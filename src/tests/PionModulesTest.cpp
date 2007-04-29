@@ -55,7 +55,7 @@ int main (int argc, char *argv[])
 
 	// initialize log4cxx system (use simple configuration)
 	log4cxx::LoggerPtr LOG(log4cxx::Logger::getLogger("Pion"));
-	#if defined(HAVE_LOG4CXX)
+	#if defined(PION_HAVE_LOG4CXX)
 		log4cxx::BasicConfigurator::configure();
 		LOG->setLevel(log4cxx::Level::DEBUG);
 	#endif
