@@ -3,10 +3,16 @@
 # -----------------------------------
 
 AC_INIT([libpion], [0.1.0], [support@atomiclabs.com])
-
+AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/lib/PionEngine.cpp)
-AM_INIT_AUTOMAKE()
+
+# DO NOT USE autoheader (the .hpp.in file is not automanaged)
+# Note: AM_CONFIG_HEADER is deprecated
+AC_CONFIG_HEADERS([src/include/libpion/PionConfig.hpp])
+
+# package and version args are now taken from AC_INIT()
+AM_INIT_AUTOMAKE
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
@@ -20,6 +26,8 @@ AC_PROG_LIBTOOL
 # Use C++ language for tests
 AC_LANG_CPLUSPLUS
 
+# Set Pion Version in PionConfig.hpp
+AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
 
 # Debug setting
 AC_ARG_WITH([debug],
@@ -38,9 +46,18 @@ fi
 
 
 # Check for unordered container support
-AC_CHECK_HEADERS([unordered_map hash_map ext/hash_map],,)
-#AC_MSG_ERROR([C++ compiler does not seem to support unordered containers]))
-
+AC_CHECK_HEADERS([unordered_map],[unordered_map_type=unordered_map],[])
+AC_CHECK_HEADERS([ext/hash_map],[unordered_map_type=ext_hash_map],[])
+AC_CHECK_HEADERS([hash_map],[unordered_map_type=hash_map],[])
+if test "$unordered_map_type" = "unordered_map"; then
+	AC_DEFINE([PION_HAVE_UNORDERED_MAP],[1],[Define to 1 if you have the <unordered_map> header file.])
+elif test "$unordered_map_type" = "ext_hash_map"; then
+	AC_DEFINE([PION_HAVE_EXT_HASH_MAP],[1],[Define to 1 if you have the <ext/hash_map> header file.])
+elif test "$unordered_map_type" = "hash_map"; then
+	AC_DEFINE([PION_HAVE_HASH_MAP],[1],[Define to 1 if you have the <hash_map> header file.])
+else
+	AC_MSG_ERROR([C++ compiler does not seem to support unordered containers])
+fi
 
 # Check for Boost
 AX_BOOST_BASE([1.33])
@@ -89,7 +106,7 @@ else
 
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
-	AC_DEFINE([HAVE_LOG4CXX],[1],[Define to 1 if you have the `log4cxx' library (-llog4cxx).])
+	AC_DEFINE([PION_HAVE_LOG4CXX],[1],[Define to 1 if you have the `log4cxx' library (-llog4cxx).])
 fi
 
 

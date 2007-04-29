@@ -21,23 +21,24 @@
 #ifndef __PION_HTTPTYPES_HEADER__
 #define __PION_HTTPTYPES_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <boost/functional/hash.hpp>
 #include <string>
 
-#if defined(HAVE_UNORDERED_MAP)
+#if defined(PION_HAVE_UNORDERED_MAP)
 	#include <unordered_map>
-	#define UNORDERED_MULTIMAP_TYPE std::tr1::unordered_multimap
-#elif defined(HAVE_EXT_HASH_MAP)
+	#define PION_UNORDERED_MULTIMAP std::tr1::unordered_multimap
+#elif defined(PION_HAVE_EXT_HASH_MAP)
 	#if __GNUC__ >= 3
 		#include <ext/hash_map>
-		#define UNORDERED_MULTIMAP_TYPE __gnu_cxx::hash_multimap
+		#define PION_UNORDERED_MULTIMAP __gnu_cxx::hash_multimap
 	#else
 		#include <ext/hash_map>
-		#define UNORDERED_MULTIMAP_TYPE hash_multimap
+		#define PION_UNORDERED_MULTIMAP hash_multimap
 	#endif
-#elif defined(HAVE_HASH_MAP)
+#elif defined(PION_HAVE_HASH_MAP)
 	#include <hash_map>
-	#define UNORDERED_MULTIMAP_TYPE hash_multimap
+	#define PION_UNORDERED_MULTIMAP hash_multimap
 #endif
 
 
@@ -78,7 +79,7 @@ struct HTTPTypes
 	static const unsigned int	RESPONSE_CODE_BAD_REQUEST;
 	
 	/// data type for a dictionary of strings (used for HTTP headers)
-	typedef UNORDERED_MULTIMAP_TYPE<std::string, std::string, boost::hash<std::string> >	StringDictionary;
+	typedef PION_UNORDERED_MULTIMAP<std::string, std::string, boost::hash<std::string> >	StringDictionary;
 
 	/// data type for HTTP headers
 	typedef StringDictionary	Headers;

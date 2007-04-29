@@ -21,6 +21,7 @@
 #ifndef __PION_HTTPSERVER_HEADER__
 #define __PION_HTTPSERVER_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <libpion/PionLogger.hpp>
 #include <libpion/HTTPModule.hpp>
 #include <libpion/TCPServer.hpp>

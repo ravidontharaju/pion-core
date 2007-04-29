@@ -21,6 +21,7 @@
 #ifndef __PION_HTTPMODULE_HEADER__
 #define __PION_HTTPMODULE_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <libpion/HTTPRequest.hpp>
 #include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>

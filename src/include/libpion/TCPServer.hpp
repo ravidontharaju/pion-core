@@ -21,6 +21,7 @@
 #ifndef __PION_TCPSERVER_HEADER__
 #define __PION_TCPSERVER_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <libpion/PionLogger.hpp>
 #include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>

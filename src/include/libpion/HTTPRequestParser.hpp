@@ -21,6 +21,7 @@
 #ifndef __PION_HTTPREQUESTPARSER_HEADER__
 #define __PION_HTTPREQUESTPARSER_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <libpion/PionLogger.hpp>
 #include <libpion/HTTPRequest.hpp>
 #include <libpion/TCPConnection.hpp>

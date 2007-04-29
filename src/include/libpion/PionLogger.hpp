@@ -21,7 +21,9 @@
 #ifndef __PION_PIONLOGGER_HEADER__
 #define __PION_PIONLOGGER_HEADER__
 
-#if defined(HAVE_LOG4CXX)
+#include <libpion/PionConfig.hpp>
+
+#if defined(PION_HAVE_LOG4CXX)
 
 	// unfortunately, the current version of log4cxx has many problems that
 	// produce very annoying warnings

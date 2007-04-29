@@ -21,6 +21,7 @@
 #ifndef __PION_PION_HEADER__
 #define __PION_PION_HEADER__
 
+#include <libpion/PionConfig.hpp>
 #include <libpion/PionEngine.hpp>
 
 
