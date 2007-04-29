@@ -21,8 +21,9 @@
 #ifndef __PION_HELLOMODULE_HEADER__
 #define __PION_HELLOMODULE_HEADER__
 
-#include "HTTPModule.hpp"
-#include "HTTPResponse.hpp"
+// pion headers
+#include <HTTPModule.hpp>
+#include <HTTPResponse.hpp>
 
 
 namespace pion {	// begin namespace pion
@@ -30,7 +31,9 @@ namespace pion {	// begin namespace pion
 ///
 /// HelloModule: simple HTTP module that responds with "Hello World!"
 ///
-class HelloModule : public HTTPModule {
+class HelloModule :
+	public HTTPModule
+{
 public:
 	// default constructor & destructor
 	virtual ~HelloModule() {}

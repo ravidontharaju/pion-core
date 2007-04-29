@@ -18,10 +18,12 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HTTPServer.hpp"
-#include "HTTPRequest.hpp"
-#include "HTTPResponse.hpp"
-#include "HTTPRequestParser.hpp"
+// pion headers
+#include <HTTPServer.hpp>
+#include <HTTPRequest.hpp>
+#include <HTTPResponse.hpp>
+#include <HTTPRequestParser.hpp>
+// other headers
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 

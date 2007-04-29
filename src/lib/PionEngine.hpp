@@ -21,9 +21,11 @@
 #ifndef __PION_PIONENGINE_HEADER__
 #define __PION_PIONENGINE_HEADER__
 
-#include "PionLogger.hpp"
-#include "TCPServer.hpp"
-#include "HTTPServer.hpp"
+// pion headers
+#include <PionLogger.hpp>
+#include <TCPServer.hpp>
+#include <HTTPServer.hpp>
+// other headers
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/once.hpp>
@@ -40,7 +42,9 @@ namespace pion {	// begin namespace pion
 ///
 /// PionEngine: singleton class that manages TCP servers and threads
 /// 
-class PionEngine : private boost::noncopyable {
+class PionEngine :
+	private boost::noncopyable
+{
 public:
 
 	/// exception thrown if start() is called after Pion is running

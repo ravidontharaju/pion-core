@@ -21,7 +21,8 @@
 #ifndef __PION_PION_HEADER__
 #define __PION_PION_HEADER__
 
-#include "PionEngine.hpp"
+// pion headers
+#include <PionEngine.hpp>
 
 
 namespace pion {	// begin namespace pion

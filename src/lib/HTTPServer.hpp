@@ -21,10 +21,12 @@
 #ifndef __PION_HTTPSERVER_HEADER__
 #define __PION_HTTPSERVER_HEADER__
 
-#include "PionLogger.hpp"
-#include "HTTPModule.hpp"
-#include "TCPServer.hpp"
-#include "TCPConnection.hpp"
+// pion headers
+#include <PionLogger.hpp>
+#include <HTTPModule.hpp>
+#include <TCPServer.hpp>
+#include <TCPConnection.hpp>
+// other headers
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <string>
@@ -36,7 +38,9 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPServer: a server that handles HTTP connections
 ///
-class HTTPServer : public TCPServer {
+class HTTPServer :
+	public TCPServer
+{
 
 public:
 

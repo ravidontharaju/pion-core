@@ -18,7 +18,8 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HTTPTypes.hpp"
+// pion headers
+#include <HTTPTypes.hpp>
 
 
 namespace pion {		// begin namespace pion

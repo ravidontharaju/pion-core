@@ -21,7 +21,9 @@
 #ifndef __PION_TCPCONNECTION_HEADER__
 #define __PION_TCPCONNECTION_HEADER__
 
-#include "PionLogger.hpp"
+// pion headers
+#include <PionLogger.hpp>
+// other headers
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -35,8 +37,8 @@ namespace pion {	// begin namespace pion
 ///
 /// TCPConnection: represents a single tcp connection
 /// 
-class TCPConnection
-	: public boost::enable_shared_from_this<TCPConnection>,
+class TCPConnection :
+	public boost::enable_shared_from_this<TCPConnection>,
 	private boost::noncopyable
 {
 public:

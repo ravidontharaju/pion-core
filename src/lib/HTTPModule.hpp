@@ -21,8 +21,10 @@
 #ifndef __PION_HTTPMODULE_HEADER__
 #define __PION_HTTPMODULE_HEADER__
 
-#include "HTTPRequest.hpp"
-#include "TCPConnection.hpp"
+// pion headers
+#include <HTTPRequest.hpp>
+#include <TCPConnection.hpp>
+// other headers
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -33,7 +35,9 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPModule: interface class for HTTP modules
 /// 
-class HTTPModule : private boost::noncopyable {
+class HTTPModule :
+	private boost::noncopyable
+{
 public:
 
 	/// virtual destructor

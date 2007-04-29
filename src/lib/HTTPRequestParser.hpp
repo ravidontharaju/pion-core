@@ -21,9 +21,11 @@
 #ifndef __PION_HTTPREQUESTPARSER_HEADER__
 #define __PION_HTTPREQUESTPARSER_HEADER__
 
-#include "PionLogger.hpp"
-#include "HTTPRequest.hpp"
-#include "TCPConnection.hpp"
+// pion headers
+#include <PionLogger.hpp>
+#include <HTTPRequest.hpp>
+#include <TCPConnection.hpp>
+// other headers
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -38,8 +40,8 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPRequestParser: parses HTTP Requests
 /// 
-class HTTPRequestParser
-	: public boost::enable_shared_from_this<HTTPRequestParser>,
+class HTTPRequestParser :
+	public boost::enable_shared_from_this<HTTPRequestParser>,
 	private boost::noncopyable
 {
 

@@ -21,8 +21,10 @@
 #ifndef __PION_TCPSERVER_HEADER__
 #define __PION_TCPSERVER_HEADER__
 
-#include "PionLogger.hpp"
-#include "TCPConnection.hpp"
+// pion headers
+#include <PionLogger.hpp>
+#include <TCPConnection.hpp>
+// other headers
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -35,8 +37,8 @@ namespace pion {	// begin namespace pion
 ///
 /// TCPServer: a multi-threaded, asynchronous TCP server
 /// 
-class TCPServer
-	: private boost::noncopyable
+class TCPServer :
+	private boost::noncopyable
 {
 public:
 

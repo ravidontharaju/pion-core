@@ -35,6 +35,7 @@
 		#pragma warning(push, 1)
 	#endif 
 
+	// log4cxx headers
 	#include <log4cxx/logger.h>
 	#include <log4cxx/basicconfigurator.h>
 

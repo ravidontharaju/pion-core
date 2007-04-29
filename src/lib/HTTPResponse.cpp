@@ -18,7 +18,9 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HTTPResponse.hpp"
+// pion headers
+#include <HTTPResponse.hpp>
+// other headers
 #include <boost/bind.hpp>
 
 

@@ -21,6 +21,7 @@
 #ifndef __PION_HTTPTYPES_HEADER__
 #define __PION_HTTPTYPES_HEADER__
 
+// other headers
 #include <boost/functional/hash.hpp>
 #include <string>
 
@@ -46,7 +47,8 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPTypes: common data types used by HTTP
 /// 
-struct HTTPTypes {
+struct HTTPTypes
+{
 	
 	// generic strings used by HTTP
 	static const std::string	STRING_EMPTY;

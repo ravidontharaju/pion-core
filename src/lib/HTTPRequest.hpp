@@ -21,7 +21,9 @@
 #ifndef __PION_HTTPREQUEST_HEADER__
 #define __PION_HTTPREQUEST_HEADER__
 
-#include "HTTPTypes.hpp"
+// pion headers
+#include <HTTPTypes.hpp>
+// other headers
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -32,7 +34,9 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPRequest: container for HTTP request information
 /// 
-class HTTPRequest : private boost::noncopyable {
+class HTTPRequest :
+	private boost::noncopyable
+{
 public:
 
 	/// creates new HTTPRequest objects

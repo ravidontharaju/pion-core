@@ -18,8 +18,11 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+// pion headers
 #include "Pion.hpp"
+// other headers
 #include <boost/bind.hpp>
+#include <iostream>
 #include <signal.h>
 
 using namespace std;

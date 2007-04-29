@@ -21,9 +21,11 @@
 #ifndef __PION_HTTPRESPONSE_HEADER__
 #define __PION_HTTPRESPONSE_HEADER__
 
-#include "PionLogger.hpp"
-#include "TCPConnection.hpp"
-#include "HTTPTypes.hpp"
+// pion headers
+#include <PionLogger.hpp>
+#include <TCPConnection.hpp>
+#include <HTTPTypes.hpp>
+// other headers
 #include <boost/asio.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/noncopyable.hpp>
@@ -39,8 +41,8 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPResponse: container for HTTP response information
 /// 
-class HTTPResponse 
-	: public boost::enable_shared_from_this<HTTPResponse>,
+class HTTPResponse :
+	public boost::enable_shared_from_this<HTTPResponse>,
 	private boost::noncopyable
 {
 	
