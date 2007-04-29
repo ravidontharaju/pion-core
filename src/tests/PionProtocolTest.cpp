@@ -19,7 +19,6 @@
 //
 
 #include "Pion.hpp"
-#include "TCPProtocol.hpp"
 #include <boost/bind.hpp>
 #include <signal.h>
 
@@ -34,11 +33,11 @@ void handle_signal(int sig)
 }
 
 
-/// simple TCP protocol that just sends "Hello there!" to each connection
-class HelloProtocol : public TCPProtocol {
+/// simple TCP server that just sends "Hello there!" to each connection
+class HelloServer : public TCPServer {
 public:
-	HelloProtocol() {}
-	virtual ~HelloProtocol() {}
+	HelloServer(const unsigned int tcp_port) : TCPServer(tcp_port) {}
+	virtual ~HelloServer() {}
 	virtual void handleConnection(TCPConnectionPtr& conn)
 	{
 		static const std::string HELLO_MESSAGE("Hello there!\r\n");
@@ -47,6 +46,9 @@ public:
 								 boost::bind(&TCPConnection::finish, conn));
 	}
 };
+
+/// data type for a HelloServer pointer
+typedef boost::shared_ptr<HelloServer>	HelloServerPtr;
 
 
 int main (int argc, char *argv[])
@@ -76,8 +78,11 @@ int main (int argc, char *argv[])
 	try {
 		
 		// create a new server to handle the Hello TCP protocol
-		TCPServerPtr hello_server(Pion::getServer(port));
-		hello_server->setProtocol(TCPProtocolPtr(new HelloProtocol));
+		HelloServerPtr hello_server(new HelloServer(port));
+		if (! Pion::addServer(hello_server)) {
+			LOG4CXX_FATAL(LOG, "Failed to add HelloServer on port " << port);
+			return 1;
+		}
 	
 		// startup pion
 		Pion::start();

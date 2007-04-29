@@ -19,7 +19,7 @@
 //
 
 #include "TCPServer.hpp"
-#include "HTTPProtocol.hpp"
+#include "PionEngine.hpp"
 #include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
@@ -29,10 +29,10 @@ namespace pion {	// begin namespace pion
 
 // TCPServer member functions
 
-TCPServer::TCPServer(boost::asio::io_service& io_service, const unsigned int port)
+TCPServer::TCPServer(const unsigned int tcp_port)
 	: m_logger(log4cxx::Logger::getLogger("Pion.TCPServer")),
-	m_tcp_acceptor(io_service), m_protocol(new HTTPProtocol), m_tcp_port(port), 
-	m_is_listening(false)
+	m_tcp_acceptor(PionEngine::getInstance().getIOService()),
+	m_tcp_port(tcp_port), m_is_listening(false)
 {}
 
 void TCPServer::start(void)
@@ -67,28 +67,7 @@ void TCPServer::stop(void)
 	if (m_is_listening) {
 		// schedule stop request with io_service to finish any pending events
 		// this allows any pending I/O events to finish processing first
-		m_tcp_acceptor.io_service().post(boost::bind(&TCPServer::handleStopRequest,
-													 shared_from_this()));
-	}
-}
-
-void TCPServer::listen(void)
-{
-	// lock mutex for thread safety
-	boost::mutex::scoped_lock server_lock(m_mutex);
-
-	if (m_is_listening) {
-		// create a new TCP connection object
-		TCPConnectionPtr new_connection(new TCPConnection(m_tcp_acceptor.io_service(),
-														  boost::bind(&TCPServer::finishConnection,
-																	  shared_from_this(), _1)));
-		m_conn_pool.insert(new_connection);
-
-		// use the new object to accept a connection
-		m_tcp_acceptor.async_accept(new_connection->getSocket(),
-									boost::bind(&TCPServer::handleConnection,
-												shared_from_this(), new_connection,
-												boost::asio::placeholders::error) );
+		m_tcp_acceptor.io_service().post(boost::bind(&TCPServer::handleStopRequest, this));
 	}
 }
 
@@ -114,20 +93,40 @@ void TCPServer::handleStopRequest(void)
 	}
 }
 
-void TCPServer::handleConnection(TCPConnectionPtr& conn, const boost::asio::error& accept_error)
+void TCPServer::listen(void)
+{
+	// lock mutex for thread safety
+	boost::mutex::scoped_lock server_lock(m_mutex);
+	
+	if (m_is_listening) {
+		// create a new TCP connection object
+		TCPConnectionPtr new_connection(new TCPConnection(m_tcp_acceptor.io_service(),
+														  boost::bind(&TCPServer::finishConnection,
+																	  this, _1)));
+		m_conn_pool.insert(new_connection);
+		
+		// use the new object to accept a connection
+		m_tcp_acceptor.async_accept(new_connection->getSocket(),
+									boost::bind(&TCPServer::handleAccept,
+												this, new_connection,
+												boost::asio::placeholders::error) );
+	}
+}
+
+void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::error& accept_error)
 {
 	if (accept_error) {
 		// an error occured while trying to a accept a new connection
 		// this happens when the server is being shut down
-		finishConnection(conn);
+		finishConnection(tcp_conn);
 	} else {
 		// got a new TCP connection
 		LOG4CXX_INFO(m_logger, "New connection on port " << getPort());
 		// schedule the acceptance of another new connection
 		// (this returns immediately since it schedules it as an event)
 		if (m_is_listening) listen();
-		// use the protocol handler to do something with the connection
-		m_protocol->handleConnection(conn);
+		// handle the new connection
+		handleConnection(tcp_conn);
 	}
 }
 

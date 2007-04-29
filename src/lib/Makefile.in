@@ -100,24 +100,20 @@ install_sh = @install_sh@
 
 lib_LTLIBRARIES = libpion.la
 
-libpion_la_SOURCES = Pion.hpp PionLogger.hpp \
-	TCPConnection.hpp TCPProtocol.hpp \
+libpion_la_SOURCES = Pion.hpp PionLogger.hpp TCPConnection.hpp \
 	PionEngine.hpp PionEngine.cpp \
 	TCPServer.hpp TCPServer.cpp \
 	HTTPRequest.hpp HTTPModule.hpp \
 	HTTPResponse.hpp HTTPResponse.cpp \
 	HTTPTypes.hpp HTTPTypes.cpp \
 	HTTPRequestParser.hpp HTTPRequestParser.cpp \
-	HTTPProtocol.hpp HTTPProtocol.cpp
+	HTTPServer.hpp HTTPServer.cpp
 
 
 libpion_includedir = $(includedir)/libpion
-libpion_include_HEADERS = Pion.hpp PionLogger.hpp \
-	TCPConnection.hpp TCPProtocol.hpp \
-	PionEngine.hpp TCPServer.hpp \
-	HTTPTypes.hpp HTTPModule.hpp \
-	HTTPRequest.hpp HTTPResponse.hpp \
-	HTTPRequestParser.hpp HTTPProtocol.hpp
+libpion_include_HEADERS = Pion.hpp PionLogger.hpp TCPConnection.hpp \
+	PionEngine.hpp TCPServer.hpp HTTPTypes.hpp HTTPModule.hpp \
+	HTTPRequest.hpp HTTPResponse.hpp HTTPRequestParser.hpp
 
 subdir = src/lib
 mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
@@ -127,7 +123,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libpion_la_LDFLAGS =
 libpion_la_LIBADD =
 am_libpion_la_OBJECTS = PionEngine.lo TCPServer.lo HTTPResponse.lo \
-	HTTPTypes.lo HTTPRequestParser.lo HTTPProtocol.lo
+	HTTPTypes.lo HTTPRequestParser.lo HTTPServer.lo
 libpion_la_OBJECTS = $(am_libpion_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -137,9 +133,9 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/build/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/HTTPProtocol.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/HTTPRequestParser.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/HTTPRequestParser.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/HTTPResponse.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/HTTPServer.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/HTTPTypes.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/PionEngine.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/TCPServer.Plo
@@ -212,9 +208,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HTTPProtocol.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HTTPRequestParser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HTTPResponse.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HTTPServer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HTTPTypes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PionEngine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TCPServer.Plo@am__quote@

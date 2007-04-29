@@ -19,7 +19,6 @@
 //
 
 #include "Pion.hpp"
-#include "HTTPProtocol.hpp"
 #include "HelloModule.hpp"
 #include <boost/bind.hpp>
 #include <signal.h>
@@ -63,10 +62,8 @@ int main (int argc, char *argv[])
 	try {
 
 		// create a server for HTTP & add the Hello module
-		TCPServerPtr http_server(Pion::getServer(port));
-		HTTPProtocolPtr http_protocol(new HTTPProtocol);
-		http_protocol->addModule(HTTPModulePtr(new HelloModule));
-		http_server->setProtocol(http_protocol);
+		HTTPServerPtr http_server(Pion::addHTTPServer(port));
+		http_server->addModule(HTTPModulePtr(new HelloModule));
 	
 		// startup pion
 		Pion::start();

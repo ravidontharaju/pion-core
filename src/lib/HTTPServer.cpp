@@ -18,32 +18,32 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HTTPProtocol.hpp"
-#include "HTTPRequestParser.hpp"
+#include "HTTPServer.hpp"
+#include "HTTPRequest.hpp"
 #include "HTTPResponse.hpp"
+#include "HTTPRequestParser.hpp"
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
 
 namespace pion {	// begin namespace pion
 
-// HTTPProtocol member functions
+// HTTPServer member functions
 
-void HTTPProtocol::handleConnection(TCPConnectionPtr& tcp_conn)
+void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
-	HTTPRequestParserPtr request_parser(new HTTPRequestParser(boost::bind(&HTTPProtocol::handleRequest,
-																		  shared_from_this(), _1, _2),
-															  tcp_conn));
+	HTTPRequestParserPtr request_parser(new HTTPRequestParser(boost::bind(&HTTPServer::handleRequest,
+																		  this, _1, _2), tcp_conn));
 	request_parser->readRequest();
 }
 
-void HTTPProtocol::handleRequest(HTTPRequestPtr& http_request,
-								 TCPConnectionPtr& tcp_conn)
+void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
+							   TCPConnectionPtr& tcp_conn)
 {
 	// create a keepalive handler that we can reuse when trying to
 	// handle requests with modules
 	TCPConnection::ConnectionHandler keepalive_handler =
-		boost::bind(&HTTPProtocol::handleConnection, shared_from_this(), _1);
+		boost::bind(&HTTPServer::handleConnection, this, _1);
 
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
@@ -106,14 +106,14 @@ void HTTPProtocol::handleRequest(HTTPRequestPtr& http_request,
 	}
 }
 
-void HTTPProtocol::addModule(HTTPModulePtr m)
+void HTTPServer::addModule(HTTPModulePtr m)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(m->getResource(), m));
 }
 
-void HTTPProtocol::clearModules(void)
+void HTTPServer::clearModules(void)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock modules_lock(m_mutex);
@@ -121,15 +121,15 @@ void HTTPProtocol::clearModules(void)
 }
 
 
-// static members of HTTPProtocol::BadRequestModule
+// static members of HTTPServer::BadRequestModule
 
-const std::string HTTPProtocol::BadRequestModule::BAD_REQUEST_HTML =
+const std::string HTTPServer::BadRequestModule::BAD_REQUEST_HTML =
 	"<html><body>The request is <em>invalid</em></body></html>\r\n\r\n";
 
 
-// HTTPProtocol::BadRequestModule member functions
+// HTTPServer::BadRequestModule member functions
 
-bool HTTPProtocol::BadRequestModule::handleRequest(HTTPRequestPtr& request,
+bool HTTPServer::BadRequestModule::handleRequest(HTTPRequestPtr& request,
 												   TCPConnectionPtr& tcp_conn,
 												   TCPConnection::ConnectionHandler& keepalive_handler)
 {
@@ -142,17 +142,17 @@ bool HTTPProtocol::BadRequestModule::handleRequest(HTTPRequestPtr& request,
 }
 
 
-// static members of HTTPProtocol::NotFoundModule
+// static members of HTTPServer::NotFoundModule
 
-const std::string HTTPProtocol::NotFoundModule::NOT_FOUND_HTML =
+const std::string HTTPServer::NotFoundModule::NOT_FOUND_HTML =
 	"<html><body>Request Not Found</body></html>\r\n\r\n";
 
 
-// HTTPProtocol::BadRequestModule member functions
+// HTTPServer::BadRequestModule member functions
 
-bool HTTPProtocol::NotFoundModule::handleRequest(HTTPRequestPtr& request,
-												 TCPConnectionPtr& tcp_conn,
-												 TCPConnection::ConnectionHandler& keepalive_handler)
+bool HTTPServer::NotFoundModule::handleRequest(HTTPRequestPtr& request,
+											   TCPConnectionPtr& tcp_conn,
+											   TCPConnection::ConnectionHandler& keepalive_handler)
 {
 	HTTPResponsePtr response(HTTPResponse::create(keepalive_handler, tcp_conn));
 	response->setResponseCode(HTTPTypes::RESPONSE_CODE_NOT_FOUND);

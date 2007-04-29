@@ -32,25 +32,38 @@ namespace pion {	// begin namespace pion
 namespace Pion {
 
 	/**
-     * Creates a server for the given port number if one does not already exist
+	 * Adds a new TCP server
 	 * 
-	 * @param port TCP port the server listens to
+	 * @param tcp_server the TCP server to add
+	 * 
+     * @return true if the server was added; false if a conflict occurred
 	 */
-	inline static void addServer(const unsigned int port) {
-		PionEngine::getInstance().getServer(port);
+	inline static bool addServer(TCPServerPtr tcp_server) {
+		return PionEngine::getInstance().addServer(tcp_server);
 	}
-
+	
 	/**
-     * Retrieves a server for the given port number (may create a new one)
-     * 
-     * @param port TCP port the server listens to
+	 * Adds a new HTTP server
 	 * 
-     * @return TCPServerPtr pointer to a server
+	 * @param tcp_port the TCP port the server listens to
+	 * 
+     * @return pointer to the new server (pointer is undefined if failure)
 	 */
-	inline static TCPServerPtr getServer(const unsigned int port) {
-		return PionEngine::getInstance().getServer(port);
+	inline static HTTPServerPtr addHTTPServer(const unsigned int tcp_port) {
+		return PionEngine::getInstance().addHTTPServer(tcp_port);
 	}
-
+	
+	/**
+	 * Retrieves an existing TCP server for the given port number
+	 * 
+	 * @param tcp_port the TCP port the server listens to
+	 * 
+     * @return pointer to the new server (pointer is undefined if failure)
+	 */
+	inline static TCPServerPtr getServer(const unsigned int tcp_port) {
+		return PionEngine::getInstance().getServer(tcp_port);
+	}
+	
 	/// starts pion
 	inline static void start(void) {
 		PionEngine::getInstance().start();

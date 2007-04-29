@@ -18,12 +18,12 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#ifndef __PION_HTTPPROTOCOL_HEADER__
-#define __PION_HTTPPROTOCOL_HEADER__
+#ifndef __PION_HTTPSERVER_HEADER__
+#define __PION_HTTPSERVER_HEADER__
 
 #include "PionLogger.hpp"
 #include "HTTPModule.hpp"
-#include "TCPProtocol.hpp"
+#include "TCPServer.hpp"
 #include "TCPConnection.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -34,28 +34,55 @@
 namespace pion {	// begin namespace pion
 
 ///
-/// HTTPProtocol: protocol handler for HTTP connections
+/// HTTPServer: a server that handles HTTP connections
 ///
-class HTTPProtocol : public TCPProtocol,
-	public boost::enable_shared_from_this<HTTPProtocol>
-{
+class HTTPServer : public TCPServer {
 
 public:
 
-	// default constructor and destructor
-	virtual ~HTTPProtocol() {}
-	explicit HTTPProtocol(void)
-		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPProtocol")),
-		m_bad_request_module(new BadRequestModule),
-		m_not_found_module(new NotFoundModule) {}
+	/// default destructor
+	virtual ~HTTPServer() {}
 
 	/**
-     * handles a new TCP connection
+	 * constructs a new HTTP server
+     * 
+     * @param tcp_port port number used to listen for new connections
+	 */
+	explicit HTTPServer(const unsigned int tcp_port)
+		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
+		m_not_found_module(new NotFoundModule)
+	{ 
+		setLogger(log4cxx::Logger::getLogger("Pion.HTTPServer"));
+	}
+
+	/// adds a new module to the HTTP server
+	void addModule(HTTPModulePtr m);
+	
+	/// clears all the modules that are currently configured
+	void clearModules(void);
+	
+	/// sets the module that handles bad HTTP requests
+	inline void setBadRequestModule(HTTPModulePtr m) { m_bad_request_module = m; }
+	
+	/// sets the module that handles requests which match no other module
+	inline void setNotFoundModule(HTTPModulePtr m) { m_not_found_module = m; }
+	
+	/// sets the logger to be used
+	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
+
+	
+protected:
+	
+	/**
+	 * handles a new TCP connection
 	 * 
-	 * @param tcp_conn the connection to handle
+	 * @param tcp_conn the new TCP connection to handle
 	 */
 	virtual void handleConnection(TCPConnectionPtr& tcp_conn);
-
+	
 	/**
 	 * handles a new HTTP request
 	 *
@@ -63,25 +90,7 @@ public:
 	 * @param tcp_conn TCP connection containing a new request
 	 */
 	void handleRequest(HTTPRequestPtr& http_request, TCPConnectionPtr& tcp_conn);
-	
-	/// adds a new module to the protocol handler
-	void addModule(HTTPModulePtr m);
 		
-	/// clears all the modules that are currently configured
-	void clearModules(void);
-
-	/// sets the module that handles bad HTTP requests
-	inline void setBadRequestModule(HTTPModulePtr m) { m_bad_request_module = m; }
-	
-	/// sets the module that handles requests which match no other module
-	inline void setNotFoundModule(HTTPModulePtr m) { m_not_found_module = m; }
-
-	/// sets the logger to be used
-	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
-	
 	
 private:
 
@@ -115,7 +124,7 @@ private:
 	/// primary logging interface used by this class
 	log4cxx::LoggerPtr		m_logger;
 
-	/// HTTP modules associated with this protocol handler
+	/// HTTP modules associated with this server
 	ModuleMap				m_modules;
 
 	/// mutex to make class thread-safe
@@ -130,7 +139,7 @@ private:
 
 
 /// data type for a HTTP protocol handler pointer
-typedef boost::shared_ptr<HTTPProtocol>		HTTPProtocolPtr;
+typedef boost::shared_ptr<HTTPServer>		HTTPServerPtr;
 
 
 }	// end namespace pion

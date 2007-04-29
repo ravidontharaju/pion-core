@@ -22,10 +22,9 @@
 #define __PION_TCPSERVER_HEADER__
 
 #include "PionLogger.hpp"
-#include "TCPProtocol.hpp"
+#include "TCPConnection.hpp"
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 #include <set>
@@ -37,8 +36,7 @@ namespace pion {	// begin namespace pion
 /// TCPServer: a multi-threaded, asynchronous TCP server
 /// 
 class TCPServer
-	: public boost::enable_shared_from_this<TCPServer>,
-	private boost::noncopyable
+	: private boost::noncopyable
 {
 public:
 
@@ -46,12 +44,11 @@ public:
 	virtual ~TCPServer() { if (m_is_listening) handleStopRequest(); }
 	
 	/**
-     * constructs a new server
+     * constructs a new TCP server
      * 
-     * @param io_service asio service associate with the server
-     * @param port port number used to listen for connections
+     * @param tcp_port port number used to listen for new connections
 	 */
-	TCPServer(boost::asio::io_service& io_service, const unsigned int port);
+	explicit TCPServer(const unsigned int tcp_port);
 
 	/// starts listening for new connections
 	void start(void);
@@ -62,12 +59,6 @@ public:
 	/// returns tcp port number server listens for connections on
 	inline unsigned int getPort(void) const { return m_tcp_port; }
 
-	/// sets the protocol handler to be used by this server
-	inline void setProtocol(TCPProtocolPtr protocol) { m_protocol = protocol; }
-
-	/// returns the protocol handler currently in use
-	inline TCPProtocolPtr getProtocol(void) { return m_protocol; }
-	
 	/// sets the logger to be used
 	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
 	
@@ -76,24 +67,40 @@ public:
 	
 
 protected:
+		
+	/**
+	 * handles a new TCP connection; derived classes SHOULD override this
+	 * since the default behavior does nothing
+	 * 
+	 * @param tcp_conn the new TCP connection to handle
+	 */
+	virtual void handleConnection(TCPConnectionPtr& tcp_conn) {
+		tcp_conn->finish();
+	}
 
+	
+private:
+		
+	/// handles a request to stop the server
+	void handleStopRequest(void);
+	
 	/// listens for a new connection
 	void listen(void);
 
-	/// handles a request to stop the server
-	void handleStopRequest(void);
-
-	/// handles new connections
-	void handleConnection(TCPConnectionPtr& conn,
-						  const boost::asio::error& accept_error);
+	/**
+	 * handles new connections (checks if there was an accept error)
+	 *
+	 * @param tcp_conn the new TCP connection (if no error occurred)
+	 * @param accept_error true if an error occurred while accepting connections
+	 */
+	void handleAccept(TCPConnectionPtr& tcp_conn,
+					  const boost::asio::error& accept_error);
 
 	/// called after we are finished handling a connection; this removes it
 	/// from the server's management pool
 	void finishConnection(TCPConnectionPtr& conn);
 
 	
-private:
-
 	/// data type for a pool of TCP connections
 	typedef std::set<TCPConnectionPtr>		ConnectionPool;
 
@@ -105,9 +112,6 @@ private:
 
 	/// manages async TCP connections
 	boost::asio::ip::tcp::acceptor			m_tcp_acceptor;
-
-	/// protocol used to handle new connections
-	TCPProtocolPtr							m_protocol;
 
 	/// pool of active connections associated with this server 
 	ConnectionPool							m_conn_pool;

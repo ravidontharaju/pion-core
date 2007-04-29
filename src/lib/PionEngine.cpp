@@ -114,23 +114,43 @@ void PionEngine::run(void)
 	}
 }
 
-TCPServerPtr PionEngine::getServer(const unsigned int port)
+bool PionEngine::addServer(TCPServerPtr tcp_server)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
-
-	// check if a server already exists
-	TCPServerMap::iterator i = m_servers.find(port);
-	if (i != m_servers.end()) return i->second;
-
-	// create a new server
-	TCPServerPtr new_server(new TCPServer(m_asio_service, port));
-
-	// insert new_server into the server map
+	
+	// attempt to insert tcp_server into the server map
 	std::pair<TCPServerMap::iterator, bool> result =
-		m_servers.insert( std::make_pair(port, new_server) );
+		m_servers.insert( std::make_pair(tcp_server->getPort(), tcp_server) );
 
-	return new_server;
+	return result.second;
+}
+
+HTTPServerPtr PionEngine::addHTTPServer(const unsigned int tcp_port)
+{
+	HTTPServerPtr http_server(new HTTPServer(tcp_port));
+
+	// lock mutex for thread safety
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	
+	// attempt to insert http_server into the server map
+	std::pair<TCPServerMap::iterator, bool> result =
+		m_servers.insert( std::make_pair(tcp_port, http_server) );
+
+	if (! result.second) http_server.reset();
+	
+	return http_server;
+}
+
+TCPServerPtr PionEngine::getServer(const unsigned int tcp_port)
+{
+	// lock mutex for thread safety
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	
+	// check if a server already exists
+	TCPServerMap::iterator i = m_servers.find(tcp_port);
+	
+	return (i==m_servers.end() ? TCPServerPtr() : i->second);
 }
 
 }	// end namespace pion

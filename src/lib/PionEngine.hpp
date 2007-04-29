@@ -23,6 +23,7 @@
 
 #include "PionLogger.hpp"
 #include "TCPServer.hpp"
+#include "HTTPServer.hpp"
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/once.hpp>
@@ -70,13 +71,31 @@ public:
 	}
 
 	/**
-	 * Retrieves a server for the given port number (may create a new one)
+	 * Adds a new TCP server
 	 * 
-	 * @param port the port the server listens to
+	 * @param tcp_server the TCP server to add
 	 * 
-     * @return TCPServerPtr pointer to a server
+     * @return true if the server was added; false if a conflict occurred
 	 */
-	TCPServerPtr getServer(const unsigned int port);
+	bool addServer(TCPServerPtr tcp_server);
+
+	/**
+	 * Adds a new HTTP server
+	 * 
+	 * @param tcp_port the TCP port the server listens to
+	 * 
+     * @return pointer to the new server (pointer is undefined if failure)
+	 */
+	HTTPServerPtr addHTTPServer(const unsigned int tcp_port);
+	
+	/**
+	 * Retrieves an existing TCP server for the given port number
+	 * 
+	 * @param tcp_port the TCP port the server listens to
+	 * 
+     * @return pointer to the new server (pointer is undefined if failure)
+	 */
+	TCPServerPtr getServer(const unsigned int tcp_port);
 
 	/// starts pion
 	void start(void);
@@ -99,7 +118,10 @@ public:
 	/// returns the logger currently in use
 	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
 	
+	/// returns the async I/O service used by the engine
+	inline boost::asio::io_service& getIOService(void) { return m_asio_service; }
 
+	
 private:
 
 	/// private constructor for singleton pattern
