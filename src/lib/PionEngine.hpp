@@ -70,8 +70,7 @@ public:
 	}
 
 	/**
-     * Retrieves a server for the given port number.
-     * Creates a new server if necessary
+	 * Retrieves a server for the given port number (may create a new one)
 	 * 
 	 * @param port the port the server listens to
 	 * 
@@ -139,7 +138,7 @@ private:
 	/// pool of threads used to receive and process requests
 	PionThreadPool					m_thread_pool;
 
-	/// manages async io events
+	/// manages async I/O events
 	boost::asio::io_service			m_asio_service;
 	
 	/// mutex to make class thread-safe

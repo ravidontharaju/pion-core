@@ -97,17 +97,18 @@ void PionEngine::stop(void)
 
 void PionEngine::join(void)
 {
-	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
-	m_engine_has_stopped.wait(engine_lock);
+	if (m_is_running) {
+		// sleep until engine_has_stopped condition is signaled
+		m_engine_has_stopped.wait(engine_lock);
+	}
 }
 
 void PionEngine::run(void)
 {
 	try {
-
+		// handle I/O events managed by the service
 		m_asio_service.run();
-
 	} catch (std::exception& e) {
 		LOG4CXX_FATAL(m_logger, "Caught exception in pool thread: " << e.what());
 	}

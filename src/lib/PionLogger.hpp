@@ -23,9 +23,10 @@
 
 #if defined(HAVE_LOG4CXX)
 
-	// log4cxx unfortunately has lots of problems that produce warnings
+	// unfortunately, the current version of log4cxx has many problems that
+	// produce very annoying warnings
 
-	// this disables warnings
+	// this disables warnings before preprocessing the log4cxx headers
 	#if defined __GNUC__
 		#pragma GCC system_header
 	#elif defined __SUNPRO_CC

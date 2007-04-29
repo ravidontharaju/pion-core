@@ -27,6 +27,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/array.hpp>
 #include <boost/function.hpp>
 #include <boost/logic/tribool.hpp>
 #include <string>
@@ -135,18 +136,6 @@ protected:
 	
 private:
 
-	/// maximum length for the resource requested
-	static const unsigned int	RESOURCE_MAX;
-
-	/// maximum length for the request method
-	static const unsigned int	METHOD_MAX;
-	
-	/// maximum length for an HTTP header name
-	static const unsigned int	HEADER_NAME_MAX;
-
-	/// maximum length for an HTTP header value
-	static const unsigned int	HEADER_VALUE_MAX;
-
 	/// state used to keep track of where we are in parsing the request
 	enum ParseState {
 		PARSE_METHOD_START, PARSE_METHOD, PARSE_URI,
@@ -160,32 +149,50 @@ private:
 		PARSE_EXPECTING_FINAL_NEWLINE, PARSE_EXPECTING_FINAL_CR
 	};
 
+	/// data type for an I/O read buffer
+	typedef boost::array<char, 8192>	ReadBuffer;
+	
+	/// maximum length for the resource requested
+	static const unsigned int			RESOURCE_MAX;
+
+	/// maximum length for the request method
+	static const unsigned int			METHOD_MAX;
+	
+	/// maximum length for an HTTP header name
+	static const unsigned int			HEADER_NAME_MAX;
+
+	/// maximum length for an HTTP header value
+	static const unsigned int			HEADER_VALUE_MAX;
+
 	/// primary logging interface used by this class
-	log4cxx::LoggerPtr			m_logger;
+	log4cxx::LoggerPtr					m_logger;
 
 	/// A function that handles the request after it has been parsed
-	RequestHandler				m_request_handler;
+	RequestHandler						m_request_handler;
 	
 	/// The HTTP connection that has a new request to parse
-	TCPConnectionPtr			m_tcp_conn;
+	TCPConnectionPtr					m_tcp_conn;
 	
 	/// The new HTTP request container being created
-	HTTPRequestPtr				m_http_request;
+	HTTPRequestPtr						m_http_request;
 	
 	/// The current state of parsing the request
-	ParseState					m_parse_state;
+	ParseState							m_parse_state;
+
+	/// buffer used for reading data from the TCP connection
+	ReadBuffer							m_read_buffer;
 
 	/// Used for parsing the name of resource requested
-	std::string					m_resource;
+	std::string							m_resource;
 	
 	/// Used for parsing the request method
-	std::string					m_method;
+	std::string							m_method;
 
 	/// Used for parsing the name of HTTP headers
-	std::string					m_header_name;
+	std::string							m_header_name;
 
 	/// Used for parsing the value of HTTP headers
-	std::string					m_header_value;
+	std::string							m_header_value;
 };
 
 

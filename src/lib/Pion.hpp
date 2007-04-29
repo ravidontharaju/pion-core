@@ -32,20 +32,18 @@ namespace pion {	// begin namespace pion
 namespace Pion {
 
 	/**
-     * Creates a server for the given port number if one does not
-     * already exist
+     * Creates a server for the given port number if one does not already exist
 	 * 
-	 * @param port the port the server listens to
+	 * @param port TCP port the server listens to
 	 */
 	inline static void addServer(const unsigned int port) {
 		PionEngine::getInstance().getServer(port);
 	}
 
 	/**
-     * Retrieves a server for the given port number.
-     * Creates a new server if necessary
+     * Retrieves a server for the given port number (may create a new one)
      * 
-     * @param port the port the server listens to
+     * @param port TCP port the server listens to
 	 * 
      * @return TCPServerPtr pointer to a server
 	 */
@@ -68,11 +66,25 @@ namespace Pion {
 		PionEngine::getInstance().join();
 	}
 	
-	// simple configuration functions
-	inline static void setNumThreads(const unsigned int n) { PionEngine::getInstance().setNumThreads(n); }
-	inline static unsigned int getNumThreads(void) { return PionEngine::getInstance().getNumThreads(); }
-	inline static void setLogger(log4cxx::LoggerPtr log_ptr) { PionEngine::getInstance().setLogger(log_ptr); }
-	inline static log4cxx::LoggerPtr getLogger(void) { return PionEngine::getInstance().getLogger(); }
+	/// sets the number of threads to be used (these are shared by all servers)
+	inline static void setNumThreads(const unsigned int n) {
+		PionEngine::getInstance().setNumThreads(n);
+	}
+
+	/// returns the number of threads currently in use
+	inline static unsigned int getNumThreads(void) {
+		return PionEngine::getInstance().getNumThreads();
+	}
+
+	/// sets the logger to be used
+	inline static void setLogger(log4cxx::LoggerPtr log_ptr) {
+		PionEngine::getInstance().setLogger(log_ptr);
+	}
+
+	/// returns the logger currently in use
+	inline static log4cxx::LoggerPtr getLogger(void) {
+		return PionEngine::getInstance().getLogger();
+	}
 
 }	// end namespace Pion
 

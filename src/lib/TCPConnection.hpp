@@ -26,7 +26,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
 #include <boost/function.hpp>
 #include <string>
 
@@ -36,17 +35,17 @@ namespace pion {	// begin namespace pion
 ///
 /// TCPConnection: represents a single tcp connection
 /// 
-class TCPConnection : public boost::enable_shared_from_this<TCPConnection>, private boost::noncopyable {
+class TCPConnection
+	: public boost::enable_shared_from_this<TCPConnection>,
+	private boost::noncopyable
+{
 public:
 
-	// function that handles TCP connection objects
+	/// data type for a function that handles TCP connection objects
 	typedef boost::function1<void, boost::shared_ptr<TCPConnection> >	ConnectionHandler;
 	
 	/// data type for a socket connection
-	typedef boost::asio::ip::tcp::socket			Socket;
-
-	/// data type for a data buffer
-	typedef boost::array<char, 8192>				Buffer;
+	typedef boost::asio::ip::tcp::socket	Socket;
 
 	/// default destructor
 	virtual ~TCPConnection() {}
@@ -64,24 +63,21 @@ public:
 	/// close the tcp socket
 	inline void close(void) { m_tcp_socket.close(); }
 
-	/// should be called after a protocol is finished with the connection
+	/// since TCP connections are managed by TCPServers, this function
+	/// must be called after a protocol has finished with the connection
 	inline void finish(void) { close(); m_finished_handler(shared_from_this()); }
 
-	// public accessors
+	/// returns the socket associated with the TCP connection
 	inline Socket& getSocket(void) { return m_tcp_socket; }
-	inline Buffer& getReadBuffer(void) { return m_read_buffer; }
 
 
 private:
 
-	/// tcp connection socket
+	/// TCP connection socket
 	Socket						m_tcp_socket;
 
 	/// function called when the connection is finished
 	ConnectionHandler			m_finished_handler;
-
-	/// buffer used for reading data from the connection (input)
-	Buffer						m_read_buffer;
 };
 
 

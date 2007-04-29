@@ -1,9 +1,11 @@
 Things to do:
 =============
 
+* Add support for parsing query data (GET/POST) and cookies from requests
 * Add RequestModule that echos the HTTP request
 * Add LogModule for displaying log entries
 * Add FileModule for delivering disk files
+* Allow more options for binding servers than just port numbers (IP)
 * Add support for SSL/TLS & server certificates
 * Add support for built-in authentication: Basic
 * Add support for built-in authentication: OpenID

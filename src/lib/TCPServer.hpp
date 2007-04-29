@@ -36,14 +36,17 @@ namespace pion {	// begin namespace pion
 ///
 /// TCPServer: a multi-threaded, asynchronous TCP server
 /// 
-class TCPServer : public boost::enable_shared_from_this<TCPServer>, private boost::noncopyable {
+class TCPServer
+	: public boost::enable_shared_from_this<TCPServer>,
+	private boost::noncopyable
+{
 public:
 
 	/// default destructor
 	virtual ~TCPServer() { if (m_is_listening) handleStopRequest(); }
 	
 	/**
-     * constructs server using asio service
+     * constructs a new server
      * 
      * @param io_service asio service associate with the server
      * @param port port number used to listen for connections
@@ -84,13 +87,14 @@ protected:
 	void handleConnection(TCPConnectionPtr& conn,
 						  const boost::asio::error& accept_error);
 
-	/// called after we are finished handling a connection
+	/// called after we are finished handling a connection; this removes it
+	/// from the server's management pool
 	void finishConnection(TCPConnectionPtr& conn);
 
 	
 private:
 
-	// data type for a pool of TCP connections
+	/// data type for a pool of TCP connections
 	typedef std::set<TCPConnectionPtr>		ConnectionPool;
 
 	/// primary logging interface used by this class
@@ -99,7 +103,7 @@ private:
 	/// mutex to make class thread-safe
 	boost::mutex							m_mutex;
 
-	/// manages async tcp connections
+	/// manages async TCP connections
 	boost::asio::ip::tcp::acceptor			m_tcp_acceptor;
 
 	/// protocol used to handle new connections
@@ -111,7 +115,7 @@ private:
 	/// tcp port number server listens for connections on
 	const unsigned int						m_tcp_port;
 
-	/// set to true when we are listening for new connections
+	/// set to true when the server is listening for new connections
 	bool									m_is_listening;
 };
 

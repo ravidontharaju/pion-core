@@ -48,7 +48,7 @@ namespace pion {	// begin namespace pion
 /// 
 struct HTTPTypes {
 	
-	// misc strings
+	// generic strings used by HTTP
 	static const std::string	STRING_EMPTY;
 	static const std::string	STRING_CRLF;
 	static const std::string	STRING_HTTP_VERSION;
@@ -61,17 +61,17 @@ struct HTTPTypes {
 	static const std::string	HEADER_CONTENT_TYPE;
 	static const std::string	HEADER_CONTENT_LENGTH;
 
-	// content types
+	// common HTTP content types
 	static const std::string	CONTENT_TYPE_HTML;
 	static const std::string	CONTENT_TYPE_TEXT;
 	static const std::string	CONTENT_TYPE_XML;
 	
-	// response strings
+	// common HTTP response messages
 	static const std::string	RESPONSE_MESSAGE_OK;
 	static const std::string	RESPONSE_MESSAGE_NOT_FOUND;
 	static const std::string	RESPONSE_MESSAGE_BAD_REQUEST;
 
-	// response codes
+	// common HTTP response codes
 	static const unsigned int	RESPONSE_CODE_OK;
 	static const unsigned int	RESPONSE_CODE_NOT_FOUND;
 	static const unsigned int	RESPONSE_CODE_BAD_REQUEST;

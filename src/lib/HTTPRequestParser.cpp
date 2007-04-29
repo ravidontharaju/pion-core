@@ -38,7 +38,7 @@ const unsigned int	HTTPRequestParser::HEADER_VALUE_MAX = 1024 * 1024;	// 1 MB
 
 void HTTPRequestParser::readRequest(void)
 {
-	m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_tcp_conn->getReadBuffer()),
+	m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_read_buffer),
 											boost::bind(&HTTPRequestParser::readHandler,
 														shared_from_this(),
 														boost::asio::placeholders::error,
@@ -85,7 +85,7 @@ void HTTPRequestParser::readHandler(const boost::asio::error& read_error,
 
 boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read) 
 {
-	register const char *ptr = m_tcp_conn->getReadBuffer().data();
+	register const char *ptr = m_read_buffer.data();
 	const char * const end = ptr + bytes_read;
 
 	// parse characters available in the read buffer

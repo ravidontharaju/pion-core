@@ -24,27 +24,30 @@
 namespace pion {		// begin namespace pion
 
 
-// static members of HTTPTypes
-	
+// generic strings used by HTTP
 const std::string	HTTPTypes::STRING_EMPTY;
 const std::string	HTTPTypes::STRING_CRLF("\r\n");
 const std::string	HTTPTypes::STRING_HTTP_VERSION("HTTP/1.1");
 const std::string	HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR(": ");
 
+// common HTTP header names
 const std::string	HTTPTypes::HEADER_HOST("Host");
 const std::string	HTTPTypes::HEADER_COOKIE("Cookie");
 const std::string	HTTPTypes::HEADER_CONNECTION("Connection");
 const std::string	HTTPTypes::HEADER_CONTENT_TYPE("Content-Type");
 const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
 
+// common HTTP content types
 const std::string	HTTPTypes::CONTENT_TYPE_HTML("text/html");
 const std::string	HTTPTypes::CONTENT_TYPE_TEXT("text/plain");
 const std::string	HTTPTypes::CONTENT_TYPE_XML("text/xml");
 
+// common HTTP response messages
 const std::string	HTTPTypes::RESPONSE_MESSAGE_OK("OK");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND("Request Not Found");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_BAD_REQUEST("Bad Request");
 
+// common HTTP response codes
 const unsigned int	HTTPTypes::RESPONSE_CODE_OK = 200;
 const unsigned int	HTTPTypes::RESPONSE_CODE_NOT_FOUND = 404;
 const unsigned int	HTTPTypes::RESPONSE_CODE_BAD_REQUEST = 400;
