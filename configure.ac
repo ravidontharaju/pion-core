@@ -39,11 +39,9 @@ AC_ARG_WITH([debug],
 if test "$with_debug" = "no"
 then
 	CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
-	#BOOST_LIB_SUFFIX="-1_33_1"
 else
 	AC_MSG_NOTICE(Building with debugging information)
 	CXXFLAGS="$CXXFLAGS -ggdb -DDEBUG"
-	#BOOST_LIB_SUFFIX="-d-1_33_1"
 fi
 
 
@@ -61,25 +59,15 @@ else
 	AC_MSG_ERROR([C++ compiler does not seem to support unordered containers])
 fi
 
+
 # Check for Boost
 AX_BOOST_BASE([1.33])
+AX_BOOST_THREAD
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-BOOST_LIBRARIES="-lboost_thread$BOOST_LIB_SUFFIX"
-LDFLAGS="$LDFLAGS $BOOST_LDFLAGS -lpthread $BOOST_LIBRARIES"
-
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $BOOST_THREAD_LIB"
 
 # Check for Boost asio headers
 AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio headers))
-
-
-# Check for Boost threads headers
-AC_CHECK_HEADERS([boost/thread/thread.hpp],,AC_MSG_ERROR(Unable to find the boost::thread headers))
-
-
-# Check for Boost threads library
-AC_TRY_LINK([#include <boost/thread/thread.hpp>],[ boost::thread_group threads; return 0; ],
-	AC_MSG_NOTICE(Linking with boost::thread works),
-	AC_MSG_ERROR(Unable to link with the boost::thread library))
 
 
 # Check for log4cxx library
