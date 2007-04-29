@@ -3,4 +3,5 @@
 # ------------------------------------------------------
 
 SUBDIRS = src
-EXTRA_DIST = autogen.sh build/ax_boost_base.m4 doc
+EXTRA_DIST = doc autogen.sh build/ax_boost_base.m4 \
+	src/modules/HelloModule.hpp
