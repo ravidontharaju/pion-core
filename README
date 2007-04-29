@@ -8,7 +8,6 @@ See COPYING for licensing information.
 
 Build and installation summary:
 
-# ./autogen.sh
 # ./configure --with-boost=/path/to/boost [--with-log4cxx=/path/to/log4cxx]
 # make all
 # [su root]

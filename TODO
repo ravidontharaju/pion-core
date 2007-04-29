@@ -1,0 +1,11 @@
+Things to do:
+=============
+
+* Add RequestModule that echos the HTTP request
+* Add LogModule for displaying log entries
+* Add FileModule for delivering disk files
+* Add support for SSL/TLS & server certificates
+* Add support for built-in authentication: Basic
+* Add support for built-in authentication: OpenID
+* Add support for built-in authentication: SSL/TLS client certificates
+* Lots more...

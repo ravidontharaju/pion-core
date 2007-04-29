@@ -110,6 +110,15 @@ libpion_la_SOURCES = Pion.hpp PionLogger.hpp \
 	HTTPRequestParser.hpp HTTPRequestParser.cpp \
 	HTTPProtocol.hpp HTTPProtocol.cpp
 
+
+libpion_includedir = $(includedir)/libpion
+libpion_include_HEADERS = Pion.hpp PionLogger.hpp \
+	TCPConnection.hpp TCPProtocol.hpp \
+	PionEngine.hpp TCPServer.hpp \
+	HTTPTypes.hpp HTTPModule.hpp \
+	HTTPRequest.hpp HTTPResponse.hpp \
+	HTTPRequestParser.hpp HTTPProtocol.hpp
+
 subdir = src/lib
 mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_CLEAN_FILES =
@@ -152,7 +161,9 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES = $(libpion_la_SOURCES)
-DIST_COMMON = Makefile.am Makefile.in
+HEADERS = $(libpion_include_HEADERS)
+
+DIST_COMMON = $(libpion_include_HEADERS) Makefile.am Makefile.in
 SOURCES = $(libpion_la_SOURCES)
 
 all: all-am
@@ -239,6 +250,24 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+libpion_includeHEADERS_INSTALL = $(INSTALL_HEADER)
+install-libpion_includeHEADERS: $(libpion_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libpion_includedir)
+	@list='$(libpion_include_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(libpion_includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libpion_includedir)/$$f"; \
+	  $(libpion_includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libpion_includedir)/$$f; \
+	done
+
+uninstall-libpion_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libpion_include_HEADERS)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(libpion_includedir)/$$f"; \
+	  rm -f $(DESTDIR)$(libpion_includedir)/$$f; \
+	done
 
 ETAGS = etags
 ETAGSFLAGS =
@@ -303,10 +332,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(libpion_includedir)
 
 install: install-am
 install-exec: install-exec-am
@@ -350,7 +379,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-libpion_includeHEADERS
 
 install-exec-am: install-libLTLIBRARIES
 
@@ -369,7 +398,8 @@ mostlyclean: mostlyclean-am
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
+uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES \
+	uninstall-libpion_includeHEADERS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-libLTLIBRARIES clean-libtool distclean distclean-compile \
@@ -377,11 +407,13 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	distclean-tags distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-exec \
 	install-exec-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool tags uninstall \
-	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
+	install-libLTLIBRARIES install-libpion_includeHEADERS \
+	install-man install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool tags uninstall uninstall-am \
+	uninstall-info-am uninstall-libLTLIBRARIES \
+	uninstall-libpion_includeHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -13,3 +13,11 @@ libpion_la_SOURCES = Pion.hpp PionLogger.hpp \
 	HTTPTypes.hpp HTTPTypes.cpp \
 	HTTPRequestParser.hpp HTTPRequestParser.cpp \
 	HTTPProtocol.hpp HTTPProtocol.cpp
+
+libpion_includedir = $(includedir)/libpion
+libpion_include_HEADERS = Pion.hpp PionLogger.hpp \
+	TCPConnection.hpp TCPProtocol.hpp \
+	PionEngine.hpp TCPServer.hpp \
+	HTTPTypes.hpp HTTPModule.hpp \
+	HTTPRequest.hpp HTTPResponse.hpp \
+	HTTPRequestParser.hpp HTTPProtocol.hpp

@@ -100,14 +100,15 @@ install_sh = @install_sh@
 
 AM_CPPFLAGS = -I../lib
 
-include_HEADERS = HelloModule.hpp
+moduleincdir = $(includedir)/libpion/modules
+moduleinc_HEADERS = HelloModule.hpp
 subdir = src/modules
 mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-HEADERS = $(include_HEADERS)
+HEADERS = $(moduleinc_HEADERS)
 
-DIST_COMMON = $(include_HEADERS) Makefile.am Makefile.in
+DIST_COMMON = $(moduleinc_HEADERS) Makefile.am Makefile.in
 all: all-am
 
 .SUFFIXES:
@@ -126,23 +127,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-includeHEADERS_INSTALL = $(INSTALL_HEADER)
-install-includeHEADERS: $(include_HEADERS)
+moduleincHEADERS_INSTALL = $(INSTALL_HEADER)
+install-moduleincHEADERS: $(moduleinc_HEADERS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(includedir)
-	@list='$(include_HEADERS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(moduleincdir)
+	@list='$(moduleinc_HEADERS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(includedir)/$$f"; \
-	  $(includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(includedir)/$$f; \
+	  echo " $(moduleincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(moduleincdir)/$$f"; \
+	  $(moduleincHEADERS_INSTALL) $$d$$p $(DESTDIR)$(moduleincdir)/$$f; \
 	done
 
-uninstall-includeHEADERS:
+uninstall-moduleincHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(include_HEADERS)'; for p in $$list; do \
+	@list='$(moduleinc_HEADERS)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(includedir)/$$f"; \
-	  rm -f $(DESTDIR)$(includedir)/$$f; \
+	  echo " rm -f $(DESTDIR)$(moduleincdir)/$$f"; \
+	  rm -f $(DESTDIR)$(moduleincdir)/$$f; \
 	done
 
 ETAGS = etags
@@ -211,7 +212,7 @@ check: check-am
 all-am: Makefile $(HEADERS)
 
 installdirs:
-	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	$(mkinstalldirs) $(DESTDIR)$(moduleincdir)
 
 install: install-am
 install-exec: install-exec-am
@@ -254,7 +255,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-includeHEADERS
+install-data-am: install-moduleincHEADERS
 
 install-exec-am:
 
@@ -272,18 +273,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
-uninstall-am: uninstall-includeHEADERS uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-moduleincHEADERS
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool distclean distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-exec \
-	install-exec-am install-includeHEADERS install-info \
-	install-info-am install-man install-strip installcheck \
+	install-exec-am install-info install-info-am install-man \
+	install-moduleincHEADERS install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool tags uninstall uninstall-am \
-	uninstall-includeHEADERS uninstall-info-am
+	uninstall-info-am uninstall-moduleincHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

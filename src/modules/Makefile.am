@@ -4,4 +4,5 @@
 
 AM_CPPFLAGS = -I../lib
 
-include_HEADERS = HelloModule.hpp
+moduleincdir = $(includedir)/libpion/modules
+moduleinc_HEADERS = HelloModule.hpp
