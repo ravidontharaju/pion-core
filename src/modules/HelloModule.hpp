@@ -37,13 +37,12 @@ public:
 	HelloModule(void) : HTTPModule("/hello") {}
 	
 	/// responds to requests with "Hello World!"
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn,
-							   TCPConnection::ConnectionHandler& keepalive_handler)
+	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 	{
 		static const std::string HELLO_HTML = "<html><body>Hello World!</body></html>\r\n\r\n";
-		HTTPResponsePtr response(HTTPResponse::create(keepalive_handler, tcp_conn));
+		HTTPResponsePtr response(HTTPResponse::create());
 		response->writeNoCopy(HELLO_HTML);
-		response->send(request->checkKeepAlive());
+		response->send(tcp_conn);
 		return true;
 	}
 };

@@ -47,9 +47,6 @@ public:
 	}
 };
 
-/// data type for a HelloServer pointer
-typedef boost::shared_ptr<HelloServer>	HelloServerPtr;
-
 
 int main (int argc, char *argv[])
 {
@@ -78,7 +75,7 @@ int main (int argc, char *argv[])
 	try {
 		
 		// create a new server to handle the Hello TCP protocol
-		HelloServerPtr hello_server(new HelloServer(port));
+		TCPServerPtr hello_server(new HelloServer(port));
 		if (! Pion::addServer(hello_server)) {
 			LOG4CXX_FATAL(LOG, "Failed to add HelloServer on port " << port);
 			return 1;

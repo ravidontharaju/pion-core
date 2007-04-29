@@ -100,9 +100,9 @@ void TCPServer::listen(void)
 	
 	if (m_is_listening) {
 		// create a new TCP connection object
-		TCPConnectionPtr new_connection(new TCPConnection(m_tcp_acceptor.io_service(),
-														  boost::bind(&TCPServer::finishConnection,
-																	  this, _1)));
+		TCPConnectionPtr new_connection(TCPConnection::create(m_tcp_acceptor.io_service(),
+															  boost::bind(&TCPServer::finishConnection,
+																		  this, _1)));
 		m_conn_pool.insert(new_connection);
 		
 		// use the new object to accept a connection
@@ -130,14 +130,21 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 	}
 }
 
-void TCPServer::finishConnection(TCPConnectionPtr& conn)
+void TCPServer::finishConnection(TCPConnectionPtr& tcp_conn)
 {
-	LOG4CXX_INFO(m_logger, "Closing connection on port " << getPort());
+	if (tcp_conn->getKeepAlive()) {
+		
+		// keep the connection alive
+		handleConnection(tcp_conn);
 
-	// lock mutex for thread safety
-	boost::mutex::scoped_lock server_lock(m_mutex);
-	m_conn_pool.erase(conn);
-	server_lock.unlock();
+	} else {
+		LOG4CXX_INFO(m_logger, "Closing connection on port " << getPort());
+		
+		// remove the connection from the server's management pool
+		boost::mutex::scoped_lock server_lock(m_mutex);
+		m_conn_pool.erase(tcp_conn);
+		server_lock.unlock();
+	}
 }
 
 }	// end namespace pion

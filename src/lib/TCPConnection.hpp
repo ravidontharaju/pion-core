@@ -47,36 +47,61 @@ public:
 	/// data type for a socket connection
 	typedef boost::asio::ip::tcp::socket	Socket;
 
-	/// default destructor
-	virtual ~TCPConnection() {}
 
 	/**
-	 * constructor to create new TCP connections
+	 * creates new TCPConnection objects
 	 *
-     * @param io_service asio service associated with the connection
-     * @param finished_handler function called when the connection
-     *                         is finished
+	 * @param io_service asio service associated with the connection
+	 * @param finished_handler function called when a server has finished
+	 *                         handling	the connection
 	 */
-	explicit TCPConnection(boost::asio::io_service& io_service, ConnectionHandler finished_handler)
-		: m_tcp_socket(io_service), m_finished_handler(finished_handler) {}
+	static inline boost::shared_ptr<TCPConnection> create(boost::asio::io_service& io_service,
+														  ConnectionHandler finished_handler)
+	{
+		return boost::shared_ptr<TCPConnection>(new TCPConnection(io_service, finished_handler));
+	}
 	
-	/// close the tcp socket
+	/// virtual destructor
+	virtual ~TCPConnection() { close(); }
+
+	/// closes the tcp socket
 	inline void close(void) { m_tcp_socket.close(); }
 
-	/// since TCP connections are managed by TCPServers, this function
-	/// must be called after a protocol has finished with the connection
-	inline void finish(void) { close(); m_finished_handler(shared_from_this()); }
+	/// This function must be called when a server has finished handling
+	/// the connection
+	inline void finish(void) { m_finished_handler(shared_from_this()); }
 
 	/// returns the socket associated with the TCP connection
 	inline Socket& getSocket(void) { return m_tcp_socket; }
 
+	/// returns true if the connection should be kept alive
+	inline bool getKeepAlive(void) const { return m_keep_alive; }
+	
+	/// sets the value of the keep_alive flag
+	inline void setKeepAlive(bool b = true) { m_keep_alive = b; }
+
+protected:
+		
+	/**
+	 * protected constructor restricts creation of objects (use create())
+	 *
+	 * @param io_service asio service associated with the connection
+	 * @param finished_handler function called when a server has finished
+	 *                         handling	the connection
+	 */
+	TCPConnection(boost::asio::io_service& io_service, ConnectionHandler finished_handler)
+		: m_tcp_socket(io_service), m_keep_alive(false), m_finished_handler(finished_handler) {}
+	
 
 private:
 
 	/// TCP connection socket
 	Socket						m_tcp_socket;
+	
+	/// true if the connection should be kept alive
+	bool						m_keep_alive;
 
-	/// function called when the connection is finished
+	/// function called when a server has finished handling the connection
 	ConnectionHandler			m_finished_handler;
 };
 

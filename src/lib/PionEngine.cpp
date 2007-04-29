@@ -128,7 +128,7 @@ bool PionEngine::addServer(TCPServerPtr tcp_server)
 
 HTTPServerPtr PionEngine::addHTTPServer(const unsigned int tcp_port)
 {
-	HTTPServerPtr http_server(new HTTPServer(tcp_port));
+	HTTPServerPtr http_server(HTTPServer::create(tcp_port));
 
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);

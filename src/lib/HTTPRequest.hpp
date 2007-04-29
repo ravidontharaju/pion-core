@@ -35,10 +35,13 @@ namespace pion {	// begin namespace pion
 class HTTPRequest : private boost::noncopyable {
 public:
 
-	/// default constructor & destructor
+	/// creates new HTTPRequest objects
+	static inline boost::shared_ptr<HTTPRequest> create(void) {
+		return boost::shared_ptr<HTTPRequest>(new HTTPRequest);
+	}
+
+	/// virtual destructor
 	virtual ~HTTPRequest() {}
-	explicit HTTPRequest(void) : m_version_major(0), m_version_minor(0),
-		m_is_valid(false) {}
 	
 	// public accessor methods (const)
 	inline bool isValid(void) const { return m_is_valid; }
@@ -67,8 +70,7 @@ public:
 	inline void setIsValid(bool b = true) { m_is_valid = b; }
 	
 	/// clears all request data
-	inline void clear(void)
-	{
+	inline void clear(void) {
 		m_resource.erase();
 		m_method.erase();
 		m_version_major = m_version_minor = 0;
@@ -78,15 +80,20 @@ public:
 	}
 
 	/// returns true if the HTTP connection may be kept alive
-	inline bool checkKeepAlive(void) const
-	{
+	inline bool checkKeepAlive(void) const {
 		return (getHeader(HTTPTypes::HEADER_CONNECTION) != "close"
 				&& (getVersionMajor() > 1
 					|| (getVersionMajor() >= 1 && getVersionMinor() >= 1)) );
 	}	
 	
+	
 protected:
-		
+	
+	/// protected constructor restricts creation of objects (use create())
+	explicit HTTPRequest(void)
+		: m_version_major(0), m_version_minor(0), m_is_valid(false)
+	{}
+
 	/**
 	 * returns the first value in a dictionary if key is found; or an empty
 	 * string if no values are found
@@ -101,6 +108,7 @@ protected:
 		HTTPTypes::StringDictionary::const_iterator i = dict.find(key);
 		return ( (i==dict.end()) ? HTTPTypes::STRING_EMPTY : i->second );
 	}
+
 	
 private:
 

@@ -27,7 +27,7 @@ namespace pion {	// begin namespace pion
 	
 // HTTPResponse member functions
 
-void HTTPResponse::send(const bool keep_alive)
+void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 {
 	flushContentStream();
 	
@@ -36,7 +36,7 @@ void HTTPResponse::send(const bool keep_alive)
 	m_response_headers.insert(std::make_pair(HTTPTypes::HEADER_CONTENT_LENGTH,
 									boost::lexical_cast<std::string>(m_content_length)));
 	m_response_headers.insert(std::make_pair(HTTPTypes::HEADER_CONNECTION,
-									(keep_alive ? "Keep-Alive" : "close") ));
+									(tcp_conn->getKeepAlive() ? "Keep-Alive" : "close") ));
 	
 	// combine I/O write buffers (headers and content) so that everything
 	// can be sent together; otherwise, we would have to send headers
@@ -64,36 +64,26 @@ void HTTPResponse::send(const bool keep_alive)
 						 m_content_buffers.end());
 	
 	// send response
-	boost::asio::async_write(m_tcp_conn->getSocket(), write_buffers,
+	boost::asio::async_write(tcp_conn->getSocket(), write_buffers,
 							 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
-										 keep_alive, boost::asio::placeholders::error,
+										 tcp_conn, boost::asio::placeholders::error,
 										 boost::asio::placeholders::bytes_transferred));
 }
 
-void HTTPResponse::handleWrite(const bool keep_alive,
-							   const boost::asio::error& write_error,
+void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn, const boost::asio::error& write_error,
 							   std::size_t bytes_written)
 {
 	if (write_error) {
 		// encountered error sending response
 		LOG4CXX_INFO(m_logger, "Unable to send HTTP response due to I/O error");
-		
-		// ignore keep-alive setting and force the connection to close
-		m_tcp_conn->finish();
-		
 	} else {
 		// response sent OK
 		LOG4CXX_DEBUG(m_logger, "Sent HTTP response of " << bytes_written << " bytes ("
-					  << (keep_alive ? "keeping alive" : "closing") << ")");
-		
-		if (keep_alive) {
-			// parse the next request (HTTP/1.1 Keep-Alive)
-			m_keepalive_handler(m_tcp_conn);
-		} else {
-			// close the connection
-			m_tcp_conn->finish();
-		}
+					  << (tcp_conn->getKeepAlive() ? "keeping alive" : "closing") << ")");
 	}
+	
+	// all finished handling the connection
+	tcp_conn->finish();
 }
 
 

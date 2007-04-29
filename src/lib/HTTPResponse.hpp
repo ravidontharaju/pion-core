@@ -46,22 +46,13 @@ class HTTPResponse
 	
 public:
 
-	/// default destructor
-	virtual ~HTTPResponse() {}
-
-	/**
-	 * creates new HTTPResponse objects
-	 *
-	 * @param keepalive_handler called after sending the response if keep-alive is true
-	 * @param tcp_conn TCP connection used to send the response
-	 */
-	static inline boost::shared_ptr<HTTPResponse> create(TCPConnection::ConnectionHandler keepalive_handler,
-														 TCPConnectionPtr& tcp_conn)
-	{
-		return boost::shared_ptr<HTTPResponse>(new HTTPResponse(keepalive_handler,
-															    tcp_conn));
+	/// creates new HTTPResponse objects
+	static inline boost::shared_ptr<HTTPResponse> create(void) {
+		return boost::shared_ptr<HTTPResponse>(new HTTPResponse);
 	}
 	
+	/// default destructor
+	virtual ~HTTPResponse() {}
 
 	/**
 	 * write text (non-binary) response content
@@ -130,10 +121,9 @@ public:
 	/**
 	 * sends the response
 	 *
-	 * @param keep_alive true if the connection should be kept alive after
-	 *                   the response has been sent
+	 * @param tcp_conn TCP connection used to send the response
 	 */
-	void send(const bool keep_alive);
+	void send(TCPConnectionPtr& tcp_conn);
 	
 
 	/// adds an HTTP response header
@@ -162,17 +152,11 @@ public:
 	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
 
 	
-private:
-	
-	/**
-	 * private constructor to restrict creation of objects (use create())
-	 *
-	 * @param keepalive_handler called after sending the response if keep-alive is true
-	 * @param tcp_conn TCP connection used to send the response
-	 */
-	explicit HTTPResponse(TCPConnection::ConnectionHandler keepalive_handler, TCPConnectionPtr& tcp_conn)
+protected:
+		
+	/// protected constructor restricts creation of objects (use create())
+	explicit HTTPResponse(void)
 		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPResponse")),
-		m_keepalive_handler(keepalive_handler), m_tcp_conn(tcp_conn),
 		m_stream_is_empty(true), 
 		m_response_message(HTTPTypes::RESPONSE_MESSAGE_OK),
 		m_content_type(HTTPTypes::CONTENT_TYPE_HTML),
@@ -180,15 +164,18 @@ private:
 	{
 			setResponseCode(HTTPTypes::RESPONSE_CODE_OK);
 	}
+
+	
+private:
 	
 	/**
 	 * called after the response is sent
 	 * 
-	 * @param keep_alive true if the connection should be kept alive
+	 * @param tcp_conn TCP connection used to send the response
 	 * @param write_error error status from the last write operation
 	 * @param bytes_written number of bytes sent by the last write operation
 	 */
-	void handleWrite(const bool keep_alive, const boost::asio::error& write_error,
+	void handleWrite(TCPConnectionPtr tcp_conn, const boost::asio::error& write_error,
 					 std::size_t bytes_written);
 
 	/// flushes any text data in the content stream after caching it in the TextCache
@@ -230,13 +217,6 @@ private:
 	/// primary logging interface used by this class
 	log4cxx::LoggerPtr						m_logger;
 
-	/// function is called after the response has finished sending
-	TCPConnection::ConnectionHandler		m_keepalive_handler;
-
-	/// The TCP connection used to send the response
-	TCPConnectionPtr						m_tcp_conn;
-		
-	
 	/// I/O write buffers that wrap the response content to be written
 	WriteBuffers							m_content_buffers;
 	
@@ -251,7 +231,6 @@ private:
 	
 	/// true if the content_stream is empty (avoids unnecessary string copies)
 	bool									m_stream_is_empty;
-	
 	
 	/// The HTTP response headers to send
 	HTTPTypes::StringDictionary				m_response_headers;

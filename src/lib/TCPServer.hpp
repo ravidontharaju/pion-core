@@ -43,13 +43,6 @@ public:
 	/// default destructor
 	virtual ~TCPServer() { if (m_is_listening) handleStopRequest(); }
 	
-	/**
-     * constructs a new TCP server
-     * 
-     * @param tcp_port port number used to listen for new connections
-	 */
-	explicit TCPServer(const unsigned int tcp_port);
-
 	/// starts listening for new connections
 	void start(void);
 
@@ -68,6 +61,13 @@ public:
 
 protected:
 		
+	/**
+	 * protect constructor so that only derived objects may be created
+	 * 
+	 * @param tcp_port port number used to listen for new connections
+	 */
+	explicit TCPServer(const unsigned int tcp_port);
+	
 	/**
 	 * handles a new TCP connection; derived classes SHOULD override this
 	 * since the default behavior does nothing
@@ -96,9 +96,11 @@ private:
 	void handleAccept(TCPConnectionPtr& tcp_conn,
 					  const boost::asio::error& accept_error);
 
-	/// called after we are finished handling a connection; this removes it
-	/// from the server's management pool
-	void finishConnection(TCPConnectionPtr& conn);
+	/// This will be called by TCPConnection::finish() after a server has
+	/// finished handling a connection.  If the keep_alive flag is true,
+	/// it will call handleConnection(); otherwise, it will close the
+	/// connection and remove it from the server's management pool
+	void finishConnection(TCPConnectionPtr& tcp_conn);
 
 	
 	/// data type for a pool of TCP connections

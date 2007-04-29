@@ -40,23 +40,14 @@ public:
 	virtual ~HTTPModule() {}
 	
 	/**
-	 * constructs a new module
-	 *
-	 * @param resource the resource or URI stem associated with this module
-	 */
-	explicit HTTPModule(const std::string& resource) : m_resource(resource) {}
-	
-	/**
      * attempts to handle a new HTTP request
 	 *
      * @param request the new HTTP request to handle
      * @param tcp_conn the TCP connection that has the new request
-	 * @param keepalive_handler called after the response has finished sending
 	 *
 	 * @return true if the request was handled; false if not
 	 */
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn,
-							   TCPConnection::ConnectionHandler& keepalive_handler)
+	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 	{ 
 		return false;
 	}
@@ -68,7 +59,16 @@ public:
 
 	/// returns the resource associated with this module
 	inline const std::string& getResource(void) const { return m_resource; }
- 	
+
+protected:
+	
+	/**
+	 * protect constructor so that only derived objects may be created
+	 *
+	 * @param resource the resource or URI stem associated with this module
+	 */
+	explicit HTTPModule(const std::string& resource) : m_resource(resource) {}
+	
 	
 private:
 

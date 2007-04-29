@@ -48,20 +48,21 @@ public:
 	// function that handles new HTTP requests
 	typedef boost::function2<void, HTTPRequestPtr, TCPConnectionPtr>	RequestHandler;
 
-	// default destructor
-	virtual ~HTTPRequestParser() {}
-
+	
 	/**
-	 * constructor to create a new HTTP request parser
+	 * creates new HTTPRequestParser objects
 	 *
 	 * @param handler HTTP request handler used to process new requests
 	 * @param tcp_conn TCP connection containing a new request to parse
 	 */
-	explicit HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
-		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPRequestParser")),
-		m_request_handler(handler), m_tcp_conn(tcp_conn),
-		m_http_request(new HTTPRequest), m_parse_state(PARSE_METHOD_START)
-	{}
+	static inline boost::shared_ptr<HTTPRequestParser> create(RequestHandler handler,
+															  TCPConnectionPtr& tcp_conn)
+	{
+		return boost::shared_ptr<HTTPRequestParser>(new HTTPRequestParser(handler, tcp_conn));
+	}
+	
+	// default destructor
+	virtual ~HTTPRequestParser() {}
 	
 	/// Incrementally reads & parses a new HTTP request
 	void readRequest(void);
@@ -74,6 +75,18 @@ public:
 	
 	
 protected:
+
+	/**
+	 * protected constructor restricts creation of objects (use create())
+	 *
+	 * @param handler HTTP request handler used to process new requests
+	 * @param tcp_conn TCP connection containing a new request to parse
+	 */
+	explicit HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
+		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPRequestParser")),
+		m_request_handler(handler), m_tcp_conn(tcp_conn),
+		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START)
+	{}
 
 	/**
 	 * Called after new request bytes have been read

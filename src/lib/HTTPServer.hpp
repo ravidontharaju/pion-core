@@ -40,21 +40,19 @@ class HTTPServer : public TCPServer {
 
 public:
 
-	/// default destructor
-	virtual ~HTTPServer() {}
-
 	/**
-	 * constructs a new HTTP server
-     * 
-     * @param tcp_port port number used to listen for new connections
+	 * creates new HTTPServer objects
+	 *
+	 * @param tcp_port port number used to listen for new connections
 	 */
-	explicit HTTPServer(const unsigned int tcp_port)
-		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
-		m_not_found_module(new NotFoundModule)
-	{ 
-		setLogger(log4cxx::Logger::getLogger("Pion.HTTPServer"));
+	static inline boost::shared_ptr<HTTPServer> create(const unsigned int tcp_port)
+	{
+		return boost::shared_ptr<HTTPServer>(new HTTPServer(tcp_port));
 	}
 
+	/// default destructor
+	virtual ~HTTPServer() {}
+	
 	/// adds a new module to the HTTP server
 	void addModule(HTTPModulePtr m);
 	
@@ -75,6 +73,18 @@ public:
 
 	
 protected:
+	
+	/**
+	 * protected constructor restricts creation of objects (use create())
+	 * 
+	 * @param tcp_port port number used to listen for new connections
+	 */
+	explicit HTTPServer(const unsigned int tcp_port)
+		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
+		m_not_found_module(new NotFoundModule)
+	{ 
+		setLogger(log4cxx::Logger::getLogger("Pion.HTTPServer"));
+	}
 	
 	/**
 	 * handles a new TCP connection
@@ -102,8 +112,7 @@ private:
 		virtual ~BadRequestModule() {}
 		BadRequestModule(void) : HTTPModule("") {}
 		virtual bool handleRequest(HTTPRequestPtr& request,
-								   TCPConnectionPtr& tcp_conn,
-								   TCPConnection::ConnectionHandler& keepalive_handler);
+								   TCPConnectionPtr& tcp_conn);
 	};
 	
 	/// used to send responses when a no modules can handle the request
@@ -114,8 +123,7 @@ private:
 		virtual ~NotFoundModule() {}
 		NotFoundModule(void) : HTTPModule("") {}
 		virtual bool handleRequest(HTTPRequestPtr& request,
-								   TCPConnectionPtr& tcp_conn,
-								   TCPConnection::ConnectionHandler& keepalive_handler);
+								   TCPConnectionPtr& tcp_conn);
 	};
 	
 	/// data type for a collection of HTTP modules

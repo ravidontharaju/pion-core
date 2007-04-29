@@ -32,23 +32,18 @@ namespace pion {	// begin namespace pion
 
 void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
-	HTTPRequestParserPtr request_parser(new HTTPRequestParser(boost::bind(&HTTPServer::handleRequest,
-																		  this, _1, _2), tcp_conn));
+	HTTPRequestParserPtr request_parser(HTTPRequestParser::create(boost::bind(&HTTPServer::handleRequest,
+																			  this, _1, _2), tcp_conn));
 	request_parser->readRequest();
 }
 
 void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 							   TCPConnectionPtr& tcp_conn)
 {
-	// create a keepalive handler that we can reuse when trying to
-	// handle requests with modules
-	TCPConnection::ConnectionHandler keepalive_handler =
-		boost::bind(&HTTPServer::handleConnection, this, _1);
-
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
 		LOG4CXX_INFO(m_logger, "Received an invalid HTTP request");
-		if (! m_bad_request_module->handleRequest(http_request, tcp_conn, keepalive_handler)) {
+		if (! m_bad_request_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
 		}
@@ -57,6 +52,9 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		
 	LOG4CXX_DEBUG(m_logger, "Received a valid HTTP request");
 	
+	// set the connection's keep_alive flag
+	tcp_conn->setKeepAlive(http_request->checkKeepAlive());
+
 	// strip off trailing slash if the request has one
 	std::string resource(http_request->getResource());
 	if (! resource.empty() && resource[resource.size() - 1] == '/')
@@ -80,9 +78,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 			if (i->second->checkResource(resource)) {
 				
 				// try to handle the request with the module
-				request_was_handled = i->second->handleRequest(http_request,
-															   tcp_conn,
-															   keepalive_handler);
+				request_was_handled = i->second->handleRequest(http_request, tcp_conn);
 
 				if (request_was_handled) {
 					// the module successfully handled the request
@@ -99,7 +95,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! request_was_handled) {
 		// no modules found that could handle the request
 		LOG4CXX_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
-		if (! m_not_found_module->handleRequest(http_request, tcp_conn, keepalive_handler)) {
+		if (! m_not_found_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
 		}
@@ -130,14 +126,13 @@ const std::string HTTPServer::BadRequestModule::BAD_REQUEST_HTML =
 // HTTPServer::BadRequestModule member functions
 
 bool HTTPServer::BadRequestModule::handleRequest(HTTPRequestPtr& request,
-												   TCPConnectionPtr& tcp_conn,
-												   TCPConnection::ConnectionHandler& keepalive_handler)
+												 TCPConnectionPtr& tcp_conn)
 {
-	HTTPResponsePtr response(HTTPResponse::create(keepalive_handler, tcp_conn));
+	HTTPResponsePtr response(HTTPResponse::create());
 	response->setResponseCode(HTTPTypes::RESPONSE_CODE_BAD_REQUEST);
 	response->setResponseMessage(HTTPTypes::RESPONSE_MESSAGE_BAD_REQUEST);
 	response->writeNoCopy(BAD_REQUEST_HTML);
-	response->send(request->checkKeepAlive());
+	response->send(tcp_conn);
 	return true;
 }
 
@@ -151,14 +146,13 @@ const std::string HTTPServer::NotFoundModule::NOT_FOUND_HTML =
 // HTTPServer::BadRequestModule member functions
 
 bool HTTPServer::NotFoundModule::handleRequest(HTTPRequestPtr& request,
-											   TCPConnectionPtr& tcp_conn,
-											   TCPConnection::ConnectionHandler& keepalive_handler)
+											   TCPConnectionPtr& tcp_conn)
 {
-	HTTPResponsePtr response(HTTPResponse::create(keepalive_handler, tcp_conn));
+	HTTPResponsePtr response(HTTPResponse::create());
 	response->setResponseCode(HTTPTypes::RESPONSE_CODE_NOT_FOUND);
 	response->setResponseMessage(HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND);
 	response->writeNoCopy(NOT_FOUND_HTML);
-	response->send(request->checkKeepAlive());
+	response->send(tcp_conn);
 	return true;
 }
 
