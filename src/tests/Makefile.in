@@ -98,7 +98,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
 
-AM_CPPFLAGS = -I../lib -I../modules
+AM_CPPFLAGS = -I../include -I../modules
 
 bin_PROGRAMS = PionProtocolTest PionModulesTest
 

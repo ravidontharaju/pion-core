@@ -40,7 +40,7 @@ oldincludedir = /usr/include
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-top_builddir = ../..
+top_builddir = ../../..
 
 ACLOCAL = @ACLOCAL@
 AUTOCONF = @AUTOCONF@
@@ -98,18 +98,25 @@ am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
 
-AM_CPPFLAGS = -I../include
-subdir = src/modules
+libpion_includedir = $(includedir)/libpion
+libpion_include_HEADERS = Pion.hpp PionLogger.hpp TCPConnection.hpp \
+	PionEngine.hpp TCPServer.hpp HTTPTypes.hpp HTTPModule.hpp \
+	HTTPRequest.hpp HTTPResponse.hpp HTTPRequestParser.hpp \
+	HTTPServer.hpp
+
+subdir = src/include/libpion
 mkinstalldirs = $(SHELL) $(top_srcdir)/build/mkinstalldirs
 CONFIG_CLEAN_FILES =
 DIST_SOURCES =
-DIST_COMMON = Makefile.am Makefile.in
+HEADERS = $(libpion_include_HEADERS)
+
+DIST_COMMON = $(libpion_include_HEADERS) Makefile.am Makefile.in
 all: all-am
 
 .SUFFIXES:
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/modules/Makefile
+	  $(AUTOMAKE) --gnu  src/include/libpion/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
 
@@ -122,12 +129,63 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-tags: TAGS
-TAGS:
+libpion_includeHEADERS_INSTALL = $(INSTALL_HEADER)
+install-libpion_includeHEADERS: $(libpion_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libpion_includedir)
+	@list='$(libpion_include_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(libpion_includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libpion_includedir)/$$f"; \
+	  $(libpion_includeHEADERS_INSTALL) $$d$$p $(DESTDIR)$(libpion_includedir)/$$f; \
+	done
 
+uninstall-libpion_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libpion_include_HEADERS)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(libpion_includedir)/$$f"; \
+	  rm -f $(DESTDIR)$(libpion_includedir)/$$f; \
+	done
+
+ETAGS = etags
+ETAGSFLAGS =
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$tags$$unique" \
+	  || $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	     $$tags $$unique
+
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) $$here
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
-top_distdir = ../..
+top_distdir = ../../..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
@@ -153,9 +211,10 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile
+all-am: Makefile $(HEADERS)
 
 installdirs:
+	$(mkinstalldirs) $(DESTDIR)$(libpion_includedir)
 
 install: install-am
 install-exec: install-exec-am
@@ -187,7 +246,8 @@ clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
 
-distclean-am: clean-am distclean-generic distclean-libtool
+distclean-am: clean-am distclean-generic distclean-libtool \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -197,7 +257,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-libpion_includeHEADERS
 
 install-exec-am:
 
@@ -215,16 +275,18 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-libpion_includeHEADERS
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	distclean distclean-generic distclean-libtool distdir dvi \
-	dvi-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool distclean distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am info info-am install \
+	install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am \
+	install-libpion_includeHEADERS install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool uninstall uninstall-am uninstall-info-am
+	mostlyclean-libtool tags uninstall uninstall-am \
+	uninstall-info-am uninstall-libpion_includeHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

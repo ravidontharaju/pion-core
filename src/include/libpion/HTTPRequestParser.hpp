@@ -21,11 +21,9 @@
 #ifndef __PION_HTTPREQUESTPARSER_HEADER__
 #define __PION_HTTPREQUESTPARSER_HEADER__
 
-// pion headers
-#include <PionLogger.hpp>
-#include <HTTPRequest.hpp>
-#include <TCPConnection.hpp>
-// other headers
+#include <libpion/PionLogger.hpp>
+#include <libpion/HTTPRequest.hpp>
+#include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>

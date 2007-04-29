@@ -21,11 +21,9 @@
 #ifndef __PION_PIONENGINE_HEADER__
 #define __PION_PIONENGINE_HEADER__
 
-// pion headers
-#include <PionLogger.hpp>
-#include <TCPServer.hpp>
-#include <HTTPServer.hpp>
-// other headers
+#include <libpion/PionLogger.hpp>
+#include <libpion/TCPServer.hpp>
+#include <libpion/HTTPServer.hpp>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/once.hpp>

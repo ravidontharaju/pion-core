@@ -21,7 +21,6 @@
 #ifndef __PION_HTTPTYPES_HEADER__
 #define __PION_HTTPTYPES_HEADER__
 
-// other headers
 #include <boost/functional/hash.hpp>
 #include <string>
 

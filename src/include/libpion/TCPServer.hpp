@@ -21,10 +21,8 @@
 #ifndef __PION_TCPSERVER_HEADER__
 #define __PION_TCPSERVER_HEADER__
 
-// pion headers
-#include <PionLogger.hpp>
-#include <TCPConnection.hpp>
-// other headers
+#include <libpion/PionLogger.hpp>
+#include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>

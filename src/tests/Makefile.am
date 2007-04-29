@@ -2,7 +2,7 @@
 # libpion automake configuration file for src directory
 # -----------------------------------------------------
 
-AM_CPPFLAGS = -I../lib -I../modules
+AM_CPPFLAGS = -I../include -I../modules
 
 bin_PROGRAMS = PionProtocolTest PionModulesTest
 

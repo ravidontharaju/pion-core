@@ -94,5 +94,6 @@ fi
 
 
 # Output Makefiles
-AC_OUTPUT(Makefile src/Makefile \
-	src/lib/Makefile src/modules/Makefile src/tests/Makefile)
+AC_OUTPUT(Makefile src/Makefile src/include/Makefile \
+	src/include/libpion/Makefile src/lib/Makefile src/modules/Makefile \
+	src/tests/Makefile)

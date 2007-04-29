@@ -21,9 +21,7 @@
 #ifndef __PION_HTTPREQUEST_HEADER__
 #define __PION_HTTPREQUEST_HEADER__
 
-// pion headers
-#include <HTTPTypes.hpp>
-// other headers
+#include <libpion/HTTPTypes.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>

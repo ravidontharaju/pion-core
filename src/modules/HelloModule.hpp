@@ -22,8 +22,8 @@
 #define __PION_HELLOMODULE_HEADER__
 
 // pion headers
-#include <HTTPModule.hpp>
-#include <HTTPResponse.hpp>
+#include <libpion/HTTPModule.hpp>
+#include <libpion/HTTPResponse.hpp>
 
 
 namespace pion {	// begin namespace pion

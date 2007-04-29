@@ -21,10 +21,8 @@
 #ifndef __PION_HTTPMODULE_HEADER__
 #define __PION_HTTPMODULE_HEADER__
 
-// pion headers
-#include <HTTPRequest.hpp>
-#include <TCPConnection.hpp>
-// other headers
+#include <libpion/HTTPRequest.hpp>
+#include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>

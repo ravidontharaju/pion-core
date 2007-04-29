@@ -2,4 +2,4 @@
 # libpion automake configuration file for src directory
 # -----------------------------------------------------
 
-AM_CPPFLAGS = -I../include
+SUBDIRS = libpion

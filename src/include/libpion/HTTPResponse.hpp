@@ -21,11 +21,9 @@
 #ifndef __PION_HTTPRESPONSE_HEADER__
 #define __PION_HTTPRESPONSE_HEADER__
 
-// pion headers
-#include <PionLogger.hpp>
-#include <TCPConnection.hpp>
-#include <HTTPTypes.hpp>
-// other headers
+#include <libpion/PionLogger.hpp>
+#include <libpion/TCPConnection.hpp>
+#include <libpion/HTTPTypes.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/noncopyable.hpp>
