@@ -7,9 +7,11 @@ AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/lib/PionEngine.cpp)
 
-# DO NOT USE autoheader (the .hpp.in file is not automanaged)
 # Note: AM_CONFIG_HEADER is deprecated
 AC_CONFIG_HEADERS([src/include/libpion/PionConfig.hpp])
+
+# DO NOT USE autoheader (the .hpp.in file is not automanaged)
+AUTOHEADER="echo autoheader ignored"
 
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
