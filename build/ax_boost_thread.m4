@@ -81,12 +81,17 @@ AC_DEFUN([AX_BOOST_THREAD],
 			 CXXFLAGS=$CXXFLAGS_SAVE
              AC_LANG_POP([C++])
 		])
+		case $host in
+		  *darwin*)
+			DARWIN=true
+			;;
+		esac
 		if test "x$ax_cv_boost_thread" = "xyes"; then
            if test "x$build_os" = "xsolaris" ; then
 			  BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
 		   elif test "x$build_os" = "xming32" ; then
 			  BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
-		   elif test regexp("x$build_os", "darwin") ; then
+		   elif test "x$DARWIN" = "xtrue"; then
 		      AC_MSG_NOTICE(Detected darwin: -pthread is not needed)
 		   else
 			  BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
