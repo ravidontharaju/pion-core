@@ -72,7 +72,7 @@ AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio h
 
 # Check for log4cxx library
 AC_ARG_WITH([log4cxx],
-    AC_HELP_STRING([--with-log4cxx\[=DIR\]],[location of log4cxx library (enables logging)]),
+    AC_HELP_STRING([--with-log4cxx@<:@=DIR@:>@],[location of log4cxx library (enables logging)]),
     [ log4cxx_location=$withval ], [ without_log4cxx=true ])
 if test "$without_log4cxx" = "true"
 then
