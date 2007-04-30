@@ -32,6 +32,7 @@ namespace pion {	// begin namespace pion
 
 void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
+	tcp_conn->setKeepAlive(false);	// default to closing the connection
 	HTTPRequestParserPtr request_parser(HTTPRequestParser::create(boost::bind(&HTTPServer::handleRequest,
 																			  this, _1, _2), tcp_conn));
 	request_parser->readRequest();
@@ -43,7 +44,6 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
 		LOG4CXX_INFO(m_logger, "Received an invalid HTTP request");
-		tcp_conn->setKeepAlive(false);
 		if (! m_bad_request_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
