@@ -44,11 +44,13 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 	
 	WriteBuffers write_buffers;
 	
+	// first response line (HTTP/1.1 200 OK)
 	write_buffers.push_back(boost::asio::buffer(HTTPTypes::STRING_HTTP_VERSION));
 	write_buffers.push_back(boost::asio::buffer(m_response_code));
 	write_buffers.push_back(boost::asio::buffer(m_response_message));
 	write_buffers.push_back(boost::asio::buffer(HTTPTypes::STRING_CRLF));
 	
+	// HTTP headers
 	for (HTTPTypes::StringDictionary::const_iterator i = m_response_headers.begin();
 		 i != m_response_headers.end(); ++i)
 	{
@@ -58,8 +60,10 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 		write_buffers.push_back(boost::asio::buffer(HTTPTypes::STRING_CRLF));
 	}
 	
+	// extra CRLF to end HTTP headers
 	write_buffers.push_back(boost::asio::buffer(HTTPTypes::STRING_CRLF));
 	
+	// append response content buffers
 	write_buffers.insert(write_buffers.end(), m_content_buffers.begin(),
 						 m_content_buffers.end());
 	
@@ -70,7 +74,8 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 										 boost::asio::placeholders::bytes_transferred));
 }
 
-void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn, const boost::asio::error& write_error,
+void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
+							   const boost::asio::error& write_error,
 							   std::size_t bytes_written)
 {
 	if (write_error) {

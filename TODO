@@ -5,6 +5,7 @@ Things to do:
 * Add RequestModule that echos the HTTP request
 * Add LogModule for displaying log entries
 * Add FileModule for delivering disk files
+* Use read-write mutex for HTTPServer modules
 * Allow more options for binding servers than just port numbers (IP)
 * Add support for SSL/TLS & server certificates
 * Add support for built-in authentication (OpenID?)

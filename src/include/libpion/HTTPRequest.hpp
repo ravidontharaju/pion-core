@@ -45,31 +45,97 @@ public:
 
 	/// virtual destructor
 	virtual ~HTTPRequest() {}
-	
-	// public accessor methods (const)
-	inline bool isValid(void) const { return m_is_valid; }
-	inline bool hasHeader(const std::string& name) const { return(m_headers.find(name) != m_headers.end()); }
-	inline bool hasQuery(const std::string& name) const { return(m_query_params.find(name) != m_query_params.end()); }
-	inline bool hasCookie(const std::string& name) const { return(m_cookie_params.find(name) != m_cookie_params.end()); }
-	inline unsigned int getVersionMajor(void) const { return m_version_major; }
-	inline unsigned int getVersionMinor(void) const { return m_version_minor; }
-	inline const std::string& getResource(void) const { return m_resource; }
-	inline const std::string& getMethod(void) const { return m_method; }
-	inline const std::string& getHeader(const std::string& name) const { return getValue(m_headers, name); }
-	inline const std::string& getQuery(const std::string& name) const { return getValue(m_query_params, name); }
-	inline const std::string& getCookie(const std::string& name) const { return getValue(m_cookie_params, name); }
-	inline const HTTPTypes::Headers& getHeaders(void) const { return m_headers; }
-	inline const HTTPTypes::QueryParams& getQueryParams(void) const { return m_query_params; }
-	inline const HTTPTypes::CookieParams& getCookieParams(void) const { return m_cookie_params; }
 
-	// public accessor methods
+	
+	/// returns true if the request is valid
+	inline bool isValid(void) const { return m_is_valid; }
+
+	/// returns true if at least one value for the header is defined
+	inline bool hasHeader(const std::string& key) const {
+		return(m_headers.find(key) != m_headers.end());
+	}
+	
+	/// returns true if at least one value for the query key is defined
+	inline bool hasQuery(const std::string& key) const {
+		return(m_query_params.find(key) != m_query_params.end());
+	}
+
+	/// returns true if at least one value for the cookie is defined
+	inline bool hasCookie(const std::string& key) const {
+		return(m_cookie_params.find(key) != m_cookie_params.end());
+	}
+
+	/// returns the request's major HTTP version number
+	inline unsigned int getVersionMajor(void) const { return m_version_major; }
+
+	/// returns the request's minor HTTP version number
+	inline unsigned int getVersionMinor(void) const { return m_version_minor; }
+
+	/// returns the resource or uri-stem requested
+	inline const std::string& getResource(void) const { return m_resource; }
+	
+	/// returns the request method (i.e. GET, POST, PUT)
+	inline const std::string& getMethod(void) const { return m_method; }
+	
+	/// returns a value for the header if any are defined; otherwise, an empty string
+	inline const std::string& getHeader(const std::string& key) const {
+		return getValue(m_headers, key);
+	}
+	
+	/// returns a value for the query key if any are defined; otherwise, an empty string
+	inline const std::string& getQuery(const std::string& key) const {
+		return getValue(m_query_params, key);
+	}
+
+	/// returns a value for the cookie if any are defined; otherwise, an empty string
+	inline const std::string& getCookie(const std::string& key) const {
+		return getValue(m_cookie_params, key);
+	}
+	
+	/// returns the HTTP request headers
+	inline const HTTPTypes::Headers& getHeaders(void) const {
+		return m_headers;
+	}
+	
+	/// returns the query parameters
+	inline const HTTPTypes::QueryParams& getQueryParams(void) const {
+		return m_query_params;
+	}
+	
+	/// returns the cookie parameters
+	inline const HTTPTypes::CookieParams& getCookieParams(void) const {
+		return m_cookie_params;
+	}
+
+
+	/// sets the resource or uri-stem requested
 	inline void setResource(const std::string& str) { m_resource = str; }
+	
+	/// sets the HTTP request method (i.e. GET, POST, PUT)
 	inline void setMethod(const std::string& str) { m_method = str; }
+	
+	/// sets the request's major HTTP version number
 	inline void setVersionMajor(const unsigned int n) { m_version_major = n; }
+
+	/// sets the request's minor HTTP version number
 	inline void setVersionMinor(const unsigned int n) { m_version_minor = n; }
-	inline void addHeader(const std::string& key, const std::string& value) { m_headers.insert(std::make_pair(key, value)); }
-	inline void addQuery(const std::string& key, const std::string& value) { m_query_params.insert(std::make_pair(key, value)); }
-	inline void addCookie(const std::string& key, const std::string& value) { m_cookie_params.insert(std::make_pair(key, value)); }
+	
+	/// adds a value for the HTTP request header key
+	inline void addHeader(const std::string& key, const std::string& value) {
+		m_headers.insert(std::make_pair(key, value));
+	}
+	
+	/// adds a value for the query key
+	inline void addQuery(const std::string& key, const std::string& value) {
+		m_query_params.insert(std::make_pair(key, value));
+	}
+	
+	/// adds a value for the cookie
+	inline void addCookie(const std::string& key, const std::string& value) {
+		m_cookie_params.insert(std::make_pair(key, value));
+	}
+
+	/// sets whether or not the request is valid
 	inline void setIsValid(bool b = true) { m_is_valid = b; }
 	
 	/// clears all request data
@@ -93,7 +159,7 @@ public:
 protected:
 	
 	/// protected constructor restricts creation of objects (use create())
-	explicit HTTPRequest(void)
+	HTTPRequest(void)
 		: m_version_major(0), m_version_minor(0), m_is_valid(false)
 	{}
 

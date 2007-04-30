@@ -156,7 +156,7 @@ public:
 protected:
 		
 	/// protected constructor restricts creation of objects (use create())
-	explicit HTTPResponse(void)
+	HTTPResponse(void)
 		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPResponse")),
 		m_stream_is_empty(true), 
 		m_response_message(HTTPTypes::RESPONSE_MESSAGE_OK),

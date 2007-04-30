@@ -83,7 +83,7 @@ protected:
 	 * @param handler HTTP request handler used to process new requests
 	 * @param tcp_conn TCP connection containing a new request to parse
 	 */
-	explicit HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
+	HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
 		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPRequestParser")),
 		m_request_handler(handler), m_tcp_conn(tcp_conn),
 		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START)

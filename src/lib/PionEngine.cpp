@@ -33,7 +33,8 @@ boost::once_flag		PionEngine::m_instance_flag = BOOST_ONCE_INIT;
 
 // PionEngine member functions
 
-void PionEngine::createInstance(void) {
+void PionEngine::createInstance(void)
+{
 	static PionEngine pion_instance;
 	m_instance_ptr = &pion_instance;
 }

@@ -71,6 +71,9 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		
 	} else {
 
+		// lock mutex for thread safety (this should probably use ref counters)
+		boost::mutex::scoped_lock modules_lock(m_mutex);
+
 		// iterate through each module that may be able to handle the request
 		ModuleMap::iterator i = m_modules.upper_bound(resource);
 		while (i != m_modules.begin()) {
@@ -83,7 +86,8 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 
 				if (request_was_handled) {
 					// the module successfully handled the request
-					LOG4CXX_DEBUG(m_logger, "HTTP request handled by module: " << i->second->getResource());
+					LOG4CXX_DEBUG(m_logger, "HTTP request handled by module: "
+								  << i->second->getResource());
 					break;
 				}
 			} else {
@@ -105,14 +109,12 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 
 void HTTPServer::addModule(HTTPModulePtr m)
 {
-	// lock mutex for thread safety
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(m->getResource(), m));
 }
 
 void HTTPServer::clearModules(void)
 {
-	// lock mutex for thread safety
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.clear();
 }
