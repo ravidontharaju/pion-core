@@ -14,7 +14,7 @@ Build and installation summary:
 
 See INSTALL or run "./configure --help" for more detailed instructions.
 More detailed information and instructions is also available for some
-platforms within the "build" subdirectory (README.platform).
+platforms within the "doc" subdirectory (README.platform).
 
 libpion REQUIRES the Boost C++ libraries (version 1.33.1 or greater),
 including the Boost ASIO library.  Boost ASIO has been accepted into Boost
