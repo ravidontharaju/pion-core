@@ -132,6 +132,10 @@ AC_DEFUN([AX_BOOST_THREAD],
 			        BOOST_LDFLAGS="-pthread $BOOST_LDFLAGS"
                               break;
                               ;;
+                              *linux* )
+			        BOOST_LDFLAGS="-pthread $BOOST_LDFLAGS"
+                              break;
+                              ;;
                            esac
 
 			fi

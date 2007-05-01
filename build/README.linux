@@ -1,0 +1,80 @@
+Linux Build Instructions
+========================
+
+Installing Boost:
+-----------------
+
+If your Linux distribution includes Boost 1.33.1 or later, then you only
+have to install ASIO over top of it (see below).  If you have an older
+version of Boost installed (CentOS/RedHat 4), you likely will need to first
+uninstall it so that gcc and libtool do not get confused:
+
+rpm -e boost
+rpm -e boost-devel
+
+Next, download the 1.33.1 source tarball from http://www.boost.org/, and
+build and install it onto your system:
+
+wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
+tar xvfj boost_1_33_1.tar.bz2
+cd boost_1_33_1
+./configure
+make ; make install
+
+
+Installing Boost ASIO:
+----------------------
+
+The current Boost distribution (1.33.1) does not include the ASIO library.
+However, since ASIO consists only of header files, it is very easy to install
+it over top of any Boost installation: just copy the header files into your
+Boost include directory:
+
+wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
+tar xvfj boost_asio_0_3_7.tar.bz2
+sudo mv boost_asio_0_3_7/boost/* /opt/local/include/boost
+
+
+Installing log4cpp:
+-------------------
+
+Note that the use of a logging framework is entirely optional, so you may
+skip this step if you like.
+
+The easiest logging framework to use for Linux is probably log4cpp since
+pre-built packages are included in the DAG repository.  If you're system
+is already configured to use the DAG repository, you can just run "yum
+install log4cpp-devel" or "up2date log4cpp-devel".  If not, you can just
+manually download and install the appropriate log4cpp RPM package for
+your system from:
+
+http://dag.wieers.com/rpm/packages/log4cpp/
+
+
+Building and installing libpion:
+--------------------------------
+
+Now you should be able to build and install libpion:
+
+tar xvfz libpion-0.1.0.tar.gz
+cd libpion-0.1.0
+./configure --with-boost=/opt/local --with-log4cpp=/opt/local
+make ; sudo make install
+
+
+Known Problems
+--------------
+
+Some (older?) versions of libtool seem to have trouble correctly determining
+the libraries to link into the tests executables.  If you are having linkage
+problems with these, make sure that the libboost_thread.a and libboost_regex.a
+files exist within your Boost library directory:
+
+ls /usr/local/lib/libboost_thread.a /usr/local/lib/libboost_regex.a
+
+If not, try creating symbolic links to existing (static) archives:
+
+ln -s /usr/local/lib/libboost_regex-gcc-mt.a /usr/local/lib/libboost_regex.a
+ln -s /usr/local/lib/libboost_thread-gcc-mt.a /usr/local/lib/libboost_thread.a
+
+Only the first link is necessary if the libraries are in your search path.

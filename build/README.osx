@@ -1,12 +1,38 @@
 Mac OS X Build Instructions
 ===========================
 
+Using MacPorts
+--------------
+
 Although you can also download and install the tarballs manually, we believe
 that the easiest way to install the Boost and logging dependency libraries
 in OS X is to use MacPorts (http://www.macports.org):
 
 sudo port install boost
 sudo port install log4cpp
+
+Note that the use of a logging framework is entirely optional, so you may
+skip the installation of log4cpp if you like.
+
+
+Installing Boost:
+-----------------
+
+This step is only necessary if you choose not to install Boost using
+MacPorts.
+
+Download the 1.33.1 source tarball from http://www.boost.org/, and
+build and install it onto your system:
+
+wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
+tar xvfj boost_1_33_1.tar.bz2
+cd boost_1_33_1
+./configure
+make ; make install
+
+
+Installing Boost ASIO:
+----------------------
 
 The current Boost distribution (1.33.1) does not include the ASIO library.
 However, since ASIO consists only of header files, it is very easy to install
@@ -17,7 +43,11 @@ wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
 sudo mv boost_asio_0_3_7/boost/* /opt/local/include/boost
 
-That's it!  Now you should be able to build and install libpion:
+
+Building and installing libpion:
+--------------------------------
+
+Now you should be able to build and install libpion:
 
 tar xvfz libpion-0.1.0.tar.gz
 cd libpion-0.1.0
