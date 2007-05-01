@@ -65,17 +65,25 @@ AX_BOOST_BASE([1.33])
 AX_BOOST_THREAD
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $BOOST_THREAD_LIB"
-
 # Check for Boost asio headers
 AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio headers))
 
 
-# Check for log4cplus library
+# Check for logging support
 AC_ARG_WITH([log4cplus],
     AC_HELP_STRING([--with-log4cplus@<:@=DIR@:>@],[location of log4cplus library (enables logging)]),
     [ log4cplus_location=$withval ], [ without_log4cplus=true ])
-if test "$without_log4cplus" != "true"
-then
+AC_ARG_WITH([log4cxx],
+    AC_HELP_STRING([--with-log4cxx@<:@=DIR@:>@],[location of log4cxx library (enables logging)]),
+    [ log4cxx_location=$withval ], [ without_log4cxx=true ])
+AC_ARG_WITH([log4cpp],
+    AC_HELP_STRING([--with-log4cpp@<:@=DIR@:>@],[location of log4cpp library (enables logging)]),
+    [ log4cpp_location=$withval ], [ without_log4cpp=true ])
+AC_ARG_WITH([ostream-logging],
+    AC_HELP_STRING([--with-ostream-logging],[use std::cout and std::cerr for logging]),
+    [with_ostream_logging=true], [with_ostream_logging=false])
+
+if test "$without_log4cplus" != "true"; then
 	# Check if log4cplus location is specified
 	if test "$log4cplus_location" != ""
 	then
@@ -95,15 +103,7 @@ then
 	# Found the log4cplus library
 	AC_MSG_NOTICE(Using the log4cplus library for logging)
 	AC_DEFINE([PION_HAVE_LOG4CPLUS],[1],[Define to 1 if you have the `log4cplus' library (-llog4cplus).])
-fi
-
-
-# Check for log4cxx library
-AC_ARG_WITH([log4cxx],
-    AC_HELP_STRING([--with-log4cxx@<:@=DIR@:>@],[location of log4cxx library (enables logging)]),
-    [ log4cxx_location=$withval ], [ without_log4cxx=true ])
-if test "$without_log4cxx" != "true"
-then
+elif test "$without_log4cxx" != "true"; then
 	# Check if log4cxx location is specified
 	if test "$log4cxx_location" != ""
 	then
@@ -123,15 +123,7 @@ then
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
 	AC_DEFINE([PION_HAVE_LOG4CXX],[1],[Define to 1 if you have the `log4cxx' library (-llog4cxx).])
-fi
-
-
-# Check for log4cpp library
-AC_ARG_WITH([log4cpp],
-    AC_HELP_STRING([--with-log4cpp@<:@=DIR@:>@],[location of log4cpp library (enables logging)]),
-    [ log4cpp_location=$withval ], [ without_log4cpp=true ])
-if test "$without_log4cpp" != "true"
-then
+elif test "$without_log4cpp" != "true"; then
 	# Check if log4cpp location is specified
 	if test "$log4cpp_location" != ""
 	then
@@ -151,27 +143,13 @@ then
 	# Found the log4cpp library
 	AC_MSG_NOTICE(Using the log4cpp library for logging)
 	AC_DEFINE([PION_HAVE_LOG4CPP],[1],[Define to 1 if you have the `log4cpp' library (-llog4cpp).])
-fi
-
-
-# Check for ostream logging
-AC_ARG_WITH([ostream-logging],
-    AC_HELP_STRING([--with-ostream-logging],[use std::cout and std::cerr for logging]),
-    [with_ostream_logging=yes],
-    [with_ostream_logging=no])
-if test "$with_ostream_logging" = "yes"
-then
+elif test "$with_ostream_logging" = "true"; then
 	AC_MSG_NOTICE(Using std::cout and std::cerr for logging)
 	AC_DEFINE([PION_HAVE_OSTREAM_LOGGING],[1],[Define to 1 to use std::cout and std::cerr for logging.])
 else
-	if test "x$PION_HAVE_LOG4CPLUS" = "" && test "x$PION_HAVE_LOG4CXX" = "" && test "x$PION_HAVE_LOG4CPP" = ""
-	then
-		AC_MSG_NOTICE([Logging is disabled: use --with-(log4cplus|log4cxx|log4cpp) to enable])
-	fi
+	# Display notice if no logging found
+	AC_MSG_NOTICE([Logging is disabled])
 fi
-
-
-# Display notice if no logging found
 
 
 # Output Makefiles
