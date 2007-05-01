@@ -6,6 +6,4 @@ SUBDIRS = src
 EXTRA_DIST = doc autogen.sh \
 	build/ax_boost_base.m4 \
 	build/ax_boost_thread.m4 \
-	build/README.linux \
-	build/README.osx \
 	src/modules/HelloModule.hpp
