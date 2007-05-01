@@ -10,7 +10,6 @@ Build and installation summary:
 
 # ./configure --with-boost=/path/to/boost
 # make all
-# [su root]
 # make install
 
 See INSTALL or run "./configure --help" for more detailed instructions.
