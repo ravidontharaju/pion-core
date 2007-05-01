@@ -23,6 +23,7 @@
 
 #include <libpion/PionConfig.hpp>
 
+
 #if defined(PION_HAVE_LOG4CXX)
 
 	// unfortunately, the current version of log4cxx has many problems that
@@ -49,8 +50,7 @@
 	#endif 
 
 	namespace pion {
-		typedef log4cxx::Logger		PionLogger;
-		typedef log4cxx::LoggerPtr	PionLoggerPtr;
+		typedef log4cxx::LoggerPtr	PionLogger;
 	}
 
 	#define PION_LOG_DEBUG	LOG4CXX_DEBUG
@@ -59,12 +59,14 @@
 	#define PION_LOG_ERROR	LOG4CXX_ERROR
 	#define PION_LOG_FATAL	LOG4CXX_FATAL
 
-	#define PION_LOG_CONFIG_BASIC(LOG)		log4cxx::BasicConfigurator::configure();
 	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG->setLevel(log4cxx::Level::DEBUG);
 	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG->setLevel(log4cxx::Level::INFO);
 	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG->setLevel(log4cxx::Level::WARN);
 	#define PION_LOG_SETLEVEL_ERROR(LOG)	LOG->setLevel(log4cxx::Level::ERROR);
 	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG->setLevel(log4cxx::Level::FATAL);
+
+	#define PION_GET_LOGGER(NAME)			log4cxx::Logger::getLogger(NAME)
+	#define PION_LOG_CONFIG_BASIC(LOG)		log4cxx::BasicConfigurator::configure();
 
 
 #elif defined(PION_HAVE_LOG4CPLUS)
@@ -75,8 +77,7 @@
 	#include <log4cplus/basicconfigurator.h>
 
 	namespace pion {
-		typedef log4cplus::Logger		PionLogger;
-		typedef log4cplus::LoggerPtr	PionLoggerPtr;
+		typedef log4cplus::LoggerPtr	PionLogger;
 	}
 
 	#define PION_LOG_DEBUG	LOG4CXX_DEBUG
@@ -85,7 +86,9 @@
 	#define PION_LOG_ERROR	LOG4CXX_ERROR
 	#define PION_LOG_FATAL	LOG4CXX_FATAL
 
-	#define PION_LOG_CONFIG_BASIC(LOG)		log4cplus:BasicConfigurator::configure();
+	#define PION_GET_LOGGER(NAME)		log4cplus::Logger::getLogger(NAME)
+	#define PION_LOG_CONFIG_BASIC(LOG)	log4cplus:BasicConfigurator::configure();
+
 	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG->setLevel(log4cxx::Level::DEBUG);
 	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG->setLevel(log4cxx::Level::INFO);
 	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG->setLevel(log4cxx::Level::WARN);
@@ -93,20 +96,92 @@
 	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG->setLevel(log4cxx::Level::FATAL);
 
 
+#elif defined(PION_HAVE_LOG4CPP)
+
+
+	// log4cpp headers
+	#include <log4cpp/Category.hh>
+	#include <log4cpp/BasicLayout.hh>
+	#include <log4cpp/OstreamAppender.hh>
+
+	namespace pion {
+		typedef log4cpp::Category*	PionLogger;
+	}
+
+	#define PION_LOG_DEBUG(LOG, MSG)	if (LOG->getPriority()>=log4cpp::Priority::DEBUG) { LOG->debugStream() << MSG; }
+	#define PION_LOG_INFO(LOG, MSG)		if (LOG->getPriority()>=log4cpp::Priority::INFO) { LOG->infoStream() << MSG; }
+	#define PION_LOG_WARN(LOG, MSG)		if (LOG->getPriority()>=log4cpp::Priority::WARN) { LOG->warnStream() << MSG; }
+	#define PION_LOG_ERROR(LOG, MSG)	if (LOG->getPriority()>=log4cpp::Priority::ERROR) { LOG->errorStream() << MSG; }
+	#define PION_LOG_FATAL(LOG, MSG)	if (LOG->getPriority()>=log4cpp::Priority::FATAL) { LOG->fatalStream() << MSG; }
+
+	#define PION_GET_LOGGER(NAME)		(&log4cpp::Category::getInstance(NAME))
+	#define PION_LOG_CONFIG_BASIC(LOG)	{ log4cpp::OstreamAppender *app = new log4cpp::OstreamAppender("cout", &std::cout); app->setLayout(new log4cpp::BasicLayout()); log4cpp::Category::getRoot().setAppender(app); }
+
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	{ LOG->setPriority(log4cpp::Priority::DEBUG); }
+	#define PION_LOG_SETLEVEL_INFO(LOG)		{ LOG->setPriority(log4cpp::Priority::INFO); }
+	#define PION_LOG_SETLEVEL_WARN(LOG)		{ LOG->setPriority(log4cpp::Priority::WARN); }
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	{ LOG->setPriority(log4cpp::Priority::ERROR); }
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	{ LOG->setPriority(log4cpp::Priority::FATAL); }
+
+
+#elif defined(PION_HAVE_OSTREAM_LOGGING)
+
+
+	// Logging uses std::cout and std::cerr
+	#include <iostream>
+	#include <ctime>
+
+	namespace pion {
+		enum PionPriorityType {
+			PION_PRIORITY_DEBUG, PION_PRIORITY_INFO, PION_PRIORITY_WARN,
+			PION_PRIORITY_ERROR, PION_PRIORITY_FATAL
+		};
+		struct PionLogger {
+			PionLogger(const std::string& name)
+				: m_name(name), m_priority(PION_PRIORITY_DEBUG) {}
+			std::string			m_name;
+			PionPriorityType	m_priority;
+		};
+	}
+
+	#define PION_LOG_DEBUG(LOG, MSG)	if (LOG.m_priority <= PION_PRIORITY_DEBUG) { std::cout << time(NULL) << " DEBUG " << LOG.m_name << ' ' << MSG << std::endl; }
+	#define PION_LOG_INFO(LOG, MSG)		if (LOG.m_priority <= PION_PRIORITY_INFO) { std::cout << time(NULL) << " INFO " << LOG.m_name << ' ' << MSG << std::endl; }
+	#define PION_LOG_WARN(LOG, MSG)		if (LOG.m_priority <= PION_PRIORITY_WARN) { std::cerr << time(NULL) << " WARN " << LOG.m_name << ' ' << MSG << std::endl; }
+	#define PION_LOG_ERROR(LOG, MSG)	if (LOG.m_priority <= PION_PRIORITY_ERROR) { std::cerr << time(NULL) << " ERROR " << LOG.m_name << ' ' << MSG << std::endl; }
+	#define PION_LOG_FATAL(LOG, MSG)	if (LOG.m_priority <= PION_PRIORITY_FATAL) { std::cerr << time(NULL) << " FATAL " << LOG.m_name << ' ' << MSG << std::endl; }
+
+	#define PION_GET_LOGGER(NAME)		PionLogger(NAME)
+	#define PION_LOG_CONFIG_BASIC(LOG)	{}
+
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	{ LOG.m_priority = PION_PRIORITY_DEBUG; }
+	#define PION_LOG_SETLEVEL_INFO(LOG)		{ LOG.m_priority = PION_PRIORITY_INFO; }
+	#define PION_LOG_SETLEVEL_WARN(LOG)		{ LOG.m_priority = PION_PRIORITY_WARN; }
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	{ LOG.m_priority = PION_PRIORITY_ERROR; }
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	{ LOG.m_priority = PION_PRIORITY_FATAL; }
+
+
 #else
 
 	// Logging is disabled -> add do-nothing stubs for logging
 	namespace pion {
-		struct PionLogger { static PionLoggerPtr getLogger(char *) { return 0; } }
-		typedef int PionLoggerPtr;
+		typedef int		PionLogger;
 	}
 
-	// use "++logger" to avoid warnings about LOG not being used
-	#define PION_LOG_DEBUG(logger, message) { if (false) ++logger; }
-	#define PION_LOG_INFO(logger, message) { if (false) ++logger; }
-	#define PION_LOG_WARN(logger, message) { if (false) ++logger; }
-	#define PION_LOG_FATAL(logger, message) { if (false) ++logger; }
+	// use "++LOG" to avoid warnings about LOG not being used
+	#define PION_LOG_DEBUG(LOG, MSG)	{ if (false) ++LOG; }
+	#define PION_LOG_INFO(LOG, MSG)		{ if (false) ++LOG; }
+	#define PION_LOG_WARN(LOG, MSG)		{ if (false) ++LOG; }
+	#define PION_LOG_ERROR(LOG, MSG)	{ if (false) ++LOG; }
+	#define PION_LOG_FATAL(LOG, MSG)	{ if (false) ++LOG; }
 
+	#define PION_GET_LOGGER(NAME)		NULL
+	#define PION_LOG_CONFIG_BASIC(LOG)	{ if (false) ++LOG; }
+
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	{ if (false) ++LOG; }
+	#define PION_LOG_SETLEVEL_INFO(LOG)		{ if (false) ++LOG; }
+	#define PION_LOG_SETLEVEL_WARN(LOG)		{ if (false) ++LOG; }
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	{ if (false) ++LOG; }
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	{ if (false) ++LOG; }
 
 #endif
 

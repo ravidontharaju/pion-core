@@ -54,7 +54,7 @@ int main (int argc, char *argv[])
 	signal(SIGINT, handle_signal);
 
 	// initialize log system (use simple configuration)
-	PionLoggerPtr main_log(PionLogger::getLogger("Pion"));
+	PionLogger main_log(PION_GET_LOGGER("Pion"));
 	PION_LOG_SETLEVEL_DEBUG(main_log);
 	PION_LOG_CONFIG_BASIC();
 	

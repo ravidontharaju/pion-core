@@ -22,10 +22,9 @@
 #define __PION_HTTPSERVER_HEADER__
 
 #include <libpion/PionConfig.hpp>
-#include <libpion/PionLogger.hpp>
-#include <libpion/HTTPModule.hpp>
 #include <libpion/TCPServer.hpp>
 #include <libpion/TCPConnection.hpp>
+#include <libpion/HTTPModule.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <string>
@@ -68,12 +67,6 @@ public:
 	/// sets the module that handles requests which match no other module
 	inline void setNotFoundModule(HTTPModulePtr m) { m_not_found_module = m; }
 	
-	/// sets the logger to be used
-	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline PionLoggerPtr getLogger(void) { return m_logger; }
-
 	
 protected:
 	
@@ -86,7 +79,7 @@ protected:
 		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
 		m_not_found_module(new NotFoundModule)
 	{ 
-		setLogger(PionLogger::getLogger("Pion.HTTPServer"));
+		setLogger(PION_GET_LOGGER("Pion.HTTPServer"));
 	}
 	
 	/**
@@ -132,9 +125,6 @@ private:
 	/// data type for a collection of HTTP modules
 	typedef std::multimap<std::string, HTTPModulePtr>	ModuleMap;
 	
-	/// primary logging interface used by this class
-	PionLoggerPtr			m_logger;
-
 	/// HTTP modules associated with this server
 	ModuleMap				m_modules;
 

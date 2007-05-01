@@ -29,11 +29,17 @@
 /* Define to 1 if you have the <hash_map> header file. */
 #undef PION_HAVE_HASH_MAP
 
+/* Define to 1 if you have the `log4cplus' library (-llog4cplus). */
+#undef PION_HAVE_LOG4CPLUS
+
 /* Define to 1 if you have the `log4cxx' library (-llog4cxx). */
 #undef PION_HAVE_LOG4CXX
 
-/* Define to 1 if you have the `log4cplus' library (-llog4cplus). */
-#undef PION_HAVE_LOG4CPLUS
+/* Define to 1 if you have the `log4cpp' library (-llog4cpp). */
+#undef PION_HAVE_LOG4CPP
+
+/* Define to 1 to use std::cout and std::cerr for logging. */
+#undef PION_HAVE_OSTREAM_LOGGING
 
 /* Define to 1 if you have the <unordered_map> header file. */
 #undef PION_HAVE_UNORDERED_MAP

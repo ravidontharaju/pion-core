@@ -116,10 +116,10 @@ public:
 	inline unsigned int getNumThreads(void) const { return m_num_threads; }
 
 	/// sets the logger to be used
-	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
 
 	/// returns the logger currently in use
-	inline PionLoggerPtr getLogger(void) { return m_logger; }
+	inline PionLogger getLogger(void) { return m_logger; }
 	
 	/// returns the async I/O service used by the engine
 	inline boost::asio::io_service& getIOService(void) { return m_asio_service; }
@@ -129,7 +129,7 @@ private:
 
 	/// private constructor for singleton pattern
 	PionEngine(void)
-		: m_logger(PionLogger::getLogger("Pion")),
+		: m_logger(PION_GET_LOGGER("Pion")),
 		m_is_running(false), m_num_threads(DEFAULT_NUM_THREADS) {}
 
 	/// creates the singleton instance, protected by boost::call_once
@@ -155,7 +155,7 @@ private:
 	static boost::once_flag			m_instance_flag;
 
 	/// primary logging interface used by this class
-	PionLoggerPtr					m_logger;
+	PionLogger						m_logger;
 
 	/// map of port numbers to TCPServer objects
 	TCPServerMap					m_servers;

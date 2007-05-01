@@ -147,17 +147,17 @@ public:
 	inline void setContentType(const std::string& t) { m_content_type = t; }
 
 	/// sets the logger to be used
-	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
 	
 	/// returns the logger currently in use
-	inline PionLoggerPtr getLogger(void) { return m_logger; }
+	inline PionLogger getLogger(void) { return m_logger; }
 
 	
 protected:
 		
 	/// protected constructor restricts creation of objects (use create())
 	HTTPResponse(void)
-		: m_logger(PionLogger::getLogger("Pion.HTTPResponse")),
+		: m_logger(PION_GET_LOGGER("Pion.HTTPResponse")),
 		m_stream_is_empty(true), 
 		m_response_message(HTTPTypes::RESPONSE_MESSAGE_OK),
 		m_content_type(HTTPTypes::CONTENT_TYPE_HTML),
@@ -216,7 +216,7 @@ private:
 	
 		
 	/// primary logging interface used by this class
-	PionLoggerPtr							m_logger;
+	PionLogger								m_logger;
 
 	/// I/O write buffers that wrap the response content to be written
 	WriteBuffers							m_content_buffers;

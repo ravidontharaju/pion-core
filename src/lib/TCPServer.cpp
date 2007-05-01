@@ -30,7 +30,7 @@ namespace pion {	// begin namespace pion
 // TCPServer member functions
 
 TCPServer::TCPServer(const unsigned int tcp_port)
-	: m_logger(PionLogger::getLogger("Pion.TCPServer")),
+	: m_logger(PION_GET_LOGGER("Pion.TCPServer")),
 	m_tcp_acceptor(PionEngine::getInstance().getIOService()),
 	m_tcp_port(tcp_port), m_is_listening(false)
 {}

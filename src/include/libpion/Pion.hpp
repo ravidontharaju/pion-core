@@ -91,12 +91,12 @@ namespace Pion {
 	}
 
 	/// sets the logger to be used
-	inline static void setLogger(PionLoggerPtr log_ptr) {
+	inline static void setLogger(PionLogger log_ptr) {
 		PionEngine::getInstance().setLogger(log_ptr);
 	}
 
 	/// returns the logger currently in use
-	inline static PionLoggerPtr getLogger(void) {
+	inline static PionLogger getLogger(void) {
 		return PionEngine::getInstance().getLogger();
 	}
 

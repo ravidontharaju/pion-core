@@ -67,7 +67,7 @@ int main (int argc, char *argv[])
 	signal(SIGINT, handle_signal);
 
 	// initialize log system (use simple configuration)
-	PionLoggerPtr main_log(PionLogger::getLogger("Pion"));
+	PionLogger main_log(PION_GET_LOGGER("Pion"));
 	PION_LOG_SETLEVEL_DEBUG(main_log);
 	PION_LOG_CONFIG_BASIC();
 	
@@ -76,7 +76,7 @@ int main (int argc, char *argv[])
 		// create a new server to handle the Hello TCP protocol
 		TCPServerPtr hello_server(new HelloServer(port));
 		if (! Pion::addServer(hello_server)) {
-			LOG4CXX_FATAL(main_log, "Failed to add HelloServer on port " << port);
+			PION_LOG_FATAL(main_log, "Failed to add HelloServer on port " << port);
 			return 1;
 		}
 	

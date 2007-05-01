@@ -8,25 +8,36 @@ See COPYING for licensing information.
 
 Build and installation summary:
 
-# ./configure --with-boost=/path/to/boost [--with-log4cxx=/path/to/log4cxx]
+# ./configure --with-boost=/path/to/boost
 # make all
 # [su root]
 # make install
 
 See INSTALL or run "./configure --help" for more detailed instructions.
+More detailed information and instructions is also available for some
+platforms within the "build" subdirectory (README.platform).
 
-More detailed information and instructions are available for some platforms
-in the "build" subdirectory (README.platform).
-
-libpion REQUIRES the Boost C++ libraries (version 1.33 or greater),
+libpion REQUIRES the Boost C++ libraries (version 1.33.1 or greater),
 including the Boost ASIO library.  Boost ASIO has been accepted into Boost
 but is not yet included in the distribution.  Boost ASIO additionally
-requires OpenSSL for SSL/TLS support and zlib for compression.  To enable
-logging support, libpion must also be built with the Apache log4cxx library.
-You can download these libraries from the following locations:
+requires OpenSSL for SSL/TLS support and zlib for compression.  You can
+download these libraries from the following locations:
 
 http://www.boost.org
 http://asio.sourceforge.net
 http://www.openssl.org
 http://www.zlib.net
+
+For logging, libpion may be configured to:
+
+a) disable logging entirely (the default configuration)
+b) use std::cout and std::cerr for logging (configure --with-ostream-logging)
+c) use one of the following open source libraries: log4cxx, log4cpp or
+   log4cplus (configure using one of --with-log4cxx, --with-log4cpp or
+   --with-log4cplus, respectively)
+
+You can download these logging libraries from the following locations:
+
 http://logging.apache.org/log4cxx
+http://log4cpp.sourceforge.net
+http://log4cplus.sourceforge.net
