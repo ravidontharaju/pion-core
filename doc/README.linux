@@ -31,7 +31,7 @@ Boost include directory:
 
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
-mv boost_asio_0_3_7/boost/* /opt/local/include/boost
+mv boost_asio_0_3_7/boost/* /usr/local/include/boost-1_33_1/boost
 
 
 Installing log4cpp:
@@ -57,23 +57,14 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-./configure --with-boost=/opt/local --with-log4cpp=/opt/local
+./configure --with-boost=/usr/local --with-log4cpp=/usr/local
 make ; make install
 
 
 Known Problems
 --------------
 
-Some (older?) versions of libtool seem to have trouble correctly determining
-the libraries to link into the tests executables.  If you are having linkage
-problems with these, make sure that the libboost_thread.a and libboost_regex.a
-files exist within your Boost library directory:
+The "tests" executables may complain about loading shared libraries if the
+Boost and/or logging libraries are not in your search path.  Try this:
 
-ls /usr/local/lib/libboost_thread.a /usr/local/lib/libboost_regex.a
-
-If not, try creating symbolic links to existing (static) archives:
-
-ln -s /usr/local/lib/libboost_regex-gcc-mt.a /usr/local/lib/libboost_regex.a
-ln -s /usr/local/lib/libboost_thread-gcc-mt.a /usr/local/lib/libboost_thread.a
-
-Only the first link is necessary if the libraries are in your search path.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
