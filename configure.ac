@@ -2,7 +2,7 @@
 # libpion autoconf configuration file
 # -----------------------------------
 
-AC_INIT([libpion], [0.1.2], [support@atomiclabs.com])
+AC_INIT([libpion], [0.1.3], [support@atomiclabs.com])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/lib/PionEngine.cpp)
