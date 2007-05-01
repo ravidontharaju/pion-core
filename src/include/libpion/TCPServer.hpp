@@ -54,10 +54,10 @@ public:
 	inline unsigned int getPort(void) const { return m_tcp_port; }
 
 	/// sets the logger to be used
-	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
 	
 	/// returns the logger currently in use
-	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
+	inline PionLoggerPtr getLogger(void) { return m_logger; }
 	
 
 protected:
@@ -108,7 +108,7 @@ private:
 	typedef std::set<TCPConnectionPtr>		ConnectionPool;
 
 	/// primary logging interface used by this class
-	log4cxx::LoggerPtr						m_logger;
+	PionLoggerPtr							m_logger;
 
 	/// mutex to make class thread-safe
 	boost::mutex							m_mutex;

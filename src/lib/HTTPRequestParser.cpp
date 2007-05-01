@@ -50,7 +50,7 @@ void HTTPRequestParser::readHandler(const boost::asio::error& read_error,
 {
 	if (!read_error) {
 
-		LOG4CXX_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
+		PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
 		
 		// parse the bytes read from the last operation
 		boost::tribool result = parseRequest(bytes_read);
@@ -74,9 +74,9 @@ void HTTPRequestParser::readHandler(const boost::asio::error& read_error,
 		if (read_error == boost::asio::error::operation_aborted) {
 			// if the operation was aborted, the acceptor was stopped,
 			// which means another thread is shutting-down the server
-			LOG4CXX_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
+			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
 		} else {
-			LOG4CXX_INFO(m_logger, "HTTP request parsing aborted due to I/O error");
+			PION_LOG_INFO(m_logger, "HTTP request parsing aborted due to I/O error");
 		}
 		
 		m_tcp_conn->finish();

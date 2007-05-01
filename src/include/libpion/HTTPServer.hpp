@@ -69,10 +69,10 @@ public:
 	inline void setNotFoundModule(HTTPModulePtr m) { m_not_found_module = m; }
 	
 	/// sets the logger to be used
-	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
 	
 	/// returns the logger currently in use
-	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
+	inline PionLoggerPtr getLogger(void) { return m_logger; }
 
 	
 protected:
@@ -86,7 +86,7 @@ protected:
 		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
 		m_not_found_module(new NotFoundModule)
 	{ 
-		setLogger(log4cxx::Logger::getLogger("Pion.HTTPServer"));
+		setLogger(PionLogger::getLogger("Pion.HTTPServer"));
 	}
 	
 	/**
@@ -133,7 +133,7 @@ private:
 	typedef std::multimap<std::string, HTTPModulePtr>	ModuleMap;
 	
 	/// primary logging interface used by this class
-	log4cxx::LoggerPtr		m_logger;
+	PionLoggerPtr			m_logger;
 
 	/// HTTP modules associated with this server
 	ModuleMap				m_modules;

@@ -69,10 +69,10 @@ public:
 	void readRequest(void);
 
 	/// sets the logger to be used
-	inline void setLogger(log4cxx::LoggerPtr log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLoggerPtr log_ptr) { m_logger = log_ptr; }
 	
 	/// returns the logger currently in use
-	inline log4cxx::LoggerPtr getLogger(void) { return m_logger; }
+	inline PionLoggerPtr getLogger(void) { return m_logger; }
 	
 	
 protected:
@@ -84,7 +84,7 @@ protected:
 	 * @param tcp_conn TCP connection containing a new request to parse
 	 */
 	HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
-		: m_logger(log4cxx::Logger::getLogger("Pion.HTTPRequestParser")),
+		: m_logger(PionLogger::getLogger("Pion.HTTPRequestParser")),
 		m_request_handler(handler), m_tcp_conn(tcp_conn),
 		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START)
 	{}
@@ -179,7 +179,7 @@ private:
 	static const unsigned int			HEADER_VALUE_MAX;
 
 	/// primary logging interface used by this class
-	log4cxx::LoggerPtr					m_logger;
+	PionLoggerPtr						m_logger;
 
 	/// A function that handles the request after it has been parsed
 	RequestHandler						m_request_handler;

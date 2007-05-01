@@ -80,11 +80,11 @@ void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
 {
 	if (write_error) {
 		// encountered error sending response
-		LOG4CXX_INFO(m_logger, "Unable to send HTTP response due to I/O error");
+		PION_LOG_INFO(m_logger, "Unable to send HTTP response due to I/O error");
 	} else {
 		// response sent OK
-		LOG4CXX_DEBUG(m_logger, "Sent HTTP response of " << bytes_written << " bytes ("
-					  << (tcp_conn->getKeepAlive() ? "keeping alive" : "closing") << ")");
+		PION_LOG_DEBUG(m_logger, "Sent HTTP response of " << bytes_written << " bytes ("
+					   << (tcp_conn->getKeepAlive() ? "keeping alive" : "closing") << ")");
 	}
 	
 	// all finished handling the connection

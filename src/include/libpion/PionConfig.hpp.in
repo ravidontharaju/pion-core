@@ -32,6 +32,9 @@
 /* Define to 1 if you have the `log4cxx' library (-llog4cxx). */
 #undef PION_HAVE_LOG4CXX
 
+/* Define to 1 if you have the `log4cplus' library (-llog4cplus). */
+#undef PION_HAVE_LOG4CPLUS
+
 /* Define to 1 if you have the <unordered_map> header file. */
 #undef PION_HAVE_UNORDERED_MAP
 

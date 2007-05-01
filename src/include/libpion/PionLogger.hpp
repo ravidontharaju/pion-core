@@ -48,19 +48,65 @@
 		#pragma warning(pop)
 	#endif 
 
+	namespace pion {
+		typedef log4cxx::Logger		PionLogger;
+		typedef log4cxx::LoggerPtr	PionLoggerPtr;
+	}
+
+	#define PION_LOG_DEBUG	LOG4CXX_DEBUG
+	#define PION_LOG_INFO	LOG4CXX_INFO
+	#define PION_LOG_WARN	LOG4CXX_WARN
+	#define PION_LOG_ERROR	LOG4CXX_ERROR
+	#define PION_LOG_FATAL	LOG4CXX_FATAL
+
+	#define PION_LOG_CONFIG_BASIC(LOG)		log4cxx::BasicConfigurator::configure();
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG->setLevel(log4cxx::Level::DEBUG);
+	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG->setLevel(log4cxx::Level::INFO);
+	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG->setLevel(log4cxx::Level::WARN);
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	LOG->setLevel(log4cxx::Level::ERROR);
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG->setLevel(log4cxx::Level::FATAL);
+
+
+#elif defined(PION_HAVE_LOG4CPLUS)
+
+
+	// log4cplus headers
+	#include <log4cplus/logger.h>
+	#include <log4cplus/basicconfigurator.h>
+
+	namespace pion {
+		typedef log4cplus::Logger		PionLogger;
+		typedef log4cplus::LoggerPtr	PionLoggerPtr;
+	}
+
+	#define PION_LOG_DEBUG	LOG4CXX_DEBUG
+	#define PION_LOG_INFO	LOG4CXX_INFO
+	#define PION_LOG_WARN	LOG4CXX_WARN
+	#define PION_LOG_ERROR	LOG4CXX_ERROR
+	#define PION_LOG_FATAL	LOG4CXX_FATAL
+
+	#define PION_LOG_CONFIG_BASIC(LOG)		log4cplus:BasicConfigurator::configure();
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG->setLevel(log4cxx::Level::DEBUG);
+	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG->setLevel(log4cxx::Level::INFO);
+	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG->setLevel(log4cxx::Level::WARN);
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	LOG->setLevel(log4cxx::Level::ERROR);
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG->setLevel(log4cxx::Level::FATAL);
+
+
 #else
 
-	// Logging is disabled -> add do-nothing stubs for log4cxx calls
-	namespace log4cxx {
-		typedef int LoggerPtr;
-		namespace Logger { static LoggerPtr getLogger(char *) { return 0; } }
+	// Logging is disabled -> add do-nothing stubs for logging
+	namespace pion {
+		struct PionLogger { static PionLoggerPtr getLogger(char *) { return 0; } }
+		typedef int PionLoggerPtr;
 	}
 
 	// use "++logger" to avoid warnings about LOG not being used
-	#define LOG4CXX_DEBUG(logger, message) { if (false) ++logger; }
-	#define LOG4CXX_INFO(logger, message) { if (false) ++logger; }
-	#define LOG4CXX_WARN(logger, message) { if (false) ++logger; }
-	#define LOG4CXX_FATAL(logger, message) { if (false) ++logger; }
+	#define PION_LOG_DEBUG(logger, message) { if (false) ++logger; }
+	#define PION_LOG_INFO(logger, message) { if (false) ++logger; }
+	#define PION_LOG_WARN(logger, message) { if (false) ++logger; }
+	#define PION_LOG_FATAL(logger, message) { if (false) ++logger; }
+
 
 #endif
 

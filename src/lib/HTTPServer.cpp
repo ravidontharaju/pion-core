@@ -43,7 +43,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 {
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
-		LOG4CXX_INFO(m_logger, "Received an invalid HTTP request");
+		PION_LOG_INFO(m_logger, "Received an invalid HTTP request");
 		if (! m_bad_request_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
@@ -51,7 +51,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		return;
 	}
 		
-	LOG4CXX_DEBUG(m_logger, "Received a valid HTTP request");
+	PION_LOG_DEBUG(m_logger, "Received a valid HTTP request");
 	
 	// set the connection's keep_alive flag
 	tcp_conn->setKeepAlive(http_request->checkKeepAlive());
@@ -67,7 +67,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (m_modules.empty()) {
 		
 		// no modules configured
-		LOG4CXX_WARN(m_logger, "No modules configured");
+		PION_LOG_WARN(m_logger, "No modules configured");
 		
 	} else {
 
@@ -86,8 +86,8 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 
 				if (request_was_handled) {
 					// the module successfully handled the request
-					LOG4CXX_DEBUG(m_logger, "HTTP request handled by module: "
-								  << i->second->getResource());
+					PION_LOG_DEBUG(m_logger, "HTTP request handled by module: "
+								   << i->second->getResource());
 					break;
 				}
 			} else {
@@ -99,7 +99,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	
 	if (! request_was_handled) {
 		// no modules found that could handle the request
-		LOG4CXX_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
+		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
 		if (! m_not_found_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();

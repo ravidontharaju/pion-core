@@ -48,7 +48,7 @@ void PionEngine::start(void)
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
-	LOG4CXX_INFO(m_logger, "Starting up");
+	PION_LOG_INFO(m_logger, "Starting up");
 
 	// schedule async tasks to listen for each server
 	for (TCPServerMap::iterator i = m_servers.begin(); i!=m_servers.end(); ++i) {
@@ -71,7 +71,7 @@ void PionEngine::stop(void)
 
 	if (m_is_running) {
 
-		LOG4CXX_INFO(m_logger, "Shutting down");
+		PION_LOG_INFO(m_logger, "Shutting down");
 
 		// stop listening for new connections
 		for (TCPServerMap::iterator i = m_servers.begin(); i!=m_servers.end(); ++i) {
@@ -79,7 +79,7 @@ void PionEngine::stop(void)
 		}
 
 		if (! m_thread_pool.empty()) {
-			LOG4CXX_DEBUG(m_logger, "Waiting for threads to shutdown");
+			PION_LOG_DEBUG(m_logger, "Waiting for threads to shutdown");
 
 			// wait until all threads in the pool have stopped
 			std::for_each(m_thread_pool.begin(), m_thread_pool.end(),
@@ -89,7 +89,7 @@ void PionEngine::stop(void)
 			m_thread_pool.clear();
 		}
 
-		LOG4CXX_INFO(m_logger, "Pion has shutdown");
+		PION_LOG_INFO(m_logger, "Pion has shutdown");
 
 		m_is_running = false;
 		m_engine_has_stopped.notify_all();
@@ -111,7 +111,7 @@ void PionEngine::run(void)
 		// handle I/O events managed by the service
 		m_asio_service.run();
 	} catch (std::exception& e) {
-		LOG4CXX_FATAL(m_logger, "Caught exception in pool thread: " << e.what());
+		PION_LOG_FATAL(m_logger, "Caught exception in pool thread: " << e.what());
 	}
 }
 

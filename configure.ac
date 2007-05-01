@@ -2,7 +2,7 @@
 # libpion autoconf configuration file
 # -----------------------------------
 
-AC_INIT([libpion], [0.1.0], [support@atomiclabs.com])
+AC_INIT([libpion], [0.1.1], [support@atomiclabs.com])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/lib/PionEngine.cpp)
@@ -74,10 +74,8 @@ AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio h
 AC_ARG_WITH([log4cxx],
     AC_HELP_STRING([--with-log4cxx@<:@=DIR@:>@],[location of log4cxx library (enables logging)]),
     [ log4cxx_location=$withval ], [ without_log4cxx=true ])
-if test "$without_log4cxx" = "true"
+if test "$without_log4cxx" != "true"
 then
-	AC_MSG_NOTICE([Logging is disabled (use --with-log4cxx) to enable])
-else
 	# Check if log4cxx location is specified
 	if test "$log4cxx_location" != ""
 	then
@@ -97,6 +95,43 @@ else
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
 	AC_DEFINE([PION_HAVE_LOG4CXX],[1],[Define to 1 if you have the `log4cxx' library (-llog4cxx).])
+fi
+
+
+# Check for log4cplus library
+AC_ARG_WITH([log4cplus],
+    AC_HELP_STRING([--with-log4cplus@<:@=DIR@:>@],[location of log4cplus library (enables logging)]),
+    [ log4cplus_location=$withval ], [ without_log4cplus=true ])
+if test "$without_log4cplus" = "true"
+then
+	AC_MSG_NOTICE([Logging is disabled (use --with-log4cplus) to enable])
+else
+	# Check if log4cplus location is specified
+	if test "$log4cplus_location" != ""
+	then
+		CPPFLAGS="$CPPFLAGS -I$log4cplus_location/include"
+		LDFLAGS="$LDFLAGS -L$log4cplus_location/lib"
+	fi
+
+	# Check for log4cplus headers
+	AC_CHECK_HEADERS([log4cplus/logger.h],,AC_MSG_ERROR([Unable to find the log4cplus headers]))
+	
+	# Check for log4cplus library
+	LDFLAGS="$LDFLAGS -llog4cplus"
+	AC_TRY_LINK([#include <log4cplus/logger.h>],[ log4cplus::Logger::getRootLogger(); return 0; ],
+		AC_MSG_NOTICE(Linking with log4cplus works),
+		AC_MSG_ERROR(Unable to link with the log4cplus library))
+
+	# Found the log4cplus library
+	AC_MSG_NOTICE(Using the log4cplus library for logging)
+	AC_DEFINE([PION_HAVE_LOG4CPLUS],[1],[Define to 1 if you have the `log4cplus' library (-llog4cplus).])
+fi
+
+
+# Display notice if no logging found
+if test "x$PION_HAVE_LOG4CXX" = "" && test "x$PION_HAVE_LOG4CPLUS" = ""
+then
+	AC_MSG_NOTICE([Logging is disabled (use --with-log4cplus or --with-log4cplus) to enable])
 fi
 
 

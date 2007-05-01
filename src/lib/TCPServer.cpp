@@ -30,7 +30,7 @@ namespace pion {	// begin namespace pion
 // TCPServer member functions
 
 TCPServer::TCPServer(const unsigned int tcp_port)
-	: m_logger(log4cxx::Logger::getLogger("Pion.TCPServer")),
+	: m_logger(PionLogger::getLogger("Pion.TCPServer")),
 	m_tcp_acceptor(PionEngine::getInstance().getIOService()),
 	m_tcp_port(tcp_port), m_is_listening(false)
 {}
@@ -41,7 +41,7 @@ void TCPServer::start(void)
 	boost::mutex::scoped_lock server_lock(m_mutex);
 
 	if (! m_is_listening) {
-		LOG4CXX_INFO(m_logger, "Starting server on port " << getPort());
+		PION_LOG_INFO(m_logger, "Starting server on port " << getPort());
 
 		// configure the acceptor service
 		tcp::endpoint endpoint(tcp::v4(), m_tcp_port);
@@ -77,7 +77,7 @@ void TCPServer::handleStopRequest(void)
 	boost::mutex::scoped_lock server_lock(m_mutex);
 
 	if (m_is_listening) {
-		LOG4CXX_INFO(m_logger, "Shutting down server on port " << getPort());
+		PION_LOG_INFO(m_logger, "Shutting down server on port " << getPort());
 	
 		m_is_listening = false;
 
@@ -121,7 +121,7 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 		finishConnection(tcp_conn);
 	} else {
 		// got a new TCP connection
-		LOG4CXX_INFO(m_logger, "New connection on port " << getPort());
+		PION_LOG_INFO(m_logger, "New connection on port " << getPort());
 		// schedule the acceptance of another new connection
 		// (this returns immediately since it schedules it as an event)
 		if (m_is_listening) listen();
@@ -138,7 +138,7 @@ void TCPServer::finishConnection(TCPConnectionPtr& tcp_conn)
 		handleConnection(tcp_conn);
 
 	} else {
-		LOG4CXX_INFO(m_logger, "Closing connection on port " << getPort());
+		PION_LOG_INFO(m_logger, "Closing connection on port " << getPort());
 		
 		// remove the connection from the server's management pool
 		boost::mutex::scoped_lock server_lock(m_mutex);

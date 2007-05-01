@@ -66,19 +66,17 @@ int main (int argc, char *argv[])
 	// setup signal handlers
 	signal(SIGINT, handle_signal);
 
-	// initialize log4cxx system (use simple configuration)
-	log4cxx::LoggerPtr LOG(log4cxx::Logger::getLogger("Pion"));
-	#if defined(PION_HAVE_LOG4CXX)
-		log4cxx::BasicConfigurator::configure();
-		LOG->setLevel(log4cxx::Level::DEBUG);
-	#endif
+	// initialize log system (use simple configuration)
+	PionLoggerPtr main_log(PionLogger::getLogger("Pion"));
+	PION_LOG_SETLEVEL_DEBUG(main_log);
+	PION_LOG_CONFIG_BASIC();
 	
 	try {
 		
 		// create a new server to handle the Hello TCP protocol
 		TCPServerPtr hello_server(new HelloServer(port));
 		if (! Pion::addServer(hello_server)) {
-			LOG4CXX_FATAL(LOG, "Failed to add HelloServer on port " << port);
+			LOG4CXX_FATAL(main_log, "Failed to add HelloServer on port " << port);
 			return 1;
 		}
 	
@@ -89,7 +87,7 @@ int main (int argc, char *argv[])
 		Pion::join();
 
 	} catch (std::exception& e) {
-		LOG4CXX_FATAL(LOG, "Caught exception in main(): " << e.what());
+		PION_LOG_FATAL(main_log, "Caught exception in main(): " << e.what());
 	}
 
 	return 0;
