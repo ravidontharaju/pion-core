@@ -96,7 +96,7 @@ if test "$without_log4cplus" != "true"; then
 	
 	# Check for log4cplus library
 	LDFLAGS="$LDFLAGS -llog4cplus"
-	AC_TRY_LINK([#include <log4cplus/logger.h>],[ log4cplus::Logger::getRootLogger(); return 0; ],
+	AC_TRY_LINK([#include <log4cplus/logger.h>],[ log4cplus::Logger::getRoot(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cplus works),
 		AC_MSG_ERROR(Unable to link with the log4cplus library))
 

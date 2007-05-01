@@ -73,26 +73,26 @@
 
 	// log4cplus headers
 	#include <log4cplus/logger.h>
-	#include <log4cplus/basicconfigurator.h>
+	#include <log4cplus/configurator.h>
 
 	namespace pion {
-		typedef log4cplus::LoggerPtr	PionLogger;
+		typedef log4cplus::Logger	PionLogger;
 	}
 
-	#define PION_LOG_CONFIG_BASIC	log4cplus:BasicConfigurator::configure();
-	#define PION_GET_LOGGER(NAME)	log4cplus::Logger::getLogger(NAME)
+	#define PION_LOG_CONFIG_BASIC	log4cplus::BasicConfigurator::doConfigure();
+	#define PION_GET_LOGGER(NAME)	log4cplus::Logger::getInstance(NAME)
 
-	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG->setLevel(log4cxx::Level::DEBUG);
-	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG->setLevel(log4cxx::Level::INFO);
-	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG->setLevel(log4cxx::Level::WARN);
-	#define PION_LOG_SETLEVEL_ERROR(LOG)	LOG->setLevel(log4cxx::Level::ERROR);
-	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG->setLevel(log4cxx::Level::FATAL);
+	#define PION_LOG_SETLEVEL_DEBUG(LOG)	LOG.setLogLevel(log4cplus::DEBUG_LOG_LEVEL);
+	#define PION_LOG_SETLEVEL_INFO(LOG)		LOG.setLogLevel(log4cplus::INFO_LOG_LEVEL);
+	#define PION_LOG_SETLEVEL_WARN(LOG)		LOG.setLogLevel(log4cplus::WARN_LOG_LEVEL);
+	#define PION_LOG_SETLEVEL_ERROR(LOG)	LOG.setLogLevel(log4cplus::ERROR_LOG_LEVEL);
+	#define PION_LOG_SETLEVEL_FATAL(LOG)	LOG.setLogLevel(log4cplus::FATAL_LOG_LEVEL);
 
-	#define PION_LOG_DEBUG	LOG4CXX_DEBUG
-	#define PION_LOG_INFO	LOG4CXX_INFO
-	#define PION_LOG_WARN	LOG4CXX_WARN
-	#define PION_LOG_ERROR	LOG4CXX_ERROR
-	#define PION_LOG_FATAL	LOG4CXX_FATAL
+	#define PION_LOG_DEBUG	LOG4CPLUS_DEBUG
+	#define PION_LOG_INFO	LOG4CPLUS_INFO
+	#define PION_LOG_WARN	LOG4CPLUS_WARN
+	#define PION_LOG_ERROR	LOG4CPLUS_ERROR
+	#define PION_LOG_FATAL	LOG4CPLUS_FATAL
 
 
 #elif defined(PION_HAVE_LOG4CPP)
