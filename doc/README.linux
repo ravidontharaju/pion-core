@@ -4,10 +4,14 @@ Linux Build Instructions
 Installing Boost:
 -----------------
 
-If your Linux distribution includes Boost 1.33.1 or later, then you only
-have to install ASIO over top of it (see below).  If you have an older
-version of Boost installed (CentOS/RedHat 4), you likely will need to first
-uninstall it so that gcc and libtool do not get confused:
+If your Linux distribution includes Boost 1.33.1 (CentOS/Redhat 5) or 
+later, then you only have to install ASIO over top of it (see below).  
+Just install the "boost" and "boost-devel" packages using an update 
+tool such as yum, up2date or apt-get.
+
+If you have an older version of Boost installed (CentOS/Redhat 4), you 
+likely will need to first uninstall it so that gcc and libtool do not 
+get confused:
 
 rpm -e boost boost-devel
 
@@ -31,7 +35,12 @@ Boost include directory:
 
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
+
+CentOS/Redhat 4:
 mv boost_asio_0_3_7/boost/* /usr/local/include/boost-1_33_1/boost
+
+CentOS/Redhat 5:
+mv boost_asio_0_3_7/boost/* /usr/include/boost/
 
 
 Installing log4cpp:
@@ -57,7 +66,13 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
+
+CentOS/Redhat 4:
 ./configure --with-boost=/usr/local --with-log4cpp=/usr/local
+
+CentOS/Redhat 5:
+./configure --with-boost=/usr --with-log4cpp=/usr
+
 make ; make install
 
 
