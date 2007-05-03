@@ -67,13 +67,20 @@ AC_DEFUN([AX_BOOST_THREAD],
         [AC_LANG_PUSH([C++])
 			 CXXFLAGS_SAVE=$CXXFLAGS
 
-			 if test "x$build_os" = "xsolaris" ; then
-  				 CXXFLAGS="-pthreads $CXXFLAGS"
-			 elif test "x$build_os" = "xming32" ; then
-				 CXXFLAGS="-mthreads $CXXFLAGS"
-			 else
+			case "x$build_os" in
+			  *solaris*)
+  				CXXFLAGS="-pthreads $CXXFLAGS"
+				;;
+			  *xming32*)
+				CXXFLAGS="-mthreads $CXXFLAGS"
+				;;
+			  *darwin*)
+				;;
+			  *)
 				CXXFLAGS="-pthread $CXXFLAGS"
-			 fi
+				;;
+			esac
+
 			 AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/thread/thread.hpp>]],
                                    [[boost::thread_group thrds;
                                    return 0;]]),
@@ -81,21 +88,21 @@ AC_DEFUN([AX_BOOST_THREAD],
 			 CXXFLAGS=$CXXFLAGS_SAVE
              AC_LANG_POP([C++])
 		])
-		case $host in
-		  *darwin*)
-			DARWIN=true
-			;;
-		esac
 		if test "x$ax_cv_boost_thread" = "xyes"; then
-           if test "x$build_os" = "xsolaris" ; then
-			  BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
-		   elif test "x$build_os" = "xming32" ; then
-			  BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
-		   elif test "x$DARWIN" = "xtrue"; then
-		      AC_MSG_NOTICE(Detected darwin: -pthread is not needed)
-		   else
-			  BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
-		   fi
+
+			case "x$build_os" in
+			  *solaris*)
+				BOOST_CPPFLAGS="-pthreads $BOOST_CPPFLAGS"
+				;;
+			  *xming32*)
+				BOOST_CPPFLAGS="-mthreads $BOOST_CPPFLAGS"
+				;;
+			  *darwin*)
+				;;
+			  *)
+				BOOST_CPPFLAGS="-pthread $BOOST_CPPFLAGS"
+				;;
+			esac
 
 			AC_SUBST(BOOST_CPPFLAGS)
 

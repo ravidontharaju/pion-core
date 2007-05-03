@@ -1,0 +1,86 @@
+Solaris Build Instructions
+==========================
+
+Basic utilities:
+----------------
+
+Make sure you have the make and ar utilities and that they are in your
+path.  Normally, these are installed in the /usr/ccs/bin directory. For
+some reason, Solaris does not include it in the default PATH.
+
+
+Installing zlib & openssl:
+--------------------------
+
+ASIO requires zlib and openssl for compression and SSL/TLS encryption
+support, respectively.  Since these libraries are not included with
+Solaris, you may need to download and install them manually from the
+following sites:
+
+http://www.zlib.net
+http://www.openssl.org
+
+If you are building libpion using GCC, it may be easiest to download and
+install the following packages from http://www.sunfreeware.com/: gcc
+(if you don't have it installed already), zlib and openssl.  If you are
+using Sun Studio, you may prefer to build these from source.
+
+
+Logging frameworks:
+-------------------
+
+If you wish to use one of the supported logging frameworks with libpion,
+you will need to download and install it from source, since none of
+them are available pre-built for Solaris.  You can download the source
+tarballs from the following sites:
+
+http://logging.apache.org/log4cxx
+http://log4cpp.sourceforge.net
+http://log4cplus.sourceforge.net
+
+
+Installing Boost:
+-----------------
+
+Download the 1.33.1 source tarball from http://www.boost.org/, and build
+and install it onto your system:
+
+wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
+bzip2 -dc boost_1_33_1.tar.bz2 | tar xvf -
+cd boost_1_33_1
+./configure
+make ; sudo make install
+
+
+Installing Boost ASIO:
+----------------------
+
+The current Boost distribution (1.33.1) does not include the ASIO library.
+However, since ASIO consists only of header files, it is very easy to install
+it over top of any Boost installation: just copy the header files into your
+Boost include directory.
+
+wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
+tar xvfj boost_asio_0_3_7.tar.bz2
+sudo mv boost_asio_0_3_7/boost/* /usr/local/include/boost-1_33_1/boost
+
+
+Building and installing libpion:
+--------------------------------
+
+Now you should be able to build and install libpion:
+
+tar xvfz libpion-VERSION.tar.gz
+cd libpion-VERSION
+./configure --with-boost=/usr/local [--with-log...]
+make ; sudo make install
+
+
+Known problems:
+---------------
+
+If you're using the gcc compiler distributed at http://www.sunfreeware.com,
+you may encountered errors about not being able to find the libstdc++ shared
+library (and others).  If this happens, try setting the LD_LIBRARY_PATH
+variable to include /usr/local/lib/.  You should also include the Boost
+libraries and the logging library (if used) in this path.

@@ -67,7 +67,12 @@ CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $BOOST_THREAD_LIB"
 # Check for Boost asio headers
 AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio headers))
-
+# Add socket library for Solaris (used by ASIO)
+case "x$build_os" in
+	*solaris*)
+  	LDFLAGS="$LDFLAGS -lsocket"
+	;;
+esac
 
 # Check for logging support
 AC_ARG_WITH([log4cplus],

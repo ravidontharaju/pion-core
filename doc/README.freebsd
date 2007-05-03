@@ -22,8 +22,9 @@ The current Boost distribution (1.33.1) does not include the ASIO library.
 However, since ASIO consists only of header files, it is very easy to install
 it over top of any Boost installation: just copy the header files into your
 Boost include directory.  ASIO 0.3.7 has a few problems you need to 
-patch first before you can use it with FreeBSD.  A patch file is 
-included in the libpion "doc" directory.
+patch first before you can use it with FreeBSD.  A patch file is included in
+the libpion "doc" directory.  ASIO 0.3.8 and above works out of the box,
+without this patch.
 
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
