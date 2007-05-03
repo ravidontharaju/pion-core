@@ -41,7 +41,7 @@ then
 	CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
 else
 	AC_MSG_NOTICE(Building with debugging information)
-	CXXFLAGS="$CXXFLAGS -ggdb -DDEBUG"
+	CXXFLAGS="$CXXFLAGS -ggdb"
 fi
 
 
