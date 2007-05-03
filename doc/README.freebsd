@@ -1,0 +1,52 @@
+FreeBSD Build Instructions
+==========================
+
+Installing Packages
+-------------------
+
+Although you can also download and install the tarballs manually, we believe
+that the easiest way to install the Boost and logging dependency libraries
+in FreeBSD is to use the pkg_add utility:
+
+pkg_add -r boost
+pkg_add -r log4cxx
+
+Note that the use of a logging framework is entirely optional, so you may
+skip the installation of the log4cxx package if you like.
+
+
+Installing Boost ASIO:
+----------------------
+
+The current Boost distribution (1.33.1) does not include the ASIO library.
+However, since ASIO consists only of header files, it is very easy to install
+it over top of any Boost installation: just copy the header files into your
+Boost include directory.  ASIO 0.3.7 has a few problems you need to 
+patch first before you can use it with FreeBSD.  A patch file is 
+included in the libpion "doc" directory.
+
+wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
+tar xvfj boost_asio_0_3_7.tar.bz2
+patch -p0 < LIBPION_HOME/doc/asio_0_3_7_freebsd.patch
+sudo mv boost_asio_0_3_7/boost/* /usr/local/include/boost
+
+
+Building and installing libpion:
+--------------------------------
+
+Now you should be able to build and install libpion:
+
+tar xvfz libpion-VERSION.tar.gz
+cd libpion-VERSION
+./configure --with-boost=/usr/local --with-log4cxx=/usr/local
+make ; sudo make install
+
+
+Known Problems
+--------------
+
+The log4cpp framework, although available, does not seem to work under 
+FreeBSD.  This appears to be due to bugs within the version of log4cpp 
+provided with FreeBSD.  Since both log4cxx and log4cplus are also 
+available and work correctly, we recommend that you use one of those 
+instead.
