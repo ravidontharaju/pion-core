@@ -42,7 +42,7 @@ class TCPServer :
 public:
 
 	/// default destructor
-	virtual ~TCPServer() { if (m_is_listening) handleStopRequest(); }
+	virtual ~TCPServer() { if (m_is_listening) stop(); }
 	
 	/// starts listening for new connections
 	void start(void);

@@ -65,18 +65,6 @@ void TCPServer::stop(void)
 	boost::mutex::scoped_lock server_lock(m_mutex);
 
 	if (m_is_listening) {
-		// schedule stop request with io_service to finish any pending events
-		// this allows any pending I/O events to finish processing first
-		m_tcp_acceptor.io_service().post(boost::bind(&TCPServer::handleStopRequest, this));
-	}
-}
-
-void TCPServer::handleStopRequest(void)
-{
-	// lock mutex for thread safety
-	boost::mutex::scoped_lock server_lock(m_mutex);
-
-	if (m_is_listening) {
 		PION_LOG_INFO(m_logger, "Shutting down server on port " << getPort());
 	
 		m_is_listening = false;
