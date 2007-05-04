@@ -5,8 +5,8 @@ General:
 --------
 
 libpion supports both GCC (g++) and Sun Studio's C++ compiler (CC).  If you
-are building with Sun Studio's C++ compiler, you may need to install all of
-the latest patches available at:
+are building with Sun Studio's C++ compiler, you will need to first install the
+latest patches available at:
 
 http://developers.sun.com/sunstudio/downloads/patches/index.jsp
 
@@ -84,10 +84,6 @@ make ; sudo make install
 
 Known problems:
 ---------------
-
-Many of the Boost libraries may fail to compile using Sun Studio's C++
-compiler.  However, the only one required by libpion is the Thread library
-which should compile and install without problems (after applying the patch).
 
 If you're using the gcc compiler distributed at http://www.sunfreeware.com,
 you may encountered errors about not being able to find the libstdc++ shared
