@@ -39,30 +39,22 @@ http://log4cpp.sourceforge.net
 http://log4cplus.sourceforge.net
 
 
-Installing Boost:
------------------
-
-Download the 1.33.1 source tarball from http://www.boost.org/, and build
-and install it onto your system:
-
-wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
-bzip2 -dc boost_1_33_1.tar.bz2 | tar xvf -
-cd boost_1_33_1
-./configure
-make ; sudo make install
-
-
-Installing Boost ASIO:
-----------------------
+Installing Boost and ASIO:
+--------------------------
 
 The current Boost distribution (1.33.1) does not include the ASIO library.
 However, since ASIO consists only of header files, it is very easy to install
 it over top of any Boost installation: just copy the header files into your
 Boost include directory.
 
+wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
-tar xvfj boost_asio_0_3_7.tar.bz2
-sudo mv boost_asio_0_3_7/boost/* /usr/local/include/boost-1_33_1/boost
+bzip2 -dc boost_1_33_1.tar.bz2 | tar xvf -
+bzip2 -dc boost_asio_0_3_7.tar.bz2 | tar xvf -
+mv boost_asio_0_3_7/boost/* boost_1_33_1/boost/
+cd boost_1_33_1
+./configure
+make ; sudo make install
 
 
 Building and installing libpion:
@@ -78,6 +70,9 @@ make ; sudo make install
 
 Known problems:
 ---------------
+
+The Sun C++ compiler is not supported at this time.  The current release of
+the Boost thread library (which is required by libpion) fails to compile.
 
 If you're using the gcc compiler distributed at http://www.sunfreeware.com,
 you may encountered errors about not being able to find the libstdc++ shared
