@@ -16,33 +16,46 @@ AUTOHEADER="echo autoheader ignored"
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
 
-# Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
-# compiler options
-CXXFLAGS="-D_REENTRANT -Wall"
+# Set Pion Version in PionConfig.hpp
+AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
 
 # Check for programs
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
-# Use C++ language for tests
+# Use C++ language
 AC_LANG_CPLUSPLUS
+AX_COMPILER_VENDOR
 
-# Set Pion Version in PionConfig.hpp
-AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
-
-# Debug setting
+# Check for debug
 AC_ARG_WITH([debug],
     AC_HELP_STRING([--with-debug],[build with debugging information]),
     [with_debug=$withval],
     [with_debug=no])
-if test "$with_debug" = "no"
-then
-	CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG"
-else
-	AC_MSG_NOTICE(Building with debugging information)
-	CXXFLAGS="$CXXFLAGS -ggdb"
-fi
+
+# Set compiler options
+case "$ax_cv_cxx_compiler_vendor" in
+sun)
+	if test "$with_debug" = "no"; then
+		CXXFLAGS="$CXXFLAGS -DNDEBUG -O2 -mt -library=stlport4"
+		CPPFLAGS="$CPPFLAGS -DNDEBUG -mt -library=stlport4"
+	else
+		AC_MSG_NOTICE(Building with debugging information)
+		CXXFLAGS="$CXXFLAGS -g -mt -library=stlport4"
+		CPPFLAGS="$CPPFLAGS -mt -library=stlport4"
+	fi
+	;;
+*)
+	if test "$with_debug" = "no"; then
+		CXXFLAGS="$CXXFLAGS -DNDEBUG -O2 -D_REENTRANT -Wall"
+		CPPFLAGS="$CPPFLAGS -DNDEBUG -D_REENTRANT"
+	else
+		AC_MSG_NOTICE(Building with debugging information)
+		CXXFLAGS="$CXXFLAGS -ggdb -D_REENTRANT -Wall"
+	fi
+	;;
+esac
 
 
 # Check for unordered container support

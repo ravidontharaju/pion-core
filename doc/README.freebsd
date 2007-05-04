@@ -28,7 +28,7 @@ without this patch.
 
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
-patch -p0 < LIBPION_HOME/doc/asio_0_3_7_freebsd.patch
+patch -p0 < LIBPION_HOME/doc/freebsd_asio_0_3_7.patch
 sudo mv boost_asio_0_3_7/boost/* /usr/local/include/boost
 
 

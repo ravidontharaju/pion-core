@@ -1,12 +1,18 @@
 Solaris Build Instructions
 ==========================
 
-Basic utilities:
-----------------
+General:
+--------
 
-Make sure you have the make and ar utilities and that they are in your
-path.  Normally, these are installed in the /usr/ccs/bin directory. For
-some reason, Solaris does not include it in the default PATH.
+libpion supports both GCC (g++) and Sun Studio's C++ compiler (CC).  If you
+are building with Sun Studio's C++ compiler, you may need to install all of
+the latest patches available at:
+
+http://developers.sun.com/sunstudio/downloads/patches/index.jsp
+
+Make sure that the make and ar utilities are in your PATH.  Normally, these are
+installed in the /usr/ccs/bin directory, which for some reason is not included
+in the default PATH.
 
 
 Installing zlib & openssl:
@@ -52,7 +58,15 @@ wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
 bzip2 -dc boost_1_33_1.tar.bz2 | tar xvf -
 bzip2 -dc boost_asio_0_3_7.tar.bz2 | tar xvf -
 mv boost_asio_0_3_7/boost/* boost_1_33_1/boost/
+
+If you are using GCC, the current Boost distribution (1.33.1) should build fine
+without any modifications.  However, a patch is required to build the required
+Boost libraries (namely the Thread library) with Sun Studio's C++ compiler (CC).
+A patch file (taken from http://blogs.sun.com/sga/entry/boost_1_33_1) is
+included in the libpion "doc" directory.
+
 cd boost_1_33_1
+gpatch -p1 < LIBPION_DIRECTORY/doc/sunstudio_boost_1_33_1.patch
 ./configure
 make ; sudo make install
 
@@ -71,8 +85,9 @@ make ; sudo make install
 Known problems:
 ---------------
 
-The Sun C++ compiler is not supported at this time.  The current release of
-the Boost thread library (which is required by libpion) fails to compile.
+Many of the Boost libraries may fail to compile using Sun Studio's C++
+compiler.  However, the only one required by libpion is the Thread library
+which should compile and install without problems (after applying the patch).
 
 If you're using the gcc compiler distributed at http://www.sunfreeware.com,
 you may encountered errors about not being able to find the libstdc++ shared
