@@ -19,6 +19,10 @@ AM_INIT_AUTOMAKE
 # Set Pion Version in PionConfig.hpp
 AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
 
+# Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
+# compiler options
+CXXFLAGS="-D_REENTRANT"
+
 # Check for programs
 AC_PROG_CXX
 AC_PROG_INSTALL
@@ -28,34 +32,54 @@ AC_PROG_LIBTOOL
 AC_LANG_CPLUSPLUS
 AX_COMPILER_VENDOR
 
+# Set basic compiler options
+case "$build_os" in
+*solaris*)
+	if test "$ax_cv_cxx_compiler_vendor" = "sun"; then
+		# Solaris: Sun Studio C++ compiler
+		CPPFLAGS="$CPPFLAGS -mt -library=stlport4"
+		LDFLAGS="$LDFLAGS -mt -library=stlport4"
+		PION_OPT_FLAGS="-O2"
+		PION_DEBUG_FLAGS="-g"
+	else
+		# Solaris: GCC compiler
+		CPPFLAGS="$CPPFLAGS -pthreads -D_REENTRANT"
+		LDFLAGS="$LDFLAGS -pthreads"
+		PION_OPT_FLAGS="-O2 -Wall"
+		PION_DEBUG_FLAGS="-ggdb -Wall"
+	fi
+	# Add socket library for Solaris (used by ASIO)
+	LDFLAGS="$LDFLAGS -lsocket"
+	;;
+*darwin*)
+	# Mac OS X: GCC compiler
+	# -pthread is implied (automatically set by compiler)
+	CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+	#LDFLAGS="$LDFLAGS"
+	PION_OPT_FLAGS="-O2 -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall"
+	;;
+*)
+	# Other (Linux/FreeBSD): GCC compiler
+	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
+	LDFLAGS="$LDFLAGS -pthread"
+	PION_OPT_FLAGS="-O2 -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall"
+	;;
+esac
+
+
 # Check for debug
 AC_ARG_WITH([debug],
     AC_HELP_STRING([--with-debug],[build with debugging information]),
     [with_debug=$withval],
     [with_debug=no])
-
-# Set compiler options
-case "$ax_cv_cxx_compiler_vendor" in
-sun)
-	if test "$with_debug" = "no"; then
-		CXXFLAGS="$CXXFLAGS -DNDEBUG -O2 -mt -library=stlport4"
-		CPPFLAGS="$CPPFLAGS -DNDEBUG -mt -library=stlport4"
-	else
-		AC_MSG_NOTICE(Building with debugging information)
-		CXXFLAGS="$CXXFLAGS -g -mt -library=stlport4"
-		CPPFLAGS="$CPPFLAGS -mt -library=stlport4"
-	fi
-	;;
-*)
-	if test "$with_debug" = "no"; then
-		CXXFLAGS="$CXXFLAGS -DNDEBUG -O2 -D_REENTRANT -Wall"
-		CPPFLAGS="$CPPFLAGS -DNDEBUG -D_REENTRANT"
-	else
-		AC_MSG_NOTICE(Building with debugging information)
-		CXXFLAGS="$CXXFLAGS -ggdb -D_REENTRANT -Wall"
-	fi
-	;;
-esac
+if test "$with_debug" = "no"; then
+	CXXFLAGS="$CXXFLAGS $PION_OPT_FLAGS"
+else
+	AC_MSG_NOTICE(Building with debugging information)
+	CXXFLAGS="$CXXFLAGS $PION_DEBUG_FLAGS"
+fi
 
 
 # Check for unordered container support
@@ -75,17 +99,37 @@ fi
 
 # Check for Boost
 AX_BOOST_BASE([1.33])
-AX_BOOST_THREAD
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $BOOST_THREAD_LIB"
-# Check for Boost asio headers
+
+
+# Check for Boost ASIO library
 AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio headers))
-# Add socket library for Solaris (used by ASIO)
-case "x$build_os" in
-	*solaris*)
-  	LDFLAGS="$LDFLAGS -lsocket"
-	;;
-esac
+
+
+# Check for Boost Thread library
+AC_CHECK_HEADERS([boost/thread/thread.hpp],,AC_MSG_ERROR(Unable to find the boost::thread headers))
+LDFLAGS_SAVED=$LDFLAGS
+BOOST_LIB=boost_thread
+for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
+	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
+	lib$BOOST_LIB-$CC lib$BOOST_LIB-$CC-mt lib$BOOST_LIB-$CC-mt-s \
+	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
+	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
+do
+	LDFLAGS="$LDFLAGS_SAVED -l$ax_lib"
+	AC_MSG_NOTICE(Checking for -l$ax_lib)
+	AC_TRY_LINK([#include <boost/thread/thread.hpp>],
+		[ boost::thread_group thrds; return 0; ],
+		[BOOST_THREAD_LIB="-l$ax_lib"; break],
+		[BOOST_THREAD_LIB=""])
+done
+if test "x$BOOST_THREAD_LIB" = ""; then
+	AC_MSG_ERROR(Unable to link with the boost::thread library)
+else
+	AC_MSG_NOTICE(Linking with boost::thread works)
+	LDFLAGS="$LDFLAGS_SAVED $BOOST_THREAD_LIB"
+fi
+
 
 # Check for logging support
 AC_ARG_WITH([log4cplus],
