@@ -100,6 +100,7 @@ fi
 # Check for Boost
 AX_BOOST_BASE([1.33])
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
 
 
 # Check for Boost ASIO library
@@ -123,7 +124,7 @@ do
 		[BOOST_THREAD_LIB="-l$ax_lib"; break],
 		[BOOST_THREAD_LIB=""])
 done
-if test "x$BOOST_THREAD_LIB" = ""; then
+if test "x$BOOST_THREAD_LIB" = "x"; then
 	AC_MSG_ERROR(Unable to link with the boost::thread library)
 else
 	AC_MSG_NOTICE(Linking with boost::thread works)
