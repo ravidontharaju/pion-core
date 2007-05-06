@@ -424,23 +424,24 @@
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = _REENTRANT;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_MASTER_OBJECT_FILE = NO;
 				HEADER_SEARCH_PATHS = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
-				OBJROOT = tmp;
+				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread",
 					"-llog4cpp",
 				);
 				PREBINDING = NO;
+				PRELINK_LIBS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				SYMROOT = "$(PROJECT_DIR)";
 				USER_HEADER_SEARCH_PATHS = ../src/include;
+				ZERO_LINK = NO;
 			};
 			name = Debug;
 		};
@@ -453,153 +454,86 @@
 					_REENTRANT,
 					NDEBUG,
 				);
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_MASTER_OBJECT_FILE = NO;
 				HEADER_SEARCH_PATHS = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
-				OBJROOT = tmp;
+				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread",
 					"-llog4cpp",
 				);
 				PREBINDING = NO;
+				PRELINK_LIBS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				SYMROOT = "$(PROJECT_DIR)";
 				USER_HEADER_SEARCH_PATHS = ../src/include;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E33288CB0BEE5103006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = pion;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E33288CC0BEE5103006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = pion;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E33288CE0BEE5103006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = lib;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = pion;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E33288CF0BEE5103006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_PREFIX = lib;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = pion;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E33288E50BEE51A8006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
-				PREBINDING = NO;
 				PRODUCT_NAME = PionProtocolTest;
-				ZERO_LINK = NO;
 			};
 			name = Debug;
 		};
 		E33288E60BEE51A8006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
-				PREBINDING = NO;
 				PRODUCT_NAME = PionProtocolTest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E33288E80BEE51A8006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
-				PREBINDING = NO;
 				PRODUCT_NAME = PionModulesTest;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E33288E90BEE51A8006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = "$(HOME)/bin";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
-				PREBINDING = NO;
 				PRODUCT_NAME = PionModulesTest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
