@@ -18,7 +18,6 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HelloModule.hpp"
 #include <libpion/Pion.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
@@ -62,7 +61,7 @@ int main (int argc, char *argv[])
 
 		// create a server for HTTP & add the Hello module
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
-		http_server->addModule(HTTPModulePtr(new HelloModule));
+		http_server->loadModule("/hello", "HelloModule");
 	
 		// startup pion
 		Pion::start();

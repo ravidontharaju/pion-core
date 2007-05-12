@@ -18,39 +18,35 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#ifndef __PION_HELLOMODULE_HEADER__
-#define __PION_HELLOMODULE_HEADER__
-
-// pion headers
 #include <libpion/HTTPModule.hpp>
 #include <libpion/HTTPResponse.hpp>
 
 
 namespace pion {	// begin namespace pion
 
-///
-/// HelloModule: simple HTTP module that responds with "Hello World!"
-///
-class HelloModule :
-	public HTTPModule
-{
-public:
-	// default constructor & destructor
-	virtual ~HelloModule() {}
-	HelloModule(void) : HTTPModule("/hello") {}
-	
-	/// responds to requests with "Hello World!"
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
-	{
-		static const std::string HELLO_HTML = "<html><body>Hello World!</body></html>\r\n\r\n";
-		HTTPResponsePtr response(HTTPResponse::create());
-		response->writeNoCopy(HELLO_HTML);
-		response->send(tcp_conn);
-		return true;
-	}
-};
+// HelloModule member functions
 
+bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+{
+	static const std::string HELLO_HTML = "<html><body>Hello World!</body></html>\r\n\r\n";
+	HTTPResponsePtr response(HTTPResponse::create());
+	response->writeNoCopy(HELLO_HTML);
+	response->send(tcp_conn);
+	return true;
+}
 
 }	// end namespace pion
 
-#endif
+
+/// creates new HelloModule objects
+extern "C" HelloModule *create(void)
+{
+	return new HelloModule();
+}
+
+
+/// destroys HelloModule objects
+extern "C" destroy(HelloModule *module_ptr)
+{
+	delete module_ptr;
+}

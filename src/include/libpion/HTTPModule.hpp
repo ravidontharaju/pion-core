@@ -25,7 +25,6 @@
 #include <libpion/HTTPRequest.hpp>
 #include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 #include <string>
 
 
@@ -39,9 +38,12 @@ class HTTPModule :
 {
 public:
 
+	/// default constructor
+	HTTPModule(void) {}
+
 	/// virtual destructor
 	virtual ~HTTPModule() {}
-	
+
 	/**
      * attempts to handle a new HTTP request
 	 *
@@ -50,38 +52,21 @@ public:
 	 *
 	 * @return true if the request was handled; false if not
 	 */
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
-	{ 
-		return false;
-	}
-
-	/// returns true if the module may be able to handle the resource
-	inline bool checkResource(const std::string& r) const {
-		return(r.compare(0, m_resource.size(), m_resource) == 0);
-	}
-
-	/// returns the resource associated with this module
-	inline const std::string& getResource(void) const { return m_resource; }
-
-protected:
-	
-	/**
-	 * protect constructor so that only derived objects may be created
-	 *
-	 * @param resource the resource or URI stem associated with this module
-	 */
-	explicit HTTPModule(const std::string& resource) : m_resource(resource) {}
-	
-	
-private:
-
-	/// HTTP resource name or URI stem
-	const std::string		m_resource;
+	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn) = 0;
 };
 
 
-/// data type for a tcp protocol handler pointer
-typedef boost::shared_ptr<HTTPModule>		HTTPModulePtr;
+/// All modules implementations that derive from HTTPModule must define a
+/// "create" function using this prototype and with an extern "C" declaration
+/// that is used to create new objects of that type
+///
+// HTTPModule *create(void);
+
+/// All modules implementations that derive from HTTPModule must define a
+/// "destroy" function using this prototype and with an extern "C" declaration
+/// that is used to destroy objects of that type
+///
+// void destroy(HTTPModule*);
 
 
 }	// end namespace pion

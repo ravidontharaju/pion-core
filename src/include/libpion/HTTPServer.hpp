@@ -22,6 +22,7 @@
 #define __PION_HTTPSERVER_HEADER__
 
 #include <libpion/PionConfig.hpp>
+#include <libpion/PionPlugin.hpp>
 #include <libpion/TCPServer.hpp>
 #include <libpion/TCPConnection.hpp>
 #include <libpion/HTTPModule.hpp>
@@ -55,17 +56,30 @@ public:
 	/// default destructor
 	virtual ~HTTPServer() {}
 	
-	/// adds a new module to the HTTP server
-	void addModule(HTTPModulePtr m);
+	/**
+	 * adds a new module to the HTTP server
+	 *
+	 * @param resource the resource name or uri-stem to bind to the module
+	 * @param module_ptr a pointer to the module
+	 */
+	void addModule(const std::string& resource, HTTPModule *module_ptr);
 	
+	/**
+	 * loads a module from a shared object file
+	 *
+	 * @param resource the resource name or uri-stem to bind to the module
+	 * @param file the name of the shared object file
+	 */
+	void loadModule(const std::string& resource, const std::string& file);
+
 	/// clears all the modules that are currently configured
 	void clearModules(void);
 	
 	/// sets the module that handles bad HTTP requests
-	inline void setBadRequestModule(HTTPModulePtr m) { m_bad_request_module = m; }
+	inline void setBadRequestModule(HTTPModule *m) { m_bad_request_module.reset(m); }
 	
 	/// sets the module that handles requests which match no other module
-	inline void setNotFoundModule(HTTPModulePtr m) { m_not_found_module = m; }
+	inline void setNotFoundModule(HTTPModule *m) { m_not_found_module.reset(m); }
 	
 	
 protected:
@@ -99,14 +113,14 @@ protected:
 		
 	
 private:
-
+	
 	/// used to send responses when a bad HTTP request is made
 	class BadRequestModule : public HTTPModule {
 	protected:
 		static const std::string	BAD_REQUEST_HTML;
 	public:
 		virtual ~BadRequestModule() {}
-		BadRequestModule(void) : HTTPModule("") {}
+		BadRequestModule(void) {}
 		virtual bool handleRequest(HTTPRequestPtr& request,
 								   TCPConnectionPtr& tcp_conn);
 	};
@@ -117,25 +131,44 @@ private:
 		static const std::string	NOT_FOUND_HTML;
 	public:
 		virtual ~NotFoundModule() {}
-		NotFoundModule(void) : HTTPModule("") {}
+		NotFoundModule(void) {}
 		virtual bool handleRequest(HTTPRequestPtr& request,
 								   TCPConnectionPtr& tcp_conn);
 	};
 	
+	/// used by ModuleMap to associated moudle objects with plugin libraries
+	typedef std::pair<HTTPModule *, PionPlugin<HTTPModule> *>	PluginPair;
+	
 	/// data type for a collection of HTTP modules
-	typedef std::multimap<std::string, HTTPModulePtr>	ModuleMap;
+	class ModuleMap
+		: public std::multimap<std::string, PluginPair>
+	{
+	public:
+		void clear(void) {
+			for (iterator i = begin(); i != end(); ++i) {
+				if (i->second.second != NULL) {
+					i->second.second->destroy(i->second.first);
+					delete i->second.second;
+				} else {
+					delete i->second.first;
+				}
+			}
+		}
+		virtual ~ModuleMap() { clear(); }
+		ModuleMap(void) {}
+	};
 	
 	/// HTTP modules associated with this server
-	ModuleMap				m_modules;
+	ModuleMap						m_modules;
 
 	/// mutex to make class thread-safe
-	boost::mutex			m_mutex;
+	boost::mutex					m_mutex;
 
 	/// points to the module that handles bad HTTP requests
-	HTTPModulePtr			m_bad_request_module;
+	boost::shared_ptr<HTTPModule>	m_bad_request_module;
 	
 	/// points to the module that handles requests which match no other module
-	HTTPModulePtr			m_not_found_module;
+	boost::shared_ptr<HTTPModule>	m_not_found_module;
 };
 
 

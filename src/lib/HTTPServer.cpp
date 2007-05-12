@@ -25,6 +25,10 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
+#ifndef WIN32
+#include <dlfcn.h>
+#endif
+
 
 namespace pion {	// begin namespace pion
 
@@ -44,10 +48,15 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
 		PION_LOG_INFO(m_logger, "Received an invalid HTTP request");
+
+		// lock mutex for thread safety (this should probably use ref counters)
+		boost::mutex::scoped_lock modules_lock(m_mutex);
+
 		if (! m_bad_request_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
 		}
+		
 		return;
 	}
 		
@@ -64,6 +73,9 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	// true if a module successfully handled the request
 	bool request_was_handled = false;
 	
+	// lock mutex for thread safety (this should probably use ref counters)
+	boost::mutex::scoped_lock modules_lock(m_mutex);
+
 	if (m_modules.empty()) {
 		
 		// no modules configured
@@ -71,25 +83,24 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		
 	} else {
 
-		// lock mutex for thread safety (this should probably use ref counters)
-		boost::mutex::scoped_lock modules_lock(m_mutex);
-
 		// iterate through each module that may be able to handle the request
 		ModuleMap::iterator i = m_modules.upper_bound(resource);
 		while (i != m_modules.begin()) {
 			--i;
+			
 			// keep checking while the first part of the strings match
-			if (i->second->checkResource(resource)) {
+			if (resource.compare(0, i->first.size(), i->first) == 0) {
 				
 				// try to handle the request with the module
-				request_was_handled = i->second->handleRequest(http_request, tcp_conn);
+				request_was_handled = i->second.first->handleRequest(http_request, tcp_conn);
 
 				if (request_was_handled) {
 					// the module successfully handled the request
 					PION_LOG_DEBUG(m_logger, "HTTP request handled by module: "
-								   << i->second->getResource());
+								   << i->first);
 					break;
 				}
+				
 			} else {
 				// we've gone to far; the first part no longer matches
 				break;
@@ -100,6 +111,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! request_was_handled) {
 		// no modules found that could handle the request
 		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
+
 		if (! m_not_found_module->handleRequest(http_request, tcp_conn)) {
 			// this shouldn't ever happen, but just in case
 			tcp_conn->finish();
@@ -107,10 +119,19 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	}
 }
 
-void HTTPServer::addModule(HTTPModulePtr m)
+void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
 {
+	PionPlugin<HTTPModule> *plugin_ptr(NULL);
 	boost::mutex::scoped_lock modules_lock(m_mutex);
-	m_modules.insert(std::make_pair(m->getResource(), m));
+	m_modules.insert(std::make_pair(resource, std::make_pair(module_ptr, plugin_ptr)));
+}
+
+void HTTPServer::loadModule(const std::string& resource, const std::string& module_file)
+{
+	PionPlugin<HTTPModule> *plugin_ptr(new PionPlugin<HTTPModule>(module_file));
+	HTTPModule *module_ptr(plugin_ptr->create());
+	boost::mutex::scoped_lock modules_lock(m_mutex);
+	m_modules.insert(std::make_pair(resource, std::make_pair(module_ptr, plugin_ptr)));
 }
 
 void HTTPServer::clearModules(void)
