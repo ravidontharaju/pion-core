@@ -21,12 +21,19 @@ AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version nu
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
-CXXFLAGS="-D_REENTRANT"
+CXXFLAGS="-DLIBPION"
+
+# Setup libtool with the ltdl library
+AC_LIBLTDL_CONVENIENCE
+AC_LIBTOOL_DLOPEN
+AC_PROG_LIBTOOL
+CPPFLAGS="$CPPFLAGS $LTDLINCL"
+AC_SUBST(LIBLTDL)
+AC_CONFIG_SUBDIRS(libltdl)
 
 # Check for programs
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
 
 # Use C++ language
 AC_LANG_CPLUSPLUS
@@ -81,7 +88,7 @@ else
 	CXXFLAGS="$CXXFLAGS $PION_DEBUG_FLAGS"
 fi
 
-
+     
 # Check for unordered container support
 AC_CHECK_HEADERS([unordered_map],[unordered_map_type=unordered_map],[])
 AC_CHECK_HEADERS([ext/hash_map],[unordered_map_type=ext_hash_map],[])
@@ -109,7 +116,7 @@ AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio h
 
 # Check for Boost Thread library
 AC_CHECK_HEADERS([boost/thread/thread.hpp],,AC_MSG_ERROR(Unable to find the boost::thread headers))
-LDFLAGS_SAVED=$LDFLAGS
+LDFLAGS_SAVED="$LDFLAGS"
 BOOST_LIB=boost_thread
 for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
 	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
@@ -128,8 +135,9 @@ if test "x$BOOST_THREAD_LIB" = "x"; then
 	AC_MSG_ERROR(Unable to link with the boost::thread library)
 else
 	AC_MSG_NOTICE(Linking with boost::thread works)
-	LDFLAGS="$LDFLAGS_SAVED $BOOST_THREAD_LIB"
 fi
+LDFLAGS="$LDFLAGS_SAVED"
+AC_SUBST(BOOST_THREAD_LIB)
 
 
 # Check for logging support
@@ -158,10 +166,12 @@ if test "$without_log4cplus" != "true"; then
 	AC_CHECK_HEADERS([log4cplus/logger.h],,AC_MSG_ERROR([Unable to find the log4cplus headers]))
 	
 	# Check for log4cplus library
+	LDFLAGS_SAVED="$LDFLAGS"
 	LDFLAGS="$LDFLAGS -llog4cplus"
 	AC_TRY_LINK([#include <log4cplus/logger.h>],[ log4cplus::Logger::getRoot(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cplus works),
 		AC_MSG_ERROR(Unable to link with the log4cplus library))
+	LDFLAGS="$LDFLAGS_SAVED"
 
 	# Found the log4cplus library
 	AC_MSG_NOTICE(Using the log4cplus library for logging)
@@ -178,10 +188,12 @@ elif test "$without_log4cxx" != "true"; then
 	AC_CHECK_HEADERS([log4cxx/logger.h],,AC_MSG_ERROR([Unable to find the log4cxx headers]))
 	
 	# Check for log4cxx library
+	LDFLAGS_SAVED="$LDFLAGS"
 	LDFLAGS="$LDFLAGS -llog4cxx"
 	AC_TRY_LINK([#include <log4cxx/logger.h>],[ log4cxx::Logger::getRootLogger(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cxx works),
 		AC_MSG_ERROR(Unable to link with the log4cxx library))
+	LDFLAGS="$LDFLAGS_SAVED"
 
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
@@ -198,10 +210,12 @@ elif test "$without_log4cpp" != "true"; then
 	AC_CHECK_HEADERS([log4cpp/Category.hh],,AC_MSG_ERROR([Unable to find the log4cpp headers]))
 	
 	# Check for log4cpp library
+	LDFLAGS_SAVED="$LDFLAGS"
 	LDFLAGS="$LDFLAGS -llog4cpp"
 	AC_TRY_LINK([#include <log4cpp/Category.hh>],[ log4cpp::Category::getRoot(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cpp works),
 		AC_MSG_ERROR(Unable to link with the log4cpp library))
+	LDFLAGS="$LDFLAGS_SAVED"
 
 	# Found the log4cpp library
 	AC_MSG_NOTICE(Using the log4cpp library for logging)
@@ -213,6 +227,7 @@ else
 	# Display notice if no logging found
 	AC_MSG_NOTICE([Logging is disabled])
 fi
+AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles

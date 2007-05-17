@@ -60,6 +60,7 @@ int main (int argc, char *argv[])
 	try {
 
 		// create a server for HTTP & add the Hello module
+		PION_ADD_PLUGIN_DIRECTORY("../modules");
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
 		http_server->loadModule("/hello", "HelloModule");
 	
