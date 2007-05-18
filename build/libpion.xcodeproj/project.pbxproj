@@ -42,8 +42,6 @@
 		E33288C80BEE50E4006D0556 /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E33288080BEE4A28006D0556 /* TCPServer.cpp */; };
 		E33288C90BEE50E5006D0556 /* TCPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E33287FD0BEE4A28006D0556 /* TCPServer.hpp */; };
 		E33288D50BEE5122006D0556 /* libpion.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion.dylib */; };
-		E33288D60BEE512A006D0556 /* PionProtocolTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E33288110BEE4A28006D0556 /* PionProtocolTest.cpp */; };
-		E33288DE0BEE5161006D0556 /* PionModulesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E33288100BEE4A28006D0556 /* PionModulesTest.cpp */; };
 		E33288DF0BEE5172006D0556 /* libpion.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion.dylib */; };
 		E34409B60BFBEF8500BBCE1F /* PionPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34409B50BFBEF8500BBCE1F /* PionPlugin.cpp */; };
 		E34409B70BFBEF8500BBCE1F /* PionPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34409B50BFBEF8500BBCE1F /* PionPlugin.cpp */; };
@@ -89,8 +87,6 @@
 		E33288040BEE4A28006D0556 /* HTTPTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypes.cpp; path = ../src/lib/HTTPTypes.cpp; sourceTree = SOURCE_ROOT; };
 		E33288070BEE4A28006D0556 /* PionEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionEngine.cpp; path = ../src/lib/PionEngine.cpp; sourceTree = SOURCE_ROOT; };
 		E33288080BEE4A28006D0556 /* TCPServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = TCPServer.cpp; path = ../src/lib/TCPServer.cpp; sourceTree = SOURCE_ROOT; };
-		E33288100BEE4A28006D0556 /* PionModulesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionModulesTest.cpp; path = ../src/tests/PionModulesTest.cpp; sourceTree = SOURCE_ROOT; };
-		E33288110BEE4A28006D0556 /* PionProtocolTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionProtocolTest.cpp; path = ../src/tests/PionProtocolTest.cpp; sourceTree = SOURCE_ROOT; };
 		E33288330BEE4B14006D0556 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = SOURCE_ROOT; };
 		E33288340BEE4B14006D0556 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = SOURCE_ROOT; };
 		E33288350BEE4B14006D0556 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = SOURCE_ROOT; };
@@ -105,7 +101,7 @@
 		E33288450BEE4B48006D0556 /* README.solaris */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README.solaris; path = ../doc/README.solaris; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpion.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpion.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		E33288D30BEE5104006D0556 /* PionProtocolTest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = PionProtocolTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E33288D30BEE5104006D0556 /* PionProtocolTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionProtocolTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288DA0BEE513D006D0556 /* PionModulesTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionModulesTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E34409B50BFBEF8500BBCE1F /* PionPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionPlugin.cpp; path = ../src/lib/PionPlugin.cpp; sourceTree = SOURCE_ROOT; };
 		E36B172B0BEEA8D30080EF3F /* HelloModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HelloModule.cpp; path = ../src/modules/HelloModule.cpp; sourceTree = SOURCE_ROOT; };
@@ -230,8 +226,6 @@
 		E332880D0BEE4A28006D0556 /* tests */ = {
 			isa = PBXGroup;
 			children = (
-				E33288100BEE4A28006D0556 /* PionModulesTest.cpp */,
-				E33288110BEE4A28006D0556 /* PionProtocolTest.cpp */,
 			);
 			name = tests;
 			path = ../src/tests;
@@ -402,7 +396,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E33288D60BEE512A006D0556 /* PionProtocolTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,7 +403,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E33288DE0BEE5161006D0556 /* PionModulesTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
