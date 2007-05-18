@@ -1,5 +1,5 @@
-# -----------------------------------------------------
-# libpion automake configuration file for src directory
-# -----------------------------------------------------
+# -----------------------------------
+# libpion automake configuration file
+# -----------------------------------
 
 SUBDIRS = libpion

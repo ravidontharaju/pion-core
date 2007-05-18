@@ -5,10 +5,10 @@
 AC_INIT([libpion], [0.1.3], [support@atomiclabs.com])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
-AC_CONFIG_SRCDIR(src/lib/PionEngine.cpp)
+AC_CONFIG_SRCDIR(src/PionEngine.cpp)
 
 # Note: AM_CONFIG_HEADER is deprecated
-AC_CONFIG_HEADERS([src/include/libpion/PionConfig.hpp])
+AC_CONFIG_HEADERS([include/libpion/PionConfig.hpp])
 
 # DO NOT USE autoheader (the .hpp.in file is not automanaged)
 AUTOHEADER="echo autoheader ignored"
@@ -231,6 +231,5 @@ AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles
-AC_OUTPUT(Makefile src/Makefile src/include/Makefile \
-	src/include/libpion/Makefile src/lib/Makefile src/modules/Makefile \
-	src/tests/Makefile)
+AC_OUTPUT(Makefile include/Makefile include/libpion/Makefile 
+	src/Makefile modules/Makefile tests/Makefile)

@@ -1,6 +1,6 @@
-# ------------------------------------------------------
-# libpion automake configuration file for root directory
-# ------------------------------------------------------
+# -----------------------------------
+# libpion automake configuration file 
+# -----------------------------------
 
 SUBDIRS = libltdl include src modules tests
 

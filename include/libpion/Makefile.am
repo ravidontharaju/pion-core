@@ -1,6 +1,6 @@
-# -----------------------------------------------------
-# libpion automake configuration file for src directory
-# -----------------------------------------------------
+# -----------------------------------
+# libpion automake configuration file 
+# -----------------------------------
 
 libpion_includedir = $(includedir)/libpion
 libpion_include_HEADERS = PionConfig.hpp PionLogger.hpp PionPlugin.hpp \
