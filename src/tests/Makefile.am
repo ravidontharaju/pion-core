@@ -4,12 +4,12 @@
 
 AM_CPPFLAGS = -I../include
 
-bin_PROGRAMS = PionProtocolTest PionModulesTest
+bin_PROGRAMS = PionServerTest PionModuleTest
 
-PionProtocolTest_SOURCES = PionProtocolTest.cpp
-PionProtocolTest_LDADD = ../lib/libpion.la @BOOST_THREAD_LIB@ @PION_LOG_LIB@
-PionProtocolTest_DEPENDENCIES = ../lib/libpion.la
+PionServerTest_SOURCES = PionServerTest.cpp
+PionServerTest_LDADD = ../lib/libpion.la @BOOST_THREAD_LIB@ @PION_LOG_LIB@
+PionServerTest_DEPENDENCIES = ../lib/libpion.la
 
-PionModulesTest_SOURCES = PionModulesTest.cpp
-PionModulesTest_LDADD = ../lib/libpion.la @BOOST_THREAD_LIB@ @PION_LOG_LIB@ @LIBLTDL@
-PionModulesTest_DEPENDENCIES = ../lib/libpion.la @LIBLTDL@
+PionModuleTest_SOURCES = PionModuleTest.cpp
+PionModuleTest_LDADD = ../lib/libpion.la @BOOST_THREAD_LIB@ @PION_LOG_LIB@ @LIBLTDL@
+PionModuleTest_DEPENDENCIES = ../lib/libpion.la @LIBLTDL@

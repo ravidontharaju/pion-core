@@ -49,6 +49,8 @@ public:
 };
 
 
+
+/// main control function
 int main (int argc, char *argv[])
 {
 	static const unsigned int DEFAULT_PORT = 8080;
@@ -59,7 +61,7 @@ int main (int argc, char *argv[])
 		port = strtoul(argv[1], 0, 10);
 		if (port == 0) port = DEFAULT_PORT;
 	} else if (argc != 1) {
-		std::cerr << "usage: PionProtocolTest [port]" << std::endl;
+		std::cerr << "usage: PionServerTest [port]" << std::endl;
 		return 1;
 	}
 
