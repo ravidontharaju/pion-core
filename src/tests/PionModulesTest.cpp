@@ -34,18 +34,47 @@ void handle_signal(int sig)
 	Pion::stop();
 }
 
+/// displays an error message if the arguments are invalid
+void argument_error(void)
+{
+	std::cerr << "usage: PionModuleTest [-p PORT] RESOURCE MODULE" << std::endl;
+}
 
+
+/// main control function
 int main (int argc, char *argv[])
 {
 	static const unsigned int DEFAULT_PORT = 8080;
 
-	// parse command line: determine port number
+	// parse command line: determine port number, RESOURCE and MODULE
 	unsigned int port = DEFAULT_PORT;
-	if (argc == 2) {
-		port = strtoul(argv[1], 0, 10);
-		if (port == 0) port = DEFAULT_PORT;
-	} else if (argc != 1) {
-		std::cerr << "usage: PionModulesTest [port]" << std::endl;
+	std::string resource_name;
+	std::string module_filename;
+	
+	for (int argnum=1; argnum < argc; ++argnum) {
+		if (argv[argnum][0] == '-') {
+			if (argv[argnum][1] == 'p' && argv[argnum][2] == '\0' && argnum+1 < argc) {
+				++argnum;
+				port = strtoul(argv[argnum], 0, 10);
+				if (port == 0) port = DEFAULT_PORT;
+			} else {
+				argument_error();
+				return 1;
+			}
+		} else if (argnum+2 == argc) {
+			// second to last argument = RESOURCE
+			resource_name = argv[argnum];
+		} else if (argnum+1 == argc) {
+			// last argument = MODULE
+			module_filename = argv[argnum];
+		} else {
+			argument_error();
+			return 1;
+		}
+	}
+	
+	if (resource_name.empty() || module_filename.empty()) {
+		argument_error();
 		return 1;
 	}
 	
@@ -60,9 +89,8 @@ int main (int argc, char *argv[])
 	try {
 
 		// create a server for HTTP & add the Hello module
-		PION_ADD_PLUGIN_DIRECTORY("../modules");
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
-		http_server->loadModule("/hello", "HelloModule");
+		http_server->loadModule(resource_name, module_filename);
 	
 		// startup pion
 		Pion::start();
