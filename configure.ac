@@ -69,6 +69,13 @@ case "$build_os" in
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
 	;;
+*cygwin*)
+	# Cygwin GCC compiler (Windows)
+	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT"
+	LDFLAGS="$LDFLAGS -mthreads"
+	PION_OPT_FLAGS="-O2 -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall"
+	;;
 *)
 	# Other (Linux/FreeBSD): GCC compiler
 	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
@@ -144,7 +151,7 @@ do
 	LDFLAGS="$LDFLAGS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
 	AC_TRY_LINK([#include <boost/thread/thread.hpp>],
-		[ boost::thread_group thrds; return 0; ],
+		[ boost::thread current_thread; return 0; ],
 		[BOOST_THREAD_LIB="-l$ax_lib"; break],
 		[BOOST_THREAD_LIB=""])
 done

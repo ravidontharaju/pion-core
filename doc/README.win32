@@ -19,8 +19,9 @@ by default; however, you will need to add the make package (it is located
 within the "Devel" group).  For a complete development environment, we
 recommend also installing the following Cygwin packages:
 
-Archive: unzip, zip
-Devel: binutils, autoconf, automake, gcc-g++, gdb, libtool, make, subversion
+Archive: unzip zip
+Devel: binutils autoconf automake gcc-g++ gdb libtool make openssl-devel 
+       subversion
 Editors: nano
 Net: openssh
 Perl: perl
@@ -32,9 +33,9 @@ Installing zlib & openssl:
 --------------------------
 
 ASIO requires zlib and openssl for compression and SSL/TLS encryption
-support, respectively.  Since these libraries are not included with
-Windows, you may need to download and install them manually from the
-following sites:
+support, respectively.  We recommend that use Cygwin to install these
+libraries.  However, you can also download and install them manually 
+from the following sites:
 
 http://www.zlib.net
 http://www.openssl.org
@@ -78,5 +79,6 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-./configure --with-boost=/usr/local [--with-log...]
+CPPFLAGS="-D__USE_W32_SOCKETS" \
+	./configure --with-boost=/usr/local [--with-log...]
 make ; sudo make install
