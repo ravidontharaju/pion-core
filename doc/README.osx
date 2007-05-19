@@ -14,6 +14,11 @@ sudo port install log4cpp
 Note that the use of a logging framework is entirely optional, so you may
 skip the installation of log4cpp if you like.
 
+We also recommend that you install the pkg-config tool, which makes it easier
+to build HTTP module plug-ins for libpion:
+
+sudo port install pkgconfig
+
 
 Installing Boost:
 -----------------

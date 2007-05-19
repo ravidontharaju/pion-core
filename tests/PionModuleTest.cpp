@@ -87,6 +87,8 @@ int main (int argc, char *argv[])
 	PION_LOG_CONFIG_BASIC;
 	
 	try {
+		// add the modules installation directory to our path
+		PION_ADD_PLUGIN_DIRECTORY(PION_MODULES_DIRECTORY);
 
 		// create a server for HTTP & add the Hello module
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));

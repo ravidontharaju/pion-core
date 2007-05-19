@@ -1,16 +1,31 @@
-Solaris Build Instructions
+Windows Build Instructions
 ==========================
 
-General:
---------
+C++ Compilers
+-------------
 
-libpion currently only supports the GCC (g++) compiler when building under
-Solaris.  We plan to add support for the Sun Studio C++ compiler in the near
-future.
+For building under Windows, only the GNU C++ compiler (g++) is currently
+supported. However, we plan to also support Microsoft's Visual C++
+compiler in the near future.
 
-Make sure that the make and ar utilities are in your PATH.  Normally, these are
-installed in the /usr/ccs/bin directory, which for some reason is not included
-in the default PATH.
+
+Installing Build Tools
+----------------------
+
+In order to configure libpion, you will need to install the bash shell and
+GNU make programs.  We recommend that you download and install the programs
+included with Cygwin from http://www.cygwin.com/.  The bash shell is included
+by default; however, you will need to add the make package (it is located
+within the "Devel" group).  For a complete development environment, we
+recommend also installing the following Cygwin packages:
+
+Archive: unzip, zip
+Devel: binutils, autoconf, automake, gcc-g++, gdb, libtool, make, subversion
+Editors: nano
+Net: openssh
+Perl: perl
+Utils: patch
+Web: wget
 
 
 Installing zlib & openssl:
@@ -18,15 +33,11 @@ Installing zlib & openssl:
 
 ASIO requires zlib and openssl for compression and SSL/TLS encryption
 support, respectively.  Since these libraries are not included with
-Solaris, you may need to download and install them manually from the
+Windows, you may need to download and install them manually from the
 following sites:
 
 http://www.zlib.net
 http://www.openssl.org
-
-The easiest way to install these libraries is to download and install
-the following packages from http://www.sunfreeware.com/: gcc (if you
-don't have it installed already), zlib and openssl. 
 
 
 Logging frameworks:
@@ -34,7 +45,7 @@ Logging frameworks:
 
 If you wish to use one of the supported logging frameworks with libpion,
 you will need to download and install it from source, since none of
-them are available pre-built for Solaris.  You can download the source
+them are available pre-built for Windows.  You can download the source
 tarballs from the following sites:
 
 http://logging.apache.org/log4cxx
@@ -52,8 +63,8 @@ Boost include directory.
 
 wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
 wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
-bzip2 -dc boost_1_33_1.tar.bz2 | tar xvf -
-bzip2 -dc boost_asio_0_3_7.tar.bz2 | tar xvf -
+tar xvfj boost_1_33_1.tar.bz2
+tar xvfj boost_asio_0_3_7.tar.bz2
 mv boost_asio_0_3_7/boost/* boost_1_33_1/boost/
 cd boost_1_33_1
 ./configure
@@ -69,13 +80,3 @@ tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
 ./configure --with-boost=/usr/local [--with-log...]
 make ; sudo make install
-
-
-Known problems:
----------------
-
-If you're using the gcc compiler distributed at http://www.sunfreeware.com,
-you may encountered errors about not being able to find the libstdc++ shared
-library (and others).  If this happens, try setting the LD_LIBRARY_PATH
-variable to include /usr/local/lib/.  You should also include the Boost
-libraries and the logging library (if used) in this path.

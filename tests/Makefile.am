@@ -2,7 +2,7 @@
 # libpion automake configuration file 
 # -----------------------------------
 
-AM_CPPFLAGS = -I../include
+AM_CPPFLAGS = -I../include @LTDLINCL@
 
 bin_PROGRAMS = PionServerTest PionModuleTest
 

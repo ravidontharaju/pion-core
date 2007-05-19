@@ -2,7 +2,13 @@
 # libpion autoconf configuration file
 # -----------------------------------
 
+# Set Pion version information
 AC_INIT([libpion], [0.1.3], [support@atomiclabs.com])
+PION_LIBRARY_VERSION=$PACKAGE_VERSION
+AC_SUBST(PION_LIBRARY_VERSION)
+AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
+
+# Initialize some other things
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/PionEngine.cpp)
@@ -16,9 +22,6 @@ AUTOHEADER="echo autoheader ignored"
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
 
-# Set Pion Version in PionConfig.hpp
-AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
-
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
 CXXFLAGS="-DLIBPION"
@@ -27,8 +30,8 @@ CXXFLAGS="-DLIBPION"
 AC_LIBLTDL_CONVENIENCE
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
-CPPFLAGS="$CPPFLAGS $LTDLINCL"
 AC_SUBST(LIBLTDL)
+AC_SUBST(LTDLINCL)
 AC_CONFIG_SUBDIRS(libltdl)
 
 # Check for programs
@@ -88,6 +91,20 @@ else
 	CXXFLAGS="$CXXFLAGS $PION_DEBUG_FLAGS"
 fi
 
+
+# Check for --with-modules
+AC_ARG_WITH([modules],
+    AC_HELP_STRING([--with-modules@<:@=DIR@:>@],[directory where HTTP modules are installed]),
+    [with_modules=$withval],
+    [with_modules=no])
+if test "$with_modules" = "no"; then
+	PION_MODULES_DIRECTORY=${prefix}/lib/libpion/modules
+else
+	PION_MODULES_DIRECTORY=$with_modules
+fi
+AC_MSG_NOTICE([HTTP modules directory: $PION_MODULES_DIRECTORY])
+AC_DEFINE_UNQUOTED([PION_MODULES_DIRECTORY],["$PION_MODULES_DIRECTORY"],[Define to the directory where HTTP modules are installed.])
+AC_SUBST(PION_MODULES_DIRECTORY)
      
 # Check for unordered container support
 AC_CHECK_HEADERS([unordered_map],[unordered_map_type=unordered_map],[])
@@ -231,5 +248,5 @@ AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles
-AC_OUTPUT(Makefile include/Makefile include/libpion/Makefile 
+AC_OUTPUT(libpion.pc Makefile include/Makefile include/libpion/Makefile 
 	src/Makefile modules/Makefile tests/Makefile)

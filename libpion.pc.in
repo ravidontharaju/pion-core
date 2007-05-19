@@ -1,0 +1,15 @@
+# libpion configuration file for pkg-config
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+datadir=@datarootdir@
+
+Name: libpion
+Description: a C++ framework for building lightweight HTTP interfaces
+Version: @VERSION@
+#Requires: boost-1.33.1 boost-asio-0.3.7
+Libs: @LDFLAGS@ @BOOST_THREAD_LIB@ @PION_LOG_LIB@ -L${libdir} -lpion
+Cflags: @CPPFLAGS@ -I${includedir}

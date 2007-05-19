@@ -2,9 +2,9 @@
 # libpion automake configuration file 
 # -----------------------------------
 
-AM_CPPFLAGS = -I../include
+AM_CPPFLAGS = -I../include @LTDLINCL@
 
-libpion_modulesdir = $(datadir)/modules
+libpion_modulesdir = @PION_MODULES_DIRECTORY@
 libpion_modules_LTLIBRARIES = HelloModule.la
 
 HelloModule_la_SOURCES = HelloModule.cpp

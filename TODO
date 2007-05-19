@@ -6,9 +6,8 @@ Things to do:
 * Add LogModule for displaying log entries
 * Add FileModule for delivering disk files
 * Use read-write mutex for HTTPServer modules
+* Compare performance of using multiple io_services versus just one
 * Allow more options for binding servers than just port numbers (IP)
 * Add support for SSL/TLS & server certificates
 * Add support for built-in authentication (OpenID?)
-* Allow HTTP modules to be loaded dynamically from object files
-* Build installation packages for OSX, Linux, BSD, Solaris & Windows
-* Lots more...
+* Add support for Sun Studio & Microsoft Visual C++ compilers

@@ -1,3 +1,13 @@
+Version 0.1.4 (2007-05-xx)
+==========================
+
+* Added support for HTTP modules to be dynamically-loadable libraries
+* Added support for pkg-config (http://pkg-config.freedesktop.org/wiki/)
+* Moved around some of the source directories & renamed test programs
+* Added build support & documentation for FreeBSD, Solaris and Windows
+* Added Xcode project file for Mac OS X (you must still use "configure")
+
+
 Version 0.1.2 (2007-05-01)
 ==========================
 
