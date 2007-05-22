@@ -71,6 +71,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E30CFF3D0C0276C3007493DC /* EchoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = EchoModule.cpp; path = ../modules/EchoModule.cpp; sourceTree = SOURCE_ROOT; };
+		E30CFF490C028019007493DC /* FileModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = FileModule.cpp; path = ../modules/FileModule.cpp; sourceTree = SOURCE_ROOT; };
+		E30CFF4A0C028019007493DC /* LogModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = LogModule.cpp; path = ../modules/LogModule.cpp; sourceTree = SOURCE_ROOT; };
 		E33288330BEE4B14006D0556 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = SOURCE_ROOT; };
 		E33288340BEE4B14006D0556 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = SOURCE_ROOT; };
 		E33288350BEE4B14006D0556 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = SOURCE_ROOT; };
@@ -207,7 +210,10 @@
 		E33288090BEE4A28006D0556 /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				E30CFF3D0C0276C3007493DC /* EchoModule.cpp */,
+				E30CFF490C028019007493DC /* FileModule.cpp */,
 				E34918FC0BFE5BDE001E1387 /* HelloModule.cpp */,
+				E30CFF4A0C028019007493DC /* LogModule.cpp */,
 			);
 			name = modules;
 			path = ../modules;

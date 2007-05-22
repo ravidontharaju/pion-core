@@ -105,7 +105,11 @@ AC_ARG_WITH([modules],
     [with_modules=$withval],
     [with_modules=no])
 if test "$with_modules" = "no"; then
-	PION_MODULES_DIRECTORY=${prefix}/lib/libpion/modules
+	if test "x$prefix" = "xNONE"; then
+		PION_MODULES_DIRECTORY=/usr/local/lib/libpion/modules
+	else
+		PION_MODULES_DIRECTORY=${prefix}/lib/libpion/modules
+	fi
 else
 	PION_MODULES_DIRECTORY=$with_modules
 fi
