@@ -25,6 +25,7 @@
 #include <libpion/HTTPTypes.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_array.hpp>
 #include <string>
 
 
@@ -47,35 +48,27 @@ public:
 	virtual ~HTTPRequest() {}
 
 	
-	/// returns true if the request is valid
-	inline bool isValid(void) const { return m_is_valid; }
-
-	/// returns true if at least one value for the header is defined
-	inline bool hasHeader(const std::string& key) const {
-		return(m_headers.find(key) != m_headers.end());
-	}
-	
-	/// returns true if at least one value for the query key is defined
-	inline bool hasQuery(const std::string& key) const {
-		return(m_query_params.find(key) != m_query_params.end());
-	}
-
-	/// returns true if at least one value for the cookie is defined
-	inline bool hasCookie(const std::string& key) const {
-		return(m_cookie_params.find(key) != m_cookie_params.end());
-	}
-
-	/// returns the request's major HTTP version number
-	inline unsigned int getVersionMajor(void) const { return m_version_major; }
-
-	/// returns the request's minor HTTP version number
-	inline unsigned int getVersionMinor(void) const { return m_version_minor; }
-
-	/// returns the resource or uri-stem requested
-	inline const std::string& getResource(void) const { return m_resource; }
-	
 	/// returns the request method (i.e. GET, POST, PUT)
 	inline const std::string& getMethod(void) const { return m_method; }
+	
+	/// returns the resource uri-stem requested
+	inline const std::string& getResource(void) const { return m_resource; }
+	
+	/// returns the uri-query or query string requested
+	inline const std::string& getQueryString(void) const { return m_query_string; }
+	
+	/// returns the request's major HTTP version number
+	inline unsigned int getVersionMajor(void) const { return m_version_major; }
+	
+	/// returns the request's minor HTTP version number
+	inline unsigned int getVersionMinor(void) const { return m_version_minor; }
+	
+	/// returns the length of the POST content (in bytes)
+	inline unsigned long getContentLength(void) const { return m_content_length; }
+	
+	/// returns a buffer containing the POST content, or NULL if the request
+	/// has no POST content
+	inline const char *getPostContent(void) { return m_post_content.get(); }
 	
 	/// returns a value for the header if any are defined; otherwise, an empty string
 	inline const std::string& getHeader(const std::string& key) const {
@@ -93,32 +86,63 @@ public:
 	}
 	
 	/// returns the HTTP request headers
-	inline const HTTPTypes::Headers& getHeaders(void) const {
+	inline HTTPTypes::Headers& getHeaders(void) {
 		return m_headers;
 	}
 	
 	/// returns the query parameters
-	inline const HTTPTypes::QueryParams& getQueryParams(void) const {
+	inline HTTPTypes::QueryParams& getQueryParams(void) {
 		return m_query_params;
 	}
 	
 	/// returns the cookie parameters
-	inline const HTTPTypes::CookieParams& getCookieParams(void) const {
+	inline HTTPTypes::CookieParams& getCookieParams(void) {
 		return m_cookie_params;
 	}
 
+	/// returns true if at least one value for the header is defined
+	inline bool hasHeader(const std::string& key) const {
+		return(m_headers.find(key) != m_headers.end());
+	}
+	
+	/// returns true if at least one value for the query key is defined
+	inline bool hasQuery(const std::string& key) const {
+		return(m_query_params.find(key) != m_query_params.end());
+	}
+	
+	/// returns true if at least one value for the cookie is defined
+	inline bool hasCookie(const std::string& key) const {
+		return(m_cookie_params.find(key) != m_cookie_params.end());
+	}
 
-	/// sets the resource or uri-stem requested
-	inline void setResource(const std::string& str) { m_resource = str; }
+	/// returns true if the request is valid
+	inline bool isValid(void) const { return m_is_valid; }
+	
 	
 	/// sets the HTTP request method (i.e. GET, POST, PUT)
 	inline void setMethod(const std::string& str) { m_method = str; }
+	
+	/// sets the resource or uri-stem requested
+	inline void setResource(const std::string& str) { m_resource = str; }
+	
+	/// sets the uri-query or query string requested
+	inline void setQueryString(const std::string& str) { m_query_string = str; }
 	
 	/// sets the request's major HTTP version number
 	inline void setVersionMajor(const unsigned int n) { m_version_major = n; }
 
 	/// sets the request's minor HTTP version number
 	inline void setVersionMinor(const unsigned int n) { m_version_minor = n; }
+
+	/// sets the length of the POST content (in bytes)
+	inline void setContentLength(const unsigned long n) { m_content_length = n; }
+	
+	/// creates a new POST content buffer of size m_content_length and returns
+	/// a pointer to the new buffer (memory is managed by HTTPRequest class)
+	inline char *createPostContentBuffer(void) {
+		m_post_content.reset(new char[m_content_length]);
+		return m_post_content.get();
+	}
 	
 	/// adds a value for the HTTP request header key
 	inline void addHeader(const std::string& key, const std::string& value) {
@@ -141,8 +165,11 @@ public:
 	/// clears all request data
 	inline void clear(void) {
 		m_resource.erase();
+		m_query_string.erase();
 		m_method.erase();
 		m_version_major = m_version_minor = 0;
+		m_content_length = 0;
+		m_post_content.reset();
 		m_headers.clear();
 		m_query_params.clear();
 		m_cookie_params.clear();
@@ -160,7 +187,8 @@ protected:
 	
 	/// protected constructor restricts creation of objects (use create())
 	HTTPRequest(void)
-		: m_version_major(0), m_version_minor(0), m_is_valid(false)
+		: m_version_major(0), m_version_minor(0),
+		m_content_length(0), m_is_valid(false)
 	{}
 
 	/**
@@ -180,30 +208,39 @@ protected:
 
 	
 private:
+	
+	/// request method (GET, POST, PUT, etc.)
+	std::string						m_method;
 
 	/// name of the resource being requested, or uri-stem
-	std::string					m_resource;
-
-	/// request method (GET, POST, PUT, etc.)
-	std::string					m_method;
+	std::string						m_resource;
+	
+	/// query string portion of the URI
+	std::string						m_query_string;
+	
+	/// HTTP major version number for the request
+	unsigned int					m_version_major;
 
 	/// HTTP major version number for the request
-	unsigned int				m_version_major;
+	unsigned int					m_version_minor;
+	
+	/// the length of the POST content (in bytes)
+	unsigned long					m_content_length;
 
-	/// HTTP major version number for the request
-	unsigned int				m_version_minor;
-
+	/// the POST content, if any was sent with the request
+	boost::scoped_array<char>		m_post_content;
+	
 	/// HTTP request headers
-	HTTPTypes::Headers			m_headers;
+	HTTPTypes::Headers				m_headers;
 
 	/// HTTP query parameters parsed from the request line and post content
-	HTTPTypes::QueryParams		m_query_params;
+	HTTPTypes::QueryParams			m_query_params;
 
 	/// HTTP cookie parameters parsed from the "Cookie" request headers
-	HTTPTypes::CookieParams		m_cookie_params;
-
+	HTTPTypes::CookieParams			m_cookie_params;
+	
 	/// True if the HTTP request is valid
-	bool						m_is_valid;
+	bool							m_is_valid;
 };
 
 

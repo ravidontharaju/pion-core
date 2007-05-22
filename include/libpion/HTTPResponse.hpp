@@ -72,7 +72,7 @@ public:
 	 * @param data points to the binary data to append to the response content
 	 * @param length the length, in bytes, of the binary data
 	 */
-	inline void write(void *data, size_t length) {
+	inline void write(const void *data, size_t length) {
 		flushContentStream();
 		m_content_buffers.push_back(m_binary_cache.add(data, length));
 		m_content_length += length;
@@ -200,11 +200,9 @@ private:
 		}
 		inline boost::asio::const_buffer add(const void *ptr, const size_t size) {
 			char *data_ptr = new char[size];
+			memcpy(data_ptr, ptr, size);
 			push_back( std::make_pair(data_ptr, size) );
 			return boost::asio::buffer(data_ptr, size);
-		}
-		inline boost::asio::const_buffer add(const std::string& str) {
-			return add(str.c_str(), str.size());
 		}
 	};
 	

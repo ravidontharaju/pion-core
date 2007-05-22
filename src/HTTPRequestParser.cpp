@@ -28,10 +28,14 @@ namespace pion {	// begin namespace pion
 	
 // static members of HTTPRequestParser
 
-const unsigned int	HTTPRequestParser::RESOURCE_MAX = 256 * 1024;	// 256 KB
 const unsigned int	HTTPRequestParser::METHOD_MAX = 1024;	// 1 KB
+const unsigned int	HTTPRequestParser::RESOURCE_MAX = 256 * 1024;	// 256 KB
+const unsigned int	HTTPRequestParser::QUERY_STRING_MAX = 1024 * 1024;	// 1 MB
 const unsigned int	HTTPRequestParser::HEADER_NAME_MAX = 1024;	// 1 KB
 const unsigned int	HTTPRequestParser::HEADER_VALUE_MAX = 1024 * 1024;	// 1 MB
+const unsigned int	HTTPRequestParser::QUERY_NAME_MAX = 1024;	// 1 KB
+const unsigned int	HTTPRequestParser::QUERY_VALUE_MAX = 1024 * 1024;	// 1 MB
+const unsigned int	HTTPRequestParser::POST_CONTENT_MAX = 1024 * 1024;	// 1 MB
 	
 	
 // HTTPRequestParser member functions
@@ -39,57 +43,153 @@ const unsigned int	HTTPRequestParser::HEADER_VALUE_MAX = 1024 * 1024;	// 1 MB
 void HTTPRequestParser::readRequest(void)
 {
 	m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_read_buffer),
-											boost::bind(&HTTPRequestParser::readHandler,
+											boost::bind(&HTTPRequestParser::readHeaderBytes,
 														shared_from_this(),
 														boost::asio::placeholders::error,
 														boost::asio::placeholders::bytes_transferred));
 }
 
-void HTTPRequestParser::readHandler(const boost::asio::error& read_error,
-									std::size_t bytes_read)
+void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
+										std::size_t bytes_read)
 {
-	if (!read_error) {
+	if (read_error) {
+		// a read error occured
+		handleReadError(read_error);
+		return;
+	}
 
-		PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
-		
-		// parse the bytes read from the last operation
-		boost::tribool result = parseRequest(bytes_read);
+	PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
+	
+	// parse the bytes read from the last operation
+	const char *read_ptr = m_read_buffer.data();
+	const char * const read_end = read_ptr + bytes_read;
+	boost::tribool result = parseRequestHeaders(read_ptr, bytes_read);
 
-		if (result) {
-			// finished parsing the request and it is valid
-			m_http_request->setIsValid(true);
-			m_request_handler(m_http_request, m_tcp_conn);
-		} else if (!result) {
-			// the request is invalid or an error occured
-			m_http_request->setIsValid(false);
-			m_request_handler(m_http_request, m_tcp_conn);
+	PION_LOG_DEBUG(m_logger, "Parsed " << (read_ptr - m_read_buffer.data()) << " HTTP header bytes");
+
+	if (result) {
+		// finished reading request headers and they are valid
+
+		// check if we have post content to read
+		const unsigned long content_length =
+			m_http_request->hasHeader(HTTPTypes::HEADER_CONTENT_LENGTH)
+			? strtoul(m_http_request->getHeader(HTTPTypes::HEADER_CONTENT_LENGTH).c_str(), 0, 10)
+			: 0;
+
+		if (content_length == 0) {
+			
+			// there is no post content to read
+			readContentBytes(read_error, 0);
+			
 		} else {
-			// not yet finished parsing the request -> read more data
-			readRequest();
+
+			// read the post content
+			unsigned long content_bytes_to_read = content_length;
+			m_http_request->setContentLength(content_length);
+			char *post_buffer = m_http_request->createPostContentBuffer();
+			
+			if (read_ptr < read_end) {
+				// there are extra bytes left from the last read operation
+				// copy them into the beginning of the content buffer
+				const unsigned int bytes_left_in_read_buffer = read_end - read_ptr;
+				
+				if (bytes_left_in_read_buffer >= content_length) {
+					// the last read operation included all of the post content
+					memcpy(post_buffer, read_ptr, content_length);
+					content_bytes_to_read = 0;
+					PION_LOG_DEBUG(m_logger, "Parsed " << content_length << " request content bytes from last read operation (finished)");
+				} else {
+					// only some of the post content has been read so far
+					memcpy(post_buffer, read_ptr, bytes_left_in_read_buffer);
+					content_bytes_to_read -= bytes_left_in_read_buffer;
+					post_buffer += bytes_left_in_read_buffer;
+					PION_LOG_DEBUG(m_logger, "Parsed " << bytes_left_in_read_buffer << " request content bytes from last read operation (partial)");
+				}
+			}
+
+			if (content_bytes_to_read != 0) {
+				// read the rest of the post content into the buffer
+				// and only return after we've finished or an error occurs
+				boost::asio::async_read(m_tcp_conn->getSocket(),
+										boost::asio::buffer(post_buffer, content_bytes_to_read),
+										boost::asio::transfer_at_least(content_bytes_to_read),
+										boost::bind(&HTTPRequestParser::readContentBytes,
+													shared_from_this(),
+													boost::asio::placeholders::error,
+													boost::asio::placeholders::bytes_transferred));
+			}
 		}
+		
+	} else if (!result) {
+		// the request is invalid or an error occured
+
+		m_http_request->setIsValid(false);
+		m_request_handler(m_http_request, m_tcp_conn);
 		
 	} else {
-		// a read error occured
-
-		if (read_error == boost::asio::error::operation_aborted) {
-			// if the operation was aborted, the acceptor was stopped,
-			// which means another thread is shutting-down the server
-			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
-		} else {
-			PION_LOG_INFO(m_logger, "HTTP request parsing aborted due to I/O error");
-		}
+		// not yet finished parsing the request -> read more data
 		
-		m_tcp_conn->finish();
+		readRequest();
 	}
 }
 
-boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read) 
+void HTTPRequestParser::readContentBytes(const boost::asio::error& read_error,
+										 std::size_t bytes_read)
 {
-	register const char *ptr = m_read_buffer.data();
-	const char * const end = ptr + bytes_read;
+	if (read_error) {
+		// a read error occured
+		handleReadError(read_error);
+		return;
+	}
 
+	if (bytes_read != 0) {
+		PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " request content bytes (finished)");
+	}
+
+	// the request is valid
+	m_http_request->setIsValid(true);
+	
+	// parse query pairs from the URI query string
+	if (! m_http_request->getQueryString().empty()) {
+		if (! parseURLEncoded(m_http_request->getQueryParams(),
+							  m_http_request->getQueryString().c_str(),
+							  m_http_request->getQueryString().size())) 
+			PION_LOG_WARN(m_logger, "Request query string parsing failed (URI)");
+	}
+	
+	// parse query pairs from post content (x-www-form-urlencoded)
+	if (m_http_request->getHeader(HTTPTypes::HEADER_CONTENT_TYPE) ==
+		HTTPTypes::CONTENT_TYPE_URLENCODED)
+	{
+		if (! parseURLEncoded(m_http_request->getQueryParams(),
+							  m_http_request->getPostContent(),
+							  m_http_request->getContentLength())) 
+			PION_LOG_WARN(m_logger, "Request query string parsing failed (POST content)");
+	}
+	
+	// call the request handler with the finished request
+	m_request_handler(m_http_request, m_tcp_conn);
+}
+
+void HTTPRequestParser::handleReadError(const boost::asio::error& read_error)
+{
+	if (read_error == boost::asio::error::operation_aborted) {
+		// if the operation was aborted, the acceptor was stopped,
+		// which means another thread is shutting-down the server
+		PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
+	} else {
+		PION_LOG_INFO(m_logger, "HTTP request parsing aborted due to I/O error");
+	}
+	// close the connection, forcing the client to establish a new one
+	m_tcp_conn->finish();
+}
+
+boost::tribool HTTPRequestParser::parseRequestHeaders(const char *& ptr,
+													  const size_t len)
+{
 	// parse characters available in the read buffer
-
+	const char * const end = ptr + len;
+	
 	while (ptr < end) {
 
 		switch (m_parse_state) {
@@ -107,7 +207,7 @@ boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read)
 			if (*ptr == ' ') {
 				m_http_request->setMethod(m_method);
 				m_resource.erase();
-				m_parse_state = PARSE_URI;
+				m_parse_state = PARSE_URI_STEM;
 			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
 				return false;
 			} else if (m_method.size() >= METHOD_MAX) {
@@ -117,11 +217,15 @@ boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read)
 			}
 			break;
 
-		case PARSE_URI:
-			// we have started parsing the URI requested (or resource name)
+		case PARSE_URI_STEM:
+			// we have started parsing the URI stem (or resource name)
 			if (*ptr == ' ') {
 				m_http_request->setResource(m_resource);
 				m_parse_state = PARSE_HTTP_VERSION_H;
+			} else if (*ptr == '?') {
+				m_http_request->setResource(m_resource);
+				m_query_string.erase();
+				m_parse_state = PARSE_URI_QUERY;
 			} else if (isControl(*ptr)) {
 				return false;
 			} else if (m_resource.size() >= RESOURCE_MAX) {
@@ -131,6 +235,20 @@ boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read)
 			}
 			break;
 
+		case PARSE_URI_QUERY:
+			// we have started parsing the URI query string
+			if (*ptr == ' ') {
+				m_http_request->setQueryString(m_query_string);
+				m_parse_state = PARSE_HTTP_VERSION_H;
+			} else if (isControl(*ptr)) {
+				return false;
+			} else if (m_query_string.size() >= QUERY_STRING_MAX) {
+				return false;
+			} else {
+				m_query_string.push_back(*ptr);
+			}
+			break;
+			
 		case PARSE_HTTP_VERSION_H:
 			// parsing "HTTP"
 			if (*ptr != 'H') return false;
@@ -347,10 +465,69 @@ boost::tribool HTTPRequestParser::parseRequest(std::size_t bytes_read)
 }
 
 bool HTTPRequestParser::parseURLEncoded(HTTPTypes::StringDictionary& dict,
-										const std::string& encoded_string)
+										const char *ptr, const size_t len)
 {
-	/// not yet implemented
-	return false;
+	// used to track whether we are parsing the name or value
+	enum QueryParseState {
+		QUERY_PARSE_NAME, QUERY_PARSE_VALUE
+	};
+	QueryParseState parse_state = QUERY_PARSE_NAME;
+
+	// misc other variables used for parsing
+	const char * const end = ptr + len;
+	std::string query_name;
+	std::string query_value;
+	
+	// iterate through each encoded character
+	while (ptr < end) {
+		switch (parse_state) {
+		
+		case QUERY_PARSE_NAME:
+			// parsing query name
+			if (*ptr == '=') {
+				// end of name found
+				if (query_name.empty()) return false;
+				parse_state = QUERY_PARSE_VALUE;
+			} else if (*ptr == '&') {
+				// value is empty (OK)
+				if (query_name.empty()) return false;
+				dict.insert( std::make_pair(query_name, query_value) );
+				query_name.erase();
+			} else if (isControl(*ptr) || query_name.size() >= QUERY_NAME_MAX) {
+				// control character detected, or max sized exceeded
+				return false;
+			} else {
+				// character is part of the name
+				query_name.push_back(*ptr);
+			}
+			break;
+
+		case QUERY_PARSE_VALUE:
+			// parsing query value
+			if (*ptr == '&') {
+				// end of value found (OK if empty)
+				dict.insert( std::make_pair(query_name, query_value) );
+				query_name.erase();
+				query_value.erase();
+				parse_state = QUERY_PARSE_NAME;
+			} else if (isControl(*ptr) || query_value.size() >= QUERY_VALUE_MAX) {
+				// control character detected, or max sized exceeded
+				return false;
+			} else {
+				// character is part of the value
+				query_value.push_back(*ptr);
+			}
+			break;
+		}
+		
+		++ptr;
+	}
+	
+	// handle last pair in string
+	if (! query_name.empty())
+		dict.insert( std::make_pair(query_name, query_value) );
+	
+	return true;
 }
 
 bool HTTPRequestParser::parseCookieEncoded(HTTPTypes::StringDictionary& dict,

@@ -90,33 +90,50 @@ protected:
 	{}
 
 	/**
-	 * Called after new request bytes have been read
+	 * Called after new request header bytes have been read
 	 * 
 	 * @param read_error error status from the last read operation
 	 * @param bytes_read number of bytes consumed by the last read operation
 	 */
-	void readHandler(const boost::asio::error& read_error, std::size_t bytes_read);
+	void readHeaderBytes(const boost::asio::error& read_error, std::size_t bytes_read);
 
 	/**
-	 * parses bytes from the last read operation
+	 * Called after new request content bytes have been read
 	 * 
-	 * @param bytes_read number of bytes available in the read buffer
+	 * @param read_error error status from the last read operation
+	 * @param bytes_read number of bytes consumed by the last read operation
+	 */
+	void readContentBytes(const boost::asio::error& read_error, std::size_t bytes_read);
+
+	/**
+	 * Handles errors that occur during read operations
+	 *
+	 * @param read_error error status from the last read operation
+	 */
+	void handleReadError(const boost::asio::error& read_error);
+	
+	/**
+	 * parses request header bytes from the last read operation
+	 * 
+	 * @param ptr points to the first byte read
+	 * @param len number of bytes available for parsing
 	 * 
 	 * @return boost::tribool result of parsing
 	 */
-	boost::tribool parseRequest(std::size_t bytes_read);
+	boost::tribool parseRequestHeaders(const char *& ptr, const size_t len);
 
 	/**
 	 * parse key-value pairs out of a url-encoded string
 	 * (i.e. this=that&a=value)
 	 * 
 	 * @param dict dictionary for key-values pairs
-	 * @param encoded_string string to be parsed
+	 * @param ptr points to the start of the encoded string
+	 * @param len length of the encoded string, in bytes
 	 * 
 	 * @return bool true if successful
 	 */
 	static bool parseURLEncoded(HTTPTypes::StringDictionary& dict,
-								const std::string& encoded_string);
+								const char *ptr, const size_t len);
 
 	/**
 	 * parse key-value pairs out of a cookie-encoded string
@@ -152,7 +169,7 @@ private:
 
 	/// state used to keep track of where we are in parsing the request
 	enum ParseState {
-		PARSE_METHOD_START, PARSE_METHOD, PARSE_URI,
+		PARSE_METHOD_START, PARSE_METHOD, PARSE_URI_STEM, PARSE_URI_QUERY,
 		PARSE_HTTP_VERSION_H, PARSE_HTTP_VERSION_T_1, PARSE_HTTP_VERSION_T_2,
 		PARSE_HTTP_VERSION_P, PARSE_HTTP_VERSION_SLASH,
 		PARSE_HTTP_VERSION_MAJOR_START, PARSE_HTTP_VERSION_MAJOR,
@@ -166,11 +183,14 @@ private:
 	/// data type for an I/O read buffer
 	typedef boost::array<char, 8192>	ReadBuffer;
 	
+	/// maximum length for the request method
+	static const unsigned int			METHOD_MAX;
+	
 	/// maximum length for the resource requested
 	static const unsigned int			RESOURCE_MAX;
 
-	/// maximum length for the request method
-	static const unsigned int			METHOD_MAX;
+	/// maximum length for the query string
+	static const unsigned int			QUERY_STRING_MAX;
 	
 	/// maximum length for an HTTP header name
 	static const unsigned int			HEADER_NAME_MAX;
@@ -178,6 +198,15 @@ private:
 	/// maximum length for an HTTP header value
 	static const unsigned int			HEADER_VALUE_MAX;
 
+	/// maximum length for the name of a query string variable
+	static const unsigned int			QUERY_NAME_MAX;
+	
+	/// maximum length for the value of a query string variable
+	static const unsigned int			QUERY_VALUE_MAX;
+	
+	/// maximum length for an HTTP header name
+	static const unsigned int			POST_CONTENT_MAX;
+	
 	/// primary logging interface used by this class
 	PionLogger							m_logger;
 
@@ -196,12 +225,15 @@ private:
 	/// buffer used for reading data from the TCP connection
 	ReadBuffer							m_read_buffer;
 
+	/// Used for parsing the request method
+	std::string							m_method;
+	
 	/// Used for parsing the name of resource requested
 	std::string							m_resource;
 	
-	/// Used for parsing the request method
-	std::string							m_method;
-
+	/// Used for parsing the query string portion of the URI
+	std::string							m_query_string;
+	
 	/// Used for parsing the name of HTTP headers
 	std::string							m_header_name;
 

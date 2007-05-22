@@ -36,54 +36,91 @@ public:
 	
 private:
 	static inline void writeDictionaryTerm(HTTPResponsePtr& response,
-										   const HTTPTypes::Headers::value_type& val);
+										   const HTTPTypes::Headers::value_type& val,
+										   const bool decode);
 };
 
 
 /// handles requests for EchoModule
 bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
+	// this modules uses static text to test the mixture of "copied" with
+	// "static" (no-copy) text
+	static const std::string REQUEST_ECHO_TEXT("[Request Echo]");
+	static const std::string REQUEST_HEADERS_TEXT("[Request Headers]");
+	static const std::string QUERY_PARAMS_TEXT("[Query Parameters]");
+	static const std::string COOKIE_PARAMS_TEXT("[Cookie Parameters]");
+	static const std::string POST_CONTENT_TEXT("[POST Content]");
+	
 	// Set Content-type to "text/plain" (plain ascii text)
 	HTTPResponsePtr response(HTTPResponse::create());
 	response->setContentType("text/plain");
 	
-	// write first line of request
-	response << request->getMethod() << ' ' << request->getResource()
-		<< " HTTP/" << request->getVersionMajor()
-		<< '.' << request->getVersionMinor()
-		<< HTTPTypes::STRING_CRLF << HTTPTypes::STRING_CRLF;
+	// write request information
+	response->writeNoCopy(REQUEST_ECHO_TEXT);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response
+		<< "Request method: "
+		<< request->getMethod()
+		<< HTTPTypes::STRING_CRLF
+		<< "Resource requested: "
+		<< request->getResource()
+		<< HTTPTypes::STRING_CRLF
+		<< "Query string: "
+		<< request->getQueryString()
+		<< HTTPTypes::STRING_CRLF
+		<< "HTTP version: "
+		<< request->getVersionMajor() << '.' << request->getVersionMinor()
+		<< HTTPTypes::STRING_CRLF
+		<< "Content length: "
+		<< request->getContentLength()
+		<< HTTPTypes::STRING_CRLF
+		<< HTTPTypes::STRING_CRLF;
 			 
 	// write request headers
-	response << "[Request Headers]"
-		<< HTTPTypes::STRING_CRLF << HTTPTypes::STRING_CRLF;
+	response->writeNoCopy(REQUEST_HEADERS_TEXT);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getHeaders().begin(), request->getHeaders().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1));
-	response << HTTPTypes::STRING_CRLF;
+				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, false));
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 
 	// write query parameters
-	response << "[Query Parameters]"
-		<< HTTPTypes::STRING_CRLF << HTTPTypes::STRING_CRLF;
+	response->writeNoCopy(QUERY_PARAMS_TEXT);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getQueryParams().begin(), request->getQueryParams().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1));
-	response << HTTPTypes::STRING_CRLF;
+				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, true));
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	
 	// write cookie parameters
-	response << "[Cookie Parameters]"
-		<< HTTPTypes::STRING_CRLF << HTTPTypes::STRING_CRLF;
+	response->writeNoCopy(COOKIE_PARAMS_TEXT);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getCookieParams().begin(), request->getCookieParams().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1));
-	response << HTTPTypes::STRING_CRLF;
-
+				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, false));
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	
+	// write POST content
+	response->writeNoCopy(POST_CONTENT_TEXT);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	response->write(request->getPostContent(), request->getContentLength());
+	
 	// send the response
 	response->send(tcp_conn);
 	return true;
 }
 
 inline void EchoModule::writeDictionaryTerm(HTTPResponsePtr& response,
-											const HTTPTypes::Headers::value_type& val)
+											const HTTPTypes::Headers::value_type& val,
+											const bool decode)
 {
+	// text is copied into response text cache
 	response << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR
-		<< val.second << HTTPTypes::STRING_CRLF;
+		<< (decode ? HTTPTypes::url_decode(val.second) : val.second)
+		<< HTTPTypes::STRING_CRLF;
 }
 
 

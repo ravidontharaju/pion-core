@@ -67,6 +67,7 @@ struct HTTPTypes
 	static const std::string	CONTENT_TYPE_HTML;
 	static const std::string	CONTENT_TYPE_TEXT;
 	static const std::string	CONTENT_TYPE_XML;
+	static const std::string	CONTENT_TYPE_URLENCODED;
 	
 	// common HTTP response messages
 	static const std::string	RESPONSE_MESSAGE_OK;
@@ -88,7 +89,10 @@ struct HTTPTypes
 	typedef StringDictionary	QueryParams;
 	
 	/// data type for HTTP cookie parameters
-	typedef StringDictionary	CookieParams;	
+	typedef StringDictionary	CookieParams;
+	
+	/// escapes URL-encoded strings (a%20value+with%20spaces)
+	static std::string url_decode(const std::string& str);
 };
 
 }	// end namespace pion

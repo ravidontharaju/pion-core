@@ -41,6 +41,7 @@ const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
 const std::string	HTTPTypes::CONTENT_TYPE_HTML("text/html");
 const std::string	HTTPTypes::CONTENT_TYPE_TEXT("text/plain");
 const std::string	HTTPTypes::CONTENT_TYPE_XML("text/xml");
+const std::string	HTTPTypes::CONTENT_TYPE_URLENCODED("application/www-form-urlencoded");
 
 // common HTTP response messages
 const std::string	HTTPTypes::RESPONSE_MESSAGE_OK("OK");
@@ -52,6 +53,39 @@ const unsigned int	HTTPTypes::RESPONSE_CODE_OK = 200;
 const unsigned int	HTTPTypes::RESPONSE_CODE_NOT_FOUND = 404;
 const unsigned int	HTTPTypes::RESPONSE_CODE_BAD_REQUEST = 400;
 
+
+std::string HTTPTypes::url_decode(const std::string& str)
+{
+	char decode_buf[3];
+	std::string result;
+	result.reserve(str.size());
+	
+	for (std::string::size_type pos = 0; pos < str.size(); ++pos) {
+		switch(str[pos]) {
+		case '+':
+			// convert to space character
+			result += ' ';
+			break;
+		case '%':
+			// decode hexidecimal value
+			if (pos + 2 < str.size()) {
+				decode_buf[0] = str[++pos];
+				decode_buf[1] = str[++pos];
+				decode_buf[2] = '\0';
+				result += static_cast<char>( strtol(decode_buf, 0, 16) );
+			} else {
+				// recover from error by not decoding character
+				result += '%';
+			}
+			break;
+		default:
+			// character does not need to be escaped
+			result += str[pos];
+		}
+	};
+	
+	return result;
+}
 
 }	// end namespace pion
 
