@@ -18,28 +18,26 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include <libpion/HTTPModule.hpp>
+#include "EchoModule.hpp"
 #include <libpion/HTTPResponse.hpp>
 #include <boost/bind.hpp>
 
 using namespace pion;
 
 
-/// Module that echos the request back (to test request parsing)
-class EchoModule :
-	public HTTPModule
+/// used by handleRequest to write dictionary terms
+void writeDictionaryTerm(HTTPResponsePtr& response,
+						 const HTTPTypes::StringDictionary::value_type& val,
+						 const bool decode)
 {
-public:
-	EchoModule(void) {}
-	virtual ~EchoModule() {}
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn);
-	
-private:
-	static inline void writeDictionaryTerm(HTTPResponsePtr& response,
-										   const HTTPTypes::Headers::value_type& val,
-										   const bool decode);
-};
+	// text is copied into response text cache
+	response << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR
+	<< (decode ? HTTPTypes::url_decode(val.second) : val.second)
+	<< HTTPTypes::STRING_CRLF;
+}
 
+
+// EchoModule member functions
 
 /// handles requests for EchoModule
 bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
@@ -83,7 +81,7 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getHeaders().begin(), request->getHeaders().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, false));
+				  boost::bind(&writeDictionaryTerm, response, _1, false));
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 
 	// write query parameters
@@ -91,7 +89,7 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getQueryParams().begin(), request->getQueryParams().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, true));
+				  boost::bind(&writeDictionaryTerm, response, _1, true));
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	
 	// write cookie parameters
@@ -99,7 +97,7 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	std::for_each(request->getCookieParams().begin(), request->getCookieParams().end(),
-				  boost::bind(&EchoModule::writeDictionaryTerm, response, _1, false));
+				  boost::bind(&writeDictionaryTerm, response, _1, false));
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	
 	// write POST content
@@ -111,16 +109,6 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// send the response
 	response->send(tcp_conn);
 	return true;
-}
-
-inline void EchoModule::writeDictionaryTerm(HTTPResponsePtr& response,
-											const HTTPTypes::Headers::value_type& val,
-											const bool decode)
-{
-	// text is copied into response text cache
-	response << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR
-		<< (decode ? HTTPTypes::url_decode(val.second) : val.second)
-		<< HTTPTypes::STRING_CRLF;
 }
 
 

@@ -73,11 +73,13 @@ struct HTTPTypes
 	static const std::string	RESPONSE_MESSAGE_OK;
 	static const std::string	RESPONSE_MESSAGE_NOT_FOUND;
 	static const std::string	RESPONSE_MESSAGE_BAD_REQUEST;
+	static const std::string	RESPONSE_MESSAGE_SERVER_ERROR;
 
 	// common HTTP response codes
 	static const unsigned int	RESPONSE_CODE_OK;
 	static const unsigned int	RESPONSE_CODE_NOT_FOUND;
 	static const unsigned int	RESPONSE_CODE_BAD_REQUEST;
+	static const unsigned int	RESPONSE_CODE_SERVER_ERROR;
 	
 	/// data type for a dictionary of strings (used for HTTP headers)
 	typedef PION_UNORDERED_MULTIMAP<std::string, std::string, boost::hash<std::string> >	StringDictionary;

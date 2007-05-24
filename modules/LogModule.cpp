@@ -18,22 +18,13 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include <libpion/HTTPModule.hpp>
+#include "LogModule.hpp"
 #include <libpion/HTTPResponse.hpp>
 
 using namespace pion;
 
 
-/// Module that responds with "Hello World"
-class LogModule :
-	public HTTPModule
-{
-public:
-	LogModule(void) {}
-	virtual ~LogModule() {}
-	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn);
-};
-
+// LogModule member functions
 
 /// handles requests for LogModule
 bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)

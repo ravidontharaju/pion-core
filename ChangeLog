@@ -3,7 +3,8 @@ Version 0.1.4 (2007-05-xx)
 
 * Fixed miscellaneous bugs with the HTTPResponse class
 * Added support for parsing POST content, and GET and POST query parameters
-* Added EchoModule and stubs for LogModule and FileModule
+* Added support for passing configuration options to HTTP modules
+* Added EchoModule and FileModule, and stubs for LogModule
 * Added support for HTTP modules to be dynamically-loadable libraries
 * Added support for pkg-config (http://pkg-config.freedesktop.org/wiki/)
 * Moved around some of the source directories & renamed test programs

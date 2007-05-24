@@ -51,6 +51,8 @@
 		E34918FB0BFE5BB7001E1387 /* TCPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E34918E10BFE5BB7001E1387 /* TCPServer.hpp */; };
 		E34918FF0BFE5C0D001E1387 /* PionServerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918FE0BFE5BFB001E1387 /* PionServerTest.cpp */; };
 		E34919000BFE5C11001E1387 /* PionModuleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918FD0BFE5BFB001E1387 /* PionModuleTest.cpp */; };
+		E35A5C920C04EBAD00A64F0D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5C910C04EBAD00A64F0D /* PionException.hpp */; };
+		E35A5C930C04EBAD00A64F0D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5C910C04EBAD00A64F0D /* PionException.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +115,11 @@
 		E34918FE0BFE5BFB001E1387 /* PionServerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServerTest.cpp; path = ../tests/PionServerTest.cpp; sourceTree = SOURCE_ROOT; };
 		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349191B0BFE5F72001E1387 /* PionModuleTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionModuleTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E35A5C910C04EBAD00A64F0D /* PionException.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionException.hpp; path = ../include/libpion/PionException.hpp; sourceTree = SOURCE_ROOT; };
+		E35A5D060C05226500A64F0D /* EchoModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = EchoModule.hpp; path = ../modules/EchoModule.hpp; sourceTree = SOURCE_ROOT; };
+		E35A5D070C05226500A64F0D /* FileModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = FileModule.hpp; path = ../modules/FileModule.hpp; sourceTree = SOURCE_ROOT; };
+		E35A5D080C05226500A64F0D /* HelloModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloModule.hpp; path = ../modules/HelloModule.hpp; sourceTree = SOURCE_ROOT; };
+		E35A5D090C05226500A64F0D /* LogModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogModule.hpp; path = ../modules/LogModule.hpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,9 +217,13 @@
 		E33288090BEE4A28006D0556 /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				E35A5D060C05226500A64F0D /* EchoModule.hpp */,
 				E30CFF3D0C0276C3007493DC /* EchoModule.cpp */,
+				E35A5D070C05226500A64F0D /* FileModule.hpp */,
 				E30CFF490C028019007493DC /* FileModule.cpp */,
+				E35A5D080C05226500A64F0D /* HelloModule.hpp */,
 				E34918FC0BFE5BDE001E1387 /* HelloModule.cpp */,
+				E35A5D090C05226500A64F0D /* LogModule.hpp */,
 				E30CFF4A0C028019007493DC /* LogModule.cpp */,
 			);
 			name = modules;
@@ -235,6 +246,7 @@
 				E34918DB0BFE5BB7001E1387 /* Pion.hpp */,
 				E34918DC0BFE5BB7001E1387 /* PionConfig.hpp */,
 				E34918DE0BFE5BB7001E1387 /* PionLogger.hpp */,
+				E35A5C910C04EBAD00A64F0D /* PionException.hpp */,
 				E34918DF0BFE5BB7001E1387 /* PionPlugin.hpp */,
 				E34918DD0BFE5BB7001E1387 /* PionEngine.hpp */,
 				E34918E00BFE5BB7001E1387 /* TCPConnection.hpp */,
@@ -270,6 +282,7 @@
 				E34918EC0BFE5BB7001E1387 /* PionPlugin.hpp in Headers */,
 				E34918ED0BFE5BB7001E1387 /* TCPConnection.hpp in Headers */,
 				E34918EE0BFE5BB7001E1387 /* TCPServer.hpp in Headers */,
+				E35A5C920C04EBAD00A64F0D /* PionException.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +303,7 @@
 				E34918F90BFE5BB7001E1387 /* PionPlugin.hpp in Headers */,
 				E34918FA0BFE5BB7001E1387 /* TCPConnection.hpp in Headers */,
 				E34918FB0BFE5BB7001E1387 /* TCPServer.hpp in Headers */,
+				E35A5C930C04EBAD00A64F0D /* PionException.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

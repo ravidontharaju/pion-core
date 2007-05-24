@@ -1,13 +1,12 @@
 Things to do:
 =============
 
-* Add support for parsing request cookies and setting response cookies
 * Implement LogModule for displaying log entries
-* Implement FileModule for delivering disk files
+* Add support for parsing request cookies and setting response cookies
+* Add support for SSL/TLS & server certificates
+* Add support for built-in authentication (OpenID?)
 * Use read-write mutex for HTTPServer modules
 * Compare performance of using multiple io_services versus just one
 * Allow more options for binding servers than just port numbers (IP)
-* Add support for SSL/TLS & server certificates
-* Add support for built-in authentication (OpenID?)
 * Add support for Sun Studio & Microsoft Visual C++ compilers
 * Add support for parsing multipart form content

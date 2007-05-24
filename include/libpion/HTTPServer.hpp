@@ -22,6 +22,7 @@
 #define __PION_HTTPSERVER_HEADER__
 
 #include <libpion/PionConfig.hpp>
+#include <libpion/PionException.hpp>
 #include <libpion/PionPlugin.hpp>
 #include <libpion/TCPServer.hpp>
 #include <libpion/TCPConnection.hpp>
@@ -42,6 +43,13 @@ class HTTPServer :
 {
 
 public:
+
+	/// exception thrown if a module cannot be found
+	class ModuleNotFoundException : public PionException {
+	public:
+		ModuleNotFoundException(const std::string& resource)
+			: PionException("No modules are identified by the resource: ", resource) {}
+	};
 
 	/**
 	 * creates new HTTPServer objects
@@ -71,6 +79,16 @@ public:
 	 * @param file the name of the shared object file
 	 */
 	void loadModule(const std::string& resource, const std::string& file);
+	
+	/**
+	 * sets a configuration options for the module associated with resource
+	 *
+	 * @param resource the resource name or uri-stem that identifies the module
+	 * @param name the name of the configuration option
+	 * @param value the value to set the option to
+	 */
+	void setModuleOption(const std::string& resource,
+						 const std::string& name, const std::string& value);
 
 	/// clears all the modules that are currently configured
 	void clearModules(void);
@@ -81,6 +99,8 @@ public:
 	/// sets the module that handles requests which match no other module
 	inline void setNotFoundModule(HTTPModule *m) { m_not_found_module.reset(m); }
 	
+	/// sets the module that handles requests which match no other module
+	inline void setServerErrorModule(HTTPModule *m) { m_server_error_module.reset(m); }
 	
 protected:
 	
@@ -91,7 +111,8 @@ protected:
 	 */
 	explicit HTTPServer(const unsigned int tcp_port)
 		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
-		m_not_found_module(new NotFoundModule)
+		m_not_found_module(new NotFoundModule),
+		m_server_error_module(new ServerErrorModule)
 	{ 
 		setLogger(PION_GET_LOGGER("Pion.HTTPServer"));
 	}
@@ -116,8 +137,6 @@ private:
 	
 	/// used to send responses when a bad HTTP request is made
 	class BadRequestModule : public HTTPModule {
-	protected:
-		static const std::string	BAD_REQUEST_HTML;
 	public:
 		virtual ~BadRequestModule() {}
 		BadRequestModule(void) {}
@@ -127,8 +146,6 @@ private:
 	
 	/// used to send responses when a no modules can handle the request
 	class NotFoundModule : public HTTPModule {
-	protected:
-		static const std::string	NOT_FOUND_HTML;
 	public:
 		virtual ~NotFoundModule() {}
 		NotFoundModule(void) {}
@@ -136,6 +153,15 @@ private:
 								   TCPConnectionPtr& tcp_conn);
 	};
 	
+	/// used to send responses when a server error occurs
+	class ServerErrorModule : public HTTPModule {
+	public:
+		virtual ~ServerErrorModule() {}
+		ServerErrorModule(void) {}
+		virtual bool handleRequest(HTTPRequestPtr& request,
+								   TCPConnectionPtr& tcp_conn);
+	};
+
 	/// used by ModuleMap to associated moudle objects with plugin libraries
 	typedef std::pair<HTTPModule *, PionPlugin<HTTPModule> *>	PluginPair;
 	
@@ -169,6 +195,9 @@ private:
 	
 	/// points to the module that handles requests which match no other module
 	boost::shared_ptr<HTTPModule>	m_not_found_module;
+
+	/// points to the module that handles server errors
+	boost::shared_ptr<HTTPModule>	m_server_error_module;
 };
 
 

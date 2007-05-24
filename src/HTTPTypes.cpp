@@ -45,14 +45,15 @@ const std::string	HTTPTypes::CONTENT_TYPE_URLENCODED("application/www-form-urlen
 
 // common HTTP response messages
 const std::string	HTTPTypes::RESPONSE_MESSAGE_OK("OK");
-const std::string	HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND("Request Not Found");
+const std::string	HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND("Not Found");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_BAD_REQUEST("Bad Request");
+const std::string	HTTPTypes::RESPONSE_MESSAGE_SERVER_ERROR("Server Error");
 
 // common HTTP response codes
 const unsigned int	HTTPTypes::RESPONSE_CODE_OK = 200;
 const unsigned int	HTTPTypes::RESPONSE_CODE_NOT_FOUND = 404;
 const unsigned int	HTTPTypes::RESPONSE_CODE_BAD_REQUEST = 400;
-
+const unsigned int	HTTPTypes::RESPONSE_CODE_SERVER_ERROR = 500;
 
 std::string HTTPTypes::url_decode(const std::string& str)
 {

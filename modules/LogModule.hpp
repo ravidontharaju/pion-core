@@ -18,34 +18,23 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#include "HelloModule.hpp"
-#include <libpion/HTTPResponse.hpp>
+#ifndef __PION_LOGMODULE_HEADER__
+#define __PION_LOGMODULE_HEADER__
 
-using namespace pion;
+#include <libpion/HTTPModule.hpp>
 
 
-// HelloModule member functions
-
-/// handles requests for HelloModule
-bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+///
+/// LogModule: module that displays log messages
+/// 
+class LogModule :
+	public pion::HTTPModule
 {
-	static const std::string HELLO_HTML = "<html><body>Hello World!</body></html>\r\n\r\n";
-	HTTPResponsePtr response(HTTPResponse::create());
-	response->writeNoCopy(HELLO_HTML);
-	response->send(tcp_conn);
-	return true;
-}
+public:
+	LogModule(void) {}
+	virtual ~LogModule() {}
+	virtual bool handleRequest(pion::HTTPRequestPtr& request,
+							   pion::TCPConnectionPtr& tcp_conn);
+};
 
-
-/// creates new HelloModule objects
-extern "C" HelloModule *HelloModule_LTX_create(void)
-{
-	return new HelloModule();
-}
-
-
-/// destroys HelloModule objects
-extern "C" void HelloModule_LTX_destroy(HelloModule *module_ptr)
-{
-	delete module_ptr;
-}
+#endif

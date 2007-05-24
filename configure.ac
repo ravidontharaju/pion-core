@@ -168,6 +168,32 @@ LDFLAGS="$LDFLAGS_SAVED"
 AC_SUBST(BOOST_THREAD_LIB)
 
 
+# Check for Boost Filesystem library
+AC_CHECK_HEADERS([boost/filesystem/path.hpp],,AC_MSG_ERROR(Unable to find the boost::filesystem headers))
+LDFLAGS_SAVED="$LDFLAGS"
+BOOST_LIB=boost_filesystem
+for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
+	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
+	lib$BOOST_LIB-$CC lib$BOOST_LIB-$CC-mt lib$BOOST_LIB-$CC-mt-s \
+	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
+	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
+do
+	LDFLAGS="$LDFLAGS_SAVED -l$ax_lib"
+	AC_MSG_NOTICE(Checking for -l$ax_lib)
+	AC_TRY_LINK([#include <boost/filesystem/path.hpp>],
+		[ boost::filesystem::path a_path; return 0; ],
+		[BOOST_FILESYSTEM_LIB="-l$ax_lib"; break],
+		[BOOST_FILESYSTEM_LIB=""])
+done
+if test "x$BOOST_FILESYSTEM_LIB" = "x"; then
+	AC_MSG_ERROR(Unable to link with the boost::filesystem library)
+else
+	AC_MSG_NOTICE(Linking with boost::filesystem works)
+fi
+LDFLAGS="$LDFLAGS_SAVED"
+AC_SUBST(BOOST_FILESYSTEM_LIB)
+
+
 # Check for logging support
 AC_ARG_WITH([log4cplus],
     AC_HELP_STRING([--with-log4cplus@<:@=DIR@:>@],[location of log4cplus library (enables logging)]),

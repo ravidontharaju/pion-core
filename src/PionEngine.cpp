@@ -112,6 +112,7 @@ void PionEngine::run(void)
 		m_asio_service.run();
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(m_logger, "Caught exception in pool thread: " << e.what());
+		stop();
 	}
 }
 

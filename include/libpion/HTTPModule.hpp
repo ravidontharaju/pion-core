@@ -22,6 +22,7 @@
 #define __PION_HTTPMODULE_HEADER__
 
 #include <libpion/PionConfig.hpp>
+#include <libpion/PionException.hpp>
 #include <libpion/HTTPRequest.hpp>
 #include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
@@ -38,6 +39,13 @@ class HTTPModule :
 {
 public:
 
+	/// exception thrown if the module does not recognize a configuration option
+	class UnknownOptionException : public PionException {
+	public:
+		UnknownOptionException(const std::string& name)
+			: PionException("Option not recognized by HTTP module: ", name) {}
+	};
+
 	/// default constructor
 	HTTPModule(void) {}
 
@@ -53,6 +61,46 @@ public:
 	 * @return true if the request was handled; false if not
 	 */
 	virtual bool handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn) = 0;
+	
+	/**
+	 * sets a configuration option
+	 *
+	 * @param name the name of the option to change
+	 * @param value the value of the option
+	 */
+	virtual void setOption(const std::string& name, const std::string& value) {
+		throw UnknownOptionException(name);
+	}
+	
+	/// sets the URI stem or resource that is bound to the module (strips any trailing slash)	
+	inline void setResource(const std::string& str) { m_resource = stripTrailingSlash(str); }
+
+	/// returns the URI stem or resource that is bound to the module	
+	inline const std::string& getResource(void) const { return m_resource; }
+	
+	/// returns the path to the resource requested, relative to the module's location
+	inline std::string getRelativeResource(const std::string& resource_requested) const {
+		if (resource_requested.size() <= getResource().size()) {
+			// either the request matches the module's resource path (a directory)
+			// or the request does not match (should never happen)
+			return std::string();
+		}
+		// strip the module's resource path plus the slash after it
+		return HTTPTypes::url_decode(resource_requested.substr(getResource().size() + 1));
+	}
+	
+private:
+		
+	/// strips trailing slash from string, if one exists
+	static inline std::string stripTrailingSlash(const std::string& str) {
+		std::string result(str);
+		if (!result.empty() && result[result.size()-1]=='/')
+			result.resize(result.size() - 1);
+		return result;
+	}
+		
+	/// the URI stem or resource that is bound to the module	
+	std::string	m_resource;
 };
 
 
