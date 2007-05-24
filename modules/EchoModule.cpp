@@ -113,14 +113,14 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new EchoModule objects
-extern "C" EchoModule *EchoModule_LTX_create(void)
+extern "C" EchoModule *create(void)
 {
 	return new EchoModule();
 }
 
 
 /// destroys EchoModule objects
-extern "C" void EchoModule_LTX_destroy(EchoModule *module_ptr)
+extern "C" void destroy(EchoModule *module_ptr)
 {
 	delete module_ptr;
 }

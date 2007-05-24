@@ -22,78 +22,97 @@
 #define __PION_PIONPLUGIN_HEADER__
 
 #include <libpion/PionConfig.hpp>
+#include <libpion/PionException.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/once.hpp>
 #include <string>
-#include <ltdl.h>
-
-
-#define PION_CREATE_PLUGIN "create"
-#define PION_DESTROY_PLUGIN "destroy"
 
 
 namespace pion {	// begin namespace pion
 
-	
-/// mutex used to make the ltdl library thread-safe
-extern boost::mutex			PION_LTDL_MUTEX;
-
-/// flag used to make sure that the ltdl library is initialized only once
-extern boost::once_flag		PION_LTDL_INIT_FLAG;
-
-/// appends a directory to the plug-in search path
-void PION_ADD_PLUGIN_DIRECTORY(const std::string& dir);
-
-
-
 ///
-/// PionPlugin: manages plug-in code loaded from shared object libraries.  This
-/// class uses the ltdl library included with GNU libtool.  For more information
-/// on ltdl, please see http://www.gnu.org/software/libtool/manual.html#Using-libltdl
+/// PionPluginBase: base class for plug-in management
 ///
-template <typename InterfaceClassType>
-class PionPlugin :
-	private boost::noncopyable
-{
+class PionPluginBase {
 public:
 
 	/// exception thrown if the plug-in file cannot be opened
 	class PluginUndefinedException : public std::exception {
+	public:
 		virtual const char* what() const throw() {
 			return "Plug-in was not loaded properly";
 		}
 	};
-
+	
 	/// exception thrown if the plug-in file cannot be opened
-	class PluginNotFoundException : public std::exception {
-		virtual const char* what() const throw() {
-			return "Unable to open plug-in library";
-		}
+	class PluginNotFoundException : public PionException {
+	public:
+		PluginNotFoundException(const std::string& dir)
+			: PionException("Plug-in library not found: ", dir) {}
 	};
-
+	
 	/// exception thrown if a plug-in library is missing the create() function
-	class PluginMissingCreateException : public std::exception {
-		virtual const char* what() const throw() {
-			return "Unable to find create symbol in plug-in";
-		}
+	class PluginMissingCreateException : public PionException {
+	public:
+		PluginMissingCreateException(const std::string& dir)
+			: PionException("Plug-in library does not include create() symbol: ", dir) {}
+	};
+	
+	/// exception thrown if a plug-in library is missing the destroy() function
+	class PluginMissingDestroyException : public PionException {
+	public:
+		PluginMissingDestroyException(const std::string& dir)
+			: PionException("Plug-in library does not include destroy() symbol: ", dir) {}
 	};
 
-	/// exception thrown if a plug-in library is missing the destroy() function
-	class PluginMissingDestroyException : public std::exception {
-		virtual const char* what() const throw() {
-			return "Unable to find destroy symbol in plug-in";
-		}
-	};
+	// default constructor and destructor
+	PionPluginBase(void) {}
+	virtual ~PionPluginBase() {}
+
+	/// appends a directory to the plug-in search path
+	static void addPluginDirectory(const std::string& dir);
+
+
+protected:
+		
+	/// load a dynamic library from plugin_file and return its handle
+	static void *loadDynamicLibrary(const std::string& plugin_file);
+
+	/// close the dynamic library corresponding with lib_handle
+	static void closeDynamicLibrary(void *lib_handle);
+
+	/// returns the address of a library symbal
+	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
+	
+		
+	/// name of function defined in object code to create a new plug-in instance
+	static const std::string	PION_PLUGIN_CREATE;
+
+	/// name of function defined in object code to destroy a plug-in instance
+	static const std::string	PION_PLUGIN_DESTROY;
+		
+	/// mutex used to make the ltdl library thread-safe
+	static boost::mutex			PION_PLUGIN_MUTEX;
+};
+
+
+///
+/// PionPlugin: manages plug-in code loaded from shared object libraries.
+///
+template <typename InterfaceClassType>
+class PionPlugin :
+	public PionPluginBase,
+	private boost::noncopyable
+{
+public:
 
 	/// closes plug-in library, if open
 	inline void close(void) {
 		m_create_func = NULL;
 		m_destroy_func = NULL;
-		if (m_handle != NULL) {
-			boost::mutex::scoped_lock ltdl_lock(PION_LTDL_MUTEX);
-			lt_dlclose(m_handle);
-			m_handle = NULL;
+		if (m_lib_handle != NULL) {
+			closeDynamicLibrary(m_lib_handle);
+			m_lib_handle = NULL;
 		}
 	}
 
@@ -104,41 +123,36 @@ public:
 	 */
 	inline void open(const std::string& plugin_file) {
 		close();
-		// lock the ltdl library and make sure it was initialized
-		boost::mutex::scoped_lock ltdl_lock(PION_LTDL_MUTEX);
-		boost::call_once(reinterpret_cast<void (*)()>(lt_dlinit), PION_LTDL_INIT_FLAG);
 		
 		// attempt to open the plugin; note that this tries all search paths
 		// and also tries a variety of platform-specific extensions
-		m_handle = lt_dlopenext(plugin_file.c_str());
-		if (m_handle == NULL) throw PluginNotFoundException();
+		m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
+		if (m_lib_handle == NULL) throw PluginNotFoundException(plugin_file);
 
 		// find the function used to create new plugin objects
-		m_create_func = reinterpret_cast<CreateObjectFunction*>(lt_dlsym(m_handle, PION_CREATE_PLUGIN));
-		if (m_create_func == NULL) throw PluginMissingCreateException();
+		m_create_func = (CreateObjectFunction*)(getLibrarySymbol(m_lib_handle, PION_PLUGIN_CREATE));
+		if (m_create_func == NULL) throw PluginMissingCreateException(plugin_file);
 
 		// find the function used to destroy existing plugin objects
-		m_destroy_func = reinterpret_cast<DestroyObjectFunction*>(lt_dlsym(m_handle, PION_DESTROY_PLUGIN));
-		if (m_destroy_func == NULL) throw PluginMissingDestroyException();
+		m_destroy_func = (DestroyObjectFunction*)(getLibrarySymbol(m_lib_handle, PION_PLUGIN_DESTROY));
+		if (m_destroy_func == NULL) throw PluginMissingDestroyException(plugin_file);
 	}	
 
 	/// creates a new instance of the plug-in object
 	inline InterfaceClassType *create(void) {
 		if (m_create_func == NULL) throw PluginUndefinedException();
-		boost::mutex::scoped_lock ltdl_lock(PION_LTDL_MUTEX);
 		return m_create_func();
 	}
 	
 	/// destroys an instance of the plug-in object
 	inline void destroy(InterfaceClassType *object_ptr) {
 		if (m_destroy_func == NULL) throw PluginUndefinedException();
-		boost::mutex::scoped_lock ltdl_lock(PION_LTDL_MUTEX);
 		m_destroy_func(object_ptr);
 	}
 	
 	/// default constructor
 	PionPlugin(void)
-		: m_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
+		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
 	{}
 
 	/**
@@ -147,7 +161,7 @@ public:
 	 * @param plugin_file shared object file containing the plugin code
 	 */
 	PionPlugin(const std::string& plugin_file)
-		: m_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
+		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
 	{
 		open(plugin_file);
 	}	
@@ -165,7 +179,7 @@ private:
 	typedef void DestroyObjectFunction(InterfaceClassType*);
 
 	/// symbol library loaded from a shared object file
-	lt_dlhandle						m_handle;
+	void *							m_lib_handle;
 	
 	/// function used to create instances of the plug-in object
 	CreateObjectFunction *			m_create_func;

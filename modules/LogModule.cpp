@@ -38,14 +38,14 @@ bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new LogModule objects
-extern "C" LogModule *LogModule_LTX_create(void)
+extern "C" LogModule *create(void)
 {
 	return new LogModule();
 }
 
 
 /// destroys LogModule objects
-extern "C" void LogModule_LTX_destroy(LogModule *module_ptr)
+extern "C" void destroy(LogModule *module_ptr)
 {
 	delete module_ptr;
 }

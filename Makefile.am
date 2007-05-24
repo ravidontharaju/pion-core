@@ -2,12 +2,12 @@
 # libpion automake configuration file 
 # -----------------------------------
 
-SUBDIRS = libltdl include src modules tests
+SUBDIRS = include src modules tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libpion.pc
 
-EXTRA_DIST = libltdl doc autogen.sh \
+EXTRA_DIST = doc autogen.sh \
 	build/ax_boost_base.m4 \
 	build/ax_compiler_vendor.m4 \
 	src/modules/HelloModule.hpp

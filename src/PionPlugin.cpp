@@ -20,19 +20,50 @@
 
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionPlugin.hpp>
+#ifdef WIN32
+	#include <windows.h>
+#else
+	#include <dlfcn.h>
+#endif
 
 
 namespace pion {	// begin namespace pion
 	
-boost::mutex			PION_LTDL_MUTEX;
-boost::once_flag		PION_LTDL_INIT_FLAG = BOOST_ONCE_INIT;
+// static members of PionEngine
+	
+const std::string	PionPluginBase::PION_PLUGIN_CREATE("create");
+const std::string	PionPluginBase::PION_PLUGIN_DESTROY("destroy");
+boost::mutex		PionPluginBase::PION_PLUGIN_MUTEX;
+	
+	
+// PionEngine member functions
 
-void PION_ADD_PLUGIN_DIRECTORY(const std::string& dir) {
-	// lock the ltdl library and make sure it was initialized
-	boost::mutex::scoped_lock ltdl_lock(PION_LTDL_MUTEX);
-	boost::call_once(reinterpret_cast<void (*)()>(lt_dlinit), PION_LTDL_INIT_FLAG);
-	// add the directory to the ltdl search path
-	lt_dladdsearchdir(dir.c_str());
+void PionPluginBase::addPluginDirectory(const std::string& dir) {
+	// currently does nothing
 }
 
+void *PionPluginBase::loadDynamicLibrary(const std::string& plugin_file) {
+#ifdef WIN32
+	return LoadLibrary(plugin_file.c_str());
+#else
+	return dlopen(plugin_file.c_str());
+#endif
+}
+
+void PionPluginBase::closeDynamicLibrary(void *lib_handle) {
+#ifdef WIN32
+	FreeLibrary((HINSTANCE) lib_handle);
+#else
+	dlclose(lib_handle);
+#endif
+}
+
+void *PionPluginBase::getLibrarySymbol(void *lib_handle, const std::string& symbol) {
+#ifdef WIN32
+	return (void*)GetProcAddress((HINSTANCE) lib_handle, symbol.c_str());
+#else
+	return dlsym(lib_handle, symbol.c_str());
+#endif
+}
+	
 }	// end namespace pion

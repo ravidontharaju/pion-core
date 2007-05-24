@@ -136,14 +136,14 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new FileModule objects
-extern "C" FileModule *FileModule_LTX_create(void)
+extern "C" FileModule *create(void)
 {
 	return new FileModule();
 }
 
 
 /// destroys FileModule objects
-extern "C" void FileModule_LTX_destroy(FileModule *module_ptr)
+extern "C" void destroy(FileModule *module_ptr)
 {
 	delete module_ptr;
 }

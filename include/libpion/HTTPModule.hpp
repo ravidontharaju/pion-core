@@ -108,13 +108,13 @@ private:
 /// "create" function using this prototype and with an extern "C" declaration
 /// that is used to create new objects of that type
 ///
-// HTTPModule *<MODULENAME>_LTX_create(void);
+// HTTPModule *create(void);
 
 /// All modules implementations that derive from HTTPModule must define a
 /// "destroy" function using this prototype and with an extern "C" declaration
 /// that is used to destroy objects of that type
 ///
-// void <MODULENAME>_LTX_destroy(HTTPModule*);
+// void destroy(HTTPModule*);
 
 
 }	// end namespace pion

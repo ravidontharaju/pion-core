@@ -9,8 +9,8 @@
 # create aclocal.m4
 aclocal -I build
 
-# Install libtool, libltdl and related files
-libtoolize --ltdl --force
+# Install libtool and related files
+libtoolize --force
 
 # Generate configure script
 autoconf

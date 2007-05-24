@@ -26,13 +26,18 @@ AM_INIT_AUTOMAKE
 # compiler options
 CXXFLAGS="-DLIBPION"
 
-# Setup libtool with the ltdl library
-AC_LIBLTDL_CONVENIENCE
-AC_LIBTOOL_DLOPEN
+# Setup libtool
+case "$build_os" in
+*cygwin*)
+	AC_MSG_NOTICE(Platform: ---CYGWIN---)
+	AC_LIBTOOL_WIN32_DLL
+	;;
+*)
+	AC_MSG_NOTICE(Platform: $build_os)
+	AC_LIBTOOL_DLOPEN
+	;;
+esac
 AC_PROG_LIBTOOL
-AC_SUBST(LIBLTDL)
-AC_SUBST(LTDLINCL)
-AC_CONFIG_SUBDIRS(libltdl)
 
 # Check for programs
 AC_PROG_CXX
@@ -59,7 +64,7 @@ case "$build_os" in
 		PION_DEBUG_FLAGS="-ggdb -Wall"
 	fi
 	# Add socket library for Solaris (used by ASIO)
-	LDFLAGS="$LDFLAGS -lsocket"
+	LIBS="$LIBS -lsocket -lnsl"
 	;;
 *darwin*)
 	# Mac OS X: GCC compiler
@@ -75,6 +80,7 @@ case "$build_os" in
 	LDFLAGS="$LDFLAGS -mthreads"
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
+	LIBS="$LIBS -lws2_32 -lmswsock"
 	;;
 *)
 	# Other (Linux/FreeBSD): GCC compiler
@@ -144,7 +150,7 @@ AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio h
 
 # Check for Boost Thread library
 AC_CHECK_HEADERS([boost/thread/thread.hpp],,AC_MSG_ERROR(Unable to find the boost::thread headers))
-LDFLAGS_SAVED="$LDFLAGS"
+LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_thread
 for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
 	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
@@ -152,7 +158,7 @@ for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
 	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
 	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
 do
-	LDFLAGS="$LDFLAGS_SAVED -l$ax_lib"
+	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
 	AC_TRY_LINK([#include <boost/thread/thread.hpp>],
 		[ boost::thread current_thread; return 0; ],
@@ -164,13 +170,13 @@ if test "x$BOOST_THREAD_LIB" = "x"; then
 else
 	AC_MSG_NOTICE(Linking with boost::thread works)
 fi
-LDFLAGS="$LDFLAGS_SAVED"
+LIBS="$LIBS_SAVED"
 AC_SUBST(BOOST_THREAD_LIB)
 
 
 # Check for Boost Filesystem library
 AC_CHECK_HEADERS([boost/filesystem/path.hpp],,AC_MSG_ERROR(Unable to find the boost::filesystem headers))
-LDFLAGS_SAVED="$LDFLAGS"
+LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_filesystem
 for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
 	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
@@ -178,7 +184,7 @@ for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
 	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
 	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
 do
-	LDFLAGS="$LDFLAGS_SAVED -l$ax_lib"
+	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
 	AC_TRY_LINK([#include <boost/filesystem/path.hpp>],
 		[ boost::filesystem::path a_path; return 0; ],
@@ -190,7 +196,7 @@ if test "x$BOOST_FILESYSTEM_LIB" = "x"; then
 else
 	AC_MSG_NOTICE(Linking with boost::filesystem works)
 fi
-LDFLAGS="$LDFLAGS_SAVED"
+LIBS="$LIBS_SAVED"
 AC_SUBST(BOOST_FILESYSTEM_LIB)
 
 
@@ -220,12 +226,12 @@ if test "$without_log4cplus" != "true"; then
 	AC_CHECK_HEADERS([log4cplus/logger.h],,AC_MSG_ERROR([Unable to find the log4cplus headers]))
 	
 	# Check for log4cplus library
-	LDFLAGS_SAVED="$LDFLAGS"
-	LDFLAGS="$LDFLAGS -llog4cplus"
+	LIBS_SAVED="$LIBS"
+	LIBS="$LIBS_SAVED -llog4cplus"
 	AC_TRY_LINK([#include <log4cplus/logger.h>],[ log4cplus::Logger::getRoot(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cplus works),
 		AC_MSG_ERROR(Unable to link with the log4cplus library))
-	LDFLAGS="$LDFLAGS_SAVED"
+	LIBS="$LIBS_SAVED"
 
 	# Found the log4cplus library
 	AC_MSG_NOTICE(Using the log4cplus library for logging)
@@ -242,12 +248,12 @@ elif test "$without_log4cxx" != "true"; then
 	AC_CHECK_HEADERS([log4cxx/logger.h],,AC_MSG_ERROR([Unable to find the log4cxx headers]))
 	
 	# Check for log4cxx library
-	LDFLAGS_SAVED="$LDFLAGS"
-	LDFLAGS="$LDFLAGS -llog4cxx"
+	LIBS_SAVED="$LIBS"
+	LIBS="$LIBS_SAVED -llog4cxx"
 	AC_TRY_LINK([#include <log4cxx/logger.h>],[ log4cxx::Logger::getRootLogger(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cxx works),
 		AC_MSG_ERROR(Unable to link with the log4cxx library))
-	LDFLAGS="$LDFLAGS_SAVED"
+	LIBS="$LIBS_SAVED"
 
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
@@ -264,12 +270,12 @@ elif test "$without_log4cpp" != "true"; then
 	AC_CHECK_HEADERS([log4cpp/Category.hh],,AC_MSG_ERROR([Unable to find the log4cpp headers]))
 	
 	# Check for log4cpp library
-	LDFLAGS_SAVED="$LDFLAGS"
-	LDFLAGS="$LDFLAGS -llog4cpp"
+	LIBS_SAVED="$LIBS"
+	LIBS="$LIBS_SAVED -llog4cpp"
 	AC_TRY_LINK([#include <log4cpp/Category.hh>],[ log4cpp::Category::getRoot(); return 0; ],
 		AC_MSG_NOTICE(Linking with log4cpp works),
 		AC_MSG_ERROR(Unable to link with the log4cpp library))
-	LDFLAGS="$LDFLAGS_SAVED"
+	LIBS="$LIBS_SAVED"
 
 	# Found the log4cpp library
 	AC_MSG_NOTICE(Using the log4cpp library for logging)

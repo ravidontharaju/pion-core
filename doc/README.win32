@@ -79,6 +79,6 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-CPPFLAGS="-D__USE_W32_SOCKETS" \
+CPPFLAGS="-DWIN32 -D__USE_W32_SOCKETS -D_WIN32_WINNT=0x500" \
 	./configure --with-boost=/usr/local [--with-log...]
 make ; sudo make install
