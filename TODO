@@ -11,3 +11,4 @@ Things to do:
 * Allow more options for binding servers than just port numbers (IP)
 * Add support for Sun Studio & Microsoft Visual C++ compilers
 * Add support for parsing multipart form content
+* Switch to Jam or CMake build system instead of autotools?

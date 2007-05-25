@@ -145,11 +145,9 @@ AC_CHECK_HEADERS([boost/asio.hpp],,AC_MSG_ERROR(Unable to find the boost::asio h
 AC_CHECK_HEADERS([boost/thread/thread.hpp],,AC_MSG_ERROR(Unable to find the boost::thread headers))
 LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_thread
-for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
-	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
-	lib$BOOST_LIB-$CC lib$BOOST_LIB-$CC-mt lib$BOOST_LIB-$CC-mt-s \
-	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
-	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
+for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
+	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
+	lib$BOOST_LIB ;
 do
 	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
@@ -171,11 +169,9 @@ AC_SUBST(BOOST_THREAD_LIB)
 AC_CHECK_HEADERS([boost/filesystem/path.hpp],,AC_MSG_ERROR(Unable to find the boost::filesystem headers))
 LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_filesystem
-for ax_lib in $BOOST_LIB $BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB-$CC-mt \
-	$BOOST_LIB-$CC-mt-s $BOOST_LIB-$CC-s lib$BOOST_LIB lib$BOOST_LIB-mt \
-	lib$BOOST_LIB-$CC lib$BOOST_LIB-$CC-mt lib$BOOST_LIB-$CC-mt-s \
-	lib$BOOST_LIB-$CC-s $BOOST_LIB-mgw $BOOST_LIB-mgw $BOOST_LIB-mgw-mt \
-	$BOOST_LIB-mgw-mt-s $BOOST_LIB-mgw-s ;
+for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
+	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
+	lib$BOOST_LIB ;
 do
 	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
