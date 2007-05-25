@@ -99,7 +99,10 @@ public:
 protected:
 	
 	/// returns true if plug-in name exists within path p
-	static bool checkForPlugin(boost::filesystem::path& p, const std::string& name);
+	static bool checkForPlugin(std::string& final_path, const std::string& start_path, const std::string& name);
+	
+	/// updates final_path for cygwin path oddities, if necessary
+	static void checkCygwinPath(boost::filesystem::path& final_path, const std::string& path_string);
 
 	/// load a dynamic library from plugin_file and return its handle
 	static void *loadDynamicLibrary(const std::string& plugin_file);

@@ -49,10 +49,12 @@ boost::mutex				PionPlugin::m_plugin_mutex;
 	
 void PionPlugin::addPluginDirectory(const std::string& dir)
 {
-	if (! boost::filesystem::exists(dir) )
+	boost::filesystem::path plugin_path(dir, &boost::filesystem::no_check);
+	checkCygwinPath(plugin_path, dir);
+	if (! boost::filesystem::exists(plugin_path) )
 		throw DirectoryNotFoundException(dir);
 	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
-	m_plugin_dirs.push_back(dir);
+	m_plugin_dirs.push_back(plugin_path.native_directory_string());
 }
 
 void PionPlugin::resetPluginDirectories(void)
@@ -61,45 +63,77 @@ void PionPlugin::resetPluginDirectories(void)
 	m_plugin_dirs.clear();
 }
 
-bool PionPlugin::findPluginFile(const std::string& name, std::string& path)
+bool PionPlugin::findPluginFile(const std::string& name, std::string& path_to_file)
 {
-	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
-
-	// try working directory first
-	boost::filesystem::path module_path(".", &boost::filesystem::no_check);
-	if (checkForPlugin(module_path, name)) {
-		path = module_path.native_directory_string();
+	// first, try the name as-is
+	if (checkForPlugin(path_to_file, name, ""))
 		return true;
-	}
 
 	// nope, check search paths
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 	for (std::vector<std::string>::iterator i = m_plugin_dirs.begin();
 		 i != m_plugin_dirs.end(); ++i)
 	{
-		module_path = *i;
-		if (checkForPlugin(module_path, name)) {
-			path = module_path.native_directory_string();
+		if (checkForPlugin(path_to_file, *i, name))
 			return true;
-		}
 	}
 	
+	// no plug-in file found
 	return false;
 }
 
-bool PionPlugin::checkForPlugin(boost::filesystem::path& p, const std::string& name)
+bool PionPlugin::checkForPlugin(std::string& final_path, const std::string& start_path, const std::string& name)
 {
-	const boost::filesystem::path base_path(p);
+	// check for cygwin path oddities
+	boost::filesystem::path cygwin_safe_path(start_path, &boost::filesystem::no_check);
+	checkCygwinPath(cygwin_safe_path, start_path);
+	boost::filesystem::path test_path(cygwin_safe_path);
+
+	// if a name is specified, append it to the test path
+	if (! name.empty())
+		test_path /= boost::filesystem::path(name, &boost::filesystem::no_check);
+
+	// check for existence of plug-in (without extension)		
+	if (boost::filesystem::exists(test_path)) {
+		final_path = test_path.native_directory_string();
+		return true;
+	}
+		
+	// next, try appending the plug-in extension		
+	if (name.empty()) {
+		// no "name" specified -> append it directly to start_path
+		test_path = boost::filesystem::path(start_path + PION_PLUGIN_EXTENSION,
+			&boost::filesystem::no_check);
+		// in this case, we need to re-check for the cygwin oddities
+		checkCygwinPath(test_path, start_path + PION_PLUGIN_EXTENSION);
+	} else {
+		// name is specified, so we can just re-use cygwin_safe_path
+		test_path = cygwin_safe_path /
+			boost::filesystem::path(name + PION_PLUGIN_EXTENSION,
+				&boost::filesystem::no_check);
+	}
+
+	// re-check for existence of plug-in (after adding extension)		
+	if (boost::filesystem::exists(test_path)) {
+		final_path = test_path.native_directory_string();
+		return true;
+	}
 	
-	// check for plug-in file without using extension (may already be provided)
-	p = base_path / boost::filesystem::path(name, &boost::filesystem::no_check);
-	if (boost::filesystem::exists(p)) return true;
-
-	// check for plug-in file with extension
-	p = base_path / boost::filesystem::path(name + PION_PLUGIN_EXTENSION, &boost::filesystem::no_check);
-	if (boost::filesystem::exists(p)) return true;
-
 	// no plug-in file found
 	return false;
+}
+
+void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path, const std::string& path_string)
+{
+#ifdef PION_CYGWIN_PATH
+	// try prepending PION_CYGWIN_PATH if not complete
+	if (! final_path.is_complete() && final_path.has_root_directory())
+	{
+		final_path = boost::filesystem::path(
+			std::string(PION_CYGWIN_PATH) + path_string,
+			&boost::filesystem::no_check);
+	}
+#endif
 }
 
 void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file) {
