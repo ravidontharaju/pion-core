@@ -57,15 +57,6 @@ http://log4cplus.sourceforge.net
 Installing Boost and ASIO:
 --------------------------
 
-To configure and install Boost under Windows, we recommend that you first
-download and install the Boost Jam executable (bjam.exe) into a directory
-that is within your path.
-
-wget http://downloads.sourceforge.net/boost/boost-jam-3.1.14-1-ntx86.zip
-unzip boost-jam-3.1.14-1.ntx86.zip
-mv boost-jam-3.1.14-1-ntx86/bjam.exe /usr/local/bin
-chmod a+x /usr/local/bin/bjam
-
 The current Boost distribution (1.33.1) does not include the ASIO library.
 However, since ASIO consists only of header files, it is very easy to install
 it over top of any Boost installation: just copy the header files into your
@@ -77,7 +68,8 @@ tar xvfj boost_1_33_1.tar.bz2
 tar xvfj boost_asio_0_3_7.tar.bz2
 mv boost_asio_0_3_7/boost/* boost_1_33_1/boost/
 cd boost_1_33_1
-bjam "-sTOOLS=gcc" "-sBOOST_POSIX=1" install
+./configure --prefix=/usr/local
+make install
 
 
 Building and installing libpion:
@@ -87,21 +79,20 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-CPPFLAGS="-DBOOST_POSIX=1 -DWIN32 -D__USE_W32_SOCKETS -D_WIN32_WINNT=0x500" \
-	./configure --with-boost=c:/boost [--with-log...]
-make ; sudo make install
+CPPFLAGS="-D_WIN32_WINNT=0x500" \
+	./configure --with-boost=/usr/local [--with-log...]
+make install
 
 
 Known Problems:
 ---------------
 
 The POSIX path emulation layer provided by cygwin sometimes confused the
-boost::filesystem library.  Because of this, you need to decide whether your
-application will use POSIX-style or Windows-style paths and compile both
-the boost::filesystem library and libpion appropriately.  The above
-documentation assumes that you want to use POSIX-style paths within Cygwin.
-To use Windows-style paths, replace "BOOST_POSIX=1" with "BOOST_WINDOWS=1".
-Please see the boost::filesystem documenation for more information:
-http://www.boost.org/libs/filesystem/doc/index.htm
+boost::filesystem library.  libpion includes some extra code for cygwin to
+try to find the path you actually want.  If you are using libpion in a
+cygwin environment, you may need to configure your cygwin installation
+directory using the parameter "--with-cygwin=[directory]" (the default is
+"c:/cygwin").  Please see the boost::filesystem documenation for more
+information: http://www.boost.org/libs/filesystem/doc/index.htm
 
-The test programs are currently dumping core at shutdown.
+The test programs are currently dumping core (stack trace) when they exit.
