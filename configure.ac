@@ -74,8 +74,15 @@ case "$build_os" in
 	PION_DEBUG_FLAGS="-ggdb -Wall"
 	LIBS="$LIBS -lws2_32 -lmswsock"
 	;;
+*freebsd*)
+	# FreeBSD: GCC compiler
+	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
+	LDFLAGS="$LDFLAGS -pthread"
+	PION_OPT_FLAGS="-O2 -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall"
+	;;
 *)
-	# Other (Linux/FreeBSD): GCC compiler
+	# Other (Linux): GCC compiler
 	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
 	LDFLAGS="$LDFLAGS -pthread"
 	PION_OPT_FLAGS="-O2 -Wall"
