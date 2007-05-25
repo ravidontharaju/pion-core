@@ -27,16 +27,8 @@ AM_INIT_AUTOMAKE
 CXXFLAGS="-DLIBPION"
 
 # Setup libtool
-case "$build_os" in
-*cygwin*)
-	AC_MSG_NOTICE(Platform: ---CYGWIN---)
-	AC_LIBTOOL_WIN32_DLL
-	;;
-*)
-	AC_MSG_NOTICE(Platform: $build_os)
-	AC_LIBTOOL_DLOPEN
-	;;
-esac
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 
 # Check for programs
@@ -63,8 +55,7 @@ case "$build_os" in
 		PION_OPT_FLAGS="-O2 -Wall"
 		PION_DEBUG_FLAGS="-ggdb -Wall"
 	fi
-	# Add socket library for Solaris (used by ASIO)
-	LIBS="$LIBS -lsocket -lnsl"
+	LIBS="$LIBS -lsocket -lnsl -ldl"
 	;;
 *darwin*)
 	# Mac OS X: GCC compiler
@@ -73,6 +64,7 @@ case "$build_os" in
 	#LDFLAGS="$LDFLAGS"
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
+	LIBS="$LIBS -ldl"
 	;;
 *cygwin*)
 	# Cygwin GCC compiler (Windows)
@@ -88,6 +80,7 @@ case "$build_os" in
 	LDFLAGS="$LDFLAGS -pthread"
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
+	LIBS="$LIBS -ldl"
 	;;
 esac
 
@@ -232,6 +225,7 @@ if test "$without_log4cplus" != "true"; then
 		AC_MSG_NOTICE(Linking with log4cplus works),
 		AC_MSG_ERROR(Unable to link with the log4cplus library))
 	LIBS="$LIBS_SAVED"
+	PION_LOG_LIB="-llog4cplus"
 
 	# Found the log4cplus library
 	AC_MSG_NOTICE(Using the log4cplus library for logging)
@@ -254,6 +248,7 @@ elif test "$without_log4cxx" != "true"; then
 		AC_MSG_NOTICE(Linking with log4cxx works),
 		AC_MSG_ERROR(Unable to link with the log4cxx library))
 	LIBS="$LIBS_SAVED"
+	PION_LOG_LIB="-llog4cxx"
 
 	# Found the log4cxx library
 	AC_MSG_NOTICE(Using the log4cxx library for logging)
@@ -276,6 +271,7 @@ elif test "$without_log4cpp" != "true"; then
 		AC_MSG_NOTICE(Linking with log4cpp works),
 		AC_MSG_ERROR(Unable to link with the log4cpp library))
 	LIBS="$LIBS_SAVED"
+	PION_LOG_LIB="-llog4cpp"
 
 	# Found the log4cpp library
 	AC_MSG_NOTICE(Using the log4cpp library for logging)

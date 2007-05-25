@@ -22,7 +22,7 @@
 #include <libpion/PionPlugin.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <iostream>
+
 #ifdef WIN32
 	#include <windows.h>
 #else
@@ -92,12 +92,10 @@ bool PionPlugin::checkForPlugin(boost::filesystem::path& p, const std::string& n
 	
 	// check for plug-in file without using extension (may already be provided)
 	p = base_path / boost::filesystem::path(name, &boost::filesystem::no_check);
-	std::cout << "checking plug-in: " << p.native_directory_string() << std::endl;
 	if (boost::filesystem::exists(p)) return true;
 
 	// check for plug-in file with extension
 	p = base_path / boost::filesystem::path(name + PION_PLUGIN_EXTENSION, &boost::filesystem::no_check);
-	std::cout << "checking plug-in: " << p.native_directory_string() << std::endl;
 	if (boost::filesystem::exists(p)) return true;
 
 	// no plug-in file found
