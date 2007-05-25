@@ -68,7 +68,7 @@ case "$build_os" in
 	;;
 *cygwin*)
 	# Cygwin GCC compiler (Windows)
-	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT"
+	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT -DWIN32 -D__USE_W32_SOCKETS"
 	LDFLAGS="$LDFLAGS -mthreads"
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
@@ -115,6 +115,29 @@ fi
 AC_MSG_NOTICE([HTTP modules directory: $PION_MODULES_DIRECTORY])
 AC_DEFINE_UNQUOTED([PION_MODULES_DIRECTORY],["$PION_MODULES_DIRECTORY"],[Define to the directory where HTTP modules are installed.])
 AC_SUBST(PION_MODULES_DIRECTORY)
+     
+
+# Check for --with-cygwin
+AC_ARG_WITH([cygwin],
+    AC_HELP_STRING([--with-cygwin@<:@=DIR@:>@],[directory where cygwin is installed]),
+    [with_cygwin=$withval],
+    [with_cygwin=maybe])
+if test "$with_cygwin" = "maybe"; then
+	case "$build_os" in
+	*cygwin*)
+		PION_CYGWIN_DIRECTORY="c:/cygwin"
+		AC_MSG_NOTICE([Cygwin root directory: $PION_CYGWIN_DIRECTORY])
+		;;
+	*)
+		;;
+	esac
+elif test "$with_cygwin" != "no"; then
+	PION_CYGWIN_DIRECTOR="$with_cygwin"
+	AC_MSG_NOTICE([Cygwin root directory: $PION_CYGWIN_DIRECTORY])
+fi
+AC_DEFINE_UNQUOTED([PION_CYGWIN_DIRECTORY],["$PION_CYGWIN_DIRECTORY"],[Define to the directory where cygwin is installed.])
+AC_SUBST(PION_CYGWIN_DIRECTORY)
+
      
 # Check for unordered container support
 AC_CHECK_HEADERS([unordered_map],[unordered_map_type=unordered_map],[])

@@ -125,12 +125,12 @@ bool PionPlugin::checkForPlugin(std::string& final_path, const std::string& star
 
 void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path, const std::string& path_string)
 {
-#ifdef PION_CYGWIN_PATH
-	// try prepending PION_CYGWIN_PATH if not complete
+#ifdef PION_CYGWIN_DIRECTORY
+	// try prepending PION_CYGWIN_DIRECTORY if not complete
 	if (! final_path.is_complete() && final_path.has_root_directory())
 	{
 		final_path = boost::filesystem::path(
-			std::string(PION_CYGWIN_PATH) + path_string,
+			std::string(PION_CYGWIN_DIRECTORY) + path_string,
 			&boost::filesystem::no_check);
 	}
 #endif

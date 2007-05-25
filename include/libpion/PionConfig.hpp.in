@@ -50,6 +50,9 @@
 /* Define to the directory where HTTP modules are installed. */
 #undef PION_MODULES_DIRECTORY
 
+/* Define to the directory where cygwin is installed. */
+#undef PION_CYGWIN_DIRECTORY
+
 
 #endif
 

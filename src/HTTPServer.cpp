@@ -159,6 +159,9 @@ void HTTPServer::loadModule(const std::string& resource, const std::string& modu
 	HTTPModule *module_ptr(plugin_ptr->create());
 	module_ptr->setResource(resource);	// strips any trailing '/' from the name
 
+	PION_LOG_INFO(m_logger, "Loaded HTTP module for resource ("
+		<< resource << "): " << module_file);
+
 	// add the module to the server's collection
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(module_ptr->getResource(),
