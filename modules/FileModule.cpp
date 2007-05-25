@@ -67,7 +67,7 @@ void FileModule::createMIMETypes(void) {
 void FileModule::setOption(const std::string& name, const std::string& value)
 {
 	if (name == "directory") {
-		m_directory = value;
+		m_directory = boost::filesystem::path(value, &boost::filesystem::no_check);
 		// make sure that the directory exists
 		if (! boost::filesystem::exists(m_directory) )
 			throw DirectoryNotFoundException(value);
@@ -85,7 +85,8 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	if (relative_resource.empty()) return false;	// module's directory is not valid
 	
 	// calculate the location of the file being requested
-	const boost::filesystem::path file_path(m_directory / relative_resource);
+	boost::filesystem::path file_path(m_directory);
+	file_path /= boost::filesystem::path(relative_resource, &boost::filesystem::no_check);
 
 	// make sure that the file exists and is not a directory
 	if (! boost::filesystem::exists(file_path) || boost::filesystem::is_directory(file_path))

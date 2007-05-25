@@ -25,15 +25,19 @@
 #include <libpion/PionException.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <vector>
 #include <string>
+
+// forward declaration of boost::filesystem::path
+namespace boost { namespace filesystem { class path; } }
 
 
 namespace pion {	// begin namespace pion
 
 ///
-/// PionPluginBase: base class for plug-in management
+/// PionPlugin: base class for plug-in management
 ///
-class PionPluginBase {
+class PionPlugin {
 public:
 
 	/// exception thrown if the plug-in file cannot be opened
@@ -44,6 +48,13 @@ public:
 		}
 	};
 	
+	/// exception thrown if the plug-in directory does not exist
+	class DirectoryNotFoundException : public pion::PionException {
+	public:
+		DirectoryNotFoundException(const std::string& dir)
+			: pion::PionException("Plug-in directory not found: ", dir) {}
+	};
+
 	/// exception thrown if the plug-in file cannot be opened
 	class PluginNotFoundException : public PionException {
 	public:
@@ -66,15 +77,30 @@ public:
 	};
 
 	// default constructor and destructor
-	PionPluginBase(void) {}
-	virtual ~PionPluginBase() {}
-
+	PionPlugin(void) {}
+	virtual ~PionPlugin() {}
+	
 	/// appends a directory to the plug-in search path
 	static void addPluginDirectory(const std::string& dir);
+	
+	/// clears all directories from the plug-in search path
+	static void resetPluginDirectories(void);
+	
+	/**
+	 * searches directories for a valid plug-in file
+	 *
+	 * @param name name of the plug-in to search for
+	 * @param path the path to the plug-in file, if found
+	 * @return true if the plug-in file was found
+	 */
+	static bool findPluginFile(const std::string& name, std::string& path);
 
-
+	
 protected:
-		
+	
+	/// returns true if plug-in name exists within path p
+	static bool checkForPlugin(boost::filesystem::path& p, const std::string& name);
+
 	/// load a dynamic library from plugin_file and return its handle
 	static void *loadDynamicLibrary(const std::string& plugin_file);
 
@@ -86,22 +112,30 @@ protected:
 	
 		
 	/// name of function defined in object code to create a new plug-in instance
-	static const std::string	PION_PLUGIN_CREATE;
+	static const std::string			PION_PLUGIN_CREATE;
 
 	/// name of function defined in object code to destroy a plug-in instance
-	static const std::string	PION_PLUGIN_DESTROY;
+	static const std::string			PION_PLUGIN_DESTROY;
+
+	/// file extension used for Pion plug-ins (platform specific)
+	static const std::string			PION_PLUGIN_EXTENSION;
+	
+private:
 		
-	/// mutex used to make the ltdl library thread-safe
-	static boost::mutex			PION_PLUGIN_MUTEX;
+	/// directories containing plugin files
+	static std::vector<std::string>		m_plugin_dirs;
+
+	/// mutex to make class thread-safe
+	static boost::mutex					m_plugin_mutex;
 };
 
 
 ///
-/// PionPlugin: manages plug-in code loaded from shared object libraries.
+/// PionPluginPtr: manages plug-in code loaded from shared object libraries.
 ///
 template <typename InterfaceClassType>
-class PionPlugin :
-	public PionPluginBase,
+class PionPluginPtr :
+	public PionPlugin,
 	private boost::noncopyable
 {
 public:
@@ -151,7 +185,7 @@ public:
 	}
 	
 	/// default constructor
-	PionPlugin(void)
+	PionPluginPtr(void)
 		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
 	{}
 
@@ -160,14 +194,14 @@ public:
 	 * 
 	 * @param plugin_file shared object file containing the plugin code
 	 */
-	PionPlugin(const std::string& plugin_file)
+	PionPluginPtr(const std::string& plugin_file)
 		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
 	{
 		open(plugin_file);
 	}	
 
 	/// virtual destructor
-	virtual ~PionPlugin() { close(); }
+	virtual ~PionPluginPtr() { close(); }
 	
 	
 private:

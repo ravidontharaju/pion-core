@@ -23,6 +23,7 @@
 
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionEngine.hpp>
+#include <libpion/PionPlugin.hpp>
 
 
 namespace pion {	// begin namespace pion
@@ -30,7 +31,7 @@ namespace pion {	// begin namespace pion
 ///
 /// Pion: library wrapper for the PionEngine singleton
 /// 
-namespace Pion {
+struct Pion {
 
 	/**
 	 * Adds a new TCP server
@@ -100,7 +101,16 @@ namespace Pion {
 		return PionEngine::getInstance().getLogger();
 	}
 
-}	// end namespace Pion
+	/// appends a directory to the plug-in search path
+	inline static void addPluginDirectory(const std::string& dir) {
+		PionPlugin::addPluginDirectory(dir);
+	}
+	
+	/// clears all directories from the plug-in search path
+	inline static void resetPluginDirectories(void) {
+		PionPlugin::resetPluginDirectories();
+	}
+};
 
 }	// end namespace pion
 

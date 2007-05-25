@@ -54,7 +54,7 @@ int main (int argc, char *argv[])
 	// parse command line: determine port number, RESOURCE and MODULE
 	unsigned int port = DEFAULT_PORT;
 	std::string resource_name;
-	std::string module_filename;
+	std::string module_name;
 	
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
@@ -81,14 +81,14 @@ int main (int argc, char *argv[])
 			resource_name = argv[argnum];
 		} else if (argnum+1 == argc) {
 			// last argument = MODULE
-			module_filename = argv[argnum];
+			module_name = argv[argnum];
 		} else {
 			argument_error();
 			return 1;
 		}
 	}
 	
-	if (resource_name.empty() || module_filename.empty()) {
+	if (resource_name.empty() || module_name.empty()) {
 		argument_error();
 		return 1;
 	}
@@ -103,11 +103,11 @@ int main (int argc, char *argv[])
 	
 	try {
 		// add the modules installation directory to our path
-		PionPluginBase::addPluginDirectory(PION_MODULES_DIRECTORY);
+		Pion::addPluginDirectory(PION_MODULES_DIRECTORY);
 
 		// create a server for HTTP & add the Hello module
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
-		http_server->loadModule(resource_name, module_filename);
+		http_server->loadModule(resource_name, module_name);
 		
 		// set module options if any are defined
 		for (ModuleOptionsType::iterator i = module_options.begin();

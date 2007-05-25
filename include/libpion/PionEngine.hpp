@@ -60,6 +60,7 @@ public:
 		}
 	};
 
+
 	/// public destructor: not virtual, should not be extended
 	~PionEngine() { stop(); }
 
@@ -138,7 +139,7 @@ private:
 	/// start function for pooled threads
 	void run(void);
 
-
+	
 	/// typedef for a group of TCPServer objects
 	typedef std::map<unsigned int, TCPServerPtr>			TCPServerMap;
 	
@@ -162,7 +163,7 @@ private:
 	
 	/// pool of threads used to receive and process requests
 	PionThreadPool					m_thread_pool;
-
+	
 	/// manages async I/O events
 	boost::asio::io_service			m_asio_service;
 	

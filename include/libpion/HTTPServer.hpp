@@ -76,9 +76,10 @@ public:
 	 * loads a module from a shared object file
 	 *
 	 * @param resource the resource name or uri-stem to bind to the module
-	 * @param file the name of the shared object file
+	 * @param module_name the name of the module to load (searches plug-in
+	 *        directories and appends extensions)
 	 */
-	void loadModule(const std::string& resource, const std::string& file);
+	void loadModule(const std::string& resource, const std::string& module_name);
 	
 	/**
 	 * sets a configuration options for the module associated with resource
@@ -163,7 +164,7 @@ private:
 	};
 
 	/// used by ModuleMap to associated moudle objects with plugin libraries
-	typedef std::pair<HTTPModule *, PionPlugin<HTTPModule> *>	PluginPair;
+	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> *>	PluginPair;
 	
 	/// data type for a collection of HTTP modules
 	class ModuleMap

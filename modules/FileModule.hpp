@@ -52,7 +52,7 @@ public:
 	};
 
 	// default constructor and destructor
-	FileModule(void) {}
+	FileModule(void) : m_directory("", &boost::filesystem::no_check) {}
 	virtual ~FileModule() {}
 	
 	/**

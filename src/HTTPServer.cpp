@@ -138,18 +138,28 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 
 void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
 {
-	PionPlugin<HTTPModule> *plugin_ptr(NULL);
+	PionPluginPtr<HTTPModule> *plugin_ptr(NULL);
 	module_ptr->setResource(resource);	// strips any trailing '/' from the name
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(module_ptr->getResource(),
 									std::make_pair(module_ptr, plugin_ptr)));
 }
 
-void HTTPServer::loadModule(const std::string& resource, const std::string& module_file)
+void HTTPServer::loadModule(const std::string& resource, const std::string& module_name)
 {
-	PionPlugin<HTTPModule> *plugin_ptr(new PionPlugin<HTTPModule>(module_file));
+	// search for the plug-in file using the configured paths
+	std::string module_file;
+	if (! PionPlugin::findPluginFile(module_name, module_file))
+		throw PionPlugin::PluginNotFoundException(module_name);
+
+	// create a new plug-in pointer to load and manage the module
+	PionPluginPtr<HTTPModule> *plugin_ptr(new PionPluginPtr<HTTPModule>(module_file));
+	
+	// create a new module using the plug-in library
 	HTTPModule *module_ptr(plugin_ptr->create());
 	module_ptr->setResource(resource);	// strips any trailing '/' from the name
+
+	// add the module to the server's collection
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(module_ptr->getResource(),
 									std::make_pair(module_ptr, plugin_ptr)));

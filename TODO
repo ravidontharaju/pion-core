@@ -1,7 +1,6 @@
 Things to do:
 =============
 
-* Bug: space characters cannot be used with FileModule
 * Add more caching functionality to FileModule
 * Implement LogModule for displaying log entries
 * Add support for parsing request cookies and setting response cookies
