@@ -67,7 +67,7 @@ void PionPlugin::resetPluginDirectories(void)
 void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
 								 const std::string& start_path)
 {
-#ifdef PION_CYGWIN_DIRECTORY
+#if defined(WIN32) && defined(PION_CYGWIN_DIRECTORY)
 	// try prepending PION_CYGWIN_DIRECTORY if not complete
 	if (! final_path.is_complete() && final_path.has_root_directory())
 	{
