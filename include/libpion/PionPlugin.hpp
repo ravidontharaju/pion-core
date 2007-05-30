@@ -58,22 +58,22 @@ public:
 	/// exception thrown if the plug-in file cannot be opened
 	class PluginNotFoundException : public PionException {
 	public:
-		PluginNotFoundException(const std::string& dir)
-			: PionException("Plug-in library not found: ", dir) {}
+		PluginNotFoundException(const std::string& file)
+			: PionException("Plug-in library not found: ", file) {}
 	};
 	
 	/// exception thrown if a plug-in library is missing the create() function
 	class PluginMissingCreateException : public PionException {
 	public:
-		PluginMissingCreateException(const std::string& dir)
-			: PionException("Plug-in library does not include create() symbol: ", dir) {}
+		PluginMissingCreateException(const std::string& file)
+			: PionException("Plug-in library does not include create() symbol: ", file) {}
 	};
 	
 	/// exception thrown if a plug-in library is missing the destroy() function
 	class PluginMissingDestroyException : public PionException {
 	public:
-		PluginMissingDestroyException(const std::string& dir)
-			: PionException("Plug-in library does not include destroy() symbol: ", dir) {}
+		PluginMissingDestroyException(const std::string& file)
+			: PionException("Plug-in library does not include destroy() symbol: ", file) {}
 	};
 
 	// default constructor and destructor
@@ -87,23 +87,73 @@ public:
 	static void resetPluginDirectories(void);
 	
 	/**
+	 * updates path for cygwin oddities, if necessary
+	 *
+	 * @param final_path path object for the file, will be modified if necessary
+	 * @param start_path original path to the file.  if final_path is not valid,
+	 *                   this will be appended to PION_CYGWIN_DIRECTORY to attempt
+	 *                   attempt correction of final_path for cygwin
+	 */
+	static void checkCygwinPath(boost::filesystem::path& final_path,
+								const std::string& path_string);
+	
+	/**
 	 * searches directories for a valid plug-in file
 	 *
-	 * @param name name of the plug-in to search for
-	 * @param path the path to the plug-in file, if found
+	 * @param path_to_file the path to the plug-in file, if found
+	 * @param the name name of the plug-in to search for
 	 * @return true if the plug-in file was found
 	 */
-	static bool findPluginFile(const std::string& name, std::string& path);
+	static inline bool findPluginFile(std::string& path_to_file,
+									  const std::string& name)
+	{
+		return findFile(path_to_file, name, PION_PLUGIN_EXTENSION);
+	}
 
+	/**
+	 * searches directories for a valid plug-in configuration file
+	 *
+	 * @param path_to_file if found, is set to the complete path to the file
+	 * @param name the name of the configuration file to search for
+	 * @return true if the configuration file was found
+	 */
+	static inline bool findConfigFile(std::string& path_to_file,
+									  const std::string& name)
+	{
+		return findFile(path_to_file, name, PION_CONFIG_EXTENSION);
+	}
+	
 	
 protected:
 	
-	/// returns true if plug-in name exists within path p
-	static bool checkForPlugin(std::string& final_path, const std::string& start_path, const std::string& name);
-	
-	/// updates final_path for cygwin path oddities, if necessary
-	static void checkCygwinPath(boost::filesystem::path& final_path, const std::string& path_string);
+	/**
+	 * searches directories for a valid plug-in file
+	 *
+	 * @param path_to_file if found, is set to the complete path to the file
+	 * @param name the name of the file to search for
+	 * @param extension will be appended to name if name is not found
+	 *
+	 * @return true if the file was found
+	 */
+	static bool findFile(std::string& path_to_file, const std::string& name,
+						 const std::string& extension);
 
+	/**
+	 * normalizes complete and final path to a file while looking for it
+	 *
+	 * @param final_path if found, is set to the complete, normalized path to the file
+	 * @param start_path the original starting path to the file
+	 * @param name the name of the file to search for
+	 * @param extension will be appended to name if name is not found
+	 *
+	 * @return true if the file was found
+	 */
+	static bool checkForFile(std::string& final_path, const std::string& start_path,
+							 const std::string& name, const std::string& extension);
+	
+	/// returns the name of the plugin object (based on the plugin_file name)
+	static std::string getPluginName(const std::string& plugin_file);
+	
 	/// load a dynamic library from plugin_file and return its handle
 	static void *loadDynamicLibrary(const std::string& plugin_file);
 
@@ -120,8 +170,11 @@ protected:
 	/// name of function defined in object code to destroy a plug-in instance
 	static const std::string			PION_PLUGIN_DESTROY;
 
-	/// file extension used for Pion plug-ins (platform specific)
+	/// file extension used for Pion plug-in files (platform specific)
 	static const std::string			PION_PLUGIN_EXTENSION;
+
+	/// file extension used for Pion configuration files
+	static const std::string			PION_CONFIG_EXTENSION;
 	
 private:
 		
@@ -160,18 +213,25 @@ public:
 	 */
 	inline void open(const std::string& plugin_file) {
 		close();
+
+		// get the name of the plugin (for create/destroy symbol names)
+		const std::string plugin_name(getPluginName(plugin_file));
 		
 		// attempt to open the plugin; note that this tries all search paths
 		// and also tries a variety of platform-specific extensions
 		m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
 		if (m_lib_handle == NULL) throw PluginNotFoundException(plugin_file);
-
+		
 		// find the function used to create new plugin objects
-		m_create_func = (CreateObjectFunction*)(getLibrarySymbol(m_lib_handle, PION_PLUGIN_CREATE));
+		m_create_func = (CreateObjectFunction*)(getLibrarySymbol(m_lib_handle,
+																 PION_PLUGIN_CREATE
+																 + plugin_name));
 		if (m_create_func == NULL) throw PluginMissingCreateException(plugin_file);
 
 		// find the function used to destroy existing plugin objects
-		m_destroy_func = (DestroyObjectFunction*)(getLibrarySymbol(m_lib_handle, PION_PLUGIN_DESTROY));
+		m_destroy_func = (DestroyObjectFunction*)(getLibrarySymbol(m_lib_handle,
+																   PION_PLUGIN_DESTROY
+																   + plugin_name));
 		if (m_destroy_func == NULL) throw PluginMissingDestroyException(plugin_file);
 	}	
 

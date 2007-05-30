@@ -51,6 +51,21 @@ public:
 			: PionException("No modules are identified by the resource: ", resource) {}
 	};
 
+	/// exception thrown if the plug-in configuration file cannot be found
+	class ConfigNotFoundException : public PionException {
+	public:
+		ConfigNotFoundException(const std::string& file)
+			: PionException("Module configuration file not found: ", file) {}
+	};
+	
+	/// exception thrown if the plug-in file cannot be opened
+	class ConfigParsingException : public PionException {
+	public:
+		ConfigParsingException(const std::string& file)
+			: PionException("Unable to parse configuration file: ", file) {}
+	};
+	
+	
 	/**
 	 * creates new HTTPServer objects
 	 *
@@ -90,6 +105,20 @@ public:
 	 */
 	void setModuleOption(const std::string& resource,
 						 const std::string& name, const std::string& value);
+	
+	/**
+	 * Parses a simple module configuration file. Each line in the file starts
+	 * with one of the following commands:
+	 *
+	 * path VALUE  :  adds a directory to the module search path
+	 * module RESOURCE FILE  :  loads module bound to RESOURCE from FILE
+	 * option RESOURCE NAME=VALUE  :  sets module option NAME to VALUE
+	 *
+	 * Blank lines or lines that begin with # are ignored as comments.
+	 *
+	 * @param config_name the name of the config file to parse
+	 */
+	void loadModuleConfig(const std::string& config_name);
 
 	/// clears all the modules that are currently configured
 	void clearModules(void);

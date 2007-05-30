@@ -38,14 +38,14 @@ bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 
 /// creates new HelloModule objects
-extern "C" HelloModule *create(void)
+extern "C" HelloModule *pion_create_HelloModule(void)
 {
 	return new HelloModule();
 }
 
 
 /// destroys HelloModule objects
-extern "C" void destroy(HelloModule *module_ptr)
+extern "C" void pion_destroy_HelloModule(HelloModule *module_ptr)
 {
 	delete module_ptr;
 }

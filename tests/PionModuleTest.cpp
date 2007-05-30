@@ -38,7 +38,8 @@ void handle_signal(int sig)
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage: PionModuleTest [-p PORT] [-o OPTION=VALUE] RESOURCE MODULE" << std::endl;
+	std::cerr << "usage: PionModuleTest [-p PORT] [-d MODULEDIR] [-o OPTION=VALUE] RESOURCE MODULE" << std::endl
+			  << "       PionModuleTest [-p PORT] [-d MODULEDIR] -c MODULE_CONFIG_NAME" << std::endl;
 }
 
 
@@ -53,6 +54,7 @@ int main (int argc, char *argv[])
 	
 	// parse command line: determine port number, RESOURCE and MODULE
 	unsigned int port = DEFAULT_PORT;
+	std::string module_config_name;
 	std::string resource_name;
 	std::string module_name;
 	
@@ -62,6 +64,16 @@ int main (int argc, char *argv[])
 				++argnum;
 				port = strtoul(argv[argnum], 0, 10);
 				if (port == 0) port = DEFAULT_PORT;
+			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
+				module_config_name = argv[++argnum];
+			} else if (argv[argnum][1] == 'd' && argv[argnum][2] == '\0' && argnum+1 < argc) {
+				// add the modules directory to the search path
+				try { Pion::addPluginDirectory(argv[++argnum]); }
+				catch (PionPlugin::DirectoryNotFoundException&) {
+					std::cerr << "PionModuleTest: Modules directory does not exist: "
+						<< argv[argnum] << std::endl;
+					return 1;
+				}
 			} else if (argv[argnum][1] == 'o' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				std::string option_name(argv[++argnum]);
 				std::string::size_type pos = option_name.find('=');
@@ -88,7 +100,7 @@ int main (int argc, char *argv[])
 		}
 	}
 	
-	if (resource_name.empty() || module_name.empty()) {
+	if (module_config_name.empty() && (resource_name.empty() || module_name.empty())) {
 		argument_error();
 		return 1;
 	}
@@ -97,8 +109,9 @@ int main (int argc, char *argv[])
 	signal(SIGINT, handle_signal);
 
 	// initialize log system (use simple configuration)
-	PionLogger main_log(PION_GET_LOGGER("Pion"));
-	PION_LOG_SETLEVEL_DEBUG(main_log);
+	PionLogger main_log(PION_GET_LOGGER("PionModuleTest"));
+	PionLogger pion_log(PION_GET_LOGGER("Pion"));
+	PION_LOG_SETLEVEL_DEBUG(pion_log);
 	PION_LOG_CONFIG_BASIC;
 	
 	try {
@@ -111,13 +124,20 @@ int main (int argc, char *argv[])
 
 		// create a server for HTTP & add the Hello module
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
-		http_server->loadModule(resource_name, module_name);
 		
-		// set module options if any are defined
-		for (ModuleOptionsType::iterator i = module_options.begin();
-			 i != module_options.end(); ++i)
-		{
-			http_server->setModuleOption(resource_name, i->first, i->second);
+		if (module_config_name.empty()) {
+			// load a single module using the command line arguments
+			http_server->loadModule(resource_name, module_name);
+
+			// set module options if any are defined
+			for (ModuleOptionsType::iterator i = module_options.begin();
+				 i != module_options.end(); ++i)
+			{
+				http_server->setModuleOption(resource_name, i->first, i->second);
+			}
+		} else {
+			// load modules using the configuration file
+			http_server->loadModuleConfig(module_config_name);
 		}
 	
 		// startup pion
@@ -127,7 +147,7 @@ int main (int argc, char *argv[])
 		Pion::join();
 		
 	} catch (std::exception& e) {
-		PION_LOG_FATAL(main_log, "Caught exception in main(): " << e.what());
+		PION_LOG_FATAL(main_log, e.what());
 	}
 
 	return 0;

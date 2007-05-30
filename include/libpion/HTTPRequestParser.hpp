@@ -147,17 +147,6 @@ protected:
 	static bool parseCookieEncoded(HTTPTypes::StringDictionary& dict,
 								   const std::string& encoded_string);
 
-	/**
-	 * parse key-value pairs out of a multipart encoded request
-	 * 
-	 * @param dict dictionary for key-values pairs
-	 * @param conn the tcp connection for the request
-	 * 
-	 * @return bool true if successful
-	 */
-	static bool parseMultipartEncoded(HTTPTypes::StringDictionary& dict,
-									  TCPConnectionPtr& conn);
-	
 	// misc functions used by parseRequest()
 	inline static bool isChar(int c);
 	inline static bool isControl(int c);

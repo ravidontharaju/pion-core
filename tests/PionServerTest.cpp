@@ -69,8 +69,9 @@ int main (int argc, char *argv[])
 	signal(SIGINT, handle_signal);
 
 	// initialize log system (use simple configuration)
-	PionLogger main_log(PION_GET_LOGGER("Pion"));
-	PION_LOG_SETLEVEL_DEBUG(main_log);
+	PionLogger main_log(PION_GET_LOGGER("PionServerTest"));
+	PionLogger pion_log(PION_GET_LOGGER("Pion"));
+	PION_LOG_SETLEVEL_DEBUG(pion_log);
 	PION_LOG_CONFIG_BASIC;
 	
 	try {
@@ -89,7 +90,7 @@ int main (int argc, char *argv[])
 		Pion::join();
 
 	} catch (std::exception& e) {
-		PION_LOG_FATAL(main_log, "Caught exception in main(): " << e.what());
+		PION_LOG_FATAL(main_log, e.what());
 	}
 
 	return 0;

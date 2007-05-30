@@ -537,13 +537,6 @@ bool HTTPRequestParser::parseCookieEncoded(HTTPTypes::StringDictionary& dict,
 	return false;
 }
 
-bool HTTPRequestParser::parseMultipartEncoded(HTTPTypes::StringDictionary& dict,
-											  TCPConnectionPtr& conn)
-{
-	/// not yet implemented
-	return false;
-}
-
 
 }	// end namespace pion
 

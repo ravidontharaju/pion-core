@@ -34,13 +34,14 @@ namespace pion {	// begin namespace pion
 	
 // static members of PionEngine
 	
-const std::string			PionPlugin::PION_PLUGIN_CREATE("create");
-const std::string			PionPlugin::PION_PLUGIN_DESTROY("destroy");
+const std::string			PionPlugin::PION_PLUGIN_CREATE("pion_create_");
+const std::string			PionPlugin::PION_PLUGIN_DESTROY("pion_destroy_");
 #ifdef WIN32
 	const std::string			PionPlugin::PION_PLUGIN_EXTENSION(".dll");
 #else
 	const std::string			PionPlugin::PION_PLUGIN_EXTENSION(".so");
 #endif
+const std::string			PionPlugin::PION_CONFIG_EXTENSION(".conf");
 std::vector<std::string>	PionPlugin::m_plugin_dirs;
 boost::mutex				PionPlugin::m_plugin_mutex;
 
@@ -63,10 +64,24 @@ void PionPlugin::resetPluginDirectories(void)
 	m_plugin_dirs.clear();
 }
 
-bool PionPlugin::findPluginFile(const std::string& name, std::string& path_to_file)
+void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
+								 const std::string& start_path)
+{
+#ifdef PION_CYGWIN_DIRECTORY
+	// try prepending PION_CYGWIN_DIRECTORY if not complete
+	if (! final_path.is_complete() && final_path.has_root_directory())
+	{
+		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path,
+											 &boost::filesystem::no_check);
+	}
+#endif
+}
+
+bool PionPlugin::findFile(std::string& path_to_file, const std::string& name,
+						  const std::string& extension)
 {
 	// first, try the name as-is
-	if (checkForPlugin(path_to_file, name, ""))
+	if (checkForFile(path_to_file, name, "", extension))
 		return true;
 
 	// nope, check search paths
@@ -74,7 +89,7 @@ bool PionPlugin::findPluginFile(const std::string& name, std::string& path_to_fi
 	for (std::vector<std::string>::iterator i = m_plugin_dirs.begin();
 		 i != m_plugin_dirs.end(); ++i)
 	{
-		if (checkForPlugin(path_to_file, *i, name))
+		if (checkForFile(path_to_file, *i, name, extension))
 			return true;
 	}
 	
@@ -82,7 +97,8 @@ bool PionPlugin::findPluginFile(const std::string& name, std::string& path_to_fi
 	return false;
 }
 
-bool PionPlugin::checkForPlugin(std::string& final_path, const std::string& start_path, const std::string& name)
+bool PionPlugin::checkForFile(std::string& final_path, const std::string& start_path,
+							  const std::string& name, const std::string& extension)
 {
 	// check for cygwin path oddities
 	boost::filesystem::path cygwin_safe_path(start_path, &boost::filesystem::no_check);
@@ -102,14 +118,14 @@ bool PionPlugin::checkForPlugin(std::string& final_path, const std::string& star
 	// next, try appending the plug-in extension		
 	if (name.empty()) {
 		// no "name" specified -> append it directly to start_path
-		test_path = boost::filesystem::path(start_path + PION_PLUGIN_EXTENSION,
+		test_path = boost::filesystem::path(start_path + extension,
 			&boost::filesystem::no_check);
 		// in this case, we need to re-check for the cygwin oddities
-		checkCygwinPath(test_path, start_path + PION_PLUGIN_EXTENSION);
+		checkCygwinPath(test_path, start_path + extension);
 	} else {
 		// name is specified, so we can just re-use cygwin_safe_path
 		test_path = cygwin_safe_path /
-			boost::filesystem::path(name + PION_PLUGIN_EXTENSION,
+			boost::filesystem::path(name + extension,
 				&boost::filesystem::no_check);
 	}
 
@@ -123,20 +139,27 @@ bool PionPlugin::checkForPlugin(std::string& final_path, const std::string& star
 	return false;
 }
 
-void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path, const std::string& path_string)
+std::string PionPlugin::getPluginName(const std::string& plugin_file)
 {
-#ifdef PION_CYGWIN_DIRECTORY
-	// try prepending PION_CYGWIN_DIRECTORY if not complete
-	if (! final_path.is_complete() && final_path.has_root_directory())
-	{
-		final_path = boost::filesystem::path(
-			std::string(PION_CYGWIN_DIRECTORY) + path_string,
-			&boost::filesystem::no_check);
-	}
+	// strip path
+#ifdef WIN32
+	std::string::size_type pos = plugin_file.find_last_of('\\');
+#else
+	std::string::size_type pos = plugin_file.find_last_of('/');
 #endif
+	std::string plugin_name = (pos == std::string::npos ?
+							   plugin_file : plugin_file.substr(pos+1));
+	pos = plugin_name.find('.');
+
+	// truncate extension
+	if (pos != std::string::npos)
+		plugin_name.resize(pos);
+							
+	return plugin_name;						
 }
 
-void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file) {
+void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
+{
 #ifdef WIN32
 	return LoadLibrary(plugin_file.c_str());
 #else
@@ -144,7 +167,8 @@ void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file) {
 #endif
 }
 
-void PionPlugin::closeDynamicLibrary(void *lib_handle) {
+void PionPlugin::closeDynamicLibrary(void *lib_handle)
+{
 #ifdef WIN32
 	FreeLibrary((HINSTANCE) lib_handle);
 #else
@@ -152,7 +176,8 @@ void PionPlugin::closeDynamicLibrary(void *lib_handle) {
 #endif
 }
 
-void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol) {
+void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
+{
 #ifdef WIN32
 	return (void*)GetProcAddress((HINSTANCE) lib_handle, symbol.c_str());
 #else

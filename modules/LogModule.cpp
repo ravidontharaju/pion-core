@@ -161,14 +161,14 @@ bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new LogModule objects
-extern "C" LogModule *create(void)
+extern "C" LogModule *pion_create_LogModule(void)
 {
 	return new LogModule();
 }
 
 
 /// destroys LogModule objects
-extern "C" void destroy(LogModule *module_ptr)
+extern "C" void pion_destroy_LogModule(LogModule *module_ptr)
 {
 	delete module_ptr;
 }

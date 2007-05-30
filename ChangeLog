@@ -1,7 +1,10 @@
 Version 0.2.0 (2007-05-xx)
 ==========================
 
+* Added support for HTTP module configuration files (see testmodules.conf)
 * Added LogModule that displays events when an external log library is used
+* Added support to FileModule for cygwin paths and "file" option
+* Plug-ins now use pion_create_PLUGINNAME and pion_destroy_PLUGINNAME
 
 
 Version 0.1.4 (2007-05-25)

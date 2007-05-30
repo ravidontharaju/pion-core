@@ -37,22 +37,39 @@ class FileModule :
 {
 public:
 	
-	/// exception thrown if the module does not recognize a configuration option
+	/// exception thrown if the directory configured is not found
 	class DirectoryNotFoundException : public pion::PionException {
 	public:
 		DirectoryNotFoundException(const std::string& dir)
 			: pion::PionException("FileModule directory not found: ", dir) {}
 	};
 
-	/// exception thrown if the module does not recognize a configuration option
+	/// exception thrown if the directory configuration option is not a directory
 	class NotADirectoryException : public pion::PionException {
 	public:
 		NotADirectoryException(const std::string& dir)
 			: pion::PionException("FileModule option is not a directory: ", dir) {}
 	};
 
+	/// exception thrown if the file configured is not found
+	class FileNotFoundException : public pion::PionException {
+	public:
+		FileNotFoundException(const std::string& file)
+			: pion::PionException("FileModule file not found: ", file) {}
+	};
+	
+	/// exception thrown if the file configuration option is not a file
+	class NotAFileException : public pion::PionException {
+	public:
+		NotAFileException(const std::string& file)
+			: pion::PionException("FileModule option is not a file: ", file) {}
+	};
+
 	// default constructor and destructor
-	FileModule(void) : m_directory("", &boost::filesystem::no_check) {}
+	FileModule(void)
+		: m_directory("", &boost::filesystem::no_check),
+		m_file("", &boost::filesystem::no_check)
+	{}
 	virtual ~FileModule() {}
 	
 	/**
@@ -98,6 +115,9 @@ private:
 
 	/// directory containing files that will be made available
 	boost::filesystem::path		m_directory;
+
+	/// single file served by the module
+	boost::filesystem::path		m_file;
 };
 
 #endif

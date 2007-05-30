@@ -113,14 +113,14 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new EchoModule objects
-extern "C" EchoModule *create(void)
+extern "C" EchoModule *pion_create_EchoModule(void)
 {
 	return new EchoModule();
 }
 
 
 /// destroys EchoModule objects
-extern "C" void destroy(EchoModule *module_ptr)
+extern "C" void pion_destroy_EchoModule(EchoModule *module_ptr)
 {
 	delete module_ptr;
 }
