@@ -52,7 +52,7 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	
 	// Set Content-type to "text/plain" (plain ascii text)
 	HTTPResponsePtr response(HTTPResponse::create());
-	response->setContentType("text/plain");
+	response->setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
 	
 	// write request information
 	response->writeNoCopy(REQUEST_ECHO_TEXT);
