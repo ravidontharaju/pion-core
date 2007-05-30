@@ -24,7 +24,7 @@
 #if defined(PION_HAVE_LOG4CXX)
 	#include <log4cxx/spi/loggingevent.h>
 	#include <boost/lexical_cast.hpp>
-#elif defined(PION_HAVE_LOG4CPP)
+#elif defined(PION_HAVE_LOG4CPLUS)
 	#include <log4cplus/spi/loggingevent.h>
 	#include <boost/lexical_cast.hpp>
 #elif defined(PION_HAVE_LOG4CPP)
@@ -136,13 +136,13 @@ LogModule::~LogModule()
 {
 #if defined(PION_HAVE_LOG4CXX)
 	// removeAppender() also deletes the object
-	log4cxx::Logger::getRootLogger()->removeAppender("LogModuleAppender");
+	log4cxx::Logger::getRootLogger()->removeAppender(m_log_appender_ptr);
 #elif defined(PION_HAVE_LOG4CPLUS)
 	// removeAppender() also deletes the object
 	log4cplus::Logger::getRoot().removeAppender("LogModuleAppender");
 #elif defined(PION_HAVE_LOG4CPP)
 	// removeAppender() also deletes the object
-	log4cpp::Category::getRoot().removeAppender("LogModuleAppender");
+	log4cpp::Category::getRoot().removeAppender(m_log_appender_ptr);
 #else
 	delete m_log_appender_ptr;
 #endif

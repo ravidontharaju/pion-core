@@ -1,3 +1,9 @@
+Version 0.2.0 (2007-05-xx)
+==========================
+
+* Added LogModule that displays events when an external log library is used
+
+
 Version 0.1.4 (2007-05-25)
 ==========================
 

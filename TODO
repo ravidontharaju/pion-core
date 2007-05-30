@@ -1,8 +1,8 @@
 Things to do:
 =============
 
-* Add more caching functionality to FileModule
-* Implement LogModule for displaying log entries
+* Add support to PionModuleTest for configuration files & multiple modules
+* Add pre-scanning and caching functionality to FileModule
 * Add support for parsing request cookies and setting response cookies
 * Add support for SSL/TLS & server certificates
 * Add support for built-in authentication (OpenID?)
