@@ -104,18 +104,29 @@ private:
 };
 
 
-/// All modules implementations that derive from HTTPModule must define a
-/// "create" function using this prototype and with an extern "C" declaration
-/// that is used to create new objects of that type
-///
-// HTTPModule *pion_create_MODULENAME(void);
-
-/// All modules implementations that derive from HTTPModule must define a
-/// "destroy" function using this prototype and with an extern "C" declaration
-/// that is used to destroy objects of that type
-///
-// void pion_destroy_MODULENAME(HTTPModule*);
-
+//
+// The following symbols must be defined for any HTTP modules that you would
+// like to be able to load dynamically using the HTTPServer::loadModule()
+// function.  These are not required for any modules that you only want to link
+// directly into your programs.
+//
+// Make sure that you replace "HTTPModule" with the name of your derived class.
+// This name must also match the name of the object file (excluding the
+// extension).  These symbols must be linked into your module's object file,
+// not included in any headers that it may use (declarations are OK in headers
+// but not the definitions).
+//
+// The "pion_create" function is used to create new instances of your module.
+// The "pion_destroy" function is used to destroy instances of your module.
+//
+// extern "C" HTTPModule *pion_create_HTTPModule(void) {
+//		return new HTTPModule;
+// }
+//
+// extern "C" void pion_destroy_HTTPModule(HTTPModule *module_ptr) {
+//		delete module_ptr;
+// }
+//
 
 }	// end namespace pion
 
