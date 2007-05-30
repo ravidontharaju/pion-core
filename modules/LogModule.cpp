@@ -25,6 +25,9 @@
 	#include <log4cxx/spi/loggingevent.h>
 	#include <boost/lexical_cast.hpp>
 #elif defined(PION_HAVE_LOG4CPP)
+	#include <log4cplus/spi/loggingevent.h>
+	#include <boost/lexical_cast.hpp>
+#elif defined(PION_HAVE_LOG4CPP)
 	#include <log4cpp/BasicLayout.hh>
 #endif
 
@@ -65,6 +68,20 @@ void LogModuleAppender::append(const log4cxx::spi::LoggingEventPtr& event)
 	formatted_string += '\n';
 	addLogString(formatted_string);
 }
+#elif defined(PION_HAVE_LOG4CPLUS)
+void LogModuleAppender::append(const log4cplus::spi::InternalLoggingEvent& event)
+{
+	// custom layouts is not supported for log4cplus library
+	std::string formatted_string(boost::lexical_cast<std::string>(event.getTimestamp().sec()));
+	formatted_string += ' ';
+	formatted_string += m_log_level_manager.toString(event.getLogLevel());
+	formatted_string += ' ';
+	formatted_string += event.getLoggerName();
+	formatted_string += " - ";
+	formatted_string += event.getMessage();
+	formatted_string += '\n';
+	addLogString(formatted_string);
+}
 #elif defined(PION_HAVE_LOG4CPP)
 void LogModuleAppender::_append(const log4cpp::LoggingEvent& event)
 {
@@ -86,7 +103,7 @@ void LogModuleAppender::addLogString(const std::string& log_string)
 
 void LogModuleAppender::writeLogEvents(pion::HTTPResponsePtr& response)
 {
-#if defined(PION_HAVE_LOG4CXX) || defined(PION_HAVE_LOG4CPP)
+#if defined(PION_HAVE_LOG4CXX) || defined(PION_HAVE_LOG4CPLUS) || defined(PION_HAVE_LOG4CPP)
 	boost::mutex::scoped_lock log_lock(m_log_mutex);
 	for (std::list<std::string>::const_iterator i = m_log_events.begin();
 		 i != m_log_events.end(); ++i)
@@ -105,7 +122,11 @@ LogModule::LogModule(void)
 	: m_log_appender_ptr(new LogModuleAppender())
 {
 #if defined(PION_HAVE_LOG4CXX)
+	m_log_appender_ptr->setName("LogModuleAppender");
 	log4cxx::Logger::getRootLogger()->addAppender(m_log_appender_ptr);
+#elif defined(PION_HAVE_LOG4CPLUS)
+	m_log_appender_ptr->setName("LogModuleAppender");
+	log4cplus::Logger::getRoot().addAppender(m_log_appender_ptr);
 #elif defined(PION_HAVE_LOG4CPP)
 	log4cpp::Category::getRoot().addAppender(m_log_appender_ptr);
 #endif
@@ -114,10 +135,14 @@ LogModule::LogModule(void)
 LogModule::~LogModule()
 {
 #if defined(PION_HAVE_LOG4CXX)
-	log4cxx::Logger::getRootLogger()->removeAppender(m_log_appender_ptr);
+	// removeAppender() also deletes the object
+	log4cxx::Logger::getRootLogger()->removeAppender("LogModuleAppender");
+#elif defined(PION_HAVE_LOG4CPLUS)
+	// removeAppender() also deletes the object
+	log4cplus::Logger::getRoot().removeAppender("LogModuleAppender");
 #elif defined(PION_HAVE_LOG4CPP)
 	// removeAppender() also deletes the object
-	log4cpp::Category::getRoot().removeAppender(m_log_appender_ptr);
+	log4cpp::Category::getRoot().removeAppender("LogModuleAppender");
 #else
 	delete m_log_appender_ptr;
 #endif
