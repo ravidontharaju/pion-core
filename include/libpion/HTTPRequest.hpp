@@ -81,6 +81,7 @@ public:
 	}
 
 	/// returns a value for the cookie if any are defined; otherwise, an empty string
+	/// since cookie names are insensitve, key should use lowercase alpha chars
 	inline const std::string& getCookie(const std::string& key) const {
 		return getValue(m_cookie_params, key);
 	}
@@ -111,6 +112,7 @@ public:
 	}
 	
 	/// returns true if at least one value for the cookie is defined
+	/// since cookie names are insensitve, key should use lowercase alpha chars
 	inline bool hasCookie(const std::string& key) const {
 		return(m_cookie_params.find(key) != m_cookie_params.end());
 	}
@@ -155,6 +157,7 @@ public:
 	}
 	
 	/// adds a value for the cookie
+	/// since cookie names are insensitve, key should use lowercase alpha chars
 	inline void addCookie(const std::string& key, const std::string& value) {
 		m_cookie_params.insert(std::make_pair(key, value));
 	}

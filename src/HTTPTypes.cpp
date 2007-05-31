@@ -33,6 +33,7 @@ const std::string	HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR(": ");
 // common HTTP header names
 const std::string	HTTPTypes::HEADER_HOST("Host");
 const std::string	HTTPTypes::HEADER_COOKIE("Cookie");
+const std::string	HTTPTypes::HEADER_SET_COOKIE("Set-Cookie");
 const std::string	HTTPTypes::HEADER_CONNECTION("Connection");
 const std::string	HTTPTypes::HEADER_CONTENT_TYPE("Content-Type");
 const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
@@ -41,7 +42,7 @@ const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
 const std::string	HTTPTypes::CONTENT_TYPE_HTML("text/html");
 const std::string	HTTPTypes::CONTENT_TYPE_TEXT("text/plain");
 const std::string	HTTPTypes::CONTENT_TYPE_XML("text/xml");
-const std::string	HTTPTypes::CONTENT_TYPE_URLENCODED("application/www-form-urlencoded");
+const std::string	HTTPTypes::CONTENT_TYPE_URLENCODED("application/x-www-form-urlencoded");
 
 // common HTTP response messages
 const std::string	HTTPTypes::RESPONSE_MESSAGE_OK("OK");

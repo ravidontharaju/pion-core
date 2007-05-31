@@ -136,16 +136,16 @@ protected:
 								const char *ptr, const size_t len);
 
 	/**
-	 * parse key-value pairs out of a cookie-encoded string
+	 * parse key-value pairs out of a "Cookie" request header
 	 * (i.e. this=that; a=value)
 	 * 
 	 * @param dict dictionary for key-values pairs
-	 * @param encoded_string string to be parsed
+	 * @param cookie_header header string to be parsed
 	 * 
 	 * @return bool true if successful
 	 */
-	static bool parseCookieEncoded(HTTPTypes::StringDictionary& dict,
-								   const std::string& encoded_string);
+	static bool parseCookieHeader(HTTPTypes::StringDictionary& dict,
+								  const std::string& cookie_header);
 
 	// misc functions used by parseRequest()
 	inline static bool isChar(int c);
@@ -192,6 +192,12 @@ private:
 	
 	/// maximum length for the value of a query string variable
 	static const unsigned int			QUERY_VALUE_MAX;
+	
+	/// maximum length for the name of a cookie name
+	static const unsigned int			COOKIE_NAME_MAX;
+	
+	/// maximum length for the value of a cookie; also used for path and domain
+	static const unsigned int			COOKIE_VALUE_MAX;
 	
 	/// maximum length for an HTTP header name
 	static const unsigned int			POST_CONTENT_MAX;

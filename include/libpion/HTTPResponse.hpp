@@ -118,20 +118,79 @@ public:
 		m_content_length += length;
 	}
 
-
-	/**
-	 * sends the response
-	 *
-	 * @param tcp_conn TCP connection used to send the response
-	 */
-	void send(TCPConnectionPtr& tcp_conn);
-	
-
 	/// adds an HTTP response header
 	inline void addHeader(const std::string& key, const std::string& value) {
 		m_response_headers.insert(std::make_pair(key, value));
 	}
+
+	/**
+	 * sets a cookie by adding a Set-Cookie header (see RFC 2109)
+	 * the cookie will be discarded by the user-agent when it closes
+	 *
+	 * @param name the name of the cookie
+	 * @param value the value of the cookie
+	 */
+	inline void setCookie(const std::string& name, const std::string& value) {
+		std::string set_cookie_header(makeSetCookieHeader(name, value, ""));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
 	
+	/**
+	 * sets a cookie by adding a Set-Cookie header (see RFC 2109)
+	 * the cookie will be discarded by the user-agent when it closes
+	 *
+	 * @param name the name of the cookie
+	 * @param value the value of the cookie
+	 * @param path the path of the cookie
+	 */
+	inline void setCookie(const std::string& name, const std::string& value,
+						  const std::string& path)
+	{
+		std::string set_cookie_header(makeSetCookieHeader(name, value, path));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
+	
+	/**
+	 * sets a cookie by adding a Set-Cookie header (see RFC 2109)
+	 *
+	 * @param name the name of the cookie
+	 * @param value the value of the cookie
+	 * @param path the path of the cookie
+	 * @param max_age the life of the cookie, in seconds (0 = discard)
+	 */
+	inline void setCookie(const std::string& name, const std::string& value,
+						  const std::string& path, const unsigned long max_age)
+	{
+		std::string set_cookie_header(makeSetCookieHeader(name, value, path, true, max_age));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
+
+	/**
+	 * sets a cookie by adding a Set-Cookie header (see RFC 2109)
+	 *
+	 * @param name the name of the cookie
+	 * @param value the value of the cookie
+	 * @param max_age the life of the cookie, in seconds (0 = discard)
+	 */
+	inline void setCookie(const std::string& name, const std::string& value,
+						  const unsigned long max_age)
+	{
+		std::string set_cookie_header(makeSetCookieHeader(name, value, "", true, max_age));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
+	
+	/// deletes cookie called name by adding a Set-Cookie header (cookie has no path)
+	inline void deleteCookie(const std::string& name) {
+		std::string set_cookie_header(makeSetCookieHeader(name, "", "", true, 0));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
+	
+	/// deletes cookie called name by adding a Set-Cookie header (cookie has a path)
+	inline void deleteCookie(const std::string& name, const std::string& path) {
+		std::string set_cookie_header(makeSetCookieHeader(name, "", path, true, 0));
+		addHeader(HTTPTypes::HEADER_SET_COOKIE, set_cookie_header);
+	}
+
 	/// sets the response or status code to send
 	inline void setResponseCode(const unsigned int n) {
 		// add space character to beginning and end
@@ -153,6 +212,14 @@ public:
 	inline PionLogger getLogger(void) { return m_logger; }
 
 	
+	/**
+	 * sends the response
+	 *
+	 * @param tcp_conn TCP connection used to send the response
+	 */
+	void send(TCPConnectionPtr& tcp_conn);
+
+	
 protected:
 		
 	/// protected constructor restricts creation of objects (use create())
@@ -166,6 +233,20 @@ protected:
 			setResponseCode(HTTPTypes::RESPONSE_CODE_OK);
 	}
 
+	/**
+	 * creates a "Set-Cookie" header
+	 *
+	 * @param name the name of the cookie
+	 * @param value the value of the cookie
+	 * @param path the path of the cookie
+	 * @param has_max_age true if the max_age value should be set
+	 * @param max_age the life of the cookie, in seconds (0 = discard)
+	 *
+	 * @return the new "Set-Cookie" header
+	 */
+	 std::string makeSetCookieHeader(const std::string& name, const std::string& value,
+									 const std::string& path, const bool has_max_age = false,
+									 const unsigned long max_age = 0);
 	
 private:
 	
@@ -212,7 +293,7 @@ private:
 	/// data type for I/O write buffers (these wrap existing data to be sent)
 	typedef std::vector<boost::asio::const_buffer>	WriteBuffers;
 	
-		
+	
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 

@@ -2,7 +2,6 @@ Things to do:
 =============
 
 * Add pre-scanning and caching functionality to FileModule
-* Add support for parsing request cookies and setting response cookies
 * Add support for SSL/TLS & server certificates
 * Use read-write mutex for HTTPServer modules
 * Compare performance of using multiple io_services versus just one

@@ -120,6 +120,8 @@
 		E35A5D070C05226500A64F0D /* FileModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = FileModule.hpp; path = ../modules/FileModule.hpp; sourceTree = SOURCE_ROOT; };
 		E35A5D080C05226500A64F0D /* HelloModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloModule.hpp; path = ../modules/HelloModule.hpp; sourceTree = SOURCE_ROOT; };
 		E35A5D090C05226500A64F0D /* LogModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogModule.hpp; path = ../modules/LogModule.hpp; sourceTree = SOURCE_ROOT; };
+		E3B018690C0E3CB0001F7D75 /* CookieModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CookieModule.cpp; path = ../modules/CookieModule.cpp; sourceTree = SOURCE_ROOT; };
+		E3B0186A0C0E3CB0001F7D75 /* CookieModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = CookieModule.hpp; path = ../modules/CookieModule.hpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +219,8 @@
 		E33288090BEE4A28006D0556 /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				E3B0186A0C0E3CB0001F7D75 /* CookieModule.hpp */,
+				E3B018690C0E3CB0001F7D75 /* CookieModule.cpp */,
 				E35A5D060C05226500A64F0D /* EchoModule.hpp */,
 				E30CFF3D0C0276C3007493DC /* EchoModule.cpp */,
 				E35A5D070C05226500A64F0D /* FileModule.hpp */,

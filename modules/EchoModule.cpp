@@ -104,7 +104,11 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	response->writeNoCopy(POST_CONTENT_TEXT);
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
 	response->writeNoCopy(HTTPTypes::STRING_CRLF);
-	response->write(request->getPostContent(), request->getContentLength());
+	if (request->getContentLength() != 0) {
+		response->write(request->getPostContent(), request->getContentLength());
+		response->writeNoCopy(HTTPTypes::STRING_CRLF);
+		response->writeNoCopy(HTTPTypes::STRING_CRLF);
+	}
 	
 	// send the response
 	response->send(tcp_conn);

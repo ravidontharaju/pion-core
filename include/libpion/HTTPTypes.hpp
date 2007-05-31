@@ -59,6 +59,7 @@ struct HTTPTypes
 	// common HTTP header names
 	static const std::string	HEADER_HOST;
 	static const std::string	HEADER_COOKIE;
+	static const std::string	HEADER_SET_COOKIE;
 	static const std::string	HEADER_CONNECTION;
 	static const std::string	HEADER_CONTENT_TYPE;
 	static const std::string	HEADER_CONTENT_LENGTH;

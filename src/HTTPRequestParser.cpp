@@ -35,6 +35,8 @@ const unsigned int	HTTPRequestParser::HEADER_NAME_MAX = 1024;	// 1 KB
 const unsigned int	HTTPRequestParser::HEADER_VALUE_MAX = 1024 * 1024;	// 1 MB
 const unsigned int	HTTPRequestParser::QUERY_NAME_MAX = 1024;	// 1 KB
 const unsigned int	HTTPRequestParser::QUERY_VALUE_MAX = 1024 * 1024;	// 1 MB
+const unsigned int	HTTPRequestParser::COOKIE_NAME_MAX = 1024;	// 1 KB
+const unsigned int	HTTPRequestParser::COOKIE_VALUE_MAX = 1024 * 1024;	// 1 MB
 const unsigned int	HTTPRequestParser::POST_CONTENT_MAX = 1024 * 1024;	// 1 MB
 	
 	
@@ -107,7 +109,13 @@ void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
 				}
 			}
 
-			if (content_bytes_to_read != 0) {
+			if (content_bytes_to_read == 0) {
+			
+				// read all of the content from the last read operation
+				readContentBytes(read_error, 0);
+
+			} else {
+
 				// read the rest of the post content into the buffer
 				// and only return after we've finished or an error occurs
 				boost::asio::async_read(m_tcp_conn->getSocket(),
@@ -122,6 +130,19 @@ void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
 		
 	} else if (!result) {
 		// the request is invalid or an error occured
+
+	#ifndef NDEBUG
+		// display extra error information if debug mode is enabled
+		std::string bad_request;
+		read_ptr = m_read_buffer.data();
+		while (read_ptr < read_end && bad_request.size() < 50) {
+			if (!isprint(*read_ptr) || *read_ptr == '\n' || *read_ptr=='\r')
+				bad_request += '.';
+			else bad_request += *read_ptr;
+			++read_ptr;
+		}
+		PION_LOG_ERROR(m_logger, "Bad request debug: " << bad_request);
+	#endif
 
 		m_http_request->setIsValid(false);
 		m_request_handler(m_http_request, m_tcp_conn);
@@ -167,18 +188,33 @@ void HTTPRequestParser::readContentBytes(const boost::asio::error& read_error,
 			PION_LOG_WARN(m_logger, "Request query string parsing failed (POST content)");
 	}
 	
+	// parse "Cookie" headers
+	std::pair<HTTPTypes::Headers::const_iterator, HTTPTypes::Headers::const_iterator>
+		cookie_pair = m_http_request->getHeaders().equal_range(HTTPTypes::HEADER_COOKIE);
+	for (HTTPTypes::Headers::const_iterator cookie_iterator = cookie_pair.first;
+		 cookie_iterator != m_http_request->getCookieParams().end()
+		 && cookie_iterator != cookie_pair.second; ++cookie_iterator)
+	{
+		if (! parseCookieHeader(m_http_request->getCookieParams(),
+								cookie_iterator->second) )
+			PION_LOG_WARN(m_logger, "Cookie header parsing failed");
+	}
+	
 	// call the request handler with the finished request
 	m_request_handler(m_http_request, m_tcp_conn);
 }
 
 void HTTPRequestParser::handleReadError(const boost::asio::error& read_error)
 {
-	if (read_error == boost::asio::error::operation_aborted) {
-		// if the operation was aborted, the acceptor was stopped,
-		// which means another thread is shutting-down the server
-		PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
-	} else {
-		PION_LOG_INFO(m_logger, "HTTP request parsing aborted due to I/O error");
+	// only log errors if the parsing has already begun
+	if (m_parse_state != PARSE_METHOD_START) {
+		if (read_error == boost::asio::error::operation_aborted) {
+			// if the operation was aborted, the acceptor was stopped,
+			// which means another thread is shutting-down the server
+			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
+		} else {
+			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (" << read_error.what() << ')');
+		}
 	}
 	// close the connection, forcing the client to establish a new one
 	m_tcp_conn->finish();
@@ -195,11 +231,13 @@ boost::tribool HTTPRequestParser::parseRequestHeaders(const char *& ptr,
 		switch (m_parse_state) {
 		case PARSE_METHOD_START:
 			// we have not yet started parsing the HTTP method string
-			if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr))
-				return false;
-			m_parse_state = PARSE_METHOD;
-			m_method.erase();
-			m_method.push_back(*ptr);
+			if (*ptr != ' ' && *ptr!='\r' && *ptr!='\n') {	// ignore leading whitespace
+				if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr))
+					return false;
+				m_parse_state = PARSE_METHOD;
+				m_method.erase();
+				m_method.push_back(*ptr);
+			}
 			break;
 
 		case PARSE_METHOD:
@@ -470,8 +508,7 @@ bool HTTPRequestParser::parseURLEncoded(HTTPTypes::StringDictionary& dict,
 	// used to track whether we are parsing the name or value
 	enum QueryParseState {
 		QUERY_PARSE_NAME, QUERY_PARSE_VALUE
-	};
-	QueryParseState parse_state = QUERY_PARSE_NAME;
+	} parse_state = QUERY_PARSE_NAME;
 
 	// misc other variables used for parsing
 	const char * const end = ptr + len;
@@ -530,11 +567,111 @@ bool HTTPRequestParser::parseURLEncoded(HTTPTypes::StringDictionary& dict,
 	return true;
 }
 
-bool HTTPRequestParser::parseCookieEncoded(HTTPTypes::StringDictionary& dict,
-										   const std::string& encoded_string)
+bool HTTPRequestParser::parseCookieHeader(HTTPTypes::StringDictionary& dict,
+										  const std::string& cookie_header)
 {
-	/// not yet implemented
-	return false;
+	// BASED ON RFC 2109
+	// 
+	// The current implementation ignores cookie attributes which begin with '$'
+	// (i.e. $Path=/, $Domain=, etc.)
+
+	// used to track what we are parsing
+	enum CookieParseState {
+		COOKIE_PARSE_NAME, COOKIE_PARSE_VALUE
+	} parse_state = COOKIE_PARSE_NAME;
+	
+	// misc other variables used for parsing
+	std::string cookie_name;
+	std::string cookie_value;
+	char value_quote_character = '\0';
+	
+	// iterate through each character
+	for (std::string::const_iterator string_iterator = cookie_header.begin();
+		 string_iterator != cookie_header.end(); ++string_iterator)
+	{
+		switch (parse_state) {
+			
+		case COOKIE_PARSE_NAME:
+			// parsing cookie name
+			if (*string_iterator == '=') {
+				// end of name found
+				if (cookie_name.empty()) return false;
+				value_quote_character = '\0';
+				parse_state = COOKIE_PARSE_VALUE;
+			} else if (*string_iterator == ';' || *string_iterator == ',') {
+				// ignore empty cookie names since this may occur naturally
+				// when quoted values are encountered
+				if (! cookie_name.empty()) {
+					// value is empty (OK)
+					if (cookie_name[0] != '$')
+						dict.insert( std::make_pair(cookie_name, cookie_value) );
+					cookie_name.erase();
+				}
+			} else if (*string_iterator != ' ') {	// ignore whitespace
+				// check if control character detected, or max sized exceeded
+				if (isControl(*string_iterator) || cookie_name.size() >= COOKIE_NAME_MAX)
+					return false;
+				// character is part of the name
+				// cookie names are case insensitive -> convert to lowercase
+				cookie_name.push_back( tolower(*string_iterator) );
+			}
+			break;
+			
+		case COOKIE_PARSE_VALUE:
+			// parsing cookie value
+			if (value_quote_character == '\0') {
+				// value is not (yet) quoted
+				if (*string_iterator == ';' || *string_iterator == ',') {
+					// end of value found (OK if empty)
+					if (cookie_name[0] != '$') 
+						dict.insert( std::make_pair(cookie_name, cookie_value) );
+					cookie_name.erase();
+					cookie_value.erase();
+					parse_state = COOKIE_PARSE_NAME;
+				} else if (*string_iterator == '\'' || *string_iterator == '"') {
+					if (cookie_value.empty()) {
+						// begin quoted value
+						value_quote_character = *string_iterator;
+					} else if (cookie_value.size() >= COOKIE_VALUE_MAX) {
+						// max size exceeded
+						return false;
+					} else {
+						// assume character is part of the (unquoted) value
+						cookie_value.push_back(*string_iterator);
+					}
+				} else if (*string_iterator != ' ') {	// ignore unquoted whitespace
+					// check if control character detected, or max sized exceeded
+					if (isControl(*string_iterator) || cookie_value.size() >= COOKIE_VALUE_MAX)
+						return false;
+					// character is part of the (unquoted) value
+					cookie_value.push_back(*string_iterator);
+				}
+			} else {
+				// value is quoted
+				if (*string_iterator == value_quote_character) {
+					// end of value found (OK if empty)
+					if (cookie_name[0] != '$') 
+						dict.insert( std::make_pair(cookie_name, cookie_value) );
+					cookie_name.erase();
+					cookie_value.erase();
+					parse_state = COOKIE_PARSE_NAME;
+				} else if (cookie_value.size() >= COOKIE_VALUE_MAX) {
+					// max size exceeded
+					return false;
+				} else {
+					// character is part of the (quoted) value
+					cookie_value.push_back(*string_iterator);
+				}
+			}
+			break;
+		}
+	}
+	
+	// handle last cookie in string
+	if (! cookie_name.empty() && cookie_name[0] != '$')
+		dict.insert( std::make_pair(cookie_name, cookie_value) );
+	
+	return true;
 }
 
 
