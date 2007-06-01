@@ -64,8 +64,6 @@ void PionPlugin::addPluginDirectory(const std::string& dir)
 		throw DirectoryNotFoundException(dir);
 	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 	m_plugin_dirs.push_back(plugin_path.native_directory_string());
-	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
-	m_plugin_dirs.push_back(plugin_path.native_directory_string());
 #endif
 }
 
