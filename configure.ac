@@ -225,7 +225,7 @@ AC_ARG_WITH([openssl],
     [ openssl_location=$withval ], [ without_openssl=true ])
 # Check if openssl location is specified
 if test "$without_openssl" != "true"; then
-	if test "x$openssl_location" != "x"; then
+	if test "x$openssl_location" != "xyes"; then
 		CPPFLAGS="$CPPFLAGS -I$openssl_location/include"
 		LDFLAGS="$LDFLAGS -L$openssl_location/lib"
 	fi
@@ -265,7 +265,7 @@ AC_ARG_WITH([ostream-logging],
 
 if test "$without_log4cplus" != "true"; then
 	# Check if log4cplus location is specified
-	if test "$log4cplus_location" != ""
+	if test "x$log4cplus_location" != "xyes"
 	then
 		CPPFLAGS="$CPPFLAGS -I$log4cplus_location/include"
 		LDFLAGS="$LDFLAGS -L$log4cplus_location/lib"
@@ -288,7 +288,7 @@ if test "$without_log4cplus" != "true"; then
 	AC_DEFINE([PION_HAVE_LOG4CPLUS],[1],[Define to 1 if you have the `log4cplus' library (-llog4cplus).])
 elif test "$without_log4cxx" != "true"; then
 	# Check if log4cxx location is specified
-	if test "$log4cxx_location" != ""
+	if test "x$log4cxx_location" != "xyes"
 	then
 		CPPFLAGS="$CPPFLAGS -I$log4cxx_location/include"
 		LDFLAGS="$LDFLAGS -L$log4cxx_location/lib"
@@ -311,7 +311,7 @@ elif test "$without_log4cxx" != "true"; then
 	AC_DEFINE([PION_HAVE_LOG4CXX],[1],[Define to 1 if you have the `log4cxx' library (-llog4cxx).])
 elif test "$without_log4cpp" != "true"; then
 	# Check if log4cpp location is specified
-	if test "$log4cpp_location" != ""
+	if test "x$log4cpp_location" != "xyes"
 	then
 		CPPFLAGS="$CPPFLAGS -I$log4cpp_location/include"
 		LDFLAGS="$LDFLAGS -L$log4cpp_location/lib"
