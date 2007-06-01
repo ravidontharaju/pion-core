@@ -68,10 +68,22 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 						 m_content_buffers.end());
 	
 	// send response
-	boost::asio::async_write(tcp_conn->getSocket(), write_buffers,
-							 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
-										 tcp_conn, boost::asio::placeholders::error,
-										 boost::asio::placeholders::bytes_transferred));
+	if (tcp_conn->getSSLFlag()) {
+#ifdef PION_HAVE_SSL
+		boost::asio::async_write(tcp_conn->getSSLSocket(), write_buffers,
+								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
+											 tcp_conn, boost::asio::placeholders::error,
+											 boost::asio::placeholders::bytes_transferred));
+
+#else
+		tcp_conn->finish();
+#endif
+	} else {
+		boost::asio::async_write(tcp_conn->getSocket(), write_buffers,
+								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
+											 tcp_conn, boost::asio::placeholders::error,
+											 boost::asio::placeholders::bytes_transferred));
+	}
 }
 
 void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,

@@ -32,7 +32,12 @@ namespace pion {	// begin namespace pion
 TCPServer::TCPServer(const unsigned int tcp_port)
 	: m_logger(PION_GET_LOGGER("Pion.TCPServer")),
 	m_tcp_acceptor(PionEngine::getInstance().getIOService()),
-	m_tcp_port(tcp_port), m_is_listening(false)
+#ifdef PION_HAVE_SSL
+	m_ssl_context(PionEngine::getInstance().getIOService(), boost::asio::ssl::context::sslv23),
+#else
+	m_ssl_context(0),
+#endif
+	m_tcp_port(tcp_port), m_ssl_flag(false), m_is_listening(false)
 {}
 
 void TCPServer::start(void)
@@ -89,15 +94,28 @@ void TCPServer::listen(void)
 	if (m_is_listening) {
 		// create a new TCP connection object
 		TCPConnectionPtr new_connection(TCPConnection::create(m_tcp_acceptor.io_service(),
+															  m_ssl_context, m_ssl_flag,
 															  boost::bind(&TCPServer::finishConnection,
 																		  this, _1)));
 		m_conn_pool.insert(new_connection);
 		
 		// use the new object to accept a connection
-		m_tcp_acceptor.async_accept(new_connection->getSocket(),
-									boost::bind(&TCPServer::handleAccept,
-												this, new_connection,
-												boost::asio::placeholders::error) );
+		if (m_ssl_flag) {
+#ifdef PION_HAVE_SSL
+			m_tcp_acceptor.async_accept(new_connection->getSSLSocket().lowest_layer(),
+										boost::bind(&TCPServer::handleAccept,
+													this, new_connection,
+													boost::asio::placeholders::error) );
+#else
+			PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
+			new_connection->finish();
+#endif
+		} else {
+			m_tcp_acceptor.async_accept(new_connection->getSocket(),
+										boost::bind(&TCPServer::handleAccept,
+													this, new_connection,
+													boost::asio::placeholders::error) );
+		}
 	}
 }
 
@@ -109,11 +127,42 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 		finishConnection(tcp_conn);
 	} else {
 		// got a new TCP connection
-		PION_LOG_INFO(m_logger, "New connection on port " << getPort());
+		PION_LOG_INFO(m_logger, "New" << (tcp_conn->getSSLFlag() ? " SSL " : " ")
+					  << "connection on port " << getPort());
+
 		// schedule the acceptance of another new connection
 		// (this returns immediately since it schedules it as an event)
 		if (m_is_listening) listen();
+		
 		// handle the new connection
+		if (tcp_conn->getSSLFlag()) {
+#ifdef PION_HAVE_SSL
+			// SSL -> perform handshake first
+			tcp_conn->getSSLSocket().async_handshake(boost::asio::ssl::stream_base::server,
+													 boost::bind(&TCPServer::handleSSLHandshake,
+																 this, tcp_conn,
+																 boost::asio::placeholders::error) );
+#else
+			PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
+			finishConnection(tcp_conn);
+#endif
+		} else {
+			// not SSL -> call the handler immediately
+			handleConnection(tcp_conn);
+		}
+	}
+}
+
+void TCPServer::handleSSLHandshake(TCPConnectionPtr& tcp_conn, const boost::asio::error& handshake_error)
+{
+	if (handshake_error) {
+		// an error occured while trying to establish the SSL connection
+		PION_LOG_WARN(m_logger, "SSL handshake failed on port " << getPort()
+					  << " (" << handshake_error.what() << ')');
+		finishConnection(tcp_conn);
+	} else {
+		// handle the new connection
+		PION_LOG_DEBUG(m_logger, "SSL handshake succeeded on port " << getPort());
 		handleConnection(tcp_conn);
 	}
 }

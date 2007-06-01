@@ -38,8 +38,9 @@ void handle_signal(int sig)
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage: PionModuleTest [-p PORT] [-d MODULEDIR] [-o OPTION=VALUE] RESOURCE MODULE" << std::endl
-			  << "       PionModuleTest [-p PORT] [-d MODULEDIR] -c MODULE_CONFIG_NAME" << std::endl;
+	std::cerr << "usage:   PionModuleTest [OPTIONS] RESOURCE MODULE" << std::endl
+		      << "         PionModuleTest [OPTIONS] -c MODULE_CONFIG_NAME" << std::endl
+			  << "options: [-ssl PEM_FILE] [-p PORT] [-d MODULE_DIR] [-o OPTION=VALUE]" << std::endl;
 }
 
 
@@ -57,6 +58,8 @@ int main (int argc, char *argv[])
 	std::string module_config_name;
 	std::string resource_name;
 	std::string module_name;
+	std::string ssl_pem_file;
+	bool ssl_flag = false;
 	
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
@@ -84,6 +87,10 @@ int main (int argc, char *argv[])
 				std::string option_value(option_name, pos + 1);
 				option_name.resize(pos);
 				module_options.push_back( std::make_pair(option_name, option_value) );
+			} else if (argv[argnum][1] == 's' && argv[argnum][2] == 's' &&
+					   argv[argnum][3] == 'l' && argv[argnum][4] == '\0' && argnum+1 < argc) {
+				ssl_flag = true;
+				ssl_pem_file = argv[++argnum];
 			} else {
 				argument_error();
 				return 1;
@@ -111,6 +118,7 @@ int main (int argc, char *argv[])
 	// initialize log system (use simple configuration)
 	PionLogger main_log(PION_GET_LOGGER("PionModuleTest"));
 	PionLogger pion_log(PION_GET_LOGGER("Pion"));
+	PION_LOG_SETLEVEL_DEBUG(main_log);
 	PION_LOG_SETLEVEL_DEBUG(pion_log);
 	PION_LOG_CONFIG_BASIC;
 	
@@ -124,6 +132,22 @@ int main (int argc, char *argv[])
 
 		// create a server for HTTP & add the Hello module
 		HTTPServerPtr http_server(Pion::addHTTPServer(port));
+
+		if (ssl_flag) {
+#ifdef PION_HAVE_SSL
+			// configure server for SSL
+			http_server->setSSLFlag(true);
+			boost::asio::ssl::context& ssl_context = http_server->getSSLContext();
+			ssl_context.set_options(boost::asio::ssl::context::default_workarounds
+									| boost::asio::ssl::context::no_sslv2
+									| boost::asio::ssl::context::single_dh_use);
+			ssl_context.use_certificate_file(ssl_pem_file, boost::asio::ssl::context::pem);
+			ssl_context.use_private_key_file(ssl_pem_file, boost::asio::ssl::context::pem);
+			PION_LOG_INFO(main_log, "SSL support enabled using key file: " << ssl_pem_file);
+#else
+			PION_LOG_ERROR(main_log, "SSL support is not enabled in libpion");
+#endif
+		}
 		
 		if (module_config_name.empty()) {
 			// load a single module using the command line arguments

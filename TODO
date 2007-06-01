@@ -2,11 +2,10 @@ Things to do:
 =============
 
 * Add pre-scanning and caching functionality to FileModule
-* Add support for SSL/TLS & server certificates
 * Use read-write mutex for HTTPServer modules
 * Compare performance of using multiple io_services versus just one
 * Allow more options for binding servers than just port numbers (IP)
 * Add support for Sun Studio & Microsoft Visual C++ compilers
-* Add support for parsing multipart form content
+* Add support for parsing multipart form content?
 * Add support for built-in authentication (OpenID)?
 * Switch to Jam or CMake build system instead of autotools?

@@ -30,6 +30,10 @@
 #include <boost/asio.hpp>
 #include <set>
 
+#ifdef PION_HAVE_SSL
+	#include <boost/asio/ssl/context.hpp>
+#endif
+
 
 namespace pion {	// begin namespace pion
 
@@ -50,6 +54,15 @@ public:
 	/// stops listening for new connections
 	void stop(void);
 
+	/// returns true if the server uses SSL to encrypt connections
+	inline bool getSSLFlag(void) const { return m_ssl_flag; }
+	
+	/// sets value of SSL flag (true if the server uses SSL to encrypt connections)
+	inline void setSSLFlag(bool b = true) { m_ssl_flag = b; }
+	
+	/// returns the SSL context for configuration
+	inline TCPConnection::SSLContext& getSSLContext(void) { return m_ssl_context; }
+	
 	/// returns tcp port number server listens for connections on
 	inline unsigned int getPort(void) const { return m_tcp_port; }
 
@@ -66,6 +79,7 @@ protected:
 	 * protect constructor so that only derived objects may be created
 	 * 
 	 * @param tcp_port port number used to listen for new connections
+	 * @param ssl_flag if true, the server will use SSL to encrypt connections
 	 */
 	explicit TCPServer(const unsigned int tcp_port);
 	
@@ -78,7 +92,7 @@ protected:
 	virtual void handleConnection(TCPConnectionPtr& tcp_conn) {
 		tcp_conn->finish();
 	}
-
+	
 	
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
@@ -101,6 +115,15 @@ private:
 	void handleAccept(TCPConnectionPtr& tcp_conn,
 					  const boost::asio::error& accept_error);
 
+	/**
+	 * handles new connections following an SSL handshake (checks for errors)
+	 *
+	 * @param tcp_conn the new TCP connection (if no error occurred)
+	 * @param handshake_error true if an error occurred during the SSL handshake
+	 */
+	void handleSSLHandshake(TCPConnectionPtr& tcp_conn,
+							const boost::asio::error& handshake_error);
+	
 	/// This will be called by TCPConnection::finish() after a server has
 	/// finished handling a connection.  If the keep_alive flag is true,
 	/// it will call handleConnection(); otherwise, it will close the
@@ -117,11 +140,17 @@ private:
 	/// manages async TCP connections
 	boost::asio::ip::tcp::acceptor			m_tcp_acceptor;
 
+	/// context used for SSL configuration
+	TCPConnection::SSLContext				m_ssl_context;
+		
 	/// pool of active connections associated with this server 
 	ConnectionPool							m_conn_pool;
 
 	/// tcp port number server listens for connections on
 	const unsigned int						m_tcp_port;
+
+	/// true if the server uses SSL to encrypt connections
+	bool									m_ssl_flag;
 
 	/// set to true when the server is listening for new connections
 	bool									m_is_listening;

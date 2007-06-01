@@ -219,6 +219,36 @@ LIBS="$LIBS_SAVED"
 AC_SUBST(BOOST_FILESYSTEM_LIB)
 
 
+# Check for OpenSSL
+AC_ARG_WITH([openssl],
+    AC_HELP_STRING([--with-openssl@<:@=DIR@:>@],[location of OpenSSL library (enables SSL support)]),
+    [ openssl_location=$withval ], [ without_openssl=true ])
+# Check if openssl location is specified
+if test "$without_openssl" != "true"; then
+	if test "x$openssl_location" != "x"; then
+		CPPFLAGS="$CPPFLAGS -I$openssl_location/include"
+		LDFLAGS="$LDFLAGS -L$openssl_location/lib"
+	fi
+	# Check for OpenSSL headers
+	AC_CHECK_HEADERS([openssl/ssl.h],,AC_MSG_ERROR([Unable to find the OpenSSL headers]))
+	# Check for log4cxx library
+	LIBS_SAVED="$LIBS"
+	LIBS="$LIBS_SAVED -lssl -lcrypto"
+	AC_TRY_LINK([#include <openssl/ssl.h>],[ SSL_library_init(); return(0); ],
+		AC_MSG_NOTICE(Linking with OpenSSL works),
+		AC_MSG_ERROR(Unable to link with the OpenSSL library))
+	LIBS="$LIBS_SAVED"
+	PION_SSL_LIB="-lssl -lcrypto"
+	# Found the OpenSSL library
+	AC_MSG_NOTICE(SSL encryption support enabled (found OpenSSL))
+	AC_DEFINE([PION_HAVE_SSL],[1],[Define to 1 if you have the `OpenSSL' library.])
+else
+	# Display notice if SSL is disabled
+	AC_MSG_NOTICE([SSL support is disabled (try --with-openssl)])
+fi
+AC_SUBST(PION_SSL_LIB)
+
+
 # Check for logging support
 AC_ARG_WITH([log4cplus],
     AC_HELP_STRING([--with-log4cplus@<:@=DIR@:>@],[location of log4cplus library (enables logging)]),

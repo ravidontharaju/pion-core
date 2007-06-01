@@ -44,11 +44,24 @@ const unsigned int	HTTPRequestParser::POST_CONTENT_MAX = 1024 * 1024;	// 1 MB
 
 void HTTPRequestParser::readRequest(void)
 {
-	m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_read_buffer),
-											boost::bind(&HTTPRequestParser::readHeaderBytes,
-														shared_from_this(),
-														boost::asio::placeholders::error,
-														boost::asio::placeholders::bytes_transferred));
+	if (m_tcp_conn->getSSLFlag()) {
+#ifdef PION_HAVE_SSL
+		m_tcp_conn->getSSLSocket().async_read_some(boost::asio::buffer(m_read_buffer),
+												   boost::bind(&HTTPRequestParser::readHeaderBytes,
+															   shared_from_this(),
+															   boost::asio::placeholders::error,
+															   boost::asio::placeholders::bytes_transferred));
+#else
+		PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
+		m_tcp_conn->finish();
+#endif		
+	} else {
+		m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_read_buffer),
+												boost::bind(&HTTPRequestParser::readHeaderBytes,
+															shared_from_this(),
+															boost::asio::placeholders::error,
+															boost::asio::placeholders::bytes_transferred));
+	}
 }
 
 void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
@@ -118,13 +131,28 @@ void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
 
 				// read the rest of the post content into the buffer
 				// and only return after we've finished or an error occurs
-				boost::asio::async_read(m_tcp_conn->getSocket(),
-										boost::asio::buffer(post_buffer, content_bytes_to_read),
-										boost::asio::transfer_at_least(content_bytes_to_read),
-										boost::bind(&HTTPRequestParser::readContentBytes,
-													shared_from_this(),
-													boost::asio::placeholders::error,
-													boost::asio::placeholders::bytes_transferred));
+				if (m_tcp_conn->getSSLFlag()) {
+#ifdef PION_HAVE_SSL
+					boost::asio::async_read(m_tcp_conn->getSSLSocket(),
+											boost::asio::buffer(post_buffer, content_bytes_to_read),
+											boost::asio::transfer_at_least(content_bytes_to_read),
+											boost::bind(&HTTPRequestParser::readContentBytes,
+														shared_from_this(),
+														boost::asio::placeholders::error,
+														boost::asio::placeholders::bytes_transferred));
+#else
+					PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
+					m_tcp_conn->finish();
+#endif
+				} else {
+					boost::asio::async_read(m_tcp_conn->getSocket(),
+											boost::asio::buffer(post_buffer, content_bytes_to_read),
+											boost::asio::transfer_at_least(content_bytes_to_read),
+											boost::bind(&HTTPRequestParser::readContentBytes,
+														shared_from_this(),
+														boost::asio::placeholders::error,
+														boost::asio::placeholders::bytes_transferred));
+				}
 			}
 		}
 		
