@@ -50,12 +50,23 @@ boost::mutex				PionPlugin::m_plugin_mutex;
 	
 void PionPlugin::addPluginDirectory(const std::string& dir)
 {
+#ifdef WIN32
+	// work around bug in boost::filesystem on Windows -> do not plugin directories
+	// basically, if you create a path object on Windows, then convert it to
+	// native_directory_string() or native_file_string(), then try to construct
+	// a new path object based on the string, it throws an exception (ugh!!!)
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	m_plugin_dirs.push_back(dir);
+#else
 	boost::filesystem::path plugin_path(dir, &boost::filesystem::no_check);
 	checkCygwinPath(plugin_path, dir);
 	if (! boost::filesystem::exists(plugin_path) )
 		throw DirectoryNotFoundException(dir);
 	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 	m_plugin_dirs.push_back(plugin_path.native_directory_string());
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	m_plugin_dirs.push_back(plugin_path.native_directory_string());
+#endif
 }
 
 void PionPlugin::resetPluginDirectories(void)
@@ -111,7 +122,7 @@ bool PionPlugin::checkForFile(std::string& final_path, const std::string& start_
 
 	// check for existence of plug-in (without extension)		
 	if (boost::filesystem::exists(test_path)) {
-		final_path = test_path.native_directory_string();
+		final_path = test_path.native_file_string();
 		return true;
 	}
 		
@@ -131,7 +142,7 @@ bool PionPlugin::checkForFile(std::string& final_path, const std::string& start_
 
 	// re-check for existence of plug-in (after adding extension)		
 	if (boost::filesystem::exists(test_path)) {
-		final_path = test_path.native_directory_string();
+		final_path = test_path.native_file_string();
 		return true;
 	}
 	

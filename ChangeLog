@@ -1,4 +1,4 @@
-Version 0.1.6 (2007-05-31)
+Version 0.1.6 (2007-06-01)
 ==========================
 
 * Added support for HTTP module configuration files (see testmodules.conf)

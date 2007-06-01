@@ -102,7 +102,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			return false;	// no file defined -> module's directory is not valid
 		
 		// use file to service directory request
-		file_name = m_file.native_directory_string();
+		file_name = m_file.native_file_string();
 		file_size = boost::filesystem::file_size(m_file);
 
 	} else if (! m_directory.empty()) {
@@ -116,7 +116,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			return false;
 		
 		// make sure that the file is within the configured directory
-		file_name = file_path.native_directory_string();
+		file_name = file_path.native_file_string();
 		if (file_name.find(m_directory.native_directory_string()) != 0)
 			return false;
 		
