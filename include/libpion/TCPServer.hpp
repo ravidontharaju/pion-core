@@ -93,6 +93,12 @@ protected:
 		tcp_conn->finish();
 	}
 	
+	/// called before the TCP server starts listening for new connections
+	virtual void beforeStarting(void) {}
+
+	/// called after the TCP server has stopped listing for new connections
+	virtual void afterStopping(void) {}
+	
 	
 	/// primary logging interface used by this class
 	PionLogger								m_logger;

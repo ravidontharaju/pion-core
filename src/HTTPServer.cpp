@@ -45,15 +45,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! http_request->isValid()) {
 		// the request is invalid or an error occured
 		PION_LOG_INFO(m_logger, "Received an invalid HTTP request");
-
-		// lock mutex for thread safety (this should probably use ref counters)
-		boost::mutex::scoped_lock modules_lock(m_mutex);
-
-		if (! m_bad_request_module->handleRequest(http_request, tcp_conn)) {
-			// this shouldn't ever happen, but just in case
-			tcp_conn->finish();
-		}
-		
+		m_bad_request_handler(http_request, tcp_conn);
 		return;
 	}
 		
@@ -103,11 +95,8 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 					throw;
 				} catch (std::exception& e) {
 					// recover gracefully from other exceptions thrown by modules
-					PION_LOG_ERROR(m_logger, "HTTP module threw exception (" << resource << "): " << e.what());
-					if (! m_server_error_module->handleRequest(http_request, tcp_conn)) {
-						// this shouldn't ever happen, but just in case
-						tcp_conn->finish();
-					}
+					PION_LOG_ERROR(m_logger, "HTTP module (" << resource << ") exception: " << e.what());
+					m_server_error_handler(http_request, tcp_conn, e.what());
 					request_was_handled = true;
 					break;
 				}
@@ -125,12 +114,24 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! request_was_handled) {
 		// no modules found that could handle the request
 		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
-
-		if (! m_not_found_module->handleRequest(http_request, tcp_conn)) {
-			// this shouldn't ever happen, but just in case
-			tcp_conn->finish();
-		}
+		m_not_found_handler(http_request, tcp_conn);
 	}
+}
+
+void HTTPServer::beforeStarting(void)
+{
+	// call the start() method for each module associated with this server
+	boost::mutex::scoped_lock modules_lock(m_mutex);
+	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i)
+		i->second.first->start();
+}
+
+void HTTPServer::afterStopping(void)
+{
+	// call the stop() method for each module associated with this server
+	boost::mutex::scoped_lock modules_lock(m_mutex);
+	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i)
+		i->second.first->stop();
 }
 
 void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
@@ -317,10 +318,8 @@ void HTTPServer::clearModules(void)
 }
 
 
-// HTTPServer::BadRequestModule member functions
-
-bool HTTPServer::BadRequestModule::handleRequest(HTTPRequestPtr& request,
-												 TCPConnectionPtr& tcp_conn)
+void HTTPServer::handleBadRequest(HTTPRequestPtr& http_request,
+								   TCPConnectionPtr& tcp_conn)
 {
 	static const std::string BAD_REQUEST_HTML =
 		"<html><head>\n"
@@ -334,48 +333,49 @@ bool HTTPServer::BadRequestModule::handleRequest(HTTPRequestPtr& request,
 	response->setResponseMessage(HTTPTypes::RESPONSE_MESSAGE_BAD_REQUEST);
 	response->writeNoCopy(BAD_REQUEST_HTML);
 	response->send(tcp_conn);
-	return true;
 }
 
-
-// HTTPServer::NotFoundModule member functions
-
-bool HTTPServer::NotFoundModule::handleRequest(HTTPRequestPtr& request,
-											   TCPConnectionPtr& tcp_conn)
+void HTTPServer::handleNotFoundRequest(HTTPRequestPtr& http_request,
+									   TCPConnectionPtr& tcp_conn)
 {
-	static const std::string NOT_FOUND_HTML =
+	static const std::string NOT_FOUND_HTML_START =
 		"<html><head>\n"
 		"<title>404 Not Found</title>\n"
 		"</head><body>\n"
 		"<h1>Not Found</h1>\n"
-		"<p>The requested URL was not found on this server.</p>\n"
+		"<p>The requested URL ";
+	static const std::string NOT_FOUND_HTML_FINISH =
+		" was not found on this server.</p>\n"
 		"</body></html>\n";
 	HTTPResponsePtr response(HTTPResponse::create());
 	response->setResponseCode(HTTPTypes::RESPONSE_CODE_NOT_FOUND);
 	response->setResponseMessage(HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND);
-	response->writeNoCopy(NOT_FOUND_HTML);
+	response->writeNoCopy(NOT_FOUND_HTML_START);
+	response << http_request->getResource();
+	response->writeNoCopy(NOT_FOUND_HTML_FINISH);
 	response->send(tcp_conn);
-	return true;
 }
 
-// HTTPServer::ServerErrorModule member functions
-
-bool HTTPServer::ServerErrorModule::handleRequest(HTTPRequestPtr& request,
-												  TCPConnectionPtr& tcp_conn)
+void HTTPServer::handleServerError(HTTPRequestPtr& http_request,
+								   TCPConnectionPtr& tcp_conn,
+								   const std::string& error_msg)
 {
-	static const std::string SERVER_ERROR_HTML =
+	static const std::string SERVER_ERROR_HTML_START =
 		"<html><head>\n"
 		"<title>500 Server Error</title>\n"
 		"</head><body>\n"
 		"<h1>Internal Server Error</h1>\n"
-		"<p>The server encountered an internal error.</p>\n"
+		"<p>The server encountered an internal error: <strong>";
+	static const std::string SERVER_ERROR_HTML_FINISH =
+		"</strong></p>\n"
 		"</body></html>\n";
 	HTTPResponsePtr response(HTTPResponse::create());
 	response->setResponseCode(HTTPTypes::RESPONSE_CODE_SERVER_ERROR);
 	response->setResponseMessage(HTTPTypes::RESPONSE_MESSAGE_SERVER_ERROR);
-	response->writeNoCopy(SERVER_ERROR_HTML);
+	response->writeNoCopy(SERVER_ERROR_HTML_START);
+	response << error_msg;
+	response->writeNoCopy(SERVER_ERROR_HTML_FINISH);
 	response->send(tcp_conn);
-	return true;
 }
 
 }	// end namespace pion

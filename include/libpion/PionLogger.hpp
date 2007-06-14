@@ -144,7 +144,7 @@
 	}
 
 	#define PION_LOG_CONFIG_BASIC	{}
-	#define PION_GET_LOGGER(NAME)	PionLogger(NAME)
+	#define PION_GET_LOGGER(NAME)	pion::PionLogger(NAME)
 
 	#define PION_LOG_SETLEVEL_DEBUG(LOG)	{ LOG.m_priority = PION_PRIORITY_DEBUG; }
 	#define PION_LOG_SETLEVEL_INFO(LOG)		{ LOG.m_priority = PION_PRIORITY_INFO; }

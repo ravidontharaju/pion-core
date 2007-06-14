@@ -19,6 +19,8 @@
 //
 
 #include <libpion/HTTPTypes.hpp>
+#include <boost/thread/mutex.hpp>
+#include <ctime>
 
 
 namespace pion {		// begin namespace pion
@@ -37,6 +39,8 @@ const std::string	HTTPTypes::HEADER_SET_COOKIE("Set-Cookie");
 const std::string	HTTPTypes::HEADER_CONNECTION("Connection");
 const std::string	HTTPTypes::HEADER_CONTENT_TYPE("Content-Type");
 const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
+const std::string	HTTPTypes::HEADER_LAST_MODIFIED("Last-Modified");
+const std::string	HTTPTypes::HEADER_IF_MODIFIED_SINCE("If-Modified-Since");
 
 // common HTTP content types
 const std::string	HTTPTypes::CONTENT_TYPE_HTML("text/html");
@@ -44,15 +48,23 @@ const std::string	HTTPTypes::CONTENT_TYPE_TEXT("text/plain");
 const std::string	HTTPTypes::CONTENT_TYPE_XML("text/xml");
 const std::string	HTTPTypes::CONTENT_TYPE_URLENCODED("application/x-www-form-urlencoded");
 
+// common HTTP request methods
+const std::string	HTTPTypes::REQUEST_METHOD_HEAD("HEAD");
+const std::string	HTTPTypes::REQUEST_METHOD_GET("GET");
+const std::string	HTTPTypes::REQUEST_METHOD_PUT("PUT");
+const std::string	HTTPTypes::REQUEST_METHOD_POST("POST");
+
 // common HTTP response messages
 const std::string	HTTPTypes::RESPONSE_MESSAGE_OK("OK");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_NOT_FOUND("Not Found");
+const std::string	HTTPTypes::RESPONSE_MESSAGE_NOT_MODIFIED("Not Modified");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_BAD_REQUEST("Bad Request");
 const std::string	HTTPTypes::RESPONSE_MESSAGE_SERVER_ERROR("Server Error");
 
 // common HTTP response codes
 const unsigned int	HTTPTypes::RESPONSE_CODE_OK = 200;
 const unsigned int	HTTPTypes::RESPONSE_CODE_NOT_FOUND = 404;
+const unsigned int	HTTPTypes::RESPONSE_CODE_NOT_MODIFIED = 304;
 const unsigned int	HTTPTypes::RESPONSE_CODE_BAD_REQUEST = 400;
 const unsigned int	HTTPTypes::RESPONSE_CODE_SERVER_ERROR = 500;
 
@@ -87,6 +99,22 @@ std::string HTTPTypes::url_decode(const std::string& str)
 	};
 	
 	return result;
+}
+
+std::string HTTPTypes::get_date_string(const time_t t)
+{
+	// use mutex since time functions are normally not thread-safe
+	static boost::mutex	time_mutex;
+	static const char *TIME_FORMAT = "%a, %d %b %Y %H:%M:%S GMT";
+	static const unsigned int TIME_BUF_SIZE = 100;
+	char time_buf[TIME_BUF_SIZE+1];
+
+	boost::mutex::scoped_lock time_lock(time_mutex);
+	if (strftime(time_buf, TIME_BUF_SIZE, TIME_FORMAT, gmtime(&t)) == 0)
+		time_buf[0] = '\0';	// failed; resulting buffer is indeterminate
+	time_lock.unlock();
+
+	return std::string(time_buf);
 }
 
 }	// end namespace pion

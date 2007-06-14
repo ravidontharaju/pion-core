@@ -47,6 +47,8 @@ void TCPServer::start(void)
 
 	if (! m_is_listening) {
 		PION_LOG_INFO(m_logger, "Starting server on port " << getPort());
+		
+		beforeStarting();
 
 		// configure the acceptor service
 		tcp::endpoint endpoint(tcp::v4(), m_tcp_port);
@@ -83,6 +85,8 @@ void TCPServer::stop(void)
 
 		// clear the TCP connection management pool
 		m_conn_pool.clear();
+		
+		afterStopping();
 	}
 }
 

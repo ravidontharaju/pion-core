@@ -72,6 +72,12 @@ public:
 		throw UnknownOptionException(name);
 	}
 	
+	/// called when the module's server is starting
+	virtual void start(void) {}
+	
+	/// called when the module's server is stopping
+	virtual void stop(void) {}
+	
 	/// sets the URI stem or resource that is bound to the module (strips any trailing slash)	
 	inline void setResource(const std::string& str) { m_resource = stripTrailingSlash(str); }
 
@@ -88,6 +94,7 @@ public:
 		// strip the module's resource path plus the slash after it
 		return HTTPTypes::url_decode(resource_requested.substr(getResource().size() + 1));
 	}
+	
 	
 private:
 		

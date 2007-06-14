@@ -22,24 +22,9 @@
 #define __PION_HTTPTYPES_HEADER__
 
 #include <libpion/PionConfig.hpp>
+#include <libpion/PionHashMap.hpp>
 #include <boost/functional/hash.hpp>
 #include <string>
-
-#if defined(PION_HAVE_UNORDERED_MAP)
-	#include <unordered_map>
-	#define PION_UNORDERED_MULTIMAP std::tr1::unordered_multimap
-#elif defined(PION_HAVE_EXT_HASH_MAP)
-	#if __GNUC__ >= 3
-		#include <ext/hash_map>
-		#define PION_UNORDERED_MULTIMAP __gnu_cxx::hash_multimap
-	#else
-		#include <ext/hash_map>
-		#define PION_UNORDERED_MULTIMAP hash_multimap
-	#endif
-#elif defined(PION_HAVE_HASH_MAP)
-	#include <hash_map>
-	#define PION_UNORDERED_MULTIMAP hash_multimap
-#endif
 
 
 namespace pion {	// begin namespace pion
@@ -63,6 +48,8 @@ struct HTTPTypes
 	static const std::string	HEADER_CONNECTION;
 	static const std::string	HEADER_CONTENT_TYPE;
 	static const std::string	HEADER_CONTENT_LENGTH;
+	static const std::string	HEADER_LAST_MODIFIED;
+	static const std::string	HEADER_IF_MODIFIED_SINCE;
 
 	// common HTTP content types
 	static const std::string	CONTENT_TYPE_HTML;
@@ -70,20 +57,28 @@ struct HTTPTypes
 	static const std::string	CONTENT_TYPE_XML;
 	static const std::string	CONTENT_TYPE_URLENCODED;
 	
+	// common HTTP request methods
+	static const std::string	REQUEST_METHOD_HEAD;
+	static const std::string	REQUEST_METHOD_GET;
+	static const std::string	REQUEST_METHOD_PUT;
+	static const std::string	REQUEST_METHOD_POST;
+	
 	// common HTTP response messages
 	static const std::string	RESPONSE_MESSAGE_OK;
 	static const std::string	RESPONSE_MESSAGE_NOT_FOUND;
+	static const std::string	RESPONSE_MESSAGE_NOT_MODIFIED;
 	static const std::string	RESPONSE_MESSAGE_BAD_REQUEST;
 	static const std::string	RESPONSE_MESSAGE_SERVER_ERROR;
 
 	// common HTTP response codes
 	static const unsigned int	RESPONSE_CODE_OK;
 	static const unsigned int	RESPONSE_CODE_NOT_FOUND;
+	static const unsigned int	RESPONSE_CODE_NOT_MODIFIED;
 	static const unsigned int	RESPONSE_CODE_BAD_REQUEST;
 	static const unsigned int	RESPONSE_CODE_SERVER_ERROR;
 	
 	/// data type for a dictionary of strings (used for HTTP headers)
-	typedef PION_UNORDERED_MULTIMAP<std::string, std::string, boost::hash<std::string> >	StringDictionary;
+	typedef PION_HASH_MULTIMAP<std::string, std::string, boost::hash<std::string> >	StringDictionary;
 
 	/// data type for HTTP headers
 	typedef StringDictionary	Headers;
@@ -96,6 +91,9 @@ struct HTTPTypes
 	
 	/// escapes URL-encoded strings (a%20value+with%20spaces)
 	static std::string url_decode(const std::string& str);
+
+	/// converts time_t format into an HTTP-date string
+	static std::string get_date_string(const time_t t);
 };
 
 }	// end namespace pion

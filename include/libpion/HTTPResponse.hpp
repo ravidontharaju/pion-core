@@ -199,6 +199,11 @@ public:
 		m_response_code += ' ';
 	}
 	
+	/// sets the time that the response was last modified (Last-Modified)
+	inline void setLastModified(const unsigned long t) {
+		addHeader(HTTPTypes::HEADER_LAST_MODIFIED, HTTPTypes::get_date_string(t));
+	}
+	
 	/// sets the response or status message to send
 	inline void setResponseMessage(const std::string& m) { m_response_message = m; }
 

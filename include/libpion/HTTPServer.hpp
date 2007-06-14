@@ -64,6 +64,18 @@ public:
 		ConfigParsingException(const std::string& file)
 			: PionException("Unable to parse configuration file: ", file) {}
 	};
+
+	/// handler for requests that result in "400 Bad Request"
+	typedef boost::function2<void, HTTPRequestPtr&,
+		TCPConnectionPtr&>	BadRequestHandler;
+
+	/// handler for requests that result in "404 Not Found"
+	typedef boost::function2<void, HTTPRequestPtr&,
+		 TCPConnectionPtr&>	NotFoundHandler;
+
+	/// handler for requests that result in "500 Server Error"
+	typedef boost::function3<void, HTTPRequestPtr&, TCPConnectionPtr&,
+		const std::string&>	ServerErrorHandler;
 	
 	
 	/**
@@ -123,14 +135,15 @@ public:
 	/// clears all the modules that are currently configured
 	void clearModules(void);
 	
-	/// sets the module that handles bad HTTP requests
-	inline void setBadRequestModule(HTTPModule *m) { m_bad_request_module.reset(m); }
+	/// sets the function that handles bad HTTP requests
+	inline void setBadRequestHandler(BadRequestHandler h) { m_bad_request_handler = h; }
 	
-	/// sets the module that handles requests which match no other module
-	inline void setNotFoundModule(HTTPModule *m) { m_not_found_module.reset(m); }
+	/// sets the function that handles requests which match no other module
+	inline void setNotFoundHandler(NotFoundHandler h) { m_not_found_handler = h; }
 	
-	/// sets the module that handles requests which match no other module
-	inline void setServerErrorModule(HTTPModule *m) { m_server_error_module.reset(m); }
+	/// sets the function that handles requests which match no other module
+	inline void setServerErrorHandler(ServerErrorHandler h) { m_server_error_handler = h; }
+
 	
 protected:
 	
@@ -140,9 +153,10 @@ protected:
 	 * @param tcp_port port number used to listen for new connections
 	 */
 	explicit HTTPServer(const unsigned int tcp_port)
-		: TCPServer(tcp_port), m_bad_request_module(new BadRequestModule),
-		m_not_found_module(new NotFoundModule),
-		m_server_error_module(new ServerErrorModule)
+		: TCPServer(tcp_port),
+		m_bad_request_handler(HTTPServer::handleBadRequest),
+		m_not_found_handler(HTTPServer::handleNotFoundRequest),
+		m_server_error_handler(HTTPServer::handleServerError)
 	{ 
 		setLogger(PION_GET_LOGGER("Pion.HTTPServer"));
 	}
@@ -162,36 +176,44 @@ protected:
 	 */
 	void handleRequest(HTTPRequestPtr& http_request, TCPConnectionPtr& tcp_conn);
 		
+	/**
+	 * used to send responses when a bad HTTP request is made
+	 *
+     * @param http_request the new HTTP request to handle
+     * @param tcp_conn the TCP connection that has the new request
+	 */
+	 static void handleBadRequest(HTTPRequestPtr& http_request,
+								  TCPConnectionPtr& tcp_conn);
+	
+	/**
+	 * used to send responses when no modules can handle the request
+	 *
+     * @param http_request the new HTTP request to handle
+     * @param tcp_conn the TCP connection that has the new request
+	 */
+	static void handleNotFoundRequest(HTTPRequestPtr& http_request,
+									  TCPConnectionPtr& tcp_conn);
+	
+	/**
+	 * used to send responses when a server error occurs
+	 *
+     * @param http_request the new HTTP request to handle
+     * @param tcp_conn the TCP connection that has the new request
+	 * @param error_msg message that explains what went wrong
+	 */
+	static void handleServerError(HTTPRequestPtr& http_request,
+								  TCPConnectionPtr& tcp_conn,
+								  const std::string& error_msg);
+	
+	/// called before the TCP server starts listening for new connections
+	virtual void beforeStarting(void);
+	
+	/// called after the TCP server has stopped listing for new connections
+	virtual void afterStopping(void);
+
 	
 private:
 	
-	/// used to send responses when a bad HTTP request is made
-	class BadRequestModule : public HTTPModule {
-	public:
-		virtual ~BadRequestModule() {}
-		BadRequestModule(void) {}
-		virtual bool handleRequest(HTTPRequestPtr& request,
-								   TCPConnectionPtr& tcp_conn);
-	};
-	
-	/// used to send responses when a no modules can handle the request
-	class NotFoundModule : public HTTPModule {
-	public:
-		virtual ~NotFoundModule() {}
-		NotFoundModule(void) {}
-		virtual bool handleRequest(HTTPRequestPtr& request,
-								   TCPConnectionPtr& tcp_conn);
-	};
-	
-	/// used to send responses when a server error occurs
-	class ServerErrorModule : public HTTPModule {
-	public:
-		virtual ~ServerErrorModule() {}
-		ServerErrorModule(void) {}
-		virtual bool handleRequest(HTTPRequestPtr& request,
-								   TCPConnectionPtr& tcp_conn);
-	};
-
 	/// used by ModuleMap to associated moudle objects with plugin libraries
 	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> *>	PluginPair;
 	
@@ -214,20 +236,21 @@ private:
 		ModuleMap(void) {}
 	};
 	
+	
 	/// HTTP modules associated with this server
-	ModuleMap						m_modules;
+	ModuleMap				m_modules;
 
 	/// mutex to make class thread-safe
-	boost::mutex					m_mutex;
+	boost::mutex			m_mutex;
 
 	/// points to the module that handles bad HTTP requests
-	boost::shared_ptr<HTTPModule>	m_bad_request_module;
+	BadRequestHandler		m_bad_request_handler;
 	
 	/// points to the module that handles requests which match no other module
-	boost::shared_ptr<HTTPModule>	m_not_found_module;
+	NotFoundHandler			m_not_found_handler;
 
 	/// points to the module that handles server errors
-	boost::shared_ptr<HTTPModule>	m_server_error_module;
+	ServerErrorHandler		m_server_error_handler;
 };
 
 
