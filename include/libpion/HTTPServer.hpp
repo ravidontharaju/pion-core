@@ -219,7 +219,7 @@ private:
 	
 	/// data type for a collection of HTTP modules
 	class ModuleMap
-		: public std::multimap<std::string, PluginPair>
+		: public std::map<std::string, PluginPair>
 	{
 	public:
 		void clear(void) {
@@ -231,6 +231,7 @@ private:
 					delete i->second.first;
 				}
 			}
+			std::map<std::string, PluginPair>::clear();
 		}
 		virtual ~ModuleMap() { clear(); }
 		ModuleMap(void) {}
