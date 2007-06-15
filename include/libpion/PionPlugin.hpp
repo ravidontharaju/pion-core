@@ -49,10 +49,10 @@ public:
 	};
 	
 	/// exception thrown if the plug-in directory does not exist
-	class DirectoryNotFoundException : public pion::PionException {
+	class DirectoryNotFoundException : public PionException {
 	public:
 		DirectoryNotFoundException(const std::string& dir)
-			: pion::PionException("Plug-in directory not found: ", dir) {}
+			: PionException("Plug-in directory not found: ", dir) {}
 	};
 
 	/// exception thrown if the plug-in file cannot be opened
