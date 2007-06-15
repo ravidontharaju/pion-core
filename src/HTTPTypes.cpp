@@ -39,6 +39,7 @@ const std::string	HTTPTypes::HEADER_SET_COOKIE("Set-Cookie");
 const std::string	HTTPTypes::HEADER_CONNECTION("Connection");
 const std::string	HTTPTypes::HEADER_CONTENT_TYPE("Content-Type");
 const std::string	HTTPTypes::HEADER_CONTENT_LENGTH("Content-Length");
+const std::string	HTTPTypes::HEADER_CONTENT_LOCATION("Content-Location");
 const std::string	HTTPTypes::HEADER_LAST_MODIFIED("Last-Modified");
 const std::string	HTTPTypes::HEADER_IF_MODIFIED_SINCE("If-Modified-Since");
 

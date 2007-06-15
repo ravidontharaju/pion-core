@@ -91,6 +91,13 @@ public:
 			: pion::PionException("FileModule unable to read file: ", value) {}
 	};
 
+	/// exception thrown if we do not know how to response (should never happen)
+	class UndefinedResponseException : public pion::PionException {
+	public:
+		UndefinedResponseException(const std::string& value)
+			: pion::PionException("FileModule has an undefined response: ", value) {}
+	};
+	
 	
 	// default constructor and destructor
 	FileModule(void);

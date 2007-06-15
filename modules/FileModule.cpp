@@ -75,8 +75,6 @@ void FileModule::setOption(const std::string& name, const std::string& value)
 			m_cache_setting = 1;
 		} else if (value == "2") {
 			m_cache_setting = 2;
-		} else if (value == "3") {
-			m_cache_setting = 3;
 		} else {
 			throw InvalidCacheException(value);
 		}
@@ -87,6 +85,8 @@ void FileModule::setOption(const std::string& name, const std::string& value)
 			m_scan_setting = 1;
 		} else if (value == "2") {
 			m_scan_setting = 2;
+		} else if (value == "3") {
+			m_scan_setting = 3;
 		} else {
 			throw InvalidScanException(value);
 		}
@@ -99,19 +99,20 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 {
 	// the type of response we will send
 	enum ResponseType {
+		RESPONSE_UNDEFINED,		// initial state until we know how to respond
 		RESPONSE_OK,			// normal response that includes the file's content
 		RESPONSE_HEAD_OK,		// response to HEAD request (would send file's content)
 		RESPONSE_NOT_MODIFIED	// Not Modified (304) response to If-Modified-Since
-	} response_type;
+	} response_type = RESPONSE_UNDEFINED;
 
+	// used to hold our response information
+	DiskFile response_file;
+	
 	// get the If-Modified-Since request header
 	const std::string if_modified_since(request->getHeader(HTTPTypes::HEADER_IF_MODIFIED_SINCE));
 	
 	// get the relative resource path for the request
 	const std::string relative_path(getRelativeResource(request->getResource()));
-	
-	DiskFile response_file;			// used to hold our response information
-	bool found_cache_entry = false;	// re-use an existing cache entry if true
 	
 	// check the cache for a corresponding entry (if enabled)
 	// note that m_cache_setting may equal 0 if m_scan_setting == 1
@@ -128,19 +129,19 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// do not allow files to be added;
 				// all requests must correspond with existing cache entries
 				// since no match was found, just return file not found
-				PION_LOG_WARN(m_logger, "Request for unknown file: " << request->getResource());
+				PION_LOG_WARN(m_logger, "Request for unknown file ("
+							  << getResource() << "): " << relative_path);
 				return false;
 			} else {
 				PION_LOG_DEBUG(m_logger, "No cache entry for request ("
-							   << getResource() << "): " << request->getResource());
+							   << getResource() << "): " << relative_path);
 			}
 			
 		} else {
 			// found an existing cache entry
-			found_cache_entry = true;
 			
 			PION_LOG_DEBUG(m_logger, "Found cache entry for request ("
-						   << getResource() << "): " << request->getResource());
+						   << getResource() << "): " << relative_path);
 
 			if (m_cache_setting == 0) {
 				// cache is disabled
@@ -166,7 +167,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 						response_file.read();
 
 						PION_LOG_DEBUG(m_logger, "Cache disabled, reading file ("
-									   << getResource() << "): " << request->getResource());
+									   << getResource() << "): " << relative_path);
 					}
 				}
 					
@@ -205,12 +206,12 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 				PION_LOG_DEBUG(m_logger, (cache_was_updated ? "Updated" : "Using")
 							   << " cache entry for request ("
-							   << getResource() << "): " << request->getResource());
+							   << getResource() << "): " << relative_path);
 			}
 		}
 	}
 	
-	if (! found_cache_entry) {
+	if (response_type == RESPONSE_UNDEFINED) {
 		// determine the path to the file
 		
 		if (relative_path.empty()) {
@@ -219,8 +220,8 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			// return false if no file defined
 			// module's directory is not valid
 			if (m_file.empty()) {
-				PION_LOG_WARN(m_logger, "No file option defined for module: "
-							  << request->getResource());
+				PION_LOG_WARN(m_logger, "No file option defined ("
+							  << getResource() << "): " << relative_path);
 				return false;
 			}
 			
@@ -234,32 +235,35 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			response_file.file_path = m_directory;
 			response_file.file_path /= boost::filesystem::path(relative_path, &boost::filesystem::no_check);
 
-			// make sure that the file exists and is not a directory
-			if (! boost::filesystem::exists(response_file.file_path)
-				|| boost::filesystem::is_directory(response_file.file_path))
-			{
-				PION_LOG_WARN(m_logger, "Request for directory or non-existent file: "
-							  << request->getResource());
+			// make sure that the file exists
+			if (! boost::filesystem::exists(response_file.file_path) ) {
+				PION_LOG_WARN(m_logger, "File not found ("
+							  << getResource() << "): " << relative_path);
+				return false;
+			}
+			
+			// make sure that it is not a directory
+			if ( boost::filesystem::is_directory(response_file.file_path) ) {
+				PION_LOG_WARN(m_logger, "Request for directory ("
+							  << getResource() << "): " << relative_path);
 				return false;
 			}
 			
 			// make sure that the file is within the configured directory
 			std::string file_string = response_file.file_path.native_file_string();
 			if (file_string.find(m_directory.native_directory_string()) != 0) {
-				PION_LOG_WARN(m_logger, "Request for file outside of directory: "
-							  << request->getResource());
+				PION_LOG_WARN(m_logger, "Request for file outside of directory ("
+							  << getResource() << "): " << relative_path);
 				return false;
 			}
 			
 		} else {
 			// request does not match resource, and no directory is defined
-			PION_LOG_WARN(m_logger, "No directory option defined for module: "
-						  << request->getResource());
 			return false;
 		}
 
-		PION_LOG_DEBUG(m_logger, "Found matching file for request ("
-					   << getResource() << "): " << request->getResource());
+		PION_LOG_DEBUG(m_logger, "Found file for request ("
+					   << getResource() << "): " << relative_path);
 
 		// determine the MIME type
 		response_file.mime_type = findMIMEType( response_file.file_path.leaf() );
@@ -280,7 +284,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			if (m_cache_setting != 0) {
 				// add new entry to the cache
 				PION_LOG_DEBUG(m_logger, "Adding cache entry for request ("
-							   << getResource() << "): " << request->getResource());
+							   << getResource() << "): " << relative_path);
 				boost::mutex::scoped_lock cache_lock(m_cache_mutex);
 				m_cache_map.insert( std::make_pair(relative_path, response_file) );
 			}
@@ -295,6 +299,10 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	response->addHeader(HTTPTypes::HEADER_LAST_MODIFIED, response_file.last_modified_string);
 
 	switch(response_type) {
+		case RESPONSE_UNDEFINED:
+			// this should never happen
+			throw UndefinedResponseException(request->getResource());
+			break;
 		case RESPONSE_NOT_MODIFIED:
 			// set "Not Modified" response
 			response->setResponseCode(HTTPTypes::RESPONSE_CODE_NOT_MODIFIED);
@@ -353,7 +361,8 @@ void FileModule::stop(void)
 
 void FileModule::scanDirectory(const boost::filesystem::path& dir_path)
 {
-	PION_LOG_DEBUG(m_logger, "Scanning directory: " << dir_path.native_directory_string());
+	PION_LOG_DEBUG(m_logger, "Scanning directory (" << getResource() << "): "
+				   << dir_path.native_directory_string());
 	
 	// iterate through items in the directory
 	boost::filesystem::directory_iterator end_itr;
@@ -464,7 +473,7 @@ void FileModule::DiskFile::read(void)
 
 	// read the file into memory
 	if (!file_stream.is_open() || !file_stream.read(file_content.get(), file_size))
-		throw FileReadException(file_path.native_file_string());
+		throw FileModule::FileReadException(file_path.native_file_string());
 }
 
 bool FileModule::DiskFile::checkUpdated(void)

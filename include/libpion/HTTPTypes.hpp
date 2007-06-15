@@ -48,6 +48,7 @@ struct HTTPTypes
 	static const std::string	HEADER_CONNECTION;
 	static const std::string	HEADER_CONTENT_TYPE;
 	static const std::string	HEADER_CONTENT_LENGTH;
+	static const std::string	HEADER_CONTENT_LOCATION;
 	static const std::string	HEADER_LAST_MODIFIED;
 	static const std::string	HEADER_IF_MODIFIED_SINCE;
 

@@ -103,8 +103,9 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 
 				if (request_was_handled) {
 					// the module successfully handled the request
-					PION_LOG_DEBUG(m_logger, "HTTP request handled by module: "
-								   << i->first);
+					PION_LOG_DEBUG(m_logger, "HTTP request handled by module ("
+								   << i->first << "): "
+								   << http_request->getResource());
 					break;
 				}
 			}
