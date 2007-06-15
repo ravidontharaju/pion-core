@@ -169,6 +169,7 @@ std::string PionPlugin::getPluginName(const std::string& plugin_file)
 
 void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 {
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	return LoadLibrary(plugin_file.c_str());
 #else
@@ -178,6 +179,7 @@ void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 
 void PionPlugin::closeDynamicLibrary(void *lib_handle)
 {
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	FreeLibrary((HINSTANCE) lib_handle);
 #else
@@ -187,6 +189,7 @@ void PionPlugin::closeDynamicLibrary(void *lib_handle)
 
 void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 {
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	return (void*)GetProcAddress((HINSTANCE) lib_handle, symbol.c_str());
 #else
