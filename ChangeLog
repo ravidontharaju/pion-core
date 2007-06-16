@@ -4,8 +4,9 @@ Version 0.2.0 (2007-06-??)
 * Added support to FileModule for the "cache" and "scan" options
 * Added Last-Modified HTTP header to FileModule and support for client cache
 * Changed HTTPServer error handlers to use functions rather than modules
+* Re-worked PionPlugin library so that it handles reference counting internally
 * Added start() and stop() virtual functions to HTTPModule
-* Added beforeStarting() and afterStopping() virtual funcs to TCPServer
+* Added beforeStarting() and afterStopping() virtual functions to TCPServer
 * Added PionHashMap.hpp for setting-up unordered map types
 
 
