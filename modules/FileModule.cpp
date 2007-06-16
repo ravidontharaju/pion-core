@@ -47,6 +47,7 @@ FileModule::FileModule(void)
 	m_cache_setting(DEFAULT_CACHE_SETTING),
 	m_scan_setting(DEFAULT_SCAN_SETTING)
 {
+	// uncomment to enable debug logging
 	PION_LOG_SETLEVEL_DEBUG(m_logger);
 }
 
@@ -437,10 +438,13 @@ void FileModule::createMIMETypes(void) {
 	static MIMETypeMap mime_types;
 	
 	// populate mime types
+	mime_types["js"] = "text/javascript";
 	mime_types["txt"] = "text/plain";
 	mime_types["xml"] = "text/xml";
+	mime_types["css"] = "text/css";
 	mime_types["htm"] = "text/html";
 	mime_types["html"] = "text/html";
+	mime_types["xhtml"] = "text/html";
 	mime_types["gif"] = "image/gif";
 	mime_types["png"] = "image/png";
 	mime_types["jpg"] = "image/jpeg";

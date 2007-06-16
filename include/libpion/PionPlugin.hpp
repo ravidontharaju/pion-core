@@ -23,11 +23,12 @@
 
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionException.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <vector>
 #include <string>
+#include <map>
+
 
 // forward declaration of boost::filesystem::path
 namespace boost { namespace filesystem { class path; } }
@@ -77,39 +78,6 @@ public:
 			: PionException("Plug-in library does not include destroy() symbol: ", file) {}
 	};
 
-	// default constructor and destructor
-	PionPlugin(void) {}
-	virtual ~PionPlugin() {}
-	
-	/// appends a directory to the plug-in search path
-	static void addPluginDirectory(const std::string& dir);
-	
-	/// clears all directories from the plug-in search path
-	static void resetPluginDirectories(void);
-	
-	/// returns the name of the plugin object (based on the plugin_file name)
-	static std::string getPluginName(const std::string& plugin_file);
-	
-	/// load a dynamic library from plugin_file and return its handle
-	static void *loadDynamicLibrary(const std::string& plugin_file);
-	
-	/// close the dynamic library corresponding with lib_handle
-	static void closeDynamicLibrary(void *lib_handle);
-	
-	/// returns the address of a library symbal
-	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
-
-	/**
-	 * updates path for cygwin oddities, if necessary
-	 *
-	 * @param final_path path object for the file, will be modified if necessary
-	 * @param start_path original path to the file.  if final_path is not valid,
-	 *                   this will be appended to PION_CYGWIN_DIRECTORY to attempt
-	 *                   attempt correction of final_path for cygwin
-	 */
-	static void checkCygwinPath(boost::filesystem::path& final_path,
-								const std::string& path_string);
-	
 	/**
 	 * searches directories for a valid plug-in file
 	 *
@@ -136,9 +104,106 @@ public:
 		return findFile(path_to_file, name, PION_CONFIG_EXTENSION);
 	}
 	
+	/**
+	 * updates path for cygwin oddities, if necessary
+	 *
+	 * @param final_path path object for the file, will be modified if necessary
+	 * @param start_path original path to the file.  if final_path is not valid,
+	 *                   this will be appended to PION_CYGWIN_DIRECTORY to attempt
+	 *                   attempt correction of final_path for cygwin
+	 */
+	static void checkCygwinPath(boost::filesystem::path& final_path,
+								const std::string& path_string);
+
+	/// appends a directory to the plug-in search path
+	static void addPluginDirectory(const std::string& dir);
+	
+	/// clears all directories from the plug-in search path
+	static void resetPluginDirectories(void);
+	
+
+	// default destructor
+	virtual ~PionPlugin() {}
+	
+	/// returns true if a shared library is loaded/open
+	inline bool is_open(void) const { return (m_plugin_data != NULL); }
+	
+	/// returns the name of the plugin that is currently open
+	inline std::string getPluginName(void) const {
+		return (is_open() ? m_plugin_data->m_plugin_name : std::string());
+	}
+	
+	/**
+	 * opens plug-in library within a shared object file.  If the library is
+	 * already being used by another PionPlugin object, then the existing
+	 * code will be re-used and the reference count will be increased.  Beware
+	 * that this does NOT check the plug-in's base class (InterfaceClassType),
+	 * so you must be careful to ensure that the namespace is unique between
+	 * plug-ins that have different base classes.  If the plug-in's name matches
+	 * an existing plug-in of a different base class, the resulting behavior is
+	 * undefined (it will probably crash your program).
+	 * 
+	 * @param plugin_file shared object file containing the plugin code
+	 */
+	void open(const std::string& plugin_file);
+
 	
 protected:
 	
+	///
+	/// PionPluginData: object to hold shared library symbols
+	///
+	struct PionPluginData
+	{
+		/// default constructors for convenience
+		PionPluginData(void)
+			: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL),
+			m_references(0)
+		{}
+		PionPluginData(const std::string& plugin_name)
+			: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL),
+			m_plugin_name(plugin_name), m_references(0)
+		{}
+		
+		/// symbol library loaded from a shared object file
+		void *			m_lib_handle;
+		
+		/// function used to create instances of the plug-in object
+		void *			m_create_func;
+		
+		/// function used to destroy instances of the plug-in object
+		void *			m_destroy_func;
+		
+		/// the name of the plugin (must be unique per process)
+		std::string		m_plugin_name;
+		
+		/// number of references to this class
+		unsigned long	m_references;
+	};
+
+	
+	/// default constructor is private (use PionPluginPtr class to create objects)
+	PionPlugin(void) : m_plugin_data(NULL) {}
+
+	/// returns a pointer to the plug-in's "create object" function
+	inline void *getCreateFunction(void) {
+		return (is_open() ? m_plugin_data->m_create_func : NULL);
+	}
+
+	/// returns a pointer to the plug-in's "destroy object" function
+	inline void *getDestroyFunction(void) {
+		return (is_open() ? m_plugin_data->m_destroy_func : NULL);
+	}
+
+	/// releases the plug-in's shared library symbols
+	void releaseData(void);
+	
+	/// grabs a reference to another plug-in's shared library symbols
+	void grabData(const PionPlugin& p);
+
+	
+private:
+
 	/**
 	 * searches directories for a valid plug-in file
 	 *
@@ -148,9 +213,9 @@ protected:
 	 *
 	 * @return true if the file was found
 	 */
-	static bool findFile(std::string& path_to_file, const std::string& name,
+	static bool findFile(std::string& path_to_file, const std::string& name,							 
 						 const std::string& extension);
-
+	
 	/**
 	 * normalizes complete and final path to a file while looking for it
 	 *
@@ -163,156 +228,114 @@ protected:
 	 */
 	static bool checkForFile(std::string& final_path, const std::string& start_path,
 							 const std::string& name, const std::string& extension);
-
 	
-	/// name of function defined in object code to create a new plug-in instance
-	static const std::string			PION_PLUGIN_CREATE;
-
-	/// name of function defined in object code to destroy a plug-in instance
-	static const std::string			PION_PLUGIN_DESTROY;
-
-	/// file extension used for Pion plug-in files (platform specific)
-	static const std::string			PION_PLUGIN_EXTENSION;
-
-	/// file extension used for Pion configuration files
-	static const std::string			PION_CONFIG_EXTENSION;
-	
-	
-private:
-		
-	/// directories containing plugin files
-	static std::vector<std::string>		m_plugin_dirs;
-
-	/// mutex to make class thread-safe
-	static boost::mutex					m_plugin_mutex;
-};
-
-
-///
-/// PionPluginData: object to hold shared library symbols
-///
-template <typename InterfaceClassType>
-struct PionPluginData
-{
-	/// default constructor and destructor
-	PionPluginData(void)
-		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
-	{}
-	~PionPluginData() {
-		if (m_lib_handle != NULL)
-			PionPlugin::closeDynamicLibrary(m_lib_handle);
-	}
-	
-	/// data type for a function that is used to create object instances
-	typedef InterfaceClassType* CreateObjectFunction(void);
-
-	/// data type for a function that is used to destroy object instances
-	typedef void DestroyObjectFunction(InterfaceClassType*);
-
-	/// symbol library loaded from a shared object file
-	void *							m_lib_handle;
-
-	/// function used to create instances of the plug-in object
-	CreateObjectFunction *			m_create_func;
-
-	/// function used to destroy instances of the plug-in object
-	DestroyObjectFunction *			m_destroy_func;
-	
-	/// the name of the plugin (must be unique per process)
-	std::string						m_plugin_name;
-};
-
-
-///
-/// PionPluginPtr: manages plug-in code loaded from shared object libraries.
-///
-template <typename InterfaceClassType>
-class PionPluginPtr :
-	public PionPlugin,
-	private boost::noncopyable
-{
-public:
-
 	/**
 	 * opens plug-in library within a shared object file
 	 * 
 	 * @param plugin_file shared object file containing the plugin code
+	 * @param plugin_data data object to load the library into
 	 */
-	inline void open(const std::string& plugin_file) {
-		// create a new shared data object
-		m_plugin_data.reset(new PionPluginData<InterfaceClassType>());
-		
-		// get the name of the plugin (for create/destroy symbol names)
-		m_plugin_data->m_plugin_name = PionPlugin::getPluginName(plugin_file);
-		
-		// attempt to open the plugin; note that this tries all search paths
-		// and also tries a variety of platform-specific extensions
-		m_plugin_data->m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
-		if (m_plugin_data->m_lib_handle == NULL)
-			throw PluginNotFoundException(plugin_file);
-		
-		// find the function used to create new plugin objects
-		m_plugin_data->m_create_func =
-			(typename PionPluginData<InterfaceClassType>::CreateObjectFunction*)
-			(getLibrarySymbol(m_plugin_data->m_lib_handle,
-							  PION_PLUGIN_CREATE + m_plugin_data->m_plugin_name));
-		if (m_plugin_data->m_create_func == NULL)
-			throw PluginMissingCreateException(plugin_file);
+	static void openPlugin(const std::string& plugin_file,
+						   PionPluginData& plugin_data);
 
-		// find the function used to destroy existing plugin objects
-		m_plugin_data->m_destroy_func =
-			(typename PionPluginData<InterfaceClassType>::DestroyObjectFunction*)
-			(getLibrarySymbol(m_plugin_data->m_lib_handle,
-							  PION_PLUGIN_DESTROY + m_plugin_data->m_plugin_name));
-		if (m_plugin_data->m_destroy_func == NULL)
-			throw PluginMissingDestroyException(plugin_file);
-	}
+	/// returns the name of the plugin object (based on the plugin_file name)
+	static std::string getPluginName(const std::string& plugin_file);
 	
-	/// closes plug-in library
-	inline void close(void) { m_plugin_data.reset(); }
+	/// load a dynamic library from plugin_file and return its handle
+	static void *loadDynamicLibrary(const std::string& plugin_file);
+	
+	/// close the dynamic library corresponding with lib_handle
+	static void closeDynamicLibrary(void *lib_handle);
+	
+	/// returns the address of a library symbal
+	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
 
-	/// creates a new instance of the plug-in object
-	inline InterfaceClassType *create(void) {
-		if (! m_plugin_data || m_plugin_data->m_create_func == NULL )
-			throw PluginUndefinedException();
-		return m_plugin_data->m_create_func();
-	}
 	
-	/// destroys an instance of the plug-in object
-	inline void destroy(InterfaceClassType *object_ptr) {
-		if (! m_plugin_data || m_plugin_data->m_destroy_func == NULL )
-			throw PluginUndefinedException();
-		m_plugin_data->m_destroy_func(object_ptr);
-	}
+	/// data type that maps plug-in names to their shared library data
+	typedef std::map<std::string, PionPluginData*>	PluginMap;
 	
-	/// returns the name of the plugin that is currently open
-	inline std::string getPluginName(void) const {
-		return (m_plugin_data ? m_plugin_data->m_plugin_name : std::string());
-	}
 	
-	inline bool null(void) const { return ! m_plugin_data; }
-		
+	/// name of function defined in object code to create a new plug-in instance
+	static const std::string			PION_PLUGIN_CREATE;
+	
+	/// name of function defined in object code to destroy a plug-in instance
+	static const std::string			PION_PLUGIN_DESTROY;
+	
+	/// file extension used for Pion plug-in files (platform specific)
+	static const std::string			PION_PLUGIN_EXTENSION;
+	
+	/// file extension used for Pion configuration files
+	static const std::string			PION_CONFIG_EXTENSION;
+	
+	
+	/// directories containing plugin files
+	static std::vector<std::string>		m_plugin_dirs;
+	
+	/// maps plug-in names to shared library data
+	static PluginMap					m_plugin_map;
+	
+	/// mutex to make class thread-safe
+	static boost::mutex					m_plugin_mutex;
+	
 
-	/// virtual destructor
-	virtual ~PionPluginPtr() { m_plugin_data.reset(); }
+	/// points to the shared library and functions used by the plug-in
+	PionPluginData *					m_plugin_data;
+};
+
+
+///
+/// PionPluginPtr: smart pointer that manages plug-in code loaded from shared
+///                object libraries
+///
+template <typename InterfaceClassType>
+class PionPluginPtr :
+	public PionPlugin
+{
+protected:
 	
-	/// default constructor
+	/// data type for a function that is used to create object instances
+	typedef InterfaceClassType* CreateObjectFunction(void);
+	
+	/// data type for a function that is used to destroy object instances
+	typedef void DestroyObjectFunction(InterfaceClassType*);
+
+	
+public:
+
+	/// default constructor & destructor
 	PionPluginPtr(void) {}
-
-	/// default copy constructor
-	PionPluginPtr(const PionPluginPtr& p) : m_plugin_data(p.m_plugin_data) {}
+	virtual ~PionPluginPtr() { releaseData(); }
+	
+	/// copy constructor
+	PionPluginPtr(const PionPluginPtr& p) { grabData(p); }
 
 	/// assignment operator
 	PionPluginPtr& operator=(const PionPluginPtr& p) {
-		m_plugin_data = p.m_plugin_data;
+		grabData(p);
 		return *this;
 	}
 	
 	
-private:
+	/// closes plug-in library
+	inline void close(void) { releaseData(); }
 
-	/// use a shared pointer to wrap the actual data so that it can be shared
-	boost::shared_ptr< PionPluginData<InterfaceClassType> >		m_plugin_data;
+	/// creates a new instance of the plug-in object
+	inline InterfaceClassType *create(void) {
+		CreateObjectFunction *create_func =
+			(CreateObjectFunction*)(getCreateFunction());
+		if (create_func == NULL)
+			throw PluginUndefinedException();
+		return create_func();
+	}
+	
+	/// destroys an instance of the plug-in object
+	inline void destroy(InterfaceClassType *object_ptr) {
+		DestroyObjectFunction *destroy_func =
+			(DestroyObjectFunction*)(getDestroyFunction());
+		if (destroy_func == NULL)
+			throw PluginUndefinedException();
+		destroy_func(object_ptr);
+	}
 };
 
 }	// end namespace pion

@@ -117,7 +117,6 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
 		m_not_found_handler(http_request, tcp_conn);
 	}
-m_modules.clear();
 }
 
 void HTTPServer::beforeStarting(void)
@@ -136,19 +135,6 @@ void HTTPServer::afterStopping(void)
 		i->second.first->stop();
 }
 
-bool HTTPServer::findPlugin(const std::string& plugin_name,
-							PionPluginPtr<HTTPModule>& plugin_ptr)
-{
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
-		if (i->second.second.getPluginName() == plugin_name) {
-			plugin_ptr = i->second.second;
-			return true;
-		}
-	}
-	return false;
-}
-
 void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
 {
 	PionPluginPtr<HTTPModule> plugin_ptr;
@@ -165,13 +151,9 @@ void HTTPServer::loadModule(const std::string& resource, const std::string& modu
 	if (! PionPlugin::findPluginFile(module_file, module_name))
 		throw PionPlugin::PluginNotFoundException(module_name);
 
-	// check to see if the plug-in was already loaded
+	// open up the plug-in's shared object library
 	PionPluginPtr<HTTPModule> plugin_ptr;
-	const std::string plugin_name(PionPlugin::getPluginName(module_file));
-	if (! findPlugin(plugin_name, plugin_ptr)) {
-		// the plug-in has not been loaded yet
-		plugin_ptr.open(module_file);
-	}
+	plugin_ptr.open(module_file);	// may throw
 	
 	// create a new module using the plug-in library
 	HTTPModule *module_ptr(plugin_ptr.create());

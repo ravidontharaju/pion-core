@@ -43,11 +43,24 @@ const std::string			PionPlugin::PION_PLUGIN_DESTROY("pion_destroy_");
 #endif
 const std::string			PionPlugin::PION_CONFIG_EXTENSION(".conf");
 std::vector<std::string>	PionPlugin::m_plugin_dirs;
+PionPlugin::PluginMap		PionPlugin::m_plugin_map;
 boost::mutex				PionPlugin::m_plugin_mutex;
 
 	
 // PionEngine member functions
 	
+void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
+								 const std::string& start_path)
+{
+#if defined(WIN32) && defined(PION_CYGWIN_DIRECTORY)
+	// try prepending PION_CYGWIN_DIRECTORY if not complete
+	if (! final_path.is_complete() && final_path.has_root_directory()) {
+		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path,
+											 &boost::filesystem::no_check);
+	}
+#endif
+}
+
 void PionPlugin::addPluginDirectory(const std::string& dir)
 {
 #ifdef WIN32
@@ -73,17 +86,66 @@ void PionPlugin::resetPluginDirectories(void)
 	m_plugin_dirs.clear();
 }
 
-void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
-								 const std::string& start_path)
+void PionPlugin::open(const std::string& plugin_file)
 {
-#if defined(WIN32) && defined(PION_CYGWIN_DIRECTORY)
-	// try prepending PION_CYGWIN_DIRECTORY if not complete
-	if (! final_path.is_complete() && final_path.has_root_directory())
-	{
-		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path,
-											 &boost::filesystem::no_check);
+	releaseData();	// make sure we're not already pointing to something
+	
+	// use a temporary object first since openPlugin() may throw
+	PionPluginData plugin_data(getPluginName(plugin_file));
+	
+	// check to see if we already have a matching shared library
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	PluginMap::iterator itr = m_plugin_map.find(plugin_data.m_plugin_name);
+	if (itr == m_plugin_map.end()) {
+		// no plug-ins found with the same name
+		
+		// open up the shared library using our temporary data object
+		openPlugin(plugin_file, plugin_data);	// may throw
+		
+		// all is good -> insert it into the plug-in map
+		m_plugin_data = new PionPluginData(plugin_data);
+		m_plugin_map.insert( std::make_pair(m_plugin_data->m_plugin_name,
+											m_plugin_data) );
+	} else {
+		// found an existing plug-in with the same name
+		m_plugin_data = itr->second;
 	}
-#endif
+	
+	// increment the number of references
+	++ m_plugin_data->m_references;
+}
+
+void PionPlugin::releaseData(void)
+{
+	if (m_plugin_data != NULL) {
+		boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+		if (--m_plugin_data->m_references == 0) {
+			// no more references to the plug-in library
+			
+			// release the shared object
+			closeDynamicLibrary(m_plugin_data->m_lib_handle);
+			
+			// remove it from the plug-in map
+			PluginMap::iterator itr = m_plugin_map.find(m_plugin_data->m_plugin_name);
+			// check itr just to be safe (it SHOULD always find a match)
+			if (itr != m_plugin_map.end())
+				m_plugin_map.erase(itr);
+			
+			// release the heap object
+			delete m_plugin_data;
+		}
+		m_plugin_data = NULL;
+	}
+}
+
+void PionPlugin::grabData(const PionPlugin& p)
+{
+	releaseData();	// make sure we're not already pointing to something
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	m_plugin_data = const_cast<PionPluginData*>(p.m_plugin_data);
+	if (m_plugin_data != NULL) {
+		++ m_plugin_data->m_references;
+	}
 }
 
 bool PionPlugin::findFile(std::string& path_to_file, const std::string& name,
@@ -148,6 +210,37 @@ bool PionPlugin::checkForFile(std::string& final_path, const std::string& start_
 	return false;
 }
 
+void PionPlugin::openPlugin(const std::string& plugin_file,
+							PionPluginData& plugin_data)
+{
+	// get the name of the plugin (for create/destroy symbol names)
+	plugin_data.m_plugin_name = getPluginName(plugin_file);
+	
+	// attempt to open the plugin; note that this tries all search paths
+	// and also tries a variety of platform-specific extensions
+	plugin_data.m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
+	if (plugin_data.m_lib_handle == NULL)
+		throw PluginNotFoundException(plugin_file);
+	
+	// find the function used to create new plugin objects
+	plugin_data.m_create_func =
+		getLibrarySymbol(plugin_data.m_lib_handle,
+						 PION_PLUGIN_CREATE + plugin_data.m_plugin_name);
+	if (plugin_data.m_create_func == NULL) {
+		closeDynamicLibrary(plugin_data.m_lib_handle);
+		throw PluginMissingCreateException(plugin_file);
+	}
+
+	// find the function used to destroy existing plugin objects
+	plugin_data.m_destroy_func =
+		getLibrarySymbol(plugin_data.m_lib_handle,
+						 PION_PLUGIN_DESTROY + plugin_data.m_plugin_name);
+	if (plugin_data.m_destroy_func == NULL) {
+		closeDynamicLibrary(plugin_data.m_lib_handle);
+		throw PluginMissingDestroyException(plugin_file);
+	}
+}
+
 std::string PionPlugin::getPluginName(const std::string& plugin_file)
 {
 	// strip path
@@ -169,7 +262,6 @@ std::string PionPlugin::getPluginName(const std::string& plugin_file)
 
 void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 {
-	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	return LoadLibrary(plugin_file.c_str());
 #else
@@ -179,7 +271,6 @@ void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 
 void PionPlugin::closeDynamicLibrary(void *lib_handle)
 {
-	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	FreeLibrary((HINSTANCE) lib_handle);
 #else
@@ -189,12 +280,11 @@ void PionPlugin::closeDynamicLibrary(void *lib_handle)
 
 void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 {
-	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 #ifdef WIN32
 	return (void*)GetProcAddress((HINSTANCE) lib_handle, symbol.c_str());
 #else
 	return dlsym(lib_handle, symbol.c_str());
 #endif
 }
-	
+
 }	// end namespace pion
