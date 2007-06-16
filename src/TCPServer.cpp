@@ -128,6 +128,7 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 	if (accept_error) {
 		// an error occured while trying to a accept a new connection
 		// this happens when the server is being shut down
+		tcp_conn->setKeepAlive(false);	// make sure it will get closed
 		finishConnection(tcp_conn);
 	} else {
 		// got a new TCP connection
@@ -148,6 +149,7 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 																 boost::asio::placeholders::error) );
 #else
 			PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
+			tcp_conn->setKeepAlive(false);	// make sure it will get closed
 			finishConnection(tcp_conn);
 #endif
 		} else {
@@ -163,6 +165,7 @@ void TCPServer::handleSSLHandshake(TCPConnectionPtr& tcp_conn, const boost::asio
 		// an error occured while trying to establish the SSL connection
 		PION_LOG_WARN(m_logger, "SSL handshake failed on port " << getPort()
 					  << " (" << handshake_error.what() << ')');
+		tcp_conn->setKeepAlive(false);	// make sure it will get closed
 		finishConnection(tcp_conn);
 	} else {
 		// handle the new connection
@@ -183,7 +186,9 @@ void TCPServer::finishConnection(TCPConnectionPtr& tcp_conn)
 		
 		// remove the connection from the server's management pool
 		boost::mutex::scoped_lock server_lock(m_mutex);
-		m_conn_pool.erase(tcp_conn);
+		ConnectionPool::iterator conn_itr = m_conn_pool.find(tcp_conn);
+		if (conn_itr != m_conn_pool.end())
+			m_conn_pool.erase(conn_itr);
 		server_lock.unlock();
 	}
 }

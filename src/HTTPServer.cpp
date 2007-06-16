@@ -117,6 +117,7 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
 		m_not_found_handler(http_request, tcp_conn);
 	}
+m_modules.clear();
 }
 
 void HTTPServer::beforeStarting(void)
