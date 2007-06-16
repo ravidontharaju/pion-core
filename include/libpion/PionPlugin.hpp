@@ -25,6 +25,7 @@
 #include <libpion/PionException.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
 
@@ -86,6 +87,18 @@ public:
 	/// clears all directories from the plug-in search path
 	static void resetPluginDirectories(void);
 	
+	/// returns the name of the plugin object (based on the plugin_file name)
+	static std::string getPluginName(const std::string& plugin_file);
+	
+	/// load a dynamic library from plugin_file and return its handle
+	static void *loadDynamicLibrary(const std::string& plugin_file);
+	
+	/// close the dynamic library corresponding with lib_handle
+	static void closeDynamicLibrary(void *lib_handle);
+	
+	/// returns the address of a library symbal
+	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
+
 	/**
 	 * updates path for cygwin oddities, if necessary
 	 *
@@ -150,20 +163,8 @@ protected:
 	 */
 	static bool checkForFile(std::string& final_path, const std::string& start_path,
 							 const std::string& name, const std::string& extension);
-	
-	/// returns the name of the plugin object (based on the plugin_file name)
-	static std::string getPluginName(const std::string& plugin_file);
-	
-	/// load a dynamic library from plugin_file and return its handle
-	static void *loadDynamicLibrary(const std::string& plugin_file);
 
-	/// close the dynamic library corresponding with lib_handle
-	static void closeDynamicLibrary(void *lib_handle);
-
-	/// returns the address of a library symbal
-	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
 	
-		
 	/// name of function defined in object code to create a new plug-in instance
 	static const std::string			PION_PLUGIN_CREATE;
 
@@ -176,6 +177,7 @@ protected:
 	/// file extension used for Pion configuration files
 	static const std::string			PION_CONFIG_EXTENSION;
 	
+	
 private:
 		
 	/// directories containing plugin files
@@ -183,6 +185,41 @@ private:
 
 	/// mutex to make class thread-safe
 	static boost::mutex					m_plugin_mutex;
+};
+
+
+///
+/// PionPluginData: object to hold shared library symbols
+///
+template <typename InterfaceClassType>
+struct PionPluginData
+{
+	/// default constructor and destructor
+	PionPluginData(void)
+		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
+	{}
+	~PionPluginData() {
+		if (m_lib_handle != NULL)
+			PionPlugin::closeDynamicLibrary(m_lib_handle);
+	}
+	
+	/// data type for a function that is used to create object instances
+	typedef InterfaceClassType* CreateObjectFunction(void);
+
+	/// data type for a function that is used to destroy object instances
+	typedef void DestroyObjectFunction(InterfaceClassType*);
+
+	/// symbol library loaded from a shared object file
+	void *							m_lib_handle;
+
+	/// function used to create instances of the plug-in object
+	CreateObjectFunction *			m_create_func;
+
+	/// function used to destroy instances of the plug-in object
+	DestroyObjectFunction *			m_destroy_func;
+	
+	/// the name of the plugin (must be unique per process)
+	std::string						m_plugin_name;
 };
 
 
@@ -196,93 +233,86 @@ class PionPluginPtr :
 {
 public:
 
-	/// closes plug-in library, if open
-	inline void close(void) {
-		m_create_func = NULL;
-		m_destroy_func = NULL;
-		if (m_lib_handle != NULL) {
-			closeDynamicLibrary(m_lib_handle);
-			m_lib_handle = NULL;
-		}
-	}
-
 	/**
 	 * opens plug-in library within a shared object file
 	 * 
 	 * @param plugin_file shared object file containing the plugin code
 	 */
 	inline void open(const std::string& plugin_file) {
-		close();
-
+		// create a new shared data object
+		m_plugin_data.reset(new PionPluginData<InterfaceClassType>());
+		
 		// get the name of the plugin (for create/destroy symbol names)
-		const std::string plugin_name(getPluginName(plugin_file));
+		m_plugin_data->m_plugin_name = PionPlugin::getPluginName(plugin_file);
 		
 		// attempt to open the plugin; note that this tries all search paths
 		// and also tries a variety of platform-specific extensions
-		m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
-		if (m_lib_handle == NULL) throw PluginNotFoundException(plugin_file);
+		m_plugin_data->m_lib_handle = loadDynamicLibrary(plugin_file.c_str());
+		if (m_plugin_data->m_lib_handle == NULL)
+			throw PluginNotFoundException(plugin_file);
 		
 		// find the function used to create new plugin objects
-		m_create_func = (CreateObjectFunction*)(getLibrarySymbol(m_lib_handle,
-																 PION_PLUGIN_CREATE
-																 + plugin_name));
-		if (m_create_func == NULL) throw PluginMissingCreateException(plugin_file);
+		m_plugin_data->m_create_func =
+			(typename PionPluginData<InterfaceClassType>::CreateObjectFunction*)
+			(getLibrarySymbol(m_plugin_data->m_lib_handle,
+							  PION_PLUGIN_CREATE + m_plugin_data->m_plugin_name));
+		if (m_plugin_data->m_create_func == NULL)
+			throw PluginMissingCreateException(plugin_file);
 
 		// find the function used to destroy existing plugin objects
-		m_destroy_func = (DestroyObjectFunction*)(getLibrarySymbol(m_lib_handle,
-																   PION_PLUGIN_DESTROY
-																   + plugin_name));
-		if (m_destroy_func == NULL) throw PluginMissingDestroyException(plugin_file);
-	}	
+		m_plugin_data->m_destroy_func =
+			(typename PionPluginData<InterfaceClassType>::DestroyObjectFunction*)
+			(getLibrarySymbol(m_plugin_data->m_lib_handle,
+							  PION_PLUGIN_DESTROY + m_plugin_data->m_plugin_name));
+		if (m_plugin_data->m_destroy_func == NULL)
+			throw PluginMissingDestroyException(plugin_file);
+	}
+	
+	/// closes plug-in library
+	inline void close(void) { m_plugin_data.reset(); }
 
 	/// creates a new instance of the plug-in object
 	inline InterfaceClassType *create(void) {
-		if (m_create_func == NULL) throw PluginUndefinedException();
-		return m_create_func();
+		if (! m_plugin_data || m_plugin_data->m_create_func == NULL )
+			throw PluginUndefinedException();
+		return m_plugin_data->m_create_func();
 	}
 	
 	/// destroys an instance of the plug-in object
 	inline void destroy(InterfaceClassType *object_ptr) {
-		if (m_destroy_func == NULL) throw PluginUndefinedException();
-		m_destroy_func(object_ptr);
+		if (! m_plugin_data || m_plugin_data->m_destroy_func == NULL )
+			throw PluginUndefinedException();
+		m_plugin_data->m_destroy_func(object_ptr);
 	}
 	
-	/// default constructor
-	PionPluginPtr(void)
-		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
-	{}
-
-	/**
-	 * constructs a new plug-in object
-	 * 
-	 * @param plugin_file shared object file containing the plugin code
-	 */
-	PionPluginPtr(const std::string& plugin_file)
-		: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL)
-	{
-		open(plugin_file);
-	}	
+	/// returns the name of the plugin that is currently open
+	inline std::string getPluginName(void) const {
+		return (m_plugin_data ? m_plugin_data->m_plugin_name : std::string());
+	}
+	
+	inline bool null(void) const { return ! m_plugin_data; }
+		
 
 	/// virtual destructor
-	virtual ~PionPluginPtr() { close(); }
+	virtual ~PionPluginPtr() { m_plugin_data.reset(); }
+	
+	/// default constructor
+	PionPluginPtr(void) {}
+
+	/// default copy constructor
+	PionPluginPtr(const PionPluginPtr& p) : m_plugin_data(p.m_plugin_data) {}
+
+	/// assignment operator
+	PionPluginPtr& operator=(const PionPluginPtr& p) {
+		m_plugin_data = p.m_plugin_data;
+		return *this;
+	}
 	
 	
 private:
 
-	/// data type for a function that is used to create object instances
-	typedef InterfaceClassType* CreateObjectFunction(void);
-
-	/// data type for a function that is used to destroy object instances
-	typedef void DestroyObjectFunction(InterfaceClassType*);
-
-	/// symbol library loaded from a shared object file
-	void *							m_lib_handle;
-	
-	/// function used to create instances of the plug-in object
-	CreateObjectFunction *			m_create_func;
-
-	/// function used to destroy instances of the plug-in object
-	DestroyObjectFunction *			m_destroy_func;
+	/// use a shared pointer to wrap the actual data so that it can be shared
+	boost::shared_ptr< PionPluginData<InterfaceClassType> >		m_plugin_data;
 };
 
 }	// end namespace pion

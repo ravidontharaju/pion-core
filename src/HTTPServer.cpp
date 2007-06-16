@@ -136,9 +136,22 @@ void HTTPServer::afterStopping(void)
 		i->second.first->stop();
 }
 
+bool HTTPServer::findPlugin(const std::string& plugin_name,
+							PionPluginPtr<HTTPModule>& plugin_ptr)
+{
+	boost::mutex::scoped_lock modules_lock(m_mutex);
+	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
+		if (i->second.second.getPluginName() == plugin_name) {
+			plugin_ptr = i->second.second;
+			return true;
+		}
+	}
+	return false;
+}
+
 void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
 {
-	PionPluginPtr<HTTPModule> *plugin_ptr(NULL);
+	PionPluginPtr<HTTPModule> plugin_ptr;
 	module_ptr->setResource(resource);	// strips any trailing '/' from the name
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(module_ptr->getResource(),
@@ -152,19 +165,24 @@ void HTTPServer::loadModule(const std::string& resource, const std::string& modu
 	if (! PionPlugin::findPluginFile(module_file, module_name))
 		throw PionPlugin::PluginNotFoundException(module_name);
 
-	// create a new plug-in pointer to load and manage the module
-	PionPluginPtr<HTTPModule> *plugin_ptr(new PionPluginPtr<HTTPModule>(module_file));
+	// check to see if the plug-in was already loaded
+	PionPluginPtr<HTTPModule> plugin_ptr;
+	const std::string plugin_name(PionPlugin::getPluginName(module_file));
+	if (! findPlugin(plugin_name, plugin_ptr)) {
+		// the plug-in has not been loaded yet
+		plugin_ptr.open(module_file);
+	}
 	
 	// create a new module using the plug-in library
-	HTTPModule *module_ptr(plugin_ptr->create());
+	HTTPModule *module_ptr(plugin_ptr.create());
 	module_ptr->setResource(resource);	// strips any trailing '/' from the name
 
 	// add the module to the server's collection
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.insert(std::make_pair(module_ptr->getResource(),
 									std::make_pair(module_ptr, plugin_ptr)));
-
 	modules_lock.unlock();
+
 	PION_LOG_INFO(m_logger, "Loaded HTTP module for resource ("
 				  << resource << "): " << module_file);
 }
@@ -318,7 +336,6 @@ void HTTPServer::clearModules(void)
 	boost::mutex::scoped_lock modules_lock(m_mutex);
 	m_modules.clear();
 }
-
 
 void HTTPServer::handleBadRequest(HTTPRequestPtr& http_request,
 								   TCPConnectionPtr& tcp_conn)

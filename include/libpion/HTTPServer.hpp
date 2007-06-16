@@ -92,6 +92,15 @@ public:
 	virtual ~HTTPServer() {}
 	
 	/**
+	 * searches for a plug-in used by the server which matches plugin_name
+	 *
+	 * @param plugin_name the name of the plug-in to search for
+	 * @param plugin_ptr if found, this will be assigned to the existing plug-in
+	 */
+	bool findPlugin(const std::string& plugin_name,
+					PionPluginPtr<HTTPModule>& plugin_ptr);
+	
+	/**
 	 * adds a new module to the HTTP server
 	 *
 	 * @param resource the resource name or uri-stem to bind to the module
@@ -215,7 +224,7 @@ protected:
 private:
 	
 	/// used by ModuleMap to associated moudle objects with plugin libraries
-	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> *>	PluginPair;
+	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> >	PluginPair;
 	
 	/// data type for a collection of HTTP modules
 	class ModuleMap
@@ -224,11 +233,10 @@ private:
 	public:
 		void clear(void) {
 			for (iterator i = begin(); i != end(); ++i) {
-				if (i->second.second != NULL) {
-					i->second.second->destroy(i->second.first);
-					delete i->second.second;
-				} else {
+				if (i->second.second.null()) {
 					delete i->second.first;
+				} else {
+					i->second.second.destroy(i->second.first);
 				}
 			}
 			std::map<std::string, PluginPair>::clear();
