@@ -55,7 +55,7 @@ case "$build_os" in
 		PION_OPT_FLAGS="-O2 -Wall"
 		PION_DEBUG_FLAGS="-ggdb -Wall"
 	fi
-	LIBS="$LIBS -lsocket -lnsl -ldl"
+	LIBS="$LIBS -lsocket -lnsl -ldl -lposix4"
 	;;
 *darwin*)
 	# Mac OS X: GCC compiler
@@ -177,7 +177,8 @@ LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_thread
 for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
 	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
-	lib$BOOST_LIB ;
+	lib$BOOST_LIB $BOOST_LIB-${CC}34-mt lib$BOOST_LIB-${CC}34-mt \
+	$BOOST_LIB-${CC}34 lib$BOOST_LIB-${CC}34;
 do
 	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
@@ -201,7 +202,8 @@ LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_system
 for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
 	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
-	lib$BOOST_LIB ;
+	lib$BOOST_LIB $BOOST_LIB-${CC}34-mt lib$BOOST_LIB-${CC}34-mt \
+	$BOOST_LIB-${CC}34 lib$BOOST_LIB-${CC}34;
 do
 	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
@@ -225,7 +227,8 @@ LIBS_SAVED="$LIBS"
 BOOST_LIB=boost_filesystem
 for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
 	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
-	lib$BOOST_LIB ;
+	lib$BOOST_LIB $BOOST_LIB-${CC}34-mt lib$BOOST_LIB-${CC}34-mt \
+	$BOOST_LIB-${CC}34 lib$BOOST_LIB-${CC}34;
 do
 	LIBS="$LIBS_SAVED -l$ax_lib"
 	AC_MSG_NOTICE(Checking for -l$ax_lib)
