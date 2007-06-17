@@ -64,7 +64,7 @@ void HTTPRequestParser::readRequest(void)
 	}
 }
 
-void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
+void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_error,
 										std::size_t bytes_read)
 {
 	if (read_error) {
@@ -182,7 +182,7 @@ void HTTPRequestParser::readHeaderBytes(const boost::asio::error& read_error,
 	}
 }
 
-void HTTPRequestParser::readContentBytes(const boost::asio::error& read_error,
+void HTTPRequestParser::readContentBytes(const boost::system::error_code& read_error,
 										 std::size_t bytes_read)
 {
 	if (read_error) {
@@ -232,7 +232,7 @@ void HTTPRequestParser::readContentBytes(const boost::asio::error& read_error,
 	m_request_handler(m_http_request, m_tcp_conn);
 }
 
-void HTTPRequestParser::handleReadError(const boost::asio::error& read_error)
+void HTTPRequestParser::handleReadError(const boost::system::error_code& read_error)
 {
 	// only log errors if the parsing has already begun
 	if (m_parse_state != PARSE_METHOD_START) {
@@ -241,7 +241,7 @@ void HTTPRequestParser::handleReadError(const boost::asio::error& read_error)
 			// which means another thread is shutting-down the server
 			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (shutting down)");
 		} else {
-			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (" << read_error.what() << ')');
+			PION_LOG_INFO(m_logger, "HTTP request parsing aborted (" << read_error.message() << ')');
 		}
 	}
 	// close the connection, forcing the client to establish a new one

@@ -42,8 +42,6 @@ FileModule::MIMETypeMap	*	FileModule::m_mime_types_ptr = NULL;
 
 FileModule::FileModule(void)
 	: m_logger(PION_GET_LOGGER("FileModule")),
-	m_directory("", &boost::filesystem::no_check),
-	m_file("", &boost::filesystem::no_check),
 	m_cache_setting(DEFAULT_CACHE_SETTING),
 	m_scan_setting(DEFAULT_SCAN_SETTING)
 {
@@ -54,7 +52,7 @@ FileModule::FileModule(void)
 void FileModule::setOption(const std::string& name, const std::string& value)
 {
 	if (name == "directory") {
-		m_directory = boost::filesystem::path(value, &boost::filesystem::no_check);
+		m_directory = value;
 		PionPlugin::checkCygwinPath(m_directory, value);
 		// make sure that the directory exists
 		if (! boost::filesystem::exists(m_directory) )
@@ -62,7 +60,7 @@ void FileModule::setOption(const std::string& name, const std::string& value)
 		if (! boost::filesystem::is_directory(m_directory) )
 			throw NotADirectoryException(value);
 	} else if (name == "file") {
-		m_file = boost::filesystem::path(value, &boost::filesystem::no_check);
+		m_file = value;
 		PionPlugin::checkCygwinPath(m_file, value);
 		// make sure that the directory exists
 		if (! boost::filesystem::exists(m_file) )
@@ -234,7 +232,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 			// calculate the location of the file being requested
 			response_file.file_path = m_directory;
-			response_file.file_path /= boost::filesystem::path(relative_path, &boost::filesystem::no_check);
+			response_file.file_path /= relative_path;
 
 			// make sure that the file exists
 			if (! boost::filesystem::exists(response_file.file_path) ) {
@@ -251,8 +249,8 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 			
 			// make sure that the file is within the configured directory
-			std::string file_string = response_file.file_path.native_file_string();
-			if (file_string.find(m_directory.native_directory_string()) != 0) {
+			std::string file_string = response_file.file_path.file_string();
+			if (file_string.find(m_directory.directory_string()) != 0) {
 				PION_LOG_WARN(m_logger, "Request for file outside of directory ("
 							  << getResource() << "): " << relative_path);
 				return false;
@@ -363,7 +361,7 @@ void FileModule::stop(void)
 void FileModule::scanDirectory(const boost::filesystem::path& dir_path)
 {
 	PION_LOG_DEBUG(m_logger, "Scanning directory (" << getResource() << "): "
-				   << dir_path.native_directory_string());
+				   << dir_path.directory_string());
 	
 	// iterate through items in the directory
 	boost::filesystem::directory_iterator end_itr;
@@ -380,8 +378,8 @@ void FileModule::scanDirectory(const boost::filesystem::path& dir_path)
 			// item is a regular file
 			
 			// figure out relative path to the file
-			std::string file_path_string( itr->native_file_string() );
-			std::string relative_path( file_path_string.substr(m_directory.native_directory_string().size() + 1) );
+			std::string file_path_string( itr->path().file_string() );
+			std::string relative_path( file_path_string.substr(m_directory.directory_string().size() + 1) );
 			
 			// add item to cache (use placeholder if scan == 1)
 			addCacheEntry(relative_path, *itr, m_scan_setting == 1);
@@ -400,7 +398,7 @@ FileModule::addCacheEntry(const std::string& relative_path,
 		try { cache_entry.read(); }
 		catch (std::exception& e) {
 			PION_LOG_ERROR(m_logger, "Unable to add file to cache: "
-						   << file_path.native_file_string());
+						   << file_path.file_string());
 			return std::make_pair(m_cache_map.end(), false);
 		}
 	}
@@ -410,10 +408,10 @@ FileModule::addCacheEntry(const std::string& relative_path,
 	
 	if (add_entry_result.second) {
 		PION_LOG_DEBUG(m_logger, "Added file to cache: "
-					   << file_path.native_file_string());
+					   << file_path.file_string());
 	} else {
 		PION_LOG_ERROR(m_logger, "Unable to insert cache entry for file: "
-					   << file_path.native_file_string());
+					   << file_path.file_string());
 	}
 	
 	return add_entry_result;
@@ -477,7 +475,7 @@ void FileModule::DiskFile::read(void)
 
 	// read the file into memory
 	if (!file_stream.is_open() || !file_stream.read(file_content.get(), file_size))
-		throw FileModule::FileReadException(file_path.native_file_string());
+		throw FileModule::FileReadException(file_path.file_string());
 }
 
 bool FileModule::DiskFile::checkUpdated(void)

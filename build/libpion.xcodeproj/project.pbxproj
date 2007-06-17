@@ -788,8 +788,14 @@
 				GCC_PREPROCESSOR_DEFINITIONS = _REENTRANT;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GENERATE_MASTER_OBJECT_FILE = NO;
-				HEADER_SEARCH_PATHS = "\"/opt/local/include\"";
+				HEADER_SEARCH_PATHS = (
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/opt/build/boost/include/boost-1_34\"";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
 					"$(CONFIGURATION_BUILD_DIR)",
@@ -797,10 +803,12 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/opt/build/boost/lib\"";
 				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
-					"-lboost_thread",
-					"-lboost_filesystem",
+					"-lboost_thread-mt-d",
+					"-lboost_filesystem-mt-d",
+					"-lboost_system-mt-d",
 					"-llog4cpp",
 					"-lssl",
 					"-lcrypto",
@@ -825,8 +833,14 @@
 					NDEBUG,
 				);
 				GENERATE_MASTER_OBJECT_FILE = NO;
-				HEADER_SEARCH_PATHS = "\"/opt/local/include\"";
+				HEADER_SEARCH_PATHS = (
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/opt/build/boost/include/boost-1_34\"";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
 					"$(CONFIGURATION_BUILD_DIR)",
@@ -834,10 +848,12 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/opt/build/boost/lib\"";
 				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
-					"-lboost_thread",
-					"-lboost_filesystem",
+					"-lboost_thread-mt",
+					"-lboost_filesystem-mt",
+					"-lboost_system-mt",
 					"-llog4cpp",
 					"-lssl",
 					"-lcrypto",

@@ -262,7 +262,8 @@ private:
 	 * @param write_error error status from the last write operation
 	 * @param bytes_written number of bytes sent by the last write operation
 	 */
-	void handleWrite(TCPConnectionPtr tcp_conn, const boost::asio::error& write_error,
+	void handleWrite(TCPConnectionPtr tcp_conn,
+					 const boost::system::error_code& write_error,
 					 std::size_t bytes_written);
 
 	/// flushes any text data in the content stream after caching it in the TextCache

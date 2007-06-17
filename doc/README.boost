@@ -1,0 +1,40 @@
+Installing Boost with ASIO
+==========================
+
+Starting with 0.2.0, libpion requires Boost 1.34.0 with ASIO 0.3.8.  Since
+these are both fairly recent releases, none of our supported platforms
+currently have pre-built versions available of these libraries.  Therefore,
+you will likely need to download, compile and install the source tarballs.
+
+Note that although the ASIO library is not currently included in the Boost
+distribution, it has been accepted into the library and will be included
+in a future release (most likely 1.35.0).  You can use it with the current
+Boost release by just copying ASIO's files into the Boost source tree.
+
+First, download the latest tarballs from SourceForge.net:
+
+wget http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2
+wget http://downloads.sourceforge.net/asio/boost_asio_0_3_8rc3.tar.bz2
+
+Next, uncompress the tarballs and copy the ASIO files into the Boost
+directory:
+
+bzip2 -dc boost_1_34_0.tar.bz2 | tar xvf -
+bzip2 -dc boost_asio_0_3_8rc3.tar.bz2 | tar xvf -
+tar cvf - -C boost_asio_0_3_8rc3 boost libs | tar xf - -C boost_1_34_0
+
+Finally, configure, build and install the Boost libraries (now with ASIO):
+
+cd boost_1_34_0
+./configure --prefix=/usr/local   (set prefix to your install directory)
+make install
+
+If you are using a non-standard build environment, you may instead want to
+use the bjam utility to configure more options for your build.  See the Boost
+Getting Started guide for more information on using bjam:
+http://www.boost.org/more/getting_started/
+
+That's it!  You're now ready to build libpion by configuring it with your
+Boost installation directory (/usr/local above).  Just use the same path
+you used for "--prefix" above for libpion's "--with-boost" option
+(i.e. "./configure --with-boost=/usr/local")

@@ -20,7 +20,6 @@
 
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionPlugin.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #ifdef WIN32
@@ -55,8 +54,7 @@ void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
 #if defined(WIN32) && defined(PION_CYGWIN_DIRECTORY)
 	// try prepending PION_CYGWIN_DIRECTORY if not complete
 	if (! final_path.is_complete() && final_path.has_root_directory()) {
-		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path,
-											 &boost::filesystem::no_check);
+		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path);
 	}
 #endif
 }
@@ -66,17 +64,17 @@ void PionPlugin::addPluginDirectory(const std::string& dir)
 #ifdef WIN32
 	// work around bug in boost::filesystem on Windows -> do not plugin directories
 	// basically, if you create a path object on Windows, then convert it to
-	// native_directory_string() or native_file_string(), then try to construct
+	// directory_string() or file_string(), then try to construct
 	// a new path object based on the string, it throws an exception (ugh!!!)
 	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 	m_plugin_dirs.push_back(dir);
 #else
-	boost::filesystem::path plugin_path(dir, &boost::filesystem::no_check);
+	boost::filesystem::path plugin_path(dir);
 	checkCygwinPath(plugin_path, dir);
 	if (! boost::filesystem::exists(plugin_path) )
 		throw DirectoryNotFoundException(dir);
 	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
-	m_plugin_dirs.push_back(plugin_path.native_directory_string());
+	m_plugin_dirs.push_back(plugin_path.directory_string());
 #endif
 }
 
@@ -172,37 +170,35 @@ bool PionPlugin::checkForFile(std::string& final_path, const std::string& start_
 							  const std::string& name, const std::string& extension)
 {
 	// check for cygwin path oddities
-	boost::filesystem::path cygwin_safe_path(start_path, &boost::filesystem::no_check);
+	boost::filesystem::path cygwin_safe_path(start_path);
 	checkCygwinPath(cygwin_safe_path, start_path);
 	boost::filesystem::path test_path(cygwin_safe_path);
 
 	// if a name is specified, append it to the test path
 	if (! name.empty())
-		test_path /= boost::filesystem::path(name, &boost::filesystem::no_check);
+		test_path /= name;
 
 	// check for existence of plug-in (without extension)		
 	if (boost::filesystem::exists(test_path)) {
-		final_path = test_path.native_file_string();
+		final_path = test_path.file_string();
 		return true;
 	}
 		
 	// next, try appending the plug-in extension		
 	if (name.empty()) {
 		// no "name" specified -> append it directly to start_path
-		test_path = boost::filesystem::path(start_path + extension,
-			&boost::filesystem::no_check);
+		test_path = boost::filesystem::path(start_path + extension);
 		// in this case, we need to re-check for the cygwin oddities
 		checkCygwinPath(test_path, start_path + extension);
 	} else {
 		// name is specified, so we can just re-use cygwin_safe_path
 		test_path = cygwin_safe_path /
-			boost::filesystem::path(name + extension,
-				&boost::filesystem::no_check);
+			boost::filesystem::path(name + extension);
 	}
 
 	// re-check for existence of plug-in (after adding extension)		
 	if (boost::filesystem::exists(test_path)) {
-		final_path = test_path.native_file_string();
+		final_path = test_path.file_string();
 		return true;
 	}
 	

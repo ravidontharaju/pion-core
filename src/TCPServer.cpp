@@ -123,7 +123,8 @@ void TCPServer::listen(void)
 	}
 }
 
-void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::error& accept_error)
+void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn,
+							 const boost::system::error_code& accept_error)
 {
 	if (accept_error) {
 		// an error occured while trying to a accept a new connection
@@ -159,12 +160,13 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn, const boost::asio::erro
 	}
 }
 
-void TCPServer::handleSSLHandshake(TCPConnectionPtr& tcp_conn, const boost::asio::error& handshake_error)
+void TCPServer::handleSSLHandshake(TCPConnectionPtr& tcp_conn,
+								   const boost::system::error_code& handshake_error)
 {
 	if (handshake_error) {
 		// an error occured while trying to establish the SSL connection
 		PION_LOG_WARN(m_logger, "SSL handshake failed on port " << getPort()
-					  << " (" << handshake_error.what() << ')');
+					  << " (" << handshake_error.message() << ')');
 		tcp_conn->setKeepAlive(false);	// make sure it will get closed
 		finishConnection(tcp_conn);
 	} else {

@@ -119,7 +119,7 @@ private:
 	 * @param accept_error true if an error occurred while accepting connections
 	 */
 	void handleAccept(TCPConnectionPtr& tcp_conn,
-					  const boost::asio::error& accept_error);
+					  const boost::system::error_code& accept_error);
 
 	/**
 	 * handles new connections following an SSL handshake (checks for errors)
@@ -128,7 +128,7 @@ private:
 	 * @param handshake_error true if an error occurred during the SSL handshake
 	 */
 	void handleSSLHandshake(TCPConnectionPtr& tcp_conn,
-							const boost::asio::error& handshake_error);
+							const boost::system::error_code& handshake_error);
 	
 	/// This will be called by TCPConnection::finish() after a server has
 	/// finished handling a connection.  If the keep_alive flag is true,

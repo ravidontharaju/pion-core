@@ -87,7 +87,7 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 }
 
 void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
-							   const boost::asio::error& write_error,
+							   const boost::system::error_code& write_error,
 							   std::size_t bytes_written)
 {
 	if (write_error) {

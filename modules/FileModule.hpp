@@ -133,8 +133,7 @@ protected:
 	struct DiskFile {
 		/// constructors for convenience
 		DiskFile(void)
-			: file_path("", &boost::filesystem::no_check),
-			file_size(0), last_modified(0) {}
+			: file_size(0), last_modified(0) {}
 		DiskFile(const boost::filesystem::path& path,
 				 char *content, unsigned long size,
 				 std::time_t modified, const std::string& mime)

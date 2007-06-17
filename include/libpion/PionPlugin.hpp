@@ -24,14 +24,11 @@
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionException.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <vector>
 #include <string>
 #include <map>
-
-
-// forward declaration of boost::filesystem::path
-namespace boost { namespace filesystem { class path; } }
 
 
 namespace pion {	// begin namespace pion

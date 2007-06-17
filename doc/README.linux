@@ -82,4 +82,4 @@ Known Problems
 The "tests" executables may complain about loading shared libraries if the
 Boost and/or logging libraries are not in your search path.  Try this:
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export LD_LIBRARY_PATH=/usr/local/lib

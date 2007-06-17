@@ -95,7 +95,8 @@ protected:
 	 * @param read_error error status from the last read operation
 	 * @param bytes_read number of bytes consumed by the last read operation
 	 */
-	void readHeaderBytes(const boost::asio::error& read_error, std::size_t bytes_read);
+	void readHeaderBytes(const boost::system::error_code& read_error,
+						 std::size_t bytes_read);
 
 	/**
 	 * Called after new request content bytes have been read
@@ -103,14 +104,15 @@ protected:
 	 * @param read_error error status from the last read operation
 	 * @param bytes_read number of bytes consumed by the last read operation
 	 */
-	void readContentBytes(const boost::asio::error& read_error, std::size_t bytes_read);
+	void readContentBytes(const boost::system::error_code& read_error,
+						  std::size_t bytes_read);
 
 	/**
 	 * Handles errors that occur during read operations
 	 *
 	 * @param read_error error status from the last read operation
 	 */
-	void handleReadError(const boost::asio::error& read_error);
+	void handleReadError(const boost::system::error_code& read_error);
 	
 	/**
 	 * parses request header bytes from the last read operation

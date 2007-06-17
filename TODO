@@ -1,7 +1,6 @@
 Things to do:
 =============
 
-* Include asio in libpion distribution & install it if necessary
 * Use read-write mutex for HTTPServer modules
 * Compare performance of using multiple io_services versus just one
 * Allow more options for binding servers than just port numbers (IP)

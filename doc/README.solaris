@@ -26,7 +26,7 @@ http://www.openssl.org
 
 The easiest way to install these libraries is to download and install
 the following packages from http://www.sunfreeware.com/: gcc (if you
-don't have it installed already), zlib and openssl. 
+don't have it installed already), gdb (optional), zlib and openssl. 
 
 
 Logging frameworks:
@@ -67,7 +67,8 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-./configure --with-boost=/usr/local [--with-log...]
+./configure --with-boost=/usr/local \
+	[--with-openssl=/usr/local/ssl] [--with-log...]
 make ; sudo make install
 
 
@@ -79,3 +80,6 @@ you may encountered errors about not being able to find the libstdc++ shared
 library (and others).  If this happens, try setting the LD_LIBRARY_PATH
 variable to include /usr/local/lib/.  You should also include the Boost
 libraries and the logging library (if used) in this path.
+
+The log4cpp and log4cplus libraries do not build correctly under Solaris.
+Please use the log4cxx library instead.

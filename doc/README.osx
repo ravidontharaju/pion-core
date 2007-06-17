@@ -58,3 +58,10 @@ tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
 ./configure --with-boost=/opt/local --with-log4cpp=/opt/local
 make ; sudo make install
+
+
+Known Problems:
+---------------
+
+The log4cplus library does not build correctly under OS X.  You should use
+the log4cpp or log4cxx library instead.

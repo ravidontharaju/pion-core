@@ -162,7 +162,7 @@ fi
 
 
 # Check for Boost
-AX_BOOST_BASE([1.33])
+AX_BOOST_BASE([1.34])
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
 
@@ -193,6 +193,30 @@ else
 fi
 LIBS="$LIBS_SAVED"
 AC_SUBST(BOOST_THREAD_LIB)
+
+
+# Check for Boost System library
+AC_CHECK_HEADERS([boost/system/error_code.hpp],,AC_MSG_ERROR(Unable to find the boost::system headers))
+LIBS_SAVED="$LIBS"
+BOOST_LIB=boost_system
+for ax_lib in $BOOST_LIB-$CC-mt $BOOST_LIB-mt lib$BOOST_LIB-$CC-mt \
+	lib$BOOST_LIB-mt $BOOST_LIB-$CC $BOOST_LIB lib$BOOST_LIB-$CC \
+	lib$BOOST_LIB ;
+do
+	LIBS="$LIBS_SAVED -l$ax_lib"
+	AC_MSG_NOTICE(Checking for -l$ax_lib)
+	AC_TRY_LINK([#include <boost/system/error_code.hpp>],
+		[ boost::system::error_code error_code; std::string message(error_code.message()); return 0; ],
+		[BOOST_SYSTEM_LIB="-l$ax_lib"; break],
+		[BOOST_SYSTEM_LIB=""])
+done
+if test "x$BOOST_SYSTEM_LIB" = "x"; then
+	AC_MSG_ERROR(Unable to link with the boost::system library)
+else
+	AC_MSG_NOTICE(Linking with boost::system works)
+fi
+LIBS="$LIBS_SAVED"
+AC_SUBST(BOOST_SYSTEM_LIB)
 
 
 # Check for Boost Filesystem library
