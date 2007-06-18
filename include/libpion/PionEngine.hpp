@@ -62,7 +62,7 @@ public:
 
 
 	/// public destructor: not virtual, should not be extended
-	~PionEngine() { stop(); }
+	~PionEngine() { stop(true); }
 
 	/**
      * return an instance of the PionEngine singleton
@@ -101,11 +101,15 @@ public:
 	 */
 	TCPServerPtr getServer(const unsigned int tcp_port);
 
+	/**
+	 * stops pion
+	 *
+	 * @param reset_servers if true, all servers will be removed
+	 */
+	void stop(const bool reset_servers = false);
+
 	/// starts pion
 	void start(void);
-
-	/// stops pion
-	void stop(void);
 
 	/// the calling thread will sleep until the engine has stopped
 	void join(void);

@@ -64,7 +64,7 @@ void PionEngine::start(void)
 	m_is_running = true;
 }
 
-void PionEngine::stop(void)
+void PionEngine::stop(const bool reset_servers)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
@@ -94,6 +94,9 @@ void PionEngine::stop(void)
 		m_is_running = false;
 		m_engine_has_stopped.notify_all();
 	}
+	
+	if (reset_servers)
+		m_servers.clear();
 }
 
 void PionEngine::join(void)
