@@ -22,7 +22,9 @@
 #include <boost/bind.hpp>
 #include <iostream>
 #include <vector>
-#include <signal.h>
+#ifndef _WIN32
+	#include <signal.h>
+#endif
 
 
 using namespace std;
@@ -30,10 +32,27 @@ using namespace pion;
 
 
 /// stops Pion when it receives signals
+#ifdef _WIN32
+BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
+{
+	switch(ctrl_type) {
+		case CTRL_C_EVENT:
+		case CTRL_BREAK_EVENT:
+		case CTRL_CLOSE_EVENT:
+		case CTRL_SHUTDOWN_EVENT:
+			Pion::stop();
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+#else
 void handle_signal(int sig)
 {
 	Pion::stop();
 }
+#endif
+
 
 /// displays an error message if the arguments are invalid
 void argument_error(void)
@@ -112,9 +131,13 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 	
-	// setup signal handlers
+	// setup signal handler
+#ifdef _WIN32
+	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
+#else
 	signal(SIGINT, handle_signal);
-
+#endif
+	
 	// initialize log system (use simple configuration)
 	PionLogger main_log(PION_GET_LOGGER("PionModuleTest"));
 	PionLogger pion_log(PION_GET_LOGGER("Pion"));

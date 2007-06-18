@@ -68,7 +68,7 @@ case "$build_os" in
 	;;
 *cygwin*)
 	# Cygwin GCC compiler (Windows)
-	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT -DWIN32 -D__USE_W32_SOCKETS"
+	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT -D_WIN32 -D__USE_W32_SOCKETS"
 	LDFLAGS="$LDFLAGS -mthreads"
 	PION_OPT_FLAGS="-O2 -Wall"
 	PION_DEBUG_FLAGS="-ggdb -Wall"
