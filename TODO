@@ -8,3 +8,4 @@ Things to do:
 * Add support for parsing multipart form content?
 * Add support for built-in authentication (OpenID)?
 * Switch to Jam or CMake build system instead of autotools?
+* Is the Windows shutdown crash really caused by bad DLL code?

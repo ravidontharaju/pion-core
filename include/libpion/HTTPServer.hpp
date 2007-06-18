@@ -89,7 +89,7 @@ public:
 	}
 
 	/// default destructor
-	virtual ~HTTPServer() { clearModules(); }
+	virtual ~HTTPServer() {}
 	
 	/**
 	 * adds a new module to the HTTP server
