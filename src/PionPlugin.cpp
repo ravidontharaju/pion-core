@@ -22,7 +22,7 @@
 #include <libpion/PionPlugin.hpp>
 #include <boost/filesystem/operations.hpp>
 
-#ifdef _WIN32
+#ifdef PION_WIN32
 	#include <windows.h>
 #else
 	#include <dlfcn.h>
@@ -35,7 +35,7 @@ namespace pion {	// begin namespace pion
 	
 const std::string			PionPlugin::PION_PLUGIN_CREATE("pion_create_");
 const std::string			PionPlugin::PION_PLUGIN_DESTROY("pion_destroy_");
-#ifdef _WIN32
+#ifdef PION_WIN32
 	const std::string			PionPlugin::PION_PLUGIN_EXTENSION(".dll");
 #else
 	const std::string			PionPlugin::PION_PLUGIN_EXTENSION(".so");
@@ -51,7 +51,7 @@ boost::mutex				PionPlugin::m_plugin_mutex;
 void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
 								 const std::string& start_path)
 {
-#if defined(_WIN32) && defined(PION_CYGWIN_DIRECTORY)
+#if defined(PION_WIN32) && defined(PION_CYGWIN_DIRECTORY)
 	// try prepending PION_CYGWIN_DIRECTORY if not complete
 	if (! final_path.is_complete() && final_path.has_root_directory()) {
 		final_path = boost::filesystem::path(std::string(PION_CYGWIN_DIRECTORY) + start_path);
@@ -61,7 +61,7 @@ void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
 
 void PionPlugin::addPluginDirectory(const std::string& dir)
 {
-#ifdef _WIN32
+#ifdef PION_WIN32
 	// work around bug in boost::filesystem on Windows -> do not plugin directories
 	// basically, if you create a path object on Windows, then convert it to
 	// directory_string() or file_string(), then try to construct
@@ -240,7 +240,7 @@ void PionPlugin::openPlugin(const std::string& plugin_file,
 std::string PionPlugin::getPluginName(const std::string& plugin_file)
 {
 	// strip path
-#ifdef _WIN32
+#ifdef PION_WIN32
 	std::string::size_type pos = plugin_file.find_last_of('\\');
 #else
 	std::string::size_type pos = plugin_file.find_last_of('/');
@@ -258,7 +258,7 @@ std::string PionPlugin::getPluginName(const std::string& plugin_file)
 
 void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 {
-#ifdef _WIN32
+#ifdef PION_WIN32
 	return LoadLibrary(plugin_file.c_str());
 #else
 	return dlopen(plugin_file.c_str(), RTLD_LAZY);
@@ -267,7 +267,7 @@ void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 
 void PionPlugin::closeDynamicLibrary(void *lib_handle)
 {
-#ifdef _WIN32
+#ifdef PION_WIN32
 	FreeLibrary((HINSTANCE) lib_handle);
 #else
 	dlclose(lib_handle);
@@ -276,7 +276,7 @@ void PionPlugin::closeDynamicLibrary(void *lib_handle)
 
 void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 {
-#ifdef _WIN32
+#ifdef PION_WIN32
 	return (void*)GetProcAddress((HINSTANCE) lib_handle, symbol.c_str());
 #else
 	return dlsym(lib_handle, symbol.c_str());

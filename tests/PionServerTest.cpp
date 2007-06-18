@@ -21,7 +21,7 @@
 #include <libpion/Pion.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
-#ifndef _WIN32
+#ifndef PION_WIN32
 	#include <signal.h>
 #endif
 
@@ -30,7 +30,7 @@ using namespace pion;
 
 
 /// stops Pion when it receives signals
-#ifdef _WIN32
+#ifdef PION_WIN32
 BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 {
 	switch(ctrl_type) {
@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
 	}
 
 	// setup signal handler
-#ifdef _WIN32
+#ifdef PION_WIN32
 	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 #else
 	signal(SIGINT, handle_signal);
