@@ -207,10 +207,8 @@ int main (int argc, char *argv[])
 	}
 
 #ifdef PION_WIN32
-	// pause to work-around crashes on Windows
-std::cout << "sleeping for 1 seconds" << std::endl;
+	// pause for 1 second to work-around crashes on Windows
 	wait_for_shutdown(1);
-std::cout << "done" << std::endl;
 #endif
 
 	return 0;
