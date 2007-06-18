@@ -1,11 +1,7 @@
-Index: Jamfile.v2
-===================================================================
-RCS file: /cvsroot/boost/boost/Jamfile.v2,v
-retrieving revision 1.32.2.1.2.21
-diff -u -p -r1.32.2.1.2.21 Jamfile.v2
---- Jamfile.v2	6 Jan 2007 14:17:30 -0000	1.32.2.1.2.21
-+++ Jamfile.v2	13 May 2007 08:30:30 -0000
-@@ -398,7 +398,8 @@ if $(layout-versioned) 
+diff -u -r boost_1_34_0/Jamfile.v2 boost_1_34_0.patched/Jamfile.v2
+--- boost_1_34_0/Jamfile.v2	2007-05-10 20:40:34.000000000 -0700
++++ boost_1_34_0.patched/Jamfile.v2	2007-06-17 23:39:40.000000000 -0700
+@@ -407,7 +407,8 @@
              {
                  noversion-file = 
                    [ MATCH "(.*)-[0-9_]+([.]so)[.0-9]*" : $(name) ] 
@@ -15,4 +11,74 @@ diff -u -p -r1.32.2.1.2.21 Jamfile.v2
              }
                          
              local new-name = 
-
+Only in boost_1_34_0.patched: Jamfile.v2.orig
+diff -u -r boost_1_34_0/tools/build/v2/tools/gcc.jam boost_1_34_0.patched/tools/build/v2/tools/gcc.jam
+--- boost_1_34_0/tools/build/v2/tools/gcc.jam	2007-05-02 23:09:04.000000000 -0700
++++ boost_1_34_0.patched/tools/build/v2/tools/gcc.jam	2007-06-17 23:40:40.000000000 -0700
+@@ -434,42 +434,40 @@
+             local generated-targets = [ unix-linking-generator.run $(project) $(name)
+                 : $(property-set) : $(sources) ] ;
+             
+-            # If more than one target was generated, throw out the
+-            # last one, which on windows just leaves the import
+-            # library.  Most generators on windows simply don't accept
+-            # shared libraries as input, but being able to link
+-            # directly to a shared library without an import library
+-            # is an important capability of GCC.  Therefore, we remove
+-            # the target after the action sees it so that dependent
+-            # targets don't try to link to both the import library and
+-            # the DLL.
+-            if [ $(property-set).get <suppress-import-lib> ] = true
+-            {
+-                return $(generated-targets[0]) $(generated-targets[-1]) ;
+-            }
+-            else
+-            {
+-                return $(generated-targets[1-2]) ;
+-            }
++            return $(generated-targets) ;
+         }
+     }
+ }
+ 
+-generators.register [ new gcc-linking-generator gcc.link : LIB OBJ : EXE 
+-    : <toolset>gcc ] ;
+-
+ .IMPLIB-COMMAND = ;
+-.IMPLIB-TYPE = ;
+ if [ os.on-windows ]
+ {
+     .IMPLIB-COMMAND = "-Wl,--out-implib," ;
+-    .IMPLIB-TYPE = IMPORT_LIB ;
++    generators.register
++        [ new gcc-linking-generator gcc.link
++            : OBJ SEARCHED_LIB STATIC_LIB IMPORT_LIB
++            : EXE
++            : <toolset>gcc ] ;
++    generators.register
++        [ new gcc-linking-generator gcc.link.dll
++            : OBJ SEARCHED_LIB STATIC_LIB IMPORT_LIB
++            : IMPORT_LIB SHARED_LIB
++            : <toolset>gcc ] ;
++}
++else
++{
++    generators.register
++        [ new gcc-linking-generator gcc.link
++            : LIB OBJ
++            : EXE
++            : <toolset>gcc ] ;
++    generators.register
++        [ new gcc-linking-generator gcc.link.dll
++            : LIB OBJ
++            : SHARED_LIB
++            : <toolset>gcc ] ;
+ }
+ 
+-generators.register 
+-  [ new gcc-linking-generator gcc.link.dll : LIB OBJ : $(.IMPLIB-TYPE) SHARED_LIB 
+-    : <toolset>gcc ] ;
+-
+ # Declare flags for linking
+ # First, the common flags
+ flags gcc.link OPTIONS <debug-symbols>on : -g ;
