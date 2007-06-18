@@ -222,17 +222,8 @@ private:
 		: public std::map<std::string, PluginPair>
 	{
 	public:
-		void clear(void) {
-			for (iterator i = begin(); i != end(); ++i) {
-				if (i->second.second.is_open()) {
-					i->second.second.destroy(i->second.first);
-				} else {
-					delete i->second.first;
-				}
-			}
-			std::map<std::string, PluginPair>::clear();
-		}
-		virtual ~ModuleMap() { clear(); }
+		void clear2(void);
+		virtual ~ModuleMap() { clear2(); }
 		ModuleMap(void) {}
 	};
 	

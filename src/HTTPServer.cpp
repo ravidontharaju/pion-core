@@ -379,5 +379,27 @@ void HTTPServer::handleServerError(HTTPRequestPtr& http_request,
 	response->send(tcp_conn);
 }
 
+
+// HTTPServer::ModuleMap member functions
+
+void HTTPServer::ModuleMap::clear2(void) {
+	std::cout << "clearing module map" << std::endl;
+	for (iterator i = begin(); i != end(); ++i) {
+		std::cout << "removing module: " << i->first << std::endl;
+		if (i->second.second.is_open()) {
+			std::cout << "using plug-in ("
+				<< i->second.second.getPluginName() << ") to destroy module: "
+				<< i->first << std::endl;
+			i->second.second.destroy(i->second.first);
+		} else {
+			std::cout << "deleting module: " << i->first << std::endl;
+			delete i->second.first;
+		}
+	}
+	std::cout << "clearing module map (erasing iterators)" << std::endl;
+	std::map<std::string, PluginPair>::clear();
+	std::cout << "done clearing module map" << std::endl;
+}
+
 }	// end namespace pion
 
