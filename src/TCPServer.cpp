@@ -129,8 +129,10 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn,
 	if (accept_error) {
 		// an error occured while trying to a accept a new connection
 		// this happens when the server is being shut down
-		tcp_conn->setKeepAlive(false);	// make sure it will get closed
-		finishConnection(tcp_conn);
+		if (m_is_listening) {
+			tcp_conn->setKeepAlive(false);	// make sure it will get closed
+			finishConnection(tcp_conn);
+		}
 	} else {
 		// got a new TCP connection
 		PION_LOG_INFO(m_logger, "New" << (tcp_conn->getSSLFlag() ? " SSL " : " ")
