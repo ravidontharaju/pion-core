@@ -161,7 +161,7 @@ protected:
 		{}
 		PionPluginData(const std::string& plugin_name)
 			: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL),
-			m_plugin_name(plugin_name), m_references(m_references)
+			m_plugin_name(plugin_name), m_references(0)
 		{}
 		
 		/// symbol library loaded from a shared object file
