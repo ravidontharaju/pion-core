@@ -13,13 +13,15 @@ Build and installation summary:
 # make install
 
 See INSTALL or run "./configure --help" for more detailed instructions.
-More detailed information and instructions is also available for some
-platforms within the "doc" subdirectory (README.platform).
+
+Detailed build instructions are available for all of the platforms supported
+by libpion within the "doc" subdirectory (README.platform).  Please read these
+instructions first.
 
 Starting with 0.2.0, libpion REQUIRES the Boost C++ libraries (version
-1.34.0 or greater), and the Boost ASIO library (version 0.38 or greater).
-Please see the README.boost file in the "doc" subdirectory for instructions
-on how to download, build and install these libraries.
+1.34.0 or greater), and the Boost ASIO library (version 0.38 or
+greater). Please see the README.boost file within the "doc" subdirectory
+for instructions on how to download, build and install these libraries.
 
 Boost ASIO additionally requires OpenSSL for SSL/TLS support and zlib for
 compression.  You can download these libraries from the following locations:
@@ -40,3 +42,6 @@ You can download these logging libraries from the following locations:
 http://logging.apache.org/log4cxx
 http://log4cpp.sourceforge.net
 http://log4cplus.sourceforge.net
+
+Please note that not all of these libraries work on all platforms.  Please
+see the README.platform files for more information.

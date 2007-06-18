@@ -1,13 +1,10 @@
 Linux Build Instructions
 ========================
 
-Installing Boost:
------------------
+Building Boost with ASIO:
+-------------------------
 
-If your Linux distribution includes Boost 1.33.1 (CentOS/Redhat 5) or 
-later, then you only have to install ASIO over top of it (see below).  
-Just install the "boost" and "boost-devel" packages using an update 
-tool such as yum, up2date or apt-get.
+Please see the README.boost file for instructions.
 
 If you have an older version of Boost installed (CentOS/Redhat 4), you 
 likely will need to first uninstall it so that gcc and libtool do not 
@@ -15,35 +12,20 @@ get confused:
 
 rpm -e boost boost-devel
 
-Next, download the 1.33.1 source tarball from http://www.boost.org/, and
-build and install it onto your system:
 
-wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
-tar xvfj boost_1_33_1.tar.bz2
-cd boost_1_33_1
-./configure
-make ; make install
+Installing zlib & openssl:
+--------------------------
 
+ASIO requires zlib and openssl for compression and SSL/TLS encryption
+support, respectively.  These libraries are normally pre-installed on
+Linux. However, you may instead choose to download and install the
+latest versions from the following sites:
 
-Installing Boost ASIO:
-----------------------
-
-The current Boost distribution (1.33.1) does not include the ASIO library.
-However, since ASIO consists only of header files, it is very easy to install
-it over top of any Boost installation: just copy the header files into your
-Boost include directory:
-
-wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
-tar xvfj boost_asio_0_3_7.tar.bz2
-
-CentOS/Redhat 4:
-mv boost_asio_0_3_7/boost/* /usr/local/include/boost-1_33_1/boost
-
-CentOS/Redhat 5:
-mv boost_asio_0_3_7/boost/* /usr/include/boost/
+http://www.zlib.net
+http://www.openssl.org
 
 
-Installing log4cpp:
+Logging frameworks:
 -------------------
 
 Note that the use of a logging framework is entirely optional, so you may
@@ -58,6 +40,13 @@ RPM packages for your system from:
 
 http://dag.wieers.com/rpm/packages/log4cpp/
 
+If you prefer instead to compile the logging framework from source, you
+can download the tarballs from the following sites:
+
+http://logging.apache.org/log4cxx
+http://log4cpp.sourceforge.net
+http://log4cplus.sourceforge.net
+
 
 Building and installing libpion:
 --------------------------------
@@ -66,14 +55,8 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-
-CentOS/Redhat 4:
-./configure --with-boost=/usr/local --with-log4cpp=/usr/local
-
-CentOS/Redhat 5:
-./configure --with-boost=/usr --with-log4cpp=/usr
-
-make ; make install
+./configure --with-boost=/usr/local [--with-openssl] [--with-log4cpp]
+make ; sudo make install
 
 
 Known Problems

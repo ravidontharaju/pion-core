@@ -1,16 +1,12 @@
 Windows Build Instructions
 ==========================
 
-C++ Compilers
--------------
+Preparing the Build Environment:
+--------------------------------
 
 For building under Windows, only the GNU C++ compiler (g++) is currently
-supported. However, we plan to also support Microsoft's Visual C++
-compiler in the near future.
-
-
-Installing Build Tools
-----------------------
+supported. However, we plan to also support for MinGW and Microsoft's
+Visual C++ compiler in the near future.
 
 In order to configure libpion, you will need to install the bash shell and
 GNU make programs.  We recommend that you download and install the programs
@@ -29,13 +25,35 @@ Utils: patch
 Web: wget
 
 
+Building Boost with ASIO
+------------------------
+
+Please see the README.boost file for instructions.
+
+Boost 1.34.0 has a bug that prevents you from installing it when using
+Cygwin.  There is a patch to fix this bug called "cygwin_boost_1_34_0.patch" 
+within libpion's doc subdirectory.  Make sure that you apply this patch after
+uncompressing the Boost source code tarball:
+
+cd boost_1_34_0
+patch < LIBPION_HOME/doc/cygwin_boost_1_34_0.patch
+
+There is another bug with Boost 1.34.0 that prevents it from copying the
+DLL files into your installation directory.  After running "make
+install", run the following command to copy these files manually:
+
+cp `find bin.v2 -name *.dll` /usr/local/lib
+
+(assuming that you are using the default prefix of /usr/local/lib)
+
+
 Installing zlib & openssl:
 --------------------------
 
 ASIO requires zlib and openssl for compression and SSL/TLS encryption
-support, respectively.  We recommend that use Cygwin to install these
-libraries.  However, you can also download and install them manually 
-from the following sites:
+support, respectively.  On Windows, we recommend that you use Cygwin to
+install these libraries. However, you may instead choose to download and
+install the latest versions from the following sites:
 
 http://www.zlib.net
 http://www.openssl.org
@@ -44,32 +62,16 @@ http://www.openssl.org
 Logging frameworks:
 -------------------
 
-If you wish to use one of the supported logging frameworks with libpion,
-you will need to download and install it from source, since none of
-them are available pre-built for Windows.  You can download the source
-tarballs from the following sites:
+Note that the use of a logging framework is entirely optional, so you may
+skip this step if you like.
+
+At this time, none of the supported logging libraries build correctly
+under Windows.  If you'd like to help add support for these, you can download
+the current source code from the following sites:
 
 http://logging.apache.org/log4cxx
 http://log4cpp.sourceforge.net
 http://log4cplus.sourceforge.net
-
-
-Installing Boost and ASIO:
---------------------------
-
-The current Boost distribution (1.33.1) does not include the ASIO library.
-However, since ASIO consists only of header files, it is very easy to install
-it over top of any Boost installation: just copy the header files into your
-Boost include directory.
-
-wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
-wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
-tar xvfj boost_1_33_1.tar.bz2
-tar xvfj boost_asio_0_3_7.tar.bz2
-mv boost_asio_0_3_7/boost/* boost_1_33_1/boost/
-cd boost_1_33_1
-./configure --prefix=/usr/local
-make install
 
 
 Building and installing libpion:
@@ -80,8 +82,8 @@ Now you should be able to build and install libpion:
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
 CPPFLAGS="-D_WIN32_WINNT=0x500" \
-	./configure --with-boost=/usr/local [--with-log...]
-make install
+	./configure --with-boost=/usr/local [--with-openssl]
+make ; make install
 
 
 Known Problems:
@@ -96,3 +98,18 @@ directory using the parameter "--with-cygwin=[directory]" (the default is
 information: http://www.boost.org/libs/filesystem/doc/index.htm
 
 The test programs are currently dumping core (stack trace) when they exit.
+
+If Windows cannot find all the shared libraries used by your program, it will
+simply exit immediately without printing any messages.  To see what shared
+libraries (or DLLs) a program uses, you can use the following command:
+
+objdump -p <PROGRAM> | grep "DLL Name"
+
+You may want to make sure that your executables can find the Boost DLLs
+located in "lib" subdirectory of your installation path by adding the
+directory to your PATH:
+
+export PATH=/usr/local/lib:$PATH
+
+(assuming that you are using the default prefix of /usr/local/lib)
+

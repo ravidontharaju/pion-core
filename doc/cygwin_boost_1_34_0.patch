@@ -1,0 +1,18 @@
+Index: Jamfile.v2
+===================================================================
+RCS file: /cvsroot/boost/boost/Jamfile.v2,v
+retrieving revision 1.32.2.1.2.21
+diff -u -p -r1.32.2.1.2.21 Jamfile.v2
+--- Jamfile.v2	6 Jan 2007 14:17:30 -0000	1.32.2.1.2.21
++++ Jamfile.v2	13 May 2007 08:30:30 -0000
+@@ -398,7 +398,8 @@ if $(layout-versioned) 
+             {
+                 noversion-file = 
+                   [ MATCH "(.*)-[0-9_]+([.]so)[.0-9]*" : $(name) ] 
+-                  [ MATCH "(.*)-[0-9_]+([.]a)" : $(name) ] ;
++                  [ MATCH "(.*)-[0-9_]+([.]a)" : $(name) ] 
++                  [ MATCH "(.*)-[0-9_]+([.]dll[.]a)" : $(name) ] ;
+             }
+                         
+             local new-name = 
+

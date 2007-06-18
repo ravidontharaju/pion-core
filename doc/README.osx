@@ -1,52 +1,44 @@
 Mac OS X Build Instructions
 ===========================
 
-Using MacPorts
---------------
+Building Boost with ASIO:
+-------------------------
 
-Although you can also download and install the tarballs manually, we believe
-that the easiest way to install the Boost and logging dependency libraries
-in OS X is to use MacPorts (http://www.macports.org):
+Please see the README.boost file for instructions.
+There are no known problems on OS X.
 
-sudo port install boost
-sudo port install log4cpp
+
+Installing zlib & openssl:
+--------------------------
+
+ASIO requires zlib and openssl for compression and SSL/TLS encryption
+support, respectively.  These libraries are pre-installed on OS X.
+However, you may instead choose to download and install the latest
+versions from the following sites:
+
+http://www.zlib.net
+http://www.openssl.org
+
+
+Logging frameworks:
+-------------------
 
 Note that the use of a logging framework is entirely optional, so you may
-skip the installation of log4cpp if you like.
+skip this step if you like.
 
-We also recommend that you install the pkg-config tool, which makes it easier
-to build HTTP module plug-ins for libpion:
+If you have MacPorts (http://www.macports.org) already installed, it is easy
+to use it to install the log4cpp library:
 
-sudo port install pkgconfig
+sudo port install log4cpp
 
+If you do not have MacPorts or prefer to compile the logging framework from
+source, you can download the tarballs from the following sites:
 
-Installing Boost:
------------------
+http://logging.apache.org/log4cxx
+http://log4cpp.sourceforge.net
 
-This step is only necessary if you choose not to install Boost using
-MacPorts.
-
-Download the 1.33.1 source tarball from http://www.boost.org/, and
-build and install it onto your system:
-
-wget http://downloads.sourceforge.net/boost/boost_1_33_1.tar.bz2
-tar xvfj boost_1_33_1.tar.bz2
-cd boost_1_33_1
-./configure
-make ; sudo make install
-
-
-Installing Boost ASIO:
-----------------------
-
-The current Boost distribution (1.33.1) does not include the ASIO library.
-However, since ASIO consists only of header files, it is very easy to install
-it over top of any Boost installation: just copy the header files into your
-Boost include directory:
-
-wget http://downloads.sourceforge.net/asio/boost_asio_0_3_7.tar.bz2
-tar xvfj boost_asio_0_3_7.tar.bz2
-sudo mv boost_asio_0_3_7/boost/* /opt/local/include/boost
+Note that the log4cplus library does not build properly under OS X, so you
+will need to use log4cxx or log4cpp instead.
 
 
 Building and installing libpion:
@@ -56,12 +48,6 @@ Now you should be able to build and install libpion:
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
-./configure --with-boost=/opt/local --with-log4cpp=/opt/local
+./configure --with-boost=/usr/local
+	[--with-openssl] [--with-log4cpp=/opt/local]
 make ; sudo make install
-
-
-Known Problems:
----------------
-
-The log4cplus library does not build correctly under OS X.  You should use
-the log4cpp or log4cxx library instead.

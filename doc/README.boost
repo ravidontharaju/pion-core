@@ -29,6 +29,9 @@ cd boost_1_34_0
 ./configure --prefix=/usr/local   (set prefix to your install directory)
 make install
 
+Note: Some platforms require additional steps for building Boost 1.34.0. 
+Please see the appropriate README.platform file for more information.
+
 If you are using a non-standard build environment, you may instead want to
 use the bjam utility to configure more options for your build.  See the Boost
 Getting Started guide for more information on using bjam:
