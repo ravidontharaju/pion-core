@@ -89,7 +89,7 @@ public:
 	}
 
 	/// default destructor
-	virtual ~HTTPServer() {}
+	virtual ~HTTPServer() { clearModules(); }
 	
 	/**
 	 * adds a new module to the HTTP server
@@ -222,8 +222,8 @@ private:
 		: public std::map<std::string, PluginPair>
 	{
 	public:
-		void clear2(void);
-		virtual ~ModuleMap() { clear2(); }
+		void clear(void);
+		virtual ~ModuleMap() { ModuleMap::clear(); }
 		ModuleMap(void) {}
 	};
 	

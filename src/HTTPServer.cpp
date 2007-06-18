@@ -382,7 +382,7 @@ void HTTPServer::handleServerError(HTTPRequestPtr& http_request,
 
 // HTTPServer::ModuleMap member functions
 
-void HTTPServer::ModuleMap::clear2(void) {
+void HTTPServer::ModuleMap::clear(void) {
 	std::cout << "clearing module map" << std::endl;
 	for (iterator i = begin(); i != end(); ++i) {
 		std::cout << "removing module: " << i->first << std::endl;
