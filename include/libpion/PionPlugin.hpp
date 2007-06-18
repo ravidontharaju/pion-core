@@ -163,6 +163,11 @@ protected:
 			: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL),
 			m_plugin_name(plugin_name), m_references(0)
 		{}
+		PionPluginData(const PionPluginData& p)
+			: m_lib_handle(p.m_lib_handle), m_create_func(p.m_create_func),
+			m_destroy_func(p.m_destroy_func), m_plugin_name(p.m_plugin_name),
+			m_references(p.m_references)
+		{}
 		
 		/// symbol library loaded from a shared object file
 		void *			m_lib_handle;
