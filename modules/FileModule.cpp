@@ -46,7 +46,7 @@ FileModule::FileModule(void)
 	m_scan_setting(DEFAULT_SCAN_SETTING)
 {
 	// uncomment to enable debug logging
-	PION_LOG_SETLEVEL_DEBUG(m_logger);
+	//PION_LOG_SETLEVEL_DEBUG(m_logger);
 }
 
 void FileModule::setOption(const std::string& name, const std::string& value)
