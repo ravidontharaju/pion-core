@@ -386,7 +386,7 @@ void HTTPServer::ModuleMap::clear(void) {
 	for (iterator i = begin(); i != end(); ++i) {
 		if (i->second.second.is_open()) {
 			i->second.second.destroy(i->second.first);
-			i->second.second.stop();
+			i->second.second.close();
 		} else {
 			delete i->second.first;
 		}
