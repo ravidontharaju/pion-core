@@ -66,16 +66,20 @@ struct Pion {
 		return PionEngine::getInstance().getServer(tcp_port);
 	}
 	
+	/**
+	 * stops pion
+	 *
+	 * @param reset_servers if true, all servers will be removed
+	 */
+	inline static void stop(const bool reset_servers = false) {
+		PionEngine::getInstance().stop(reset_servers);
+	}
+
 	/// starts pion
 	inline static void start(void) {
 		PionEngine::getInstance().start();
 	}
-
-	/// stops pion
-	inline static void stop(void) {
-		PionEngine::getInstance().stop();
-	}
-
+	
 	/// the calling thread will sleep until the engine has stopped
 	inline static void join(void) {
 		PionEngine::getInstance().join();

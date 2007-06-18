@@ -117,7 +117,8 @@ void PionPlugin::releaseData(void)
 {
 	if (m_plugin_data != NULL) {
 		boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
-		if (--m_plugin_data->m_references == 0) {
+		// double-check after locking mutex
+		if (m_plugin_data != NULL && --m_plugin_data->m_references == 0) {
 			// no more references to the plug-in library
 			
 			// release the shared object

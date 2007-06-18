@@ -27,7 +27,7 @@ Finally, configure, build and install the Boost libraries (now with ASIO):
 
 cd boost_1_34_0
 ./configure --prefix=/usr/local   (set prefix to your install directory)
-make install
+make all install
 
 Note: Some platforms require additional steps for building Boost 1.34.0. 
 Please see the appropriate README.platform file for more information.

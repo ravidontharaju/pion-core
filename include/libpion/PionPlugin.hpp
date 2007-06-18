@@ -25,7 +25,6 @@
 #include <libpion/PionException.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <vector>
 #include <string>
 #include <map>
@@ -120,7 +119,7 @@ public:
 	
 
 	// default destructor
-	virtual ~PionPlugin() {}
+	virtual ~PionPlugin() { releaseData(); }
 	
 	/// returns true if a shared library is loaded/open
 	inline bool is_open(void) const { return (m_plugin_data != NULL); }
@@ -144,6 +143,9 @@ public:
 	 */
 	void open(const std::string& plugin_file);
 
+	/// closes plug-in library
+	inline void close(void) { releaseData(); }
+
 	
 protected:
 	
@@ -159,7 +161,7 @@ protected:
 		{}
 		PionPluginData(const std::string& plugin_name)
 			: m_lib_handle(NULL), m_create_func(NULL), m_destroy_func(NULL),
-			m_plugin_name(plugin_name), m_references(0)
+			m_plugin_name(plugin_name), m_references(m_references)
 		{}
 		
 		/// symbol library loaded from a shared object file
@@ -181,6 +183,12 @@ protected:
 	
 	/// default constructor is private (use PionPluginPtr class to create objects)
 	PionPlugin(void) : m_plugin_data(NULL) {}
+	
+	/// copy constructor
+	PionPlugin(const PionPlugin& p) : m_plugin_data(NULL) { grabData(p); }
+
+	/// assignment operator
+	PionPlugin& operator=(const PionPlugin& p) { grabData(p); return *this; }
 
 	/// returns a pointer to the plug-in's "create object" function
 	inline void *getCreateFunction(void) {
@@ -300,21 +308,15 @@ protected:
 public:
 
 	/// default constructor & destructor
-	PionPluginPtr(void) {}
-	virtual ~PionPluginPtr() { releaseData(); }
+	PionPluginPtr(void) : PionPlugin() {}
+	virtual ~PionPluginPtr() {}
 	
 	/// copy constructor
-	PionPluginPtr(const PionPluginPtr& p) { grabData(p); }
+	PionPluginPtr(const PionPluginPtr& p) : PionPlugin(p) {}
 
 	/// assignment operator
-	PionPluginPtr& operator=(const PionPluginPtr& p) {
-		grabData(p);
-		return *this;
-	}
+	PionPluginPtr& operator=(const PionPluginPtr& p) { return(*this = p); }
 	
-	
-	/// closes plug-in library
-	inline void close(void) { releaseData(); }
 
 	/// creates a new instance of the plug-in object
 	inline InterfaceClassType *create(void) {
