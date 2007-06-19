@@ -10,7 +10,7 @@ Version 0.2.0 (2007-06-19)
 * Added start() and stop() virtual functions to HTTPModule
 * Added beforeStarting() and afterStopping() virtual functions to TCPServer
 * Added PionHashMap.hpp for setting-up unordered map types
-* Fixed bug that was causing Windows to crash at shutdown
+* Added work-around for bug that causes Windows to crash @ shutdown
 
 
 Version 0.1.6 (2007-06-01)

@@ -1,6 +1,7 @@
 Things to do:
 =============
 
+* Try to fix bug causing Windows shutdown crash versus using work-around
 * Help get at least one of the logging frameworks working in Windows
 * Add support for Sun Studio & Microsoft Visual C++ compilers
 * Use read-write mutex for HTTPServer modules?
