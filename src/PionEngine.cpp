@@ -11,6 +11,7 @@
 #include <boost/bind.hpp>
 #ifdef PION_WIN32
 	// for Windows shutdown crash work-around
+	#include <boost/thread/xtime.hpp>
 	#include <ctime>
 #endif
 
