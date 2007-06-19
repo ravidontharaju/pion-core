@@ -11,10 +11,7 @@
 #include <boost/bind.hpp>
 #include <iostream>
 #include <vector>
-#ifdef PION_WIN32
-	#include <boost/thread.hpp>
-	#include <ctime>
-#else
+#ifndef PION_WIN32
 	#include <signal.h>
 #endif
 
@@ -37,12 +34,6 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		default:
 			return FALSE;
 	}
-}
-void wait_for_shutdown(const unsigned int seconds)
-{
-	boost::xtime stop_time;
-	stop_time.sec = time(NULL) + seconds;
-	boost::thread::sleep(stop_time);
 }
 #else
 void handle_signal(int sig)
@@ -195,11 +186,5 @@ int main (int argc, char *argv[])
 		PION_LOG_FATAL(main_log, e.what());
 	}
 
-#ifdef PION_WIN32
-	// pause for 1 second to work-around crashes on Windows
-	wait_for_shutdown(1);
-#endif
-
 	return 0;
 }
-

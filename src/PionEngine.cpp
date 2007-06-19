@@ -9,6 +9,10 @@
 
 #include <libpion/PionEngine.hpp>
 #include <boost/bind.hpp>
+#ifdef PION_WIN32
+	// for Windows shutdown crash work-around
+	#include <ctime>
+#endif
 
 
 namespace pion {	// begin namespace pion
@@ -78,14 +82,24 @@ void PionEngine::stop(const bool reset_servers)
 			m_thread_pool.clear();
 		}
 
+#ifdef PION_WIN32
+		// pause for 1 extra second to work-around shutdown crash on Windows
+		// which seems related to static objects used in the ASIO library
+		boost::xtime stop_time;
+		stop_time.sec = time(NULL) + 1;
+		boost::thread::sleep(stop_time);
+#endif
+
 		PION_LOG_INFO(m_logger, "Pion has shutdown");
 
 		m_is_running = false;
 		m_engine_has_stopped.notify_all();
 	}
 	
-	if (reset_servers)
+	if (reset_servers) {
+		m_asio_service.stop();
 		m_servers.clear();
+	}
 }
 
 void PionEngine::join(void)
