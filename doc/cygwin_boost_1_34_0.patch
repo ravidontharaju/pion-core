@@ -1,6 +1,6 @@
-diff -u -r boost_1_34_0/Jamfile.v2 boost_1_34_0.patched/Jamfile.v2
+diff -r -u boost_1_34_0/Jamfile.v2 boost_1_34_0.patched/Jamfile.v2
 --- boost_1_34_0/Jamfile.v2	2007-05-10 20:40:34.000000000 -0700
-+++ boost_1_34_0.patched/Jamfile.v2	2007-06-17 23:39:40.000000000 -0700
++++ boost_1_34_0.patched/Jamfile.v2	2007-06-19 09:07:13.875000000 -0700
 @@ -407,7 +407,8 @@
              {
                  noversion-file = 
@@ -12,9 +12,9 @@ diff -u -r boost_1_34_0/Jamfile.v2 boost_1_34_0.patched/Jamfile.v2
                          
              local new-name = 
 Only in boost_1_34_0.patched: Jamfile.v2.orig
-diff -u -r boost_1_34_0/tools/build/v2/tools/gcc.jam boost_1_34_0.patched/tools/build/v2/tools/gcc.jam
+diff -r -u boost_1_34_0/tools/build/v2/tools/gcc.jam boost_1_34_0.patched/tools/build/v2/tools/gcc.jam
 --- boost_1_34_0/tools/build/v2/tools/gcc.jam	2007-05-02 23:09:04.000000000 -0700
-+++ boost_1_34_0.patched/tools/build/v2/tools/gcc.jam	2007-06-17 23:40:40.000000000 -0700
++++ boost_1_34_0.patched/tools/build/v2/tools/gcc.jam	2007-06-19 09:07:50.375000000 -0700
 @@ -434,42 +434,40 @@
              local generated-targets = [ unix-linking-generator.run $(project) $(name)
                  : $(property-set) : $(sources) ] ;
@@ -82,3 +82,26 @@ diff -u -r boost_1_34_0/tools/build/v2/tools/gcc.jam boost_1_34_0.patched/tools/
  # Declare flags for linking
  # First, the common flags
  flags gcc.link OPTIONS <debug-symbols>on : -g ;
+diff -r -u boost_1_34_0/tools/build/v2/tools/stage.jam boost_1_34_0.patched/tools/build/v2/tools/stage.jam
+--- boost_1_34_0/tools/build/v2/tools/stage.jam	2006-11-10 09:20:05.000000000 -0800
++++ boost_1_34_0.patched/tools/build/v2/tools/stage.jam	2007-06-19 09:07:56.625000000 -0700
+@@ -351,7 +351,8 @@
+     
+     rule run ( project name ? : property-set : source : multiple ? )
+     {
+-        if [ $(property-set).get <os> ] in NT CYGWIN
++        if [ $(property-set).get <os> ] in NT CYGWIN ||
++            [ $(property-set).get <target-os> ] in windows cygwin
+         {
+             # Relinking is never needed on NT
+             return [ stage.copy-file $(project) 
+@@ -383,7 +384,8 @@
+     
+     rule run ( project name ? : property-set : source : multiple ? )
+     {                        
+-        if [ $(property-set).get <os> ] = NT
++        if [ $(property-set).get <os> ] in NT CYGWIN ||
++            [ $(property-set).get <target-os> ] in windows cygwin
+         {
+             local copied = [ stage.copy-file $(project) 
+               : $(source) : $(property-set) ] ; 
