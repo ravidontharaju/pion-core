@@ -31,23 +31,14 @@ Building Boost with ASIO
 Please see the README.boost file for instructions.
 
 Boost 1.34.0 has several bugs that prevent it from installing correctly
-under Cygwin.  There is a patch to fix these bugs called
-"cygwin_boost_1_34_0.patch" within libpion's doc subdirectory.  Make
-sure that you apply this patch after uncompressing the Boost source code
-tarball:
+under Cygwin.  There is a patch that fixes all of these bugs called
+"cygwin_boost_1_34_0.patch" within libpion's doc subdirectory.  If you
+are using Boost 1.34.0, make sure that you apply this patch after
+uncompressing the Boost source code tarball:
 
 patch -p0 < LIBPION_HOME/doc/cygwin_boost_1_34_0.patch
 
-There is one additional problem that this patch does not fix -- it
-strips the "lib" prefix from import library files, which must be present
-in order for libtool to properly detect and link with the library. 
-After installing the boost libraries, you can create symbolic links to
-work-around this problem:
-
-cd BOOST_INSTALL_DIRECTORY/lib
-ln -s boost_thread-gcc34-mt-1_34.dll.a libboost_thread-mt.dll.a
-ln -s boost_system-gcc34-mt-1_34.dll.a libboost_system-mt.dll.a
-ln -s boost_filesystem-gcc34-mt-1_34.dll.a libboost_filesystem-mt.dll.a
+This patch is unnecessary for Boost 1.34.1 and later releases.
 
 
 Installing zlib & openssl:
@@ -69,8 +60,8 @@ Note that the use of a logging framework is entirely optional, so you may
 skip this step if you like.
 
 At this time, none of the supported logging libraries build correctly
-under Windows.  If you'd like to help add support for these, you can download
-the current source code from the following sites:
+under Windows.  If you'd like to help add support for these, you can
+download the current source code from the following sites:
 
 http://logging.apache.org/log4cxx
 http://log4cpp.sourceforge.net
@@ -81,6 +72,7 @@ Building and installing libpion:
 --------------------------------
 
 Now you should be able to build and install libpion:
+(the "-D_WIN32_WINNT=0x500" eliminates warnings in ASIO)
 
 tar xvfz libpion-VERSION.tar.gz
 cd libpion-VERSION
@@ -100,8 +92,6 @@ directory using the parameter "--with-cygwin=[directory]" (the default is
 "c:/cygwin").  Please see the boost::filesystem documenation for more
 information: http://www.boost.org/libs/filesystem/doc/index.htm
 
-The test programs are currently dumping core (stack trace) when they exit.
-
 If Windows cannot find all the shared libraries used by your program, it will
 simply exit immediately without printing any messages.  To see what shared
 libraries (or DLLs) a program uses, you can use the following command:
@@ -115,4 +105,3 @@ directory to your PATH:
 export PATH=/usr/local/lib:$PATH
 
 (assuming that you are using the default prefix of /usr/local/lib)
-
