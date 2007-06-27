@@ -122,7 +122,7 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn,
 			listen();	// schedule acceptance of another connection
 			tcp_conn->setKeepAlive(false);	// make sure it will get closed
 			finishConnection(tcp_conn);
-			PION_LOG_WARN(m_logger, "Accept error on port " << getPort());
+			PION_LOG_WARN(m_logger, "Accept error on port " << getPort() << ": " << accept_error.message());
 		}
 	} else {
 		// got a new TCP connection
