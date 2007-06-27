@@ -3,7 +3,7 @@
 # -----------------------------------
 
 # Set Pion version information
-AC_INIT([libpion], [0.3.1], [support@atomiclabs.com])
+AC_INIT([libpion], [0.2.2], [support@atomiclabs.com])
 PION_LIBRARY_VERSION=$PACKAGE_VERSION
 AC_SUBST(PION_LIBRARY_VERSION)
 AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version number of libpion.])
@@ -53,7 +53,7 @@ case "$build_os" in
 		CPPFLAGS="$CPPFLAGS -pthreads -D_REENTRANT"
 		LDFLAGS="$LDFLAGS -pthreads"
 		PION_OPT_FLAGS="-O2 -Wall"
-		PION_DEBUG_FLAGS="-ggdb -Wall"
+		PION_DEBUG_FLAGS="-ggdb -Wall -fno-inline"
 	fi
 	LIBS="$LIBS -lsocket -lnsl -ldl -lposix4"
 	;;
@@ -63,7 +63,7 @@ case "$build_os" in
 	CPPFLAGS="$CPPFLAGS -D_REENTRANT"
 	#LDFLAGS="$LDFLAGS"
 	PION_OPT_FLAGS="-O2 -Wall"
-	PION_DEBUG_FLAGS="-ggdb -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall -fno-inline"
 	LIBS="$LIBS -ldl"
 	;;
 *cygwin*)
@@ -71,7 +71,7 @@ case "$build_os" in
 	CPPFLAGS="$CPPFLAGS -mthreads -D_REENTRANT -DPION_WIN32 -D__USE_W32_SOCKETS"
 	LDFLAGS="$LDFLAGS -mthreads"
 	PION_OPT_FLAGS="-O2 -Wall"
-	PION_DEBUG_FLAGS="-ggdb -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall -fno-inline"
 	LIBS="$LIBS -lws2_32 -lmswsock"
 	;;
 *freebsd*)
@@ -79,14 +79,14 @@ case "$build_os" in
 	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
 	LDFLAGS="$LDFLAGS -pthread"
 	PION_OPT_FLAGS="-O2 -Wall"
-	PION_DEBUG_FLAGS="-ggdb -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall -fno-inline"
 	;;
 *)
 	# Other (Linux): GCC compiler
 	CPPFLAGS="$CPPFLAGS -pthread -D_REENTRANT"
 	LDFLAGS="$LDFLAGS -pthread"
 	PION_OPT_FLAGS="-O2 -Wall"
-	PION_DEBUG_FLAGS="-ggdb -Wall"
+	PION_DEBUG_FLAGS="-ggdb -Wall -fno-inline"
 	LIBS="$LIBS -ldl"
 	;;
 esac

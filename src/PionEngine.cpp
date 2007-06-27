@@ -20,7 +20,7 @@ namespace pion {	// begin namespace pion
 
 
 // static members of PionEngine
-const unsigned int		PionEngine::DEFAULT_NUM_THREADS = 5;
+const unsigned int		PionEngine::DEFAULT_NUM_THREADS = 8;
 PionEngine *			PionEngine::m_instance_ptr = NULL;
 boost::once_flag		PionEngine::m_instance_flag = BOOST_ONCE_INIT;
 

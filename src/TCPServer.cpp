@@ -119,8 +119,10 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn,
 		// an error occured while trying to a accept a new connection
 		// this happens when the server is being shut down
 		if (m_is_listening) {
+			listen();	// schedule acceptance of another connection
 			tcp_conn->setKeepAlive(false);	// make sure it will get closed
 			finishConnection(tcp_conn);
+			PION_LOG_WARN(m_logger, "Accept error on port " << getPort());
 		}
 	} else {
 		// got a new TCP connection
