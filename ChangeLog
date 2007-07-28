@@ -1,3 +1,9 @@
+Version 0.2.4 (2007-07-xx)
+==========================
+
+* Fixed a bug in HTTPServer that caused it to not find some modules correctly
+
+
 Version 0.2.2 (2007-06-26)
 ==========================
 
