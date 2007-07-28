@@ -62,22 +62,24 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 		boost::asio::async_write(tcp_conn->getSSLSocket(), write_buffers,
 								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
 											 tcp_conn, boost::asio::placeholders::error,
-											 boost::asio::placeholders::bytes_transferred));
+											 boost::asio::placeholders::bytes_transferred,
+											 tcp_conn->getPipelined()));
 
 #else
-		tcp_conn->finish();
+		if (! tcp_conn->getPipelined()) tcp_conn->finish();
 #endif
 	} else {
 		boost::asio::async_write(tcp_conn->getSocket(), write_buffers,
 								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
 											 tcp_conn, boost::asio::placeholders::error,
-											 boost::asio::placeholders::bytes_transferred));
+											 boost::asio::placeholders::bytes_transferred,
+											 tcp_conn->getPipelined()));
 	}
 }
 
 void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
 							   const boost::system::error_code& write_error,
-							   std::size_t bytes_written)
+							   std::size_t bytes_written, const bool pipelined)
 {
 	if (write_error) {
 		// encountered error sending response
@@ -85,11 +87,12 @@ void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
 	} else {
 		// response sent OK
 		PION_LOG_DEBUG(m_logger, "Sent HTTP response of " << bytes_written << " bytes ("
-					   << (tcp_conn->getKeepAlive() ? "keeping alive" : "closing") << ")");
+					   << (pipelined || tcp_conn->getKeepAlive() ? "keeping alive)" : "closing)"));
 	}
 	
 	// all finished handling the connection
-	tcp_conn->finish();
+	// only finish if there were no pipelined HTTP requests in the read buffer
+	if (! pipelined) tcp_conn->finish();
 }
 
 std::string HTTPResponse::makeSetCookieHeader(const std::string& name,

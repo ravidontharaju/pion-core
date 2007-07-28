@@ -51,6 +51,11 @@ public:
 	typedef int		SSLContext;
 #endif
 
+	/// data type for the connection's lifecycle state
+	enum LifecycleType {
+		LIFECYCLE_CLOSE, LIFECYCLE_KEEPALIVE, LIFECYCLE_PIPELINED
+	};
+
 	
 	/**
 	 * creates new TCPConnection objects
@@ -96,12 +101,18 @@ public:
 	/// returns the socket associated with the TCP connection (SSL)
 	inline SSLSocket& getSSLSocket(void) { return m_ssl_socket; }
 
-	/// returns true if the connection should be kept alive
-	inline bool getKeepAlive(void) const { return m_keep_alive; }
+	/// sets the lifecycle type for the connection
+	inline void setLifecycle(LifecycleType t) { m_lifecycle = t; }
 	
-	/// sets the value of the keep_alive flag
-	inline void setKeepAlive(bool b = true) { m_keep_alive = b; }
-
+	/// returns the lifecycle type for the connection
+	inline bool getLifecycle(void) const { return m_lifecycle; }
+	
+	/// returns true if the connection should be kept alive
+	inline bool getKeepAlive(void) const { return m_lifecycle != LIFECYCLE_CLOSE; }
+	
+	/// returns true if the HTTP requests are pipelined
+	inline bool getPipelined(void) const { return m_lifecycle == LIFECYCLE_PIPELINED; }
+	
 	
 protected:
 		
@@ -124,7 +135,7 @@ protected:
 #else
 		m_ssl_socket(io_service),
 #endif
-		m_ssl_flag(ssl_flag), m_keep_alive(false),
+		m_ssl_flag(ssl_flag), m_lifecycle(LIFECYCLE_CLOSE),
 		m_finished_handler(finished_handler)
 	{}
 	
@@ -139,9 +150,9 @@ private:
 
 	/// true if the connection is encrypted using SSL
 	const bool					m_ssl_flag;
-	
-	/// true if the connection should be kept alive
-	bool						m_keep_alive;
+
+	/// lifecycle state for the connection
+	LifecycleType				m_lifecycle;
 
 	/// function called when a server has finished handling the connection
 	ConnectionHandler			m_finished_handler;

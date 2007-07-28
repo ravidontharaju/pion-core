@@ -120,7 +120,7 @@ void TCPServer::handleAccept(TCPConnectionPtr& tcp_conn,
 		// this happens when the server is being shut down
 		if (m_is_listening) {
 			listen();	// schedule acceptance of another connection
-			tcp_conn->setKeepAlive(false);	// make sure it will get closed
+			tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 			finishConnection(tcp_conn);
 			PION_LOG_WARN(m_logger, "Accept error on port " << getPort() << ": " << accept_error.message());
 		}
@@ -160,7 +160,7 @@ void TCPServer::handleSSLHandshake(TCPConnectionPtr& tcp_conn,
 		// an error occured while trying to establish the SSL connection
 		PION_LOG_WARN(m_logger, "SSL handshake failed on port " << getPort()
 					  << " (" << handshake_error.message() << ')');
-		tcp_conn->setKeepAlive(false);	// make sure it will get closed
+		tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 		finishConnection(tcp_conn);
 	} else {
 		// handle the new connection

@@ -22,7 +22,7 @@ namespace pion {	// begin namespace pion
 
 void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
-	tcp_conn->setKeepAlive(false);	// default to closing the connection
+	tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// default to closing the connection
 	HTTPRequestParserPtr request_parser(HTTPRequestParser::create(boost::bind(&HTTPServer::handleRequest,
 																			  this, _1, _2), tcp_conn));
 	request_parser->readRequest();
@@ -40,9 +40,6 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 		
 	PION_LOG_DEBUG(m_logger, "Received a valid HTTP request");
 	
-	// set the connection's keep_alive flag
-	tcp_conn->setKeepAlive(http_request->checkKeepAlive());
-
 	// strip off trailing slash if the request has one
 	std::string resource(http_request->getResource());
 	if (! resource.empty() && resource[resource.size() - 1] == '/')

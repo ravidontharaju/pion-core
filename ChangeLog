@@ -2,6 +2,7 @@ Version 0.2.4 (2007-07-xx)
 ==========================
 
 * Fixed a bug in HTTPServer that caused it to not find some modules correctly
+* Added support for HTTP/1.1 pipelining (multiple requests in single packet)
 
 
 Version 0.2.2 (2007-06-26)

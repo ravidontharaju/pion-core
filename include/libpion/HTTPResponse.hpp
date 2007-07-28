@@ -258,10 +258,11 @@ private:
 	 * @param tcp_conn TCP connection used to send the response
 	 * @param write_error error status from the last write operation
 	 * @param bytes_written number of bytes sent by the last write operation
+	 * @param pipelined true if there are pipelined HTTP requests pending
 	 */
 	void handleWrite(TCPConnectionPtr tcp_conn,
 					 const boost::system::error_code& write_error,
-					 std::size_t bytes_written);
+					 std::size_t bytes_written, const bool pipelined);
 
 	/// flushes any text data in the content stream after caching it in the TextCache
 	inline void flushContentStream(void) {

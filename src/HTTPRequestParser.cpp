@@ -61,15 +61,26 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 		handleReadError(read_error);
 		return;
 	}
-
-	PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
 	
-	// parse the bytes read from the last operation
-	const char *read_ptr = m_read_buffer.data();
-	const char * const read_end = read_ptr + bytes_read;
-	boost::tribool result = parseRequestHeaders(read_ptr, bytes_read);
+	PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
 
-	PION_LOG_DEBUG(m_logger, "Parsed " << (read_ptr - m_read_buffer.data()) << " HTTP header bytes");
+	// set pointers for new request data to be consumed
+	m_read_ptr = m_read_buffer.data();
+	m_read_end_ptr = m_read_ptr + bytes_read;
+
+	// consume the new request bytes available
+	consumeHeaderBytes();
+}
+
+void HTTPRequestParser::consumeHeaderBytes(void)
+{
+	// parse the bytes read from the last operation
+	const char *read_start_ptr = m_read_ptr;	// bookmark starting position
+	boost::tribool result = parseRequestHeaders();
+	if (m_read_ptr > read_start_ptr) {
+		// parsed > 0 bytes in request headers
+		PION_LOG_DEBUG(m_logger, "Parsed " << (m_read_ptr - read_start_ptr) << " HTTP header bytes");
+	}
 
 	if (result) {
 		// finished reading request headers and they are valid
@@ -83,7 +94,8 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 		if (content_length == 0) {
 			
 			// there is no post content to read
-			readContentBytes(read_error, 0);
+			const boost::system::error_code no_error;
+			readContentBytes(no_error, 0);
 			
 		} else {
 
@@ -92,20 +104,22 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 			m_http_request->setContentLength(content_length);
 			char *post_buffer = m_http_request->createPostContentBuffer();
 			
-			if (read_ptr < read_end) {
+			if (m_read_ptr < m_read_end_ptr) {
 				// there are extra bytes left from the last read operation
 				// copy them into the beginning of the content buffer
-				const unsigned int bytes_left_in_read_buffer = read_end - read_ptr;
+				const unsigned int bytes_left_in_read_buffer = bytes_available();
 				
 				if (bytes_left_in_read_buffer >= content_length) {
 					// the last read operation included all of the post content
-					memcpy(post_buffer, read_ptr, content_length);
+					memcpy(post_buffer, m_read_ptr, content_length);
 					content_bytes_to_read = 0;
+					m_read_ptr += content_length;
 					PION_LOG_DEBUG(m_logger, "Parsed " << content_length << " request content bytes from last read operation (finished)");
 				} else {
 					// only some of the post content has been read so far
-					memcpy(post_buffer, read_ptr, bytes_left_in_read_buffer);
+					memcpy(post_buffer, m_read_ptr, bytes_left_in_read_buffer);
 					content_bytes_to_read -= bytes_left_in_read_buffer;
+					m_read_ptr = m_read_end_ptr;
 					post_buffer += bytes_left_in_read_buffer;
 					PION_LOG_DEBUG(m_logger, "Parsed " << bytes_left_in_read_buffer << " request content bytes from last read operation (partial)");
 				}
@@ -114,7 +128,8 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 			if (content_bytes_to_read == 0) {
 			
 				// read all of the content from the last read operation
-				readContentBytes(read_error, 0);
+				const boost::system::error_code no_error;
+				readContentBytes(no_error, 0);
 
 			} else {
 
@@ -151,12 +166,12 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 	#ifndef NDEBUG
 		// display extra error information if debug mode is enabled
 		std::string bad_request;
-		read_ptr = m_read_buffer.data();
-		while (read_ptr < read_end && bad_request.size() < 50) {
-			if (!isprint(*read_ptr) || *read_ptr == '\n' || *read_ptr=='\r')
+		m_read_ptr = m_read_buffer.data();
+		while (m_read_ptr < m_read_end_ptr && bad_request.size() < 50) {
+			if (!isprint(*m_read_ptr) || *m_read_ptr == '\n' || *m_read_ptr=='\r')
 				bad_request += '.';
-			else bad_request += *read_ptr;
-			++read_ptr;
+			else bad_request += *m_read_ptr;
+			++m_read_ptr;
 		}
 		PION_LOG_ERROR(m_logger, "Bad request debug: " << bad_request);
 	#endif
@@ -216,9 +231,25 @@ void HTTPRequestParser::readContentBytes(const boost::system::error_code& read_e
 								cookie_iterator->second) )
 			PION_LOG_WARN(m_logger, "Cookie header parsing failed");
 	}
-	
+
+	// set the connection's lifecycle type
+	if (m_http_request->checkKeepAlive()) {
+		m_tcp_conn->setLifecycle(eof()
+								 ? TCPConnection::LIFECYCLE_KEEPALIVE
+								 : TCPConnection::LIFECYCLE_PIPELINED);
+	} else {
+		m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);
+	}
+
 	// call the request handler with the finished request
 	m_request_handler(m_http_request, m_tcp_conn);
+	
+	// parse the next request if more data is available (HTTP pipelining)
+	if (m_tcp_conn->getPipelined()) {
+		PION_LOG_DEBUG(m_logger, "HTTP pipelined request (" << bytes_available() << " bytes available)");
+		reset();
+		consumeHeaderBytes();
+	}
 }
 
 void HTTPRequestParser::handleReadError(const boost::system::error_code& read_error)
@@ -237,117 +268,113 @@ void HTTPRequestParser::handleReadError(const boost::system::error_code& read_er
 	m_tcp_conn->finish();
 }
 
-boost::tribool HTTPRequestParser::parseRequestHeaders(const char *& ptr,
-													  const size_t len)
+boost::tribool HTTPRequestParser::parseRequestHeaders(void)
 {
-	// parse characters available in the read buffer
-	const char * const end = ptr + len;
-	
-	while (ptr < end) {
+	while (m_read_ptr < m_read_end_ptr) {
 
 		switch (m_parse_state) {
 		case PARSE_METHOD_START:
 			// we have not yet started parsing the HTTP method string
-			if (*ptr != ' ' && *ptr!='\r' && *ptr!='\n') {	// ignore leading whitespace
-				if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr))
+			if (*m_read_ptr != ' ' && *m_read_ptr!='\r' && *m_read_ptr!='\n') {	// ignore leading whitespace
+				if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr))
 					return false;
 				m_parse_state = PARSE_METHOD;
 				m_method.erase();
-				m_method.push_back(*ptr);
+				m_method.push_back(*m_read_ptr);
 			}
 			break;
 
 		case PARSE_METHOD:
 			// we have started parsing the HTTP method string
-			if (*ptr == ' ') {
+			if (*m_read_ptr == ' ') {
 				m_http_request->setMethod(m_method);
 				m_resource.erase();
 				m_parse_state = PARSE_URI_STEM;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else if (m_method.size() >= METHOD_MAX) {
 				return false;
 			} else {
-				m_method.push_back(*ptr);
+				m_method.push_back(*m_read_ptr);
 			}
 			break;
 
 		case PARSE_URI_STEM:
 			// we have started parsing the URI stem (or resource name)
-			if (*ptr == ' ') {
+			if (*m_read_ptr == ' ') {
 				m_http_request->setResource(m_resource);
 				m_parse_state = PARSE_HTTP_VERSION_H;
-			} else if (*ptr == '?') {
+			} else if (*m_read_ptr == '?') {
 				m_http_request->setResource(m_resource);
 				m_query_string.erase();
 				m_parse_state = PARSE_URI_QUERY;
-			} else if (isControl(*ptr)) {
+			} else if (isControl(*m_read_ptr)) {
 				return false;
 			} else if (m_resource.size() >= RESOURCE_MAX) {
 				return false;
 			} else {
-				m_resource.push_back(*ptr);
+				m_resource.push_back(*m_read_ptr);
 			}
 			break;
 
 		case PARSE_URI_QUERY:
 			// we have started parsing the URI query string
-			if (*ptr == ' ') {
+			if (*m_read_ptr == ' ') {
 				m_http_request->setQueryString(m_query_string);
 				m_parse_state = PARSE_HTTP_VERSION_H;
-			} else if (isControl(*ptr)) {
+			} else if (isControl(*m_read_ptr)) {
 				return false;
 			} else if (m_query_string.size() >= QUERY_STRING_MAX) {
 				return false;
 			} else {
-				m_query_string.push_back(*ptr);
+				m_query_string.push_back(*m_read_ptr);
 			}
 			break;
 			
 		case PARSE_HTTP_VERSION_H:
 			// parsing "HTTP"
-			if (*ptr != 'H') return false;
+			if (*m_read_ptr != 'H') return false;
 			m_parse_state = PARSE_HTTP_VERSION_T_1;
 			break;
 
 		case PARSE_HTTP_VERSION_T_1:
 			// parsing "HTTP"
-			if (*ptr != 'T') return false;
+			if (*m_read_ptr != 'T') return false;
 			m_parse_state = PARSE_HTTP_VERSION_T_2;
 			break;
 
 		case PARSE_HTTP_VERSION_T_2:
 			// parsing "HTTP"
-			if (*ptr != 'T') return false;
+			if (*m_read_ptr != 'T') return false;
 			m_parse_state = PARSE_HTTP_VERSION_P;
 			break;
 
 		case PARSE_HTTP_VERSION_P:
 			// parsing "HTTP"
-			if (*ptr != 'P') return false;
+			if (*m_read_ptr != 'P') return false;
 			m_parse_state = PARSE_HTTP_VERSION_SLASH;
 			break;
 
 		case PARSE_HTTP_VERSION_SLASH:
 			// parsing slash after "HTTP"
-			if (*ptr != '/') return false;
+			if (*m_read_ptr != '/') return false;
 			m_parse_state = PARSE_HTTP_VERSION_MAJOR_START;
 			break;
 
 		case PARSE_HTTP_VERSION_MAJOR_START:
 			// parsing the first digit of the major version number
-			if (!isDigit(*ptr)) return false;
-			m_http_request->setVersionMajor(*ptr - '0');
+			if (!isDigit(*m_read_ptr)) return false;
+			m_http_request->setVersionMajor(*m_read_ptr - '0');
 			m_parse_state = PARSE_HTTP_VERSION_MAJOR;
 			break;
 
 		case PARSE_HTTP_VERSION_MAJOR:
 			// parsing the major version number (not first digit)
-			if (*ptr == '.') {
+			if (*m_read_ptr == '.') {
 				m_parse_state = PARSE_HTTP_VERSION_MINOR_START;
-			} else if (isDigit(*ptr)) {
+			} else if (isDigit(*m_read_ptr)) {
 				m_http_request->setVersionMajor( (m_http_request->getVersionMajor() * 10)
-												 + (*ptr - '0') );
+												 + (*m_read_ptr - '0') );
 			} else {
 				return false;
 			}
@@ -355,20 +382,20 @@ boost::tribool HTTPRequestParser::parseRequestHeaders(const char *& ptr,
 
 		case PARSE_HTTP_VERSION_MINOR_START:
 			// parsing the first digit of the minor version number
-			if (!isDigit(*ptr)) return false;
-			m_http_request->setVersionMinor(*ptr - '0');
+			if (!isDigit(*m_read_ptr)) return false;
+			m_http_request->setVersionMinor(*m_read_ptr - '0');
 			m_parse_state = PARSE_HTTP_VERSION_MINOR;
 			break;
 
 		case PARSE_HTTP_VERSION_MINOR:
 			// parsing the major version number (not first digit)
-			if (*ptr == '\r') {
+			if (*m_read_ptr == '\r') {
 				m_parse_state = PARSE_EXPECTING_NEWLINE;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				m_parse_state = PARSE_EXPECTING_CR;
-			} else if (isDigit(*ptr)) {
+			} else if (isDigit(*m_read_ptr)) {
 				m_http_request->setVersionMinor( (m_http_request->getVersionMinor() * 10)
-												 + (*ptr - '0') );
+												 + (*m_read_ptr - '0') );
 			} else {
 				return false;
 			}
@@ -376,144 +403,144 @@ boost::tribool HTTPRequestParser::parseRequestHeaders(const char *& ptr,
 
 		case PARSE_EXPECTING_NEWLINE:
 			// we received a CR; expecting a newline to follow
-			if (*ptr == '\n') {
+			if (*m_read_ptr == '\n') {
 				m_parse_state = PARSE_HEADER_START;
-			} else if (*ptr == '\r') {
+			} else if (*m_read_ptr == '\r') {
 				// we received two CR's in a row
 				// assume CR only is (incorrectly) being used for line termination
 				// therefore, the request is finished
-				++ptr;
+				++m_read_ptr;
 				return true;
-			} else if (*ptr == '\t' || *ptr == ' ') {
+			} else if (*m_read_ptr == '\t' || *m_read_ptr == ' ') {
 				m_parse_state = PARSE_HEADER_WHITESPACE;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else {
 				// assume it is the first character for the name of a header
 				m_header_name.erase();
-				m_header_name.push_back(*ptr);
+				m_header_name.push_back(*m_read_ptr);
 				m_parse_state = PARSE_HEADER_NAME;
 			}
 			break;
 
 		case PARSE_EXPECTING_CR:
 			// we received a newline without a CR
-			if (*ptr == '\r') {
+			if (*m_read_ptr == '\r') {
 				m_parse_state = PARSE_HEADER_START;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				// we received two newlines in a row
 				// assume newline only is (incorrectly) being used for line termination
 				// therefore, the request is finished
-				++ptr;
+				++m_read_ptr;
 				return true;
-			} else if (*ptr == '\t' || *ptr == ' ') {
+			} else if (*m_read_ptr == '\t' || *m_read_ptr == ' ') {
 				m_parse_state = PARSE_HEADER_WHITESPACE;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else {
 				// assume it is the first character for the name of a header
 				m_header_name.erase();
-				m_header_name.push_back(*ptr);
+				m_header_name.push_back(*m_read_ptr);
 				m_parse_state = PARSE_HEADER_NAME;
 			}
 			break;
 
 		case PARSE_HEADER_WHITESPACE:
 			// parsing whitespace before a header name
-			if (*ptr == '\r') {
+			if (*m_read_ptr == '\r') {
 				m_parse_state = PARSE_EXPECTING_NEWLINE;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				m_parse_state = PARSE_EXPECTING_CR;
-			} else if (*ptr != '\t' && *ptr != ' ') {
-				if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr))
+			} else if (*m_read_ptr != '\t' && *m_read_ptr != ' ') {
+				if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr))
 					return false;
 				// assume it is the first character for the name of a header
 				m_header_name.erase();
-				m_header_name.push_back(*ptr);
+				m_header_name.push_back(*m_read_ptr);
 				m_parse_state = PARSE_HEADER_NAME;
 			}
 			break;
 
 		case PARSE_HEADER_START:
 			// parsing the start of a new header
-			if (*ptr == '\r') {
+			if (*m_read_ptr == '\r') {
 				m_parse_state = PARSE_EXPECTING_FINAL_NEWLINE;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				m_parse_state = PARSE_EXPECTING_FINAL_CR;
-			} else if (*ptr == '\t' || *ptr == ' ') {
+			} else if (*m_read_ptr == '\t' || *m_read_ptr == ' ') {
 				m_parse_state = PARSE_HEADER_WHITESPACE;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else {
 				// first character for the name of a header
 				m_header_name.erase();
-				m_header_name.push_back(*ptr);
+				m_header_name.push_back(*m_read_ptr);
 				m_parse_state = PARSE_HEADER_NAME;
 			}
 			break;
 
 		case PARSE_HEADER_NAME:
 			// parsing the name of a header
-			if (*ptr == ':') {
+			if (*m_read_ptr == ':') {
 				m_header_value.erase();
 				m_parse_state = PARSE_SPACE_BEFORE_HEADER_VALUE;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else if (m_header_name.size() >= HEADER_NAME_MAX) {
 				return false;
 			} else {
 				// character (not first) for the name of a header
-				m_header_name.push_back(*ptr);
+				m_header_name.push_back(*m_read_ptr);
 			}
 			break;
 
 		case PARSE_SPACE_BEFORE_HEADER_VALUE:
 			// parsing space character before a header's value
-			if (*ptr == ' ') {
+			if (*m_read_ptr == ' ') {
 				m_parse_state = PARSE_HEADER_VALUE;
-			} else if (*ptr == '\r') {
+			} else if (*m_read_ptr == '\r') {
 				m_http_request->addHeader(m_header_name, m_header_value);
 				m_parse_state = PARSE_EXPECTING_NEWLINE;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				m_http_request->addHeader(m_header_name, m_header_value);
 				m_parse_state = PARSE_EXPECTING_CR;
-			} else if (!isChar(*ptr) || isControl(*ptr) || isSpecial(*ptr)) {
+			} else if (!isChar(*m_read_ptr) || isControl(*m_read_ptr) || isSpecial(*m_read_ptr)) {
 				return false;
 			} else {
 				// assume it is the first character for the value of a header
-				m_header_value.push_back(*ptr);
+				m_header_value.push_back(*m_read_ptr);
 				m_parse_state = PARSE_HEADER_VALUE;
 			}
 			break;
 
 		case PARSE_HEADER_VALUE:
 			// parsing the value of a header
-			if (*ptr == '\r') {
+			if (*m_read_ptr == '\r') {
 				m_http_request->addHeader(m_header_name, m_header_value);
 				m_parse_state = PARSE_EXPECTING_NEWLINE;
-			} else if (*ptr == '\n') {
+			} else if (*m_read_ptr == '\n') {
 				m_http_request->addHeader(m_header_name, m_header_value);
 				m_parse_state = PARSE_EXPECTING_CR;
-			} else if (isControl(*ptr)) {
+			} else if (isControl(*m_read_ptr)) {
 				return false;
 			} else if (m_header_value.size() >= HEADER_VALUE_MAX) {
 				return false;
 			} else {
 				// character (not first) for the value of a header
-				m_header_value.push_back(*ptr);
+				m_header_value.push_back(*m_read_ptr);
 			}
 			break;
 
 		case PARSE_EXPECTING_FINAL_NEWLINE:
-			if (*ptr == '\n') ++ptr;
+			if (*m_read_ptr == '\n') ++m_read_ptr;
 			return true;
 
 		case PARSE_EXPECTING_FINAL_CR:
-			if (*ptr == '\r') ++ptr;
+			if (*m_read_ptr == '\r') ++m_read_ptr;
 			return true;
 		}
 
-		++ptr;
+		++m_read_ptr;
 	}
 
 	return boost::indeterminate;

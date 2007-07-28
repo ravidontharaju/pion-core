@@ -56,6 +56,18 @@ public:
 	
 	/// Incrementally reads & parses a new HTTP request
 	void readRequest(void);
+	
+	/// returns true if there are no more bytes available in the read buffer
+	inline bool eof(void) const { return m_read_ptr == NULL || m_read_ptr >= m_read_end_ptr; }
+	
+	/// returns the number of bytes available in the read buffer
+	inline unsigned long bytes_available(void) const { return (eof() ? 0 : (m_read_end_ptr - m_read_ptr)); } 
+
+	/// resets the request parser so that it can process a new request
+	inline void reset(void) {
+		m_http_request = HTTPRequest::create();
+		m_parse_state = PARSE_METHOD_START;
+	}
 
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
@@ -75,7 +87,8 @@ protected:
 	HTTPRequestParser(RequestHandler handler, TCPConnectionPtr& tcp_conn)
 		: m_logger(PION_GET_LOGGER("Pion.HTTPRequestParser")),
 		m_request_handler(handler), m_tcp_conn(tcp_conn),
-		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START)
+		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START),
+		m_read_ptr(NULL), m_read_end_ptr(NULL)
 	{}
 
 	/**
@@ -87,6 +100,11 @@ protected:
 	void readHeaderBytes(const boost::system::error_code& read_error,
 						 std::size_t bytes_read);
 
+	/**
+	 * Consumes request header bytes available in the read buffer
+	 */
+	void consumeHeaderBytes(void);
+	
 	/**
 	 * Called after new request content bytes have been read
 	 * 
@@ -106,12 +124,9 @@ protected:
 	/**
 	 * parses request header bytes from the last read operation
 	 * 
-	 * @param ptr points to the first byte read
-	 * @param len number of bytes available for parsing
-	 * 
 	 * @return boost::tribool result of parsing
 	 */
-	boost::tribool parseRequestHeaders(const char *& ptr, const size_t len);
+	boost::tribool parseRequestHeaders(void);
 
 	/**
 	 * parse key-value pairs out of a url-encoded string
@@ -210,6 +225,12 @@ private:
 
 	/// buffer used for reading data from the TCP connection
 	ReadBuffer							m_read_buffer;
+
+	/// points to the next character to be consumed in the read_buffer
+	const char *						m_read_ptr;
+
+	/// points to the end of the read_buffer (last byte + 1)
+	const char *						m_read_end_ptr;
 
 	/// Used for parsing the request method
 	std::string							m_method;
