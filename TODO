@@ -4,6 +4,8 @@ Things to do:
 * Try to fix bug causing Windows shutdown crash versus using work-around
 * Help get at least one of the logging frameworks working in Windows
 * Add support for Sun Studio & Microsoft Visual C++ compilers
+* Add support for chunked/incremental responses
+* Add support for sending HTTP requests (client-side extensions)
 * Use read-write mutex for HTTPServer modules?
 * Compare performance of using multiple io_services versus just one
 * Allow more options for binding servers than just port numbers (IP)
