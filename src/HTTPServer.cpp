@@ -66,17 +66,15 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 			// keep checking while the first part of the strings match
 			if (resource.compare(0, i->first.size(), i->first) != 0) {
 				// the first part no longer matches
-				if (i == m_modules.begin()) {
-					// first module in ordered list; no more to check
-					break;
-				} else {
+				if (i != m_modules.begin()) {
 					// continue to next module in list if its size is < this one
 					ModuleMap::iterator j=i;
 					--j;
 					if (j->first.size() < i->first.size())
 						continue;
-					break;
 				}
+				// otherwise we've reached the end; stop looking for a match
+				break;
 			}
 				
 			// only try the module if the request matches the module name or
