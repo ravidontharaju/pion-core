@@ -638,7 +638,7 @@ bool HTTPRequestParser::parseCookieHeader(HTTPTypes::StringDictionary& dict,
 
 	// used to track what we are parsing
 	enum CookieParseState {
-		COOKIE_PARSE_NAME, COOKIE_PARSE_VALUE
+		COOKIE_PARSE_NAME, COOKIE_PARSE_VALUE, COOKIE_PARSE_IGNORE
 	} parse_state = COOKIE_PARSE_NAME;
 	
 	// misc other variables used for parsing
