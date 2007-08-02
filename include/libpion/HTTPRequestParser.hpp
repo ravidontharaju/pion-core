@@ -124,7 +124,10 @@ protected:
 	/**
 	 * parses request header bytes from the last read operation
 	 * 
-	 * @return boost::tribool result of parsing
+	 * @return boost::tribool result of parsing:
+	 *         false = request has an error,
+	 *         true = finished parsing request,
+	 *         intermediate = request is not yet finished
 	 */
 	boost::tribool parseRequestHeaders(void);
 
