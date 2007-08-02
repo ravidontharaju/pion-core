@@ -10,10 +10,10 @@
 #ifndef __PION_PIONPLUGIN_HEADER__
 #define __PION_PIONPLUGIN_HEADER__
 
-#include <libpion/PionConfig.hpp>
-#include <libpion/PionException.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/filesystem/path.hpp>
+#include <libpion/PionConfig.hpp>
+#include <libpion/PionException.hpp>
 #include <vector>
 #include <string>
 #include <map>

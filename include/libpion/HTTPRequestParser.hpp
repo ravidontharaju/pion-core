@@ -10,16 +10,16 @@
 #ifndef __PION_HTTPREQUESTPARSER_HEADER__
 #define __PION_HTTPREQUESTPARSER_HEADER__
 
-#include <libpion/PionConfig.hpp>
-#include <libpion/PionLogger.hpp>
-#include <libpion/HTTPRequest.hpp>
-#include <libpion/TCPConnection.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/array.hpp>
 #include <boost/function.hpp>
 #include <boost/logic/tribool.hpp>
+#include <libpion/PionConfig.hpp>
+#include <libpion/PionLogger.hpp>
+#include <libpion/HTTPRequest.hpp>
+#include <libpion/TCPConnection.hpp>
 #include <string>
 
 

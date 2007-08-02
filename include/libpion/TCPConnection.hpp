@@ -10,17 +10,17 @@
 #ifndef __PION_TCPCONNECTION_HEADER__
 #define __PION_TCPCONNECTION_HEADER__
 
-#include <libpion/PionConfig.hpp>
+#ifdef PION_HAVE_SSL
+	#include <boost/asio/ssl.hpp>
+#endif
+
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <libpion/PionConfig.hpp>
 #include <string>
-
-#ifdef PION_HAVE_SSL
-	#include <boost/asio/ssl.hpp>
-#endif
 
 
 namespace pion {	// begin namespace pion

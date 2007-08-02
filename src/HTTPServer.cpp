@@ -7,12 +7,12 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
 #include <libpion/HTTPServer.hpp>
 #include <libpion/HTTPRequest.hpp>
 #include <libpion/HTTPResponse.hpp>
 #include <libpion/HTTPRequestParser.hpp>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
 #include <fstream>
 
 

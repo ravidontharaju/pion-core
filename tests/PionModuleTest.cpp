@@ -7,8 +7,8 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include <libpion/Pion.hpp>
 #include <boost/bind.hpp>
+#include <libpion/Pion.hpp>
 #include <iostream>
 #include <vector>
 #ifndef PION_WIN32

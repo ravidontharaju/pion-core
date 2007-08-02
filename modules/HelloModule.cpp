@@ -10,6 +10,12 @@
 #include "HelloModule.hpp"
 #include <libpion/HTTPResponse.hpp>
 
+#ifdef BOOST_MSVC
+	#define DLLEXPORT __declspec(dllexport)
+#else
+	#define DLLEXPORT
+#endif
+
 using namespace pion;
 
 
@@ -27,14 +33,14 @@ bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 
 /// creates new HelloModule objects
-extern "C" HelloModule *pion_create_HelloModule(void)
+extern "C" DLLEXPORT HelloModule *pion_create_HelloModule(void)
 {
 	return new HelloModule();
 }
 
 
 /// destroys HelloModule objects
-extern "C" void pion_destroy_HelloModule(HelloModule *module_ptr)
+extern "C" DLLEXPORT void pion_destroy_HelloModule(HelloModule *module_ptr)
 {
 	delete module_ptr;
 }

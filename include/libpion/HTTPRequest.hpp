@@ -10,11 +10,11 @@
 #ifndef __PION_HTTPREQUEST_HEADER__
 #define __PION_HTTPREQUEST_HEADER__
 
-#include <libpion/PionConfig.hpp>
-#include <libpion/HTTPTypes.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
+#include <libpion/PionConfig.hpp>
+#include <libpion/HTTPTypes.hpp>
 #include <string>
 
 

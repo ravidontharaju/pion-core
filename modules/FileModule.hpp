@@ -10,15 +10,15 @@
 #ifndef __PION_FILEMODULE_HEADER__
 #define __PION_FILEMODULE_HEADER__
 
-#include <libpion/PionLogger.hpp>
-#include <libpion/PionException.hpp>
-#include <libpion/PionHashMap.hpp>
-#include <libpion/HTTPModule.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
+#include <libpion/PionLogger.hpp>
+#include <libpion/PionException.hpp>
+#include <libpion/PionHashMap.hpp>
+#include <libpion/HTTPModule.hpp>
 #include <string>
 #include <map>
 
@@ -153,11 +153,10 @@ protected:
 	};
 	
 	/// data type for map of file names to cache entries
-	typedef PION_HASH_MAP<std::string, DiskFile, boost::hash<std::string> >	CacheMap;
+	typedef PION_HASH_MAP<std::string, DiskFile, PION_HASH_STRING >		CacheMap;
 	
 	/// data type for map of file extensions to MIME types
-	typedef PION_HASH_MAP<std::string, std::string, boost::hash<std::string> >	MIMETypeMap;
-
+	typedef PION_HASH_MAP<std::string, std::string, PION_HASH_STRING >	MIMETypeMap;
 	
 	/**
 	 * adds all files within a directory to the cache

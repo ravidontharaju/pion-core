@@ -10,6 +10,12 @@
 #include "CookieModule.hpp"
 #include <libpion/HTTPResponse.hpp>
 
+#ifdef BOOST_MSVC
+	#define DLLEXPORT __declspec(dllexport)
+#else
+	#define DLLEXPORT
+#endif
+
 using namespace pion;
 
 
@@ -59,7 +65,7 @@ bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 		std::pair<HTTPTypes::Headers::const_iterator, HTTPTypes::Headers::const_iterator>
 			header_pair = request->getHeaders().equal_range(HTTPTypes::HEADER_COOKIE);
 		for (HTTPTypes::Headers::const_iterator header_iterator = header_pair.first;
-			 header_iterator != request->getCookieParams().end()
+			 header_iterator != request->getHeaders().end()
 			 && header_iterator != header_pair.second; ++header_iterator)
 		{
 			response << "<li>Cookie: " << header_iterator->second << "\n";
@@ -104,14 +110,14 @@ bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 
 
 /// creates new CookieModule objects
-extern "C" CookieModule *pion_create_CookieModule(void)
+extern "C" DLLEXPORT CookieModule *pion_create_CookieModule(void)
 {
 	return new CookieModule();
 }
 
 
 /// destroys CookieModule objects
-extern "C" void pion_destroy_CookieModule(CookieModule *module_ptr)
+extern "C" DLLEXPORT void pion_destroy_CookieModule(CookieModule *module_ptr)
 {
 	delete module_ptr;
 }

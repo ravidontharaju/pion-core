@@ -10,18 +10,18 @@
 #ifndef __PION_TCPSERVER_HEADER__
 #define __PION_TCPSERVER_HEADER__
 
-#include <libpion/PionConfig.hpp>
-#include <libpion/PionLogger.hpp>
-#include <libpion/TCPConnection.hpp>
+#ifdef PION_HAVE_SSL
+	#include <boost/asio/ssl/context.hpp>
+#endif
+
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
+#include <libpion/PionConfig.hpp>
+#include <libpion/PionLogger.hpp>
+#include <libpion/TCPConnection.hpp>
 #include <set>
-
-#ifdef PION_HAVE_SSL
-	#include <boost/asio/ssl/context.hpp>
-#endif
 
 
 namespace pion {	// begin namespace pion

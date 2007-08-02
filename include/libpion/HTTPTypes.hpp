@@ -10,9 +10,9 @@
 #ifndef __PION_HTTPTYPES_HEADER__
 #define __PION_HTTPTYPES_HEADER__
 
+#include <boost/functional/hash.hpp>
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionHashMap.hpp>
-#include <boost/functional/hash.hpp>
 #include <string>
 
 
@@ -68,7 +68,7 @@ struct HTTPTypes
 	static const unsigned int	RESPONSE_CODE_SERVER_ERROR;
 	
 	/// data type for a dictionary of strings (used for HTTP headers)
-	typedef PION_HASH_MULTIMAP<std::string, std::string, boost::hash<std::string> >	StringDictionary;
+	typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING >	StringDictionary;
 
 	/// data type for HTTP headers
 	typedef StringDictionary	Headers;

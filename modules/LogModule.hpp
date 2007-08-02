@@ -10,11 +10,11 @@
 #ifndef __PION_LOGMODULE_HEADER__
 #define __PION_LOGMODULE_HEADER__
 
+#include <boost/thread/mutex.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <libpion/PionLogger.hpp>
 #include <libpion/HTTPModule.hpp>
 #include <libpion/HTTPResponse.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <string>
 #include <list>
 

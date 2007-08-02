@@ -7,9 +7,9 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
+#include <boost/filesystem/operations.hpp>
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionPlugin.hpp>
-#include <boost/filesystem/operations.hpp>
 
 #ifdef PION_WIN32
 	#include <windows.h>
@@ -255,7 +255,11 @@ std::string PionPlugin::getPluginName(const std::string& plugin_file)
 void *PionPlugin::loadDynamicLibrary(const std::string& plugin_file)
 {
 #ifdef PION_WIN32
-	return LoadLibrary(plugin_file.c_str());
+	#ifdef BOOST_MSVC
+		return LoadLibraryA(plugin_file.c_str());
+	#else
+		return LoadLibrary(plugin_file.c_str());
+	#endif
 #else
 	return dlopen(plugin_file.c_str(), RTLD_LAZY);
 #endif

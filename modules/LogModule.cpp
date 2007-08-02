@@ -7,8 +7,11 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include "LogModule.hpp"
-#include <libpion/HTTPResponse.hpp>
+#ifdef BOOST_MSVC
+	#define DLLEXPORT __declspec(dllexport)
+#else
+	#define DLLEXPORT
+#endif
 
 #if defined(PION_HAVE_LOG4CXX)
 	#include <log4cxx/spi/loggingevent.h>
@@ -19,6 +22,10 @@
 #elif defined(PION_HAVE_LOG4CPP)
 	#include <log4cpp/BasicLayout.hh>
 #endif
+
+#include "LogModule.hpp"
+#include <libpion/HTTPResponse.hpp>
+
 
 using namespace pion;
 
@@ -150,14 +157,14 @@ bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new LogModule objects
-extern "C" LogModule *pion_create_LogModule(void)
+extern "C" DLLEXPORT LogModule *pion_create_LogModule(void)
 {
 	return new LogModule();
 }
 
 
 /// destroys LogModule objects
-extern "C" void pion_destroy_LogModule(LogModule *module_ptr)
+extern "C" DLLEXPORT void pion_destroy_LogModule(LogModule *module_ptr)
 {
 	delete module_ptr;
 }

@@ -7,9 +7,9 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
+#include <boost/bind.hpp>
 #include <libpion/TCPServer.hpp>
 #include <libpion/PionEngine.hpp>
-#include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
 

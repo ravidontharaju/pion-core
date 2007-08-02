@@ -7,8 +7,8 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include <libpion/HTTPTypes.hpp>
 #include <boost/thread/mutex.hpp>
+#include <libpion/HTTPTypes.hpp>
 #include <ctime>
 
 

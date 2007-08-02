@@ -7,13 +7,20 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include "FileModule.hpp"
-#include <libpion/PionPlugin.hpp>
-#include <libpion/HTTPResponse.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <algorithm>
+
+#include "FileModule.hpp"
+#include <libpion/PionPlugin.hpp>
+#include <libpion/HTTPResponse.hpp>
+
+#ifdef BOOST_MSVC
+	#define DLLEXPORT __declspec(dllexport)
+#else
+	#define DLLEXPORT
+#endif
 
 using namespace pion;
 
@@ -491,14 +498,14 @@ bool FileModule::DiskFile::checkUpdated(void)
 
 
 /// creates new FileModule objects
-extern "C" FileModule *pion_create_FileModule(void)
+extern "C" DLLEXPORT FileModule *pion_create_FileModule(void)
 {
 	return new FileModule();
 }
 
 
 /// destroys FileModule objects
-extern "C" void pion_destroy_FileModule(FileModule *module_ptr)
+extern "C" DLLEXPORT void pion_destroy_FileModule(FileModule *module_ptr)
 {
 	delete module_ptr;
 }

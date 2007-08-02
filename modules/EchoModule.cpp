@@ -8,8 +8,14 @@
 //
 
 #include "EchoModule.hpp"
-#include <libpion/HTTPResponse.hpp>
 #include <boost/bind.hpp>
+#include <libpion/HTTPResponse.hpp>
+
+#ifdef BOOST_MSVC
+	#define DLLEXPORT __declspec(dllexport)
+#else
+	#define DLLEXPORT
+#endif
 
 using namespace pion;
 
@@ -106,14 +112,14 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new EchoModule objects
-extern "C" EchoModule *pion_create_EchoModule(void)
+extern "C" DLLEXPORT EchoModule *pion_create_EchoModule(void)
 {
 	return new EchoModule();
 }
 
 
 /// destroys EchoModule objects
-extern "C" void pion_destroy_EchoModule(EchoModule *module_ptr)
+extern "C" DLLEXPORT void pion_destroy_EchoModule(EchoModule *module_ptr)
 {
 	delete module_ptr;
 }
