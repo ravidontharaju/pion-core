@@ -69,21 +69,6 @@ public:
 		}
 	}
 	
-	/**
-	 * write text (non-binary) response content; the data written is not copied,
-	 * and therefore must persist until the response has finished sending
-	 *
-	 * @param data the data to append to the response content
-	 */
-	template <typename T>
-	inline void writeNoCopy(const T& data) {
-		std::string as_string(boost::lexical_cast<std::string>(data));
-		if (! as_string.empty()) {
-			flushContentStream();
-			m_content_buffers.push_back(boost::asio::buffer(as_string));
-			m_content_length += as_string.size();
-		}
-	}
 
 	/**
 	 * write text (non-binary) response content; the data written is not
