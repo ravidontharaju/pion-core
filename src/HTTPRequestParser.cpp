@@ -7,9 +7,9 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include <libpion/HTTPRequestParser.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <libpion/HTTPRequestParser.hpp>
 
 
 namespace pion {	// begin namespace pion
@@ -74,9 +74,19 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 
 void HTTPRequestParser::consumeHeaderBytes(void)
 {
+	// bookmark starting position
+	const char *read_start_ptr = m_read_ptr;
+
 	// parse the bytes read from the last operation
-	const char *read_start_ptr = m_read_ptr;	// bookmark starting position
+	//
+	// note that boost::tribool may have one of THREE states:
+	//
+	// false: encountered an error while parsing request
+	// true: finished successfully parsing the request
+	// intermediate: parsed bytes, but the request is not yet finished
+	//
 	boost::tribool result = parseRequestHeaders();
+	
 	if (m_read_ptr > read_start_ptr) {
 		// parsed > 0 bytes in request headers
 		PION_LOG_DEBUG(m_logger, "Parsed " << (m_read_ptr - read_start_ptr) << " HTTP header bytes");
@@ -224,7 +234,7 @@ void HTTPRequestParser::readContentBytes(const boost::system::error_code& read_e
 	std::pair<HTTPTypes::Headers::const_iterator, HTTPTypes::Headers::const_iterator>
 		cookie_pair = m_http_request->getHeaders().equal_range(HTTPTypes::HEADER_COOKIE);
 	for (HTTPTypes::Headers::const_iterator cookie_iterator = cookie_pair.first;
-		 cookie_iterator != m_http_request->getCookieParams().end()
+		 cookie_iterator != m_http_request->getHeaders().end()
 		 && cookie_iterator != cookie_pair.second; ++cookie_iterator)
 	{
 		if (! parseCookieHeader(m_http_request->getCookieParams(),
@@ -270,6 +280,13 @@ void HTTPRequestParser::handleReadError(const boost::system::error_code& read_er
 
 boost::tribool HTTPRequestParser::parseRequestHeaders(void)
 {
+	//
+	// note that boost::tribool may have one of THREE states:
+	//
+	// false: encountered an error while parsing request
+	// true: finished successfully parsing the request
+	// intermediate: parsed bytes, but the request is not yet finished
+	//
 	while (m_read_ptr < m_read_end_ptr) {
 
 		switch (m_parse_state) {
@@ -698,7 +715,7 @@ bool HTTPRequestParser::parseCookieHeader(HTTPTypes::StringDictionary& dict,
 						dict.insert( std::make_pair(cookie_name, cookie_value) );
 					cookie_name.erase();
 					cookie_value.erase();
-					parse_state = COOKIE_PARSE_NAME;
+					parse_state = COOKIE_PARSE_IGNORE;
 				} else if (cookie_value.size() >= COOKIE_VALUE_MAX) {
 					// max size exceeded
 					return false;
@@ -707,6 +724,12 @@ bool HTTPRequestParser::parseCookieHeader(HTTPTypes::StringDictionary& dict,
 					cookie_value.push_back(*string_iterator);
 				}
 			}
+			break;
+			
+		case COOKIE_PARSE_IGNORE:
+			// ignore everything until we reach a comma "," or semicolon ";"
+			if (*string_iterator == ';' || *string_iterator == ',')
+				parse_state = COOKIE_PARSE_NAME;
 			break;
 		}
 	}
