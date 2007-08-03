@@ -1,11 +1,16 @@
 Version 0.3.x (2007-08-xx)
 ==========================
 
-* Fixed a bug in HTTPServer that caused it to not find some modules correctly
-* Removed writeNoCopy(const T& data) function since only strings make sense
-* Updated cookie parser to ignore garbage after quoted values
 * Added support for HTTP/1.1 pipelining (multiple requests in single packet)
 * Added support for MSVC compiler (see builds/libpion.vcproj file)
+
+
+Version 0.2.4 (2007-08-xx)
+==========================
+
+* Fixed a bug in HTTPServer that caused it to not find some modules correctly   
+* Removed writeNoCopy(const T& data) function since only strings make sense
+* Updated cookie parser to ignore garbage after quoted values
 
 
 Version 0.2.2 (2007-06-26)

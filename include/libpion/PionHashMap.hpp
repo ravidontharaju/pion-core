@@ -10,6 +10,7 @@
 #ifndef __PION_PIONHASHMAP_HEADER__
 #define __PION_PIONHASHMAP_HEADER__
 
+#include <boost/functional/hash.hpp>
 #include <libpion/PionConfig.hpp>
 
 

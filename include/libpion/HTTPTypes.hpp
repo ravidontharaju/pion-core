@@ -10,7 +10,6 @@
 #ifndef __PION_HTTPTYPES_HEADER__
 #define __PION_HTTPTYPES_HEADER__
 
-#include <boost/functional/hash.hpp>
 #include <libpion/PionConfig.hpp>
 #include <libpion/PionHashMap.hpp>
 #include <string>
