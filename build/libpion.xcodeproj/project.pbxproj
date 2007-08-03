@@ -792,7 +792,7 @@
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/opt/build/boost/include/boost-1_34\"";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/usr/local/include/boost-1_34\"";
 				HEADER_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
@@ -803,7 +803,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
-				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/opt/build/boost/lib\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/usr/local/lib\"";
 				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread-mt-d",
@@ -837,7 +837,7 @@
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/opt/build/boost/include/boost-1_34\"";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "\"/usr/local/include/boost-1_34\"";
 				HEADER_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
@@ -848,7 +848,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
-				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/opt/build/boost/lib\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/usr/local/lib\"";
 				OBJROOT = "${PROJECT_DIR}/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread-mt",

@@ -57,42 +57,30 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 						 m_content_buffers.end());
 	
 	// send response
-	if (tcp_conn->getSSLFlag()) {
-#ifdef PION_HAVE_SSL
-		boost::asio::async_write(tcp_conn->getSSLSocket(), write_buffers,
-								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
-											 tcp_conn, boost::asio::placeholders::error,
-											 boost::asio::placeholders::bytes_transferred,
-											 tcp_conn->getPipelined()));
-
-#else
-		if (! tcp_conn->getPipelined()) tcp_conn->finish();
-#endif
-	} else {
-		boost::asio::async_write(tcp_conn->getSocket(), write_buffers,
-								 boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
-											 tcp_conn, boost::asio::placeholders::error,
-											 boost::asio::placeholders::bytes_transferred,
-											 tcp_conn->getPipelined()));
-	}
+	tcp_conn->async_write(write_buffers,
+						  boost::bind(&HTTPResponse::handleWrite, shared_from_this(),
+									  tcp_conn, boost::asio::placeholders::error,
+									  boost::asio::placeholders::bytes_transferred));
 }
 
 void HTTPResponse::handleWrite(TCPConnectionPtr tcp_conn,
 							   const boost::system::error_code& write_error,
-							   std::size_t bytes_written, const bool pipelined)
+							   std::size_t bytes_written)
 {
 	if (write_error) {
 		// encountered error sending response
+		tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 		PION_LOG_INFO(m_logger, "Unable to send HTTP response due to I/O error");
 	} else {
 		// response sent OK
 		PION_LOG_DEBUG(m_logger, "Sent HTTP response of " << bytes_written << " bytes ("
-					   << (pipelined || tcp_conn->getKeepAlive() ? "keeping alive)" : "closing)"));
+					   << (tcp_conn->getKeepAlive() ? "keeping alive)" : "closing)"));
 	}
 	
-	// all finished handling the connection
-	// only finish if there were no pipelined HTTP requests in the read buffer
-	if (! pipelined) tcp_conn->finish();
+	// TCPConnection::finish() calls TCPServer::finishConnection, which will either:
+	// a) call HTTPServer::handleConnection again if keep-alive is true; or,
+	// b) close the socket and remove it from the server's connection pool
+	tcp_conn->finish();
 }
 
 std::string HTTPResponse::makeSetCookieHeader(const std::string& name,

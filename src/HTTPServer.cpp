@@ -22,7 +22,6 @@ namespace pion {	// begin namespace pion
 
 void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
-	tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// default to closing the connection
 	HTTPRequestParserPtr request_parser(HTTPRequestParser::create(boost::bind(&HTTPServer::handleRequest,
 																			  this, _1, _2), tcp_conn));
 	request_parser->readRequest();

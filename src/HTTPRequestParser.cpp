@@ -33,23 +33,18 @@ const unsigned int	HTTPRequestParser::POST_CONTENT_MAX = 1024 * 1024;	// 1 MB
 
 void HTTPRequestParser::readRequest(void)
 {
-	if (m_tcp_conn->getSSLFlag()) {
-#ifdef PION_HAVE_SSL
-		m_tcp_conn->getSSLSocket().async_read_some(boost::asio::buffer(m_read_buffer),
-												   boost::bind(&HTTPRequestParser::readHeaderBytes,
-															   shared_from_this(),
-															   boost::asio::placeholders::error,
-															   boost::asio::placeholders::bytes_transferred));
-#else
-		PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
-		m_tcp_conn->finish();
-#endif		
+	if (m_tcp_conn->getPipelined()) {
+		// there are pipeliend requests available in the connection's read buffer
+		m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// default to close the connection
+		m_tcp_conn->loadReadPosition(m_read_ptr, m_read_end_ptr);
+		consumeHeaderBytes();
 	} else {
-		m_tcp_conn->getSocket().async_read_some(boost::asio::buffer(m_read_buffer),
-												boost::bind(&HTTPRequestParser::readHeaderBytes,
-															shared_from_this(),
-															boost::asio::placeholders::error,
-															boost::asio::placeholders::bytes_transferred));
+		// no pipelined requests available in the read buffer -> read bytes from the socket
+		m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// default to close the connection
+		m_tcp_conn->async_read_some(boost::bind(&HTTPRequestParser::readHeaderBytes,
+												shared_from_this(),
+												boost::asio::placeholders::error,
+												boost::asio::placeholders::bytes_transferred));
 	}
 }
 
@@ -65,7 +60,7 @@ void HTTPRequestParser::readHeaderBytes(const boost::system::error_code& read_er
 	PION_LOG_DEBUG(m_logger, "Read " << bytes_read << " bytes from HTTP request");
 
 	// set pointers for new request data to be consumed
-	m_read_ptr = m_read_buffer.data();
+	m_read_ptr = m_tcp_conn->getReadBuffer().data();
 	m_read_end_ptr = m_read_ptr + bytes_read;
 
 	// consume the new request bytes available
@@ -142,31 +137,14 @@ void HTTPRequestParser::consumeHeaderBytes(void)
 				readContentBytes(no_error, 0);
 
 			} else {
-
 				// read the rest of the post content into the buffer
 				// and only return after we've finished or an error occurs
-				if (m_tcp_conn->getSSLFlag()) {
-#ifdef PION_HAVE_SSL
-					boost::asio::async_read(m_tcp_conn->getSSLSocket(),
-											boost::asio::buffer(post_buffer, content_bytes_to_read),
-											boost::asio::transfer_at_least(content_bytes_to_read),
-											boost::bind(&HTTPRequestParser::readContentBytes,
-														shared_from_this(),
-														boost::asio::placeholders::error,
-														boost::asio::placeholders::bytes_transferred));
-#else
-					PION_LOG_ERROR(m_logger, "SSL flag set for server, but support is not enabled");
-					m_tcp_conn->finish();
-#endif
-				} else {
-					boost::asio::async_read(m_tcp_conn->getSocket(),
-											boost::asio::buffer(post_buffer, content_bytes_to_read),
-											boost::asio::transfer_at_least(content_bytes_to_read),
-											boost::bind(&HTTPRequestParser::readContentBytes,
-														shared_from_this(),
-														boost::asio::placeholders::error,
-														boost::asio::placeholders::bytes_transferred));
-				}
+				m_tcp_conn->async_read(boost::asio::buffer(post_buffer, content_bytes_to_read),
+									   boost::asio::transfer_at_least(content_bytes_to_read),
+									   boost::bind(&HTTPRequestParser::readContentBytes,
+												   shared_from_this(),
+												   boost::asio::placeholders::error,
+												   boost::asio::placeholders::bytes_transferred));
 			}
 		}
 		
@@ -176,7 +154,7 @@ void HTTPRequestParser::consumeHeaderBytes(void)
 	#ifndef NDEBUG
 		// display extra error information if debug mode is enabled
 		std::string bad_request;
-		m_read_ptr = m_read_buffer.data();
+		m_read_ptr = m_tcp_conn->getReadBuffer().data();
 		while (m_read_ptr < m_read_end_ptr && bad_request.size() < 50) {
 			if (!isprint(*m_read_ptr) || *m_read_ptr == '\n' || *m_read_ptr=='\r')
 				bad_request += '.';
@@ -186,6 +164,7 @@ void HTTPRequestParser::consumeHeaderBytes(void)
 		PION_LOG_ERROR(m_logger, "Bad request debug: " << bad_request);
 	#endif
 
+		m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 		m_http_request->setIsValid(false);
 		m_request_handler(m_http_request, m_tcp_conn);
 		
@@ -244,22 +223,26 @@ void HTTPRequestParser::readContentBytes(const boost::system::error_code& read_e
 
 	// set the connection's lifecycle type
 	if (m_http_request->checkKeepAlive()) {
-		m_tcp_conn->setLifecycle(eof()
-								 ? TCPConnection::LIFECYCLE_KEEPALIVE
-								 : TCPConnection::LIFECYCLE_PIPELINED);
+		if ( eof() ) {
+			// the connection should be kept alive, but does not have pipelined requests
+			m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_KEEPALIVE);
+		} else {
+			// the connection has pipelined requests
+			m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_PIPELINED);
+
+			// save the read position as a bookmark so that it can be retrieved
+			// by a new request handler, which will be created after the current
+			// request has been handled
+			m_tcp_conn->saveReadPosition(m_read_ptr, m_read_end_ptr);
+			
+			PION_LOG_DEBUG(m_logger, "HTTP pipelined request (" << bytes_available() << " bytes available)");
+		}
 	} else {
 		m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);
 	}
 
 	// call the request handler with the finished request
 	m_request_handler(m_http_request, m_tcp_conn);
-	
-	// parse the next request if more data is available (HTTP pipelining)
-	if (m_tcp_conn->getPipelined()) {
-		PION_LOG_DEBUG(m_logger, "HTTP pipelined request (" << bytes_available() << " bytes available)");
-		reset();
-		consumeHeaderBytes();
-	}
 }
 
 void HTTPRequestParser::handleReadError(const boost::system::error_code& read_error)
@@ -275,6 +258,7 @@ void HTTPRequestParser::handleReadError(const boost::system::error_code& read_er
 		}
 	}
 	// close the connection, forcing the client to establish a new one
+	m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 	m_tcp_conn->finish();
 }
 

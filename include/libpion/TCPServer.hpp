@@ -10,10 +10,6 @@
 #ifndef __PION_TCPSERVER_HEADER__
 #define __PION_TCPSERVER_HEADER__
 
-#ifdef PION_HAVE_SSL
-	#include <boost/asio/ssl/context.hpp>
-#endif
-
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -79,6 +75,7 @@ protected:
 	 * @param tcp_conn the new TCP connection to handle
 	 */
 	virtual void handleConnection(TCPConnectionPtr& tcp_conn) {
+		tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
 		tcp_conn->finish();
 	}
 	

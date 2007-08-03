@@ -46,12 +46,12 @@ class HelloServer : public TCPServer {
 public:
 	HelloServer(const unsigned int tcp_port) : TCPServer(tcp_port) {}
 	virtual ~HelloServer() {}
-	virtual void handleConnection(TCPConnectionPtr& conn)
+	virtual void handleConnection(TCPConnectionPtr& tcp_conn)
 	{
 		static const std::string HELLO_MESSAGE("Hello there!\r\n");
-		boost::asio::async_write(conn->getSocket(),
-								 boost::asio::buffer(HELLO_MESSAGE),
-								 boost::bind(&TCPConnection::finish, conn));
+		tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
+		tcp_conn->async_write(boost::asio::buffer(HELLO_MESSAGE),
+							  boost::bind(&TCPConnection::finish, tcp_conn));
 	}
 };
 

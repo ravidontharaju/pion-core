@@ -13,7 +13,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/array.hpp>
 #include <boost/function.hpp>
 #include <boost/logic/tribool.hpp>
 #include <libpion/PionConfig.hpp>
@@ -63,12 +62,6 @@ public:
 	/// returns the number of bytes available in the read buffer
 	inline unsigned long bytes_available(void) const { return (eof() ? 0 : (m_read_end_ptr - m_read_ptr)); } 
 
-	/// resets the request parser so that it can process a new request
-	inline void reset(void) {
-		m_http_request = HTTPRequest::create();
-		m_parse_state = PARSE_METHOD_START;
-	}
-
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
 	
@@ -104,7 +97,7 @@ protected:
 	 * Consumes request header bytes available in the read buffer
 	 */
 	void consumeHeaderBytes(void);
-	
+
 	/**
 	 * Called after new request content bytes have been read
 	 * 
@@ -178,9 +171,6 @@ private:
 		PARSE_EXPECTING_FINAL_NEWLINE, PARSE_EXPECTING_FINAL_CR
 	};
 
-	/// data type for an I/O read buffer
-	typedef boost::array<char, 8192>	ReadBuffer;
-	
 	/// maximum length for the request method
 	static const unsigned int			METHOD_MAX;
 	
@@ -225,9 +215,6 @@ private:
 	
 	/// The current state of parsing the request
 	ParseState							m_parse_state;
-
-	/// buffer used for reading data from the TCP connection
-	ReadBuffer							m_read_buffer;
 
 	/// points to the next character to be consumed in the read_buffer
 	const char *						m_read_ptr;
