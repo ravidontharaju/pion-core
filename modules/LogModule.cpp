@@ -7,12 +7,6 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifdef BOOST_MSVC
-	#define DLLEXPORT __declspec(dllexport)
-#else
-	#define DLLEXPORT
-#endif
-
 #if defined(PION_HAVE_LOG4CXX)
 	#include <log4cxx/spi/loggingevent.h>
 	#include <boost/lexical_cast.hpp>
@@ -25,6 +19,11 @@
 
 #include "LogModule.hpp"
 #include <libpion/HTTPResponse.hpp>
+#ifdef BOOST_MSVC
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
 
 
 using namespace pion;

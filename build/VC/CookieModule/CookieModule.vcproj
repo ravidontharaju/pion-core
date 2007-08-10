@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include;"
+				AdditionalIncludeDirectories="..\..\..\include;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;COOKIEMODULE_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,7 +116,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COOKIEMODULE_EXPORTS"
+				AdditionalIncludeDirectories="..\..\..\include;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COOKIEMODULE_EXPORTS;_CRT_SECURE_NO_WARNINGS;_WIN32_WINNT=0x0500"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -176,7 +177,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\modules\CookieModule.cpp"
+				RelativePath="..\..\..\modules\CookieModule.cpp"
 				>
 			</File>
 		</Filter>
@@ -186,7 +187,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\modules\CookieModule.hpp"
+				RelativePath="..\..\..\modules\CookieModule.hpp"
 				>
 			</File>
 		</Filter>

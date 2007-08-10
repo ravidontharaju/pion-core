@@ -7,13 +7,12 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifdef PION_WIN32
-	// for Windows shutdown crash work-around
-	#include <boost/thread/xtime.hpp>
-#endif
 #include <boost/bind.hpp>
 #include <libpion/PionEngine.hpp>
-
+#ifdef PION_WIN32
+// for Windows shutdown crash work-around
+#include <boost/thread/xtime.hpp>
+#endif
 
 namespace pion {	// begin namespace pion
 
