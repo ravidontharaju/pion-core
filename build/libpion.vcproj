@@ -223,8 +223,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Copying PionConfig.hpp.win to PionConfig.hpp"
-						CommandLine="copy $(InputPath) $(InputDir)PionConfig.hpp"
-						Outputs="$(InputDir)PionConfig.hpp"
+						CommandLine="copy &quot;$(InputPath)&quot; &quot;$(InputDir)PionConfig.hpp&quot;"
+						Outputs="&quot;$(InputDir)PionConfig.hpp&quot;"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -233,8 +233,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Copying PionConfig.hpp.win to PionConfig.hpp"
-						CommandLine="copy $(InputPath) $(InputDir)PionConfig.hpp"
-						Outputs="$(InputDir)PionConfig.hpp"
+						CommandLine="copy &quot;$(InputPath)&quot; &quot;$(InputDir)PionConfig.hpp&quot;"
+						Outputs="&quot;$(InputDir)PionConfig.hpp&quot;"
 					/>
 				</FileConfiguration>
 			</File>
