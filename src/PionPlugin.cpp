@@ -102,6 +102,47 @@ void PionPlugin::open(const std::string& plugin_file)
 	++ m_plugin_data->m_references;
 }
 
+#ifdef PION_STATIC_LINKING
+
+std::map<std::string, void*> PionPlugin::m_create_func_pointers;
+std::map<std::string, void*> PionPlugin::m_destroy_func_pointers;
+
+void PionPlugin::initStaticInfo(const StaticFunctionPointers* table, int num_rows)
+{
+	for (int i = 0; i < num_rows; ++i) {
+		m_create_func_pointers[table[i].m_module_name]  = table[i].m_create_func;
+		m_destroy_func_pointers[table[i].m_module_name] = table[i].m_destroy_func;
+	}
+}
+
+void PionPlugin::openStaticLinked(const std::string& plugin_name)
+{
+	releaseData();	// make sure we're not already pointing to something
+
+	// check to see if we already have a matching shared library
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	PluginMap::iterator itr = m_plugin_map.find(plugin_name);
+	if (itr == m_plugin_map.end()) {
+		// no plug-ins found with the same name
+
+		// all is good -> insert it into the plug-in map
+		m_plugin_data = new PionPluginData(plugin_name);
+		m_plugin_data->m_lib_handle = NULL; // this will indicate that we are using statically linked plug-in
+		m_plugin_data->m_create_func = m_create_func_pointers[plugin_name];
+		m_plugin_data->m_destroy_func = m_destroy_func_pointers[plugin_name];
+		m_plugin_map.insert( std::make_pair(m_plugin_data->m_plugin_name,
+											m_plugin_data) );
+	} else {
+		// found an existing plug-in with the same name
+		m_plugin_data = itr->second;
+	}
+
+	// increment the number of references
+	++ m_plugin_data->m_references;
+}
+
+#endif
+
 void PionPlugin::releaseData(void)
 {
 	if (m_plugin_data != NULL) {

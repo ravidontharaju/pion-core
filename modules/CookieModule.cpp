@@ -10,12 +10,6 @@
 #include "CookieModule.hpp"
 #include <libpion/HTTPResponse.hpp>
 
-#ifdef BOOST_MSVC
-	#define DLLEXPORT __declspec(dllexport)
-#else
-	#define DLLEXPORT
-#endif
-
 using namespace pion;
 
 
@@ -110,14 +104,14 @@ bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 
 
 /// creates new CookieModule objects
-extern "C" DLLEXPORT CookieModule *pion_create_CookieModule(void)
+extern "C" PLUGIN_API CookieModule *pion_create_CookieModule(void)
 {
 	return new CookieModule();
 }
 
 
 /// destroys CookieModule objects
-extern "C" DLLEXPORT void pion_destroy_CookieModule(CookieModule *module_ptr)
+extern "C" PLUGIN_API void pion_destroy_CookieModule(CookieModule *module_ptr)
 {
 	delete module_ptr;
 }

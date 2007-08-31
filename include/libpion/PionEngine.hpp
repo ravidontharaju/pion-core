@@ -30,7 +30,7 @@ namespace pion {	// begin namespace pion
 ///
 /// PionEngine: singleton class that manages TCP servers and threads
 /// 
-class PionEngine :
+class PION_API PionEngine :
 	private boost::noncopyable
 {
 public:

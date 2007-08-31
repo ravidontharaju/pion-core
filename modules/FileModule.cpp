@@ -16,12 +16,6 @@
 #include <libpion/PionPlugin.hpp>
 #include <libpion/HTTPResponse.hpp>
 
-#ifdef BOOST_MSVC
-	#define DLLEXPORT __declspec(dllexport)
-#else
-	#define DLLEXPORT
-#endif
-
 using namespace pion;
 
 
@@ -498,14 +492,14 @@ bool FileModule::DiskFile::checkUpdated(void)
 
 
 /// creates new FileModule objects
-extern "C" DLLEXPORT FileModule *pion_create_FileModule(void)
+extern "C" PLUGIN_API FileModule *pion_create_FileModule(void)
 {
 	return new FileModule();
 }
 
 
 /// destroys FileModule objects
-extern "C" DLLEXPORT void pion_destroy_FileModule(FileModule *module_ptr)
+extern "C" PLUGIN_API void pion_destroy_FileModule(FileModule *module_ptr)
 {
 	delete module_ptr;
 }

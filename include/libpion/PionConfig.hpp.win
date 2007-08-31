@@ -48,7 +48,41 @@
 /* Define to the directory where cygwin is installed. */
 #undef PION_CYGWIN_DIRECTORY
 
-#define PION_WIN32	1
+#ifdef _WIN32
+	#define PION_WIN32	1
+#else
+	#error PionConfig.hpp.win is for Win32 only.
+#endif // _WIN32
 
-#endif
+#include <boost/config.hpp>
 
+#ifdef BOOST_MSVC
+	#pragma warning(disable: 4251)
+	#pragma warning(disable: 4275)
+
+	#ifdef PION_EXPORTS
+		#define PION_API __declspec(dllexport)
+	#elif defined PION_STATIC_LINKING
+		#define PION_API
+	#else
+		#define PION_API __declspec(dllimport)
+	#endif
+
+	#ifdef PION_STATIC_LINKING
+		#define PLUGIN_API 
+	#else
+		#define PLUGIN_API __declspec(dllexport)
+	#endif
+
+	/*
+	Verify correctness of the PION_STATIC_LINKING setup
+	*/
+	#ifdef PION_STATIC_LINKING
+		#ifdef _USRDLL
+			#error Need to be compiled as a static library for PION_STATIC_LINKING
+		#endif
+	#endif
+
+#endif // BOOST_MSVC
+
+#endif //__PION_PIONCONFIG_HEADER__

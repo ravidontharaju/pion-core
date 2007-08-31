@@ -25,7 +25,7 @@ namespace pion {	// begin namespace pion
 ///
 /// TCPServer: a multi-threaded, asynchronous TCP server
 /// 
-class TCPServer :
+class PION_API TCPServer :
 	private boost::noncopyable
 {
 public:

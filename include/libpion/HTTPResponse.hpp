@@ -29,7 +29,7 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPResponse: container for HTTP response information
 /// 
-class HTTPResponse :
+class PION_API HTTPResponse :
 	public boost::enable_shared_from_this<HTTPResponse>,
 	private boost::noncopyable
 {

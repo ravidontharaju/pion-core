@@ -21,10 +21,51 @@
 
 namespace pion {	// begin namespace pion
 
+#ifdef PION_STATIC_LINKING
+	typedef struct
+	{
+		std::string m_module_name;
+		void*       m_create_func;
+		void*       m_destroy_func;
+	}
+	StaticFunctionPointers;
+
+	/**
+	* Macros to declare entry points for statically linked modules in accordance
+	* with the general naming convention.
+	* It would be great if this could be done with a single macro per module, 
+	* but for now, at least the two macros that must be added for a new module 
+	* will be close together.
+	*
+	* Typical use:
+	* @code
+	* DECLARE_MODULE(EchoModule)
+	* ....
+	* DECLARE_MODULE(FileModule)
+	*
+	* static StaticFunctionPointers sfp_table[] = {
+	*	TABLE_ROW_FOR_MODULE(EchoModule)
+	*	....
+	*	TABLE_ROW_FOR_MODULE(FileModule)
+	* };
+	* ....
+	* PionPlugin::initStaticInfo(sfp_table, sizeof(sfp_table) / sizeof(sfp_table[0]));
+	* @endcode
+	*
+	*/
+	#define DECLARE_MODULE(module_name)	\
+		class module_name;						\
+		extern "C" module_name* pion_create_##module_name(void); \
+		extern "C" void pion_destroy_##module_name(module_name* module_ptr);
+
+	#define TABLE_ROW_FOR_MODULE(module_name)	\
+		{ #module_name, pion_create_##module_name, pion_destroy_##module_name },
+#endif
+
 ///
 /// PionPlugin: base class for plug-in management
 ///
-class PionPlugin {
+class PION_API PionPlugin {
 public:
 
 	/// exception thrown if the plug-in file cannot be opened
@@ -131,6 +172,18 @@ public:
 	 * @param plugin_file shared object file containing the plugin code
 	 */
 	void open(const std::string& plugin_file);
+
+#ifdef PION_STATIC_LINKING
+	static void initStaticInfo(const StaticFunctionPointers* table, int num_rows);
+
+	/**
+	* opens plug-in library that statically linked to the main module.
+	* 
+	* @param plugin_name plug-in name to be used in future references
+	*
+	*/
+	void openStaticLinked(const std::string& plugin_name);
+#endif
 
 	/// closes plug-in library
 	inline void close(void) { releaseData(); }
@@ -273,6 +326,11 @@ private:
 	/// maps plug-in names to shared library data
 	static PluginMap					m_plugin_map;
 	
+#ifdef PION_STATIC_LINKING
+	static std::map<std::string, void*> m_create_func_pointers;
+	static std::map<std::string, void*> m_destroy_func_pointers;
+#endif
+
 	/// mutex to make class thread-safe
 	static boost::mutex					m_plugin_mutex;
 	

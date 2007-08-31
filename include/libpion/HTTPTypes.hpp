@@ -20,7 +20,7 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPTypes: common data types used by HTTP
 /// 
-struct HTTPTypes
+struct PION_API HTTPTypes
 {
 	
 	// generic strings used by HTTP

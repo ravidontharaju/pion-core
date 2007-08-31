@@ -19,12 +19,6 @@
 
 #include "LogModule.hpp"
 #include <libpion/HTTPResponse.hpp>
-#ifdef BOOST_MSVC
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT
-#endif
-
 
 using namespace pion;
 
@@ -156,14 +150,14 @@ bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new LogModule objects
-extern "C" DLLEXPORT LogModule *pion_create_LogModule(void)
+extern "C" PLUGIN_API LogModule *pion_create_LogModule(void)
 {
 	return new LogModule();
 }
 
 
 /// destroys LogModule objects
-extern "C" DLLEXPORT void pion_destroy_LogModule(LogModule *module_ptr)
+extern "C" PLUGIN_API void pion_destroy_LogModule(LogModule *module_ptr)
 {
 	delete module_ptr;
 }
