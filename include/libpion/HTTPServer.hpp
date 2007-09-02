@@ -98,7 +98,7 @@ public:
 	void loadModule(const std::string& resource, const std::string& module_name);
 	
 	/**
-	 * sets a configuration options for the module associated with resource
+	 * sets a configuration option for the module associated with resource
 	 *
 	 * @param resource the resource name or uri-stem that identifies the module
 	 * @param name the name of the configuration option
@@ -197,13 +197,13 @@ protected:
 	/// called before the TCP server starts listening for new connections
 	virtual void beforeStarting(void);
 	
-	/// called after the TCP server has stopped listing for new connections
+	/// called after the TCP server has stopped listening for new connections
 	virtual void afterStopping(void);
 
 	
 private:
 	
-	/// used by ModuleMap to associated moudle objects with plugin libraries
+	/// used by ModuleMap to associate module objects with plug-in libraries
 	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> >	PluginPair;
 	
 	/// data type for a collection of HTTP modules

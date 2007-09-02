@@ -20,7 +20,7 @@ void writeDictionaryTerm(HTTPResponsePtr& response,
 						 const bool decode)
 {
 	// text is copied into response text cache
-	response << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR
+	response << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMITER
 	<< (decode ? HTTPTypes::url_decode(val.second) : val.second)
 	<< HTTPTypes::STRING_CRLF;
 }

@@ -19,7 +19,7 @@ namespace pion {		// begin namespace pion
 const std::string	HTTPTypes::STRING_EMPTY;
 const std::string	HTTPTypes::STRING_CRLF("\r\n");
 const std::string	HTTPTypes::STRING_HTTP_VERSION("HTTP/1.1");
-const std::string	HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR(": ");
+const std::string	HTTPTypes::HEADER_NAME_VALUE_DELIMITER(": ");
 
 // common HTTP header names
 const std::string	HTTPTypes::HEADER_HOST("Host");

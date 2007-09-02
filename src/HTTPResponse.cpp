@@ -44,7 +44,7 @@ void HTTPResponse::send(TCPConnectionPtr& tcp_conn)
 		 i != m_response_headers.end(); ++i)
 	{
 		write_buffers.push_back(boost::asio::buffer(i->first));
-		write_buffers.push_back(boost::asio::buffer(HTTPTypes::HEADER_NAME_VALUE_DELIMINATOR));
+		write_buffers.push_back(boost::asio::buffer(HTTPTypes::HEADER_NAME_VALUE_DELIMITER));
 		write_buffers.push_back(boost::asio::buffer(i->second));
 		write_buffers.push_back(boost::asio::buffer(HTTPTypes::STRING_CRLF));
 	}

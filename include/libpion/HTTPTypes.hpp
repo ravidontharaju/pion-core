@@ -27,7 +27,7 @@ struct PION_API HTTPTypes
 	static const std::string	STRING_EMPTY;
 	static const std::string	STRING_CRLF;
 	static const std::string	STRING_HTTP_VERSION;
-	static const std::string	HEADER_NAME_VALUE_DELIMINATOR;
+	static const std::string	HEADER_NAME_VALUE_DELIMITER;
 	
 	// common HTTP header names
 	static const std::string	HEADER_HOST;
