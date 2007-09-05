@@ -492,14 +492,14 @@ bool FileModule::DiskFile::checkUpdated(void)
 
 
 /// creates new FileModule objects
-extern "C" PLUGIN_API FileModule *pion_create_FileModule(void)
+extern "C" PION_PLUGIN_API FileModule *pion_create_FileModule(void)
 {
 	return new FileModule();
 }
 
 
 /// destroys FileModule objects
-extern "C" PLUGIN_API void pion_destroy_FileModule(FileModule *module_ptr)
+extern "C" PION_PLUGIN_API void pion_destroy_FileModule(FileModule *module_ptr)
 {
 	delete module_ptr;
 }

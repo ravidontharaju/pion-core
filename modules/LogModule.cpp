@@ -150,14 +150,14 @@ bool LogModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new LogModule objects
-extern "C" PLUGIN_API LogModule *pion_create_LogModule(void)
+extern "C" PION_PLUGIN_API LogModule *pion_create_LogModule(void)
 {
 	return new LogModule();
 }
 
 
 /// destroys LogModule objects
-extern "C" PLUGIN_API void pion_destroy_LogModule(LogModule *module_ptr)
+extern "C" PION_PLUGIN_API void pion_destroy_LogModule(LogModule *module_ptr)
 {
 	delete module_ptr;
 }

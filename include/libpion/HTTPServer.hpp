@@ -27,7 +27,7 @@ namespace pion {	// begin namespace pion
 ///
 /// HTTPServer: a server that handles HTTP connections
 ///
-class PION_API HTTPServer :
+class PION_LIBRARY_API HTTPServer :
 	public TCPServer
 {
 

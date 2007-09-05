@@ -106,14 +106,14 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new EchoModule objects
-extern "C" PLUGIN_API EchoModule *pion_create_EchoModule(void)
+extern "C" PION_PLUGIN_API EchoModule *pion_create_EchoModule(void)
 {
 	return new EchoModule();
 }
 
 
 /// destroys EchoModule objects
-extern "C" PLUGIN_API void pion_destroy_EchoModule(EchoModule *module_ptr)
+extern "C" PION_PLUGIN_API void pion_destroy_EchoModule(EchoModule *module_ptr)
 {
 	delete module_ptr;
 }

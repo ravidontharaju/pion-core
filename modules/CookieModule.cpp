@@ -104,14 +104,14 @@ bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 
 
 /// creates new CookieModule objects
-extern "C" PLUGIN_API CookieModule *pion_create_CookieModule(void)
+extern "C" PION_PLUGIN_API CookieModule *pion_create_CookieModule(void)
 {
 	return new CookieModule();
 }
 
 
 /// destroys CookieModule objects
-extern "C" PLUGIN_API void pion_destroy_CookieModule(CookieModule *module_ptr)
+extern "C" PION_PLUGIN_API void pion_destroy_CookieModule(CookieModule *module_ptr)
 {
 	delete module_ptr;
 }

@@ -61,17 +61,17 @@
 	#pragma warning(disable: 4275)
 
 	#ifdef PION_EXPORTS
-		#define PION_API __declspec(dllexport)
+		#define PION_LIBRARY_API __declspec(dllexport)
 	#elif defined PION_STATIC_LINKING
-		#define PION_API
+		#define PION_LIBRARY_API
 	#else
-		#define PION_API __declspec(dllimport)
+		#define PION_LIBRARY_API __declspec(dllimport)
 	#endif
 
 	#ifdef PION_STATIC_LINKING
-		#define PLUGIN_API 
+		#define PION_PLUGIN_API 
 	#else
-		#define PLUGIN_API __declspec(dllexport)
+		#define PION_PLUGIN_API __declspec(dllexport)
 	#endif
 
 	/*

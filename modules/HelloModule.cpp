@@ -27,14 +27,14 @@ bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 
 /// creates new HelloModule objects
-extern "C" PLUGIN_API HelloModule *pion_create_HelloModule(void)
+extern "C" PION_PLUGIN_API HelloModule *pion_create_HelloModule(void)
 {
 	return new HelloModule();
 }
 
 
 /// destroys HelloModule objects
-extern "C" PLUGIN_API void pion_destroy_HelloModule(HelloModule *module_ptr)
+extern "C" PION_PLUGIN_API void pion_destroy_HelloModule(HelloModule *module_ptr)
 {
 	delete module_ptr;
 }
