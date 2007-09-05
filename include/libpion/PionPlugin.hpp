@@ -42,11 +42,15 @@ namespace pion {	// begin namespace pion
 	* DECLARE_MODULE(EchoModule)
 	* ....
 	* DECLARE_MODULE(FileModule)
+
 	*
+
 	* static StaticFunctionPointers sfp_table[] = {
 	*	TABLE_ROW_FOR_MODULE(EchoModule)
+
 	*	....
 	*	TABLE_ROW_FOR_MODULE(FileModule)
+
 	* };
 	* ....
 	* PionPlugin::initStaticInfo(sfp_table, sizeof(sfp_table) / sizeof(sfp_table[0]));
