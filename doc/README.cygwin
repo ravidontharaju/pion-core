@@ -4,9 +4,9 @@ Windows Build Instructions
 Preparing the Build Environment:
 --------------------------------
 
-For building under Windows, only the GNU C++ compiler (g++) is currently
-supported. However, we plan to also support for MinGW and Microsoft's
-Visual C++ compiler in the near future.
+For building under Windows, only the GNU C++ compiler (g++) and Microsoft's
+Visual C++ compiler (see README.msvc) are currently supported. However, we
+plan to also support MinGW in the near future.
 
 In order to configure libpion, you will need to install the bash shell and
 GNU make programs.  We recommend that you download and install the programs
