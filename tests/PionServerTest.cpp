@@ -27,7 +27,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		case CTRL_BREAK_EVENT:
 		case CTRL_CLOSE_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
-			Pion::stop();
+			Pion::shutdown();
 			return TRUE;
 		default:
 			return FALSE;
@@ -36,7 +36,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 #else
 void handle_signal(int sig)
 {
-	Pion::stop();
+	Pion::shutdown();
 }
 #endif
 
@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
 		}
 	
 		// startup pion
-		Pion::start();
+		Pion::startup();
 		
 		// run until stopped
 		Pion::join();

@@ -46,5 +46,9 @@
 #undef PION_CYGWIN_DIRECTORY
 
 
-#endif
+/* The following are only used by the Windows projects */
+#define PION_API
+#define PLUGIN_API
 
+
+#endif

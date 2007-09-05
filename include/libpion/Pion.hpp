@@ -55,20 +55,16 @@ struct Pion {
 		return PionEngine::getInstance().getServer(tcp_port);
 	}
 	
-	/**
-	 * stops pion
-	 *
-	 * @param reset_servers if true, all servers will be removed
-	 */
-	inline static void stop(const bool reset_servers = false) {
-		PionEngine::getInstance().stop(reset_servers);
-	}
-
-	/// starts pion
-	inline static void start(void) {
-		PionEngine::getInstance().start();
+	/// Should be called once during startup, after all servers have been registered
+	inline static void startup(void) {
+		PionEngine::getInstance().startup();
 	}
 	
+	/// Should be called once during shutdown for cleanup
+	inline static void shutdown(void) {
+		PionEngine::getInstance().shutdown();
+	}
+
 	/// the calling thread will sleep until the engine has stopped
 	inline static void join(void) {
 		PionEngine::getInstance().join();

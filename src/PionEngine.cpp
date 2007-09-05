@@ -31,7 +31,7 @@ void PionEngine::createInstance(void)
 	m_instance_ptr = &pion_instance;
 }
 
-void PionEngine::start(void)
+void PionEngine::startup(void)
 {
 	// check for errors
 	if (m_is_running) throw AlreadyStartedException();
@@ -56,7 +56,7 @@ void PionEngine::start(void)
 	m_is_running = true;
 }
 
-void PionEngine::stop(const bool reset_servers)
+void PionEngine::shutdown(void)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
@@ -70,16 +70,29 @@ void PionEngine::stop(const bool reset_servers)
 			i->second->stop();
 		}
 
+		// Stop the service to make sure no more events are pending
+		m_asio_service.stop();
+
 		if (! m_thread_pool.empty()) {
 			PION_LOG_DEBUG(m_logger, "Waiting for threads to shutdown");
 
 			// wait until all threads in the pool have stopped
-			std::for_each(m_thread_pool.begin(), m_thread_pool.end(),
-						  boost::bind(&boost::thread::join, _1));
+
+			// make sure we do not call join() for the current thread,
+			// since this may yield "undefined behavior"
+			boost::thread current_thread;
+			for (PionThreadPool::iterator i = m_thread_pool.begin();
+				i != m_thread_pool.end(); ++i)
+			{
+				if (**i != current_thread) (*i)->join();
+			}
 
 			// clear the thread pool (also deletes thread objects)
 			m_thread_pool.clear();
 		}
+
+		// Reset all of the registered servers
+		m_servers.clear();
 
 #ifdef PION_WIN32
 		// pause for 1 extra second to work-around shutdown crash on Windows
@@ -94,11 +107,6 @@ void PionEngine::stop(const bool reset_servers)
 
 		m_is_running = false;
 		m_engine_has_stopped.notify_all();
-	}
-	
-	if (reset_servers) {
-		m_asio_service.stop();
-		m_servers.clear();
 	}
 }
 
@@ -118,7 +126,6 @@ void PionEngine::run(void)
 		m_asio_service.run();
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(m_logger, "Caught exception in pool thread: " << e.what());
-		stop();
 	}
 }
 

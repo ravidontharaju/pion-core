@@ -20,13 +20,11 @@ using namespace std;
 using namespace pion;
 
 #ifdef PION_STATIC_LINKING
-
 	DECLARE_MODULE(EchoModule)
 	DECLARE_MODULE(FileModule)
 	DECLARE_MODULE(HelloModule)
 	DECLARE_MODULE(LogModule)
 	DECLARE_MODULE(CookieModule)
-
 	static StaticFunctionPointers sfp_table[] = {
 		TABLE_ROW_FOR_MODULE(EchoModule)
 		TABLE_ROW_FOR_MODULE(FileModule)
@@ -34,7 +32,6 @@ using namespace pion;
 		TABLE_ROW_FOR_MODULE(LogModule)
 		TABLE_ROW_FOR_MODULE(CookieModule)
 	};
-
 #endif
 
 /// stops Pion when it receives signals
@@ -46,7 +43,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		case CTRL_BREAK_EVENT:
 		case CTRL_CLOSE_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
-			Pion::stop();
+			Pion::shutdown();
 			return TRUE;
 		default:
 			return FALSE;
@@ -55,7 +52,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 #else
 void handle_signal(int sig)
 {
-	Pion::stop();
+	Pion::shutdown();
 }
 #endif
 
@@ -197,7 +194,7 @@ int main (int argc, char *argv[])
 		}
 	
 		// startup pion
-		Pion::start();
+		Pion::startup();
 	
 		// run until stopped
 		Pion::join();
