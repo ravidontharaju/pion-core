@@ -1,11 +1,14 @@
-Version 0.3.x (2007-08-xx)
+Version 0.3.2 (2007-09-xx)
 ==========================
 
 * Added support for HTTP/1.1 pipelining (multiple requests in single packet)
 * Added support for MSVC compiler (see builds/libpion.vcproj file)
+* Added accessor functions for client IP address in HTTPRequest/TCPConnection
+* Moved more I/O logic into TCPConnection to cleanup SSL checks
+* Changed start() to startup() and stop() to shutdown() in PionEngine
 
 
-Version 0.2.4 (2007-09-xx)
+Version 0.2.4 (2007-09-05)
 ==========================
 
 * Fixed a bug in HTTPServer that caused it to not find some modules correctly   

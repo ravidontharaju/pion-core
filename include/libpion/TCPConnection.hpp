@@ -255,23 +255,19 @@ public:
 		read_ptr = m_read_position.first;
 		read_end_ptr = m_read_position.second;
 	}
-	
-	inline boost::asio::ip::address getRemoteIp() const
-	{
+
+	/// returns the client's IP address
+	inline boost::asio::ip::address getRemoteIp(void) const {
 		boost::asio::ip::tcp::endpoint remote_endpoint;
-		try
-		{
+		try {
 #ifdef PION_HAVE_SSL
 			if (getSSLFlag())
 				remote_endpoint = m_ssl_socket.remote_endpoint();
 			else
-#endif		
+#endif
 				remote_endpoint = m_tcp_socket.remote_endpoint();
-		}
-		catch (boost::system::system_error& e)
-		{
-			//do nothing
-			e;
+		} catch (boost::system::system_error& /* e */) {
+			// do nothing
 		}
 		return remote_endpoint.address();
 	}
