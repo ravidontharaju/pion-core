@@ -256,6 +256,25 @@ public:
 		read_end_ptr = m_read_position.second;
 	}
 	
+	inline boost::asio::ip::address getRemoteIp() const
+	{
+		boost::asio::ip::tcp::endpoint remote_endpoint;
+		try
+		{
+#ifdef PION_HAVE_SSL
+			if (getSSLFlag())
+				remote_endpoint = m_ssl_socket.remote_endpoint();
+			else
+#endif		
+				remote_endpoint = m_tcp_socket.remote_endpoint();
+		}
+		catch (boost::system::system_error& e)
+		{
+			//do nothing
+			e;
+		}
+		return remote_endpoint.address();
+	}
 	
 protected:
 		

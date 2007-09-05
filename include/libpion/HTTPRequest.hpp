@@ -13,6 +13,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/asio.hpp>
 #include <libpion/PionConfig.hpp>
 #include <libpion/HTTPTypes.hpp>
 #include <string>
@@ -90,6 +91,11 @@ public:
 		return m_cookie_params;
 	}
 
+	/// returns remote requester IP address
+	inline boost::asio::ip::address& getRemoteIp(void) {
+		return m_remote_ip;
+	}
+
 	/// returns true if at least one value for the header is defined
 	inline bool hasHeader(const std::string& key) const {
 		return(m_headers.find(key) != m_headers.end());
@@ -128,6 +134,9 @@ public:
 	/// sets the length of the POST content (in bytes)
 	inline void setContentLength(const unsigned long n) { m_content_length = n; }
 	
+	/// sets requester IP address
+	inline void setRemoteIp(const boost::asio::ip::address& ip) { m_remote_ip = ip; }
+
 	/// creates a new POST content buffer of size m_content_length and returns
 	/// a pointer to the new buffer (memory is managed by HTTPRequest class)
 	inline char *createPostContentBuffer(void) {
@@ -233,6 +242,9 @@ private:
 	
 	/// True if the HTTP request is valid
 	bool							m_is_valid;
+
+	/// keep requester IP address
+	boost::asio::ip::address		m_remote_ip;
 };
 
 

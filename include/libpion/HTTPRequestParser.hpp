@@ -82,7 +82,9 @@ protected:
 		m_request_handler(handler), m_tcp_conn(tcp_conn),
 		m_http_request(HTTPRequest::create()), m_parse_state(PARSE_METHOD_START),
 		m_read_ptr(NULL), m_read_end_ptr(NULL)
-	{}
+	{
+		m_http_request->setRemoteIp(tcp_conn->getRemoteIp());
+	}
 
 	/**
 	 * Called after new request header bytes have been read
