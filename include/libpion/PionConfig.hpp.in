@@ -47,8 +47,8 @@
 
 
 /* The following are only used by the Windows projects */
-#define PION_API
-#define PLUGIN_API
+#define PION_LIBRARY_API
+#define PION_PLUGIN_API
 
 
 #endif
