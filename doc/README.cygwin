@@ -1,12 +1,14 @@
-Windows Build Instructions
-==========================
+Cygwin/GNU C++ Build Instructions
+=================================
 
-Preparing the Build Environment:
---------------------------------
+For building under Windows, only the Cygwin/GNU C++ compiler (g++) and
+Microsoft's Visual C++ 2005 compiler are currently supported. We plan to add
+support for the MinGW compiler in the near future. Please see README.msvc for
+instructions on using Microsoft's Visual C++ compiler.
 
-For building under Windows, only the GNU C++ compiler (g++) and Microsoft's
-Visual C++ compiler (see README.msvc) are currently supported. However, we
-plan to also support MinGW in the near future.
+
+Installing Cygwin Packages:
+---------------------------
 
 In order to configure libpion, you will need to install the bash shell and
 GNU make programs.  We recommend that you download and install the programs
@@ -25,8 +27,8 @@ Utils: patch
 Web: wget
 
 
-Building Boost with ASIO
-------------------------
+Building Boost with ASIO:
+-------------------------
 
 Please see the README.boost file for instructions.
 

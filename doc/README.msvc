@@ -1,13 +1,11 @@
-Windows Build Instructions
-==========================
+Microsoft Visual C++ Build Instructions
+=======================================
 
-Preparing the Build Environment:
---------------------------------
+For building under Windows, only the Cygwin/GNU C++ compiler (g++) and
+Microsoft's Visual C++ 2005 compiler are currently supported. We plan to add
+support for the MinGW compiler in the near future. Please see README.cygwin for
+instructions on using the Cygwin/GNU C++ compiler.
 
-For building under Windows, only the GNU C++ compiler (g++) and Microsoft's
-Visual C++ compiler (Visual C++ 2005 Express Edition) are currently supported. 
-However, we plan to also support for MinGW in the near future.
-Instructions for GNU C++ compiler are in README.cygwin.
 
 Installing Visual C++ 2005 Express Edition:
 -------------------------------------------
@@ -16,74 +14,45 @@ This whole section can be skipped if you have Visual Studio 2005 (i.e. not the
 free Express edition) installed.
 
 To install Visual C++ 2005 Express Edition and the Microsoft Platform SDK,
-follow the steps in http://msdn2.microsoft.com/en-us/express/aa700755.aspx.
+follow the steps described at the following URL:
+http://msdn2.microsoft.com/en-us/express/aa700755.aspx.
 
-In order for bjam (discussed below) to find the necessary Microsoft Platform 
-SDK files, one more file must be modified: in
-C:\Program Files\Microsoft Visual Studio 8\Common7\Tools\vsvars32.bat, replace
-the lines 
+In order for the Visual Studio Command Line Compiler to find the necessary
+Microsoft Platform SDK files, one more file must be modified: open
+"C:\Program Files\Microsoft Visual Studio 8\VC\vcvarsall.bat" in an editor and
+add the following lines at the top, after "@echo off":
 
-@set INCLUDE=C:\Program Files\Microsoft Visual Studio 8\VC\INCLUDE;%INCLUDE%
-@set LIB=C:\Program Files\Microsoft Visual Studio 8\VC\LIB;C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\lib;%LIB%
+@set PATH=C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Bin;%PATH%
+@set INCLUDE=C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include;%INCLUDE%
+@set LIB=C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib;%LIB%
 
-with
 
-@set INCLUDE=C:\Program Files\Microsoft Visual Studio 8\VC\INCLUDE;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include;%INCLUDE%
-@set LIB=C:\Program Files\Microsoft Visual Studio 8\VC\LIB;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\lib;C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\lib;%LIB%
+Building Boost with ASIO:
+-------------------------
 
-(There must be another way to specify the two additional directories, since the 
-Boost installer is able to find windows.h and uuid.lib when it builds, but this 
-method does work.)
+Please see the README.boost file for instructions.
 
-Installing Boost:
------------------
+We recommend that you use the bjam tool to build Boost & ASIO for MSVC.  Open
+the Visual Studio 2005 Command Prompt, change to the Boost build directory,
+and type:
 
-Option 1:
+bjam --toolset=msvc --with-thread --with-system --with-filesystem \
+	debug release threading=multi stage
 
-Run BoostPro_1.34.1_Installer from http://www.boost-consulting.com/products/free.
+(You may leave out the --with-... options if you wish to build everything)
 
-In the setup dialog, under Compilers, check Visual C++ 8.0, and under Variants, 
-check (at least) all the multithreaded options.
+We recommend that you create a C:\Boost directory with C:\Boost\Lib and
+C:\Boost\Include subdirectories.  To install Boost into these directories, just
+copy the files in stage/lib into C:\Boost\Lib, and copy the entire boost/
+directory into C:\Boost\Include.
 
-Option 1 is easy, but it does take a long time to compile all the libraries that
-need compiling, and only two of them (Boost.Filesystem and Boost.Thread) are 
-needed by libpion.  Also, you're still going to need to build Boost.System (see 
-Installing ASIO).
-
-Option 2:
-
-Download the code from http://www.boost.org/ and build the two needed libraries
-using bjam (available at http://www.boost.org/tools/build/v2/index.html).
-
-C:\Program Files\boost\boost_1_34_1>bjam --toolset=msvc --with-filesystem --with-thread debug release threading=multi stage
-
-Installing ASIO:
-----------------
-
-Download the Boost version of ASIO, version 0.3.8, from http://asio.sourceforge.net/.
-Currently, this is boost_asio_0_3_8rc3.  After extracting the files, copy the 
-'boost' and 'libs' directories into the ones in C:\Program Files\boost\boost_1_34_1
-(assuming you installed Boost in the default location).
-
-Now the Boost.System library needs to be built, using bjam (available at 
-http://www.boost.org/tools/build/v2/index.html):
-
-C:\Program Files\boost\boost_1_34_1>bjam --toolset=msvc --with-system debug release threading=multi stage
-
-Then copy all the files in C:\Program Files\boost\boost_1_34_1\stage\lib to
-C:\Program Files\boost\boost_1_34_1\lib.  If you followed option 2 above, this
-will also include the Boost.Filesystem and Boost.Thread libraries you built.
-
-Consult the Boost Getting Started page (http://www.boost.org/more/getting_started.html) 
-for more information on how to build the Boost libraries.
 
 Installing zlib & openssl:
 --------------------------
 
 ASIO requires zlib and openssl for compression and SSL/TLS encryption
-support, respectively.  On Windows, we recommend that you use Cygwin to
-install these libraries. However, you may instead choose to download and
-install the latest versions from the following sites:
+support, respectively.  For MSVC, we recommend that you build and install
+these packages from the source tarballs, available from the following sites:
 
 http://www.zlib.net
 http://www.openssl.org
@@ -107,16 +76,17 @@ http://log4cplus.sourceforge.net
 Building and installing libpion:
 --------------------------------
 
-Update the VC++ Directories in the Projects and Solutions section in the 
-Options dialog box.  For Include files, add C:\Program Files\boost\boost_1_34_1
-and for Library files, add C:\Program Files\boost\boost_1_34_1\lib.
+Update the Visual C++ Directories in the Projects and Solutions section in the 
+Options dialog box.  For Include files add "C:\Boost\Include", and for Library
+files add "C:\Boost\Lib".
 
-Now you should be able to build libpion_vc.sln.
+Now you should be able to build the solution file in build/VC/libpion_vc.sln.
+
 
 Running the test programs:
 --------------------------
 
-Make sure C:\Program Files\boost\boost_1_34_1\lib is on your path.
+Make sure "C:\Boost\Lib" is on your path.
 
 To test PionModuleTest, try running it with the following command line args:
 -c ..\..\..\tests\vcmodules.conf
