@@ -262,7 +262,8 @@ public:
 		try {
 #ifdef PION_HAVE_SSL
 			if (getSSLFlag())
-				remote_endpoint = m_ssl_socket.remote_endpoint();
+				// const_cast is required since lowest_layer() is only defined non-const in asio
+				remote_endpoint = const_cast<SSLSocket&>(m_ssl_socket).lowest_layer().remote_endpoint();
 			else
 #endif
 				remote_endpoint = m_tcp_socket.remote_endpoint();
