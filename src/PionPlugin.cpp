@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------
+// ----------------------------------------------------------------
 // libpion: a C++ framework for building lightweight HTTP interfaces
 // -----------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
@@ -33,6 +33,7 @@ const std::string			PionPlugin::PION_CONFIG_EXTENSION(".conf");
 std::vector<std::string>	PionPlugin::m_plugin_dirs;
 PionPlugin::PluginMap		PionPlugin::m_plugin_map;
 boost::mutex				PionPlugin::m_plugin_mutex;
+std::list<PionPlugin::ModuleEntryPoint>   *PionPlugin::m_entryPointList=NULL;
 
 	
 // PionEngine member functions
@@ -102,20 +103,9 @@ void PionPlugin::open(const std::string& plugin_file)
 	++ m_plugin_data->m_references;
 }
 
-#ifdef PION_STATIC_LINKING
-
-std::map<std::string, void*> PionPlugin::m_create_func_pointers;
-std::map<std::string, void*> PionPlugin::m_destroy_func_pointers;
-
-void PionPlugin::initStaticInfo(const StaticFunctionPointers* table, int num_rows)
-{
-	for (int i = 0; i < num_rows; ++i) {
-		m_create_func_pointers[table[i].m_module_name]  = table[i].m_create_func;
-		m_destroy_func_pointers[table[i].m_module_name] = table[i].m_destroy_func;
-	}
-}
-
-void PionPlugin::openStaticLinked(const std::string& plugin_name)
+void PionPlugin::openStaticLinked(const std::string& plugin_name,
+								  void *create_func,
+								  void *destroy_func)
 {
 	releaseData();	// make sure we're not already pointing to something
 
@@ -128,10 +118,10 @@ void PionPlugin::openStaticLinked(const std::string& plugin_name)
 		// all is good -> insert it into the plug-in map
 		m_plugin_data = new PionPluginData(plugin_name);
 		m_plugin_data->m_lib_handle = NULL; // this will indicate that we are using statically linked plug-in
-		m_plugin_data->m_create_func = m_create_func_pointers[plugin_name];
-		m_plugin_data->m_destroy_func = m_destroy_func_pointers[plugin_name];
-		m_plugin_map.insert( std::make_pair(m_plugin_data->m_plugin_name,
-											m_plugin_data) );
+		m_plugin_data->m_create_func = create_func;
+		m_plugin_data->m_destroy_func = destroy_func;
+		m_plugin_map.insert(std::make_pair(m_plugin_data->m_plugin_name,
+										   m_plugin_data));
 	} else {
 		// found an existing plug-in with the same name
 		m_plugin_data = itr->second;
@@ -140,8 +130,6 @@ void PionPlugin::openStaticLinked(const std::string& plugin_name)
 	// increment the number of references
 	++ m_plugin_data->m_references;
 }
-
-#endif
 
 void PionPlugin::releaseData(void)
 {
@@ -322,6 +310,36 @@ void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 #else
 	return dlsym(lib_handle, symbol.c_str());
 #endif
+}
+
+bool PionPlugin::findEntryPoint(const std::string& plugin_name,
+								void **create_func,
+								void **destroy_func)
+{
+	if (m_entryPointList==NULL) {
+		return false;
+	}
+
+	for (std::list<ModuleEntryPoint>::const_iterator i = m_entryPointList->begin();
+		 i != m_entryPointList->end(); ++i) {
+			if (i->m_module_name==plugin_name) {
+				*create_func  = i->m_create_func;
+				*destroy_func = i->m_destroy_func;
+				return true;
+			}
+	}
+	return false;
+}
+
+void PionPlugin::addEntryPoint(const std::string& plugin_name,
+							   void *create_func,
+							   void *destroy_func)
+{
+	if (m_entryPointList == NULL)
+		m_entryPointList = new std::list<ModuleEntryPoint>();
+
+	if (m_entryPointList)
+		m_entryPointList->push_back(ModuleEntryPoint(plugin_name, create_func, destroy_func));
 }
 
 }	// end namespace pion

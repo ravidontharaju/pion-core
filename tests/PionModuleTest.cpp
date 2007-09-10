@@ -16,23 +16,14 @@
 #endif
 
 
+DECLARE_MODULE(EchoModule)
+DECLARE_MODULE(FileModule)
+DECLARE_MODULE(HelloModule)
+DECLARE_MODULE(LogModule)
+DECLARE_MODULE(CookieModule)
+
 using namespace std;
 using namespace pion;
-
-#ifdef PION_STATIC_LINKING
-	DECLARE_MODULE(EchoModule)
-	DECLARE_MODULE(FileModule)
-	DECLARE_MODULE(HelloModule)
-	DECLARE_MODULE(LogModule)
-	DECLARE_MODULE(CookieModule)
-	static StaticFunctionPointers sfp_table[] = {
-		TABLE_ROW_FOR_MODULE(EchoModule)
-		TABLE_ROW_FOR_MODULE(FileModule)
-		TABLE_ROW_FOR_MODULE(HelloModule)
-		TABLE_ROW_FOR_MODULE(LogModule)
-		TABLE_ROW_FOR_MODULE(CookieModule)
-	};
-#endif
 
 /// stops Pion when it receives signals
 #ifdef PION_WIN32
@@ -175,9 +166,6 @@ int main (int argc, char *argv[])
 #endif
 		}
 		
-#ifdef PION_STATIC_LINKING
-		PionPlugin::initStaticInfo(sfp_table, sizeof(sfp_table) / sizeof(sfp_table[0]));
-#endif
 		if (module_config_name.empty()) {
 			// load a single module using the command line arguments
 			http_server->loadModule(resource_name, module_name);

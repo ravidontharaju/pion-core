@@ -139,20 +139,26 @@ void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
 
 void HTTPServer::loadModule(const std::string& resource, const std::string& module_name)
 {
-#ifndef PION_STATIC_LINKING
 	// search for the plug-in file using the configured paths
+	bool is_static;
+	void *create_func;
+	void *destroy_func;
 	std::string module_file;
-	if (! PionPlugin::findPluginFile(module_file, module_name))
-		throw PionPlugin::PluginNotFoundException(module_name);
-#endif
+	
+	// check if module is statically linked, and if not, try to resolve for dynamic
+	is_static = PionPlugin::findEntryPoint(module_name, &create_func, &destroy_func);
+	if (!is_static){
+		if (!PionPlugin::findPluginFile(module_file, module_name))
+			throw PionPlugin::PluginNotFoundException(module_name);
+	}
 
 	// open up the plug-in's shared object library
 	PionPluginPtr<HTTPModule> plugin_ptr;
-#ifdef PION_STATIC_LINKING
-	plugin_ptr.openStaticLinked(module_name);	// may throw
-#else
-	plugin_ptr.open(module_file);	// may throw
-#endif
+	if (is_static) {
+		plugin_ptr.openStaticLinked(module_name, create_func, destroy_func);	// may throw
+	} else {
+		plugin_ptr.open(module_file);	// may throw
+	}
 
 	// create a new module using the plug-in library
 	HTTPModule *module_ptr(plugin_ptr.create());
@@ -164,11 +170,11 @@ void HTTPServer::loadModule(const std::string& resource, const std::string& modu
 									std::make_pair(module_ptr, plugin_ptr)));
 	modules_lock.unlock();
 
-#ifdef PION_STATIC_LINKING
-	PION_LOG_INFO(m_logger, "Loaded HTTP module for resource (" << resource << "): " << module_name);
-#else
-	PION_LOG_INFO(m_logger, "Loaded HTTP module for resource (" << resource << "): " << module_file);
-#endif
+	if (is_static){
+		PION_LOG_INFO(m_logger, "Loaded HTTP static module for resource (" << resource << "): " << module_name);
+	} else {
+		PION_LOG_INFO(m_logger, "Loaded HTTP module for resource (" << resource << "): " << module_file);
+	}
 }
 
 void HTTPServer::setModuleOption(const std::string& resource,
