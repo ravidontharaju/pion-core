@@ -89,4 +89,4 @@ Running the test programs:
 Make sure "C:\Boost\Lib" is on your path.
 
 To test PionModuleTest, try running it with the following command line args:
--c ..\..\..\tests\vcmodules.conf
+-c ..\..\..\..\tests\vcmodules.conf
