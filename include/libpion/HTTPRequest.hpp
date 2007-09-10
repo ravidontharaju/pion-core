@@ -54,7 +54,7 @@ public:
 	inline unsigned int getVersionMinor(void) const { return m_version_minor; }
 	
 	/// returns the length of the POST content (in bytes)
-	inline unsigned long getContentLength(void) const { return m_content_length; }
+	inline size_t getContentLength(void) const { return m_content_length; }
 	
 	/// returns a buffer containing the POST content, or NULL if the request
 	/// has no POST content
@@ -132,7 +132,7 @@ public:
 	inline void setVersionMinor(const unsigned int n) { m_version_minor = n; }
 
 	/// sets the length of the POST content (in bytes)
-	inline void setContentLength(const unsigned long n) { m_content_length = n; }
+	inline void setContentLength(const size_t n) { m_content_length = n; }
 	
 	/// sets requester IP address
 	inline void setRemoteIp(const boost::asio::ip::address& ip) { m_remote_ip = ip; }
@@ -226,7 +226,7 @@ private:
 	unsigned int					m_version_minor;
 	
 	/// the length of the POST content (in bytes)
-	unsigned long					m_content_length;
+	size_t							m_content_length;
 
 	/// the POST content, if any was sent with the request
 	boost::scoped_array<char>		m_post_content;

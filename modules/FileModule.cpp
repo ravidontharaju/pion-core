@@ -385,7 +385,7 @@ FileModule::addCacheEntry(const std::string& relative_path,
 	if (! placeholder) {
 		cache_entry.update();
 		try { cache_entry.read(); }
-		catch (std::exception& e) {
+		catch (std::exception&) {
 			PION_LOG_ERROR(m_logger, "Unable to add file to cache: "
 						   << file_path.file_string());
 			return std::make_pair(m_cache_map.end(), false);

@@ -61,7 +61,7 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		<< request->getVersionMajor() << '.' << request->getVersionMinor()
 		<< HTTPTypes::STRING_CRLF
 		<< "Content length: "
-		<< request->getContentLength()
+		<< (unsigned long)request->getContentLength()
 		<< HTTPTypes::STRING_CRLF
 		<< HTTPTypes::STRING_CRLF;
 			 

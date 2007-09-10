@@ -316,7 +316,7 @@ private:
 	std::string								m_content_type;
 	
 	/// The length (in bytes) of the response content to be sent (Content-Length)
-	unsigned long							m_content_length;
+	size_t									m_content_length;
 };
 
 
