@@ -110,6 +110,9 @@ void PionEngine::shutdown(void)
 
 	} else {
 	
+		// Stop the service to make sure for certain that no events are pending
+		m_asio_service.stop();
+		
 		// Make sure that the servers and thread pool is empty
 		m_servers.clear();
 		m_thread_pool.clear();
