@@ -1,4 +1,4 @@
-Version 0.3.2 (2007-09-xx)
+Version 0.3.2 (2007-09-11)
 ==========================
 
 * Added support for MSVC compiler (see builds/VC/libpion.vcproj file)

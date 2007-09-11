@@ -37,7 +37,7 @@ the Visual Studio 2005 Command Prompt, change to the Boost build directory,
 and type:
 
 bjam --toolset=msvc --with-thread --with-system --with-filesystem \
-	--with-regex --with-date-time debug release threading=multi stage
+	--with-regex --with-date_time debug release threading=multi stage
 
 You may leave out the --with-... options if you wish to build everything.  Note
 that the "regex" and "date_time" libraries are required only to avoid errors
