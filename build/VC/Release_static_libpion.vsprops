@@ -13,6 +13,6 @@
 	/>
 	<Tool
 		Name="VCLibrarianTool"
-		AdditionalDependencies="libboost_system-vc80-mt-s-1_34_1.lib libboost_thread-vc80-mt-s-1_34_1.lib libboost_filesystem-vc80-mt-s-1_34_1.lib"
+		AdditionalDependencies="libboost_system-vc80-mt-s.lib libboost_thread-vc80-mt-s.lib libboost_filesystem-vc80-mt-s.lib"
 	/>
 </VisualStudioPropertySheet>
