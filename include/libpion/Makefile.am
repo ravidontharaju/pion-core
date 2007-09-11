@@ -8,3 +8,5 @@ libpion_include_HEADERS = PionConfig.hpp PionLogger.hpp \
 	PionEngine.hpp TCPConnection.hpp TCPServer.hpp \
 	HTTPTypes.hpp HTTPModule.hpp HTTPRequest.hpp HTTPResponse.hpp \
 	HTTPRequestParser.hpp HTTPServer.hpp
+
+EXTRA_DIST = PionConfig.hpp.win
