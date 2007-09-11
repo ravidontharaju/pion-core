@@ -107,6 +107,16 @@ void PionEngine::shutdown(void)
 
 		m_is_running = false;
 		m_engine_has_stopped.notify_all();
+
+	} else {
+	
+		// Make sure that the servers and thread pool is empty
+		m_servers.clear();
+		m_thread_pool.clear();
+
+		// Make sure anyone waiting on shutdown gets notified
+		// even if the server did not startup successfully
+		m_engine_has_stopped.notify_all();
 	}
 }
 
