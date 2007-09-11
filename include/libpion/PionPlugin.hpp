@@ -91,6 +91,28 @@ public:
 	}
 	
 	/**
+	 * finds an entry point for a plugin that is statically linked
+	 *
+	 * @param plugin_name the name of the plugin to look for
+	 * @param create_func - pointer to the function to be used in to create plugin object
+	 * @param destroy_func - pointer to the function to be used to release plugin object
+	 */
+	static bool findStaticEntryPoint(const std::string& plugin_name,
+									 void **create_func,
+									 void **destroy_func);
+	
+	/**
+	 * adds an entry point for a plugin that is statically linked
+	 *
+	 * @param plugin_name the name of the plugin to add
+	 * @param create_func - pointer to the function to be used in to create plugin object
+	 * @param destroy_func - pointer to the function to be used to release plugin object
+	 */
+	static void addStaticEntryPoint(const std::string& plugin_name,
+									void *create_func,
+									void *destroy_func);
+	
+	/**
 	 * updates path for cygwin oddities, if necessary
 	 *
 	 * @param final_path path object for the file, will be modified if necessary
@@ -134,10 +156,10 @@ public:
 	void open(const std::string& plugin_file);
 
 	/**
-	* opens plug-in library that statically linked to the main module.
+	* opens plug-in library that is statically linked into the program
 	* 
 	* @param plugin_name plugin name to be used in future references
-	* @param create_function - pointer to the function to be used in to create plugin object
+	* @param create_func - pointer to the function to be used in to create plugin object
 	* @param destroy_func - pointer to the function to be used to release plugin object
 	*
 	*/
@@ -147,14 +169,6 @@ public:
 
 	/// closes plug-in library
 	inline void close(void) { releaseData(); }
-
-	static bool findEntryPoint(const std::string& plugin_name,
-							   void **create_func,
-							   void **destroy_func);
-
-	static void addEntryPoint(const std::string& plugin_name,
-							  void *create_func,
-							  void *destroy_func);
 
 protected:
 	
@@ -273,6 +287,18 @@ private:
 	/// data type that maps plug-in names to their shared library data
 	typedef std::map<std::string, PionPluginData*>	PluginMap;
 	
+	/// data type for keeping track of the entry points for static plugins
+	class StaticEntryPoint
+	{
+	public:
+		StaticEntryPoint(const std::string& name, void *create, void *destroy)
+			: m_module_name(name), m_create_func(create), m_destroy_func(destroy)
+			{}
+		std::string  m_module_name;
+		void *       m_create_func;
+		void *       m_destroy_func;
+	};
+	
 	
 	/// name of function defined in object code to create a new plug-in instance
 	static const std::string			PION_PLUGIN_CREATE;
@@ -295,21 +321,11 @@ private:
 	/// mutex to make class thread-safe
 	static boost::mutex					m_plugin_mutex;
 
+	/// list of entry points for statically linked modules
+	static std::list<StaticEntryPoint>	m_entry_point_list;
+
 	/// points to the shared library and functions used by the plug-in
 	PionPluginData *					m_plugin_data;
-
-	/// storage for entry points for statically linked modules
-	class ModuleEntryPoint
-	{
-	public:
-		ModuleEntryPoint(const std::string& name, void *create, void *destroy):
-		  m_module_name(name), m_create_func(create), m_destroy_func(destroy){}
-		std::string  m_module_name;
-		void *       m_create_func;
-		void *       m_destroy_func;
-	};
-
-	static std::list<ModuleEntryPoint> *	m_entryPointList;
 };
 
 
@@ -362,6 +378,7 @@ public:
 	}
 };
 
+
 /**
 * Macros to declare entry points for statically linked modules in accordance
 * with the general naming convention.
@@ -381,13 +398,14 @@ public:
 	class module_name;						\
 	extern "C" module_name *pion_create_##module_name(void); \
 	extern "C" void pion_destroy_##module_name(module_name *module_ptr); \
-	static pion::EntryPointHelper helper_##module_name(#module_name, pion_create_##module_name, pion_destroy_##module_name);
+	static pion::StaticEntryPointHelper helper_##module_name(#module_name, pion_create_##module_name, pion_destroy_##module_name);
 
-class EntryPointHelper{
+/// used by PION_DECLARE_MODULE to add an entry point for static-linked modules
+class StaticEntryPointHelper {
 public:
-	EntryPointHelper(const std::string& name, void *create, void *destroy)
+	StaticEntryPointHelper(const std::string& name, void *create, void *destroy)
 	{
-		pion::PionPlugin::addEntryPoint(name, create, destroy);
+		pion::PionPlugin::addStaticEntryPoint(name, create, destroy);
 	}
 };
 

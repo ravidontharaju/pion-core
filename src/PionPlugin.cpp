@@ -33,7 +33,7 @@ const std::string			PionPlugin::PION_CONFIG_EXTENSION(".conf");
 std::vector<std::string>	PionPlugin::m_plugin_dirs;
 PionPlugin::PluginMap		PionPlugin::m_plugin_map;
 boost::mutex				PionPlugin::m_plugin_mutex;
-std::list<PionPlugin::ModuleEntryPoint>   *PionPlugin::m_entryPointList=NULL;
+std::list<PionPlugin::StaticEntryPoint>   PionPlugin::m_entry_point_list;
 
 	
 // PionEngine member functions
@@ -312,16 +312,19 @@ void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 #endif
 }
 
-bool PionPlugin::findEntryPoint(const std::string& plugin_name,
-								void **create_func,
-								void **destroy_func)
+bool PionPlugin::findStaticEntryPoint(const std::string& plugin_name,
+									  void **create_func,
+									  void **destroy_func)
 {
-	if (m_entryPointList==NULL) {
-		return false;
-	}
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
 
-	for (std::list<ModuleEntryPoint>::const_iterator i = m_entryPointList->begin();
-		 i != m_entryPointList->end(); ++i) {
+	// check simple case first: no entry points exist
+	if (m_entry_point_list.empty())
+		return false;
+
+	// try to find the entry point for the module
+	for (std::list<StaticEntryPoint>::const_iterator i = m_entry_point_list.begin();
+		 i != m_entry_point_list.end(); ++i) {
 			if (i->m_module_name==plugin_name) {
 				*create_func  = i->m_create_func;
 				*destroy_func = i->m_destroy_func;
@@ -331,15 +334,12 @@ bool PionPlugin::findEntryPoint(const std::string& plugin_name,
 	return false;
 }
 
-void PionPlugin::addEntryPoint(const std::string& plugin_name,
-							   void *create_func,
-							   void *destroy_func)
+void PionPlugin::addStaticEntryPoint(const std::string& plugin_name,
+									 void *create_func,
+									 void *destroy_func)
 {
-	if (m_entryPointList == NULL)
-		m_entryPointList = new std::list<ModuleEntryPoint>();
-
-	if (m_entryPointList)
-		m_entryPointList->push_back(ModuleEntryPoint(plugin_name, create_func, destroy_func));
+	boost::mutex::scoped_lock plugin_lock(m_plugin_mutex);
+	m_entry_point_list.push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
 }
 
 }	// end namespace pion

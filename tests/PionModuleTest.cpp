@@ -15,7 +15,8 @@
 	#include <signal.h>
 #endif
 
-
+// these are used only when linking to static HTTP module libraries
+// #ifdef PION_STATIC_LINKING
 PION_DECLARE_MODULE(EchoModule)
 PION_DECLARE_MODULE(FileModule)
 PION_DECLARE_MODULE(HelloModule)

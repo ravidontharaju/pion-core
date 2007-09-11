@@ -146,8 +146,8 @@ void HTTPServer::loadModule(const std::string& resource, const std::string& modu
 	std::string module_file;
 	
 	// check if module is statically linked, and if not, try to resolve for dynamic
-	is_static = PionPlugin::findEntryPoint(module_name, &create_func, &destroy_func);
-	if (!is_static){
+	is_static = PionPlugin::findStaticEntryPoint(module_name, &create_func, &destroy_func);
+	if (!is_static) {
 		if (!PionPlugin::findPluginFile(module_file, module_name))
 			throw PionPlugin::PluginNotFoundException(module_name);
 	}
