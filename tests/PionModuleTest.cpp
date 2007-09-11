@@ -16,11 +16,11 @@
 #endif
 
 
-DECLARE_MODULE(EchoModule)
-DECLARE_MODULE(FileModule)
-DECLARE_MODULE(HelloModule)
-DECLARE_MODULE(LogModule)
-DECLARE_MODULE(CookieModule)
+PION_DECLARE_MODULE(EchoModule)
+PION_DECLARE_MODULE(FileModule)
+PION_DECLARE_MODULE(HelloModule)
+PION_DECLARE_MODULE(LogModule)
+PION_DECLARE_MODULE(CookieModule)
 
 using namespace std;
 using namespace pion;

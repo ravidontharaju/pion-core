@@ -368,16 +368,16 @@ public:
 *
 * Typical use:
 * @code
-* DECLARE_MODULE(EchoModule)
+* PION_DECLARE_MODULE(EchoModule)
 * ....
-* DECLARE_MODULE(FileModule)
+* PION_DECLARE_MODULE(FileModule)
 *
 * @endcode
 *
 */
 #ifdef PION_STATIC_LINKING
 
-#define DECLARE_MODULE(module_name)	\
+#define PION_DECLARE_MODULE(module_name)	\
 	class module_name;						\
 	extern "C" module_name *pion_create_##module_name(void); \
 	extern "C" void pion_destroy_##module_name(module_name *module_ptr); \
@@ -393,7 +393,7 @@ public:
 
 #else
 
-#define DECLARE_MODULE(module_name)
+#define PION_DECLARE_MODULE(module_name)
 
 #endif
 
