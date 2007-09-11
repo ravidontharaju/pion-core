@@ -7,6 +7,8 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
+#include "LogModule.hpp"
+
 #if defined(PION_HAVE_LOG4CXX)
 	#include <log4cxx/spi/loggingevent.h>
 	#include <boost/lexical_cast.hpp>
@@ -17,8 +19,8 @@
 	#include <log4cpp/BasicLayout.hh>
 #endif
 
-#include "LogModule.hpp"
 #include <libpion/HTTPResponse.hpp>
+
 
 using namespace pion;
 
