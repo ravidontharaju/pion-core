@@ -15,4 +15,4 @@ PionModuleTest_LDADD = ../src/libpion.la @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @
 PionModuleTest_DEPENDENCIES = ../src/libpion.la
 
 EXTRA_DIST = nomodules.conf testmodules.conf xcodemodules.conf \
-	testmodules.html sslkey.pem
+	testmodules.html vcmodules.conf sslkey.pem
