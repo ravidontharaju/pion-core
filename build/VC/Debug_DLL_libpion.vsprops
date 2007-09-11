@@ -15,7 +15,6 @@
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalDependencies="boost_filesystem-vc80-mt-gd.lib boost_thread-vc80-mt-gd.lib boost_system-vc80-mt-gd.lib"
 		LinkIncremental="2"
 		GenerateDebugInformation="true"
 	/>
