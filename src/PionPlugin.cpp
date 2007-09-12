@@ -312,31 +312,17 @@ void *PionPlugin::getLibrarySymbol(void *lib_handle, const std::string& symbol)
 #endif
 }
 
-PionPlugin::StaticEntryPointList& PionPlugin::getStaticEntryPoints(void)
-{
-	static boost::mutex	entry_points_mutex;
-	if (m_entry_points_ptr == NULL) {
-		boost::mutex::scoped_lock entry_points_lock(entry_points_mutex);
-		if (m_entry_points_ptr == NULL)
-			m_entry_points_ptr = new StaticEntryPointList;
-	}
-	return *m_entry_points_ptr;
-}
-
 bool PionPlugin::findStaticEntryPoint(const std::string& plugin_name,
 									  void **create_func,
 									  void **destroy_func)
 {
-	// get the list of static entry points
-	StaticEntryPointList& entry_points = getStaticEntryPoints();
-	
 	// check simple case first: no entry points exist
-	if (entry_points.empty())
+	if (m_entry_points_ptr == NULL || m_entry_points_ptr->empty())
 		return false;
 
 	// try to find the entry point for the plugin
-	for (std::list<StaticEntryPoint>::const_iterator i = entry_points.begin();
-		 i != entry_points.end(); ++i) {
+	for (std::list<StaticEntryPoint>::const_iterator i = m_entry_points_ptr->begin();
+		 i != m_entry_points_ptr->end(); ++i) {
 			if (i->m_plugin_name==plugin_name) {
 				*create_func  = i->m_create_func;
 				*destroy_func = i->m_destroy_func;
@@ -350,7 +336,7 @@ void PionPlugin::addStaticEntryPoint(const std::string& plugin_name,
 									 void *create_func,
 									 void *destroy_func)
 {
-	getStaticEntryPoints().push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
+	m_entry_points_ptr->push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
 }
 
 }	// end namespace pion
