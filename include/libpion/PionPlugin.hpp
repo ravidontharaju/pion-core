@@ -237,6 +237,28 @@ protected:
 	
 private:
 
+	/// data type for keeping track of the entry points for static plugins
+	class StaticEntryPoint
+	{
+	public:
+		StaticEntryPoint(const std::string& name, void *create, void *destroy)
+			: m_plugin_name(name), m_create_func(create), m_destroy_func(destroy)
+			{}
+		std::string  m_plugin_name;
+		void *       m_create_func;
+		void *       m_destroy_func;
+	};
+
+	/// data type for a list of static entry points
+	typedef std::list<StaticEntryPoint>		StaticEntryPointList;
+	
+	/// data type that maps plug-in names to their shared library data
+	typedef std::map<std::string, PionPluginData*>	PluginMap;
+
+	
+	/// returns the list of static entry points
+	static StaticEntryPointList& getStaticEntryPoints(void);
+
 	/**
 	 * searches directories for a valid plug-in file
 	 *
@@ -282,22 +304,6 @@ private:
 	
 	/// returns the address of a library symbal
 	static void *getLibrarySymbol(void *lib_handle, const std::string& symbol);
-
-	
-	/// data type that maps plug-in names to their shared library data
-	typedef std::map<std::string, PionPluginData*>	PluginMap;
-	
-	/// data type for keeping track of the entry points for static plugins
-	class StaticEntryPoint
-	{
-	public:
-		StaticEntryPoint(const std::string& name, void *create, void *destroy)
-			: m_module_name(name), m_create_func(create), m_destroy_func(destroy)
-			{}
-		std::string  m_module_name;
-		void *       m_create_func;
-		void *       m_destroy_func;
-	};
 	
 	
 	/// name of function defined in object code to create a new plug-in instance
@@ -321,8 +327,8 @@ private:
 	/// mutex to make class thread-safe
 	static boost::mutex					m_plugin_mutex;
 
-	/// list of entry points for statically linked modules
-	static std::list<StaticEntryPoint>	m_entry_point_list;
+	/// list of entry points for statically linked plugins
+	static StaticEntryPointList			*m_entry_points_ptr;
 
 	/// points to the shared library and functions used by the plug-in
 	PionPluginData *					m_plugin_data;
@@ -380,27 +386,27 @@ public:
 
 
 /**
-* Macros to declare entry points for statically linked modules in accordance
+* Macros to declare entry points for statically linked plugins in accordance
 * with the general naming convention.
 *
 * Typical use:
 * @code
-* PION_DECLARE_MODULE(EchoModule)
+* PION_DECLARE_PLUGIN(EchoModule)
 * ....
-* PION_DECLARE_MODULE(FileModule)
+* PION_DECLARE_PLUGIN(FileModule)
 *
 * @endcode
 *
 */
 #ifdef PION_STATIC_LINKING
 
-#define PION_DECLARE_MODULE(module_name)	\
-	class module_name;						\
-	extern "C" module_name *pion_create_##module_name(void); \
-	extern "C" void pion_destroy_##module_name(module_name *module_ptr); \
-	static pion::StaticEntryPointHelper helper_##module_name(#module_name, pion_create_##module_name, pion_destroy_##module_name);
+#define PION_DECLARE_PLUGIN(plugin_name)	\
+	class plugin_name;						\
+	extern "C" plugin_name *pion_create_##plugin_name(void); \
+	extern "C" void pion_destroy_##plugin_name(plugin_name *plugin_ptr); \
+	static pion::StaticEntryPointHelper helper_##plugin_name(#plugin_name, pion_create_##plugin_name, pion_destroy_##plugin_name);
 
-/// used by PION_DECLARE_MODULE to add an entry point for static-linked modules
+/// used by PION_DECLARE_PLUGIN to add an entry point for static-linked plugins
 class StaticEntryPointHelper {
 public:
 	StaticEntryPointHelper(const std::string& name, void *create, void *destroy)
@@ -411,7 +417,7 @@ public:
 
 #else
 
-#define PION_DECLARE_MODULE(module_name)
+#define PION_DECLARE_PLUGIN(plugin_name)
 
 #endif
 

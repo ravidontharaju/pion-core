@@ -17,11 +17,11 @@
 
 // these are used only when linking to static HTTP module libraries
 // #ifdef PION_STATIC_LINKING
-PION_DECLARE_MODULE(EchoModule)
-PION_DECLARE_MODULE(FileModule)
-PION_DECLARE_MODULE(HelloModule)
-PION_DECLARE_MODULE(LogModule)
-PION_DECLARE_MODULE(CookieModule)
+PION_DECLARE_PLUGIN(EchoModule)
+PION_DECLARE_PLUGIN(FileModule)
+PION_DECLARE_PLUGIN(HelloModule)
+PION_DECLARE_PLUGIN(LogModule)
+PION_DECLARE_PLUGIN(CookieModule)
 
 using namespace std;
 using namespace pion;
