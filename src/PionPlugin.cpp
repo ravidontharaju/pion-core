@@ -340,6 +340,8 @@ void PionPlugin::addStaticEntryPoint(const std::string& plugin_name,
 									 void *create_func,
 									 void *destroy_func)
 {
+	if (m_entry_points_ptr == NULL)
+		m_entry_points_ptr = new StaticEntryPointList;
 	m_entry_points_ptr->push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
 }
 
