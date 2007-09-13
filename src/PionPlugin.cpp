@@ -35,6 +35,10 @@ PionPlugin::PluginMap		PionPlugin::m_plugin_map;
 boost::mutex				PionPlugin::m_plugin_mutex;
 PionPlugin::StaticEntryPointList	*PionPlugin::m_entry_points_ptr = NULL;
 
+#ifdef PION_STATIC_LINKING
+	boost::mutex				StaticEntryPointHelper::m_entrypoint_mutex;
+#endif
+
 	
 // PionEngine member functions
 	
