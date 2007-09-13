@@ -35,10 +35,6 @@ PionPlugin::PluginMap		PionPlugin::m_plugin_map;
 boost::mutex				PionPlugin::m_plugin_mutex;
 PionPlugin::StaticEntryPointList	*PionPlugin::m_entry_points_ptr = NULL;
 
-#ifdef PION_STATIC_LINKING
-	boost::mutex				StaticEntryPointHelper::m_entrypoint_mutex;
-#endif
-
 	
 // PionEngine member functions
 	
@@ -340,8 +336,15 @@ void PionPlugin::addStaticEntryPoint(const std::string& plugin_name,
 									 void *create_func,
 									 void *destroy_func)
 {
+	// make sure that this function can only be called by one thread at a time
+	static boost::mutex			entrypoint_mutex;
+	boost::mutex::scoped_lock	entrypoint_lock(entrypoint_mutex);
+
+	// create the entry point list if it doesn't already exist
 	if (m_entry_points_ptr == NULL)
 		m_entry_points_ptr = new StaticEntryPointList;
+	
+	// insert it into the entry point list
 	m_entry_points_ptr->push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
 }
 

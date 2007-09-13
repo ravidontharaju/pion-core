@@ -408,12 +408,8 @@ class StaticEntryPointHelper {
 public:
 	StaticEntryPointHelper(const std::string& name, void *create, void *destroy)
 	{
-		boost::mutex::scoped_lock entrypoint_lock(m_entrypoint_mutex);
 		pion::PionPlugin::addStaticEntryPoint(name, create, destroy);
 	}
-private:
-	/// mutex to make class thread-safe
-	static boost::mutex		m_entrypoint_mutex;
 };
 
 #else
