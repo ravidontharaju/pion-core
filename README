@@ -1,0 +1,9 @@
+This is the root directory for the Pion Platform source code.
+
+Please note that the "libpion" project has been renamed the "Pion 
+Network Library" and is now located in the "net/" subdirectory.
+
+net    -  Pion Network Library
+data   -  Pion Data Library
+store  -  Pion Storage Library
+parse  -  Pion Parser Library
