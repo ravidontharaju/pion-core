@@ -1,9 +1,8 @@
 This is the future home of the "Pion Platform" repository.
 
-Please note that this repository automatically checks out the following:
+Please note that this repository automatically checks-out the following:
 
-pion-common   -  Pion Common Library
-pion-net      -  Pion Network Library
-pion-data     -  Pion Data Library
-pion-storage  -  Pion Storage Library
-
+common   -  Pion Common Library   -  http://svn.atomiclabs.com/pion-common
+net      -  Pion Network Library  -  http://svn.atomiclabs.com/pion-net
+data     -  Pion Data Library     -  http://svn.atomiclabs.com/pion-data
+storage  -  Pion Storage Library  -  http://svn.atomiclabs.com/pion-storage
