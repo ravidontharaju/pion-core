@@ -1,1 +1,7 @@
-This is the future home of the "Pion Common Library" repository.
+This is the home of the "Pion Common Library."
+
+build    -  Project build files for the Pion Common Library
+doc      -  Documentation files for the Pion Common Library
+include  -  Header source files for the Pion Common Library
+src      -  Implementation source files for the Pion Common Library
+tests    -  Unit tests for the Pion Common Library
