@@ -1,6 +1,6 @@
 This is the future home of the "Pion Platform" repository.
 
-Please note that this repository automatically checks-out the following:
+This repository includes links to the following other libraries:
 
 common   -  Pion Common Library   -  http://svn.atomiclabs.com/pion-common
 net      -  Pion Network Library  -  http://svn.atomiclabs.com/pion-net
