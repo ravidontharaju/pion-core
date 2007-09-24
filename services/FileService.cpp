@@ -493,14 +493,14 @@ bool FileService::DiskFile::checkUpdated(void)
 
 
 /// creates new FileService objects
-extern "C" PION_PLUGIN_API FileService *pion_create_FileService(void)
+extern "C" PION_SERVICE_API FileService *pion_create_FileService(void)
 {
 	return new FileService();
 }
 
 
 /// destroys FileService objects
-extern "C" PION_PLUGIN_API void pion_destroy_FileService(FileService *service_ptr)
+extern "C" PION_SERVICE_API void pion_destroy_FileService(FileService *service_ptr)
 {
 	delete service_ptr;
 }

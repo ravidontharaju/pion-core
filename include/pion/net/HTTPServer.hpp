@@ -28,7 +28,7 @@ namespace net {		// begin namespace net (Pion Network Library)
 ///
 /// HTTPServer: a server that handles HTTP connections
 ///
-class PION_LIBRARY_API HTTPServer :
+class PION_NET_API HTTPServer :
 	public TCPServer
 {
 

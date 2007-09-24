@@ -153,14 +153,14 @@ bool LogService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 
 /// creates new LogService objects
-extern "C" PION_PLUGIN_API LogService *pion_create_LogService(void)
+extern "C" PION_SERVICE_API LogService *pion_create_LogService(void)
 {
 	return new LogService();
 }
 
 
 /// destroys LogService objects
-extern "C" PION_PLUGIN_API void pion_destroy_LogService(LogService *service_ptr)
+extern "C" PION_SERVICE_API void pion_destroy_LogService(LogService *service_ptr)
 {
 	delete service_ptr;
 }

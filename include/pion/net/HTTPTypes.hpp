@@ -21,7 +21,7 @@ namespace net {		// begin namespace net (Pion Network Library)
 ///
 /// HTTPTypes: common data types used by HTTP
 /// 
-struct PION_LIBRARY_API HTTPTypes
+struct PION_NET_API HTTPTypes
 {
 	
 	// generic strings used by HTTP

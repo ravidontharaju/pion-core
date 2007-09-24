@@ -2,8 +2,8 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="Release_DLL_libpion"
-	InheritedPropertySheets=".\all_pion_net.vsprops"
+	Name="Release_DLL_pion-net"
+	InheritedPropertySheets=".\all_pion-net.vsprops"
 	>
 	<Tool
 		Name="VCCLCompilerTool"

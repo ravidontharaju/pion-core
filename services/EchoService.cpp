@@ -107,14 +107,14 @@ bool EchoService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 
 /// creates new EchoService objects
-extern "C" PION_PLUGIN_API EchoService *pion_create_EchoService(void)
+extern "C" PION_SERVICE_API EchoService *pion_create_EchoService(void)
 {
 	return new EchoService();
 }
 
 
 /// destroys EchoService objects
-extern "C" PION_PLUGIN_API void pion_destroy_EchoService(EchoService *service_ptr)
+extern "C" PION_SERVICE_API void pion_destroy_EchoService(EchoService *service_ptr)
 {
 	delete service_ptr;
 }

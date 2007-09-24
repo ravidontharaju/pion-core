@@ -105,14 +105,14 @@ bool CookieService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp
 
 
 /// creates new CookieService objects
-extern "C" PION_PLUGIN_API CookieService *pion_create_CookieService(void)
+extern "C" PION_SERVICE_API CookieService *pion_create_CookieService(void)
 {
 	return new CookieService();
 }
 
 
 /// destroys CookieService objects
-extern "C" PION_PLUGIN_API void pion_destroy_CookieService(CookieService *service_ptr)
+extern "C" PION_SERVICE_API void pion_destroy_CookieService(CookieService *service_ptr)
 {
 	delete service_ptr;
 }

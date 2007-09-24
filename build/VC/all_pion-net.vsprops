@@ -2,12 +2,12 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="all_pion_net"
+	Name="all_pion-net"
 	OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(build_root)\include"
+		AdditionalIncludeDirectories="$(PION_COMMON_HOME)\include;$(PION_NET_HOME)\include"
 		PreprocessorDefinitions="WIN32;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_UNICODE;UNICODE;_WIN32_WINNT=0x0500"
 		MinimalRebuild="true"
 		UsePrecompiledHeader="0"

@@ -30,7 +30,7 @@ namespace net {		// begin namespace net (Pion Network Library)
 ///
 /// HTTPResponse: container for HTTP response information
 /// 
-class PION_LIBRARY_API HTTPResponse :
+class PION_NET_API HTTPResponse :
 	public boost::enable_shared_from_this<HTTPResponse>,
 	private boost::noncopyable
 {

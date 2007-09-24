@@ -28,14 +28,14 @@ bool HelloService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 
 
 /// creates new HelloService objects
-extern "C" PION_PLUGIN_API HelloService *pion_create_HelloService(void)
+extern "C" PION_SERVICE_API HelloService *pion_create_HelloService(void)
 {
 	return new HelloService();
 }
 
 
 /// destroys HelloService objects
-extern "C" PION_PLUGIN_API void pion_destroy_HelloService(HelloService *service_ptr)
+extern "C" PION_SERVICE_API void pion_destroy_HelloService(HelloService *service_ptr)
 {
 	delete service_ptr;
 }

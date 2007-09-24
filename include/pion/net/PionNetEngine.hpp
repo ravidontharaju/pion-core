@@ -31,7 +31,7 @@ namespace net {		// begin namespace net (Pion Network Library)
 ///
 /// PionNetEngine: singleton class that manages TCP servers and threads
 /// 
-class PION_LIBRARY_API PionNetEngine :
+class PION_NET_API PionNetEngine :
 	private boost::noncopyable
 {
 public:

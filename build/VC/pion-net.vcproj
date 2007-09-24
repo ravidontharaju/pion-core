@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="PionModuleTest"
-	ProjectGUID="{2CC83526-B419-45E1-A692-6DEA0CD56292}"
-	RootNamespace="PionModuleTest"
+	Name="pion-net"
+	ProjectGUID="{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}"
+	RootNamespace="pion-net"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -17,9 +17,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_DLL|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion_net.vsprops;..\depth_3.vsprops"
+			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets=".\Debug_DLL_pion-net.vsprops;.\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,11 +38,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="BOOST_ALL_DYN_LINK;_DEBUG;_CONSOLE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				DebugInformationFormat="4"
+				PreprocessorDefinitions="PION_NET_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -55,11 +51,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="$(OutDir)/pion_net.lib"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -88,9 +79,9 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_static|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion_net.vsprops;..\depth_3.vsprops"
+			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets=".\Debug_static_pion-net.vsprops;.\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -109,11 +100,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;PION_STATIC_LINKING;_CONSOLE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -125,16 +111,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -146,21 +126,14 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion_net.vsprops;..\depth_3.vsprops"
-			WholeProgramOptimization="1"
+			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets=".\Release_DLL_pion-net.vsprops;.\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -179,9 +152,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="BOOST_ALL_DYN_LINK;NDEBUG;_CONSOLE"
-				RuntimeLibrary="2"
-				DebugInformationFormat="3"
+				PreprocessorDefinitions="PION_NET_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -194,11 +165,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="$(OutDir)/pion_net.lib"
-				LinkIncremental="1"
-				GenerateDebugInformation="true"
-				SubSystem="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -227,9 +193,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release_static|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion_net.vsprops;..\depth_3.vsprops"
+			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets=".\Release_static_pion-net.vsprops;.\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -248,9 +214,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_STATIC_LINKING;NDEBUG;_CONSOLE"
-				RuntimeLibrary="0"
-				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -262,16 +225,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -281,12 +238,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -302,7 +253,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\tests\PionModuleTest.cpp"
+				RelativePath="..\..\src\HTTPRequestParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\HTTPResponse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\HTTPServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\HTTPTypes.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\PionNetEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\TCPServer.cpp"
 				>
 			</File>
 		</Filter>
@@ -311,6 +282,46 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\include\pion\net\HTTPRequest.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\HTTPRequestParser.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\HTTPResponse.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\HTTPServer.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\HTTPTypes.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\PionNet.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\PionNetEngine.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\TCPConnection.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\TCPServer.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\pion\net\WebService.hpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -318,10 +329,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath="..\..\..\doc\README.msvc"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

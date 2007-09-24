@@ -2,15 +2,20 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="Debug_static_libpion"
-	InheritedPropertySheets=".\all_pion_net.vsprops"
+	Name="Debug_DLL_pion-net"
+	InheritedPropertySheets=".\all_pion-net.vsprops"
 	>
 	<Tool
 		Name="VCCLCompilerTool"
 		Optimization="0"
-		PreprocessorDefinitions="PION_STATIC_LINKING;_DEBUG;_LIB"
+		PreprocessorDefinitions="BOOST_ALL_DYN_LINK;_DEBUG;_USRDLL"
 		BasicRuntimeChecks="3"
-		RuntimeLibrary="1"
+		RuntimeLibrary="3"
 		DebugInformationFormat="4"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		LinkIncremental="2"
+		GenerateDebugInformation="true"
 	/>
 </VisualStudioPropertySheet>

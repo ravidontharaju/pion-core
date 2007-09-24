@@ -2,10 +2,14 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="depth_3"
+	Name="depth_2_pion-net"
 	>
 	<UserMacro
-		Name="build_root"
-		Value="..\..\.."
+		Name="PION_COMMON_HOME"
+		Value="..\..\common"
+	/>
+	<UserMacro
+		Name="PION_NET_HOME"
+		Value="..\.."
 	/>
 </VisualStudioPropertySheet>

@@ -26,7 +26,7 @@ namespace net {		// begin namespace net (Pion Network Library)
 ///
 /// TCPServer: a multi-threaded, asynchronous TCP server
 /// 
-class PION_LIBRARY_API TCPServer :
+class PION_NET_API TCPServer :
 	private boost::noncopyable
 {
 public:

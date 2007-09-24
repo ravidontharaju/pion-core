@@ -84,7 +84,7 @@ Update the Visual C++ Directories in the Projects and Solutions section in the
 Options dialog box.  For Include files add "C:\Boost\Include", and for Library
 files add "C:\Boost\Lib".
 
-Now you should be able to build the solution file in build/VC/pion_net_vc.sln.
+Now you should be able to build the solution file in build/VC/pion-net.sln.
 
 
 Running the test programs:
@@ -92,7 +92,7 @@ Running the test programs:
 
 Make sure "C:\Boost\Lib" is on your path.
 
-To test PionModuleTest, try running it with the following command line args:
--c ..\..\..\..\tests\vcmodules.conf
+To test PionServiceTest, try running it with the following command line args:
+-c ..\..\..\..\tests\vcservices.conf
 To run from within the IDE, go to PionModuleTest Property Pages -> Debugging,
 and set 'Command Arguments' to the above and 'Working Directory' to $(OutDir).
