@@ -379,4 +379,5 @@ AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles
-AC_OUTPUT(pion.pc Makefile include/Makefile include/pion/Makefile src/Makefile)
+AC_OUTPUT(pion-common.pc Makefile include/Makefile include/pion/Makefile
+	src/Makefile)
