@@ -388,9 +388,9 @@ public:
 *
 * Typical use:
 * @code
-* PION_DECLARE_PLUGIN(EchoModule)
+* PION_DECLARE_PLUGIN(EchoService)
 * ....
-* PION_DECLARE_PLUGIN(FileModule)
+* PION_DECLARE_PLUGIN(FileService)
 *
 * @endcode
 *
