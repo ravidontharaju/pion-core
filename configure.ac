@@ -14,7 +14,7 @@ AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_SRCDIR(src/PionEngine.cpp)
 
 # Note: AM_CONFIG_HEADER is deprecated
-AC_CONFIG_HEADERS([include/pion/net/PionConfig.hpp])
+#AC_CONFIG_HEADERS([include/pion/net/PionEngine.hpp])
 
 # DO NOT USE autoheader (the .hpp.in file is not automanaged)
 AUTOHEADER="echo autoheader ignored"
@@ -105,66 +105,76 @@ else
 fi
 
 
-# Check for --with-modules
-AC_ARG_WITH([modules],
-    AC_HELP_STRING([--with-modules@<:@=DIR@:>@],[directory where HTTP modules are installed]),
-    [with_modules=$withval],
-    [with_modules=no])
-if test "$with_modules" = "no"; then
+# Check for --with-plugins
+AC_ARG_WITH([plugins],
+    AC_HELP_STRING([--with-plugins@<:@=DIR@:>@],[directory where Pion Plug-ins are installed]),
+    [with_plugins=$withval],
+    [with_plugins=no])
+if test "$with_plugins" = "no"; then
 	if test "x$prefix" = "xNONE"; then
-		PION_MODULES_DIRECTORY=/usr/local/lib/pion/modules
+		PION_PLUGINS_DIRECTORY=/usr/local/lib/pion/plugins
 	else
-		PION_MODULES_DIRECTORY=${prefix}/lib/pion/modules
+		PION_PLUGINS_DIRECTORY=${prefix}/lib/pion/plugins
 	fi
 else
-	PION_MODULES_DIRECTORY=$with_modules
+	PION_PLUGINS_DIRECTORY=$with_plugins
 fi
-AC_MSG_NOTICE([HTTP modules directory: $PION_MODULES_DIRECTORY])
-AC_DEFINE_UNQUOTED([PION_MODULES_DIRECTORY],["$PION_MODULES_DIRECTORY"],[Define to the directory where HTTP modules are installed.])
-AC_SUBST(PION_MODULES_DIRECTORY)
-     
-
-# Check for --with-cygwin
-AC_ARG_WITH([cygwin],
-    AC_HELP_STRING([--with-cygwin@<:@=DIR@:>@],[directory where cygwin is installed]),
-    [with_cygwin=$withval],
-    [with_cygwin=maybe])
-if test "$with_cygwin" = "maybe"; then
-	case "$build_os" in
-	*cygwin*)
-		PION_CYGWIN_DIRECTORY="c:/cygwin"
-		AC_MSG_NOTICE([Cygwin root directory: $PION_CYGWIN_DIRECTORY])
-		;;
-	*)
-		;;
-	esac
-elif test "$with_cygwin" != "no"; then
-	PION_CYGWIN_DIRECTOR="$with_cygwin"
-	AC_MSG_NOTICE([Cygwin root directory: $PION_CYGWIN_DIRECTORY])
-fi
-AC_DEFINE_UNQUOTED([PION_CYGWIN_DIRECTORY],["$PION_CYGWIN_DIRECTORY"],[Define to the directory where cygwin is installed.])
-AC_SUBST(PION_CYGWIN_DIRECTORY)
-
-     
-# Check for unordered container support
-AC_CHECK_HEADERS([unordered_map],[unordered_map_type=unordered_map],[])
-AC_CHECK_HEADERS([ext/hash_map],[unordered_map_type=ext_hash_map],[])
-AC_CHECK_HEADERS([hash_map],[unordered_map_type=hash_map],[])
-if test "$unordered_map_type" = "unordered_map"; then
-	AC_DEFINE([PION_HAVE_UNORDERED_MAP],[1],[Define to 1 if you have the <unordered_map> header file.])
-elif test "$unordered_map_type" = "ext_hash_map"; then
-	AC_DEFINE([PION_HAVE_EXT_HASH_MAP],[1],[Define to 1 if you have the <ext/hash_map> header file.])
-elif test "$unordered_map_type" = "hash_map"; then
-	AC_DEFINE([PION_HAVE_HASH_MAP],[1],[Define to 1 if you have the <hash_map> header file.])
-else
-	AC_MSG_ERROR([C++ compiler does not seem to support unordered containers])
-fi
+AC_MSG_NOTICE([Pion Plug-ins directory: $PION_PLUGINS_DIRECTORY])
+AC_DEFINE_UNQUOTED([PION_PLUGINS_DIRECTORY],["$PION_PLUGINS_DIRECTORY"],[Define to the directory where Pion Plug-ins are installed.])
+AC_SUBST(PION_PLUGINS_DIRECTORY)
 
 
 # Check for Boost
 AX_BOOST_BASE([1.34])
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+
+
+# Check for pion-common library
+AC_ARG_WITH([common],
+    AC_HELP_STRING([--with-common@<:@=DIR@:>@],[location of pion-common library: required]),
+    [ pion_common_location=$withval ], [ find_common_location=true ])
+# Check if common location is specified
+if test "$find_common_location" == "true"; then
+	# No location was specified; try to find it
+	CPPFLAGS_SAVED="$CPPFLAGS"
+	for pion_common_test in $prefix /usr/local ../pion-common
+	do
+		CPPFLAGS="$CPPFLAGS_SAVED -I${pion_common_test}/include"
+		AC_CHECK_HEADERS([pion/PionException.hpp],
+			[pion_common_location="${pion_common_test}"; break],
+			[pion_common_location=""])
+	done	
+	if test "x$pion_common_location" = "x"; then
+		AC_MSG_ERROR(Unable to find the pion-common library: use --with-common)
+	fi
+	AC_MSG_NOTICE(Found pion-common library in $pion_common_location)
+	# Use the location we found
+	CPPFLAGS="$CPPFLAGS_SAVED -I$pion_common_location/include"
+else
+	# Check for pion-common library headers
+	CPPFLAGS="$CPPFLAGS -I$pion_common_location/include"
+	AC_CHECK_HEADERS([pion/PionException.hpp],,AC_MSG_ERROR([Unable to find the pion-common headers in ${pion_common_location}]))
+fi
+# Check for PionConfig.hpp header
+AC_CHECK_HEADERS([pion/PionConfig.hpp],,
+	AC_MSG_ERROR([Found pion-common library but it has not been configured]))
+# Check for pion-common library
+for pion_common_test in $pion_common_location/lib $pion_common_location/src
+do
+	if test -f "$pion_common_test/libpion-common.la"; then
+		PION_COMMON_LIB="$pion_common_test/libpion-common.la"
+		break
+	else
+		PION_COMMON_LIB=""
+	fi
+done
+LIBS="$LIBS_SAVED"
+if test "x$PION_COMMON_LIB" = "x"; then
+	AC_MSG_ERROR(Unable to find libtool file for the pion-common library)
+fi
+AC_MSG_NOTICE([Using pion-common library in $pion_common_location])
+AC_SUBST(PION_COMMON_LIB)
 
 
 # Check for Boost ASIO library
@@ -267,7 +277,7 @@ if test "$without_openssl" != "true"; then
 	fi
 	# Check for OpenSSL headers
 	AC_CHECK_HEADERS([openssl/ssl.h],,AC_MSG_ERROR([Unable to find the OpenSSL headers]))
-	# Check for log4cxx library
+	# Check for openssl library
 	LIBS_SAVED="$LIBS"
 	LIBS="$LIBS_SAVED -lssl -lcrypto"
 	AC_TRY_LINK([#include <openssl/ssl.h>],[ SSL_library_init(); return(0); ],

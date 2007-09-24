@@ -10,9 +10,9 @@
 #ifndef __PION_PION_HEADER__
 #define __PION_PION_HEADER__
 
-#include <pion/net/PionConfig.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
 #include <pion/net/PionEngine.hpp>
-#include <pion/net/PionPlugin.hpp>
 
 
 namespace pion {	// begin namespace pion

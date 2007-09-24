@@ -7,11 +7,11 @@ AM_CPPFLAGS = -I../include
 bin_PROGRAMS = PionServerTest PionModuleTest
 
 PionServerTest_SOURCES = PionServerTest.cpp
-PionServerTest_LDADD = ../src/libpion-net.la @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @PION_SSL_LIB@ @PION_LOG_LIB@
+PionServerTest_LDADD = ../src/libpion-net.la @PION_COMMON_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @PION_SSL_LIB@ @PION_LOG_LIB@
 PionServerTest_DEPENDENCIES = ../src/libpion-net.la
 
 PionModuleTest_SOURCES = PionModuleTest.cpp
-PionModuleTest_LDADD = ../src/libpion-net.la @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @PION_SSL_LIB@ @PION_LOG_LIB@
+PionModuleTest_LDADD = ../src/libpion-net.la @PION_COMMON_LIB@ @BOOST_THREAD_LIB@ @BOOST_SYSTEM_LIB@ @BOOST_FILESYSTEM_LIB@ @PION_SSL_LIB@ @PION_LOG_LIB@
 PionModuleTest_DEPENDENCIES = ../src/libpion-net.la
 
 EXTRA_DIST = nomodules.conf testmodules.conf xcodemodules.conf \

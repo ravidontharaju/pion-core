@@ -16,8 +16,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionLogger.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/net/TCPServer.hpp>
 #include <pion/net/HTTPServer.hpp>
 #include <exception>

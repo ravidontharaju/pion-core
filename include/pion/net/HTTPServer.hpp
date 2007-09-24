@@ -12,9 +12,9 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionException.hpp>
-#include <pion/net/PionPlugin.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
+#include <pion/PionPlugin.hpp>
 #include <pion/net/TCPServer.hpp>
 #include <pion/net/TCPConnection.hpp>
 #include <pion/net/HTTPModule.hpp>

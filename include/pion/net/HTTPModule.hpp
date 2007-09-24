@@ -11,8 +11,8 @@
 #define __PION_HTTPMODULE_HEADER__
 
 #include <boost/noncopyable.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionException.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/TCPConnection.hpp>
 #include <string>

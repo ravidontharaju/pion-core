@@ -20,7 +20,7 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/function.hpp>
-#include <pion/net/PionConfig.hpp>
+#include <pion/PionConfig.hpp>
 #include <string>
 
 

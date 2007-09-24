@@ -15,9 +15,9 @@
 #include <boost/thread/once.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
-#include <pion/net/PionLogger.hpp>
-#include <pion/net/PionException.hpp>
-#include <pion/net/PionHashMap.hpp>
+#include <pion/PionLogger.hpp>
+#include <pion/PionException.hpp>
+#include <pion/PionHashMap.hpp>
 #include <pion/net/HTTPModule.hpp>
 #include <string>
 #include <map>
@@ -32,59 +32,59 @@ class FileModule :
 public:
 	
 	/// exception thrown if the directory configured is not found
-	class DirectoryNotFoundException : public pion::net::PionException {
+	class DirectoryNotFoundException : public pion::PionException {
 	public:
 		DirectoryNotFoundException(const std::string& dir)
-			: pion::net::PionException("FileModule directory not found: ", dir) {}
+			: pion::PionException("FileModule directory not found: ", dir) {}
 	};
 
 	/// exception thrown if the directory configuration option is not a directory
-	class NotADirectoryException : public pion::net::PionException {
+	class NotADirectoryException : public pion::PionException {
 	public:
 		NotADirectoryException(const std::string& dir)
-			: pion::net::PionException("FileModule option is not a directory: ", dir) {}
+			: pion::PionException("FileModule option is not a directory: ", dir) {}
 	};
 
 	/// exception thrown if the file configured is not found
-	class FileNotFoundException : public pion::net::PionException {
+	class FileNotFoundException : public pion::PionException {
 	public:
 		FileNotFoundException(const std::string& file)
-			: pion::net::PionException("FileModule file not found: ", file) {}
+			: pion::PionException("FileModule file not found: ", file) {}
 	};
 	
 	/// exception thrown if the file configuration option is not a file
-	class NotAFileException : public pion::net::PionException {
+	class NotAFileException : public pion::PionException {
 	public:
 		NotAFileException(const std::string& file)
-			: pion::net::PionException("FileModule option is not a file: ", file) {}
+			: pion::PionException("FileModule option is not a file: ", file) {}
 	};
 
 	/// exception thrown if the cache option is set to an invalid value
-	class InvalidCacheException : public pion::net::PionException {
+	class InvalidCacheException : public pion::PionException {
 	public:
 		InvalidCacheException(const std::string& value)
-			: pion::net::PionException("FileModule invalid value for cache option: ", value) {}
+			: pion::PionException("FileModule invalid value for cache option: ", value) {}
 	};
 
 	/// exception thrown if the cache option is set to an invalid value
-	class InvalidScanException : public pion::net::PionException {
+	class InvalidScanException : public pion::PionException {
 	public:
 		InvalidScanException(const std::string& value)
-			: pion::net::PionException("FileModule invalid value for scan option: ", value) {}
+			: pion::PionException("FileModule invalid value for scan option: ", value) {}
 	};
 
 	/// exception thrown if we are unable to read a file from disk
-	class FileReadException : public pion::net::PionException {
+	class FileReadException : public pion::PionException {
 	public:
 		FileReadException(const std::string& value)
-			: pion::net::PionException("FileModule unable to read file: ", value) {}
+			: pion::PionException("FileModule unable to read file: ", value) {}
 	};
 
 	/// exception thrown if we do not know how to response (should never happen)
-	class UndefinedResponseException : public pion::net::PionException {
+	class UndefinedResponseException : public pion::PionException {
 	public:
 		UndefinedResponseException(const std::string& value)
-			: pion::net::PionException("FileModule has an undefined response: ", value) {}
+			: pion::PionException("FileModule has an undefined response: ", value) {}
 	};
 	
 	

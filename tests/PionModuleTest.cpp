@@ -143,10 +143,10 @@ int main (int argc, char *argv[])
 	
 	try {
 		// add the modules installation directory to our path
-		try { Pion::addPluginDirectory(PION_MODULES_DIRECTORY); }
+		try { Pion::addPluginDirectory(PION_PLUGINS_DIRECTORY); }
 		catch (PionPlugin::DirectoryNotFoundException&) {
 			PION_LOG_WARN(main_log, "Default modules directory does not exist: "
-				<< PION_MODULES_DIRECTORY);
+				<< PION_PLUGINS_DIRECTORY);
 		}
 
 		// create a server for HTTP & add the Hello module

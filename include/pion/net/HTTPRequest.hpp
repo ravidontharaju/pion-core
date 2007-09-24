@@ -14,7 +14,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/asio.hpp>
-#include <pion/net/PionConfig.hpp>
+#include <pion/PionConfig.hpp>
 #include <pion/net/HTTPTypes.hpp>
 #include <string>
 

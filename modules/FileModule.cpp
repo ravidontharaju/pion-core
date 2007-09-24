@@ -13,7 +13,7 @@
 #include <algorithm>
 
 #include "FileModule.hpp"
-#include <pion/net/PionPlugin.hpp>
+#include <pion/PionPlugin.hpp>
 #include <pion/net/HTTPResponse.hpp>
 
 using namespace pion;

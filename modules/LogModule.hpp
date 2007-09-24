@@ -12,7 +12,7 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <pion/net/PionLogger.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/net/HTTPModule.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <string>

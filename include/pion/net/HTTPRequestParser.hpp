@@ -15,8 +15,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/logic/tribool.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionLogger.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/TCPConnection.hpp>
 #include <string>
