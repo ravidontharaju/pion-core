@@ -10,7 +10,7 @@
 #ifndef __PION_HELLOSERVICE_HEADER__
 #define __PION_HELLOSERVICE_HEADER__
 
-#include <pion/net/HTTPService.hpp>
+#include <pion/net/WebService.hpp>
 
 
 ///

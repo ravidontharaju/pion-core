@@ -2,7 +2,7 @@
 # pion-net automake configuration file 
 # ------------------------------------
 
-SUBDIRS = include src modules tests
+SUBDIRS = include src services tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pion-net.pc

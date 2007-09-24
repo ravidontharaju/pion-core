@@ -8,17 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		E306A5520C23086D004DE0C0 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E306A5530C230871004DE0C0 /* HelloModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918FC0BFE5BDE001E1387 /* HelloModule.cpp */; };
-		E306A5540C230871004DE0C0 /* HelloModule.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5D080C05226500A64F0D /* HelloModule.hpp */; };
 		E306A5630C23097A004DE0C0 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E306A5640C230982004DE0C0 /* EchoModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30CFF3D0C0276C3007493DC /* EchoModule.cpp */; };
-		E306A5650C230983004DE0C0 /* EchoModule.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5D060C05226500A64F0D /* EchoModule.hpp */; };
 		E306A56D0C2309B8004DE0C0 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E306A56E0C2309BD004DE0C0 /* LogModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30CFF4A0C028019007493DC /* LogModule.cpp */; };
-		E306A56F0C2309BE004DE0C0 /* LogModule.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5D090C05226500A64F0D /* LogModule.hpp */; };
 		E306A5770C2309EF004DE0C0 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E306A5780C2309F6004DE0C0 /* FileModule.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35A5D070C05226500A64F0D /* FileModule.hpp */; };
-		E306A5790C2309F6004DE0C0 /* FileModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30CFF490C028019007493DC /* FileModule.cpp */; };
 		E33288D50BEE5122006D0556 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E33288DF0BEE5172006D0556 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E33661800CA1F28600C7E1FC /* HTTPRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E33661710CA1F28600C7E1FC /* HTTPRequest.hpp */; };
@@ -52,12 +44,20 @@
 		E34918D20BFE5B94001E1387 /* PionEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918C40BFE5B94001E1387 /* PionEngine.cpp */; };
 		E34918D40BFE5B94001E1387 /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918C60BFE5B94001E1387 /* TCPServer.cpp */; };
 		E34918FF0BFE5C0D001E1387 /* PionServerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E34918FE0BFE5BFB001E1387 /* PionServerTest.cpp */; };
-		E352F41C0C22F4B600A7946C /* CookieModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B018690C0E3CB0001F7D75 /* CookieModule.cpp */; };
-		E352F41D0C22F4B700A7946C /* CookieModule.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B0186A0C0E3CB0001F7D75 /* CookieModule.hpp */; };
 		E352F4200C22F4DC00A7946C /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E36F2D8D0CA76C8300120C6D /* WebService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2D8C0CA76C8300120C6D /* WebService.hpp */; };
 		E36F2D8E0CA76C8300120C6D /* WebService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2D8C0CA76C8300120C6D /* WebService.hpp */; };
 		E36F2DB20CA775EB00120C6D /* PionServiceTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DB10CA775EB00120C6D /* PionServiceTest.cpp */; };
+		E36F2DF00CA7774200120C6D /* CookieService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DE50CA7770C00120C6D /* CookieService.cpp */; };
+		E36F2DF10CA7774300120C6D /* CookieService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2DE60CA7770C00120C6D /* CookieService.hpp */; };
+		E36F2DF20CA7774900120C6D /* HelloService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DEB0CA7770C00120C6D /* HelloService.cpp */; };
+		E36F2DF30CA7774A00120C6D /* HelloService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2DEC0CA7770C00120C6D /* HelloService.hpp */; };
+		E36F2DF40CA7775000120C6D /* EchoService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2DE80CA7770C00120C6D /* EchoService.hpp */; };
+		E36F2DF50CA7775000120C6D /* EchoService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DE70CA7770C00120C6D /* EchoService.cpp */; };
+		E36F2DF60CA7775600120C6D /* LogService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DED0CA7770C00120C6D /* LogService.cpp */; };
+		E36F2DF70CA7775600120C6D /* LogService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2DEE0CA7770C00120C6D /* LogService.hpp */; };
+		E36F2DF80CA7775C00120C6D /* FileService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36F2DE90CA7770C00120C6D /* FileService.cpp */; };
+		E36F2DF90CA7775D00120C6D /* FileService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36F2DEA0CA7770C00120C6D /* FileService.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -120,13 +120,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E306A54E0C2307EC004DE0C0 /* HelloModule.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = HelloModule.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E306A55D0C230930004DE0C0 /* EchoModule.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = EchoModule.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E306A56C0C2309AD004DE0C0 /* LogModule.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogModule.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E306A5760C2309E3004DE0C0 /* FileModule.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileModule.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E30CFF3D0C0276C3007493DC /* EchoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = EchoModule.cpp; path = ../modules/EchoModule.cpp; sourceTree = SOURCE_ROOT; };
-		E30CFF490C028019007493DC /* FileModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = FileModule.cpp; path = ../modules/FileModule.cpp; sourceTree = SOURCE_ROOT; };
-		E30CFF4A0C028019007493DC /* LogModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = LogModule.cpp; path = ../modules/LogModule.cpp; sourceTree = SOURCE_ROOT; };
+		E306A54E0C2307EC004DE0C0 /* HelloService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = HelloService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A55D0C230930004DE0C0 /* EchoService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = EchoService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A56C0C2309AD004DE0C0 /* LogService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A5760C2309E3004DE0C0 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288330BEE4B14006D0556 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = SOURCE_ROOT; };
 		E33288340BEE4B14006D0556 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = SOURCE_ROOT; };
 		E33288350BEE4B14006D0556 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = SOURCE_ROOT; };
@@ -156,19 +153,22 @@
 		E34918C30BFE5B94001E1387 /* HTTPTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypes.cpp; path = ../src/HTTPTypes.cpp; sourceTree = SOURCE_ROOT; };
 		E34918C40BFE5B94001E1387 /* PionEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionEngine.cpp; path = ../src/PionEngine.cpp; sourceTree = SOURCE_ROOT; };
 		E34918C60BFE5B94001E1387 /* TCPServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = TCPServer.cpp; path = ../src/TCPServer.cpp; sourceTree = SOURCE_ROOT; };
-		E34918FC0BFE5BDE001E1387 /* HelloModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HelloModule.cpp; path = ../modules/HelloModule.cpp; sourceTree = SOURCE_ROOT; };
 		E34918FE0BFE5BFB001E1387 /* PionServerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServerTest.cpp; path = ../tests/PionServerTest.cpp; sourceTree = SOURCE_ROOT; };
 		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E352F4190C22F49100A7946C /* CookieModule.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieModule.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E35A5D060C05226500A64F0D /* EchoModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = EchoModule.hpp; path = ../modules/EchoModule.hpp; sourceTree = SOURCE_ROOT; };
-		E35A5D070C05226500A64F0D /* FileModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = FileModule.hpp; path = ../modules/FileModule.hpp; sourceTree = SOURCE_ROOT; };
-		E35A5D080C05226500A64F0D /* HelloModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloModule.hpp; path = ../modules/HelloModule.hpp; sourceTree = SOURCE_ROOT; };
-		E35A5D090C05226500A64F0D /* LogModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogModule.hpp; path = ../modules/LogModule.hpp; sourceTree = SOURCE_ROOT; };
+		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2D8C0CA76C8300120C6D /* WebService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = WebService.hpp; path = ../include/pion/net/WebService.hpp; sourceTree = SOURCE_ROOT; };
 		E36F2DB10CA775EB00120C6D /* PionServiceTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServiceTest.cpp; path = ../tests/PionServiceTest.cpp; sourceTree = SOURCE_ROOT; };
-		E3B018690C0E3CB0001F7D75 /* CookieModule.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CookieModule.cpp; path = ../modules/CookieModule.cpp; sourceTree = SOURCE_ROOT; };
-		E3B0186A0C0E3CB0001F7D75 /* CookieModule.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = CookieModule.hpp; path = ../modules/CookieModule.hpp; sourceTree = SOURCE_ROOT; };
+		E36F2DE50CA7770C00120C6D /* CookieService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CookieService.cpp; path = ../services/CookieService.cpp; sourceTree = SOURCE_ROOT; };
+		E36F2DE60CA7770C00120C6D /* CookieService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = CookieService.hpp; path = ../services/CookieService.hpp; sourceTree = SOURCE_ROOT; };
+		E36F2DE70CA7770C00120C6D /* EchoService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = EchoService.cpp; path = ../services/EchoService.cpp; sourceTree = SOURCE_ROOT; };
+		E36F2DE80CA7770C00120C6D /* EchoService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = EchoService.hpp; path = ../services/EchoService.hpp; sourceTree = SOURCE_ROOT; };
+		E36F2DE90CA7770C00120C6D /* FileService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = FileService.cpp; path = ../services/FileService.cpp; sourceTree = SOURCE_ROOT; };
+		E36F2DEA0CA7770C00120C6D /* FileService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = FileService.hpp; path = ../services/FileService.hpp; sourceTree = SOURCE_ROOT; };
+		E36F2DEB0CA7770C00120C6D /* HelloService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HelloService.cpp; path = ../services/HelloService.cpp; sourceTree = SOURCE_ROOT; };
+		E36F2DEC0CA7770C00120C6D /* HelloService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloService.hpp; path = ../services/HelloService.hpp; sourceTree = SOURCE_ROOT; };
+		E36F2DED0CA7770C00120C6D /* LogService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = LogService.cpp; path = ../services/LogService.cpp; sourceTree = SOURCE_ROOT; };
+		E36F2DEE0CA7770C00120C6D /* LogService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogService.hpp; path = ../services/LogService.hpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -250,7 +250,7 @@
 			children = (
 				E34919230BFE6010001E1387 /* include */,
 				E33288000BEE4A28006D0556 /* src */,
-				E33288090BEE4A28006D0556 /* modules */,
+				E36F2DEF0CA7771500120C6D /* services */,
 				E332880D0BEE4A28006D0556 /* tests */,
 				C6859E8C029090F304C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
@@ -265,11 +265,11 @@
 				E33288B80BEE50B4006D0556 /* libpion-net.dylib */,
 				E34919190BFE5F64001E1387 /* PionServerTest */,
 				E349191B0BFE5F72001E1387 /* PionServiceTest */,
-				E352F4190C22F49100A7946C /* CookieModule.so */,
-				E306A55D0C230930004DE0C0 /* EchoModule.so */,
-				E306A5760C2309E3004DE0C0 /* FileModule.so */,
-				E306A54E0C2307EC004DE0C0 /* HelloModule.so */,
-				E306A56C0C2309AD004DE0C0 /* LogModule.so */,
+				E352F4190C22F49100A7946C /* CookieService.so */,
+				E306A55D0C230930004DE0C0 /* EchoService.so */,
+				E306A5760C2309E3004DE0C0 /* FileService.so */,
+				E306A54E0C2307EC004DE0C0 /* HelloService.so */,
+				E306A56C0C2309AD004DE0C0 /* LogService.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -307,24 +307,6 @@
 			path = ../src;
 			sourceTree = SOURCE_ROOT;
 		};
-		E33288090BEE4A28006D0556 /* modules */ = {
-			isa = PBXGroup;
-			children = (
-				E3B0186A0C0E3CB0001F7D75 /* CookieModule.hpp */,
-				E3B018690C0E3CB0001F7D75 /* CookieModule.cpp */,
-				E35A5D060C05226500A64F0D /* EchoModule.hpp */,
-				E30CFF3D0C0276C3007493DC /* EchoModule.cpp */,
-				E35A5D070C05226500A64F0D /* FileModule.hpp */,
-				E30CFF490C028019007493DC /* FileModule.cpp */,
-				E35A5D080C05226500A64F0D /* HelloModule.hpp */,
-				E34918FC0BFE5BDE001E1387 /* HelloModule.cpp */,
-				E35A5D090C05226500A64F0D /* LogModule.hpp */,
-				E30CFF4A0C028019007493DC /* LogModule.cpp */,
-			);
-			name = modules;
-			path = ../modules;
-			sourceTree = SOURCE_ROOT;
-		};
 		E332880D0BEE4A28006D0556 /* tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -353,6 +335,23 @@
 			path = ../include;
 			sourceTree = "<group>";
 		};
+		E36F2DEF0CA7771500120C6D /* services */ = {
+			isa = PBXGroup;
+			children = (
+				E36F2DE50CA7770C00120C6D /* CookieService.cpp */,
+				E36F2DE60CA7770C00120C6D /* CookieService.hpp */,
+				E36F2DE70CA7770C00120C6D /* EchoService.cpp */,
+				E36F2DE80CA7770C00120C6D /* EchoService.hpp */,
+				E36F2DE90CA7770C00120C6D /* FileService.cpp */,
+				E36F2DEA0CA7770C00120C6D /* FileService.hpp */,
+				E36F2DEB0CA7770C00120C6D /* HelloService.cpp */,
+				E36F2DEC0CA7770C00120C6D /* HelloService.hpp */,
+				E36F2DED0CA7770C00120C6D /* LogService.cpp */,
+				E36F2DEE0CA7770C00120C6D /* LogService.hpp */,
+			);
+			name = services;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -360,7 +359,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5540C230871004DE0C0 /* HelloModule.hpp in Headers */,
+				E36F2DF30CA7774A00120C6D /* HelloService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,7 +367,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5650C230983004DE0C0 /* EchoModule.hpp in Headers */,
+				E36F2DF40CA7775000120C6D /* EchoService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,7 +375,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A56F0C2309BE004DE0C0 /* LogModule.hpp in Headers */,
+				E36F2DF70CA7775600120C6D /* LogService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,7 +383,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5780C2309F6004DE0C0 /* FileModule.hpp in Headers */,
+				E36F2DF90CA7775D00120C6D /* FileService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,16 +425,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E352F41D0C22F4B700A7946C /* CookieModule.hpp in Headers */,
+				E36F2DF10CA7774300120C6D /* CookieService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		E306A54D0C2307EC004DE0C0 /* HelloModule */ = {
+		E306A54D0C2307EC004DE0C0 /* HelloService */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E306A54F0C230828004DE0C0 /* Build configuration list for PBXNativeTarget "HelloModule" */;
+			buildConfigurationList = E306A54F0C230828004DE0C0 /* Build configuration list for PBXNativeTarget "HelloService" */;
 			buildPhases = (
 				E306A54A0C2307EC004DE0C0 /* Headers */,
 				E306A54B0C2307EC004DE0C0 /* Sources */,
@@ -445,14 +444,14 @@
 			);
 			dependencies = (
 			);
-			name = HelloModule;
+			name = HelloService;
 			productName = HelloModule;
-			productReference = E306A54E0C2307EC004DE0C0 /* HelloModule.so */;
+			productReference = E306A54E0C2307EC004DE0C0 /* HelloService.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		E306A55C0C230930004DE0C0 /* EchoModule */ = {
+		E306A55C0C230930004DE0C0 /* EchoService */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E306A5600C23095A004DE0C0 /* Build configuration list for PBXNativeTarget "EchoModule" */;
+			buildConfigurationList = E306A5600C23095A004DE0C0 /* Build configuration list for PBXNativeTarget "EchoService" */;
 			buildPhases = (
 				E306A5590C230930004DE0C0 /* Headers */,
 				E306A55A0C230930004DE0C0 /* Sources */,
@@ -462,14 +461,14 @@
 			);
 			dependencies = (
 			);
-			name = EchoModule;
+			name = EchoService;
 			productName = EchoModule;
-			productReference = E306A55D0C230930004DE0C0 /* EchoModule.so */;
+			productReference = E306A55D0C230930004DE0C0 /* EchoService.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		E306A56B0C2309AD004DE0C0 /* LogModule */ = {
+		E306A56B0C2309AD004DE0C0 /* LogService */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E306A57B0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "LogModule" */;
+			buildConfigurationList = E306A57B0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "LogService" */;
 			buildPhases = (
 				E306A5680C2309AD004DE0C0 /* Headers */,
 				E306A5690C2309AD004DE0C0 /* Sources */,
@@ -479,14 +478,14 @@
 			);
 			dependencies = (
 			);
-			name = LogModule;
+			name = LogService;
 			productName = LogModule;
-			productReference = E306A56C0C2309AD004DE0C0 /* LogModule.so */;
+			productReference = E306A56C0C2309AD004DE0C0 /* LogService.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		E306A5750C2309E3004DE0C0 /* FileModule */ = {
+		E306A5750C2309E3004DE0C0 /* FileService */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E306A57E0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "FileModule" */;
+			buildConfigurationList = E306A57E0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "FileService" */;
 			buildPhases = (
 				E306A5720C2309E3004DE0C0 /* Headers */,
 				E306A5730C2309E3004DE0C0 /* Sources */,
@@ -496,9 +495,9 @@
 			);
 			dependencies = (
 			);
-			name = FileModule;
+			name = FileService;
 			productName = FileModule;
-			productReference = E306A5760C2309E3004DE0C0 /* FileModule.so */;
+			productReference = E306A5760C2309E3004DE0C0 /* FileService.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		E33288A10BEE5044006D0556 /* pion-net: static */ = {
@@ -574,9 +573,9 @@
 			productReference = E349191B0BFE5F72001E1387 /* PionServiceTest */;
 			productType = "com.apple.product-type.tool";
 		};
-		E352F4180C22F49100A7946C /* CookieModule */ = {
+		E352F4180C22F49100A7946C /* CookieService */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieModule" */;
+			buildConfigurationList = E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieService" */;
 			buildPhases = (
 				E352F4150C22F49100A7946C /* Headers */,
 				E352F4160C22F49100A7946C /* Sources */,
@@ -587,9 +586,9 @@
 			dependencies = (
 				E352F41B0C22F49C00A7946C /* PBXTargetDependency */,
 			);
-			name = CookieModule;
+			name = CookieService;
 			productName = CookieModule;
-			productReference = E352F4190C22F49100A7946C /* CookieModule.so */;
+			productReference = E352F4190C22F49100A7946C /* CookieService.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -606,11 +605,11 @@
 				E33288B70BEE50B4006D0556 /* pion-net: dynamic */,
 				E33288D20BEE5104006D0556 /* PionServerTest */,
 				E33288D90BEE513D006D0556 /* PionServiceTest */,
-				E352F4180C22F49100A7946C /* CookieModule */,
-				E306A54D0C2307EC004DE0C0 /* HelloModule */,
-				E306A55C0C230930004DE0C0 /* EchoModule */,
-				E306A56B0C2309AD004DE0C0 /* LogModule */,
-				E306A5750C2309E3004DE0C0 /* FileModule */,
+				E352F4180C22F49100A7946C /* CookieService */,
+				E306A54D0C2307EC004DE0C0 /* HelloService */,
+				E306A55C0C230930004DE0C0 /* EchoService */,
+				E306A56B0C2309AD004DE0C0 /* LogService */,
+				E306A5750C2309E3004DE0C0 /* FileService */,
 			);
 		};
 /* End PBXProject section */
@@ -620,7 +619,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5530C230871004DE0C0 /* HelloModule.cpp in Sources */,
+				E36F2DF20CA7774900120C6D /* HelloService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -628,7 +627,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5640C230982004DE0C0 /* EchoModule.cpp in Sources */,
+				E36F2DF50CA7775000120C6D /* EchoService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,7 +635,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A56E0C2309BD004DE0C0 /* LogModule.cpp in Sources */,
+				E36F2DF60CA7775600120C6D /* LogService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,7 +643,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E306A5790C2309F6004DE0C0 /* FileModule.cpp in Sources */,
+				E36F2DF80CA7775C00120C6D /* FileService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -694,7 +693,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E352F41C0C22F4B600A7946C /* CookieModule.cpp in Sources */,
+				E36F2DF00CA7774200120C6D /* CookieService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -703,27 +702,27 @@
 /* Begin PBXTargetDependency section */
 		E306A5820C230A40004DE0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E352F4180C22F49100A7946C /* CookieModule */;
+			target = E352F4180C22F49100A7946C /* CookieService */;
 			targetProxy = E306A5810C230A40004DE0C0 /* PBXContainerItemProxy */;
 		};
 		E306A5840C230A43004DE0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E306A54D0C2307EC004DE0C0 /* HelloModule */;
+			target = E306A54D0C2307EC004DE0C0 /* HelloService */;
 			targetProxy = E306A5830C230A43004DE0C0 /* PBXContainerItemProxy */;
 		};
 		E306A5860C230A46004DE0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E306A55C0C230930004DE0C0 /* EchoModule */;
+			target = E306A55C0C230930004DE0C0 /* EchoService */;
 			targetProxy = E306A5850C230A46004DE0C0 /* PBXContainerItemProxy */;
 		};
 		E306A5880C230A48004DE0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E306A56B0C2309AD004DE0C0 /* LogModule */;
+			target = E306A56B0C2309AD004DE0C0 /* LogService */;
 			targetProxy = E306A5870C230A48004DE0C0 /* PBXContainerItemProxy */;
 		};
 		E306A58A0C230A4B004DE0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E306A5750C2309E3004DE0C0 /* FileModule */;
+			target = E306A5750C2309E3004DE0C0 /* FileService */;
 			targetProxy = E306A5890C230A4B004DE0C0 /* PBXContainerItemProxy */;
 		};
 		E33288DD0BEE514F006D0556 /* PBXTargetDependency */ = {
@@ -846,7 +845,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = HelloModule;
+				PRODUCT_NAME = HelloService;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -863,7 +862,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = HelloModule;
+				PRODUCT_NAME = HelloService;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -882,7 +881,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = EchoModule;
+				PRODUCT_NAME = EchoService;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -899,7 +898,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = EchoModule;
+				PRODUCT_NAME = EchoService;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -918,7 +917,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = LogModule;
+				PRODUCT_NAME = LogService;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -935,7 +934,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = LogModule;
+				PRODUCT_NAME = LogService;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -954,7 +953,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = FileModule;
+				PRODUCT_NAME = FileService;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -971,7 +970,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = FileModule;
+				PRODUCT_NAME = FileService;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1054,7 +1053,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = CookieModule;
+				PRODUCT_NAME = CookieService;
 				ZERO_LINK = YES;
 			};
 			name = Debug;
@@ -1071,7 +1070,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
-				PRODUCT_NAME = CookieModule;
+				PRODUCT_NAME = CookieService;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1088,7 +1087,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E306A54F0C230828004DE0C0 /* Build configuration list for PBXNativeTarget "HelloModule" */ = {
+		E306A54F0C230828004DE0C0 /* Build configuration list for PBXNativeTarget "HelloService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E306A5500C230828004DE0C0 /* Debug */,
@@ -1097,7 +1096,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E306A5600C23095A004DE0C0 /* Build configuration list for PBXNativeTarget "EchoModule" */ = {
+		E306A5600C23095A004DE0C0 /* Build configuration list for PBXNativeTarget "EchoService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E306A5610C23095A004DE0C0 /* Debug */,
@@ -1106,7 +1105,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E306A57B0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "LogModule" */ = {
+		E306A57B0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "LogService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E306A57C0C2309FD004DE0C0 /* Debug */,
@@ -1115,7 +1114,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E306A57E0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "FileModule" */ = {
+		E306A57E0C2309FD004DE0C0 /* Build configuration list for PBXNativeTarget "FileService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E306A57F0C2309FD004DE0C0 /* Debug */,
@@ -1160,7 +1159,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieModule" */ = {
+		E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E352F4240C22F50500A7946C /* Debug */,

@@ -17,7 +17,7 @@
 /// EchoService: web service that echos back requests (to test request parsing)
 /// 
 class EchoService :
-	public pion::net::HTTPService
+	public pion::net::WebService
 {
 public:
 	EchoService(void) {}
