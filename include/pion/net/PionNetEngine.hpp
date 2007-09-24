@@ -7,8 +7,8 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_PIONENGINE_HEADER__
-#define __PION_PIONENGINE_HEADER__
+#ifndef __PION_PIONNETENGINE_HEADER__
+#define __PION_PIONNETENGINE_HEADER__
 
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
@@ -29,9 +29,9 @@ namespace pion {	// begin namespace pion
 namespace net {		// begin namespace net (Pion Network Library)
 
 ///
-/// PionEngine: singleton class that manages TCP servers and threads
+/// PionNetEngine: singleton class that manages TCP servers and threads
 /// 
-class PION_LIBRARY_API PionEngine :
+class PION_LIBRARY_API PionNetEngine :
 	private boost::noncopyable
 {
 public:
@@ -52,15 +52,15 @@ public:
 
 
 	/// public destructor: not virtual, should not be extended
-	~PionEngine() { shutdown(); }
+	~PionNetEngine() { shutdown(); }
 
 	/**
-     * return an instance of the PionEngine singleton
+     * return an instance of the PionNetEngine singleton
 	 * 
-     * @return PionEngine& instance of PionEngine
+     * @return PionNetEngine& instance of PionNetEngine
 	 */
-	inline static PionEngine& getInstance(void) {
-		boost::call_once(PionEngine::createInstance, m_instance_flag);
+	inline static PionNetEngine& getInstance(void) {
+		boost::call_once(PionNetEngine::createInstance, m_instance_flag);
 		return *m_instance_ptr;
 	}
 
@@ -119,7 +119,7 @@ public:
 private:
 
 	/// private constructor for singleton pattern
-	PionEngine(void)
+	PionNetEngine(void)
 		: m_logger(PION_GET_LOGGER("Pion")),
 		m_is_running(false), m_num_threads(DEFAULT_NUM_THREADS) {}
 
@@ -140,7 +140,7 @@ private:
 	static const unsigned int		DEFAULT_NUM_THREADS;
 
 	/// points to the singleton instance after creation
-	static PionEngine *				m_instance_ptr;
+	static PionNetEngine *			m_instance_ptr;
 	
 	/// used for thread-safe singleton pattern
 	static boost::once_flag			m_instance_flag;

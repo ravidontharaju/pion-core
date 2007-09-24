@@ -9,7 +9,7 @@
 
 #include <boost/bind.hpp>
 #include <pion/net/TCPServer.hpp>
-#include <pion/net/PionEngine.hpp>
+#include <pion/net/PionNetEngine.hpp>
 
 using boost::asio::ip::tcp;
 
@@ -21,9 +21,9 @@ namespace net {		// begin namespace net (Pion Network Library)
 
 TCPServer::TCPServer(const unsigned int tcp_port)
 	: m_logger(PION_GET_LOGGER("Pion.TCPServer")),
-	m_tcp_acceptor(PionEngine::getInstance().getIOService()),
+	m_tcp_acceptor(PionNetEngine::getInstance().getIOService()),
 #ifdef PION_HAVE_SSL
-	m_ssl_context(PionEngine::getInstance().getIOService(), boost::asio::ssl::context::sslv23),
+	m_ssl_context(PionNetEngine::getInstance().getIOService(), boost::asio::ssl::context::sslv23),
 #else
 	m_ssl_context(0),
 #endif

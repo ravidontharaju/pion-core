@@ -8,7 +8,7 @@
 //
 
 #include <boost/bind.hpp>
-#include <pion/net/PionEngine.hpp>
+#include <pion/net/PionNetEngine.hpp>
 #ifdef PION_WIN32
 	// for Windows shutdown crash work-around
 	#include <boost/thread/xtime.hpp>
@@ -18,21 +18,21 @@ namespace pion {	// begin namespace pion
 namespace net {		// begin namespace net (Pion Network Library)
 
 
-// static members of PionEngine
-const unsigned int		PionEngine::DEFAULT_NUM_THREADS = 8;
-PionEngine *			PionEngine::m_instance_ptr = NULL;
-boost::once_flag		PionEngine::m_instance_flag = BOOST_ONCE_INIT;
+// static members of PionNetEngine
+const unsigned int		PionNetEngine::DEFAULT_NUM_THREADS = 8;
+PionNetEngine *			PionNetEngine::m_instance_ptr = NULL;
+boost::once_flag		PionNetEngine::m_instance_flag = BOOST_ONCE_INIT;
 
 
-// PionEngine member functions
+// PionNetEngine member functions
 
-void PionEngine::createInstance(void)
+void PionNetEngine::createInstance(void)
 {
-	static PionEngine pion_instance;
+	static PionNetEngine pion_instance;
 	m_instance_ptr = &pion_instance;
 }
 
-void PionEngine::startup(void)
+void PionNetEngine::startup(void)
 {
 	// check for errors
 	if (m_is_running) throw AlreadyStartedException();
@@ -50,14 +50,14 @@ void PionEngine::startup(void)
 
 	// start multiple threads to handle async tasks
 	for (unsigned int n = 0; n < m_num_threads; ++n) {
-		boost::shared_ptr<boost::thread> new_thread(new boost::thread( boost::bind(&PionEngine::run, this) ));
+		boost::shared_ptr<boost::thread> new_thread(new boost::thread( boost::bind(&PionNetEngine::run, this) ));
 		m_thread_pool.push_back(new_thread);
 	}
 
 	m_is_running = true;
 }
 
-void PionEngine::shutdown(void)
+void PionNetEngine::shutdown(void)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
@@ -124,7 +124,7 @@ void PionEngine::shutdown(void)
 	}
 }
 
-void PionEngine::join(void)
+void PionNetEngine::join(void)
 {
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	if (m_is_running) {
@@ -133,7 +133,7 @@ void PionEngine::join(void)
 	}
 }
 
-void PionEngine::run(void)
+void PionNetEngine::run(void)
 {
 	try {
 		// handle I/O events managed by the service
@@ -143,7 +143,7 @@ void PionEngine::run(void)
 	}
 }
 
-bool PionEngine::addServer(TCPServerPtr tcp_server)
+bool PionNetEngine::addServer(TCPServerPtr tcp_server)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);
@@ -155,7 +155,7 @@ bool PionEngine::addServer(TCPServerPtr tcp_server)
 	return result.second;
 }
 
-HTTPServerPtr PionEngine::addHTTPServer(const unsigned int tcp_port)
+HTTPServerPtr PionNetEngine::addHTTPServer(const unsigned int tcp_port)
 {
 	HTTPServerPtr http_server(HTTPServer::create(tcp_port));
 
@@ -171,7 +171,7 @@ HTTPServerPtr PionEngine::addHTTPServer(const unsigned int tcp_port)
 	return http_server;
 }
 
-TCPServerPtr PionEngine::getServer(const unsigned int tcp_port)
+TCPServerPtr PionNetEngine::getServer(const unsigned int tcp_port)
 {
 	// lock mutex for thread safety
 	boost::mutex::scoped_lock engine_lock(m_mutex);

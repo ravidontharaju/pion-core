@@ -174,7 +174,7 @@ void HTTPServer::loadService(const std::string& resource, const std::string& ser
 	if (is_static){
 		PION_LOG_INFO(m_logger, "Loaded static web service for resource (" << resource << "): " << service_name);
 	} else {
-		PION_LOG_INFO(m_logger, "Loaded web service for resource (" << resource << "): " << service_file);
+		PION_LOG_INFO(m_logger, "Loaded web service for resource (" << resource << "): " << service_name);
 	}
 }
 

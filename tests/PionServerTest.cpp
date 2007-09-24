@@ -8,7 +8,7 @@
 //
 
 #include <boost/bind.hpp>
-#include <pion/net/Pion.hpp>
+#include <pion/net/PionNet.hpp>
 #include <iostream>
 #ifndef PION_WIN32
 	#include <signal.h>
@@ -28,7 +28,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		case CTRL_BREAK_EVENT:
 		case CTRL_CLOSE_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
-			Pion::shutdown();
+			PionNet::shutdown();
 			return TRUE;
 		default:
 			return FALSE;
@@ -37,7 +37,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 #else
 void handle_signal(int sig)
 {
-	Pion::shutdown();
+	PionNet::shutdown();
 }
 #endif
 
@@ -91,16 +91,16 @@ int main (int argc, char *argv[])
 		
 		// create a new server to handle the Hello TCP protocol
 		TCPServerPtr hello_server(new HelloServer(port));
-		if (! Pion::addServer(hello_server)) {
+		if (! PionNet::addServer(hello_server)) {
 			PION_LOG_FATAL(main_log, "Failed to add HelloServer on port " << port);
 			return 1;
 		}
 	
 		// startup pion
-		Pion::startup();
+		PionNet::startup();
 		
 		// run until stopped
-		Pion::join();
+		PionNet::join();
 
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(main_log, e.what());

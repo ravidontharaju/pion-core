@@ -2,7 +2,7 @@
 # pion-net automake configuration file 
 # ------------------------------------
 
-AM_CPPFLAGS = -I../include
+AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include
 
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
 pion_plugins_LTLIBRARIES = HelloService.la EchoService.la \

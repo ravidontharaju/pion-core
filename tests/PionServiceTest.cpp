@@ -8,7 +8,7 @@
 //
 
 #include <boost/bind.hpp>
-#include <pion/net/Pion.hpp>
+#include <pion/net/PionNet.hpp>
 #include <iostream>
 #include <vector>
 #ifndef PION_WIN32
@@ -36,7 +36,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		case CTRL_BREAK_EVENT:
 		case CTRL_CLOSE_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
-			Pion::shutdown();
+			PionNet::shutdown();
 			return TRUE;
 		default:
 			return FALSE;
@@ -45,7 +45,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 #else
 void handle_signal(int sig)
 {
-	Pion::shutdown();
+	PionNet::shutdown();
 }
 #endif
 
@@ -86,7 +86,7 @@ int main (int argc, char *argv[])
 				service_config_file = argv[++argnum];
 			} else if (argv[argnum][1] == 'd' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				// add the service plug-ins directory to the search path
-				try { Pion::addPluginDirectory(argv[++argnum]); }
+				try { PionNet::addPluginDirectory(argv[++argnum]); }
 				catch (PionPlugin::DirectoryNotFoundException&) {
 					std::cerr << "PionServiceTest: Web service plug-ins directory does not exist: "
 						<< argv[argnum] << std::endl;
@@ -143,14 +143,14 @@ int main (int argc, char *argv[])
 	
 	try {
 		// add the Pion plug-ins installation directory to our path
-		try { Pion::addPluginDirectory(PION_PLUGINS_DIRECTORY); }
+		try { PionNet::addPluginDirectory(PION_PLUGINS_DIRECTORY); }
 		catch (PionPlugin::DirectoryNotFoundException&) {
 			PION_LOG_WARN(main_log, "Default plug-ins directory does not exist: "
 				<< PION_PLUGINS_DIRECTORY);
 		}
 
 		// create a server for HTTP & add the Hello Service
-		HTTPServerPtr http_server(Pion::addHTTPServer(port));
+		HTTPServerPtr http_server(PionNet::addHTTPServer(port));
 
 		if (ssl_flag) {
 #ifdef PION_HAVE_SSL
@@ -184,10 +184,10 @@ int main (int argc, char *argv[])
 		}
 	
 		// startup pion
-		Pion::startup();
+		PionNet::startup();
 	
 		// run until stopped
-		Pion::join();
+		PionNet::join();
 		
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(main_log, e.what());
