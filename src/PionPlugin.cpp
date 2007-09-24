@@ -1,6 +1,6 @@
-// ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
-// ------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// pion-common: a collection of common libraries used by the Pion Platform
+// -----------------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
@@ -8,8 +8,8 @@
 //
 
 #include <boost/filesystem/operations.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionPlugin.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
 
 #ifdef PION_WIN32
 	#include <windows.h>
@@ -19,7 +19,6 @@
 
 
 namespace pion {	// begin namespace pion
-namespace net {		// begin namespace net (Pion Network Library)
 	
 // static members of PionEngine
 	
@@ -349,5 +348,4 @@ void PionPlugin::addStaticEntryPoint(const std::string& plugin_name,
 	m_entry_points_ptr->push_back(StaticEntryPoint(plugin_name, create_func, destroy_func));
 }
 
-}	// end namespace net
 }	// end namespace pion

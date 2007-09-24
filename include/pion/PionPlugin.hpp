@@ -1,6 +1,6 @@
-// ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
-// ------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// pion-common: a collection of common libraries used by the Pion Platform
+// -----------------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
@@ -16,12 +16,11 @@
 #include <list>
 #include <boost/thread/mutex.hpp>
 #include <boost/filesystem/path.hpp>
-#include <pion/net/PionConfig.hpp>
-#include <pion/net/PionException.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 
 
 namespace pion {	// begin namespace pion
-namespace net {		// begin namespace net (Pion Network Library)
 
 ///
 /// PionPlugin: base class for plug-in management
@@ -419,7 +418,6 @@ public:
 
 #endif
 
-}	// end namespace net
 }	// end namespace pion
 
 #endif

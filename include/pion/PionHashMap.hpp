@@ -1,6 +1,6 @@
-// ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
-// ------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// pion-common: a collection of common libraries used by the Pion Platform
+// -----------------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
@@ -11,7 +11,7 @@
 #define __PION_PIONHASHMAP_HEADER__
 
 #include <boost/functional/hash.hpp>
-#include <pion/net/PionConfig.hpp>
+#include <pion/PionConfig.hpp>
 
 
 #if defined(PION_HAVE_UNORDERED_MAP)
