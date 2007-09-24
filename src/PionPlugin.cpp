@@ -20,7 +20,7 @@
 
 namespace pion {	// begin namespace pion
 	
-// static members of PionEngine
+// static members of PionPlugin
 	
 const std::string			PionPlugin::PION_PLUGIN_CREATE("pion_create_");
 const std::string			PionPlugin::PION_PLUGIN_DESTROY("pion_destroy_");
@@ -36,7 +36,7 @@ boost::mutex				PionPlugin::m_plugin_mutex;
 PionPlugin::StaticEntryPointList	*PionPlugin::m_entry_points_ptr = NULL;
 
 	
-// PionEngine member functions
+// PionPlugin member functions
 	
 void PionPlugin::checkCygwinPath(boost::filesystem::path& final_path,
 								 const std::string& start_path)

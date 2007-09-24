@@ -60,20 +60,26 @@
 	#pragma warning(disable: 4251)
 	#pragma warning(disable: 4275)
 
-	#ifdef PION_EXPORTS
-		#define PION_LIBRARY_API __declspec(dllexport)
+	#ifdef PION_COMMON_EXPORTS
+		#define PION_COMMON_API __declspec(dllexport)
 	#elif defined PION_STATIC_LINKING
-		#define PION_LIBRARY_API
-
+		#define PION_COMMON_API
 	#else
-		#define PION_LIBRARY_API __declspec(dllimport)
+		#define PION_COMMON_API __declspec(dllimport)
+	#endif
 
+	#ifdef PION_NET_EXPORTS
+		#define PION_NET_API __declspec(dllexport)
+	#elif defined PION_STATIC_LINKING
+		#define PION_NET_API
+	#else
+		#define PION_NET_API __declspec(dllimport)
 	#endif
 
 	#ifdef PION_STATIC_LINKING
-		#define PION_PLUGIN_API 
+		#define PION_SERVICE_API 
 	#else
-		#define PION_PLUGIN_API __declspec(dllexport)
+		#define PION_SERVICE_API __declspec(dllexport)
 	#endif
 
 	/*

@@ -25,7 +25,7 @@ namespace pion {	// begin namespace pion
 ///
 /// PionPlugin: base class for plug-in management
 ///
-class PION_LIBRARY_API PionPlugin {
+class PION_COMMON_API PionPlugin {
 public:
 
 	/// exception thrown if the plug-in file cannot be opened
@@ -401,14 +401,14 @@ public:
 	class plugin_name;						\
 	extern "C" plugin_name *pion_create_##plugin_name(void); \
 	extern "C" void pion_destroy_##plugin_name(plugin_name *plugin_ptr); \
-	static pion::net::StaticEntryPointHelper helper_##plugin_name(#plugin_name, pion_create_##plugin_name, pion_destroy_##plugin_name);
+	static pion::StaticEntryPointHelper helper_##plugin_name(#plugin_name, pion_create_##plugin_name, pion_destroy_##plugin_name);
 
 /// used by PION_DECLARE_PLUGIN to add an entry point for static-linked plugins
 class StaticEntryPointHelper {
 public:
 	StaticEntryPointHelper(const std::string& name, void *create, void *destroy)
 	{
-		pion::net::PionPlugin::addStaticEntryPoint(name, create, destroy);
+		pion::PionPlugin::addStaticEntryPoint(name, create, destroy);
 	}
 };
 
