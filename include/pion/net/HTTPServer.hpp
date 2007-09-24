@@ -17,7 +17,7 @@
 #include <pion/PionPlugin.hpp>
 #include <pion/net/TCPServer.hpp>
 #include <pion/net/TCPConnection.hpp>
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/WebService.hpp>
 #include <string>
 #include <map>
 
@@ -34,18 +34,18 @@ class PION_LIBRARY_API HTTPServer :
 
 public:
 
-	/// exception thrown if a module cannot be found
-	class ModuleNotFoundException : public PionException {
+	/// exception thrown if a web service cannot be found
+	class ServiceNotFoundException : public PionException {
 	public:
-		ModuleNotFoundException(const std::string& resource)
-			: PionException("No modules are identified by the resource: ", resource) {}
+		ServiceNotFoundException(const std::string& resource)
+			: PionException("No web services are identified by the resource: ", resource) {}
 	};
 
-	/// exception thrown if the plug-in configuration file cannot be found
+	/// exception thrown if the web service configuration file cannot be found
 	class ConfigNotFoundException : public PionException {
 	public:
 		ConfigNotFoundException(const std::string& file)
-			: PionException("Module configuration file not found: ", file) {}
+			: PionException("Web service configuration file not found: ", file) {}
 	};
 	
 	/// exception thrown if the plug-in file cannot be opened
@@ -82,56 +82,56 @@ public:
 	virtual ~HTTPServer() {}
 	
 	/**
-	 * adds a new module to the HTTP server
+	 * adds a new web service to the HTTP server
 	 *
-	 * @param resource the resource name or uri-stem to bind to the module
-	 * @param module_ptr a pointer to the module
+	 * @param resource the resource name or uri-stem to bind to the web service
+	 * @param service_ptr a pointer to the web service
 	 */
-	void addModule(const std::string& resource, HTTPModule *module_ptr);
+	void addService(const std::string& resource, WebService *service_ptr);
 	
 	/**
-	 * loads a module from a shared object file
+	 * loads a web service from a shared object file
 	 *
-	 * @param resource the resource name or uri-stem to bind to the module
-	 * @param module_name the name of the module to load (searches plug-in
+	 * @param resource the resource name or uri-stem to bind to the web service
+	 * @param service_name the name of the web service to load (searches plug-in
 	 *        directories and appends extensions)
 	 */
-	void loadModule(const std::string& resource, const std::string& module_name);
+	void loadService(const std::string& resource, const std::string& service_name);
 	
 	/**
-	 * sets a configuration option for the module associated with resource
+	 * sets a configuration option for the web service associated with resource
 	 *
-	 * @param resource the resource name or uri-stem that identifies the module
+	 * @param resource the resource name or uri-stem that identifies the web service
 	 * @param name the name of the configuration option
 	 * @param value the value to set the option to
 	 */
-	void setModuleOption(const std::string& resource,
-						 const std::string& name, const std::string& value);
+	void setServiceOption(const std::string& resource,
+						  const std::string& name, const std::string& value);
 	
 	/**
-	 * Parses a simple module configuration file. Each line in the file starts
-	 * with one of the following commands:
+	 * Parses a simple web service configuration file. Each line in the file
+	 * starts with one of the following commands:
 	 *
-	 * path VALUE  :  adds a directory to the module search path
-	 * module RESOURCE FILE  :  loads module bound to RESOURCE from FILE
-	 * option RESOURCE NAME=VALUE  :  sets module option NAME to VALUE
+	 * path VALUE  :  adds a directory to the web service search path
+	 * service RESOURCE FILE  :  loads web service bound to RESOURCE from FILE
+	 * option RESOURCE NAME=VALUE  :  sets web service option NAME to VALUE
 	 *
 	 * Blank lines or lines that begin with # are ignored as comments.
 	 *
 	 * @param config_name the name of the config file to parse
 	 */
-	void loadModuleConfig(const std::string& config_name);
+	void loadServiceConfig(const std::string& config_name);
 
-	/// clears all the modules that are currently configured
-	void clearModules(void);
+	/// clears all the web services that are currently configured
+	void clearServices(void);
 	
 	/// sets the function that handles bad HTTP requests
 	inline void setBadRequestHandler(BadRequestHandler h) { m_bad_request_handler = h; }
 	
-	/// sets the function that handles requests which match no other module
+	/// sets the function that handles requests which match no other web services
 	inline void setNotFoundHandler(NotFoundHandler h) { m_not_found_handler = h; }
 	
-	/// sets the function that handles requests which match no other module
+	/// sets the function that handles requests which match no other web services
 	inline void setServerErrorHandler(ServerErrorHandler h) { m_server_error_handler = h; }
 
 	
@@ -176,7 +176,7 @@ protected:
 								  TCPConnectionPtr& tcp_conn);
 	
 	/**
-	 * used to send responses when no modules can handle the request
+	 * used to send responses when no web services can handle the request
 	 *
      * @param http_request the new HTTP request to handle
      * @param tcp_conn the TCP connection that has the new request
@@ -204,33 +204,33 @@ protected:
 	
 private:
 	
-	/// used by ModuleMap to associate module objects with plug-in libraries
-	typedef std::pair<HTTPModule *, PionPluginPtr<HTTPModule> >	PluginPair;
+	/// used by WebServiceMap to associate web service objects with plug-in libraries
+	typedef std::pair<WebService *, PionPluginPtr<WebService> >	PluginPair;
 	
-	/// data type for a collection of HTTP modules
-	class ModuleMap
+	/// data type for a collection of web services
+	class WebServiceMap
 		: public std::map<std::string, PluginPair>
 	{
 	public:
 		void clear(void);
-		virtual ~ModuleMap() { ModuleMap::clear(); }
-		ModuleMap(void) {}
+		virtual ~WebServiceMap() { WebServiceMap::clear(); }
+		WebServiceMap(void) {}
 	};
 	
 	
-	/// HTTP modules associated with this server
-	ModuleMap				m_modules;
+	/// Web services associated with this server
+	WebServiceMap			m_services;
 
 	/// mutex to make class thread-safe
 	boost::mutex			m_mutex;
 
-	/// points to the module that handles bad HTTP requests
+	/// points to a function that handles bad HTTP requests
 	BadRequestHandler		m_bad_request_handler;
 	
-	/// points to the module that handles requests which match no other module
+	/// points to a function that handles requests which match no web services
 	NotFoundHandler			m_not_found_handler;
 
-	/// points to the module that handles server errors
+	/// points to the function that handles server errors
 	ServerErrorHandler		m_server_error_handler;
 };
 

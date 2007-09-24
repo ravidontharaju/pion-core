@@ -7,17 +7,17 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include "HelloModule.hpp"
+#include "HelloService.hpp"
 #include <pion/net/HTTPResponse.hpp>
 
 using namespace pion;
 using namespace pion::net;
 
 
-// HelloModule member functions
+// HelloService member functions
 
-/// handles requests for HelloModule
-bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+/// handles requests for HelloService
+bool HelloService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
 	static const std::string HELLO_HTML = "<html><body>Hello World!</body></html>\r\n\r\n";
 	HTTPResponsePtr response(HTTPResponse::create());
@@ -27,15 +27,15 @@ bool HelloModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 }
 
 
-/// creates new HelloModule objects
-extern "C" PION_PLUGIN_API HelloModule *pion_create_HelloModule(void)
+/// creates new HelloService objects
+extern "C" PION_PLUGIN_API HelloService *pion_create_HelloService(void)
 {
-	return new HelloModule();
+	return new HelloService();
 }
 
 
-/// destroys HelloModule objects
-extern "C" PION_PLUGIN_API void pion_destroy_HelloModule(HelloModule *module_ptr)
+/// destroys HelloService objects
+extern "C" PION_PLUGIN_API void pion_destroy_HelloService(HelloService *service_ptr)
 {
-	delete module_ptr;
+	delete service_ptr;
 }

@@ -7,21 +7,21 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_COOKIEMODULE_HEADER__
-#define __PION_COOKIEMODULE_HEADER__
+#ifndef __PION_COOKIESERVICE_HEADER__
+#define __PION_COOKIESERVICE_HEADER__
 
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/WebService.hpp>
 
 
 ///
-/// CookieModule: module that displays and updates cookies
+/// CookieService: web service that displays and updates cookies
 /// 
-class CookieModule :
-	public pion::net::HTTPModule
+class CookieService :
+	public pion::net::WebService
 {
 public:
-	CookieModule(void) {}
-	virtual ~CookieModule() {}
+	CookieService(void) {}
+	virtual ~CookieService() {}
 	virtual bool handleRequest(pion::net::HTTPRequestPtr& request,
 							   pion::net::TCPConnectionPtr& tcp_conn);
 };

@@ -7,21 +7,21 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_HELLOMODULE_HEADER__
-#define __PION_HELLOMODULE_HEADER__
+#ifndef __PION_HELLOSERVICE_HEADER__
+#define __PION_HELLOSERVICE_HEADER__
 
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/HTTPService.hpp>
 
 
 ///
-/// HelloModule: module that responds with "Hello World"
+/// HelloService: web service that responds with "Hello World"
 /// 
-class HelloModule :
-	public pion::net::HTTPModule
+class HelloService :
+	public pion::net::WebService
 {
 public:
-	HelloModule(void) {}
-	virtual ~HelloModule() {}
+	HelloService(void) {}
+	virtual ~HelloService() {}
 	virtual bool handleRequest(pion::net::HTTPRequestPtr& request,
 							   pion::net::TCPConnectionPtr& tcp_conn);
 };

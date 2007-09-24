@@ -7,20 +7,20 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include "CookieModule.hpp"
+#include "CookieService.hpp"
 #include <pion/net/HTTPResponse.hpp>
 
 using namespace pion;
 using namespace pion::net;
 
 
-// CookieModule member functions
+// CookieService member functions
 
-/// handles requests for CookieModule
-bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+/// handles requests for CookieService
+bool CookieService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	static const std::string HEADER_HTML = "<html>\n<head>\n<title>Cookie Module</title>\n"
-		"</head>\n<body>\n\n<h1>Cookie Module</h1>\n";
+	static const std::string HEADER_HTML = "<html>\n<head>\n<title>Cookie Service</title>\n"
+		"</head>\n<body>\n\n<h1>Cookie Service</h1>\n";
 	static const std::string FOOTER_HTML = "\n</body>\n</html>\n";
 
 	// Set Content-type for HTML and write the header
@@ -104,15 +104,15 @@ bool CookieModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_
 }
 
 
-/// creates new CookieModule objects
-extern "C" PION_PLUGIN_API CookieModule *pion_create_CookieModule(void)
+/// creates new CookieService objects
+extern "C" PION_PLUGIN_API CookieService *pion_create_CookieService(void)
 {
-	return new CookieModule();
+	return new CookieService();
 }
 
 
-/// destroys CookieModule objects
-extern "C" PION_PLUGIN_API void pion_destroy_CookieModule(CookieModule *module_ptr)
+/// destroys CookieService objects
+extern "C" PION_PLUGIN_API void pion_destroy_CookieService(CookieService *service_ptr)
 {
-	delete module_ptr;
+	delete service_ptr;
 }

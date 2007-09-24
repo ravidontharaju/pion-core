@@ -7,13 +7,13 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_LOGMODULE_HEADER__
-#define __PION_LOGMODULE_HEADER__
+#ifndef __PION_LOGSERVICE_HEADER__
+#define __PION_LOGSERVICE_HEADER__
 
 #include <boost/thread/mutex.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <pion/PionLogger.hpp>
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/WebService.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <string>
 #include <list>
@@ -29,9 +29,9 @@
 
 
 ///
-/// LogModuleAppender: caches log events in memory for use by LogModule
+/// LogServiceAppender: caches log events in memory for use by LogService
 /// 
-class LogModuleAppender
+class LogServiceAppender
 	#if defined(PION_HAVE_LOG4CXX)
 		: public log4cxx::AppenderSkeleton
 	#elif defined(PION_HAVE_LOG4CPLUS)
@@ -42,8 +42,8 @@ class LogModuleAppender
 {
 public:
 	// default constructor and destructor
-	LogModuleAppender(void);
-	virtual ~LogModuleAppender() {}
+	LogServiceAppender(void);
+	virtual ~LogServiceAppender() {}
 	
 	/// sets the maximum number of log events cached in memory
 	inline void setMaxEvents(unsigned int n) { m_max_events = n; }
@@ -105,26 +105,26 @@ private:
 
 
 ///
-/// LogModule: module that displays log messages
+/// LogService: web service that displays log messages
 /// 
-class LogModule :
-	public pion::net::HTTPModule
+class LogService :
+	public pion::net::WebService
 {
 public:
 	// default constructor and destructor
-	LogModule(void);
-	virtual ~LogModule();
+	LogService(void);
+	virtual ~LogService();
 	
 	/// handles a new HTTP request
 	virtual bool handleRequest(pion::net::HTTPRequestPtr& request,
 							   pion::net::TCPConnectionPtr& tcp_conn);
 
-	/// returns the log appender used by LogModule
-	inline LogModuleAppender& getLogAppender(void) { return *m_log_appender_ptr; }
+	/// returns the log appender used by LogService
+	inline LogServiceAppender& getLogAppender(void) { return *m_log_appender_ptr; }
 	
 private:
 	/// map of file extensions to MIME types
-	LogModuleAppender *		m_log_appender_ptr;
+	LogServiceAppender *	m_log_appender_ptr;
 };
 
 #endif

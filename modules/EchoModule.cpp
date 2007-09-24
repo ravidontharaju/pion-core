@@ -7,7 +7,7 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#include "EchoModule.hpp"
+#include "EchoService.hpp"
 #include <boost/bind.hpp>
 #include <pion/net/HTTPResponse.hpp>
 
@@ -27,12 +27,12 @@ void writeDictionaryTerm(HTTPResponsePtr& response,
 }
 
 
-// EchoModule member functions
+// EchoService member functions
 
-/// handles requests for EchoModule
-bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+/// handles requests for EchoService
+bool EchoService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	// this modules uses static text to test the mixture of "copied" with
+	// this web service uses static text to test the mixture of "copied" with
 	// "static" (no-copy) text
 	static const std::string REQUEST_ECHO_TEXT("[Request Echo]");
 	static const std::string REQUEST_HEADERS_TEXT("[Request Headers]");
@@ -106,15 +106,15 @@ bool EchoModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 }
 
 
-/// creates new EchoModule objects
-extern "C" PION_PLUGIN_API EchoModule *pion_create_EchoModule(void)
+/// creates new EchoService objects
+extern "C" PION_PLUGIN_API EchoService *pion_create_EchoService(void)
 {
-	return new EchoModule();
+	return new EchoService();
 }
 
 
-/// destroys EchoModule objects
-extern "C" PION_PLUGIN_API void pion_destroy_EchoModule(EchoModule *module_ptr)
+/// destroys EchoService objects
+extern "C" PION_PLUGIN_API void pion_destroy_EchoService(EchoService *service_ptr)
 {
-	delete module_ptr;
+	delete service_ptr;
 }

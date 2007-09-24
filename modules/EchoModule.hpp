@@ -7,21 +7,21 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_ECHOMODULE_HEADER__
-#define __PION_ECHOMODULE_HEADER__
+#ifndef __PION_ECHOSERVICE_HEADER__
+#define __PION_ECHOSERVICE_HEADER__
 
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/WebService.hpp>
 
 
 ///
-/// EchoModule: module that echos back requests (to test request parsing)
+/// EchoService: web service that echos back requests (to test request parsing)
 /// 
-class EchoModule :
-	public pion::net::HTTPModule
+class EchoService :
+	public pion::net::HTTPService
 {
 public:
-	EchoModule(void) {}
-	virtual ~EchoModule() {}
+	EchoService(void) {}
+	virtual ~EchoService() {}
 	virtual bool handleRequest(pion::net::HTTPRequestPtr& request,
 							   pion::net::TCPConnectionPtr& tcp_conn);
 };

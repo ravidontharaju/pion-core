@@ -7,8 +7,8 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
-#ifndef __PION_FILEMODULE_HEADER__
-#define __PION_FILEMODULE_HEADER__
+#ifndef __PION_FILESERVICE_HEADER__
+#define __PION_FILESERVICE_HEADER__
 
 #include <boost/functional/hash.hpp>
 #include <boost/filesystem/path.hpp>
@@ -18,16 +18,16 @@
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
-#include <pion/net/HTTPModule.hpp>
+#include <pion/net/WebService.hpp>
 #include <string>
 #include <map>
 
 
 ///
-/// FileModule: module that serves regular files
+/// FileService: web service that serves regular files
 /// 
-class FileModule :
-	public pion::net::HTTPModule
+class FileService :
+	public pion::net::WebService
 {
 public:
 	
@@ -35,78 +35,78 @@ public:
 	class DirectoryNotFoundException : public pion::PionException {
 	public:
 		DirectoryNotFoundException(const std::string& dir)
-			: pion::PionException("FileModule directory not found: ", dir) {}
+			: pion::PionException("FileService directory not found: ", dir) {}
 	};
 
 	/// exception thrown if the directory configuration option is not a directory
 	class NotADirectoryException : public pion::PionException {
 	public:
 		NotADirectoryException(const std::string& dir)
-			: pion::PionException("FileModule option is not a directory: ", dir) {}
+			: pion::PionException("FileService option is not a directory: ", dir) {}
 	};
 
 	/// exception thrown if the file configured is not found
 	class FileNotFoundException : public pion::PionException {
 	public:
 		FileNotFoundException(const std::string& file)
-			: pion::PionException("FileModule file not found: ", file) {}
+			: pion::PionException("FileService file not found: ", file) {}
 	};
 	
 	/// exception thrown if the file configuration option is not a file
 	class NotAFileException : public pion::PionException {
 	public:
 		NotAFileException(const std::string& file)
-			: pion::PionException("FileModule option is not a file: ", file) {}
+			: pion::PionException("FileService option is not a file: ", file) {}
 	};
 
 	/// exception thrown if the cache option is set to an invalid value
 	class InvalidCacheException : public pion::PionException {
 	public:
 		InvalidCacheException(const std::string& value)
-			: pion::PionException("FileModule invalid value for cache option: ", value) {}
+			: pion::PionException("FileService invalid value for cache option: ", value) {}
 	};
 
 	/// exception thrown if the cache option is set to an invalid value
 	class InvalidScanException : public pion::PionException {
 	public:
 		InvalidScanException(const std::string& value)
-			: pion::PionException("FileModule invalid value for scan option: ", value) {}
+			: pion::PionException("FileService invalid value for scan option: ", value) {}
 	};
 
 	/// exception thrown if we are unable to read a file from disk
 	class FileReadException : public pion::PionException {
 	public:
 		FileReadException(const std::string& value)
-			: pion::PionException("FileModule unable to read file: ", value) {}
+			: pion::PionException("FileService unable to read file: ", value) {}
 	};
 
 	/// exception thrown if we do not know how to response (should never happen)
 	class UndefinedResponseException : public pion::PionException {
 	public:
 		UndefinedResponseException(const std::string& value)
-			: pion::PionException("FileModule has an undefined response: ", value) {}
+			: pion::PionException("FileService has an undefined response: ", value) {}
 	};
 	
 	
 	// default constructor and destructor
-	FileModule(void);
-	virtual ~FileModule() {}
+	FileService(void);
+	virtual ~FileService() {}
 	
 	/**
-	 * configuration options supported by FileModule:
+	 * configuration options supported by FileService:
 	 *
 	 * directory: all files within the directory will be made available
 	 */
 	virtual void setOption(const std::string& name, const std::string& value);
 	
-	/// handles requests for FileModule
+	/// handles requests for FileService
 	virtual bool handleRequest(pion::net::HTTPRequestPtr& request,
 							   pion::net::TCPConnectionPtr& tcp_conn);	
 	
-	/// called when the module's server is starting
+	/// called when the web service's server is starting
 	virtual void start(void);
 	
-	/// called when the module's server is stopping
+	/// called when the web service's server is stopping
 	virtual void stop(void);
 	
 	/// sets the logger to be used
@@ -218,7 +218,7 @@ private:
 	/// directory containing files that will be made available
 	boost::filesystem::path		m_directory;
 	
-	/// single file served by the module
+	/// single file served by the web service
 	boost::filesystem::path		m_file;
 	
 	/// used to cache file contents and metadata in memory

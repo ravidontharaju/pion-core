@@ -45,30 +45,30 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	if (! resource.empty() && resource[resource.size() - 1] == '/')
 		resource.resize( resource.size() - 1 );
 
-	// true if a module successfully handled the request
+	// true if a web service successfully handled the request
 	bool request_was_handled = false;
 	
 	// lock mutex for thread safety (this should probably use ref counters)
-	boost::mutex::scoped_lock modules_lock(m_mutex);
+	boost::mutex::scoped_lock services_lock(m_mutex);
 
-	if (m_modules.empty()) {
+	if (m_services.empty()) {
 		
-		// no modules configured
-		PION_LOG_WARN(m_logger, "No modules configured");
+		// no services configured
+		PION_LOG_WARN(m_logger, "No web services configured");
 		
 	} else {
 
-		// iterate through each module that may be able to handle the request
-		ModuleMap::iterator i = m_modules.upper_bound(resource);
-		while (i != m_modules.begin()) {
+		// iterate through each web service that may be able to handle the request
+		WebServiceMap::iterator i = m_services.upper_bound(resource);
+		while (i != m_services.begin()) {
 			--i;
 			
 			// keep checking while the first part of the strings match
 			if (resource.compare(0, i->first.size(), i->first) != 0) {
 				// the first part no longer matches
-				if (i != m_modules.begin()) {
-					// continue to next module in list if its size is < this one
-					ModuleMap::iterator j=i;
+				if (i != m_services.begin()) {
+					// continue to next service in list if its size is < this one
+					WebServiceMap::iterator j=i;
 					--j;
 					if (j->first.size() < i->first.size())
 						continue;
@@ -77,27 +77,27 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 				break;
 			}
 				
-			// only try the module if the request matches the module name or
-			// if module name is followed first with a '/' character
+			// only try the service if the request matches the service name or
+			// if service name is followed first with a '/' character
 			if (resource.size() == i->first.size() || resource[i->first.size()]=='/') {
 				
-				// try to handle the request with the module
+				// try to handle the request with the web service
 				try {
 					request_was_handled = i->second.first->handleRequest(http_request, tcp_conn);
 				} catch (std::bad_alloc&) {
 					// propagate memory errors (FATAL)
 					throw;
 				} catch (std::exception& e) {
-					// recover gracefully from other exceptions thrown by modules
-					PION_LOG_ERROR(m_logger, "HTTP module (" << resource << ") exception: " << e.what());
+					// recover gracefully from other exceptions thrown by services
+					PION_LOG_ERROR(m_logger, "Web service (" << resource << ") exception: " << e.what());
 					m_server_error_handler(http_request, tcp_conn, e.what());
 					request_was_handled = true;
 					break;
 				}
 
 				if (request_was_handled) {
-					// the module successfully handled the request
-					PION_LOG_DEBUG(m_logger, "HTTP request handled by module ("
+					// the web service successfully handled the request
+					PION_LOG_DEBUG(m_logger, "HTTP request handled by web service ("
 								   << i->first << "): "
 								   << http_request->getResource());
 					break;
@@ -107,95 +107,95 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	}
 	
 	if (! request_was_handled) {
-		// no modules found that could handle the request
-		PION_LOG_INFO(m_logger, "No modules found to handle HTTP request: " << resource);
+		// no web services found that could handle the request
+		PION_LOG_INFO(m_logger, "No web services found to handle HTTP request: " << resource);
 		m_not_found_handler(http_request, tcp_conn);
 	}
 }
 
 void HTTPServer::beforeStarting(void)
 {
-	// call the start() method for each module associated with this server
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i)
+	// call the start() method for each web service associated with this server
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	for (WebServiceMap::iterator i = m_services.begin(); i != m_services.end(); ++i)
 		i->second.first->start();
 }
 
 void HTTPServer::afterStopping(void)
 {
-	// call the stop() method for each module associated with this server
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i)
+	// call the stop() method for each web service associated with this server
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	for (WebServiceMap::iterator i = m_services.begin(); i != m_services.end(); ++i)
 		i->second.first->stop();
 }
 
-void HTTPServer::addModule(const std::string& resource, HTTPModule *module_ptr)
+void HTTPServer::addService(const std::string& resource, WebService *service_ptr)
 {
-	PionPluginPtr<HTTPModule> plugin_ptr;
-	module_ptr->setResource(resource);	// strips any trailing '/' from the name
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	m_modules.insert(std::make_pair(module_ptr->getResource(),
-									std::make_pair(module_ptr, plugin_ptr)));
+	PionPluginPtr<WebService> plugin_ptr;
+	service_ptr->setResource(resource);	// strips any trailing '/' from the name
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	m_services.insert(std::make_pair(service_ptr->getResource(),
+									 std::make_pair(service_ptr, plugin_ptr)));
 }
 
-void HTTPServer::loadModule(const std::string& resource, const std::string& module_name)
+void HTTPServer::loadService(const std::string& resource, const std::string& service_name)
 {
 	// search for the plug-in file using the configured paths
 	bool is_static;
 	void *create_func;
 	void *destroy_func;
-	std::string module_file;
+	std::string plugin_file;
 	
-	// check if module is statically linked, and if not, try to resolve for dynamic
-	is_static = PionPlugin::findStaticEntryPoint(module_name, &create_func, &destroy_func);
+	// check if service is statically linked, and if not, try to resolve for dynamic
+	is_static = PionPlugin::findStaticEntryPoint(service_name, &create_func, &destroy_func);
 	if (!is_static) {
-		if (!PionPlugin::findPluginFile(module_file, module_name))
-			throw PionPlugin::PluginNotFoundException(module_name);
+		if (!PionPlugin::findPluginFile(plugin_file, service_name))
+			throw PionPlugin::PluginNotFoundException(service_name);
 	}
 
 	// open up the plug-in's shared object library
-	PionPluginPtr<HTTPModule> plugin_ptr;
+	PionPluginPtr<WebService> plugin_ptr;
 	if (is_static) {
-		plugin_ptr.openStaticLinked(module_name, create_func, destroy_func);	// may throw
+		plugin_ptr.openStaticLinked(service_name, create_func, destroy_func);	// may throw
 	} else {
-		plugin_ptr.open(module_file);	// may throw
+		plugin_ptr.open(plugin_file);	// may throw
 	}
 
-	// create a new module using the plug-in library
-	HTTPModule *module_ptr(plugin_ptr.create());
-	module_ptr->setResource(resource);	// strips any trailing '/' from the name
+	// create a new web service using the plug-in library
+	WebService *service_ptr(plugin_ptr.create());
+	service_ptr->setResource(resource);	// strips any trailing '/' from the name
 
-	// add the module to the server's collection
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	m_modules.insert(std::make_pair(module_ptr->getResource(),
-									std::make_pair(module_ptr, plugin_ptr)));
-	modules_lock.unlock();
+	// add the web service to the server's collection
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	m_services.insert(std::make_pair(service_ptr->getResource(),
+									 std::make_pair(service_ptr, plugin_ptr)));
+	services_lock.unlock();
 
 	if (is_static){
-		PION_LOG_INFO(m_logger, "Loaded HTTP static module for resource (" << resource << "): " << module_name);
+		PION_LOG_INFO(m_logger, "Loaded static web service for resource (" << resource << "): " << service_name);
 	} else {
-		PION_LOG_INFO(m_logger, "Loaded HTTP module for resource (" << resource << "): " << module_file);
+		PION_LOG_INFO(m_logger, "Loaded web service for resource (" << resource << "): " << service_file);
 	}
 }
 
-void HTTPServer::setModuleOption(const std::string& resource,
-								 const std::string& name, const std::string& value)
+void HTTPServer::setServiceOption(const std::string& resource,
+								  const std::string& name, const std::string& value)
 {
-	boost::mutex::scoped_lock modules_lock(m_mutex);
+	boost::mutex::scoped_lock services_lock(m_mutex);
 
-	// find the module associated with resource & set the option
-	// if resource == "/" then look for module with an empty string
-	ModuleMap::iterator i = (resource == "/" ? m_modules.find("") : m_modules.find(resource));
-	if (i == m_modules.end())
-		throw ModuleNotFoundException(resource);
+	// find the web service associated with resource & set the option
+	// if resource == "/" then look for web service with an empty string
+	WebServiceMap::iterator i = (resource == "/" ? m_services.find("") : m_services.find(resource));
+	if (i == m_services.end())
+		throw ServiceNotFoundException(resource);
 	i->second.first->setOption(name, value);
 
-	modules_lock.unlock();
-	PION_LOG_INFO(m_logger, "Set module option for resource ("
+	services_lock.unlock();
+	PION_LOG_INFO(m_logger, "Set web service option for resource ("
 				  << resource << "): " << name << '=' << value);
 }
 
-void HTTPServer::loadModuleConfig(const std::string& config_name)
+void HTTPServer::loadServiceConfig(const std::string& config_name)
 {
 	std::string config_file;
 	if (! PionPlugin::findConfigFile(config_file, config_name))
@@ -242,7 +242,7 @@ void HTTPServer::loadModuleConfig(const std::string& config_name)
 				if (command_string=="path") {
 					value_string.clear();
 					parse_state = PARSE_VALUE;
-				} else if (command_string=="module" || command_string=="option") {
+				} else if (command_string=="service" || command_string=="option") {
 					resource_string.clear();
 					parse_state = PARSE_RESOURCE;
 				} else {
@@ -285,9 +285,9 @@ void HTTPServer::loadModuleConfig(const std::string& config_name)
 				} else if (command_string == "path") {
 					// finished path command
 					PionPlugin::addPluginDirectory(value_string);
-				} else if (command_string == "module") {
-					// finished module command
-					loadModule(resource_string, value_string);
+				} else if (command_string == "service") {
+					// finished service command
+					loadService(resource_string, value_string);
 				} else if (command_string == "option") {
 					// finished option command
 					std::string::size_type pos = value_string.find('=');
@@ -295,8 +295,8 @@ void HTTPServer::loadModuleConfig(const std::string& config_name)
 						throw ConfigParsingException(config_name);
 					option_name_string = value_string.substr(0, pos);
 					option_value_string = value_string.substr(pos + 1);
-					setModuleOption(resource_string, option_name_string,
-									option_value_string);
+					setServiceOption(resource_string, option_name_string,
+									 option_value_string);
 				}
 				command_string.clear();
 				parse_state = PARSE_NEWLINE;
@@ -322,10 +322,10 @@ void HTTPServer::loadModuleConfig(const std::string& config_name)
 	}
 }
 
-void HTTPServer::clearModules(void)
+void HTTPServer::clearServices(void)
 {
-	boost::mutex::scoped_lock modules_lock(m_mutex);
-	m_modules.clear();
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	m_services.clear();
 }
 
 void HTTPServer::handleBadRequest(HTTPRequestPtr& http_request,
@@ -389,9 +389,9 @@ void HTTPServer::handleServerError(HTTPRequestPtr& http_request,
 }
 
 
-// HTTPServer::ModuleMap member functions
+// HTTPServer::WebServiceMap member functions
 
-void HTTPServer::ModuleMap::clear(void) {
+void HTTPServer::WebServiceMap::clear(void) {
 	for (iterator i = begin(); i != end(); ++i) {
 		if (i->second.second.is_open()) {
 			i->second.second.destroy(i->second.first);

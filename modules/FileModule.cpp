@@ -12,7 +12,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <algorithm>
 
-#include "FileModule.hpp"
+#include "FileService.hpp"
 #include <pion/PionPlugin.hpp>
 #include <pion/net/HTTPResponse.hpp>
 
@@ -20,26 +20,26 @@ using namespace pion;
 using namespace pion::net;
 
 
-// static members of FileModule
+// static members of FileService
 
-const std::string			FileModule::DEFAULT_MIME_TYPE("application/octet-stream");
-const unsigned int			FileModule::DEFAULT_CACHE_SETTING = 1;
-const unsigned int			FileModule::DEFAULT_SCAN_SETTING = 0;
-boost::once_flag			FileModule::m_mime_types_init_flag = BOOST_ONCE_INIT;
-FileModule::MIMETypeMap	*	FileModule::m_mime_types_ptr = NULL;
+const std::string			FileService::DEFAULT_MIME_TYPE("application/octet-stream");
+const unsigned int			FileService::DEFAULT_CACHE_SETTING = 1;
+const unsigned int			FileService::DEFAULT_SCAN_SETTING = 0;
+boost::once_flag			FileService::m_mime_types_init_flag = BOOST_ONCE_INIT;
+FileService::MIMETypeMap	*FileService::m_mime_types_ptr = NULL;
 
 
-// FileModule member functions
+// FileService member functions
 
-FileModule::FileModule(void)
-	: m_logger(PION_GET_LOGGER("FileModule")),
+FileService::FileService(void)
+	: m_logger(PION_GET_LOGGER("FileService")),
 	m_cache_setting(DEFAULT_CACHE_SETTING),
 	m_scan_setting(DEFAULT_SCAN_SETTING)
 {
 	PION_LOG_SETLEVEL_WARN(m_logger);
 }
 
-void FileModule::setOption(const std::string& name, const std::string& value)
+void FileService::setOption(const std::string& name, const std::string& value)
 {
 	if (name == "directory") {
 		m_directory = value;
@@ -84,7 +84,7 @@ void FileModule::setOption(const std::string& name, const std::string& value)
 	}
 }
 
-bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
+bool FileService::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
 	// the type of response we will send
 	enum ResponseType {
@@ -207,7 +207,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			// request matches resource exactly
 
 			// return false if no file defined
-			// module's directory is not valid
+			// web service's directory is not valid
 			if (m_file.empty()) {
 				PION_LOG_WARN(m_logger, "No file option defined ("
 							  << getResource() << "): " << relative_path);
@@ -315,7 +315,7 @@ bool FileModule::handleRequest(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	return true;
 }
 
-void FileModule::start(void)
+void FileService::start(void)
 {
 	PION_LOG_DEBUG(m_logger, "Starting up resource (" << getResource() << ')');
 
@@ -340,7 +340,7 @@ void FileModule::start(void)
 	}
 }
 
-void FileModule::stop(void)
+void FileService::stop(void)
 {
 	PION_LOG_DEBUG(m_logger, "Shutting down resource (" << getResource() << ')');
 	// clear cached files (if started again, it will re-scan)
@@ -348,7 +348,7 @@ void FileModule::stop(void)
 	m_cache_map.clear();
 }
 
-void FileModule::scanDirectory(const boost::filesystem::path& dir_path)
+void FileService::scanDirectory(const boost::filesystem::path& dir_path)
 {
 	PION_LOG_DEBUG(m_logger, "Scanning directory (" << getResource() << "): "
 				   << dir_path.directory_string());
@@ -377,8 +377,8 @@ void FileModule::scanDirectory(const boost::filesystem::path& dir_path)
 	}
 }
 
-std::pair<FileModule::CacheMap::iterator, bool>
-FileModule::addCacheEntry(const std::string& relative_path,
+std::pair<FileService::CacheMap::iterator, bool>
+FileService::addCacheEntry(const std::string& relative_path,
 						  const boost::filesystem::path& file_path,
 						  const bool placeholder)
 {
@@ -407,9 +407,9 @@ FileModule::addCacheEntry(const std::string& relative_path,
 	return add_entry_result;
 }
 
-std::string FileModule::findMIMEType(const std::string& file_name) {
+std::string FileService::findMIMEType(const std::string& file_name) {
 	// initialize m_mime_types if it hasn't been done already
-	boost::call_once(FileModule::createMIMETypes, m_mime_types_init_flag);
+	boost::call_once(FileService::createMIMETypes, m_mime_types_init_flag);
 	
 	// determine the file's extension
 	std::string extension(file_name.substr(file_name.find_last_of('.') + 1));
@@ -421,7 +421,7 @@ std::string FileModule::findMIMEType(const std::string& file_name) {
 	return (i == m_mime_types_ptr->end() ? DEFAULT_MIME_TYPE : i->second);
 }
 
-void FileModule::createMIMETypes(void) {
+void FileService::createMIMETypes(void) {
 	// create the map
 	static MIMETypeMap mime_types;
 	
@@ -444,9 +444,9 @@ void FileModule::createMIMETypes(void) {
 }
 
 
-// FileModule::DiskFile member functions
+// FileService::DiskFile member functions
 
-void FileModule::DiskFile::update(void)
+void FileService::DiskFile::update(void)
 {
 	// set file_size and last_modified
 	file_size = boost::filesystem::file_size( file_path );
@@ -454,7 +454,7 @@ void FileModule::DiskFile::update(void)
 	last_modified_string = HTTPTypes::get_date_string( last_modified );
 }
 
-void FileModule::DiskFile::read(void)
+void FileService::DiskFile::read(void)
 {
 	// re-allocate storage buffer for the file's content
 	file_content.reset(new char[file_size]);
@@ -465,10 +465,10 @@ void FileModule::DiskFile::read(void)
 
 	// read the file into memory
 	if (!file_stream.is_open() || !file_stream.read(file_content.get(), file_size))
-		throw FileModule::FileReadException(file_path.file_string());
+		throw FileService::FileReadException(file_path.file_string());
 }
 
-bool FileModule::DiskFile::checkUpdated(void)
+bool FileService::DiskFile::checkUpdated(void)
 {
 	// get current values
 	unsigned long cur_size = boost::filesystem::file_size( file_path );
@@ -492,15 +492,15 @@ bool FileModule::DiskFile::checkUpdated(void)
 }
 
 
-/// creates new FileModule objects
-extern "C" PION_PLUGIN_API FileModule *pion_create_FileModule(void)
+/// creates new FileService objects
+extern "C" PION_PLUGIN_API FileService *pion_create_FileService(void)
 {
-	return new FileModule();
+	return new FileService();
 }
 
 
-/// destroys FileModule objects
-extern "C" PION_PLUGIN_API void pion_destroy_FileModule(FileModule *module_ptr)
+/// destroys FileService objects
+extern "C" PION_PLUGIN_API void pion_destroy_FileService(FileService *service_ptr)
 {
-	delete module_ptr;
+	delete service_ptr;
 }
