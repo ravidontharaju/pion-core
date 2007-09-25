@@ -40,8 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CookieService", "CookieModu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileService", "FileModule\FileModule.vcproj", "{70CA1FA9-BA9A-4EA4-9B7B-C747238991C1}"
 	ProjectSection(ProjectDependencies) = postProject
-		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
+		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogService", "LogModule\LogModule.vcproj", "{12F95FE7-ACE1-4281-86BF-4117AE2D633E}"
@@ -49,7 +49,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogService", "LogModule\Log
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "pion-common\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "..\..\common\src\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
