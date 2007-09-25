@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="PionServerTest"
-	ProjectGUID="{49714B23-3394-43CE-BF84-290EB1A50715}"
-	RootNamespace="PionServerTest"
+	Name="FileService"
+	ProjectGUID="{70CA1FA9-BA9A-4EA4-9B7B-C747238991C1}"
+	RootNamespace="FileService"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -18,8 +18,8 @@
 		<Configuration
 			Name="Debug_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			ConfigurationType="2"
+			InheritedPropertySheets="..\vsprops\shared\Debug_DLL_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,11 +38,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="BOOST_ALL_DYN_LINK;_DEBUG;_CONSOLE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				DebugInformationFormat="4"
+				PreprocessorDefinitions="FILESERVICE_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -55,9 +51,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -87,8 +80,8 @@
 		<Configuration
 			Name="Debug_static|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			ConfigurationType="4"
+			InheritedPropertySheets="..\vsprops\shared\Debug_static_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -107,11 +100,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;PION_STATIC_LINKING;_CONSOLE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				DebugInformationFormat="4"
+				PreprocessorDefinitions="PION_STATIC_LINKING"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -123,16 +112,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -144,21 +127,14 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
-			WholeProgramOptimization="1"
+			ConfigurationType="2"
+			InheritedPropertySheets="..\vsprops\shared\Release_DLL_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -177,9 +153,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="BOOST_ALL_DYN_LINK;NDEBUG;_CONSOLE"
-				RuntimeLibrary="2"
-				DebugInformationFormat="3"
+				PreprocessorDefinitions="FILESERVICE_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -192,9 +166,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkIncremental="1"
-				GenerateDebugInformation="true"
-				SubSystem="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -224,8 +195,8 @@
 		<Configuration
 			Name="Release_static|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			ConfigurationType="4"
+			InheritedPropertySheets="..\vsprops\shared\Release_static_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -244,9 +215,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_STATIC_LINKING;NDEBUG;_CONSOLE"
-				RuntimeLibrary="0"
-				DebugInformationFormat="3"
+				PreprocessorDefinitions="PION_STATIC_LINKING"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -258,16 +227,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -277,12 +240,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -298,7 +255,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\tests\PionServerTest.cpp"
+				RelativePath="FileService.cpp"
 				>
 			</File>
 		</Filter>
@@ -307,6 +264,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="FileService.hpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

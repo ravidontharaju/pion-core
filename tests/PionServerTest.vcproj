@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="PionServiceTest"
-	ProjectGUID="{2CC83526-B419-45E1-A692-6DEA0CD56292}"
-	RootNamespace="PionServiceTest"
+	Name="PionServerTest"
+	ProjectGUID="{49714B23-3394-43CE-BF84-290EB1A50715}"
+	RootNamespace="PionServerTest"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -19,7 +19,7 @@
 			Name="Debug_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -55,8 +55,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="$(OutDir)/pion-common.lib $(OutDir)/pion-net.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -90,7 +88,7 @@
 			Name="Debug_static|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -159,7 +157,7 @@
 			Name="Release_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -194,8 +192,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkLibraryDependencies="false"
-				AdditionalDependencies="$(OutDir)/pion-common.lib $(OutDir)/pion-net.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -229,7 +225,7 @@
 			Name="Release_static|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\all_pion-net.vsprops;..\depth_3_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -302,7 +298,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\tests\PionServiceTest.cpp"
+				RelativePath="PionServerTest.cpp"
 				>
 			</File>
 		</Filter>
@@ -318,10 +314,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath="..\..\..\doc\README.msvc"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

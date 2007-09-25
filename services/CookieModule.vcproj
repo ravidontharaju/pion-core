@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="pion-net"
-	ProjectGUID="{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}"
-	RootNamespace="pion-net"
+	Name="CookieService"
+	ProjectGUID="{1CF012D8-A47C-4D2B-952D-D90D19795A07}"
+	RootNamespace="CookieService"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -17,9 +17,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_DLL|Win32"
-			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets=".\Debug_DLL_pion-net.vsprops;.\depth_2_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\Debug_DLL_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,7 +38,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_NET_EXPORTS"
+				PreprocessorDefinitions="COOKIESERVICE_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -79,9 +79,9 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_static|Win32"
-			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\Debug_static_pion-net.vsprops;.\depth_2_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\Debug_static_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -131,9 +131,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
-			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets=".\Release_DLL_pion-net.vsprops;.\depth_2_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\Release_DLL_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -152,7 +152,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_NET_EXPORTS"
+				PreprocessorDefinitions="COOKIESERVICE_EXPORTS"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -193,9 +193,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release_static|Win32"
-			IntermediateDirectory="pion-net\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\Release_static_pion-net.vsprops;.\depth_2_pion-net.vsprops"
+			InheritedPropertySheets="..\vsprops\shared\Release_static_pion.vsprops;..\vsprops\depth_2_pion-net.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -253,27 +253,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\HTTPRequestParser.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\HTTPResponse.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\HTTPServer.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\HTTPTypes.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\PionNetEngine.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\TCPServer.cpp"
+				RelativePath="CookieService.cpp"
 				>
 			</File>
 		</Filter>
@@ -283,43 +263,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\include\pion\net\HTTPRequest.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\HTTPRequestParser.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\HTTPResponse.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\HTTPServer.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\HTTPTypes.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\PionNet.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\PionNetEngine.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\TCPConnection.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\TCPServer.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\include\pion\net\WebService.hpp"
+				RelativePath="CookieService.hpp"
 				>
 			</File>
 		</Filter>
