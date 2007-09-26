@@ -92,7 +92,7 @@ Running the test programs:
 
 Make sure "C:\Boost\Lib" is on your path.
 
-To test PionServiceTest, try running it with the following command line args:
--c ..\..\..\tests\vcservices.conf
-To run from within the IDE, go to PionModuleTest Property Pages -> Debugging,
-and set 'Command Arguments' to the above and 'Working Directory' to $(OutDir).
+To test PionServiceTest, try running it from <PION_NET_HOME>\tests\ with the 
+following command line args: -c vcservices.conf
+To run from within the IDE, go to PionServiceTest Property Pages -> Debugging,
+and set 'Command Arguments' to the above.

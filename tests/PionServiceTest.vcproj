@@ -323,6 +323,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\testservices.html"
+			>
+		</File>
+		<File
 			RelativePath=".\vcservices.conf"
 			>
 		</File>

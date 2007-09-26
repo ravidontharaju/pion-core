@@ -100,7 +100,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_STATIC_LINKING"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -215,7 +214,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_STATIC_LINKING"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
