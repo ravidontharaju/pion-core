@@ -149,6 +149,13 @@ int main (int argc, char *argv[])
 				<< PION_PLUGINS_DIRECTORY);
 		}
 
+		// add the directory of the program we're running to our path
+		try { PionNet::addPluginDirectory(boost::filesystem::path(argv[0]).branch_path().string()); }
+		catch (PionPlugin::DirectoryNotFoundException&) {
+			PION_LOG_WARN(main_log, "Directory of current executable does not exist: "
+				<< boost::filesystem::path(argv[0]).branch_path());
+		}
+
 		// create a server for HTTP & add the Hello Service
 		HTTPServerPtr http_server(PionNet::addHTTPServer(port));
 
