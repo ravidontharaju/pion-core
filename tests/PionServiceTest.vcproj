@@ -322,6 +322,10 @@
 			RelativePath="..\doc\README.msvc"
 			>
 		</File>
+		<File
+			RelativePath=".\vcservices.conf"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

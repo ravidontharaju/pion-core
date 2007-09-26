@@ -1,18 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-net", "..\..\src\pion-net.vcproj", "{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-net", "..\src\pion-net.vcproj", "{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionServerTest", "..\..\tests\PionServerTest.vcproj", "{49714B23-3394-43CE-BF84-290EB1A50715}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionServerTest", "..\tests\PionServerTest.vcproj", "{49714B23-3394-43CE-BF84-290EB1A50715}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionServiceTest", "..\..\tests\PionServiceTest.vcproj", "{2CC83526-B419-45E1-A692-6DEA0CD56292}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionServiceTest", "..\tests\PionServiceTest.vcproj", "{2CC83526-B419-45E1-A692-6DEA0CD56292}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9EE2433A-B460-45E0-8968-EC5CE8EF9875} = {9EE2433A-B460-45E0-8968-EC5CE8EF9875}
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
@@ -23,33 +23,33 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionServiceTest", "..\..\te
 		{12F95FE7-ACE1-4281-86BF-4117AE2D633E} = {12F95FE7-ACE1-4281-86BF-4117AE2D633E}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloService", "..\..\services\HelloService.vcproj", "{9EE2433A-B460-45E0-8968-EC5CE8EF9875}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloService", "..\services\HelloService.vcproj", "{9EE2433A-B460-45E0-8968-EC5CE8EF9875}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EchoService", "..\..\services\EchoService.vcproj", "{09C3D3D7-7CE0-48D1-994F-EB534C07CF8B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EchoService", "..\services\EchoService.vcproj", "{09C3D3D7-7CE0-48D1-994F-EB534C07CF8B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CookieService", "..\..\services\CookieService.vcproj", "{1CF012D8-A47C-4D2B-952D-D90D19795A07}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CookieService", "..\services\CookieService.vcproj", "{1CF012D8-A47C-4D2B-952D-D90D19795A07}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileService", "..\..\services\FileService.vcproj", "{70CA1FA9-BA9A-4EA4-9B7B-C747238991C1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileService", "..\services\FileService.vcproj", "{70CA1FA9-BA9A-4EA4-9B7B-C747238991C1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogService", "..\..\services\LogService.vcproj", "{12F95FE7-ACE1-4281-86BF-4117AE2D633E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogService", "..\services\LogService.vcproj", "{12F95FE7-ACE1-4281-86BF-4117AE2D633E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "..\..\common\src\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "..\common\src\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
