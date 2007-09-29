@@ -1,6 +1,6 @@
 This is the future home of the "Pion Platform" repository.
 
-This repository includes links to the following other libraries:
+This repository includes links to the following external libraries:
 
 common   -  Pion Common Library   -  http://svn.atomiclabs.com/pion-common
 net      -  Pion Network Library  -  http://svn.atomiclabs.com/pion-net
@@ -8,10 +8,6 @@ reactor  -  Pion Reactor Library  -  http://svn.atomiclabs.com/pion-reactor
 
 The following additional directories are included:
 
-build    -  Project build files for the Pion Platform
-doc      -  Documentation files for the Pion Platform
 gui      -  Graphical User Interface files for the Pion Platform
-include  -  Header source files for the Pion Platform and dev libraries
 plugins  -  Plug-in source files for the Pion Platform
-src      -  Implementation source files for the Pion Platform and libraries
-tests    -  Unit tests for the Pion Platform
+platform -  Source files for the Pion Platform libraries
