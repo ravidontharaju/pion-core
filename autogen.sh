@@ -7,7 +7,7 @@
 #autoheader
 
 # create aclocal.m4
-aclocal -I build
+aclocal -I common/build
 
 # Install libtool and related files
 libtoolize --force

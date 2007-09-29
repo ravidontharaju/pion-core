@@ -10,11 +10,11 @@ AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version nu
 
 # Initialize some other things
 AC_PREREQ([2.59])
-AC_CONFIG_AUX_DIR(build)
-AC_CONFIG_SRCDIR(src/PionPlugin.cpp)
+AC_CONFIG_AUX_DIR(common/build)
+AC_CONFIG_SRCDIR(common/src/PionPlugin.cpp)
 
 # Note: AM_CONFIG_HEADER is deprecated
-AC_CONFIG_HEADERS([include/pion/PionConfig.hpp])
+AC_CONFIG_HEADERS([common/include/pion/PionConfig.hpp])
 
 # DO NOT USE autoheader (the .hpp.in file is not automanaged)
 AUTOHEADER="echo autoheader ignored"
@@ -379,5 +379,5 @@ AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles
-AC_OUTPUT(pion-common.pc Makefile include/Makefile include/pion/Makefile
-	src/Makefile)
+AC_OUTPUT(pion-common.pc Makefile common/Makefile common/include/Makefile
+	common/include/pion/Makefile common/src/Makefile)
