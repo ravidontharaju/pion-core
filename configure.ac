@@ -10,8 +10,8 @@ AC_DEFINE_UNQUOTED([PION_VERSION],["$PACKAGE_VERSION"],[Define to the version nu
 
 # Initialize some other things
 AC_PREREQ([2.59])
-AC_CONFIG_AUX_DIR(build)
-AC_CONFIG_SRCDIR(src/TCPServer.cpp)
+AC_CONFIG_AUX_DIR(net/build)
+AC_CONFIG_SRCDIR(net/src/TCPServer.cpp)
 
 # Note: AM_CONFIG_HEADER is deprecated
 AC_CONFIG_HEADERS([common/include/pion/PionConfig.hpp])
@@ -410,7 +410,7 @@ AC_SUBST(PION_LOG_LIB)
 
 
 # Output Makefiles
-AC_OUTPUT(pion-net.pc Makefile
-	include/Makefile include/pion/Makefile include/pion/net/Makefile
+AC_OUTPUT(pion-net.pc Makefile net/Makefile
+	net/include/Makefile net/include/pion/Makefile net/include/pion/net/Makefile
 	common/Makefile common/include/Makefile common/include/pion/Makefile common/src/Makefile
-	src/Makefile services/Makefile tests/Makefile)
+	net/src/Makefile net/services/Makefile net/tests/Makefile)

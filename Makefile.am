@@ -2,12 +2,12 @@
 # pion-net automake configuration file 
 # ------------------------------------
 
-SUBDIRS = @PION_COMMON_MAKEDIRS@ include src services tests
+SUBDIRS = @PION_COMMON_MAKEDIRS@ net
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pion-net.pc
 
 EXTRA_DIST = doc autogen.sh \
-	build/ax_boost_base.m4 \
-	build/ax_compiler_vendor.m4 \
-	build/pion-net.xcodeproj build/VC
+	common/build/ax_boost_base.m4 \
+	common/build/ax_compiler_vendor.m4 \
+	pion-net.xcodeproj pion-net.sln
