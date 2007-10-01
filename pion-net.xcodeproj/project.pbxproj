@@ -141,28 +141,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3B2A3430CADD96E001A9A8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E3B2A3490CADD9E6001A9A8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3B2A34B0CADD9E8001A9A8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 /* End PBXContainerItemProxy section */
@@ -187,7 +187,7 @@
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E2E0CA78A0400120C6D /* libpion-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
