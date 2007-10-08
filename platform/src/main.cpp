@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
+// pion-platform: a C++ framework for building lightweight HTTP interfaces
 // ------------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
@@ -8,20 +8,20 @@
 //
 
 #include <boost/bind.hpp>
-#include <pion/net/Pion.hpp>
+#include <pion/net/PionNet.hpp>
 #include <iostream>
 #include <vector>
 #ifndef PION_WIN32
 	#include <signal.h>
 #endif
 
-// these are used only when linking to static HTTP module libraries
+// these are used only when linking to static web service libraries
 // #ifdef PION_STATIC_LINKING
-PION_DECLARE_PLUGIN(EchoModule)
-PION_DECLARE_PLUGIN(FileModule)
-PION_DECLARE_PLUGIN(HelloModule)
-PION_DECLARE_PLUGIN(LogModule)
-PION_DECLARE_PLUGIN(CookieModule)
+PION_DECLARE_PLUGIN(EchoService)
+PION_DECLARE_PLUGIN(FileService)
+PION_DECLARE_PLUGIN(HelloService)
+PION_DECLARE_PLUGIN(LogService)
+PION_DECLARE_PLUGIN(CookieService)
 
 using namespace std;
 using namespace pion;
@@ -36,7 +36,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 		case CTRL_BREAK_EVENT:
 		case CTRL_CLOSE_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
-			Pion::shutdown();
+			PionNet::shutdown();
 			return TRUE;
 		default:
 			return FALSE;
@@ -45,7 +45,7 @@ BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 #else
 void handle_signal(int sig)
 {
-	Pion::shutdown();
+	PionNet::shutdown();
 }
 #endif
 
@@ -53,9 +53,9 @@ void handle_signal(int sig)
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage:   PionModuleTest [OPTIONS] RESOURCE MODULE" << std::endl
-		      << "         PionModuleTest [OPTIONS] -c MODULE_CONFIG_NAME" << std::endl
-			  << "options: [-ssl PEM_FILE] [-p PORT] [-d MODULE_DIR] [-o OPTION=VALUE]" << std::endl;
+	std::cerr << "usage:   piond [OPTIONS] RESOURCE WEBSERVICE" << std::endl
+		      << "         piond [OPTIONS] -c SERVICE_CONFIG_FILE" << std::endl
+			  << "options: [-ssl PEM_FILE] [-p PORT] [-d SERVICE_PLUGINS_DIR] [-o OPTION=VALUE]" << std::endl;
 }
 
 
@@ -64,15 +64,15 @@ int main (int argc, char *argv[])
 {
 	static const unsigned int DEFAULT_PORT = 8080;
 
-	// used to keep track of module name=value options
-	typedef std::vector<std::pair<std::string, std::string> >	ModuleOptionsType;
-	ModuleOptionsType module_options;
+	// used to keep track of web service name=value options
+	typedef std::vector<std::pair<std::string, std::string> >	ServiceOptionsType;
+	ServiceOptionsType service_options;
 	
-	// parse command line: determine port number, RESOURCE and MODULE
+	// parse command line: determine port number, RESOURCE and WEBSERVICE
 	unsigned int port = DEFAULT_PORT;
-	std::string module_config_name;
+	std::string service_config_file;
 	std::string resource_name;
-	std::string module_name;
+	std::string service_name;
 	std::string ssl_pem_file;
 	bool ssl_flag = false;
 	
@@ -83,12 +83,12 @@ int main (int argc, char *argv[])
 				port = strtoul(argv[argnum], 0, 10);
 				if (port == 0) port = DEFAULT_PORT;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
-				module_config_name = argv[++argnum];
+				service_config_file = argv[++argnum];
 			} else if (argv[argnum][1] == 'd' && argv[argnum][2] == '\0' && argnum+1 < argc) {
-				// add the modules directory to the search path
-				try { Pion::addPluginDirectory(argv[++argnum]); }
+				// add the service plug-ins directory to the search path
+				try { PionNet::addPluginDirectory(argv[++argnum]); }
 				catch (PionPlugin::DirectoryNotFoundException&) {
-					std::cerr << "PionModuleTest: Modules directory does not exist: "
+					std::cerr << "piond: Web service plug-ins directory does not exist: "
 						<< argv[argnum] << std::endl;
 					return 1;
 				}
@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 				}
 				std::string option_value(option_name, pos + 1);
 				option_name.resize(pos);
-				module_options.push_back( std::make_pair(option_name, option_value) );
+				service_options.push_back( std::make_pair(option_name, option_value) );
 			} else if (argv[argnum][1] == 's' && argv[argnum][2] == 's' &&
 					   argv[argnum][3] == 'l' && argv[argnum][4] == '\0' && argnum+1 < argc) {
 				ssl_flag = true;
@@ -114,15 +114,15 @@ int main (int argc, char *argv[])
 			// second to last argument = RESOURCE
 			resource_name = argv[argnum];
 		} else if (argnum+1 == argc) {
-			// last argument = MODULE
-			module_name = argv[argnum];
+			// last argument = WEBSERVICE
+			service_name = argv[argnum];
 		} else {
 			argument_error();
 			return 1;
 		}
 	}
 	
-	if (module_config_name.empty() && (resource_name.empty() || module_name.empty())) {
+	if (service_config_file.empty() && (resource_name.empty() || service_name.empty())) {
 		argument_error();
 		return 1;
 	}
@@ -135,22 +135,29 @@ int main (int argc, char *argv[])
 #endif
 	
 	// initialize log system (use simple configuration)
-	PionLogger main_log(PION_GET_LOGGER("PionModuleTest"));
+	PionLogger main_log(PION_GET_LOGGER("piond"));
 	PionLogger pion_log(PION_GET_LOGGER("Pion"));
 	PION_LOG_SETLEVEL_DEBUG(main_log);
 	PION_LOG_SETLEVEL_DEBUG(pion_log);
 	PION_LOG_CONFIG_BASIC;
 	
 	try {
-		// add the modules installation directory to our path
-		try { Pion::addPluginDirectory(PION_MODULES_DIRECTORY); }
+		// add the Pion plug-ins installation directory to our path
+		try { PionNet::addPluginDirectory(PION_PLUGINS_DIRECTORY); }
 		catch (PionPlugin::DirectoryNotFoundException&) {
-			PION_LOG_WARN(main_log, "Default modules directory does not exist: "
-				<< PION_MODULES_DIRECTORY);
+			PION_LOG_WARN(main_log, "Default plug-ins directory does not exist: "
+				<< PION_PLUGINS_DIRECTORY);
 		}
 
-		// create a server for HTTP & add the Hello module
-		HTTPServerPtr http_server(Pion::addHTTPServer(port));
+		// add the directory of the program we're running to our path
+		try { PionNet::addPluginDirectory(boost::filesystem::path(argv[0]).branch_path().string()); }
+		catch (PionPlugin::DirectoryNotFoundException&) {
+			PION_LOG_WARN(main_log, "Directory of current executable does not exist: "
+				<< boost::filesystem::path(argv[0]).branch_path());
+		}
+
+		// create a server for HTTP & add the Hello Service
+		HTTPServerPtr http_server(PionNet::addHTTPServer(port));
 
 		if (ssl_flag) {
 #ifdef PION_HAVE_SSL
@@ -168,26 +175,26 @@ int main (int argc, char *argv[])
 #endif
 		}
 		
-		if (module_config_name.empty()) {
-			// load a single module using the command line arguments
-			http_server->loadModule(resource_name, module_name);
+		if (service_config_file.empty()) {
+			// load a single web service using the command line arguments
+			http_server->loadService(resource_name, service_name);
 
-			// set module options if any are defined
-			for (ModuleOptionsType::iterator i = module_options.begin();
-				 i != module_options.end(); ++i)
+			// set web service options if any are defined
+			for (ServiceOptionsType::iterator i = service_options.begin();
+				 i != service_options.end(); ++i)
 			{
-				http_server->setModuleOption(resource_name, i->first, i->second);
+				http_server->setServiceOption(resource_name, i->first, i->second);
 			}
 		} else {
-			// load modules using the configuration file
-			http_server->loadModuleConfig(module_config_name);
+			// load services using the configuration file
+			http_server->loadServiceConfig(service_config_file);
 		}
 	
 		// startup pion
-		Pion::startup();
+		PionNet::startup();
 	
 		// run until stopped
-		Pion::join();
+		PionNet::join();
 		
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(main_log, e.what());

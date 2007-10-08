@@ -1,0 +1,16 @@
+Running piond:
+--------------
+
+Make sure "C:\Boost\Lib" is on your path.
+
+If you got the source code from the Subversion repository and haven't yet run
+Doxygen, then run Doxygen from <PION_NET_HOME>\docs.  (The documentation is
+used as part of the test.)
+
+To test piond, run it from the project directory with the following command line args: 
+
+	-c ..\tests\vcpiond.conf
+
+To run from within the IDE, go to piond Property Pages -> Debugging,
+and set 'Command Arguments' to the above.
+
