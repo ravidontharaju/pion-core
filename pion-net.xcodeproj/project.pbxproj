@@ -172,18 +172,6 @@
 		E306A55D0C230930004DE0C0 /* EchoService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = EchoService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E306A56C0C2309AD004DE0C0 /* LogService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E306A5760C2309E3004DE0C0 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E33288330BEE4B14006D0556 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = AUTHORS; path = ../AUTHORS; sourceTree = SOURCE_ROOT; };
-		E33288340BEE4B14006D0556 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = ChangeLog; path = ../ChangeLog; sourceTree = SOURCE_ROOT; };
-		E33288350BEE4B14006D0556 /* COPYING */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = COPYING; path = ../COPYING; sourceTree = SOURCE_ROOT; };
-		E33288360BEE4B14006D0556 /* INSTALL */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = INSTALL; path = ../INSTALL; sourceTree = SOURCE_ROOT; };
-		E33288370BEE4B14006D0556 /* NEWS */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = NEWS; path = ../NEWS; sourceTree = SOURCE_ROOT; };
-		E33288380BEE4B14006D0556 /* README */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README; path = ../README; sourceTree = SOURCE_ROOT; };
-		E33288390BEE4B14006D0556 /* TODO */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = TODO; path = ../TODO; sourceTree = SOURCE_ROOT; };
-		E33288410BEE4B48006D0556 /* Doxyfile */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = Doxyfile; path = ../doc/Doxyfile; sourceTree = SOURCE_ROOT; };
-		E33288420BEE4B48006D0556 /* README.freebsd */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README.freebsd; path = ../doc/README.freebsd; sourceTree = SOURCE_ROOT; };
-		E33288430BEE4B48006D0556 /* README.linux */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README.linux; path = ../doc/README.linux; sourceTree = SOURCE_ROOT; };
-		E33288440BEE4B48006D0556 /* README.osx */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README.osx; path = ../doc/README.osx; sourceTree = SOURCE_ROOT; };
-		E33288450BEE4B48006D0556 /* README.solaris */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = README.solaris; path = ../doc/README.solaris; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -327,10 +315,7 @@
 			isa = PBXGroup;
 			children = (
 				E36F2E210CA7899C00120C6D /* common */,
-				E3B2A2630CADC3E3001A9A8D /* include */,
-				E3B2A2640CADC3EC001A9A8D /* src */,
-				E36F2DEF0CA7771500120C6D /* services */,
-				E3B2A2650CADC3F2001A9A8D /* tests */,
+				E3DB07B90CBAF90F004EAD4D /* net */,
 				C6859E8C029090F304C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
@@ -358,18 +343,6 @@
 		C6859E8C029090F304C91782 /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
-				E33288410BEE4B48006D0556 /* Doxyfile */,
-				E33288420BEE4B48006D0556 /* README.freebsd */,
-				E33288430BEE4B48006D0556 /* README.linux */,
-				E33288440BEE4B48006D0556 /* README.osx */,
-				E33288450BEE4B48006D0556 /* README.solaris */,
-				E33288330BEE4B14006D0556 /* AUTHORS */,
-				E33288340BEE4B14006D0556 /* ChangeLog */,
-				E33288350BEE4B14006D0556 /* COPYING */,
-				E33288360BEE4B14006D0556 /* INSTALL */,
-				E33288370BEE4B14006D0556 /* NEWS */,
-				E33288380BEE4B14006D0556 /* README */,
-				E33288390BEE4B14006D0556 /* TODO */,
 			);
 			name = Documentation;
 			sourceTree = "<group>";
@@ -457,6 +430,17 @@
 				E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		E3DB07B90CBAF90F004EAD4D /* net */ = {
+			isa = PBXGroup;
+			children = (
+				E3B2A2630CADC3E3001A9A8D /* include */,
+				E3B2A2640CADC3EC001A9A8D /* src */,
+				E36F2DEF0CA7771500120C6D /* services */,
+				E3B2A2650CADC3F2001A9A8D /* tests */,
+			);
+			name = net;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

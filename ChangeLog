@@ -1,7 +1,9 @@
-Version 0.3.4 (2007-xx-xx)
+Version 0.3.4 (2007-10-xx)
 ==========================
 
 * Renamed "libpion" to "Pion Network Library" (or "pion-net" for short)
+* Added support to HTTPResponse for sending chunked responses
+* Added new options to FileService: max_cache_size and max_chunk_size
 
 
 Version 0.3.2 (2007-09-14)
