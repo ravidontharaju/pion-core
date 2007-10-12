@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E349E3570CBAF2DC003B4BAB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E349E33B0CBAF195003B4BAB /* main.cpp */; };
-		E349E35D0CBAF309003B4BAB /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E349E35E0CBAF30B003B4BAB /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36F2EE70CA7922100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36F2F0A0CA793B400120C6D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E36F2F0C0CA793C100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
@@ -21,6 +18,9 @@
 		E36F2F140CA793E100120C6D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E36F2F150CA793E400120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36F2F160CA793E500120C6D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
+		E38E433D0CC01F36003A47E8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E38E433C0CC01F36003A47E8 /* main.cpp */; };
+		E38E43410CC01F5D003A47E8 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E38E43420CC01F60003A47E8 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E3B2A26D0CADC46B001A9A8D /* PionConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */; };
 		E3B2A26E0CADC46B001A9A8D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2690CADC46B001A9A8D /* PionException.hpp */; };
 		E3B2A26F0CADC46B001A9A8D /* PionHashMap.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */; };
@@ -119,55 +119,6 @@
 			remoteGlobalIDString = E306A5750C2309E3004DE0C0;
 			remoteInfo = FileModule;
 		};
-		E349E3450CBAF20F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E352F4180C22F49100A7946C /* CookieService */;
-			remoteInfo = CookieService;
-		};
-		E349E3470CBAF20F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E306A54D0C2307EC004DE0C0 /* HelloService */;
-			remoteInfo = HelloService;
-		};
-		E349E3490CBAF20F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E306A55C0C230930004DE0C0 /* EchoService */;
-			remoteInfo = EchoService;
-		};
-		E349E34B0CBAF20F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E306A56B0C2309AD004DE0C0 /* LogService */;
-			remoteInfo = LogService;
-		};
-		E349E34D0CBAF20F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E306A5750C2309E3004DE0C0 /* FileService */;
-			remoteInfo = FileService;
-		};
-		E349E35F0CBAF31F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
-			remoteInfo = "pion-common: dynamic";
-		};
-		E349E3610CBAF31F003B4BAB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
-			remoteInfo = "pion-net: dynamic";
-		};
 		E352F41A0C22F49C00A7946C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -188,6 +139,55 @@
 			proxyType = 1;
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
+		};
+		E38E43240CC01E74003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E38E43260CC01E78003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E38E43280CC01E94003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E352F4180C22F49100A7946C;
+			remoteInfo = CookieService;
+		};
+		E38E432A0CC01E94003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A54D0C2307EC004DE0C0;
+			remoteInfo = HelloService;
+		};
+		E38E432C0CC01E94003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A55C0C230930004DE0C0;
+			remoteInfo = EchoService;
+		};
+		E38E432E0CC01E94003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A56B0C2309AD004DE0C0;
+			remoteInfo = LogService;
+		};
+		E38E43300CC01E94003A47E8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A5750C2309E3004DE0C0;
+			remoteInfo = FileService;
 		};
 		E3B2A3410CADD96C001A9A8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -228,11 +228,11 @@
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E349E33B0CBAF195003B4BAB /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = platform/src/main.cpp; sourceTree = SOURCE_ROOT; };
-		E349E33F0CBAF1EF003B4BAB /* piond */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = piond; sourceTree = BUILT_PRODUCTS_DIR; };
 		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E2E0CA78A0400120C6D /* libpion-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E38E43200CC01E29003A47E8 /* piond */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = piond; sourceTree = BUILT_PRODUCTS_DIR; };
+		E38E433C0CC01F36003A47E8 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = platform/src/main.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionConfig.hpp; path = common/include/pion/PionConfig.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2690CADC46B001A9A8D /* PionException.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionException.hpp; path = common/include/pion/PionException.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionHashMap.hpp; path = common/include/pion/PionHashMap.hpp; sourceTree = SOURCE_ROOT; };
@@ -339,15 +339,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E349E33D0CBAF1EF003B4BAB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E349E35D0CBAF309003B4BAB /* libpion-net.dylib in Frameworks */,
-				E349E35E0CBAF30B003B4BAB /* libpion-common.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E352F4170C22F49100A7946C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -371,6 +362,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E38E431E0CC01E29003A47E8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E38E43410CC01F5D003A47E8 /* libpion-common.dylib in Frameworks */,
+				E38E43420CC01F60003A47E8 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -378,9 +378,8 @@
 			isa = PBXGroup;
 			children = (
 				E36F2E210CA7899C00120C6D /* common */,
-				E349E3330CBAF10B003B4BAB /* net */,
-				E349E3370CBAF147003B4BAB /* reactor */,
-				E349E3380CBAF14D003B4BAB /* platform */,
+				E3DB07B90CBAF90F004EAD4D /* net */,
+				E38E43390CC01F03003A47E8 /* platform */,
 				C6859E8C029090F304C91782 /* Documentation */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
@@ -401,7 +400,7 @@
 				E306A5760C2309E3004DE0C0 /* FileService.so */,
 				E306A54E0C2307EC004DE0C0 /* HelloService.so */,
 				E306A56C0C2309AD004DE0C0 /* LogService.so */,
-				E349E33F0CBAF1EF003B4BAB /* piond */,
+				E38E43200CC01E29003A47E8 /* piond */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -411,48 +410,6 @@
 			children = (
 			);
 			name = Documentation;
-			sourceTree = "<group>";
-		};
-		E349E3330CBAF10B003B4BAB /* net */ = {
-			isa = PBXGroup;
-			children = (
-				E3B2A2630CADC3E3001A9A8D /* include */,
-				E3B2A2640CADC3EC001A9A8D /* src */,
-				E36F2DEF0CA7771500120C6D /* services */,
-				E3B2A2650CADC3F2001A9A8D /* tests */,
-			);
-			name = net;
-			sourceTree = "<group>";
-		};
-		E349E3370CBAF147003B4BAB /* reactor */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = reactor;
-			sourceTree = "<group>";
-		};
-		E349E3380CBAF14D003B4BAB /* platform */ = {
-			isa = PBXGroup;
-			children = (
-				E349E3390CBAF16B003B4BAB /* include */,
-				E349E33A0CBAF170003B4BAB /* src */,
-			);
-			name = platform;
-			sourceTree = "<group>";
-		};
-		E349E3390CBAF16B003B4BAB /* include */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = include;
-			sourceTree = "<group>";
-		};
-		E349E33A0CBAF170003B4BAB /* src */ = {
-			isa = PBXGroup;
-			children = (
-				E349E33B0CBAF195003B4BAB /* main.cpp */,
-			);
-			name = src;
 			sourceTree = "<group>";
 		};
 		E36F2DEF0CA7771500120C6D /* services */ = {
@@ -479,6 +436,30 @@
 				E3B2A2670CADC42C001A9A8D /* src */,
 			);
 			name = common;
+			sourceTree = "<group>";
+		};
+		E38E43390CC01F03003A47E8 /* platform */ = {
+			isa = PBXGroup;
+			children = (
+				E38E433A0CC01F12003A47E8 /* include */,
+				E38E433B0CC01F17003A47E8 /* src */,
+			);
+			name = platform;
+			sourceTree = "<group>";
+		};
+		E38E433A0CC01F12003A47E8 /* include */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		E38E433B0CC01F17003A47E8 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				E38E433C0CC01F36003A47E8 /* main.cpp */,
+			);
+			name = src;
 			sourceTree = "<group>";
 		};
 		E3B2A2630CADC3E3001A9A8D /* include */ = {
@@ -538,6 +519,17 @@
 				E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */,
 			);
 			name = src;
+			sourceTree = "<group>";
+		};
+		E3DB07B90CBAF90F004EAD4D /* net */ = {
+			isa = PBXGroup;
+			children = (
+				E3B2A2630CADC3E3001A9A8D /* include */,
+				E3B2A2640CADC3EC001A9A8D /* src */,
+				E36F2DEF0CA7771500120C6D /* services */,
+				E3B2A2650CADC3F2001A9A8D /* tests */,
+			);
+			name = net;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -789,29 +781,6 @@
 			productReference = E349191B0BFE5F72001E1387 /* PionServiceTest */;
 			productType = "com.apple.product-type.tool";
 		};
-		E349E33E0CBAF1EF003B4BAB /* piond */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E349E34F0CBAF22E003B4BAB /* Build configuration list for PBXNativeTarget "piond" */;
-			buildPhases = (
-				E349E33C0CBAF1EF003B4BAB /* Sources */,
-				E349E33D0CBAF1EF003B4BAB /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				E349E3600CBAF31F003B4BAB /* PBXTargetDependency */,
-				E349E3620CBAF31F003B4BAB /* PBXTargetDependency */,
-				E349E3460CBAF20F003B4BAB /* PBXTargetDependency */,
-				E349E3480CBAF20F003B4BAB /* PBXTargetDependency */,
-				E349E34A0CBAF20F003B4BAB /* PBXTargetDependency */,
-				E349E34C0CBAF20F003B4BAB /* PBXTargetDependency */,
-				E349E34E0CBAF20F003B4BAB /* PBXTargetDependency */,
-			);
-			name = piond;
-			productName = piond;
-			productReference = E349E33F0CBAF1EF003B4BAB /* piond */;
-			productType = "com.apple.product-type.tool";
-		};
 		E352F4180C22F49100A7946C /* CookieService */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieService" */;
@@ -864,6 +833,29 @@
 			productReference = E36F2E2E0CA78A0400120C6D /* libpion-common.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		E38E431F0CC01E29003A47E8 /* piond */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E38E43340CC01EC6003A47E8 /* Build configuration list for PBXNativeTarget "piond" */;
+			buildPhases = (
+				E38E431D0CC01E29003A47E8 /* Sources */,
+				E38E431E0CC01E29003A47E8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E38E43250CC01E74003A47E8 /* PBXTargetDependency */,
+				E38E43270CC01E78003A47E8 /* PBXTargetDependency */,
+				E38E43290CC01E94003A47E8 /* PBXTargetDependency */,
+				E38E432B0CC01E94003A47E8 /* PBXTargetDependency */,
+				E38E432D0CC01E94003A47E8 /* PBXTargetDependency */,
+				E38E432F0CC01E94003A47E8 /* PBXTargetDependency */,
+				E38E43310CC01E94003A47E8 /* PBXTargetDependency */,
+			);
+			name = piond;
+			productName = piond;
+			productReference = E38E43200CC01E29003A47E8 /* piond */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -880,7 +872,7 @@
 				E33288B70BEE50B4006D0556 /* pion-net: dynamic */,
 				E33288D20BEE5104006D0556 /* PionServerTest */,
 				E33288D90BEE513D006D0556 /* PionServiceTest */,
-				E349E33E0CBAF1EF003B4BAB /* piond */,
+				E38E431F0CC01E29003A47E8 /* piond */,
 				E352F4180C22F49100A7946C /* CookieService */,
 				E306A54D0C2307EC004DE0C0 /* HelloService */,
 				E306A55C0C230930004DE0C0 /* EchoService */,
@@ -965,14 +957,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		E349E33C0CBAF1EF003B4BAB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				E349E3570CBAF2DC003B4BAB /* main.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		E352F4160C22F49100A7946C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -994,6 +978,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B2A2780CADC481001A9A8D /* PionPlugin.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E38E431D0CC01E29003A47E8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E38E433D0CC01F36003A47E8 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1025,41 +1017,6 @@
 			target = E306A5750C2309E3004DE0C0 /* FileService */;
 			targetProxy = E306A5890C230A4B004DE0C0 /* PBXContainerItemProxy */;
 		};
-		E349E3460CBAF20F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E352F4180C22F49100A7946C /* CookieService */;
-			targetProxy = E349E3450CBAF20F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E3480CBAF20F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E306A54D0C2307EC004DE0C0 /* HelloService */;
-			targetProxy = E349E3470CBAF20F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E34A0CBAF20F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E306A55C0C230930004DE0C0 /* EchoService */;
-			targetProxy = E349E3490CBAF20F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E34C0CBAF20F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E306A56B0C2309AD004DE0C0 /* LogService */;
-			targetProxy = E349E34B0CBAF20F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E34E0CBAF20F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E306A5750C2309E3004DE0C0 /* FileService */;
-			targetProxy = E349E34D0CBAF20F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E3600CBAF31F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
-			targetProxy = E349E35F0CBAF31F003B4BAB /* PBXContainerItemProxy */;
-		};
-		E349E3620CBAF31F003B4BAB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
-			targetProxy = E349E3610CBAF31F003B4BAB /* PBXContainerItemProxy */;
-		};
 		E352F41B0C22F49C00A7946C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
@@ -1074,6 +1031,41 @@
 			isa = PBXTargetDependency;
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E36F2E3F0CA78A5200120C6D /* PBXContainerItemProxy */;
+		};
+		E38E43250CC01E74003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E38E43240CC01E74003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E43270CC01E78003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			targetProxy = E38E43260CC01E78003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E43290CC01E94003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E352F4180C22F49100A7946C /* CookieService */;
+			targetProxy = E38E43280CC01E94003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E432B0CC01E94003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A54D0C2307EC004DE0C0 /* HelloService */;
+			targetProxy = E38E432A0CC01E94003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E432D0CC01E94003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A55C0C230930004DE0C0 /* EchoService */;
+			targetProxy = E38E432C0CC01E94003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E432F0CC01E94003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A56B0C2309AD004DE0C0 /* LogService */;
+			targetProxy = E38E432E0CC01E94003A47E8 /* PBXContainerItemProxy */;
+		};
+		E38E43310CC01E94003A47E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A5750C2309E3004DE0C0 /* FileService */;
+			targetProxy = E38E43300CC01E94003A47E8 /* PBXContainerItemProxy */;
 		};
 		E3B2A3420CADD96C001A9A8D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1122,7 +1114,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/usr/local/lib\"";
-				OBJROOT = "$(PROJECT_DIR)/platform/build/tmp";
+				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread-mt-d",
 					"-lboost_filesystem-mt-d",
@@ -1135,8 +1127,8 @@
 				PREBINDING = NO;
 				PRELINK_LIBS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				SYMROOT = "$(PROJECT_DIR)/platform/build/bin";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/reactor/include ${PROJECT_DIR}/platform/include";
+				SYMROOT = "$(PROJECT_DIR)/bin";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include";
 				ZERO_LINK = NO;
 			};
 			name = Debug;
@@ -1167,7 +1159,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"/opt/local/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"/usr/lib\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"/usr/local/lib\"";
-				OBJROOT = "$(PROJECT_DIR)/platform/build/tmp";
+				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
 				OTHER_LDFLAGS = (
 					"-lboost_thread-mt",
 					"-lboost_filesystem-mt",
@@ -1180,8 +1172,8 @@
 				PREBINDING = NO;
 				PRELINK_LIBS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				SYMROOT = "$(PROJECT_DIR)/platform/build/bin";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/reactor/include ${PROJECT_DIR}/platform/include";
+				SYMROOT = "$(PROJECT_DIR)/bin";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include";
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1189,144 +1181,72 @@
 		E306A5500C230828004DE0C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = HelloService;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E306A5510C230828004DE0C0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = HelloService;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E306A5610C23095A004DE0C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = EchoService;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E306A5620C23095A004DE0C0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = EchoService;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E306A57C0C2309FD004DE0C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = LogService;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E306A57D0C2309FD004DE0C0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = LogService;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E306A57F0C2309FD004DE0C0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = FileService;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E306A5800C2309FD004DE0C0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = FileService;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -1334,10 +1254,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = /usr/local/lib;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-				);
 				PRODUCT_NAME = "pion-net";
 			};
 			name = Debug;
@@ -1345,6 +1261,7 @@
 		E33288CC0BEE5103006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				GCC_DYNAMIC_NO_PIC = YES;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = "pion-net";
 			};
@@ -1354,7 +1271,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = "pion-net";
 			};
@@ -1364,12 +1280,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = lib;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				INSTALL_PATH = /usr/local/lib;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-				);
 				PRODUCT_NAME = "pion-net";
 			};
 			name = Release;
@@ -1402,129 +1313,70 @@
 			};
 			name = Release;
 		};
-		E349E3500CBAF22E003B4BAB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				PREBINDING = NO;
-				PRODUCT_NAME = piond;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		E349E3510CBAF22E003B4BAB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
-				PREBINDING = NO;
-				PRODUCT_NAME = piond;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 		E352F4240C22F50500A7946C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = CookieService;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E352F4250C22F50500A7946C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_EXTENSION = so;
-				EXECUTABLE_PREFIX = "";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = CookieService;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E36F2E280CA78A0100120C6D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
 				EXECUTABLE_PREFIX = lib;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = "pion-common";
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E36F2E290CA78A0100120C6D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				EXECUTABLE_PREFIX = lib;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = "pion-common";
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		E36F2E420CA78A7000120C6D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = "pion-common";
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E36F2E430CA78A7000120C6D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G5;
+				GCC_DYNAMIC_NO_PIC = YES;
 				INSTALL_PATH = /usr/local/lib;
-				PREBINDING = NO;
 				PRODUCT_NAME = "pion-common";
-				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		E38E43350CC01EC6003A47E8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = piond;
+			};
+			name = Debug;
+		};
+		E38E43360CC01EC6003A47E8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = piond;
 			};
 			name = Release;
 		};
@@ -1612,15 +1464,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E349E34F0CBAF22E003B4BAB /* Build configuration list for PBXNativeTarget "piond" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E349E3500CBAF22E003B4BAB /* Debug */,
-				E349E3510CBAF22E003B4BAB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		E352F4230C22F50500A7946C /* Build configuration list for PBXNativeTarget "CookieService" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1644,6 +1487,15 @@
 			buildConfigurations = (
 				E36F2E420CA78A7000120C6D /* Debug */,
 				E36F2E430CA78A7000120C6D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E38E43340CC01EC6003A47E8 /* Build configuration list for PBXNativeTarget "piond" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E38E43350CC01EC6003A47E8 /* Debug */,
+				E38E43360CC01EC6003A47E8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
