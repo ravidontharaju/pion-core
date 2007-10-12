@@ -15,12 +15,12 @@ Build and installation summary:
 See INSTALL or run "./configure --help" for more detailed instructions.
 
 Detailed build instructions are available for all of the platforms supported
-by the Pion Network Library ("pion-net") within the "doc" subdirectory
+by the Pion Network Library ("pion-net") within the "net/doc" subdirectory
 (README.platform).  Please read these instructions first.
 
 Starting with 0.2.0, pion-net REQUIRES the Boost C++ libraries (version
 1.34.0 or greater), and the Boost ASIO library (version 0.38 or
-greater). Please see the README.boost file within the "doc" subdirectory
+greater). Please see the README.boost file within the "net/doc" subdirectory
 for instructions on how to download, build and install these libraries.
 
 Boost ASIO additionally requires OpenSSL for SSL/TLS support and zlib for

@@ -6,7 +6,6 @@ Version 0.3.4 (2007-10-12)
 * Added support to HTTPResponse for sending chunked responses
 * Added new options to FileService: max_cache_size and max_chunk_size
 * Updated log4cxx support so that it works with both 0.9.7 and 0.10.x
-* Updated log4cxx support & docs so that it works now on Windows
 
 
 Version 0.3.2 (2007-09-14)
