@@ -8,6 +8,6 @@ reactor  -  Pion Reactor Library  -  http://svn.atomiclabs.com/pion-reactor
 
 The following additional directories are included:
 
-gui      -  Graphical User Interface files for the Pion Platform
+platform -  Source files for the Pion Platform Library
 plugins  -  Plug-in source files for the Pion Platform
-platform -  Source files for the Pion Platform libraries
+server   -  Source and interface files for the Pion Platform Server

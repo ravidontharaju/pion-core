@@ -2,4 +2,4 @@
 # pion-platform automake configuration file 
 # -----------------------------------------
 
-SUBDIRS = include src
+SUBDIRS = platform
