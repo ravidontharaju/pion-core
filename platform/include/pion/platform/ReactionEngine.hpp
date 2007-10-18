@@ -31,6 +31,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
 #include <pion/reactor/Event.hpp>
 #include <pion/reactor/Reactor.hpp>
@@ -88,9 +90,18 @@ public:
 	/**
 	 * registers a new Reactor for Event processing
 	 *
-	 * @param r pointer to the Reactor to register
+	 * @param reactor_ptr pointer to the Reactor object
 	 */
-	void add(pion::reactor::ReactorPtr& r);
+	void add(pion::reactor::Reactor *reactor_ptr);
+
+	/**
+	 * loads a Reactor from a shared object file (plug-in)
+	 *
+	 * @param reactor_id the identifier for the Reactor to be loaded
+	 * @param reactor_name the name of the Reactor class to load (searches 
+	 *                     plug-in directories and appends extensions)
+	 */
+	void load(const std::string& reactor_id, const std::string& reactor_name);
 
 	/**
 	 * removes a registered Reactor
@@ -126,20 +137,28 @@ public:
 	/**
 	 * schedules an Event to be processed by a Reactor
 	 *
-	 * @param r pointer to the Reactor that will process the Event
+	 * @param reactor_ptr pointer to the Reactor that will process the Event
 	 * @param e pointer to the Event that will be processed
 	 */
-	inline void schedule(pion::reactor::ReactorPtr& r,
+	inline void schedule(pion::reactor::Reactor* reactor_ptr,
 						 pion::reactor::EventPtr& e)
 	{
-		m_io_service.post(boost::bind(&pion::reactor::Reactor::send, r, e));
+		m_io_service.post(boost::bind(&pion::reactor::Reactor::send, reactor_ptr, e));
 	}
 
-
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+	
+	
 private:
 
 	/// private constructor for singleton pattern
-	ReactionEngine(void) : m_num_threads(0), m_is_running(false) {}
+	ReactionEngine(void)
+		: m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")),
+		m_num_threads(0), m_is_running(false) {}
 	
 	/// creates the singleton instance, protected by boost::call_once
 	static void createInstance(void);
@@ -148,13 +167,26 @@ private:
 	void stopNoLock(void);
 	
 	
-	/// data type used to map identifiers to Reactor objects
-	typedef std::map<std::string, pion::reactor::ReactorPtr>	ReactorMap;
-
 	/// data type for a pool of processing threads
-	typedef std::list<boost::shared_ptr<boost::thread> >		ThreadPool;
+	typedef std::list<boost::shared_ptr<boost::thread> >	ThreadPool;
 
+	/// used by ReactorMap to associate Reactor objects with plug-in libraries
+	typedef std::pair<pion::reactor::Reactor *, PionPluginPtr<pion::reactor::Reactor> >	PluginPair;
 	
+	/// data type used to map identifiers to Reactor objects
+	class ReactorMap
+		: public std::map<std::string, PluginPair>
+	{
+	public:
+		void clear(void);
+		virtual ~ReactorMap() { ReactorMap::clear(); }
+		ReactorMap(void) {}
+	};
+	
+	
+	/// primary logging interface used by this class
+	PionLogger						m_logger;
+
 	/// mutex to make class thread-safe
 	mutable boost::mutex			m_mutex;
 	
@@ -179,7 +211,6 @@ private:
 	/// used for thread-safe singleton pattern
 	static boost::once_flag			m_instance_flag;
 };
-
 
 
 }	// end namespace pion

@@ -3,18 +3,18 @@
 // ------------------------------------------------------------------
 // Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
-// pion-reactor is free software: you can redistribute it and/or modify
+// pion-platform is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// pion-reactor is distributed in the hope that it will be useful,
+// pion-platform is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with pion-reactor.  If not, see <http://www.gnu.org/licenses/>.
+// along with pion-platform.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #include <algorithm>
@@ -45,7 +45,7 @@ void ReactionEngine::stopNoLock(void)
 {
 	if (m_is_running) {
 		for (ReactorMap::iterator i = m_reactors.begin(); i != m_reactors.end(); ++i) {
-			i->second->stop();
+			i->second.first->stop();
 		}
 		m_is_running = false;
 	}
@@ -56,7 +56,7 @@ void ReactionEngine::start(void)
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	if (! m_is_running) {
 		for (ReactorMap::iterator i = m_reactors.begin(); i != m_reactors.end(); ++i) {
-			i->second->start();
+			i->second.first->start();
 		}
 		m_is_running = true;
 	}
@@ -73,7 +73,7 @@ void ReactionEngine::reset(void)
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	stopNoLock();
 	for (ReactorMap::iterator i = m_reactors.begin(); i != m_reactors.end(); ++i) {
-		i->second->reset();
+		i->second.first->reset();
 	}
 }
 
@@ -88,14 +88,57 @@ void ReactionEngine::clearStats(void)
 {
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	for (ReactorMap::iterator i = m_reactors.begin(); i != m_reactors.end(); ++i) {
-		i->second->clearStats();
+		i->second.first->clearStats();
 	}
 }
 
-void ReactionEngine::add(ReactorPtr& r)
+void ReactionEngine::add(Reactor *reactor_ptr)
 {
+	PionPluginPtr<Reactor> plugin_ptr;
 	boost::mutex::scoped_lock engine_lock(m_mutex);
-	m_reactors.insert(std::make_pair(r->getReactorID(), r));
+	m_reactors.insert(std::make_pair(reactor_ptr->getId(),
+									 std::make_pair(reactor_ptr, plugin_ptr)));
+}
+
+void ReactionEngine::load(const std::string& reactor_id,
+						  const std::string& reactor_name)
+{
+	// search for the plug-in file using the configured paths
+	bool is_static;
+	void *create_func;
+	void *destroy_func;
+	std::string plugin_file;
+	
+	// check if reactor is statically linked, and if not, try to resolve for dynamic
+	is_static = PionPlugin::findStaticEntryPoint(reactor_name, &create_func, &destroy_func);
+	if (!is_static) {
+		if (!PionPlugin::findPluginFile(plugin_file, reactor_name))
+			throw PionPlugin::PluginNotFoundException(reactor_name);
+	}
+	
+	// open up the plug-in's shared object library
+	PionPluginPtr<Reactor> plugin_ptr;
+	if (is_static) {
+		plugin_ptr.openStaticLinked(reactor_name, create_func, destroy_func);	// may throw
+	} else {
+		plugin_ptr.open(plugin_file);	// may throw
+	}
+	
+	// create a new reactor using the plug-in library
+	Reactor *reactor_ptr(plugin_ptr.create());
+	reactor_ptr->setId(reactor_id);
+	
+	// add the reactor to the engine's collection
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	m_reactors.insert(std::make_pair(reactor_ptr->getId(),
+									 std::make_pair(reactor_ptr, plugin_ptr)));
+	engine_lock.unlock();
+	
+	if (is_static) {
+		PION_LOG_INFO(m_logger, "Loaded static reactor (" << reactor_id << "): " << reactor_name);
+	} else {
+		PION_LOG_INFO(m_logger, "Loaded reactor plug-in (" << reactor_id << "): " << reactor_name);
+	}
 }
 
 void ReactionEngine::remove(const std::string& reactor_id)
@@ -111,7 +154,7 @@ void ReactionEngine::reset(const std::string& reactor_id)
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	ReactorMap::iterator i = m_reactors.find(reactor_id);
 	if (i == m_reactors.end()) throw UnknownReactorException(reactor_id);
-	i->second->reset();
+	i->second.first->reset();
 }
 
 void ReactionEngine::clearStats(const std::string& reactor_id)
@@ -119,7 +162,7 @@ void ReactionEngine::clearStats(const std::string& reactor_id)
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	ReactorMap::iterator i = m_reactors.find(reactor_id);
 	if (i == m_reactors.end()) throw UnknownReactorException(reactor_id);
-	i->second->clearStats();
+	i->second.first->clearStats();
 }
 
 void ReactionEngine::configure(const std::string& reactor_id,
@@ -128,8 +171,24 @@ void ReactionEngine::configure(const std::string& reactor_id,
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	ReactorMap::iterator i = m_reactors.find(reactor_id);
 	if (i == m_reactors.end()) throw UnknownReactorException(reactor_id);
-	i->second->configure(config);
+	i->second.first->configure(config);
 }
+
+
+// ReactionEngine::ReactorMap member functions
+
+void ReactionEngine::ReactorMap::clear(void) {
+	for (iterator i = begin(); i != end(); ++i) {
+		if (i->second.second.is_open()) {
+			i->second.second.destroy(i->second.first);
+			i->second.second.close();
+		} else {
+			delete i->second.first;
+		}
+	}
+	std::map<std::string, PluginPair>::clear();
+}
+
 
 }	// end namespace net
 }	// end namespace platform
