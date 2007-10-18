@@ -31,11 +31,11 @@ http://www.zlib.net
 
 For logging, pion-net may be configured to:
 
-a) disable logging entirely (the default configuration)
-b) use std::cout and std::cerr for logging (configure --with-ostream-logging)
-c) use one of the following open source libraries: log4cxx, log4cpp or
+a) use std::cout and std::cerr for logging (the default configuration)
+b) use one of the following open source libraries: log4cxx, log4cpp or
    log4cplus (configure using one of --with-log4cxx, --with-log4cpp or
    --with-log4cplus, respectively)
+c) disable logging entirely (configure --disable-logging)
 
 You can download these logging libraries from the following locations:
 
