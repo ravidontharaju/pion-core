@@ -74,8 +74,6 @@
 		E3B2A3130CADD5E4001A9A8D /* LogService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A30B0CADD5CF001A9A8D /* LogService.hpp */; };
 		E3B2A3140CADD5E8001A9A8D /* FileService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A3060CADD5CF001A9A8D /* FileService.cpp */; };
 		E3B2A3150CADD5E8001A9A8D /* FileService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A3070CADD5CF001A9A8D /* FileService.hpp */; };
-		E3B2A3180CADD60A001A9A8D /* PionServerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A3160CADD605001A9A8D /* PionServerTest.cpp */; };
-		E3B2A3190CADD60D001A9A8D /* PionServiceTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A3170CADD605001A9A8D /* PionServiceTest.cpp */; };
 		E3B2A33D0CADD950001A9A8D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3B2A33E0CADD952001A9A8D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E3B2A3470CADD9D4001A9A8D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
@@ -91,6 +89,8 @@
 		E3C3B7510CC42E7B00FAF9F4 /* Reactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3912E800CC3D74B00D1A9C3 /* Reactor.hpp */; };
 		E3C3B7520CC42E7C00FAF9F4 /* Vocabulary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3912E9A0CC41B6700D1A9C3 /* Vocabulary.cpp */; };
 		E3C3B7530CC42E7C00FAF9F4 /* Vocabulary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3912E810CC3D74B00D1A9C3 /* Vocabulary.hpp */; };
+		E3D247C30CC80EC400D3EF8D /* PionServerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D247C10CC80EBC00D3EF8D /* PionServerTest.cpp */; };
+		E3D247C40CC80EC800D3EF8D /* PionServiceTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D247C20CC80EBC00D3EF8D /* PionServiceTest.cpp */; };
 		E3EF1EB00CC578940078ED98 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EF1EAF0CC578940078ED98 /* main.cpp */; };
 		E3EF1ECB0CC578E00078ED98 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3EF1EDC0CC579AE0078ED98 /* ReactionEngine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3912E7A0CC3D71000D1A9C3 /* ReactionEngine.hpp */; };
@@ -318,7 +318,7 @@
 		E306A5760C2309E3004DE0C0 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -362,10 +362,10 @@
 		E3B2A3090CADD5CF001A9A8D /* HelloService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloService.hpp; path = net/services/HelloService.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A30A0CADD5CF001A9A8D /* LogService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = LogService.cpp; path = net/services/LogService.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A30B0CADD5CF001A9A8D /* LogService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogService.hpp; path = net/services/LogService.hpp; sourceTree = SOURCE_ROOT; };
-		E3B2A3160CADD605001A9A8D /* PionServerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServerTest.cpp; path = net/tests/PionServerTest.cpp; sourceTree = SOURCE_ROOT; };
-		E3B2A3170CADD605001A9A8D /* PionServiceTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServiceTest.cpp; path = net/tests/PionServiceTest.cpp; sourceTree = SOURCE_ROOT; };
 		E3C3B72B0CC42DBE00FAF9F4 /* libpion-reactor.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-reactor.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C3B7460CC42DC200FAF9F4 /* libpion-reactor.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-reactor.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3D247C10CC80EBC00D3EF8D /* PionServerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServerTest.cpp; path = net/utils/PionServerTest.cpp; sourceTree = SOURCE_ROOT; };
+		E3D247C20CC80EBC00D3EF8D /* PionServiceTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServiceTest.cpp; path = net/utils/PionServiceTest.cpp; sourceTree = SOURCE_ROOT; };
 		E3EF1EAF0CC578940078ED98 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = server/src/main.cpp; sourceTree = SOURCE_ROOT; };
 		E3EF1EBF0CC578DD0078ED98 /* libpion-platform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-platform.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3EF1ECF0CC578E00078ED98 /* libpion-platform.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-platform.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -668,8 +668,6 @@
 		E3B2A2650CADC3F2001A9A8D /* tests */ = {
 			isa = PBXGroup;
 			children = (
-				E3B2A3160CADD605001A9A8D /* PionServerTest.cpp */,
-				E3B2A3170CADD605001A9A8D /* PionServiceTest.cpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";
@@ -695,12 +693,22 @@
 			name = src;
 			sourceTree = "<group>";
 		};
+		E3D247C00CC80E9C00D3EF8D /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				E3D247C10CC80EBC00D3EF8D /* PionServerTest.cpp */,
+				E3D247C20CC80EBC00D3EF8D /* PionServiceTest.cpp */,
+			);
+			name = utils;
+			sourceTree = "<group>";
+		};
 		E3DB07B90CBAF90F004EAD4D /* net */ = {
 			isa = PBXGroup;
 			children = (
 				E3B2A2630CADC3E3001A9A8D /* include */,
 				E3B2A2640CADC3EC001A9A8D /* src */,
 				E36F2DEF0CA7771500120C6D /* services */,
+				E3D247C00CC80E9C00D3EF8D /* utils */,
 				E3B2A2650CADC3F2001A9A8D /* tests */,
 			);
 			name = net;
@@ -1249,7 +1257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3B2A3180CADD60A001A9A8D /* PionServerTest.cpp in Sources */,
+				E3D247C30CC80EC400D3EF8D /* PionServerTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1257,7 +1265,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3B2A3190CADD60D001A9A8D /* PionServiceTest.cpp in Sources */,
+				E3D247C40CC80EC800D3EF8D /* PionServiceTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

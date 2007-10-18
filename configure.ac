@@ -56,7 +56,7 @@ m4_include([common/build/pion-config.m4])
 AC_OUTPUT(pion-platform.pc Makefile
 	common/Makefile common/include/Makefile common/include/pion/Makefile common/src/Makefile
 	net/Makefile net/include/Makefile net/include/pion/Makefile net/include/pion/net/Makefile
-	net/src/Makefile net/services/Makefile net/tests/Makefile
+	net/src/Makefile net/services/Makefile net/utils/Makefile
 	reactor/Makefile reactor/src/Makefile reactor/include/Makefile reactor/include/pion/Makefile
 	reactor/include/pion/reactor/Makefile
 	platform/Makefile platform/src/Makefile platform/include/Makefile platform/include/pion/Makefile
