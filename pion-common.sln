@@ -5,8 +5,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "common\src\p
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "common\tests\UnitTests.vcproj", "{2CC83526-B419-45E1-A692-6DEA0CD56292}"
 	ProjectSection(ProjectDependencies) = postProject
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E} = {8C8A8E46-4588-4CE1-B624-89C36EA5209E}
+		{33DEAB53-40E1-42FF-9C17-7A9956102052} = {33DEAB53-40E1-42FF-9C17-7A9956102052}
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83} = {2DEAB99F-2617-4235-8EF7-653F36EFAC83}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hasNoCreate", "common\tests\PluginsUsedByUnitTests\hasNoCreate.vcproj", "{33DEAB53-40E1-42FF-9C17-7A9956102052}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hasCreateButNoDestroy", "common\tests\PluginsUsedByUnitTests\hasCreateButNoDestroy.vcproj", "{2DEAB99F-2617-4235-8EF7-653F36EFAC83}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hasCreateAndDestroy", "common\tests\PluginsUsedByUnitTests\hasCreateAndDestroy.vcproj", "{8C8A8E46-4588-4CE1-B624-89C36EA5209E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +41,30 @@ Global
 		{2CC83526-B419-45E1-A692-6DEA0CD56292}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
 		{2CC83526-B419-45E1-A692-6DEA0CD56292}.Release_static|Win32.ActiveCfg = Release_static|Win32
 		{2CC83526-B419-45E1-A692-6DEA0CD56292}.Release_static|Win32.Build.0 = Release_static|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Debug_static|Win32.ActiveCfg = Debug_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Debug_static|Win32.Build.0 = Debug_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Release_static|Win32.ActiveCfg = Release_DLL|Win32
+		{33DEAB53-40E1-42FF-9C17-7A9956102052}.Release_static|Win32.Build.0 = Release_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Debug_static|Win32.ActiveCfg = Debug_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Debug_static|Win32.Build.0 = Debug_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Release_static|Win32.ActiveCfg = Release_DLL|Win32
+		{2DEAB99F-2617-4235-8EF7-653F36EFAC83}.Release_static|Win32.Build.0 = Release_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_static|Win32.ActiveCfg = Debug_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_static|Win32.Build.0 = Debug_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_static|Win32.ActiveCfg = Release_DLL|Win32
+		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_static|Win32.Build.0 = Release_DLL|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
