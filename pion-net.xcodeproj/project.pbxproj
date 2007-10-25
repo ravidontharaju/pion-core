@@ -22,8 +22,6 @@
 		E36F2F140CA793E100120C6D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E36F2F150CA793E400120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36F2F160CA793E500120C6D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
-		E3A341ED0CC80CB00085E661 /* PionServiceTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A341EC0CC80CA00085E661 /* PionServiceTest.cpp */; };
-		E3A341EE0CC80CB50085E661 /* PionServerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A341EB0CC80CA00085E661 /* PionServerTest.cpp */; };
 		E3B2A26D0CADC46B001A9A8D /* PionConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */; };
 		E3B2A26E0CADC46B001A9A8D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2690CADC46B001A9A8D /* PionException.hpp */; };
 		E3B2A26F0CADC46B001A9A8D /* PionHashMap.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */; };
@@ -41,8 +39,6 @@
 		E3B2A2DE0CADD57E001A9A8D /* HTTPResponse.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D40CADD57E001A9A8D /* HTTPResponse.hpp */; };
 		E3B2A2DF0CADD57E001A9A8D /* HTTPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D50CADD57E001A9A8D /* HTTPServer.hpp */; };
 		E3B2A2E00CADD57E001A9A8D /* HTTPTypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D60CADD57E001A9A8D /* HTTPTypes.hpp */; };
-		E3B2A2E10CADD57E001A9A8D /* PionNet.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D70CADD57E001A9A8D /* PionNet.hpp */; };
-		E3B2A2E20CADD57E001A9A8D /* PionNetEngine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D80CADD57E001A9A8D /* PionNetEngine.hpp */; };
 		E3B2A2E30CADD57E001A9A8D /* TCPConnection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D90CADD57E001A9A8D /* TCPConnection.hpp */; };
 		E3B2A2E40CADD57E001A9A8D /* TCPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2DA0CADD57E001A9A8D /* TCPServer.hpp */; };
 		E3B2A2E50CADD57E001A9A8D /* WebService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2DB0CADD57E001A9A8D /* WebService.hpp */; };
@@ -51,8 +47,6 @@
 		E3B2A2E80CADD57E001A9A8D /* HTTPResponse.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D40CADD57E001A9A8D /* HTTPResponse.hpp */; };
 		E3B2A2E90CADD57E001A9A8D /* HTTPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D50CADD57E001A9A8D /* HTTPServer.hpp */; };
 		E3B2A2EA0CADD57E001A9A8D /* HTTPTypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D60CADD57E001A9A8D /* HTTPTypes.hpp */; };
-		E3B2A2EB0CADD57E001A9A8D /* PionNet.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D70CADD57E001A9A8D /* PionNet.hpp */; };
-		E3B2A2EC0CADD57E001A9A8D /* PionNetEngine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D80CADD57E001A9A8D /* PionNetEngine.hpp */; };
 		E3B2A2ED0CADD57E001A9A8D /* TCPConnection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2D90CADD57E001A9A8D /* TCPConnection.hpp */; };
 		E3B2A2EE0CADD57E001A9A8D /* TCPServer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2DA0CADD57E001A9A8D /* TCPServer.hpp */; };
 		E3B2A2EF0CADD57E001A9A8D /* WebService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2DB0CADD57E001A9A8D /* WebService.hpp */; };
@@ -60,13 +54,11 @@
 		E3B2A2F70CADD598001A9A8D /* HTTPResponse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F10CADD598001A9A8D /* HTTPResponse.cpp */; };
 		E3B2A2F80CADD598001A9A8D /* HTTPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F20CADD598001A9A8D /* HTTPServer.cpp */; };
 		E3B2A2F90CADD598001A9A8D /* HTTPTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F30CADD598001A9A8D /* HTTPTypes.cpp */; };
-		E3B2A2FA0CADD598001A9A8D /* PionNetEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F40CADD598001A9A8D /* PionNetEngine.cpp */; };
 		E3B2A2FB0CADD598001A9A8D /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F50CADD598001A9A8D /* TCPServer.cpp */; };
 		E3B2A2FC0CADD598001A9A8D /* HTTPRequestParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F00CADD598001A9A8D /* HTTPRequestParser.cpp */; };
 		E3B2A2FD0CADD598001A9A8D /* HTTPResponse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F10CADD598001A9A8D /* HTTPResponse.cpp */; };
 		E3B2A2FE0CADD598001A9A8D /* HTTPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F20CADD598001A9A8D /* HTTPServer.cpp */; };
 		E3B2A2FF0CADD598001A9A8D /* HTTPTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F30CADD598001A9A8D /* HTTPTypes.cpp */; };
-		E3B2A3000CADD598001A9A8D /* PionNetEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F40CADD598001A9A8D /* PionNetEngine.cpp */; };
 		E3B2A3010CADD598001A9A8D /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2F50CADD598001A9A8D /* TCPServer.cpp */; };
 		E3B2A30C0CADD5D4001A9A8D /* CookieService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A3020CADD5CF001A9A8D /* CookieService.cpp */; };
 		E3B2A30D0CADD5D5001A9A8D /* CookieService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A3030CADD5CF001A9A8D /* CookieService.hpp */; };
@@ -82,6 +74,17 @@
 		E3B2A33E0CADD952001A9A8D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E3B2A3470CADD9D4001A9A8D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3B2A3480CADD9D6001A9A8D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
+		E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
+		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
+		E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
+		E3CFE20D0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
+		E3CFE33A0CD00CB300016E0F /* PionWebServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3390CD00CAD00016E0F /* PionWebServer.cpp */; };
+		E3CFE33B0CD00CB700016E0F /* PionHelloServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3380CD00CAD00016E0F /* PionHelloServer.cpp */; };
+		E3CFE3690CD00E8900016E0F /* PionNetUnitTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3530CD00E3E00016E0F /* PionNetUnitTests.cpp */; };
+		E3CFE36C0CD00E8F00016E0F /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E3CFE36D0CD00E9100016E0F /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
+		E3CFE3C80CD0152800016E0F /* TCPServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */; };
+		E3CFE43B0CD01B7C00016E0F /* WebServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -169,6 +172,55 @@
 			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
+		E3CFE35B0CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E3CFE35D0CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E3CFE35F0CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E352F4180C22F49100A7946C /* CookieService */;
+			remoteInfo = CookieService;
+		};
+		E3CFE3610CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A54D0C2307EC004DE0C0 /* HelloService */;
+			remoteInfo = HelloService;
+		};
+		E3CFE3630CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A55C0C230930004DE0C0 /* EchoService */;
+			remoteInfo = EchoService;
+		};
+		E3CFE3650CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A56B0C2309AD004DE0C0 /* LogService */;
+			remoteInfo = LogService;
+		};
+		E3CFE3670CD00E7300016E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A5750C2309E3004DE0C0 /* FileService */;
+			remoteInfo = FileService;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -180,13 +232,11 @@
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E34919190BFE5F64001E1387 /* PionServerTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServerTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E349191B0BFE5F72001E1387 /* PionServiceTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionServiceTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E34919190BFE5F64001E1387 /* PionHelloServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionHelloServer; sourceTree = BUILT_PRODUCTS_DIR; };
+		E349191B0BFE5F72001E1387 /* PionWebServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionWebServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E2E0CA78A0400120C6D /* libpion-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E3A341EB0CC80CA00085E661 /* PionServerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServerTest.cpp; path = net/utils/PionServerTest.cpp; sourceTree = SOURCE_ROOT; };
-		E3A341EC0CC80CA00085E661 /* PionServiceTest.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionServiceTest.cpp; path = net/utils/PionServiceTest.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionConfig.hpp; path = common/include/pion/PionConfig.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2690CADC46B001A9A8D /* PionException.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionException.hpp; path = common/include/pion/PionException.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionHashMap.hpp; path = common/include/pion/PionHashMap.hpp; sourceTree = SOURCE_ROOT; };
@@ -198,8 +248,6 @@
 		E3B2A2D40CADD57E001A9A8D /* HTTPResponse.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HTTPResponse.hpp; path = net/include/pion/net/HTTPResponse.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2D50CADD57E001A9A8D /* HTTPServer.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HTTPServer.hpp; path = net/include/pion/net/HTTPServer.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2D60CADD57E001A9A8D /* HTTPTypes.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HTTPTypes.hpp; path = net/include/pion/net/HTTPTypes.hpp; sourceTree = SOURCE_ROOT; };
-		E3B2A2D70CADD57E001A9A8D /* PionNet.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionNet.hpp; path = net/include/pion/net/PionNet.hpp; sourceTree = SOURCE_ROOT; };
-		E3B2A2D80CADD57E001A9A8D /* PionNetEngine.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionNetEngine.hpp; path = net/include/pion/net/PionNetEngine.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2D90CADD57E001A9A8D /* TCPConnection.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = TCPConnection.hpp; path = net/include/pion/net/TCPConnection.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2DA0CADD57E001A9A8D /* TCPServer.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = TCPServer.hpp; path = net/include/pion/net/TCPServer.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2DB0CADD57E001A9A8D /* WebService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = WebService.hpp; path = net/include/pion/net/WebService.hpp; sourceTree = SOURCE_ROOT; };
@@ -207,7 +255,6 @@
 		E3B2A2F10CADD598001A9A8D /* HTTPResponse.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPResponse.cpp; path = net/src/HTTPResponse.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2F20CADD598001A9A8D /* HTTPServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPServer.cpp; path = net/src/HTTPServer.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2F30CADD598001A9A8D /* HTTPTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypes.cpp; path = net/src/HTTPTypes.cpp; sourceTree = SOURCE_ROOT; };
-		E3B2A2F40CADD598001A9A8D /* PionNetEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionNetEngine.cpp; path = net/src/PionNetEngine.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2F50CADD598001A9A8D /* TCPServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = TCPServer.cpp; path = net/src/TCPServer.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A3020CADD5CF001A9A8D /* CookieService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = CookieService.cpp; path = net/services/CookieService.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A3030CADD5CF001A9A8D /* CookieService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = CookieService.hpp; path = net/services/CookieService.hpp; sourceTree = SOURCE_ROOT; };
@@ -219,6 +266,14 @@
 		E3B2A3090CADD5CF001A9A8D /* HelloService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HelloService.hpp; path = net/services/HelloService.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A30A0CADD5CF001A9A8D /* LogService.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = LogService.cpp; path = net/services/LogService.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A30B0CADD5CF001A9A8D /* LogService.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = LogService.hpp; path = net/services/LogService.hpp; sourceTree = SOURCE_ROOT; };
+		E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionScheduler.hpp; path = common/include/pion/PionScheduler.hpp; sourceTree = SOURCE_ROOT; };
+		E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionScheduler.cpp; path = common/src/PionScheduler.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3380CD00CAD00016E0F /* PionHelloServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionHelloServer.cpp; path = net/utils/PionHelloServer.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3390CD00CAD00016E0F /* PionWebServer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionWebServer.cpp; path = net/utils/PionWebServer.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3530CD00E3E00016E0F /* PionNetUnitTests.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionNetUnitTests.cpp; path = net/tests/PionNetUnitTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = TCPServerTests.cpp; path = net/tests/TCPServerTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = WebServerTests.cpp; path = net/tests/WebServerTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3CFE3590CD00E5300016E0F /* PionNetUnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionNetUnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -314,6 +369,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3CFE3570CD00E5300016E0F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3CFE36C0CD00E8F00016E0F /* libpion-common.dylib in Frameworks */,
+				E3CFE36D0CD00E9100016E0F /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -335,13 +399,14 @@
 				E36F2E260CA789CD00120C6D /* libpion-common.dylib */,
 				E33288A20BEE5044006D0556 /* libpion-net.a */,
 				E33288B80BEE50B4006D0556 /* libpion-net.dylib */,
-				E34919190BFE5F64001E1387 /* PionServerTest */,
-				E349191B0BFE5F72001E1387 /* PionServiceTest */,
+				E34919190BFE5F64001E1387 /* PionHelloServer */,
+				E349191B0BFE5F72001E1387 /* PionWebServer */,
 				E352F4190C22F49100A7946C /* CookieService.so */,
 				E306A55D0C230930004DE0C0 /* EchoService.so */,
 				E306A5760C2309E3004DE0C0 /* FileService.so */,
 				E306A54E0C2307EC004DE0C0 /* HelloService.so */,
 				E306A56C0C2309AD004DE0C0 /* LogService.so */,
+				E3CFE3590CD00E5300016E0F /* PionNetUnitTests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -382,8 +447,8 @@
 		E3A341EA0CC80C7F0085E661 /* utils */ = {
 			isa = PBXGroup;
 			children = (
-				E3A341EB0CC80CA00085E661 /* PionServerTest.cpp */,
-				E3A341EC0CC80CA00085E661 /* PionServiceTest.cpp */,
+				E3CFE3380CD00CAD00016E0F /* PionHelloServer.cpp */,
+				E3CFE3390CD00CAD00016E0F /* PionWebServer.cpp */,
 			);
 			name = utils;
 			sourceTree = "<group>";
@@ -391,8 +456,6 @@
 		E3B2A2630CADC3E3001A9A8D /* include */ = {
 			isa = PBXGroup;
 			children = (
-				E3B2A2D70CADD57E001A9A8D /* PionNet.hpp */,
-				E3B2A2D80CADD57E001A9A8D /* PionNetEngine.hpp */,
 				E3B2A2D90CADD57E001A9A8D /* TCPConnection.hpp */,
 				E3B2A2DA0CADD57E001A9A8D /* TCPServer.hpp */,
 				E3B2A2D60CADD57E001A9A8D /* HTTPTypes.hpp */,
@@ -408,7 +471,6 @@
 		E3B2A2640CADC3EC001A9A8D /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E3B2A2F40CADD598001A9A8D /* PionNetEngine.cpp */,
 				E3B2A2F50CADD598001A9A8D /* TCPServer.cpp */,
 				E3B2A2F30CADD598001A9A8D /* HTTPTypes.cpp */,
 				E3B2A2F00CADD598001A9A8D /* HTTPRequestParser.cpp */,
@@ -421,6 +483,9 @@
 		E3B2A2650CADC3F2001A9A8D /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				E3CFE3530CD00E3E00016E0F /* PionNetUnitTests.cpp */,
+				E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */,
+				E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";
@@ -434,6 +499,7 @@
 				E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */,
 				E3B2A26B0CADC46B001A9A8D /* PionLogger.hpp */,
 				E3B2A26C0CADC46B001A9A8D /* PionPlugin.hpp */,
+				E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */,
 			);
 			name = include;
 			sourceTree = "<group>";
@@ -443,6 +509,7 @@
 			children = (
 				E30D89390CCE8BC7005C483D /* PionCounter.cpp */,
 				E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */,
+				E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -503,8 +570,6 @@
 				E3B2A2DE0CADD57E001A9A8D /* HTTPResponse.hpp in Headers */,
 				E3B2A2DF0CADD57E001A9A8D /* HTTPServer.hpp in Headers */,
 				E3B2A2E00CADD57E001A9A8D /* HTTPTypes.hpp in Headers */,
-				E3B2A2E10CADD57E001A9A8D /* PionNet.hpp in Headers */,
-				E3B2A2E20CADD57E001A9A8D /* PionNetEngine.hpp in Headers */,
 				E3B2A2E30CADD57E001A9A8D /* TCPConnection.hpp in Headers */,
 				E3B2A2E40CADD57E001A9A8D /* TCPServer.hpp in Headers */,
 				E3B2A2E50CADD57E001A9A8D /* WebService.hpp in Headers */,
@@ -520,8 +585,6 @@
 				E3B2A2E80CADD57E001A9A8D /* HTTPResponse.hpp in Headers */,
 				E3B2A2E90CADD57E001A9A8D /* HTTPServer.hpp in Headers */,
 				E3B2A2EA0CADD57E001A9A8D /* HTTPTypes.hpp in Headers */,
-				E3B2A2EB0CADD57E001A9A8D /* PionNet.hpp in Headers */,
-				E3B2A2EC0CADD57E001A9A8D /* PionNetEngine.hpp in Headers */,
 				E3B2A2ED0CADD57E001A9A8D /* TCPConnection.hpp in Headers */,
 				E3B2A2EE0CADD57E001A9A8D /* TCPServer.hpp in Headers */,
 				E3B2A2EF0CADD57E001A9A8D /* WebService.hpp in Headers */,
@@ -546,6 +609,7 @@
 				E3B2A2750CADC46B001A9A8D /* PionLogger.hpp in Headers */,
 				E3B2A2760CADC46B001A9A8D /* PionPlugin.hpp in Headers */,
 				E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */,
+				E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,6 +623,7 @@
 				E3B2A2700CADC46B001A9A8D /* PionLogger.hpp in Headers */,
 				E3B2A2710CADC46B001A9A8D /* PionPlugin.hpp in Headers */,
 				E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */,
+				E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -669,9 +734,9 @@
 			productReference = E33288B80BEE50B4006D0556 /* libpion-net.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		E33288D20BEE5104006D0556 /* PionServerTest */ = {
+		E33288D20BEE5104006D0556 /* PionHelloServer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E33288E40BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionServerTest" */;
+			buildConfigurationList = E33288E40BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionHelloServer" */;
 			buildPhases = (
 				E33288D00BEE5104006D0556 /* Sources */,
 				E33288D10BEE5104006D0556 /* Frameworks */,
@@ -682,14 +747,14 @@
 				E3B2A3420CADD96C001A9A8D /* PBXTargetDependency */,
 				E3B2A3440CADD96E001A9A8D /* PBXTargetDependency */,
 			);
-			name = PionServerTest;
+			name = PionHelloServer;
 			productName = PionProtocolTest;
-			productReference = E34919190BFE5F64001E1387 /* PionServerTest */;
+			productReference = E34919190BFE5F64001E1387 /* PionHelloServer */;
 			productType = "com.apple.product-type.tool";
 		};
-		E33288D90BEE513D006D0556 /* PionServiceTest */ = {
+		E33288D90BEE513D006D0556 /* PionWebServer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E33288E70BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionServiceTest" */;
+			buildConfigurationList = E33288E70BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionWebServer" */;
 			buildPhases = (
 				E33288D70BEE513D006D0556 /* Sources */,
 				E33288D80BEE513D006D0556 /* Frameworks */,
@@ -705,9 +770,9 @@
 				E306A5880C230A48004DE0C0 /* PBXTargetDependency */,
 				E306A58A0C230A4B004DE0C0 /* PBXTargetDependency */,
 			);
-			name = PionServiceTest;
+			name = PionWebServer;
 			productName = PionModulesTest;
-			productReference = E349191B0BFE5F72001E1387 /* PionServiceTest */;
+			productReference = E349191B0BFE5F72001E1387 /* PionWebServer */;
 			productType = "com.apple.product-type.tool";
 		};
 		E352F4180C22F49100A7946C /* CookieService */ = {
@@ -762,6 +827,29 @@
 			productReference = E36F2E2E0CA78A0400120C6D /* libpion-common.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		E3CFE3580CD00E5300016E0F /* PionNetUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3CFE36F0CD00EAF00016E0F /* Build configuration list for PBXNativeTarget "PionNetUnitTests" */;
+			buildPhases = (
+				E3CFE3560CD00E5300016E0F /* Sources */,
+				E3CFE3570CD00E5300016E0F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E3CFE35C0CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE35E0CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE3600CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE3620CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE3640CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE3660CD00E7300016E0F /* PBXTargetDependency */,
+				E3CFE3680CD00E7300016E0F /* PBXTargetDependency */,
+			);
+			name = PionNetUnitTests;
+			productName = PionNetUnitTests;
+			productReference = E3CFE3590CD00E5300016E0F /* PionNetUnitTests */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -776,13 +864,14 @@
 				E36F2E250CA789CD00120C6D /* pion-common: dynamic */,
 				E33288A10BEE5044006D0556 /* pion-net: static */,
 				E33288B70BEE50B4006D0556 /* pion-net: dynamic */,
-				E33288D20BEE5104006D0556 /* PionServerTest */,
-				E33288D90BEE513D006D0556 /* PionServiceTest */,
 				E352F4180C22F49100A7946C /* CookieService */,
 				E306A54D0C2307EC004DE0C0 /* HelloService */,
 				E306A55C0C230930004DE0C0 /* EchoService */,
 				E306A56B0C2309AD004DE0C0 /* LogService */,
 				E306A5750C2309E3004DE0C0 /* FileService */,
+				E33288D20BEE5104006D0556 /* PionHelloServer */,
+				E33288D90BEE513D006D0556 /* PionWebServer */,
+				E3CFE3580CD00E5300016E0F /* PionNetUnitTests */,
 			);
 		};
 /* End PBXProject section */
@@ -828,7 +917,6 @@
 				E3B2A2FD0CADD598001A9A8D /* HTTPResponse.cpp in Sources */,
 				E3B2A2FE0CADD598001A9A8D /* HTTPServer.cpp in Sources */,
 				E3B2A2FF0CADD598001A9A8D /* HTTPTypes.cpp in Sources */,
-				E3B2A3000CADD598001A9A8D /* PionNetEngine.cpp in Sources */,
 				E3B2A3010CADD598001A9A8D /* TCPServer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -841,7 +929,6 @@
 				E3B2A2F70CADD598001A9A8D /* HTTPResponse.cpp in Sources */,
 				E3B2A2F80CADD598001A9A8D /* HTTPServer.cpp in Sources */,
 				E3B2A2F90CADD598001A9A8D /* HTTPTypes.cpp in Sources */,
-				E3B2A2FA0CADD598001A9A8D /* PionNetEngine.cpp in Sources */,
 				E3B2A2FB0CADD598001A9A8D /* TCPServer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -850,7 +937,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3A341EE0CC80CB50085E661 /* PionServerTest.cpp in Sources */,
+				E3CFE33B0CD00CB700016E0F /* PionHelloServer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -858,7 +945,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3A341ED0CC80CB00085E661 /* PionServiceTest.cpp in Sources */,
+				E3CFE33A0CD00CB300016E0F /* PionWebServer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -876,6 +963,7 @@
 			files = (
 				E3B2A2790CADC481001A9A8D /* PionPlugin.cpp in Sources */,
 				E30D893B0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
+				E3CFE20D0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,6 +973,17 @@
 			files = (
 				E3B2A2780CADC481001A9A8D /* PionPlugin.cpp in Sources */,
 				E30D893A0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
+				E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3CFE3560CD00E5300016E0F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3CFE3690CD00E8900016E0F /* PionNetUnitTests.cpp in Sources */,
+				E3CFE3C80CD0152800016E0F /* TCPServerTests.cpp in Sources */,
+				E3CFE43B0CD01B7C00016E0F /* WebServerTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -950,6 +1049,41 @@
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
 			targetProxy = E3B2A34B0CADD9E8001A9A8D /* PBXContainerItemProxy */;
+		};
+		E3CFE35C0CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E3CFE35B0CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE35E0CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			targetProxy = E3CFE35D0CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE3600CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E352F4180C22F49100A7946C /* CookieService */;
+			targetProxy = E3CFE35F0CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE3620CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A54D0C2307EC004DE0C0 /* HelloService */;
+			targetProxy = E3CFE3610CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE3640CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A55C0C230930004DE0C0 /* EchoService */;
+			targetProxy = E3CFE3630CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE3660CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A56B0C2309AD004DE0C0 /* LogService */;
+			targetProxy = E3CFE3650CD00E7300016E0F /* PBXContainerItemProxy */;
+		};
+		E3CFE3680CD00E7300016E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A5750C2309E3004DE0C0 /* FileService */;
+			targetProxy = E3CFE3670CD00E7300016E0F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1154,28 +1288,28 @@
 		E33288E50BEE51A8006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = PionServerTest;
+				PRODUCT_NAME = PionHelloServer;
 			};
 			name = Debug;
 		};
 		E33288E60BEE51A8006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = PionServerTest;
+				PRODUCT_NAME = PionHelloServer;
 			};
 			name = Release;
 		};
 		E33288E80BEE51A8006D0556 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = PionServiceTest;
+				PRODUCT_NAME = PionWebServer;
 			};
 			name = Debug;
 		};
 		E33288E90BEE51A8006D0556 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = PionServiceTest;
+				PRODUCT_NAME = PionWebServer;
 			};
 			name = Release;
 		};
@@ -1229,6 +1363,38 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = "pion-common";
+			};
+			name = Release;
+		};
+		E3CFE3700CD00EAF00016E0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = (
+					"-lboost_thread-mt-d",
+					"-lboost_filesystem-mt-d",
+					"-lboost_system-mt-d",
+					"-lboost_unit_test_framework-mt-d",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
+				);
+				PRODUCT_NAME = PionNetUnitTests;
+			};
+			name = Debug;
+		};
+		E3CFE3710CD00EAF00016E0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = (
+					"-lboost_thread-mt",
+					"-lboost_filesystem-mt",
+					"-lboost_system-mt",
+					"-lboost_unit_test_framework-mt",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
+				);
+				PRODUCT_NAME = PionNetUnitTests;
 			};
 			name = Release;
 		};
@@ -1298,7 +1464,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E33288E40BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionServerTest" */ = {
+		E33288E40BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionHelloServer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E33288E50BEE51A8006D0556 /* Debug */,
@@ -1307,7 +1473,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E33288E70BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionServiceTest" */ = {
+		E33288E70BEE51A8006D0556 /* Build configuration list for PBXNativeTarget "PionWebServer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E33288E80BEE51A8006D0556 /* Debug */,
@@ -1339,6 +1505,15 @@
 			buildConfigurations = (
 				E36F2E420CA78A7000120C6D /* Debug */,
 				E36F2E430CA78A7000120C6D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3CFE36F0CD00EAF00016E0F /* Build configuration list for PBXNativeTarget "PionNetUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3CFE3700CD00EAF00016E0F /* Debug */,
+				E3CFE3710CD00EAF00016E0F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
