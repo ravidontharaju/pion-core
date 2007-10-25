@@ -74,6 +74,7 @@
 		E3B2A33E0CADD952001A9A8D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E3B2A3470CADD9D4001A9A8D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3B2A3480CADD9D6001A9A8D /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
+		E3BE7CCF0CD05B1300238F37 /* WebServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */; };
 		E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
@@ -84,7 +85,6 @@
 		E3CFE36C0CD00E8F00016E0F /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3CFE36D0CD00E9100016E0F /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-net.dylib */; };
 		E3CFE3C80CD0152800016E0F /* TCPServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */; };
-		E3CFE43B0CD01B7C00016E0F /* WebServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -176,49 +176,49 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3CFE35D0CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E3CFE35F0CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E352F4180C22F49100A7946C /* CookieService */;
+			remoteGlobalIDString = E352F4180C22F49100A7946C;
 			remoteInfo = CookieService;
 		};
 		E3CFE3610CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E306A54D0C2307EC004DE0C0 /* HelloService */;
+			remoteGlobalIDString = E306A54D0C2307EC004DE0C0;
 			remoteInfo = HelloService;
 		};
 		E3CFE3630CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E306A55C0C230930004DE0C0 /* EchoService */;
+			remoteGlobalIDString = E306A55C0C230930004DE0C0;
 			remoteInfo = EchoService;
 		};
 		E3CFE3650CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E306A56B0C2309AD004DE0C0 /* LogService */;
+			remoteGlobalIDString = E306A56B0C2309AD004DE0C0;
 			remoteInfo = LogService;
 		};
 		E3CFE3670CD00E7300016E0F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E306A5750C2309E3004DE0C0 /* FileService */;
+			remoteGlobalIDString = E306A5750C2309E3004DE0C0;
 			remoteInfo = FileService;
 		};
 /* End PBXContainerItemProxy section */
@@ -983,7 +983,7 @@
 			files = (
 				E3CFE3690CD00E8900016E0F /* PionNetUnitTests.cpp in Sources */,
 				E3CFE3C80CD0152800016E0F /* TCPServerTests.cpp in Sources */,
-				E3CFE43B0CD01B7C00016E0F /* WebServerTests.cpp in Sources */,
+				E3BE7CCF0CD05B1300238F37 /* WebServerTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
