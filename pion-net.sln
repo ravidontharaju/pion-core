@@ -57,7 +57,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "net\tests\Unit
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AllowNothingService", "net\tests\PluginsUsedByUnitTests\AllowNothingService.vcproj", "{8C8A8E46-4588-4CE1-B624-89C36EA5209E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AllowNothingService", "net\services\AllowNothingService.vcproj", "{8C8A8E46-4588-4CE1-B624-89C36EA5209E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
@@ -153,11 +153,9 @@ Global
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_static|Win32.ActiveCfg = Debug_DLL|Win32
-		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Debug_static|Win32.Build.0 = Debug_DLL|Win32
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_static|Win32.ActiveCfg = Release_DLL|Win32
-		{8C8A8E46-4588-4CE1-B624-89C36EA5209E}.Release_static|Win32.Build.0 = Release_DLL|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
