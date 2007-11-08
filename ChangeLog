@@ -1,3 +1,23 @@
+Version 0.4.0 (2007-11-08)
+==========================
+
+* Added support to send HTTP requests and parse responses; lots of refactoring
+* Added unit tests! Integrated into MSVC, or use "make check" for Unixes
+* The log4cxx library can now be used to build with MSVC (see README.msvc)
+* PionNetEngine singleton was removed; servers are now used independently
+* Added "writable" FileService option that lets you add, change & delete files
+* Servers can now be bound to any endpoints that are supported by ASIO
+* Added new PionCounter and PionScheduler classes to the Common Library
+* The WebService::handleRequest() function now returns void instead of bool
+* Renamed PionServerTest to PionHelloServer & PionServiceTest to PionWebServer
+* Improved performance and flexibility of Boost library detection in autoconf
+* Logging via std::ostream is now the default (see --disable-logging)
+* Logging via std::ostream now uses a globally-shared priority level
+* MSVC projects were failing to build if there were spaces in the path
+* Fixed various crashes that mainly occurred during shutdown in Windows
+* Boost 1.34.1 and ASIO 0.3.8 are now REQUIRED; see README.boost
+
+
 Version 0.3.4 (2007-10-12)
 ==========================
 
