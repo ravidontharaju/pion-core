@@ -28,8 +28,8 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of ReactionEngine
-ReactionEngine *				ReactionEngine::m_instance_ptr = NULL;
-boost::once_flag				ReactionEngine::m_instance_flag = BOOST_ONCE_INIT;
+ReactionEngine *		ReactionEngine::m_instance_ptr = NULL;
+boost::once_flag		ReactionEngine::m_instance_flag = BOOST_ONCE_INIT;
 
 
 // ReactionEngine member functions
@@ -107,21 +107,16 @@ void ReactionEngine::load(const std::string& reactor_id,
 	bool is_static;
 	void *create_func;
 	void *destroy_func;
-	std::string plugin_file;
 	
 	// check if reactor is statically linked, and if not, try to resolve for dynamic
 	is_static = PionPlugin::findStaticEntryPoint(reactor_name, &create_func, &destroy_func);
-	if (!is_static) {
-		if (!PionPlugin::findPluginFile(plugin_file, reactor_name))
-			throw PionPlugin::PluginNotFoundException(reactor_name);
-	}
-	
+
 	// open up the plug-in's shared object library
 	PionPluginPtr<Reactor> plugin_ptr;
 	if (is_static) {
 		plugin_ptr.openStaticLinked(reactor_name, create_func, destroy_func);	// may throw
 	} else {
-		plugin_ptr.open(plugin_file);	// may throw
+		plugin_ptr.open(reactor_name);	// may throw
 	}
 	
 	// create a new reactor using the plug-in library

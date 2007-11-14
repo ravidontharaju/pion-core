@@ -28,12 +28,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/once.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/reactor/Event.hpp>
 #include <pion/reactor/Reactor.hpp>
 
@@ -143,7 +143,7 @@ public:
 	inline void schedule(pion::reactor::Reactor* reactor_ptr,
 						 pion::reactor::EventPtr& e)
 	{
-		m_io_service.post(boost::bind(&pion::reactor::Reactor::send, reactor_ptr, e));
+		m_scheduler.getIOService().post(boost::bind(&pion::reactor::Reactor::send, reactor_ptr, e));
 	}
 
 	/// sets the logger to be used
@@ -158,7 +158,7 @@ private:
 	/// private constructor for singleton pattern
 	ReactionEngine(void)
 		: m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")),
-		m_num_threads(0), m_is_running(false) {}
+		m_scheduler(PionScheduler::getInstance()), m_is_running(false) {}
 	
 	/// creates the singleton instance, protected by boost::call_once
 	static void createInstance(void);
@@ -167,9 +167,6 @@ private:
 	void stopNoLock(void);
 	
 	
-	/// data type for a pool of processing threads
-	typedef std::list<boost::shared_ptr<boost::thread> >	ThreadPool;
-
 	/// used by ReactorMap to associate Reactor objects with plug-in libraries
 	typedef std::pair<pion::reactor::Reactor *, PionPluginPtr<pion::reactor::Reactor> >	PluginPair;
 	
@@ -187,20 +184,11 @@ private:
 	/// primary logging interface used by this class
 	PionLogger						m_logger;
 
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;
-	
 	/// used to schedule the delivery of events to Reactors for processing
-	boost::asio::io_service			m_io_service;
+	PionScheduler &					m_scheduler;
 	
 	/// used to hold all of the registered Reactor objects
 	ReactorMap						m_reactors;
-
-	/// pool of threads used to process Events using Reactors
-	ThreadPool						m_threads;	
-	
-	/// number of threads in the available pool for processing Events
-	unsigned int					m_num_threads;
 
 	/// true if the reaction engine is running
 	bool							m_is_running;
@@ -210,6 +198,9 @@ private:
 	
 	/// used for thread-safe singleton pattern
 	static boost::once_flag			m_instance_flag;
+
+	/// mutex to make class thread-safe
+	mutable boost::mutex			m_mutex;
 };
 
 

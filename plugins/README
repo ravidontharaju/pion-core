@@ -1,5 +1,0 @@
-This is where plug-ins for the Pion Platform are located.
-
-codecs   - Codecs used to encode and decode data streams
-services - Web service plugins built using the Pion Network Library
-reactors - Pion Reactors built using the Pion Reactor Library
