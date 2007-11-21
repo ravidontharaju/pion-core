@@ -32,7 +32,7 @@ AC_SUBST(PION_COMMON_MAKEDIRS)
 AC_MSG_NOTICE([Using the embedded pion-common library])
 
 # Include pion-config.m4
-m4_include([common/build/pion-config.m4])
+m4_include([common/build/pion-config.inc])
 
 # Output Makefiles
 AC_OUTPUT(pion-net.pc Makefile net/Makefile

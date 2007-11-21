@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E30D893A0CCE8BC7005C483D /* PionCounter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30D89390CCE8BC7005C483D /* PionCounter.cpp */; };
-		E30D893B0CCE8BC7005C483D /* PionCounter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30D89390CCE8BC7005C483D /* PionCounter.cpp */; };
 		E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E34588950CDA693700332599 /* HTTPReader.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E34588910CDA693700332599 /* HTTPReader.hpp */; };
@@ -188,91 +186,91 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7F9E0CDFE63400F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E38F7FA00CDFE63C00F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7FA20CDFE64500F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7FA40CDFE64500F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E38F7FA60CDFE64E00F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7FA80CDFE64E00F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E38F7FAA0CDFE65700F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7FAC0CDFE65700F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E38F7FAE0CDFE66000F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E38F7FB00CDFE66000F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-net: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E38F7FB20CDFE66D00F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E38F7F8E0CDFE5D400F9A9A7 /* AllowNothingService */;
+			remoteGlobalIDString = E38F7F8E0CDFE5D400F9A9A7;
 			remoteInfo = AllowNothingService;
 		};
 		E38F7FB40CDFE67600F9A9A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E38F7F8E0CDFE5D400F9A9A7 /* AllowNothingService */;
+			remoteGlobalIDString = E38F7F8E0CDFE5D400F9A9A7;
 			remoteInfo = AllowNothingService;
 		};
 		E3B2A3410CADD96C001A9A8D /* PBXContainerItemProxy */ = {
@@ -345,7 +343,6 @@
 		E306A55D0C230930004DE0C0 /* EchoService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = EchoService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E306A56C0C2309AD004DE0C0 /* LogService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E306A5760C2309E3004DE0C0 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E30D89390CCE8BC7005C483D /* PionCounter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionCounter.cpp; path = common/src/PionCounter.cpp; sourceTree = SOURCE_ROOT; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -664,7 +661,6 @@
 		E3B2A2670CADC42C001A9A8D /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E30D89390CCE8BC7005C483D /* PionCounter.cpp */,
 				E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */,
 				E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */,
 				E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */,
@@ -1179,7 +1175,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B2A2790CADC481001A9A8D /* PionPlugin.cpp in Sources */,
-				E30D893B0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
 				E3CFE20D0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
 				E3B3A0600CD4F81600F9EA6D /* PionLogger.cpp in Sources */,
 			);
@@ -1190,7 +1185,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B2A2780CADC481001A9A8D /* PionPlugin.cpp in Sources */,
-				E30D893A0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
 				E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
 				E3B3A05F0CD4F81600F9EA6D /* PionLogger.cpp in Sources */,
 			);
