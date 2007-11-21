@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E30D893A0CCE8BC7005C483D /* PionCounter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30D89390CCE8BC7005C483D /* PionCounter.cpp */; };
-		E30D893B0CCE8BC7005C483D /* PionCounter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E30D89390CCE8BC7005C483D /* PionCounter.cpp */; };
 		E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E3B2A26D0CADC46B001A9A8D /* PionConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */; };
@@ -49,7 +47,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3D4E5D40CDD05800061FE38 /* PBXContainerItemProxy */ = {
@@ -63,41 +61,40 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3D4E5E60CDD06040061FE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E3D4E5C30CDD04940061FE38 /* hasNoCreate */;
+			remoteGlobalIDString = E3D4E5C30CDD04940061FE38;
 			remoteInfo = hasNoCreate;
 		};
 		E3D4E5E80CDD06040061FE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E3D4E5C80CDD054A0061FE38 /* hasCreateAndDestroy */;
+			remoteGlobalIDString = E3D4E5C80CDD054A0061FE38;
 			remoteInfo = hasCreateAndDestroy;
 		};
 		E3D4E5EA0CDD06040061FE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E3D4E5D20CDD05800061FE38 /* hasCreateButNoDestroy */;
+			remoteGlobalIDString = E3D4E5D20CDD05800061FE38;
 			remoteInfo = hasCreateButNoDestroy;
 		};
 		E3D4E6140CDD07B30061FE38 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E30D89390CCE8BC7005C483D /* PionCounter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionCounter.cpp; path = common/src/PionCounter.cpp; sourceTree = SOURCE_ROOT; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E2E0CA78A0400120C6D /* libpion-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -232,7 +229,6 @@
 		E3B2A2670CADC42C001A9A8D /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E30D89390CCE8BC7005C483D /* PionCounter.cpp */,
 				E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */,
 				E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */,
 				E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */,
@@ -450,7 +446,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B2A2790CADC481001A9A8D /* PionPlugin.cpp in Sources */,
-				E30D893B0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
 				E3CFE20D0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
 				E3B3A0600CD4F81600F9EA6D /* PionLogger.cpp in Sources */,
 			);
@@ -461,7 +456,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3B2A2780CADC481001A9A8D /* PionPlugin.cpp in Sources */,
-				E30D893A0CCE8BC7005C483D /* PionCounter.cpp in Sources */,
 				E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */,
 				E3B3A05F0CD4F81600F9EA6D /* PionLogger.cpp in Sources */,
 			);

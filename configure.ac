@@ -23,7 +23,7 @@ AC_PROG_LIBTOOL
 CXXFLAGS="-DPION_COMMON_LIBRARY"
 
 # Include pion-config.m4
-m4_include([common/build/pion-config.m4])
+m4_include([common/build/pion-config.inc])
 
 # Output Makefiles
 AC_OUTPUT(pion-common.pc Makefile common/Makefile
