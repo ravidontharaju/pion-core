@@ -1,9 +1,9 @@
 Version 0.5.2 (2007-12-17)
 ==========================
 
-* Added support for parsing chunked HTTP requests
-* Added unit tests and fixed some bugs related to sending chunked responses
-* Refactored PluginManager
+* Added support for parsing chunked HTTP requests and responses
+* Refactored PluginManager out of HTTPServer service management code
+
 
 Version 0.4.2 (2007-12-14)
 ==========================
