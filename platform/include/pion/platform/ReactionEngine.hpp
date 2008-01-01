@@ -34,9 +34,12 @@
 #include <pion/PionScheduler.hpp>
 #include <pion/PluginManager.hpp>
 #include <pion/platform/Event.hpp>
-#include <pion/platform/Reactor.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/VocabularyManager.hpp>
+#include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/DatabaseManager.hpp>
+#include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/Reactor.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -64,13 +67,25 @@ public:
 	/**
 	 * constructs a new ReactionEngine object
 	 *
-	 * @param v the Vocabulary that this ReactionEngine will use to describe Terms
+	 * @param vocab_mgr the global manager of Vocabularies
+	 * @param codec_factory the global factory that manages Codecs
+	 * @param database_mgr the global manager of Databases
 	 */
-	ReactionEngine(const Vocabulary& v)
+	ReactionEngine(const VocabularyManager& vocab_mgr,
+				   const CodecFactory& codec_factory,
+				   const DatabaseManager& database_mgr)
 		: ConfigManager(DEFAULT_CONFIG_FILE),
-		m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")), m_vocabulary(v),
-		m_scheduler(PionScheduler::getInstance()), m_is_running(false)
-	{}
+		m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")),
+		m_scheduler(PionScheduler::getInstance()),
+		m_vocabulary(vocab_mgr.getVocabulary()),
+		m_codec_factory(codec_factory),
+		m_database_mgr(database_mgr),
+		m_is_running(false)
+	{
+		vocab_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateVocabulary, this));
+		m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
+		m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
+	}
 
 	/// virtual destructor
 	virtual ~ReactionEngine() {}
@@ -164,7 +179,9 @@ public:
 	{
 		// convert "plugin not found" exceptions into "reactor not found"
 		try {
-			m_reactors.run(reactor_id, boost::bind(&Reactor::setOption, _1, option_name, option_value));
+			m_reactors.run(reactor_id, boost::bind(&Reactor::setOption, _1,
+												   boost::cref(option_name),
+												   boost::cref(option_value)));
 		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
 			throw ReactorNotFoundException(reactor_id);
 		}
@@ -209,9 +226,28 @@ public:
 	 * @param e pointer to the Event that will be processed
 	 */
 	inline void schedule(Reactor* reactor_ptr, EventPtr& e) {
-		m_scheduler.getIOService().post(boost::bind(&Reactor::send, reactor_ptr, e));
+		m_scheduler.getIOService().post(boost::bind(&Reactor::send, reactor_ptr,
+													boost::ref(e)));
 	}
 
+	/// this updates the Vocabularies used by all Reactors
+	inline void updateVocabulary(void) {
+		m_reactors.run(boost::bind(&Reactor::updateVocabulary, _1,
+								   boost::cref(m_vocabulary)));
+	}
+
+	/// this updates all of the Codecs used by Reactors
+	inline void updateCodecs(void) {
+		m_reactors.run(boost::bind(&Reactor::updateCodecs, _1,
+								   boost::cref(m_codec_factory)));
+	}
+
+	/// this updates all of the Databases used by Reactors
+	inline void updateDatabases(void) {
+		m_reactors.run(boost::bind(&Reactor::updateDatabases, _1,
+								   boost::cref(m_database_mgr)));
+	}
+	
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
 	
@@ -238,11 +274,17 @@ private:
 	/// primary logging interface used by this class
 	PionLogger						m_logger;
 
+	/// used to schedule the delivery of events to Reactors for processing
+	PionScheduler &					m_scheduler;
+	
 	/// references the Vocabulary used by this ReactionEngine to describe Terms
 	const Vocabulary&				m_vocabulary;
 
-	/// used to schedule the delivery of events to Reactors for processing
-	PionScheduler &					m_scheduler;
+	/// references the global factory that manages Codecs
+	const CodecFactory&				m_codec_factory;
+
+	/// references the global manager of Databases
+	const DatabaseManager&			m_database_mgr;
 	
 	/// used to hold all of the registered Reactor objects
 	PluginManager<Reactor>			m_reactors;

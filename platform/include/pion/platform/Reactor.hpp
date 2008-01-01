@@ -73,6 +73,22 @@ public:
 	virtual void updateVocabulary(const Vocabulary& v) = 0;
 
 	/**
+	 * this updates the Codecs that are used by this Reactor; it should
+	 * be called whenever any Codec's configuration is updated
+	 *
+	 * @param codec_factory the global factory that manages Codecs
+	 */
+	virtual void updateCodecs(const CodecFactory& codec_factory) = 0;
+	
+	/**
+	 * this updates the Databases that are used by this Reactor; it should
+	 * be called whenever any Database's configuration is updated
+	 *
+	 * @param database_mgr the global manager of Databases
+	 */
+	virtual void updateDatabases(const DatabaseManager& database_mgr) = 0;
+	
+	/**
 	 * sets a configuration option
 	 *
 	 * @param option_name the name of the option to change

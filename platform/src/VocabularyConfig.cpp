@@ -51,7 +51,6 @@ VocabularyConfig::VocabularyConfig(void)
 void VocabularyConfig::openConfigFile(void)
 {
 	// just return if it's already open
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	if (m_vocabulary_node != NULL)
 		return;
 	
@@ -269,7 +268,6 @@ bool VocabularyConfig::addNewTermTypeConfig(void *term_node, const Vocabulary::T
 	
 void VocabularyConfig::setId(const std::string& new_id)
 {
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary_id = new_id;
 	
 	// update config file only if it is open
@@ -286,7 +284,6 @@ void VocabularyConfig::setId(const std::string& new_id)
 void VocabularyConfig::setNamespace(const std::string& new_namespace)
 {
 	// change namespace option
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_namespace = new_namespace;
 	
 	// update config file only if it is open
@@ -301,7 +298,6 @@ void VocabularyConfig::setNamespace(const std::string& new_namespace)
 void VocabularyConfig::setComment(const std::string& new_comment)
 {
 	// change comment option
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_comment = new_comment;
 	
 	// update config file only if it is open
@@ -320,7 +316,6 @@ void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
 		throw VocabularyNotOpenException(getConfigFile());
 
 	// add it to the memory structures
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary.addTerm(new_term);
 	m_signal_add_term(new_term);
 	
@@ -367,7 +362,6 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 		throw VocabularyNotOpenException(getConfigFile());
 	
 	// update the values in memory
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary.updateTerm(t);
 	m_signal_update_term(t);
 
@@ -445,7 +439,6 @@ void VocabularyConfig::removeTerm(const std::string& term_id)
 		throw VocabularyNotOpenException(getConfigFile());
 	
 	// remove the Term from our memory structures
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary.removeTerm(term_id);
 	m_signal_remove_term(term_id);
 	
@@ -473,7 +466,6 @@ void VocabularyConfig::addObjectMember(const std::string& object_term_id,
 		throw VocabularyNotOpenException(getConfigFile());
 	
 	// add it to the memory structures
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary.addObjectMember(object_term_id, member_term_id);
 	m_signal_add_member(object_term_id, member_term_id);
 	
@@ -507,7 +499,6 @@ void VocabularyConfig::removeObjectMember(const std::string& object_term_id,
 		throw VocabularyNotOpenException(getConfigFile());
 	
 	// remove it from the memory structures
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	m_vocabulary.removeObjectMember(object_term_id, member_term_id);
 	m_signal_remove_member(object_term_id, member_term_id);
 

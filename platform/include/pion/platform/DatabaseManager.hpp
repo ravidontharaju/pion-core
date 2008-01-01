@@ -21,14 +21,16 @@
 #define __PION_DATABASEMANAGER_HEADER__
 
 #include <boost/bind.hpp>
+#include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PluginManager.hpp>
-#include <pion/platform/Database.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/VocabularyManager.hpp>
+#include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/Database.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -62,12 +64,15 @@ public:
 	/**
 	 * constructs a new DatabaseManager object
 	 *
-	 * @param v the Vocabulary that this DatabaseManager will use to describe Terms
+	 * @param vocab_mgr the global manager of Vocabularies
 	 */
-	DatabaseManager(const Vocabulary& v)
+	DatabaseManager(const VocabularyManager& vocab_mgr)
 		: ConfigManager(DEFAULT_CONFIG_FILE),
-		m_logger(PION_GET_LOGGER("pion.platform.DatabaseManager")), m_vocabulary(v)
-	{}
+		m_logger(PION_GET_LOGGER("pion.platform.DatabaseManager")),
+		m_vocabulary(vocab_mgr.getVocabulary())
+	{
+		vocab_mgr.registerForUpdates(boost::bind(&DatabaseManager::updateVocabulary, this));
+	}
 
 	/// virtual destructor
 	virtual ~DatabaseManager() {}
@@ -88,6 +93,7 @@ public:
 		// ...
 		
 		m_databases.load(database_id, database_type);
+		m_signal_database_updated();
 		PION_LOG_DEBUG(m_logger, "Registered database (" << database_type << "): " << database_id);
 	}
 	
@@ -102,7 +108,24 @@ public:
 		catch (PluginManager<Database>::PluginNotFoundException& /* e */) {
 			throw DatabaseNotFoundException(database_id);
 		}
+		m_signal_database_updated();
 		PION_LOG_DEBUG(m_logger, "Released database: " << database_id);
+	}
+	
+	/**
+	 * registers a callback function to be executed whenever a Database is updated
+	 *
+	 * @param f the callback function to register
+	 */
+	template <typename DatabaseUpdateFunction>
+	inline void registerForUpdates(DatabaseUpdateFunction f) const {
+		m_signal_database_updated.connect(f);
+	}
+
+	/// this updates the Vocabularies used by all Databases
+	inline void updateVocabulary(void) {
+		m_databases.run(boost::bind(&Database::updateVocabulary, _1,
+									boost::cref(m_vocabulary)));
 	}
 	
 	/// sets the logger to be used
@@ -129,6 +152,9 @@ private:
 
 	/// collection of storage engine objects being managed
 	PluginManager<Database>			m_databases;
+
+	/// signal triggered whenever a Database is modified
+	mutable boost::signal0<void>	m_signal_database_updated;
 };
 
 

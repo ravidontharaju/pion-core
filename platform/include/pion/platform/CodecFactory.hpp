@@ -21,14 +21,16 @@
 #define __PION_CODECFACTORY_HEADER__
 
 #include <boost/bind.hpp>
+#include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PluginManager.hpp>
-#include <pion/platform/Codec.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/VocabularyManager.hpp>
+#include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/Codec.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -55,12 +57,15 @@ public:
 	/**
 	 * constructs a new CodecFactory object
 	 *
-	 * @param v the Vocabulary that this CodecFactory will use to describe Terms
+	 * @param vocab_mgr the global manager of Vocabularies
 	 */
-	CodecFactory(const Vocabulary& v)
+	CodecFactory(const VocabularyManager& vocab_mgr)
 		: ConfigManager(DEFAULT_CONFIG_FILE),
-		m_logger(PION_GET_LOGGER("pion.platform.CodecFactory")), m_vocabulary(v)
-	{}
+		m_logger(PION_GET_LOGGER("pion.platform.CodecFactory")),
+		m_vocabulary(vocab_mgr.getVocabulary())
+	{
+		vocab_mgr.registerForUpdates(boost::bind(&CodecFactory::updateVocabulary, this));
+	}
 
 	/// virtual destructor
 	virtual ~CodecFactory() {}
@@ -131,12 +136,30 @@ public:
 	{
 		// convert "plugin not found" exceptions into "codec not found"
 		try {
-			m_codecs.run(codec_id, boost::bind(&Codec::setOption, _1, option_name, option_value));
+			m_codecs.run(codec_id, boost::bind(&Codec::setOption, _1,
+											   boost::cref(option_name),
+											   boost::cref(option_value)));
 		} catch (PluginManager<Codec>::PluginNotFoundException& /* e */) {
 			throw CodecNotFoundException(codec_id);
 		}
 		PION_LOG_DEBUG(m_logger, "Set codec option (" << codec_id << "): "
 					   << option_name << '=' << option_value);
+	}
+
+	/**
+	 * registers a callback function to be executed whenever a Codec is updated
+	 *
+	 * @param f the callback function to register
+	 */
+	template <typename CodecUpdateFunction>
+	inline void registerForUpdates(CodecUpdateFunction f) const {
+		m_signal_codec_updated.connect(f);
+	}
+	
+	/// this updates the Vocabularies used by all Codecs
+	inline void updateVocabulary(void) {
+		m_codecs.run(boost::bind(&Codec::updateVocabulary, _1,
+								 boost::cref(m_vocabulary)));
 	}
 
 	/// sets the logger to be used
@@ -160,6 +183,9 @@ private:
 
 	/// collection of codec objects being managed
 	PluginManager<Codec>			m_codecs;
+
+	/// signal triggered whenever a Codec is modified
+	mutable boost::signal0<void>	m_signal_codec_updated;
 };
 
 

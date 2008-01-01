@@ -461,15 +461,13 @@ BOOST_AUTO_TEST_CASE(checkVocabularyManagerSizeEqualsSeven) {
 }
 
 BOOST_AUTO_TEST_CASE(checkVocabularyManagerOptionValues) {
-	const VocabularyConfig& vocab_a = m_vocab_mgr.getConfig("urn:vocab:test");
-	BOOST_CHECK_EQUAL(vocab_a.getId(), "urn:vocab:test");
-	BOOST_CHECK_EQUAL(vocab_a.getNamespace(), "t");
-	BOOST_CHECK_EQUAL(vocab_a.getComment(), "Vocabulary for Unit Tests");
+	const std::string vocab_a_id("urn:vocab:test");
+	BOOST_CHECK_EQUAL(m_vocab_mgr.getNamespace(vocab_a_id), "t");
+	BOOST_CHECK_EQUAL(m_vocab_mgr.getComment(vocab_a_id), "Vocabulary for Unit Tests");
 
-	const VocabularyConfig& vocab_b = m_vocab_mgr.getConfig("urn:vocab:test_b");
-	BOOST_CHECK_EQUAL(vocab_b.getId(), "urn:vocab:test_b");
-	BOOST_CHECK_EQUAL(vocab_b.getNamespace(), "b");
-	BOOST_CHECK_EQUAL(vocab_b.getComment(), "Vocabulary for Unit Tests");
+	const std::string vocab_b_id("urn:vocab:test_b");
+	BOOST_CHECK_EQUAL(m_vocab_mgr.getNamespace(vocab_b_id), "b");
+	BOOST_CHECK_EQUAL(m_vocab_mgr.getComment(vocab_b_id), "Vocabulary for Unit Tests");
 }
 
 BOOST_AUTO_TEST_CASE(checkVocabularyManagerTermIds) {

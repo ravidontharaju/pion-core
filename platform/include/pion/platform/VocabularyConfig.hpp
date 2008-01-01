@@ -24,7 +24,6 @@
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
@@ -203,7 +202,6 @@ public:
 	 * @param v the Vocabulary object to bind
 	 */
 	inline void bind(Vocabulary& v) {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 		m_signal_add_term.connect(boost::bind(&Vocabulary::addTerm, &v, _1));
 		m_signal_update_term.connect(boost::bind(&Vocabulary::updateTerm, &v, _1));
 		m_signal_remove_term.connect(boost::bind(&Vocabulary::removeTerm, &v, _1));
@@ -213,22 +211,13 @@ public:
 	}
 
 	/// returns the URI used to uniquely identify this Vocabulary
-	inline const std::string& getId(void) const {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-		return m_vocabulary_id;
-	}
+	inline const std::string& getId(void) const { return m_vocabulary_id; }
 	
 	/// returns the default namespace assigned to this Vocabulary
-	inline const std::string& getNamespace(void) const {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-		return m_namespace;
-	}
+	inline const std::string& getNamespace(void) const { return m_namespace; }
 	
 	/// returns the comment that describes this Vocabulary
-	inline const std::string& getComment(void) const {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-		return m_comment;
-	}
+	inline const std::string& getComment(void) const { return m_comment; }
 	
 	/// returns a reference to the local Vocabulary configuration
 	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
@@ -274,9 +263,6 @@ private:
 	/// name of the size (term_size) attribute for Pion XML config files
 	static const std::string		SIZE_ATTRIBUTE_NAME;	
 		
-	
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;
 	
 	/// primary logging interface used by this class
 	PionLogger						m_logger;	

@@ -161,63 +161,63 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8A6B0D29CA6F00B4C134 /* pion-net: static */;
+			remoteGlobalIDString = E36D8A6B0D29CA6F00B4C134;
 			remoteInfo = "pion-net: static";
 		};
 		E36D8BAD0D29D5A400B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8BAF0D29D5AD00B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8BEB0D29D6F200B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E36D8BED0D29D6F200B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8BEF0D29D6F200B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-platform: dynamic";
 		};
 		E36D8C120D29D79000B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E36D8C140D29D79000B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
 			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8C160D29D79000B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-platform: dynamic";
 		};
 		E36D8C1B0D29D7E300B4C134 /* PBXContainerItemProxy */ = {
@@ -266,21 +266,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8C0E0D29D78000B4C134 /* ELFCodec */;
+			remoteGlobalIDString = E36D8C0E0D29D78000B4C134;
 			remoteInfo = ELFCodec;
 		};
 		E36D8C370D29D83C00B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8C190D29D7E300B4C134 /* JSONCodec */;
+			remoteGlobalIDString = E36D8C190D29D7E300B4C134;
 			remoteInfo = JSONCodec;
 		};
 		E36D8C390D29D83C00B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36D8C270D29D7EA00B4C134 /* XMLCodec */;
+			remoteGlobalIDString = E36D8C270D29D7EA00B4C134;
 			remoteInfo = XMLCodec;
 		};
 		E36F2E3D0CA78A4400120C6D /* PBXContainerItemProxy */ = {
@@ -718,10 +718,10 @@
 		E3B2A2640CADC3EC001A9A8D /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E36D88C70D29BA3D00B4C134 /* CodecFactory.cpp */,
-				E36D88C80D29BA3D00B4C134 /* ConfigManager.cpp */,
-				E36D88C90D29BA3D00B4C134 /* DatabaseManager.cpp */,
 				E36D88CA0D29BA3D00B4C134 /* Event.cpp */,
+				E36D88C80D29BA3D00B4C134 /* ConfigManager.cpp */,
+				E36D88C70D29BA3D00B4C134 /* CodecFactory.cpp */,
+				E36D88C90D29BA3D00B4C134 /* DatabaseManager.cpp */,
 				E36D88CB0D29BA3D00B4C134 /* ReactionEngine.cpp */,
 				E36D88CC0D29BA3D00B4C134 /* Vocabulary.cpp */,
 				E36D88CD0D29BA3D00B4C134 /* VocabularyConfig.cpp */,
