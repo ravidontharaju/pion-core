@@ -3,12 +3,12 @@
 # -----------------------------------------
 
 # Set Pion version information
-AC_INIT([pion-platform], [0.5.1], [support@atomiclabs.com])
+AC_INIT([pion-platform], [0.5.3], [support@atomiclabs.com])
 
 # Initialize some other things
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(platform/build)
-AC_CONFIG_SRCDIR(platform/src/ReactionEngine.cpp)
+AC_CONFIG_SRCDIR(platform/src/Vocabulary.cpp)
 
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
@@ -40,17 +40,9 @@ AC_SUBST(PION_NET_LIB)
 AC_SUBST(PION_NET_MAKEDIRS)
 AC_MSG_NOTICE([Using the embedded pion-net library])
 
-# Currently only the embedded reactor library can be used
-PION_REACTOR_HOME=`pwd`/reactor
-PION_REACTOR_LIB="$PION_REACTOR_HOME/src/libpion-reactor.la"
-PION_REACTOR_MAKEDIRS=reactor
-AC_SUBST(PION_REACTOR_HOME)
-AC_SUBST(PION_REACTOR_LIB)
-AC_SUBST(PION_REACTOR_MAKEDIRS)
-AC_MSG_NOTICE([Using the embedded pion-reactor library])
-
 # Include pion-config.m4
-m4_include([common/build/pion-config.m4])
+m4_include([common/build/pion-config.inc])
+m4_include([platform/build/pion-config.inc])
 
 # Output Makefiles
 AC_OUTPUT(pion-platform.pc Makefile
@@ -58,8 +50,7 @@ AC_OUTPUT(pion-platform.pc Makefile
 	common/src/Makefile common/tests/Makefile common/tests/PluginsUsedByUnitTests/Makefile
 	net/Makefile net/include/Makefile net/include/pion/Makefile net/include/pion/net/Makefile
 	net/src/Makefile net/services/Makefile net/utils/Makefile net/tests/Makefile
-	reactor/Makefile reactor/src/Makefile reactor/include/Makefile reactor/include/pion/Makefile
-	reactor/include/pion/reactor/Makefile
-	platform/Makefile platform/src/Makefile platform/utils/Makefile
-	platform/include/Makefile platform/include/pion/Makefile
-	platform/include/pion/platform/Makefile)
+	platform/Makefile platform/include/Makefile
+	platform/include/pion/Makefile platform/include/pion/platform/Makefile
+	platform/src/Makefile platform/apps/Makefile platform/tests/Makefile
+	platform/codecs/Makefile)

@@ -1,20 +1,20 @@
-// ------------------------------------------------------------------
-// pion-platform: a collection of libraries used by the Pion Platform
-// ------------------------------------------------------------------
-// Copyright (C) 2007 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// ------------------------------------------------------------------------
+// Pion is a development platform for building Reactors that process Events
+// ------------------------------------------------------------------------
+// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
-// pion-platform is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Pion is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
 //
-// pion-platform is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// Pion is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+// more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with pion-platform.  If not, see <http://www.gnu.org/licenses/>.
+// You should have received a copy of the GNU Affero General Public License
+// along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #ifndef __PION_REACTIONENGINE_HEADER__
@@ -27,112 +27,180 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/once.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
-#include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionScheduler.hpp>
-#include <pion/reactor/Event.hpp>
-#include <pion/reactor/Reactor.hpp>
+#include <pion/PluginManager.hpp>
+#include <pion/platform/Event.hpp>
+#include <pion/platform/Reactor.hpp>
+#include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/Vocabulary.hpp>
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace reactor (Pion Platform Library)
+namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 ///
-/// ReactionEngine: singleton used to manage all of the registered Reactors,
-///                 and to route Events between them
+/// ReactionEngine: manages all of the registered Reactors,
+///                 and routes Events between them
 ///
 class ReactionEngine :
+	public ConfigManager,
 	private boost::noncopyable
 {
 public:
 
 	/// exception thrown if we are unable to find a Reactor with the same identifier
-	class UnknownReactorException : public PionException {
+	class ReactorNotFoundException : public PionException {
 	public:
-		UnknownReactorException(const std::string& reactor_id)
-			: PionException("Unable to find Reactor identified by: ", reactor_id) {}
+		ReactorNotFoundException(const std::string& reactor_id)
+			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 
-	
-	/// public destructor: not virtual, should not be extended
-	~ReactionEngine() {}
-	
+		
 	/**
-	 * return an instance of the ReactionEngine singleton
-	 * 
-     * @return ReactionEngine& instance of ReactionEngine
+	 * constructs a new ReactionEngine object
+	 *
+	 * @param v the Vocabulary that this ReactionEngine will use to describe Terms
 	 */
-	inline static ReactionEngine& getInstance(void) {
-		boost::call_once(ReactionEngine::createInstance, m_instance_flag);
-		return *m_instance_ptr;
-	}
+	ReactionEngine(const Vocabulary& v)
+		: ConfigManager(DEFAULT_CONFIG_FILE),
+		m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")), m_vocabulary(v),
+		m_scheduler(PionScheduler::getInstance()), m_is_running(false)
+	{}
+
+	/// virtual destructor
+	virtual ~ReactionEngine() {}
 	
 	/// starts all Event processing
-	void start(void);
-	
+	inline void start(void) {
+		boost::mutex::scoped_lock engine_lock(m_mutex);
+		if (! m_is_running) {
+			PION_LOG_INFO(m_logger, "Starting all reactors");
+			m_reactors.run(boost::bind(&Reactor::start, _1));
+			m_is_running = true;
+		}
+	}
+		
 	/// stops all Event processing
-	void stop(void);
+	inline void stop(void) {
+		boost::mutex::scoped_lock engine_lock(m_mutex);
+		stopNoLock();
+	}
 	
 	/// resets all Reactors to their initial state
-	void reset(void);
+	inline void reset(void) {
+		boost::mutex::scoped_lock engine_lock(m_mutex);
+		stopNoLock();
+		m_reactors.run(boost::bind(&Reactor::reset, _1));
+		PION_LOG_DEBUG(m_logger, "Reset all reactors");
+	}
 
 	/// stops all Event processing and removes all registered Reactors
-	void clear(void);
-
+	inline void clear(void) {
+		boost::mutex::scoped_lock engine_lock(m_mutex);
+		stopNoLock();
+		m_reactors.clear();
+		PION_LOG_DEBUG(m_logger, "Removed all reactors");
+	}
+		
 	/// clears statistic counters for all Reactors
-	void clearStats(void);
+	inline void clearStats(void) {
+		m_reactors.run(boost::bind(&Reactor::clearStats, _1));
+		PION_LOG_DEBUG(m_logger, "Cleared all reactor statistics");
+	}
 
 	/**
 	 * registers a new Reactor for Event processing
 	 *
 	 * @param reactor_ptr pointer to the Reactor object
 	 */
-	void add(pion::reactor::Reactor *reactor_ptr);
+	inline void addReactor(Reactor *reactor_ptr) {
+		m_reactors.add(reactor_ptr->getId(), reactor_ptr);
+		PION_LOG_DEBUG(m_logger, "Added static reactor: " << reactor_ptr->getId());
+	}
 
 	/**
-	 * loads a Reactor from a shared object file (plug-in)
+	 * loads a new Reactor plug-in
 	 *
 	 * @param reactor_id the identifier for the Reactor to be loaded
-	 * @param reactor_name the name of the Reactor class to load (searches 
+	 * @param reactor_type the type of the Reactor class to load (searches 
 	 *                     plug-in directories and appends extensions)
 	 */
-	void load(const std::string& reactor_id, const std::string& reactor_name);
+	inline void loadReactor(const std::string& reactor_id,
+							const std::string& reactor_type)
+	{
+		m_reactors.load(reactor_id, reactor_type);
+		PION_LOG_DEBUG(m_logger, "Loaded reactor (" << reactor_type << "): " << reactor_id);
+	}
 
 	/**
 	 * removes a registered Reactor
 	 *
 	 * @param reactor_id the identifier for the Reactor to be removed
 	 */
-	void remove(const std::string& reactor_id);
+	inline void removeReactor(const std::string& reactor_id) {
+		// convert "plugin not found" exceptions into "reactor not found"
+		try { m_reactors.remove(reactor_id); }
+		catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
+			throw ReactorNotFoundException(reactor_id);
+		}
+		PION_LOG_DEBUG(m_logger, "Removed reactor: " << reactor_id);
+	}
 
+	/**
+	 * sets a configuration option for a registered Reactor
+	 *
+	 * @param reactor_id the identifier for the Reactor to be configured
+	 * @param option_name the name of the configuration option
+	 * @param option_value the value to set the option to
+	 */
+	inline void setReactorOption(const std::string& reactor_id,
+								 const std::string& option_name,
+								 const std::string& option_value)
+	{
+		// convert "plugin not found" exceptions into "reactor not found"
+		try {
+			m_reactors.run(reactor_id, boost::bind(&Reactor::setOption, _1, option_name, option_value));
+		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
+			throw ReactorNotFoundException(reactor_id);
+		}
+		PION_LOG_DEBUG(m_logger, "Set reactor option (" << reactor_id << "): "
+					  << option_name << '=' << option_value);
+	}
+	
 	/**
 	 * resets a Reactor to its initial state
 	 *
 	 * @param reactor_id the identifier for the Reactor to be reset
 	 */
-	void reset(const std::string& reactor_id);
+	inline void resetReactor(const std::string& reactor_id) {
+		// convert "plugin not found" exceptions into "reactor not found"
+		try {
+			m_reactors.run(reactor_id, boost::bind(&Reactor::reset, _1));
+		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
+			throw ReactorNotFoundException(reactor_id);
+		}
+		PION_LOG_DEBUG(m_logger, "Reset reactor: " << reactor_id);
+	}
 
 	/**
 	 * clears the statistic counters for a Reactor
 	 *
 	 * @param reactor_id the identifier for the Reactor to be cleared
 	 */
-	void clearStats(const std::string& reactor_id);
-
-	/**
-	 * sets configuration settings for a Reactor
-	 *
-	 * @param reactor_id the identifier for the Reactor to be configured
-	 * @param config contains configuration settings for the Reactor.  This may contain
-	 *               settings for just one or for many different  parameters.
-	 */
-	void configure(const std::string& reactor_id,
-				   const pion::reactor::EventPtr& config);
+	inline void clearReactorStats(const std::string& reactor_id) {
+		// convert "plugin not found" exceptions into "reactor not found"
+		try {
+			m_reactors.run(reactor_id, boost::bind(&Reactor::clearStats, _1));
+		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
+			throw ReactorNotFoundException(reactor_id);
+		}
+		PION_LOG_DEBUG(m_logger, "Cleared reactor statistics: " << reactor_id);
+	}
 
 	/**
 	 * schedules an Event to be processed by a Reactor
@@ -140,10 +208,8 @@ public:
 	 * @param reactor_ptr pointer to the Reactor that will process the Event
 	 * @param e pointer to the Event that will be processed
 	 */
-	inline void schedule(pion::reactor::Reactor* reactor_ptr,
-						 pion::reactor::EventPtr& e)
-	{
-		m_scheduler.getIOService().post(boost::bind(&pion::reactor::Reactor::send, reactor_ptr, e));
+	inline void schedule(Reactor* reactor_ptr, EventPtr& e) {
+		m_scheduler.getIOService().post(boost::bind(&Reactor::send, reactor_ptr, e));
 	}
 
 	/// sets the logger to be used
@@ -154,57 +220,42 @@ public:
 	
 	
 private:
-
-	/// private constructor for singleton pattern
-	ReactionEngine(void)
-		: m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")),
-		m_scheduler(PionScheduler::getInstance()), m_is_running(false) {}
-	
-	/// creates the singleton instance, protected by boost::call_once
-	static void createInstance(void);
 	
 	/// stops all Event processing without locking the class's mutex
-	void stopNoLock(void);
+	inline void stopNoLock(void) {
+		if (m_is_running) {
+			PION_LOG_INFO(m_logger, "Stopping all reactors");
+			m_reactors.run(boost::bind(&Reactor::stop, _1));
+			m_is_running = false;
+		}
+	}
 	
 	
-	/// used by ReactorMap to associate Reactor objects with plug-in libraries
-	typedef std::pair<pion::reactor::Reactor *, PionPluginPtr<pion::reactor::Reactor> >	PluginPair;
-	
-	/// data type used to map identifiers to Reactor objects
-	class ReactorMap
-		: public std::map<std::string, PluginPair>
-	{
-	public:
-		void clear(void);
-		virtual ~ReactorMap() { ReactorMap::clear(); }
-		ReactorMap(void) {}
-	};
-	
+	/// default name of the reactor config file
+	static const std::string		DEFAULT_CONFIG_FILE;
+
 	
 	/// primary logging interface used by this class
 	PionLogger						m_logger;
+
+	/// references the Vocabulary used by this ReactionEngine to describe Terms
+	const Vocabulary&				m_vocabulary;
 
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler &					m_scheduler;
 	
 	/// used to hold all of the registered Reactor objects
-	ReactorMap						m_reactors;
+	PluginManager<Reactor>			m_reactors;
 
 	/// true if the reaction engine is running
 	bool							m_is_running;
 	
-	/// points to the singleton instance after creation
-	static ReactionEngine *			m_instance_ptr;
-	
-	/// used for thread-safe singleton pattern
-	static boost::once_flag			m_instance_flag;
-
 	/// mutex to make class thread-safe
 	mutable boost::mutex			m_mutex;
 };
 
 
-}	// end namespace pion
 }	// end namespace platform
+}	// end namespace pion
 
 #endif

@@ -17,20 +17,20 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/ReactionEngine.hpp>
+#include <pion/platform/CodecFactory.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of ReactionEngine
-const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
+// static members of CodecFactory
+const std::string			CodecFactory::DEFAULT_CONFIG_FILE = "codecs.xml";
 
 
-// ReactionEngine member functions
+// CodecFactory member functions
 // ...
 	
-	
+
 }	// end namespace platform
 }	// end namespace pion

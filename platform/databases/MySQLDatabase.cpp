@@ -17,20 +17,14 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/ReactionEngine.hpp>
+#include "MySQLDatabase.hpp"
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of ReactionEngine
-const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
 
 
-// ReactionEngine member functions
-// ...
-	
-	
 }	// end namespace platform
 }	// end namespace pion

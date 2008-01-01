@@ -17,20 +17,21 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/ReactionEngine.hpp>
+#include <pion/platform/DatabaseManager.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of ReactionEngine
-const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
+// static members of DatabaseManager
+const std::string			DatabaseManager::DEFAULT_CONFIG_FILE = "databases.xml";
+const std::string			DatabaseManager::DEFAULT_DATABASE_TYPE = "sqlite";
 
 
-// ReactionEngine member functions
+// DatabaseManager member functions
 // ...
-	
-	
+
+
 }	// end namespace platform
 }	// end namespace pion

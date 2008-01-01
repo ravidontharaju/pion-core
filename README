@@ -1,13 +1,55 @@
-This is the future home of the "Pion Platform" repository.
+This is the root of the "Pion Platform" source code repository.
 
-This repository includes links to the following external libraries:
+Copyright (C) 2007-2008 Atomic Labs, Inc.
 
-common   -  Pion Common Library   -  http://svn.atomiclabs.com/pion-common
-net      -  Pion Network Library  -  http://svn.atomiclabs.com/pion-net
-reactor  -  Pion Reactor Library  -  http://svn.atomiclabs.com/pion-reactor
+Home page: http://pion.atomiclabs.com
 
-The following additional directories are included:
+The Pion Platform is published under the GNU Affero General Public License.
+See COPYING for licensing information.
 
-platform -  Source files for the Pion Platform Library
-plugins  -  Plug-in source files for the Pion Platform
-server   -  Source and interface files for the Pion Platform Server
+Please note that the "Pion Common Library" and the "Pion Network Library" are 
+included in the "common" and "net" subdirectories.  These two libraries are 
+published under an alternative Boost Software License.
+
+Build and installation summary:
+
+# ./configure [--with-boost=<BOOST_DIR>]
+# make all
+# make check	(this will build and run Pion's unit tests)
+# make install	(this may require superuser/Administrator privileges)
+
+Note that you only need to specify a "--with-boost=<BOOST_DIR>" parameter to
+Pion's configure script if you installed Boost into an alternative directory
+(other than /usr/local).
+
+Detailed build instructions are available for all of the platforms supported
+by the Pion within the "common/doc" subdirectory (README.platform).  Please
+read these instructions first.
+
+Starting with 0.4.2, Pion REQUIRES the Boost C++ libraries (version 1.34.1
+or greater), and the Boost ASIO library (version 0.3.9 or greater). Please see
+the README.boost file within the "common/doc" subdirectory for instructions on
+how to download, build and install these libraries.
+
+Boost ASIO additionally requires OpenSSL for SSL/TLS support and zlib for
+compression.  You can download these libraries from the following locations:
+
+http://www.openssl.org
+http://www.zlib.net
+
+For logging, Pion may be configured to:
+
+a) use std::cout and std::cerr for logging (the default configuration)
+b) use one of the following open source libraries: log4cxx, log4cpp or
+   log4cplus (configure using one of --with-log4cxx, --with-log4cpp or
+   --with-log4cplus, respectively)
+c) disable logging entirely (configure --disable-logging)
+
+You can download these logging libraries from the following locations:
+
+http://logging.apache.org/log4cxx
+http://log4cpp.sourceforge.net
+http://log4cplus.sourceforge.net
+
+Please note that not all of these libraries work on all platforms.  Please
+see the README.platform files for more information.

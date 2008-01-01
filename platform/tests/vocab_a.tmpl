@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://purl.org/pion/config">
+  <vocabulary id="urn:vocab:test">
+    <namespace>t</namespace>
+    <comment>Vocabulary for Unit Tests</comment>
+    <term id="urn:pion:null-term"/>
+    <term id="urn:pion:plain-old-int">
+      <type>int16</type>
+      <comment>A plain, old integer number</comment>
+    </term>
+    <term id="urn:pion:big-int">
+      <type>uint64</type>
+      <comment>A really big positive integer</comment>
+    </term>
+    <term id="urn:pion:fixed-text">
+      <type size="10">char</type>
+      <comment>Ten bytes of text</comment>
+    </term>
+    <term id="urn:pion:simple-object">
+      <type>object</type>
+      <comment>An object containing other Terms</comment>
+      <member>urn:pion:plain-old-int</member>
+      <member>urn:pion:big-int</member>
+      <member>urn:pion:fixed-text</member>
+    </term>
+  </vocabulary>
+</config>

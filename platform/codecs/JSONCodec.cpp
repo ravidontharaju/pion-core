@@ -17,20 +17,53 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/ReactionEngine.hpp>
+#include "JSONCodec.hpp"
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of ReactionEngine
-const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
+// static members of JSONCodec
+const std::string			JSONCodec::CONTENT_TYPE = "text/json";
 
 
-// ReactionEngine member functions
-// ...
+// JSONCodec member functions
+
+CodecPtr JSONCodec::clone(void) const
+{
+	return CodecPtr();
+}
+
+void JSONCodec::write(std::ostream& out, const Event& e)
+{
+}
+
+bool JSONCodec::read(std::istream& in, Event& e)
+{
+	return false;
+}
+
+EventPtr JSONCodec::read(std::istream& in)
+{
+	return EventPtr();
+}
+
+void JSONCodec::updateVocabulary(const Vocabulary& v)
+{
+}
 	
 	
 }	// end namespace platform
 }	// end namespace pion
+
+
+/// creates new JSONCodec objects
+extern "C" PION_PLUGIN_API pion::platform::Codec *pion_create_JSONCodec(void) {
+	return new pion::platform::JSONCodec();
+}
+
+/// destroys JSONCodec objects
+extern "C" PION_PLUGIN_API void pion_destroy_JSONCodec(pion::platform::JSONCodec *codec_ptr) {
+	delete codec_ptr;
+}

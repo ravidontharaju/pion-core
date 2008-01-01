@@ -17,20 +17,53 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/ReactionEngine.hpp>
+#include "ELFCodec.hpp"
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of ReactionEngine
-const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
+// static members of ELFCodec
+const std::string			ELFCodec::CONTENT_TYPE = "text/ascii";
 
 
-// ReactionEngine member functions
-// ...
-	
+// ELFCodec member functions
+
+CodecPtr ELFCodec::clone(void) const
+{
+	return CodecPtr();
+}
+
+void ELFCodec::write(std::ostream& out, const Event& e)
+{
+}
+
+bool ELFCodec::read(std::istream& in, Event& e)
+{
+	return false;
+}
+
+EventPtr ELFCodec::read(std::istream& in)
+{
+	return EventPtr();
+}
+
+void ELFCodec::updateVocabulary(const Vocabulary& v)
+{
+}
+
 	
 }	// end namespace platform
 }	// end namespace pion
+
+
+/// creates new ELFCodec objects
+extern "C" PION_PLUGIN_API pion::platform::Codec *pion_create_ELFCodec(void) {
+	return new pion::platform::ELFCodec();
+}
+
+/// destroys ELFCodec objects
+extern "C" PION_PLUGIN_API void pion_destroy_ELFCodec(pion::platform::ELFCodec *codec_ptr) {
+	delete codec_ptr;
+}
