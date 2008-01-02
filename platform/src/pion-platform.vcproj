@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="pion-reactor"
+	Name="pion-platform"
 	ProjectGUID="{7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D}"
-	RootNamespace="pion-reactor"
+	RootNamespace="pion-platform"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -19,7 +19,7 @@
 			Name="Debug_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-reactor.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,7 +38,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_REACTOR_EXPORTS;_USRDLL"
+				PreprocessorDefinitions="PION_PLATFORM_EXPORTS;_USRDLL"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -82,7 +82,7 @@
 			Name="Debug_DLL_full|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-reactor.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -101,7 +101,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_REACTOR_EXPORTS;PION_FULL;_USRDLL"
+				PreprocessorDefinitions="PION_PLATFORM_EXPORTS;PION_FULL;_USRDLL"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -145,7 +145,7 @@
 			Name="Release_DLL|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-reactor.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -164,7 +164,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_REACTOR_EXPORTS;_USRDLL"
+				PreprocessorDefinitions="PION_PLATFORM_EXPORTS;_USRDLL"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -208,7 +208,7 @@
 			Name="Release_DLL_full|Win32"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-reactor.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -227,7 +227,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_REACTOR_EXPORTS;PION_FULL;_USRDLL"
+				PreprocessorDefinitions="PION_PLATFORM_EXPORTS;PION_FULL;_USRDLL"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -311,47 +311,47 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\include\pion\reactor\Codec.hpp"
+				RelativePath="..\include\pion\platform\Codec.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\CodecFactory.hpp"
+				RelativePath="..\include\pion\platform\CodecFactory.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\ConfigManager.hpp"
+				RelativePath="..\include\pion\platform\ConfigManager.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\Database.hpp"
+				RelativePath="..\include\pion\platform\Database.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\DatabaseManager.hpp"
+				RelativePath="..\include\pion\platform\DatabaseManager.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\Event.hpp"
+				RelativePath="..\include\pion\platform\Event.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\ReactionEngine.hpp"
+				RelativePath="..\include\pion\platform\ReactionEngine.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\Reactor.hpp"
+				RelativePath="..\include\pion\platform\Reactor.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\Vocabulary.hpp"
+				RelativePath="..\include\pion\platform\Vocabulary.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\VocabularyConfig.hpp"
+				RelativePath="..\include\pion\platform\VocabularyConfig.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\include\pion\reactor\VocabularyManager.hpp"
+				RelativePath="..\include\pion\platform\VocabularyManager.hpp"
 				>
 			</File>
 		</Filter>

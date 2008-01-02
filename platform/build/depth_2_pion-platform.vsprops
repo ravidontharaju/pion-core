@@ -13,4 +13,8 @@
 		Name="PION_NET_HOME"
 		Value="..\..\net"
 	/>
+	<UserMacro
+		Name="PION_PLATFORM_HOME"
+		Value=".."
+	/>
 </VisualStudioPropertySheet>

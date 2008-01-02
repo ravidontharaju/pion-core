@@ -2,10 +2,10 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="pion-net"
+	Name="pion-platform"
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(PION_NET_HOME)\include"
+		AdditionalIncludeDirectories="$(PION_PLATFORM_HOME)\include"
 	/>
 </VisualStudioPropertySheet>
