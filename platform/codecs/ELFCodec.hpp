@@ -21,9 +21,11 @@
 #define __PION_ELFCODEC_HEADER__
 
 #include <vector>
-#include <boost/thread/mutex.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionHashMap.hpp>
+#include <pion/PionException.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -39,6 +41,17 @@ class ELFCodec :
 	public Codec
 {
 public:
+
+	/// exception thrown if there is an unknown field name used in a format
+	class UnknownFieldInFormat : public PionException {
+	public:
+		UnknownFieldInFormat(const std::string& field)
+			: PionException("Unknown field in ELFCodec format: ", field) {}
+	};
+
+	/// data type that describes the sequence of data fields in the log format
+	typedef std::vector<std::string>	FieldFormat;
+	
 
 	/// constructs a new ELFCodec object
 	ELFCodec(void) : Codec() {}
@@ -88,37 +101,108 @@ public:
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
 	virtual void updateVocabulary(const Vocabulary& v);
-		
-	
-protected:
 
-	/// data type that describes how Terms are used in the log format
-	struct DataField {
-		Vocabulary::Term		term;
-		bool					is_quoted;
+	
+	/**
+	 * maps a data field to a Vocabulary Term
+	 *
+	 * @param field the name of the data field
+	 * @param term the Vocabulary Term to map the data field to
+	 * @param delim_start character used to deliminate the start of the data field value
+	 * @param delim_end character used to deliminate the end of the data field value
+	 */
+	inline void mapFieldToTerm(const std::string& field,
+							   const Vocabulary::Term& term,
+							   char delim_start, char delim_end)
+	{
+		m_field_map[field].reset(new LogField(field, term, delim_start, delim_end));
+		m_ref_map[term.term_ref] = m_field_map[field];
+	}
+
+	/// sets the format of data fields used by this Codec
+	inline void setFieldFormat(const FieldFormat& format) {
+		m_default_format = format;
+		m_format.clear();
+		std::for_each(format.begin(), format.end(),
+					  boost::bind(&ELFCodec::appendToFormat, this, _1));
+	}
+	
+	/// resets the configuration for this Codec
+	inline void reset(void) {
+		m_field_map.clear();
+		m_ref_map.clear();
+		m_format.clear();
+		m_default_format.clear();
+	}
+	
+	
+private:
+	
+	/**
+	 * appends a field to the current format
+	 *
+	 * @param field the name of the field to append
+	 */
+	inline void appendToFormat(const std::string& field) {
+		FieldMap::iterator i = m_field_map.find(field);
+		if (i == m_field_map.end())
+			throw UnknownFieldInFormat(field);
+		m_format.push_back(i->second);
+	}
+
+	/// data type used to configure how the log format describes Vocabulary Terms
+	struct LogField {
+		/// constructs a new LogField structure
+		LogField(const std::string& f, const Vocabulary::Term& t, char d_start, char d_end)
+			: log_field(f), log_term(t), log_delim_start(d_start), log_delim_end(d_end)
+		{}
+		/// copy constructor
+		LogField(const LogField& f)
+			: log_field(f.log_field), log_term(f.log_term),
+			log_delim_start(f.log_delim_start), log_delim_end(f.log_delim_end)
+		{}
+		/// assignment operator
+		inline LogField& operator=(const LogField& f) {
+			log_field = f.log_field;
+			log_term = f.log_term;
+			log_delim_start = f.log_delim_start;
+			log_delim_end = f.log_delim_end;
+			return *this;
+		}
+		/// the name of the field
+		std::string			log_field;
+		/// the Vocabulary Term that the data field represents
+		Vocabulary::Term	log_term;
+		/// a character that deliminates the beginning of the field value, or '\0' if none
+		char				log_delim_start;
+		/// a character that deliminates the end of the field value, or '\0' if none
+		char				log_delim_end;
 	};
 	
-	/// data type that maps strings to DataFields through the Codec's configuration
-	typedef PION_HASH_MAP<std::string, DataField, PION_HASH_STRING >	FieldMap;
+	/// data type that maps field names to LogFields
+	typedef PION_HASH_MAP<std::string, boost::shared_ptr<LogField>, PION_HASH_STRING >	FieldMap;
 
-	/// data type that describes the sequence of data fields in the log format
-	typedef std::vector<DataField>	FieldFormat;
+	/// data type that maps Term reference values to LogFields
+	typedef PION_HASH_MAP<Vocabulary::TermRef, boost::shared_ptr<LogField> >	TermRefMap;
 	
+	/// data type that keeps track of the log file's current field format
+	typedef std::vector<boost::shared_ptr<LogField> >	CurrentFormat;
+
 	
-	/// content type 
+	/// content type used by this Codec
 	static const std::string		CONTENT_TYPE;
 	
-	/// used to configure which fields map to Vocabulary Terms
+	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
 	
+	/// maps Vocabulary Term references to LogFields (for writing)
+	TermRefMap						m_ref_map;
+	
+	/// represents the current sequence of data fields in the log format
+	CurrentFormat					m_format;
+
 	/// configured to represent the default sequence of data fields in the log format
 	FieldFormat						m_default_format;
-
-	/// configured to represent the current sequence of data fields in the log format
-	FieldFormat						m_current_format;
-	
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;	
 };
 
 

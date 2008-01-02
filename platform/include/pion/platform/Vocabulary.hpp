@@ -86,6 +86,15 @@ public:
 			term_comment(t.term_comment), term_type(t.term_type),
 			term_size(t.term_size), term_num_parents(t.term_num_parents)
 			{}
+		/// assignment operator
+		inline Term& operator=(const Term& t) {
+			term_ref = t.term_ref;
+			term_comment = t.term_comment;
+			term_type = t.term_type;
+			term_size = t.term_size;
+			term_num_parents = t.term_num_parents;
+			return *this;
+		}
 		/// URI used to uniquely identify the term
 		const std::string		term_id;
 		/// used to reference the term within this Vocabulary object

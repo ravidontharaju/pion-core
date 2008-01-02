@@ -88,7 +88,7 @@ public:
 	
 private:
 
-	/// content type 
+	/// content type used by this Codec
 	static const std::string		CONTENT_TYPE;
 };
 

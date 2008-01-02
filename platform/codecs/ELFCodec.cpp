@@ -32,7 +32,13 @@ const std::string			ELFCodec::CONTENT_TYPE = "text/ascii";
 
 CodecPtr ELFCodec::clone(void) const
 {
-	return CodecPtr();
+	ELFCodec *new_codec(new ELFCodec());
+	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
+		new_codec->mapFieldToTerm(i->first, i->second->log_term,
+								  i->second->log_delim_start, i->second->log_delim_end);
+	}
+	new_codec->setFieldFormat(m_default_format);
+	return CodecPtr(new_codec);
 }
 
 void ELFCodec::write(std::ostream& out, const Event& e)
@@ -51,6 +57,11 @@ EventPtr ELFCodec::read(std::istream& in)
 
 void ELFCodec::updateVocabulary(const Vocabulary& v)
 {
+	/// copy Term data over from the updated Vocabulary
+	for (FieldMap::iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
+		/// we can assume for now that Term reference values will never change
+		i->second->log_term = v[i->second->log_term.term_ref];
+	}
 }
 
 	
