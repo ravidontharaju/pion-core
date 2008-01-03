@@ -40,7 +40,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// CodecFactory: manages the creation of codecs
 ///
-class CodecFactory :
+class PION_PLATFORM_API CodecFactory :
 	public ConfigManager,
 	private boost::noncopyable
 {

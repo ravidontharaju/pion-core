@@ -32,7 +32,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// ConfigManager: interface that manages XML configuration files
 ///
-class ConfigManager
+class PION_PLATFORM_API ConfigManager
 {
 public:
 

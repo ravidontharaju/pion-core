@@ -108,8 +108,8 @@ public:
 	 *
 	 * @param field the name of the data field
 	 * @param term the Vocabulary Term to map the data field to
-	 * @param delim_start character used to deliminate the start of the data field value
-	 * @param delim_end character used to deliminate the end of the data field value
+	 * @param delim_start character used to delimit the start of the data field value
+	 * @param delim_end character used to delimit the end of the data field value
 	 */
 	inline void mapFieldToTerm(const std::string& field,
 							   const Vocabulary::Term& term,
@@ -173,9 +173,9 @@ private:
 		std::string			log_field;
 		/// the Vocabulary Term that the data field represents
 		Vocabulary::Term	log_term;
-		/// a character that deliminates the beginning of the field value, or '\0' if none
+		/// a character that delimits the beginning of the field value, or '\0' if none
 		char				log_delim_start;
-		/// a character that deliminates the end of the field value, or '\0' if none
+		/// a character that delimits the end of the field value, or '\0' if none
 		char				log_delim_end;
 	};
 	
