@@ -33,34 +33,24 @@ using namespace pion::platform;
 
 
 #if defined(_MSC_VER)
-	static const std::string VOCAB_A_CONFIG_FILE("vocab_a.xml");
-	static const std::string VOCAB_A_TEMPLATE_FILE("vocab_a.tmpl");
-	static const std::string VOCAB_A_BACKUP_FILE("vocab_a.xml.bak");
-	static const std::string VOCAB_B_CONFIG_FILE("vocab_b.xml");
-	static const std::string VOCAB_B_TEMPLATE_FILE("vocab_b.tmpl");
-	static const std::string VOCAB_B_BACKUP_FILE("vocab_b.xml.bak");
-	static const std::string VOCAB_NEW_CONFIG_FILE("vocab_new.xml");
-	static const std::string VOCAB_NEW_BACKUP_FILE("vocab_new.xml.bak");
+	static const std::string VOCAB_CONFIG_FILE_DIR(".");
 #elif defined(PION_XCODE)
-	static const std::string VOCAB_A_CONFIG_FILE("../../platform/tests/vocab_a.xml");
-	static const std::string VOCAB_A_TEMPLATE_FILE("../../platform/tests/vocab_a.tmpl");
-	static const std::string VOCAB_A_BACKUP_FILE("../../platform/tests/vocab_a.xml.bak");
-	static const std::string VOCAB_B_CONFIG_FILE("../../platform/tests/vocab_b.xml");
-	static const std::string VOCAB_B_TEMPLATE_FILE("../../platform/tests/vocab_b.tmpl");
-	static const std::string VOCAB_B_BACKUP_FILE("../../platform/tests/vocab_b.xml.bak");
-	static const std::string VOCAB_NEW_CONFIG_FILE("../../platform/tests/vocab_new.xml");
-	static const std::string VOCAB_NEW_BACKUP_FILE("../../platform/tests/vocab_new.xml.bak");
+	static const std::string VOCAB_CONFIG_FILE_DIR("../../platform/tests");
 #else
 	// same for Unix and Cygwin
-	static const std::string VOCAB_A_CONFIG_FILE("vocab_a.xml");
-	static const std::string VOCAB_A_TEMPLATE_FILE("vocab_a.tmpl");
-	static const std::string VOCAB_A_BACKUP_FILE("vocab_a.xml.bak");
-	static const std::string VOCAB_B_CONFIG_FILE("vocab_b.xml");
-	static const std::string VOCAB_B_TEMPLATE_FILE("vocab_b.tmpl");
-	static const std::string VOCAB_B_BACKUP_FILE("vocab_b.xml.bak");
-	static const std::string VOCAB_NEW_CONFIG_FILE("vocab_new.xml");
-	static const std::string VOCAB_NEW_BACKUP_FILE("vocab_new.xml.bak");
+	static const std::string VOCAB_CONFIG_FILE_DIR(".");
 #endif
+
+static const std::string VOCAB_A_CONFIG_FILE("vocab_a.xml");
+static const std::string VOCAB_A_TEMPLATE_FILE("vocab_a.tmpl");
+static const std::string VOCAB_A_BACKUP_FILE("vocab_a.xml.bak");
+static const std::string VOCAB_B_CONFIG_FILE("vocab_b.xml");
+static const std::string VOCAB_B_TEMPLATE_FILE("vocab_b.tmpl");
+static const std::string VOCAB_B_BACKUP_FILE("vocab_b.xml.bak");
+static const std::string VOCAB_NEW_CONFIG_FILE("vocab_new.xml");
+static const std::string VOCAB_NEW_BACKUP_FILE("vocab_new.xml.bak");
+static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
+static const std::string VOCAB_DEFAULT_BACKUP_FILE("vocabulary.xml.bak");
 
 /// sets up logging (run once only)
 extern void setup_logging_for_unit_tests(void);
@@ -68,6 +58,10 @@ extern void setup_logging_for_unit_tests(void);
 /// cleans up vocabulary config files in the working directory
 void cleanup_vocab_config_files(void)
 {
+	char m_old_cwd[DIRECTORY_MAX_SIZE+1];
+	BOOST_REQUIRE(GET_DIRECTORY(m_old_cwd, DIRECTORY_MAX_SIZE) != NULL);
+	BOOST_REQUIRE(CHANGE_DIRECTORY(VOCAB_CONFIG_FILE_DIR.c_str()) == 0);
+
 	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
 	if (boost::filesystem::exists(VOCAB_A_BACKUP_FILE))
@@ -84,6 +78,13 @@ void cleanup_vocab_config_files(void)
 		boost::filesystem::remove(VOCAB_NEW_CONFIG_FILE);
 	if (boost::filesystem::exists(VOCAB_NEW_BACKUP_FILE))
 		boost::filesystem::remove(VOCAB_NEW_BACKUP_FILE);
+
+	if (boost::filesystem::exists(VOCAB_DEFAULT_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_DEFAULT_CONFIG_FILE);
+	if (boost::filesystem::exists(VOCAB_DEFAULT_BACKUP_FILE))
+		boost::filesystem::remove(VOCAB_DEFAULT_BACKUP_FILE);
+
+	BOOST_REQUIRE(CHANGE_DIRECTORY(m_old_cwd) == 0);
 }
 
 
@@ -113,14 +114,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAccessors) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetConfigFileBeforeSettingConfigFile) {
-	// "vocabulary.xml" is the default config file.
-	BOOST_CHECK_EQUAL(F::getConfigFile(), "vocabulary.xml");
+	BOOST_CHECK_EQUAL(F::getConfigFile(), VOCAB_DEFAULT_CONFIG_FILE);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFileBeforeSettingConfigFile) {
-	// THIS TEST IS CURRENTLY FAILING!
-	// Maybe this should throw something, but right now it's throwing EmptyVocabularyIdException, 
-	// because vocabulary.xml has no ID.
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
 
