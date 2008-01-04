@@ -38,9 +38,9 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 ///
-/// DatabaseManager: singleton used to manage the creation of Databases
+/// DatabaseManager: manages the creation of Databases
 ///
-class DatabaseManager :
+class PION_PLATFORM_API DatabaseManager :
 	public ConfigManager,
 	private boost::noncopyable
 {
@@ -95,6 +95,9 @@ public:
 		m_databases.load(database_id, database_type);
 		m_signal_database_updated();
 		PION_LOG_DEBUG(m_logger, "Registered database (" << database_type << "): " << database_id);
+
+		// Needs to return something!
+		return NULL;
 	}
 	
 	/**
