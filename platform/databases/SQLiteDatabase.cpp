@@ -72,31 +72,42 @@ void SQLiteDatabase::setOption(const std::string& option_name,
 Database::QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 											const std::string& sql_query)
 {
+	return NULL;
 }
 
 bool SQLiteDatabase::runQuery(const std::string& sql_query) const
 {
+	return false;
 }
 
 bool SQLiteDatabase::runQuery(QueryPtr query_ptr) const
 {
+	return false;
 }
 
 bool SQLiteDatabase::runQuery(QueryPtr query_ptr, Event& query_params) const
 {
+	return false;
 }
 
 bool SQLiteDatabase::runQuery(QueryPtr query_ptr, EventPtrCollection& query_params) const
 {
+	return false;
 }
 
 bool SQLiteDatabase::runQuery(QueryPtr query_ptr, Event& query_params,
 							  EventPtrCollection& query_results) const
 {
+	return false;
 }
 
 bool SQLiteDatabase::runQuery(QueryPtr query_ptr, EventPtrCollection& query_params,
 							  EventPtrCollection& query_results) const
+{
+	return false;
+}
+
+void SQLiteDatabase::updateVocabulary(const Vocabulary& v)
 {
 }
 

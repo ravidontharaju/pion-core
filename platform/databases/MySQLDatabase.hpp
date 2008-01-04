@@ -22,6 +22,8 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Database.hpp>
+#include <my_global.h>
+#include <my_sys.h>
 #include <mysql.h>
 
 
@@ -39,10 +41,8 @@ public:
 	
 	/**
 	 * constructs a new MySQLDatabase object
-	 *
-	 * @param v the Vocabulary that this Database will use to describe Terms
 	 */
-	MySQLDatabase(const Vocabulary& v) : Database(v) {}
+	MySQLDatabase(void) : Database() {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~MySQLDatabase() {}

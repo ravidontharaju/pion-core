@@ -20,6 +20,10 @@
 #ifndef __PION_SQLITEDATABASE_HEADER__
 #define __PION_SQLITEDATABASE_HEADER__
 
+#if defined _MSC_VER
+	#pragma comment(lib, "sqlite3")
+#endif
+
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Database.hpp>
 #include <sqlite3.h>
@@ -39,10 +43,8 @@ public:
 	
 	/**
 	 * constructs a new SQLiteDatabase object
-	 *
-	 * @param v the Vocabulary that this Database will use to describe Terms
 	 */
-	SQLiteDatabase(const Vocabulary& v) : Database(v), m_sqlite_db(NULL) {}
+	SQLiteDatabase(void) : Database(), m_sqlite_db(NULL) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteDatabase() { close(); }

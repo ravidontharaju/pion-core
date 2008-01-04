@@ -62,9 +62,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-platform", "platform\s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "platform\tests\UnitTests.vcproj", "{BE12B953-FECB-470B-AC62-24FA5BC419D8}"
 	ProjectSection(ProjectDependencies) = postProject
-		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 		{7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D} = {7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D}
+		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MySQLDatabase", "platform\databases\MySQLDatabase.vcproj", "{83035888-D39A-496E-9D5B-36CAD04B8EF8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLiteDatabase", "platform\databases\SQLiteDatabase.vcproj", "{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -232,6 +236,30 @@ Global
 		{BE12B953-FECB-470B-AC62-24FA5BC419D8}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
 		{BE12B953-FECB-470B-AC62-24FA5BC419D8}.Release_static|Win32.ActiveCfg = Release_DLL_full|Win32
 		{BE12B953-FECB-470B-AC62-24FA5BC419D8}.Release_static|Win32.Build.0 = Release_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_DLL_full|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_DLL_full|Win32.Build.0 = Debug_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_static|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Debug_static|Win32.Build.0 = Debug_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_DLL_full|Win32.ActiveCfg = Release_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_DLL_full|Win32.Build.0 = Release_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_static|Win32.ActiveCfg = Release_DLL_full|Win32
+		{83035888-D39A-496E-9D5B-36CAD04B8EF8}.Release_static|Win32.Build.0 = Release_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_DLL_full|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_DLL_full|Win32.Build.0 = Debug_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_static|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Debug_static|Win32.Build.0 = Debug_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_DLL_full|Win32.ActiveCfg = Release_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_DLL_full|Win32.Build.0 = Release_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_static|Win32.ActiveCfg = Release_DLL_full|Win32
+		{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}.Release_static|Win32.Build.0 = Release_DLL_full|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
