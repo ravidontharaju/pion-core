@@ -22,6 +22,7 @@
 
 #include <string>
 #include <list>
+#include <boost/any.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
@@ -67,9 +68,10 @@ public:
 		TYPE_SHORT_STRING,		///< variable-length string up to 255 bytes
 		TYPE_STRING,			///< variable-length string up to 65535 bytes
 		TYPE_LONG_STRING,		///< variable-length string up to 2^32-1 bytes
-		TYPE_DATE_TIME,			///< represents a specific date and time
+		TYPE_DATE_TIME,			///< represents a specific date and time using term_format
+		TYPE_DATE,				///< represents a specific date using term_format
+		TYPE_TIME,				///< represents a specific time using term_format
 		TYPE_CHAR,				///< fixed-length string of size term_size
-		TYPE_ENUM,				///< enumeration; handled as a 255-byte string
 		TYPE_OBJECT				///< object may contain other terms (boost::any)
 	};
 	
@@ -84,7 +86,8 @@ public:
 		Term(const Term& t)
 			: term_id(t.term_id), term_ref(t.term_ref),
 			term_comment(t.term_comment), term_type(t.term_type),
-			term_size(t.term_size), term_num_parents(t.term_num_parents)
+			term_size(t.term_size), term_format(t.term_format),
+			term_num_parents(t.term_num_parents)
 			{}
 		/// assignment operator
 		inline Term& operator=(const Term& t) {
@@ -92,6 +95,7 @@ public:
 			term_comment = t.term_comment;
 			term_type = t.term_type;
 			term_size = t.term_size;
+			term_format = t.term_format;
 			term_num_parents = t.term_num_parents;
 			return *this;
 		}
@@ -105,6 +109,8 @@ public:
 		DataType				term_type;
 		/// maximum length if data type == TYPE_CHAR
 		size_t					term_size;
+		/// format used for date/time Term types
+		std::string				term_format;
 		/// the number of "parent" object terms that this is currently a member of
 		unsigned int			term_num_parents;
 	};
@@ -294,6 +300,17 @@ public:
 	 * @return std::string a temporary string object that represents the data type
 	 */
 	static std::string getDataTypeAsString(const DataType type);
+	
+	/**
+	 * parses a typed value from a string
+	 *
+	 * @param result a boost::any object that stores the result
+	 * @param str the string to parse the value from
+	 * @param type data type to use for storage of the result
+	 *
+	 * @return size_t number of characters parsed
+	 */
+	static void parseString(boost::any& result, std::string str, const DataType type);
 	
 	
 private:

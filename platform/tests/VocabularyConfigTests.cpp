@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewObjectMember) {
 	F::addObjectMember("urn:pion:simple-object", "urn:pion:null-term");
 
 	// make sure it has been added
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
 }
 
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveObjectMember) {
 	F::removeObjectMember("urn:pion:simple-object", "urn:pion:plain-old-int");
 
 	// make sure it is gone
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	for (Vocabulary::OBJECT_MEMBER_LIST::iterator i = member_list.begin();
 		 i != member_list.end(); ++i)
 	{
@@ -365,8 +365,8 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(BoundVocabularyConfig_S,
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsFive) {
 	// there should be five terms defined in the config file
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(5));
-	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), static_cast<size_t>(5));
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(6));
+	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), static_cast<size_t>(6));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdValues) {
@@ -375,12 +375,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdValues) {
 	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_id, "urn:pion:plain-old-int");
 	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_id, "urn:pion:big-int");
 	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_id, "urn:pion:fixed-text");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_id, "urn:pion:simple-object");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_id, "urn:pion:date");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_id, "urn:pion:simple-object");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_id, "urn:pion:null-term");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_id, "urn:pion:plain-old-int");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_id, "urn:pion:big-int");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_id, "urn:pion:fixed-text");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_id, "urn:pion:simple-object");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_id, "urn:pion:date");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_id, "urn:pion:simple-object");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentValues) {
@@ -389,11 +391,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentValues) {
 	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_comment, "A plain, old integer number");
 	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_comment, "A really big positive integer");
 	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_comment, "Ten bytes of text");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_comment, "An object containing other Terms");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_comment, "A specific date");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_comment, "An object containing other Terms");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_comment, "");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_comment, "A plain, old integer number");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_comment, "A really big positive integer");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_comment, "Ten bytes of text");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_comment, "A specific date");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_comment, "An object containing other Terms");
 }
 
@@ -403,12 +407,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeValues) {
 	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_type, Vocabulary::TYPE_INT16);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_type, Vocabulary::TYPE_UINT64);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_type, Vocabulary::TYPE_CHAR);
-	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_type, Vocabulary::TYPE_OBJECT);
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_type, Vocabulary::TYPE_DATE);
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_type, Vocabulary::TYPE_OBJECT);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_type, Vocabulary::TYPE_NULL);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_type, Vocabulary::TYPE_INT16);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_type, Vocabulary::TYPE_UINT64);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_type, Vocabulary::TYPE_CHAR);
-	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_type, Vocabulary::TYPE_OBJECT);
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_type, Vocabulary::TYPE_DATE);
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_type, Vocabulary::TYPE_OBJECT);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeSizes) {
@@ -418,16 +424,34 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeSizes) {
 	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_size, static_cast<size_t>(0));
 	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_size, static_cast<size_t>(10));
 	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_size, static_cast<size_t>(0));
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_size, static_cast<size_t>(0));
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_size, static_cast<size_t>(0));
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_size, static_cast<size_t>(0));
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_size, static_cast<size_t>(0));
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_size, static_cast<size_t>(10));
 	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_size, static_cast<size_t>(0));
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_size, static_cast<size_t>(0));
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeFormats) {
+	// check data format values
+	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_format, "");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_format, "");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_format, "");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_format, "");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_format, "%Y-%m-%d");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_format, "");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_format, "");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_format, "");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_format, "");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_format, "");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_format, "%Y-%m-%d");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_format, "");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkMembersOfSimpleObjectTerm) {
 	// check members of the simple-object term
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	Vocabulary::OBJECT_MEMBER_LIST::const_iterator i = member_list.begin();
 	BOOST_REQUIRE(i != member_list.end());
 	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(2));
@@ -437,7 +461,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkMembersOfSimpleObjectTerm) {
 	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(4));
 	BOOST_CHECK(++i == member_list.end());
 	
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	i = member_list.begin();
 	BOOST_REQUIRE(i != member_list.end());
 	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(2));
@@ -453,9 +477,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewObjectMember) {
 	F::addObjectMember("urn:pion:simple-object", "urn:pion:null-term");
 
 	// make sure it has been added
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
 }
 
@@ -464,12 +488,12 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveObjectMember) {
 	F::removeObjectMember("urn:pion:simple-object", "urn:pion:plain-old-int");
 
 	// make sure it is gone
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	Vocabulary::OBJECT_MEMBER_LIST::iterator i;
 	for (i = member_list.begin(); i != member_list.end(); ++i) {
 		BOOST_CHECK(*i != static_cast<Vocabulary::TermRef>(1));
 	}
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(5));
+	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
 	for (i = member_list.begin(); i != member_list.end(); ++i) {
 		BOOST_CHECK(*i != static_cast<Vocabulary::TermRef>(1));
 	}

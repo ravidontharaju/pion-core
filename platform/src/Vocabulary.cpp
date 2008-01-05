@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/lexical_cast.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
 
@@ -67,6 +68,7 @@ Vocabulary::TermRef Vocabulary::addTermNoLock(const Term& t)
 		term_ptr->term_size = 1;
 	else
 		term_ptr->term_size = t.term_size;
+	term_ptr->term_format = t.term_format;
 	
 	// add it to the memory structures
 	m_ref_map.push_back(term_ptr);
@@ -100,6 +102,7 @@ void Vocabulary::updateTerm(const Term& t)
 	term_ptr->term_comment = t.term_comment;
 	term_ptr->term_type = t.term_type;
 	term_ptr->term_size = t.term_size;
+	term_ptr->term_format = t.term_format;
 }
 	
 void Vocabulary::removeTerm(const std::string& term_id)
@@ -279,10 +282,12 @@ Vocabulary::DataType Vocabulary::parseDataType(std::string str)
 		return TYPE_LONG_STRING;
 	else if (str == "datetime") 
 		return TYPE_DATE_TIME;
+	else if (str == "date") 
+		return TYPE_DATE;
+	else if (str == "time") 
+		return TYPE_TIME;
 	else if (str == "char") 
 		return TYPE_CHAR;
-	else if (str == "enum") 
-		return TYPE_ENUM;
 	else if (str == "object") 
 		return TYPE_OBJECT;
 	
@@ -341,18 +346,82 @@ std::string Vocabulary::getDataTypeAsString(const DataType data_type)
 		case TYPE_DATE_TIME:
 			str = "datetime";
 			break;
+		case TYPE_DATE:
+			str = "date";
+			break;
+		case TYPE_TIME:
+			str = "time";
+			break;
 		case TYPE_CHAR:
 			str = "char";
-			break;
-		case TYPE_ENUM:
-			str = "enum";
 			break;
 		case TYPE_OBJECT:
 			str = "object";
 			break;
 	}
 	return str;
-}	
+}
+	
+void Vocabulary::parseString(boost::any& result, std::string str, const DataType type)
+{
+	switch(type) {
+		case TYPE_NULL:
+			// reset value by assigning to an empty temp any object
+			result = boost::any();
+			break;
+		case TYPE_INT8:
+		case TYPE_INT16:
+			result = boost::lexical_cast<int>(str);
+			break;
+		case TYPE_UINT8:
+		case TYPE_UINT16:
+			result = boost::lexical_cast<unsigned int>(str);
+			break;
+		case TYPE_INT32:
+			result = boost::lexical_cast<long>(str);
+			break;
+		case TYPE_UINT32:
+			result = boost::lexical_cast<unsigned long>(str);
+			break;
+		case TYPE_INT64:
+			result = boost::lexical_cast<long long>(str);
+			break;
+		case TYPE_UINT64:
+			result = boost::lexical_cast<unsigned long long>(str);
+			break;
+		case TYPE_FLOAT:
+			result = boost::lexical_cast<float>(str);
+			break;
+		case TYPE_DOUBLE:
+			result = boost::lexical_cast<double>(str);
+			break;
+		case TYPE_LONG_DOUBLE:
+			result = boost::lexical_cast<long double>(str);
+			break;
+		case TYPE_SHORT_STRING:
+		case TYPE_STRING:
+		case TYPE_LONG_STRING:
+		case TYPE_CHAR:
+			result = str;
+			break;
+		case TYPE_DATE_TIME:
+			// implement me!
+			// ...
+			break;
+		case TYPE_DATE:
+			// implement me!
+			// ...
+			break;
+		case TYPE_TIME:
+			// implement me!
+			// ...
+			break;
+		case TYPE_OBJECT:
+			// do nothing
+			break;
+	}
+}
+	
 	
 }	// end namespace platform
 }	// end namespace pion

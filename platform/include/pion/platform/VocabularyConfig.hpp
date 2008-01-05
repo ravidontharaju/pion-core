@@ -263,6 +263,9 @@ private:
 	/// name of the size (term_size) attribute for Pion XML config files
 	static const std::string		SIZE_ATTRIBUTE_NAME;	
 		
+	/// name of the format (term_format) attribute for Pion XML config files
+	static const std::string		FORMAT_ATTRIBUTE_NAME;	
+
 	
 	/// primary logging interface used by this class
 	PionLogger						m_logger;	

@@ -37,6 +37,7 @@ const std::string			VocabularyConfig::TYPE_ELEMENT_NAME = "type";
 const std::string			VocabularyConfig::COMMENT_ELEMENT_NAME = "comment";
 const std::string			VocabularyConfig::ID_ATTRIBUTE_NAME = "id";
 const std::string			VocabularyConfig::SIZE_ATTRIBUTE_NAME = "size";
+const std::string			VocabularyConfig::FORMAT_ATTRIBUTE_NAME = "format";
 	
 		
 // VocabularyConfig member functions
@@ -149,6 +150,13 @@ void VocabularyConfig::openConfigFile(void)
 						}
 					}
 				}
+
+				// check for "format" attribute
+				xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
+				if (xml_char_ptr != NULL) {
+					new_term.term_format = reinterpret_cast<char*>(xml_char_ptr);
+					xmlFree(xml_char_ptr);
+				}				
 				
 				// find the existing "comment" node (if any)
 				xmlNodePtr comment_node = static_cast<xmlNodePtr>(findConfigNodeByName(COMMENT_ELEMENT_NAME,
@@ -261,6 +269,12 @@ bool VocabularyConfig::addNewTermTypeConfig(void *term_node, const Vocabulary::T
 			new_size_string = "1";
 		if (xmlNewProp(new_type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()),
 					   reinterpret_cast<const xmlChar*>(new_size_string.c_str())) == NULL)
+			return false;
+	}
+	// set the format attribute if it is not empty
+	if (! t.term_format.empty()) {
+		if (xmlNewProp(new_type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()),
+					   reinterpret_cast<const xmlChar*>(t.term_format.c_str())) == NULL)
 			return false;
 	}
 	return true;
@@ -379,13 +393,16 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 	xmlNodePtr type_node = static_cast<xmlNodePtr>(findConfigNodeByName(TYPE_ELEMENT_NAME,
 																		term_node->children));
 	if (type_node == NULL) {
+		
 		// no type node currently exists
 		// add a new one, so long as the new type is not "NULL"
 		if (t.term_type != Vocabulary::TYPE_NULL) {
 			if (! addNewTermTypeConfig(term_node, t))
 				throw UpdateTermConfigException(t.term_id);
 		}
+		
 	} else {
+		
 		// look for the existing size attribute
 		const std::string new_size_string(boost::lexical_cast<std::string>(t.term_size));
 		xmlAttrPtr size_attr_ptr = xmlHasProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()));
@@ -404,6 +421,25 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 			xmlSetProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()),
 					   reinterpret_cast<const xmlChar*>(new_size_string.c_str()));
 		}
+
+		// look for existing format attribute
+		xmlAttrPtr format_attr_ptr = xmlHasProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
+		if (format_attr_ptr == NULL) {
+			// no format attribute currently defined -> add one if not empty
+			if (! t.term_format.empty()) {
+				if (xmlNewProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()),
+							   reinterpret_cast<const xmlChar*>(t.term_format.c_str())) == NULL)
+					throw UpdateTermConfigException(t.term_id);
+			}
+		} else if (t.term_format.empty()) {
+			// format is being removed -> remove the existing attribute
+			xmlUnsetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
+		} else {
+			// update the value of the existing format attribute
+			xmlSetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()),
+					   reinterpret_cast<const xmlChar*>(t.term_format.c_str()));
+		}
+			
 		// update the content of the type attribute
 		const std::string new_type_string(Vocabulary::getDataTypeAsString(t.term_type));
 		xmlNodeSetContent(type_node, reinterpret_cast<const xmlChar*>(new_type_string.c_str()));
