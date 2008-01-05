@@ -53,7 +53,15 @@ public:
 			: PionException("No codecs found for identifier: ", codec_id) {}
 	};
 
-	
+	/// exception thrown if a request is made to add a Codec when a Codec with
+	/// the same ID already exists
+	class DuplicateIdentifierException : public PionException {
+	public:
+		DuplicateIdentifierException(const std::string& codec_id)
+			: PionException("A codec already exists with that identifier: ", codec_id) {}
+	};
+
+
 	/**
 	 * constructs a new CodecFactory object
 	 *
@@ -105,7 +113,12 @@ public:
 	 *                   plug-in directories and appends extensions)
 	 */
 	inline void loadCodec(const std::string& codec_id, const std::string& codec_type) {
-		m_codecs.load(codec_id, codec_type);
+		// convert "duplicate plugin" exceptions into "duplicate (codec) ID"
+		try { m_codecs.load(codec_id, codec_type); }
+		catch (PluginManager<Codec>::DuplicatePluginException&) {
+			throw DuplicateIdentifierException(codec_id);
+		}
+
 		PION_LOG_DEBUG(m_logger, "Loaded codec (" << codec_type << "): " << codec_id);
 	}
 	

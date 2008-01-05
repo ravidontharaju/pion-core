@@ -32,7 +32,8 @@ const std::string			JSONCodec::CONTENT_TYPE = "text/json";
 
 CodecPtr JSONCodec::clone(void) const
 {
-	return CodecPtr();
+	JSONCodec *new_codec(new JSONCodec());
+	return CodecPtr(new_codec);
 }
 
 void JSONCodec::write(std::ostream& out, const Event& e)

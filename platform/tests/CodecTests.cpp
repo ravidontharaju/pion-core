@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadMultipleCodecs) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadTwoCodecsWithSameId) {
 	BOOST_CHECK_NO_THROW(F::loadCodec("id_1", "ELFCodec"));
-	BOOST_CHECK_THROW(F::loadCodec("id_1", "JSONCodec"), PionException); // CodecFactory::DuplicateIdException?
+	BOOST_CHECK_THROW(F::loadCodec("id_1", "JSONCodec"), CodecFactory::DuplicateIdentifierException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadUnknownCodec) {

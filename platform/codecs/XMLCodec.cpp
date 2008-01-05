@@ -32,7 +32,8 @@ const std::string			XMLCodec::CONTENT_TYPE = "text/xml";
 
 CodecPtr XMLCodec::clone(void) const
 {
-	return CodecPtr();
+	XMLCodec *new_codec(new XMLCodec());
+	return CodecPtr(new_codec);
 }
 
 void XMLCodec::write(std::ostream& out, const Event& e)
