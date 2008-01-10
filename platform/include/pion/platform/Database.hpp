@@ -179,6 +179,12 @@ public:
 		throw UnknownOptionException(option_name);
 	}
 	
+	/// sets the unique identifier for this Database
+	inline void setId(const std::string& database_id) { m_database_id = database_id; }
+	
+	/// returns the unique identifier for this Database
+	inline const std::string& getId(void) const { return m_database_id; }
+	
 	
 protected:
 
@@ -186,9 +192,25 @@ protected:
 	/// data type that maps query identifiers to pointers of compiled queries
 	typedef PION_HASH_MAP<QueryID, QueryPtr, PION_HASH(QueryID) >		QueryMap;
 
+	
+	/// name of the database element for Pion XML config files
+	static const std::string		DATABASE_ELEMENT_NAME;
+	
+	/// name of the table element for Pion XML config files
+	static const std::string		TABLE_ELEMENT_NAME;
+	
+	/// name of the field element for Pion XML config files
+	static const std::string		FIELD_ELEMENT_NAME;
+	
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
+	
 
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap						m_query_map;
+
+	/// uniquely identifies this particular Database
+	std::string						m_database_id;
 
 	/// mutex to make class thread-safe
 	mutable boost::mutex			m_mutex;

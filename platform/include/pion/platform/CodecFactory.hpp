@@ -20,6 +20,7 @@
 #ifndef __PION_CODECFACTORY_HEADER__
 #define __PION_CODECFACTORY_HEADER__
 
+#include <libxml/tree.h>
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
@@ -46,6 +47,13 @@ class PION_PLATFORM_API CodecFactory :
 {
 public:
 
+	/// exception thrown if you try modifying Codecs before opening the config file
+	class CodecConfigNotOpenException : public PionException {
+	public:
+		CodecConfigNotOpenException(const std::string& config_file)
+			: PionException("Codecs configuration file must be opened before making changes: ", config_file) {}
+	};
+
 	/// exception thrown if a Codec cannot be found
 	class CodecNotFoundException : public PionException {
 	public:
@@ -61,7 +69,42 @@ public:
 			: PionException("A codec already exists with that identifier: ", codec_id) {}
 	};
 
+	/// exception thrown if the codec config file contains a codec with a missing identifier
+	class EmptyCodecIdException : public PionException {
+	public:
+		EmptyCodecIdException(const std::string& config_file)
+			: PionException("Configuration file includes a codec with an empty identifier: ", config_file) {}
+	};
 
+	/// exception thrown if the codec config tree does not define a plug-in type
+	class EmptyPluginException : public PionException {
+	public:
+		EmptyPluginException(const std::string& codec_id)
+			: PionException("Codec configuration does not define a plug-in type: ", codec_id) {}
+	};
+	
+	/// exception thrown if there is an error adding a Codec to the config file
+	class AddCodecConfigException : public PionException {
+	public:
+		AddCodecConfigException(const std::string& codec_id)
+			: PionException("Unable to add a codec to the configuration file: ", codec_id) {}
+	};
+
+	/// exception thrown if there is an error updating a Codec in the config file
+	class UpdateCodecConfigException : public PionException {
+	public:
+		UpdateCodecConfigException(const std::string& codec_id)
+			: PionException("Unable to update a codec in the configuration file: ", codec_id) {}
+	};
+
+	/// exception thrown if there is an error removing a Codec from the config file
+	class RemoveCodecConfigException : public PionException {
+	public:
+		RemoveCodecConfigException(const std::string& codec_id)
+			: PionException("Unable to remove a codec from the configuration file: ", codec_id) {}
+	};
+		
+	
 	/**
 	 * constructs a new CodecFactory object
 	 *
@@ -78,6 +121,12 @@ public:
 	/// virtual destructor
 	virtual ~CodecFactory() {}
 	
+	/// creates a new Codec config file that includes the Pion "config" element
+	virtual void createConfigFile(void);
+	
+	/// opens an existing Codec config file and loads the data it contains
+	virtual void openConfigFile(void);
+		
 	/**
 	 * gets a unique instance of a Codec that may be used for en/decoding
 	 *
@@ -95,69 +144,32 @@ public:
 	}
 	
 	/**
-	 * adds a new Codec object
-	 *
-	 * @param codec_id unique identifier associated with the Codec
-	 * @param codec_ptr pointer to the Codec object to add
-	 */
-	inline void addCodec(const std::string& codec_id, Codec *codec_ptr) {
-		m_codecs.add(codec_id, codec_ptr);
-		PION_LOG_DEBUG(m_logger, "Added static codec: " << codec_id);
-	}
-
-	/**
-	 * loads a new Codec plug-in
-	 *
-	 * @param codec_id unique identifier associated with the Codec
-	 * @param codec_type the type of Codec plug-in to load (searches
-	 *                   plug-in directories and appends extensions)
-	 */
-	inline void loadCodec(const std::string& codec_id, const std::string& codec_type) {
-		// convert "duplicate plugin" exceptions into "duplicate (codec) ID"
-		try { m_codecs.load(codec_id, codec_type); }
-		catch (PluginManager<Codec>::DuplicatePluginException&) {
-			throw DuplicateIdentifierException(codec_id);
-		}
-
-		PION_LOG_DEBUG(m_logger, "Loaded codec (" << codec_type << "): " << codec_id);
-	}
-	
-	/**
 	 * removes a Codec object
 	 *
 	 * @param codec_id unique identifier associated with the Codec
 	 */
-	inline void removeCodec(const std::string& codec_id) {
-		// convert "plugin not found" exceptions into "codec not found"
-		try { m_codecs.remove(codec_id); }
-		catch (PluginManager<Codec>::PluginNotFoundException& /* e */) {
-			throw CodecNotFoundException(codec_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Removed codec: " << codec_id);
-	}
+	void removeCodec(const std::string& codec_id);
 	
 	/**
-	 * sets a configuration option for a managed Codec
+	 * adds a new Codec object
 	 *
 	 * @param codec_id unique identifier associated with the Codec
-	 * @param option_name the name of the configuration option
-	 * @param option_value the value to set the option to
+	 * @param codec_plugin the name of the Codec plug-in to load (searches
+	 *                     plug-in directories and appends extensions)
+	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
+	 *                         configuration parameters
 	 */
-	inline void setCodecOption(const std::string& codec_id,
-							   const std::string& option_name,
-							   const std::string& option_value)
-	{
-		// convert "plugin not found" exceptions into "codec not found"
-		try {
-			m_codecs.run(codec_id, boost::bind(&Codec::setOption, _1,
-											   boost::cref(option_name),
-											   boost::cref(option_value)));
-		} catch (PluginManager<Codec>::PluginNotFoundException& /* e */) {
-			throw CodecNotFoundException(codec_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Set codec option (" << codec_id << "): "
-					   << option_name << '=' << option_value);
-	}
+	void addCodec(const std::string& codec_id, const std::string& codec_plugin,
+				  const xmlNodePtr codec_config_ptr = NULL);
+	
+	/**
+	 * sets configuration parameters for a managed Codec
+	 *
+	 * @param codec_id unique identifier associated with the Codec
+	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
+	 *                         configuration parameters
+	 */
+	void setCodecConfig(const std::string& codec_id, const xmlNodePtr codec_config_ptr);
 
 	/**
 	 * registers a callback function to be executed whenever a Codec is updated
@@ -184,8 +196,28 @@ public:
 	
 private:
 
+	/**
+	 * add configuration parameters for a codec to the config file
+	 *
+	 * @param codec_node_ptr pointer to the existing codec element node
+	 * @param codec_config_ptr pointer to the new configuration parameters
+	 *
+	 * @return true if successful, false if there was an error
+	 */
+	bool addCodecConfig(xmlNodePtr codec_node_ptr, xmlNodePtr codec_config_ptr);
+
+	
 	/// default name of the Codec config file
 	static const std::string		DEFAULT_CONFIG_FILE;
+
+	/// name of the codec element for Pion XML config files
+	static const std::string		CODEC_ELEMENT_NAME;
+
+	/// name of the plugin type element for Pion XML config files
+	static const std::string		PLUGIN_ELEMENT_NAME;
+
+	/// name of the ID (codec_id) attribute for Pion XML config files
+	static const std::string		ID_ATTRIBUTE_NAME;
 
 	
 	/// primary logging interface used by this class

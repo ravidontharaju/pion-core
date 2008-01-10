@@ -17,24 +17,21 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <string>
-#include <pion/PionConfig.hpp>
-#include <pion/PionLogger.hpp>
-
-#define BOOST_TEST_MODULE pion-platform-unit-tests
-#include <boost/test/unit_test.hpp>
+#include <pion/platform/Reactor.hpp>
 
 
-/// sets up logging (run once only)
-void setup_logging_for_unit_tests(void)
-{
-	static bool first_run = true;
-	if (first_run) {
-		first_run = false;
-		// configure logging
-		PION_LOG_CONFIG_BASIC;
-		pion::PionLogger log_ptr;
-		log_ptr = PION_GET_LOGGER("pion.platform");
-		PION_LOG_SETLEVEL_WARN(log_ptr);
-	}
-}
+namespace pion {		// begin namespace pion
+namespace platform {	// begin namespace platform (Pion Platform Library)
+
+
+// static members of Reactor
+const std::string			Reactor::EVENT_ELEMENT_NAME = "event";
+const std::string			Reactor::COMMENT_ELEMENT_NAME = "comment";
+	
+		
+// Reactor member functions
+
+	
+	
+}	// end namespace platform
+}	// end namespace pion

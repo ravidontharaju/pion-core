@@ -21,6 +21,7 @@
 #define __PION_VOCABULARYCONFIG_HEADER__
 
 #include <string>
+#include <libxml/tree.h>
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
@@ -143,9 +144,10 @@ public:
 	/// virtual destructor
 	virtual ~VocabularyConfig() {}
 	
-	/**
-	 * opens the vocabulary config file, loads data, and keeps it in sync
-	 */
+	/// creates a new Vocabulary config file that includes the Pion "config" and "vocabulary" elements
+	virtual void createConfigFile(void);
+	
+	/// opens an existing Vocabulary config file and loads the data it contains
 	virtual void openConfigFile(void);
 	
 	/// sets the URI used to uniquely identify this Vocabulary
@@ -233,7 +235,7 @@ private:
 	 *
 	 * @return bool true if the element was added successfully; false if not
 	 */
-	bool addNewTermTypeConfig(void *term_node, const Vocabulary::Term& t);
+	bool addNewTermTypeConfig(xmlNodePtr term_node, const Vocabulary::Term& t);
 
 	
 	/// default name of the vocabulary config file
@@ -271,7 +273,7 @@ private:
 	PionLogger						m_logger;	
 
 	/// pointer to the vocabulary element node in the XML document tree
-	void *							m_vocabulary_node;
+	xmlNodePtr 						m_vocabulary_node;
 	
 	/// local Vocabulary used to track the managed terms
 	Vocabulary						m_vocabulary;

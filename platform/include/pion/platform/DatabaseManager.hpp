@@ -57,7 +57,7 @@ public:
 	class DuplicateDatabaseException : public PionException {
 	public:
 		DuplicateDatabaseException(const std::string& database_id)
-			: PionException("Cannot register database with existing identifier: ", database_id) {}
+			: PionException("Cannot register database with a duplicate identifier: ", database_id) {}
 	};
 	
 
@@ -84,15 +84,17 @@ public:
 	 * @return Database* pointer to the new Database object
 	 */
 	inline Database *registerDatabase(const std::string& database_id) {
-		// make sure the database was not already registered
-		if (m_databases.get(database_id) != NULL)
-			throw DuplicateDatabaseException(database_id);
-
 		// determine the type of database (driver) to load
 		std::string database_type = DEFAULT_DATABASE_TYPE;
 		// ...
 		
-		m_databases.load(database_id, database_type);
+		// make sure the database was not already registered
+		Database *new_database_ptr;
+		try { new_database_ptr = m_databases.load(database_id, database_type); }
+		catch (PluginManager<Database>::DuplicatePluginException&) {
+			throw DuplicateDatabaseException(database_id);
+		}
+		new_database_ptr->setId(database_id);
 		m_signal_database_updated();
 		PION_LOG_DEBUG(m_logger, "Registered database (" << database_type << "): " << database_id);
 

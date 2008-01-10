@@ -23,6 +23,7 @@
 #include <string>
 #include <list>
 #include <boost/any.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
@@ -54,23 +55,21 @@ public:
 	/// data type for the type of data that a term represents
 	enum DataType {
 		TYPE_NULL = 0,			///< NULL or undefined type
-		TYPE_INT8,				///< 8-bit, signed integer
-		TYPE_UINT8,				///< 8-bit, unsigned integer
-		TYPE_INT16,				///< 16-bit, signed integer
-		TYPE_UINT16,			///< 16-bit, unsigned integer
-		TYPE_INT32,				///< 32-bit, signed integer
-		TYPE_UINT32,			///< 32-bit, unsigned integer
-		TYPE_INT64,				///< 64-bit, signed integer
-		TYPE_UINT64,			///< 64-bit, unsigned integer
-		TYPE_FLOAT,				///< floating point number
-		TYPE_DOUBLE,			///< large floating point number
-		TYPE_LONG_DOUBLE,		///< very large floating point number
+		TYPE_INT8,				///< 8-bit, signed integer (uses boost::int32_t)
+		TYPE_UINT8,				///< 8-bit, unsigned integer (uses boost::uint32_t)
+		TYPE_INT16,				///< 16-bit, signed integer (uses boost::int32_t)
+		TYPE_UINT16,			///< 16-bit, unsigned integer (uses boost::uint32_t)
+		TYPE_INT32,				///< 32-bit, signed integer (uses boost::int32_t)
+		TYPE_UINT32,			///< 32-bit, unsigned integer (uses boost::uint32_t)
+		TYPE_INT64,				///< 64-bit, signed integer (uses boost::int64_t)
+		TYPE_UINT64,			///< 64-bit, unsigned integer (uses boost::uint64_t)
+		TYPE_FLOAT,				///< floating point number (uses float)
+		TYPE_DOUBLE,			///< large floating point number (uses double)
+		TYPE_LONG_DOUBLE,		///< very large floating point number (uses long double)
 		TYPE_SHORT_STRING,		///< variable-length string up to 255 bytes
 		TYPE_STRING,			///< variable-length string up to 65535 bytes
 		TYPE_LONG_STRING,		///< variable-length string up to 2^32-1 bytes
-		TYPE_DATE_TIME,			///< represents a specific date and time using term_format
-		TYPE_DATE,				///< represents a specific date using term_format
-		TYPE_TIME,				///< represents a specific time using term_format
+		TYPE_DATE_TIME,			///< represents a specific date and/or time using term_format
 		TYPE_CHAR,				///< fixed-length string of size term_size
 		TYPE_OBJECT				///< object may contain other terms (boost::any)
 	};

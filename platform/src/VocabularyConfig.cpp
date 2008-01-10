@@ -19,7 +19,6 @@
 
 #include <pion/platform/VocabularyConfig.hpp>
 #include <boost/lexical_cast.hpp>
-#include <libxml/tree.h>
 #include <cstdlib>
 
 
@@ -49,215 +48,195 @@ VocabularyConfig::VocabularyConfig(void)
 {
 }
 
+void VocabularyConfig::createConfigFile(void)
+{
+	// just return if it's already open
+	if (m_vocabulary_node != NULL)
+		return;
+	
+	// create the file with "config" root element
+	ConfigManager::createConfigFile();
+	
+	PION_LOG_INFO(m_logger, "Initializing new Vocabulary configuration file: " << m_config_file);
+
+	// create a new vocabulary element
+	m_vocabulary_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(VOCABULARY_ELEMENT_NAME.c_str()));
+	if (m_vocabulary_node == NULL)
+		throw InitializeConfigException(getConfigFile());
+	if ((m_vocabulary_node=xmlAddChild(m_config_node_ptr,
+									   m_vocabulary_node)) == NULL)
+	{
+		xmlFreeNode(m_vocabulary_node);
+		throw InitializeConfigException(getConfigFile());
+	}
+	if (xmlNewProp(m_vocabulary_node,
+				   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
+				   reinterpret_cast<const xmlChar*>(m_vocabulary_id.c_str())) == NULL)
+		throw InitializeConfigException(getConfigFile());
+	
+	// create a namespace child element
+	if (! m_namespace.empty()) {
+		if (xmlNewTextChild(m_vocabulary_node, NULL,
+							reinterpret_cast<const xmlChar*>(NAMESPACE_ELEMENT_NAME.c_str()),
+							reinterpret_cast<const xmlChar*>(m_namespace.c_str())) == NULL)
+			throw InitializeConfigException(getConfigFile());
+	}
+	
+	// create a comment child element
+	if (! m_comment.empty()) {
+		if (xmlNewTextChild(m_vocabulary_node, NULL,
+							reinterpret_cast<const xmlChar*>(COMMENT_ELEMENT_NAME.c_str()),
+							reinterpret_cast<const xmlChar*>(m_comment.c_str())) == NULL)
+			throw InitializeConfigException(getConfigFile());
+	}
+	
+	// save the new XML config file
+	saveConfigFile();
+}
+	
 void VocabularyConfig::openConfigFile(void)
 {
 	// just return if it's already open
 	if (m_vocabulary_node != NULL)
 		return;
 	
-	// open the config file (returns false if the file is new)
-	if (openAndParseConfigFile()) {
-		
-		// find the root "vocabulary" element
-		m_vocabulary_node = static_cast<xmlNodePtr>(findConfigNodeByName(VOCABULARY_ELEMENT_NAME,
-																		 static_cast<xmlNodePtr>(m_config_root_ptr)->children));
-		if (m_vocabulary_node == NULL)
-			throw MissingVocabularyException(getConfigFile());
+	// open the file and find the "config" root element
+	ConfigManager::openConfigFile();
 
-		// get the unique identifier for the Vocabulary
-		xmlChar *xml_char_ptr = xmlGetProp(static_cast<xmlNodePtr>(m_vocabulary_node),
-										   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-			if (xml_char_ptr != NULL)
-				xmlFree(xml_char_ptr);
-			throw EmptyVocabularyIdException(getConfigFile());
-		}
-		m_vocabulary_id = reinterpret_cast<char*>(xml_char_ptr);
-		xmlFree(xml_char_ptr);
-		
-		// find the "namespace" element
-		xmlNodePtr namespace_node = static_cast<xmlNodePtr>(findConfigNodeByName(NAMESPACE_ELEMENT_NAME,
-																				 static_cast<xmlNodePtr>(m_vocabulary_node)->children));
-		if (namespace_node != NULL) {
-			xml_char_ptr = xmlNodeGetContent(namespace_node);
-			if (xml_char_ptr != NULL) {
-				m_namespace = reinterpret_cast<char*>(xml_char_ptr);
-				xmlFree(xml_char_ptr);
-			} else m_namespace.clear();
-		} else m_namespace.clear();	
-		
-		// find the "comment" element
-		xmlNodePtr comment_node = static_cast<xmlNodePtr>(findConfigNodeByName(COMMENT_ELEMENT_NAME,
-																			   static_cast<xmlNodePtr>(m_vocabulary_node)->children));
-		if (comment_node != NULL) {
-			xml_char_ptr = xmlNodeGetContent(comment_node);
-			if (xml_char_ptr != NULL) {
-				m_comment = reinterpret_cast<char*>(xml_char_ptr);
-				xmlFree(xml_char_ptr);
-			} else m_comment.clear();
-		} else m_comment.clear();
-		
-		// this is used to cache all object dependencies
-		// these are resolved LAST, to ensure that all Terms already exist first
-		std::list<std::pair<std::string,std::string> >	object_dependencies;
-		
-		// load Vocabulary Terms
-		for (xmlNodePtr cur_node = static_cast<xmlNodePtr>(m_vocabulary_node)->children;
-			 cur_node != NULL; cur_node = cur_node->next)
+	// find the root "vocabulary" element
+	m_vocabulary_node = findConfigNodeByName(VOCABULARY_ELEMENT_NAME,
+											 m_config_node_ptr->children);
+	if (m_vocabulary_node == NULL)
+		throw MissingVocabularyException(getConfigFile());
+
+	// get the unique identifier for the Vocabulary
+	xmlChar *xml_char_ptr = xmlGetProp(m_vocabulary_node,
+									   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
+	if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+		if (xml_char_ptr != NULL)
+			xmlFree(xml_char_ptr);
+		throw EmptyVocabularyIdException(getConfigFile());
+	}
+	m_vocabulary_id = reinterpret_cast<char*>(xml_char_ptr);
+	xmlFree(xml_char_ptr);
+	
+	// find the "namespace" element
+	getConfigOption(NAMESPACE_ELEMENT_NAME, m_namespace, m_vocabulary_node->children);
+
+	// find the "comment" element
+	getConfigOption(COMMENT_ELEMENT_NAME, m_comment, m_vocabulary_node->children);
+	
+	// this is used to cache all object dependencies
+	// these are resolved LAST, to ensure that all Terms already exist first
+	std::list<std::pair<std::string,std::string> >	object_dependencies;
+	
+	// load Vocabulary Terms
+	for (xmlNodePtr cur_node = m_vocabulary_node->children;
+		 cur_node != NULL; cur_node = cur_node->next)
+	{
+		if (cur_node->type == XML_ELEMENT_NODE
+			&& xmlStrcmp(cur_node->name, reinterpret_cast<const xmlChar*>(TERM_ELEMENT_NAME.c_str()))==0)
 		{
-			if (cur_node->type == XML_ELEMENT_NODE
-				&& xmlStrcmp(cur_node->name, reinterpret_cast<const xmlChar*>(TERM_ELEMENT_NAME.c_str()))==0)
-			{
-				// parse new term definition
-				xml_char_ptr = xmlGetProp(cur_node, reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
+			// parse new term definition
+			xml_char_ptr = xmlGetProp(cur_node, reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw Vocabulary::EmptyTermIdException();
+			}
+			Vocabulary::Term new_term(reinterpret_cast<char*>(xml_char_ptr));
+			xmlFree(xml_char_ptr);
+			
+			// find the existing "type" node (if any)
+			xmlNodePtr type_node = findConfigNodeByName(TYPE_ELEMENT_NAME,
+														cur_node->children);
+			if (type_node != NULL) {
+				// found a type node (if not found we can leave it as "NULL" (the default)
+				xml_char_ptr = xmlNodeGetContent(type_node);
 				if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
 					if (xml_char_ptr != NULL)
 						xmlFree(xml_char_ptr);
-					throw Vocabulary::EmptyTermIdException();
+					throw EmptyTypeException(new_term.term_id);
 				}
-				Vocabulary::Term new_term(reinterpret_cast<char*>(xml_char_ptr));
+				
+				// set the term's data type
+				const std::string new_term_type(reinterpret_cast<char*>(xml_char_ptr));
 				xmlFree(xml_char_ptr);
+				new_term.term_type = Vocabulary::parseDataType(new_term_type);
 				
-				// find the existing "type" node (if any)
-				xmlNodePtr type_node = static_cast<xmlNodePtr>(findConfigNodeByName(TYPE_ELEMENT_NAME,
-																					cur_node->children));
-				if (type_node != NULL) {
-					// found a type node (if not found we can leave it as "NULL" (the default)
-					xml_char_ptr = xmlNodeGetContent(type_node);
-					if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-						if (xml_char_ptr != NULL)
-							xmlFree(xml_char_ptr);
-						throw EmptyTypeException(new_term.term_id);
-					}
-					
-					// set the term's data type
-					const std::string new_term_type(reinterpret_cast<char*>(xml_char_ptr));
-					xmlFree(xml_char_ptr);
-					new_term.term_type = Vocabulary::parseDataType(new_term_type);
-					
-					// check for "size" attribute only if type is "char"
-					if (new_term.term_type == Vocabulary::TYPE_CHAR) {
-						// use a default size of '1' for char data type
-						new_term.term_size = 1;
-						xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()));
-						if (xml_char_ptr != NULL) {
-							if (xml_char_ptr[0] != '\0')
-								new_term.term_size = strtoul(reinterpret_cast<char*>(xml_char_ptr), NULL, 10);
-							// make sure it is not equal to 0 (change to 1 if it is)
-							if (new_term.term_size == 0)
-								new_term.term_size = 1;
-							xmlFree(xml_char_ptr);
-						}
-					}
-				}
-
-				// check for "format" attribute
-				xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
-				if (xml_char_ptr != NULL) {
-					new_term.term_format = reinterpret_cast<char*>(xml_char_ptr);
-					xmlFree(xml_char_ptr);
-				}				
-				
-				// find the existing "comment" node (if any)
-				xmlNodePtr comment_node = static_cast<xmlNodePtr>(findConfigNodeByName(COMMENT_ELEMENT_NAME,
-																					   cur_node->children));
-				
-				if (comment_node != NULL) {
-					// found a comment node (if not found we can leave it empty (the default)
-					xml_char_ptr = xmlNodeGetContent(comment_node);
+				// check for "size" attribute only if type is "char"
+				if (new_term.term_type == Vocabulary::TYPE_CHAR) {
+					// use a default size of '1' for char data type
+					new_term.term_size = 1;
+					xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()));
 					if (xml_char_ptr != NULL) {
 						if (xml_char_ptr[0] != '\0')
-							new_term.term_comment = reinterpret_cast<char*>(xml_char_ptr);
+							new_term.term_size = strtoul(reinterpret_cast<char*>(xml_char_ptr), NULL, 10);
+						// make sure it is not equal to 0 (change to 1 if it is)
+						if (new_term.term_size == 0)
+							new_term.term_size = 1;
 						xmlFree(xml_char_ptr);
 					}
 				}
+			}
 
-				// add the new term (finished parsing basic config)
-				m_vocabulary.addTerm(new_term);
-				m_signal_add_term(new_term);
-				PION_LOG_DEBUG(m_logger, "Added Vocabulary Term: " << new_term.term_id);
+			// check for "format" attribute
+			xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr != NULL) {
+				new_term.term_format = reinterpret_cast<char*>(xml_char_ptr);
+				xmlFree(xml_char_ptr);
+			}				
+			
+			// find the existing "comment" node (if any)
+			getConfigOption(COMMENT_ELEMENT_NAME, new_term.term_comment, cur_node->children);
 
-				// step through the term's members and save them for later
-				xmlNodePtr member_node = static_cast<xmlNodePtr>(findConfigNodeByName(MEMBER_ELEMENT_NAME,
-																					  cur_node->children));
-				while (member_node != NULL) {
-					// found a member node -> extract the element's content
-					xml_char_ptr = xmlNodeGetContent(member_node);
-					if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-						if (xml_char_ptr != NULL)
-							xmlFree(xml_char_ptr);
-						throw EmptyMemberException(new_term.term_id);
-					}
-					const std::string member_uri(reinterpret_cast<char*>(xml_char_ptr));
-					xmlFree(xml_char_ptr);
-					// queue the member_uri for later
-					object_dependencies.push_back(std::make_pair(new_term.term_id,
-																 member_uri));
-					// step ahead to next member node (if any more)
-					member_node = static_cast<xmlNodePtr>(findConfigNodeByName(MEMBER_ELEMENT_NAME,
-																			   member_node->next));
+			// add the new term (finished parsing basic config)
+			m_vocabulary.addTerm(new_term);
+			m_signal_add_term(new_term);
+			PION_LOG_DEBUG(m_logger, "Added Vocabulary Term: " << new_term.term_id);
+
+			// step through the term's members and save them for later
+			xmlNodePtr member_node = findConfigNodeByName(MEMBER_ELEMENT_NAME,
+														  cur_node->children);
+			while (member_node != NULL) {
+				// found a member node -> extract the element's content
+				xml_char_ptr = xmlNodeGetContent(member_node);
+				if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+					if (xml_char_ptr != NULL)
+						xmlFree(xml_char_ptr);
+					throw EmptyMemberException(new_term.term_id);
 				}
+				const std::string member_uri(reinterpret_cast<char*>(xml_char_ptr));
+				xmlFree(xml_char_ptr);
+				// queue the member_uri for later
+				object_dependencies.push_back(std::make_pair(new_term.term_id,
+															 member_uri));
+				// step ahead to next member node (if any more)
+				member_node = findConfigNodeByName(MEMBER_ELEMENT_NAME,
+												   member_node->next);
 			}
 		}
-		
-		// process object dependencies LAST
-		// AFTER adding all the Terms
-		// so that all term_id references can be resolved properly
-		for (std::list<std::pair<std::string,std::string> >::iterator i = object_dependencies.begin();
-			 i != object_dependencies.end(); ++i)
-		{
-			m_vocabulary.addObjectMember(i->first, i->second);
-			m_signal_add_member(i->first, i->second);
-			PION_LOG_DEBUG(m_logger, "Added object member to Vocabulary Term ("
-						   << i->first << "): " << i->second);
-		}
-		
-		PION_LOG_INFO(m_logger, "Loaded Vocabulary configuration: " << m_config_file);
-		
-	} else {
-
-		PION_LOG_INFO(m_logger, "Initializing new Vocabulary configuration: " << m_config_file);
-
-		// create a new vocabulary element
-		m_vocabulary_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(VOCABULARY_ELEMENT_NAME.c_str()));
-		if (m_vocabulary_node == NULL)
-			throw InitializeConfigException(getConfigFile());
-		if ((m_vocabulary_node=xmlAddChild(static_cast<xmlNodePtr>(m_config_root_ptr),
-										   static_cast<xmlNodePtr>(m_vocabulary_node))) == NULL)
-		{
-			xmlFreeNode(static_cast<xmlNodePtr>(m_vocabulary_node));
-			throw InitializeConfigException(getConfigFile());
-		}
-		if (xmlNewProp(static_cast<xmlNodePtr>(m_vocabulary_node),
-					   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
-					   reinterpret_cast<const xmlChar*>(m_vocabulary_id.c_str())) == NULL)
-			throw InitializeConfigException(getConfigFile());
-		
-		// create a namespace child element
-		if (! m_namespace.empty()) {
-			if (xmlNewTextChild(static_cast<xmlNodePtr>(m_vocabulary_node), NULL,
-								reinterpret_cast<const xmlChar*>(NAMESPACE_ELEMENT_NAME.c_str()),
-								reinterpret_cast<const xmlChar*>(m_namespace.c_str())) == NULL)
-				throw InitializeConfigException(getConfigFile());
-		}
-
-		// create a comment child element
-		if (! m_comment.empty()) {
-			if (xmlNewTextChild(static_cast<xmlNodePtr>(m_vocabulary_node), NULL,
-								reinterpret_cast<const xmlChar*>(COMMENT_ELEMENT_NAME.c_str()),
-								reinterpret_cast<const xmlChar*>(m_comment.c_str())) == NULL)
-				throw InitializeConfigException(getConfigFile());
-		}
-		
-		// save the new XML config file
-		saveConfigFile();
 	}
+	
+	// process object dependencies LAST
+	// AFTER adding all the Terms
+	// so that all term_id references can be resolved properly
+	for (std::list<std::pair<std::string,std::string> >::iterator i = object_dependencies.begin();
+		 i != object_dependencies.end(); ++i)
+	{
+		m_vocabulary.addObjectMember(i->first, i->second);
+		m_signal_add_member(i->first, i->second);
+		PION_LOG_DEBUG(m_logger, "Added object member to Vocabulary Term ("
+					   << i->first << "): " << i->second);
+	}
+	
+	PION_LOG_INFO(m_logger, "Loaded Vocabulary configuration file: " << m_config_file);
 }
 
-bool VocabularyConfig::addNewTermTypeConfig(void *term_node, const Vocabulary::Term& t)
+bool VocabularyConfig::addNewTermTypeConfig(xmlNodePtr term_node, const Vocabulary::Term& t)
 {
 	const std::string new_type_string(Vocabulary::getDataTypeAsString(t.term_type));
-	xmlNodePtr new_type_node = xmlNewTextChild(static_cast<xmlNodePtr>(term_node), NULL,
+	xmlNodePtr new_type_node = xmlNewTextChild(term_node, NULL,
 											   reinterpret_cast<const xmlChar*>(TYPE_ELEMENT_NAME.c_str()),
 											   reinterpret_cast<const xmlChar*>(new_type_string.c_str()));
 	if (new_type_node == NULL)
@@ -286,7 +265,7 @@ void VocabularyConfig::setId(const std::string& new_id)
 	
 	// update config file only if it is open
 	if (m_vocabulary_node != NULL) {
-		if (xmlSetProp(static_cast<xmlNodePtr>(m_vocabulary_node),
+		if (xmlSetProp(m_vocabulary_node,
 					   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
 					   reinterpret_cast<const xmlChar*>(new_id.c_str())) == NULL)
 			throw UpdateVocabularyException(getConfigFile());
@@ -339,7 +318,7 @@ void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
 	xmlNodePtr new_term_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(TERM_ELEMENT_NAME.c_str()));
 	if (new_term_node == NULL)
 		throw AddTermConfigException(new_term.term_id);
-	if ((new_term_node=xmlAddChild(static_cast<xmlNodePtr>(m_vocabulary_node), new_term_node)) == NULL) {
+	if ((new_term_node=xmlAddChild(m_vocabulary_node, new_term_node)) == NULL) {
 		xmlFreeNode(new_term_node);
 		throw AddTermConfigException(new_term.term_id);
 	}
@@ -382,16 +361,16 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 	// update it within the Vocabulary config file
 	
 	// find the term element in the XML config document
-	xmlNodePtr term_node = static_cast<xmlNodePtr>(findConfigNodeByAttr(TERM_ELEMENT_NAME,
-																		ID_ATTRIBUTE_NAME,
-																		t.term_id,
-																		static_cast<xmlNodePtr>(m_vocabulary_node)->children));
+	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
+												ID_ATTRIBUTE_NAME,
+												t.term_id,
+												m_vocabulary_node->children);
 	if (term_node == NULL)
 		throw UpdateTermConfigException(t.term_id);
 	
 	// find the existing "type" node (if any)
-	xmlNodePtr type_node = static_cast<xmlNodePtr>(findConfigNodeByName(TYPE_ELEMENT_NAME,
-																		term_node->children));
+	xmlNodePtr type_node = findConfigNodeByName(TYPE_ELEMENT_NAME,
+												term_node->children);
 	if (type_node == NULL) {
 		
 		// no type node currently exists
@@ -446,8 +425,8 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 	}
 
 	// find the existing "comment" node (if any)
-	xmlNodePtr comment_node = static_cast<xmlNodePtr>(findConfigNodeByName(COMMENT_ELEMENT_NAME,
-																		   term_node->children));
+	xmlNodePtr comment_node = findConfigNodeByName(COMMENT_ELEMENT_NAME,
+												   term_node->children);
 	if (comment_node == NULL) {
 		// no comment node currently exists
 		// add a new one, so long as the new comment is not empty
@@ -479,14 +458,14 @@ void VocabularyConfig::removeTerm(const std::string& term_id)
 	m_signal_remove_term(term_id);
 	
 	// remove it from the Vocabulary config file
-	xmlNodePtr term_node = static_cast<xmlNodePtr>(findConfigNodeByAttr(TERM_ELEMENT_NAME,
-																		ID_ATTRIBUTE_NAME,
-																		term_id,
-																		static_cast<xmlNodePtr>(m_vocabulary_node)->children));
+	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
+												ID_ATTRIBUTE_NAME,
+												term_id,
+												m_vocabulary_node->children);
 	if (term_node == NULL)
 		throw RemoveTermConfigException(term_id);
 	xmlUnlinkNode(term_node);
-	xmlFreeNodeList(term_node);
+	xmlFreeNode(term_node);
 	
 	// save the new XML config file
 	saveConfigFile();
@@ -508,10 +487,10 @@ void VocabularyConfig::addObjectMember(const std::string& object_term_id,
 	// add the member to the Vocabulary config file
 	
 	// find the term element in the XML config document
-	xmlNodePtr term_node = static_cast<xmlNodePtr>(findConfigNodeByAttr(TERM_ELEMENT_NAME,
-																		ID_ATTRIBUTE_NAME,
-																		object_term_id,
-																		static_cast<xmlNodePtr>(m_vocabulary_node)->children));
+	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
+												ID_ATTRIBUTE_NAME,
+												object_term_id,
+												m_vocabulary_node->children);
 	if (term_node == NULL)
 		throw AddMemberConfigException(member_term_id);
 	
@@ -541,25 +520,25 @@ void VocabularyConfig::removeObjectMember(const std::string& object_term_id,
 	// remove it from the Vocabulary config file
 
 	// find the term element in the XML config document
-	xmlNodePtr term_node = static_cast<xmlNodePtr>(findConfigNodeByAttr(TERM_ELEMENT_NAME,
-																		ID_ATTRIBUTE_NAME,
-																		object_term_id,
-																		static_cast<xmlNodePtr>(m_vocabulary_node)->children));
+	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
+												ID_ATTRIBUTE_NAME,
+												object_term_id,
+												m_vocabulary_node->children);
 	// throw exception if we were unable to find it within the XML doc
 	if (term_node == NULL)
 		throw RemoveMemberConfigException(member_term_id);
 	
 	// find the matching member element node
-	xmlNodePtr member_node = static_cast<xmlNodePtr>(findConfigNodeByContent(MEMBER_ELEMENT_NAME,
-																			 member_term_id,
-																			 term_node->children));
+	xmlNodePtr member_node = findConfigNodeByContent(MEMBER_ELEMENT_NAME,
+													 member_term_id,
+													 term_node->children);
 	// throw exception if we were unable to find it within the XML doc
 	if (member_node == NULL)
 		throw RemoveMemberConfigException(member_term_id);
 	
 	// remove the node from the XML config document tree
 	xmlUnlinkNode(member_node);
-	xmlFreeNodeList(member_node);
+	xmlFreeNode(member_node);
 	
 	// save the new XML config file
 	saveConfigFile();

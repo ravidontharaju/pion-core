@@ -21,6 +21,7 @@
 #define __PION_CODEC_HEADER__
 
 #include <iostream>
+#include <libxml/tree.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
@@ -41,16 +42,30 @@ class Codec
 {
 public:
 
-	/// exception thrown if the service does not recognize a configuration option
-	class UnknownOptionException : public PionException {
+	/// exception thrown if the Codec configuration does not define an event type
+	class EmptyEventException : public PionException {
 	public:
-		UnknownOptionException(const std::string& option_name)
-			: PionException("Option not recognized by codec: ", option_name) {}
+		EmptyEventException(const std::string& codec_id)
+			: PionException("Codec configuration does not define an event type: ", codec_id) {}
+	};
+
+	/// exception thrown if the Codec configuration references an unknown event type
+	class UnknownTermException : public PionException {
+	public:
+		UnknownTermException(const std::string& event_type)
+			: PionException("Codec configuration references an unknown event type: ", event_type) {}
+	};
+
+	/// exception thrown if the Codec configuration uses an event type for a Term that is not an object
+	class NotAnObjectException : public PionException {
+	public:
+		NotAnObjectException(const std::string& event_type)
+			: PionException("Codec configuration defines a non-object event type: ", event_type) {}
 	};
 
 	
 	/// constructs a new Codec object
-	Codec(void) {}
+	Codec(void) : m_event_type(Vocabulary::UNDEFINED_TERM_REF) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Codec() {}
@@ -83,12 +98,13 @@ public:
 	virtual bool read(std::istream& in, Event& e) = 0;
 
 	/**
-	 * reads an Event from an input stream
+	 * sets configuration parameters for this Codec
 	 *
-	 * @param in the input stream to read the Event from
-	 * @return EventPtr& pointer to the event read, if any; null if error
+	 * @param v the Vocabulary that this Codec will use to describe Terms
+	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
+	 *                         configuration parameters
 	 */
-	virtual EventPtr read(std::istream& in) = 0;
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr);
 	
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be
@@ -96,18 +112,8 @@ public:
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v) = 0;
+	virtual void updateVocabulary(const Vocabulary& v);
 
-	/**
-	 * sets a configuration option
-	 *
-	 * @param option_name the name of the option to change
-	 * @param option_value the value of the option
-	 */
-	virtual void setOption(const std::string& option_name, const std::string& option_value) {
-		throw UnknownOptionException(option_name);
-	}
-	
 	/**
 	 * writes a collection of Events to an output stream
 	 *
@@ -141,12 +147,70 @@ public:
 	 */
 	inline bool read(std::istream& in, EventPtrCollection& c) {
 		if (!c.empty()) c.clear();
-		EventPtr event_ptr;
-		while ( (event_ptr = read(in)) ) {
+		EventPtr event_ptr(new Event(m_event_type));
+		while (read(in, *event_ptr)) {
 			c.push_back(event_ptr);
+			event_ptr.reset(new Event(m_event_type));
 		}
 		return(! c.empty());
 	}
+	
+	/**
+	 * reads an Event from an input stream
+	 *
+	 * @param in the input stream to read the Event from
+	 * @return EventPtr& pointer to the event read, if any; null if error
+	 */
+	inline EventPtr read(std::istream& in) {
+		EventPtr event_ptr(new Event(getEventType()));
+		if (! read(in, *event_ptr))
+			event_ptr.reset();
+		return event_ptr;
+	}
+	
+	/// sets the unique identifier for this Codec
+	inline void setId(const std::string& codec_id) { m_codec_id = codec_id; }
+	
+	/// returns the unique identifier for this Codec
+	inline const std::string& getId(void) const { return m_codec_id; }
+	
+	/// sets the descriptive comment for this Codec
+	inline void setComment(const std::string& comment) { m_comment = comment; }
+	
+	/// returns the descriptive comment for this Codec
+	inline const std::string& getComment(void) const { return m_comment; }
+
+	/// returns the type of Event that is used by this Codec
+	inline Event::EventType getEventType(void) const { return m_event_type; }
+
+	
+protected:
+	
+	/// protected copy function (use clone() instead)
+	inline void copy(const Codec& c) {
+		m_codec_id = c.m_codec_id;
+		m_comment = c.m_comment;
+		m_event_type = c.m_event_type;
+	}
+	
+	
+private:
+	
+	/// name of the event type element for Pion XML config files
+	static const std::string		EVENT_ELEMENT_NAME;
+
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
+
+
+	/// uniquely identifies this particular Codec
+	std::string						m_codec_id;
+
+	/// descriptive comment for this Codec
+	std::string						m_comment;
+
+	/// the type of Events used by this Codec (TermRef maps to Terms of type OBJECT)
+	Event::EventType				m_event_type;
 };
 
 

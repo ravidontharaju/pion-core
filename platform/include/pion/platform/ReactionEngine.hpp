@@ -63,7 +63,14 @@ public:
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 
-		
+	/// exception thrown when trying to add a Reactor with an identifier that already exists
+	class DuplicateReactorException : public PionException {
+	public:
+		DuplicateReactorException(const std::string& reactor_id)
+			: PionException("Cannot add Reactor with a duplicate identifier: ", reactor_id) {}
+	};
+
+	
 	/**
 	 * constructs a new ReactionEngine object
 	 *
@@ -129,26 +136,21 @@ public:
 	}
 
 	/**
-	 * registers a new Reactor for Event processing
-	 *
-	 * @param reactor_ptr pointer to the Reactor object
-	 */
-	inline void addReactor(Reactor *reactor_ptr) {
-		m_reactors.add(reactor_ptr->getId(), reactor_ptr);
-		PION_LOG_DEBUG(m_logger, "Added static reactor: " << reactor_ptr->getId());
-	}
-
-	/**
-	 * loads a new Reactor plug-in
+	 * adds a new Reactor for Event processing
 	 *
 	 * @param reactor_id the identifier for the Reactor to be loaded
 	 * @param reactor_type the type of the Reactor class to load (searches 
 	 *                     plug-in directories and appends extensions)
 	 */
-	inline void loadReactor(const std::string& reactor_id,
-							const std::string& reactor_type)
+	inline void addReactor(const std::string& reactor_id,
+						   const std::string& reactor_type)
 	{
-		m_reactors.load(reactor_id, reactor_type);
+		Reactor *new_reactor_ptr;
+		try { new_reactor_ptr = m_reactors.load(reactor_id, reactor_type); }
+		catch (PluginManager<Reactor>::DuplicatePluginException&) {
+			throw DuplicateReactorException(reactor_id);
+		}
+		new_reactor_ptr->setId(reactor_id);
 		PION_LOG_DEBUG(m_logger, "Loaded reactor (" << reactor_type << "): " << reactor_id);
 	}
 

@@ -70,12 +70,13 @@ public:
 	virtual bool read(std::istream& in, Event& e);
 
 	/**
-	 * reads an Event from an input stream
+	 * sets configuration parameters for this Codec
 	 *
-	 * @param in the input stream to read the Event from
-	 * @return EventPtr& pointer to the event read, if any; null if error
+	 * @param v the Vocabulary that this Codec will use to describe Terms
+	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
+	 *                         configuration parameters
 	 */
-	virtual EventPtr read(std::istream& in);
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr);
 
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be

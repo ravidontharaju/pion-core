@@ -31,24 +31,24 @@
 using namespace pion;
 using namespace pion::platform;
 
-
+/// the directory containing the configuration files for unit tests
 #if defined(_MSC_VER)
-	static const std::string VOCAB_CONFIG_FILE_DIR(".");
+	static const std::string TESTS_CONFIG_FILE_DIR("");
 #elif defined(PION_XCODE)
-	static const std::string VOCAB_CONFIG_FILE_DIR("../../platform/tests");
+	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/");
 #else
 	// same for Unix and Cygwin
-	static const std::string VOCAB_CONFIG_FILE_DIR(".");
+	static const std::string TESTS_CONFIG_FILE_DIR("");
 #endif
 
-static const std::string VOCAB_A_CONFIG_FILE("vocab_a.xml");
-static const std::string VOCAB_A_TEMPLATE_FILE("vocab_a.tmpl");
-static const std::string VOCAB_A_BACKUP_FILE("vocab_a.xml.bak");
-static const std::string VOCAB_B_CONFIG_FILE("vocab_b.xml");
-static const std::string VOCAB_B_TEMPLATE_FILE("vocab_b.tmpl");
-static const std::string VOCAB_B_BACKUP_FILE("vocab_b.xml.bak");
-static const std::string VOCAB_NEW_CONFIG_FILE("vocab_new.xml");
-static const std::string VOCAB_NEW_BACKUP_FILE("vocab_new.xml.bak");
+static const std::string VOCAB_A_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.xml");
+static const std::string VOCAB_A_TEMPLATE_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.tmpl");
+static const std::string VOCAB_A_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.xml.bak");
+static const std::string VOCAB_B_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.xml");
+static const std::string VOCAB_B_TEMPLATE_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.tmpl");
+static const std::string VOCAB_B_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.xml.bak");
+static const std::string VOCAB_NEW_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_new.xml");
+static const std::string VOCAB_NEW_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_new.xml.bak");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
 static const std::string VOCAB_DEFAULT_BACKUP_FILE("vocabulary.xml.bak");
 
@@ -58,10 +58,6 @@ extern void setup_logging_for_unit_tests(void);
 /// cleans up vocabulary config files in the working directory
 void cleanup_vocab_config_files(void)
 {
-	char m_old_cwd[DIRECTORY_MAX_SIZE+1];
-	BOOST_REQUIRE(GET_DIRECTORY(m_old_cwd, DIRECTORY_MAX_SIZE) != NULL);
-	BOOST_REQUIRE(CHANGE_DIRECTORY(VOCAB_CONFIG_FILE_DIR.c_str()) == 0);
-
 	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
 	if (boost::filesystem::exists(VOCAB_A_BACKUP_FILE))
@@ -83,8 +79,6 @@ void cleanup_vocab_config_files(void)
 		boost::filesystem::remove(VOCAB_DEFAULT_CONFIG_FILE);
 	if (boost::filesystem::exists(VOCAB_DEFAULT_BACKUP_FILE))
 		boost::filesystem::remove(VOCAB_DEFAULT_BACKUP_FILE);
-
-	BOOST_REQUIRE(CHANGE_DIRECTORY(m_old_cwd) == 0);
 }
 
 
@@ -117,13 +111,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetConfigFileBeforeSettingConfigFile)
 	BOOST_CHECK_EQUAL(F::getConfigFile(), VOCAB_DEFAULT_CONFIG_FILE);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFileBeforeSettingConfigFile) {
-	BOOST_CHECK_NO_THROW(F::openConfigFile());
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFileThatDoesNotExist) {
+	BOOST_CHECK_THROW(F::openConfigFile(), ConfigManager::MissingConfigFileException);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFileAfterSettingConfigFile) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateNewConfigFile) {
 	F::setConfigFile(VOCAB_NEW_CONFIG_FILE);
-	BOOST_CHECK_NO_THROW(F::openConfigFile());
+	BOOST_CHECK_NO_THROW(F::createConfigFile());
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTermBeforeOpening) {
@@ -140,7 +134,7 @@ public:
 	VocabularyConfigWithNewConfigFileOpen_F() {
 		// open up a new Vocabulary configuration file
 		setConfigFile(VOCAB_NEW_CONFIG_FILE);
-		openConfigFile();
+		createConfigFile();
 	}
 	~VocabularyConfigWithNewConfigFileOpen_F() {
 	}
@@ -228,8 +222,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigIsOpen) {
 	BOOST_CHECK(F::configIsOpen());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsFive) {
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(5));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsSix) {
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(6));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularyConfigOptionValues) {
@@ -397,8 +391,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentValues) {
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_comment, "A plain, old integer number");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_comment, "A really big positive integer");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_comment, "Ten bytes of text");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_comment, "A specific date");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_comment, "An object containing other Terms");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_comment, "A specific date");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_comment, "An object containing other Terms");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeValues) {
@@ -407,13 +401,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeValues) {
 	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_type, Vocabulary::TYPE_INT16);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_type, Vocabulary::TYPE_UINT64);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_type, Vocabulary::TYPE_CHAR);
-	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_type, Vocabulary::TYPE_DATE);
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_type, Vocabulary::TYPE_DATE_TIME);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_type, Vocabulary::TYPE_OBJECT);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_type, Vocabulary::TYPE_NULL);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_type, Vocabulary::TYPE_INT16);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_type, Vocabulary::TYPE_UINT64);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_type, Vocabulary::TYPE_CHAR);
-	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_type, Vocabulary::TYPE_DATE);
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_type, Vocabulary::TYPE_DATE_TIME);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_type, Vocabulary::TYPE_OBJECT);
 }
 
@@ -510,9 +504,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 
 	// look up the term using the ID
 	Vocabulary::TermRef term_ref = F::m_vocabulary.findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(6));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(7));
 	term_ref = F::getVocabulary().findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(6));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(7));
 	
 	// check Term member values
 	BOOST_CHECK_EQUAL(F::m_vocabulary[term_ref].term_id, new_term.term_id);
@@ -798,9 +792,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
 	BOOST_CHECK_NO_THROW(F::getVocabulary());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsSeven) {
-	// there should be seven terms defined in the (two) config files
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(7));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsEight) {
+	// there should be eight terms defined in the (two) config files
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(8));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOptionValues) {

@@ -29,6 +29,8 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/DatabaseManager.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -151,6 +153,13 @@ private:
 	/// a list of Reactors to which Events may be delivered
 	typedef std::list<Reactor*>		ReactorList;
 	
+
+	/// name of the event type element for Pion XML config files
+	static const std::string		EVENT_ELEMENT_NAME;
+	
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
+
 	
 	/// used to provide thread safety for the Reactor's data structures
 	boost::mutex					m_mutex;

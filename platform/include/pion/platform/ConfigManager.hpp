@@ -21,6 +21,7 @@
 #define __PION_CONFIGMANAGER_HEADER__
 
 #include <string>
+#include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 
@@ -36,6 +37,34 @@ class PION_PLATFORM_API ConfigManager
 {
 public:
 
+	/// exception thrown if you try to open a config file when it is already open
+	class ConfigAlreadyOpenException : public PionException {
+	public:
+		ConfigAlreadyOpenException(const std::string& file_name)
+			: PionException("Configuration file is already open: ", file_name) {}
+	};
+
+	/// exception thrown if you try to create a config file that already exists
+	class ConfigFileExistsException : public PionException {
+	public:
+		ConfigFileExistsException(const std::string& file_name)
+			: PionException("Configuration file already exists: ", file_name) {}
+	};
+	
+	/// exception thrown if you try to open a config file that does not exist
+	class MissingConfigFileException : public PionException {
+	public:
+		MissingConfigFileException(const std::string& file_name)
+			: PionException("Unable to find configuration file: ", file_name) {}
+	};
+
+	/// exception thrown if the root configuration element is not found
+	class MissingRootElementException : public PionException {
+	public:
+		MissingRootElementException(const std::string& config_file)
+		: PionException("Configuration file is missing the root config element: ", config_file) {}
+	};
+
 	/// exception thrown if there is an error initializing a new config file's root element
 	class InitializeRootConfigException : public PionException {
 	public:
@@ -50,19 +79,15 @@ public:
 		: PionException("Unable to read config file: ", config_file) {}
 	};
 
-	/// exception thrown if the root element of the config file is not what it should be
-	class BadRootElementException : public PionException {
-	public:
-		BadRootElementException(const std::string& config_file)
-			: PionException("Bad root element for config file: ", config_file) {}
-	};
-
 	
 	/// virtual destructor
 	virtual ~ConfigManager() { closeConfigFile(); }
 	
-	/// opens the config file -> should be changed by derived classes
-	virtual void openConfigFile(void) { openAndParseConfigFile(); }
+	/// creates a new config file and adds a root Pion "config" element
+	virtual void createConfigFile(void);
+	
+	/// opens an existing config file and finds the root Pion "config" element
+	virtual void openConfigFile(void);
 	
 	/// sets the name of the config file to use
 	inline void setConfigFile(const std::string& config_file) { m_config_file = config_file; }
@@ -71,34 +96,9 @@ public:
 	inline const std::string& getConfigFile(void) const { return m_config_file; }
 	
 	/// returns true if the config file is open and being used
-	inline bool configIsOpen(void) const { return m_config_ptr != NULL; }
+	inline bool configIsOpen(void) const { return m_config_doc_ptr != NULL; }
 
 
-protected:
-	
-	/**
-	 * protected constructor: this should only be used by derived classes
-	 *
-	 * @param default_config_file the default configuration file to use
-	 */
-	ConfigManager(const std::string& default_config_file)
-		: m_config_file(default_config_file),
-		m_config_ptr(NULL), m_config_root_ptr(NULL)
-	{}
-	
-	/**
-	 * opens and parses the config file
-	 *
-	 * @return true if an existing file was opened, or false if the file is new
-	 */
-	bool openAndParseConfigFile(void);
-	
-	/// closes the config file	
-	void closeConfigFile(void);
-	
-	/// saves the config file	
-	void saveConfigFile(void);
-	
 	/**
 	 * searches for an element node within the XML document tree
 	 *
@@ -106,9 +106,10 @@ protected:
 	 * @param starting_node pointer to the node to start searching with; both it
 	 *                      and any following sibling nodes will be checked
 	 *
-	 * @return void* pointer to an XML document node if found, otherwise NULL
+	 * @return xmlNodePtr pointer to an XML document node if found, otherwise NULL
 	 */
-	void *findConfigNodeByName(const std::string& element_name, void *starting_node);
+	static xmlNodePtr findConfigNodeByName(const std::string& element_name,
+										   xmlNodePtr starting_node);
 	
 	/**
 	 * searches for an element node within the XML document tree that has a
@@ -119,11 +120,11 @@ protected:
 	 * @param starting_node pointer to the node to start searching with; both it
 	 *                      and any following sibling nodes will be checked
 	 *
-	 * @return void* pointer to an XML document node if found, otherwise NULL
+	 * @return xmlNodePtr pointer to an XML document node if found, otherwise NULL
 	 */
-	void *findConfigNodeByContent(const std::string& element_name,
-								  const std::string& content_value,
-								  void *starting_node);
+	static xmlNodePtr findConfigNodeByContent(const std::string& element_name,
+											  const std::string& content_value,
+											  xmlNodePtr starting_node);
 	
 	/**
 	 * searches for an element node within the XML document tree that has a
@@ -135,13 +136,28 @@ protected:
 	 * @param starting_node pointer to the node to start searching with; both it
 	 *                      and any following sibling nodes will be checked
 	 *
-	 * @return void* pointer to an XML document node if found, otherwise NULL
+	 * @return xmlNodePtr pointer to an XML document node if found, otherwise NULL
 	 */
-	void *findConfigNodeByAttr(const std::string& element_name,
-							   const std::string& attr_name,
-							   const std::string& attr_value,
-							   void *starting_node);
+	static xmlNodePtr findConfigNodeByAttr(const std::string& element_name,
+										   const std::string& attr_name,
+										   const std::string& attr_value,
+										   xmlNodePtr starting_node);
 	
+	/**
+	 * retrieves the value for a simple configuration option that is contained
+	 * within an XML element node.
+	 *
+	 * @param option_name the name of the option's element node
+	 * @param option_value the value (text content) of the option's element node
+	 * @param starting_node pointer to the node to start searching with; both it
+	 *                      and any following sibling nodes will be checked
+	 *
+	 * @return true if the option has a value; false if it is undefined or empty
+	 */
+	static bool getConfigOption(const std::string& option_name,
+								std::string& option_value,
+								const xmlNodePtr starting_node);
+
 	/**
 	 * updates a simple configuration option that is contained within an XML
 	 * element node.  If the option value is empty, the node is removed.  Adds
@@ -153,9 +169,28 @@ protected:
 	 *
 	 * @return true if the option was updated; false if there was an error
 	 */
-	bool updateConfigOption(const std::string& option_name,
-							const std::string& option_value,
-							void *parent_node);
+	static bool updateConfigOption(const std::string& option_name,
+								   const std::string& option_value,
+								   xmlNodePtr parent_node);
+
+
+protected:
+	
+	/**
+	 * protected constructor: this should only be used by derived classes
+	 *
+	 * @param default_config_file the default configuration file to use
+	 */
+	ConfigManager(const std::string& default_config_file)
+		: m_config_file(default_config_file),
+		m_config_doc_ptr(NULL), m_config_node_ptr(NULL)
+	{}
+	
+	/// closes the config file	
+	void closeConfigFile(void);
+	
+	/// saves the config file	
+	void saveConfigFile(void);
 
 	
 	/// extension added to the name of backup files
@@ -170,11 +205,11 @@ protected:
 	/// name of the XML config file being used
 	std::string						m_config_file;
 	
-	/// pointer to an XML document tree (if libxml support is enabled)
-	void *							m_config_ptr;
+	/// pointer to the root of the XML document tree (if libxml support is enabled)
+	xmlDocPtr 						m_config_doc_ptr;
 	
-	/// pointer to the root node ("config") in the XML document tree
-	void *							m_config_root_ptr;
+	/// pointer to the root configuration node ("config") in the XML document tree
+	xmlNodePtr 						m_config_node_ptr;
 };
 
 

@@ -82,15 +82,15 @@ BOOST_FIXTURE_TEST_SUITE(EventTests_S, EventTests_F)
 BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	addAllTerms();
 	std::string short_msg_str("short msg");
-	Event e(m_vocabulary, m_object_term.term_ref);
-	e.set(m_plain_int_term.term_ref, static_cast<int>(24));
-	e.set(m_big_int_term.term_ref, static_cast<unsigned long>(2025221224));
+	Event e(m_object_term.term_ref);
+	e.setInt(m_plain_int_term.term_ref, 24);
+	e.setUBigInt(m_big_int_term.term_ref, 2025221224);
 	e[m_fixed_term.term_ref] = short_msg_str;
-	const boost::any *value_ptr = e.get(m_plain_int_term.term_ref);
+	const boost::any *value_ptr = e.getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
-	BOOST_CHECK_EQUAL(boost::any_cast<int>(*value_ptr), static_cast<int>(24));
-	BOOST_CHECK_EQUAL(boost::any_cast<unsigned long>(e[m_big_int_term.term_ref]), static_cast<unsigned long>(2025221224));
-	BOOST_CHECK_EQUAL(boost::any_cast<std::string&>(e[m_fixed_term.term_ref]), short_msg_str);
+	BOOST_CHECK_EQUAL(boost::any_cast<boost::int32_t>(*value_ptr), 24);
+	BOOST_CHECK_EQUAL(boost::any_cast<boost::uint64_t>(e[m_big_int_term.term_ref]), 2025221224UL);
+	BOOST_CHECK_EQUAL(e.getString(m_fixed_term.term_ref), short_msg_str);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

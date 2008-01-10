@@ -19,7 +19,6 @@
 
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <libxml/tree.h>
 
 
 namespace pion {		// begin namespace pion
@@ -34,64 +33,64 @@ const std::string		ConfigManager::ROOT_ELEMENT_NAME = "config";
 		
 // ConfigManager member functions
 
-bool ConfigManager::openAndParseConfigFile(void)
+void ConfigManager::createConfigFile(void)
 {
 	// make sure the config file is not already open
-	if (m_config_ptr != NULL)
-		return false;
+	if (m_config_doc_ptr != NULL)
+		throw ConfigAlreadyOpenException(m_config_file);
 
-	// check if the config file is new
-	bool config_exists = boost::filesystem::exists(m_config_file);
-	if (config_exists) {
-		// read the existing config file
-		if ((m_config_ptr = xmlReadFile(m_config_file.c_str(), NULL, XML_PARSE_NOBLANKS)) == NULL)
-			throw ReadConfigException(m_config_file);
+	// make sure the config file does not already exist
+	if (boost::filesystem::exists(m_config_file))
+		throw ConfigFileExistsException(m_config_file);
 
-		// make sure that the root element is what it should be
-		if ((m_config_root_ptr = xmlDocGetRootElement(static_cast<xmlDocPtr>(m_config_ptr))) == NULL)
-		{
-			// config file is empty -> change flag so that caller knows to ignore contents
-			config_exists = false;
-			// create a new root element
-			m_config_root_ptr = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str()));
-			if (m_config_root_ptr == NULL)
-				throw InitializeRootConfigException(m_config_file);
-			xmlDocSetRootElement(static_cast<xmlDocPtr>(m_config_ptr),
-								 static_cast<xmlNodePtr>(m_config_root_ptr));
-			if (xmlNewProp(static_cast<xmlNodePtr>(m_config_root_ptr),
-						   reinterpret_cast<const xmlChar*>("xmlns"),
-						   reinterpret_cast<const xmlChar*>(CONFIG_NAMESPACE_URL.c_str())) == NULL)
-				throw InitializeRootConfigException(m_config_file);
-		} else if (xmlStrcmp(static_cast<xmlNodePtr>(m_config_root_ptr)->name,
-							 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())))
-		{
-			// root element of document is not what it should be
-			throw BadRootElementException(m_config_file);
-		}
-		
-	} else {
-		// create a new (empty) config file
-		if ((m_config_ptr = xmlNewDoc(reinterpret_cast<const xmlChar*>("1.0"))) == NULL)
-			throw InitializeRootConfigException(m_config_file);
-		if ((m_config_root_ptr = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str()))) == NULL)
-			throw InitializeRootConfigException(m_config_file);
-		xmlDocSetRootElement(static_cast<xmlDocPtr>(m_config_ptr),
-							 static_cast<xmlNodePtr>(m_config_root_ptr));
-		if (xmlNewProp(static_cast<xmlNodePtr>(m_config_root_ptr),
-					   reinterpret_cast<const xmlChar*>("xmlns"),
-					   reinterpret_cast<const xmlChar*>(CONFIG_NAMESPACE_URL.c_str())) == NULL)
-			throw InitializeRootConfigException(m_config_file);
-		saveConfigFile();
-	}
+	// create a new (empty) XML config tree
+	if ((m_config_doc_ptr = xmlNewDoc(reinterpret_cast<const xmlChar*>("1.0"))) == NULL)
+		throw InitializeRootConfigException(m_config_file);
 	
-	return config_exists;
+	// add the root Pion "config" element
+	if ((m_config_node_ptr = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str()))) == NULL)
+		throw InitializeRootConfigException(m_config_file);
+	xmlDocSetRootElement(m_config_doc_ptr, m_config_node_ptr);
+
+	// add the namespace for the "config" element
+	if (xmlNewProp(m_config_node_ptr,
+				   reinterpret_cast<const xmlChar*>("xmlns"),
+				   reinterpret_cast<const xmlChar*>(CONFIG_NAMESPACE_URL.c_str())) == NULL)
+		throw InitializeRootConfigException(m_config_file);
+
+	// save the new config file
+	saveConfigFile();
+}
+
+void ConfigManager::openConfigFile(void)
+{
+	// make sure the config file is not already open
+	if (m_config_doc_ptr != NULL)
+		throw ConfigAlreadyOpenException(m_config_file);
+
+	// make sure the config file exists
+	if (! boost::filesystem::exists(m_config_file))
+		throw MissingConfigFileException(m_config_file);
+
+	// read the existing config file
+	if ((m_config_doc_ptr = xmlReadFile(m_config_file.c_str(), NULL, XML_PARSE_NOBLANKS)) == NULL)
+		throw ReadConfigException(m_config_file);
+
+	// make sure that the root element is what it should be
+	if ( (m_config_node_ptr = xmlDocGetRootElement(m_config_doc_ptr)) == NULL
+		|| xmlStrcmp(m_config_node_ptr->name,
+					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) )
+	{
+		// config file is missing the root Pion "config" element
+		throw MissingRootElementException(m_config_file);
+	}
 }
 
 void ConfigManager::closeConfigFile(void)
 {
-	xmlFreeDoc(static_cast<xmlDocPtr>(m_config_ptr));
-	m_config_ptr = NULL;
-	m_config_root_ptr = NULL;
+	xmlFreeDoc(m_config_doc_ptr);
+	m_config_doc_ptr = NULL;
+	m_config_node_ptr = NULL;
 }
 
 void ConfigManager::saveConfigFile(void)
@@ -107,16 +106,16 @@ void ConfigManager::saveConfigFile(void)
 	
 	// save the latest XML config document to the file
 	xmlSaveFormatFileEnc(m_config_file.c_str(),
-						 static_cast<xmlDocPtr>(m_config_ptr), "UTF-8", 1);
+						 m_config_doc_ptr, "UTF-8", 1);
 }
 
-void *ConfigManager::findConfigNodeByName(const std::string& element_name,
-										  void *starting_node)
+xmlNodePtr ConfigManager::findConfigNodeByName(const std::string& element_name,
+											   xmlNodePtr starting_node)
 {
 	xmlNodePtr matching_node = NULL;
 	
 	// find the element node in the XML config document
-	for (xmlNodePtr cur_node = static_cast<xmlNodePtr>(starting_node);
+	for (xmlNodePtr cur_node = starting_node;
 		 cur_node != NULL; cur_node = cur_node->next)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE
@@ -131,14 +130,14 @@ void *ConfigManager::findConfigNodeByName(const std::string& element_name,
 	return matching_node;
 }
 	
-void *ConfigManager::findConfigNodeByContent(const std::string& element_name,
-											 const std::string& content_value,
-											 void *starting_node)
+xmlNodePtr ConfigManager::findConfigNodeByContent(const std::string& element_name,
+												  const std::string& content_value,
+												  xmlNodePtr starting_node)
 {
 	xmlNodePtr matching_node = NULL;
 
 	// find the element node in the XML config document
-	for (xmlNodePtr cur_node = static_cast<xmlNodePtr>(starting_node);
+	for (xmlNodePtr cur_node = starting_node;
 		 cur_node != NULL; cur_node = cur_node->next)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE
@@ -160,15 +159,15 @@ void *ConfigManager::findConfigNodeByContent(const std::string& element_name,
 	return matching_node;
 }
 	
-void *ConfigManager::findConfigNodeByAttr(const std::string& element_name,
-										  const std::string& attr_name,
-										  const std::string& attr_value,
-										  void *starting_node)
+xmlNodePtr ConfigManager::findConfigNodeByAttr(const std::string& element_name,
+											   const std::string& attr_name,
+											   const std::string& attr_value,
+											   xmlNodePtr starting_node)
 {
 	xmlNodePtr matching_node = NULL;
 	
 	// find the element node in the XML config document
-	for (xmlNodePtr cur_node = static_cast<xmlNodePtr>(starting_node);
+	for (xmlNodePtr cur_node = starting_node;
 		 cur_node != NULL; cur_node = cur_node->next)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE
@@ -190,13 +189,37 @@ void *ConfigManager::findConfigNodeByAttr(const std::string& element_name,
 	return matching_node;
 }
 	
-bool ConfigManager::updateConfigOption(const std::string& option_name,
-									   const std::string& option_value,
-									   void *parent_node)
+bool ConfigManager::getConfigOption(const std::string& option_name,
+									std::string& option_value,
+									const xmlNodePtr starting_node)
 {
 	// find the option's element
-	xmlNodePtr option_node = static_cast<xmlNodePtr>(findConfigNodeByName(option_name,
-																		  static_cast<xmlNodePtr>(parent_node)->children));
+	xmlNodePtr option_node = findConfigNodeByName(option_name, starting_node);
+	if (option_node != NULL) {
+		xmlChar *xml_char_ptr = xmlNodeGetContent(option_node);
+		if (xml_char_ptr != NULL) {
+			// found it
+			if (xml_char_ptr[0] != '\0') {
+				// it is not empty
+				option_value = reinterpret_cast<char*>(xml_char_ptr);
+				xmlFree(xml_char_ptr);
+				return true;
+			}
+			xmlFree(xml_char_ptr);
+		}
+	}
+
+	// option was not found or it had an empty value
+	option_value.clear();
+	return false;
+}
+
+bool ConfigManager::updateConfigOption(const std::string& option_name,
+									   const std::string& option_value,
+									   xmlNodePtr parent_node)
+{
+	// find the option's element
+	xmlNodePtr option_node = findConfigNodeByName(option_name, parent_node->children);
 	if (option_node != NULL) {
 		// an existing value is assigned to the option
 		if (option_value.empty()) {
@@ -211,7 +234,7 @@ bool ConfigManager::updateConfigOption(const std::string& option_name,
 		// no value is currently set for the option
 		// only add an element if the new value is not empty
 		if (! option_value.empty()) {
-			if (xmlNewTextChild(static_cast<xmlNodePtr>(parent_node), NULL,
+			if (xmlNewTextChild(parent_node, NULL,
 								reinterpret_cast<const xmlChar*>(option_name.c_str()),
 								reinterpret_cast<const xmlChar*>(option_value.c_str())) == NULL)
 				return false;

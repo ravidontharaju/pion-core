@@ -49,7 +49,7 @@ public:
 		m_plain_int_term.term_type = Vocabulary::TYPE_INT16;
 		m_big_int_term.term_type = Vocabulary::TYPE_UINT64;
 		m_fixed_term.term_type = Vocabulary::TYPE_CHAR;
-		m_date_term.term_type = Vocabulary::TYPE_DATE;
+		m_date_term.term_type = Vocabulary::TYPE_DATE_TIME;
 		m_object_term.term_type = Vocabulary::TYPE_OBJECT;
 		m_null_term.term_comment = "A plain, old integer number";
 		m_plain_int_term.term_comment = "A plain, old integer number";

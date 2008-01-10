@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://purl.org/pion/config">
+  <codec id="clf-codec">
+    <plugin>LogCodec</plugin>
+    <event>urn:vocab:clf#http-request</event>
+    <comment>Codec for the Common Log Format (CLF)</comment>
+    <field term="urn:vocab:clf#remotehost">remotehost</field>
+    <field term="urn:vocab:clf#rfc931">rfc931</field>
+    <field term="urn:vocab:clf#authuser">authuser</field>
+    <field term="urn:vocab:clf#date" start="[" end="]">date</field>
+    <field term="urn:vocab:clf#request" start="&quot;" end="&quot;">request</field>
+    <field term="urn:vocab:clf#status">status</field>
+    <field term="urn:vocab:clf#bytes">bytes</field>
+  </codec>
+</config>

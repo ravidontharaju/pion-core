@@ -282,10 +282,6 @@ Vocabulary::DataType Vocabulary::parseDataType(std::string str)
 		return TYPE_LONG_STRING;
 	else if (str == "datetime") 
 		return TYPE_DATE_TIME;
-	else if (str == "date") 
-		return TYPE_DATE;
-	else if (str == "time") 
-		return TYPE_TIME;
 	else if (str == "char") 
 		return TYPE_CHAR;
 	else if (str == "object") 
@@ -346,12 +342,6 @@ std::string Vocabulary::getDataTypeAsString(const DataType data_type)
 		case TYPE_DATE_TIME:
 			str = "datetime";
 			break;
-		case TYPE_DATE:
-			str = "date";
-			break;
-		case TYPE_TIME:
-			str = "time";
-			break;
 		case TYPE_CHAR:
 			str = "char";
 			break;
@@ -405,14 +395,6 @@ void Vocabulary::parseString(boost::any& result, std::string str, const DataType
 			result = str;
 			break;
 		case TYPE_DATE_TIME:
-			// implement me!
-			// ...
-			break;
-		case TYPE_DATE:
-			// implement me!
-			// ...
-			break;
-		case TYPE_TIME:
 			// implement me!
 			// ...
 			break;
