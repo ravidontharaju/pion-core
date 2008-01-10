@@ -174,6 +174,12 @@ public:
 	/// returns the unique identifier for this Codec
 	inline const std::string& getId(void) const { return m_codec_id; }
 	
+	/// sets the descriptive name for this Codec
+	inline void setName(const std::string& name) { m_name = name; }
+	
+	/// returns the descriptive name for this Codec
+	inline const std::string& getName(void) const { return m_name; }
+	
 	/// sets the descriptive comment for this Codec
 	inline void setComment(const std::string& comment) { m_comment = comment; }
 	
@@ -189,6 +195,7 @@ protected:
 	/// protected copy function (use clone() instead)
 	inline void copy(const Codec& c) {
 		m_codec_id = c.m_codec_id;
+		m_name = c.m_name;
 		m_comment = c.m_comment;
 		m_event_type = c.m_event_type;
 	}
@@ -199,6 +206,9 @@ private:
 	/// name of the event type element for Pion XML config files
 	static const std::string		EVENT_ELEMENT_NAME;
 
+	/// name of the descriptive name element for Pion XML config files
+	static const std::string		NAME_ELEMENT_NAME;
+	
 	/// name of the comment element for Pion XML config files
 	static const std::string		COMMENT_ELEMENT_NAME;
 
@@ -206,9 +216,12 @@ private:
 	/// uniquely identifies this particular Codec
 	std::string						m_codec_id;
 
+	/// descriptive name for this Codec
+	std::string						m_name;
+
 	/// descriptive comment for this Codec
 	std::string						m_comment;
-
+	
 	/// the type of Events used by this Codec (TermRef maps to Terms of type OBJECT)
 	Event::EventType				m_event_type;
 };

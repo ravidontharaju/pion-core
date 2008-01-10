@@ -1466,6 +1466,7 @@
 					"-lboost_date_time-mt-d",
 					"-lboost_signals-mt-d",
 					"-lxml2",
+					"-luuid",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -1506,6 +1507,7 @@
 					"-lboost_date_time-mt",
 					"-lboost_signals-mt",
 					"-lxml2",
+					"-luuid",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";

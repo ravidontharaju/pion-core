@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <uuid.h>
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -29,6 +30,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "config";
+const std::string		ConfigManager::URN_UUID_PREFIX = "urn:uuid:";
 
 		
 // ConfigManager member functions
@@ -109,6 +111,26 @@ void ConfigManager::saveConfigFile(void)
 						 m_config_doc_ptr, "UTF-8", 1);
 }
 
+std::string ConfigManager::createUUID(void)
+{
+	uuid_t *u;
+	char *str = NULL;
+	uuid_create(&u);
+	uuid_make(u, UUID_MAKE_V1);
+	uuid_export(u, UUID_FMT_STR, &str, NULL);
+	std::string result(str);
+	uuid_destroy(u);
+	free(str);
+	return result;
+}
+	
+std::string ConfigManager::createUniqueObjectId(void)
+{
+	std::string result(URN_UUID_PREFIX);
+	result += createUUID();
+	return result;
+}	
+	
 xmlNodePtr ConfigManager::findConfigNodeByName(const std::string& element_name,
 											   xmlNodePtr starting_node)
 {

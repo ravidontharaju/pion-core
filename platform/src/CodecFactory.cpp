@@ -72,14 +72,8 @@ void CodecFactory::openConfigFile(void)
 		if (! getConfigOption(PLUGIN_ELEMENT_NAME, new_codec_plugin, codec_node->children))
 			throw EmptyPluginException(new_codec_id);
 		
-		// load the plugin and add the codec
-		Codec *new_codec_ptr;
-		try { new_codec_ptr = m_codecs.load(new_codec_id, new_codec_plugin); }
-		catch (PluginManager<Codec>::DuplicatePluginException&) {
-			throw DuplicateIdentifierException(new_codec_id);
-		}
-		
-		// set the codec's configuration
+		// add the codec and set the codec's configuration
+		Codec *new_codec_ptr = m_codecs.load(new_codec_id, new_codec_plugin);
 		new_codec_ptr->setId(new_codec_id);
 		new_codec_ptr->setConfig(m_vocabulary, codec_node->children);
 
@@ -119,22 +113,17 @@ void CodecFactory::removeCodec(const std::string& codec_id)
 	PION_LOG_DEBUG(m_logger, "Removed codec: " << codec_id);
 }
 	
-void CodecFactory::addCodec(const std::string& codec_id,
-							const std::string& codec_plugin,
-							const xmlNodePtr codec_config_ptr)
+std::string CodecFactory::addCodec(const std::string& codec_plugin,
+								   const xmlNodePtr codec_config_ptr)
 {
+	std::string codec_id(createUniqueObjectId());
+	
 	// make sure that the Codecs configuration file is open
 	if (! configIsOpen())
 		throw CodecConfigNotOpenException(getConfigFile());
 
-	// convert "duplicate plugin" exceptions into "duplicate (codec) ID"
-	Codec *new_codec_ptr;
-	try { new_codec_ptr = m_codecs.load(codec_id, codec_plugin); }
-	catch (PluginManager<Codec>::DuplicatePluginException&) {
-		throw DuplicateIdentifierException(codec_id);
-	}
-	
-	// set configuration options for the codec
+	// create and set configuration options for the codec
+	Codec *new_codec_ptr = m_codecs.load(codec_id, codec_plugin);
 	new_codec_ptr->setId(codec_id);
 	if (codec_config_ptr != NULL)
 		new_codec_ptr->setConfig(m_vocabulary, codec_config_ptr);
@@ -172,6 +161,8 @@ void CodecFactory::addCodec(const std::string& codec_id,
 	
 	m_signal_codec_updated();
 	PION_LOG_DEBUG(m_logger, "Loaded codec (" << codec_plugin << "): " << codec_id);
+	
+	return codec_id;
 }
 
 void CodecFactory::setCodecConfig(const std::string& codec_id,

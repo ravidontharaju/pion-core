@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://purl.org/pion/config">
-  <codec id="clf-codec">
+  <codec id="urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68">
     <plugin>LogCodec</plugin>
     <event>urn:vocab:clf#http-request</event>
+    <name>CLF Codec</name>
     <comment>Codec for the Common Log Format (CLF)</comment>
     <field term="urn:vocab:clf#remotehost">remotehost</field>
     <field term="urn:vocab:clf#rfc931">rfc931</field>

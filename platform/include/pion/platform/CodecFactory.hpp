@@ -61,14 +61,6 @@ public:
 			: PionException("No codecs found for identifier: ", codec_id) {}
 	};
 
-	/// exception thrown if a request is made to add a Codec when a Codec with
-	/// the same ID already exists
-	class DuplicateIdentifierException : public PionException {
-	public:
-		DuplicateIdentifierException(const std::string& codec_id)
-			: PionException("A codec already exists with that identifier: ", codec_id) {}
-	};
-
 	/// exception thrown if the codec config file contains a codec with a missing identifier
 	class EmptyCodecIdException : public PionException {
 	public:
@@ -153,14 +145,15 @@ public:
 	/**
 	 * adds a new Codec object
 	 *
-	 * @param codec_id unique identifier associated with the Codec
 	 * @param codec_plugin the name of the Codec plug-in to load (searches
 	 *                     plug-in directories and appends extensions)
 	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
 	 *                         configuration parameters
+	 *
+	 * @return std::string string containing the Codec's auto-generated identifier
 	 */
-	void addCodec(const std::string& codec_id, const std::string& codec_plugin,
-				  const xmlNodePtr codec_config_ptr = NULL);
+	std::string addCodec(const std::string& codec_plugin,
+						 const xmlNodePtr codec_config_ptr = NULL);
 	
 	/**
 	 * sets configuration parameters for a managed Codec

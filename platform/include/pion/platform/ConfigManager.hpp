@@ -98,6 +98,11 @@ public:
 	/// returns true if the config file is open and being used
 	inline bool configIsOpen(void) const { return m_config_doc_ptr != NULL; }
 
+	/// returns a string containing a new UUID value
+	static std::string createUUID(void);
+
+	/// returns a unique object identifier (UUID expressed as a URN)
+	static std::string createUniqueObjectId(void);
 
 	/**
 	 * searches for an element node within the XML document tree
@@ -201,6 +206,10 @@ protected:
 
 	/// name of the root element for Pion XML config files
 	static const std::string		ROOT_ELEMENT_NAME;
+	
+	/// prefix for a UUID type URN
+	static const std::string		URN_UUID_PREFIX;
+
 	
 	/// name of the XML config file being used
 	std::string						m_config_file;

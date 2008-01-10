@@ -198,30 +198,25 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewCodecFactory_S,
 									   boost::mpl::list<NewCodecFactory_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec(F::m_codec_id, "LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadJSONCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec(F::m_codec_id, "JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadXMLCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec(F::m_codec_id, "XMLCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadMultipleCodecs) {
-	BOOST_CHECK_NO_THROW(F::addCodec("id_1", "LogCodec"));
-	BOOST_CHECK_NO_THROW(F::addCodec("id_2", "JSONCodec"));
-	BOOST_CHECK_NO_THROW(F::addCodec("id_3", "XMLCodec"));
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadTwoCodecsWithSameId) {
-	BOOST_CHECK_NO_THROW(F::addCodec("id_1", "LogCodec"));
-	BOOST_CHECK_THROW(F::addCodec("id_1", "JSONCodec"), CodecFactory::DuplicateIdentifierException);
+	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadUnknownCodec) {
-	BOOST_CHECK_THROW(F::addCodec(F::m_codec_id, "UnknownCodec"), PionPlugin::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::addCodec("UnknownCodec"), PionPlugin::PluginNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigForMissingCodec) {
@@ -254,7 +249,7 @@ class CodecFactoryWithCodecLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithCodecLoaded_F() {
 		m_plugin_name = plugin_name;
-		addCodec(m_codec_id, m_plugin_name);
+		m_codec_id = addCodec(m_plugin_name);
 	}
 	
 	std::string m_plugin_name;
@@ -354,12 +349,9 @@ BOOST_AUTO_TEST_SUITE_END()
 class CodecFactoryWithMultipleCodecsLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithMultipleCodecsLoaded_F() {
-		m_LogCodec_id = "ELF_id";
-		addCodec(m_LogCodec_id, LogCodec_name);
-		m_JSONCodec_id = "JSON_id";
-		addCodec(m_JSONCodec_id, JSONCodec_name);
-		m_XMLCodec_id = "XML_id";
-		addCodec(m_XMLCodec_id, XMLCodec_name);
+		m_LogCodec_id = addCodec(LogCodec_name);
+		m_JSONCodec_id = addCodec(JSONCodec_name);
+		m_XMLCodec_id = addCodec(XMLCodec_name);
 	}
 	
 	std::string m_LogCodec_id;
@@ -465,7 +457,8 @@ BOOST_AUTO_TEST_SUITE_END()
 class CodecFactoryCommonLogFormatTests_F : public CodecFactory {
 public:
 	CodecFactoryCommonLogFormatTests_F()
-		: CodecFactory(NewCodecFactory_F::m_vocab_mgr), m_codec_id("clf-codec")
+		: CodecFactory(NewCodecFactory_F::m_vocab_mgr),
+		m_codec_id("urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68")
 	{
 		setup_logging_for_unit_tests();
 		cleanup_codec_config_files();
@@ -514,6 +507,10 @@ BOOST_AUTO_TEST_CASE(checkGetCodec) {
 BOOST_AUTO_TEST_CASE(checkCLFCodecEventType) {
 	const Event::EventType event_type_ref = NewCodecFactory_F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#http-request");
 	BOOST_CHECK_EQUAL(m_codec_ptr->getEventType(), event_type_ref);
+}
+
+BOOST_AUTO_TEST_CASE(checkCLFCodecName) {
+	BOOST_CHECK_EQUAL(m_codec_ptr->getName(), "CLF Codec");
 }
 
 BOOST_AUTO_TEST_CASE(checkCLFCodecComment) {

@@ -27,6 +27,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of Codec
 const std::string			Codec::EVENT_ELEMENT_NAME = "event";
+const std::string			Codec::NAME_ELEMENT_NAME = "name";
 const std::string			Codec::COMMENT_ELEMENT_NAME = "comment";
 	
 		
@@ -49,6 +50,10 @@ void Codec::setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr)
 	if (v[m_event_type].term_type != Vocabulary::TYPE_OBJECT)
 		throw NotAnObjectException(codec_event_str);
 	
+	// get the descriptive name for the codec (if any)
+	ConfigManager::getConfigOption(NAME_ELEMENT_NAME, m_name,
+								   codec_config_ptr);
+
 	// get the descriptive comments for the codec (if any)
 	ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, m_comment,
 								   codec_config_ptr);
