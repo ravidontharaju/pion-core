@@ -27,7 +27,9 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of LogCodec
 const std::string			LogCodec::CONTENT_TYPE = "text/ascii";
+const std::string			LogCodec::FIELDS_FORMAT_STRING = "#Fields:";
 const std::string			LogCodec::FIELD_ELEMENT_NAME = "field";
+const std::string			LogCodec::HEADERS_ELEMENT_NAME = "headers";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
 const std::string			LogCodec::END_ATTRIBUTE_NAME = "end";
@@ -40,6 +42,8 @@ CodecPtr LogCodec::clone(void) const
 {
 	LogCodec *new_codec(new LogCodec());
 	new_codec->copy(*this);
+	boost::mutex::scoped_lock codec_lock(m_mutex);
+	new_codec->m_needs_to_write_headers = m_needs_to_write_headers;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term,
 								  (*i)->log_delim_start, (*i)->log_delim_end);
@@ -52,6 +56,14 @@ void LogCodec::write(std::ostream& out, const Event& e)
 	const boost::any *value_ptr;
 	
 	// iterate through each field in the current format
+	boost::mutex::scoped_lock codec_lock(m_mutex);
+	
+	// write the ELF headers if necessary
+	if (m_needs_to_write_headers) {
+		writeHeaders(out);
+		m_needs_to_write_headers = false;
+	}
+	
 	CurrentFormat::const_iterator i = m_format.begin();
 	while (i != m_format.end()) {
 		// get the value for the field
@@ -80,7 +92,6 @@ bool LogCodec::read(std::istream& in, Event& e)
 	char *read_ptr;
 	char * const read_start = m_read_buf.get();
 	const char * const read_end = read_start + READ_BUFFER_SIZE;
-	CurrentFormat::const_iterator i = m_format.begin();
 
 	// skip space characters at beginning of line
 	while (! in.eof() ) {
@@ -89,19 +100,30 @@ bool LogCodec::read(std::istream& in, Event& e)
 			in.get();
 		} else if (c == '#') {
 			// ignore comment line
+			read_ptr = read_start;
 			do {
 				c = in.get();
+				// read in the comment in case it is a format change
+				if (read_ptr < read_end)
+					*(read_ptr++) = c;
 			} while (c != '\x0A' && c != '\x0D');
-			if (c == '\x0A' && in.peek() == '\x0D'
-				|| c == '\x0D' && in.peek() == '\x0A')
-			{
-				// consume \r\n or \n\r
+			// consume \r\n or \n\r
+			if (c == '\x0A' && in.peek() == '\x0D' || c == '\x0D' && in.peek() == '\x0A')
 				in.get();
+			// check if it is a format change
+			*read_ptr = '\0';
+			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
+			if (FIELDS_FORMAT_STRING == read_start) {
+				if (! changeFormat(read_start + FIELDS_FORMAT_STRING.size() + 1))
+					return false;
 			}
 		} else {
 			break;
 		}
 	}
+
+	boost::mutex::scoped_lock codec_lock(m_mutex);
+	CurrentFormat::const_iterator i = m_format.begin();
 
 	// iterate through each field in the format
 	while (i != m_format.end()) {
@@ -151,9 +173,11 @@ bool LogCodec::read(std::istream& in, Event& e)
 		}
 		
 		++i;
-		
 		if (i == m_format.end()) {
 			// end of format
+			while (c != '\x0A' && c != '\x0D' && !in.eof()) {
+				c = in.get();
+			}
 			if (c == '\x0A' && in.peek() == '\x0D'
 				|| c == '\x0D' && in.peek() == '\x0A')
 			{
@@ -182,8 +206,18 @@ bool LogCodec::read(std::istream& in, Event& e)
 void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr)
 {
 	// first set config options for the Codec base class
-	Codec::setConfig(v, codec_config_ptr);
 	reset();
+	Codec::setConfig(v, codec_config_ptr);
+	boost::mutex::scoped_lock codec_lock(m_mutex);
+	
+	// check if the Codec should include headers when writing output
+	std::string headers_option;
+	if (ConfigManager::getConfigOption(HEADERS_ELEMENT_NAME, headers_option,
+									   codec_config_ptr))
+	{
+		if (headers_option == "true")
+			m_needs_to_write_headers = true;
+	}
 	
 	// next, map the fields to Terms
 	xmlNodePtr codec_field_node = codec_config_ptr;
@@ -242,6 +276,7 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 	Codec::updateVocabulary(v);
 
 	/// copy Term data over from the updated Vocabulary
+	boost::mutex::scoped_lock codec_lock(m_mutex);
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		/// we can assume for now that Term reference values will never change
 		(*i)->log_term = v[(*i)->log_term.term_ref];

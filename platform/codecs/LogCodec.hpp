@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
@@ -69,7 +70,8 @@ public:
 	
 	/// constructs a new LogCodec object
 	LogCodec(void)
-		: Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1])
+		: Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
+		m_needs_to_write_headers(false)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -118,6 +120,16 @@ public:
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
 	virtual void updateVocabulary(const Vocabulary& v);
+	
+	/// resets the configuration for this Codec
+	inline void reset(void) {
+		boost::mutex::scoped_lock codec_lock(m_mutex);
+		m_field_map.clear();
+		m_format.clear();
+	}
+	
+	
+private:
 
 	/**
 	 * maps a data field to a Vocabulary Term
@@ -129,26 +141,23 @@ public:
 	 */
 	inline void mapFieldToTerm(const std::string& field,
 							   const Vocabulary::Term& term,
-							   char delim_start, char delim_end)
-	{
-		// prepare a new Logfield object
-		LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
-		if (term.term_type == Vocabulary::TYPE_DATE_TIME)
-			field_ptr->log_time_facet.setFormat(term.term_format);
-		// add it to the mapping of field names
-		m_field_map[field] = field_ptr;
-		// append the new field to the current (default) format
-		m_format.push_back(field_ptr);
-	}
+							   char delim_start, char delim_end);
+	
+	/**
+	 * changes the current format used by the Codec
+	 *
+	 * @param fmt the new format to use (a sequence of field names separated by spaces)
+	 * @return true if the format was successfully changed; false if error
+	 */
+	inline bool changeFormat(char *fmt);
+	
+	/**
+	 * writes the ELF version number and field format headers
+	 *
+	 * @param out the output stream to which the headers will be written
+	 */
+	inline void writeHeaders(std::ostream& out) const;
 
-	/// resets the configuration for this Codec
-	inline void reset(void) {
-		m_field_map.clear();
-		m_format.clear();
-	}
-	
-	
-private:
 	
 	/// data type used to configure how the log format describes Vocabulary Terms
 	struct LogField {
@@ -224,8 +233,14 @@ private:
 	/// content type used by this Codec
 	static const std::string		CONTENT_TYPE;
 	
+	/// String defines a field format for the log file (ELF)
+	static const std::string		FIELDS_FORMAT_STRING;
+	
 	/// name of the field mapping element for Pion XML config files
 	static const std::string		FIELD_ELEMENT_NAME;
+	
+	/// name of the headers element for Pion XML config files
+	static const std::string		HEADERS_ELEMENT_NAME;
 	
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string		TERM_ATTRIBUTE_NAME;	
@@ -248,9 +263,66 @@ private:
 	
 	/// represents the current sequence of data fields in the log format
 	CurrentFormat					m_format;
+	
+	/// true if the codec should write out ELF headers
+	bool							m_needs_to_write_headers;
+
+	/// mutex used to protect the field mappings
+	mutable boost::mutex			m_mutex;	
 };
 
 
+// inline member functions for LogCodec
+
+inline void LogCodec::mapFieldToTerm(const std::string& field,
+									 const Vocabulary::Term& term,
+									 char delim_start, char delim_end)
+{
+	// prepare a new Logfield object
+	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
+	if (term.term_type == Vocabulary::TYPE_DATE_TIME)
+		field_ptr->log_time_facet.setFormat(term.term_format);
+	// add it to the mapping of field names
+	m_field_map[field] = field_ptr;
+	// append the new field to the current (default) format
+	m_format.push_back(field_ptr);
+}
+	
+inline bool LogCodec::changeFormat(char *fmt)
+{
+	m_format.clear();
+	char *ptr;
+	bool last_field = false;
+	while (!last_field && *fmt != '\0' && *fmt != '\n' && *fmt != '\r') {
+		// skip leading spaces
+		while (*fmt == ' ') ++fmt;
+		// find the end of the field name
+		ptr = fmt;
+		while (*ptr != '\0' && *ptr != '\n' && *ptr != '\r' && *ptr != ' ') ++ptr;
+		// set last_field if we're at the end
+		if (*ptr == '\0' || *ptr == '\n' || *ptr == '\r') last_field = true;
+		*ptr = '\0';
+		FieldMap::const_iterator i = m_field_map.find(fmt);
+		if (i == m_field_map.end()) return false;
+		m_format.push_back(i->second);
+		fmt = ptr + 1;
+	}
+	return true;
+}
+	
+inline void LogCodec::writeHeaders(std::ostream& out) const
+{
+	out << "#Version: 1.0\x0A";
+	out << FIELDS_FORMAT_STRING << ' ';
+	CurrentFormat::const_iterator i = m_format.begin();
+	while (i != m_format.end()) {
+		out << (*i)->log_field;
+		if (++i != m_format.end()) out << ' ';
+	}
+	out << '\x0A';
+}
+
+	
 // inline member functions for LogCodec::LogField
 
 inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value)

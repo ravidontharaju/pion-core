@@ -3,7 +3,7 @@
   <codec id="urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68">
     <plugin>LogCodec</plugin>
     <event>urn:vocab:clf#http-request</event>
-    <name>CLF Codec</name>
+    <name>Common Log Format</name>
     <comment>Codec for the Common Log Format (CLF)</comment>
     <field term="urn:vocab:clf#remotehost">remotehost</field>
     <field term="urn:vocab:clf#rfc931">rfc931</field>
@@ -12,5 +12,32 @@
     <field term="urn:vocab:clf#request" start="&quot;" end="&quot;">request</field>
     <field term="urn:vocab:clf#status">status</field>
     <field term="urn:vocab:clf#bytes">bytes</field>
+  </codec>
+  <codec id="urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68">
+    <plugin>LogCodec</plugin>
+    <event>urn:vocab:clf#http-request</event>
+    <name>Combined Log Format</name>
+    <comment>Codec for the Combined Log Format (CLF)</comment>
+    <field term="urn:vocab:clf#remotehost">remotehost</field>
+    <field term="urn:vocab:clf#rfc931">rfc931</field>
+    <field term="urn:vocab:clf#authuser">authuser</field>
+    <field term="urn:vocab:clf#date" start="[" end="]">date</field>
+    <field term="urn:vocab:clf#request" start="&quot;" end="&quot;">request</field>
+    <field term="urn:vocab:clf#status">status</field>
+    <field term="urn:vocab:clf#bytes">bytes</field>
+    <field term="urn:vocab:clf#referer" start="&quot;" end="&quot;">cs(Referer)</field>
+    <field term="urn:vocab:clf#useragent" start="&quot;" end="&quot;">cs(User-Agent)</field>
+  </codec>
+  <codec id="urn:uuid:23f68d5a-bfec-11dc-81a7-0016cb926e68">
+    <plugin>LogCodec</plugin>
+    <headers>true</headers>
+    <event>urn:vocab:clf#http-request</event>
+    <name>Extended Log Format</name>
+    <comment>Codec for the Extended Log Format (ELF)</comment>
+    <field term="urn:vocab:clf#date" start="&quot;" end="&quot;">date</field>
+    <field term="urn:vocab:clf#remotehost">remotehost</field>
+    <field term="urn:vocab:clf#request" start="&quot;" end="&quot;">request</field>
+    <field term="urn:vocab:clf#referer" start="&quot;" end="&quot;">cs(Referer)</field>
+    <field term="urn:vocab:clf#status">status</field>
   </codec>
 </config>

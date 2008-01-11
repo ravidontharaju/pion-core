@@ -35,6 +35,8 @@ const std::string			CodecFactory::ID_ATTRIBUTE_NAME = "id";
 
 void CodecFactory::createConfigFile(void)
 {
+	boost::mutex::scoped_lock factory_lock(m_mutex);
+
 	// just return if it's already open
 	if (configIsOpen())
 		return;
@@ -47,6 +49,8 @@ void CodecFactory::createConfigFile(void)
 
 void CodecFactory::openConfigFile(void)
 {
+	boost::mutex::scoped_lock factory_lock(m_mutex);
+
 	// just return if it's already open
 	if (configIsOpen())
 		return;
@@ -91,6 +95,7 @@ void CodecFactory::removeCodec(const std::string& codec_id)
 		throw CodecConfigNotOpenException(getConfigFile());
 
 	// convert "plugin not found" exceptions into "codec not found"
+	boost::mutex::scoped_lock factory_lock(m_mutex);
 	try { m_codecs.remove(codec_id); }
 	catch (PluginManager<Codec>::PluginNotFoundException& /* e */) {
 		throw CodecNotFoundException(codec_id);
@@ -123,6 +128,7 @@ std::string CodecFactory::addCodec(const std::string& codec_plugin,
 		throw CodecConfigNotOpenException(getConfigFile());
 
 	// create and set configuration options for the codec
+	boost::mutex::scoped_lock factory_lock(m_mutex);
 	Codec *new_codec_ptr = m_codecs.load(codec_id, codec_plugin);
 	new_codec_ptr->setId(codec_id);
 	if (codec_config_ptr != NULL)
@@ -173,6 +179,7 @@ void CodecFactory::setCodecConfig(const std::string& codec_id,
 		throw CodecConfigNotOpenException(getConfigFile());
 
 	// convert "plugin not found" exceptions into "codec not found"
+	boost::mutex::scoped_lock factory_lock(m_mutex);
 	try {
 		m_codecs.run(codec_id, boost::bind(&Codec::setConfig, _1,
 										   boost::cref(m_vocabulary), codec_config_ptr));

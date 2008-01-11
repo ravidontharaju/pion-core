@@ -1,46 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://purl.org/pion/config">
-  <vocabulary id="urn:vocab:clf">
-    <namespace>clf</namespace>
-    <comment>Vocabulary for the Common Log Format (CLF); from http://www.w3.org/Daemon/User/Config/Logging.html#common-logfile-format</comment>
-    <term id="urn:vocab:clf#remotehost">
-    	<type>shortstring</type>
-    	<comment>Remote hostname (or IP number if DNS hostname is not available)</comment>
-    </term>
-    <term id="urn:vocab:clf#rfc931">
-    	<type>shortstring</type>
-    	<comment>The remote logname of the user</comment>
-    </term>
-    <term id="urn:vocab:clf#authuser">
-    	<type>shortstring</type>
-    	<comment>The username as which the user has authenticated himself</comment>
-    </term>
-	<term id="urn:vocab:clf#date">
-		<type format="%d/%b/%Y:%H:%M:%S %q">datetime</type>
-		<comment>Date and time of the request</comment>
-	</term>
-	<term id="urn:vocab:clf#request">
-		<type>string</type>
-		<comment>The request line exactly as it came from the client</comment>
-	</term>
-	<term id="urn:vocab:clf#status">
-		<type>uint16</type>
-		<comment>The HTTP status code returned to the client</comment>
-	</term>
-	<term id="urn:vocab:clf#bytes">
-		<type>uint32</type>
-		<comment>The content-length of the document transferred</comment>
-	</term>
-    <term id="urn:vocab:clf#http-request">
-      <type>object</type>
-      <comment>A individual HTTP request</comment>
-      <member>urn:vocab:clf#remotehost</member>
-      <member>urn:vocab:clf#rfc931</member>
-      <member>urn:vocab:clf#authuser</member>
-      <member>urn:vocab:clf#date</member>
-      <member>urn:vocab:clf#request</member>
-      <member>urn:vocab:clf#status</member>
-      <member>urn:vocab:clf#bytes</member>
-    </term>
-  </vocabulary>
+	<vocabulary id="urn:vocab:clf">
+		<namespace>clf</namespace>
+		<comment>Vocabulary for the Common and Combined Log Formats (CLF); from http://www.w3.org/Daemon/User/Config/Logging.html#common-logfile-format</comment>
+		<term id="urn:vocab:clf#remotehost">
+			<type>shortstring</type>
+			<comment>Remote hostname (or IP number if DNS hostname is not available)</comment>
+		</term>
+		<term id="urn:vocab:clf#rfc931">
+			<type>shortstring</type>
+			<comment>The remote logname of the user</comment>
+		</term>
+		<term id="urn:vocab:clf#authuser">
+			<type>shortstring</type>
+			<comment>The username as which the user has authenticated himself</comment>
+		</term>
+		<term id="urn:vocab:clf#date">
+			<type format="%d/%b/%Y:%H:%M:%S %q">datetime</type>
+			<comment>Date and time of the request</comment>
+		</term>
+		<term id="urn:vocab:clf#request">
+			<type>string</type>
+			<comment>The request line exactly as it came from the client</comment>
+		</term>
+		<term id="urn:vocab:clf#status">
+			<type>uint16</type>
+			<comment>The HTTP status code returned to the client</comment>
+		</term>
+		<term id="urn:vocab:clf#bytes">
+			<type>uint32</type>
+			<comment>The content-length of the document transferred</comment>
+		</term>
+		<term id="urn:vocab:clf#referer">
+			<type>string</type>
+			<comment>The Referer HTTP request header</comment>
+		</term>
+		<term id="urn:vocab:clf#useragent">
+			<type>string</type>
+			<comment>The User-Agent HTTP request header</comment>
+		</term>
+		<term id="urn:vocab:clf#http-request">
+			<type>object</type>
+			<comment>A individual HTTP request</comment>
+			<member>urn:vocab:clf#remotehost</member>
+			<member>urn:vocab:clf#rfc931</member>
+			<member>urn:vocab:clf#authuser</member>
+			<member>urn:vocab:clf#date</member>
+			<member>urn:vocab:clf#request</member>
+			<member>urn:vocab:clf#status</member>
+			<member>urn:vocab:clf#bytes</member>
+			<member>urn:vocab:clf#referer</member>
+			<member>urn:vocab:clf#useragent</member>
+		</term>
+	</vocabulary>
 </config>

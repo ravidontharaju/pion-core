@@ -1,0 +1,8 @@
+#Version: 1.0
+#Fields: status remotehost date request cs(Referer)
+200 10.0.2.104 "24/Sep/2007:12:13:03 -0600" "GET /default.css HTTP/1.1" "http://www.google.com/"
+200 10.0.141.122 "30/Jan/2008:15:26:07 -0600" "GET /pion/ HTTP/1.1" "http://www.wikipedia.com/"
+#Fields: date remotehost request cs(Referer) status
+"05/Apr/2007:05:37:11 -0600" 10.0.19.111 "GET /robots.txt HTTP/1.0" "http://www.example.com/start.html" 404
+# Empty comment line here
+"08/Jun/2007:07:20:02 -0600" 10.0.31.104 "GET /community/ HTTP/1.1" "http://www.atomiclabs.com/" 200

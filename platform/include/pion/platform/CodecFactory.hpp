@@ -24,6 +24,7 @@
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
@@ -126,6 +127,7 @@ public:
 	 * @return CodecPtr smart pointer to the Codec object (destructs it when finished)
 	 */
 	inline CodecPtr getCodec(const std::string& codec_id) {
+		boost::mutex::scoped_lock factory_lock(m_mutex);
 		Codec *codec_ptr = m_codecs.get(codec_id);
 		// throw an exception if the codec was not found
 		if (codec_ptr == NULL)
@@ -171,6 +173,7 @@ public:
 	 */
 	template <typename CodecUpdateFunction>
 	inline void registerForUpdates(CodecUpdateFunction f) const {
+		boost::mutex::scoped_lock factory_lock(m_mutex);
 		m_signal_codec_updated.connect(f);
 	}
 	
@@ -213,6 +216,9 @@ private:
 	static const std::string		ID_ATTRIBUTE_NAME;
 
 	
+	/// mutex to make class thread-safe
+	mutable boost::mutex			m_mutex;	
+
 	/// primary logging interface used by this class
 	PionLogger						m_logger;	
 
