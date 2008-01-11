@@ -62,6 +62,7 @@
 	<script type="text/javascript" src="dijit/form/Button.js"></script>
 	<script type="text/javascript" src="dijit/layout/ContentPane.js"></script>
 	<script type="text/javascript" src="dijit/layout/LayoutContainer.js"></script>
+	<script type="text/javascript" src="dijit/layout/TabContainer.js"></script>
 
 	<script type="text/javascript" src="dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojox/gfx/svg.js"></script>
@@ -71,20 +72,63 @@
 		dojo.require("dojo.dnd.Source");
 		dojo.require("dijit.Dialog");
 		dojo.require("dijit.form.TextBox");
-        dojo.require("dijit.layout.ContentPane");
-        dojo.require("dijit.layout.LayoutContainer");
+		dojo.require("dijit.form.Button");
+		dojo.require("dijit.layout.ContentPane");
+		dojo.require("dijit.layout.LayoutContainer");
+		dojo.require("dijit.layout.TabContainer");
 		dojo.require("dojox.gfx");
 		//dojo.require("dojox.gfx.move");
 
+		var workspace_boxes = [];
+		var workspace_box = null;
+		var surfaces = [];
 		var surface = null;
-		var first_reactor = true;
 		var latest_event = null;
 		var STEP = 20;
+		var num_tabs = 3;
 
 		var init = function(){
-			dojo.connect(workspace_box, "onDndDrop", handleDropOnWorkspace);
-			dojo.connect(workspace_box.node, "onmouseup", updateLatestMouseUpEvent);
-			surface = dojox.gfx.createSurface("workspace_box_div", 500, 125);
+			workspace_boxes.push(workspace_box_1);
+			workspace_boxes.push(workspace_box_2);
+			workspace_boxes.push(workspace_box_3);
+			var wrappers = [];
+			wrappers[0] = function(source, nodes, copy, target){
+				handleDropOnWorkspace(source, nodes, copy, workspace_boxes[0]);
+			}
+			wrappers[1] = function(source, nodes, copy, target){
+				handleDropOnWorkspace(source, nodes, copy, workspace_boxes[1]);
+			}
+			wrappers[2] = function(source, nodes, copy, target){
+				handleDropOnWorkspace(source, nodes, copy, workspace_boxes[2]);
+			}
+			for (var i = 0; i < num_tabs; ++i) {
+				/*
+				var wb = workspace_boxes[i];
+				console.debug("wb = ", wb);
+				var name = "wrappers[" + i + "]";
+				wrappers[i] = function(source, nodes, copy, target){
+					console.debug(name);
+					handleDropOnWorkspace(source, nodes, copy, wb);
+				}
+				*/
+				dojo.connect(workspace_boxes[i], "onDndDrop", wrappers[i]);
+				dojo.connect(workspace_boxes[i].node, "onmouseup", updateLatestMouseUpEvent);
+				surfaces.push(dojox.gfx.createSurface(workspace_boxes[i].node, 500, 125));
+			}
+
+			// Now add one more, programatically.  (This one doesn't work quite like the others.)
+			var tc = dijit.byId("mainTabContainer");
+			var cp = new dijit.layout.ContentPane({ title: 'Workspace ' + (i + 1) });
+			var wb = new dojo.dnd.Target(cp.domNode, {accept: ["reactor"]});
+			dojo.addClass(wb.node, "container");
+			workspace_boxes.push(wb);
+			dojo.connect(wb, "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, wb); });
+			dojo.connect(wb.node, "onmouseup", updateLatestMouseUpEvent);
+			surfaces.push(dojox.gfx.createSurface(wb.node, 500, 125));
+			tc.addChild(cp, i);
+
+			workspace_box = workspace_boxes[0];
+			surface = surfaces[0];
 		};
 		dojo.addOnLoad(init);
 
@@ -106,10 +150,8 @@
 		}
 		function handleDropOnReactor(source, nodes, copy, target){
 			console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
-			console.debug("target.targetState = ", target.targetState);
-			console.debug("target.processed = ", target.processed);
-			console.debug('target.node.lastChild = ', target.node.lastChild);
-			
+			console.debug("target.targetState = ", target.targetState, ", target.processed = ", target.processed, ', target.node.lastChild = ', target.node.lastChild);
+
 			// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
 			// after a connector node was added to the reactor.  If this is that time, delete the connector node.
 			if (target.node.lastChild.getAttribute && target.node.lastChild.getAttribute("dndType") == "connector") {
@@ -133,8 +175,8 @@
 			console.debug("I'm connecting to " + target.node.getAttribute("reactor_type"));
 			//debugger;
 			// This is a hack.  Note that iterating through target.node.offsetParent and accumulating the offsets does not work right.
-			var xOffset = -55;
-			var yOffset = -30;
+			var xOffset = -42;
+			var yOffset = -17;
 
 			var x1 = xOffset + target.node.offsetLeft + target.node.offsetWidth;
 			var y1 = yOffset + target.node.offsetTop  + target.node.offsetHeight / 2;
@@ -157,9 +199,8 @@
 
 			target.processed = true;
 		}
-
 		function handleDropOnWorkspace(source, nodes, copy, target){
-			console.debug("handleDropOnWorkspace called");
+			console.debug("handleDropOnWorkspace called, target.node.id = ", target.node.id, ", workspace_box.node.id = ", workspace_box.node.id);
 			if (target != workspace_box){
 				// So why was handleDropOnWorkspace called?  Because the manager is using a global canDrop flag.
 				// I added 
@@ -168,9 +209,11 @@
 				//alert("huh?");
 				return;
 			}
-			if (nodes[0].getAttribute("widgetid") == "connector") {
-				// This should not be reached, since the workspace targets are only supposed to accept reactors.
-				alert("connector must be dropped on a reactor");
+			//console.debug("nodes[0]: ", nodes[0]);
+			//console.debug("nodes[0].getAttribute('dndType'): ", nodes[0].getAttribute('dndType'));
+			if (nodes[0].getAttribute("dndType") != "reactor") {
+				// This should not be reached, since the workspace targets are only supposed to accept reactors, but it is.
+				console.debug("dropped object is not a reactor");
 				return;
 			}
 			//debugger;
@@ -185,6 +228,7 @@
 			new_div.innerHTML = reactor_type;
 			new_div.setAttribute("reactor_type", reactor_type);
 			//debugger;
+			console.debug("workspace_box.node.lastChild = ", workspace_box.node.lastChild);
 			workspace_box.node.replaceChild(new_div, workspace_box.node.lastChild);
 			var m5 = new dojo.dnd.move.parentConstrainedMoveable(new_div, {area: "padding", within: true});
 			var c = m5.constraints();
@@ -192,7 +236,8 @@
 			// calculate them here.
 			c.r = c.l + c.w - new_div.offsetWidth;
 			c.b = c.t + c.h - new_div.offsetHeight;
-			var newLeftTop = getNearbyGridPointInBox(c, {l: latest_event.clientX, t: latest_event.clientY});
+			var tabOffsetHack = -30;
+			var newLeftTop = getNearbyGridPointInBox(c, {l: latest_event.clientX, t: latest_event.clientY + tabOffsetHack});
 			new_div.style.top  = newLeftTop.t + "px";
 			new_div.style.left = newLeftTop.l + "px";
 			new_div.style.position = "absolute";
@@ -229,10 +274,30 @@
 		function updateName(dialogFields, node) {
 			node.innerHTML = dialogFields.name;
 		}
+		function selected(page){
+			var result = page.title.match(/Workspace (\d+)/);
+			var index = result[1] - 1;
+			console.debug("selected " + page.title + ", page.id = " + page.id + ", index = " + index);
+			workspace_box = workspace_boxes[index];
+			surface = surfaces[index];
+		}
+		dojo.subscribe("mainTabContainer-selectChild", selected);
 	</script>
 </head>
 <body class="tundra">
-	<div dojoType="dojo.dnd.Target" id="workspace_box_div" jsId="workspace_box" class="container" accept="reactor" horizontal="true">
+	<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" style="width: 550px; height: 200px;">
+		<div id="tab1" dojoType="dijit.layout.ContentPane" title="Workspace 1">
+			<div dojoType="dojo.dnd.Target" id="workspace_box_div_1" jsId="workspace_box_1" class="container" accept="reactor">
+			</div>
+		</div>
+		<div id="tab2" dojoType="dijit.layout.ContentPane" title="Workspace 2">
+			<div dojoType="dojo.dnd.Target" id="workspace_box_div_2" jsId="workspace_box_2" class="container" accept="reactor">
+			</div>
+		</div>
+		<div id="tab3" dojoType="dijit.layout.ContentPane" title="Workspace 3">
+			<div dojoType="dojo.dnd.Target" id="workspace_box_div_3" jsId="workspace_box_3" class="container" accept="reactor">
+			</div>
+		</div>
 	</div>
 	<div style="width: 600px">
 		<div style="float: left; margin: 5px;">
