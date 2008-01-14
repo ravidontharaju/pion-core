@@ -91,9 +91,9 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 	var new_div = document.createElement("div");
 	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
 	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
-	new_div.setAttribute("class", "moveable");
 	//debugger;
 	var reactor_type = nodes[0].getAttribute("reactor_type");
+	new_div.setAttribute("class", "moveable " + reactor_type);
 	new_div.innerHTML = reactor_type;
 	new_div.setAttribute("reactor_type", reactor_type);
 	//debugger;
