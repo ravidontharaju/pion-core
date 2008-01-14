@@ -1,3 +1,8 @@
+html, body {
+	width: 100%;	/* make the body expand to ... */
+	height: 100%;   /* ... fill the visible window */
+}
+
 body {
 	margin: 0;
 	padding: 0;
@@ -7,8 +12,6 @@ body {
 	color: #333333;
 }
 
-
-
 h1 {
 	font-size: 3.5em;
 	font-weight: bold;
@@ -16,7 +19,7 @@ h1 {
 
 h2 {
 	font-size: 1.6em;
-	font-weight: normal;		
+	font-weight: normal;
 }
 
 h3 {
@@ -37,12 +40,19 @@ a img {
 }
 
 
+/* outermost layout container */
+
+#outer {
+	width: 100%;
+	height: 100%;
+}
+
 
 /* Header */
 
 #logo {
 	background: url(../images/bg01.png) repeat-x;
-	width: 950px;
+	/*width: 950px;*/
 	height: 88px;
 	margin: 0 auto;
 	padding: 0;
@@ -52,7 +62,6 @@ a img {
 	float: left;
 	margin: 20px 0 0 20px;
 }
-
 
 
 /* SecondaryMenu */
@@ -68,14 +77,13 @@ a img {
 
 #menu {
 	background: #0b0b0b;
-	width: 950px;
+	/*width: 950px;*/
 	height: 30px;
 	margin: 0 auto;
 	padding: 0;
 	border-bottom: 1px solid #CCCCCC;
-
 }
-	
+
 #menu ul {
 	margin: 0;
 	padding: 0;
@@ -92,6 +100,7 @@ a img {
 	height: 17px;
 	margin: 5px 3px 0 0;
 	padding: 7px 0 0 20px;
+	padding: 7px 0 0 7px;
 	background: #999999;
 	border: 1px solid #CCCCCC;
 	text-decoration: none;
@@ -118,44 +127,48 @@ a img {
 
 #menu a span
 {
-	padding-right: 20px;
+	//padding-right: 20px;
+	padding-right: 5px;
 }
 
 
-
-
 /* Page */
-
+/* no 'page' node any more */
+/*
 #page {
 	width: 950px;
 	margin: 0 auto;
 	padding: 25px 0 0 0;
 }
+*/
 
+
+/* Workspace Header */
+
+#workspaceHeader {
+	margin: 0 0 0 20px;
+}
 
 
 /* Content */
 
-
 #contentWide {
-	float: left;
-	width: 720px;
+	/*float: left;*/
+	/*width: 720px;*/
 	padding: 0 0 20px 0;
-	margin: -10px 0 0 30px;
+	margin: 10px 10px 0 30px;
 	line-height: 150%;
 	font-size: 12px;
 }
 
-#workspace {
-	width: 748px;
-	height: 460px;
+.workspacePane {
 	background: url(../images/bg-workspace.png) repeat;
-	margin: 20px 0 0 0;
-	border: 1px solid #CCCCCC;
 }
 
-
-
+/* a div with this class goes inside each workspace pane, to serve as a target for reactors */
+.workspaceTarget {
+	height: 100%;
+}
 
 
 /* Sidebar */
@@ -163,21 +176,20 @@ a img {
 #side {
  	width: 170px;
  	float: left;
+	margin: 0 auto;
+	padding: 25px 0 0 0;
 }
 
 .sidebar {
-	
-	width: 170px;
+	/*width: 170px;*/
 	line-height: 150%;
 	padding: 5px 5px;
 	background:#cccccc;
 	font-size: 11px;
 }
 
-
 .sidebarHeader {
-
-	width: 170px;
+	/*width: 160px;*/
 	background: url(../images/bg02.png) repeat-x;
 	font-size: 16px;
 	color: #ffffff;
@@ -186,7 +198,7 @@ a img {
 }
 
 .collectionHeader {
-	width: 160px;
+	/*width: 160px;*/
 	background: #ffcccc;
 	font-size: 12px;
 	font-weight: bold;
@@ -195,7 +207,7 @@ a img {
 }
 
 .processingHeader {
-	width: 160px;
+	/*width: 160px;*/
 	background: #cce5ff;
 	font-size: 12px;
 	font-weight: bold;
@@ -204,7 +216,7 @@ a img {
 }
 
 .storageHeader {
-	width: 160px;
+	/*width: 160px;*/
 	background: #cedaa6;
 	font-size: 12px;
 	font-weight: bold;
@@ -213,25 +225,24 @@ a img {
 }
 
 .reactorBucket {
-	width: 160px;
+	/*width: 160px;*/
 	height: 100px;
+	height: 90px;
 	background: #ffffff;
 	padding: 5px;
 }
 
 .connectorBucket {
-	width: 160px;
+	/*width: 160px;*/
 	height: 50px;
 	background: #ffffff;
 	padding: 5px;
 }
 
 
-
-
-
 /* Tabs */
-
+/* not used any more */
+/*
 #tabs {
 	width: 720px;
 	height: 21px;
@@ -286,16 +297,14 @@ a img {
 {
 	padding-right: 20px;
 }
-
-
-
+*/
 
 
 /* Footer */
 
 #footer {
 	margin:  0 auto;
-	width: 950px;
+	/*width: 950px;*/
 	height: 30px;
 }
 
@@ -306,5 +315,23 @@ a img {
 }
 
 
+/* for drag-and-drop items */
 
+.dojoDndItem {
+	padding: 5px 10px;
+	margin: 10px 20px;
+	border: 4px solid black;
+	cursor: pointer;
+	radius:8pt;
+	-moz-border-radius:8pt 8pt; 
+}
 
+/* for moveable items, e.g. reactors in a workspace */
+
+.moveable {
+	background: #FFFFBF;
+	border: 1px solid black;
+	width: 50px;
+	padding: 5px 10px;
+	cursor: pointer;
+}

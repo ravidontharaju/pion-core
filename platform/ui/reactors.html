@@ -5,125 +5,219 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-    <title>Pion&trade;, Rule Your Data :: Reactors Configuration</title>
-    
-    <link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
+	<title>Pion&trade;, Rule Your Data :: Reactors Configuration</title>
+
+	<style type="text/css">
+		@import "dijit/themes/tundra/tundra.css";
+	</style>
+	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
+
+	<script type="text/javascript" src="dojo/dojo.js"
+		djConfig="isDebug: true, parseOnLoad: true"></script>
+
+	<!-- All these dojo source code files are included here just for debugging 
+		 purposes; by putting them here, the code is available to Firebug. -->
+	<script type="text/javascript" src="dojo/dnd/Mover.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Moveable.js"></script>
+	<script type="text/javascript" src="dojo/dnd/move.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Container.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Selector.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Source.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Avatar.js"></script>
+	<script type="text/javascript" src="dojo/dnd/Manager.js"></script>
+	<script type="text/javascript" src="dijit/dijit.js"></script>
+	<script type="text/javascript" src="dijit/Dialog.js"></script>
+	<script type="text/javascript" src="dijit/form/TextBox.js"></script>
+	<script type="text/javascript" src="dijit/form/Button.js"></script>
+	<script type="text/javascript" src="dijit/layout/ContentPane.js"></script>
+	<script type="text/javascript" src="dijit/layout/LayoutContainer.js"></script>
+	<script type="text/javascript" src="dijit/layout/TabContainer.js"></script>
+	<script type="text/javascript" src="dojox/gfx/shape.js"></script>
+	<script type="text/javascript" src="dojox/gfx/svg.js"></script>
+
+	<script type="text/javascript" src="reactors.js"></script>
 </head>
+<body class="tundra">
+	<div id="outer" dojoType="dijit.layout.LayoutContainer">
+		<div id="topBar" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+			<!-- start header -->
+			<div id="logo">
+				<p class="logo"><img src="images/pion-logo.png" width="140" height="64" alt="Pion - Rule Your Data" /></p>
+				<!-- start secondary menu -->
+				<div id="secondaryMenu">
+				<p>
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Atomic Labs</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header"  href="#">Help</a>
+					&nbsp;&nbsp;&nbsp;
+				</p>
+				</div>
+				<!-- end secondary menu -->
+			</div>
+			<!-- end header -->
 
-<body>
+			<!-- start main menu -->
+			<div id="menu">
+				<ul>
+					<li><a href="/#"><span>System</span></a></li>
+					<li><a href="/#"><span>Users</span></a></li>
+					<li><a href="/#"><span>Databases</span></a></li>
+					<li><a href="/#"><span>Codecs</span></a></li>
+					<li><a href="/#"><span>Vocabularies</span></a></li>
+					<li class="current_page_item"><a href="/reactors"><span>Reactors</span></a></li>
+				</ul>
+			</div>
+			<!-- end main menu -->
+		</div>
+		<div id="bottomBar" dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+			<div id="footer">
+				<hr noshade="noshade" size="1" color="#333333" />
+				<p>&copy; 2008 Atomic Labs, Inc. All rights reserved.</p>
+			</div>
+		</div>
+		<!-- start left sidebar -->
+		<div id="side" dojoType="dijit.layout.ContentPane" layoutAlign="left">
+			<div class="sidebarHeader">Reactor Types</div>
+			<div class="sidebar">
 
-    
-<!-- start header -->
-<div id="logo">
-	<p class="logo"><img src="images/pion-logo.png" width="140" height="64" alt="Pion - Rule Your Data" /></p>
-    <!-- start secondary menu -->
-    <div id="secondaryMenu">
-    <p>
-		<a class="header" href="http://www.atomiclabs.com" target="_blank">Atomic Labs</a>
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-    	<a class="header"  href="#">Help</a>
-        &nbsp;&nbsp;&nbsp;
-	</p>
-    </div>
-    <!-- start secondary menu -->
-</div>
-<!-- end header -->
+				Drag reactors onto Workspace
 
+				<div class="collectionHeader">Collection Reactors</div>
+				<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+					<div class="dojoDndItem" dndType="reactor" reactor_type="log_files">log files</div>
+				</div>
 
+				<div class="processingHeader">Processing Reactors</div>
+				<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+					<div class="dojoDndItem" dndType="reactor" reactor_type="filter">filter</div>
+					<div class="dojoDndItem" dndType="reactor" reactor_type="transform">transform</div>
+				</div>
 
-<!-- start main menu -->
-<div id="menu">
-    <ul>
-        <li><a href="/#"><span>System</span></a></li>
-        <li><a href="/#"><span>Users</span></a></li>
-        <li><a href="/#"><span>Databases</span></a></li>
-        <li><a href="/#"><span>Codecs</span></a></li>
-        <li><a href="/#"><span>Vocabularies</span></a></li>
-        <li class="current_page_item"><a href="/reactors"><span>Reactors</span></a></li>
-	</ul>
-</div>
-<!-- end main menu -->
+				<div class="storageHeader">Storage Reactors</div>
+				<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+					<div class="dojoDndItem" dndType="reactor" reactor_type="data_store">data store</div>
+				</div>
 
+			</div>
 
-<!-- start page -->
-<div id="page">
+			<br />
 
+			<div class="sidebarHeader">Connect Reactors</div>
+			<div class="sidebar">
 
-    <!-- start left sidebar -->
-    <div id="side">
-        <div class="sidebarHeader">Reactor Types</div>
-        <div class="sidebar">
-        
-        Drag reactors onto Workspace
-        
-        <div class="collectionHeader">Collection Reactors</div>
-        <div class="reactorBucket">&nbsp;</div>
-        
-        <div class="processingHeader">Processing Reactors</div>
-        <div class="reactorBucket">&nbsp;</div>
-        
-        <div class="storageHeader">Storage Reactors</div>
-        <div class="reactorBucket">&nbsp;</div>
-            
-        </div>
-        
-        <br />
-        
-        <div class="sidebarHeader">Connect Reactors</div>
-        <div class="sidebar">
-        
-        Drag to connect Reactors
-        <div class="connectorBucket">&nbsp;</div>
-        </div>
-    </div>
-    <!-- end left sidebar -->
+				Drag to connect Reactors
 
-  	    
+				<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
+					<div class="dojoDndItem" dndType="connector" reactor_type="connector">--------></div>
+				</div>
+			</div>
+		</div>
+		<!-- end left sidebar -->
 
-    <!-- start content -->
-    
-    <div id="contentWide">
-    
-        <h1>Reactors Configuration</h1>
-        
-        <h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
-            2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
-            3. Drag arrows to connect Reactors
-        </h3>
-        
-        <div id="workspace">&nbsp;</div>
-        
-            <!-- start tabs -->
-            <div id="tabs">
-                <ul>
-                    <li class="current_workspace_tab"><a href="#"><span>Workspace 1</span></a></li>
-                    <li><a href="/#"><span>Workspace 2</span></a></li>
-                    <li><a href="/#"><span>Workspace 3</span></a></li>
-                    <li><a href="/#"><span>Workspace <i>n</i></span></a></li>
-                </ul>
-                
-            </div>
-            <!-- end tabs -->
-    
-    </div>
-      
-    
-    <!-- end content -->
+		<div id="workspaceHeader" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+			<h1>Reactors Configuration</h1>
 
-    
-<div style="clear: both;">&nbsp;</div>
-</div>
-<!-- end page -->
+			<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
+				2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
+				3. Drag arrows to connect Reactors
+			</h3>
+		</div>
 
+		<!-- start tabbed workspaces -->
+		<div id="contentWide" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+			<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
+				<div id="tab1" class="workspacePane" dojoType="dijit.layout.ContentPane" title="Workspace 1">
+					<div dojoType="dojo.dnd.Target" id="workspace_box_div_1" jsId="workspace_box_1" class="workspaceTarget" accept="reactor">
+					</div>
+				</div>
+				<div id="tab2" class="workspacePane" dojoType="dijit.layout.ContentPane" title="Workspace 2">
+					<div dojoType="dojo.dnd.Target" id="workspace_box_div_2" jsId="workspace_box_2" class="workspaceTarget" accept="reactor">
+					</div>
+				</div>
+				<div id="tab3" class="workspacePane" dojoType="dijit.layout.ContentPane" title="Workspace 3">
+					<div dojoType="dojo.dnd.Target" id="workspace_box_div_3" jsId="workspace_box_3" class="workspaceTarget" accept="reactor">
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- end tabbed workspaces -->
+	</div>
 
-<!-- start footer -->
-<div id="footer">
-    <hr noshade="noshade" size="1" color="#333333" />
-    <p>&copy; 2008 Atomic Labs, Inc. All rights reserved.</p>
-</div>
-<!-- end footer -->
-
-
+<!-- start configuration dialogs -->
+<!-- These are only visible after double-clicking a reactor in the workspace. -->
+	<div dojoType="dijit.Dialog" id="log_files_dialog" title="Log Configuration">
+		<table>
+			<tr>
+				<td><label for="name">Name: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_1" name="name"></td>
+			</tr>
+			<tr>
+				<td><label for="is _this_used">Comments: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+			</tr>
+			<tr>
+				<td><label for="how_about_this">Event Type: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_3" name="event_type"></td>
+			</tr>
+			<tr>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
+			</tr>
+		</table>
+	</div>
+	<div dojoType="dijit.Dialog" id="filter_dialog" title="Filter Configuration">
+		<table>
+			<tr>
+				<td><label for="name">Name: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_1" name="name"></td>
+			</tr>
+			<tr>
+				<td><label for="loc">Comments: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+			</tr>
+			<tr>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
+			</tr>
+		</table>
+	</div>
+	<div dojoType="dijit.Dialog" id="transform_dialog" title="Transform Configuration">
+		<table>
+			<tr>
+				<td><label for="name">Name: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_1" name="name"></td>
+			</tr>
+			<tr>
+				<td><label for="loc">Comments: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+			</tr>
+			<tr>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
+			</tr>
+		</table>
+	</div>
+	<div dojoType="dijit.Dialog" id="data_store_dialog" title="Storage Configuration">
+		<table>
+			<tr>
+				<td><label for="name">Name: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_1" name="name"></td>
+			</tr>
+			<tr>
+				<td><label for="loc">Comments: </label></td>
+				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+			</tr>
+			<tr>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
+			</tr>
+		</table>
+	</div>
+<!-- end configuration dialogs -->
 
 </body>
 </html>
