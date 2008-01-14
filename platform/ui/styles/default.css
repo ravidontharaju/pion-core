@@ -176,7 +176,7 @@ a img {
 #side {
  	width: 170px;
  	float: left;
-	margin: 0 auto;
+	margin: 0 auto 0 20px;
 	padding: 25px 0 0 0;
 }
 
@@ -317,13 +317,17 @@ a img {
 
 /* for drag-and-drop items */
 
+
 .dojoDndItem {
-	padding: 5px 10px;
-	margin: 10px 20px;
-	border: 4px solid black;
+	padding: 5px 10px 0 10px;
+	margin: 10px 0;
+	border: 1px solid #666666;
 	cursor: pointer;
-	radius:8pt;
-	-moz-border-radius:8pt 8pt; 
+	radius:3pt;
+	-moz-border-radius:3pt 3pt;
+	font-size: 12px;
+	font-weight: bold;
+	vertical-align: middle; 
 }
 
 .dojoDndItemOver {

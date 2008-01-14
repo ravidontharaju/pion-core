@@ -9,7 +9,7 @@ dojo.require("dijit.layout.TabContainer");
 dojo.require("dojox.gfx");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
-var STEP = 16;
+var STEP = 10;
 var num_tabs = 3;
 
 var latest_event = null;
