@@ -326,6 +326,12 @@ a img {
 	-moz-border-radius:8pt 8pt; 
 }
 
+.dojoDndItemOver {
+	background: #ededed;
+	cursor:pointer;
+}
+
+
 /* for moveable items, e.g. reactors in a workspace */
 
 .moveable {
