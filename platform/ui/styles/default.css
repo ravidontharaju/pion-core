@@ -77,10 +77,9 @@ a img {
 
 #menu {
 	background: #0b0b0b;
-	/*width: 950px;*/
 	height: 30px;
 	margin: 0 auto;
-	padding: 0;
+	padding: 0 10px 0 0;
 	border-bottom: 1px solid #CCCCCC;
 }
 
@@ -98,8 +97,7 @@ a img {
 	display: block;
 	float: right;
 	height: 17px;
-	margin: 5px 3px 0 0;
-	padding: 7px 0 0 20px;
+	margin: 5px 4px 0 0;
 	padding: 7px 0 0 7px;
 	background: #999999;
 	border: 1px solid #CCCCCC;
@@ -132,29 +130,16 @@ a img {
 }
 
 
-/* Page */
-/* no 'page' node any more */
-/*
-#page {
-	width: 950px;
-	margin: 0 auto;
-	padding: 25px 0 0 0;
-}
-*/
-
-
 /* Workspace Header */
 
 #workspaceHeader {
-	margin: 0 0 0 20px;
+	margin: 0 0 0 30px;
 }
 
 
 /* Content */
 
 #contentWide {
-	/*float: left;*/
-	/*width: 720px;*/
 	padding: 0 0 20px 0;
 	margin: 10px 10px 0 30px;
 	line-height: 150%;
@@ -181,7 +166,6 @@ a img {
 }
 
 .sidebar {
-	/*width: 170px;*/
 	line-height: 150%;
 	padding: 5px 5px;
 	background:#cccccc;
@@ -189,7 +173,6 @@ a img {
 }
 
 .sidebarHeader {
-	/*width: 160px;*/
 	background: url(../images/bg02.png) repeat-x;
 	font-size: 16px;
 	color: #ffffff;
@@ -198,7 +181,6 @@ a img {
 }
 
 .collectionHeader {
-	/*width: 160px;*/
 	background: #ffcccc;
 	font-size: 12px;
 	font-weight: bold;
@@ -207,7 +189,6 @@ a img {
 }
 
 .processingHeader {
-	/*width: 160px;*/
 	background: #cce5ff;
 	font-size: 12px;
 	font-weight: bold;
@@ -216,7 +197,6 @@ a img {
 }
 
 .storageHeader {
-	/*width: 160px;*/
 	background: #cedaa6;
 	font-size: 12px;
 	font-weight: bold;
@@ -225,7 +205,6 @@ a img {
 }
 
 .reactorBucket {
-	/*width: 160px;*/
 	height: 100px;
 	height: 90px;
 	background: #ffffff;
@@ -233,78 +212,17 @@ a img {
 }
 
 .connectorBucket {
-	/*width: 160px;*/
 	height: 50px;
 	background: #ffffff;
 	padding: 5px;
 }
 
 
-/* Tabs */
-/* not used any more */
-/*
-#tabs {
-	width: 720px;
-	height: 21px;
-	margin: 0 auto;
-	padding: 0;
-}
-	
-#tabs ul {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-#tabs li {
-	display: inline;
-}
-
-#tabs a {
-	display: block;
-	float: left;
-	height: 20px;
-	margin: 0px 3px 0 0;
-	padding: 2px 0 0 20px;
-	background: url(../images/bg-tab-off.png) repeat-x;
-	border-right: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-top: none;
-	border-bottom: 1px solid #CCCCCC;
-	text-decoration: none;
-	font-size: 11px;
-	color: #333333;
-}
-
-#tabs a:hover {
-	background: url(../images/bg-tab-on.png) repeat-x;
-	border-right: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-top: none;
-	border-bottom: 1px solid #CCCCCC;
-}
-
-#tabs .current_workspace_tab a {
-	font-weight: bold;
-	background: url(../images/bg-tab-on.png) repeat-x;
-	border-right: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-top: none;
-	border-bottom: 1px solid #CCCCCC;
-}
-
-#tabs a span
-{
-	padding-right: 20px;
-}
-*/
-
 
 /* Footer */
 
 #footer {
 	margin:  0 auto;
-	/*width: 950px;*/
 	height: 30px;
 }
 
@@ -312,6 +230,7 @@ a img {
 	text-align: left;
 	font-size: smaller;
 	color: #666666;
+	margin-left: 20px;
 }
 
 
@@ -338,10 +257,36 @@ a img {
 
 /* for moveable items, e.g. reactors in a workspace */
 
+
+
 .moveable {
-	background: #FFFFBF;
-	border: 1px solid black;
-	width: 50px;
-	padding: 5px 10px;
+	padding: 10px 10px 0 5px;
+	border: 1px solid #666666;
 	cursor: pointer;
+	width: 83px;
+	height: 38px;
+	font-size: 14px;
+	font-weight: bold;
+	vertical-align: middle;
+	background: #ffcccc; 
 }
+
+.log_files {
+	background-color: #ffffff;
+	background: url(../images/bg-moveable-collection.png) repeat-x;
+	}
+		
+.filter {
+	background-color: #ffffff;
+	background: url(../images/bg-moveable-processing.png) repeat-x;
+	}
+	
+.transform {
+	background-color: #ffffff;
+	background: url(../images/bg-moveable-processing.png) repeat-x;
+	}
+	
+.data_store {
+	background-color: #ffffff;
+	background: url(../images/bg-moveable-storage.png) repeat-x;
+	}
