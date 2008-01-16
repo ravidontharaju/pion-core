@@ -2,6 +2,7 @@ dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.form.TextBox");
+dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
@@ -129,12 +130,17 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 	console.debug(copy ? "Copying from" : "Moving from", source);
 	console.debug("nodes: ", nodes);
 	var new_div = document.createElement("div");
+	workspace_box.reactors.push(new_div);
 	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
 	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 	//debugger;
 	var reactor_type = nodes[0].getAttribute("reactor_type");
 	new_div.setAttribute("class", "moveable " + reactor_type);
-	new_div.innerHTML = reactor_type;
+	var i = 1;
+	do {
+		new_div.name = reactor_type + "_" + i++;
+	} while (isDuplicateName(new_div, new_div.name))
+	new_div.innerHTML = new_div.name;
 	new_div.setAttribute("reactor_type", reactor_type);
 	new_div.reactor_inputs = [];
 	new_div.reactor_outputs = [];
@@ -168,17 +174,32 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 	new_div.style.left = newLeftTop.l + "px";
 	new_div.style.position = "absolute";
 
-	new_div.ondblclick = function(a){
-		//console.debug("a: ", a);
-		//for (key in a) { console.debug(key + ": " + a[key]); }
-		var id = reactor_type + "_dialog";
-		var dialog = dijit.byId(id);
-		//debugger;
-		//dijit.byId(id).setContent({"name": "qwerty"});
+	new_div.ondblclick = function(event) {
+		var validationTextBox = dijit.byId(reactor_type + "_name");
+		var this_reactor = this;
+		validationTextBox.isValid = function(/* Boolean*/ isFocused) {
+			if (!this.validator(this.textbox.value, this.constraints)) {
+				this.invalidMessage = "Invalid Reactor name";
+				console.debug('validationTextBox.isValid returned false');
+				return false;
+			}
+			if (isDuplicateName(this_reactor, this.textbox.value)) {
+				this.invalidMessage = "A Reactor with this name already exists";
+				console.debug('In validationTextBox.isValid, isDuplicateName returned true');
+				return false;
+			}
+			console.debug('validationTextBox.isValid returned true');
+			return true;
+		};
+		validationTextBox.setDisplayedValue(this.name);
+		
+		var dialog = dijit.byId(reactor_type + "_dialog");
+		dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
+
 		// This makes the first field have a blue border, but doesn't put the cursor there, so it's pretty useless.
 		dijit.focus(dojo.query('input', this.domNode)[0]);
-		dijit.byId(id).show();
-		dijit.byId(id).execute = function(dialogFields) { updateName(dialogFields, new_div); }
+		dialog.show();
+		dialog.execute = function(dialogFields) { updateName(dialogFields, new_div); }
 	}
 
 	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
@@ -241,7 +262,7 @@ function handleDropOnReactor(source, nodes, copy, target){
 	var x1 = target.node.offsetLeft + target.node.offsetWidth;
 	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
 	console.debug("x1 = ", x1, ", y1 = ", y1);
-	var trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 10, y: y1}]).setStroke("black");
+	var trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
 	var xOffset = dojo.byId("contentWide").offsetLeft;
 	var yOffset = dojo.byId("contentWide").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
@@ -279,7 +300,19 @@ function handleSelectionOfConnectorEndpoint(event, startpointTarget)
 	event.target.reactor_inputs.push({node: startpointTarget, line: line});
 }
 
+// Returns true if there is another reactor with the given name.
+// TODO: Should we check all the workspaces here instead of just the current one?
+function isDuplicateName(reactor, name) {
+	for (var i = 0; i < workspace_box.reactors.length; ++i) {
+		if (workspace_box.reactors[i] != reactor && workspace_box.reactors[i].name == name) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function updateName(dialogFields, node) {
+	node.name = dialogFields.name;
 	node.innerHTML = dialogFields.name;
 }
 
