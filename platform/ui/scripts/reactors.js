@@ -17,6 +17,7 @@ var workspace_boxes = [];
 var workspace_box = null;
 var surfaces = [];
 var surface = null;
+var tracking = false;
 
 var init = function(){
 	workspace_boxes.push(workspace_box_1);
@@ -37,6 +38,7 @@ var init = function(){
 		dojo.connect(workspace_boxes[i], "onDndDrop", wrappers[i]);
 		dojo.connect(workspace_boxes[i].node, "onmouseup", updateLatestMouseUpEvent);
 		surfaces.push(dojox.gfx.createSurface(workspace_boxes[i].node, box.w, box.h));
+		workspace_boxes[i].reactors = [];
 	}
 
 	workspace_box = workspace_boxes[0];
@@ -68,6 +70,44 @@ function getNearbyGridPointInBox(constraintBox, currentLeftTop) {
 	return newLeftTop;
 }
 
+function updateConnectionLine(poly, start_node, end_node) {
+	// poly: the polyline to update
+	// start_node: the node representing the reactor box at the start of the connection
+	// end_node: the node representing the reactor box at the end of the connection
+
+	// set (x1, y1) to the center of start_node
+	var x1 = start_node.offsetLeft + start_node.offsetWidth / 2;
+	var y1 = start_node.offsetTop + start_node.offsetHeight / 2;
+
+	if (end_node.offsetTop > y1) {									// horiz line y = y1 passes above end_node
+		var x2 = end_node.offsetLeft + end_node.offsetWidth / 2;
+		var y2 = end_node.offsetTop;
+		// add down arrow
+		var a1 = {x: x2 - 5, y: y2 - 5};
+		var a2 = {x: x2 + 5, y: y2 - 5};
+	} else if (end_node.offsetTop + end_node.offsetHeight < y1) {	// horiz line y = y1 passes below end_node
+		var x2 = end_node.offsetLeft + end_node.offsetWidth / 2;
+		var y2 = end_node.offsetTop + end_node.offsetHeight;
+		// add up arrow
+		var a1 = {x: x2 - 5, y: y2 + 5};
+		var a2 = {x: x2 + 5, y: y2 + 5};
+	} else if (end_node.offsetLeft > x1) {							// horiz line y = y1 intersects end_node from the left
+		var x2 = end_node.offsetLeft;
+		var y2 = y1;
+		// add right arrow
+		var a1 = {x: x2 - 5, y: y2 - 5};
+		var a2 = {x: x2 - 5, y: y2 + 5};
+	} else {														// horiz line y = y1 intersects end_node from the right
+		var x2 = end_node.offsetLeft + end_node.offsetWidth;
+		var y2 = y1;
+		// add left arrow
+		var a1 = {x: x2 + 5, y: y2 - 5};
+		var a2 = {x: x2 + 5, y: y2 + 5};
+	}
+	//console.debug("x1 = ", x1, ", y1 = ", y1, ', x2 = ', x2, ', y2 = ', y2);
+	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
+}
+
 function handleDropOnWorkspace(source, nodes, copy, target){
 	console.debug("handleDropOnWorkspace called, target.node.id = ", target.node.id, ", workspace_box.node.id = ", workspace_box.node.id);
 	if (target != workspace_box){
@@ -96,6 +136,8 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 	new_div.setAttribute("class", "moveable " + reactor_type);
 	new_div.innerHTML = reactor_type;
 	new_div.setAttribute("reactor_type", reactor_type);
+	new_div.reactor_inputs = [];
+	new_div.reactor_outputs = [];
 	//debugger;
 	console.debug("workspace_box.node.lastChild = ", workspace_box.node.lastChild);
 	workspace_box.node.replaceChild(new_div, workspace_box.node.lastChild);
@@ -148,6 +190,17 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 		var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
 		//console.debug("newLeftTop = ", newLeftTop);
 		dojo.marginBox(mover.node, newLeftTop);
+
+		//console.debug("new_div = ", new_div);
+		for (var i = 0; i < new_div.reactor_inputs.length; ++i) {
+			//console.debug("new_div.reactor_inputs[", i, "].node = ", new_div.reactor_inputs[i].node);
+			//console.debug("new_div.reactor_inputs[", i, "].line.rawNode = ", new_div.reactor_inputs[i].line.rawNode);
+			updateConnectionLine(new_div.reactor_inputs[i].line, new_div.reactor_inputs[i].node, new_div);
+		}
+		for (var i = 0; i < new_div.reactor_outputs.length; ++i) {
+			//console.debug("new_div.reactor_outputs[", i, "] = ", new_div.reactor_outputs[i]);
+			updateConnectionLine(new_div.reactor_outputs[i].line, new_div, new_div.reactor_outputs[i].node);
+		}
 	};
 /*
 	// This doesn't do anything, because the constrained onMove doesn't call onMoving.
@@ -161,17 +214,18 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 
 function handleDropOnReactor(source, nodes, copy, target){
 	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
-	console.debug("target.targetState = ", target.targetState, ", target.processed = ", target.processed, ', target.node.lastChild = ', target.node.lastChild);
+	console.debug("target.targetState = ", target.targetState, ", tracking = ", tracking, ', target.node.lastChild = ', target.node.lastChild);
 
 	// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
 	// after a connector node was added to the reactor.  If this is that time, delete the connector node.
+	// Note that this sometimes happens after tracking has started, i.e. when tracking == true. 
 	if (target.node.lastChild.getAttribute && target.node.lastChild.getAttribute("dndType") == "connector") {
+		console.debug("removing unneeded connector node");
 		target.node.removeChild(target.node.lastChild);
 	}
 
-	// If we've already set up a connector for this target, we're done.  (When we're ready to allow
-	// adding another connector, this will have to be redone.) 
-	if (target.processed) return;
+	// If we're already tracking a connector for this target, we're done.
+	if (tracking) return;
 
 	//debugger;
 	console.debug('nodes[0].getAttribute("dndType") = ', nodes[0].getAttribute("dndType"));
@@ -179,31 +233,50 @@ function handleDropOnReactor(source, nodes, copy, target){
 
 	if (nodes[0].getAttribute("dndType") != "connector") {
 		// This should not be reached, since reactor targets are only supposed to accept connectors.
-		console.debug('nodes[0].getAttribute("dndType") != "connector"');
+		console.debug('returning because nodes[0].getAttribute("dndType") != "connector"');
 		return;
 	}
 
-	console.debug("I'm connecting to " + target.node.getAttribute("reactor_type"));
+	tracking = true;
 	var x1 = target.node.offsetLeft + target.node.offsetWidth;
 	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
 	console.debug("x1 = ", x1, ", y1 = ", y1);
+	var trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 10, y: y1}]).setStroke("black");
+	var xOffset = dojo.byId("contentWide").offsetLeft;
+	var yOffset = dojo.byId("contentWide").offsetTop;
+	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
+	mouseConnection = dojo.connect('onmousemove', function(event) {x2 = event.clientX - xOffset; y2 = event.clientY - yOffset; trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])});
+	var line = surface.createPolyline().setStroke("black");
+	console.debug("created mouseConnection");
 
-	var children = workspace_box.node.childNodes;
-	for (var i = 0; i < children.length; ++i) {
-		console.debug('children[', i, '] = ', children[i]);
-		if (children[i] == target.node) {
-			console.debug('myself');
-			continue;
-		}
-		if (children[i].getAttribute && children[i].getAttribute("reactor_type")) {
-			var x2 = children[i].offsetLeft;
-			var y2 = children[i].offsetTop + children[i].offsetHeight / 2;
-			console.debug('x2 = ', x2, ', y2 = ', y2, ', children[', i, '].getAttribute("reactor_type") = ', children[i].getAttribute("reactor_type"));
-			var shape = surface.createLine({x1: x1, y1: y1, x2: x2, y2: y2}).setStroke("black");
-		}
+	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
+	wrapperWithStartpoint = function(event) {
+		dojo.disconnect(mouseConnection);
+		console.debug("disconnected mouseConnection");
+		trackLine.removeShape();
+		handleSelectionOfConnectorEndpoint(event, target.node);
 	}
 
-	target.processed = true;
+	dojo.query(".moveable").filter(function(n) { return n != target.node; }).forEach("item.onclick = wrapperWithStartpoint");
+
+	// TODO: disable everything except clicking on moveable's.
+}
+
+function handleSelectionOfConnectorEndpoint(event, startpointTarget)
+{
+	tracking = false;
+	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
+	console.debug('event.target = ', event.target);
+	console.debug('startpointTarget = ', startpointTarget);	
+
+	// Disable (single) clicking on all moveable's.
+	dojo.query(".moveable").forEach("item.onclick = function () {}");
+
+	var line = surface.createPolyline().setStroke("black");
+	updateConnectionLine(line, startpointTarget, event.target);
+	
+	startpointTarget.reactor_outputs.push({node: event.target, line: line});
+	event.target.reactor_inputs.push({node: startpointTarget, line: line});
 }
 
 function updateName(dialogFields, node) {
