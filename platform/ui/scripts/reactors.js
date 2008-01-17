@@ -195,9 +195,12 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 		
 		var dialog = dijit.byId(reactor_type + "_dialog");
 		dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
+		dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
+		dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteReactorIfConfirmed(this_reactor); }; });
 
-		// This makes the first field have a blue border, but doesn't put the cursor there, so it's pretty useless.
-		dijit.focus(dojo.query('input', this.domNode)[0]);
+		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
 		dialog.show();
 		dialog.execute = function(dialogFields) { updateName(dialogFields, new_div); }
 	}
@@ -267,7 +270,6 @@ function handleDropOnReactor(source, nodes, copy, target){
 	var yOffset = dojo.byId("contentWide").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
 	mouseConnection = dojo.connect('onmousemove', function(event) {x2 = event.clientX - xOffset; y2 = event.clientY - yOffset; trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])});
-	var line = surface.createPolyline().setStroke("black");
 	console.debug("created mouseConnection");
 
 	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
@@ -314,6 +316,52 @@ function isDuplicateName(reactor, name) {
 function updateName(dialogFields, node) {
 	node.name = dialogFields.name;
 	node.innerHTML = dialogFields.name;
+}
+
+function deleteReactorIfConfirmed(reactor) {
+	var dialog = dijit.byId('delete_confirmation_dialog');
+	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteReactor(reactor); };
+	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
+	dialog.show();
+	setTimeout("dijit.byId('cancel_delete').focus()", 100);
+}
+	
+function deleteReactor(reactor) {
+	console.debug('deleting ', reactor.name);
+
+	// Remove the reactor from the outputs of incoming reactors and the inputs of
+	// incoming reactors, and remove the lines connecting them.
+	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+		var incomingReactor = reactor.reactor_inputs[i];
+		incomingReactor.line.removeShape();
+		
+		// remove reactor from the outputs of incomingReactor
+		for (var j = 0; j < incomingReactor.node.reactor_outputs.length; ++j) {
+			if (incomingReactor.node.reactor_outputs[j] == reactor) {
+				incomingReactor.node.reactor_outputs.splice(j, 1);
+			}
+		}
+	}
+	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+		var outgoingReactor = reactor.reactor_outputs[i];
+		outgoingReactor.line.removeShape();
+		
+		// remove reactor from the inputs of outgoingReactor
+		for (var j = 0; j < outgoingReactor.node.reactor_inputs.length; ++j) {
+			if (outgoingReactor.node.reactor_inputs[j] == reactor) {
+				outgoingReactor.node.reactor_inputs.splice(j, 1);
+			}
+		}
+	}
+	
+	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
+	// itself from the list of reactors.
+	workspace_box.node.removeChild(reactor);
+	for (var j = 0; j < workspace_box.length; ++j) {
+		if (workspace_box[j] == reactor) {
+			workspace_box.splice(j, 1);
+		}
+	}
 }
 
 function selected(page){

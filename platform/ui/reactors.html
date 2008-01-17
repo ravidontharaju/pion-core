@@ -167,8 +167,8 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_3" name="event_type"></td>
 			</tr>
 			<tr>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="delete">Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="cancel">Cancel</button></td>
 				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
 			</tr>
 		</table>
@@ -185,8 +185,8 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
 			<tr>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="delete">Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="cancel">Cancel</button></td>
 				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
 			</tr>
 		</table>
@@ -203,8 +203,8 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
 			<tr>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="delete">Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="cancel">Cancel</button></td>
 				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
 			</tr>
 		</table>
@@ -221,11 +221,16 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
 			<tr>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_1" onclick=alert("Delete")>Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button type="put_something_here_2" onclick=alert("Cancel")>Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="delete">Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="cancel">Cancel</button></td>
 				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
 			</tr>
 		</table>
+	</div>
+	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
+		<p>Are you sure you want to delete this reactor?</p>
+		<button dojoType=dijit.form.Button id="cancel_delete">Cancel</button>
+		<button dojoType=dijit.form.Button id="confirm_delete">Delete</button>
 	</div>
 <!-- end configuration dialogs -->
 
