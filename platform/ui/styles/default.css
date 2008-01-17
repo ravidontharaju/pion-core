@@ -68,7 +68,7 @@ a img {
 
 #secondaryMenu {
 	float: right;
-	margin: 0;
+	margin: 0 20px 0 0;
 	padding: 0;
 }
 
@@ -79,7 +79,7 @@ a img {
 	background: #0b0b0b;
 	height: 30px;
 	margin: 0 auto;
-	padding: 0 10px 0 0;
+	padding: 0 20px 0 0;
 	border-bottom: 1px solid #CCCCCC;
 }
 

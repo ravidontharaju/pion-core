@@ -8,48 +8,80 @@
 </head>
 <body bgcolor="#ffffff">
 
-<div id="splash">
-<span class="center">
-<!--url's used in the movie-->
-<a href="reactors.html"></a>
-<!--text used in the movie-->
-<!-- saved from url=(0013)about:internet -->
-<script language="javascript">
-	if (AC_FL_RunContent == 0) {
-		alert("This page requires AC_RunActiveContent.js.");
-	} else {
-		AC_FL_RunContent(
-			'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0',
-			'width', '800',
-			'height', '600',
-			'src', 'atom',
-			'quality', 'high',
-			'pluginspage', 'http://www.macromedia.com/go/getflashplayer',
-			'align', 'middle',
-			'play', 'true',
-			'loop', 'true',
-			'scale', 'showall',
-			'wmode', 'window',
-			'devicefont', 'false',
-			'id', 'atom',
-			'bgcolor', '#ffffff',
-			'name', 'atom',
-			'menu', 'true',
-			'allowFullScreen', 'false',
-			'allowScriptAccess','sameDomain',
-			'movie', 'atom',
-			'salign', ''
-			); //end AC code
-	}
-</script>
-<noscript>
-	<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" width="800" height="600" id="atom" align="middle">
-	<param name="allowScriptAccess" value="sameDomain" />
-	<param name="allowFullScreen" value="false" />
-	<param name="movie" value="atom.swf" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" />	<embed src="atom.swf" quality="high" bgcolor="#ffffff" width="800" height="600" name="atom" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
-	</object>
-</noscript>
-</span>
+
+
+
+
+<div class="content">
+
+            <div class="leftCol">
+               
+                        
+				<SCRIPT LANGUAGE="JavaScript1.1">
+                <!--
+                var MM_contentVersion = 8;
+                var plugin = (navigator.mimeTypes && navigator.mimeTypes["application/x-shockwave-flash"]) ? navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin : 0;
+                if ( plugin ) {
+                        var words = navigator.plugins["Shockwave Flash"].description.split(" ");
+                        for (var i = 0; i < words.length; ++i)
+                        {
+                        if (isNaN(parseInt(words[i])))
+                        continue;
+                        var MM_PluginVersion = words[i]; 
+                        }
+                    var MM_FlashCanPlay = MM_PluginVersion >= MM_contentVersion;
+                }
+                else if (navigator.userAgent && navigator.userAgent.indexOf("MSIE")>=0 
+                   && (navigator.appVersion.indexOf("Win") != -1)) {
+                    document.write('<SCR' + 'IPT LANGUAGE=VBScript\> \n'); //FS hide this from IE4.5 Mac by splitting the tag
+                    document.write('on error resume next \n');
+                    document.write('MM_FlashCanPlay = ( IsObject(CreateObject("ShockwaveFlash.ShockwaveFlash." & MM_contentVersion)))\n');
+                    document.write('</SCR' + 'IPT\> \n');
+                }
+                if ( MM_FlashCanPlay ) {
+                        document.write('<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"');
+                    document.write('  codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" ');
+                    document.write(' ID="script" WIDTH="300" HEIGHT="180" ALIGN="">');
+                    document.write(' <PARAM NAME=movie VALUE="atom.swf"> <PARAM NAME=quality VALUE=high> <PARAM NAME=bgcolor VALUE=#000000>  '); 
+                    document.write(' <EMBED src="atom.swf" quality=high bgcolor=#000000  ');
+                    document.write(' swLiveConnect=FALSE WIDTH="500" HEIGHT="180" NAME="script" ALIGN="middle"');
+                    document.write(' TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer">');
+                    document.write(' </EMBED>');
+                    document.write(' </OBJECT>');
+                } else{
+                    document.write('<IMG SRC="images/atom.png" WIDTH="500" HEIGHT="180" usemap="#script" BORDER="0">');
+                }
+                //-->
+                </SCRIPT>
+                <NOSCRIPT><IMG SRC="images/atom.png" WIDTH="500" HEIGHT="180" BORDER="0"></NOSCRIPT>
+            </div>
+
+			<div class="rightCol">
+            <table cellpadding="5" cellspacing="5" border="0">
+            <tr>
+            	<td rowspan="5" width="20" style="border-left: 1px #999999 solid;">&nbsp;</td>
+            	<tr>
+                	<th colspan="2" style="border-bottom: 1px #999999 solid;">Sign in to Pion</th>
+                </tr><tr><form>
+                	<td width="50%" align="right" nowrap>Email Address</td>
+                    <td align="right"><input type="text"></td>
+                </tr><tr>
+                	<td width="50%" align="right">Password</td>
+                    <td align="right"><input type="text">
+                </tr><tr>
+                	<td>&nbsp;</td>
+                    <td align="right"><a href="reactors.html"><img src="images/button-sign-in-off.png" width="62" height="22" alt="Sign In" border="0"></a></td>
+                </tr></form>
+             </table>           
+            </div>
+            
+</div>       
+	
+
+
+<div id="footer">
+    <p>&copy 2008 Atomic Labs, Inc. All rights reserved.</p>
 </div>
+
 </body>
 </html>
