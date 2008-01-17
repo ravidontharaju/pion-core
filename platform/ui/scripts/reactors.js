@@ -1,9 +1,11 @@
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
+dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
+dojo.require("dijit.form.FilteringSelect");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.TabContainer");
@@ -202,7 +204,7 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
 		dialog.show();
-		dialog.execute = function(dialogFields) { updateName(dialogFields, new_div); }
+		dialog.execute = function(dialogFields) { updateReactorConfig(dialogFields, new_div); }
 	}
 
 	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
@@ -313,9 +315,13 @@ function isDuplicateName(reactor, name) {
 	return false;
 }
 
-function updateName(dialogFields, node) {
+function updateReactorConfig(dialogFields, node) {
 	node.name = dialogFields.name;
 	node.innerHTML = dialogFields.name;
+	if (dialogFields.event_type) {
+		node.event_type = dialogFields.event_type;
+		console.debug('node.event_type set to ', node.event_type);
+	}
 }
 
 function deleteReactorIfConfirmed(reactor) {
@@ -323,7 +329,7 @@ function deleteReactorIfConfirmed(reactor) {
 	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteReactor(reactor); };
 	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
 	dialog.show();
-	setTimeout("dijit.byId('cancel_delete').focus()", 100);
+	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
 	
 function deleteReactor(reactor) {

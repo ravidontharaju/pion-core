@@ -1,0 +1,10 @@
+{
+	identifier: "term_ref",
+	items: [
+		{term_id: "Event Type 1", term_ref: 1},
+		{term_id: "Event Type 2", term_ref: 2},
+		{term_id: "Event Type 3", term_ref: 3},
+		{term_id: "Special Event Type 1", term_ref: 4},
+		{term_id: "Special Event Type 2", term_ref: 5}
+	]
+}
