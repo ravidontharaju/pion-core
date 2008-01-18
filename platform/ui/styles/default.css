@@ -165,11 +165,23 @@ a img {
 	padding: 25px 0 0 0;
 }
 
-.sidebar {
+.sidebarInstructions {
 	line-height: 150%;
-	padding: 5px 5px;
+	padding: 5px 5px 0 5px;
 	background:#cccccc;
 	font-size: 11px;
+}
+
+.sidebar {
+	line-height: 150%;
+	padding: 0 5px 5px 5px;
+	background:#cccccc;
+	font-size: 11px;
+}
+
+#sidebarBottom {
+	margin: 20px 0 0 0;
+	height: 150px;
 }
 
 .sidebarHeader {
@@ -180,7 +192,7 @@ a img {
 	border-bottom: 1px #ffffff solid;
 }
 
-.collectionHeader {
+.tundra .collectionHeader .dijitAccordionTitle {
 	background: #ffcccc;
 	font-size: 12px;
 	font-weight: bold;
@@ -188,7 +200,7 @@ a img {
 	padding: 5px;
 }
 
-.processingHeader {
+.tundra .processingHeader .dijitAccordionTitle {
 	background: #cce5ff;
 	font-size: 12px;
 	font-weight: bold;
@@ -196,7 +208,7 @@ a img {
 	padding: 5px;
 }
 
-.storageHeader {
+.tundra .storageHeader .dijitAccordionTitle {
 	background: #cedaa6;
 	font-size: 12px;
 	font-weight: bold;
@@ -205,8 +217,6 @@ a img {
 }
 
 .reactorBucket {
-	height: 100px;
-	height: 90px;
 	background: #ffffff;
 	padding: 5px;
 }
