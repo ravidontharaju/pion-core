@@ -14,7 +14,7 @@ dojo.require("dojox.gfx");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 var STEP = 10;
-var num_tabs = 3;
+var num_initial_workspaces = 2;
 
 var latest_event = null;
 var workspace_boxes = [];
@@ -23,35 +23,36 @@ var surfaces = [];
 var surface = null;
 var tracking = false;
 
-var init = function(){
-	workspace_boxes.push(workspace_box_1);
-	workspace_boxes.push(workspace_box_2);
-	workspace_boxes.push(workspace_box_3);
-	var wrappers = [];
-	wrappers[0] = function(source, nodes, copy, target){
-		handleDropOnWorkspace(source, nodes, copy, workspace_boxes[0]);
-	}
-	wrappers[1] = function(source, nodes, copy, target){
-		handleDropOnWorkspace(source, nodes, copy, workspace_boxes[1]);
-	}
-	wrappers[2] = function(source, nodes, copy, target){
-		handleDropOnWorkspace(source, nodes, copy, workspace_boxes[2]);
-	}
-	var box = dojo.marginBox(workspace_boxes[0].node);
-	for (var i = 0; i < num_tabs; ++i) {
-		dojo.connect(workspace_boxes[i], "onDndDrop", wrappers[i]);
-		dojo.connect(workspace_boxes[i].node, "onmouseup", updateLatestMouseUpEvent);
-		surfaces.push(dojox.gfx.createSurface(workspace_boxes[i].node, box.w, box.h));
-		workspace_boxes[i].reactors = [];
+var init = function() {
+	for (var i = 0; i < num_initial_workspaces; ++i) {
+		var selectIt = (i == 0);
+		addWorkspace(selectIt);
 	}
 
 	workspace_box = workspace_boxes[0];
 	surface = surfaces[0];
-};
+}
 
 dojo.addOnLoad(init);
 
-function updateLatestMouseUpEvent(e){
+function addWorkspace(selectIt) {
+	var i = workspace_boxes.length;
+	var tab_container = dijit.byId("mainTabContainer");
+	var surface_box = dojo.marginBox(tab_container.domNode);
+	var content_pane = new dijit.layout.ContentPane({ class: "workspacePane", title: 'Workspace ' + (i + 1) });
+	tab_container.addChild(content_pane, i);
+	workspace_boxes[i] = new dojo.dnd.Target(content_pane.domNode, { accept: ["reactor"] });
+	dojo.addClass(workspace_boxes[i].node, "workspaceTarget");
+	dojo.connect(workspace_boxes[i], "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, workspace_boxes[i]); });
+	dojo.connect(workspace_boxes[i].node, "onmouseup", updateLatestMouseUpEvent);
+	surfaces.push(dojox.gfx.createSurface(workspace_boxes[i].node, surface_box.w, surface_box.h));
+	workspace_boxes[i].reactors = [];
+	if (selectIt) {
+		tab_container.selectChild(content_pane);
+	}
+}
+
+function updateLatestMouseUpEvent(e) {
 	latest_event = e;
 	console.debug("e = ", e);
 }
@@ -112,9 +113,9 @@ function updateConnectionLine(poly, start_node, end_node) {
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
 }
 
-function handleDropOnWorkspace(source, nodes, copy, target){
+function handleDropOnWorkspace(source, nodes, copy, target) {
 	console.debug("handleDropOnWorkspace called, target.node.id = ", target.node.id, ", workspace_box.node.id = ", workspace_box.node.id);
-	if (target != workspace_box){
+	if (target != workspace_box) {
 		// So why was handleDropOnWorkspace called?  Because the manager is using a global canDrop flag.
 		// I added 
 		//		if(this.targetState == "Disabled"){ break; }
@@ -211,7 +212,7 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
 	// getNearbyGridPointInBox() takes care of both.  Note that parts of this.constraintBox are not calculated until
 	// onFirstMove() is called.
-	m5.onMove = function(mover, leftTop){
+	m5.onMove = function(mover, leftTop) {
 		//console.debug("In m5.onMove, this.constraintBox = ", this.constraintBox);
 		//console.debug("leftTop = ", leftTop);
 		var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
@@ -239,7 +240,7 @@ function handleDropOnWorkspace(source, nodes, copy, target){
 /**/
 }
 
-function handleDropOnReactor(source, nodes, copy, target){
+function handleDropOnReactor(source, nodes, copy, target) {
 	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
 	console.debug("target.targetState = ", target.targetState, ", tracking = ", tracking, ', target.node.lastChild = ', target.node.lastChild);
 
@@ -332,7 +333,7 @@ function deleteReactorIfConfirmed(reactor) {
 	dialog.show();
 	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
-	
+
 function deleteReactor(reactor) {
 	console.debug('deleting ', reactor.name);
 
@@ -352,7 +353,7 @@ function deleteReactor(reactor) {
 	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
 		var outgoingReactor = reactor.reactor_outputs[i];
 		outgoingReactor.line.removeShape();
-		
+
 		// remove reactor from the inputs of outgoingReactor
 		for (var j = 0; j < outgoingReactor.node.reactor_inputs.length; ++j) {
 			if (outgoingReactor.node.reactor_inputs[j] == reactor) {
@@ -360,18 +361,23 @@ function deleteReactor(reactor) {
 			}
 		}
 	}
-	
+
 	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
 	// itself from the list of reactors.
 	workspace_box.node.removeChild(reactor);
-	for (var j = 0; j < workspace_box.length; ++j) {
-		if (workspace_box[j] == reactor) {
-			workspace_box.splice(j, 1);
+	for (var j = 0; j < workspace_box.reactors.length; ++j) {
+		if (workspace_box.reactors[j] == reactor) {
+			workspace_box.reactors.splice(j, 1);
 		}
 	}
 }
 
-function selected(page){
+function selected(page) {
+	if (page.title == "Add new workspace") {
+		console.debug("'Add new workspace' tab was selected");
+		addWorkspace(true);
+		return;
+	}
 	var result = page.title.match(/Workspace (\d+)/);
 	var index = result[1] - 1;
 	console.debug("selected " + page.title + ", page.id = " + page.id + ", index = " + index);
