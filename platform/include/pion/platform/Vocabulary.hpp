@@ -70,6 +70,8 @@ public:
 		TYPE_STRING,			///< variable-length string up to 65535 bytes
 		TYPE_LONG_STRING,		///< variable-length string up to 2^32-1 bytes
 		TYPE_DATE_TIME,			///< represents a specific date and/or time using term_format
+		TYPE_DATE,				///< represents a specific date using term_format
+		TYPE_TIME,				///< represents a specific time of day using term_format
 		TYPE_CHAR,				///< fixed-length string of size term_size
 		TYPE_OBJECT				///< object may contain other terms (boost::any)
 	};
@@ -299,17 +301,6 @@ public:
 	 * @return std::string a temporary string object that represents the data type
 	 */
 	static std::string getDataTypeAsString(const DataType type);
-	
-	/**
-	 * parses a typed value from a string
-	 *
-	 * @param result a boost::any object that stores the result
-	 * @param str the string to parse the value from
-	 * @param type data type to use for storage of the result
-	 *
-	 * @return size_t number of characters parsed
-	 */
-	static void parseString(boost::any& result, std::string str, const DataType type);
 	
 	
 private:

@@ -280,8 +280,15 @@ inline void LogCodec::mapFieldToTerm(const std::string& field,
 {
 	// prepare a new Logfield object
 	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
-	if (term.term_type == Vocabulary::TYPE_DATE_TIME)
-		field_ptr->log_time_facet.setFormat(term.term_format);
+	switch (term.term_type) {
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			field_ptr->log_time_facet.setFormat(term.term_format);
+			break;
+		default:
+			break; // do nothing
+	}
 	// add it to the mapping of field names
 	m_field_map[field] = field_ptr;
 	// append the new field to the current (default) format
@@ -366,6 +373,8 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 			out << boost::any_cast<std::string>(value);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
 			log_time_facet.write(out, boost::any_cast<const PionDateTime&>(value));
 			break;
 		case Vocabulary::TYPE_OBJECT:
@@ -415,6 +424,8 @@ inline void LogCodec::LogField::read(const char *buf, boost::any& value)
 			value = std::string(buf);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
 		{
 			PionDateTime dt;
 			log_time_facet.fromString(buf, dt);

@@ -282,6 +282,10 @@ Vocabulary::DataType Vocabulary::parseDataType(std::string str)
 		return TYPE_LONG_STRING;
 	else if (str == "datetime") 
 		return TYPE_DATE_TIME;
+	else if (str == "date") 
+		return TYPE_DATE;
+	else if (str == "time") 
+		return TYPE_TIME;
 	else if (str == "char") 
 		return TYPE_CHAR;
 	else if (str == "object") 
@@ -342,6 +346,12 @@ std::string Vocabulary::getDataTypeAsString(const DataType data_type)
 		case TYPE_DATE_TIME:
 			str = "datetime";
 			break;
+		case TYPE_DATE:
+			str = "date";
+			break;
+		case TYPE_TIME:
+			str = "time";
+			break;
 		case TYPE_CHAR:
 			str = "char";
 			break;
@@ -350,58 +360,6 @@ std::string Vocabulary::getDataTypeAsString(const DataType data_type)
 			break;
 	}
 	return str;
-}
-	
-void Vocabulary::parseString(boost::any& result, std::string str, const DataType type)
-{
-	switch(type) {
-		case TYPE_NULL:
-			// reset value by assigning to an empty temp any object
-			result = boost::any();
-			break;
-		case TYPE_INT8:
-		case TYPE_INT16:
-			result = boost::lexical_cast<int>(str);
-			break;
-		case TYPE_UINT8:
-		case TYPE_UINT16:
-			result = boost::lexical_cast<unsigned int>(str);
-			break;
-		case TYPE_INT32:
-			result = boost::lexical_cast<long>(str);
-			break;
-		case TYPE_UINT32:
-			result = boost::lexical_cast<unsigned long>(str);
-			break;
-		case TYPE_INT64:
-			result = boost::lexical_cast<long long>(str);
-			break;
-		case TYPE_UINT64:
-			result = boost::lexical_cast<unsigned long long>(str);
-			break;
-		case TYPE_FLOAT:
-			result = boost::lexical_cast<float>(str);
-			break;
-		case TYPE_DOUBLE:
-			result = boost::lexical_cast<double>(str);
-			break;
-		case TYPE_LONG_DOUBLE:
-			result = boost::lexical_cast<long double>(str);
-			break;
-		case TYPE_SHORT_STRING:
-		case TYPE_STRING:
-		case TYPE_LONG_STRING:
-		case TYPE_CHAR:
-			result = str;
-			break;
-		case TYPE_DATE_TIME:
-			// implement me!
-			// ...
-			break;
-		case TYPE_OBJECT:
-			// do nothing
-			break;
-	}
 }
 	
 	

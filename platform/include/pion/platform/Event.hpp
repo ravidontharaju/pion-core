@@ -422,7 +422,7 @@ public:
 	}
 	
 	/// returns const reference to the parameter map for the Event (for iteration)
-	inline const ParameterMap& getParameterMap(void) { return m_parms; }
+	inline const ParameterMap& getParameterMap(void) const { return m_parms; }
 	
 	/// returns the type of Event that this is
 	inline EventType getType(void) const { return m_event_type; }
