@@ -25,13 +25,30 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of DatabaseManager
-const std::string			DatabaseManager::DEFAULT_CONFIG_FILE = "databases.xml";
-const std::string			DatabaseManager::DEFAULT_DATABASE_TYPE = "sqlite";
+const std::string		DatabaseManager::DEFAULT_CONFIG_FILE = "databases.xml";
+const std::string		DatabaseManager::DATABASE_ELEMENT_NAME = "database";
+const std::string		DatabaseManager::DEFAULT_DATABASE_TYPE = "sqlite";
 
 
 // DatabaseManager member functions
-// ...
+	
+DatabaseManager::DatabaseManager(const VocabularyManager& vocab_mgr)
+	: PluginConfig<Database>(vocab_mgr, DEFAULT_CONFIG_FILE, DATABASE_ELEMENT_NAME)
+{
+	setLogger(PION_GET_LOGGER("pion.platform.DatabaseManager"));
+}
+	
+DatabasePtr DatabaseManager::getDatabase(const std::string& database_id)
+{
+	boost::mutex::scoped_lock manager_lock(m_mutex);
+	Database *database_ptr = m_plugins.get(database_id);
+	// throw an exception if the Database was not found
+	if (database_ptr == NULL)
+		throw DatabaseNotFoundException(database_id);
+	// return a cloned instance of the Database since it may change during use
+	return database_ptr->clone();
+}
 
-
+	
 }	// end namespace platform
 }	// end namespace pion

@@ -30,6 +30,8 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "config";
+const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "plugin";
+const std::string		ConfigManager::PLUGIN_ID_ATTRIBUTE_NAME = "id";
 const std::string		ConfigManager::URN_UUID_PREFIX = "urn:uuid:";
 
 		
@@ -265,6 +267,153 @@ bool ConfigManager::updateConfigOption(const std::string& option_name,
 	
 	return true;
 }
+
+void ConfigManager::openPluginConfig(const std::string& plugin_name,
+									 AddPluginCallback add_plugin_func)
+{
+	// open the file and find the "config" root element
+	ConfigManager::openConfigFile();
+	
+	xmlNodePtr plugin_node = m_config_node_ptr->children;
+	while ( (plugin_node = findConfigNodeByName(plugin_name, plugin_node)) != NULL)
+	{
+		// parse new plug-in definition
+		xmlChar *xml_char_ptr = xmlGetProp(plugin_node, reinterpret_cast<const xmlChar*>(PLUGIN_ID_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+			if (xml_char_ptr != NULL)
+				xmlFree(xml_char_ptr);
+			throw EmptyPluginIdException(getConfigFile());
+		}
+		const std::string new_plugin_id(reinterpret_cast<char*>(xml_char_ptr));
+		xmlFree(xml_char_ptr);
+		
+		// find plug-in type
+		std::string new_plugin_type;
+		if (! getConfigOption(PLUGIN_ELEMENT_NAME, new_plugin_type, plugin_node->children))
+			throw EmptyPluginElementException(new_plugin_id);
+
+		// execute callback to actually add the plug-in
+		add_plugin_func(new_plugin_id, new_plugin_type, plugin_node->children);
+
+		// look for more plug-in nodes
+		plugin_node = plugin_node->next;
+	}
+}
+	
+bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr config_ptr)
+{
+	xmlNodePtr plugin_config_copy = xmlCopyNodeList(config_ptr);
+	if (plugin_config_copy == NULL)
+		return false;
+	
+	// remove the plugin type element, if it exists in the new config
+	xmlNodePtr plugin_plugin_node = findConfigNodeByName(PLUGIN_ELEMENT_NAME,
+														 plugin_config_copy);
+	if (plugin_plugin_node != NULL) {
+		xmlUnlinkNode(plugin_plugin_node);
+		xmlFreeNode(plugin_plugin_node);
+	}
+	
+	// add the plugin config to the config file
+	if (xmlAddChild(plugin_node_ptr, plugin_config_copy) == NULL) {
+		xmlFreeNodeList(plugin_config_copy);
+		return false;
+	}
+	
+	return true;
+}
+	
+void ConfigManager::setPluginConfig(const std::string& plugin_name,
+									const std::string& plugin_id,
+									const xmlNodePtr config_ptr)
+{
+	// find the plug-in element in the XML config document
+	xmlNodePtr plugin_node = findConfigNodeByAttr(plugin_name,
+												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  plugin_id,
+												  m_config_node_ptr->children);
+	if (plugin_node == NULL)
+		throw UpdatePluginConfigException(plugin_id);
+	
+	// remove all children except the plugin type node
+	xmlNodePtr cur_node;
+	xmlNodePtr next_node = plugin_node->children;
+	while (next_node != NULL) {
+		cur_node = next_node;
+		next_node = next_node->next;
+		
+		if (cur_node->type != XML_ELEMENT_NODE
+			|| xmlStrcmp(cur_node->name, reinterpret_cast<const xmlChar*>(PLUGIN_ELEMENT_NAME.c_str()))!=0)
+		{
+			xmlUnlinkNode(cur_node);
+			xmlFreeNode(cur_node);
+		}
+	}
+	
+	// update the plugin configuration parameters (if any)
+	if (config_ptr != NULL) {
+		if (! setPluginConfig(plugin_node, config_ptr))
+			throw UpdatePluginConfigException(plugin_id);
+	}
+	
+	// save the new XML config file
+	saveConfigFile();
+}
+
+void ConfigManager::addPluginConfig(const std::string& plugin_name,
+									const std::string& plugin_id,
+									const std::string& plugin_type,
+									const xmlNodePtr config_ptr)
+{
+	// create a new node for the plug-in and add it to the XML config document
+	xmlNodePtr new_plugin_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(plugin_name.c_str()));
+	if (new_plugin_node == NULL)
+		throw AddPluginConfigException(plugin_type);
+	if ((new_plugin_node=xmlAddChild(m_config_node_ptr, new_plugin_node)) == NULL) {
+		xmlFreeNode(new_plugin_node);
+		throw AddPluginConfigException(plugin_type);
+	}
+	
+	// set the id attribute for the plug-in element
+	if (xmlNewProp(new_plugin_node, reinterpret_cast<const xmlChar*>(PLUGIN_ID_ATTRIBUTE_NAME.c_str()),
+				   reinterpret_cast<const xmlChar*>(plugin_id.c_str())) == NULL)
+		throw AddPluginConfigException(plugin_type);
+	
+	// add a plugin type child element to the plug-in element
+	if (xmlNewTextChild(new_plugin_node, NULL,
+						reinterpret_cast<const xmlChar*>(PLUGIN_ELEMENT_NAME.c_str()),
+						reinterpret_cast<const xmlChar*>(plugin_type.c_str())) == NULL)
+		throw AddPluginConfigException(plugin_type);
+	
+	// update the plug-in configuration parameters (if any)
+	if (config_ptr != NULL) {
+		if (! setPluginConfig(new_plugin_node, config_ptr))
+			throw AddPluginConfigException(plugin_type);
+	}
+	
+	// save the new XML config file
+	saveConfigFile();
+}
+		
+void ConfigManager::removePluginConfig(const std::string& plugin_name,
+									   const std::string& plugin_id)
+{
+	// find the plug-in node to remove
+	xmlNodePtr plugin_node = findConfigNodeByAttr(plugin_name,
+												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  plugin_id,
+												  m_config_node_ptr->children);
+	if (plugin_node == NULL)
+		throw RemovePluginConfigException(plugin_id);
+	
+	// remove the plug-in element (and all of its children)
+	xmlUnlinkNode(plugin_node);
+	xmlFreeNode(plugin_node);
+	
+	// save the new XML config file
+	saveConfigFile();
+}
+
 	
 }	// end namespace platform
 }	// end namespace pion

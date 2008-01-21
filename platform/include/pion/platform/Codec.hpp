@@ -23,11 +23,11 @@
 #include <iostream>
 #include <libxml/tree.h>
 #include <boost/shared_ptr.hpp>
-#include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -38,7 +38,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// Codec: used to encode and decode Events using a particular format
 ///
 class Codec
-	: private boost::noncopyable
+	: public PlatformPlugin
 {
 public:
 
@@ -76,7 +76,7 @@ public:
 	/**
 	 * clones the codec, returning a pointer to the cloned copy
 	 *
-	 * @return Codec* pointer to the cloned copy of the codec
+	 * @return CodecPtr pointer to the cloned copy of the codec
 	 */
 	virtual boost::shared_ptr<Codec> clone(void) const = 0;
 
@@ -101,14 +101,14 @@ public:
 	 * sets configuration parameters for this Codec
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
-	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
-	 *                         configuration parameters
+	 * @param config_ptr pointer to a list of XML nodes containing Codec
+	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr);
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
-	 * this updates the Vocabulary information used by this Codec; it should be
-	 * called whenever the global Vocabulary is updated
+	 * this updates the Vocabulary information used by this Codec;
+	 * it should be called whenever the global Vocabulary is updated
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
@@ -168,24 +168,6 @@ public:
 		return event_ptr;
 	}
 	
-	/// sets the unique identifier for this Codec
-	inline void setId(const std::string& codec_id) { m_codec_id = codec_id; }
-	
-	/// returns the unique identifier for this Codec
-	inline const std::string& getId(void) const { return m_codec_id; }
-	
-	/// sets the descriptive name for this Codec
-	inline void setName(const std::string& name) { m_name = name; }
-	
-	/// returns the descriptive name for this Codec
-	inline const std::string& getName(void) const { return m_name; }
-	
-	/// sets the descriptive comment for this Codec
-	inline void setComment(const std::string& comment) { m_comment = comment; }
-	
-	/// returns the descriptive comment for this Codec
-	inline const std::string& getComment(void) const { return m_comment; }
-
 	/// returns the type of Event that is used by this Codec
 	inline Event::EventType getEventType(void) const { return m_event_type; }
 
@@ -193,34 +175,17 @@ public:
 protected:
 	
 	/// protected copy function (use clone() instead)
-	inline void copy(const Codec& c) {
-		m_codec_id = c.m_codec_id;
-		m_name = c.m_name;
-		m_comment = c.m_comment;
+	inline void copyCodec(const Codec& c) {
+		copyPlugin(c);
 		m_event_type = c.m_event_type;
 	}
-	
+
 	
 private:
 	
 	/// name of the event type element for Pion XML config files
 	static const std::string		EVENT_ELEMENT_NAME;
 
-	/// name of the descriptive name element for Pion XML config files
-	static const std::string		NAME_ELEMENT_NAME;
-	
-	/// name of the comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
-
-
-	/// uniquely identifies this particular Codec
-	std::string						m_codec_id;
-
-	/// descriptive name for this Codec
-	std::string						m_name;
-
-	/// descriptive comment for this Codec
-	std::string						m_comment;
 	
 	/// the type of Events used by this Codec (TermRef maps to Terms of type OBJECT)
 	Event::EventType				m_event_type;

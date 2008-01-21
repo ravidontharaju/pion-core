@@ -41,7 +41,7 @@ const unsigned int			LogCodec::READ_BUFFER_SIZE = 1024 * 126;	// 128KB
 CodecPtr LogCodec::clone(void) const
 {
 	LogCodec *new_codec(new LogCodec());
-	new_codec->copy(*this);
+	new_codec->copyCodec(*this);
 	boost::mutex::scoped_lock codec_lock(m_mutex);
 	new_codec->m_needs_to_write_headers = m_needs_to_write_headers;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
@@ -203,24 +203,24 @@ bool LogCodec::read(std::istream& in, Event& e)
 	return true;
 }
 
-void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr)
+void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Codec base class
 	reset();
-	Codec::setConfig(v, codec_config_ptr);
+	Codec::setConfig(v, config_ptr);
 	boost::mutex::scoped_lock codec_lock(m_mutex);
 	
 	// check if the Codec should include headers when writing output
 	std::string headers_option;
 	if (ConfigManager::getConfigOption(HEADERS_ELEMENT_NAME, headers_option,
-									   codec_config_ptr))
+									   config_ptr))
 	{
 		if (headers_option == "true")
 			m_needs_to_write_headers = true;
 	}
 	
 	// next, map the fields to Terms
-	xmlNodePtr codec_field_node = codec_config_ptr;
+	xmlNodePtr codec_field_node = config_ptr;
 	while ( (codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL)
 	{
 		// parse new field mapping

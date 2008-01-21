@@ -20,29 +20,22 @@
 #ifndef __PION_DATABASEMANAGER_HEADER__
 #define __PION_DATABASEMANAGER_HEADER__
 
-#include <boost/bind.hpp>
-#include <boost/signal.hpp>
-#include <boost/noncopyable.hpp>
+#include <string>
+#include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionLogger.hpp>
-#include <pion/PluginManager.hpp>
-#include <pion/platform/Vocabulary.hpp>
-#include <pion/platform/VocabularyManager.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Database.hpp>
+#include <pion/platform/PluginConfig.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-
 ///
 /// DatabaseManager: manages the creation of Databases
 ///
 class PION_PLATFORM_API DatabaseManager :
-	public ConfigManager,
-	private boost::noncopyable
+	public PluginConfig<Database>
 {
 public:
 
@@ -52,114 +45,67 @@ public:
 		DatabaseNotFoundException(const std::string& database_id)
 			: PionException("No databases found for identifier: ", database_id) {}
 	};
-
-	/// exception thrown when trying to add a database with an identifier that already exists
-	class DuplicateDatabaseException : public PionException {
-	public:
-		DuplicateDatabaseException(const std::string& database_id)
-			: PionException("Cannot register database with a duplicate identifier: ", database_id) {}
-	};
 	
-
-	/**
-	 * constructs a new DatabaseManager object
-	 *
-	 * @param vocab_mgr the global manager of Vocabularies
-	 */
-	DatabaseManager(const VocabularyManager& vocab_mgr)
-		: ConfigManager(DEFAULT_CONFIG_FILE),
-		m_logger(PION_GET_LOGGER("pion.platform.DatabaseManager")),
-		m_vocabulary(vocab_mgr.getVocabulary())
-	{
-		vocab_mgr.registerForUpdates(boost::bind(&DatabaseManager::updateVocabulary, this));
-	}
 
 	/// virtual destructor
 	virtual ~DatabaseManager() {}
 	
 	/**
-	 * registers a new Database
+	 * constructs a new DatabaseManager object
+	 *
+	 * @param vocab_mgr the global manager of Vocabularies
+	 */
+	DatabaseManager(const VocabularyManager& vocab_mgr);
+
+	/**
+	 * gets a unique instance of a Database
 	 *
 	 * @param database_id unique identifier associated with the Database
-	 * @return Database* pointer to the new Database object
+	 * @return DatabasePtr smart pointer to the Database object (destructs it when finished)
 	 */
-	inline Database *registerDatabase(const std::string& database_id) {
-		// determine the type of database (driver) to load
-		std::string database_type = DEFAULT_DATABASE_TYPE;
-		// ...
-		
-		// make sure the database was not already registered
-		Database *new_database_ptr;
-		try { new_database_ptr = m_databases.load(database_id, database_type); }
-		catch (PluginManager<Database>::DuplicatePluginException&) {
-			throw DuplicateDatabaseException(database_id);
-		}
-		new_database_ptr->setId(database_id);
-		m_signal_database_updated();
-		PION_LOG_DEBUG(m_logger, "Registered database (" << database_type << "): " << database_id);
-
-		// Needs to return something!
-		return NULL;
-	}
+	DatabasePtr getDatabase(const std::string& database_id);
 	
 	/**
-	 * releases a registered Database
+	 * sets configuration parameters for a managed Database
+	 *
+	 * @param database_id unique identifier associated with the Database
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                           configuration parameters
+	 */
+	void setDatabaseConfig(const std::string& database_id,
+						   const xmlNodePtr config_ptr);
+	
+	/**
+	 * adds a new Database object
+	 *
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 *
+	 * @return std::string string containing the Database's auto-generated identifier
+	 */
+	std::string addDatabase(const std::string& plugin_type,
+							const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a managed Database
 	 *
 	 * @param database_id unique identifier associated with the Database
 	 */
-	inline void removeDatabase(const std::string& database_id) {
-		// convert "plugin not found" exceptions into "database not found"
-		try { m_databases.remove(database_id); }
-		catch (PluginManager<Database>::PluginNotFoundException& /* e */) {
-			throw DatabaseNotFoundException(database_id);
-		}
-		m_signal_database_updated();
-		PION_LOG_DEBUG(m_logger, "Released database: " << database_id);
-	}
-	
-	/**
-	 * registers a callback function to be executed whenever a Database is updated
-	 *
-	 * @param f the callback function to register
-	 */
-	template <typename DatabaseUpdateFunction>
-	inline void registerForUpdates(DatabaseUpdateFunction f) const {
-		m_signal_database_updated.connect(f);
-	}
-
-	/// this updates the Vocabularies used by all Databases
-	inline void updateVocabulary(void) {
-		m_databases.run(boost::bind(&Database::updateVocabulary, _1,
-									boost::cref(m_vocabulary)));
-	}
-	
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
+	void removeDatabase(const std::string& database_id);
 	
 	
 private:
-
+	
 	/// default name of the database config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
+	/// name of the database element for Pion XML config files
+	static const std::string		DATABASE_ELEMENT_NAME;
+
 	/// the default type of database to use if one is not otherwise specified
 	static const std::string		DEFAULT_DATABASE_TYPE;
-	
-	
-	/// primary logging interface used by this class
-	PionLogger						m_logger;	
-
-	/// references the Vocabulary used by this DatabaseManager to describe Terms
-	const Vocabulary&				m_vocabulary;
-
-	/// collection of storage engine objects being managed
-	PluginManager<Database>			m_databases;
-
-	/// signal triggered whenever a Database is modified
-	mutable boost::signal0<void>	m_signal_database_updated;
 };
 
 

@@ -50,6 +50,13 @@ public:
 	virtual ~SQLiteDatabase() { close(); }
 	
 	/**
+	 * clones the Database, returning a pointer to the cloned copy
+	 *
+	 * @return DatabasePtr pointer to the cloned copy of the Database
+	 */
+	virtual DatabasePtr clone(void) const;
+
+	/**
 	 * opens the database connection
 	 *
 	 * @param create_backup if true, create a backup of the old database before opening

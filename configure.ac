@@ -53,4 +53,4 @@ AC_OUTPUT(pion-platform.pc Makefile
 	platform/Makefile platform/include/Makefile
 	platform/include/pion/Makefile platform/include/pion/platform/Makefile
 	platform/src/Makefile platform/apps/Makefile platform/tests/Makefile
-	platform/codecs/Makefile)
+	platform/codecs/Makefile platform/reactors/Makefile)

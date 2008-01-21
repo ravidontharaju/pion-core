@@ -17,45 +17,36 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/Codec.hpp>
+#include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of Codec
-const std::string			Codec::EVENT_ELEMENT_NAME = "event";
+// static members of PlatformPlugin
+const std::string			PlatformPlugin::NAME_ELEMENT_NAME = "name";
+const std::string			PlatformPlugin::COMMENT_ELEMENT_NAME = "comment";
 	
 		
-// Codec member functions
+// PlatformPlugin member functions
 
-void Codec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+void PlatformPlugin::setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr)
 {
-	PlatformPlugin::setConfig(v, config_ptr);
-	
-	// determine the type of event used by the codec
-	std::string codec_event_str;
-	if (! ConfigManager::getConfigOption(EVENT_ELEMENT_NAME, codec_event_str,
-										 config_ptr))
-		throw EmptyEventException(getId());
+	// get the descriptive name for the codec (if any)
+	ConfigManager::getConfigOption(NAME_ELEMENT_NAME, m_plugin_name,
+								   codec_config_ptr);
 
-	// find the Term reference number for the event type
-	m_event_type = v.findTerm(codec_event_str);
-	if (m_event_type == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(codec_event_str);
-
-	// make sure that it is an object type Term
-	if (v[m_event_type].term_type != Vocabulary::TYPE_OBJECT)
-		throw NotAnObjectException(codec_event_str);
+	// get the descriptive comments for the codec (if any)
+	ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, m_plugin_comment,
+								   codec_config_ptr);
 }
 	
-void Codec::updateVocabulary(const Vocabulary& v)
+void PlatformPlugin::updateVocabulary(const Vocabulary& v)
 {
-	PlatformPlugin::updateVocabulary(v);
-
-	// assume that term references never change
+	// nothing is currently necessary
 }
 
 }	// end namespace platform

@@ -21,11 +21,11 @@
 #define __PION_DATABASE_HEADER__
 
 #include <string>
-#include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionHashMap.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -36,17 +36,10 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// Database: abstract class for storing and retrieving Events
 ///
 class Database
-	: private boost::noncopyable
+	: public PlatformPlugin
 {
 public:
 	
-	/// exception thrown if the database does not recognize a configuration option
-	class UnknownOptionException : public PionException {
-	public:
-		UnknownOptionException(const std::string& option_name)
-			: PionException("Option not recognized by database: ", option_name) {}
-	};
-
 	/// exception thrown if there is an error opening a Database
 	class OpenDatabaseException : public PionException {
 	public:
@@ -82,6 +75,13 @@ public:
 			query_ptr = i->second;
 		return query_ptr;
 	}
+	
+	/**
+	 * clones the Database, returning a pointer to the cloned copy
+	 *
+	 * @return DatabasePtr pointer to the cloned copy of the Database
+	 */
+	virtual boost::shared_ptr<Database> clone(void) const = 0;
 	
 	/**
 	 * opens the database connection
@@ -162,32 +162,33 @@ public:
 						  EventPtrCollection& query_results) const = 0;
 	
 	/**
-	 * this updates the Vocabulary information used by this Database; it should
-	 * be called whenever the global Vocabulary is updated
+	 * sets configuration parameters for this Database
+	 *
+	 * @param v the Vocabulary that this Database will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing Database
+	 *                   configuration parameters
+	 */
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	
+	/**
+	 * this updates the Vocabulary information used by this Database; 
+	 * it should be called whenever the global Vocabulary is updated
 	 *
 	 * @param v the Vocabulary that this Database will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v) = 0;
-	
-	/**
-	 * sets a configuration option
-	 *
-	 * @param option_name the name of the option to change
-	 * @param option_value the value of the option
-	 */
-	virtual void setOption(const std::string& option_name, const std::string& option_value) {
-		throw UnknownOptionException(option_name);
-	}
-	
-	/// sets the unique identifier for this Database
-	inline void setId(const std::string& database_id) { m_database_id = database_id; }
-	
-	/// returns the unique identifier for this Database
-	inline const std::string& getId(void) const { return m_database_id; }
-	
+	virtual void updateVocabulary(const Vocabulary& v);
+		
 	
 protected:
 
+	/// protected copy function (use clone() instead)
+	inline void copyDatabase(const Database& d) {
+		copyPlugin(d);
+
+		// copy query map??
+		// ...
+	}
+	
 	
 	/// data type that maps query identifiers to pointers of compiled queries
 	typedef PION_HASH_MAP<QueryID, QueryPtr, PION_HASH(QueryID) >		QueryMap;
@@ -209,14 +210,15 @@ protected:
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap						m_query_map;
 
-	/// uniquely identifies this particular Database
-	std::string						m_database_id;
-
 	/// mutex to make class thread-safe
 	mutable boost::mutex			m_mutex;
 };	
 
+	
+/// data type used for Database smart pointers
+typedef boost::shared_ptr<Database>		DatabasePtr;
 
+	
 //
 // The following symbols must be defined for any Databases that you would
 // like to be able to load dynamically using the DatabaseManager::load()

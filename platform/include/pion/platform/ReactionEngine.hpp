@@ -20,39 +20,31 @@
 #ifndef __PION_REACTIONENGINE_HEADER__
 #define __PION_REACTIONENGINE_HEADER__
 
-#include <map>
-#include <list>
 #include <string>
-#include <boost/asio.hpp>
+#include <libxml/tree.h>
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
-#include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionScheduler.hpp>
-#include <pion/PluginManager.hpp>
 #include <pion/platform/Event.hpp>
-#include <pion/platform/Vocabulary.hpp>
-#include <pion/platform/VocabularyManager.hpp>
-#include <pion/platform/CodecFactory.hpp>
-#include <pion/platform/DatabaseManager.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Reactor.hpp>
+#include <pion/platform/PluginConfig.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-
+// forward declarations
+class VocabularyManager;
+class CodecFactory;
+class DatabaseManager;
+	
 ///
 /// ReactionEngine: manages all of the registered Reactors,
 ///                 and routes Events between them
 ///
-class ReactionEngine :
-	public ConfigManager,
-	private boost::noncopyable
+class PION_PLATFORM_API ReactionEngine :
+	public PluginConfig<Reactor>
 {
 public:
 
@@ -62,14 +54,10 @@ public:
 		ReactorNotFoundException(const std::string& reactor_id)
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
-
-	/// exception thrown when trying to add a Reactor with an identifier that already exists
-	class DuplicateReactorException : public PionException {
-	public:
-		DuplicateReactorException(const std::string& reactor_id)
-			: PionException("Cannot add Reactor with a duplicate identifier: ", reactor_id) {}
-	};
-
+	
+	
+	/// virtual destructor
+	virtual ~ReactionEngine() {}
 	
 	/**
 	 * constructs a new ReactionEngine object
@@ -80,146 +68,65 @@ public:
 	 */
 	ReactionEngine(const VocabularyManager& vocab_mgr,
 				   const CodecFactory& codec_factory,
-				   const DatabaseManager& database_mgr)
-		: ConfigManager(DEFAULT_CONFIG_FILE),
-		m_logger(PION_GET_LOGGER("pion.platform.ReactionEngine")),
-		m_scheduler(PionScheduler::getInstance()),
-		m_vocabulary(vocab_mgr.getVocabulary()),
-		m_codec_factory(codec_factory),
-		m_database_mgr(database_mgr),
-		m_is_running(false)
-	{
-		vocab_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateVocabulary, this));
-		m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
-		m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
-	}
-
-	/// virtual destructor
-	virtual ~ReactionEngine() {}
-	
-	/// starts all Event processing
-	inline void start(void) {
-		boost::mutex::scoped_lock engine_lock(m_mutex);
-		if (! m_is_running) {
-			PION_LOG_INFO(m_logger, "Starting all reactors");
-			m_reactors.run(boost::bind(&Reactor::start, _1));
-			m_is_running = true;
-		}
-	}
-		
-	/// stops all Event processing
-	inline void stop(void) {
-		boost::mutex::scoped_lock engine_lock(m_mutex);
-		stopNoLock();
-	}
-	
-	/// resets all Reactors to their initial state
-	inline void reset(void) {
-		boost::mutex::scoped_lock engine_lock(m_mutex);
-		stopNoLock();
-		m_reactors.run(boost::bind(&Reactor::reset, _1));
-		PION_LOG_DEBUG(m_logger, "Reset all reactors");
-	}
-
-	/// stops all Event processing and removes all registered Reactors
-	inline void clear(void) {
-		boost::mutex::scoped_lock engine_lock(m_mutex);
-		stopNoLock();
-		m_reactors.clear();
-		PION_LOG_DEBUG(m_logger, "Removed all reactors");
-	}
-		
-	/// clears statistic counters for all Reactors
-	inline void clearStats(void) {
-		m_reactors.run(boost::bind(&Reactor::clearStats, _1));
-		PION_LOG_DEBUG(m_logger, "Cleared all reactor statistics");
-	}
+				   const DatabaseManager& database_mgr);
 
 	/**
-	 * adds a new Reactor for Event processing
+	 * sets configuration parameters for a managed Reactor
 	 *
-	 * @param reactor_id the identifier for the Reactor to be loaded
-	 * @param reactor_type the type of the Reactor class to load (searches 
-	 *                     plug-in directories and appends extensions)
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                           configuration parameters
 	 */
-	inline void addReactor(const std::string& reactor_id,
-						   const std::string& reactor_type)
-	{
-		Reactor *new_reactor_ptr;
-		try { new_reactor_ptr = m_reactors.load(reactor_id, reactor_type); }
-		catch (PluginManager<Reactor>::DuplicatePluginException&) {
-			throw DuplicateReactorException(reactor_id);
-		}
-		new_reactor_ptr->setId(reactor_id);
-		PION_LOG_DEBUG(m_logger, "Loaded reactor (" << reactor_type << "): " << reactor_id);
-	}
-
-	/**
-	 * removes a registered Reactor
-	 *
-	 * @param reactor_id the identifier for the Reactor to be removed
-	 */
-	inline void removeReactor(const std::string& reactor_id) {
-		// convert "plugin not found" exceptions into "reactor not found"
-		try { m_reactors.remove(reactor_id); }
-		catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
-			throw ReactorNotFoundException(reactor_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Removed reactor: " << reactor_id);
-	}
-
-	/**
-	 * sets a configuration option for a registered Reactor
-	 *
-	 * @param reactor_id the identifier for the Reactor to be configured
-	 * @param option_name the name of the configuration option
-	 * @param option_value the value to set the option to
-	 */
-	inline void setReactorOption(const std::string& reactor_id,
-								 const std::string& option_name,
-								 const std::string& option_value)
-	{
-		// convert "plugin not found" exceptions into "reactor not found"
-		try {
-			m_reactors.run(reactor_id, boost::bind(&Reactor::setOption, _1,
-												   boost::cref(option_name),
-												   boost::cref(option_value)));
-		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
-			throw ReactorNotFoundException(reactor_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Set reactor option (" << reactor_id << "): "
-					  << option_name << '=' << option_value);
-	}
+	void setReactorConfig(const std::string& reactor_id,
+						  const xmlNodePtr config_ptr);
 	
 	/**
-	 * resets a Reactor to its initial state
+	 * adds a new Reactor object
 	 *
-	 * @param reactor_id the identifier for the Reactor to be reset
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 *
+	 * @return std::string string containing the Reactor's auto-generated identifier
 	 */
-	inline void resetReactor(const std::string& reactor_id) {
-		// convert "plugin not found" exceptions into "reactor not found"
-		try {
-			m_reactors.run(reactor_id, boost::bind(&Reactor::reset, _1));
-		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
-			throw ReactorNotFoundException(reactor_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Reset reactor: " << reactor_id);
-	}
-
+	std::string addReactor(const std::string& plugin_type,
+						   const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a managed Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	void removeReactor(const std::string& reactor_id);
+	
 	/**
 	 * clears the statistic counters for a Reactor
 	 *
 	 * @param reactor_id the identifier for the Reactor to be cleared
 	 */
-	inline void clearReactorStats(const std::string& reactor_id) {
-		// convert "plugin not found" exceptions into "reactor not found"
-		try {
-			m_reactors.run(reactor_id, boost::bind(&Reactor::clearStats, _1));
-		} catch (PluginManager<Reactor>::PluginNotFoundException& /* e */) {
-			throw ReactorNotFoundException(reactor_id);
-		}
-		PION_LOG_DEBUG(m_logger, "Cleared reactor statistics: " << reactor_id);
-	}
+	void clearReactorStats(const std::string& reactor_id);
+
+	/// starts all Event processing
+	void start(void);
+	
+	/// stops all Event processing
+	void stop(void);
+	
+	/// clears statistic counters for all Reactors
+	void clearStats(void);
+
+	/// this updates all of the Codecs used by Reactors
+	void updateCodecs(void);
+
+	/// this updates all of the Databases used by Reactors
+	void updateDatabases(void);
+	
+	
+private:
+	
+	/// stops all Event processing (without locking)
+	void stopNoLock(void);
 
 	/**
 	 * schedules an Event to be processed by a Reactor
@@ -231,56 +138,17 @@ public:
 		m_scheduler.getIOService().post(boost::bind(&Reactor::send, reactor_ptr,
 													boost::ref(e)));
 	}
-
-	/// this updates the Vocabularies used by all Reactors
-	inline void updateVocabulary(void) {
-		m_reactors.run(boost::bind(&Reactor::updateVocabulary, _1,
-								   boost::cref(m_vocabulary)));
-	}
-
-	/// this updates all of the Codecs used by Reactors
-	inline void updateCodecs(void) {
-		m_reactors.run(boost::bind(&Reactor::updateCodecs, _1,
-								   boost::cref(m_codec_factory)));
-	}
-
-	/// this updates all of the Databases used by Reactors
-	inline void updateDatabases(void) {
-		m_reactors.run(boost::bind(&Reactor::updateDatabases, _1,
-								   boost::cref(m_database_mgr)));
-	}
-	
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
-	
-	
-private:
-	
-	/// stops all Event processing without locking the class's mutex
-	inline void stopNoLock(void) {
-		if (m_is_running) {
-			PION_LOG_INFO(m_logger, "Stopping all reactors");
-			m_reactors.run(boost::bind(&Reactor::stop, _1));
-			m_is_running = false;
-		}
-	}
 	
 	
 	/// default name of the reactor config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
+	/// name of the reactor element for Pion XML config files
+	static const std::string		REACTOR_ELEMENT_NAME;
 	
-	/// primary logging interface used by this class
-	PionLogger						m_logger;
-
+	
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler &					m_scheduler;
-	
-	/// references the Vocabulary used by this ReactionEngine to describe Terms
-	const Vocabulary&				m_vocabulary;
 
 	/// references the global factory that manages Codecs
 	const CodecFactory&				m_codec_factory;
@@ -288,14 +156,8 @@ private:
 	/// references the global manager of Databases
 	const DatabaseManager&			m_database_mgr;
 	
-	/// used to hold all of the registered Reactor objects
-	PluginManager<Reactor>			m_reactors;
-
 	/// true if the reaction engine is running
 	bool							m_is_running;
-	
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;
 };
 
 

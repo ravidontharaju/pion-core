@@ -73,11 +73,11 @@ public:
 	 * sets configuration parameters for this Codec
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
-	 * @param codec_config_ptr pointer to a list of XML nodes containing codec
-	 *                         configuration parameters
+	 * @param config_ptr pointer to a list of XML nodes containing Codec
+	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr);
-
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be
 	 * called whenever the global Vocabulary is updated

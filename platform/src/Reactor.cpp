@@ -31,6 +31,15 @@ const std::string			Reactor::COMMENT_ELEMENT_NAME = "comment";
 		
 // Reactor member functions
 
+void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+{
+	PlatformPlugin::setConfig(v, config_ptr);
+}
+
+void Reactor::updateVocabulary(const Vocabulary& v)
+{
+	PlatformPlugin::updateVocabulary(v);
+}	
 	
 	
 }	// end namespace platform

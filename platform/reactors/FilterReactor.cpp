@@ -17,46 +17,57 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/Codec.hpp>
-#include <pion/platform/ConfigManager.hpp>
+#include "FilterReactor.hpp"
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of Codec
-const std::string			Codec::EVENT_ELEMENT_NAME = "event";
-	
-		
-// Codec member functions
+// FilterReactor member functions
 
-void Codec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+void FilterReactor::reset(void)
 {
-	PlatformPlugin::setConfig(v, config_ptr);
-	
-	// determine the type of event used by the codec
-	std::string codec_event_str;
-	if (! ConfigManager::getConfigOption(EVENT_ELEMENT_NAME, codec_event_str,
-										 config_ptr))
-		throw EmptyEventException(getId());
-
-	// find the Term reference number for the event type
-	m_event_type = v.findTerm(codec_event_str);
-	if (m_event_type == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(codec_event_str);
-
-	// make sure that it is an object type Term
-	if (v[m_event_type].term_type != Vocabulary::TYPE_OBJECT)
-		throw NotAnObjectException(codec_event_str);
-}
-	
-void Codec::updateVocabulary(const Vocabulary& v)
-{
-	PlatformPlugin::updateVocabulary(v);
-
-	// assume that term references never change
+	Reactor::reset();
+	// clear the Comparison rules
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	m_rules.clear();
 }
 
+void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+{
+	// first set config options for the Reactor base class
+	Reactor::setConfig(v, config_ptr);
+	
+	// ...
+	// implement me! =)
+}
+	
+void FilterReactor::updateVocabulary(const Vocabulary& v)
+{
+	// first update anything in the Reactor base class that might be needed
+	Reactor::updateVocabulary(v);
+	
+	// ...
+	// implement me! =)
+}
+	
+void FilterReactor::process(const EventPtr& e)
+{
+	// implement me! =)
+}
+	
+	
 }	// end namespace platform
 }	// end namespace pion
+
+
+/// creates new FilterReactor objects
+extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_FilterReactor(void) {
+	return new pion::platform::FilterReactor();
+}
+
+/// destroys FilterReactor objects
+extern "C" PION_PLUGIN_API void pion_destroy_FilterReactor(pion::platform::FilterReactor *reactor_ptr) {
+	delete reactor_ptr;
+}

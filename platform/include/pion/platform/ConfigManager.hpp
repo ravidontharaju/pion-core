@@ -22,6 +22,7 @@
 
 #include <string>
 #include <libxml/tree.h>
+#include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 
@@ -79,6 +80,48 @@ public:
 		: PionException("Unable to read config file: ", config_file) {}
 	};
 
+	/// exception thrown if there is an error adding a plug-in to the config file
+	class AddPluginConfigException : public PionException {
+	public:
+		AddPluginConfigException(const std::string& plugin_type)
+			: PionException("Unable to add a plug-in to the configuration file: ", plugin_type) {}
+	};
+	
+	/// exception thrown if there is an error updating a plug-in in the config file
+	class UpdatePluginConfigException : public PionException {
+	public:
+		UpdatePluginConfigException(const std::string& plugin_id)
+			: PionException("Unable to update a plug-in in the configuration file: ", plugin_id) {}
+	};
+	
+	/// exception thrown if there is an error removing a plug-in from the config file
+	class RemovePluginConfigException : public PionException {
+	public:
+		RemovePluginConfigException(const std::string& plugin_id)
+			: PionException("Unable to remove a plug-in from the configuration file: ", plugin_id) {}
+	};
+	
+	/// exception thrown if you try modifying plug-ins before opening the config file
+	class PluginConfigNotOpenException : public PionException {
+	public:
+		PluginConfigNotOpenException(const std::string& config_file)
+			: PionException("Plug-ins configuration file must be opened before making changes: ", config_file) {}
+	};
+	
+	/// exception thrown if the config file contains a plug-in with a missing identifier
+	class EmptyPluginIdException : public PionException {
+	public:
+		EmptyPluginIdException(const std::string& config_file)
+		: PionException("Configuration file includes a plug-in with an empty identifier: ", config_file) {}
+	};
+	
+	/// exception thrown if the plug-in config does not include a plug-in element
+	class EmptyPluginElementException : public PionException {
+	public:
+		EmptyPluginElementException(const std::string& plugin_id)
+			: PionException("Plug-in configuration does not contain a \"plugin\" element: ", plugin_id) {}
+	};
+	
 	
 	/// virtual destructor
 	virtual ~ConfigManager() { closeConfigFile(); }
@@ -162,7 +205,7 @@ public:
 	static bool getConfigOption(const std::string& option_name,
 								std::string& option_value,
 								const xmlNodePtr starting_node);
-
+	
 	/**
 	 * updates a simple configuration option that is contained within an XML
 	 * element node.  If the option value is empty, the node is removed.  Adds
@@ -178,8 +221,13 @@ public:
 								   const std::string& option_value,
 								   xmlNodePtr parent_node);
 
-
+	
 protected:
+
+	/// data type for a callback function used to add new plug-in object
+	typedef boost::function3<void,const std::string&,
+		const std::string&,const xmlNodePtr>	AddPluginCallback;
+
 	
 	/**
 	 * protected constructor: this should only be used by derived classes
@@ -197,6 +245,62 @@ protected:
 	/// saves the config file	
 	void saveConfigFile(void);
 
+	/**
+	 * opens a plug-in configuration file and loads all of the plug-ins
+	 * that it contains using a callback function
+	 *
+	 * @param plugin_name the name of the plug-in element node
+	 * @param add_plugin_func callback function to add a new plug-in
+	 */
+	void openPluginConfig(const std::string& plugin_name,
+						  AddPluginCallback add_plugin_func);
+	
+	/**
+	 * add configuration parameters for a plug-in to the configuration file
+	 *
+	 * @param plugin_node_ptr pointer to the existing plugin element node
+	 * @param config_ptr pointer to the new configuration parameters
+	 *
+	 * @return true if successful, false if there was an error
+	 */
+	bool setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr config_ptr);
+	
+	/**
+	 * updates the configuration parameters for a plug-in
+	 *
+	 * @param plugin_name the name of the plug-in element node
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                           configuration parameters
+	 */
+	void setPluginConfig(const std::string& plugin_name,
+						 const std::string& plugin_id,
+						 const xmlNodePtr config_ptr);
+	
+	/**
+	 * adds a new plug-in object to the configuration file
+	 *
+	 * @param plugin_name the name of the plug-in element node
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	void addPluginConfig(const std::string& plugin_name,
+						 const std::string& plugin_id,
+						 const std::string& plugin_type,
+						 const xmlNodePtr config_ptr = NULL);
+		
+	/**
+	 * removes a plug-in object from the configuration file
+	 *
+	 * @param plugin_name the name of the plug-in element node
+	 * @param plugin_id unique identifier associated with the plug-in
+	 */
+	void removePluginConfig(const std::string& plugin_name,
+							const std::string& plugin_id);
+
 	
 	/// extension added to the name of backup files
 	static const std::string		BACKUP_FILE_EXTENSION;
@@ -207,6 +311,12 @@ protected:
 	/// name of the root element for Pion XML config files
 	static const std::string		ROOT_ELEMENT_NAME;
 	
+	/// name of the plug-in type element for Pion XML config files
+	static const std::string		PLUGIN_ELEMENT_NAME;
+	
+	/// name of the plug-in ID attribute for Pion XML config files
+	static const std::string		PLUGIN_ID_ATTRIBUTE_NAME;
+
 	/// prefix for a UUID type URN
 	static const std::string		URN_UUID_PREFIX;
 

@@ -45,10 +45,10 @@ bool XMLCodec::read(std::istream& in, Event& e)
 	return false;
 }
 
-void XMLCodec::setConfig(const Vocabulary& v, const xmlNodePtr codec_config_ptr)
+void XMLCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Codec base class
-	Codec::setConfig(v, codec_config_ptr);
+	Codec::setConfig(v, config_ptr);
 	
 	// ...
 }

@@ -32,7 +32,16 @@ const std::string			Database::COMMENT_ELEMENT_NAME = "comment";
 	
 		
 // Database member functions
+	
+void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+{
+	PlatformPlugin::setConfig(v, config_ptr);
+}
 
+void Database::updateVocabulary(const Vocabulary& v)
+{
+	PlatformPlugin::updateVocabulary(v);
+}	
 	
 	
 }	// end namespace platform

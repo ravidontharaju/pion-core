@@ -31,6 +31,12 @@ const std::string		SQLiteDatabase::BACKUP_FILE_EXTENSION = ".bak";
 	
 // SQLiteDatabase member functions
 
+DatabasePtr SQLiteDatabase::clone(void) const
+{
+	SQLiteDatabase *db_ptr(new SQLiteDatabase());
+	return DatabasePtr(db_ptr);
+}
+	
 void SQLiteDatabase::open(bool create_backup)
 {
 	// create a backup copy of the database before opening it

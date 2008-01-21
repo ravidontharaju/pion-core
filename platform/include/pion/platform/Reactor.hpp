@@ -22,15 +22,14 @@
 
 #include <string>
 #include <list>
-#include <boost/any.hpp>
-#include <boost/noncopyable.hpp>
+#include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
 #include <pion/PionCounter.hpp>
-#include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
+#include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -41,17 +40,9 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// Reactor: used to process Events, and to deliver the same or new Events to other Reactors
 ///
 class Reactor
-	: private boost::noncopyable
+	: public PlatformPlugin
 {
 public:
-
-	/// exception thrown if the reactor does not recognize a configuration option
-	class UnknownOptionException : public PionException {
-	public:
-		UnknownOptionException(const std::string& option_name)
-			: PionException("Option not recognized by reactor: ", option_name) {}
-	};
-	
 
 	/// constructs a new Reactor object
 	Reactor(void) {}
@@ -59,20 +50,35 @@ public:
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Reactor() {}
 	
-	/**
-	 * send a new Event to this reactor
-	 *
-	 * @param e pointer to the new Event
-	 */
-	inline void send(const EventPtr& e) { ++m_events_in; process(e); }
+	
+	/// called by the ReactorEngine to start Event processing
+	virtual void start(void) {}
+	
+	/// called by the ReactorEngine to stop Event processing
+	virtual void stop(void) {}
+	
+	/// resets the Reactor to its initial state
+	virtual void reset(void) { clearStats(); }
+	
+	/// clears statistic counters for the Reactor
+	virtual void clearStats(void) { m_events_in = m_events_out = 0; }
 	
 	/**
-	 * this updates the Vocabulary information used by this Reactor; it should
-	 * be called whenever the global Vocabulary is updated
+	 * sets configuration parameters for this Reactor
+	 *
+	 * @param v the Vocabulary that this Reactor will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 */
+	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	
+	/**
+	 * this updates the Vocabulary information used by this Reactor;
+	 * it should be called whenever the global Vocabulary is updated
 	 *
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v) = 0;
+	virtual void updateVocabulary(const Vocabulary& v);
 
 	/**
 	 * this updates the Codecs that are used by this Reactor; it should
@@ -80,7 +86,7 @@ public:
 	 *
 	 * @param codec_factory the global factory that manages Codecs
 	 */
-	virtual void updateCodecs(const CodecFactory& codec_factory) = 0;
+	virtual void updateCodecs(const CodecFactory& codec_factory) {}
 	
 	/**
 	 * this updates the Databases that are used by this Reactor; it should
@@ -88,36 +94,15 @@ public:
 	 *
 	 * @param database_mgr the global manager of Databases
 	 */
-	virtual void updateDatabases(const DatabaseManager& database_mgr) = 0;
+	virtual void updateDatabases(const DatabaseManager& database_mgr) {}
 	
 	/**
-	 * sets a configuration option
+	 * send a new Event to this reactor
 	 *
-	 * @param option_name the name of the option to change
-	 * @param option_value the value of the option
+	 * @param e pointer to the new Event
 	 */
-	virtual void setOption(const std::string& option_name, const std::string& option_value) {
-		throw UnknownOptionException(option_name);
-	}
-	
-	/// called by the ReactorEngine to start Event processing
-	virtual void start(void) {}
-	
-	/// called by the ReactorEngine to stop Event processing
-	virtual void stop(void) {}
+	inline void send(const EventPtr& e) { ++m_events_in; process(e); }
 
-	/// clears statistic counters for the Reactor
-	virtual void clearStats(void) { m_events_in = m_events_out = 0; }
-	
-	/// resets the Reactor to its initial state
-	virtual void reset(void) { clearStats(); }
-
-	/// sets the unique identifier for this Reactor
-	inline void setId(const std::string& reactor_id) { m_reactor_id = reactor_id; }
-
-	/// returns the unique identifier for this Reactor
-	inline const std::string& getId(void) const { return m_reactor_id; }
-	
 	/// returns the total number of Events received by this Reactor
 	inline unsigned long long getEventsIn(void) const { return m_events_in.getValue(); }
 		
@@ -141,12 +126,16 @@ protected:
 	 * @param e pointer to the Event to deliver
 	 */
 	inline void deliver(const EventPtr& e) {
-		boost::mutex::scoped_lock counter_lock(m_mutex);
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		for (ReactorList::iterator i = m_output.begin(); i != m_output.end(); ++i) {
 			(*i)->send(e);
 		}
 	}
 
+	
+	/// used to provide thread safety for the Reactor's data structures
+	boost::mutex					m_mutex;
+	
 	
 private:
 
@@ -161,15 +150,9 @@ private:
 	static const std::string		COMMENT_ELEMENT_NAME;
 
 	
-	/// used to provide thread safety for the Reactor's data structures
-	boost::mutex					m_mutex;
-
 	/// a list of other Reactors to which this one delivers Events
 	ReactorList						m_output;
 
-	/// uniquely identifies this particular Reactor
-	std::string						m_reactor_id;
-	
 	/// the total number of Events received by this Reactor
 	PionCounter						m_events_in;
 

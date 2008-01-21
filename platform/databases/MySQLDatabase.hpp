@@ -48,6 +48,13 @@ public:
 	virtual ~MySQLDatabase() {}
 	
 	/**
+	 * clones the Database, returning a pointer to the cloned copy
+	 *
+	 * @return DatabasePtr pointer to the cloned copy of the Database
+	 */
+	virtual DatabasePtr clone(void) const = 0;
+
+	/**
 	 * saves an Event in the Database
 	 *
 	 * @param e the Event to save
