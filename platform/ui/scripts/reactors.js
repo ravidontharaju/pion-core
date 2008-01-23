@@ -10,46 +10,111 @@ dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.layout.AccordionContainer");
+dojo.require("dijit.Menu");
 dojo.require("dojox.gfx");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
+// configuration parameters
 var STEP = 10;
 var num_initial_workspaces = 2;
+var minimum_workspace_width = 600;
 
 var latest_event = null;
 var workspace_boxes = [];
 var workspace_box = null;
-var surfaces = [];
 var surface = null;
-var tracking = false;
+var new_workspace_tab_clicked = false;
 
 var init = function() {
 	for (var i = 0; i < num_initial_workspaces; ++i) {
-		var selectIt = (i == 0);
-		addWorkspace(selectIt);
+		addWorkspace();
 	}
 
 	workspace_box = workspace_boxes[0];
-	surface = surfaces[0];
+	surface = workspace_box.my_surface;
+	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
+	
+	dojo.connect('onresize', expandWorkspaceIfNeeded);
+	dojo.connect('onkeypress', handleKeyPress);
+
+	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
+	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
+	// triggers another tab to actually be selected.
+
+	// This is a workaround for a bug in dojo, namely that the tab that's clicked will always look as if it's selected, 
+	// even if clicking it triggered another tab to actually be selected, as is the case with the 'add new workspace' tab.
+	dojo.connect(dijit.byId("mainTabContainer").tablist, 'onButtonClick', 
+					function() {
+						if (new_workspace_tab_clicked) {
+							var current_content_pane = workspace_box.my_content_pane;
+
+							// Although current_content_pane is already selected, we need to reselect it to get the
+							// tab itself to look selected.  But we can't just call selectChild, because it won't do
+							// anything since it's already selected.  So, we need to select a different pane first.
+							// workspace_boxes[0] is NOT the current content pane, since it can't be a new workspace.
+							dijit.byId("mainTabContainer").selectChild(workspace_boxes[0].my_content_pane);
+							
+							// Now we can reselect, and finally the tab will show that it's selected.
+							dijit.byId("mainTabContainer").selectChild(current_content_pane);
+
+							// Reset this since the workaround is only needed when the 'add new workspace' tab is clicked. 
+							new_workspace_tab_clicked = false;
+						}
+					});
 }
 
 dojo.addOnLoad(init);
 
-function addWorkspace(selectIt) {
+function addWorkspace() {
 	var i = workspace_boxes.length;
+	var title = 'Workspace ' + (i + 1);
+	for (j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
+		title = 'Workspace ' + j;
+	};
+	var workspace_pane = new dijit.layout.ContentPane({ class: "workspacePane", title: title, style: "overflow: auto" });
 	var tab_container = dijit.byId("mainTabContainer");
-	var surface_box = dojo.marginBox(tab_container.domNode);
-	var content_pane = new dijit.layout.ContentPane({ class: "workspacePane", title: 'Workspace ' + (i + 1) });
-	tab_container.addChild(content_pane, i);
-	workspace_boxes[i] = new dojo.dnd.Target(content_pane.domNode, { accept: ["reactor"] });
-	dojo.addClass(workspace_boxes[i].node, "workspaceTarget");
-	dojo.connect(workspace_boxes[i], "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, workspace_boxes[i]); });
-	dojo.connect(workspace_boxes[i].node, "onmouseup", updateLatestMouseUpEvent);
-	surfaces.push(dojox.gfx.createSurface(workspace_boxes[i].node, surface_box.w, surface_box.h));
-	workspace_boxes[i].reactors = [];
-	if (selectIt) {
-		tab_container.selectChild(content_pane);
+	var w = dojo.marginBox(tab_container.domNode).w;
+	var shim = document.createElement("div");
+	if (w < minimum_workspace_width) {
+		shim.style.width = minimum_workspace_width + "px";
 	}
+	workspace_pane.domNode.appendChild(shim);
+	tab_container.addChild(workspace_pane, i);
+	var new_workspace = new dojo.dnd.Target(shim, { accept: ["reactor"] });
+	dojo.addClass(new_workspace.node, "workspaceTarget");
+	dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, new_workspace); });
+	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
+	new_workspace.my_content_pane = workspace_pane;
+	workspace_pane.my_workspace_box = new_workspace;
+	workspace_boxes[i] = new_workspace;
+
+	// Need to do this now so that the dimensions of new_workspace are calculated.
+	tab_container.selectChild(workspace_pane);
+
+	new_workspace.node.style.width = new_workspace.node.offsetWidth + "px"; // This will keep it from automatically changing on resize.
+	var surface_box = dojo.marginBox(new_workspace.node);
+	surface_box.h -= 5; // We need some decrement even when there's no horiz scroll bar.
+	/*
+	surface_box.h -= 20; // If there's a horiz scroll bar, we need to additionally decrement by its height to avoid a vertical scroll bar.
+						 // TODO: figure out whether there's a scroll bar, and if so get its height h and decrement by h, else no (add'l) decrement. 
+	*/
+	console.debug('surface_box = ', surface_box);
+	workspace_box.my_surface = dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h);
+	//surfaces.push(dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h));
+
+	// Need to select the pane again, to incorporate the surface.
+	tab_container.selectChild(workspace_pane);
+
+	new_workspace.reactors = [];
+	new_workspace.isTracking = false;
+
+	// Add a context menu, for both the workspace content pane and the tab button.
+	var menu = new dijit.Menu({targetNodeIds: [workspace_pane.controlButton.domNode, new_workspace.node]});
+	menu.addChild(new dijit.MenuItem({ label: "Edit workspace configuration", onClick: function(){showWorkspaceConfigDialog(workspace_pane);} }));
+	menu.addChild(new dijit.MenuItem({ label: "Delete workspace", onClick: function(){deleteWorkspaceIfConfirmed(workspace_pane);} }));
+
+	new_workspace.node.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
+	workspace_pane.controlButton.domNode.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 }
 
 function updateLatestMouseUpEvent(e) {
@@ -143,7 +208,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	var i = 1;
 	do {
 		new_div.name = reactor_type + "_" + i++;
-	} while (isDuplicateName(new_div, new_div.name))
+	} while (isDuplicateName(new_div, new_div.name));
 	new_div.innerHTML = new_div.name;
 	new_div.setAttribute("reactor_type", reactor_type);
 	new_div.reactor_inputs = [];
@@ -178,35 +243,14 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	new_div.style.left = newLeftTop.l + "px";
 	new_div.style.position = "absolute";
 
+	// Add a context menu for the new reactor.
+	var menu = new dijit.Menu({targetNodeIds: [new_div]});
+	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(new_div);} }));
+	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(new_div);} }));
+
 	new_div.ondblclick = function(event) {
-		var validationTextBox = dijit.byId(reactor_type + "_name");
-		var this_reactor = this;
-		validationTextBox.isValid = function(/* Boolean*/ isFocused) {
-			if (!this.validator(this.textbox.value, this.constraints)) {
-				this.invalidMessage = "Invalid Reactor name";
-				console.debug('validationTextBox.isValid returned false');
-				return false;
-			}
-			if (isDuplicateName(this_reactor, this.textbox.value)) {
-				this.invalidMessage = "A Reactor with this name already exists";
-				console.debug('In validationTextBox.isValid, isDuplicateName returned true');
-				return false;
-			}
-			console.debug('validationTextBox.isValid returned true');
-			return true;
-		};
-		validationTextBox.setDisplayedValue(this.name);
-		
-		var dialog = dijit.byId(reactor_type + "_dialog");
-		dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
-		dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
-		dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteReactorIfConfirmed(this_reactor); }; });
-
-		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
-
-		dialog.show();
-		dialog.execute = function(dialogFields) { updateReactorConfig(dialogFields, new_div); }
+		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
+		showReactorConfigDialog(new_div);
 	}
 
 	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
@@ -242,18 +286,18 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 
 function handleDropOnReactor(source, nodes, copy, target) {
 	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
-	console.debug("target.targetState = ", target.targetState, ", tracking = ", tracking, ', target.node.lastChild = ', target.node.lastChild);
+	console.debug("target.targetState = ", target.targetState, ", isTracking = ", workspace_box.isTracking, ', target.node.lastChild = ', target.node.lastChild);
 
 	// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
 	// after a connector node was added to the reactor.  If this is that time, delete the connector node.
-	// Note that this sometimes happens after tracking has started, i.e. when tracking == true. 
+	// Note that this sometimes happens after tracking has started, i.e. when isTracking == true. 
 	if (target.node.lastChild.getAttribute && target.node.lastChild.getAttribute("dndType") == "connector") {
 		console.debug("removing unneeded connector node");
 		target.node.removeChild(target.node.lastChild);
 	}
 
 	// If we're already tracking a connector for this target, we're done.
-	if (tracking) return;
+	if (workspace_box.isTracking) return;
 
 	//debugger;
 	console.debug('nodes[0].getAttribute("dndType") = ', nodes[0].getAttribute("dndType"));
@@ -265,22 +309,33 @@ function handleDropOnReactor(source, nodes, copy, target) {
 		return;
 	}
 
-	tracking = true;
+	workspace_box.isTracking = true;
 	var x1 = target.node.offsetLeft + target.node.offsetWidth;
 	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
 	console.debug("x1 = ", x1, ", y1 = ", y1);
-	var trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
+	workspace_box.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
 	var xOffset = dojo.byId("contentWide").offsetLeft;
 	var yOffset = dojo.byId("contentWide").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
-	mouseConnection = dojo.connect('onmousemove', function(event) {x2 = event.clientX - xOffset; y2 = event.clientY - yOffset; trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])});
+	mouseConnection = dojo.connect(workspace_box.node, 'onmousemove', 
+		function(event) {
+			var x2 = event.layerX;
+			var y2 = event.layerY;
+			if (event.target.tagName != 'svg') {
+				//console.debug('event.target = ', event.target);
+				//console.dir(event.target);
+				x2 += event.target.offsetLeft;
+				y2 += event.target.offsetTop;
+			}
+			workspace_box.trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])
+		});
 	console.debug("created mouseConnection");
 
 	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
 	wrapperWithStartpoint = function(event) {
 		dojo.disconnect(mouseConnection);
 		console.debug("disconnected mouseConnection");
-		trackLine.removeShape();
+		workspace_box.trackLine.removeShape();
 		handleSelectionOfConnectorEndpoint(event, target.node);
 	}
 
@@ -291,7 +346,7 @@ function handleDropOnReactor(source, nodes, copy, target) {
 
 function handleSelectionOfConnectorEndpoint(event, startpointTarget)
 {
-	tracking = false;
+	workspace_box.isTracking = false;
 	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
 	console.debug('event.target = ', event.target);
 	console.debug('startpointTarget = ', startpointTarget);	
@@ -317,6 +372,40 @@ function isDuplicateName(reactor, name) {
 	return false;
 }
 
+function showReactorConfigDialog(reactor) {
+	var reactor_type = reactor.getAttribute("reactor_type");
+	var validationTextBox = dijit.byId(reactor_type + "_name");
+	validationTextBox.isValid = function(isFocused) {
+		if (!this.validator(this.textbox.value, this.constraints)) {
+			this.invalidMessage = "Invalid Reactor name";
+			console.debug('validationTextBox.isValid returned false');
+			return false;
+		}
+		if (isDuplicateName(reactor, this.textbox.value)) {
+			this.invalidMessage = "A Reactor with this name already exists";
+			console.debug('In validationTextBox.isValid, isDuplicateName returned true');
+			return false;
+		}
+		console.debug('validationTextBox.isValid returned true');
+		return true;
+	};
+	validationTextBox.setDisplayedValue(reactor.name);
+
+	var dialog = dijit.byId(reactor_type + "_dialog");
+	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {
+		dijit.byNode(n).setValue(reactor.event_type || 1);  // '1' means the item in the event data store with term_ref = 1
+	});
+	dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
+	dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
+	dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteReactorIfConfirmed(reactor); }; });
+
+	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+	dialog.show();
+	dialog.execute = function(dialogFields) { updateReactorConfig(dialogFields, reactor); }
+}
+
 function updateReactorConfig(dialogFields, node) {
 	node.name = dialogFields.name;
 	node.innerHTML = dialogFields.name;
@@ -328,6 +417,7 @@ function updateReactorConfig(dialogFields, node) {
 
 function deleteReactorIfConfirmed(reactor) {
 	var dialog = dijit.byId('delete_confirmation_dialog');
+	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete this reactor?";
 	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteReactor(reactor); };
 	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
 	dialog.show();
@@ -372,17 +462,121 @@ function deleteReactor(reactor) {
 	}
 }
 
+dojo.subscribe("mainTabContainer-selectChild", selected);
+
 function selected(page) {
 	if (page.title == "Add new workspace") {
 		console.debug("'Add new workspace' tab was selected");
-		addWorkspace(true);
+		new_workspace_tab_clicked = true;
+		addWorkspace();
 		return;
 	}
-	var result = page.title.match(/Workspace (\d+)/);
-	var index = result[1] - 1;
-	console.debug("selected " + page.title + ", page.id = " + page.id + ", index = " + index);
-	workspace_box = workspace_boxes[index];
-	surface = surfaces[index];
+	console.debug("selected " + page.title + ", page.id = " + page.id);
+	workspace_box = page.my_workspace_box
+	surface = workspace_box.my_surface;
+
+	// in case the window was resized since the workspace was last selected
+	expandWorkspaceIfNeeded();
+}
+	
+function expandWorkspaceIfNeeded() {
+	if (!surface) return; // the workspace isn't ready yet
+
+	console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth); 
+	console.debug('workspace_box.my_content_pane.offsetWidth = ', workspace_box.my_content_pane.offsetWidth); 
+	
+	// If the window was resized, the width of the workspace's contentPane probably changed.
+	// new_width is the new width of the viewing area.
+	var new_width = workspace_box.my_content_pane.domNode.offsetWidth;
+	
+	// We can get the current workspace width from the surface.  (We can't use workspace_box.node.offsetWidth,
+	// because in certain situations it will have already been updated, namely, if the original width was > minimum 
+	// and this is the first resize.)
+	var surfaceDims = surface.getDimensions();
+	var old_width = parseInt(surfaceDims.width);
+	
+	// If the viewing area is wider than the workspace, expand the workspace to fill it.
+	// We never decrease it; if the viewing area is narrower than the workspace, scroll bars will appear.
+	if (new_width > old_width) {
+		workspace_box.node.style.width = new_width + "px";
+		surface.setDimensions(workspace_box.node.offsetWidth + "px", surfaceDims.height + "px");
+	}
 }
 
-dojo.subscribe("mainTabContainer-selectChild", selected);
+function handleKeyPress(e) {
+	if (e.keyCode == dojo.keys.ESCAPE) {
+		if (workspace_box.isTracking) {
+			dojo.disconnect(mouseConnection);
+			workspace_box.trackLine.removeShape();
+			workspace_box.isTracking = false;
+		}
+	}
+}
+
+function showWorkspaceConfigDialog(workspace_pane) {
+	console.debug('showWorkspaceConfigDialog: workspace_pane = ', workspace_pane);
+	console.debug('workspace_pane.title = ', workspace_pane.title);
+
+	var validationTextBox = dijit.byId("workspace_name");
+	validationTextBox.isValid = function(isFocused) {
+		if (!this.validator(this.textbox.value, this.constraints)) {
+			this.invalidMessage = "Invalid Workspace name";
+			console.debug('validationTextBox.isValid returned false');
+			return false;
+		}
+		if (isDuplicateWorkspaceName(workspace_pane, this.textbox.value)) {
+			this.invalidMessage = "A Workspace with this name already exists";
+			console.debug('In validationTextBox.isValid, isDuplicateWorkspaceName returned true');
+			return false;
+		}
+		console.debug('validationTextBox.isValid returned true');
+		return true;
+	};
+	validationTextBox.setDisplayedValue(workspace_pane.title);
+	
+	var dialog = dijit.byId("workspace_dialog");
+	dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
+	dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
+	dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteWorkspaceIfConfirmed(workspace_pane); }; });
+
+	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+	dialog.show();
+	dialog.execute = function(dialogFields) { updateWorkspaceConfig(dialogFields, workspace_pane); }
+}
+
+function updateWorkspaceConfig(dialogFields, node) {
+	node.title = dialogFields.name;
+	dojo.byId(node.controlButton.id).innerHTML = dialogFields.name;
+}
+
+// Returns true if there is another workspace with the given name.
+function isDuplicateWorkspaceName(workspace_pane, name) {
+	for (var i = 0; i < workspace_boxes.length; ++i) {
+		if (workspace_boxes[i].my_content_pane != workspace_pane && workspace_boxes[i].my_content_pane.title == name) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function deleteWorkspaceIfConfirmed(workspace_pane) {
+	var dialog = dijit.byId('delete_confirmation_dialog');
+	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete workspace '" + workspace_pane.title + "'?";
+	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteWorkspace(workspace_pane); };
+	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
+	dialog.show();
+	setTimeout("dijit.byId('cancel_delete').focus()", 500);
+}
+
+function deleteWorkspace(workspace_pane) {
+	console.debug('deleting ', workspace_pane.title);
+	
+	for (var j = 0; j < workspace_boxes.length; ++j) {
+		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
+			workspace_boxes.splice(j, 1);
+		}
+	}
+	dijit.byId("mainTabContainer").removeChild(workspace_pane);
+}

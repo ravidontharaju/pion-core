@@ -29,9 +29,12 @@
 	<script type="text/javascript" src="dijit/Dialog.js"></script>
 	<script type="text/javascript" src="dijit/form/TextBox.js"></script>
 	<script type="text/javascript" src="dijit/form/Button.js"></script>
+	<script type="text/javascript" src="dijit/form/FilteringSelect.js"></script>
 	<script type="text/javascript" src="dijit/layout/ContentPane.js"></script>
 	<script type="text/javascript" src="dijit/layout/LayoutContainer.js"></script>
+	<script type="text/javascript" src="dijit/layout/StackContainer.js"></script>
 	<script type="text/javascript" src="dijit/layout/TabContainer.js"></script>
+	<script type="text/javascript" src="dijit/Menu.js"></script>
 	<script type="text/javascript" src="dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojox/gfx/svg.js"></script>
 
@@ -145,7 +148,7 @@
 
 
 <!-- start configuration dialogs -->
-<!-- These are only visible after double-clicking a reactor in the workspace. -->
+<!-- These are only visible after double-clicking a reactor in the workspace, right-clicking a workspace tab, etc. -->
 	<div dojoType="dijit.Dialog" id="log_files_dialog" title="Log Configuration">
 		<table>
 			<tr>
@@ -227,9 +230,28 @@
 		</table>
 	</div>
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
-		<p>Are you sure you want to delete this reactor?</p>
+		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
+		<div id="are_you_sure">Are you sure you want to delete?</div>
 		<button dojoType=dijit.form.Button id="cancel_delete">Cancel</button>
 		<button dojoType=dijit.form.Button id="confirm_delete">Delete</button>
+	</div>
+	<div dojoType="dijit.Dialog" id="workspace_dialog" title="Workspace Configuration">
+		<table>
+			<tr>
+				<td><label for="name">Name: </label></td>
+				<td><input dojoType="dijit.form.ValidationTextBox" id="workspace_name" type="text" name="name"
+					 regExp=".+" required="true"></td>
+			</tr>
+			<tr>
+				<td><label for="loc">Comments: </label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comments"></td>
+			</tr>
+			<tr>
+				<td align="center"><button dojoType=dijit.form.Button type="delete">Delete</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="cancel">Cancel</button></td>
+				<td align="center"><button dojoType=dijit.form.Button type="submit">Save</button></td>
+			</tr>
+		</table>
 	</div>
 <!-- end configuration dialogs -->
 

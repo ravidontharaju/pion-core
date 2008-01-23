@@ -13,7 +13,14 @@ body {
 }
 
 h1 {
+/*
+The exact size isn't critical here, but 3.5em is so big that it's often not fitting on one line.
+The main issue is that #workspaceHeader now has a fixed height (currently 120px) so this should be
+consistent with whatever that value is.
+
 	font-size: 3.5em;
+*/
+	font-size: 2.5em;
 	font-weight: bold;
 }
 
@@ -133,6 +140,7 @@ a img {
 /* Workspace Header */
 
 #workspaceHeader {
+	height: 120px;
 	margin: 0 0 0 30px;
 }
 
