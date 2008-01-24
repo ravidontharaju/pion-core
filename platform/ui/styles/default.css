@@ -241,7 +241,10 @@ a img {
 
 #footer {
 	margin:  0 auto;
+/*
+30px is not enough for IE.  If a height must be specified here, make sure it's enough for all supported browsers.
 	height: 30px;
+*/
 }
 
 #footer p {

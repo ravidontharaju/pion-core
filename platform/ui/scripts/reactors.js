@@ -34,8 +34,8 @@ var init = function() {
 	surface = workspace_box.my_surface;
 	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 	
-	dojo.connect('onresize', expandWorkspaceIfNeeded);
-	dojo.connect('onkeypress', handleKeyPress);
+	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
+	dojo.connect(document, 'onkeypress', handleKeyPress);
 
 	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
 	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
@@ -68,15 +68,19 @@ dojo.addOnLoad(init);
 function addWorkspace() {
 	var i = workspace_boxes.length;
 	var title = 'Workspace ' + (i + 1);
-	for (j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
+	for (var j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
 		title = 'Workspace ' + j;
 	};
-	var workspace_pane = new dijit.layout.ContentPane({ class: "workspacePane", title: title, style: "overflow: auto" });
+	var workspace_pane = new dijit.layout.ContentPane({ "class": "workspacePane", title: title, style: "overflow: auto" });
 	var tab_container = dijit.byId("mainTabContainer");
 	var w = dojo.marginBox(tab_container.domNode).w;
+	console.debug('w = dojo.marginBox(tab_container.domNode).w = ', w);
 	var shim = document.createElement("div");
 	if (w < minimum_workspace_width) {
 		shim.style.width = minimum_workspace_width + "px";
+	} else {
+		// keeps scroll bars from appearing unnecessarily in IE and Firefox on Mac OS X
+		shim.style.width = (w - 4) + "px";
 	}
 	workspace_pane.domNode.appendChild(shim);
 	tab_container.addChild(workspace_pane, i);
@@ -93,14 +97,14 @@ function addWorkspace() {
 
 	new_workspace.node.style.width = new_workspace.node.offsetWidth + "px"; // This will keep it from automatically changing on resize.
 	var surface_box = dojo.marginBox(new_workspace.node);
-	surface_box.h -= 5; // We need some decrement even when there's no horiz scroll bar.
+	surface_box.h -= 6; // We need some decrement even when there's no horizontal scroll bar, to avoid a vertical scroll bar.
+						// This is enough for Firefox on both Windows XP and Mac OS X, and for IE.
 	/*
 	surface_box.h -= 20; // If there's a horiz scroll bar, we need to additionally decrement by its height to avoid a vertical scroll bar.
 						 // TODO: figure out whether there's a scroll bar, and if so get its height h and decrement by h, else no (add'l) decrement. 
 	*/
 	console.debug('surface_box = ', surface_box);
-	workspace_box.my_surface = dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h);
-	//surfaces.push(dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h));
+	new_workspace.my_surface = dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h);
 
 	// Need to select the pane again, to incorporate the surface.
 	tab_container.selectChild(workspace_pane);
@@ -204,7 +208,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 	//debugger;
 	var reactor_type = nodes[0].getAttribute("reactor_type");
-	new_div.setAttribute("class", "moveable " + reactor_type);
+	new_div.className = "moveable " + reactor_type;
 	var i = 1;
 	do {
 		new_div.name = reactor_type + "_" + i++;
@@ -333,6 +337,9 @@ function handleDropOnReactor(source, nodes, copy, target) {
 
 	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
 	wrapperWithStartpoint = function(event) {
+		// workaround for non-standard IE event model
+		if (!event) event = window.event;
+
 		dojo.disconnect(mouseConnection);
 		console.debug("disconnected mouseConnection");
 		workspace_box.trackLine.removeShape();
@@ -344,21 +351,25 @@ function handleDropOnReactor(source, nodes, copy, target) {
 	// TODO: disable everything except clicking on moveable's.
 }
 
-function handleSelectionOfConnectorEndpoint(event, startpointTarget)
-{
+function handleSelectionOfConnectorEndpoint(event, startNode) {
 	workspace_box.isTracking = false;
 	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
+	console.debug('startNode = ', startNode);
 	console.debug('event.target = ', event.target);
-	console.debug('startpointTarget = ', startpointTarget);	
+	console.debug('event.srcElement = ', event.srcElement);
+
+	// workaround for non-standard IE event model
+	endNode = event.target || event.srcElement;
+	console.debug('endNode = ', endNode);
 
 	// Disable (single) clicking on all moveable's.
 	dojo.query(".moveable").forEach("item.onclick = function () {}");
 
 	var line = surface.createPolyline().setStroke("black");
-	updateConnectionLine(line, startpointTarget, event.target);
+	updateConnectionLine(line, startNode, endNode);
 	
-	startpointTarget.reactor_outputs.push({node: event.target, line: line});
-	event.target.reactor_inputs.push({node: startpointTarget, line: line});
+	startNode.reactor_outputs.push({node: endNode, line: line});
+	endNode.reactor_inputs.push({node: startNode, line: line});
 }
 
 // Returns true if there is another reactor with the given name.
@@ -478,26 +489,29 @@ function selected(page) {
 	// in case the window was resized since the workspace was last selected
 	expandWorkspaceIfNeeded();
 }
-	
+
 function expandWorkspaceIfNeeded() {
 	if (!surface) return; // the workspace isn't ready yet
 
 	console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth); 
-	console.debug('workspace_box.my_content_pane.offsetWidth = ', workspace_box.my_content_pane.offsetWidth); 
 	
 	// If the window was resized, the width of the workspace's contentPane probably changed.
 	// new_width is the new width of the viewing area.
 	var new_width = workspace_box.my_content_pane.domNode.offsetWidth;
-	
+
+	// keeps scroll bars from appearing unnecessarily in IE
+	new_width -= 2;
+
 	// We can get the current workspace width from the surface.  (We can't use workspace_box.node.offsetWidth,
 	// because in certain situations it will have already been updated, namely, if the original width was > minimum 
 	// and this is the first resize.)
 	var surfaceDims = surface.getDimensions();
 	var old_width = parseInt(surfaceDims.width);
-	
+
 	// If the viewing area is wider than the workspace, expand the workspace to fill it.
 	// We never decrease it; if the viewing area is narrower than the workspace, scroll bars will appear.
 	if (new_width > old_width) {
+		console.debug('expanding workspace width to ', new_width, "px");
 		workspace_box.node.style.width = new_width + "px";
 		surface.setDimensions(workspace_box.node.offsetWidth + "px", surfaceDims.height + "px");
 	}
