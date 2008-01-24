@@ -20,7 +20,7 @@ consistent with whatever that value is.
 
 	font-size: 3.5em;
 */
-	font-size: 2.5em;
+	font-size: 3em;
 	font-weight: bold;
 }
 
@@ -140,7 +140,7 @@ a img {
 /* Workspace Header */
 
 #workspaceHeader {
-	height: 120px;
+	height: 110px;
 	margin: 0 0 0 30px;
 }
 
@@ -170,7 +170,7 @@ a img {
  	width: 170px;
  	float: left;
 	margin: 0 auto 0 20px;
-	padding: 25px 0 0 0;
+	padding: 10px 0 0 0;
 }
 
 .sidebarInstructions {
@@ -311,3 +311,53 @@ a img {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-storage.png) repeat-x;
 	}
+	
+	/* Tabs */
+
+.tundra .dijitTabPaneWrapper {
+	/*
+	overflow: hidden;
+	*/
+	background:#fff; 
+	border:1px solid #ccc;
+}
+
+.tundra .dijitTab {
+	line-height:normal;
+	margin-right:5px;	/* space between one tab and the next in top/bottom mode */
+	padding:0px;
+	border:1px solid #ccc;
+	background: url(../images/bg-tab-off.png) repeat-x;
+}
+
+.tundra .dijitAlignLeft .dijitTab,
+.tundra .dijitAlignRight .dijitTab {
+	margin-right:0px;
+	margin-bottom:5px;	/* space between one tab and the next in left/right mode */
+}
+
+.tundra .dijitTabInnerDiv {
+	padding:6px 10px 4px 10px;
+	border-left:1px solid #fff;
+	border-bottom:1px solid #fff;
+}
+
+.tundra .dijitTabHover,
+.tundra .dijitTabCloseButtonHover {
+	border:1px solid #ccc;
+	background: url(../images/bg-tab-hover.png) repeat-x;
+}
+
+.dj_ie6 .tundra .dijitTabHover,
+.dj_ie6 .tundra .dijitTabCloseButtonHover {
+	background-image: url(../images/bg-tab-hover.png); 
+}
+
+.tundra .dijitTabChecked,
+.tundra .dijitTabCloseButtonChecked
+{
+	/* the selected tab (with or without hover) */
+	background: url(../images/bg-tab-on.png) repeat-x;
+	border-color: #ccc;
+	font-weight: bold; 
+}
