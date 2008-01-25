@@ -16,8 +16,9 @@ dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 // configuration parameters
 var STEP = 10;
-var num_initial_workspaces = 2;
+var num_initial_workspaces = 1;
 var minimum_workspace_width = 600;
+var minimum_workspace_height = 400;
 
 var latest_event = null;
 var workspace_boxes = [];
@@ -73,14 +74,17 @@ function addWorkspace() {
 	};
 	var workspace_pane = new dijit.layout.ContentPane({ "class": "workspacePane", title: title, style: "overflow: auto" });
 	var tab_container = dijit.byId("mainTabContainer");
-	var w = dojo.marginBox(tab_container.domNode).w;
-	console.debug('w = dojo.marginBox(tab_container.domNode).w = ', w);
+	var margin_box = dojo.marginBox(tab_container.domNode);
+	console.debug('margin_box = dojo.marginBox(tab_container.domNode) = ', margin_box);
 	var shim = document.createElement("div");
-	if (w < minimum_workspace_width) {
+	if (margin_box.w < minimum_workspace_width) {
 		shim.style.width = minimum_workspace_width + "px";
 	} else {
 		// keeps scroll bars from appearing unnecessarily in IE and Firefox on Mac OS X
-		shim.style.width = (w - 4) + "px";
+		shim.style.width = (margin_box.w - 4) + "px";
+	}
+	if (margin_box.h < minimum_workspace_height) {
+		shim.style.height = minimum_workspace_height + "px";
 	}
 	workspace_pane.domNode.appendChild(shim);
 	tab_container.addChild(workspace_pane, i);
@@ -492,27 +496,42 @@ function selected(page) {
 function expandWorkspaceIfNeeded() {
 	if (!surface) return; // the workspace isn't ready yet
 
-	console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth); 
-	
-	// If the window was resized, the width of the workspace's contentPane probably changed.
-	// new_width is the new width of the viewing area.
+	console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth);
+	console.debug('workspace_box.node.offsetHeight = ', workspace_box.node.offsetHeight);
+
+	// If the window was resized, the dimensions of the workspace's contentPane probably changed.
+	// new_width and new_height are the new width and height of the viewing area.
 	var new_width = workspace_box.my_content_pane.domNode.offsetWidth;
+	var new_height = workspace_box.my_content_pane.domNode.offsetHeight;
 
 	// keeps scroll bars from appearing unnecessarily in IE
 	new_width -= 2;
+	
+	new_height -= 6; // We need some decrement even when there's no horizontal scroll bar, to avoid a vertical scroll bar.
+					 // This is enough for Firefox on both Windows XP and Mac OS X, and for IE.
 
-	// We can get the current workspace width from the surface.  (We can't use workspace_box.node.offsetWidth,
-	// because in certain situations it will have already been updated, namely, if the original width was > minimum 
-	// and this is the first resize.)
-	var surfaceDims = surface.getDimensions();
-	var old_width = parseInt(surfaceDims.width);
+	// We can get the current workspace size from the surface.  (We can't use workspace_box.node.offsetWidth
+	// and workspace_box.node.offsetHeight, because in certain situations they will have already been updated, 
+	// namely, if the original width or height was > minimum and this is the first resize.)
+	var surface_dims = surface.getDimensions();
+	var old_width = parseInt(surface_dims.width);
+	var old_height = parseInt(surface_dims.height);
+	console.debug('old_width = ', old_width, ', new_width = ', new_width, ', old_height = ', old_height, ', new_height = ', new_height);
 
-	// If the viewing area is wider than the workspace, expand the workspace to fill it.
-	// We never decrease it; if the viewing area is narrower than the workspace, scroll bars will appear.
+	// If the viewing area is larger than the workspace, expand the workspace to fill it.
+	// We never decrease it; if the viewing area is smaller than the workspace, scroll bars will appear.
 	if (new_width > old_width) {
 		console.debug('expanding workspace width to ', new_width, "px");
 		workspace_box.node.style.width = new_width + "px";
-		surface.setDimensions(workspace_box.node.offsetWidth + "px", surfaceDims.height + "px");
+		surface_dims.width = new_width;
+	}
+	if (new_height > old_height) {
+		console.debug('expanding workspace height to ', new_height, "px");
+		workspace_box.node.style.height = new_height + "px";
+		surface_dims.height = new_height;
+	}
+	if (new_width > old_width || new_height > old_height) {
+		surface.setDimensions(surface_dims.width + "px", surface_dims.height + "px");
 	}
 }
 
