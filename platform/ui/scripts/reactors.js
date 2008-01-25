@@ -252,10 +252,10 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(new_div);} }));
 	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(new_div);} }));
 
-	new_div.ondblclick = function(event) {
+	dojo.connect(new_div, 'dblclick', function(event) {
 		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
 		showReactorConfigDialog(new_div);
-	}
+	});
 
 	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
 	// getNearbyGridPointInBox() takes care of both.  Note that parts of this.constraintBox are not calculated until
@@ -337,16 +337,13 @@ function handleDropOnReactor(source, nodes, copy, target) {
 
 	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
 	wrapperWithStartpoint = function(event) {
-		// workaround for non-standard IE event model
-		if (!event) event = window.event;
-
 		dojo.disconnect(mouseConnection);
 		console.debug("disconnected mouseConnection");
 		workspace_box.trackLine.removeShape();
 		handleSelectionOfConnectorEndpoint(event, target.node);
 	}
 
-	dojo.query(".moveable").filter(function(n) { return n != target.node; }).forEach("item.onclick = wrapperWithStartpoint");
+	dojo.query(".moveable").filter(function(n) { return n != target.node; }).forEach("item.onClickHandler = dojo.connect(item, 'click', wrapperWithStartpoint)");
 
 	// TODO: disable everything except clicking on moveable's.
 }
@@ -355,15 +352,11 @@ function handleSelectionOfConnectorEndpoint(event, startNode) {
 	workspace_box.isTracking = false;
 	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
 	console.debug('startNode = ', startNode);
-	console.debug('event.target = ', event.target);
-	console.debug('event.srcElement = ', event.srcElement);
-
-	// workaround for non-standard IE event model
-	endNode = event.target || event.srcElement;
+	var endNode = event.target;
 	console.debug('endNode = ', endNode);
 
-	// Disable (single) clicking on all moveable's.
-	dojo.query(".moveable").forEach("item.onclick = function () {}");
+	// Disconnect the click handlers on all moveable's.
+	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
 	var line = surface.createPolyline().setStroke("black");
 	updateConnectionLine(line, startNode, endNode);
@@ -406,9 +399,15 @@ function showReactorConfigDialog(reactor) {
 	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {
 		dijit.byNode(n).setValue(reactor.event_type || 1);  // '1' means the item in the event data store with term_ref = 1
 	});
-	dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
-	dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
-	dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteReactorIfConfirmed(reactor); }; });
+	dojo.query(".dijitButton.delete", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', function() { dialog.onCancel(); deleteReactorIfConfirmed(reactor); })
+	});
+	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', dialog, 'onCancel')
+	});
+	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
+		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
+	});
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
@@ -549,9 +548,15 @@ function showWorkspaceConfigDialog(workspace_pane) {
 	validationTextBox.setDisplayedValue(workspace_pane.title);
 	
 	var dialog = dijit.byId("workspace_dialog");
-	dojo.query("button[type='submit']", dialog.domNode).forEach(function(n) { dijit.byId(n.id).onClick = function() { return dialog.isValid(); }; });
-	dojo.query("button[type='cancel']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); }; });
-	dojo.query("button[type='delete']", dialog.domNode).forEach(function(n) { n.onclick = function() { dialog.onCancel(); deleteWorkspaceIfConfirmed(workspace_pane); }; });
+	dojo.query(".dijitButton.delete", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', function() { dialog.onCancel(); deleteWorkspaceIfConfirmed(workspace_pane); })
+	});
+	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', dialog, 'onCancel')
+	});
+	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
+		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
+	});
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
