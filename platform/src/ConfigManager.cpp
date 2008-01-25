@@ -307,11 +307,11 @@ bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr confi
 		return false;
 	
 	// remove the plugin type element, if it exists in the new config
-	xmlNodePtr plugin_plugin_node = findConfigNodeByName(PLUGIN_ELEMENT_NAME,
-														 plugin_config_copy);
-	if (plugin_plugin_node != NULL) {
-		xmlUnlinkNode(plugin_plugin_node);
-		xmlFreeNode(plugin_plugin_node);
+	xmlNodePtr plugin_type_node = findConfigNodeByName(PLUGIN_ELEMENT_NAME,
+													   plugin_config_copy);
+	if (plugin_type_node != NULL) {
+		xmlUnlinkNode(plugin_type_node);
+		xmlFreeNode(plugin_type_node);
 	}
 	
 	// add the plugin config to the config file

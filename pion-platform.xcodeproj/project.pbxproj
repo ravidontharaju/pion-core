@@ -11,6 +11,8 @@
 		E30B43740CFBB4CF00337BA4 /* PluginManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */; };
 		E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
+		E319399E0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
+		E319399F0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
 		E326EF8A0D2D733700BBCE56 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
@@ -362,6 +364,7 @@
 /* Begin PBXFileReference section */
 		E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PluginManager.hpp; path = common/include/pion/PluginManager.hpp; sourceTree = SOURCE_ROOT; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
+		E319399D0D49601A00DDF224 /* Comparison.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Comparison.cpp; path = platform/src/Comparison.cpp; sourceTree = SOURCE_ROOT; };
 		E326EF890D2D733700BBCE56 /* CodecTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CodecTests.cpp; path = platform/tests/CodecTests.cpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-platform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-platform.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-platform.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-platform.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -794,6 +797,7 @@
 			isa = PBXGroup;
 			children = (
 				E36D88CA0D29BA3D00B4C134 /* Event.cpp */,
+				E319399D0D49601A00DDF224 /* Comparison.cpp */,
 				E36D88C80D29BA3D00B4C134 /* ConfigManager.cpp */,
 				E36D88CC0D29BA3D00B4C134 /* Vocabulary.cpp */,
 				E36D88CD0D29BA3D00B4C134 /* VocabularyConfig.cpp */,
@@ -1294,6 +1298,7 @@
 				E3A9CE170D33EDCB0094ECEE /* Database.cpp in Sources */,
 				E3A9CE180D33EDCB0094ECEE /* Reactor.cpp in Sources */,
 				E3CFFB240D4527F100ADB135 /* PlatformPlugin.cpp in Sources */,
+				E319399E0D49601A00DDF224 /* Comparison.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1312,6 +1317,7 @@
 				E3A9CE1A0D33EDCB0094ECEE /* Database.cpp in Sources */,
 				E3A9CE1B0D33EDCB0094ECEE /* Reactor.cpp in Sources */,
 				E3CFFB250D4527F100ADB135 /* PlatformPlugin.cpp in Sources */,
+				E319399F0D49601A00DDF224 /* Comparison.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -23,6 +23,7 @@
 #include <vector>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/Comparison.hpp>
 
@@ -39,14 +40,40 @@ class FilterReactor :
 {
 public:
 
+	/// exception thrown if the FilterReactor configuration does not define a Term for a Comparison
+	class EmptyTermException : public PionException {
+	public:
+		EmptyTermException(const std::string& reactor_id)
+			: PionException("FilterReactor configuration is missing a term identifier: ", reactor_id) {}
+	};
+	
+	/// exception thrown if the FilterReactor configuration uses an unknown Term for a Comparison
+	class UnknownTermException : public PionException {
+	public:
+		UnknownTermException(const std::string& reactor_id)
+			: PionException("FilterReactor configuration maps field to an unknown term: ", reactor_id) {}
+	};
+
+	/// exception thrown if the FilterReactor configuration does not define a Comparison operation
+	class EmptyComparisonException : public PionException {
+	public:
+		EmptyComparisonException(const std::string& reactor_id)
+			: PionException("FilterReactor configuration does not include a comparison operation: ", reactor_id) {}
+	};
+	
+	/// exception thrown if the FilterReactor configuration does not define a Term for a Comparison
+	class EmptyValueException : public PionException {
+	public:
+		EmptyValueException(const std::string& reactor_id)
+			: PionException("FilterReactor configuration is missing a required comparison value: ", reactor_id) {}
+	};
+	
+	
 	/// constructs a new FilterReactor object
 	FilterReactor(void) : Reactor() {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~FilterReactor() {}
-	
-	/// resets the Reactor to its initial state
-	virtual void reset(void);
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -77,6 +104,12 @@ protected:
 	 */
 	virtual void process(const EventPtr& e);
 
+	/// resets the configuration for this Reactor
+	inline void reset(void) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		m_rules.clear();
+	}
+	
 	
 private:
 	
@@ -84,8 +117,21 @@ private:
 	typedef std::vector<Comparison>		RuleChain;
 
 	
+	/// name of the term element for Pion XML config files
+	static const std::string		TERM_ELEMENT_NAME;
+
+	/// name of the operation element for Pion XML config files
+	static const std::string		OPERATION_ELEMENT_NAME;
+	
+	/// name of the value element for Pion XML config files
+	static const std::string		VALUE_ELEMENT_NAME;
+
+	/// name of the 'match all values' element for Pion XML config files
+	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
+	
+	
 	/// a chain of Comparison rules used to filter out unwanted Events
-	RuleChain			m_rules;
+	RuleChain						m_rules;
 };
 
 

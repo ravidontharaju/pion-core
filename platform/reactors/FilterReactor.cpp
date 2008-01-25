@@ -24,23 +24,73 @@ namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// FilterReactor member functions
+// static members of FilterReactor
+const std::string			FilterReactor::TERM_ELEMENT_NAME = "term";
+const std::string			FilterReactor::OPERATION_ELEMENT_NAME = "operation";
+const std::string			FilterReactor::VALUE_ELEMENT_NAME = "value";
+const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "match-all-values";
 
-void FilterReactor::reset(void)
-{
-	Reactor::reset();
-	// clear the Comparison rules
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	m_rules.clear();
-}
+	
+// FilterReactor member functions
 
 void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
+	reset();
 	Reactor::setConfig(v, config_ptr);
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	
-	// ...
-	// implement me! =)
+	// next, parse each comparison rule
+	xmlNodePtr comparison_node = config_ptr;
+	while ( (comparison_node = ConfigManager::findConfigNodeByName(OPERATION_ELEMENT_NAME, comparison_node)) != NULL)
+	{
+		// parse new Comparison rule
+		
+		// get the Term used for the Comparison rule
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
+											 comparison_node))
+			throw EmptyTermException(getId());
+		
+		// make sure that the Term is valid
+		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw UnknownTermException(getId());
+
+		// get the Comparison operation & make sure that it is valid
+		std::string operation_str;
+		if (! ConfigManager::getConfigOption(OPERATION_ELEMENT_NAME, operation_str,
+											 comparison_node))
+			throw EmptyComparisonException(getId());
+		// note: parseComparisonType will throw if it is invalid
+		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(operation_str);
+
+		// get the value parameter (only if type is not generic)
+		std::string value_str;
+		if (Comparison::isGenericType(comparison_type)) {
+			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
+												 comparison_node))
+				throw EmptyValueException(getId());
+		}
+		
+		// check if the Comparison should match all values for the given Term
+		bool match_all_values = false;
+		std::string match_all_values_str;
+		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
+										   comparison_node))
+		{
+			if (match_all_values_str == "true")
+				match_all_values = true;
+		}
+		
+		// add the Comparison
+		Comparison new_comparison(v[term_ref]);
+		new_comparison.configure(comparison_type, value_str, match_all_values);
+		m_rules.push_back(new_comparison);
+		
+		// step to the next Comparison rule
+		comparison_node = comparison_node->next;
+	}
 }
 	
 void FilterReactor::updateVocabulary(const Vocabulary& v)
@@ -48,13 +98,20 @@ void FilterReactor::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Reactor base class that might be needed
 	Reactor::updateVocabulary(v);
 	
-	// ...
-	// implement me! =)
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	for (RuleChain::iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
+		i->updateVocabulary(v);
+	}
 }
 	
 void FilterReactor::process(const EventPtr& e)
 {
-	// implement me! =)
+	// all comparisons in the rule chain must pass for the Event to be delivered
+	for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
+		if (! i->evaluate(*e))
+			return;
+	}
+	deliver(e);
 }
 	
 	

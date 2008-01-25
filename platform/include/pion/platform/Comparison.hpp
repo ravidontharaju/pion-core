@@ -24,6 +24,7 @@
 #include <boost/regex.hpp>
 #include <boost/logic/tribool.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
 
@@ -90,6 +91,13 @@ public:
 		TYPE_SAME_OR_LATER_TIME,
 	};
 	
+	/// exception thrown if the Comparison type is not recognized
+	class UnknownComparisonTypeException : public PionException {
+	public:
+		UnknownComparisonTypeException(const std::string& comparison_type)
+			: PionException("Could not parse unknown comparison type: ", comparison_type) {}
+	};
+
 	/// exception thrown if an invalid comparison was evaluated
 	class InvalidComparisonException : public std::exception {
 	public:
@@ -121,10 +129,10 @@ public:
 	/**
 	 * constructs a new Comparison
 	 *
-	 * @param t the term that will be examined
+	 * @param term the term that will be examined
 	 */
-	Comparison(const Vocabulary::Term& t)
-		: m_term(t), m_type(TYPE_FALSE), m_match_all_values(false)
+	explicit Comparison(const Vocabulary::Term& term)
+		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false)
 	{}
 	
 	/// standard copy constructor
@@ -134,6 +142,15 @@ public:
 	{}
 
 	
+	/**
+	 * evaluates the result of the Comparison
+	 *
+	 * @param e the Event to evaluate
+	 *
+	 * @return true if the Comparison succeeded; false if it did not
+	 */
+	inline bool evaluate(const Event& e) const;
+
 	/**
 	 * configures the Comparison information
 	 *
@@ -153,9 +170,12 @@ public:
 	 * @param value the value that the Vocabulary Term is compared to
 	 * @param match_all_values if true, all values of the Vocabulary Term must match
 	 */
-	inline void configure(const ComparisonType type,
-						  const char *value,
-						  const bool match_all_values = false);
+	inline void configure(const ComparisonType type, const char *value,
+						  const bool match_all_values = false)
+	{
+		std::string value_str(value);
+		configure(type, value_str, match_all_values);
+	}
 	
 	/**
 	 * configures the Comparison information (alternate form for string comparisons)
@@ -164,25 +184,23 @@ public:
 	 * @param value the value that the Vocabulary Term is compared to
 	 * @param match_all_values if true, all values of the Vocabulary Term must match
 	 */
-	inline void configure(const ComparisonType type,
-						  const std::string &value,
-						  const bool match_all_values = false);
+	void configure(const ComparisonType type, const std::string &value,
+				   const bool match_all_values = false);
 
 	/**
 	 * configures the Comparison information (alternate form comparisons that have not value)
 	 *
 	 * @param the type of Comparison to perform
 	 */
-	inline void configure(const ComparisonType type);
-
+	void configure(const ComparisonType type);
+	
 	/**
-	 * evaluates the result of the Comparison
+	 * this updates the Vocabulary information used by this Comparison;
+	 * it should be called whenever the global Vocabulary is updated
 	 *
-	 * @param e the Event to evaluate
-	 *
-	 * @return true if the Comparison succeeded; false if it did not
+	 * @param v the Vocabulary that this Comparison will use to describe Terms
 	 */
-	inline bool evaluate(const Event& e) const;
+	void updateVocabulary(const Vocabulary& v);
 	
 	
 	/// returns the Vocabulary Term to examine
@@ -198,6 +216,22 @@ public:
 	inline bool getMatchAllValues(void) const { return m_match_all_values; }
 	
 	
+	/**
+	 * parses Comparison type from a string
+	 *
+	 * @param str the string to parse
+	 * @return ComparisonType the type matching the parsed string
+	 */
+	static ComparisonType parseComparisonType(std::string str);
+	
+	/**
+	 * returns a string that represents a particular Comparison type
+	 *
+	 * @param comparison_type the Comparison type to get a string for
+	 * @return std::string a temporary string object that represents the Comparison type
+	 */
+	static std::string getComparisonTypeAsString(const ComparisonType comparison_type);	
+
 	/// returns true for generic comparison types
 	static inline bool isGenericType(ComparisonType t) {
 		return (t >= TYPE_FALSE && t <= TYPE_IS_NOT_DEFINED);
@@ -228,7 +262,7 @@ public:
 	static inline bool isTimeType(ComparisonType t) {
 		return (t >= TYPE_SAME_TIME && t <= TYPE_SAME_OR_LATER_TIME);
 	}
-
+	
 	
 private:
 	
@@ -537,7 +571,7 @@ private:
 	 *
 	 * @return true if the type is valid for the Vocabulary Term
 	 */
-	inline bool checkForValidType(const ComparisonType type) const;
+	bool checkForValidType(const ComparisonType type) const;
 	
 	/**
 	 * helper function that compares a range of values using the provided function
@@ -567,172 +601,7 @@ private:
 
 	
 // inline member functions for Comparison
-inline bool Comparison::checkForValidType(const ComparisonType type) const
-{
-	bool result = false;
-
-	if (isGenericType(type)) {
-		// generic comparisons are always valid
-		result = true;
-	} else {
-		switch (m_term.term_type) {
-			case Vocabulary::TYPE_NULL:
-			case Vocabulary::TYPE_OBJECT:
-				result = false;
-				break;
-			case Vocabulary::TYPE_INT8:
-			case Vocabulary::TYPE_UINT8:
-			case Vocabulary::TYPE_INT16:
-			case Vocabulary::TYPE_UINT16:
-			case Vocabulary::TYPE_INT32:
-			case Vocabulary::TYPE_UINT32:
-			case Vocabulary::TYPE_INT64:
-			case Vocabulary::TYPE_UINT64:
-			case Vocabulary::TYPE_FLOAT:
-			case Vocabulary::TYPE_DOUBLE:
-			case Vocabulary::TYPE_LONG_DOUBLE:
-				result = isNumericType(type);
-				break;
-			case Vocabulary::TYPE_SHORT_STRING:
-			case Vocabulary::TYPE_STRING:
-			case Vocabulary::TYPE_LONG_STRING:
-			case Vocabulary::TYPE_CHAR:
-				result = isStringType(type);
-				break;
-			case Vocabulary::TYPE_DATE_TIME:
-				result = isDateTimeType(type);
-				break;
-			case Vocabulary::TYPE_DATE:
-				result = isDateType(type);
-				break;
-			case Vocabulary::TYPE_TIME:
-				result = isTimeType(type);
-				break;
-		}
-	}
 	
-	return result;
-}
-	
-template <typename T>
-inline void Comparison::configure(const ComparisonType type,
-								  const T& value,
-								  const bool match_all_values)
-{
-	if (! checkForValidType(type))
-		throw InvalidTypeForTermException();
-	
-	m_type = type;
-	m_value = value;
-	m_match_all_values = match_all_values;
-	
-	// make sure the value matches the comparison type
-	switch (m_term.term_type) {
-		case Vocabulary::TYPE_NULL:
-		case Vocabulary::TYPE_OBJECT:
-			throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
-			if (boost::any_cast<boost::int32_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
-			if (boost::any_cast<boost::uint32_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_INT64:
-			if (boost::any_cast<boost::int64_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_UINT64:
-			if (boost::any_cast<boost::uint64_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_FLOAT:
-			if (boost::any_cast<float>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_DOUBLE:
-			if (boost::any_cast<double>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
-			if (boost::any_cast<long double>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
-			if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
-				if (boost::any_cast<boost::regex>(&m_value) == NULL)
-					throw InvalidValueForTypeException();
-			} else {
-				if (boost::any_cast<std::string>(&m_value) == NULL)
-					throw InvalidValueForTypeException();
-			}
-			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
-			if (boost::any_cast<PionDateTime>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-	}
-}
-	
-inline void Comparison::configure(const ComparisonType type,
-								  const char *value,
-								  const bool match_all_values)
-{
-	if (! checkForValidType(type))
-		throw InvalidTypeForTermException();
-
-	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX)
-		m_value = boost::regex(value);
-	else if (isStringType(type))
-		m_value = std::string(value);
-	else
-		throw InvalidValueForTypeException();
-	
-	m_type = type;
-	m_match_all_values = match_all_values;
-}
-	
-inline void Comparison::configure(const ComparisonType type,
-								  const std::string & value,
-								  const bool match_all_values)
-{
-	if (! checkForValidType(type))
-		throw InvalidTypeForTermException();
-	
-	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX)
-		m_value = boost::regex(value);
-	else if (isStringType(type))
-		m_value = value;
-	else
-		throw InvalidValueForTypeException();
-	
-	m_type = type;
-	m_match_all_values = match_all_values;
-}
-
-inline void Comparison::configure(const ComparisonType type)
-{
-	if (! checkForValidType(type))
-		throw InvalidTypeForTermException();
-	if (! isGenericType(type))
-		throw InvalidValueForTypeException();
-		
-	m_type = type;
-	m_value = boost::any();
-	m_match_all_values = false;
-}
-
 template <typename ComparisonFunction>
 inline bool Comparison::checkComparison(const ComparisonFunction& comparison_func,
 										const ValuesRange& values_range) const
@@ -1315,6 +1184,77 @@ inline bool Comparison::evaluate(const Event& e) const
 	}
 	
 	return result;
+}
+
+template <typename T>
+inline void Comparison::configure(const ComparisonType type,
+								  const T& value,
+								  const bool match_all_values)
+{
+	if (! checkForValidType(type))
+		throw InvalidTypeForTermException();
+	
+	m_type = type;
+	m_value = value;
+	m_match_all_values = match_all_values;
+	
+	// make sure the value matches the comparison type
+	switch (m_term.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+			throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			if (boost::any_cast<boost::int32_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_UINT8:
+			case Vocabulary::TYPE_UINT16:
+			case Vocabulary::TYPE_UINT32:
+			if (boost::any_cast<boost::uint32_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_INT64:
+			if (boost::any_cast<boost::int64_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_UINT64:
+			if (boost::any_cast<boost::uint64_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_FLOAT:
+			if (boost::any_cast<float>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_DOUBLE:
+			if (boost::any_cast<double>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_LONG_DOUBLE:
+			if (boost::any_cast<long double>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+			case Vocabulary::TYPE_SHORT_STRING:
+			case Vocabulary::TYPE_STRING:
+			case Vocabulary::TYPE_LONG_STRING:
+			case Vocabulary::TYPE_CHAR:
+			if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
+				if (boost::any_cast<boost::regex>(&m_value) == NULL)
+					throw InvalidValueForTypeException();
+			} else {
+				if (boost::any_cast<std::string>(&m_value) == NULL)
+					throw InvalidValueForTypeException();
+			}
+			break;
+			case Vocabulary::TYPE_DATE_TIME:
+			case Vocabulary::TYPE_DATE:
+			case Vocabulary::TYPE_TIME:
+			if (boost::any_cast<PionDateTime>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+	}
 }
 
 

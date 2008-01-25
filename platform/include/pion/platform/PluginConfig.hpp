@@ -73,11 +73,23 @@ public:
 	}
 		
 	/**
+	 * returns an XML tree representing the configuration for a plug-in
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 *
+	 * @return xmlNodePtr pointer to a list of XML nodes containing plug-in
+	 *                    configuration parameters; the parameters are copied,
+	 *                    so the caller is responsible for freeing the list
+	 *                    when finished
+	 */
+	inline xmlNodePtr getPluginConfig(const std::string& plugin_id);
+	
+	/**
 	 * sets configuration parameters for a managed plug-in
 	 *
 	 * @param plugin_id unique identifier associated with the plug-in
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                           configuration parameters
+	 *                   configuration parameters
 	 */
 	inline void setPluginConfig(const std::string& plugin_id,
 								const xmlNodePtr config_ptr);
@@ -148,13 +160,13 @@ protected:
 	 * adds a new plug-in object (without locking or config file updates)
 	 *
 	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param plugin_plugin the name of the plug-in to load (searches
-	 *                      plug-in directories and appends extensions)
+	 * @param plugin_name the name of the plug-in to load (searches
+	 *                    plug-in directories and appends extensions)
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
 	 *                   configuration parameters
 	 */
 	inline void addPluginNoLock(const std::string& plugin_id,
-								const std::string& plugin_plugin,
+								const std::string& plugin_name,
 								const xmlNodePtr config_ptr);
 	
 	
@@ -190,7 +202,22 @@ inline void PluginConfig<PluginType>::addPluginNoLock(const std::string& plugin_
 	if (config_ptr != NULL)
 		new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
 }
-
+	
+template <typename PluginType>
+inline xmlNodePtr PluginConfig<PluginType>::getPluginConfig(const std::string& plugin_id)
+{
+	// find the plug-in element in the XML config document
+	xmlNodePtr plugin_node = findConfigNodeByAttr(m_plugin_element,
+												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  plugin_id,
+												  m_config_node_ptr->children);
+	if (plugin_node == NULL)
+		throw PluginManager<PluginType>::PluginNotFoundException(plugin_id);
+	
+	// copy the plugin configuration
+	return xmlCopyNodeList(plugin_node);
+}
+	
 template <typename PluginType>
 inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_id,
 													  const xmlNodePtr config_ptr)

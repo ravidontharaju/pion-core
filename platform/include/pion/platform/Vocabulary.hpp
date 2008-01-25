@@ -124,7 +124,7 @@ public:
 		}
 	};
 	
-	/// exception thrown if you try opening the Vocabulary config file after Terms have been defined
+	/// exception thrown if the DataType is not recognized
 	class UnknownDataTypeException : public PionException {
 	public:
 		UnknownDataTypeException(const std::string& data_type)

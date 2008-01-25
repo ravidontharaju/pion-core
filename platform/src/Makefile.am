@@ -9,7 +9,7 @@ lib_LTLIBRARIES = libpion-platform.la
 libpion_platform_la_SOURCES = Event.cpp Vocabulary.cpp VocabularyConfig.cpp \
 	CodecFactory.cpp ConfigManager.cpp DatabaseManager.cpp \
 	ReactionEngine.cpp PlatformPlugin.cpp \
-	Codec.cpp Database.cpp Reactor.cpp
+	Codec.cpp Database.cpp Reactor.cpp Comparison.cpp
 
 libpion_platform_la_LDFLAGS = -no-undefined -release $(PION_LIBRARY_VERSION)
 libpion_platform_la_LIBADD = @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
