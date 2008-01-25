@@ -17,8 +17,8 @@ dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 // configuration parameters
 var STEP = 10;
 var num_initial_workspaces = 1;
-var minimum_workspace_width = 600;
-var minimum_workspace_height = 400;
+var minimum_workspace_width = 2000;
+var minimum_workspace_height = 2000;
 
 var latest_event = null;
 var workspace_boxes = [];
