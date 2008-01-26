@@ -53,23 +53,24 @@ public:
 	virtual void createConfigFile(void) {
 		boost::mutex::scoped_lock plugins_lock(m_mutex);
 		// just return if it's already open
-		if (configIsOpen())
+		if (ConfigManager::configIsOpen())
 			return;
 		// create the file with "config" root element
 		ConfigManager::createConfigFile();
-		PION_LOG_INFO(m_logger, "Initializing new " << m_plugin_element << " configuration file: " << m_config_file);
+		PION_LOG_INFO(m_logger, "Initializing new " << m_plugin_element
+					  << " configuration file: " << ConfigManager::getConfigFile());
 	}		
 	
 	/// opens an existing configuration file and loads the plug-ins it contains
 	virtual void openConfigFile(void) {
 		boost::mutex::scoped_lock plugins_lock(m_mutex);
 		// just return if it's already open
-		if (configIsOpen())
+		if (ConfigManager::configIsOpen())
 			return;
 		// open the plug-in config file and load plug-ins
-		openPluginConfig(m_plugin_element, boost::bind(&PluginConfig::addPluginNoLock,
-													   this, _1, _2, _3));
-		PION_LOG_INFO(m_logger, "Loaded " << m_plugin_element << " configuration file: " << getConfigFile());
+		ConfigManager::openPluginConfig(m_plugin_element);
+		PION_LOG_INFO(m_logger, "Loaded " << m_plugin_element
+					  << " configuration file: " << ConfigManager::getConfigFile());
 	}
 		
 	/**
@@ -157,7 +158,9 @@ protected:
 	{}
 
 	/**
-	 * adds a new plug-in object (without locking or config file updates)
+	 * adds a new plug-in object (without locking or config file updates).  This
+	 * function must be defined properly for any derived classes that wish to
+	 * use openPluginConfig().
 	 *
 	 * @param plugin_id unique identifier associated with the plug-in
 	 * @param plugin_name the name of the plug-in to load (searches
@@ -165,9 +168,15 @@ protected:
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
 	 *                   configuration parameters
 	 */
-	inline void addPluginNoLock(const std::string& plugin_id,
-								const std::string& plugin_name,
-								const xmlNodePtr config_ptr);
+	virtual void addPluginNoLock(const std::string& plugin_id,
+								 const std::string& plugin_name,
+								 const xmlNodePtr config_ptr)
+	{
+		PluginType *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
+		new_plugin_ptr->setId(plugin_id);
+		if (config_ptr != NULL)
+			new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+	}
 	
 	
 	/// primary logging interface used by this class
@@ -192,17 +201,6 @@ protected:
 	
 // inline member functions for PluginConfig
 
-template <typename PluginType>
-inline void PluginConfig<PluginType>::addPluginNoLock(const std::string& plugin_id,
-													  const std::string& plugin_type,
-													  const xmlNodePtr config_ptr)
-{
-	PluginType *new_plugin_ptr = m_plugins.load(plugin_id, plugin_type);
-	new_plugin_ptr->setId(plugin_id);
-	if (config_ptr != NULL)
-		new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
-}
-	
 template <typename PluginType>
 inline xmlNodePtr PluginConfig<PluginType>::getPluginConfig(const std::string& plugin_id)
 {

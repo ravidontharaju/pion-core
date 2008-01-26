@@ -57,7 +57,7 @@ public:
 	
 	
 	/// virtual destructor
-	virtual ~ReactionEngine() {}
+	virtual ~ReactionEngine() { stop(); }
 	
 	/**
 	 * constructs a new ReactionEngine object
@@ -69,36 +69,6 @@ public:
 	ReactionEngine(const VocabularyManager& vocab_mgr,
 				   const CodecFactory& codec_factory,
 				   const DatabaseManager& database_mgr);
-
-	/**
-	 * sets configuration parameters for a managed Reactor
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                           configuration parameters
-	 */
-	void setReactorConfig(const std::string& reactor_id,
-						  const xmlNodePtr config_ptr);
-	
-	/**
-	 * adds a new Reactor object
-	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 *
-	 * @return std::string string containing the Reactor's auto-generated identifier
-	 */
-	std::string addReactor(const std::string& plugin_type,
-						   const xmlNodePtr config_ptr = NULL);
-	
-	/**
-	 * removes a managed Reactor
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 */
-	void removeReactor(const std::string& reactor_id);
 	
 	/**
 	 * clears the statistic counters for a Reactor
@@ -122,22 +92,51 @@ public:
 	/// this updates all of the Databases used by Reactors
 	void updateDatabases(void);
 	
+	/**
+	 * schedules an Event to be processed by a Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param e pointer to the Event that will be processed
+	 */
+	inline void send(const std::string& reactor_id, EventPtr& e) {
+		m_scheduler.getIOService().post(boost::bind(&Reactor::send,
+													m_plugins.get(reactor_id), e));
+	}
+	
+	/**
+	 * returns the total number operations performed by all managed Reactors
+	 *
+	 * @return boost::uint64_t number of operations performed
+	 */
+	inline boost::uint64_t getTotalOperations(void) const {
+		return m_plugins.getStatistic(boost::bind(&Reactor::getEventsIn, _1));
+	}
+	
+	/**
+	 * returns the total number of Events received by a Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @return boost::uint64_t number of Events received
+	 */
+	inline boost::uint64_t getEventsIn(const std::string& reactor_id) const {
+		return m_plugins.getStatistic(reactor_id, boost::bind(&Reactor::getEventsIn, _1));
+	}
+	
+	/**
+	 * returns the total number of Events delivered by a Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @return boost::uint64_t number of Events delivered
+	 */
+	inline boost::uint64_t getEventsOut(const std::string& reactor_id) const {
+		return m_plugins.getStatistic(reactor_id, boost::bind(&Reactor::getEventsOut, _1));
+	}
+
 	
 private:
 	
 	/// stops all Event processing (without locking)
 	void stopNoLock(void);
-
-	/**
-	 * schedules an Event to be processed by a Reactor
-	 *
-	 * @param reactor_ptr pointer to the Reactor that will process the Event
-	 * @param e pointer to the Event that will be processed
-	 */
-	inline void schedule(Reactor* reactor_ptr, EventPtr& e) {
-		m_scheduler.getIOService().post(boost::bind(&Reactor::send, reactor_ptr,
-													boost::ref(e)));
-	}
 	
 	
 	/// default name of the reactor config file

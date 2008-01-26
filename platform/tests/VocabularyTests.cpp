@@ -30,6 +30,7 @@ using namespace pion::platform;
 /// sets up logging (run once only)
 extern void setup_logging_for_unit_tests(void);
 
+
 class VocabularyWithSomeTermsAdded_F : public Vocabulary {
 public:
 	VocabularyWithSomeTermsAdded_F()

@@ -55,7 +55,7 @@ public:
 	 *
 	 * @param vocab_mgr the global manager of Vocabularies
 	 */
-	CodecFactory(const VocabularyManager& vocab_mgr);
+	explicit CodecFactory(const VocabularyManager& vocab_mgr);
 
 	/**
 	 * gets a unique instance of a Codec that may be used for en/decoding

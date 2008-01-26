@@ -19,11 +19,27 @@
 
 #include <string>
 #include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
 
 #define BOOST_TEST_MODULE pion-platform-unit-tests
 #include <boost/test/unit_test.hpp>
 
+
+/// returns the path to the unit test config file directory
+const std::string& get_config_file_dir(void)
+{
+#if defined(_MSC_VER)
+	static const std::string TESTS_CONFIG_FILE_DIR("");
+#elif defined(PION_XCODE)
+	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/");
+#else
+	// same for Unix and Cygwin
+	static const std::string TESTS_CONFIG_FILE_DIR("");
+#endif
+
+	return TESTS_CONFIG_FILE_DIR;
+}
 
 /// sets up logging (run once only)
 void setup_logging_for_unit_tests(void)
@@ -36,5 +52,32 @@ void setup_logging_for_unit_tests(void)
 		pion::PionLogger log_ptr;
 		log_ptr = PION_GET_LOGGER("pion.platform");
 		PION_LOG_SETLEVEL_WARN(log_ptr);
+	}
+}
+
+/// initializes the Pion plug-in path
+void setup_plugins_directory(void)
+{
+	static bool init_done = false;
+	if (! init_done) {
+		pion::PionPlugin::resetPluginDirectories();
+
+#if defined(_MSC_VER)
+	#if defined(_DEBUG) && defined(PION_FULL)
+		pion::PionPlugin::addPluginDirectory("../../bin/Debug_DLL_full");
+	#elif defined(_DEBUG) && !defined(PION_FULL)
+		pion::PionPlugin::addPluginDirectory("../../bin/Debug_DLL");
+	#elif defined(NDEBUG) && defined(PION_FULL)
+		pion::PionPlugin::addPluginDirectory("../../bin/Release_DLL_full");
+	#elif defined(NDEBUG) && !defined(PION_FULL)
+		pion::PionPlugin::addPluginDirectory("../../bin/Release_DLL");
+	#endif
+#elif defined(PION_XCODE)
+		pion::PionPlugin::addPluginDirectory(".");
+#else
+		// same for Unix and Cygwin
+		pion::PionPlugin::addPluginDirectory("../codecs/.libs");
+		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
+#endif
 	}
 }

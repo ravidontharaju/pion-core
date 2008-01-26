@@ -54,11 +54,11 @@ public:
 			: PionException("FilterReactor configuration maps field to an unknown term: ", reactor_id) {}
 	};
 
-	/// exception thrown if the FilterReactor configuration does not define a Comparison operation
-	class EmptyComparisonException : public PionException {
+	/// exception thrown if the FilterReactor configuration does not define a Comparison type
+	class EmptyTypeException : public PionException {
 	public:
-		EmptyComparisonException(const std::string& reactor_id)
-			: PionException("FilterReactor configuration does not include a comparison operation: ", reactor_id) {}
+		EmptyTypeException(const std::string& reactor_id)
+			: PionException("FilterReactor configuration does not include a comparison type: ", reactor_id) {}
 	};
 	
 	/// exception thrown if the FilterReactor configuration does not define a Term for a Comparison
@@ -118,10 +118,13 @@ private:
 
 	
 	/// name of the term element for Pion XML config files
+	static const std::string		COMPARISON_ELEMENT_NAME;
+	
+	/// name of the term element for Pion XML config files
 	static const std::string		TERM_ELEMENT_NAME;
 
-	/// name of the operation element for Pion XML config files
-	static const std::string		OPERATION_ELEMENT_NAME;
+	/// name of the type element for Pion XML config files
+	static const std::string		TYPE_ELEMENT_NAME;
 	
 	/// name of the value element for Pion XML config files
 	static const std::string		VALUE_ELEMENT_NAME;

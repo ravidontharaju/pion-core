@@ -63,8 +63,12 @@ void ReactionEngine::start(void)
 {
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	if (! m_is_running) {
+		// notify the thread scheduler that we need it now
+		m_scheduler.addActiveUser();
+
 		PION_LOG_INFO(m_logger, "Starting all reactors");
 		m_plugins.run(boost::bind(&Reactor::start, _1));
+
 		m_is_running = true;
 	}
 }
@@ -98,6 +102,10 @@ void ReactionEngine::stopNoLock(void)
 	if (m_is_running) {
 		PION_LOG_INFO(m_logger, "Stopping all reactors");
 		m_plugins.run(boost::bind(&Reactor::stop, _1));
+
+		// notify the thread scheduler that we no longer need it
+		PionScheduler::getInstance().removeActiveUser();
+
 		m_is_running = false;
 	}
 }

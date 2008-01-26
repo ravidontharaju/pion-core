@@ -25,8 +25,10 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of FilterReactor
+
+const std::string			FilterReactor::COMPARISON_ELEMENT_NAME = "comparison";
 const std::string			FilterReactor::TERM_ELEMENT_NAME = "term";
-const std::string			FilterReactor::OPERATION_ELEMENT_NAME = "operation";
+const std::string			FilterReactor::TYPE_ELEMENT_NAME = "type";
 const std::string			FilterReactor::VALUE_ELEMENT_NAME = "value";
 const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "match-all-values";
 
@@ -42,14 +44,14 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	
 	// next, parse each comparison rule
 	xmlNodePtr comparison_node = config_ptr;
-	while ( (comparison_node = ConfigManager::findConfigNodeByName(OPERATION_ELEMENT_NAME, comparison_node)) != NULL)
+	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
 	{
 		// parse new Comparison rule
 		
 		// get the Term used for the Comparison rule
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
-											 comparison_node))
+											 comparison_node->children))
 			throw EmptyTermException(getId());
 		
 		// make sure that the Term is valid
@@ -57,19 +59,19 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw UnknownTermException(getId());
 
-		// get the Comparison operation & make sure that it is valid
-		std::string operation_str;
-		if (! ConfigManager::getConfigOption(OPERATION_ELEMENT_NAME, operation_str,
-											 comparison_node))
-			throw EmptyComparisonException(getId());
+		// get the Comparison type & make sure that it is valid
+		std::string type_str;
+		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, type_str,
+											 comparison_node->children))
+			throw EmptyTypeException(getId());
 		// note: parseComparisonType will throw if it is invalid
-		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(operation_str);
+		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(type_str);
 
 		// get the value parameter (only if type is not generic)
 		std::string value_str;
-		if (Comparison::isGenericType(comparison_type)) {
+		if (! Comparison::isGenericType(comparison_type)) {
 			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
-												 comparison_node))
+												 comparison_node->children))
 				throw EmptyValueException(getId());
 		}
 		
@@ -77,7 +79,7 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		bool match_all_values = false;
 		std::string match_all_values_str;
 		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
-										   comparison_node))
+										   comparison_node->children))
 		{
 			if (match_all_values_str == "true")
 				match_all_values = true;
@@ -107,10 +109,12 @@ void FilterReactor::updateVocabulary(const Vocabulary& v)
 void FilterReactor::process(const EventPtr& e)
 {
 	// all comparisons in the rule chain must pass for the Event to be delivered
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
 		if (! i->evaluate(*e))
 			return;
 	}
+	reactor_lock.unlock();
 	deliver(e);
 }
 	

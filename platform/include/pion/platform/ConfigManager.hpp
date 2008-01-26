@@ -223,11 +223,6 @@ public:
 
 	
 protected:
-
-	/// data type for a callback function used to add new plug-in object
-	typedef boost::function3<void,const std::string&,
-		const std::string&,const xmlNodePtr>	AddPluginCallback;
-
 	
 	/**
 	 * protected constructor: this should only be used by derived classes
@@ -247,13 +242,11 @@ protected:
 
 	/**
 	 * opens a plug-in configuration file and loads all of the plug-ins
-	 * that it contains using a callback function
+	 * that it contains by calling addPluginNoLock()
 	 *
 	 * @param plugin_name the name of the plug-in element node
-	 * @param add_plugin_func callback function to add a new plug-in
 	 */
-	void openPluginConfig(const std::string& plugin_name,
-						  AddPluginCallback add_plugin_func);
+	void openPluginConfig(const std::string& plugin_name);
 	
 	/**
 	 * add configuration parameters for a plug-in to the configuration file
@@ -300,6 +293,21 @@ protected:
 	 */
 	void removePluginConfig(const std::string& plugin_name,
 							const std::string& plugin_id);
+
+	/**
+	 * adds a new plug-in object (without locking or config file updates).  This
+	 * function must be defined properly for any derived classes that wish to
+	 * use openPluginConfig().
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param plugin_name the name of the plug-in to load (searches
+	 *                    plug-in directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	virtual void addPluginNoLock(const std::string& plugin_id,
+								 const std::string& plugin_name,
+								 const xmlNodePtr config_ptr) {}
 
 	
 	/// extension added to the name of backup files

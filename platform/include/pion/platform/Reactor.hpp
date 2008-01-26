@@ -104,10 +104,10 @@ public:
 	inline void send(const EventPtr& e) { ++m_events_in; process(e); }
 
 	/// returns the total number of Events received by this Reactor
-	inline unsigned long long getEventsIn(void) const { return m_events_in.getValue(); }
+	inline boost::uint64_t getEventsIn(void) const { return m_events_in.getValue(); }
 		
 	/// returns the total number of Events delivered by this Reactor
-	inline unsigned long long getEventsOut(void) const { return m_events_out.getValue(); }
+	inline boost::uint64_t getEventsOut(void) const { return m_events_out.getValue(); }
 
 		
 protected:
@@ -126,6 +126,7 @@ protected:
 	 * @param e pointer to the Event to deliver
 	 */
 	inline void deliver(const EventPtr& e) {
+		++m_events_out;
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		for (ReactorList::iterator i = m_output.begin(); i != m_output.end(); ++i) {
 			(*i)->send(e);

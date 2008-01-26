@@ -55,7 +55,7 @@ public:
 	 *
 	 * @param vocab_mgr the global manager of Vocabularies
 	 */
-	DatabaseManager(const VocabularyManager& vocab_mgr);
+	explicit DatabaseManager(const VocabularyManager& vocab_mgr);
 
 	/**
 	 * gets a unique instance of a Database
@@ -64,37 +64,7 @@ public:
 	 * @return DatabasePtr smart pointer to the Database object (destructs it when finished)
 	 */
 	DatabasePtr getDatabase(const std::string& database_id);
-	
-	/**
-	 * sets configuration parameters for a managed Database
-	 *
-	 * @param database_id unique identifier associated with the Database
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                           configuration parameters
-	 */
-	void setDatabaseConfig(const std::string& database_id,
-						   const xmlNodePtr config_ptr);
-	
-	/**
-	 * adds a new Database object
-	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 *
-	 * @return std::string string containing the Database's auto-generated identifier
-	 */
-	std::string addDatabase(const std::string& plugin_type,
-							const xmlNodePtr config_ptr = NULL);
-	
-	/**
-	 * removes a managed Database
-	 *
-	 * @param database_id unique identifier associated with the Database
-	 */
-	void removeDatabase(const std::string& database_id);
-	
+		
 	
 private:
 	

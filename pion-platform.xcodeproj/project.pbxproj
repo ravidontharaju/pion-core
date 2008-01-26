@@ -13,7 +13,6 @@
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E319399E0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
 		E319399F0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
-		E326EF8A0D2D733700BBCE56 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E36D88B10D29BA0E00B4C134 /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
@@ -52,9 +51,7 @@
 		E36D88D90D29BA3D00B4C134 /* ReactionEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CB0D29BA3D00B4C134 /* ReactionEngine.cpp */; };
 		E36D88DA0D29BA3D00B4C134 /* Vocabulary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CC0D29BA3D00B4C134 /* Vocabulary.cpp */; };
 		E36D88DB0D29BA3D00B4C134 /* VocabularyConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CD0D29BA3D00B4C134 /* VocabularyConfig.cpp */; };
-		E36D88EA0D29BBC800B4C134 /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
 		E36D88EB0D29BBC800B4C134 /* PionPlatformUnitTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */; };
-		E36D88ED0D29BBC800B4C134 /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E36D8A660D29CA5000B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36D8A670D29CA5800B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36D8A710D29CABD00B4C134 /* HTTPMessage.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A160D29C75200B4C134 /* HTTPMessage.hpp */; };
@@ -123,6 +120,7 @@
 		E36D8C5A0D29DB1400B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8C5B0D29DB1500B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36F2EE70CA7922100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E378EE720D4A6B06002658FA /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
 		E3A9CE160D33EDCB0094ECEE /* Codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE130D33EDCB0094ECEE /* Codec.cpp */; };
 		E3A9CE170D33EDCB0094ECEE /* Database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE140D33EDCB0094ECEE /* Database.cpp */; };
 		E3A9CE180D33EDCB0094ECEE /* Reactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */; };
@@ -131,7 +129,6 @@
 		E3A9CE1B0D33EDCB0094ECEE /* Reactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */; };
 		E3A9D1690D367F040094ECEE /* PionDateTime.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3A9D1680D367F040094ECEE /* PionDateTime.hpp */; };
 		E3A9D16A0D367F040094ECEE /* PionDateTime.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3A9D1680D367F040094ECEE /* PionDateTime.hpp */; };
-		E3AD88EF0D32D00400E1BC5A /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
 		E3B2A26D0CADC46B001A9A8D /* PionConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */; };
 		E3B2A26E0CADC46B001A9A8D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2690CADC46B001A9A8D /* PionException.hpp */; };
 		E3B2A26F0CADC46B001A9A8D /* PionHashMap.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */; };
@@ -146,7 +143,6 @@
 		E3B2A2790CADC481001A9A8D /* PionPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2A2770CADC481001A9A8D /* PionPlugin.cpp */; };
 		E3B3A05F0CD4F81600F9EA6D /* PionLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */; };
 		E3B3A0600CD4F81600F9EA6D /* PionLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */; };
-		E3C408460D3E9242008A4BFC /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
 		E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
@@ -324,6 +320,13 @@
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
+		E378EE730D4AA746002658FA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3CFF95B0D44340800ADB135 /* FilterReactor */;
+			remoteInfo = FilterReactor;
+		};
 		E3CFF95D0D44340800ADB135 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -399,9 +402,6 @@
 		E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionPlatformUnitTests.cpp; path = platform/tests/PionPlatformUnitTests.cpp; sourceTree = SOURCE_ROOT; };
 		E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VocabularyConfigTests.cpp; path = platform/tests/VocabularyConfigTests.cpp; sourceTree = SOURCE_ROOT; };
 		E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VocabularyTests.cpp; path = platform/tests/VocabularyTests.cpp; sourceTree = SOURCE_ROOT; };
-		E36D8A0A0D29C6A100B4C134 /* PionCommonUnitTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCommonUnitTests.cpp; path = "../pion-common/common/tests/PionCommonUnitTests.cpp"; sourceTree = SOURCE_ROOT; };
-		E36D8A0B0D29C6A100B4C134 /* PionCounterTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCounterTests.cpp; path = "../pion-common/common/tests/PionCounterTests.cpp"; sourceTree = SOURCE_ROOT; };
-		E36D8A0C0D29C6A100B4C134 /* PionPluginPtrTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionPluginPtrTests.cpp; path = "../pion-common/common/tests/PionPluginPtrTests.cpp"; sourceTree = SOURCE_ROOT; };
 		E36D8A160D29C75200B4C134 /* HTTPMessage.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPMessage.hpp; path = net/include/pion/net/HTTPMessage.hpp; sourceTree = SOURCE_ROOT; };
 		E36D8A170D29C75200B4C134 /* HTTPParser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPParser.hpp; path = net/include/pion/net/HTTPParser.hpp; sourceTree = SOURCE_ROOT; };
 		E36D8A180D29C75200B4C134 /* HTTPReader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPReader.hpp; path = net/include/pion/net/HTTPReader.hpp; sourceTree = SOURCE_ROOT; };
@@ -456,6 +456,12 @@
 		E36D8C340D29D7EA00B4C134 /* XMLCodec.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = XMLCodec.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E260CA789CD00120C6D /* libpion-common.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-common.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36F2E2E0CA78A0400120C6D /* libpion-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E378EE710D4A6B06002658FA /* ReactorTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReactorTests.cpp; path = platform/tests/ReactorTests.cpp; sourceTree = SOURCE_ROOT; };
+		E378F09E0D4AC126002658FA /* PionCommonUnitTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCommonUnitTests.cpp; path = common/tests/PionCommonUnitTests.cpp; sourceTree = SOURCE_ROOT; };
+		E378F09F0D4AC126002658FA /* PionCounterTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCounterTests.cpp; path = common/tests/PionCounterTests.cpp; sourceTree = SOURCE_ROOT; };
+		E378F0A00D4AC126002658FA /* PionDateTimeTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionDateTimeTests.cpp; path = common/tests/PionDateTimeTests.cpp; sourceTree = SOURCE_ROOT; };
+		E378F0A10D4AC126002658FA /* PionPluginPtrTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionPluginPtrTests.cpp; path = common/tests/PionPluginPtrTests.cpp; sourceTree = SOURCE_ROOT; };
+		E378F0A20D4AC126002658FA /* PluginManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PluginManagerTests.cpp; path = common/tests/PluginManagerTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3A9CE130D33EDCB0094ECEE /* Codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Codec.cpp; path = platform/src/Codec.cpp; sourceTree = SOURCE_ROOT; };
 		E3A9CE140D33EDCB0094ECEE /* Database.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Database.cpp; path = platform/src/Database.cpp; sourceTree = SOURCE_ROOT; };
 		E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Reactor.cpp; path = platform/src/Reactor.cpp; sourceTree = SOURCE_ROOT; };
@@ -679,9 +685,11 @@
 		E36D8A090D29C67300B4C134 /* tests */ = {
 			isa = PBXGroup;
 			children = (
-				E36D8A0A0D29C6A100B4C134 /* PionCommonUnitTests.cpp */,
-				E36D8A0B0D29C6A100B4C134 /* PionCounterTests.cpp */,
-				E36D8A0C0D29C6A100B4C134 /* PionPluginPtrTests.cpp */,
+				E378F09E0D4AC126002658FA /* PionCommonUnitTests.cpp */,
+				E378F09F0D4AC126002658FA /* PionCounterTests.cpp */,
+				E378F0A00D4AC126002658FA /* PionDateTimeTests.cpp */,
+				E378F0A10D4AC126002658FA /* PionPluginPtrTests.cpp */,
+				E378F0A20D4AC126002658FA /* PluginManagerTests.cpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";
@@ -822,8 +830,8 @@
 				E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */,
 				E3B2A26B0CADC46B001A9A8D /* PionLogger.hpp */,
 				E3B2A26C0CADC46B001A9A8D /* PionPlugin.hpp */,
-				E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */,
 				E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */,
+				E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */,
 				E36D8B8B0D29D40600B4C134 /* PionUnitTestDefs.hpp */,
 			);
 			name = include;
@@ -860,6 +868,7 @@
 				E36D88E60D29BBC800B4C134 /* EventTests.cpp */,
 				E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */,
 				E326EF890D2D733700BBCE56 /* CodecTests.cpp */,
+				E378EE710D4A6B06002658FA /* ReactorTests.cpp */,
 				E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */,
 				E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */,
 			);
@@ -1248,6 +1257,7 @@
 				E36D8C360D29D83C00B4C134 /* PBXTargetDependency */,
 				E36D8C380D29D83C00B4C134 /* PBXTargetDependency */,
 				E36D8C3A0D29D83C00B4C134 /* PBXTargetDependency */,
+				E378EE740D4AA746002658FA /* PBXTargetDependency */,
 			);
 			name = PionPlatformUnitTests;
 			productName = PionReactorUnitTests;
@@ -1414,12 +1424,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E36D88EA0D29BBC800B4C134 /* EventTests.cpp in Sources */,
 				E36D88EB0D29BBC800B4C134 /* PionPlatformUnitTests.cpp in Sources */,
-				E36D88ED0D29BBC800B4C134 /* VocabularyTests.cpp in Sources */,
-				E326EF8A0D2D733700BBCE56 /* CodecTests.cpp in Sources */,
-				E3AD88EF0D32D00400E1BC5A /* VocabularyConfigTests.cpp in Sources */,
-				E3C408460D3E9242008A4BFC /* ComparisonTests.cpp in Sources */,
+				E378EE720D4A6B06002658FA /* ReactorTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1535,6 +1541,11 @@
 			isa = PBXTargetDependency;
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E36F2E3F0CA78A5200120C6D /* PBXContainerItemProxy */;
+		};
+		E378EE740D4AA746002658FA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3CFF95B0D44340800ADB135 /* FilterReactor */;
+			targetProxy = E378EE730D4AA746002658FA /* PBXContainerItemProxy */;
 		};
 		E3CFF95C0D44340800ADB135 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://purl.org/pion/config">
+  <reactor id="urn:uuid:153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
+    <name>Only IE Requests</name>
+    <comment>Filter events that are not requests from IE browsers</comment>
+    <plugin>FilterReactor</plugin>
+    <comparison>
+    	<term>urn:vocab:clf#useragent</term>
+    	<type>contains</type>
+    	<value>MSIE</value>
+    </comparison>
+  </reactor>
+</config>

@@ -268,8 +268,7 @@ bool ConfigManager::updateConfigOption(const std::string& option_name,
 	return true;
 }
 
-void ConfigManager::openPluginConfig(const std::string& plugin_name,
-									 AddPluginCallback add_plugin_func)
+void ConfigManager::openPluginConfig(const std::string& plugin_name)
 {
 	// open the file and find the "config" root element
 	ConfigManager::openConfigFile();
@@ -293,7 +292,7 @@ void ConfigManager::openPluginConfig(const std::string& plugin_name,
 			throw EmptyPluginElementException(new_plugin_id);
 
 		// execute callback to actually add the plug-in
-		add_plugin_func(new_plugin_id, new_plugin_type, plugin_node->children);
+		addPluginNoLock(new_plugin_id, new_plugin_type, plugin_node->children);
 
 		// look for more plug-in nodes
 		plugin_node = plugin_node->next;

@@ -31,29 +31,24 @@
 using namespace pion;
 using namespace pion::platform;
 
-/// the directory containing the configuration files for unit tests
-#if defined(_MSC_VER)
-	static const std::string TESTS_CONFIG_FILE_DIR("");
-#elif defined(PION_XCODE)
-	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/");
-#else
-	// same for Unix and Cygwin
-	static const std::string TESTS_CONFIG_FILE_DIR("");
-#endif
 
-static const std::string VOCAB_A_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.xml");
-static const std::string VOCAB_A_TEMPLATE_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.tmpl");
-static const std::string VOCAB_A_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_a.xml.bak");
-static const std::string VOCAB_B_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.xml");
-static const std::string VOCAB_B_TEMPLATE_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.tmpl");
-static const std::string VOCAB_B_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_b.xml.bak");
-static const std::string VOCAB_NEW_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_new.xml");
-static const std::string VOCAB_NEW_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "vocab_new.xml.bak");
+/// external functions defined in PionPlatformUnitTests.cpp
+extern const std::string& get_config_file_dir(void);
+extern void setup_logging_for_unit_tests(void);
+
+
+/// static strings used by these unit tests
+static const std::string VOCAB_A_CONFIG_FILE(get_config_file_dir() + "vocab_a.xml");
+static const std::string VOCAB_A_TEMPLATE_FILE(get_config_file_dir() + "vocab_a.tmpl");
+static const std::string VOCAB_A_BACKUP_FILE(get_config_file_dir() + "vocab_a.xml.bak");
+static const std::string VOCAB_B_CONFIG_FILE(get_config_file_dir() + "vocab_b.xml");
+static const std::string VOCAB_B_TEMPLATE_FILE(get_config_file_dir() + "vocab_b.tmpl");
+static const std::string VOCAB_B_BACKUP_FILE(get_config_file_dir() + "vocab_b.xml.bak");
+static const std::string VOCAB_NEW_CONFIG_FILE(get_config_file_dir() + "vocab_new.xml");
+static const std::string VOCAB_NEW_BACKUP_FILE(get_config_file_dir() + "vocab_new.xml.bak");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
 static const std::string VOCAB_DEFAULT_BACKUP_FILE("vocabulary.xml.bak");
 
-/// sets up logging (run once only)
-extern void setup_logging_for_unit_tests(void);
 
 /// cleans up vocabulary config files in the working directory
 void cleanup_vocab_config_files(void)

@@ -32,39 +32,24 @@
 using namespace pion;
 using namespace pion::platform;
 
-#if defined(_MSC_VER)
-	#if defined(_DEBUG) && defined(PION_FULL)
-		static const std::string PATH_TO_PLUGINS("../../bin/Debug_DLL_full");
-	#elif defined(_DEBUG) && !defined(PION_FULL)
-		static const std::string PATH_TO_PLUGINS("../../bin/Debug_DLL");
-	#elif defined(NDEBUG) && defined(PION_FULL)
-		static const std::string PATH_TO_PLUGINS("../../bin/Release_DLL_full");
-	#elif defined(NDEBUG) && !defined(PION_FULL)
-		static const std::string PATH_TO_PLUGINS("../../bin/Release_DLL");
-	#endif
-	static const std::string TESTS_CONFIG_FILE_DIR("");
-#elif defined(PION_XCODE)
-	static const std::string PATH_TO_PLUGINS(".");
-	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/");
-#else
-	// same for Unix and Cygwin
-	static const std::string PATH_TO_PLUGINS("../codecs/.libs");
-	static const std::string TESTS_CONFIG_FILE_DIR("");
-#endif
 
-
-static const std::string CODECS_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "codecs.xml");
-static const std::string CODECS_BACKUP_FILE(TESTS_CONFIG_FILE_DIR + "codecs.xml.bak");
-static const std::string VOCAB_CLF_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "vocab_clf.xml");
-static const std::string CODECS_CLF_CONFIG_FILE(TESTS_CONFIG_FILE_DIR + "codecs_clf.xml");
-static const std::string COMMON_LOG_FILE(TESTS_CONFIG_FILE_DIR + "common.log");
-static const std::string COMBINED_LOG_FILE(TESTS_CONFIG_FILE_DIR + "combined.log");
-static const std::string EXTENDED_LOG_FILE(TESTS_CONFIG_FILE_DIR + "extended.log");
-
-/// sets up logging (run once only)
+/// external functions defined in PionPlatformUnitTests.cpp
+extern const std::string& get_config_file_dir(void);
 extern void setup_logging_for_unit_tests(void);
+extern void setup_plugins_directory(void);
 
-/// cleans up vocabulary config files in the working directory
+
+/// static strings used by these unit tests
+static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+static const std::string CODECS_BACKUP_FILE(get_config_file_dir() + "codecs.xml.bak");
+static const std::string VOCAB_CLF_CONFIG_FILE(get_config_file_dir() + "vocab_clf.xml");
+static const std::string CODECS_CLF_CONFIG_FILE(get_config_file_dir() + "codecs_clf.xml");
+static const std::string COMMON_LOG_FILE(get_config_file_dir() + "common.log");
+static const std::string COMBINED_LOG_FILE(get_config_file_dir() + "combined.log");
+static const std::string EXTENDED_LOG_FILE(get_config_file_dir() + "extended.log");
+
+
+/// cleans up codec config files in the working directory
 void cleanup_codec_config_files(void)
 {
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
@@ -79,8 +64,7 @@ public:
 	PluginPtrReadyToAddCodec_F() { 
 		setup_logging_for_unit_tests();
 		cleanup_codec_config_files();
-		PionPlugin::resetPluginDirectories();
-		PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
+		setup_plugins_directory();		
 	}
 };
 
@@ -165,8 +149,7 @@ public:
 		cleanup_codec_config_files();
 		
 		if (! m_config_loaded) {
-			PionPlugin::resetPluginDirectories();
-			PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
+			setup_plugins_directory();		
 			// load the CLF vocabulary
 			m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
 			m_config_loaded = true;
@@ -472,8 +455,7 @@ public:
 		cleanup_codec_config_files();
 
 		if (! m_config_loaded) {
-			PionPlugin::resetPluginDirectories();
-			PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
+			setup_plugins_directory();		
 			// load the CLF vocabulary
 			m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
 			m_config_loaded = true;
@@ -528,24 +510,28 @@ bool				CodecFactoryLogFormatTests_F::m_config_loaded = false;
 BOOST_FIXTURE_TEST_SUITE(CodecFactoryLogFormatTests_S, CodecFactoryLogFormatTests_F)
 
 BOOST_AUTO_TEST_CASE(checkGetCodec) {
-	/*
 	BOOST_CHECK(getCodec(m_common_id));
 	BOOST_CHECK(getCodec(m_combined_id));
-	 */
+	BOOST_CHECK(getCodec(m_extended_id));
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecEventTypes) {
 	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#http-request");
 	BOOST_CHECK_EQUAL(m_common_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_combined_codec->getEventType(), event_type_ref);
+	BOOST_CHECK_EQUAL(m_extended_codec->getEventType(), event_type_ref);
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecName) {
 	BOOST_CHECK_EQUAL(m_common_codec->getName(), "Common Log Format");
+	BOOST_CHECK_EQUAL(m_combined_codec->getName(), "Combined Log Format");
+	BOOST_CHECK_EQUAL(m_extended_codec->getName(), "Extended Log Format");
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecComment) {
 	BOOST_CHECK_EQUAL(m_common_codec->getComment(), "Codec for the Common Log Format (CLF)");
+	BOOST_CHECK_EQUAL(m_combined_codec->getComment(), "Codec for the Combined Log Format (CLF)");
+	BOOST_CHECK_EQUAL(m_extended_codec->getComment(), "Codec for the Extended Log Format (ELF)");
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
