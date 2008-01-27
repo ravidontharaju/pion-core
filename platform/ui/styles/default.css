@@ -361,3 +361,7 @@ a img {
 	border-color: #ccc;
 	font-weight: bold; 
 }
+
+#create_new_workspace_tab {
+	border:1px solid red;
+}

@@ -27,6 +27,9 @@ var surface = null;
 var new_workspace_tab_clicked = false;
 
 var init = function() {
+	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
+	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
+
 	for (var i = 0; i < num_initial_workspaces; ++i) {
 		addWorkspace();
 	}
@@ -123,6 +126,51 @@ function addWorkspace() {
 
 	new_workspace.node.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 	workspace_pane.controlButton.domNode.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
+
+	// Handle scroll events so that scrolling always occurs in multiples of STEP pixels.
+	workspace_pane.isScrolling = false;
+	workspace_pane.prevScrollTop = 0;
+	workspace_pane.prevScrollLeft = 0;
+	dojo.connect(workspace_pane.domNode, "scroll", makeScrollHandler(workspace_pane));
+}
+
+// Return a scroll event handler for a specific workspace pane.  The handler waits until all pending
+// scroll events are handled by the browser, then quantizes the scroll values.
+function makeScrollHandler(workspace_pane) {
+	var _pane = workspace_pane;
+	var _node = workspace_pane.domNode;
+	return function() {
+		if (_pane.isScrolling) return;
+		_pane.isScrolling = true;
+		var callback = function() {
+			_pane.isScrolling = false;
+
+			// Round scroll positions to the nearest multiple of STEP in the direction of scrolling.
+			if (_node.scrollLeft > _pane.prevScrollLeft) {
+				_node.scrollLeft += STEP - _node.scrollLeft % STEP;
+			} else {
+				_node.scrollLeft -= _node.scrollLeft % STEP;
+			}
+			if (_pane.prevScrollTop > _node.scrollTop) {
+				_node.scrollTop += STEP - _node.scrollTop % STEP;
+			} else if (_node.scrollTop <= STEP) {
+				_node.scrollTop = 0; // For some reason, the vertical scroll sometimes gets stuck just below the top.
+			} else {
+				_node.scrollTop -= _node.scrollTop % STEP;
+			}
+
+			// Save the scroll positions so that the direction of scrolling can be determined.
+			_pane.prevScrollLeft = _node.scrollLeft;
+			_pane.prevScrollTop  = _node.scrollTop;
+		};
+
+		// We're calling setTimeout with a value of 0, so that the callback will be called
+		// as soon as all pending events are handled.  This avoids the problem that with IE,
+		// even a minimal scroll sets off a bunch of onscroll events, often with just one
+		// pixel difference between them.  (Note: this is not for efficiency reasons, it's
+		// to make the quantization work in a reasonable way.)
+		setTimeout(callback, 0);
+	};
 }
 
 function updateLatestMouseUpEvent(e) {
@@ -246,9 +294,8 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	var mouseLeftTop = {l: latest_event.clientX - cw.offsetLeft, t: latest_event.clientY - cw.offsetTop - offsetTopHack};
 	console.debug("mouseLeftTop: ", mouseLeftTop);
 	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
-	//var newLeftTop = getNearbyGridPointInBox(c, {l: latest_event.clientX, t: latest_event.clientY});
-	new_div.style.top  = newLeftTop.t + "px";
-	new_div.style.left = newLeftTop.l + "px";
+	new_div.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
+	new_div.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
 	new_div.style.position = "absolute";
 
 	// Add a context menu for the new reactor.
