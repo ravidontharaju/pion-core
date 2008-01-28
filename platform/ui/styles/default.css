@@ -13,13 +13,6 @@ body {
 }
 
 h1 {
-/*
-The exact size isn't critical here, but 3.5em is so big that it's often not fitting on one line.
-The main issue is that #workspace_config_header now has a fixed height (currently 120px) so this should be
-consistent with whatever that value is.
-
-	font-size: 3.5em;
-*/
 	font-size: 3em;
 	font-weight: bold;
 }
@@ -59,7 +52,6 @@ a img {
 
 #logo {
 	background: url(../images/bg01.png) repeat-x;
-	/*width: 950px;*/
 	height: 88px;
 	margin: 0 auto;
 	padding: 0;
@@ -87,34 +79,17 @@ a img {
 	height: 30px;
 	margin: 0 auto;
 	padding: 0 20px 0 0;
-	border-bottom: 1px solid #CCCCCC;
-}
-/*
-#menu ul {
-	margin: 0;
-	padding: 0;
-	list-style: none;
 }
 
-#menu li {
-	display: inline;
-}
-*/
 #menu span {
 	display: block;
 	float: right;
 }
-/*
-#menu a {
-*/
+
 #menu .dijitButtonText {
 	height: 17px;
-/*
-	margin: 5px 4px 0 0;
-	padding: 7px 0 0 7px;
-	background: #999999;
-	border: 1px solid #CCCCCC;
-*/
+	width: 75px;
+	padding: 2px 0 0 0;
 	text-decoration: none;
 	font-size: 12px;
 	font-weight: bold;
@@ -132,24 +107,23 @@ a img {
 	border-bottom: 1px solid #ffffff;
 }
 
-/*
-#menu .current_page_item a {
-	background: #ffffff;
+
+#menu .dijitToggleButtonChecked button {
+	background-color: #ffffff;
+	background-image: none;
 	border-right: 1px solid #CCCCCC;
 	border-left: 1px solid #CCCCCC;
 	border-top: 1px solid #CCCCCC;
 	border-bottom: 1px solid #ffffff;
-}
-*/
 
-#menu .dijitToggleButtonChecked button {
-	background-color: yellow;
-	background-image: none;
 }
 
-/*
-#menu a span
-*/
+#menu .dijitButtonNode {
+	background: none;
+	background-color: #9e9e9e;
+}
+
+
 #menu span
 {
 	//padding-right: 20px;
@@ -343,7 +317,7 @@ This is a duplicate of #reactor_config_content for now.
 	padding: 10px 10px 0 5px;
 	border: 1px solid #666666;
 	cursor: pointer;
-	width: 83px;
+	width: 132px;
 	height: 38px;
 	font-size: 14px;
 	font-weight: bold;
@@ -422,5 +396,8 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 #create_new_workspace_tab {
-	border:1px solid red;
+	border: 0px;
+	background-color: #ffffff;
+	background: none;
+	text-decoration: underline;
 }
