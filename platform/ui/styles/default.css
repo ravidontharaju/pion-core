@@ -15,7 +15,7 @@ body {
 h1 {
 /*
 The exact size isn't critical here, but 3.5em is so big that it's often not fitting on one line.
-The main issue is that #workspaceHeader now has a fixed height (currently 120px) so this should be
+The main issue is that #workspace_config_header now has a fixed height (currently 120px) so this should be
 consistent with whatever that value is.
 
 	font-size: 3.5em;
@@ -89,7 +89,7 @@ a img {
 	padding: 0 20px 0 0;
 	border-bottom: 1px solid #CCCCCC;
 }
-
+/*
 #menu ul {
 	margin: 0;
 	padding: 0;
@@ -99,22 +99,32 @@ a img {
 #menu li {
 	display: inline;
 }
-
-#menu a {
+*/
+#menu span {
 	display: block;
 	float: right;
+}
+/*
+#menu a {
+*/
+#menu .dijitButtonText {
 	height: 17px;
+/*
 	margin: 5px 4px 0 0;
 	padding: 7px 0 0 7px;
 	background: #999999;
 	border: 1px solid #CCCCCC;
+*/
 	text-decoration: none;
 	font-size: 12px;
 	font-weight: bold;
 	color: #333333;
 }
 
+/*
 #menu a:hover {
+*/
+#menu button:hover {
 	background: #ffffff;
 	border-right: 1px solid #CCCCCC;
 	border-left: 1px solid #CCCCCC;
@@ -122,6 +132,7 @@ a img {
 	border-bottom: 1px solid #ffffff;
 }
 
+/*
 #menu .current_page_item a {
 	background: #ffffff;
 	border-right: 1px solid #CCCCCC;
@@ -129,25 +140,73 @@ a img {
 	border-top: 1px solid #CCCCCC;
 	border-bottom: 1px solid #ffffff;
 }
+*/
 
+#menu .dijitToggleButtonChecked button {
+	background-color: yellow;
+	background-image: none;
+}
+
+/*
 #menu a span
+*/
+#menu span
 {
 	//padding-right: 20px;
 	padding-right: 5px;
 }
+/*
+A highly simplified extract of the generated HTML for a stack controller with two buttons, with the second one selected.
 
+<div id="menu">
+	<span class="dijitStackController">
+		<div class="dijitButton">
+			<div class="dijitRight">
+				<button class="dijitStretch dijitButtonNode dijitButtonContents">
+					<span class="dijitButtonText">Label 1</span>
+				</button>
+			</div>
+		</div>
+		<div class="dijitButton dijitToggleButtonChecked">
+			<div class="dijitRight">
+				<button class="dijitStretch dijitButtonNode dijitButtonContents">
+					<span class="dijitButtonText">Label 2</span>
+				</button>
+			</div>
+		</div>
+	</span>
+</div>
+*/
+
+/*
+This is a duplicate of #workspace_config_header for now.
+*/
+.config_header {
+	height: 110px;
+	margin: 0 0 0 30px;
+}
 
 /* Workspace Header */
 
-#workspaceHeader {
+#workspace_config_header {
 	height: 110px;
 	margin: 0 0 0 30px;
 }
 
 
+/*
+This is a duplicate of #reactor_config_content for now.
+*/
+.config_content {
+	padding: 0 0 20px 0;
+	margin: 10px 10px 0 30px;
+	line-height: 150%;
+	font-size: 12px;
+}
+
 /* Content */
 
-#contentWide {
+#reactor_config_content {
 	padding: 0 0 20px 0;
 	margin: 10px 10px 0 30px;
 	line-height: 150%;

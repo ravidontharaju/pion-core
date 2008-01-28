@@ -279,7 +279,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	c.r = c.l + c.w - new_div.offsetWidth;
 	c.b = c.t + c.h - new_div.offsetHeight;
 	console.debug("latest_event: ", latest_event);
-	var cw = dojo.byId("contentWide"); // Move to init()?
+	var cw = dojo.byId("reactor_config_content"); // Move to init()?
 	/*
 	console.debug("cw.offsetLeft: ", cw.offsetLeft, ", cw.offsetTop: ", cw.offsetTop);
 	var cw2 = cw.parentNode;
@@ -369,8 +369,8 @@ function handleDropOnReactor(source, nodes, copy, target) {
 	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
 	console.debug("x1 = ", x1, ", y1 = ", y1);
 	workspace_box.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
-	var xOffset = dojo.byId("contentWide").offsetLeft;
-	var yOffset = dojo.byId("contentWide").offsetTop;
+	var xOffset = dojo.byId("reactor_config_content").offsetLeft;
+	var yOffset = dojo.byId("reactor_config_content").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
 	mouseConnection = dojo.connect(workspace_box.node, 'onmousemove', 
 		function(event) {

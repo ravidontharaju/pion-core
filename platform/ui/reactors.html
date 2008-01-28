@@ -39,6 +39,7 @@
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
 
 	<script type="text/javascript" src="scripts/reactors.js"></script>
+	<script type="text/javascript" src="scripts/users.js"></script>
 </head>
 <body class="tundra">
 	<div id="outer" dojoType="dijit.layout.LayoutContainer">
@@ -61,14 +62,7 @@
 
 			<!-- start main menu -->
 			<div id="menu">
-				<ul>
-					<li><a href="/#"><span>System</span></a></li>
-					<li><a href="/#"><span>Users</span></a></li>
-					<li><a href="/#"><span>Databases</span></a></li>
-					<li><a href="/#"><span>Codecs</span></a></li>
-					<li><a href="/#"><span>Vocabularies</span></a></li>
-					<li class="current_page_item"><a href="/reactors"><span>Reactors</span></a></li>
-				</ul>
+				<span dojoType="dijit.layout.StackController" containerId="main_stack_container"></span>
 			</div>
 			<!-- end main menu -->
 		</div>
@@ -122,24 +116,120 @@
 		</div>
 		<!-- end left sidebar -->
 
-		<div id="workspaceHeader" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-			<h1>Reactors Configuration</h1>
+		<div id="main_stack" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+			<div id="main_stack_container" dojoType="dijit.layout.StackContainer">
+				<div id="reactor_config" dojoType="dijit.layout.LayoutContainer" title="Reactors">
+					<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>Reactors Configuration</h1>
 
-			<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
-				2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
-				3. Drag arrows to connect Reactors
-			</h3>
-		</div>
+						<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
+							2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
+							3. Drag arrows to connect Reactors
+						</h3>
+					</div>
+					<!-- start tabbed workspaces -->
+					<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
+							<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
+								This text should never be visible!
+							</div>
+						</div>
+					</div>
+					<!-- end tabbed workspaces -->
+				</div>
+				<div id="vocab_config" dojoType="dijit.layout.LayoutContainer" title="Vocabularies">
+					<div id="vocab_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>Vocabulary Configuration</h1>
 
-		<!-- start tabbed workspaces -->
-		<div id="contentWide" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-			<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
-				<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
-					This text should never be visible!
+						<h3>simple instructions?</h3>
+					</div>
+					<div id="vocab_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						put accordion, etc here
+					</div>
+				</div>
+				<div id="codec_config" dojoType="dijit.layout.LayoutContainer" title="Codecs">
+					<div id="codec_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>Codec Configuration</h1>
+
+						<h3>simple instructions?</h3>
+					</div>
+					<div id="codec_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						put accordion, etc here
+					</div>
+				</div>
+				<div id="database_config" dojoType="dijit.layout.LayoutContainer" title="Databases">
+					<div id="database_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>Database Configuration</h1>
+
+						<h3>simple instructions?</h3>
+					</div>
+					<div id="database_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						put accordion, etc here
+					</div>
+				</div>
+				<div id="user_config" dojoType="dijit.layout.LayoutContainer" title="Users">
+					<div id="user_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>User Configuration</h1>
+
+						<h3>simple instructions?</h3>
+					</div>
+					<div id="user_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						<div dojoType="dijit.layout.LayoutContainer">
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="top">
+								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">Add a new user</button>
+							</div>
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">Add a new user</button>
+							</div>
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
+								<div id="user_config_accordion" class="config_accordion" dojoType="dijit.layout.AccordionContainer" duration="200" style="height: 100%; overflow: auto">
+									<div dojoType="dijit.layout.AccordionPane" class="user_pane" selected="true" title="User 1">
+										<div class="save_cancel_delete">
+											<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+											<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+											<button dojoType=dijit.form.Button class="delete">Delete</button>
+										</div>
+										<table>
+											<tr>
+												<td><label>Last name</label></td>
+												<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
+											</tr>
+											<tr>
+												<td><label>First name</label></td>
+												<td><input dojoType="dijit.form.TextBox" name="first_name"></td>
+											</tr>
+											<tr>
+												<td><label>Username</label></td>
+												<td><input dojoType="dijit.form.TextBox" name="username"></td>
+											</tr>
+											<tr>
+												<td><label>Password</label></td>
+												<td><input dojoType="dijit.form.TextBox" name="password"></td>
+											</tr>
+										</table>
+										<div class="save_cancel_delete">
+											<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+											<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+											<button dojoType=dijit.form.Button class="delete">Delete</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="system_config" dojoType="dijit.layout.LayoutContainer" title="System">
+					<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+						<h1>System Configuration</h1>
+
+						<h3>simple instructions?</h3>
+					</div>
+					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						put accordion, etc here
+					</div>
 				</div>
 			</div>
 		</div>
-		<!-- end tabbed workspaces -->
 	</div>
 
 
@@ -162,7 +252,7 @@
 			</tr>
 			<tr>
 				<td><label>Event Type: </label></td>
-				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/>
+				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
 			<tr>
 				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
@@ -202,7 +292,7 @@
 			</tr>
 			<tr>
 				<td><label>Event Type: </label></td>
-				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/>
+				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
 			<tr>
 				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
