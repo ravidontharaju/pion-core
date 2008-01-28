@@ -12,7 +12,6 @@ dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
 dojo.require("dojox.gfx");
-dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 // configuration parameters
 var STEP = 10;
@@ -26,7 +25,7 @@ var workspace_box = null;
 var surface = null;
 var new_workspace_tab_clicked = false;
 
-var init = function() {
+function initReactorConfiguration() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 
@@ -66,8 +65,6 @@ var init = function() {
 						}
 					});
 }
-
-dojo.addOnLoad(init);
 
 function addWorkspace() {
 	var i = workspace_boxes.length;

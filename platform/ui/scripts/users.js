@@ -4,7 +4,6 @@ dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
-dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 var users = [{first_name: 'Mignon'}];
 
