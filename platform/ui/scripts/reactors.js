@@ -25,7 +25,7 @@ var workspace_box = null;
 var surface = null;
 var new_workspace_tab_clicked = false;
 
-function initReactorConfiguration() {
+function initReactorConfigPage() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 

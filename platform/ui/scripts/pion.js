@@ -1,14 +1,20 @@
 dojo.require("dijit.layout.StackContainer");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
+var user_config_page_initialized = false;
+
 var init = function() {
-	initReactorConfiguration();
+	initReactorConfigPage();
 }
 
 dojo.addOnLoad(init);
 
-dojo.subscribe("main_stack_container-selectChild", configModeSelected);
+dojo.subscribe("main_stack_container-selectChild", configPageSelected);
 
-function configModeSelected(page) {
-	console.debug('Selected ' + page.title + ' configuration mode');
+function configPageSelected(page) {
+	console.debug('Selected ' + page.title + ' configuration page');
+	if (page.title == "Users" && !user_config_page_initialized) {
+		initUserConfigPage();
+		user_config_page_initialized = true;
+	}
 }
