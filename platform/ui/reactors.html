@@ -247,14 +247,15 @@
 								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">Add a new User</button>
 							</div-->
 							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">ADD A NEW USER</button>
+								<button dojoType=dijit.form.Button class="add_new" onClick="addNewUser">ADD A NEW USER</button>
 							</div>
 							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
 								<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
 									<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
 										<form id="user_form" dojoType="dijit.form.Form">
+
 										<BR />
-											<table cellpadding="2" cellspacing="0" border="0">
+											<table cellpadding="3" cellspacing="0" border="0">
 												<tr>
 													<td><label>Last name</label></td>
 													<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
@@ -318,12 +319,12 @@
 				<td><label>Event Type: </label></td>
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
-			<tr>
-				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="cancel">Cancel</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="save" type="submit">Save</button></td>
-			</tr>
 		</table>
+        <div class="save_cancel_delete">
+            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
+            <button dojoType=dijit.form.Button class="delete">Delete</button>
+    	</div>        
 	</div>
 	<div dojoType="dijit.Dialog" id="filter_dialog" title="Filter Configuration">
 		<table>
@@ -336,13 +337,13 @@
 				<td><label for="loc">Comments: </label></td>
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
-			<tr>
-				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="cancel">Cancel</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="save" type="submit">Save</button></td>
-			</tr>
 		</table>
-	</div>
+        <div class="save_cancel_delete">
+            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
+            <button dojoType=dijit.form.Button class="delete">Delete</button>
+    	</div>
+    </div>
 	<div dojoType="dijit.Dialog" id="transform_dialog" title="Transform Configuration">
 		<table>
 			<tr>
@@ -358,12 +359,12 @@
 				<td><label>Event Type: </label></td>
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
-			<tr>
-				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="cancel">Cancel</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="save" type="submit">Save</button></td>
-			</tr>
 		</table>
+        <div class="save_cancel_delete">
+            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
+            <button dojoType=dijit.form.Button class="delete">Delete</button>
+    	</div>        
 	</div>
 	<div dojoType="dijit.Dialog" id="data_store_dialog" title="Storage Configuration">
 		<table>
@@ -376,12 +377,12 @@
 				<td><label for="loc">Comments: </label></td>
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
-			<tr>
-				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="cancel">Cancel</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="save" type="submit">Save</button></td>
-			</tr>
 		</table>
+        <div class="save_cancel_delete">
+            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
+            <button dojoType=dijit.form.Button class="delete">Delete</button>
+    	</div>        
 	</div>
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
 		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
@@ -400,12 +401,12 @@
 				<td><label for="loc">Comments: </label></td>
 				<td><input dojoType="dijit.form.TextBox" name="comments"></td>
 			</tr>
-			<tr>
-				<td align="center"><button dojoType=dijit.form.Button class="delete">Delete</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="cancel">Cancel</button></td>
-				<td align="center"><button dojoType=dijit.form.Button class="save" type="submit">Save</button></td>
-			</tr>
 		</table>
+        <div class="save_cancel_delete">
+            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
+            <button dojoType=dijit.form.Button class="delete">Delete</button>
+    	</div>
 	</div>
 <!-- end configuration dialogs -->
 

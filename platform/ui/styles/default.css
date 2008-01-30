@@ -406,7 +406,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .tundra .save .dijitButtonNode {
 	background: #ffffff url("../images/button-save-off.png");
-	border: solid #cccccc 1px;
+	border: solid #999999 1px;
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
@@ -425,9 +425,9 @@ This is a duplicate of #reactor_config_content for now.
 
 
 
-.tundra .add_new_user .dijitButtonNode {
-	background: #ffffff url("../images/button-add-new-user-off.png");
-	border: solid #cccccc 1px;
+.tundra .cancel .dijitButtonNode {
+	background: #ffffff url("../images/button-cancel-off.png");
+	border: solid #999999 1px;
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
@@ -437,14 +437,70 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
+.tundra .cancel.dijitButtonHover .dijitButtonNode 
+
+{
+	background: #ffffff url("../images/button-cancel-on.png");
+}
 
 
 
+
+.tundra .delete .dijitButtonNode {
+	background: #ffffff url("../images/button-delete-off.png");
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .delete.dijitButtonHover .dijitButtonNode 
+
+{
+	background: #ffffff url("../images/button-delete-on.png");
+}
+
+
+
+.tundra .add_new_user .dijitButtonNode {
+	background: #ffffff url("../images/button-add-new-user-off.png");
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
 
 .tundra .add_new_user.dijitButtonHover .dijitButtonNode 
 
 {
 	background: #ffffff url("../images/button-add-new-user-on.png");
+}
+
+.tundra .add_new .dijitButtonNode {
+	background: #ffffff url("../images/button-add-off.png");
+	border: none;
+	color: #366dba;
+	font-size: 16px;
+	font-weight: bold;
+	width: auto;
+	height: 30px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .add_new.dijitButtonHover .dijitButtonNode 
+
+{
+	background: #ffffff url("../images/button-add-on.png");
 }
 
 
@@ -459,5 +515,33 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 .unsaved_changes {
-	border: 1px solid red;
+	border: 1px dashed #666666;
 }
+
+.tundra .user_pane .dijitAccordionBody{
+	padding: 10px;
+	height: auto;
+}
+
+.tundra .user_pane .dijitAccordionTitle{
+	text-decoration: underline;
+}
+
+
+.tundra .dijitAccordionPane .dijitAccordionArrow {
+	background:url("../images/arrowDown.png") no-repeat;
+}
+
+.dj_ie6 .tundra .dijitAccordionPane .dijitAccordionArrow {
+	background-image: url("../images/arrowDown.png"); 
+}
+
+.tundra .dijitAccordionPane-selected .dijitAccordionArrow {
+	background:url("../images/circleIcon.png") no-repeat;
+	margin-top:2px;
+}
+
+.dj_ie6 .tundra .dijitAccordionPane-selected .dijitAccordionArrow {
+	background-image: url("../images/circleIcon.png"); 
+}
+
