@@ -27,7 +27,7 @@ function initUserConfigPage() {
 	// there's a vertical one.
 	accordion_width = dijit.byId('user_config_accordion').domNode.clientWidth - 15;
 
-	adjustAccordionSize();
+	adjustUserAccordionSize();
 	
 	dojo.query("input", selected_user_pane.domNode).forEach(function(n) {
 		dojo.connect(n, 'change', function() {
@@ -62,7 +62,7 @@ function initUserConfigPage() {
 			dijit.byId('user_config_accordion').forward();
 			
 			dijit.byId('user_config_accordion').removeChild(pane_to_delete);
-			adjustAccordionSize();
+			adjustUserAccordionSize();
 		})
 	});
 }
@@ -86,12 +86,12 @@ function addNewUser() {
 	}
 	var user_pane = createNewUserPane();
 	user_config_accordion.addChild(user_pane);
-	adjustAccordionSize();
+	adjustUserAccordionSize();
 	user_config_accordion.selectChild(user_pane);
 	console.debug("user_config_accordion.domNode.style.height = " + user_config_accordion.domNode.style.height);
 }
 
-function adjustAccordionSize() {
+function adjustUserAccordionSize() {
 	var user_config_accordion = dijit.byId('user_config_accordion');
 	var num_users = user_config_accordion.getChildren().length;
 	console.debug("num_users = " + num_users);

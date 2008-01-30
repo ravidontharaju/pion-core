@@ -42,9 +42,17 @@
 
 	<script type="text/javascript" src="scripts/pion.js"></script>
 	<script type="text/javascript" src="scripts/reactors.js"></script>
+	<script type="text/javascript" src="scripts/codecs.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
 </head>
 <body class="tundra">
+
+<!-- data store for event types -->
+	<div dojoType="dojo.data.ItemFileReadStore" jsId="eventTypeStore" url="eventTypes.json"></div>
+
+<!-- data store for codec types -->
+	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="codecTypes.json"></div>
+
 	<div id="outer" dojoType="dijit.layout.LayoutContainer">
 		<div id="topBar" dojoType="dijit.layout.ContentPane" layoutAlign="top">
 			<!-- start header -->
@@ -157,7 +165,61 @@
 						<h3>simple instructions?</h3>
 					</div>
 					<div id="codec_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						put accordion, etc here
+						<div dojoType="dijit.layout.LayoutContainer">
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+								<button dojoType=dijit.form.Button class="add_new_codec" onClick="addNewCodec">ADD A NEW CODEC</button>
+							</div>
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
+								<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
+									<div dojoType="dijit.layout.AccordionPane" class="codec_pane" title="Codec 1">
+										<form id="codec_form" dojoType="dijit.form.Form">
+										<BR />
+											<table cellpadding="2" cellspacing="0" border="0">
+												<tr>
+													<td><label>Name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="codec_name"></td>
+												</tr>
+												<tr>
+													<td><label>Comment</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="comment"></td>
+												</tr>
+												<tr>
+													<td><label>URI</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="uri"></td>
+												</tr>
+												<tr>
+													<td><label>Type</label></td>
+													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+												</tr>
+											</table>
+											<hr/>
+											<h3>Map Field Names to Terms</h3>
+											<h4>Double-click to edit fields; drag rows to re-order</h4>
+											<table cellpadding="2" cellspacing="0" border="0">
+												<thead>
+													<td>Field Name</td>
+													<td>Term</td>
+													<td>Start Char</td>
+													<td>End Char</td>
+												</tr>
+												<tr>
+													<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+													<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+													<td><input dojoType="dijit.form.TextBox" name="start_char"></td>
+													<td><input dojoType="dijit.form.TextBox" name="end_char"></td>
+												</tr>
+											</table>
+											<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
+											<div class="save_cancel_delete">
+												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+												<button dojoType=dijit.form.Button class="delete">Delete</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 				<div id="database_config" dojoType="dijit.layout.LayoutContainer" title="Databases">
@@ -170,13 +232,13 @@
 						put accordion, etc here
 					</div>
 				</div>
-                
-                <!--Start Users-->
+
+				<!--Start Users-->
 				<div id="user_config" dojoType="dijit.layout.LayoutContainer" title="Users">
 					<div id="user_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
 						<h1>Users Configuration</h1>
-                        
-                        <h3>simple instructions?</h3>
+						
+						<h3>simple instructions?</h3>
 
 					</div>
 					<div id="user_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
@@ -191,43 +253,39 @@
 								<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
 									<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
 										<form id="user_form" dojoType="dijit.form.Form">
-                                        
-                                        <BR />
-                                            
-                                            <table cellpadding="2" cellspacing="0" border="0">
-                                                <tr>
-                                                        <td><label>Last name</label></td>
-                                                        <td><input dojoType="dijit.form.TextBox" name="last_name"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><label>First name</label></td>
-                                                        <td><input dojoType="dijit.form.TextBox" name="first_name"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><label>Username</label></td>
-                                                        <td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><label>Password</label></td>
-                                                        <td><input dojoType="dijit.form.TextBox" name="password" value="2!n8]&vb"></td>
-                                                    </tr>
-                                            </table>
-                                            <div class="save_cancel_delete">
-                                                <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-                                                <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-                                                <button dojoType=dijit.form.Button class="delete">Delete</button>
-                                            </div>
+										<BR />
+											<table cellpadding="2" cellspacing="0" border="0">
+												<tr>
+													<td><label>Last name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
+												</tr>
+												<tr>
+													<td><label>First name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="first_name"></td>
+												</tr>
+												<tr>
+													<td><label>Username</label></td>
+													<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"></td>
+												</tr>
+												<tr>
+													<td><label>Password</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="password" value="2!n8]&vb"></td>
+												</tr>
+											</table>
+											<div class="save_cancel_delete">
+												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+												<button dojoType=dijit.form.Button class="delete">Delete</button>
+											</div>
 										</form>
-                                            
-
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-                <!--End Users-->
-                
+				<!--End Users-->
+
 				<div id="system_config" dojoType="dijit.layout.LayoutContainer" title="System">
 					<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
 						<h1>System Configuration</h1>
@@ -241,10 +299,6 @@
 			</div>
 		</div>
 	</div>
-
-
-<!-- data store for event types -->
-	<div dojoType="dojo.data.ItemFileReadStore" jsId="eventTypeStore" url="eventTypes.json"></div>
 
 
 <!-- start configuration dialogs -->

@@ -1,0 +1,10 @@
+{
+	identifier: "type_ref",
+	items: [
+		{type_id: "Log File", type_ref: 1},
+		{type_id: "Codec Type 2", type_ref: 2},
+		{type_id: "Codec Type 3", type_ref: 3},
+		{type_id: "Special Codec Type 1", type_ref: 4},
+		{type_id: "Special Codec Type 2", type_ref: 5}
+	]
+}
