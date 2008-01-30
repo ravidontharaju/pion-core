@@ -401,3 +401,7 @@ This is a duplicate of #reactor_config_content for now.
 	background: none;
 	text-decoration: underline;
 }
+
+.unsaved_changes {
+	border: 1px solid red;
+}

@@ -530,7 +530,7 @@ function selected(page) {
 		return;
 	}
 	console.debug("selected " + page.title + ", page.id = " + page.id);
-	workspace_box = page.my_workspace_box
+	workspace_box = page.my_workspace_box;
 	surface = workspace_box.my_surface;
 
 	// in case the window was resized since the workspace was last selected

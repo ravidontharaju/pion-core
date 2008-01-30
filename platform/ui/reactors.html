@@ -27,6 +27,8 @@
 	<script type="text/javascript" src="dojo/dojo/dnd/Manager.js"></script>
 	<script type="text/javascript" src="dojo/dijit/dijit.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Dialog.js"></script>
+	<script type="text/javascript" src="dojo/dijit/form/_Widget.js"></script>
+	<script type="text/javascript" src="dojo/dijit/form/Form.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/TextBox.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Button.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/FilteringSelect.js"></script>
@@ -183,36 +185,39 @@
 								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">Add a new user</button>
 							</div>
 							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
-								<div id="user_config_accordion">
-									<div class="user_pane">
-										<div class="save_cancel_delete">
-											<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-											<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-											<button dojoType=dijit.form.Button class="delete">Delete</button>
-										</div>
-										<table>
-											<tr>
-												<td><label>Last name</label></td>
-												<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
-											</tr>
-											<tr>
-												<td><label>First name</label></td>
-												<td><input dojoType="dijit.form.TextBox" name="first_name"></td>
-											</tr>
-											<tr>
-												<td><label>Username</label></td>
-												<td><input dojoType="dijit.form.TextBox" name="username"></td>
-											</tr>
-											<tr>
-												<td><label>Password</label></td>
-												<td><input dojoType="dijit.form.TextBox" name="password"></td>
-											</tr>
-										</table>
-										<div class="save_cancel_delete">
-											<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-											<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-											<button dojoType=dijit.form.Button class="delete">Delete</button>
-										</div>
+
+								<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
+									<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
+										<form id="user_form" dojoType="dijit.form.Form">
+											<div class="save_cancel_delete">
+												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+												<button dojoType=dijit.form.Button class="delete">Delete</button>
+											</div>
+											<table>
+												<tr>
+													<td><label>Last name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
+												</tr>
+												<tr>
+													<td><label>First name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="first_name"></td>
+												</tr>
+												<tr>
+													<td><label>Username</label></td>
+													<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"></td>
+												</tr>
+												<tr>
+													<td><label>Password</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="password" value="2!n8]&vb"></td>
+												</tr>
+											</table>
+											<div class="save_cancel_delete">
+												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+												<button dojoType=dijit.form.Button class="delete">Delete</button>
+											</div>
+										</form>
 									</div>
 								</div>
 							</div>
