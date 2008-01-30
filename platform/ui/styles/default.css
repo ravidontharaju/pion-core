@@ -402,6 +402,62 @@ This is a duplicate of #reactor_config_content for now.
 	text-decoration: underline;
 }
 
+/* Overwrite Dojo Dijit Styles for the Config Screens */
+
+.tundra .save .dijitButtonNode {
+	background: #ffffff url("../images/button-save-off.png");
+	border: solid #cccccc 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .save.dijitButtonHover .dijitButtonNode 
+
+{
+	background: #ffffff url("../images/button-save-on.png");
+}
+
+
+
+
+.tundra .add_new_user .dijitButtonNode {
+	background: #ffffff url("../images/button-add-new-user-off.png");
+	border: solid #cccccc 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+
+
+
+
+.tundra .add_new_user.dijitButtonHover .dijitButtonNode 
+
+{
+	background: #ffffff url("../images/button-add-new-user-on.png");
+}
+
+
+
+#user_config_accordion {
+	margin-top: 20px;
+}
+
+.save_cancel_delete {
+	margin-top: 5px;
+	margin-left: 2px;
+}
+
 .unsaved_changes {
 	border: 1px solid red;
 }
