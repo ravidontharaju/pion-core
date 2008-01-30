@@ -8,6 +8,7 @@ dojo.require("dijit.layout.AccordionContainer");
 
 var user_pane_title_height = -1;
 var user_pane_body_height = 180;
+var accordion_width = -1;
 var unique_user_id = 1;
 var selected_user_pane = null;
 var default_user_data;
@@ -21,8 +22,13 @@ function initUserConfigPage() {
 	selected_user_pane = dijit.byId('user_config_accordion').getChildren()[0];
 	selected_user_pane.user_data = default_user_data;
 	user_pane_title_height = selected_user_pane.getTitleHeight();
-	adjustAccordionHeight();
 
+	// Make the accordion just narrow enough to avoid a horizontal scroll bar when
+	// there's a vertical one.
+	accordion_width = dijit.byId('user_config_accordion').domNode.clientWidth - 15;
+
+	adjustAccordionSize();
+	
 	dojo.query("input", selected_user_pane.domNode).forEach(function(n) {
 		dojo.connect(n, 'change', function() {
 			console.debug('change: selected user is ', selected_user_pane.title, ', form.getValues() = ', form.getValues());
@@ -33,6 +39,8 @@ function initUserConfigPage() {
 		dojo.connect(n, 'click', function() {
 			console.debug('save: selected user is ', selected_user_pane.title, ', form.getValues() = ', form.getValues());
 			selected_user_pane.user_data = form.getValues();
+			selected_user_pane.title = selected_user_pane.user_data.last_name + ', ' + selected_user_pane.user_data.first_name;
+			dojo.query('.dijitAccordionTitle .dijitAccordionText', selected_user_pane.domNode).forEach('item.firstChild.nodeValue = selected_user_pane.title;');
 			dojo.removeClass(selected_user_pane.domNode, 'unsaved_changes');
 		})
 	});
@@ -54,7 +62,7 @@ function initUserConfigPage() {
 			dijit.byId('user_config_accordion').forward();
 			
 			dijit.byId('user_config_accordion').removeChild(pane_to_delete);
-			adjustAccordionHeight();
+			adjustAccordionSize();
 		})
 	});
 }
@@ -78,16 +86,16 @@ function addNewUser() {
 	}
 	var user_pane = createNewUserPane();
 	user_config_accordion.addChild(user_pane);
-	adjustAccordionHeight();
+	adjustAccordionSize();
 	user_config_accordion.selectChild(user_pane);
 	console.debug("user_config_accordion.domNode.style.height = " + user_config_accordion.domNode.style.height);
 }
 
-function adjustAccordionHeight() {
+function adjustAccordionSize() {
 	var user_config_accordion = dijit.byId('user_config_accordion');
 	var num_users = user_config_accordion.getChildren().length;
 	console.debug("num_users = " + num_users);
-	user_config_accordion.resize({h: user_pane_body_height + num_users * user_pane_title_height});
+	user_config_accordion.resize({h: user_pane_body_height + num_users * user_pane_title_height, w: accordion_width});
 }
 
 dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);
