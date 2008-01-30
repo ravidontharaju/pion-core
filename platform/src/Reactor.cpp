@@ -17,6 +17,8 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/lexical_cast.hpp>
+#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Reactor.hpp>
 
 
@@ -25,22 +27,75 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of Reactor
-const std::string			Reactor::EVENT_ELEMENT_NAME = "event";
-const std::string			Reactor::COMMENT_ELEMENT_NAME = "comment";
+
+const std::string			Reactor::WORKSPACE_ELEMENT_NAME = "Workspace";
+const std::string			Reactor::X_COORDINATE_ELEMENT_NAME = "X";
+const std::string			Reactor::Y_COORDINATE_ELEMENT_NAME = "Y";
 	
-		
+	
 // Reactor member functions
 
 void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	PlatformPlugin::setConfig(v, config_ptr);
-}
+	
+	// get the Reactor's Workspace
+	ConfigManager::getConfigOption(WORKSPACE_ELEMENT_NAME, m_workspace,
+								   config_ptr);
 
+	// get the Reactor's X coordinate
+	std::string coordinate_str;
+	ConfigManager::getConfigOption(X_COORDINATE_ELEMENT_NAME, coordinate_str,
+								   config_ptr);
+	m_x_coordinate = (coordinate_str.empty() ? 0 : boost::lexical_cast<unsigned int>(coordinate_str));
+	
+	// get the Reactor's Y coordinate
+	ConfigManager::getConfigOption(Y_COORDINATE_ELEMENT_NAME, coordinate_str,
+								   config_ptr);
+	m_y_coordinate = (coordinate_str.empty() ? 0 : boost::lexical_cast<unsigned int>(coordinate_str));
+}
+	
 void Reactor::updateVocabulary(const Vocabulary& v)
 {
 	PlatformPlugin::updateVocabulary(v);
 }	
 	
+void Reactor::addConnection(Reactor &output_reactor)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+
+	// check if it already connected
+	for (ReactorList::iterator i = m_connections.begin();
+		 i != m_connections.end(); ++i)
+	{
+		if ((*i)->getId() == output_reactor.getId())
+			throw AlreadyConnectedException(output_reactor.getId());
+	}
+	
+	// add it to the end of the connections list
+	m_connections.push_back(& output_reactor);
+}
+
+void Reactor::removeConnection(const std::string& reactor_id)
+{
+	bool found_reactor = false;
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+
+	// find the connection to remove
+	for (ReactorList::iterator i = m_connections.begin();
+		 i != m_connections.end(); ++i)
+	{
+		if ((*i)->getId() == reactor_id) {
+			// found the connection; remove it
+			found_reactor = true;
+			m_connections.erase(i);
+			break;
+		}
+	}
+	
+	if (! found_reactor)
+		throw ConnectionNotFoundException(reactor_id);
+}
 	
 }	// end namespace platform
 }	// end namespace pion

@@ -210,10 +210,10 @@ inline xmlNodePtr PluginConfig<PluginType>::getPluginConfig(const std::string& p
 												  plugin_id,
 												  m_config_node_ptr->children);
 	if (plugin_node == NULL)
-		throw PluginManager<PluginType>::PluginNotFoundException(plugin_id);
+		throw typename PluginManager<PluginType>::PluginNotFoundException(plugin_id);
 	
 	// copy the plugin configuration
-	return xmlCopyNodeList(plugin_node);
+	return xmlDocCopyNodeList(m_config_doc_ptr, plugin_node);
 }
 	
 template <typename PluginType>

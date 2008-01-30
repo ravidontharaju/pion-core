@@ -26,7 +26,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of Codec
-const std::string			Codec::EVENT_ELEMENT_NAME = "event";
+const std::string			Codec::EVENT_ELEMENT_NAME = "EventType";
 	
 		
 // Codec member functions

@@ -59,11 +59,6 @@ public:
 		m_vocabulary.addTerm(m_date_term);
 		m_vocabulary.addTerm(m_time_term);
 		m_vocabulary.addTerm(m_object_term);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_plain_int_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_string_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_date_time_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_date_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_time_term.term_id);
 
 		m_plain_int_term.term_ref = m_vocabulary.findTerm(m_plain_int_term.term_id);
 		m_string_term.term_ref = m_vocabulary.findTerm(m_string_term.term_id);

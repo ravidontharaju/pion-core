@@ -36,7 +36,6 @@ Vocabulary::Vocabulary(void)
 {
 	// add an initial "null" term to the vocabulary
 	m_ref_map.push_back(new Term(""));
-	m_object_members.push_back(OBJECT_MEMBER_LIST());
 }
 
 Vocabulary::~Vocabulary()
@@ -72,7 +71,6 @@ Vocabulary::TermRef Vocabulary::addTermNoLock(const Term& t)
 	
 	// add it to the memory structures
 	m_ref_map.push_back(term_ptr);
-	m_object_members.push_back(OBJECT_MEMBER_LIST());
 	m_uri_map.insert(std::make_pair(term_ptr->term_id, term_ptr));
 	
 	// return the new numeric identifier
@@ -118,129 +116,28 @@ void Vocabulary::removeTerm(const std::string& term_id)
 		throw RemoveTermNotFoundException(term_id);
 	Term *term_ptr = uri_iterator->second;
 	
-	// make sure that the Term is not a member of any other Terms
-	if (term_ptr->term_num_parents != 0)
-		throw RemoveTermHasParentsException(term_id);
-	
 	// remove the Term from the URI map
 	m_uri_map.erase(uri_iterator);
-	
-	// remove any members of the term
-	for (OBJECT_MEMBER_LIST::iterator member_iterator = m_object_members[term_ptr->term_ref].begin();
-		 member_iterator != m_object_members[term_ptr->term_ref].end(); ++member_iterator)
-	{
-		-- m_ref_map[*member_iterator]->term_num_parents;
-	}
-	m_object_members[term_ptr->term_ref].clear();
 	
 	// remove the Term's object and point it to the undefined term
 	m_ref_map[term_ptr->term_ref] = m_ref_map[UNDEFINED_TERM_REF];
 	delete term_ptr;
 }
 
-void Vocabulary::addObjectMember(const std::string& object_term_id,
-								 const std::string& member_term_id)
-{
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-
-	// find object_term_ref
-	TermStringMap::const_iterator object_iterator = m_uri_map.find(object_term_id);
-	if (object_iterator == m_uri_map.end())
-		throw AddMemberNotFoundException(object_term_id);
-	const TermRef object_term_ref = object_iterator->second->term_ref;
-
-	// find member_term_ref
-	TermStringMap::const_iterator member_iterator = m_uri_map.find(member_term_id);
-	if (member_iterator == m_uri_map.end())
-		throw AddMemberNotFoundException(member_term_id);
-	const TermRef member_term_ref = member_iterator->second->term_ref;
-
-	// make sure that the term references are valid
-	PION_ASSERT(object_term_ref <= m_num_terms && member_term_ref <= m_num_terms);
-	
-	// make sure that we are adding members to an "object" Term
-	if (m_ref_map[object_term_ref]->term_type != TYPE_OBJECT)
-		throw NotObjectTermException(m_ref_map[member_term_ref]->term_id);
-	
-	// make sure the member is not already included
-	for (OBJECT_MEMBER_LIST::iterator i = m_object_members[object_term_ref].begin();
-		 i != m_object_members[object_term_ref].end(); ++i)
-	{
-		if (*i == member_term_ref)
-			throw DuplicateMemberException(m_ref_map[member_term_ref]->term_id);
-	}
-	
-	// add the member to the Term in memory
-	m_object_members[object_term_ref].push_back(member_term_ref);
-	++ m_ref_map[member_term_ref]->term_num_parents;
-}
-	
-void Vocabulary::removeObjectMember(const std::string& object_term_id,
-									const std::string& member_term_id)
-{
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-	
-	// find object_term_ref
-	TermStringMap::const_iterator object_iterator = m_uri_map.find(object_term_id);
-	if (object_iterator == m_uri_map.end())
-		throw RemoveMemberNotFoundException(object_term_id);
-	const TermRef object_term_ref = object_iterator->second->term_ref;
-	
-	// find member_term_ref
-	TermStringMap::const_iterator member_iterator = m_uri_map.find(member_term_id);
-	if (member_iterator == m_uri_map.end())
-		throw RemoveMemberNotFoundException(member_term_id);
-	const TermRef member_term_ref = member_iterator->second->term_ref;
-
-	// make sure that the term references are valid
-	PION_ASSERT(object_term_ref <= m_num_terms && member_term_ref <= m_num_terms);
-
-	// make sure that the member exists
-	for (OBJECT_MEMBER_LIST::iterator i = m_object_members[object_term_ref].begin();
-		 i != m_object_members[object_term_ref].end(); ++i)
-	{
-		if (*i == member_term_ref) {
-			// remove it from our memory structures
-			m_object_members[object_term_ref].erase(i);
-			-- m_ref_map[member_term_ref]->term_num_parents;
-			break;
-		}
-	}
-}
-	
 const Vocabulary& Vocabulary::operator+=(const Vocabulary& v)
 {
 	// lock both vocabularies
 	boost::mutex::scoped_lock local_lock(m_mutex);
 	boost::mutex::scoped_lock remote_lock(v.m_mutex);
 
-	// this is used to cache all object dependencies
-	// these are resolved LAST, to ensure that all Terms already exist first
-	std::list<std::pair<std::string,std::string> >	object_dependencies;
-	
 	// copy over term object pointers
 	for (TermRef n = 1; n <= v.m_num_terms; ++n) {
 		if (v.m_ref_map[n] != v.m_ref_map[UNDEFINED_TERM_REF]) {
 			addTermNoLock(*(v.m_ref_map[n]));
-			for (OBJECT_MEMBER_LIST::const_iterator i = v.m_object_members[n].begin();
-				 i != v.m_object_members[n].end(); ++i)
-			{
-				object_dependencies.push_back(std::make_pair(v.m_ref_map[n]->term_id,
-															 v.m_ref_map[*i]->term_id));
-			}
 		}
 	}
 	local_lock.unlock();
 	remote_lock.unlock();
-	
-	// process object dependencies LAST
-	// AFTER adding all the Terms
-	// so that all term_id references can be resolved properly
-	for (std::list<std::pair<std::string,std::string> >::iterator d = object_dependencies.begin();
-		 d != object_dependencies.end(); ++d)
-	{
-		addObjectMember(d->first, d->second);
-	}
 	
 	return *this;
 }

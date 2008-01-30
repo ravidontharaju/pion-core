@@ -25,10 +25,9 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of Database
-const std::string			Database::DATABASE_ELEMENT_NAME = "database";
-const std::string			Database::TABLE_ELEMENT_NAME = "table";
-const std::string			Database::FIELD_ELEMENT_NAME = "field";
-const std::string			Database::COMMENT_ELEMENT_NAME = "comment";
+const std::string			Database::DATABASE_ELEMENT_NAME = "Database";
+const std::string			Database::TABLE_ELEMENT_NAME = "Table";
+const std::string			Database::FIELD_ELEMENT_NAME = "Field";
 	
 		
 // Database member functions

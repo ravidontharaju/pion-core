@@ -28,8 +28,8 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of LogCodec
 const std::string			LogCodec::CONTENT_TYPE = "text/ascii";
 const std::string			LogCodec::FIELDS_FORMAT_STRING = "#Fields:";
-const std::string			LogCodec::FIELD_ELEMENT_NAME = "field";
-const std::string			LogCodec::HEADERS_ELEMENT_NAME = "headers";
+const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
+const std::string			LogCodec::HEADERS_ELEMENT_NAME = "Headers";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
 const std::string			LogCodec::END_ATTRIBUTE_NAME = "end";

@@ -64,9 +64,6 @@ public:
 		m_vocabulary.addTerm(m_big_int_term);
 		m_vocabulary.addTerm(m_fixed_term);
 		m_vocabulary.addTerm(m_object_term);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_plain_int_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_big_int_term.term_id);
-		m_vocabulary.addObjectMember(m_object_term.term_id, m_fixed_term.term_id);
 	}
 
 	Vocabulary			m_vocabulary;

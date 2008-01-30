@@ -57,14 +57,13 @@ void cleanup_reactor_config_files(void)
 		boost::filesystem::remove(REACTORS_CONFIG_FILE);
 	if (boost::filesystem::exists(REACTORS_BACKUP_FILE))
 		boost::filesystem::remove(REACTORS_BACKUP_FILE);
-	boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
 }
 
 
-/// fixture for testing filters on log file data
-class ReactionEngineLogFilterTests_F {
+/// interface class for ReactionEngine tests
+class ReactionEngineTestInterface_F {
 public:
-	ReactionEngineLogFilterTests_F()
+	ReactionEngineTestInterface_F()
 		: m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_database_mgr),
 		m_combined_id("urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68"),
@@ -73,17 +72,14 @@ public:
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
 		cleanup_reactor_config_files();
-
+		
 		m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
 		m_codec_factory.setConfigFile(CODECS_CLF_CONFIG_FILE);
 		m_codec_factory.openConfigFile();
-		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
-		m_reaction_engine.openConfigFile();
-
 		m_combined_codec = m_codec_factory.getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);
 	}
-	~ReactionEngineLogFilterTests_F() {}
+	virtual ~ReactionEngineTestInterface_F() {}
 	
 	/**
 	 * put the current thread to sleep for an amount of time
@@ -113,10 +109,134 @@ public:
 };
 
 
-// CodecFactoryWithCodecLoaded_S contains tests for the common log format
+/// fixture for some basic ReactionEngine tests
+class ReactionEngineBasicTests_F
+	: public ReactionEngineTestInterface_F
+{
+public:
+	ReactionEngineBasicTests_F() {
+		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
+		m_reaction_engine.createConfigFile();
+	}
+	virtual ~ReactionEngineBasicTests_F() {}
+};
+
+BOOST_FIXTURE_TEST_SUITE(ReactionEngineBasicTests_S, ReactionEngineBasicTests_F)
+
+BOOST_AUTO_TEST_CASE(checkAddConnectionForMissingReactor) {
+	BOOST_CHECK_THROW(m_reaction_engine.addConnection("bad_id", "another_bad_id"),
+					  ReactionEngine::ReactorNotFoundException);
+}
+
+BOOST_AUTO_TEST_CASE(checkRemoveConnectionForMissingReactor) {
+	BOOST_CHECK_THROW(m_reaction_engine.removeConnection("bad_id", "another_bad_id"),
+					  ReactionEngine::ReactorNotFoundException);
+}
+
+BOOST_AUTO_TEST_CASE(checkAddFilterReactorNoConfig) {
+	std::string reactor_id = m_reaction_engine.addPlugin("FilterReactor");
+	BOOST_CHECK(! reactor_id.empty());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture for Reactor connection tests
+class ReactionEngineConnectionTests_F
+	: public ReactionEngineTestInterface_F
+{
+public:
+	ReactionEngineConnectionTests_F() {
+		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
+		m_reaction_engine.createConfigFile();
+		
+		filter_one_id = m_reaction_engine.addPlugin("FilterReactor");
+		BOOST_REQUIRE(! filter_one_id.empty());
+
+		filter_two_id = m_reaction_engine.addPlugin("FilterReactor");
+		BOOST_REQUIRE(! filter_two_id.empty());
+	}
+	virtual ~ReactionEngineConnectionTests_F() {}
+	
+	std::string filter_one_id;
+	std::string filter_two_id;
+};
+
+BOOST_FIXTURE_TEST_SUITE(ReactionEngineConnectionTests_S, ReactionEngineConnectionTests_F)
+
+BOOST_AUTO_TEST_CASE(checkAddThenRemoveReactorConnection) {
+	m_reaction_engine.addConnection(filter_one_id, filter_two_id);
+	
+	// check config file
+	// ...
+	
+	m_reaction_engine.removeConnection(filter_one_id, filter_two_id);
+	
+	// check config file
+	// ...
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture for testing filters on log file data
+class ReactionEngineLogFilterTests_F
+	: public ReactionEngineTestInterface_F
+{
+public:
+	ReactionEngineLogFilterTests_F() {
+		boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
+		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
+		m_reaction_engine.openConfigFile();
+	}
+	virtual ~ReactionEngineLogFilterTests_F() {}
+};
+
+
 BOOST_FIXTURE_TEST_SUITE(ReactionEngineLogFilterTests_S, ReactionEngineLogFilterTests_F)
 
-BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {
+BOOST_AUTO_TEST_CASE(checkSetReactorWorkspace) {
+	// get the current configuration for the Reactor
+	xmlNodePtr reactor_config = m_reaction_engine.getPluginConfig(m_ie_filter_id);
+	BOOST_REQUIRE(reactor_config);
+	
+	// add a "Workspace" node
+	xmlNodePtr workspace_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Workspace"));
+	xmlNodeSetContent(workspace_node,  reinterpret_cast<const xmlChar*>("Log Workspace"));
+	xmlAddNextSibling(reactor_config->last, workspace_node);
+
+	// update the Reactor's config
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setPluginConfig(m_ie_filter_id,
+														   reactor_config->children));
+	xmlFreeNodeList(reactor_config);
+	
+	// check config file
+	// ...
+}
+
+BOOST_AUTO_TEST_CASE(checkSetReactorCoordinates) {
+	// get the current configuration for the Reactor
+	xmlNodePtr reactor_config = m_reaction_engine.getPluginConfig(m_ie_filter_id);
+	BOOST_REQUIRE(reactor_config);
+	
+	// add coordinate nodes
+	xmlNodePtr x_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("X"));
+	xmlNodeSetContent(x_node,  reinterpret_cast<const xmlChar*>("75"));
+	xmlAddNextSibling(reactor_config->last, x_node);
+	xmlNodePtr y_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Y"));
+	xmlNodeSetContent(y_node,  reinterpret_cast<const xmlChar*>("50"));
+	xmlAddNextSibling(reactor_config->last, y_node);
+	
+	// update the Reactor's config
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setPluginConfig(m_ie_filter_id,
+														   reactor_config->children));
+	xmlFreeNodeList(reactor_config);
+	
+	// check config file
+	// ...
+}
+
+BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	// start the reaction engine
 	m_reaction_engine.start();
 	
@@ -143,12 +263,13 @@ BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {
 	}
 	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_filter_id), events_read);
 	
-	// make sure that the number of operations matches the events read
+	// make sure that the number of operations matches the events read plus 1
+	// plus 1 because one event (with MSIE) is passed along to the "Do Nothing" reactor
 	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getTotalOperations() == events_read) break;
+		if (m_reaction_engine.getTotalOperations() == events_read + 1) break;
 		sleep_briefly(100000000); // 0.1 seconds
 	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), events_read);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), events_read + 1);
 
 	// make sure that only one event passed the filter
 	for (int i = 0; i < 10; ++i) {

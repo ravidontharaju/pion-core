@@ -264,25 +264,25 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigMissingEventType) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigUnknownEventType) {
-	xmlNodePtr event_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("event"));
-	xmlNodeSetContent(event_node,  reinterpret_cast<const xmlChar*>("NotATerm"));
+	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("NotAType"));
 
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_node), Codec::UnknownTermException);
+	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_type_node), Codec::UnknownTermException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigEventTypeNotAnObject) {
-	xmlNodePtr event_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("event"));
-	xmlNodeSetContent(event_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#remotehost"));
+	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#remotehost"));
 	
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_node), Codec::NotAnObjectException);
+	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
-	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("comment"));
+	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Comment"));
 	xmlNodeSetContent(comment_node,  reinterpret_cast<const xmlChar*>("A new comment"));
-	xmlNodePtr event_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("event"));
-	xmlNodeSetContent(event_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
-	xmlAddNextSibling(comment_node, event_node);
+	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
+	xmlAddNextSibling(comment_node, event_type_node);
 
 	BOOST_CHECK_NO_THROW(F::setPluginConfig(F::m_codec_id, comment_node));
 	xmlFreeNodeList(comment_node);

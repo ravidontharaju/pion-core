@@ -28,12 +28,12 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of VocabularyConfig
 const std::string			VocabularyConfig::DEFAULT_CONFIG_FILE = "vocabulary.xml";
-const std::string			VocabularyConfig::VOCABULARY_ELEMENT_NAME = "vocabulary";
-const std::string			VocabularyConfig::NAMESPACE_ELEMENT_NAME = "namespace";
-const std::string			VocabularyConfig::TERM_ELEMENT_NAME = "term";
-const std::string			VocabularyConfig::MEMBER_ELEMENT_NAME = "member";
-const std::string			VocabularyConfig::TYPE_ELEMENT_NAME = "type";
-const std::string			VocabularyConfig::COMMENT_ELEMENT_NAME = "comment";
+const std::string			VocabularyConfig::VOCABULARY_ELEMENT_NAME = "Vocabulary";
+const std::string			VocabularyConfig::NAME_ELEMENT_NAME = "Name";
+const std::string			VocabularyConfig::COMMENT_ELEMENT_NAME = "Comment";
+const std::string			VocabularyConfig::LOCKED_ELEMENT_NAME = "Locked";
+const std::string			VocabularyConfig::TERM_ELEMENT_NAME = "Term";
+const std::string			VocabularyConfig::TYPE_ELEMENT_NAME = "Type";
 const std::string			VocabularyConfig::ID_ATTRIBUTE_NAME = "id";
 const std::string			VocabularyConfig::SIZE_ATTRIBUTE_NAME = "size";
 const std::string			VocabularyConfig::FORMAT_ATTRIBUTE_NAME = "format";
@@ -44,7 +44,7 @@ const std::string			VocabularyConfig::FORMAT_ATTRIBUTE_NAME = "format";
 VocabularyConfig::VocabularyConfig(void)
 	: ConfigManager(DEFAULT_CONFIG_FILE),
 	m_logger(PION_GET_LOGGER("pion.platform.VocabularyConfig")),
-	m_vocabulary_node(NULL)
+	m_vocabulary_node(NULL), m_is_locked(false)
 {
 }
 
@@ -74,11 +74,11 @@ void VocabularyConfig::createConfigFile(void)
 				   reinterpret_cast<const xmlChar*>(m_vocabulary_id.c_str())) == NULL)
 		throw InitializeConfigException(getConfigFile());
 	
-	// create a namespace child element
-	if (! m_namespace.empty()) {
+	// create a name child element
+	if (! m_name.empty()) {
 		if (xmlNewTextChild(m_vocabulary_node, NULL,
-							reinterpret_cast<const xmlChar*>(NAMESPACE_ELEMENT_NAME.c_str()),
-							reinterpret_cast<const xmlChar*>(m_namespace.c_str())) == NULL)
+							reinterpret_cast<const xmlChar*>(NAME_ELEMENT_NAME.c_str()),
+							reinterpret_cast<const xmlChar*>(m_name.c_str())) == NULL)
 			throw InitializeConfigException(getConfigFile());
 	}
 	
@@ -90,6 +90,14 @@ void VocabularyConfig::createConfigFile(void)
 			throw InitializeConfigException(getConfigFile());
 	}
 	
+	// create a locked child element
+	if (m_is_locked) {
+		if (xmlNewTextChild(m_vocabulary_node, NULL,
+							reinterpret_cast<const xmlChar*>(LOCKED_ELEMENT_NAME.c_str()),
+							reinterpret_cast<const xmlChar*>("true")) == NULL)
+			throw InitializeConfigException(getConfigFile());
+	}
+
 	// save the new XML config file
 	saveConfigFile();
 }
@@ -120,16 +128,22 @@ void VocabularyConfig::openConfigFile(void)
 	m_vocabulary_id = reinterpret_cast<char*>(xml_char_ptr);
 	xmlFree(xml_char_ptr);
 	
-	// find the "namespace" element
-	getConfigOption(NAMESPACE_ELEMENT_NAME, m_namespace, m_vocabulary_node->children);
+	// find the "name" element
+	getConfigOption(NAME_ELEMENT_NAME, m_name, m_vocabulary_node->children);
 
 	// find the "comment" element
 	getConfigOption(COMMENT_ELEMENT_NAME, m_comment, m_vocabulary_node->children);
 	
-	// this is used to cache all object dependencies
-	// these are resolved LAST, to ensure that all Terms already exist first
-	std::list<std::pair<std::string,std::string> >	object_dependencies;
-	
+	// find the "locked" element
+	m_is_locked = false;
+	std::string locked_option;
+	if (getConfigOption(LOCKED_ELEMENT_NAME, locked_option,
+						m_vocabulary_node->children))
+	{
+		if (locked_option == "true")
+			m_is_locked = true;
+	}
+
 	// load Vocabulary Terms
 	for (xmlNodePtr cur_node = m_vocabulary_node->children;
 		 cur_node != NULL; cur_node = cur_node->next)
@@ -194,40 +208,7 @@ void VocabularyConfig::openConfigFile(void)
 			m_vocabulary.addTerm(new_term);
 			m_signal_add_term(new_term);
 			PION_LOG_DEBUG(m_logger, "Added Vocabulary Term: " << new_term.term_id);
-
-			// step through the term's members and save them for later
-			xmlNodePtr member_node = findConfigNodeByName(MEMBER_ELEMENT_NAME,
-														  cur_node->children);
-			while (member_node != NULL) {
-				// found a member node -> extract the element's content
-				xml_char_ptr = xmlNodeGetContent(member_node);
-				if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-					if (xml_char_ptr != NULL)
-						xmlFree(xml_char_ptr);
-					throw EmptyMemberException(new_term.term_id);
-				}
-				const std::string member_uri(reinterpret_cast<char*>(xml_char_ptr));
-				xmlFree(xml_char_ptr);
-				// queue the member_uri for later
-				object_dependencies.push_back(std::make_pair(new_term.term_id,
-															 member_uri));
-				// step ahead to next member node (if any more)
-				member_node = findConfigNodeByName(MEMBER_ELEMENT_NAME,
-												   member_node->next);
-			}
 		}
-	}
-	
-	// process object dependencies LAST
-	// AFTER adding all the Terms
-	// so that all term_id references can be resolved properly
-	for (std::list<std::pair<std::string,std::string> >::iterator i = object_dependencies.begin();
-		 i != object_dependencies.end(); ++i)
-	{
-		m_vocabulary.addObjectMember(i->first, i->second);
-		m_signal_add_member(i->first, i->second);
-		PION_LOG_DEBUG(m_logger, "Added object member to Vocabulary Term ("
-					   << i->first << "): " << i->second);
 	}
 	
 	PION_LOG_INFO(m_logger, "Loaded Vocabulary configuration file: " << m_config_file);
@@ -274,14 +255,14 @@ void VocabularyConfig::setId(const std::string& new_id)
 	}
 }
 
-void VocabularyConfig::setNamespace(const std::string& new_namespace)
+void VocabularyConfig::setName(const std::string& new_name)
 {
-	// change namespace option
-	m_namespace = new_namespace;
+	// change descriptive name
+	m_name = new_name;
 	
 	// update config file only if it is open
 	if (m_vocabulary_node != NULL) {
-		if (! updateConfigOption(NAMESPACE_ELEMENT_NAME, new_namespace, m_vocabulary_node))
+		if (! updateConfigOption(NAME_ELEMENT_NAME, new_name, m_vocabulary_node))
 			throw UpdateVocabularyException(getConfigFile());
 		// save the new XML config file
 		saveConfigFile();
@@ -302,6 +283,22 @@ void VocabularyConfig::setComment(const std::string& new_comment)
 	}
 }
 		
+void VocabularyConfig::setLocked(bool b)
+{
+	// change locked setting
+	m_is_locked = b;
+	
+	// update config file only if it is open
+	if (m_vocabulary_node != NULL) {
+		// note that setting the value to "" (empty) removes the node
+		const std::string new_locked_value(m_is_locked ? "true" : "");
+		if (! updateConfigOption(LOCKED_ELEMENT_NAME, "true", m_vocabulary_node))
+			throw UpdateVocabularyException(getConfigFile());
+		// save the new XML config file
+		saveConfigFile();
+	}
+}
+
 void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
 {
 	// make sure that the Vocabulary configuration file is open
@@ -472,80 +469,6 @@ void VocabularyConfig::removeTerm(const std::string& term_id)
 	
 	PION_LOG_DEBUG(m_logger, "Removed Vocabulary Term: " << term_id);
 }
-
-void VocabularyConfig::addObjectMember(const std::string& object_term_id,
-									   const std::string& member_term_id)
-{
-	// make sure that the Vocabulary configuration file is open
-	if (m_vocabulary_node == NULL)
-		throw VocabularyNotOpenException(getConfigFile());
-	
-	// add it to the memory structures
-	m_vocabulary.addObjectMember(object_term_id, member_term_id);
-	m_signal_add_member(object_term_id, member_term_id);
-	
-	// add the member to the Vocabulary config file
-	
-	// find the term element in the XML config document
-	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
-												ID_ATTRIBUTE_NAME,
-												object_term_id,
-												m_vocabulary_node->children);
-	if (term_node == NULL)
-		throw AddMemberConfigException(member_term_id);
-	
-	// add the member element to the document tree
-	if (xmlNewTextChild(term_node, NULL, reinterpret_cast<const xmlChar*>(MEMBER_ELEMENT_NAME.c_str()),
-						reinterpret_cast<const xmlChar*>(member_term_id.c_str())) == NULL)
-		throw AddMemberConfigException(member_term_id);
-	
-	// save the new XML config file
-	saveConfigFile();
-	
-	PION_LOG_DEBUG(m_logger, "Added object member to Vocabulary Term ("
-				   << object_term_id << "): " << member_term_id);
-}
-
-void VocabularyConfig::removeObjectMember(const std::string& object_term_id,
-										  const std::string& member_term_id)
-{
-	// make sure that the Vocabulary configuration file is open
-	if (m_vocabulary_node == NULL)
-		throw VocabularyNotOpenException(getConfigFile());
-	
-	// remove it from the memory structures
-	m_vocabulary.removeObjectMember(object_term_id, member_term_id);
-	m_signal_remove_member(object_term_id, member_term_id);
-
-	// remove it from the Vocabulary config file
-
-	// find the term element in the XML config document
-	xmlNodePtr term_node = findConfigNodeByAttr(TERM_ELEMENT_NAME,
-												ID_ATTRIBUTE_NAME,
-												object_term_id,
-												m_vocabulary_node->children);
-	// throw exception if we were unable to find it within the XML doc
-	if (term_node == NULL)
-		throw RemoveMemberConfigException(member_term_id);
-	
-	// find the matching member element node
-	xmlNodePtr member_node = findConfigNodeByContent(MEMBER_ELEMENT_NAME,
-													 member_term_id,
-													 term_node->children);
-	// throw exception if we were unable to find it within the XML doc
-	if (member_node == NULL)
-		throw RemoveMemberConfigException(member_term_id);
-	
-	// remove the node from the XML config document tree
-	xmlUnlinkNode(member_node);
-	xmlFreeNode(member_node);
-	
-	// save the new XML config file
-	saveConfigFile();
-	
-	PION_LOG_DEBUG(m_logger, "Removed member from Vocabulary object Term ("
-				   << object_term_id << "): " << member_term_id);
-}	
 
 }	// end namespace platform
 }	// end namespace pion

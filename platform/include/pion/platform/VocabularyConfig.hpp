@@ -81,20 +81,6 @@ public:
 			: PionException("Vocabulary configuration has an empty data type for Term: ", term_id) {}
 	};
 	
-	/// exception thrown if the config file contains an empty member definition
-	class EmptyMemberException : public PionException {
-	public:
-		EmptyMemberException(const std::string& term_id)
-			: PionException("Vocabulary configuration has an empty member for object Term: ", term_id) {}
-	};
-	
-	/// exception thrown if the config file contains a member with an unknown Term URI
-	class UnknownMemberException : public PionException {
-	public:
-		UnknownMemberException(const std::string& member_term_id)
-			: PionException("Vocabulary configuration has an unknown member for object Term: ", member_term_id) {}
-	};
-	
 	/// exception thrown if there is an error initializing a Vocabulary config file
 	class InitializeConfigException : public PionException {
 	public:
@@ -109,13 +95,6 @@ public:
 			: PionException("Unable to add a Term to the Vocabulary configuration file: ", term_id) {}
 	};
 
-	/// exception thrown if there is an error adding an object member to the config file
-	class AddMemberConfigException : public PionException {
-	public:
-		AddMemberConfigException(const std::string& member_term_id)
-			: PionException("Unable to add an object member to the Vocabulary configuration file: ", member_term_id) {}
-	};
-
 	/// exception thrown if there is an error removing a Term from the config file
 	class RemoveTermConfigException : public PionException {
 	public:
@@ -123,13 +102,6 @@ public:
 			: PionException("Unable to remove a Term from the Vocabulary configuration file: ", term_id) {}
 	};
 
-	/// exception thrown if there is an error removing an object member from the config file
-	class RemoveMemberConfigException : public PionException {
-	public:
-		RemoveMemberConfigException(const std::string& member_term_id)
-			: PionException("Unable to remove an object member from the Vocabulary configuration file: ", member_term_id) {}
-	};
-	
 	/// exception thrown if there is an error updating a Term in the config file
 	class UpdateTermConfigException : public PionException {
 	public:
@@ -153,11 +125,14 @@ public:
 	/// sets the URI used to uniquely identify this Vocabulary
 	void setId(const std::string& new_id);
 	
-	/// sets the default namespace assigned to this Vocabulary
-	void setNamespace(const std::string& new_namespace);
+	/// sets the descriptive name assigned to this Vocabulary
+	void setName(const std::string& new_name);
 	
 	/// sets the comment that describes this Vocabulary
 	void setComment(const std::string& new_comment);
+
+	/// sets the locked boolean for this Vocabulary
+	void setLocked(bool b);
 	
 	/**
 	 * adds a new Term to the Vocabulary
@@ -181,24 +156,6 @@ public:
 	void removeTerm(const std::string& term_id);
 	
 	/**
-	 * adds a Term as a member of an OBJECT Term
-	 * 
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to add
-	 */
-	void addObjectMember(const std::string& object_term_id,
-						 const std::string& member_term_id);
-	
-	/**
-	 * removes a member Term from an OBJECT Term
-	 * 
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to remove
-	 */
-	void removeObjectMember(const std::string& object_term_id,
-							const std::string& member_term_id);
-	
-	/**
 	 * binds a Vocabulary to this configuration manager and copies over terms
 	 *
 	 * @param v the Vocabulary object to bind
@@ -207,19 +164,20 @@ public:
 		m_signal_add_term.connect(boost::bind(&Vocabulary::addTerm, &v, _1));
 		m_signal_update_term.connect(boost::bind(&Vocabulary::updateTerm, &v, _1));
 		m_signal_remove_term.connect(boost::bind(&Vocabulary::removeTerm, &v, _1));
-		m_signal_add_member.connect(boost::bind(&Vocabulary::addObjectMember, &v, _1, _2));
-		m_signal_remove_member.connect(boost::bind(&Vocabulary::removeObjectMember, &v, _1, _2));
 		v += m_vocabulary;
 	}
 
 	/// returns the URI used to uniquely identify this Vocabulary
 	inline const std::string& getId(void) const { return m_vocabulary_id; }
 	
-	/// returns the default namespace assigned to this Vocabulary
-	inline const std::string& getNamespace(void) const { return m_namespace; }
+	/// returns the descriptive name assigned to this Vocabulary
+	inline const std::string& getName(void) const { return m_name; }
 	
 	/// returns the comment that describes this Vocabulary
 	inline const std::string& getComment(void) const { return m_comment; }
+	
+	/// returns true if the Vocabulary is currently locked; false if it is not
+	inline bool getLocked(void) const { return m_is_locked; }
 	
 	/// returns a reference to the local Vocabulary configuration
 	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
@@ -244,21 +202,21 @@ private:
 	/// name of the vocabulary (root) element for Pion XML config files
 	static const std::string		VOCABULARY_ELEMENT_NAME;
 
-	/// name of the namspace element for Pion XML config files
-	static const std::string		NAMESPACE_ELEMENT_NAME;
+	/// name of the descriptive name element for Pion XML config files
+	static const std::string		NAME_ELEMENT_NAME;
+	
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
+	
+	/// name of the locked element for Pion XML config files
+	static const std::string		LOCKED_ELEMENT_NAME;
 	
 	/// name of the Term element for Pion XML config files
 	static const std::string		TERM_ELEMENT_NAME;
 	
-	/// name of the Member element for Pion XML config files
-	static const std::string		MEMBER_ELEMENT_NAME;
-
 	/// name of the Data Type element for Pion XML config files
 	static const std::string		TYPE_ELEMENT_NAME;
 
-	/// name of the Term comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
-	
 	/// name of the ID (term_id) attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;	
 	
@@ -281,11 +239,14 @@ private:
 	/// the URI used to uniquely identify this Vocabulary
 	std::string						m_vocabulary_id;
 	
-	/// the default namespace used to reference this Vocabulary
-	std::string						m_namespace;
+	/// the descriptive name assigned to this Vocabulary
+	std::string						m_name;
 	
 	/// an option comment that describes this Vocabulary
 	std::string						m_comment;
+	
+	/// true if this Vocabulary is currently locked
+	bool							m_is_locked;
 	
 	/// signal triggered when a new Term is added
 	boost::signal1<void,const Vocabulary::Term&>				m_signal_add_term;
@@ -295,12 +256,6 @@ private:
 
 	/// signal triggered when a Term is removed
 	boost::signal1<void,const std::string&>						m_signal_remove_term;
-	
-	/// signal triggered when a member is added to an object Term
-	boost::signal2<void,const std::string&,const std::string&>	m_signal_add_member;
-
-	/// signal triggered when a member is removed from an object Term
-	boost::signal2<void,const std::string&,const std::string&>	m_signal_remove_member;
 };
 
 

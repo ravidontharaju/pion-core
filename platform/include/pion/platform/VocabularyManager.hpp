@@ -103,16 +103,16 @@ public:
 	}
 	
 	/**
-	 * changes the default namespace assigned to a Vocabulary
+	 * changes the descriptive name assigned to a Vocabulary
 	 *
 	 * @param vocab_id the unique identifier for the Vocabulary to modify
-	 * @param new_namespace the new namespace to assign to the Vocabulary
+	 * @param new_name the new descriptive name to assign to the Vocabulary
 	 */
-	inline void setNamespace(const std::string& vocab_id,
-							 const std::string& new_namespace)
+	inline void setName(const std::string& vocab_id,
+						const std::string& new_name)
 	{
-		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::setNamespace,
-											   _1, boost::cref(new_namespace)));
+		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::setName,
+											   _1, boost::cref(new_name)));
 	}
 	
 	/**
@@ -168,38 +168,6 @@ public:
 	}
 	
 	/**
-	 * adds a Term as a member of an OBJECT Term
-	 * 
-	 * @param vocab_id the unique identifier for the Vocabulary to modify
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to add
-	 */
-	inline void addObjectMember(const std::string& vocab_id, 
-								const std::string& object_term_id,
-								const std::string& member_term_id)
-	{
-		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::addObjectMember,
-											   _1, boost::cref(object_term_id),
-											   boost::cref(member_term_id)));
-	}
-	
-	/**
-	 * removes a member Term from an OBJECT Term
-	 * 
-	 * @param vocab_id the unique identifier for the Vocabulary to modify
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to remove
-	 */
-	inline void removeObjectMember(const std::string& vocab_id, 
-								   const std::string& object_term_id,
-								   const std::string& member_term_id)
-	{
-		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::removeObjectMember,
-											   _1, boost::cref(object_term_id),
-											   boost::cref(member_term_id)));
-	}
-	
-	/**
 	 * registers a callback function to be executed whenever a Vocabulary is updated
 	 *
 	 * @param f the callback function to register
@@ -211,16 +179,16 @@ public:
 	}
 	
 	/**
-	 * returns the default namespace assigned to a Vocabulary
+	 * returns the descriptive name assigned to a Vocabulary
 	 * 
 	 * @param vocab_id the unique identifier for the Vocabulary to search for
-	 * @return const std::string& the namespace assigned to the Vocabulary
+	 * @return const std::string& the descriptive name assigned to the Vocabulary
 	 */
-	inline const std::string& getNamespace(const std::string& vocab_id) const {
+	inline const std::string& getName(const std::string& vocab_id) const {
 		VocabularyMap::const_iterator i = m_vocab_map.find(vocab_id);
 		if (i == m_vocab_map.end())
 			throw VocabularyNotFoundException(vocab_id);
-		return i->second->getNamespace();
+		return i->second->getName();
 	}
 
 	/**

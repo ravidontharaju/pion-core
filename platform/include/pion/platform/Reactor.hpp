@@ -24,6 +24,7 @@
 #include <list>
 #include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/PionCounter.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -44,8 +45,23 @@ class Reactor
 {
 public:
 
+	/// exception thrown if you try to add a duplicate connection
+	class AlreadyConnectedException : public PionException {
+	public:
+		AlreadyConnectedException(const std::string& reactor_id)
+			: PionException("Reactor is already connected: ", reactor_id) {}
+	};
+	
+	/// exception thrown if you try to remove a connection that does not exist
+	class ConnectionNotFoundException : public PionException {
+	public:
+		ConnectionNotFoundException(const std::string& reactor_id)
+			: PionException("Tried removing an unknown connection: ", reactor_id) {}
+	};
+	
+	
 	/// constructs a new Reactor object
-	Reactor(void) {}
+	Reactor(void) : m_x_coordinate(0), m_y_coordinate(0) {}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Reactor() {}
@@ -97,6 +113,20 @@ public:
 	virtual void updateDatabases(const DatabaseManager& database_mgr) {}
 	
 	/**
+	 * connects the output of this Reactor to the input of another Reactor
+	 *
+	 * @param output_reactor the Reactor that events will be sent to
+	 */
+	void addConnection(Reactor &output_reactor);
+	
+	/**
+	 * removes an existing connection to another Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor to remove
+	 */
+	void removeConnection(const std::string& reactor_id);
+
+	/**
 	 * send a new Event to this reactor
 	 *
 	 * @param e pointer to the new Event
@@ -128,7 +158,7 @@ protected:
 	inline void deliver(const EventPtr& e) {
 		++m_events_out;
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		for (ReactorList::iterator i = m_output.begin(); i != m_output.end(); ++i) {
+		for (ReactorList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
 			(*i)->send(e);
 		}
 	}
@@ -143,16 +173,28 @@ private:
 	/// a list of Reactors to which Events may be delivered
 	typedef std::list<Reactor*>		ReactorList;
 	
-
-	/// name of the event type element for Pion XML config files
-	static const std::string		EVENT_ELEMENT_NAME;
 	
-	/// name of the comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
+	/// name of the workspace element for Pion XML config files
+	static const std::string		WORKSPACE_ELEMENT_NAME;
+	
+	/// name of the "x coordinate" element for Pion XML config files
+	static const std::string		X_COORDINATE_ELEMENT_NAME;
+	
+	/// name of the "y coordinate" element for Pion XML config files
+	static const std::string		Y_COORDINATE_ELEMENT_NAME;
 
 	
+	/// workspace that this Reactor is displayed on (for UI only)
+	std::string						m_workspace;
+
+	/// X coordinate where the Reactor is positioned (for UI only)
+	unsigned int					m_x_coordinate;
+
+	/// Y coordinate where the Reactor is positioned (for UI only)
+	unsigned int					m_y_coordinate;
+
 	/// a list of other Reactors to which this one delivers Events
-	ReactorList						m_output;
+	ReactorList						m_connections;
 
 	/// the total number of Events received by this Reactor
 	PionCounter						m_events_in;

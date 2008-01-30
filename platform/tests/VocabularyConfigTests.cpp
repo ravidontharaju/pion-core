@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsSix) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularyConfigOptionValues) {
 	BOOST_CHECK_EQUAL(F::getId(), "urn:vocab:test");
-	BOOST_CHECK_EQUAL(F::getNamespace(), "t");
+	BOOST_CHECK_EQUAL(F::getName(), "Vocabulary A");
 	BOOST_CHECK_EQUAL(F::getComment(), "Vocabulary for Unit Tests");
 }
 
@@ -233,29 +233,16 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeId) {
 	BOOST_CHECK_EQUAL(F::getId(), new_value);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeNamespace) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeName) {
 	const std::string new_value("test");
-	F::setNamespace(new_value);
-	BOOST_CHECK_EQUAL(F::getNamespace(), new_value);
+	F::setName(new_value);
+	BOOST_CHECK_EQUAL(F::getName(), new_value);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeComment) {
 	const std::string new_value("A new comment");
 	F::setComment(new_value);
 	BOOST_CHECK_EQUAL(F::getComment(), new_value);
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewMemberForNonObject) {
-	BOOST_CHECK_THROW(F::addObjectMember("urn:pion:plain-old-int",
-										 "urn:pion:big-int"),
-					  Vocabulary::NotObjectTermException);
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddDuplicateObjectMember) {
-	// try adding a duplicate member (should throw)
-	BOOST_CHECK_THROW(F::addObjectMember("urn:pion:simple-object",
-										 "urn:pion:plain-old-int"),
-					  Vocabulary::DuplicateMemberException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddDuplicateTerm) {
@@ -270,10 +257,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTermFailures) {
 	
 	// try to remove Term using an unknown ID
 	BOOST_CHECK_THROW(F::removeTerm("unknown"), Vocabulary::RemoveTermNotFoundException);
-	
-	// try to remove Term that is a member of a parent object
-	BOOST_CHECK_THROW(F::removeTerm("urn:pion:plain-old-int"),
-					  Vocabulary::RemoveTermHasParentsException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
@@ -288,54 +271,17 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterRemovingTerm) {
 	// first check that the expected expression is in the file before removing the Term
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<term id=\"urn:pion:null-term\"/>")));
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Term id=\"urn:pion:null-term\"/>")));
 
 	F::removeTerm("urn:pion:null-term");
 	
 	// now check that the expression is no longer in the file
-	BOOST_CHECK(!F::configFileContainsExpression(boost::regex("<term id=\"urn:pion:null-term\"/>")));
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewObjectMember) {
-	// Add the null term to the simple-object term
-	F::addObjectMember("urn:pion:simple-object", "urn:pion:null-term");
-
-	// make sure it has been added
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterAddingNewObjectMember) {
-	F::addObjectMember("urn:pion:simple-object", "urn:pion:null-term");
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<member>urn:pion:null-term</member>")));
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveObjectMember) {
-	// remove the object member
-	F::removeObjectMember("urn:pion:simple-object", "urn:pion:plain-old-int");
-
-	// make sure it is gone
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	for (Vocabulary::OBJECT_MEMBER_LIST::iterator i = member_list.begin();
-		 i != member_list.end(); ++i)
-	{
-		BOOST_CHECK(*i != static_cast<Vocabulary::TermRef>(1));
-	}
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterRemovingObjectMember) {
-	// first check that the expected expression is in the file before removing the member
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<member>urn:pion:plain-old-int</member>")));
-
-	F::removeObjectMember("urn:pion:simple-object", "urn:pion:plain-old-int");
-
-	// now check that the expression is no longer in the file
-	BOOST_CHECK(!F::configFileContainsExpression(boost::regex("<member>urn:pion:plain-old-int</member>")));
+	BOOST_CHECK(!F::configFileContainsExpression(boost::regex("<Term id=\"urn:pion:null-term\"/>")));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-	
+
 /// fixture for unit tests on newly opened VocabularyConfig with bound Vocabulary
 class BoundVocabularyConfig_F : public VocabularyConfigWithPreExistingConfigFileOpen_F {
 public:
@@ -438,56 +384,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeFormats) {
 	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_format, "");
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkMembersOfSimpleObjectTerm) {
-	// check members of the simple-object term
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	Vocabulary::OBJECT_MEMBER_LIST::const_iterator i = member_list.begin();
-	BOOST_REQUIRE(i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(2));
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(3));
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(4));
-	BOOST_CHECK(++i == member_list.end());
-	
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	i = member_list.begin();
-	BOOST_REQUIRE(i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(2));
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(3));
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, static_cast<Vocabulary::TermRef>(4));
-	BOOST_CHECK(++i == member_list.end());
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewObjectMember) {
-	// Add the null term to the simple-object term
-	F::addObjectMember("urn:pion:simple-object", "urn:pion:null-term");
-
-	// make sure it has been added
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	BOOST_CHECK_EQUAL(member_list.back(), static_cast<Vocabulary::TermRef>(1));
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveObjectMember) {
-	// remove the object member
-	F::removeObjectMember("urn:pion:simple-object", "urn:pion:plain-old-int");
-
-	// make sure it is gone
-	Vocabulary::OBJECT_MEMBER_LIST member_list = F::m_vocabulary.getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	Vocabulary::OBJECT_MEMBER_LIST::iterator i;
-	for (i = member_list.begin(); i != member_list.end(); ++i) {
-		BOOST_CHECK(*i != static_cast<Vocabulary::TermRef>(1));
-	}
-	member_list = F::getVocabulary().getObjectMembers(static_cast<Vocabulary::TermRef>(6));
-	for (i = member_list.begin(); i != member_list.end(); ++i) {
-		BOOST_CHECK(*i != static_cast<Vocabulary::TermRef>(1));
-	}
-}
-
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 	// create a new term to add
 	Vocabulary::Term new_term("urn:pion:floating-point-number");
@@ -556,17 +452,17 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(VocabularyConfigWithConfigFileOpen_S, typ
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingId) {
 	F::setId("urn:vocab:new_id");
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<vocabulary id=\"urn:vocab:new_id\"")));
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Vocabulary id=\"urn:vocab:new_id\"")));
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingNamespace) {
-	F::setNamespace("test");
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<namespace>test</namespace>")));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingName) {
+	F::setName("test");
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Name>test</Name>")));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingComment) {
 	F::setComment("A new comment");
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<comment>A new comment</comment>")));
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Comment>A new comment</Comment>")));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -577,10 +473,10 @@ class VocabularyConfigWithNewTermAdded_F : public VocabularyConfigWithNewConfigF
 public:
 	VocabularyConfigWithNewTermAdded_F()
 		: m_new_term("urn:pion:new-float-number"),
-		  m_expectedExpression("<term id=\"urn:pion:new-float-number\">\\s*"
-							   "<type>float</type>\\s*"
-							   "<comment>A floating-point number</comment>\\s*"
-							   "</term>"),
+		  m_expectedExpression("<Term id=\"urn:pion:new-float-number\">\\s*"
+							   "<Type>float</Type>\\s*"
+							   "<Comment>A floating-point number</Comment>\\s*"
+							   "</Term>"),
 		  m_updated_term_ptr(NULL)
 	{
 		// create a new term to add
@@ -669,10 +565,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterUpdatingTerm) {
 	BOOST_CHECK(!F::configFileContainsExpression(F::m_expectedExpression));
 
 	// check that an updated expression is in the file
-	boost::regex newExpectedExpression("<term id=\"urn:pion:new-float-number\">\\s*"
-									   "<type>string</type>\\s*"
-									   "<comment>was a float, now a string</comment>\\s*"
-									   "</term>");
+	boost::regex newExpectedExpression("<Term id=\"urn:pion:new-float-number\">\\s*"
+									   "<Type>string</Type>\\s*"
+									   "<Comment>was a float, now a string</Comment>\\s*"
+									   "</Term>");
 	BOOST_CHECK(!F::configFileContainsExpression(F::m_expectedExpression));
 }
 
@@ -695,13 +591,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdAccessors) {
 	BOOST_CHECK_EQUAL(F::getId(), newer_value);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNamespaceAccessors) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNameAccessors) {
 	const std::string new_value("new");
-	F::setNamespace(new_value);
-	BOOST_CHECK_EQUAL(F::getNamespace(), new_value);
+	F::setName(new_value);
+	BOOST_CHECK_EQUAL(F::getName(), new_value);
 	const std::string newer_value("newer");
-	F::setNamespace(newer_value);
-	BOOST_CHECK_EQUAL(F::getNamespace(), newer_value);
+	F::setName(newer_value);
+	BOOST_CHECK_EQUAL(F::getName(), newer_value);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentAccessors) {
@@ -738,16 +634,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadConfigFile) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkMethodsTakingIds) {
 	// These should all throw VocabularyManager::VocabularyNotFoundException, since no vocabularies have been loaded.
 	BOOST_CHECK_THROW(F::setId("urn:vocab:old_id", "urn:vocab:new_id"), VocabularyManager::VocabularyNotFoundException);
-	BOOST_CHECK_THROW(F::setNamespace("urn:vocab:id1", "new_namespace"), VocabularyManager::VocabularyNotFoundException);
-	BOOST_CHECK_THROW(F::getNamespace("urn:vocab:id1"), VocabularyManager::VocabularyNotFoundException);
+	BOOST_CHECK_THROW(F::setName("urn:vocab:id1", "new_name"), VocabularyManager::VocabularyNotFoundException);
+	BOOST_CHECK_THROW(F::getName("urn:vocab:id1"), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::setComment("urn:vocab:id2", "new_comment"), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::getComment("urn:vocab:id2"), VocabularyManager::VocabularyNotFoundException);
 	Vocabulary::Term new_term("some_uri");
 	BOOST_CHECK_THROW(F::addTerm("urn:vocab:id3", new_term), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::updateTerm("urn:vocab:id4", new_term), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::removeTerm("urn:vocab:id5", "some_term_id"), VocabularyManager::VocabularyNotFoundException);
-	BOOST_CHECK_THROW(F::addObjectMember("urn:vocab:id6", "some_object_term_id", "some_member_term_id"), VocabularyManager::VocabularyNotFoundException);
-	BOOST_CHECK_THROW(F::removeObjectMember("urn:vocab:id7", "some_object_term_id", "some_member_term_id"), VocabularyManager::VocabularyNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
@@ -793,18 +687,18 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsEight) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOptionValues) {
-	BOOST_CHECK_EQUAL(F::getNamespace(F::m_vocab_a_id), "t");
+	BOOST_CHECK_EQUAL(F::getName(F::m_vocab_a_id), "Vocabulary A");
 	BOOST_CHECK_EQUAL(F::getComment(F::m_vocab_a_id), "Vocabulary for Unit Tests");
 
-	BOOST_CHECK_EQUAL(F::getNamespace(F::m_vocab_b_id), "b");
-	BOOST_CHECK_EQUAL(F::getComment(F::m_vocab_b_id), "Vocabulary for Unit Tests");
+	BOOST_CHECK_EQUAL(F::getName(F::m_vocab_b_id), "Vocabulary B");
+	BOOST_CHECK_EQUAL(F::getComment(F::m_vocab_b_id), "Another Vocabulary for Unit Tests");
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNamespaceAccessors) {
-	F::setNamespace(F::m_vocab_a_id, "new_namespace_a");
-	F::setNamespace(F::m_vocab_b_id, "new_namespace_b");
-	BOOST_CHECK_EQUAL(F::getNamespace(F::m_vocab_a_id), "new_namespace_a");
-	BOOST_CHECK_EQUAL(F::getNamespace(F::m_vocab_b_id), "new_namespace_b");
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNameAccessors) {
+	F::setName(F::m_vocab_a_id, "new_name_a");
+	F::setName(F::m_vocab_b_id, "new_name_b");
+	BOOST_CHECK_EQUAL(F::getName(F::m_vocab_a_id), "new_name_a");
+	BOOST_CHECK_EQUAL(F::getName(F::m_vocab_b_id), "new_name_b");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentAccessors) {

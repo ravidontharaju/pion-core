@@ -203,9 +203,6 @@ protected:
 	/// name of the field element for Pion XML config files
 	static const std::string		FIELD_ELEMENT_NAME;
 	
-	/// name of the comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
-	
 
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap						m_query_map;

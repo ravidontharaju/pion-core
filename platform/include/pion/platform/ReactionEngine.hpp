@@ -55,9 +55,34 @@ public:
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 	
+	/// exception thrown if the config file includes a connection with a missing From element
+	class EmptyFromException : public PionException {
+	public:
+		EmptyFromException(const std::string& config_file)
+			: PionException("Reactor configuration has a Connection with empty From element: ", config_file) {}
+	};
 	
-	/// virtual destructor
-	virtual ~ReactionEngine() { stop(); }
+	/// exception thrown if the config file includes a connection with a missing To element
+	class EmptyToException : public PionException {
+	public:
+		EmptyToException(const std::string& config_file)
+			: PionException("Reactor configuration has a Connection with empty To element: ", config_file) {}
+	};
+	
+	/// exception thrown if there is an error adding a Connection element to the config file
+	class AddConnectionConfigException : public PionException {
+	public:
+		AddConnectionConfigException(const std::string& connection)
+			: PionException("Unable to add a Connection to the Reactor configuration file: ", connection) {}
+	};
+	
+	/// exception thrown if there is an error removing a Connection from the config file
+	class RemoveConnectionConfigException : public PionException {
+	public:
+		RemoveConnectionConfigException(const std::string& connection)
+			: PionException("Unable to remove a Connection from the Reactor configuration file: ", connection) {}
+	};
+	
 	
 	/**
 	 * constructs a new ReactionEngine object
@@ -70,6 +95,12 @@ public:
 				   const CodecFactory& codec_factory,
 				   const DatabaseManager& database_mgr);
 	
+	/// virtual destructor
+	virtual ~ReactionEngine() { stop(); }
+	
+	/// opens an existing configuration file and loads the plug-ins it contains
+	virtual void openConfigFile(void);
+
 	/**
 	 * clears the statistic counters for a Reactor
 	 *
@@ -93,14 +124,33 @@ public:
 	void updateDatabases(void);
 	
 	/**
+	 * connects the output of one Reactor to the input of another Reactor
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	void addConnection(const std::string& from_id, const std::string& to_id);
+	
+	/**
+	 * removes an existing connection between Reactors
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	void removeConnection(const std::string& from_id, const std::string& to_id);
+	
+	/**
 	 * schedules an Event to be processed by a Reactor
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor
 	 * @param e pointer to the Event that will be processed
 	 */
 	inline void send(const std::string& reactor_id, EventPtr& e) {
+		Reactor *reactor_ptr = m_plugins.get(reactor_id);
+		if (reactor_ptr == NULL)
+			throw ReactorNotFoundException(reactor_id);
 		m_scheduler.getIOService().post(boost::bind(&Reactor::send,
-													m_plugins.get(reactor_id), e));
+													reactor_ptr, e));
 	}
 	
 	/**
@@ -135,6 +185,37 @@ public:
 	
 private:
 	
+	/**
+	 * simple helper function to display a connection in a friendly way
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	static inline std::string getConnectionAsText(const std::string& from_id,
+												  const std::string& to_id)
+	{
+		std::string result(from_id);
+		result += " -> ";
+		result += to_id;
+		return result;
+	}
+	
+	/**
+	 * connects the output of one Reactor to the input of another Reactor (without locking)
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	void addConnectionNoLock(const std::string& from_id, const std::string& to_id);
+	
+	/**
+	 * removes an existing connection between Reactors (without locking)
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	void removeConnectionNoLock(const std::string& from_id, const std::string& to_id);
+
 	/// stops all Event processing (without locking)
 	void stopNoLock(void);
 	
@@ -144,6 +225,15 @@ private:
 
 	/// name of the reactor element for Pion XML config files
 	static const std::string		REACTOR_ELEMENT_NAME;
+	
+	/// name of the connection element for Pion XML config files
+	static const std::string		CONNECTION_ELEMENT_NAME;
+	
+	/// name of the from connection element for Pion XML config files
+	static const std::string		FROM_ELEMENT_NAME;
+	
+	/// name of the to connection element for Pion XML config files
+	static const std::string		TO_ELEMENT_NAME;
 	
 	
 	/// used to schedule the delivery of events to Reactors for processing

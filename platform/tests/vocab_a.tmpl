@@ -1,31 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://purl.org/pion/config">
-  <vocabulary id="urn:vocab:test">
-    <namespace>t</namespace>
-    <comment>Vocabulary for Unit Tests</comment>
-    <term id="urn:pion:null-term"/>
-    <term id="urn:pion:plain-old-int">
-      <type>int16</type>
-      <comment>A plain, old integer number</comment>
-    </term>
-    <term id="urn:pion:big-int">
-      <type>uint64</type>
-      <comment>A really big positive integer</comment>
-    </term>
-    <term id="urn:pion:fixed-text">
-      <type size="10">char</type>
-      <comment>Ten bytes of text</comment>
-    </term>
-    <term id="urn:pion:date">
-      <type format="%Y-%m-%d">datetime</type>
-      <comment>A specific date</comment>
-    </term>
-    <term id="urn:pion:simple-object">
-      <type>object</type>
-      <comment>An object containing other Terms</comment>
-      <member>urn:pion:plain-old-int</member>
-      <member>urn:pion:big-int</member>
-      <member>urn:pion:fixed-text</member>
-    </term>
-  </vocabulary>
-</config>
+<PionConfig xmlns="http://purl.org/pion/config">
+  <Vocabulary id="urn:vocab:test">
+    <Name>Vocabulary A</Name>
+    <Comment>Vocabulary for Unit Tests</Comment>
+    <Term id="urn:pion:null-term"/>
+    <Term id="urn:pion:plain-old-int">
+      <Type>int16</Type>
+      <Comment>A plain, old integer number</Comment>
+    </Term>
+    <Term id="urn:pion:big-int">
+      <Type>uint64</Type>
+      <Comment>A really big positive integer</Comment>
+    </Term>
+    <Term id="urn:pion:fixed-text">
+      <Type size="10">char</Type>
+      <Comment>Ten bytes of text</Comment>
+    </Term>
+    <Term id="urn:pion:date">
+      <Type format="%Y-%m-%d">datetime</Type>
+      <Comment>A specific date</Comment>
+    </Term>
+    <Term id="urn:pion:simple-object">
+      <Type>object</Type>
+      <Comment>An object containing other Terms</Comment>
+    </Term>
+  </Vocabulary>
+</PionConfig>

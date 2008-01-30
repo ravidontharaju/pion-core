@@ -49,9 +49,6 @@ public:
 	/// null term reference constant (0)
 	static const TermRef		UNDEFINED_TERM_REF;
 	
-	/// data type for a list of object members
-	typedef std::list<TermRef>	OBJECT_MEMBER_LIST;
-
 	/// data type for the type of data that a term represents
 	enum DataType {
 		TYPE_NULL = 0,			///< NULL or undefined type
@@ -81,14 +78,13 @@ public:
 		/// default constructor
 		Term(const std::string uri)
 			: term_id(uri), term_ref(UNDEFINED_TERM_REF),
-			term_type(TYPE_NULL), term_size(0), term_num_parents(0)
+			term_type(TYPE_NULL), term_size(0)
 			{}
 		/// copy constructor
 		Term(const Term& t)
 			: term_id(t.term_id), term_ref(t.term_ref),
 			term_comment(t.term_comment), term_type(t.term_type),
-			term_size(t.term_size), term_format(t.term_format),
-			term_num_parents(t.term_num_parents)
+			term_size(t.term_size), term_format(t.term_format)
 			{}
 		/// assignment operator
 		inline Term& operator=(const Term& t) {
@@ -97,7 +93,6 @@ public:
 			term_type = t.term_type;
 			term_size = t.term_size;
 			term_format = t.term_format;
-			term_num_parents = t.term_num_parents;
 			return *this;
 		}
 		/// URI used to uniquely identify the term
@@ -112,8 +107,6 @@ public:
 		size_t					term_size;
 		/// format used for date/time Term types
 		std::string				term_format;
-		/// the number of "parent" object terms that this is currently a member of
-		unsigned int			term_num_parents;
 	};
 	
 	/// exception thrown if you try to add a term with an empty identifier
@@ -138,20 +131,6 @@ public:
 			: PionException("Tried adding a duplicate term to the Vocabulary: ", term_id) {}
 	};
 	
-	/// exception thrown if you try to add a duplicate member for an object Term
-	class DuplicateMemberException : public PionException {
-	public:
-		DuplicateMemberException(const std::string& term_member_id)
-			: PionException("Member is already part of the object Term: ", term_member_id) {}
-	};
-		
-	/// exception thrown if you try to add a member to a Term that is not an object
-	class NotObjectTermException : public PionException {
-	public:
-		NotObjectTermException(const std::string& term_id)
-			: PionException("Unable to add member to a non-object Term: ", term_id) {}
-	};
-	
 	/// exception thrown if there is a problem finding the Term to update
 	class UpdateTermNotFoundException : public PionException {
 	public:
@@ -164,27 +143,6 @@ public:
 	public:
 		RemoveTermNotFoundException(const std::string& term_id)
 			: PionException("Unable to find the Vocabulary Term to remove: ", term_id) {}
-	};
-	
-	/// exception thrown if you try to remove a Term that is a member of parent objects
-	class RemoveTermHasParentsException : public PionException {
-	public:
-		RemoveTermHasParentsException(const std::string& term_id)
-			: PionException("Unable to remove a Term that is a member of parent objects: ", term_id) {}
-	};
-
-	/// exception thrown if you try to add a member using an unrecognized Term Identifier
-	class AddMemberNotFoundException : public PionException {
-	public:
-		AddMemberNotFoundException(const std::string& term_id)
-			: PionException("Unable to find the Vocabulary Term while adding object member: ", term_id) {}
-	};
-
-	/// exception thrown if you try to remove a member using an unrecognized Term Identifier
-	class RemoveMemberNotFoundException : public PionException {
-	public:
-		RemoveMemberNotFoundException(const std::string& term_id)
-			: PionException("Unable to find the Vocabulary Term while removing object member: ", term_id) {}
 	};
 	
 	
@@ -226,18 +184,6 @@ public:
 	}
 
 	/**
-	 * returns a list of Term identifiers that are members of an OBJECT Term
-	 * 
-	 * @param object_term_ref reference number assigned to the OBJECT term
-	 * @return OBJECT_MEMBER_LIST list of Term identifiers that are members
-	 */
-	inline OBJECT_MEMBER_LIST getObjectMembers(const TermRef& object_term_ref) const {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-		PION_ASSERT(object_term_ref <= m_num_terms);
-		return m_object_members[object_term_ref];
-	}
-	
-	/**
 	 * adds a new Term if it has not yet been defined
 	 *
 	 * @param t the Term to identify or define
@@ -258,24 +204,6 @@ public:
 	 * @param term_id unique identifier for the Term to remove
 	 */
 	void removeTerm(const std::string& term_id);
-	
-	/**
-	 * adds a Term as a member of an OBJECT Term
-	 * 
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to add
-	 */
-	void addObjectMember(const std::string& object_term_id,
-						 const std::string& member_term_id);
-	
-	/**
-	 * removes a member Term from an OBJECT Term
-	 * 
-	 * @param object_term_id unique identifier for the OBJECT term
-	 * @param member_term_id unique identifier for the member Term to remove
-	 */
-	void removeObjectMember(const std::string& object_term_id,
-							const std::string& member_term_id);
 	
 	/**
 	 * Incorporates all the data from another Vocabulary into this one
@@ -320,18 +248,12 @@ private:
 	/// data type that maps Term reference numbers to Term definition objects
 	typedef std::vector<Term*>					TermRefMap;
 	
-	/// data type that maps Term reference numbers to object members
-	typedef std::vector<OBJECT_MEMBER_LIST>		ObjectMembersMap;
-	
 	
 	/// used to map Term reference numbers to Term definition objects
 	TermRefMap						m_ref_map;
 
 	/// used to map URI Term identifiers to Term definition objects
 	TermStringMap					m_uri_map;
-	
-	/// used to track the members of Terms that are OBJECT types
-	ObjectMembersMap				m_object_members;
 	
 	/// number of Terms that are defined within the Vocabulary
 	TermRef							m_num_terms;

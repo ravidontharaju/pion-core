@@ -26,11 +26,11 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of FilterReactor
 
-const std::string			FilterReactor::COMPARISON_ELEMENT_NAME = "comparison";
-const std::string			FilterReactor::TERM_ELEMENT_NAME = "term";
-const std::string			FilterReactor::TYPE_ELEMENT_NAME = "type";
-const std::string			FilterReactor::VALUE_ELEMENT_NAME = "value";
-const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "match-all-values";
+const std::string			FilterReactor::COMPARISON_ELEMENT_NAME = "Comparison";
+const std::string			FilterReactor::TERM_ELEMENT_NAME = "Term";
+const std::string			FilterReactor::TYPE_ELEMENT_NAME = "Type";
+const std::string			FilterReactor::VALUE_ELEMENT_NAME = "Value";
+const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
 
 	
 // FilterReactor member functions

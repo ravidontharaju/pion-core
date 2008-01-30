@@ -27,8 +27,8 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of PlatformPlugin
-const std::string			PlatformPlugin::NAME_ELEMENT_NAME = "name";
-const std::string			PlatformPlugin::COMMENT_ELEMENT_NAME = "comment";
+const std::string			PlatformPlugin::NAME_ELEMENT_NAME = "Name";
+const std::string			PlatformPlugin::COMMENT_ELEMENT_NAME = "Comment";
 	
 		
 // PlatformPlugin member functions

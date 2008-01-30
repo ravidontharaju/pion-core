@@ -29,8 +29,8 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of ConfigManager
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
-const std::string		ConfigManager::ROOT_ELEMENT_NAME = "config";
-const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "plugin";
+const std::string		ConfigManager::ROOT_ELEMENT_NAME = "PionConfig";
+const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
 const std::string		ConfigManager::PLUGIN_ID_ATTRIBUTE_NAME = "id";
 const std::string		ConfigManager::URN_UUID_PREFIX = "urn:uuid:";
 
@@ -301,7 +301,7 @@ void ConfigManager::openPluginConfig(const std::string& plugin_name)
 	
 bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr config_ptr)
 {
-	xmlNodePtr plugin_config_copy = xmlCopyNodeList(config_ptr);
+	xmlNodePtr plugin_config_copy = xmlDocCopyNodeList(m_config_doc_ptr, config_ptr);
 	if (plugin_config_copy == NULL)
 		return false;
 	
@@ -313,12 +313,23 @@ bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr confi
 		xmlFreeNode(plugin_type_node);
 	}
 	
+	// clean namespaces in config nodes: work-around for libxml namespace bugs
+	for (xmlNodePtr tmp_node = plugin_config_copy; tmp_node != NULL;
+		 tmp_node = tmp_node->next)
+	{
+		if (tmp_node->nsDef != NULL) {
+			xmlFreeNs(tmp_node->nsDef);
+			tmp_node->nsDef = NULL;
+		}
+		xmlSetNs(tmp_node, m_config_node_ptr->ns);
+	}
+	
 	// add the plugin config to the config file
-	if (xmlAddChild(plugin_node_ptr, plugin_config_copy) == NULL) {
+	if (xmlAddChildList(plugin_node_ptr, plugin_config_copy) == NULL) {
 		xmlFreeNodeList(plugin_config_copy);
 		return false;
 	}
-	
+
 	return true;
 }
 	

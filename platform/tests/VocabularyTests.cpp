@@ -71,9 +71,6 @@ public:
 		addTerm(m_fixed_term);
 		addTerm(m_date_term);
 		addTerm(m_object_term);
-		addObjectMember(m_object_term.term_id, m_plain_int_term.term_id);
-		addObjectMember(m_object_term.term_id, m_big_int_term.term_id);
-		addObjectMember(m_object_term.term_id, m_fixed_term.term_id);
 	}
 
 	Vocabulary::Term	m_null_term;
@@ -136,32 +133,6 @@ BOOST_AUTO_TEST_CASE(checkVocabularyDataTypeFormats) {
 	BOOST_CHECK_EQUAL((*this)[6].term_format, m_object_term.term_format);
 }
 
-BOOST_AUTO_TEST_CASE(checkVocabularyMembersOfSimpleObjectTerm) {
-	// check members of the simple-object term
-	Vocabulary::OBJECT_MEMBER_LIST member_list = getObjectMembers(m_object_term.term_ref);
-	Vocabulary::OBJECT_MEMBER_LIST::const_iterator i = member_list.begin();
-	BOOST_REQUIRE(i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, m_plain_int_term.term_ref);
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, m_big_int_term.term_ref);
-	BOOST_REQUIRE(++i != member_list.end());
-	BOOST_CHECK_EQUAL(*i, m_fixed_term.term_ref);
-	BOOST_CHECK(++i == member_list.end());
-}
-
-BOOST_AUTO_TEST_CASE(checkVocabularyAddNewMemberForNonObject) {
-	BOOST_CHECK_THROW(addObjectMember(m_plain_int_term.term_id,
-												   m_big_int_term.term_id),
-					  Vocabulary::NotObjectTermException);
-}
-
-BOOST_AUTO_TEST_CASE(checkVocabularyAddDuplicateObjectMember) {
-	// try adding a duplicate member (should throw)
-	BOOST_CHECK_THROW(addObjectMember(m_object_term.term_id,
-												   m_plain_int_term.term_id),
-					  Vocabulary::DuplicateMemberException);
-}
-
 BOOST_AUTO_TEST_CASE(checkVocabularyAddDuplicateTerm) {
 	// check throw if we try adding a term with the same ID
 	BOOST_CHECK_THROW(addTerm(m_plain_int_term), Vocabulary::DuplicateTermException);
@@ -173,29 +144,6 @@ BOOST_AUTO_TEST_CASE(checkVocabularyRemoveTermFailures) {
 	
 	// try to remove Term using an unknown ID
 	BOOST_CHECK_THROW(removeTerm("unknown"), Vocabulary::RemoveTermNotFoundException);
-	
-	// try to remove Term that is a member of a parent object
-	BOOST_CHECK_THROW(removeTerm(m_plain_int_term.term_id),
-					  Vocabulary::RemoveTermHasParentsException);
-}
-
-BOOST_AUTO_TEST_CASE(checkVocabularyAddNewObjectMember) {
-	// Add the null term to the simple-object term
-	addObjectMember(m_object_term.term_id, m_null_term.term_id);
-	// make sure it has been added
-	Vocabulary::OBJECT_MEMBER_LIST member_list = getObjectMembers(m_object_term.term_ref);
-	BOOST_CHECK_EQUAL(member_list.back(), m_null_term.term_ref);
-}
-
-BOOST_AUTO_TEST_CASE(checkVocabularyRemoveObjectMember) {
-	// remove the object member
-	removeObjectMember(m_object_term.term_id, m_fixed_term.term_id);
-	// make sure it is gone
-	Vocabulary::OBJECT_MEMBER_LIST member_list = getObjectMembers(m_object_term.term_ref);
-	Vocabulary::OBJECT_MEMBER_LIST::iterator i;
-	for (i = member_list.begin(); i != member_list.end(); ++i) {
-		BOOST_CHECK(*i != m_null_term.term_ref);
-	}
 }
 
 BOOST_AUTO_TEST_CASE(checkVocabularyAddNewTerm) {
