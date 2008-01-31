@@ -402,7 +402,12 @@ This is a duplicate of #reactor_config_content for now.
 	text-decoration: underline;
 }
 
+
+
+
 /* Overwrite Dojo Dijit Styles for the Config Screens */
+
+/* Global Config Styles */
 
 .tundra .save .dijitButtonNode {
 	background: #ffffff url("../images/button-save-off.png");
@@ -421,8 +426,6 @@ This is a duplicate of #reactor_config_content for now.
 {
 	background: #ffffff url("../images/button-save-on.png");
 }
-
-
 
 
 .tundra .cancel .dijitButtonNode {
@@ -444,8 +447,6 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
-
-
 .tundra .delete .dijitButtonNode {
 	background: #ffffff url("../images/button-delete-off.png");
 	border: solid #999999 1px;
@@ -464,25 +465,6 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ffffff url("../images/button-delete-on.png");
 }
 
-
-
-.tundra .add_new_user .dijitButtonNode {
-	background: #ffffff url("../images/button-add-new-user-off.png");
-	border: solid #999999 1px;
-	color: #366dba;
-	font-weight: bold;
-	width: auto;
-	height: 24px;
-	text-align: left;
-	padding-left: 25px;
-	padding-right: 2px;
-}
-
-.tundra .add_new_user.dijitButtonHover .dijitButtonNode 
-
-{
-	background: #ffffff url("../images/button-add-new-user-on.png");
-}
 
 .tundra .add_new .dijitButtonNode {
 	background: #ffffff url("../images/button-add-off.png");
@@ -504,11 +486,6 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
-
-#user_config_accordion {
-	margin-top: 20px;
-}
-
 .save_cancel_delete {
 	margin-top: 5px;
 	margin-left: 2px;
@@ -516,15 +493,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .unsaved_changes {
 	border: 1px dashed #666666;
-}
-
-.tundra .user_pane .dijitAccordionBody{
-	padding: 10px;
-	height: auto;
-}
-
-.tundra .user_pane .dijitAccordionTitle{
-	text-decoration: underline;
+	
 }
 
 
@@ -543,5 +512,31 @@ This is a duplicate of #reactor_config_content for now.
 
 .dj_ie6 .tundra .dijitAccordionPane-selected .dijitAccordionArrow {
 	background-image: url("../images/circleIcon.png"); 
+}
+
+
+/* Users Config Styles */
+
+
+.tundra .user_pane .dijitAccordionBody{
+	padding-left: 10px;
+	height: auto;
+}
+
+.tundra .user_pane .dijitAccordionTitle{
+	text-decoration: underline;
+}
+
+
+/* Codecs Config Styles */
+
+
+.tundra .codec_pane .dijitAccordionBody{
+	padding-left: 10px;
+	height: auto;
+}
+
+.tundra .codec_pane .dijitAccordionTitle{
+	text-decoration: underline;
 }
 

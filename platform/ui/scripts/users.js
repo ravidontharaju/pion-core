@@ -7,7 +7,7 @@ dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
 
 var user_pane_title_height = -1;
-var user_pane_body_height = 180;
+var user_pane_body_height = 190;
 var accordion_width = -1;
 var unique_user_id = 1;
 var selected_user_pane = null;
