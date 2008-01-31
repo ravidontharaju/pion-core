@@ -301,7 +301,7 @@ void ConfigManager::openPluginConfig(const std::string& plugin_name)
 	
 bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr config_ptr)
 {
-	xmlNodePtr plugin_config_copy = xmlDocCopyNodeList(m_config_doc_ptr, config_ptr);
+	xmlNodePtr plugin_config_copy = xmlCopyNodeList(config_ptr);
 	if (plugin_config_copy == NULL)
 		return false;
 	
@@ -317,11 +317,7 @@ bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr confi
 	for (xmlNodePtr tmp_node = plugin_config_copy; tmp_node != NULL;
 		 tmp_node = tmp_node->next)
 	{
-		if (tmp_node->nsDef != NULL) {
-			xmlFreeNs(tmp_node->nsDef);
-			tmp_node->nsDef = NULL;
-		}
-		xmlSetNs(tmp_node, m_config_node_ptr->ns);
+		tmp_node->ns = tmp_node->nsDef = NULL;
 	}
 	
 	// add the plugin config to the config file
