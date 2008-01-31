@@ -123,12 +123,15 @@ function addWorkspace() {
 
 	new_workspace.node.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 	workspace_pane.controlButton.domNode.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
+/*
+This scroll handling is kind of buggy, and not a high priority feature, so disable it for now.
 
 	// Handle scroll events so that scrolling always occurs in multiples of STEP pixels.
 	workspace_pane.isScrolling = false;
 	workspace_pane.prevScrollTop = 0;
 	workspace_pane.prevScrollLeft = 0;
 	dojo.connect(workspace_pane.domNode, "scroll", makeScrollHandler(workspace_pane));
+*/
 }
 
 // Return a scroll event handler for a specific workspace pane.  The handler waits until all pending
