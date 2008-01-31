@@ -277,18 +277,14 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	c.b = c.t + c.h - new_div.offsetHeight;
 	console.debug("latest_event: ", latest_event);
 	var cw = dojo.byId("reactor_config_content"); // Move to init()?
-	/*
-	console.debug("cw.offsetLeft: ", cw.offsetLeft, ", cw.offsetTop: ", cw.offsetTop);
-	var cw2 = cw.parentNode;
-	console.debug("cw2.offsetLeft: ", cw2.offsetLeft, ", cw2.offsetTop: ", cw2.offsetTop);
-	var cw3 = cw2.parentNode;
-	console.debug("cw3.offsetLeft: ", cw3.offsetLeft, ", cw3.offsetTop: ", cw3.offsetTop);
-	*/
-	// This is a hack.  Note that iterating through node.offsetParent or node.parentNode and accumulating the offsets does not work right.
-	// (oddly, 0 seems to work now, but it keeps changing, so leave it for now)
-	offsetTopHack = 0;
-
-	var mouseLeftTop = {l: latest_event.clientX - cw.offsetLeft, t: latest_event.clientY - cw.offsetTop - offsetTopHack};
+	var totalOffsetLeft = 0;
+	var totalOffsetTop  = 0;
+	do {
+		totalOffsetLeft += cw.offsetLeft;
+		totalOffsetTop  += cw.offsetTop;
+		cw = cw.parentNode;
+	} while (cw != document.body);
+	var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
 	console.debug("mouseLeftTop: ", mouseLeftTop);
 	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
 	new_div.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
