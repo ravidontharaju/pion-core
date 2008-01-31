@@ -40,6 +40,28 @@ a img {
 }
 
 
+.matrixMainHeader {
+	background: url(../images/bg-matrix-main-header.png) repeat-x;
+	font-size: 13px;
+	font-weight: bold;
+	border-bottom: 1px solid #cccccc;
+}
+
+.matrixInsideHeader {
+	background: url(../images/bg-matrix-inside-header.png) repeat-x;
+	font-size: 12px;
+	border-bottom: 1px solid #cccccc;
+	border-right: 2px solid #cccccc;
+}
+
+.matrixInsideHeaderRight {
+	background: url(../images/bg-matrix-inside-header.png) repeat-x;
+	font-size: 12px;
+	border-bottom: 1px solid #cccccc;
+
+}
+
+
 /* outermost layout container */
 
 #outer {
@@ -479,12 +501,31 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
+
 .tundra .add_new.dijitButtonHover .dijitButtonNode 
 
 {
 	background: #ffffff url("../images/button-add-on.png");
 }
 
+
+.tundra .add_new_row .dijitButtonNode {
+	background: url("../images/button-add-new-row-off.png");
+	border: none;
+	color: #366dba;
+	font-size: 11px;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .add_new_row.dijitButtonHover .dijitButtonNode 
+
+{
+	background: url("../images/button-add-new-row-on.png");
+}
 
 .save_cancel_delete {
 	margin-top: 5px;

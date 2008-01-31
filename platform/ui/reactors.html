@@ -167,7 +167,7 @@
 					<div id="codec_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
 						<div dojoType="dijit.layout.LayoutContainer">
 							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<button dojoType=dijit.form.Button class="add_new_codec" onClick="addNewCodec">ADD A NEW CODEC</button>
+								<button dojoType=dijit.form.Button class="add_new" onClick="addNewCodec">ADD A NEW CODEC</button>
 							</div>
 							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
 								<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
@@ -192,24 +192,54 @@
 													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
 												</tr>
 											</table>
-											<hr/>
-											<h3>Map Field Names to Terms</h3>
-											<h4>Double-click to edit fields; drag rows to re-order</h4>
-											<table cellpadding="2" cellspacing="0" border="0">
-												<thead>
-													<td>Field Name</td>
-													<td>Term</td>
-													<td>Start Char</td>
-													<td>End Char</td>
-												</tr>
-												<tr>
-													<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-													<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-													<td><input dojoType="dijit.form.TextBox" name="start_char"></td>
-													<td><input dojoType="dijit.form.TextBox" name="end_char"></td>
-												</tr>
-											</table>
-											<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
+                                            <br />
+											<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+                                            	<tr>
+                                                	<td class="matrixMainHeader">
+                                                    Map Field Names to Terms
+                                                    </td>
+                                                </tr><tr>
+                                                    <td style="background-color: #f1f1f1;">
+                                                    
+                                                                
+                                                        <table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="100%">                                                			<tr>
+                                                                <td class="matrixInsideHeader">Field Name</td>
+                                                                <td class="matrixInsideHeader">Term</td>
+                                                                <td class="matrixInsideHeader">Start Char</td>
+                                                                <td class="matrixInsideHeader">End Char</td>
+                                                                <td class="matrixInsideHeaderRight">&nbsp;</td>
+                                                            </tr><tr style="background-color: #ecf5f6;">
+                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+                                                            </tr><tr style="background-color: #ffffff;">
+                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+                                                            </tr><tr style="background-color: #ecf5f6;">
+                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+                                                            </tr><tr style="background-color: #ffffff;">
+                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+                                                            </tr>
+                                                        </table>
+                                                        
+													<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+											
 											<div class="save_cancel_delete">
 												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
