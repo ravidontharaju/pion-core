@@ -313,19 +313,15 @@ This is a duplicate of #reactor_config_content for now.
 /* for drag-and-drop items in the Reactor configuration page*/
 
 #reactor_config .dojoDndItem {
-	padding: 5px 10px 0 10px;
+	border: #cccccc 1px solid;
+	width: 148px;
+	height: 25px;
 	margin: 10px 0;
-	border: 1px solid #666666;
 	cursor: pointer;
-	radius:3pt;
-	-moz-border-radius:3pt 3pt;
-	font-size: 12px;
-	font-weight: bold;
-	vertical-align: middle; 
 }
 
 #reactor_config .dojoDndItemOver {
-	background: #ededed;
+	border: #666666 1px solid;
 	cursor:pointer;
 }
 
