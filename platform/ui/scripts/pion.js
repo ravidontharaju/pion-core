@@ -1,8 +1,10 @@
 dojo.require("dijit.layout.StackContainer");
+dojo.require("dojox.widget.FileInput");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 var user_config_page_initialized = false;
 var codec_config_page_initialized = false;
+var system_config_page_initialized = false;
 
 var init = function() {
 	initReactorConfigPage();
@@ -20,5 +22,8 @@ function configPageSelected(page) {
 	} else if (page.title == "Codecs" && !codec_config_page_initialized) {
 		initCodecConfigPage();
 		codec_config_page_initialized = true;
+	} else if (page.title == "System" && !system_config_page_initialized) {
+		initSystemConfigPage();
+		system_config_page_initialized = true;
 	}
 }

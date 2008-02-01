@@ -310,10 +310,9 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
-/* for drag-and-drop items */
+/* for drag-and-drop items in the Reactor configuration page*/
 
-
-.dojoDndItem {
+#reactor_config .dojoDndItem {
 	padding: 5px 10px 0 10px;
 	margin: 10px 0;
 	border: 1px solid #666666;
@@ -325,7 +324,7 @@ This is a duplicate of #reactor_config_content for now.
 	vertical-align: middle; 
 }
 
-.dojoDndItemOver {
+#reactor_config .dojoDndItemOver {
 	background: #ededed;
 	cursor:pointer;
 }
@@ -581,3 +580,17 @@ This is a duplicate of #reactor_config_content for now.
 	text-decoration: underline;
 }
 
+
+/* for drag-and-drop items in the System configuration page*/
+
+#system_config .dojoDndItem {
+	padding: 1px 10px 1px 20px;
+	margin: 5px 0;
+	border: 1px solid #666666;
+	cursor: pointer;
+}
+
+#system_config .dojoDndItemOver {
+	background: #ededed;
+	cursor:pointer;
+}

@@ -9,6 +9,7 @@
 
 	<style type="text/css">
 		@import "dojo/dijit/themes/tundra/tundra.css";
+		@import "dojo/dojox/widget/FileInput/FileInput.css"; 
 	</style>
 	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
 
@@ -28,6 +29,7 @@
 	<script type="text/javascript" src="dojo/dijit/dijit.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Dialog.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/_Widget.js"></script>
+	<script type="text/javascript" src="dojo/dijit/form/_FormWidget.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Form.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/TextBox.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Button.js"></script>
@@ -39,11 +41,13 @@
 	<script type="text/javascript" src="dojo/dijit/Menu.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
+	<script type="text/javascript" src="dojo/dojox/FileInput.js"></script>
 
 	<script type="text/javascript" src="scripts/pion.js"></script>
 	<script type="text/javascript" src="scripts/reactors.js"></script>
 	<script type="text/javascript" src="scripts/codecs.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
+	<script type="text/javascript" src="scripts/system.js"></script>
 </head>
 <body class="tundra">
 
@@ -192,54 +196,53 @@
 													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
 												</tr>
 											</table>
-                                            <br />
+											<br />
 											<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
-                                            	<tr>
-                                                	<td class="matrixMainHeader">
-                                                    Map Field Names to Terms
-                                                    </td>
-                                                </tr><tr>
-                                                    <td style="background-color: #f1f1f1;">
-                                                    
-                                                                
-                                                        <table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="100%">                                                			<tr>
-                                                                <td class="matrixInsideHeader">Field Name</td>
-                                                                <td class="matrixInsideHeader">Term</td>
-                                                                <td class="matrixInsideHeader">Start Char</td>
-                                                                <td class="matrixInsideHeader">End Char</td>
-                                                                <td class="matrixInsideHeaderRight">&nbsp;</td>
-                                                            </tr><tr style="background-color: #ecf5f6;">
-                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-                                                            </tr><tr style="background-color: #ffffff;">
-                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-                                                            </tr><tr style="background-color: #ecf5f6;">
-                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-                                                            </tr><tr style="background-color: #ffffff;">
-                                                                <td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-                                                                <td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-                                                                <td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-                                                                <td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-                                                            </tr>
-                                                        </table>
-                                                        
-													<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
-                                                    </td>
-                                                </tr>
-                                            </table>
-											
+												<tr>
+													<td class="matrixMainHeader">
+													Map Field Names to Terms
+													</td>
+												</tr><tr>
+													<td style="background-color: #f1f1f1;">
+														<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="100%">
+															<tr>
+																<td class="matrixInsideHeader">Field Name</td>
+																<td class="matrixInsideHeader">Term</td>
+																<td class="matrixInsideHeader">Start Char</td>
+																<td class="matrixInsideHeader">End Char</td>
+																<td class="matrixInsideHeaderRight">&nbsp;</td>
+															</tr><tr style="background-color: #ecf5f6;">
+																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+															</tr><tr style="background-color: #ffffff;">
+																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+															</tr><tr style="background-color: #ecf5f6;">
+																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+															</tr><tr style="background-color: #ffffff;">
+																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
+																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
+																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
+																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
+															</tr>
+														</table>
+
+														<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
+													</td>
+												</tr>
+											</table>
+
 											<div class="save_cancel_delete">
 												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
@@ -322,8 +325,42 @@
 
 						<h3>simple instructions?</h3>
 					</div>
-					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						put accordion, etc here
+					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client" style="overflow: auto">
+						<h3>Configuration File Paths</h3>
+						<hr/>
+						<table cellpadding="3" cellspacing="0" border="0">
+							<tr>
+								<td><label>Vocabularies</label></td>
+								<td><input jsId="vocab_conf_file_widget" dojoType="dojox.widget.FileInput" name="vocabularies" style="width: 500px"></td>
+							</tr>
+							<tr>
+								<td><label>Codecs</label></td>
+								<td><input jsId="codec_conf_file_widget" dojoType="dojox.widget.FileInput" name="codecs" width="500px"></td>
+							</tr>
+							<tr>
+								<td><label>Databases</label></td>
+								<td><input jsId="database_conf_file_widget" dojoType="dojox.widget.FileInput" name="databases"></td>
+							</tr>
+							<tr>
+								<td><label>Reactors</label></td>
+								<td><input jsId="reactor_conf_file_widget" dojoType="dojox.widget.FileInput" name="reactors"></td>
+							</tr>
+							<tr>
+								<td><label>Users</label></td>
+								<td><input jsId="user_conf_file_widget" dojoType="dojox.widget.FileInput" name="users"></td>
+							</tr>
+						</table>
+						<button id="save_conf_file_paths" dojoType=dijit.form.Button class="save">Save</button>
+						<h3>Plugin Paths</h3>
+						<hr/>
+						<h4>Drag rows to re-order</h4>
+						<div dojoType="dojo.dnd.Source" jsId="plugin_path_list" class="container" skipForm="true">
+							<div class="dojoDndItem" style="background-color: yellow">
+								<button dojoType=dijit.form.Button class="delete" style="float: right">Delete</button>
+								<input dojoType="dijit.form.TextBox" value="Path A" />
+							</div>
+						</div>
+						<button dojoType=dijit.form.Button class="add_new_plugin_path" onClick="addNewPluginPath">ADD NEW PLUGIN PATH</button>
 					</div>
 				</div>
 			</div>
@@ -349,11 +386,11 @@
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
 		</table>
-        <div class="save_cancel_delete">
-            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-            <button dojoType=dijit.form.Button class="delete">Delete</button>
-    	</div>        
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>		
 	</div>
 	<div dojoType="dijit.Dialog" id="filter_dialog" title="Filter Configuration">
 		<table>
@@ -367,12 +404,12 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
 		</table>
-        <div class="save_cancel_delete">
-            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-            <button dojoType=dijit.form.Button class="delete">Delete</button>
-    	</div>
-    </div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>
+	</div>
 	<div dojoType="dijit.Dialog" id="transform_dialog" title="Transform Configuration">
 		<table>
 			<tr>
@@ -389,11 +426,11 @@
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
 			</tr>
 		</table>
-        <div class="save_cancel_delete">
-            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-            <button dojoType=dijit.form.Button class="delete">Delete</button>
-    	</div>        
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>		
 	</div>
 	<div dojoType="dijit.Dialog" id="data_store_dialog" title="Storage Configuration">
 		<table>
@@ -407,11 +444,11 @@
 				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
 			</tr>
 		</table>
-        <div class="save_cancel_delete">
-            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-            <button dojoType=dijit.form.Button class="delete">Delete</button>
-    	</div>        
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>		
 	</div>
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
 		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
@@ -431,11 +468,11 @@
 				<td><input dojoType="dijit.form.TextBox" name="comments"></td>
 			</tr>
 		</table>
-        <div class="save_cancel_delete">
-            <button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-            <button dojoType=dijit.form.Button class="cancel">Cancel</button>
-            <button dojoType=dijit.form.Button class="delete">Delete</button>
-    	</div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>
 	</div>
 <!-- end configuration dialogs -->
 
