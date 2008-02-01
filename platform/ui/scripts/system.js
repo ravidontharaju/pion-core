@@ -35,14 +35,14 @@ function initSystemConfigPage() {
 
 function plugin_path_dnd_item_creator(item, hint){
 /*
-	<div class="dojoDndItem" style="background-color: yellow">
+	<div class="dojoDndItem" style="background-color: #ecf5f6">
 		<button dojoType=dijit.form.Button class="delete" style="float: right">Delete</button>
 		<input dojoType="dijit.form.TextBox" value="Path A" />
 	</div>
 */
 	var node = dojo.doc.createElement('div');
-	node.style.backgroundColor = 'yellow';
-	var button = new dijit.form.Button({'class': 'delete', style: 'float: right', label: 'Delete'});
+	node.style.backgroundColor = '#ecf5f6';
+	var button = new dijit.form.Button({'class': 'delete_row', style: 'float: right'});
 	dojo.connect(button.domNode, 'click', function() {
 		plugin_path_list.delItem(node.id);
 		dojo._destroyElement(node);

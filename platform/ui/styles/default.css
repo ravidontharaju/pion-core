@@ -99,8 +99,8 @@ a img {
 #menu {
 	background: #0b0b0b;
 	height: 30px;
-	margin: 0 auto;
-	padding: 0 20px 0 0;
+	margin: 0 auto -3px auto;
+	padding: 0 10px 0 0;
 }
 
 #menu span {
@@ -243,7 +243,7 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 #sidebarBottom {
-	margin: 20px 0 0 0;
+	margin: 20px 0 -5px 0;
 	height: 150px;
 }
 
@@ -482,6 +482,19 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ffffff url("../images/button-delete-on.png");
 }
 
+.tundra .delete_row .dijitButtonNode {
+	background: url("../images/button-delete-row-off.png") no-repeat;
+	background-color: none;
+	border: none;
+	margin: -3px 0 0 0;
+}
+
+.tundra .delete_row.dijitButtonHover .dijitButtonNode 
+
+{
+	background: url("../images/button-delete-row-on.png") no-repeat;
+	background-color: none;
+}
 
 .tundra .add_new .dijitButtonNode {
 	background: #ffffff url("../images/button-add-off.png");
@@ -590,3 +603,23 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ededed;
 	cursor:pointer;
 }
+
+.tundra .add_new_plugin_path .dijitButtonNode {
+	background: url("../images/button-add-new-plugin-path-off.png");
+	border: none;
+	color: #366dba;
+	font-size: 11px;
+	width: auto;
+	height: 24px;
+	text-align: left;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .add_new_plugin_path.dijitButtonHover .dijitButtonNode 
+
+{
+	background: url("../images/button-add-new-plugin-path-on.png");
+}
+
+

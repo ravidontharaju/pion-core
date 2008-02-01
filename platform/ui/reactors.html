@@ -351,16 +351,32 @@
 							</tr>
 						</table>
 						<button id="save_conf_file_paths" dojoType=dijit.form.Button class="save">Save</button>
-						<h3>Plugin Paths</h3>
-						<hr/>
-						<h4>Drag rows to re-order</h4>
-						<div dojoType="dojo.dnd.Source" jsId="plugin_path_list" class="container" skipForm="true">
-							<div class="dojoDndItem" style="background-color: yellow">
-								<button dojoType=dijit.form.Button class="delete" style="float: right">Delete</button>
-								<input dojoType="dijit.form.TextBox" value="Path A" />
-							</div>
-						</div>
-						<button dojoType=dijit.form.Button class="add_new_plugin_path" onClick="addNewPluginPath">ADD NEW PLUGIN PATH</button>
+                        
+                        <br />&nbsp;<br />
+						
+                        <table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+                            <tr>
+                                <td class="matrixMainHeader">
+                                Plugin Paths (Drag rows to re-order)
+                                </td>
+                            </tr><tr>
+                                <td style="background-color: #f1f1f1;">
+    
+										<div style="background-color: #ffffff; border: 1px solid #cccccc; padding: 10px;">
+                                            
+                                            <div dojoType="dojo.dnd.Source" jsId="plugin_path_list" class="container" skipForm="true">
+                                                <div class="dojoDndItem" style="background-color: #ecf5f6">
+                                                    <span style="float: left; margin-right: 10px;"><img src="images/drag-handle.png" /></span>
+                                                    <button dojoType=dijit.form.Button class="delete_row" style="float: right">&nbsp;</button>
+                                                    <input dojoType="dijit.form.TextBox" value="Path A" />
+                                                </div>
+                                            </div>
+                                            <button dojoType=dijit.form.Button class="add_new_plugin_path" onClick="addNewPluginPath">ADD NEW PLUGIN PATH</button>
+                                        </div>
+                                        
+                                    </td>
+                                </tr>
+                            </table>
 					</div>
 				</div>
 			</div>
