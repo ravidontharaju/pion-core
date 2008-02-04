@@ -9,6 +9,7 @@
 
 	<style type="text/css">
 		@import "dojo/dijit/themes/tundra/tundra.css";
+		@import "dojo/dojox/grid/_grid/tundraGrid.css";
 		@import "dojo/dojox/widget/FileInput/FileInput.css"; 
 	</style>
 	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
@@ -39,6 +40,7 @@
 	<script type="text/javascript" src="dojo/dijit/layout/StackContainer.js"></script>
 	<script type="text/javascript" src="dojo/dijit/layout/TabContainer.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Menu.js"></script>
+	<script type="text/javascript" src="dojo/dojox/data/XmlStore.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
 	<script type="text/javascript" src="dojo/dojox/FileInput.js"></script>
@@ -57,7 +59,7 @@
 <!-- data store for codec types -->
 	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="codecTypes.json"></div>
 
-	<div id="outer" dojoType="dijit.layout.LayoutContainer">
+	<div id="outer" dojoType="dijit.layout.LayoutContainer" style="visibility: hidden">
 		<div id="topBar" dojoType="dijit.layout.ContentPane" layoutAlign="top">
 			<!-- start header -->
 			<div id="logo">
@@ -177,7 +179,7 @@
 								<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
 									<div dojoType="dijit.layout.AccordionPane" class="codec_pane" title="Codec 1">
 										<form id="codec_form" dojoType="dijit.form.Form">
-										<BR />
+											<BR />
 											<table cellpadding="2" cellspacing="0" border="0">
 												<tr>
 													<td><label>Name</label></td>
@@ -204,45 +206,14 @@
 													</td>
 												</tr><tr>
 													<td style="background-color: #f1f1f1;">
-														<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="100%">
-															<tr>
-																<td class="matrixInsideHeader">Field Name</td>
-																<td class="matrixInsideHeader">Term</td>
-																<td class="matrixInsideHeader">Start Char</td>
-																<td class="matrixInsideHeader">End Char</td>
-																<td class="matrixInsideHeaderRight">&nbsp;</td>
-															</tr><tr style="background-color: #ecf5f6;">
-																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-															</tr><tr style="background-color: #ffffff;">
-																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-															</tr><tr style="background-color: #ecf5f6;">
-																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-															</tr><tr style="background-color: #ffffff;">
-																<td><input dojoType="dijit.form.TextBox" name="field_name"></td>
-																<td><input dojoType="dijit.form.FilteringSelect" name="term" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-																<td><input dojoType="dijit.form.TextBox" name="start_char" style="width: 25px;"></td>
-																<td><input dojoType="dijit.form.TextBox" name="end_char" style="width: 25px;"></td>
-																<td align="center"><img src="images/icon-delete.png" alt="DELETE" border="0" /></td>
-															</tr>
-														</table>
-
+														<div class="codec_grid">
+															<div id="grid" jsId="grid" dojoType="dojox.Grid" model="model"
+																 structure="gridLayout" singleClickEdit="true"></div>
+														</div>
 														<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
 													</td>
 												</tr>
 											</table>
-
 											<div class="save_cancel_delete">
 												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 												<button dojoType=dijit.form.Button class="cancel">Cancel</button>

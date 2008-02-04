@@ -7,6 +7,7 @@ var codec_config_page_initialized = false;
 var system_config_page_initialized = false;
 
 var init = function() {
+	dojo.byId('outer').style.visibility = 'visible';
 	initReactorConfigPage();
 }
 
