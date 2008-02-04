@@ -393,11 +393,11 @@ This is a duplicate of #reactor_config_content for now.
 
 
 .moveable {
-	padding: 10px 10px 0 5px;
+	padding: 8px 10px 0 5px;
 	border: 1px solid #666666;
 	cursor: pointer;
 	width: 132px;
-	height: 38px;
+	height: 40px;
 	font-size: 14px;
 	font-weight: bold;
 	vertical-align: middle;
@@ -406,22 +406,22 @@ This is a duplicate of #reactor_config_content for now.
 
 .log_files {
 	background-color: #ffffff;
-	background: url(../images/bg-moveable-collection.png) repeat-x;
+	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
 	}
 		
 .filter {
 	background-color: #ffffff;
-	background: url(../images/bg-moveable-processing.png) repeat-x;
+	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
 	}
 	
 .transform {
 	background-color: #ffffff;
-	background: url(../images/bg-moveable-processing.png) repeat-x;
+	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
 	}
 	
 .data_store {
 	background-color: #ffffff;
-	background: url(../images/bg-moveable-storage.png) repeat-x;
+	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
 	}
 	
 	/* Tabs */
