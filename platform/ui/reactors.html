@@ -50,6 +50,23 @@
 	<script type="text/javascript" src="scripts/codecs.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
 	<script type="text/javascript" src="scripts/system.js"></script>
+	<script type="text/javascript">
+		var gridLayout = [{
+			rows: [[
+				{ name: 'Field Name', styles: '', width: 20, 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Term', styles: '', 
+					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 20},
+				{ name: 'Start Char', width: 5, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'End Char', width: 5, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
+	</script>
 </head>
 <body class="tundra">
 
