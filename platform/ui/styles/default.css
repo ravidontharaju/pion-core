@@ -12,6 +12,68 @@ body {
 	color: #333333;
 }
 
+#counterBackground {
+	position:absolute;
+	top: 121px;
+	left: 221px;
+	z-index: 2;
+	background: #000000;
+	width: 350px;
+	height: 50px;
+	/* for IE */
+  	filter:alpha(opacity=80);
+  	/* CSS3 standard */
+  	opacity:0.8;
+	
+}
+
+.counterTitle {
+	z-index: 3;
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: bold;
+	width: 185px;
+	padding: 10px 0 10px 10px;
+	float: left;
+
+	
+}
+
+.counterNumbersRight {
+	z-index: 3;
+	color: #ffffff;
+	font-family: Verdana, Arial, Helvetica, sans-serif;	
+	font-size: 10px;
+	width: 50px;
+	padding: 10px 10px 10px 0;
+	float: left;
+	text-align: right;
+	line-height: 1.4;
+	
+}
+.counterNumbersLeft {
+	z-index: 3;
+	color: #ffffff;
+	font-family: Verdana, Arial, Helvetica, sans-serif;	
+	font-weight: bold;
+	font-size: 10px;
+	width: 80px;
+	padding: 10px 0 10px 0;
+	float: left;
+	text-align: right;
+	line-height: 1.4;
+	
+}
+
+.conterToggle {
+	z-index: 3;
+	color: #ffffff;
+	width: 15px;
+	padding: 0;
+	float: left;
+	
+}
+
 h1 {
 	font-size: 3em;
 	font-weight: bold;
