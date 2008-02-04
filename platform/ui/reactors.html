@@ -211,18 +211,22 @@
 											<table cellpadding="2" cellspacing="0" border="0">
 												<tr>
 													<td><label>Name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="codec_name"></td>
+													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"></td>
+                                                    <td rowspan="4" valign="top" width="50">&nbsp;</td>
+                                                    <td rowspan="1">Comments</td>
+                                                    <td rowspan="4" valign="top"><textarea rows="8" cols="50"></textarea></td>
 												</tr>
 												<tr>
-													<td><label>Comment</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="comment"></td>
+													<td><label>ID</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="uri" style="width: 350px;"></td>
+                                                    <td rowspan="3">&nbsp;</td>
 												</tr>
 												<tr>
-													<td><label>URI</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="uri"></td>
+													<td><label>Plug-In Type</label></td>
+													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
 												</tr>
-												<tr>
-													<td><label>Type</label></td>
+                                                <tr>
+													<td><label>Event Type</label></td>
 													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
 												</tr>
 											</table>
@@ -243,9 +247,9 @@
 												</tr>
 											</table>
 											<div class="save_cancel_delete">
-												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-												<button dojoType=dijit.form.Button class="delete">Delete</button>
+												<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
+												<button dojoType=dijit.form.Button class="delete">Delete Codec</button>
 											</div>
 										</form>
 									</div>
