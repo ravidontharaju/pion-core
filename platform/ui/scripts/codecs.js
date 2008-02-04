@@ -20,7 +20,7 @@ var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
 var codec_config_items;
 
-var term_store = new dojox.data.XmlStore({url: '../tests/vocab_clf.xml', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
+var term_store = new dojox.data.XmlStore({url: '../config/vocabularies/clf.xml', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
 var attributes_by_column = [];
 attributes_by_column[0] = 'text()';
@@ -103,7 +103,7 @@ function initCodecConfigPage() {
 		return term_store.getValue(item, 'id');
 	}
 
-	codec_config_store = new dojox.data.XmlStore({url: '../tests/codecs_clf.xml'});
+	codec_config_store = new dojox.data.XmlStore({url: '../config/codecs.xml'});
 
 	function onComplete(items, request){
 		codec_config_items = items;
