@@ -36,18 +36,23 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
+extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
+extern const std::string& get_vocabulary_path(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 
 
 /// static strings used by these unit tests
-static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
+static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
 static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
-static const std::string REACTORS_BACKUP_FILE(get_config_file_dir() + "reactors.xml.bak");
-static const std::string VOCAB_CLF_CONFIG_FILE(get_config_file_dir() + "vocab_clf.xml");
-static const std::string CODECS_CLF_CONFIG_FILE(get_config_file_dir() + "codecs_clf.xml");
-static const std::string COMBINED_LOG_FILE(get_config_file_dir() + "combined.log");
+static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
+static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
+static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
+static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
+static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
+static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 
 
 /// cleans up reactor config files in the working directory
@@ -55,8 +60,18 @@ void cleanup_reactor_config_files(void)
 {
 	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
 		boost::filesystem::remove(REACTORS_CONFIG_FILE);
-	if (boost::filesystem::exists(REACTORS_BACKUP_FILE))
-		boost::filesystem::remove(REACTORS_BACKUP_FILE);
+
+	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
+		boost::filesystem::remove(CODECS_CONFIG_FILE);
+	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
+
+	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
 }
 
 
@@ -72,9 +87,9 @@ public:
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
 		cleanup_reactor_config_files();
-		
-		m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
-		m_codec_factory.setConfigFile(CODECS_CLF_CONFIG_FILE);
+		m_vocab_mgr.setConfigFile(VOCABULARY_CONFIG_FILE);
+		m_vocab_mgr.openConfigFile();
+		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
 		m_codec_factory.openConfigFile();
 		m_combined_codec = m_codec_factory.getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);

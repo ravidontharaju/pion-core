@@ -22,9 +22,10 @@
 
 #include <string>
 #include <libxml/tree.h>
-#include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionLogger.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -35,9 +36,17 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// ConfigManager: interface that manages XML configuration files
 ///
 class PION_PLATFORM_API ConfigManager
+	: public boost::noncopyable
 {
 public:
 
+	/// exception thrown if you try modifying something before opening the config file
+	class ConfigNotOpenException : public PionException {
+	public:
+		ConfigNotOpenException(const std::string& config_file)
+			: PionException("Configuration file must be opened before making changes: ", config_file) {}
+	};
+	
 	/// exception thrown if you try to open a config file when it is already open
 	class ConfigAlreadyOpenException : public PionException {
 	public:
@@ -101,13 +110,6 @@ public:
 			: PionException("Unable to remove a plug-in from the configuration file: ", plugin_id) {}
 	};
 	
-	/// exception thrown if you try modifying plug-ins before opening the config file
-	class PluginConfigNotOpenException : public PionException {
-	public:
-		PluginConfigNotOpenException(const std::string& config_file)
-			: PionException("Plug-ins configuration file must be opened before making changes: ", config_file) {}
-	};
-	
 	/// exception thrown if the config file contains a plug-in with a missing identifier
 	class EmptyPluginIdException : public PionException {
 	public:
@@ -140,13 +142,45 @@ public:
 	
 	/// returns true if the config file is open and being used
 	inline bool configIsOpen(void) const { return m_config_doc_ptr != NULL; }
-
+	
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+	
+	
+	/// removes the config file (after backing it up)
+	void removeConfigFile(void);
+	
 	/// returns a string containing a new UUID value
 	static std::string createUUID(void);
 
 	/// returns a unique object identifier (UUID expressed as a URN)
 	static std::string createUniqueObjectId(void);
 
+	/// returns a unique XML filename based on a UUID
+	static std::string createFilename(void);
+
+	/**
+	 * creates a unique XML filename based on a UUID that is located in the given path
+	 *
+	 * @param file_path path where the file will be located
+	 *
+	 * @return std::string absolute path to the new filename
+	 */
+	static std::string createFilename(const std::string& file_path);
+	
+	/**
+	 * retrieves the unique identifier for an XML document node
+	 *
+	 * @param config_node the node to get the identifier for
+	 * @param node_id will be assigned to the unique identifier for the node
+	 *
+	 * @return true if a unique identifier was found and it is not empty
+	 */
+	static bool getNodeId(xmlNodePtr config_node, std::string& node_id);
+	
 	/**
 	 * searches for an element node within the XML document tree
 	 *
@@ -230,15 +264,28 @@ protected:
 	 * @param default_config_file the default configuration file to use
 	 */
 	ConfigManager(const std::string& default_config_file)
-		: m_config_file(default_config_file),
+		: m_logger(PION_GET_LOGGER("pion.platform.ConfigManager")),
+		m_config_file(default_config_file),
 		m_config_doc_ptr(NULL), m_config_node_ptr(NULL)
 	{}
 	
 	/// closes the config file	
 	void closeConfigFile(void);
 	
-	/// saves the config file	
+	/// saves the config file (after backing up the existing copy)
 	void saveConfigFile(void);
+	
+	/// creates a backup copy of the config file (if it exists)
+	void backupConfigFile(void);
+	
+	/**
+	 * resolves paths relative to the location of the config file
+	 *
+	 * @param orig_path the original path (may be relative or absolute)
+	 *
+	 * @return std::string resolved, absolute path to the file
+	 */
+	std::string resolveRelativePath(const std::string& orig_path) const;
 
 	/**
 	 * opens a plug-in configuration file and loads all of the plug-ins
@@ -310,6 +357,9 @@ protected:
 								 const xmlNodePtr config_ptr) {}
 
 	
+	/// extension added to the name of XML files
+	static const std::string		XML_FILE_EXTENSION;
+	
 	/// extension added to the name of backup files
 	static const std::string		BACKUP_FILE_EXTENSION;
 	
@@ -322,12 +372,15 @@ protected:
 	/// name of the plug-in type element for Pion XML config files
 	static const std::string		PLUGIN_ELEMENT_NAME;
 	
-	/// name of the plug-in ID attribute for Pion XML config files
-	static const std::string		PLUGIN_ID_ATTRIBUTE_NAME;
+	/// name of the unique identifier attribute for Pion XML config files
+	static const std::string		ID_ATTRIBUTE_NAME;
 
 	/// prefix for a UUID type URN
 	static const std::string		URN_UUID_PREFIX;
 
+	
+	/// primary logging interface used by this class
+	PionLogger						m_logger;	
 	
 	/// name of the XML config file being used
 	std::string						m_config_file;

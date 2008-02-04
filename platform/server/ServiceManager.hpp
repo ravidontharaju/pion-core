@@ -1,0 +1,184 @@
+// ------------------------------------------------------------------------
+// Pion is a development platform for building Reactors that process Events
+// ------------------------------------------------------------------------
+// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+//
+// Pion is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Pion is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+// more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Pion.  If not, see <http://www.gnu.org/licenses/>.
+//
+
+#ifndef __PION_SERVICEMANAGER_HEADER__
+#define __PION_SERVICEMANAGER_HEADER__
+
+#include <list>
+#include <string>
+#include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
+#include <pion/PluginManager.hpp>
+#include <pion/net/HTTPServer.hpp>
+#include <pion/net/WebService.hpp>
+#include <pion/platform/ConfigManager.hpp>
+#include "PlatformService.hpp"
+
+
+namespace pion {		// begin namespace pion
+namespace server {		// begin namespace server (Pion Server)
+	
+	
+// forward declarations to avoid header dependencies
+class PlatformConfig;
+	
+
+///
+/// ServiceManager: manages configuration for platform services
+///
+class PION_PLATFORM_API ServiceManager :
+	public pion::platform::ConfigManager
+{
+public:
+	
+	/// exception thrown if the config file contains a Server with an empty or missing identifier
+	class EmptyServerIdException : public PionException {
+	public:
+		EmptyServerIdException(const std::string& config_file)
+			: PionException("Service configuration file includes a Server without a unique identifier: ", config_file) {}
+	};
+
+	/// exception thrown if the config file contains a Service with an empty or missing identifier
+	class EmptyServiceIdException : public PionException {
+	public:
+		EmptyServiceIdException(const std::string& server_id)
+			: PionException("Server configuration includes a Service without a unique identifier: ", server_id) {}
+	};
+	
+	/// exception thrown if the config file contains a Service with an empty or missing plug-in type
+	class EmptyServicePluginException : public PionException {
+	public:
+		EmptyServicePluginException(const std::string& service_id)
+			: PionException("Service configuration does not define a plug-in type: ", service_id) {}
+	};
+	
+	/// exception thrown if the config file contains a Server with an empty or missing HTTP resource
+	class EmptyServiceResourceException : public PionException {
+	public:
+		EmptyServiceResourceException(const std::string& service_id)
+			: PionException("Service configuration does not define a resource: ", service_id) {}
+	};
+	
+	/// exception thrown if the config file contains a WebService option with an empty name
+	class EmptyOptionNameException : public PionException {
+	public:
+		EmptyOptionNameException(const std::string& service_id)
+			: PionException("Service configuration option does not define a name: ", service_id) {}
+	};
+	
+	/// exception thrown if the config file contains a Server with a missing port number
+	class MissingPortException : public PionException {
+	public:
+		MissingPortException(const std::string& server_id)
+			: PionException("Server configuration does not define a port number: ", server_id) {}
+	};
+
+	/// exception used to propagate exceptions thrown by web services
+	class WebServiceException : public PionException {
+	public:
+		WebServiceException(const std::string& resource, const std::string& error_msg)
+			: PionException(std::string("Service (") + resource,
+							std::string("): ") + error_msg)
+		{}
+	};
+
+	
+	/**
+	 * constructs a new ServiceManager instance
+	 *
+	 * @param platform_config reference to the global platform configuration manager
+	 */
+	ServiceManager(PlatformConfig& platform_config);
+	
+	/// virtual destructor
+	virtual ~ServiceManager() {}
+	
+	/// opens an existing config file and loads the data it contains
+	virtual void openConfigFile(void);
+
+	
+private:
+
+	/**
+	 * used to get basic config options for services
+	 *
+	 * @param service_node the XML tree node for the service
+	 * @param server_id the unique identifier for the Server associated with the service
+	 * @param service_id will be assigned to the service's unique identifier
+	 * @param plugin_type will be assigned to the service's plug-in type
+	 * @param http_resource will be assigned to the service's HTTP resource
+	 */
+	void getServiceConfig(xmlNodePtr service_node, const std::string& server_id,
+						  std::string& service_id, std::string& plugin_type,
+						  std::string& http_resource);
+
+	
+	/// data type for a list of HTTPServer pointers
+	typedef std::list<pion::net::HTTPServerPtr>		ServerList;
+	
+	/// data type for a collection of web services
+	typedef PluginManager<pion::net::WebService>	WebServiceManager;
+	
+	/// data type for a collection of platform services
+	typedef PluginManager<PlatformService>			PlatformServiceManager;
+	
+	
+	/// default name of the vocabulary config file
+	static const std::string		DEFAULT_CONFIG_FILE;
+
+	/// name of the server (HTTPServer) element for Pion XML config files
+	static const std::string		SERVER_ELEMENT_NAME;
+
+	/// name of the service (WebService) element for Pion XML config files
+	static const std::string		WEB_SERVICE_ELEMENT_NAME;
+	
+	/// name of the service (PlatformService) element for Pion XML config files
+	static const std::string		PLATFORM_SERVICE_ELEMENT_NAME;
+	
+	/// name of the port number element for Pion XML config files
+	static const std::string		PORT_ELEMENT_NAME;
+
+	/// name of the HTTP resource element for Pion XML config files
+	static const std::string		RESOURCE_ELEMENT_NAME;
+	
+	/// name of the WebService option element for Pion XML config files
+	static const std::string		OPTION_ELEMENT_NAME;
+	
+	/// name of the option name attribute for Pion XML config files
+	static const std::string		NAME_ATTRIBUTE_NAME;
+		
+	
+	/// reference to the Pion platform configuration manager
+	PlatformConfig &				m_platform_config;
+	
+	/// collection of HTTP servers
+	ServerList						m_servers;
+
+	/// collection of regular web services used by the HTTP servers
+	WebServiceManager				m_web_services;
+
+	/// collection of platform services used by the HTTP servers
+	PlatformServiceManager			m_platform_services;
+};
+
+
+}	// end namespace server
+}	// end namespace pion
+
+#endif

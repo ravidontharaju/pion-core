@@ -17,37 +17,23 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <pion/platform/Vocabulary.hpp>
-#include <pion/platform/ConfigManager.hpp>
-#include <pion/platform/PlatformPlugin.hpp>
+#include "PlatformConfig.hpp"
+#include "PlatformService.hpp"
+
+using namespace pion::net;
+using namespace pion::platform;
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace server {		// begin namespace server (Pion Server)
 
-
-// static members of PlatformPlugin
-const std::string			PlatformPlugin::NAME_ELEMENT_NAME = "Name";
-const std::string			PlatformPlugin::COMMENT_ELEMENT_NAME = "Comment";
-	
 		
-// PlatformPlugin member functions
+// PlatformService member functions
 
-void PlatformPlugin::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+void PlatformService::setConfig(PlatformConfig& platform_cfg, const xmlNodePtr config_ptr)
 {
-	// get the descriptive name for the codec (if any)
-	ConfigManager::getConfigOption(NAME_ELEMENT_NAME, m_plugin_name,
-								   config_ptr);
-
-	// get the descriptive comments for the codec (if any)
-	ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, m_plugin_comment,
-								   config_ptr);
+	PlatformPlugin::setConfig(platform_cfg.getVocabularyManager().getVocabulary(), config_ptr);
 }
 	
-void PlatformPlugin::updateVocabulary(const Vocabulary& v)
-{
-	// nothing is currently necessary
-}
-
-}	// end namespace platform
+}	// end namespace server
 }	// end namespace pion

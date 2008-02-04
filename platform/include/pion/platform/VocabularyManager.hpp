@@ -23,12 +23,12 @@
 #include <string>
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
+#include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/VocabularyConfig.hpp>
 
 
@@ -40,10 +40,24 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// VocabularyManager: maps URI identifiers to VocabularyConfig objects
 ///
 class PION_PLATFORM_API VocabularyManager
-	: private boost::noncopyable
+	: public ConfigManager
 {
 public:
 	
+	/// exception thrown if the config file contains an empty VocabularyConfig element
+	class EmptyVocabularyConfigException : public PionException {
+	public:
+		EmptyVocabularyConfigException(const std::string& config_file)
+			: PionException("Configuration file defines an empty Vocabulary config element: ", config_file) {}
+	};
+
+	/// exception thrown if the config file does not contain a VocabularyPath element
+	class MissingVocabularyPathException : public PionException {
+	public:
+		MissingVocabularyPathException(const std::string& config_file)
+			: PionException("Configuration file does not define a Vocabulary path: ", config_file) {}
+	};
+
 	/// exception thrown if you try loading a duplicate Vocabulary
 	class DuplicateVocabularyException : public PionException {
 	public:
@@ -58,49 +72,64 @@ public:
 			: PionException("Vocabulary has not beed defined: ", vocab_id) {}
 	};
 
+	/// exception thrown if there is an error adding a Vocabulary to the config file
+	class AddVocabularyConfigException : public PionException {
+	public:
+		AddVocabularyConfigException(const std::string& vocab_id)
+			: PionException("Unable to add a Vocabulary to the configuration file: ", vocab_id) {}
+	};
+
+	/// exception thrown if there is an error removing a Vocabulary from the config file
+	class RemoveVocabularyConfigException : public PionException {
+	public:
+		RemoveVocabularyConfigException(const std::string& vocab_id)
+			: PionException("Unable to remove a Vocabulary from the configuration file: ", vocab_id) {}
+	};
+	
+	/// exception thrown if there is an error updating the Vocabulary config file path
+	class UpdateVocabularyPathException : public PionException {
+	public:
+		UpdateVocabularyPathException(const std::string& config_file)
+			: PionException("Unable to update Vocabulary path in the configuration file: ", config_file) {}
+	};
+
 	
 	/// constructs a new VocabularyManager instance
-	VocabularyManager(void) {}
+	VocabularyManager(void);
 	
-	/// public destructor: not virtual, should not be extended
-	~VocabularyManager() {}
+	/// virtual destructor
+	virtual ~VocabularyManager() {}
 	
+	/// creates a new Vocabulary config file
+	virtual void createConfigFile(void);
+	
+	/// opens an existing Vocabulary config file and loads the data it contains
+	virtual void openConfigFile(void);
 
 	/**
-	 * loads a new Vocabulary configuration file
+	 * creates a new, empty vocabulary
 	 *
-	 * @param file_name the name of the XML configuration file to load
+	 * @param vocab_id the unique identifier for the Vocabulary to create
+	 * @param vocab_name the descriptive name to assign to the Vocabulary
+	 * @param vocab_comment the descriptive comment to assign to the Vocabulary
 	 */
-	inline void loadConfigFile(const std::string& file_name) {
-		// open and parse the Vocabulary configuration file
-		VocabularyConfigPtr new_config(new VocabularyConfig());
-		new_config->setConfigFile(file_name);
-		new_config->openConfigFile();
-		const std::string new_vocab_id(new_config->getId());
-		
-		// make sure it has not already been loaded
-		boost::mutex::scoped_lock manager_lock(m_mutex);
-		if (m_vocab_map.find(new_vocab_id) != m_vocab_map.end())
-			throw DuplicateVocabularyException(new_vocab_id);
-		
-		// it's new; add it to the vocabulary map and bind it
-		m_vocab_map.insert(std::make_pair(new_vocab_id, new_config));
-		new_config->bind(m_vocabulary);
-		
-		// notify everyone that the vocabulary was updated
-		m_signal_vocabulary_updated();
-	}
+	void addVocabulary(const std::string& vocab_id,
+					   const std::string& vocab_name,
+					   const std::string& vocab_comment);
 	
 	/**
-	 * changes the URI used to uniquely identify a Vocabulary
+	 * removes an existing vocabulary and deletes the associated config file
 	 *
-	 * @param old_id the current unique identifier for the Vocabulary
-	 * @param new_id the new unique identifier to assign to the Vocabulary
+	 * @param vocab_id the unique identifier for the Vocabulary to remove
 	 */
-	inline void setId(const std::string& old_id, const std::string& new_id) {
-		updateVocabulary(old_id, boost::bind(&VocabularyConfig::setId, _1,
-											 boost::cref(new_id)));
-	}
+	void removeVocabulary(const std::string& vocab_id);
+	
+	/**
+	 * sets the default path where new vocabulary config files will be created
+	 *
+	 * @param vocab_path the new path where config files will be created
+	 */
+	void setVocabularyPath(const std::string& vocab_path);
 	
 	/**
 	 * changes the descriptive name assigned to a Vocabulary
@@ -126,6 +155,18 @@ public:
 	{
 		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::setComment,
 											   _1, boost::cref(new_comment)));
+	}
+	
+	/**
+	 * changes the locked setting for a Vocabulary
+	 *
+	 * @param vocab_id the unique identifier for the Vocabulary to modify
+	 * @param locked_setting the new value to assign to the locked setting
+	 */
+	inline void setLocked(const std::string& vocab_id, bool locked_setting)
+	{
+		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::setLocked,
+											   _1, locked_setting));
 	}
 	
 	/**
@@ -185,6 +226,7 @@ public:
 	 * @return const std::string& the descriptive name assigned to the Vocabulary
 	 */
 	inline const std::string& getName(const std::string& vocab_id) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
 		VocabularyMap::const_iterator i = m_vocab_map.find(vocab_id);
 		if (i == m_vocab_map.end())
 			throw VocabularyNotFoundException(vocab_id);
@@ -198,6 +240,7 @@ public:
 	 * @return const std::string& the comment assigned to the Vocabulary
 	 */
 	inline const std::string& getComment(const std::string& vocab_id) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
 		VocabularyMap::const_iterator i = m_vocab_map.find(vocab_id);
 		if (i == m_vocab_map.end())
 			throw VocabularyNotFoundException(vocab_id);
@@ -207,7 +250,10 @@ public:
 	/// returns a const reference to the universal Vocabulary
 	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
 
+	/// returns the path where new vocabulary config files are created
+	inline const std::string& getVocabularyPath(void) const { return m_vocab_path; }
 
+	
 private:
 
 	/**
@@ -232,11 +278,27 @@ private:
 	/// data type for a pointer to a VocabularyConfig object
 	typedef boost::shared_ptr<VocabularyConfig>		VocabularyConfigPtr;
 	
-	/// data type that maps strings to Term definition objects
+	/// data type that maps Vocabulary identifiers to configuration pointers
 	typedef PION_HASH_MAP<std::string, VocabularyConfigPtr, PION_HASH_STRING >	VocabularyMap;
 	
 	
-	/// used to map Term reference numbers to Term definition objects
+	/// default name of the vocabulary config file
+	static const std::string			DEFAULT_CONFIG_FILE;
+	
+	/// default path where new vocabulary config files are created
+	static const std::string			DEFAULT_VOCABULARY_PATH;
+	
+	/// name of the vocabulary path element for Pion XML config files
+	static const std::string			VOCABULARY_PATH_ELEMENT_NAME;
+	
+	/// name of the vocabulary config element for Pion XML config files
+	static const std::string			VOCABULARY_CONFIG_ELEMENT_NAME;
+
+	
+	/// the path where new vocabulary config files are created
+	std::string							m_vocab_path;
+	
+	/// used to map Vocabulary identifiers to configuration pointers
 	VocabularyMap						m_vocab_map;
 	
 	/// this includes a union of all Vocabularies that have been loaded

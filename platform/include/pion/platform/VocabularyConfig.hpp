@@ -24,10 +24,8 @@
 #include <libxml/tree.h>
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
-#include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionLogger.hpp>
 #include <pion/PionHashMap.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/ConfigManager.hpp>
@@ -41,18 +39,17 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// VocabularyConfig: manages Vocabulary configuration & XML config files
 ///
 class PION_PLATFORM_API VocabularyConfig :
-	public ConfigManager,
-	private boost::noncopyable
+	public ConfigManager
 {
 public:
 
-	/// exception thrown if you try modifying the Vocabulary before opening the config file
-	class VocabularyNotOpenException : public PionException {
+	/// exception thrown if the config file does not contain a vocabulary element
+	class VocabularyIsLockedException : public PionException {
 	public:
-		VocabularyNotOpenException(const std::string& config_file)
-			: PionException("Vocabulary configuration file must be opened before making changes: ", config_file) {}
+		VocabularyIsLockedException(const std::string& vocab_id)
+			: PionException("Unabled to modify a locked Vocabulary: ", vocab_id) {}
 	};
-	
+
 	/// exception thrown if the config file does not contain a vocabulary element
 	class MissingVocabularyException : public PionException {
 	public:
@@ -217,9 +214,6 @@ private:
 	/// name of the Data Type element for Pion XML config files
 	static const std::string		TYPE_ELEMENT_NAME;
 
-	/// name of the ID (term_id) attribute for Pion XML config files
-	static const std::string		ID_ATTRIBUTE_NAME;	
-	
 	/// name of the size (term_size) attribute for Pion XML config files
 	static const std::string		SIZE_ATTRIBUTE_NAME;	
 		
@@ -227,9 +221,6 @@ private:
 	static const std::string		FORMAT_ATTRIBUTE_NAME;	
 
 	
-	/// primary logging interface used by this class
-	PionLogger						m_logger;	
-
 	/// pointer to the vocabulary element node in the XML document tree
 	xmlNodePtr 						m_vocabulary_node;
 	

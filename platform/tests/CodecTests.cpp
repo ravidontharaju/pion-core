@@ -34,19 +34,23 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
+extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
+extern const std::string& get_vocabulary_path(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 
 
 /// static strings used by these unit tests
+static const std::string COMMON_LOG_FILE(get_log_file_dir() + "common.log");
+static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
+static const std::string EXTENDED_LOG_FILE(get_log_file_dir() + "extended.log");
+static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-static const std::string CODECS_BACKUP_FILE(get_config_file_dir() + "codecs.xml.bak");
-static const std::string VOCAB_CLF_CONFIG_FILE(get_config_file_dir() + "vocab_clf.xml");
-static const std::string CODECS_CLF_CONFIG_FILE(get_config_file_dir() + "codecs_clf.xml");
-static const std::string COMMON_LOG_FILE(get_config_file_dir() + "common.log");
-static const std::string COMBINED_LOG_FILE(get_config_file_dir() + "combined.log");
-static const std::string EXTENDED_LOG_FILE(get_config_file_dir() + "extended.log");
+static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
+static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
+static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
+static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 
 
 /// cleans up codec config files in the working directory
@@ -54,8 +58,14 @@ void cleanup_codec_config_files(void)
 {
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
-	if (boost::filesystem::exists(CODECS_BACKUP_FILE))
-		boost::filesystem::remove(CODECS_BACKUP_FILE);
+
+	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
+
+	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
 }
 
 
@@ -151,7 +161,8 @@ public:
 		if (! m_config_loaded) {
 			setup_plugins_directory();		
 			// load the CLF vocabulary
-			m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
+			m_vocab_mgr.setConfigFile(VOCABULARY_CONFIG_FILE);
+			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
 
@@ -453,15 +464,17 @@ public:
 	{
 		setup_logging_for_unit_tests();
 		cleanup_codec_config_files();
+		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 
 		if (! m_config_loaded) {
 			setup_plugins_directory();		
 			// load the CLF vocabulary
-			m_vocab_mgr.loadConfigFile(VOCAB_CLF_CONFIG_FILE);
+			m_vocab_mgr.setConfigFile(VOCABULARY_CONFIG_FILE);
+			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
 		
-		setConfigFile(CODECS_CLF_CONFIG_FILE);
+		setConfigFile(CODECS_CONFIG_FILE);
 		openConfigFile();
 		
 		m_common_codec = getCodec(m_common_id);

@@ -27,11 +27,12 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of ConfigManager
+const std::string		ConfigManager::XML_FILE_EXTENSION = ".xml";
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "PionConfig";
 const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
-const std::string		ConfigManager::PLUGIN_ID_ATTRIBUTE_NAME = "id";
+const std::string		ConfigManager::ID_ATTRIBUTE_NAME = "id";
 const std::string		ConfigManager::URN_UUID_PREFIX = "urn:uuid:";
 
 		
@@ -99,18 +100,29 @@ void ConfigManager::closeConfigFile(void)
 
 void ConfigManager::saveConfigFile(void)
 {
-	// check if the config file is new
+	// always create a backup copy of the config file first
+	backupConfigFile();
+	
+	// save the latest XML config document to the file
+	xmlSaveFormatFileEnc(m_config_file.c_str(),
+						 m_config_doc_ptr, "UTF-8", 1);
+}
+	
+void ConfigManager::removeConfigFile(void)
+{
+	backupConfigFile();
+	boost::filesystem::remove(m_config_file);
+}
+
+void ConfigManager::backupConfigFile(void)
+{
+	// make sure that the config file exists
 	if (boost::filesystem::exists(m_config_file)) {
-		// create a backup copy of the config file before opening it
 		const std::string backup_filename(m_config_file + BACKUP_FILE_EXTENSION);
 		if (boost::filesystem::exists(backup_filename))
 			boost::filesystem::remove(backup_filename);
 		boost::filesystem::copy_file(m_config_file, backup_filename);
 	}
-	
-	// save the latest XML config document to the file
-	xmlSaveFormatFileEnc(m_config_file.c_str(),
-						 m_config_doc_ptr, "UTF-8", 1);
 }
 
 std::string ConfigManager::createUUID(void)
@@ -132,6 +144,39 @@ std::string ConfigManager::createUniqueObjectId(void)
 	result += createUUID();
 	return result;
 }	
+
+std::string ConfigManager::createFilename(void)
+{
+	std::string file_name(createUUID());
+	file_name += XML_FILE_EXTENSION;
+	return file_name;
+}
+
+std::string ConfigManager::createFilename(const std::string& file_path)
+{
+	boost::filesystem::path new_path(file_path);
+	new_path /= createFilename();
+	return boost::filesystem::system_complete(new_path).file_string();
+}
+	
+std::string ConfigManager::resolveRelativePath(const std::string& orig_path) const
+{
+	boost::filesystem::path new_path(boost::filesystem::system_complete(getConfigFile()));
+	new_path.remove_leaf();
+	new_path /= orig_path;
+	return new_path.file_string();
+}
+
+bool ConfigManager::getNodeId(xmlNodePtr config_node, std::string& node_id)
+{
+	node_id = "";
+	xmlChar *xml_char_ptr = xmlGetProp(config_node,
+									   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
+	if (xml_char_ptr != NULL && xml_char_ptr[0]!='\0')
+		node_id = reinterpret_cast<char*>(xml_char_ptr);
+	xmlFree(xml_char_ptr);
+	return(! node_id.empty());
+}
 	
 xmlNodePtr ConfigManager::findConfigNodeByName(const std::string& element_name,
 											   xmlNodePtr starting_node)
@@ -277,14 +322,9 @@ void ConfigManager::openPluginConfig(const std::string& plugin_name)
 	while ( (plugin_node = findConfigNodeByName(plugin_name, plugin_node)) != NULL)
 	{
 		// parse new plug-in definition
-		xmlChar *xml_char_ptr = xmlGetProp(plugin_node, reinterpret_cast<const xmlChar*>(PLUGIN_ID_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-			if (xml_char_ptr != NULL)
-				xmlFree(xml_char_ptr);
+		std::string new_plugin_id;
+		if (! getNodeId(plugin_node, new_plugin_id))
 			throw EmptyPluginIdException(getConfigFile());
-		}
-		const std::string new_plugin_id(reinterpret_cast<char*>(xml_char_ptr));
-		xmlFree(xml_char_ptr);
 		
 		// find plug-in type
 		std::string new_plugin_type;
@@ -335,7 +375,7 @@ void ConfigManager::setPluginConfig(const std::string& plugin_name,
 {
 	// find the plug-in element in the XML config document
 	xmlNodePtr plugin_node = findConfigNodeByAttr(plugin_name,
-												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  ID_ATTRIBUTE_NAME,
 												  plugin_id,
 												  m_config_node_ptr->children);
 	if (plugin_node == NULL)
@@ -381,7 +421,7 @@ void ConfigManager::addPluginConfig(const std::string& plugin_name,
 	}
 	
 	// set the id attribute for the plug-in element
-	if (xmlNewProp(new_plugin_node, reinterpret_cast<const xmlChar*>(PLUGIN_ID_ATTRIBUTE_NAME.c_str()),
+	if (xmlNewProp(new_plugin_node, reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
 				   reinterpret_cast<const xmlChar*>(plugin_id.c_str())) == NULL)
 		throw AddPluginConfigException(plugin_type);
 	
@@ -406,7 +446,7 @@ void ConfigManager::removePluginConfig(const std::string& plugin_name,
 {
 	// find the plug-in node to remove
 	xmlNodePtr plugin_node = findConfigNodeByAttr(plugin_name,
-												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  ID_ATTRIBUTE_NAME,
 												  plugin_id,
 												  m_config_node_ptr->children);
 	if (plugin_node == NULL)

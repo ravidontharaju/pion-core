@@ -144,7 +144,7 @@ void ReactionEngine::addConnection(const std::string& from_id,
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
-		throw PluginConfigNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
 	
 	// add the connection to memory structures
 	boost::mutex::scoped_lock engine_lock(m_mutex);
@@ -185,7 +185,7 @@ void ReactionEngine::removeConnection(const std::string& from_id,
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
-		throw PluginConfigNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
 
 	// remove the connection from memory structures
 	boost::mutex::scoped_lock engine_lock(m_mutex);

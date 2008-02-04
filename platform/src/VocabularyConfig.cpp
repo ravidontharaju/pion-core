@@ -27,6 +27,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of VocabularyConfig
+	
 const std::string			VocabularyConfig::DEFAULT_CONFIG_FILE = "vocabulary.xml";
 const std::string			VocabularyConfig::VOCABULARY_ELEMENT_NAME = "Vocabulary";
 const std::string			VocabularyConfig::NAME_ELEMENT_NAME = "Name";
@@ -34,7 +35,6 @@ const std::string			VocabularyConfig::COMMENT_ELEMENT_NAME = "Comment";
 const std::string			VocabularyConfig::LOCKED_ELEMENT_NAME = "Locked";
 const std::string			VocabularyConfig::TERM_ELEMENT_NAME = "Term";
 const std::string			VocabularyConfig::TYPE_ELEMENT_NAME = "Type";
-const std::string			VocabularyConfig::ID_ATTRIBUTE_NAME = "id";
 const std::string			VocabularyConfig::SIZE_ATTRIBUTE_NAME = "size";
 const std::string			VocabularyConfig::FORMAT_ATTRIBUTE_NAME = "format";
 	
@@ -43,9 +43,9 @@ const std::string			VocabularyConfig::FORMAT_ATTRIBUTE_NAME = "format";
 
 VocabularyConfig::VocabularyConfig(void)
 	: ConfigManager(DEFAULT_CONFIG_FILE),
-	m_logger(PION_GET_LOGGER("pion.platform.VocabularyConfig")),
 	m_vocabulary_node(NULL), m_is_locked(false)
 {
+	setLogger(PION_GET_LOGGER("pion.platform.VocabularyConfig"));
 }
 
 void VocabularyConfig::createConfigFile(void)
@@ -118,15 +118,8 @@ void VocabularyConfig::openConfigFile(void)
 		throw MissingVocabularyException(getConfigFile());
 
 	// get the unique identifier for the Vocabulary
-	xmlChar *xml_char_ptr = xmlGetProp(m_vocabulary_node,
-									   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
-	if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-		if (xml_char_ptr != NULL)
-			xmlFree(xml_char_ptr);
+	if (! getNodeId(m_vocabulary_node, m_vocabulary_id))
 		throw EmptyVocabularyIdException(getConfigFile());
-	}
-	m_vocabulary_id = reinterpret_cast<char*>(xml_char_ptr);
-	xmlFree(xml_char_ptr);
 	
 	// find the "name" element
 	getConfigOption(NAME_ELEMENT_NAME, m_name, m_vocabulary_node->children);
@@ -145,6 +138,7 @@ void VocabularyConfig::openConfigFile(void)
 	}
 
 	// load Vocabulary Terms
+	xmlChar *xml_char_ptr;
 	for (xmlNodePtr cur_node = m_vocabulary_node->children;
 		 cur_node != NULL; cur_node = cur_node->next)
 	{
@@ -152,14 +146,10 @@ void VocabularyConfig::openConfigFile(void)
 			&& xmlStrcmp(cur_node->name, reinterpret_cast<const xmlChar*>(TERM_ELEMENT_NAME.c_str()))==0)
 		{
 			// parse new term definition
-			xml_char_ptr = xmlGetProp(cur_node, reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()));
-			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-				if (xml_char_ptr != NULL)
-					xmlFree(xml_char_ptr);
+			std::string new_term_id;
+			if (! getNodeId(cur_node, new_term_id))
 				throw Vocabulary::EmptyTermIdException();
-			}
-			Vocabulary::Term new_term(reinterpret_cast<char*>(xml_char_ptr));
-			xmlFree(xml_char_ptr);
+			Vocabulary::Term new_term(new_term_id);
 			
 			// find the existing "type" node (if any)
 			xmlNodePtr type_node = findConfigNodeByName(TYPE_ELEMENT_NAME,
@@ -303,8 +293,11 @@ void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
 {
 	// make sure that the Vocabulary configuration file is open
 	if (m_vocabulary_node == NULL)
-		throw VocabularyNotOpenException(getConfigFile());
-
+		throw ConfigNotOpenException(getConfigFile());
+	// make sure that the Vocabulary is not locked
+	if (m_is_locked)
+		throw VocabularyIsLockedException(getId());
+		
 	// add it to the memory structures
 	m_vocabulary.addTerm(new_term);
 	m_signal_add_term(new_term);
@@ -349,7 +342,10 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 {
 	// make sure that the Vocabulary configuration file is open
 	if (m_vocabulary_node == NULL)
-		throw VocabularyNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
+	// make sure that the Vocabulary is not locked
+	if (m_is_locked)
+		throw VocabularyIsLockedException(getId());
 	
 	// update the values in memory
 	m_vocabulary.updateTerm(t);
@@ -448,7 +444,10 @@ void VocabularyConfig::removeTerm(const std::string& term_id)
 {
 	// make sure that the Vocabulary configuration file is open
 	if (m_vocabulary_node == NULL)
-		throw VocabularyNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
+	// make sure that the Vocabulary is not locked
+	if (m_is_locked)
+		throw VocabularyIsLockedException(getId());
 	
 	// remove the Term from our memory structures
 	m_vocabulary.removeTerm(term_id);

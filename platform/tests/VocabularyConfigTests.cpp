@@ -34,20 +34,19 @@ using namespace pion::platform;
 
 /// external functions defined in PionPlatformUnitTests.cpp
 extern const std::string& get_config_file_dir(void);
+extern const std::string& get_vocabulary_path(void);
 extern void setup_logging_for_unit_tests(void);
 
 
 /// static strings used by these unit tests
-static const std::string VOCAB_A_CONFIG_FILE(get_config_file_dir() + "vocab_a.xml");
-static const std::string VOCAB_A_TEMPLATE_FILE(get_config_file_dir() + "vocab_a.tmpl");
-static const std::string VOCAB_A_BACKUP_FILE(get_config_file_dir() + "vocab_a.xml.bak");
-static const std::string VOCAB_B_CONFIG_FILE(get_config_file_dir() + "vocab_b.xml");
-static const std::string VOCAB_B_TEMPLATE_FILE(get_config_file_dir() + "vocab_b.tmpl");
-static const std::string VOCAB_B_BACKUP_FILE(get_config_file_dir() + "vocab_b.xml.bak");
-static const std::string VOCAB_NEW_CONFIG_FILE(get_config_file_dir() + "vocab_new.xml");
-static const std::string VOCAB_NEW_BACKUP_FILE(get_config_file_dir() + "vocab_new.xml.bak");
+static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
+static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
+static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
+static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
+static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
+static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
+static const std::string VOCAB_NEW_CONFIG_FILE(get_vocabulary_path() + "new.xml");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
-static const std::string VOCAB_DEFAULT_BACKUP_FILE("vocabulary.xml.bak");
 
 
 /// cleans up vocabulary config files in the working directory
@@ -55,25 +54,21 @@ void cleanup_vocab_config_files(void)
 {
 	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
-	if (boost::filesystem::exists(VOCAB_A_BACKUP_FILE))
-		boost::filesystem::remove(VOCAB_A_BACKUP_FILE);
 	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
 
 	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
-	if (boost::filesystem::exists(VOCAB_B_BACKUP_FILE))
-		boost::filesystem::remove(VOCAB_B_BACKUP_FILE);
 	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
+
+	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
 
 	if (boost::filesystem::exists(VOCAB_NEW_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_NEW_CONFIG_FILE);
-	if (boost::filesystem::exists(VOCAB_NEW_BACKUP_FILE))
-		boost::filesystem::remove(VOCAB_NEW_BACKUP_FILE);
 
 	if (boost::filesystem::exists(VOCAB_DEFAULT_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_DEFAULT_CONFIG_FILE);
-	if (boost::filesystem::exists(VOCAB_DEFAULT_BACKUP_FILE))
-		boost::filesystem::remove(VOCAB_DEFAULT_BACKUP_FILE);
 }
 
 
@@ -117,7 +112,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateNewConfigFile) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTermBeforeOpening) {
 	Vocabulary::Term new_term("urn:pion:new-null-term");
-	BOOST_CHECK_THROW(F::addTerm(new_term), VocabularyConfig::VocabularyNotOpenException);
+	BOOST_CHECK_THROW(F::addTerm(new_term), ConfigManager::ConfigNotOpenException);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -627,13 +622,12 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewVocabularyManager_S,
 									   boost::mpl::list<NewVocabularyManager_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadConfigFile) {
-	BOOST_CHECK_NO_THROW(F::loadConfigFile(VOCAB_A_CONFIG_FILE));
-	BOOST_CHECK_NO_THROW(F::loadConfigFile(VOCAB_B_CONFIG_FILE));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(VOCABULARY_CONFIG_FILE));
+	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkMethodsTakingIds) {
 	// These should all throw VocabularyManager::VocabularyNotFoundException, since no vocabularies have been loaded.
-	BOOST_CHECK_THROW(F::setId("urn:vocab:old_id", "urn:vocab:new_id"), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::setName("urn:vocab:id1", "new_name"), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::getName("urn:vocab:id1"), VocabularyManager::VocabularyNotFoundException);
 	BOOST_CHECK_THROW(F::setComment("urn:vocab:id2", "new_comment"), VocabularyManager::VocabularyNotFoundException);
@@ -659,8 +653,8 @@ BOOST_AUTO_TEST_SUITE_END()
 class VocabularyManagerWithConfigFilesLoaded_F : public NewVocabularyManager_F {
 public:
 	VocabularyManagerWithConfigFilesLoaded_F() {
-		loadConfigFile(VOCAB_A_CONFIG_FILE);
-		loadConfigFile(VOCAB_B_CONFIG_FILE);
+		setConfigFile(VOCABULARY_CONFIG_FILE);
+		openConfigFile();
 
 		// It doesn't seem like the user should have to provide both the file name and the ID, since the ID is in the file.
 		// Consider having loadConfigFile return the ID.
@@ -681,9 +675,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
 	BOOST_CHECK_NO_THROW(F::getVocabulary());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsEight) {
-	// there should be eight terms defined in the (two) config files
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(8));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsEighteen) {
+	// there should be eighteen terms defined in the (three) config files
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(18));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOptionValues) {

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+	<Server id="urn:uuid:9ff8ade4-d2c9-11dc-9fbc-0016cb926e68">
+		<Port>8080</Port>
+		<WebService id="urn:uuid:b5a875e8-d2c9-11dc-b10b-0016cb926e68">
+			<Name>Log Service</Name>
+			<Comment>Returns Pion log entries</Comment>
+			<Plugin>LogService</Plugin>
+			<Resource>/log</Resource>
+		</WebService>
+		<WebService id="urn:uuid:bbfd9fae-d2c9-11dc-a96d-0016cb926e68">
+			<Name>Echo Service</Name>
+			<Comment>Echos the HTTP request</Comment>
+			<Plugin>EchoService</Plugin>
+			<Resource>/echo</Resource>
+		</WebService>
+	</Server>
+	<Server id="urn:uuid:c0f94d6e-d2c9-11dc-826c-0016cb926e68">
+		<Port>8081</Port>
+		<WebService id="urn:uuid:c6111642-d2c9-11dc-9ba2-0016cb926e68">
+			<Name>Hello Service</Name>
+			<Comment>Says hello to the world</Comment>
+			<Plugin>HelloService</Plugin>
+			<Resource>/hello</Resource>
+		</WebService>
+	</Server>
+</PionConfig>

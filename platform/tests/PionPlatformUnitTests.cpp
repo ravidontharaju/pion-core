@@ -26,19 +26,49 @@
 #include <boost/test/unit_test.hpp>
 
 
+/// returns the path to the unit test log file directory
+const std::string& get_log_file_dir(void)
+{
+#if defined(_MSC_VER)
+	static const std::string TESTS_LOG_FILE_DIR("logs\\");
+#elif defined(PION_XCODE)
+	static const std::string TESTS_LOG_FILE_DIR("../../platform/tests/logs/");
+#else
+	// same for Unix and Cygwin
+	static const std::string TESTS_LOG_FILE_DIR("logs/");
+#endif
+
+	return TESTS_LOG_FILE_DIR;
+}
+
 /// returns the path to the unit test config file directory
 const std::string& get_config_file_dir(void)
 {
 #if defined(_MSC_VER)
-	static const std::string TESTS_CONFIG_FILE_DIR("");
+	static const std::string TESTS_CONFIG_FILE_DIR("config\\");
 #elif defined(PION_XCODE)
-	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/");
+	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/config/");
 #else
 	// same for Unix and Cygwin
-	static const std::string TESTS_CONFIG_FILE_DIR("");
+	static const std::string TESTS_CONFIG_FILE_DIR("config/");
 #endif
-
+	
 	return TESTS_CONFIG_FILE_DIR;
+}
+
+/// returns the path to the unit test vocabulary config path
+const std::string& get_vocabulary_path(void)
+{
+#if defined(_MSC_VER)
+	static const std::string TESTS_VOCABULARY_PATH("config\\vocabularies\\");
+#elif defined(PION_XCODE)
+	static const std::string TESTS_VOCABULARY_PATH("../../platform/tests/config/vocabularies/");
+#else
+	// same for Unix and Cygwin
+	static const std::string TESTS_VOCABULARY_PATH("config/vocabularies/");
+#endif
+	
+	return TESTS_VOCABULARY_PATH;
 }
 
 /// sets up logging (run once only)

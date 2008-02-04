@@ -23,10 +23,8 @@
 #include <libxml/tree.h>
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
-#include <pion/PionLogger.hpp>
 #include <pion/PluginManager.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/VocabularyManager.hpp>
@@ -41,8 +39,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 template <typename PluginType>
 class PION_PLATFORM_API PluginConfig :
-	public ConfigManager,
-	private boost::noncopyable
+	public ConfigManager
 {
 public:
 
@@ -132,12 +129,6 @@ public:
 								  boost::cref(m_vocabulary)));
 	}
 
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
-	
 	
 protected:
 
@@ -152,10 +143,11 @@ protected:
 				 const std::string& config_file,
 				 const std::string& plugin_element)
 		: ConfigManager(config_file),
-		m_logger(PION_GET_LOGGER("pion.platform.PluginConfig")),
 		m_vocabulary(vocab_mgr.getVocabulary()),
 		m_plugin_element(plugin_element)
-	{}
+	{
+		setLogger(PION_GET_LOGGER("pion.platform.PluginConfig"));
+	}
 
 	/**
 	 * adds a new plug-in object (without locking or config file updates).  This
@@ -179,9 +171,6 @@ protected:
 	}
 	
 	
-	/// primary logging interface used by this class
-	PionLogger						m_logger;	
-
 	/// references the Vocabulary used by plug-ins to describe Terms
 	const Vocabulary&				m_vocabulary;
 
@@ -206,7 +195,7 @@ inline xmlNodePtr PluginConfig<PluginType>::getPluginConfig(const std::string& p
 {
 	// find the plug-in element in the XML config document
 	xmlNodePtr plugin_node = findConfigNodeByAttr(m_plugin_element,
-												  PLUGIN_ID_ATTRIBUTE_NAME,
+												  ID_ATTRIBUTE_NAME,
 												  plugin_id,
 												  m_config_node_ptr->children);
 	if (plugin_node == NULL)
@@ -222,7 +211,7 @@ inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
-		throw PluginConfigNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
 	
 	// update it within memory and the configuration file
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
@@ -241,7 +230,7 @@ inline std::string PluginConfig<PluginType>::addPlugin(const std::string& plugin
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
-		throw PluginConfigNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
 	
 	// create the new plug-in and add it to the config file
 	const std::string plugin_id(createUniqueObjectId());
@@ -262,7 +251,7 @@ inline void PluginConfig<PluginType>::removePlugin(const std::string& plugin_id)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
-		throw PluginConfigNotOpenException(getConfigFile());
+		throw ConfigNotOpenException(getConfigFile());
 
 	// remove it from memory and the configuration file
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
