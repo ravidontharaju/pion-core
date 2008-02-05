@@ -92,23 +92,14 @@ public:
 	 */
 	virtual void updateVocabulary(const Vocabulary& v);
 	
-	
-protected:
-	
 	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
 	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to Reactors that are connected to this one.
+	 * delivered to the output connections.
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void process(const EventPtr& e);
-
-	/// resets the configuration for this Reactor
-	inline void reset(void) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		m_rules.clear();
-	}
+	virtual void operator()(const EventPtr& e);
 	
 	
 private:

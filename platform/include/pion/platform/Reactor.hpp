@@ -23,9 +23,10 @@
 #include <string>
 #include <list>
 #include <libxml/tree.h>
+#include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionCounter.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/CodecFactory.hpp>
@@ -45,6 +46,9 @@ class Reactor
 {
 public:
 
+	/// data type for a function that receives Events
+	typedef boost::function1<void, EventPtr>	EventHandler;
+	
 	/// exception thrown if you try to add a duplicate connection
 	class AlreadyConnectedException : public PionException {
 	public:
@@ -61,7 +65,10 @@ public:
 	
 	
 	/// constructs a new Reactor object
-	Reactor(void) : m_x_coordinate(0), m_y_coordinate(0) {}
+	Reactor(void)
+		: m_scheduler_ptr(NULL), m_x_coordinate(0), m_y_coordinate(0),
+		m_events_in(0), m_events_out(0)
+	{}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Reactor() {}
@@ -77,7 +84,10 @@ public:
 	virtual void reset(void) { clearStats(); }
 	
 	/// clears statistic counters for the Reactor
-	virtual void clearStats(void) { m_events_in = m_events_out = 0; }
+	virtual void clearStats(void) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		m_events_in = m_events_out = 0;
+	}
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -113,54 +123,84 @@ public:
 	virtual void updateDatabases(const DatabaseManager& database_mgr) {}
 	
 	/**
-	 * connects the output of this Reactor to the input of another Reactor
+	 * processes a new Event.  All derived Reactors should:
 	 *
-	 * @param output_reactor the Reactor that events will be sent to
+	 * a) call incrementEventsIn() or safeIncrementEventsIn() for every Event received
+	 * b) call deliverEvent() or safeDeliverEvent() to send Events to output connections
+	 *
+	 * @param e pointer to the Event to process
 	 */
-	void addConnection(Reactor &output_reactor);
+	virtual void operator()(const EventPtr& e) = 0;
 	
 	/**
-	 * removes an existing connection to another Reactor
+	 * connects a handler to the output of this Reactor
 	 *
-	 * @param reactor_id unique identifier associated with the Reactor to remove
+	 * @param connection_id unique identifier associated with the output connection
+	 * @param connection_handler function handler to which Events will be sent
 	 */
-	void removeConnection(const std::string& reactor_id);
-
+	void addConnection(const std::string& connection_id, EventHandler connection_handler);
+	
 	/**
-	 * send a new Event to this reactor
+	 * removes an existing output connection
 	 *
-	 * @param e pointer to the new Event
+	 * @param connection_id unique identifier associated with the output connection
 	 */
-	inline void send(const EventPtr& e) { ++m_events_in; process(e); }
+	void removeConnection(const std::string& connection_id);
 
+	/// sets the scheduler that will be used to deliver Events to other Reactors
+	inline void setScheduler(PionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
+	
 	/// returns the total number of Events received by this Reactor
-	inline boost::uint64_t getEventsIn(void) const { return m_events_in.getValue(); }
+	inline boost::uint64_t getEventsIn(void) const { return m_events_in; }
 		
 	/// returns the total number of Events delivered by this Reactor
-	inline boost::uint64_t getEventsOut(void) const { return m_events_out.getValue(); }
+	inline boost::uint64_t getEventsOut(void) const { return m_events_out; }
 
 		
 protected:
 
 	/**
-	 * processes an Event.  All derived classes should re-define this function, and should
-	 * call deliver() for any new Events and Events that are not filtered.
-	 *
-	 * @param e pointer to the Event to process
+	 * increments the incoming Events counter.  This is not thread-safe and
+	 * should be called only when the Reactor's mutex is locked.
 	 */
-	virtual void process(const EventPtr& e) { deliver(e); }
-
+	inline void incrementEventsIn(void) { ++m_events_in; }
+	
 	/**
-	 * delivers an Event to downstream Reactors
+	 * delivers an Event to the output connections.  This is not thread-safe
+	 * and should be called only when the Reactor's mutex is locked.
 	 *
 	 * @param e pointer to the Event to deliver
 	 */
-	inline void deliver(const EventPtr& e) {
+	inline void deliverEvent(const EventPtr& e) {
 		++m_events_out;
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		for (ReactorList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
-			(*i)->send(e);
+		if (! m_connections.empty()) {
+			OutputConnections::iterator i = m_connections.begin();
+			// iterate through each Reactor after the first one and send the Event
+			// using the scheduler.  This way, the entire thread pool will be used
+			// for processing pipelines
+			while (++i != m_connections.end()) {
+				if (m_scheduler_ptr != NULL)
+					m_scheduler_ptr->getIOService().post(boost::bind(i->second, e));
+				else
+					i->second(e);
+			}
+			// send to the first Reactor using the same thread
+			// this helps to reduce context switching by ensuring
+			// that the longer processing chains remain unbroken
+			m_connections.begin()->second(e);
 		}
+	}
+	
+	/// safely increments the incoming Events counter (locks the Reactor's mutex)
+	inline void safeIncrementEventsIn(void) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		incrementEventsIn();
+	}
+	
+	/// safely delivers an Event to the output connections (locks the Reactor's mutex)
+	inline void safeDeliverEvent(const EventPtr& e) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		deliverEvent(e);
 	}
 
 	
@@ -170,8 +210,8 @@ protected:
 	
 private:
 
-	/// a list of Reactors to which Events may be delivered
-	typedef std::list<Reactor*>		ReactorList;
+	/// data type for a collection of connections to which Events may be sent
+	typedef std::map<std::string,EventHandler>	OutputConnections;
 	
 	
 	/// name of the workspace element for Pion XML config files
@@ -184,6 +224,12 @@ private:
 	static const std::string		Y_COORDINATE_ELEMENT_NAME;
 
 	
+	/// used to schedule the delivery of events to Reactors for processing
+	PionScheduler *					m_scheduler_ptr;
+	
+	/// a collection of connections to which Events may be sent
+	OutputConnections				m_connections;
+	
 	/// workspace that this Reactor is displayed on (for UI only)
 	std::string						m_workspace;
 
@@ -193,14 +239,11 @@ private:
 	/// Y coordinate where the Reactor is positioned (for UI only)
 	unsigned int					m_y_coordinate;
 
-	/// a list of other Reactors to which this one delivers Events
-	ReactorList						m_connections;
-
 	/// the total number of Events received by this Reactor
-	PionCounter						m_events_in;
+	boost::uint64_t					m_events_in;
 
 	/// the total number of Events delivered by this Reactor
-	PionCounter						m_events_out;
+	boost::uint64_t					m_events_out;
 };
 
 

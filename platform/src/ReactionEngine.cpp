@@ -139,6 +139,40 @@ void ReactionEngine::updateDatabases(void)
 							  boost::cref(m_database_mgr)));
 }
 
+void ReactionEngine::addTempConnection(const std::string& reactor_id, 
+									   const std::string& connection_id,
+									   Reactor::EventHandler connection_handler)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+	
+	// add the connection to memory structures
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	Reactor *reactor_ptr = m_plugins.get(reactor_id);
+	if (reactor_ptr == NULL)
+		throw ReactorNotFoundException(reactor_id);
+	reactor_ptr->addConnection(connection_id, connection_handler);
+	
+	PION_LOG_DEBUG(m_logger, "Added event handler connection: "
+				   << reactor_id << " -> " << connection_id);
+}
+	
+void ReactionEngine::removeTempConnection(const std::string& reactor_id,
+										  const std::string& connection_id)
+{ 
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+	
+	// remove the connection from memory structures
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	removeConnectionNoLock(reactor_id, connection_id);
+		
+	PION_LOG_DEBUG(m_logger, "Removed event handler connection: "
+				   << reactor_id << " -> " << connection_id);
+}
+	
 void ReactionEngine::addConnection(const std::string& from_id,
 								   const std::string& to_id)
 {
@@ -181,7 +215,6 @@ void ReactionEngine::addConnection(const std::string& from_id,
 		
 void ReactionEngine::removeConnection(const std::string& from_id,
 									  const std::string& to_id)
-
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
@@ -241,19 +274,19 @@ void ReactionEngine::addConnectionNoLock(const std::string& from_id,
 		throw ReactorNotFoundException(to_id);
 	
 	// connect them together
-	from_ptr->addConnection(*to_ptr);
+	from_ptr->addConnection(to_ptr->getId(), boost::ref(*to_ptr));
 }
 
-void ReactionEngine::removeConnectionNoLock(const std::string& from_id,
-											const std::string& to_id)
+void ReactionEngine::removeConnectionNoLock(const std::string& reactor_id,
+											const std::string& connection_id)
 {
 	// find the source Reactor
-	Reactor *from_ptr = m_plugins.get(from_id);
+	Reactor *from_ptr = m_plugins.get(reactor_id);
 	if (from_ptr == NULL)
-		throw ReactorNotFoundException(from_id);
+		throw ReactorNotFoundException(reactor_id);
 
 	// remove the connection
-	from_ptr->removeConnection(to_id);
+	from_ptr->removeConnection(connection_id);
 }
 
 void ReactionEngine::stopNoLock(void)

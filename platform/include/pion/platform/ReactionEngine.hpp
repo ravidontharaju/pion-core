@@ -124,6 +124,26 @@ public:
 	void updateDatabases(void);
 	
 	/**
+	 * temporarily connects an Event handler to the output of a Reactor (not saved to config)
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor events come from
+	 * @param connection_id unique identifier associated with the output connection
+	 * @param connection_handler function handler to which Events will be sent
+	 */
+	void addTempConnection(const std::string& reactor_id, 
+						   const std::string& connection_id,
+						   Reactor::EventHandler connection_handler);
+	
+	/**
+	 * removes a temporary connection between Reactors (does not change config)
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor events come from
+	 * @param connection_id unique identifier associated with the output connection
+	 */
+	void removeTempConnection(const std::string& reactor_id,
+							  const std::string& connection_id);
+
+	/**
 	 * connects the output of one Reactor to the input of another Reactor
 	 *
 	 * @param from_id unique identifier associated with the Reactor events come from
@@ -149,8 +169,7 @@ public:
 		Reactor *reactor_ptr = m_plugins.get(reactor_id);
 		if (reactor_ptr == NULL)
 			throw ReactorNotFoundException(reactor_id);
-		m_scheduler.getIOService().post(boost::bind(&Reactor::send,
-													reactor_ptr, e));
+		m_scheduler.getIOService().post(boost::bind<void>(boost::ref(*reactor_ptr), e));
 	}
 	
 	/**
@@ -186,6 +205,28 @@ public:
 private:
 	
 	/**
+	 * adds a new plug-in object (without locking or config file updates).  This
+	 * function must be defined properly for any derived classes that wish to
+	 * use openPluginConfig().
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param plugin_name the name of the plug-in to load (searches
+	 *                    plug-in directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	virtual void addPluginNoLock(const std::string& plugin_id,
+								 const std::string& plugin_name,
+								 const xmlNodePtr config_ptr)
+	{
+		Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
+		reactor_ptr->setId(plugin_id);
+		reactor_ptr->setScheduler(m_scheduler);
+		if (config_ptr != NULL)
+			reactor_ptr->setConfig(m_vocabulary, config_ptr);
+	}
+
+	/**
 	 * simple helper function to display a connection in a friendly way
 	 *
 	 * @param from_id unique identifier associated with the Reactor events come from
@@ -211,10 +252,11 @@ private:
 	/**
 	 * removes an existing connection between Reactors (without locking)
 	 *
-	 * @param from_id unique identifier associated with the Reactor events come from
-	 * @param to_id unique identifier associated with the Reactor events go to
+	 * @param reactor_id unique identifier associated with the Reactor events come from
+	 * @param connection_id unique identifier associated with the output connection
 	 */
-	void removeConnectionNoLock(const std::string& from_id, const std::string& to_id);
+	void removeConnectionNoLock(const std::string& reactor_id,
+								const std::string& connection_id);
 
 	/// stops all Event processing (without locking)
 	void stopNoLock(void);

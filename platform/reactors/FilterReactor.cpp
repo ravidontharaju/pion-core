@@ -38,9 +38,11 @@ const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValu
 void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	reset();
-	Reactor::setConfig(v, config_ptr);
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	Reactor::setConfig(v, config_ptr);
+	
+	// clear the current configuration
+	m_rules.clear();
 	
 	// next, parse each comparison rule
 	xmlNodePtr comparison_node = config_ptr;
@@ -98,24 +100,27 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 void FilterReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	Reactor::updateVocabulary(v);
-	
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	Reactor::updateVocabulary(v);
+
+	// update Vocabulary for each of the rules
 	for (RuleChain::iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
 		i->updateVocabulary(v);
 	}
 }
 	
-void FilterReactor::process(const EventPtr& e)
+void FilterReactor::operator()(const EventPtr& e)
 {
-	// all comparisons in the rule chain must pass for the Event to be delivered
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	incrementEventsIn();
+
+	// all comparisons in the rule chain must pass for the Event to be delivered
 	for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
 		if (! i->evaluate(*e))
 			return;
 	}
-	reactor_lock.unlock();
-	deliver(e);
+
+	deliverEvent(e);
 }
 	
 	

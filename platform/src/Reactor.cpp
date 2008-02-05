@@ -60,41 +60,30 @@ void Reactor::updateVocabulary(const Vocabulary& v)
 	PlatformPlugin::updateVocabulary(v);
 }	
 	
-void Reactor::addConnection(Reactor &output_reactor)
+void Reactor::addConnection(const std::string& connection_id,
+							EventHandler connection_handler)
 {
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 
 	// check if it already connected
-	for (ReactorList::iterator i = m_connections.begin();
-		 i != m_connections.end(); ++i)
-	{
-		if ((*i)->getId() == output_reactor.getId())
-			throw AlreadyConnectedException(output_reactor.getId());
-	}
+	if (m_connections.find(connection_id) != m_connections.end())
+		throw AlreadyConnectedException(connection_id);
 	
-	// add it to the end of the connections list
-	m_connections.push_back(& output_reactor);
+	// add the new connection
+	m_connections.insert(std::make_pair(connection_id, connection_handler));
 }
 
-void Reactor::removeConnection(const std::string& reactor_id)
+void Reactor::removeConnection(const std::string& connection_id)
 {
-	bool found_reactor = false;
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
-
-	// find the connection to remove
-	for (ReactorList::iterator i = m_connections.begin();
-		 i != m_connections.end(); ++i)
-	{
-		if ((*i)->getId() == reactor_id) {
-			// found the connection; remove it
-			found_reactor = true;
-			m_connections.erase(i);
-			break;
-		}
-	}
 	
-	if (! found_reactor)
-		throw ConnectionNotFoundException(reactor_id);
+	// find the connection to remove
+	OutputConnections::iterator i = m_connections.find(connection_id);
+	if (i == m_connections.end())
+		throw ConnectionNotFoundException(connection_id);
+	
+	// remove the connection
+	m_connections.erase(i);
 }
 	
 }	// end namespace platform
