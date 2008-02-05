@@ -71,6 +71,24 @@ public:
 	}
 		
 	/**
+	 * writes the entire configuration tree to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 */
+	virtual void writeConfigXML(std::ostream& out) const {
+		boost::mutex::scoped_lock plugins_lock(m_mutex);
+		ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
+	}
+	
+	/**
+	 * writes the configuration data for a particular plug-in (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 * @param plugin_id unique identifier associated with the plug-in
+	 */
+	inline bool writeConfigXML(std::ostream& out, const std::string& plugin_id) const;
+	
+	/**
 	 * returns an XML tree representing the configuration for a plug-in
 	 *
 	 * @param plugin_id unique identifier associated with the plug-in
@@ -191,9 +209,28 @@ protected:
 // inline member functions for PluginConfig
 
 template <typename PluginType>
+inline bool PluginConfig<PluginType>::writeConfigXML(std::ostream& out,
+													 const std::string& plugin_id) const
+{
+	// find the plug-in element in the XML config document
+	boost::mutex::scoped_lock plugins_lock(m_mutex);
+	xmlNodePtr plugin_node = findConfigNodeByAttr(m_plugin_element,
+												  ID_ATTRIBUTE_NAME,
+												  plugin_id,
+												  m_config_node_ptr->children);
+	if (plugin_node == NULL)
+		return false;
+	
+	// found it
+	ConfigManager::writeConfigXML(out, plugin_node, false);
+	return true;
+}
+
+template <typename PluginType>
 inline xmlNodePtr PluginConfig<PluginType>::getPluginConfig(const std::string& plugin_id)
 {
 	// find the plug-in element in the XML config document
+	boost::mutex::scoped_lock plugins_lock(m_mutex);
 	xmlNodePtr plugin_node = findConfigNodeByAttr(m_plugin_element,
 												  ID_ATTRIBUTE_NAME,
 												  plugin_id,

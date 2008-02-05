@@ -128,6 +128,21 @@ void VocabularyManager::openConfigFile(void)
 	PION_LOG_INFO(m_logger, "Loaded global Vocabulary configuration file: " << m_config_file);
 }
 	
+bool VocabularyManager::writeConfigXML(std::ostream& out,
+									   const std::string& vocab_id) const
+{
+	boost::mutex::scoped_lock manager_lock(m_mutex);
+	
+	// find the VocabularyConfig object
+	VocabularyMap::const_iterator vocab_iterator = m_vocab_map.find(vocab_id);
+	if (vocab_iterator == m_vocab_map.end())
+		return false;
+	
+	// found it
+	vocab_iterator->second->writeConfigXML(out);
+	return true;
+}
+	
 void VocabularyManager::addVocabulary(const std::string& vocab_id,
 									  const std::string& vocab_name,
 									  const std::string& vocab_comment)

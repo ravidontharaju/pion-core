@@ -50,6 +50,8 @@ ServiceManager::ServiceManager(PlatformConfig& platform_config)
 
 void ServiceManager::openConfigFile(void)
 {
+	boost::mutex::scoped_lock services_lock(m_mutex);
+
 	// just return if it's already open
 	if (configIsOpen())
 		return;
@@ -193,8 +195,28 @@ void ServiceManager::getServiceConfig(xmlNodePtr service_node, const std::string
 	// find the HTTP resource
 	if (! getConfigOption(RESOURCE_ELEMENT_NAME, http_resource, service_node->children))
 		throw EmptyServiceResourceException(service_id);
+	
+	// remove the trailing slash (if any) from the HTTP resource
+	http_resource = HTTPServer::stripTrailingSlash(http_resource);
 }
 	
+bool ServiceManager::writeConfigXML(std::ostream& out,
+									const std::string& server_id) const
+{
+	// find the plug-in element in the XML config document
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	xmlNodePtr server_node = findConfigNodeByAttr(SERVER_ELEMENT_NAME,
+												  ID_ATTRIBUTE_NAME,
+												  server_id,
+												  m_config_node_ptr->children);
+	if (server_node == NULL)
+		return false;
+	
+	// found it
+	ConfigManager::writeConfigXML(out, server_node, false);
+	return true;
+}
+
 	
 }	// end namespace server
 }	// end namespace pion

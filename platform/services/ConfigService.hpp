@@ -17,25 +17,45 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "PlatformConfig.hpp"
-#include "PlatformService.hpp"
+#ifndef __PION_CONFIGSERVICE_HEADER__
+#define __PION_CONFIGSERVICE_HEADER__
 
-using namespace pion::net;
-using namespace pion::platform;
+#include <pion/PionConfig.hpp>
+#include "PlatformService.hpp"
 
 
 namespace pion {		// begin namespace pion
 namespace server {		// begin namespace server (Pion Server)
 
-		
-// PlatformService member functions
-
-void PlatformService::setConfig(PlatformConfig& platform_cfg, const xmlNodePtr config_ptr)
+	
+///
+/// ConfigService: Platform WebService used to manage configuration
+///
+class ConfigService
+	: public PlatformService
 {
-	m_config_ptr = &platform_cfg;
-	PlatformPlugin::setConfig(platform_cfg.getVocabularyManager().getVocabulary(), config_ptr);
-}
+public:
+	
+	/// constructs a new ConfigService object
+	ConfigService(void) {}
+	
+	/// virtual destructor: this class is meant to be extended
+	virtual ~ConfigService() {}
+	
+	/**
+	 * attempts to handle a new HTTP request
+	 *
+	 * @param request the new HTTP request to handle
+	 * @param tcp_conn the TCP connection that has the new request
+	 *
+	 * @return true if the request was handled; false if not
+	 */
+	virtual void operator()(pion::net::HTTPRequestPtr& request,
+							pion::net::TCPConnectionPtr& tcp_conn);
+};
 
 	
 }	// end namespace server
 }	// end namespace pion
+
+#endif

@@ -125,6 +125,97 @@ void ConfigManager::backupConfigFile(void)
 	}
 }
 
+void ConfigManager::writeConfigXML(std::ostream& out,
+								   xmlNodePtr config_node,
+								   bool include_siblings)
+{
+	// this should not be so hard!
+	// there has to be a better way to do this....
+	
+	while (config_node != NULL) {
+		
+		// write data for the current node
+		if (config_node->type == XML_ELEMENT_NODE) {
+			
+			// write new element tag (begin)
+			out << '<' << xml_encode(reinterpret_cast<const char*>(config_node->name));
+			
+			// write attribute properties
+			for (_xmlAttr *attr_ptr = config_node->properties;
+				 attr_ptr != NULL; attr_ptr = attr_ptr->next)
+			{
+				xmlChar *xml_char_ptr = xmlGetProp(config_node, attr_ptr->name);
+				if (xml_char_ptr != NULL) {
+					out << ' ' << xml_encode(reinterpret_cast<const char*>(attr_ptr->name))
+						<< "=\"" << xml_encode(reinterpret_cast<const char*>(xml_char_ptr)) << '"';
+					xmlFree(xml_char_ptr);
+				}
+			}
+
+			// write new XML element node
+			if (config_node->children != NULL) {
+				// write new element tag (end)
+				out << '>';
+
+				// recursive into children nodes
+				writeConfigXML(out, config_node->children, true);
+				
+				// write close element tag (end)
+				out << "</" << xml_encode(reinterpret_cast<const char*>(config_node->name)) << '>';
+			} else {
+				// write new element tag (end, no children)
+				out << "/>";
+			}
+			
+			// break if siblings should not be included
+			if (! include_siblings)
+				break;
+			
+		} else if (config_node->type == XML_TEXT_NODE) {
+
+			// write contents of text node
+			out << xml_encode(reinterpret_cast<const char*>(config_node->content));
+		}
+
+		// step to the next sibling of config_node
+		config_node = config_node->next;
+	}
+}
+	
+std::string ConfigManager::xml_encode(const std::string& str)
+{
+	// return early if we can
+	if (str.find_first_of("&<>\"'") == std::string::npos)
+		return str;
+	
+	// otherwise, build a result string
+	std::string result;
+	result.reserve(str.size());
+	for (std::string::size_type pos = 0; pos < str.size(); ++pos) {
+		switch(str[pos]) {
+			case '&':
+				result += "&amp;";
+				break;
+			case '<':
+				result += "&lt;";
+				break;
+			case '>':
+				result += "&gt;";
+				break;
+			case '\"':
+				result += "&quot;";
+				break;
+			case '\'':
+				result += "&apos;";
+				break;
+			default:
+				result += str[pos];
+		}
+	}	
+	
+	return result;
+}	
+	
 std::string ConfigManager::createUUID(void)
 {
 	uuid_t *u;

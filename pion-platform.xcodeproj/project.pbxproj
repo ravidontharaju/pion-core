@@ -99,7 +99,6 @@
 		E36D8A9C0D29CAEC00B4C134 /* TCPConnection.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A220D29C75200B4C134 /* TCPConnection.hpp */; };
 		E36D8B8C0D29D40600B4C134 /* PionUnitTestDefs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8B8B0D29D40600B4C134 /* PionUnitTestDefs.hpp */; };
 		E36D8B8D0D29D40600B4C134 /* PionUnitTestDefs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8B8B0D29D40600B4C134 /* PionUnitTestDefs.hpp */; };
-		E36D8BAA0D29D58A00B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8BF30D29D72000B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36D8BF40D29D72200B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8BF50D29D72300B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
@@ -108,13 +107,10 @@
 		E36D8C3F0D29D85700B4C134 /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
 		E36D8C400D29D85800B4C134 /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
 		E36D8C530D29DB0300B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E36D8C540D29DB0500B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8C550D29DB0700B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36D8C560D29DB0C00B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E36D8C570D29DB0E00B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8C580D29DB0F00B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36D8C590D29DB1300B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E36D8C5A0D29DB1400B4C134 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E36D8C5B0D29DB1500B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36F2EE70CA7922100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E39F35070D5137760058A75F /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
@@ -147,7 +143,6 @@
 		E3CFF9630D44340800ADB135 /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
 		E3CFF9650D44340800ADB135 /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
 		E3CFF9670D44340800ADB135 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E3CFF9680D44340800ADB135 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E3CFF9690D44340800ADB135 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E3CFF96E0D44345000ADB135 /* FilterReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFF9590D4432DE00ADB135 /* FilterReactor.cpp */; };
 		E3CFF96F0D44345000ADB135 /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
@@ -166,9 +161,6 @@
 		E3D045270D564C6B0015545F /* VocabularyManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045260D564C6B0015545F /* VocabularyManager.cpp */; };
 		E3D045280D564C6B0015545F /* VocabularyManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045260D564C6B0015545F /* VocabularyManager.cpp */; };
 		E3D045390D5693770015545F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045320D5693770015545F /* main.cpp */; };
-		E3D0453A0D5693770015545F /* PlatformConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045330D5693770015545F /* PlatformConfig.cpp */; };
-		E3D0453B0D5693770015545F /* PlatformService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045350D5693770015545F /* PlatformService.cpp */; };
-		E3D0453C0D5693770015545F /* ServiceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045370D5693770015545F /* ServiceManager.cpp */; };
 		E3D046CB0D569F940015545F /* PionPlatformUnitTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */; };
 		E3D046D60D56A10F0015545F /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
 		E3D046D70D56A1100015545F /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
@@ -176,6 +168,86 @@
 		E3D046DB0D56A1190015545F /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
 		E3D046DE0D56A1210015545F /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
 		E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E3FF95890D5789BE001E075B /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
+		E3FF958A0D5789BE001E075B /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
+		E3FF958C0D5789BE001E075B /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
+		E3FF958D0D5789BE001E075B /* FilterReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFF9590D4432DE00ADB135 /* FilterReactor.cpp */; };
+		E3FF958F0D5789BE001E075B /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E3FF95900D5789BE001E075B /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E3FF95910D5789BE001E075B /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
+		E3FF95A50D579280001E075B /* ConfigService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3FF95A30D579280001E075B /* ConfigService.cpp */; };
+		E3FF95A60D579280001E075B /* ConfigService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3FF95A40D579280001E075B /* ConfigService.hpp */; };
+		E3FF96160D579AB8001E075B /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
+		E3FF96170D579AB8001E075B /* CodecFactory.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */; };
+		E3FF96180D579AB8001E075B /* ConfigManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A80D29BA0E00B4C134 /* ConfigManager.hpp */; };
+		E3FF96190D579AB8001E075B /* Database.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A90D29BA0E00B4C134 /* Database.hpp */; };
+		E3FF961A0D579AB8001E075B /* DatabaseManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AA0D29BA0E00B4C134 /* DatabaseManager.hpp */; };
+		E3FF961B0D579AB8001E075B /* Event.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AB0D29BA0E00B4C134 /* Event.hpp */; };
+		E3FF961C0D579AB8001E075B /* ReactionEngine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AC0D29BA0E00B4C134 /* ReactionEngine.hpp */; };
+		E3FF961D0D579AB8001E075B /* Reactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AD0D29BA0E00B4C134 /* Reactor.hpp */; };
+		E3FF961E0D579AB8001E075B /* Vocabulary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AE0D29BA0E00B4C134 /* Vocabulary.hpp */; };
+		E3FF961F0D579AB8001E075B /* VocabularyConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AF0D29BA0E00B4C134 /* VocabularyConfig.hpp */; };
+		E3FF96200D579AB8001E075B /* VocabularyManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88B00D29BA0E00B4C134 /* VocabularyManager.hpp */; };
+		E3FF96210D579AB8001E075B /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
+		E3FF96220D579AB8001E075B /* PlatformPlugin.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFFB200D45263A00ADB135 /* PlatformPlugin.hpp */; };
+		E3FF96230D579AB8001E075B /* PluginConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFFC260D45359C00ADB135 /* PluginConfig.hpp */; };
+		E3FF96250D579AB8001E075B /* CodecFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C70D29BA3D00B4C134 /* CodecFactory.cpp */; };
+		E3FF96260D579AB8001E075B /* ConfigManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C80D29BA3D00B4C134 /* ConfigManager.cpp */; };
+		E3FF96270D579AB8001E075B /* DatabaseManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C90D29BA3D00B4C134 /* DatabaseManager.cpp */; };
+		E3FF96280D579AB8001E075B /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CA0D29BA3D00B4C134 /* Event.cpp */; };
+		E3FF96290D579AB8001E075B /* ReactionEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CB0D29BA3D00B4C134 /* ReactionEngine.cpp */; };
+		E3FF962A0D579AB8001E075B /* Vocabulary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CC0D29BA3D00B4C134 /* Vocabulary.cpp */; };
+		E3FF962B0D579AB8001E075B /* VocabularyConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CD0D29BA3D00B4C134 /* VocabularyConfig.cpp */; };
+		E3FF962C0D579AB8001E075B /* Codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE130D33EDCB0094ECEE /* Codec.cpp */; };
+		E3FF962D0D579AB8001E075B /* Database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE140D33EDCB0094ECEE /* Database.cpp */; };
+		E3FF962E0D579AB8001E075B /* Reactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */; };
+		E3FF962F0D579AB8001E075B /* PlatformPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFFB230D4527F100ADB135 /* PlatformPlugin.cpp */; };
+		E3FF96300D579AB8001E075B /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
+		E3FF96310D579AB8001E075B /* VocabularyManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045260D564C6B0015545F /* VocabularyManager.cpp */; };
+		E3FF963B0D579ABB001E075B /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
+		E3FF963C0D579ABB001E075B /* CodecFactory.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */; };
+		E3FF963D0D579ABB001E075B /* ConfigManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A80D29BA0E00B4C134 /* ConfigManager.hpp */; };
+		E3FF963E0D579ABB001E075B /* Database.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A90D29BA0E00B4C134 /* Database.hpp */; };
+		E3FF963F0D579ABB001E075B /* DatabaseManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AA0D29BA0E00B4C134 /* DatabaseManager.hpp */; };
+		E3FF96400D579ABB001E075B /* Event.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AB0D29BA0E00B4C134 /* Event.hpp */; };
+		E3FF96410D579ABB001E075B /* ReactionEngine.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AC0D29BA0E00B4C134 /* ReactionEngine.hpp */; };
+		E3FF96420D579ABB001E075B /* Reactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AD0D29BA0E00B4C134 /* Reactor.hpp */; };
+		E3FF96430D579ABB001E075B /* Vocabulary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AE0D29BA0E00B4C134 /* Vocabulary.hpp */; };
+		E3FF96440D579ABB001E075B /* VocabularyConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88AF0D29BA0E00B4C134 /* VocabularyConfig.hpp */; };
+		E3FF96450D579ABB001E075B /* VocabularyManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88B00D29BA0E00B4C134 /* VocabularyManager.hpp */; };
+		E3FF96460D579ABB001E075B /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
+		E3FF96470D579ABB001E075B /* PlatformPlugin.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFFB200D45263A00ADB135 /* PlatformPlugin.hpp */; };
+		E3FF96480D579ABB001E075B /* PluginConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFFC260D45359C00ADB135 /* PluginConfig.hpp */; };
+		E3FF964A0D579ABB001E075B /* CodecFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C70D29BA3D00B4C134 /* CodecFactory.cpp */; };
+		E3FF964B0D579ABB001E075B /* ConfigManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C80D29BA3D00B4C134 /* ConfigManager.cpp */; };
+		E3FF964C0D579ABB001E075B /* DatabaseManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88C90D29BA3D00B4C134 /* DatabaseManager.cpp */; };
+		E3FF964D0D579ABB001E075B /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CA0D29BA3D00B4C134 /* Event.cpp */; };
+		E3FF964E0D579ABB001E075B /* ReactionEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CB0D29BA3D00B4C134 /* ReactionEngine.cpp */; };
+		E3FF964F0D579ABB001E075B /* Vocabulary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CC0D29BA3D00B4C134 /* Vocabulary.cpp */; };
+		E3FF96500D579ABB001E075B /* VocabularyConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88CD0D29BA3D00B4C134 /* VocabularyConfig.cpp */; };
+		E3FF96510D579ABB001E075B /* Codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE130D33EDCB0094ECEE /* Codec.cpp */; };
+		E3FF96520D579ABB001E075B /* Database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE140D33EDCB0094ECEE /* Database.cpp */; };
+		E3FF96530D579ABB001E075B /* Reactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */; };
+		E3FF96540D579ABB001E075B /* PlatformPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFFB230D4527F100ADB135 /* PlatformPlugin.cpp */; };
+		E3FF96550D579ABB001E075B /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
+		E3FF96560D579ABB001E075B /* VocabularyManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045260D564C6B0015545F /* VocabularyManager.cpp */; };
+		E3FF96580D579ABB001E075B /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E3FF96670D579B26001E075B /* libpion-server.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FF965C0D579ABB001E075B /* libpion-server.dylib */; };
+		E3FF96680D579B35001E075B /* PlatformConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045330D5693770015545F /* PlatformConfig.cpp */; };
+		E3FF96690D579B35001E075B /* PlatformConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045340D5693770015545F /* PlatformConfig.hpp */; };
+		E3FF966A0D579B36001E075B /* PlatformService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045350D5693770015545F /* PlatformService.cpp */; };
+		E3FF966B0D579B36001E075B /* PlatformService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045360D5693770015545F /* PlatformService.hpp */; };
+		E3FF966C0D579B37001E075B /* ServiceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045370D5693770015545F /* ServiceManager.cpp */; };
+		E3FF966D0D579B37001E075B /* ServiceManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045380D5693770015545F /* ServiceManager.hpp */; };
+		E3FF966E0D579B3C001E075B /* PlatformConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045330D5693770015545F /* PlatformConfig.cpp */; };
+		E3FF966F0D579B3D001E075B /* PlatformConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045340D5693770015545F /* PlatformConfig.hpp */; };
+		E3FF96700D579B3D001E075B /* PlatformService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045350D5693770015545F /* PlatformService.cpp */; };
+		E3FF96710D579B3E001E075B /* PlatformService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045360D5693770015545F /* PlatformService.hpp */; };
+		E3FF96720D579B3E001E075B /* ServiceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045370D5693770015545F /* ServiceManager.cpp */; };
+		E3FF96730D579B3F001E075B /* ServiceManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D045380D5693770015545F /* ServiceManager.hpp */; };
+		E3FF96740D579B4B001E075B /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E3FF96750D579B4C001E075B /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
+		E3FF96760D579B58001E075B /* libpion-server.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FF965C0D579ABB001E075B /* libpion-server.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -192,13 +264,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = E36F2E2D0CA78A0400120C6D;
 			remoteInfo = "pion-common: static";
-		};
-		E36D8BAF0D29D5AD00B4C134 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
-			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8BEB0D29D6F200B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -228,13 +293,6 @@
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
-		E36D8C140D29D79000B4C134 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
-			remoteInfo = "pion-net: dynamic";
-		};
 		E36D8C160D29D79000B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -249,13 +307,6 @@
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
-		E36D8C1D0D29D7E300B4C134 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
-			remoteInfo = "pion-net: dynamic";
-		};
 		E36D8C1F0D29D7E300B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -269,13 +320,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
-		};
-		E36D8C2B0D29D7EA00B4C134 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
-			remoteInfo = "pion-net: dynamic";
 		};
 		E36D8C2D0D29D7EA00B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -333,13 +377,6 @@
 			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
-		E3CFF95F0D44340800ADB135 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
-			remoteInfo = "pion-net: dynamic";
-		};
 		E3CFF9610D44340800ADB135 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -360,6 +397,111 @@
 			proxyType = 1;
 			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-reactor: dynamic";
+		};
+		E3FF95830D5789BE001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E3FF95850D5789BE001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E3FF95870D5789BE001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
+			remoteInfo = "pion-platform: dynamic";
+		};
+		E3FF95990D578A95001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8C0E0D29D78000B4C134;
+			remoteInfo = LogCodec;
+		};
+		E3FF959B0D578A95001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8C190D29D7E300B4C134;
+			remoteInfo = JSONCodec;
+		};
+		E3FF959D0D578A95001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8C270D29D7EA00B4C134;
+			remoteInfo = XMLCodec;
+		};
+		E3FF959F0D578A95001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3CFF95B0D44340800ADB135;
+			remoteInfo = FilterReactor;
+		};
+		E3FF95A10D578A95001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FF95810D5789BE001E075B;
+			remoteInfo = ReactorService;
+		};
+		E3FF96140D579AB8001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E2D0CA78A0400120C6D;
+			remoteInfo = "pion-common: static";
+		};
+		E3FF96390D579ABB001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E3FF965D0D579AF0001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A6B0D29CA6F00B4C134;
+			remoteInfo = "pion-net: static";
+		};
+		E3FF965F0D579AF0001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288A10BEE5044006D0556;
+			remoteInfo = "pion-platform: static";
+		};
+		E3FF96610D579AFB001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E3FF96630D579AFB001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
+			remoteInfo = "pion-platform: dynamic";
+		};
+		E3FF96650D579B1A001E075B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FF96370D579ABB001E075B;
+			remoteInfo = "pion-server: dynamic";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -493,6 +635,11 @@
 		E3D045370D5693770015545F /* ServiceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServiceManager.cpp; path = platform/server/ServiceManager.cpp; sourceTree = SOURCE_ROOT; };
 		E3D045380D5693770015545F /* ServiceManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ServiceManager.hpp; path = platform/server/ServiceManager.hpp; sourceTree = SOURCE_ROOT; };
 		E3EFC68F0D18905C0019CCD4 /* PionPlatformUnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionPlatformUnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3FF95950D5789BE001E075B /* ConfigService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ConfigService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3FF95A30D579280001E075B /* ConfigService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigService.cpp; path = platform/services/ConfigService.cpp; sourceTree = SOURCE_ROOT; };
+		E3FF95A40D579280001E075B /* ConfigService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConfigService.hpp; path = platform/services/ConfigService.hpp; sourceTree = SOURCE_ROOT; };
+		E3FF96360D579AB8001E075B /* libpion-server.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-server.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3FF965C0D579ABB001E075B /* libpion-server.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-server.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -533,6 +680,7 @@
 				E36D8BF30D29D72000B4C134 /* libpion-common.dylib in Frameworks */,
 				E36D8BF40D29D72200B4C134 /* libpion-net.dylib in Frameworks */,
 				E36D8BF50D29D72300B4C134 /* libpion-platform.dylib in Frameworks */,
+				E3FF96760D579B58001E075B /* libpion-server.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,7 +689,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E36D8C530D29DB0300B4C134 /* libpion-common.dylib in Frameworks */,
-				E36D8C540D29DB0500B4C134 /* libpion-net.dylib in Frameworks */,
 				E36D8C550D29DB0700B4C134 /* libpion-platform.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -551,7 +698,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E36D8C560D29DB0C00B4C134 /* libpion-common.dylib in Frameworks */,
-				E36D8C570D29DB0E00B4C134 /* libpion-net.dylib in Frameworks */,
 				E36D8C580D29DB0F00B4C134 /* libpion-platform.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -561,7 +707,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E36D8C590D29DB1300B4C134 /* libpion-common.dylib in Frameworks */,
-				E36D8C5A0D29DB1400B4C134 /* libpion-net.dylib in Frameworks */,
 				E36D8C5B0D29DB1500B4C134 /* libpion-platform.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -585,7 +730,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3CFF9670D44340800ADB135 /* libpion-common.dylib in Frameworks */,
-				E3CFF9680D44340800ADB135 /* libpion-net.dylib in Frameworks */,
 				E3CFF9690D44340800ADB135 /* libpion-platform.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -596,7 +740,34 @@
 			files = (
 				E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */,
 				E36D8A660D29CA5000B4C134 /* libpion-platform.dylib in Frameworks */,
-				E36D8BAA0D29D58A00B4C134 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF958E0D5789BE001E075B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF958F0D5789BE001E075B /* libpion-common.dylib in Frameworks */,
+				E3FF95900D5789BE001E075B /* libpion-net.dylib in Frameworks */,
+				E3FF95910D5789BE001E075B /* libpion-platform.dylib in Frameworks */,
+				E3FF96670D579B26001E075B /* libpion-server.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF96320D579AB8001E075B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF96570D579ABB001E075B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF96580D579ABB001E075B /* libpion-common.dylib in Frameworks */,
+				E3FF96740D579B4B001E075B /* libpion-net.dylib in Frameworks */,
+				E3FF96750D579B4C001E075B /* libpion-platform.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -629,6 +800,9 @@
 				E36D8C260D29D7E300B4C134 /* JSONCodec.so */,
 				E36D8C340D29D7EA00B4C134 /* XMLCodec.so */,
 				E3CFF96D0D44340800ADB135 /* FilterReactor.so */,
+				E3FF95950D5789BE001E075B /* ConfigService.so */,
+				E3FF96360D579AB8001E075B /* libpion-server.a */,
+				E3FF965C0D579ABB001E075B /* libpion-server.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -871,6 +1045,7 @@
 				E32AB4CD0CEB5E1E008DE01C /* codecs */,
 				E3A316E10CFCCA720020656F /* databases */,
 				E32AB4CE0CEB5E26008DE01C /* reactors */,
+				E3FF957E0D57897F001E075B /* services */,
 				E36D8BA50D29D48C00B4C134 /* server */,
 				E3EFC67F0D188DC80019CCD4 /* tests */,
 			);
@@ -889,6 +1064,15 @@
 				E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */,
 			);
 			name = tests;
+			sourceTree = "<group>";
+		};
+		E3FF957E0D57897F001E075B /* services */ = {
+			isa = PBXGroup;
+			children = (
+				E3FF95A40D579280001E075B /* ConfigService.hpp */,
+				E3FF95A30D579280001E075B /* ConfigService.cpp */,
+			);
+			name = services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1049,6 +1233,64 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3FF95880D5789BE001E075B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF95890D5789BE001E075B /* XMLCodec.hpp in Headers */,
+				E3FF958A0D5789BE001E075B /* FilterReactor.hpp in Headers */,
+				E3FF95A60D579280001E075B /* ConfigService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF96150D579AB8001E075B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF96160D579AB8001E075B /* Codec.hpp in Headers */,
+				E3FF96170D579AB8001E075B /* CodecFactory.hpp in Headers */,
+				E3FF96180D579AB8001E075B /* ConfigManager.hpp in Headers */,
+				E3FF96190D579AB8001E075B /* Database.hpp in Headers */,
+				E3FF961A0D579AB8001E075B /* DatabaseManager.hpp in Headers */,
+				E3FF961B0D579AB8001E075B /* Event.hpp in Headers */,
+				E3FF961C0D579AB8001E075B /* ReactionEngine.hpp in Headers */,
+				E3FF961D0D579AB8001E075B /* Reactor.hpp in Headers */,
+				E3FF961E0D579AB8001E075B /* Vocabulary.hpp in Headers */,
+				E3FF961F0D579AB8001E075B /* VocabularyConfig.hpp in Headers */,
+				E3FF96200D579AB8001E075B /* VocabularyManager.hpp in Headers */,
+				E3FF96210D579AB8001E075B /* Comparison.hpp in Headers */,
+				E3FF96220D579AB8001E075B /* PlatformPlugin.hpp in Headers */,
+				E3FF96230D579AB8001E075B /* PluginConfig.hpp in Headers */,
+				E3FF96690D579B35001E075B /* PlatformConfig.hpp in Headers */,
+				E3FF966B0D579B36001E075B /* PlatformService.hpp in Headers */,
+				E3FF966D0D579B37001E075B /* ServiceManager.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF963A0D579ABB001E075B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF963B0D579ABB001E075B /* Codec.hpp in Headers */,
+				E3FF963C0D579ABB001E075B /* CodecFactory.hpp in Headers */,
+				E3FF963D0D579ABB001E075B /* ConfigManager.hpp in Headers */,
+				E3FF963E0D579ABB001E075B /* Database.hpp in Headers */,
+				E3FF963F0D579ABB001E075B /* DatabaseManager.hpp in Headers */,
+				E3FF96400D579ABB001E075B /* Event.hpp in Headers */,
+				E3FF96410D579ABB001E075B /* ReactionEngine.hpp in Headers */,
+				E3FF96420D579ABB001E075B /* Reactor.hpp in Headers */,
+				E3FF96430D579ABB001E075B /* Vocabulary.hpp in Headers */,
+				E3FF96440D579ABB001E075B /* VocabularyConfig.hpp in Headers */,
+				E3FF96450D579ABB001E075B /* VocabularyManager.hpp in Headers */,
+				E3FF96460D579ABB001E075B /* Comparison.hpp in Headers */,
+				E3FF96470D579ABB001E075B /* PlatformPlugin.hpp in Headers */,
+				E3FF96480D579ABB001E075B /* PluginConfig.hpp in Headers */,
+				E3FF966F0D579B3D001E075B /* PlatformConfig.hpp in Headers */,
+				E3FF96710D579B3E001E075B /* PlatformService.hpp in Headers */,
+				E3FF96730D579B3F001E075B /* ServiceManager.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -1137,6 +1379,11 @@
 				E36D8BEC0D29D6F200B4C134 /* PBXTargetDependency */,
 				E36D8BEE0D29D6F200B4C134 /* PBXTargetDependency */,
 				E36D8BF00D29D6F200B4C134 /* PBXTargetDependency */,
+				E3FF959A0D578A95001E075B /* PBXTargetDependency */,
+				E3FF959C0D578A95001E075B /* PBXTargetDependency */,
+				E3FF959E0D578A95001E075B /* PBXTargetDependency */,
+				E3FF95A00D578A95001E075B /* PBXTargetDependency */,
+				E3FF95A20D578A95001E075B /* PBXTargetDependency */,
 			);
 			name = pion;
 			productName = piond;
@@ -1155,7 +1402,6 @@
 			);
 			dependencies = (
 				E36D8C130D29D79000B4C134 /* PBXTargetDependency */,
-				E36D8C150D29D79000B4C134 /* PBXTargetDependency */,
 				E36D8C170D29D79000B4C134 /* PBXTargetDependency */,
 			);
 			name = LogCodec;
@@ -1175,7 +1421,6 @@
 			);
 			dependencies = (
 				E36D8C1A0D29D7E300B4C134 /* PBXTargetDependency */,
-				E36D8C1C0D29D7E300B4C134 /* PBXTargetDependency */,
 				E36D8C1E0D29D7E300B4C134 /* PBXTargetDependency */,
 			);
 			name = JSONCodec;
@@ -1195,7 +1440,6 @@
 			);
 			dependencies = (
 				E36D8C280D29D7EA00B4C134 /* PBXTargetDependency */,
-				E36D8C2A0D29D7EA00B4C134 /* PBXTargetDependency */,
 				E36D8C2C0D29D7EA00B4C134 /* PBXTargetDependency */,
 			);
 			name = XMLCodec;
@@ -1249,7 +1493,6 @@
 			);
 			dependencies = (
 				E3CFF95C0D44340800ADB135 /* PBXTargetDependency */,
-				E3CFF95E0D44340800ADB135 /* PBXTargetDependency */,
 				E3CFF9600D44340800ADB135 /* PBXTargetDependency */,
 			);
 			name = FilterReactor;
@@ -1268,7 +1511,6 @@
 			);
 			dependencies = (
 				E3EFC6D40D1896930019CCD4 /* PBXTargetDependency */,
-				E36D8BB00D29D5AD00B4C134 /* PBXTargetDependency */,
 				E3EFC6D60D1896930019CCD4 /* PBXTargetDependency */,
 				E36D8C360D29D83C00B4C134 /* PBXTargetDependency */,
 				E36D8C380D29D83C00B4C134 /* PBXTargetDependency */,
@@ -1279,6 +1521,67 @@
 			productName = PionReactorUnitTests;
 			productReference = E3EFC68F0D18905C0019CCD4 /* PionPlatformUnitTests */;
 			productType = "com.apple.product-type.tool";
+		};
+		E3FF95810D5789BE001E075B /* ConfigService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3FF95920D5789BE001E075B /* Build configuration list for PBXNativeTarget "ConfigService" */;
+			buildPhases = (
+				E3FF95880D5789BE001E075B /* Headers */,
+				E3FF958B0D5789BE001E075B /* Sources */,
+				E3FF958E0D5789BE001E075B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E3FF95820D5789BE001E075B /* PBXTargetDependency */,
+				E3FF95840D5789BE001E075B /* PBXTargetDependency */,
+				E3FF95860D5789BE001E075B /* PBXTargetDependency */,
+				E3FF96660D579B1A001E075B /* PBXTargetDependency */,
+			);
+			name = ConfigService;
+			productName = ELFCodec;
+			productReference = E3FF95950D5789BE001E075B /* ConfigService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E3FF96120D579AB8001E075B /* pion-server: static */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3FF96330D579AB8001E075B /* Build configuration list for PBXNativeTarget "pion-server: static" */;
+			buildPhases = (
+				E3FF96150D579AB8001E075B /* Headers */,
+				E3FF96240D579AB8001E075B /* Sources */,
+				E3FF96320D579AB8001E075B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E3FF96130D579AB8001E075B /* PBXTargetDependency */,
+				E3FF965E0D579AF0001E075B /* PBXTargetDependency */,
+				E3FF96600D579AF0001E075B /* PBXTargetDependency */,
+			);
+			name = "pion-server: static";
+			productName = pion;
+			productReference = E3FF96360D579AB8001E075B /* libpion-server.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		E3FF96370D579ABB001E075B /* pion-server: dynamic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3FF96590D579ABB001E075B /* Build configuration list for PBXNativeTarget "pion-server: dynamic" */;
+			buildPhases = (
+				E3FF963A0D579ABB001E075B /* Headers */,
+				E3FF96490D579ABB001E075B /* Sources */,
+				E3FF96570D579ABB001E075B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E3FF96380D579ABB001E075B /* PBXTargetDependency */,
+				E3FF96620D579AFB001E075B /* PBXTargetDependency */,
+				E3FF96640D579AFB001E075B /* PBXTargetDependency */,
+			);
+			name = "pion-server: dynamic";
+			productName = pion;
+			productReference = E3FF965C0D579ABB001E075B /* libpion-server.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
 
@@ -1298,10 +1601,13 @@
 				E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */,
 				E33288A10BEE5044006D0556 /* pion-platform: static */,
 				E33288B70BEE50B4006D0556 /* pion-platform: dynamic */,
+				E3FF96120D579AB8001E075B /* pion-server: static */,
+				E3FF96370D579ABB001E075B /* pion-server: dynamic */,
 				E36D8C0E0D29D78000B4C134 /* LogCodec */,
 				E36D8C190D29D7E300B4C134 /* JSONCodec */,
 				E36D8C270D29D7EA00B4C134 /* XMLCodec */,
 				E3CFF95B0D44340800ADB135 /* FilterReactor */,
+				E3FF95810D5789BE001E075B /* ConfigService */,
 				E3EFC68E0D18905C0019CCD4 /* PionPlatformUnitTests */,
 				E36D8BE60D29D6DC00B4C134 /* pion */,
 			);
@@ -1384,9 +1690,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3D045390D5693770015545F /* main.cpp in Sources */,
-				E3D0453A0D5693770015545F /* PlatformConfig.cpp in Sources */,
-				E3D0453B0D5693770015545F /* PlatformService.cpp in Sources */,
-				E3D0453C0D5693770015545F /* ServiceManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1457,6 +1760,62 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3FF958B0D5789BE001E075B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF958C0D5789BE001E075B /* XMLCodec.cpp in Sources */,
+				E3FF958D0D5789BE001E075B /* FilterReactor.cpp in Sources */,
+				E3FF95A50D579280001E075B /* ConfigService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF96240D579AB8001E075B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF96250D579AB8001E075B /* CodecFactory.cpp in Sources */,
+				E3FF96260D579AB8001E075B /* ConfigManager.cpp in Sources */,
+				E3FF96270D579AB8001E075B /* DatabaseManager.cpp in Sources */,
+				E3FF96280D579AB8001E075B /* Event.cpp in Sources */,
+				E3FF96290D579AB8001E075B /* ReactionEngine.cpp in Sources */,
+				E3FF962A0D579AB8001E075B /* Vocabulary.cpp in Sources */,
+				E3FF962B0D579AB8001E075B /* VocabularyConfig.cpp in Sources */,
+				E3FF962C0D579AB8001E075B /* Codec.cpp in Sources */,
+				E3FF962D0D579AB8001E075B /* Database.cpp in Sources */,
+				E3FF962E0D579AB8001E075B /* Reactor.cpp in Sources */,
+				E3FF962F0D579AB8001E075B /* PlatformPlugin.cpp in Sources */,
+				E3FF96300D579AB8001E075B /* Comparison.cpp in Sources */,
+				E3FF96310D579AB8001E075B /* VocabularyManager.cpp in Sources */,
+				E3FF96680D579B35001E075B /* PlatformConfig.cpp in Sources */,
+				E3FF966A0D579B36001E075B /* PlatformService.cpp in Sources */,
+				E3FF966C0D579B37001E075B /* ServiceManager.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3FF96490D579ABB001E075B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3FF964A0D579ABB001E075B /* CodecFactory.cpp in Sources */,
+				E3FF964B0D579ABB001E075B /* ConfigManager.cpp in Sources */,
+				E3FF964C0D579ABB001E075B /* DatabaseManager.cpp in Sources */,
+				E3FF964D0D579ABB001E075B /* Event.cpp in Sources */,
+				E3FF964E0D579ABB001E075B /* ReactionEngine.cpp in Sources */,
+				E3FF964F0D579ABB001E075B /* Vocabulary.cpp in Sources */,
+				E3FF96500D579ABB001E075B /* VocabularyConfig.cpp in Sources */,
+				E3FF96510D579ABB001E075B /* Codec.cpp in Sources */,
+				E3FF96520D579ABB001E075B /* Database.cpp in Sources */,
+				E3FF96530D579ABB001E075B /* Reactor.cpp in Sources */,
+				E3FF96540D579ABB001E075B /* PlatformPlugin.cpp in Sources */,
+				E3FF96550D579ABB001E075B /* Comparison.cpp in Sources */,
+				E3FF96560D579ABB001E075B /* VocabularyManager.cpp in Sources */,
+				E3FF966E0D579B3C001E075B /* PlatformConfig.cpp in Sources */,
+				E3FF96700D579B3D001E075B /* PlatformService.cpp in Sources */,
+				E3FF96720D579B3E001E075B /* ServiceManager.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1469,11 +1828,6 @@
 			isa = PBXTargetDependency;
 			target = E36F2E2D0CA78A0400120C6D /* pion-common: static */;
 			targetProxy = E36D8A6F0D29CA7700B4C134 /* PBXContainerItemProxy */;
-		};
-		E36D8BB00D29D5AD00B4C134 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
-			targetProxy = E36D8BAF0D29D5AD00B4C134 /* PBXContainerItemProxy */;
 		};
 		E36D8BEC0D29D6F200B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1495,11 +1849,6 @@
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E36D8C120D29D79000B4C134 /* PBXContainerItemProxy */;
 		};
-		E36D8C150D29D79000B4C134 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
-			targetProxy = E36D8C140D29D79000B4C134 /* PBXContainerItemProxy */;
-		};
 		E36D8C170D29D79000B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
@@ -1510,11 +1859,6 @@
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E36D8C1B0D29D7E300B4C134 /* PBXContainerItemProxy */;
 		};
-		E36D8C1C0D29D7E300B4C134 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
-			targetProxy = E36D8C1D0D29D7E300B4C134 /* PBXContainerItemProxy */;
-		};
 		E36D8C1E0D29D7E300B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
@@ -1524,11 +1868,6 @@
 			isa = PBXTargetDependency;
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E36D8C290D29D7EA00B4C134 /* PBXContainerItemProxy */;
-		};
-		E36D8C2A0D29D7EA00B4C134 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
-			targetProxy = E36D8C2B0D29D7EA00B4C134 /* PBXContainerItemProxy */;
 		};
 		E36D8C2C0D29D7EA00B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1570,11 +1909,6 @@
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
 			targetProxy = E3CFF95D0D44340800ADB135 /* PBXContainerItemProxy */;
 		};
-		E3CFF95E0D44340800ADB135 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
-			targetProxy = E3CFF95F0D44340800ADB135 /* PBXContainerItemProxy */;
-		};
 		E3CFF9600D44340800ADB135 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
@@ -1589,6 +1923,81 @@
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
 			targetProxy = E3EFC6D50D1896930019CCD4 /* PBXContainerItemProxy */;
+		};
+		E3FF95820D5789BE001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E3FF95830D5789BE001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF95840D5789BE001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E3FF95850D5789BE001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF95860D5789BE001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			targetProxy = E3FF95870D5789BE001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF959A0D578A95001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8C0E0D29D78000B4C134 /* LogCodec */;
+			targetProxy = E3FF95990D578A95001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF959C0D578A95001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8C190D29D7E300B4C134 /* JSONCodec */;
+			targetProxy = E3FF959B0D578A95001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF959E0D578A95001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8C270D29D7EA00B4C134 /* XMLCodec */;
+			targetProxy = E3FF959D0D578A95001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF95A00D578A95001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3CFF95B0D44340800ADB135 /* FilterReactor */;
+			targetProxy = E3FF959F0D578A95001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF95A20D578A95001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FF95810D5789BE001E075B /* ConfigService */;
+			targetProxy = E3FF95A10D578A95001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96130D579AB8001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E2D0CA78A0400120C6D /* pion-common: static */;
+			targetProxy = E3FF96140D579AB8001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96380D579ABB001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E3FF96390D579ABB001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF965E0D579AF0001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A6B0D29CA6F00B4C134 /* pion-net: static */;
+			targetProxy = E3FF965D0D579AF0001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96600D579AF0001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288A10BEE5044006D0556 /* pion-platform: static */;
+			targetProxy = E3FF965F0D579AF0001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96620D579AFB001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E3FF96610D579AFB001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96640D579AFB001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			targetProxy = E3FF96630D579AFB001E075B /* PBXContainerItemProxy */;
+		};
+		E3FF96660D579B1A001E075B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FF96370D579ABB001E075B /* pion-server: dynamic */;
+			targetProxy = E3FF96650D579B1A001E075B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1631,7 +2040,7 @@
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include ${PROJECT_DIR}/platform/server";
 			};
 			name = Debug;
 		};
@@ -1672,7 +2081,7 @@
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include ${PROJECT_DIR}/platform/server";
 			};
 			name = Release;
 		};
@@ -1908,6 +2317,60 @@
 			};
 			name = Release;
 		};
+		E3FF95930D5789BE001E075B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = ConfigService;
+			};
+			name = Debug;
+		};
+		E3FF95940D5789BE001E075B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = ConfigService;
+			};
+			name = Release;
+		};
+		E3FF96340D579AB8001E075B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "pion-server";
+			};
+			name = Debug;
+		};
+		E3FF96350D579AB8001E075B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "pion-server";
+			};
+			name = Release;
+		};
+		E3FF965A0D579ABB001E075B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "pion-server";
+			};
+			name = Debug;
+		};
+		E3FF965B0D579ABB001E075B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "pion-server";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2024,6 +2487,33 @@
 			buildConfigurations = (
 				E3EFC6910D18905C0019CCD4 /* Debug */,
 				E3EFC6920D18905C0019CCD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3FF95920D5789BE001E075B /* Build configuration list for PBXNativeTarget "ConfigService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3FF95930D5789BE001E075B /* Debug */,
+				E3FF95940D5789BE001E075B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3FF96330D579AB8001E075B /* Build configuration list for PBXNativeTarget "pion-server: static" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3FF96340D579AB8001E075B /* Debug */,
+				E3FF96350D579AB8001E075B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3FF96590D579ABB001E075B /* Build configuration list for PBXNativeTarget "pion-server: dynamic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3FF965A0D579ABB001E075B /* Debug */,
+				E3FF965B0D579ABB001E075B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

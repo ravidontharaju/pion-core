@@ -5,7 +5,8 @@
 	<DatabaseConfig>databases.xml</DatabaseConfig>
 	<ReactorConfig>reactors.xml</ReactorConfig>
 	<ServiceConfig>services.xml</ServiceConfig>
-	<PluginPath>../codecs/.libs/</PluginPath>
-	<PluginPath>../reactors/.libs/</PluginPath>
+	<PluginPath>../../platform/codecs/.libs/</PluginPath>
+	<PluginPath>../../platform/reactors/.libs/</PluginPath>
+	<PluginPath>../../platform/services/.libs/</PluginPath>
 	<PluginPath>../../net/services/.libs/</PluginPath>
 </PionConfig>

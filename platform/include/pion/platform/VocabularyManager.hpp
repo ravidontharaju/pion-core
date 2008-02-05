@@ -105,6 +105,24 @@ public:
 	
 	/// opens an existing Vocabulary config file and loads the data it contains
 	virtual void openConfigFile(void);
+	
+	/**
+	 * writes the entire configuration tree to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 */
+	virtual void writeConfigXML(std::ostream& out) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
+		ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
+	}
+
+	/**
+	 * writes the configuration data for a particular Vocabulary (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 * @param vocab_id the unique identifier for the Vocabulary
+	 */
+	bool writeConfigXML(std::ostream& out, const std::string& vocab_id) const;
 
 	/**
 	 * creates a new, empty vocabulary

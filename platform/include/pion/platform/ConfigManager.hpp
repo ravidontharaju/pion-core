@@ -139,7 +139,7 @@ public:
 	
 	/// returns the name of the config file being used
 	inline const std::string& getConfigFile(void) const { return m_config_file; }
-	
+
 	/// returns true if the config file is open and being used
 	inline bool configIsOpen(void) const { return m_config_doc_ptr != NULL; }
 	
@@ -149,9 +149,31 @@ public:
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
 	
-	
 	/// removes the config file (after backing it up)
 	void removeConfigFile(void);
+	
+	/**
+	 * writes the entire configuration tree to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 */
+	virtual void writeConfigXML(std::ostream& out) const {
+		writeConfigXML(out, m_config_node_ptr, true);
+	}
+	
+	/**
+	 * writes configuration data to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 * @param config_node xmlNodePtr to start writing data from
+	 * @param include_siblings if true, siblings of config_node will be written
+	 */
+	static void writeConfigXML(std::ostream& out,
+							   xmlNodePtr config_node,
+							   bool include_siblings = false);
+	
+	/// encodes strings so that they are safe for XML (this &amp; that)
+	static std::string xml_encode(const std::string& str);
 	
 	/// returns a string containing a new UUID value
 	static std::string createUUID(void);

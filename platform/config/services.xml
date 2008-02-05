@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-	<Server id="urn:uuid:9ff8ade4-d2c9-11dc-9fbc-0016cb926e68">
+	<Server id="urn:server:main_server">
 		<Port>8080</Port>
-		<WebService id="urn:uuid:b5a875e8-d2c9-11dc-b10b-0016cb926e68">
+		<WebService id="urn:service:ui_service">
+			<Name>User Interface Service</Name>
+			<Comment>Delivers user interface files</Comment>
+			<Plugin>FileService</Plugin>
+			<Resource>/</Resource>
+			<Option name="file">../../platform/ui/index.html</Option>
+			<Option name="directory">../../platform/ui/</Option>
+			<Option name="cache">1</Option>
+			<Option name="scan">2</Option>
+			<Option name="writable">false</Option>
+		</WebService>
+		<PlatformService id="urn:service:config_service">
+			<Name>Configuration Service</Name>
+			<Comment>Pion platform configuration service</Comment>
+			<Plugin>ConfigService</Plugin>
+			<Resource>/config</Resource>
+		</PlatformService>
+		<WebService id="urn:service:log_service">
 			<Name>Log Service</Name>
-			<Comment>Returns Pion log entries</Comment>
+			<Comment>Sends recent log entries</Comment>
 			<Plugin>LogService</Plugin>
 			<Resource>/log</Resource>
 		</WebService>
-		<WebService id="urn:uuid:bbfd9fae-d2c9-11dc-a96d-0016cb926e68">
-			<Name>Echo Service</Name>
-			<Comment>Echos the HTTP request</Comment>
-			<Plugin>EchoService</Plugin>
-			<Resource>/echo</Resource>
-		</WebService>
 	</Server>
-	<Server id="urn:uuid:c0f94d6e-d2c9-11dc-826c-0016cb926e68">
+	<Server id="urn:server:hello_server">
 		<Port>8081</Port>
-		<WebService id="urn:uuid:c6111642-d2c9-11dc-9ba2-0016cb926e68">
+		<WebService id="urn:service:hello_service">
 			<Name>Hello Service</Name>
 			<Comment>Says hello to the world</Comment>
 			<Plugin>HelloService</Plugin>
 			<Resource>/hello</Resource>
+		</WebService>
+		<WebService id="urn:service:echo_service">
+			<Name>Echo Service</Name>
+			<Comment>Echoes the HTTP request</Comment>
+			<Plugin>EchoService</Plugin>
+			<Resource>/echo</Resource>
 		</WebService>
 	</Server>
 </PionConfig>

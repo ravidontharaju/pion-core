@@ -22,6 +22,7 @@
 
 #include <list>
 #include <string>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PluginManager.hpp>
@@ -112,6 +113,24 @@ public:
 	/// opens an existing config file and loads the data it contains
 	virtual void openConfigFile(void);
 
+	/**
+	 * writes the entire configuration tree to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 */
+	virtual void writeConfigXML(std::ostream& out) const {
+		boost::mutex::scoped_lock services_lock(m_mutex);
+		ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
+	}
+	
+	/**
+	 * writes the configuration data for a particular server (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 * @param server_id unique identifier associated with the HTTP server
+	 */
+	bool writeConfigXML(std::ostream& out, const std::string& server_id) const;
+	
 	
 private:
 
@@ -175,6 +194,9 @@ private:
 
 	/// collection of platform services used by the HTTP servers
 	PlatformServiceManager			m_platform_services;
+	
+	/// mutex to make class thread-safe
+	mutable boost::mutex			m_mutex;	
 };
 
 

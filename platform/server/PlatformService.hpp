@@ -45,8 +45,16 @@ class PlatformService
 {
 public:
 
+	/// exception thrown if the Platform configuration is missing
+	class MissingConfigException : public PionException {
+	public:
+		MissingConfigException(const std::string& service_id)
+			: PionException("Platform service missing configuration: ", service_id) {}
+	};
+
+	
 	/// constructs a new PlatformService object
-	PlatformService(void) {}
+	PlatformService(void) : m_config_ptr(NULL) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~PlatformService() {}
@@ -71,8 +79,54 @@ public:
 	 */
 	virtual void setConfig(PlatformConfig& platform_cfg,
 						   const xmlNodePtr config_ptr);
+
+	
+protected:
+	
+	/// returns a const reference to the Platform configuration manager
+	inline const PlatformConfig& getConfig(void) const {
+		if (m_config_ptr == NULL)
+			throw MissingConfigException(getId());
+		return *m_config_ptr;
+	}
+	
+	/// returns a reference to the Platform configuration manager
+	inline PlatformConfig& getConfig(void) {
+		if (m_config_ptr == NULL)
+			throw MissingConfigException(getId());
+		return *m_config_ptr;
+	}
+	
+	
+private:
+	
+	/// pointer to the Platform configuration manager
+	PlatformConfig		*m_config_ptr;
 };
 
+
+//
+// The following symbols must be defined for any platform service that you would
+// like to be able to load dynamically using the ServiceManager.
+//
+// Make sure that you replace "PlatformService" with the name of your derived
+// class. This name must also match the name of the object file (excluding the
+// extension).  These symbols must be linked into your service's object file,
+// not included in any headers that it may use (declarations are OK in headers
+// but not the definitions).
+//
+// The "pion_create" function is used to create new instances of your service.
+// The "pion_destroy" function is used to destroy instances of your service.
+//
+// extern "C" PlatformService *pion_create_PlatformService(void) {
+//		return new PlatformService;
+// }
+//
+// extern "C" void pion_destroy_PlatformService(PlatformService *service_ptr) {
+//		delete service_ptr;
+// }
+//
+	
 	
 }	// end namespace server
 }	// end namespace pion
