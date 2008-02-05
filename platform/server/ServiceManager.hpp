@@ -25,6 +25,7 @@
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/PluginManager.hpp>
 #include <pion/net/HTTPServer.hpp>
 #include <pion/net/WebService.hpp>
@@ -131,6 +132,15 @@ public:
 	 */
 	bool writeConfigXML(std::ostream& out, const std::string& server_id) const;
 	
+	/// returns the number of threads that are currently running
+	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
+	
+	/// returns the number of threads currently in use
+	inline boost::uint32_t getNumThreads(void) const { return m_scheduler.getNumThreads(); }
+	
+	/// sets the number of threads used all of the HTTP servers & services
+	inline void setNumThreads(const boost::uint32_t n) { m_scheduler.setNumThreads(n); }
+
 	
 private:
 
@@ -157,6 +167,9 @@ private:
 	/// data type for a collection of platform services
 	typedef PluginManager<PlatformService>			PlatformServiceManager;
 	
+	
+	/// default number of worker threads in the thread pool
+	static const boost::uint32_t	DEFAULT_NUM_THREADS;
 	
 	/// default name of the vocabulary config file
 	static const std::string		DEFAULT_CONFIG_FILE;
@@ -185,6 +198,9 @@ private:
 	
 	/// reference to the Pion platform configuration manager
 	PlatformConfig &				m_platform_config;
+	
+	/// used to manage a worker thread pool shared by all servers
+	PionScheduler					m_scheduler;
 	
 	/// collection of HTTP servers
 	ServerList						m_servers;

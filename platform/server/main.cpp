@@ -61,6 +61,9 @@ int main (int argc, char *argv[])
 		PlatformConfig platform_cfg;
 		platform_cfg.setConfigFile(platform_config_file);
 		platform_cfg.openConfigFile();
+		
+		// start the ReactionEngine
+		platform_cfg.getReactionEngine().start();
 
 		// wait for shutdown
 		main_shutdown_manager.wait();

@@ -201,6 +201,15 @@ public:
 		return m_plugins.getStatistic(reactor_id, boost::bind(&Reactor::getEventsOut, _1));
 	}
 
+	/// returns the number of threads that are currently running
+	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
+	
+	/// returns the number of threads currently in use
+	inline boost::uint32_t getNumThreads(void) const { return m_scheduler.getNumThreads(); }
+	
+	/// sets the number of threads used to route and process Events
+	inline void setNumThreads(const boost::uint32_t n) { m_scheduler.setNumThreads(n); }
+	
 	
 private:
 	
@@ -262,6 +271,9 @@ private:
 	void stopNoLock(void);
 	
 	
+	/// default number of worker threads in the thread pool
+	static const boost::uint32_t	DEFAULT_NUM_THREADS;
+	
 	/// default name of the reactor config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
@@ -279,7 +291,7 @@ private:
 	
 	
 	/// used to schedule the delivery of events to Reactors for processing
-	PionScheduler &					m_scheduler;
+	PionScheduler					m_scheduler;
 
 	/// references the global factory that manages Codecs
 	const CodecFactory&				m_codec_factory;

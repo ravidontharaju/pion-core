@@ -29,6 +29,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of ReactionEngine
 	
+const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 8;
 const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
 const std::string		ReactionEngine::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
@@ -42,12 +43,13 @@ ReactionEngine::ReactionEngine(const VocabularyManager& vocab_mgr,
 							   const CodecFactory& codec_factory,
 							   const DatabaseManager& database_mgr)
 	: PluginConfig<Reactor>(vocab_mgr, DEFAULT_CONFIG_FILE, REACTOR_ELEMENT_NAME),
-	m_scheduler(PionScheduler::getInstance()),
 	m_codec_factory(codec_factory),
 	m_database_mgr(database_mgr),
 	m_is_running(false)
 {
 	setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));
+	m_scheduler.setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));
+	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
 	m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
 	m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
 }
@@ -296,7 +298,7 @@ void ReactionEngine::stopNoLock(void)
 		m_plugins.run(boost::bind(&Reactor::stop, _1));
 
 		// notify the thread scheduler that we no longer need it
-		PionScheduler::getInstance().removeActiveUser();
+		m_scheduler.removeActiveUser();
 
 		m_is_running = false;
 	}

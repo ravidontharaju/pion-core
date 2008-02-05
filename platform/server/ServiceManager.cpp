@@ -30,6 +30,7 @@ namespace server {		// begin namespace server (Pion Server)
 
 // static members of ServiceManager
 	
+const boost::uint32_t		ServiceManager::DEFAULT_NUM_THREADS = 4;
 const std::string			ServiceManager::DEFAULT_CONFIG_FILE = "services.xml";
 const std::string			ServiceManager::SERVER_ELEMENT_NAME = "Server";
 const std::string			ServiceManager::WEB_SERVICE_ELEMENT_NAME = "WebService";
@@ -46,6 +47,8 @@ ServiceManager::ServiceManager(PlatformConfig& platform_config)
 	: ConfigManager(DEFAULT_CONFIG_FILE), m_platform_config(platform_config)
 {
 	setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
+	m_scheduler.setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
+	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
 }
 
 void ServiceManager::openConfigFile(void)
@@ -80,7 +83,7 @@ void ServiceManager::openConfigFile(void)
 			throw MissingPortException(server_id);
 		
 		// create the server and add it to our list
-		HTTPServerPtr server_ptr(new HTTPServer(boost::lexical_cast<unsigned int>(port_str)));
+		HTTPServerPtr server_ptr(new HTTPServer(m_scheduler, boost::lexical_cast<unsigned int>(port_str)));
 		m_servers.push_back(server_ptr);
 		
 		// step through PlatformService configurations
