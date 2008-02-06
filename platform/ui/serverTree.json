@@ -1,0 +1,16 @@
+{
+	label: 'name',
+	items: [
+		{ name: 'Server1', ID: '999-001', comment: 'main system', 'port number': 1,
+			services: [
+				{ name: 'Service A', ID: '00001', comment: 'Table service', resource: 'abc', 'plugin type': 'Type A' },
+				{ name: 'Service B', ID: '00002', comment: 'Public service', resource: 'xyz' }
+			]
+		},
+		{ name: 'Server2', ID: '999-002', comment: 'backup system', 'port number': 2,
+			services: [
+				{ name: 'Service C', ID: '00001', comment: 'Secret Service', resource: 'abc', 'plugin type': 'Type Z' }
+			]
+		}
+	]
+}

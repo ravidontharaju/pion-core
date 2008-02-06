@@ -1,69 +1,44 @@
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.TextBox");
-dojo.require("dijit.form.ValidationTextBox");
-dojo.require("dijit.form.Button");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.LayoutContainer");
-dojo.require("dijit.layout.AccordionContainer");
-
-var system_pane_title_height = -1;
-var system_pane_body_height = 350;
-var accordion_width = -1;
-var unique_system_id = 1;
-var selected_system_pane = null;
-var default_system_data;
+dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dijit.Tree");
 
 function initSystemConfigPage() {
-	var first_plugin_path_node = plugin_path_list.getAllNodes()[0];
-	var button_node = dojo.query('button', first_plugin_path_node)[0];
-	dojo.connect(button_node, 'click', function() {
-		plugin_path_list.delItem(first_plugin_path_node.id);
-		dojo._destroyElement(first_plugin_path_node);
-	})
-	var input_node = dojo.query('input', first_plugin_path_node)[0];
-	input_node.style.width = (plugin_path_list.node.clientWidth - 150) + 'px';
+	dojo.byId('platform_conf_file').firstChild.nodeValue = 'actual/path/here/PlatformConfigFile.xml';
+	dojo.byId('vocab_conf_file').firstChild.nodeValue = 'actual/path/here/VocabulariesConfigFile.xml';
+	dojo.byId('codec_conf_file').firstChild.nodeValue = 'actual/path/here/CodecsConfigFile.xml';
+	dojo.byId('database_conf_file').firstChild.nodeValue = 'actual/path/here/DatabasesConfigFile.xml';
+	dojo.byId('reactor_conf_file').firstChild.nodeValue = 'actual/path/here/ReactorsConfigFile.xml';
+	dojo.byId('service_conf_file').firstChild.nodeValue = 'actual/path/here/ServicesConfigFile.xml';
 
-	var save_button = dojo.byId('save_conf_file_paths');
-	dojo.connect(save_button, 'click', function() {
-		console.debug('vocab_conf_file_widget.fileInput.value = ', vocab_conf_file_widget.fileInput.value);
-		console.debug('codec_conf_file_widget.fileInput.value = ', codec_conf_file_widget.fileInput.value);
-		console.debug('database_conf_file_widget.fileInput.value = ', database_conf_file_widget.fileInput.value);
-		console.debug('reactor_conf_file_widget.fileInput.value = ', reactor_conf_file_widget.fileInput.value);
-		console.debug('user_conf_file_widget.fileInput.value = ', user_conf_file_widget.fileInput.value);
-	})
+	dojo.byId('vocab_path').firstChild.nodeValue = 'actual/path/here/VocabularyPath';
+
+	var plugin_paths_list = dojo.byId('plugin_paths');
+	while (plugin_paths_list.firstChild) {
+		plugin_paths_list.removeChild(plugin_paths_list.firstChild);
+	}
+	var plugin_path = document.createElement('li');
+	plugin_path.appendChild(document.createTextNode('first/path/to/search'));
+	plugin_paths_list.appendChild(plugin_path);
+	var plugin_path_2 = document.createElement('li');
+	plugin_path_2.appendChild(document.createTextNode('second/path/to/search'));
+	plugin_paths_list.appendChild(plugin_path_2);
+
+	server_store.fetch({sort: [{attribute: 'order', descending: true}], queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: rebuildTree});
 }
 
-function plugin_path_dnd_item_creator(item, hint){
-/*
-	<div class="dojoDndItem" style="background-color: #ecf5f6">
-		<span style="float: left; margin-right: 10px;"><img src="images/drag-handle.png" /></span>
-		<button dojoType=dijit.form.Button class="delete_row" style="float: right">&nbsp;</button>
-		<input dojoType="dijit.form.TextBox" value="Path A" />
-	</div>
-*/
-	var node = dojo.doc.createElement('div');
-	node.style.backgroundColor = '#ecf5f6';
-	var span = document.createElement('span');
-	span.style.float = 'left';
-	span.style.marginRight = '10px';
-	var img = document.createElement('img');
-	img.src = "images/drag-handle.png";
-	span.appendChild(img);
-	var button = new dijit.form.Button({'class': 'delete_row', style: 'float: right'});
-	dojo.connect(button.domNode, 'click', function() {
-		plugin_path_list.delItem(node.id);
-		dojo._destroyElement(node);
-	})
-	var text_box_style = 'width: ' + (plugin_path_list.node.clientWidth - 150) + 'px';
-	var text_box = new dijit.form.TextBox({name: 'path', value: 'new path', style: text_box_style});
-	node.appendChild(span);
-	node.appendChild(button.domNode);
-	node.appendChild(text_box.domNode);
-	node.id = dojo.dnd.getUniqueId();
-	return {node: node, data: item, type: []};
-};
+function handleServerTreeItem(item, request) {
+	var attrs = server_store.getAttributes(item);
+	console.debug('got item with attributes ', attrs);
+	for (var i = 0; i < attrs.length; ++i) {
+		var attr = attrs[i];
+		if (attr != 'name' && attr != 'services') {
+			server_store.newItem({name: attr + ': ' + server_store.getValue(item, attr)}, {parent: item, attribute: 'services'});
+		}
+	}
+}
 
-function addNewPluginPath() {
-	plugin_path_list.creator = plugin_path_dnd_item_creator;
-	plugin_path_list.insertNodes(false, [{}]);
+function rebuildTree() {
+	/*
+	TODO: Make the leaves for the server attributes come before the service nodes.  This will probably mean deleting the service items
+	and recreating them, so they come after the leaves created by handleServerTreeItem.
+	*/
 }
