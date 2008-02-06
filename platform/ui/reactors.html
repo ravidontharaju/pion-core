@@ -29,10 +29,11 @@
 	<script type="text/javascript" src="dojo/dojo/dnd/Manager.js"></script>
 	<script type="text/javascript" src="dojo/dijit/dijit.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Dialog.js"></script>
-	<script type="text/javascript" src="dojo/dijit/form/_Widget.js"></script>
+	<script type="text/javascript" src="dojo/dijit/_Widget.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/_FormWidget.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Form.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/TextBox.js"></script>
+	<script type="text/javascript" src="dojo/dijit/form/Textarea.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Button.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/FilteringSelect.js"></script>
 	<script type="text/javascript" src="dojo/dijit/layout/ContentPane.js"></script>
@@ -43,7 +44,8 @@
 	<script type="text/javascript" src="dojo/dojox/data/XmlStore.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
-	<script type="text/javascript" src="dojo/dojox/FileInput.js"></script>
+	<script type="text/javascript" src="dojo/dojox/grid/_data/dijitEditors.js"></script>
+	<script type="text/javascript" src="dojo/dojox/grid/_data/editors.js"></script>
 
 	<script type="text/javascript" src="scripts/pion.js"></script>
 	<script type="text/javascript" src="scripts/reactors.js"></script>
@@ -62,6 +64,26 @@
 					editor: dojox.grid.editors.Input},
 				{ name: 'End Char', width: 5, styles: 'text-align: center;', 
 					editor: dojox.grid.editors.Input},
+				{ name: 'order', 
+					editor: dojox.grid.editors.Dijit,
+					editorClass: "dijit.form.NumberSpinner", width: 5},
+				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
+
+		// This is very redundant, but dojo.clone can't seem to handle cloning gridLayout.
+		var grid_layout_no_order = [{
+			rows: [[
+				{ name: 'Field Name', styles: '', width: 20, 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Term', styles: '', 
+					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 20},
+				{ name: 'Start Char', width: 5, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'End Char', width: 5, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
 				{ name: 'Delete', styles: 'align: center;', width: 4, 
 				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 			]]
@@ -69,9 +91,6 @@
 	</script>
 </head>
 <body class="tundra">
-
-<!-- data store for event types -->
-	<div dojoType="dojo.data.ItemFileReadStore" jsId="eventTypeStore" url="eventTypes.json"></div>
 
 <!-- data store for codec types -->
 	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="codecTypes.json"></div>
@@ -138,7 +157,7 @@
 										</div>
 									</div>
 									<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
-										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
 											<div class="dojoDndItem" dndType="reactor" reactor_type="filter"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
 											<div class="dojoDndItem" dndType="reactor" reactor_type="transform"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
 										</div>
@@ -161,18 +180,18 @@
 							3. Drag arrows to connect Reactors
 						</h3>
 					</div>
-                    <div id="counterBackground">
-                    	<span class="counterTitle">Operations per Second</span>
-                        <span class="counterNumbersLeft">
-                        	Global:<br />
+					<div id="counterBackground">
+						<span class="counterTitle">Operations per Second</span>
+						<span class="counterNumbersLeft">
+							Global:<br />
 							Workspace:
 						</span><span class="counterNumbersRight">
-                        	261,893<br />
+							261,893<br />
 							159,307
 						</span><span class="conterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
-                    </div>
-                    
-			    <!-- start tabbed workspaces -->
+					</div>
+					
+				<!-- start tabbed workspaces -->
 					<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
 						<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
 							<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
@@ -212,22 +231,22 @@
 												<tr>
 													<td><label>Name</label></td>
 													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"></td>
-                                                    <td rowspan="4" valign="top" width="50">&nbsp;</td>
-                                                    <td rowspan="1">Comments</td>
-                                                    <td rowspan="4" valign="top"><textarea rows="8" cols="50"></textarea></td>
+													<td rowspan="4" valign="top" width="50">&nbsp;</td>
+													<td rowspan="1">Comments</td>
+													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 150px"></textarea></td>
 												</tr>
 												<tr>
 													<td><label>ID</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="uri" style="width: 350px;"></td>
-                                                    <td rowspan="3">&nbsp;</td>
+													<td><input dojoType="dijit.form.TextBox" name="ID" style="width: 350px;"></td>
+													<td rowspan="3">&nbsp;</td>
 												</tr>
 												<tr>
 													<td><label>Plug-In Type</label></td>
-													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+													<td><input dojoType="dijit.form.FilteringSelect" onChange="handlePluginTypeChange" name="plugin_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
 												</tr>
-                                                <tr>
+												<tr>
 													<td><label>Event Type</label></td>
-													<td><input dojoType="dijit.form.FilteringSelect" name="codec_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
+													<td><input dojoType="dijit.form.FilteringSelect" onChange="setUnsavedChangesTrue" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 												</tr>
 											</table>
 											<br />
@@ -354,32 +373,32 @@
 							</tr>
 						</table>
 						<button id="save_conf_file_paths" dojoType=dijit.form.Button class="save">Save</button>
-                        
-                        <br />&nbsp;<br />
 						
-                        <table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
-                            <tr>
-                                <td class="matrixMainHeader">
-                                Plugin Paths (Drag rows to re-order)
-                                </td>
-                            </tr><tr>
-                                <td style="background-color: #f1f1f1;">
-    
+						<br />&nbsp;<br />
+						
+						<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+							<tr>
+								<td class="matrixMainHeader">
+								Plugin Paths (Drag rows to re-order)
+								</td>
+							</tr><tr>
+								<td style="background-color: #f1f1f1;">
+	
 										<div style="background-color: #ffffff; border: 1px solid #cccccc; padding: 10px;">
-                                            
-                                            <div dojoType="dojo.dnd.Source" jsId="plugin_path_list" class="container" skipForm="true">
-                                                <div class="dojoDndItem" style="background-color: #ecf5f6">
-                                                    <span style="float: left; margin-right: 10px;"><img src="images/drag-handle.png" /></span>
-                                                    <button dojoType=dijit.form.Button class="delete_row" style="float: right">&nbsp;</button>
-                                                    <input dojoType="dijit.form.TextBox" value="Path A" />
-                                                </div>
-                                            </div>
-                                            <button dojoType=dijit.form.Button class="add_new_plugin_path" onClick="addNewPluginPath">ADD NEW PLUGIN PATH</button>
-                                        </div>
-                                        
-                                    </td>
-                                </tr>
-                            </table>
+											
+											<div dojoType="dojo.dnd.Source" jsId="plugin_path_list" class="container" skipForm="true">
+												<div class="dojoDndItem" style="background-color: #ecf5f6">
+													<span style="float: left; margin-right: 10px;"><img src="images/drag-handle.png" /></span>
+													<button dojoType=dijit.form.Button class="delete_row" style="float: right">&nbsp;</button>
+													<input dojoType="dijit.form.TextBox" value="Path A" />
+												</div>
+											</div>
+											<button dojoType=dijit.form.Button class="add_new_plugin_path" onClick="addNewPluginPath">ADD NEW PLUGIN PATH</button>
+										</div>
+										
+									</td>
+								</tr>
+							</table>
 					</div>
 				</div>
 			</div>
@@ -402,7 +421,7 @@
 			</tr>
 			<tr>
 				<td><label>Event Type: </label></td>
-				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
+				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
 		<div class="save_cancel_delete">
@@ -442,7 +461,7 @@
 			</tr>
 			<tr>
 				<td><label>Event Type: </label></td>
-				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="eventTypeStore" searchAttr="term_id" autocomplete="true"/></td>
+				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
 		<div class="save_cancel_delete">
@@ -492,6 +511,10 @@
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
+	</div>
+	<div dojoType="dijit.Dialog" id="unsaved_changes_dialog" title="Unsaved Changes">
+		<div>Please save or cancel unsaved changes before selecting another Codec.</div>
+		<button dojoType=dijit.form.Button type="submit">OK</button>
 	</div>
 <!-- end configuration dialogs -->
 

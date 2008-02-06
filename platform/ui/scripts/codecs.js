@@ -1,6 +1,7 @@
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
+dojo.require("dijit.form.Textarea");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
@@ -22,15 +23,25 @@ var codec_config_items;
 
 var term_store = new dojox.data.XmlStore({url: '../config/vocabularies/clf.xml', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
+// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+term_store.fetchItemByIdentity = function(keywordArgs) {
+	term_store.fetch({query: {id: keywordArgs.identity}, onItem: keywordArgs.onItem});
+}
+term_store.getIdentity = function(item) {
+	return term_store.getValue(item, 'id');
+}
+
 var attributes_by_column = [];
 attributes_by_column[0] = 'text()';
 attributes_by_column[1] = '@term';
 attributes_by_column[2] = '@start';
 attributes_by_column[3] = '@end';
+var order_col_index = 4;
+var delete_col_index = 5;
 
 function handleCellClick(e) {
 	console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-	if (e.cellIndex == 4) {
+	if (e.cellIndex == delete_col_index) {
 		console.debug('Removing row ', e.rowIndex); 
 		grid.removeSelectedRows();
 		var field_attrs = codec_config_store.getValues(selected_codec_pane.config_item, 'Field');
@@ -73,6 +84,34 @@ function handleCellEdit(inValue, inRowIndex, inFieldIndex) {
 		case 3:
 			newElement.setAttribute('end', inValue);
 			break;
+		case order_col_index:
+			var old_order = selected_codec_pane.order_map[inRowIndex];
+			var order_map = selected_codec_pane.order_map;
+			console.debug('1: order_map = ', order_map);
+			order_map[inRowIndex] = inValue;
+			if (inValue > old_order) {
+				for (var i = 0; i < order_map.length; ++i) {
+					if (order_map[i] > old_order && order_map[i] <= inValue && i != inRowIndex) {
+						order_map[i]--;
+					}
+				}
+			} else {
+				for (var i = 0; i < order_map.length; ++i) {
+					if (order_map[i] >= inValue && order_map[i] < old_order && i != inRowIndex) {
+						order_map[i]++;
+					}
+				}
+			}
+			console.debug('2: order_map = ', order_map);
+			for (var i = 0; i < order_map.length; ++i) {
+				selected_codec_pane.field_table[i][order_col_index] = order_map[i];
+				
+				// The problem with using setDatum here is that if the table is currently 
+				// sorted by order, it will sort after each update, messing up the ordering.
+				//model.setDatum(order_map[i], i, order_col_index);
+			}
+			model.setData(selected_codec_pane.field_table);
+			break;
 		default:
 	}
 	/**
@@ -95,14 +134,6 @@ function handleCellEdit(inValue, inRowIndex, inFieldIndex) {
 var model = new dojox.grid.data.Table(null, []);
 
 function initCodecConfigPage() {
-	// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
-	term_store.fetchItemByIdentity = function(keywordArgs) {
-		term_store.fetch({query: {id: keywordArgs.identity}, onItem: keywordArgs.onItem});
-	}
-	term_store.getIdentity = function(item) {
-		return term_store.getValue(item, 'id');
-	}
-
 	codec_config_store = new dojox.data.XmlStore({url: '../config/codecs.xml'});
 
 	function onComplete(items, request){
@@ -142,14 +173,52 @@ function initCodecConfigPage() {
 			dojo.addClass(selected_codec_pane.domNode, 'unsaved_changes');
 		})
 	});
+	dojo.query("input[name='plugin_type']", selected_codec_pane.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', function() {
+			console.debug('clicked plugin_type');
+		})
+	});
+	/*
+	dojo.connect(dojo.byId('codec_type_node'), 'click', function() {
+		console.debug('clicked plugin_type (dojo.byId)');
+	})
+	var h2 = dojo.connect(dojo.byId('codec_type_node'), 'change', function() {
+		console.debug('1: changed plugin_type (dojo.byId)');
+	})
+	console.debug('Node ', dojo.byId('codec_type_node'), ' connected to "change"');
+	console.debug('h2 = ', h2);
+	dojo.connect(dojo.byId('codec_type_node'), 'onchange', function() {
+		console.debug('2: changed plugin_type (dojo.byId)');
+	})
+	dojo.connect(dojo.byId('codec_type_node'), 'blur', function() {
+		console.debug('plugin_type lost focus (dojo.byId)');
+	})
+	*/
+	dojo.query("input[name='plugin_type']", selected_codec_pane.domNode).forEach(function(n) {
+		var h = dojo.connect(n, 'change', function() {
+		//dojo.connect(n, 'change', function() {
+			console.debug('changed plugin_type (dojo.query & dojo.connect)');
+			if (n.value == 'LogCodec') {
+				grid.setStructure(gridLayout);
+				delete_col_index = 5;
+			} else {
+				grid.setStructure(grid_layout_no_order);
+				delete_col_index = 4;
+			}
+		})
+		console.debug('Node ', n, ' connected to "change"');
+		console.debug('h = ', h);
+	});
 	dojo.query(".dijitButton.save", selected_codec_pane.domNode).forEach(function(n) {
 		dojo.connect(n, 'click', function() {
 			console.debug('save: selected codec is ', selected_codec_pane.title, ', form.getValues() = ', form.getValues());
 
 			var form_data = form.getValues();
 			codec_config_store.setValue(selected_codec_pane.config_item, 'Name', form_data.codec_name);
+			codec_config_store.setValue(selected_codec_pane.config_item, '@id', form_data.ID);
 			codec_config_store.setValue(selected_codec_pane.config_item, 'Comment', form_data.comment);
-			codec_config_store.setValue(selected_codec_pane.config_item, 'EventType', form_data.codec_type);
+			codec_config_store.setValue(selected_codec_pane.config_item, 'Plugin', form_data.plugin_type);
+			codec_config_store.setValue(selected_codec_pane.config_item, 'EventType', form_data.event_type);
 			codec_config_store.save();
 
 			selected_codec_pane.title = form_data.codec_name;
@@ -169,6 +238,7 @@ function initCodecConfigPage() {
 		dojo.connect(n, 'click', function() {
 			console.debug('delete: selected codec is ', selected_codec_pane.title);
 
+			dojo.removeClass(selected_codec_pane.domNode, 'unsaved_changes');
 			var pane_to_delete = selected_codec_pane;
 
 			codec_config_store.deleteItem(pane_to_delete.config_item);
@@ -201,37 +271,95 @@ function initCodecConfigPage() {
 	setTimeout("dijit.byId('grid').update()", 200);
 }
 
+function setUnsavedChangesTrue() {
+	console.debug('setUnsavedChangesTrue called');
+	dojo.addClass(selected_codec_pane.domNode, 'unsaved_changes');
+}
+
+function setUnsavedChangesFalse() {
+	console.debug('setUnsavedChangesFalse called');
+	dojo.removeClass(selected_codec_pane.domNode, 'unsaved_changes');
+}
+
+function handlePluginTypeChange() {
+	console.debug('changed plugin_type (handlePluginTypeChange)');
+	var form = dijit.byId('codec_form');
+	var form_data = form.getValues();
+	if (form_data.plugin_type == 'LogCodec') {
+		grid.setStructure(gridLayout);
+		delete_col_index = 5;
+	} else {
+		grid.setStructure(grid_layout_no_order);
+		delete_col_index = 4;
+	}
+	dojo.addClass(selected_codec_pane.domNode, 'unsaved_changes');
+}
+
 function populatePaneFromConfigItem(item) {
 	var form_data = {};
-	var form = dijit.byId('codec_form');
 	form_data.codec_name = codec_config_store.getValue(item, 'Name');
-	form_data.comment = codec_config_store.getValue(item, 'Comment');
-	if (!form_data.comment) form_data.comment = '';
-	form_data.codec_type = codec_config_store.getValue(item, 'EventType');
-	if (!form_data.codec_type) form_data.codec_type = 1;
+	form_data.ID = codec_config_store.getValue(item, '@id') || '';
+	var xml_item = codec_config_store.getValue(item, 'Comment');
+	form_data.comment = xml_item? xml_item.element.firstChild.nodeValue : '';
+	xml_item = codec_config_store.getValue(item, 'Plugin');
+	form_data.plugin_type = xml_item? xml_item.element.firstChild.nodeValue : 'LogCodec';
+	xml_item = codec_config_store.getValue(item, 'EventType');
+	
+	// There has to be a default value here, because there's no way to clear the FilteringSelect widget.
+	// (If event_type is removed from form_data or set to the empty string, the widget will display 
+	// whatever value was previously in it.)
+	form_data.event_type = xml_item? xml_item.element.firstChild.nodeValue : 'urn:vocab:clf#http-request';
+	
+	var form = dijit.byId('codec_form');
 	form.setValues(form_data);
 	selected_codec_pane.title = form_data.codec_name;
 	dojo.query('.dijitAccordionTitle .dijitAccordionText', selected_codec_pane.domNode).forEach('item.firstChild.nodeValue = selected_codec_pane.title;');
 	
 	var field_attrs = codec_config_store.getValues(item, 'Field');
 	selected_codec_pane.field_table = [];
+	selected_codec_pane.order_map = [];
 	for (var i = 0; i < field_attrs.length; ++i) {
 		var field_table_row = [];
 		console.debug('codec_config_store.isItem(field_attrs[i]) = ', codec_config_store.isItem(field_attrs[i]));
 		for (var j = 0; j < attributes_by_column.length; ++j) {
 			field_table_row[j] = codec_config_store.getValue(field_attrs[i], attributes_by_column[j]);
 		}
+		field_table_row[order_col_index] = i + 1;
 		/*
 		field_table_row[0] = codec_config_store.getValue(field_attrs[i], 'text()');
 		field_table_row[1] = codec_config_store.getValue(field_attrs[i], '@term');
 		field_table_row[2] = codec_config_store.getValue(field_attrs[i], '@start');
 		field_table_row[3] = codec_config_store.getValue(field_attrs[i], '@end');
 		*/
-		selected_codec_pane.field_table.push(field_table_row);	
-	}
+		selected_codec_pane.field_table.push(field_table_row);
 
-	model = new dojox.grid.data.Table(null, selected_codec_pane.field_table);
-	grid.setModel(model);
+		selected_codec_pane.order_map[i] = i + 1;
+	}
+	model.setData(selected_codec_pane.field_table);
+
+	// This would be nice and simple, but I can't make it work.
+	//grid.setCellWidth(order_col_index, 0);
+	//grid.updateStructure();
+	
+/*
+	// Build grid_layout_no_order if its needed and hasn't been built yet.
+	// Alas, cloning gridLayout doesn't work.
+	if (form_data.plugin_type != 1 && !grid_layout_no_order) {
+		var grid_layout_no_order = dojo.clone(gridLayout);
+		grid_layout_no_order[0].rows[0].splice(order_col_index, 1);
+	}
+*/
+
+	if (form_data.plugin_type == 'LogCodec') {
+		grid.setStructure(gridLayout);
+		delete_col_index = 5;
+	} else {
+		grid.setStructure(grid_layout_no_order);
+		delete_col_index = 4;
+	}
+	
+	// Wait a bit for the change events on the FilteringSelect widgets to get handled.
+	setTimeout('setUnsavedChangesFalse(), 200');
 }
 
 function createNewCodecPane(title) {
@@ -278,9 +406,17 @@ dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
 function codecPaneSelected(pane) {
 	console.debug('Selected ' + pane.title);
 
-	// TODO: ask the user what to do if there are unsaved changes.
-	// Currently, they stay until 'save', 'cancel' or 'delete' is pressed, in any pane.
-	dojo.removeClass(selected_codec_pane.domNode, 'unsaved_changes');
+	if (pane == selected_codec_pane) {
+		return;
+	}
+	if (dojo.hasClass(selected_codec_pane.domNode, 'unsaved_changes')) {
+		var dialog = dijit.byId('unsaved_changes_dialog');
+		dialog.show();
+		
+		// Return to the previously selected pane.
+		setTimeout("dijit.byId('codec_config_accordion').selectChild(selected_codec_pane)", 500);
+		return;
+	}
 
 	// Move all the DOM nodes for the form from the previously selected pane to the newly selected one.
 	var form_node_to_move = dojo.query('form', selected_codec_pane.domNode)[0];
