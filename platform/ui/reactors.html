@@ -232,8 +232,8 @@
 													<td><label>Name</label></td>
 													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"></td>
 													<td rowspan="4" valign="top" width="50">&nbsp;</td>
-													<td rowspan="1">Comments</td>
-													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 150px"></textarea></td>
+													<td rowspan="1"><label>Comments</label></td>
+													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 300px"></textarea></td>
 												</tr>
 												<tr>
 													<td><label>ID</label></td>
@@ -352,7 +352,7 @@
 					</div>
 					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client" style="overflow: auto">
 					
-						<div style="float:left; width:600px; margin-right: 20px;">
+						<div style="float:left; width:450px; margin-right: 20px;">
 							<h2>Configuration Files</h2>
 							<hr />
 							
@@ -401,13 +401,13 @@
 
 							<table id="plugin_paths" cellpadding="5" border="0" class="pathsTable" width="100%">
 								<tr>
-									<td width="20%">&nbsp;</td>
+									<td width="20%" align="right"><label>Plug-In 1</label></td>
 									<td width="80%">your/path/here/PluginPath</td>
 								</tr><tr>
-									<td width="20%">&nbsp;</td>
+									<td width="20%" align="right"><label>Plug-In 2</label></td>
 									<td width="80%">your/path/here/PluginPath</td>
 								</tr><tr>
-									<td width="20%">&nbsp;</td>
+									<td width="20%" align="right"><label>Plug-In 3</label></td>
 									<td width="80%">your/path/here/PluginPath</td>
 								</tr>
 							</table>
