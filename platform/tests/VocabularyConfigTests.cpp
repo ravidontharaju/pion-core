@@ -45,6 +45,8 @@ static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl")
 static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
 static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
 static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
+static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
+static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 static const std::string VOCAB_NEW_CONFIG_FILE(get_vocabulary_path() + "new.xml");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
 
@@ -59,6 +61,10 @@ void cleanup_vocab_config_files(void)
 	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
 	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
+
+	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
 
 	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
 		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
