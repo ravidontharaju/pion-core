@@ -1,4 +1,5 @@
 dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dojox.xml.DomParser");
 dojo.require("dijit.Tree");
 
 function initSystemConfigPage() {
@@ -12,16 +13,27 @@ function initSystemConfigPage() {
 	dojo.byId('vocab_path').firstChild.nodeValue = 'actual/path/here/VocabularyPath';
 
 	var plugin_paths_list = dojo.byId('plugin_paths');
+	// TODO: create new table rows to replace the placeholders.
+	/*
 	while (plugin_paths_list.firstChild) {
 		plugin_paths_list.removeChild(plugin_paths_list.firstChild);
 	}
+	*/
+	/*
+	<tr>
+        <td width="20%">&nbsp;</td>
+        <td width="80%">your/path/here/PluginPath</td>
+    </tr>
+    */
+    /*
 	var plugin_path = document.createElement('li');
 	plugin_path.appendChild(document.createTextNode('first/path/to/search'));
 	plugin_paths_list.appendChild(plugin_path);
 	var plugin_path_2 = document.createElement('li');
 	plugin_path_2.appendChild(document.createTextNode('second/path/to/search'));
 	plugin_paths_list.appendChild(plugin_path_2);
-
+	*/
+	
 	server_store.fetch({sort: [{attribute: 'order', descending: true}], queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: rebuildTree});
 }
 
