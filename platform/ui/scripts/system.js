@@ -36,12 +36,19 @@ function initSystemConfigPage() {
 function plugin_path_dnd_item_creator(item, hint){
 /*
 	<div class="dojoDndItem" style="background-color: #ecf5f6">
-		<button dojoType=dijit.form.Button class="delete" style="float: right">Delete</button>
+		<span style="float: left; margin-right: 10px;"><img src="images/drag-handle.png" /></span>
+		<button dojoType=dijit.form.Button class="delete_row" style="float: right">&nbsp;</button>
 		<input dojoType="dijit.form.TextBox" value="Path A" />
 	</div>
 */
 	var node = dojo.doc.createElement('div');
 	node.style.backgroundColor = '#ecf5f6';
+	var span = document.createElement('span');
+	span.style.float = 'left';
+	span.style.marginRight = '10px';
+	var img = document.createElement('img');
+	img.src = "images/drag-handle.png";
+	span.appendChild(img);
 	var button = new dijit.form.Button({'class': 'delete_row', style: 'float: right'});
 	dojo.connect(button.domNode, 'click', function() {
 		plugin_path_list.delItem(node.id);
@@ -49,6 +56,7 @@ function plugin_path_dnd_item_creator(item, hint){
 	})
 	var text_box_style = 'width: ' + (plugin_path_list.node.clientWidth - 150) + 'px';
 	var text_box = new dijit.form.TextBox({name: 'path', value: 'new path', style: text_box_style});
+	node.appendChild(span);
 	node.appendChild(button.domNode);
 	node.appendChild(text_box.domNode);
 	node.id = dojo.dnd.getUniqueId();
