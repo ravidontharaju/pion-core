@@ -51,7 +51,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -114,7 +113,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -177,7 +175,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -240,7 +237,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libxml2.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -277,11 +273,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\Codec.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CodecFactory.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\Comparison.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ConfigManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Database.cpp"
 				>
 			</File>
 			<File
@@ -293,7 +301,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PlatformPlugin.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ReactionEngine.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Reactor.cpp"
 				>
 			</File>
 			<File
@@ -302,6 +318,10 @@
 			</File>
 			<File
 				RelativePath=".\VocabularyConfig.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VocabularyManager.cpp"
 				>
 			</File>
 		</Filter>
@@ -332,6 +352,10 @@
 			</File>
 			<File
 				RelativePath="..\include\pion\platform\Event.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pion\platform\PlatformPlugin.hpp"
 				>
 			</File>
 			<File

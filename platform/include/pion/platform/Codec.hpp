@@ -37,7 +37,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// Codec: used to encode and decode Events using a particular format
 ///
-class Codec
+class PION_PLATFORM_API Codec
 	: public PlatformPlugin
 {
 public:

@@ -19,6 +19,7 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
+#include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/PionUnitTestDefs.hpp>

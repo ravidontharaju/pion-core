@@ -38,7 +38,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// PluginConfig: manages a collection of plug-ins and their configuration settings
 ///
 template <typename PluginType>
-class PION_PLATFORM_API PluginConfig :
+class PluginConfig :
 	public ConfigManager
 {
 public:

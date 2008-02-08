@@ -26,9 +26,9 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/VocabularyManager.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
-#include <pion/platform/ReactionEngine.hpp>
 #include "ServiceManager.hpp"
 
 
@@ -39,7 +39,7 @@ namespace server {		// begin namespace server (Pion Server)
 ///
 /// PlatformConfig: manages system configuration for the Pion Platform
 ///
-class PION_PLATFORM_API PlatformConfig :
+class PION_SERVER_API PlatformConfig :
 	public pion::platform::ConfigManager
 {
 public:

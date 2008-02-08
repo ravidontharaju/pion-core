@@ -35,7 +35,7 @@ class Vocabulary;
 ///
 /// PlatformPlugin: interface class extended by all Pion Platform plug-ins
 ///
-class PlatformPlugin
+class PION_PLATFORM_API PlatformPlugin
 	: private boost::noncopyable
 {
 public:

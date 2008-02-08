@@ -36,7 +36,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// Event: an item of structured data that represents something of interest
 ///
-class Event
+class PION_PLATFORM_API Event
 {
 public:
 

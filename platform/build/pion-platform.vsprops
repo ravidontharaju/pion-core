@@ -8,4 +8,9 @@
 		Name="VCCLCompilerTool"
 		AdditionalIncludeDirectories="$(PION_PLATFORM_HOME)\include"
 	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="libxml2.lib rpcrt4.lib"
+		AdditionalLibraryDirectories="$(LIBXML_HOME)\lib"
+	/>
 </VisualStudioPropertySheet>

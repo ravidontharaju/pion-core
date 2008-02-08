@@ -44,7 +44,7 @@ class PlatformConfig;
 ///
 /// ServiceManager: manages configuration for platform services
 ///
-class PION_PLATFORM_API ServiceManager :
+class PION_SERVER_API ServiceManager :
 	public pion::platform::ConfigManager
 {
 public:
