@@ -36,7 +36,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// Comparison: used to perform a comparison on the value of a Term
 ///
-class Comparison
+class PION_PLATFORM_API Comparison
 {
 public:
 
@@ -1210,36 +1210,36 @@ inline void Comparison::configure(const ComparisonType type,
 			if (boost::any_cast<boost::int32_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_UINT8:
-			case Vocabulary::TYPE_UINT16:
-			case Vocabulary::TYPE_UINT32:
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
 			if (boost::any_cast<boost::uint32_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_INT64:
+		case Vocabulary::TYPE_INT64:
 			if (boost::any_cast<boost::int64_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_UINT64:
+		case Vocabulary::TYPE_UINT64:
 			if (boost::any_cast<boost::uint64_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_FLOAT:
+		case Vocabulary::TYPE_FLOAT:
 			if (boost::any_cast<float>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_DOUBLE:
+		case Vocabulary::TYPE_DOUBLE:
 			if (boost::any_cast<double>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_LONG_DOUBLE:
+		case Vocabulary::TYPE_LONG_DOUBLE:
 			if (boost::any_cast<long double>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
-			case Vocabulary::TYPE_SHORT_STRING:
-			case Vocabulary::TYPE_STRING:
-			case Vocabulary::TYPE_LONG_STRING:
-			case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
 			if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
 				if (boost::any_cast<boost::regex>(&m_value) == NULL)
 					throw InvalidValueForTypeException();
@@ -1248,9 +1248,9 @@ inline void Comparison::configure(const ComparisonType type,
 					throw InvalidValueForTypeException();
 			}
 			break;
-			case Vocabulary::TYPE_DATE_TIME:
-			case Vocabulary::TYPE_DATE:
-			case Vocabulary::TYPE_TIME:
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
 			if (boost::any_cast<PionDateTime>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;

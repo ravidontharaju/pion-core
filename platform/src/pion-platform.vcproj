@@ -339,6 +339,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\pion\platform\Comparison.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\include\pion\platform\ConfigManager.hpp"
 				>
 			</File>
@@ -356,6 +360,10 @@
 			</File>
 			<File
 				RelativePath="..\include\pion\platform\PlatformPlugin.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pion\platform\PluginConfig.hpp"
 				>
 			</File>
 			<File

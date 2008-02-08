@@ -19,9 +19,9 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/platform/VocabularyManager.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
-#include <pion/platform/ReactionEngine.hpp>
 #include <pion/PionUnitTestDefs.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/thread/xtime.hpp>

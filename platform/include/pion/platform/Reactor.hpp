@@ -41,7 +41,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// Reactor: used to process Events, and to deliver the same or new Events to other Reactors
 ///
-class Reactor
+class PION_PLATFORM_API Reactor
 	: public PlatformPlugin
 {
 public:

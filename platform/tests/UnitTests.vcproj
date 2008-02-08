@@ -289,6 +289,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ComparisonTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ConfigManagerTests.cpp"
 				>
 			</File>
@@ -298,6 +302,10 @@
 			</File>
 			<File
 				RelativePath=".\PionPlatformUnitTests.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ReactorTests.cpp"
 				>
 			</File>
 			<File
