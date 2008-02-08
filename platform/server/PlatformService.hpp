@@ -39,7 +39,7 @@ class PlatformConfig;
 ///
 /// PlatformService: Pion Platform WebService that supports XML configuration
 ///
-class PlatformService
+class PION_SERVER_API PlatformService
 	: public pion::platform::PlatformPlugin,
 	public pion::net::WebService
 {
