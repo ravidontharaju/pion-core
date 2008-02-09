@@ -49,6 +49,10 @@ ServiceManager::ServiceManager(PlatformConfig& platform_config)
 	setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
 	m_scheduler.setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
 	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
+	platform_config.getVocabularyManager().registerForUpdates(boost::bind(&ServiceManager::updateVocabulary, this));
+	platform_config.getCodecFactory().registerForUpdates(boost::bind(&ServiceManager::updateCodecs, this));
+	platform_config.getDatabaseManager().registerForUpdates(boost::bind(&ServiceManager::updateDatabases, this));
+	platform_config.getReactionEngine().registerForUpdates(boost::bind(&ServiceManager::updateReactors, this));
 }
 
 void ServiceManager::openConfigFile(void)
@@ -220,6 +224,30 @@ bool ServiceManager::writeConfigXML(std::ostream& out,
 	return true;
 }
 
+void ServiceManager::updateVocabulary(void)
+{
+	m_platform_services.run(boost::bind(&PlatformService::updateVocabulary, _1,
+										boost::cref(m_platform_config.getVocabularyManager().getVocabulary())));
+}
+
+void ServiceManager::updateCodecs(void)
+{
+	m_platform_services.run(boost::bind(&PlatformService::updateCodecs, _1,
+										boost::ref(m_platform_config)));
+}
+
+void ServiceManager::updateDatabases(void)
+{
+	m_platform_services.run(boost::bind(&PlatformService::updateDatabases, _1,
+										boost::ref(m_platform_config)));
+}
+
+void ServiceManager::updateReactors(void)
+{
+	m_platform_services.run(boost::bind(&PlatformService::updateReactors, _1,
+										boost::ref(m_platform_config)));
+}
+	
 	
 }	// end namespace server
 }	// end namespace pion

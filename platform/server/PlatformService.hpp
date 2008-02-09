@@ -80,6 +80,30 @@ public:
 	virtual void setConfig(PlatformConfig& platform_cfg,
 						   const xmlNodePtr config_ptr);
 
+	/**
+	 * this updates the Codecs that are used by this service; it should
+	 * be called whenever any Codec's configuration is updated
+	 *
+	 * @param platform_cfg reference to the platform configuration manager
+	 */
+	virtual void updateCodecs(PlatformConfig& platform_cfg) {}
+	
+	/**
+	 * this updates the Databases that are used by this service; it should
+	 * be called whenever any Database's configuration is updated
+	 *
+	 * @param platform_cfg reference to the platform configuration manager
+	 */
+	virtual void updateDatabases(PlatformConfig& platform_cfg) {}
+
+	/**
+	 * this updates the Databases that are used by this service; it should
+	 * be called whenever any Database's configuration is updated
+	 *
+	 * @param platform_cfg reference to the platform configuration manager
+	 */
+	virtual void updateReactors(PlatformConfig& platform_cfg) {}
+
 	
 protected:
 	

@@ -200,7 +200,24 @@ public:
 	inline boost::uint64_t getEventsOut(const std::string& reactor_id) const {
 		return m_plugins.getStatistic(reactor_id, boost::bind(&Reactor::getEventsOut, _1));
 	}
+	
+	/**
+	 * checks to see if a Reactor is recognized (reactor_id is valid)
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	inline bool hasReactor(const std::string& reactor_id) const {
+		return (m_plugins.get(reactor_id) != NULL);
+	}
 
+	/**
+	 * schedules work to be performed by one of the pooled threads
+	 *
+	 * @param work_func work function to be executed
+	 */
+	template<typename WorkFunction>
+	inline void post(WorkFunction work_func) { m_scheduler.getIOService().post(work_func); }
+	
 	/// returns the number of threads that are currently running
 	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
 	

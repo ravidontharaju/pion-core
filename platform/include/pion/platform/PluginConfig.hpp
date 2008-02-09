@@ -164,6 +164,7 @@ protected:
 		m_vocabulary(vocab_mgr.getVocabulary()),
 		m_plugin_element(plugin_element)
 	{
+		vocab_mgr.registerForUpdates(boost::bind(&PluginConfig::updateVocabulary, this));
 		setLogger(PION_GET_LOGGER("pion.platform.PluginConfig"));
 	}
 

@@ -132,6 +132,14 @@ public:
 	 */
 	bool writeConfigXML(std::ostream& out, const std::string& server_id) const;
 	
+	/**
+	 * schedules work to be performed by one of the pooled threads
+	 *
+	 * @param work_func work function to be executed
+	 */
+	template<typename WorkFunction>
+	inline void post(WorkFunction work_func) { m_scheduler.getIOService().post(work_func); }
+	
 	/// returns the number of threads that are currently running
 	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
 	
@@ -140,7 +148,19 @@ public:
 	
 	/// sets the number of threads used all of the HTTP servers & services
 	inline void setNumThreads(const boost::uint32_t n) { m_scheduler.setNumThreads(n); }
+		
+	/// this notifies all the service plug-ins that the Vocabulary was updated
+	void updateVocabulary(void);
+	
+	/// this notifies all the service plug-ins that the Codecs were updated
+	void updateCodecs(void);
 
+	/// this notifies all the service plug-ins that the Databases were updated
+	void updateDatabases(void);
+
+	/// this notifies all the service plug-ins that the Reactors were updated
+	void updateReactors(void);
+	
 	
 private:
 

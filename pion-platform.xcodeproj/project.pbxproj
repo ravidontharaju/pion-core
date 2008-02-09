@@ -167,6 +167,16 @@
 		E3D046D80D56A1120015545F /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E3D046DB0D56A1190015545F /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
 		E3D046DE0D56A1210015545F /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
+		E3E6AE420D5A5E5100A9C68F /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
+		E3E6AE430D5A5E5100A9C68F /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
+		E3E6AE460D5A5E5100A9C68F /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
+		E3E6AE470D5A5E5100A9C68F /* FilterReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFF9590D4432DE00ADB135 /* FilterReactor.cpp */; };
+		E3E6AE4A0D5A5E5100A9C68F /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E3E6AE4B0D5A5E5100A9C68F /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E3E6AE4C0D5A5E5100A9C68F /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
+		E3E6AE4D0D5A5E5100A9C68F /* libpion-server.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FF965C0D579ABB001E075B /* libpion-server.dylib */; };
+		E3E6AE520D5A5E7F00A9C68F /* FeedService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */; };
+		E3E6AE530D5A5E8000A9C68F /* FeedService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */; };
 		E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3FF95890D5789BE001E075B /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
 		E3FF958A0D5789BE001E075B /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
@@ -251,6 +261,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		E32C2ECB0D5D2DB500C2DECB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3E6AE380D5A5E5100A9C68F /* FeedService */;
+			remoteInfo = FeedService;
+		};
 		E36D8A620D29CA0400B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
@@ -383,6 +400,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-platform: dynamic";
+		};
+		E3E6AE3A0D5A5E5100A9C68F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E3E6AE3C0D5A5E5100A9C68F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E3E6AE3E0D5A5E5100A9C68F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
+			remoteInfo = "pion-platform: dynamic";
+		};
+		E3E6AE400D5A5E5100A9C68F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FF96370D579ABB001E075B;
+			remoteInfo = "pion-server: dynamic";
 		};
 		E3EFC6D30D1896930019CCD4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -634,6 +679,9 @@
 		E3D045360D5693770015545F /* PlatformService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PlatformService.hpp; path = platform/server/PlatformService.hpp; sourceTree = SOURCE_ROOT; };
 		E3D045370D5693770015545F /* ServiceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServiceManager.cpp; path = platform/server/ServiceManager.cpp; sourceTree = SOURCE_ROOT; };
 		E3D045380D5693770015545F /* ServiceManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ServiceManager.hpp; path = platform/server/ServiceManager.hpp; sourceTree = SOURCE_ROOT; };
+		E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeedService.cpp; path = platform/services/FeedService.cpp; sourceTree = SOURCE_ROOT; };
+		E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FeedService.hpp; path = platform/services/FeedService.hpp; sourceTree = SOURCE_ROOT; };
+		E3E6AE510D5A5E5100A9C68F /* FeedService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FeedService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3EFC68F0D18905C0019CCD4 /* PionPlatformUnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionPlatformUnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95950D5789BE001E075B /* ConfigService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ConfigService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95A30D579280001E075B /* ConfigService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigService.cpp; path = platform/services/ConfigService.cpp; sourceTree = SOURCE_ROOT; };
@@ -734,6 +782,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3E6AE490D5A5E5100A9C68F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3E6AE4A0D5A5E5100A9C68F /* libpion-common.dylib in Frameworks */,
+				E3E6AE4B0D5A5E5100A9C68F /* libpion-net.dylib in Frameworks */,
+				E3E6AE4C0D5A5E5100A9C68F /* libpion-platform.dylib in Frameworks */,
+				E3E6AE4D0D5A5E5100A9C68F /* libpion-server.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E3EFC68D0D18905C0019CCD4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -803,6 +862,7 @@
 				E3FF95950D5789BE001E075B /* ConfigService.so */,
 				E3FF96360D579AB8001E075B /* libpion-server.a */,
 				E3FF965C0D579ABB001E075B /* libpion-server.dylib */,
+				E3E6AE510D5A5E5100A9C68F /* FeedService.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -908,18 +968,18 @@
 		E36D8A0F0D29C6C200B4C134 /* services */ = {
 			isa = PBXGroup;
 			children = (
-				E36D8A2C0D29C7A300B4C134 /* AllowNothingService.cpp */,
 				E36D8A2D0D29C7A300B4C134 /* AllowNothingService.hpp */,
-				E36D8A2E0D29C7A300B4C134 /* CookieService.cpp */,
+				E36D8A2C0D29C7A300B4C134 /* AllowNothingService.cpp */,
 				E36D8A2F0D29C7A300B4C134 /* CookieService.hpp */,
-				E36D8A300D29C7A300B4C134 /* EchoService.cpp */,
+				E36D8A2E0D29C7A300B4C134 /* CookieService.cpp */,
 				E36D8A310D29C7A300B4C134 /* EchoService.hpp */,
-				E36D8A320D29C7A300B4C134 /* FileService.cpp */,
+				E36D8A300D29C7A300B4C134 /* EchoService.cpp */,
 				E36D8A330D29C7A300B4C134 /* FileService.hpp */,
-				E36D8A340D29C7A300B4C134 /* HelloService.cpp */,
+				E36D8A320D29C7A300B4C134 /* FileService.cpp */,
 				E36D8A350D29C7A300B4C134 /* HelloService.hpp */,
-				E36D8A360D29C7A300B4C134 /* LogService.cpp */,
+				E36D8A340D29C7A300B4C134 /* HelloService.cpp */,
 				E36D8A370D29C7A300B4C134 /* LogService.hpp */,
+				E36D8A360D29C7A300B4C134 /* LogService.cpp */,
 			);
 			name = services;
 			sourceTree = "<group>";
@@ -1071,6 +1131,8 @@
 			children = (
 				E3FF95A40D579280001E075B /* ConfigService.hpp */,
 				E3FF95A30D579280001E075B /* ConfigService.cpp */,
+				E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */,
+				E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */,
 			);
 			name = services;
 			sourceTree = "<group>";
@@ -1233,6 +1295,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3E6AE410D5A5E5100A9C68F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3E6AE420D5A5E5100A9C68F /* XMLCodec.hpp in Headers */,
+				E3E6AE430D5A5E5100A9C68F /* FilterReactor.hpp in Headers */,
+				E3E6AE530D5A5E8000A9C68F /* FeedService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E3FF95880D5789BE001E075B /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1384,6 +1456,7 @@
 				E3FF959E0D578A95001E075B /* PBXTargetDependency */,
 				E3FF95A00D578A95001E075B /* PBXTargetDependency */,
 				E3FF95A20D578A95001E075B /* PBXTargetDependency */,
+				E32C2ECC0D5D2DB500C2DECB /* PBXTargetDependency */,
 			);
 			name = pion;
 			productName = piond;
@@ -1500,6 +1573,27 @@
 			productReference = E3CFF96D0D44340800ADB135 /* FilterReactor.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		E3E6AE380D5A5E5100A9C68F /* FeedService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E3E6AE4E0D5A5E5100A9C68F /* Build configuration list for PBXNativeTarget "FeedService" */;
+			buildPhases = (
+				E3E6AE410D5A5E5100A9C68F /* Headers */,
+				E3E6AE450D5A5E5100A9C68F /* Sources */,
+				E3E6AE490D5A5E5100A9C68F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E3E6AE390D5A5E5100A9C68F /* PBXTargetDependency */,
+				E3E6AE3B0D5A5E5100A9C68F /* PBXTargetDependency */,
+				E3E6AE3D0D5A5E5100A9C68F /* PBXTargetDependency */,
+				E3E6AE3F0D5A5E5100A9C68F /* PBXTargetDependency */,
+			);
+			name = FeedService;
+			productName = ELFCodec;
+			productReference = E3E6AE510D5A5E5100A9C68F /* FeedService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		E3EFC68E0D18905C0019CCD4 /* PionPlatformUnitTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E3EFC6AD0D1890E90019CCD4 /* Build configuration list for PBXNativeTarget "PionPlatformUnitTests" */;
@@ -1608,6 +1702,7 @@
 				E36D8C270D29D7EA00B4C134 /* XMLCodec */,
 				E3CFF95B0D44340800ADB135 /* FilterReactor */,
 				E3FF95810D5789BE001E075B /* ConfigService */,
+				E3E6AE380D5A5E5100A9C68F /* FeedService */,
 				E3EFC68E0D18905C0019CCD4 /* PionPlatformUnitTests */,
 				E36D8BE60D29D6DC00B4C134 /* pion */,
 			);
@@ -1746,6 +1841,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E3E6AE450D5A5E5100A9C68F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E3E6AE460D5A5E5100A9C68F /* XMLCodec.cpp in Sources */,
+				E3E6AE470D5A5E5100A9C68F /* FilterReactor.cpp in Sources */,
+				E3E6AE520D5A5E7F00A9C68F /* FeedService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E3EFC68C0D18905C0019CCD4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1819,6 +1924,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E32C2ECC0D5D2DB500C2DECB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3E6AE380D5A5E5100A9C68F /* FeedService */;
+			targetProxy = E32C2ECB0D5D2DB500C2DECB /* PBXContainerItemProxy */;
+		};
 		E36D8A630D29CA0400B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
@@ -1913,6 +2023,26 @@
 			isa = PBXTargetDependency;
 			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
 			targetProxy = E3CFF9610D44340800ADB135 /* PBXContainerItemProxy */;
+		};
+		E3E6AE390D5A5E5100A9C68F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E3E6AE3A0D5A5E5100A9C68F /* PBXContainerItemProxy */;
+		};
+		E3E6AE3B0D5A5E5100A9C68F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E3E6AE3C0D5A5E5100A9C68F /* PBXContainerItemProxy */;
+		};
+		E3E6AE3D0D5A5E5100A9C68F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			targetProxy = E3E6AE3E0D5A5E5100A9C68F /* PBXContainerItemProxy */;
+		};
+		E3E6AE3F0D5A5E5100A9C68F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FF96370D579ABB001E075B /* pion-server: dynamic */;
+			targetProxy = E3E6AE400D5A5E5100A9C68F /* PBXContainerItemProxy */;
 		};
 		E3EFC6D40D1896930019CCD4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2283,6 +2413,26 @@
 			};
 			name = Release;
 		};
+		E3E6AE4F0D5A5E5100A9C68F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = FeedService;
+			};
+			name = Debug;
+		};
+		E3E6AE500D5A5E5100A9C68F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = FeedService;
+			};
+			name = Release;
+		};
 		E3EFC6910D18905C0019CCD4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2478,6 +2628,15 @@
 			buildConfigurations = (
 				E3CFF96B0D44340800ADB135 /* Debug */,
 				E3CFF96C0D44340800ADB135 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E3E6AE4E0D5A5E5100A9C68F /* Build configuration list for PBXNativeTarget "FeedService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3E6AE4F0D5A5E5100A9C68F /* Debug */,
+				E3E6AE500D5A5E5100A9C68F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
