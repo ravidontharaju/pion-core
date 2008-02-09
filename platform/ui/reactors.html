@@ -41,6 +41,7 @@
 	<script type="text/javascript" src="dojo/dijit/layout/StackContainer.js"></script>
 	<script type="text/javascript" src="dojo/dijit/layout/TabContainer.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Menu.js"></script>
+	<script type="text/javascript" src="dojo/dijit/Tree.js"></script>
 	<script type="text/javascript" src="dojo/dojox/data/XmlStore.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/shape.js"></script>
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
@@ -417,9 +418,9 @@
 						<!--start servers and services tree-->
 						<h2>Services</h2>
 						<hr/>
-						<div style="float:left; width:auto; margin-right: 20px;"">
-						<div dojoType="dojo.data.ItemFileWriteStore" url="serverTree.json" jsid="server_store" />
-						<div dojoType="dijit.Tree" id="server_tree" store="server_store" labelAttr="name" childrenAttr="services"></div>
+						<div style="float:left; width:auto; margin-right: 20px;">							
+							<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->
+							<div id="server_tree"/>
 						</div>
 						<!--end servers and services tree-->
 					</div>

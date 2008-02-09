@@ -2,6 +2,29 @@ dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.xml.DomParser");
 dojo.require("dijit.Tree");
 
+var server_store;
+
+dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
+	// Override getValues, which is used by dijit.Tree.getItemChildren, so that we can re-order the children.
+	getValues: function (item, attribute) {
+		var values = this.inherited("getValues", arguments);
+		
+		// getItemChildren only calls getValues with attribute = childrenAttr
+		if (attribute != 'services') return values;
+
+		// Move values with children to the end of the list.
+		var len = values.length;
+		for (var i = 0; i < len; ++i) {
+			if (values[0].services) {
+				values.push(values[0]);
+				values.splice(0, 1);
+			}
+		}
+		
+		return values;
+	}
+});
+
 function initSystemConfigPage() {
 	dojo.byId('platform_conf_file').firstChild.nodeValue = 'actual/path/here/PlatformConfigFile.xml';
 	dojo.byId('vocab_conf_file').firstChild.nodeValue = 'actual/path/here/VocabulariesConfigFile.xml';
@@ -34,7 +57,8 @@ function initSystemConfigPage() {
 	plugin_paths_list.appendChild(plugin_path_2);
 	*/
 	
-	server_store.fetch({sort: [{attribute: 'order', descending: true}], queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: rebuildTree});
+	server_store = new childlessChildrenFirstStore({url: "serverTree.json"});
+	server_store.fetch({queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: buildTree});
 }
 
 function handleServerTreeItem(item, request) {
@@ -48,9 +72,6 @@ function handleServerTreeItem(item, request) {
 	}
 }
 
-function rebuildTree() {
-	/*
-	TODO: Make the leaves for the server attributes come before the service nodes.  This will probably mean deleting the service items
-	and recreating them, so they come after the leaves created by handleServerTreeItem.
-	*/
+function buildTree() {
+	var server_tree = new dijit.Tree({store: server_store, labelAttr:"name", childrenAttr:["services"]}, dojo.byId('server_tree'));
 }
