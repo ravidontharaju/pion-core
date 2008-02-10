@@ -8,7 +8,7 @@ dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
 	// Override getValues, which is used by dijit.Tree.getItemChildren, so that we can re-order the children.
 	getValues: function (item, attribute) {
 		var values = this.inherited("getValues", arguments);
-		
+
 		// getItemChildren only calls getValues with attribute = childrenAttr
 		if (attribute != 'services') return values;
 
@@ -20,45 +20,104 @@ dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
 				values.splice(0, 1);
 			}
 		}
-		
+
 		return values;
 	}
 });
 
 function initSystemConfigPage() {
+	dojo.xhrGet({
+		url: '/config',
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			console.debug('xml: response = ', response);
+			dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].textContent;
+			dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].textContent;
+			dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].textContent;
+			dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
+			dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
+			
+			// in the plugin paths table, save the first placeholder row node for cloning and then remove all rows
+			var plugin_paths_table = dojo.byId('plugin_paths');
+			var row_node_to_clone = plugin_paths_table.getElementsByTagName('tr')[0];
+			while (plugin_paths_table.firstChild) {
+				plugin_paths_table.removeChild(plugin_paths_table.firstChild);
+			}
+
+			var plugin_paths = response.getElementsByTagName('PluginPath');
+			var row_nodes = [];
+			for (var i = 0; i < plugin_paths.length; ++i) {
+				row_nodes[i] = dojo.clone(row_node_to_clone);
+				row_nodes[i].getElementsByTagName('label')[0].innerHTML = 'Plug-In Path ' + (i + 1);
+				row_nodes[i].getElementsByTagName('td')[1].innerHTML = plugin_paths[i].textContent;
+				plugin_paths_table.appendChild(row_nodes[i]);
+			}
+			return response;
+		},
+		error: function(response, ioArgs) {
+			console.error('HTTP status code: ', ioArgs.xhr.status);
+			return response;
+		}
+	});
+	dojo.xhrGet({
+		url: '/config/vocabularies',
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			console.debug('xml: response = ', response);
+			dojo.byId('vocab_path').innerHTML = response.getElementsByTagName('VocabularyPath')[0].textContent;
+			return response;
+		},
+		error: function(response, ioArgs) {
+			console.error('HTTP status code: ', ioArgs.xhr.status);
+			return response;
+		}
+	});
+
 	dojo.byId('platform_conf_file').firstChild.nodeValue = 'actual/path/here/PlatformConfigFile.xml';
-	dojo.byId('vocab_conf_file').firstChild.nodeValue = 'actual/path/here/VocabulariesConfigFile.xml';
-	dojo.byId('codec_conf_file').firstChild.nodeValue = 'actual/path/here/CodecsConfigFile.xml';
-	dojo.byId('database_conf_file').firstChild.nodeValue = 'actual/path/here/DatabasesConfigFile.xml';
-	dojo.byId('reactor_conf_file').firstChild.nodeValue = 'actual/path/here/ReactorsConfigFile.xml';
-	dojo.byId('service_conf_file').firstChild.nodeValue = 'actual/path/here/ServicesConfigFile.xml';
 
-	dojo.byId('vocab_path').firstChild.nodeValue = 'actual/path/here/VocabularyPath';
+	//server_store = new childlessChildrenFirstStore({url: 'serverTree.json'});
+	//server_store.fetch({queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: buildTree});
+	server_store = new dojox.data.XmlStore({url: '/config/services'});
 
-	var plugin_paths_list = dojo.byId('plugin_paths');
-	// TODO: create new table rows to replace the placeholders.
-	/*
-	while (plugin_paths_list.firstChild) {
-		plugin_paths_list.removeChild(plugin_paths_list.firstChild);
+	// dijit.Tree requires dojo.data.api.Identity support, although it only uses getIdentity()
+	server_store.getFeatures = function() {
+		return {
+			 'dojo.data.api.Read': true,
+			 'dojo.data.api.Identity': true
+		};
 	}
-	*/
-	/*
-	<tr>
-        <td width="20%">&nbsp;</td>
-        <td width="80%">your/path/here/PluginPath</td>
-    </tr>
-    */
-    /*
-	var plugin_path = document.createElement('li');
-	plugin_path.appendChild(document.createTextNode('first/path/to/search'));
-	plugin_paths_list.appendChild(plugin_path);
-	var plugin_path_2 = document.createElement('li');
-	plugin_path_2.appendChild(document.createTextNode('second/path/to/search'));
-	plugin_paths_list.appendChild(plugin_path_2);
-	*/
-	
-	server_store = new childlessChildrenFirstStore({url: "serverTree.json"});
-	server_store.fetch({queryOptions: {deep: true}, onItem: handleServerTreeItem, onComplete: buildTree});
+	server_store.getIdentity = function(item) {
+		console.debug("server_store.getValue(item, '@id') = ", server_store.getValue(item, '@id'));
+		console.debug("server_store.getAttributes(item) = ", server_store.getAttributes(item));
+		// This is not unique, since most items don't have attribute @id, but somehow it works.
+		// If we need to use features that require unique identities, we'll have to generate them somehow.
+		return server_store.getValue(item, '@id');
+	}
+
+	var server_tree = new dijit.Tree({
+		store: server_store,
+		childrenAttr: ['childNodes'],
+		getLabel: function(item) {
+			var label = server_store.getValue(item, 'tagName');
+			
+			// Because @id is the identity attribute, the following returns null rather than undefined if the item doesn't have attribute @id.
+			// (Also, server_store.hasAttribute(item, '@id') always returns true, even if getAttributes(item) doesn't include @id.)
+			var id = server_store.getValue(item, '@id');
+			
+			if (id) {
+				return label + ': ' + id;
+			}
+			if (label == 'Option') {
+				label += ' ' + server_store.getValue(item, '@name');
+			}
+			if (server_store.hasAttribute(item, 'text()')) {
+				return label + ': ' + server_store.getValue(item, 'text()');
+			}
+			return label;
+		}
+	}, dojo.byId('server_tree'));
 }
 
 function handleServerTreeItem(item, request) {

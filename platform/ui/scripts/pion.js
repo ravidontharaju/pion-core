@@ -9,6 +9,11 @@ var system_config_page_initialized = false;
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
 	initReactorConfigPage();
+	
+	// do a fetch just to check if the datastore is available
+	term_store.fetch({onError: function(errorData, request){
+		alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
+	}});
 }
 
 dojo.addOnLoad(init);

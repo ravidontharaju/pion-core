@@ -21,7 +21,7 @@ var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
 var codec_config_items;
 
-var term_store = new dojox.data.XmlStore({url: '../config/vocabularies/clf.xml', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
+var term_store = new dojox.data.XmlStore({url: '/config/vocabularies?id=urn:vocab:clf', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
 term_store.fetchItemByIdentity = function(keywordArgs) {
@@ -134,7 +134,7 @@ function handleCellEdit(inValue, inRowIndex, inFieldIndex) {
 var model = new dojox.grid.data.Table(null, []);
 
 function initCodecConfigPage() {
-	codec_config_store = new dojox.data.XmlStore({url: '../config/codecs.xml'});
+	codec_config_store = new dojox.data.XmlStore({url: '/config/codecs'});
 
 	function onComplete(items, request){
 		codec_config_items = items;
