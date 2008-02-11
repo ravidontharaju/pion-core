@@ -16,7 +16,6 @@ libpion_server_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@ @P
 bin_PROGRAMS = pion
 
 pion_SOURCES = main.cpp
-pion_LDFLAGS = -Wl,-E
 pion_LDADD = libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 pion_DEPENDENCIES = libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
