@@ -31,13 +31,21 @@ function initSystemConfigPage() {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
-			console.debug('xml: response = ', response);
-			dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].textContent;
-			dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].textContent;
-			dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].textContent;
-			dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
-			dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
-			
+			console.debug('in load()');
+			if (dojo.isIE) {
+				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].xml;
+				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].xml;
+				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].xml;
+				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].xml;
+				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].xml;
+			} else {
+				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].textContent;
+				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].textContent;
+				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].textContent;
+				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
+				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
+			}
+
 			// in the plugin paths table, save the first placeholder row node for cloning and then remove all rows
 			var plugin_paths_table = dojo.byId('plugin_paths');
 			var row_node_to_clone = plugin_paths_table.getElementsByTagName('tr')[0];
@@ -48,10 +56,16 @@ function initSystemConfigPage() {
 			var plugin_paths = response.getElementsByTagName('PluginPath');
 			var row_nodes = [];
 			for (var i = 0; i < plugin_paths.length; ++i) {
-				row_nodes[i] = dojo.clone(row_node_to_clone);
+				if (dojo.isIE) {
+					row_nodes[i] = plugin_paths_table.insertRow();
+					dojo.forEach(row_node_to_clone.childNodes, function(n){row_nodes[i].appendChild(dojo.clone(n));});
+				} else {
+					row_nodes[i] = dojo.clone(row_node_to_clone);
+					plugin_paths_table.appendChild(row_nodes[i]);
+				}
 				row_nodes[i].getElementsByTagName('label')[0].innerHTML = 'Plug-In Path ' + (i + 1);
-				row_nodes[i].getElementsByTagName('td')[1].innerHTML = plugin_paths[i].textContent;
-				plugin_paths_table.appendChild(row_nodes[i]);
+				var plugin_path = dojo.isIE? plugin_paths[i].xml : plugin_paths[i].textContent;
+				row_nodes[i].getElementsByTagName('td')[1].innerHTML = plugin_path;
 			}
 			return response;
 		},
@@ -65,8 +79,8 @@ function initSystemConfigPage() {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
-			console.debug('xml: response = ', response);
-			dojo.byId('vocab_path').innerHTML = response.getElementsByTagName('VocabularyPath')[0].textContent;
+			var node = response.getElementsByTagName('VocabularyPath')[0];
+			dojo.byId('vocab_path').innerHTML = dojo.isIE? node.xml : node.textContent;
 			return response;
 		},
 		error: function(response, ioArgs) {
