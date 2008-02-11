@@ -20,7 +20,8 @@
 #ifndef __PION_CODEC_HEADER__
 #define __PION_CODEC_HEADER__
 
-#include <iostream>
+#include <istream>
+#include <ostream>
 #include <libxml/tree.h>
 #include <boost/shared_ptr.hpp>
 #include <pion/PionConfig.hpp>
