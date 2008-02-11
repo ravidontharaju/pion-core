@@ -50,6 +50,10 @@ static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tm
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
 static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
 static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
+static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
+static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
+static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
+static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
 static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
 static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 
@@ -63,6 +67,14 @@ void cleanup_codec_config_files(void)
 	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
 		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
 	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
+
+	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
+
+	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
 
 	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
 		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
@@ -461,7 +473,8 @@ public:
 		: CodecFactory(m_vocab_mgr),
 		m_common_id("urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68"),
 		m_combined_id("urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68"),
-		m_extended_id("urn:uuid:23f68d5a-bfec-11dc-81a7-0016cb926e68")
+		m_extended_id("urn:uuid:23f68d5a-bfec-11dc-81a7-0016cb926e68"),
+		m_justdate_id("urn:uuid:dba9eac2-d8bb-11dc-bebe-001cc02bd66b")
 	{
 		setup_logging_for_unit_tests();
 		cleanup_codec_config_files();
@@ -484,7 +497,9 @@ public:
 		BOOST_CHECK(m_combined_codec);
 		m_extended_codec = getCodec(m_extended_id);
 		BOOST_CHECK(m_extended_codec);
-		
+		m_date_codec = getCodec(m_justdate_id);
+		BOOST_CHECK(m_date_codec);
+
 		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#remotehost");
 		m_rfc931_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#rfc931");
 		m_authuser_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#authuser");
@@ -500,9 +515,11 @@ public:
 	const std::string	m_common_id;
 	const std::string	m_combined_id;
 	const std::string	m_extended_id;
+	const std::string	m_justdate_id;
 	CodecPtr			m_common_codec;
 	CodecPtr			m_combined_codec;
 	CodecPtr			m_extended_codec;
+	CodecPtr			m_date_codec;
 	Vocabulary::TermRef	m_remotehost_ref;
 	Vocabulary::TermRef	m_rfc931_ref;
 	Vocabulary::TermRef	m_authuser_ref;
@@ -546,6 +563,15 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecComment) {
 	BOOST_CHECK_EQUAL(m_common_codec->getComment(), "Codec for the Common Log Format (CLF)");
 	BOOST_CHECK_EQUAL(m_combined_codec->getComment(), "Codec for the Combined Log Format (CLF)");
 	BOOST_CHECK_EQUAL(m_extended_codec->getComment(), "Codec for the Extended Log Format (ELF)");
+}
+
+BOOST_AUTO_TEST_CASE(checkJustDateCodecReadEntry) {
+	BOOST_REQUIRE(m_date_codec);
+	std::stringstream ss("\"2008-07-24\"\n");
+	Event e(m_date_codec->getEventType());
+	BOOST_REQUIRE(m_date_codec->read(ss, e));
+	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+					  PionDateTime(boost::gregorian::date(2008, 7, 24)));
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
@@ -613,13 +639,6 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /pion/ HTTP/1.1");
 	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
 	BOOST_CHECK_EQUAL(e.getUInt(m_bytes_ref), 7058UL);
-
-	/*
-	EventPtr event_ptr;
-	while ((event_ptr = m_common_codec->read(in))) {
-		m_common_codec->write(std::cout, *event_ptr);
-	}
-	*/
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatJustOneField) {
@@ -755,6 +774,5 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
 	m_extended_codec->write(ss, e);
 	BOOST_CHECK_EQUAL(ss.str(), "#Version: 1.0\x0A#Fields: date remotehost request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

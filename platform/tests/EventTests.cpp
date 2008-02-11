@@ -35,7 +35,7 @@ public:
 	EventTests_F()
 		: m_null_term("urn:pion:null-term"), m_plain_int_term("urn:pion:plain-old-int"),
 		m_big_int_term("urn:pion:big-int"), m_fixed_term("urn:pion:fixed-text"),
-		m_object_term("urn:pion:simple-object")
+		m_date_term("urn:pion:date"), m_object_term("urn:pion:simple-object")
 	{
 		setup_logging_for_unit_tests();
 		// initialize our initial term set
@@ -48,13 +48,16 @@ public:
 		m_plain_int_term.term_type = Vocabulary::TYPE_INT16;
 		m_big_int_term.term_type = Vocabulary::TYPE_UINT64;
 		m_fixed_term.term_type = Vocabulary::TYPE_CHAR;
+		m_date_term.term_type = Vocabulary::TYPE_DATE;
 		m_object_term.term_type = Vocabulary::TYPE_OBJECT;
 		m_null_term.term_comment = "A plain, old integer number";
 		m_plain_int_term.term_comment = "A plain, old integer number";
 		m_big_int_term.term_comment = "A really big positive integer";
 		m_fixed_term.term_comment = "Ten bytes of text";
+		m_date_term.term_comment = "A date";
 		m_object_term.term_comment = "An object containing other Terms";
 		m_fixed_term.term_size = 10;
+		m_date_term.term_format = "%Y-%m-%d";
 	}
 	~EventTests_F() {
 	}
@@ -63,6 +66,7 @@ public:
 		m_vocabulary.addTerm(m_plain_int_term);
 		m_vocabulary.addTerm(m_big_int_term);
 		m_vocabulary.addTerm(m_fixed_term);
+		m_vocabulary.addTerm(m_date_term);
 		m_vocabulary.addTerm(m_object_term);
 	}
 
@@ -71,6 +75,7 @@ public:
 	Vocabulary::Term	m_plain_int_term;
 	Vocabulary::Term	m_big_int_term;
 	Vocabulary::Term	m_fixed_term;
+	Vocabulary::Term	m_date_term;
 	Vocabulary::Term	m_object_term;
 };
 
@@ -83,11 +88,17 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	e.setInt(m_plain_int_term.term_ref, 24);
 	e.setUBigInt(m_big_int_term.term_ref, 2025221224);
 	e[m_fixed_term.term_ref] = short_msg_str;
+	e[m_date_term.term_ref] = PionDateTime(boost::gregorian::date(2007, 4, 5));
+
 	const boost::any *value_ptr = e.getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
 	BOOST_CHECK_EQUAL(boost::any_cast<boost::int32_t>(*value_ptr), 24);
 	BOOST_CHECK_EQUAL(boost::any_cast<boost::uint64_t>(e[m_big_int_term.term_ref]), 2025221224UL);
 	BOOST_CHECK_EQUAL(e.getString(m_fixed_term.term_ref), short_msg_str);
+	PionDateTime pdt = e.getDateTime(m_date_term.term_ref);
+	BOOST_CHECK_EQUAL(pdt.date().year(), 2007);
+	BOOST_CHECK_EQUAL(pdt.date().month(), 4);
+	BOOST_CHECK_EQUAL(pdt.date().day(), 5);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

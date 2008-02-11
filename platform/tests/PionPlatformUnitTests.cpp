@@ -111,3 +111,4 @@ void setup_plugins_directory(void)
 #endif
 	}
 }
+

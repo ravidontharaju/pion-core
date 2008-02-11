@@ -24,6 +24,7 @@
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -115,6 +116,7 @@ public:
 	 * @return const std::string& the value of the field
 	 */
 	inline const std::string& getString(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(std::string))
 		return boost::any_cast<const std::string&>(operator[](term_ref));
 	}
 	
@@ -126,6 +128,7 @@ public:
 	 * @return std::string& the value of the field
 	 */
 	inline std::string& getString(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(std::string))
 		return boost::any_cast<std::string&>(operator[](term_ref));
 	}
 	
@@ -137,6 +140,7 @@ public:
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::int32_t& getInt(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int32_t))
 		return boost::any_cast<const boost::int32_t&>(operator[](term_ref));
 	}
 	
@@ -148,6 +152,7 @@ public:
 	 * @return std::string& the value of the field
 	 */
 	inline boost::int32_t& getInt(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int32_t))
 		return boost::any_cast<boost::int32_t&>(operator[](term_ref));
 	}
 
@@ -159,6 +164,7 @@ public:
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::uint32_t& getUInt(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint32_t))
 		return boost::any_cast<const boost::uint32_t&>(operator[](term_ref));
 	}
 	
@@ -170,6 +176,7 @@ public:
 	 * @return std::string& the value of the field
 	 */
 	inline boost::uint32_t& getUInt(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint32_t))
 		return boost::any_cast<boost::uint32_t&>(operator[](term_ref));
 	}
 	
@@ -181,6 +188,7 @@ public:
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::int64_t& getBigInt(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int64_t))
 		return boost::any_cast<const boost::int64_t&>(operator[](term_ref));
 	}
 	
@@ -192,6 +200,7 @@ public:
 	 * @return std::string& the value of the field
 	 */
 	inline boost::int64_t& getBigInt(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int64_t))
 		return boost::any_cast<boost::int64_t&>(operator[](term_ref));
 	}
 	
@@ -203,6 +212,7 @@ public:
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::uint64_t& getUBigInt(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint64_t))
 		return boost::any_cast<const boost::uint64_t&>(operator[](term_ref));
 	}
 	
@@ -214,6 +224,7 @@ public:
 	 * @return std::string& the value of the field
 	 */
 	inline boost::uint64_t& getUBigInt(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint64_t))
 		return boost::any_cast<boost::uint64_t&>(operator[](term_ref));
 	}
 
@@ -225,6 +236,7 @@ public:
 	 * @return const float& the value of the field
 	 */
 	inline const float& getFloat(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(float))
 		return boost::any_cast<const float&>(operator[](term_ref));
 	}
 
@@ -236,6 +248,7 @@ public:
 	 * @return float& the value of the field
 	 */
 	inline float& getFloat(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(float))
 		return boost::any_cast<float&>(operator[](term_ref));
 	}
 	
@@ -247,6 +260,7 @@ public:
 	 * @return const double& the value of the field
 	 */
 	inline const double& getDouble(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(double))
 		return boost::any_cast<const double&>(operator[](term_ref));
 	}
 	
@@ -258,6 +272,7 @@ public:
 	 * @return double& the value of the field
 	 */
 	inline double& getDouble(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(double))
 		return boost::any_cast<double&>(operator[](term_ref));
 	}
 
@@ -269,6 +284,7 @@ public:
 	 * @return const long double& the value of the field
 	 */
 	inline const long double& getLongDouble(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(long double))
 		return boost::any_cast<const long double&>(operator[](term_ref));
 	}
 	
@@ -280,6 +296,7 @@ public:
 	 * @return double& the value of the field
 	 */
 	inline long double& getLongDouble(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(long double))
 		return boost::any_cast<long double&>(operator[](term_ref));
 	}
 	
@@ -291,6 +308,7 @@ public:
 	 * @return const PionDateTime& the value of the field
 	 */
 	inline const PionDateTime& getDateTime(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(operator[](term_ref).type()==typeid(PionDateTime))
 		return boost::any_cast<const PionDateTime&>(operator[](term_ref));
 	}
 	
@@ -302,6 +320,7 @@ public:
 	 * @return PionDateTime& the value of the field
 	 */
 	inline PionDateTime& getDateTime(const Vocabulary::TermRef& term_ref) {
+		PION_ASSERT(operator[](term_ref).type()==typeid(PionDateTime))
 		return boost::any_cast<PionDateTime&>(operator[](term_ref));
 	}
 

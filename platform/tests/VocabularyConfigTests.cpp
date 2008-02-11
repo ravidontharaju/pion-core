@@ -724,3 +724,4 @@ BOOST_AUTO_TEST_SUITE_END()
 
 // TODO:
 // void registerForUpdates(VocabularyUpdateFunction f)
+

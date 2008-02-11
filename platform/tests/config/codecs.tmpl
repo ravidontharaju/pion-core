@@ -40,4 +40,11 @@
     <Field term="urn:vocab:clf#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clf#status">status</Field>
   </Codec>
+  <Codec id="urn:uuid:dba9eac2-d8bb-11dc-bebe-001cc02bd66b">
+    <Name>Just the Date</Name>
+    <Comment>Codec for just reading dates</Comment>
+    <Plugin>LogCodec</Plugin>
+    <EventType>urn:vocab:clf#http-request</EventType>
+    <Field term="urn:vocab:clf#date" start="&quot;" end="&quot;">date</Field>
+  </Codec>
 </PionConfig>

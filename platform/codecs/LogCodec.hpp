@@ -370,7 +370,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
-			out << boost::any_cast<std::string>(value);
+			out << boost::any_cast<const std::string&>(value);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
