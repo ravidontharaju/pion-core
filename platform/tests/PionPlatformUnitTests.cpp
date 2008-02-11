@@ -18,6 +18,7 @@
 //
 
 #include <string>
+#include <boost/filesystem/operations.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
@@ -71,6 +72,13 @@ const std::string& get_vocabulary_path(void)
 	return TESTS_VOCABULARY_PATH;
 }
 
+/// returns the full path to the vocabularies.xml config file
+const std::string& get_vocabularies_file(void)
+{
+	static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
+	return VOCABULARY_CONFIG_FILE;
+}
+
 /// sets up logging (run once only)
 void setup_logging_for_unit_tests(void)
 {
@@ -112,3 +120,30 @@ void setup_plugins_directory(void)
 	}
 }
 
+/// cleans up vocabulary config files in the tests config directory
+void cleanup_vocab_config_files(void)
+{
+	static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
+	static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
+	static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
+	static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
+	static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
+	static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
+	static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
+
+	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
+		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
+	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(get_vocabularies_file()))
+		boost::filesystem::remove(get_vocabularies_file());
+	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, get_vocabularies_file());
+}

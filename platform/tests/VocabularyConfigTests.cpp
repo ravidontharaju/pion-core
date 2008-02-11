@@ -35,40 +35,22 @@ using namespace pion::platform;
 /// external functions defined in PionPlatformUnitTests.cpp
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
+extern const std::string& get_vocabularies_file(void);
 extern void setup_logging_for_unit_tests(void);
+extern void cleanup_vocab_config_files(void);
 
 
 /// static strings used by these unit tests
-static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
-static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
-static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
-static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
-static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
-static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
-static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
-static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 static const std::string VOCAB_NEW_CONFIG_FILE(get_vocabulary_path() + "new.xml");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
+static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
+static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
 
 
 /// cleans up vocabulary config files in the working directory
-void cleanup_vocab_config_files(void)
+void cleanup_config_files(void)
 {
-	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
-
-	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
-
-	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
-		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
-	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
-
-	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
-		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
+	cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(VOCAB_NEW_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_NEW_CONFIG_FILE);
@@ -83,7 +65,7 @@ class NewVocabularyConfig_F : public VocabularyConfig {
 public:
 	NewVocabularyConfig_F() {
 		setup_logging_for_unit_tests();
-		cleanup_vocab_config_files();
+		cleanup_config_files();
 	}
 	~NewVocabularyConfig_F() {
 	}
@@ -618,7 +600,7 @@ class NewVocabularyManager_F : public VocabularyManager {
 public:
 	NewVocabularyManager_F() {
 		setup_logging_for_unit_tests();
-		cleanup_vocab_config_files();
+		cleanup_config_files();
 	}
 	~NewVocabularyManager_F() {
 	}
@@ -628,7 +610,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewVocabularyManager_S,
 									   boost::mpl::list<NewVocabularyManager_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadConfigFile) {
-	BOOST_CHECK_NO_THROW(F::setConfigFile(VOCABULARY_CONFIG_FILE));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(get_vocabularies_file()));
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
 
@@ -659,7 +641,7 @@ BOOST_AUTO_TEST_SUITE_END()
 class VocabularyManagerWithConfigFilesLoaded_F : public NewVocabularyManager_F {
 public:
 	VocabularyManagerWithConfigFilesLoaded_F() {
-		setConfigFile(VOCABULARY_CONFIG_FILE);
+		setConfigFile(get_vocabularies_file());
 		openConfigFile();
 
 		// It doesn't seem like the user should have to provide both the file name and the ID, since the ID is in the file.

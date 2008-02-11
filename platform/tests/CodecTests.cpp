@@ -38,8 +38,10 @@ using namespace pion::platform;
 extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
+extern const std::string& get_vocabularies_file(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
+extern void cleanup_vocab_config_files(void);
 
 
 /// static strings used by these unit tests
@@ -48,37 +50,15 @@ static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
 static const std::string EXTENDED_LOG_FILE(get_log_file_dir() + "extended.log");
 static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
-static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
-static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
-static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
-static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
-static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
-static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clf.tmpl");
-static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clf.xml");
 
 
 /// cleans up codec config files in the working directory
 void cleanup_codec_config_files(void)
 {
+	cleanup_vocab_config_files();
+
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
-
-	if (boost::filesystem::exists(VOCABULARY_CONFIG_FILE))
-		boost::filesystem::remove(VOCABULARY_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, VOCABULARY_CONFIG_FILE);
-
-	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
-
-	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
-
-	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
-		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
-	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
 }
 
 
@@ -174,7 +154,7 @@ public:
 		if (! m_config_loaded) {
 			setup_plugins_directory();		
 			// load the CLF vocabulary
-			m_vocab_mgr.setConfigFile(VOCABULARY_CONFIG_FILE);
+			m_vocab_mgr.setConfigFile(get_vocabularies_file());
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
@@ -483,7 +463,7 @@ public:
 		if (! m_config_loaded) {
 			setup_plugins_directory();		
 			// load the CLF vocabulary
-			m_vocab_mgr.setConfigFile(VOCABULARY_CONFIG_FILE);
+			m_vocab_mgr.setConfigFile(get_vocabularies_file());
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
@@ -567,11 +547,11 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecComment) {
 
 BOOST_AUTO_TEST_CASE(checkJustDateCodecReadEntry) {
 	BOOST_REQUIRE(m_date_codec);
-	std::stringstream ss("\"2008-07-24\"\n");
+	std::stringstream ss("\"05/Apr/2007:05:37:11 -0600\"\n");
 	Event e(m_date_codec->getEventType());
 	BOOST_REQUIRE(m_date_codec->read(ss, e));
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
-					  PionDateTime(boost::gregorian::date(2008, 7, 24)));
+	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref).date(),
+					  boost::gregorian::date(2007, 4, 5));
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
