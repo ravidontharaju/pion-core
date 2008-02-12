@@ -12,6 +12,7 @@ dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.gfx");
+dojo.require("dojox.grid.Grid");
 
 // configuration parameters
 var STEP = 10;
@@ -25,6 +26,8 @@ var workspace_box = null;
 var surface = null;
 var new_workspace_tab_clicked = false;
 var reactorsById = {};
+var reactor_config_store;
+var filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
 
 function initReactorConfigPage() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
@@ -52,6 +55,7 @@ function initReactorConfigPage() {
 			reactor.id = reactor_config_store.getValue(item, '@id');
 			reactorsById[reactor.id] = reactor;
 			reactor.comment = reactor_config_store.getValue(item, 'Comment').toString();
+			reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
 			workspace_box.node.appendChild(reactor);
 			makeReactorMoveable(reactor);
 		},
@@ -482,6 +486,23 @@ function showReactorConfigDialog(reactor) {
  	dijit.byNode(dojo.query("input[name='name']",    dialog.domNode)[0]).setValue(reactor.name);
 	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.id);
 	dijit.byNode(dojo.query("input[name='comment']", dialog.domNode)[0]).setValue(reactor.comment);
+
+	if (reactor_type == 'FilterReactor') {
+		if (!reactor.comparison_table) {
+			reactor.comparison_table = [];
+			for (var i = 0; i < reactor.comparisons.length; ++i) {
+				var comparison_table_row = [];
+				console.debug('reactor.comparisons[i] = ', reactor.comparisons[i]);
+				comparison_table_row[0] = reactor_config_store.getValue(reactor.comparisons[i], 'Term');
+				comparison_table_row[1] = reactor_config_store.getValue(reactor.comparisons[i], 'Type');
+				comparison_table_row[2] = reactor_config_store.getValue(reactor.comparisons[i], 'Value');
+				reactor.comparison_table.push(comparison_table_row);
+			}
+		}
+		filter_reactor_grid_model.setData(reactor.comparison_table);
+		setTimeout("filter_reactor_grid.resize()", 200);
+		setTimeout("filter_reactor_grid.update()", 200);
+	}
 
 	// The following use forEach to allow either zero or multiple matches.
 	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {

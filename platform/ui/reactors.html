@@ -88,6 +88,20 @@
 				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 			]]
 		}];
+		
+		var filter_reactor_grid_layout = [{
+			rows: [[
+				{ name: 'Term', styles: '', 
+					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 15},
+				{ name: 'Comparison', styles: '', width: 15, 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Value', width: 10, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
 	</script>
 </head>
 <body class="tundra">
@@ -457,7 +471,7 @@
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" title="Filter Configuration">
+	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" title="Filter Configuration" style="width: 600px;">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -472,6 +486,8 @@
 				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
+		<div id="filter_reactor_grid" jsId="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
+			 structure="filter_reactor_grid_layout" singleClickEdit="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
