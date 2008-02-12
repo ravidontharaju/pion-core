@@ -1,5 +1,4 @@
 dojo.require("dijit.layout.StackContainer");
-dojo.require("dojox.widget.FileInput");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 
 var user_config_page_initialized = false;

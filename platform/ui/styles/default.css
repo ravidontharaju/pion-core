@@ -1,6 +1,6 @@
 html, body {
 	width: 100%;	/* make the body expand to ... */
-	height: 100%;   /* ... fill the visible window */
+	height: 100%;	/* ... fill the visible window */
 }
 
 body {
@@ -21,9 +21,9 @@ body {
 	width: 350px;
 	height: 50px;
 	/* for IE */
-  	filter:alpha(opacity=80);
-  	/* CSS3 standard */
-  	opacity:0.8;
+	filter:alpha(opacity=80);
+	/* CSS3 standard */
+	opacity:0.8;
 	
 }
 
@@ -361,7 +361,7 @@ This is a duplicate of #reactor_config_content for now.
 /* Footer */
 
 #footer {
-	margin:  0 auto;
+	margin: 0 auto;
 /*
 30px is not enough for IE.  If a height must be specified here, make sure it's enough for all supported browsers.
 	height: 30px;
@@ -413,7 +413,7 @@ This is a duplicate of #reactor_config_content for now.
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
 	}
 		
-.filter {
+.FilterReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
 	}
@@ -682,9 +682,7 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
-.tundra .add_new_plugin_path.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .add_new_plugin_path.dijitButtonHover .dijitButtonNode {
 	background: url("../images/button-add-new-plugin-path-on.png");
 }
 
@@ -714,11 +712,9 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 .tundra .dijitTreeNode {
-    background-image : url('../images/bg-tree-i.png');
-    background-position : top left;
-    background-repeat : repeat-y;
-    margin-left: 19px;
-    zoom: 1;	/* MOW: what the heck is this doing in here? */
+	background-image : url('../images/bg-tree-i.png');
+	background-position : top left;
+	background-repeat : repeat-y;
+	margin-left: 19px;
+	zoom: 1;	/* MOW: what the heck is this doing in here? */
 }
-
-

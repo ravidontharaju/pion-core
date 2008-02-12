@@ -1,6 +1,5 @@
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
-dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.ValidationTextBox");
@@ -11,6 +10,7 @@ dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
+dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.gfx");
 
 // configuration parameters
@@ -24,6 +24,7 @@ var workspace_boxes = [];
 var workspace_box = null;
 var surface = null;
 var new_workspace_tab_clicked = false;
+var reactorsById = {};
 
 function initReactorConfigPage() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
@@ -37,6 +38,44 @@ function initReactorConfigPage() {
 	surface = workspace_box.my_surface;
 	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 	
+	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
+	reactor_config_store.fetch({
+		query: {tagName: 'Reactor'},
+		onItem: function(item, request) {
+			console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
+			var name = reactor_config_store.getValue(item, 'Name').toString();
+			//console.debug('name = ', reactor_config_store.getValue(item, 'Name').toString());
+			var reactor_type = reactor_config_store.getValue(item, 'Plugin').toString();
+
+			latest_event = { clientX: 250 + 100 * workspace_box.reactors.length, clientY: 350 + 100 * workspace_box.reactors.length };
+			var reactor = createReactor(name, reactor_type);
+			reactor.id = reactor_config_store.getValue(item, '@id');
+			reactorsById[reactor.id] = reactor;
+			reactor.comment = reactor_config_store.getValue(item, 'Comment').toString();
+			workspace_box.node.appendChild(reactor);
+			makeReactorMoveable(reactor);
+		},
+		onComplete: function(items, request) {
+			console.debug('done fetching Reactors');
+		}
+	});
+	reactor_config_store.fetch({
+		query: {tagName: 'Connection'},
+		onItem: function(item, request) {
+			var startNode_id = reactor_config_store.getValue(item, 'From').toString();
+			var endNode_id   = reactor_config_store.getValue(item, 'To').toString();
+			console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id);
+
+			var startNode = reactorsById[startNode_id];
+			var endNode = reactorsById[endNode_id];
+			var line = surface.createPolyline().setStroke("black");
+			updateConnectionLine(line, startNode, endNode);
+			
+			startNode.reactor_outputs.push({node: endNode, line: line});
+			endNode.reactor_inputs.push({node: startNode, line: line});
+		}
+	});
+
 	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
 	dojo.connect(document, 'onkeypress', handleKeyPress);
 
@@ -234,6 +273,84 @@ function updateConnectionLine(poly, start_node, end_node) {
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
 }
 
+function createReactor(name, reactor_type) {
+	var new_div = document.createElement("div");
+	workspace_box.reactors.push(new_div);
+	new_div.name = name;
+	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
+	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
+	new_div.className = "moveable " + reactor_type;
+	new_div.innerHTML = name;
+	new_div.setAttribute("reactor_type", reactor_type);
+	new_div.reactor_inputs = [];
+	new_div.reactor_outputs = [];
+	return new_div;
+}	
+	
+function makeReactorMoveable(reactor) {
+	var m5 = new dojo.dnd.move.parentConstrainedMoveable(reactor, {area: "padding", within: true});
+	var c = m5.constraints();
+	// Since parts of the constraintBox are not calculated until onFirstMove() is called,
+	// calculate them here.
+	c.r = c.l + c.w - reactor.offsetWidth;
+	c.b = c.t + c.h - reactor.offsetHeight;
+	console.debug("latest_event: ", latest_event);
+	var cw = dojo.byId("reactor_config_content"); // Move to init()?
+	var totalOffsetLeft = 0;
+	var totalOffsetTop  = 0;
+	do {
+		totalOffsetLeft += cw.offsetLeft;
+		totalOffsetTop  += cw.offsetTop;
+		cw = cw.parentNode;
+	} while (cw != document.body);
+	var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
+	console.debug("mouseLeftTop: ", mouseLeftTop);
+	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
+	reactor.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
+	reactor.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
+	reactor.style.position = "absolute";
+
+	// Add a context menu for the new reactor.
+	var menu = new dijit.Menu({targetNodeIds: [reactor]});
+	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(reactor);} }));
+	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(reactor);} }));
+
+	dojo.connect(reactor, 'dblclick', function(event) {
+		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
+		showReactorConfigDialog(reactor);
+	});
+
+	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
+	// getNearbyGridPointInBox() takes care of both.  Note that parts of this.constraintBox are not calculated until
+	// onFirstMove() is called.
+	m5.onMove = function(mover, leftTop) {
+		//console.debug("In m5.onMove, this.constraintBox = ", this.constraintBox);
+		//console.debug("leftTop = ", leftTop);
+		var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
+		//console.debug("newLeftTop = ", newLeftTop);
+		dojo.marginBox(mover.node, newLeftTop);
+
+		//console.debug("reactor = ", reactor);
+		for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+			//console.debug("reactor.reactor_inputs[", i, "].node = ", reactor.reactor_inputs[i].node);
+			//console.debug("reactor.reactor_inputs[", i, "].line.rawNode = ", reactor.reactor_inputs[i].line.rawNode);
+			updateConnectionLine(reactor.reactor_inputs[i].line, reactor.reactor_inputs[i].node, reactor);
+		}
+		for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+			//console.debug("reactor.reactor_outputs[", i, "] = ", reactor.reactor_outputs[i]);
+			updateConnectionLine(reactor.reactor_outputs[i].line, reactor, reactor.reactor_outputs[i].node);
+		}
+	};
+/*
+	// This doesn't do anything, because the constrained onMove doesn't call onMoving.
+	dojo.connect(m5, "onMoving", function(mover, leftTop){
+		console.debug("m5 is moving");
+		leftTop.l -= leftTop.l % STEP;
+		leftTop.t -= leftTop.t % STEP;
+	});
+/**/
+}
+
 function handleDropOnWorkspace(source, nodes, copy, target) {
 	console.debug("handleDropOnWorkspace called, target.node.id = ", target.node.id, ", workspace_box.node.id = ", workspace_box.node.id);
 	if (target != workspace_box) {
@@ -254,98 +371,34 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	//debugger;
 	console.debug(copy ? "Copying from" : "Moving from", source);
 	console.debug("nodes: ", nodes);
-	var new_div = document.createElement("div");
-	workspace_box.reactors.push(new_div);
-	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
-	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
-	//debugger;
+
 	var reactor_type = nodes[0].getAttribute("reactor_type");
-	new_div.className = "moveable " + reactor_type;
-	var i = 1;
-	do {
-		new_div.name = reactor_type + "_" + i++;
-	} while (isDuplicateName(new_div, new_div.name));
-	new_div.innerHTML = new_div.name;
-	new_div.setAttribute("reactor_type", reactor_type);
-	new_div.reactor_inputs = [];
-	new_div.reactor_outputs = [];
+	var name = reactor_type + '_1';
+	for (var i = 2; isDuplicateName('nothing', name); ++i) {
+		name = reactor_type + "_" + i;
+	}
+	var reactor = createReactor(name, reactor_type);
+
 	//debugger;
 	console.debug("workspace_box.node.lastChild = ", workspace_box.node.lastChild);
-	workspace_box.node.replaceChild(new_div, workspace_box.node.lastChild);
-	var m5 = new dojo.dnd.move.parentConstrainedMoveable(new_div, {area: "padding", within: true});
-	var c = m5.constraints();
-	// Since parts of the constraintBox are not calculated until onFirstMove() is called,
-	// calculate them here.
-	c.r = c.l + c.w - new_div.offsetWidth;
-	c.b = c.t + c.h - new_div.offsetHeight;
-	console.debug("latest_event: ", latest_event);
-	var cw = dojo.byId("reactor_config_content"); // Move to init()?
-	var totalOffsetLeft = 0;
-	var totalOffsetTop  = 0;
-	do {
-		totalOffsetLeft += cw.offsetLeft;
-		totalOffsetTop  += cw.offsetTop;
-		cw = cw.parentNode;
-	} while (cw != document.body);
-	var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
-	console.debug("mouseLeftTop: ", mouseLeftTop);
-	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
-	new_div.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
-	new_div.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
-	new_div.style.position = "absolute";
+	workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
 
-	// Add a context menu for the new reactor.
-	var menu = new dijit.Menu({targetNodeIds: [new_div]});
-	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(new_div);} }));
-	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(new_div);} }));
-
-	dojo.connect(new_div, 'dblclick', function(event) {
-		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
-		showReactorConfigDialog(new_div);
-	});
-
-	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
-	// getNearbyGridPointInBox() takes care of both.  Note that parts of this.constraintBox are not calculated until
-	// onFirstMove() is called.
-	m5.onMove = function(mover, leftTop) {
-		//console.debug("In m5.onMove, this.constraintBox = ", this.constraintBox);
-		//console.debug("leftTop = ", leftTop);
-		var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
-		//console.debug("newLeftTop = ", newLeftTop);
-		dojo.marginBox(mover.node, newLeftTop);
-
-		//console.debug("new_div = ", new_div);
-		for (var i = 0; i < new_div.reactor_inputs.length; ++i) {
-			//console.debug("new_div.reactor_inputs[", i, "].node = ", new_div.reactor_inputs[i].node);
-			//console.debug("new_div.reactor_inputs[", i, "].line.rawNode = ", new_div.reactor_inputs[i].line.rawNode);
-			updateConnectionLine(new_div.reactor_inputs[i].line, new_div.reactor_inputs[i].node, new_div);
-		}
-		for (var i = 0; i < new_div.reactor_outputs.length; ++i) {
-			//console.debug("new_div.reactor_outputs[", i, "] = ", new_div.reactor_outputs[i]);
-			updateConnectionLine(new_div.reactor_outputs[i].line, new_div, new_div.reactor_outputs[i].node);
-		}
-	};
-/*
-	// This doesn't do anything, because the constrained onMove doesn't call onMoving.
-	dojo.connect(m5, "onMoving", function(mover, leftTop){
-		console.debug("m5 is moving");
-		leftTop.l -= leftTop.l % STEP;
-		leftTop.t -= leftTop.t % STEP;
-	});
-/**/
+	makeReactorMoveable(reactor);
 }
 
 function handleDropOnReactor(source, nodes, copy, target) {
 	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
 	console.debug("target.targetState = ", target.targetState, ", isTracking = ", workspace_box.isTracking, ', target.node.lastChild = ', target.node.lastChild);
 
+	// If target is not a reactor, return.  This happens when dropping reactors on the workspace, and seems to be a dnd bug. 
+	if (!target.node.hasAttribute('reactor_type')) return;
+	
 	// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
 	// after a connector node was added to the reactor.  If this is that time, delete the connector node.
-	// Note that this sometimes happens after tracking has started, i.e. when isTracking == true. 
-	if (target.node.lastChild.getAttribute && target.node.lastChild.getAttribute("dndType") == "connector") {
-		console.debug("removing unneeded connector node");
-		target.node.removeChild(target.node.lastChild);
-	}
+	// Note that this sometimes happens after tracking has started, i.e. when isTracking == true.
+	dojo.query('.dojoDndItem', target.node).forEach(function(n) {
+		target.node.removeChild(n);
+	});
 
 	// If we're already tracking a connector for this target, we're done.
 	if (workspace_box.isTracking) return;
@@ -425,24 +478,12 @@ function isDuplicateName(reactor, name) {
 
 function showReactorConfigDialog(reactor) {
 	var reactor_type = reactor.getAttribute("reactor_type");
-	var validationTextBox = dijit.byId(reactor_type + "_name");
-	validationTextBox.isValid = function(isFocused) {
-		if (!this.validator(this.textbox.value, this.constraints)) {
-			this.invalidMessage = "Invalid Reactor name";
-			console.debug('validationTextBox.isValid returned false');
-			return false;
-		}
-		if (isDuplicateName(reactor, this.textbox.value)) {
-			this.invalidMessage = "A Reactor with this name already exists";
-			console.debug('In validationTextBox.isValid, isDuplicateName returned true');
-			return false;
-		}
-		console.debug('validationTextBox.isValid returned true');
-		return true;
-	};
-	validationTextBox.setDisplayedValue(reactor.name);
-
 	var dialog = dijit.byId(reactor_type + "_dialog");
+ 	dijit.byNode(dojo.query("input[name='name']",    dialog.domNode)[0]).setValue(reactor.name);
+	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.id);
+	dijit.byNode(dojo.query("input[name='comment']", dialog.domNode)[0]).setValue(reactor.comment);
+
+	// The following use forEach to allow either zero or multiple matches.
 	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {
 		dijit.byNode(n).setValue(reactor.event_type || 1);  // '1' means the item in the event data store with term_ref = 1
 	});
@@ -466,6 +507,7 @@ function showReactorConfigDialog(reactor) {
 function updateReactorConfig(dialogFields, node) {
 	node.name = dialogFields.name;
 	node.innerHTML = dialogFields.name;
+	node.comment = dialogFields.comment;
 	if (dialogFields.event_type) {
 		node.event_type = dialogFields.event_type;
 		console.debug('node.event_type set to ', node.event_type);

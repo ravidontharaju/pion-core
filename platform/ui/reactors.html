@@ -10,7 +10,6 @@
 	<style type="text/css">
 		@import "dojo/dijit/themes/tundra/tundra.css";
 		@import "dojo/dojox/grid/_grid/tundraGrid.css";
-		@import "dojo/dojox/widget/FileInput/FileInput.css"; 
 	</style>
 	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
 
@@ -159,7 +158,7 @@
 									</div>
 									<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
 										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
-											<div class="dojoDndItem" dndType="reactor" reactor_type="filter"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
+											<div class="dojoDndItem" dndType="reactor" reactor_type="FilterReactor"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
 											<div class="dojoDndItem" dndType="reactor" reactor_type="transform"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
 										</div>
 									</div>
@@ -191,7 +190,7 @@
 							159,307
 						</span><span class="conterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
 					</div>
-					
+
 				<!-- start tabbed workspaces -->
 					<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
 						<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
@@ -231,14 +230,14 @@
 											<table cellpadding="2" cellspacing="0" border="0">
 												<tr>
 													<td><label>Name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"></td>
+													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"/></td>
 													<td rowspan="4" valign="top" width="50">&nbsp;</td>
 													<td rowspan="1"><label>Comments</label></td>
 													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 300px"></textarea></td>
 												</tr>
 												<tr>
 													<td><label>ID</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="ID" style="width: 350px;" disabled="true"></td>
+													<td><input dojoType="dijit.form.TextBox" name="ID" style="width: 350px;" disabled="true"/></td>
 													<td rowspan="3">&nbsp;</td>
 												</tr>
 												<tr>
@@ -293,7 +292,7 @@
 				<div id="user_config" dojoType="dijit.layout.LayoutContainer" title="Users">
 					<div id="user_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
 						<h1>Users Configuration</h1>
-						
+
 						<h3>simple instructions?</h3>
 
 					</div>
@@ -313,19 +312,19 @@
 											<table cellpadding="3" cellspacing="0" border="0">
 												<tr>
 													<td><label>Last name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="last_name"></td>
+													<td><input dojoType="dijit.form.TextBox" name="last_name"/></td>
 												</tr>
 												<tr>
 													<td><label>First name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="first_name"></td>
+													<td><input dojoType="dijit.form.TextBox" name="first_name"/></td>
 												</tr>
 												<tr>
 													<td><label>Username</label></td>
-													<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"></td>
+													<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"/></td>
 												</tr>
 												<tr>
 													<td><label>Password</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="password" value="2!n8]&vb"></td>
+													<td><input dojoType="dijit.form.TextBox" name="password" value="2!n8]&vb"/></td>
 												</tr>
 											</table>
 											<div class="save_cancel_delete">
@@ -352,11 +351,11 @@
 						<h3>simple instructions?</h3>
 					</div>
 					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client" style="overflow: auto">
-					
+
 						<div style="float:left; width:450px; margin-right: 20px;">
 							<h2>Configuration Files</h2>
 							<hr />
-							
+
 							<table cellpadding="5" border="0" class="pathsTable" width="100%">
 								<tr>
 									<td align="right" width="20%"><label>Platform</label></td>
@@ -383,7 +382,7 @@
 									<td id="service_conf_file">your/path/here/ServicesConfigFile.xml</td>
 								</tr>
 							</table>
-							
+
 							<br />
 							<h2>Configuration Paths</h2>
 							<hr />
@@ -394,9 +393,9 @@
 									<td id="vocab_path" width="80%">your/path/here/VocabularyPath</td>
 								</tr>
 							</table>
-							
+
 							<br />
-							
+
 							<h2>Plug-In Paths</h2>
 							<hr />
 
@@ -412,13 +411,13 @@
 									<td width="80%">your/path/here/PluginPath</td>
 								</tr>
 							</table>
-									
+
 						</div>
-						
+
 						<!--start servers and services tree-->
 						<h2>Services</h2>
 						<hr/>
-						<div style="float:left; width:auto; margin-right: 20px;">							
+						<div style="float:left; width:auto; margin-right: 20px;">
 							<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->
 							<div id="server_tree"/>
 						</div>
@@ -436,16 +435,19 @@
 	<div dojoType="dijit.Dialog" id="log_files_dialog" title="Log Configuration">
 		<table>
 			<tr>
-				<td><label for="name">Name: </label></td>
-				<td><input dojoType="dijit.form.ValidationTextBox" id="log_files_name" type="text" name="name"
-					 regExp="[\w-]+" required="true"></td>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
 			</tr>
 			<tr>
-				<td><label for="is _this_used">Comments: </label></td>
-				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
 			</tr>
 			<tr>
-				<td><label>Event Type: </label></td>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>Event Type:</label></td>
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
@@ -453,18 +455,21 @@
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>		
+		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="filter_dialog" title="Filter Configuration">
+	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" title="Filter Configuration">
 		<table>
 			<tr>
-				<td><label for="name">Name: </label></td>
-				<td><input dojoType="dijit.form.ValidationTextBox" id="filter_name" type="text" name="name"
-					 regExp="[\w-]+" required="true"></td>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
 			</tr>
 			<tr>
-				<td><label for="loc">Comments: </label></td>
-				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
 		<div class="save_cancel_delete">
@@ -476,16 +481,19 @@
 	<div dojoType="dijit.Dialog" id="transform_dialog" title="Transform Configuration">
 		<table>
 			<tr>
-				<td><label for="name">Name: </label></td>
-				<td><input dojoType="dijit.form.ValidationTextBox" id="transform_name" type="text" name="name"
-					 regExp="[\w-]+" required="true"></td>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
 			</tr>
 			<tr>
-				<td><label for="loc">Comments: </label></td>
-				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
 			</tr>
 			<tr>
-				<td><label>Event Type: </label></td>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>Event Type:</label></td>
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
@@ -493,25 +501,28 @@
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>		
+		</div>
 	</div>
 	<div dojoType="dijit.Dialog" id="data_store_dialog" title="Storage Configuration">
 		<table>
 			<tr>
-				<td><label for="name">Name: </label></td>
-				<td><input dojoType="dijit.form.ValidationTextBox" id="data_store_name" type="text" name="name"
-					 regExp="[\w-]+" required="true"></td>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
 			</tr>
 			<tr>
-				<td><label for="loc">Comments: </label></td>
-				<td><input dojoType="dijit.form.TextBox" type="do_I_need_this_2" name="comments"></td>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>		
+		</div>
 	</div>
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
 		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
@@ -522,13 +533,13 @@
 	<div dojoType="dijit.Dialog" id="workspace_dialog" title="Workspace Configuration">
 		<table>
 			<tr>
-				<td><label for="name">Name: </label></td>
+				<td><label>Name:</label></td>
 				<td><input dojoType="dijit.form.ValidationTextBox" id="workspace_name" type="text" name="name"
 					 regExp=".+" required="true"></td>
 			</tr>
 			<tr>
-				<td><label for="loc">Comments: </label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comments"></td>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
 		<div class="save_cancel_delete">
