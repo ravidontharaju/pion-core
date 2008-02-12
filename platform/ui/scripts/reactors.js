@@ -16,7 +16,6 @@ dojo.require("dojox.grid.Grid");
 
 // configuration parameters
 var STEP = 10;
-var num_initial_workspaces = 1;
 var minimum_workspace_width = 2000;
 var minimum_workspace_height = 2000;
 
@@ -25,7 +24,8 @@ var workspace_boxes = [];
 var workspace_box = null;
 var surface = null;
 var new_workspace_tab_clicked = false;
-var reactorsById = {};
+var workspaces_by_name = {};
+var reactors_by_id = {};
 var reactor_config_store;
 var filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
 
@@ -33,14 +33,6 @@ function initReactorConfigPage() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 
-	for (var i = 0; i < num_initial_workspaces; ++i) {
-		addWorkspace();
-	}
-
-	workspace_box = workspace_boxes[0];
-	surface = workspace_box.my_surface;
-	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
-	
 	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
 	reactor_config_store.fetch({
 		query: {tagName: 'Reactor'},
@@ -49,11 +41,20 @@ function initReactorConfigPage() {
 			var name = reactor_config_store.getValue(item, 'Name').toString();
 			//console.debug('name = ', reactor_config_store.getValue(item, 'Name').toString());
 			var reactor_type = reactor_config_store.getValue(item, 'Plugin').toString();
+			var workspace_name = reactor_config_store.getValue(item, 'Workspace').toString();
+			workspace_box = workspaces_by_name[workspace_name];
+			if (!workspace_box) {
+				addWorkspace(workspace_name);
+			}
+			
+			// This simulates clicking where the reactor should go.
+			var dc = dojo.coords(workspace_box.node);
+			latest_event = { clientX: dc.x + parseInt(reactor_config_store.getValue(item, 'X')), clientY: dc.y + parseInt(reactor_config_store.getValue(item, 'Y')) };
 
-			latest_event = { clientX: 250 + 100 * workspace_box.reactors.length, clientY: 350 + 100 * workspace_box.reactors.length };
 			var reactor = createReactor(name, reactor_type);
+			reactor.workspace = workspace_box;
 			reactor.id = reactor_config_store.getValue(item, '@id');
-			reactorsById[reactor.id] = reactor;
+			reactors_by_id[reactor.id] = reactor;
 			reactor.comment = reactor_config_store.getValue(item, 'Comment').toString();
 			reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
 			workspace_box.node.appendChild(reactor);
@@ -61,22 +62,34 @@ function initReactorConfigPage() {
 		},
 		onComplete: function(items, request) {
 			console.debug('done fetching Reactors');
-		}
-	});
-	reactor_config_store.fetch({
-		query: {tagName: 'Connection'},
-		onItem: function(item, request) {
-			var startNode_id = reactor_config_store.getValue(item, 'From').toString();
-			var endNode_id   = reactor_config_store.getValue(item, 'To').toString();
-			console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id);
+			reactor_config_store.fetch({
+				query: {tagName: 'Connection'},
+				onItem: function(item, request) {
+					var startNode_id = reactor_config_store.getValue(item, 'From').toString();
+					var endNode_id   = reactor_config_store.getValue(item, 'To').toString();
+					console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id);
 
-			var startNode = reactorsById[startNode_id];
-			var endNode = reactorsById[endNode_id];
-			var line = surface.createPolyline().setStroke("black");
-			updateConnectionLine(line, startNode, endNode);
-			
-			startNode.reactor_outputs.push({node: endNode, line: line});
-			endNode.reactor_inputs.push({node: startNode, line: line});
+					var startNode = reactors_by_id[startNode_id];
+					var endNode = reactors_by_id[endNode_id];
+					workspace_box = startNode.workspace;
+					surface = workspace_box.my_surface;
+					dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);			
+					var line = surface.createPolyline().setStroke("black");
+					updateConnectionLine(line, startNode, endNode);
+					
+					startNode.reactor_outputs.push({node: endNode, line: line});
+					endNode.reactor_inputs.push({node: startNode, line: line});
+				},
+				onComplete: function(items, request) {
+					console.debug('done fetching Connections');
+					if (workspace_boxes.length == 0) {
+						addWorkspace();
+					}
+					workspace_box = workspace_boxes[0];
+					surface = workspace_box.my_surface;
+					dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);			
+				}
+			});
 		}
 	});
 
@@ -109,12 +122,16 @@ function initReactorConfigPage() {
 					});
 }
 
-function addWorkspace() {
+function addWorkspace(name) {
 	var i = workspace_boxes.length;
-	var title = 'Workspace ' + (i + 1);
-	for (var j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
-		title = 'Workspace ' + j;
-	};
+	if (name) {
+		var title = name;
+	} else {
+		var title = 'Workspace ' + (i + 1);
+		for (var j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
+			title = 'Workspace ' + j;
+		};
+	}
 	var workspace_pane = new dijit.layout.ContentPane({ "class": "workspacePane", title: title, style: "overflow: auto" });
 	var tab_container = dijit.byId("mainTabContainer");
 	var margin_box = dojo.marginBox(tab_container.domNode);
@@ -137,6 +154,7 @@ function addWorkspace() {
 	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
 	new_workspace.my_content_pane = workspace_pane;
 	workspace_pane.my_workspace_box = new_workspace;
+	workspaces_by_name[title] = new_workspace;
 	workspace_boxes[i] = new_workspace;
 
 	// Need to do this now so that the dimensions of new_workspace are calculated.

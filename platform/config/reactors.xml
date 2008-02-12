@@ -4,19 +4,50 @@
     <Name>Only IE Requests</Name>
     <Comment>Filter events that are not requests from IE browsers</Comment>
     <Plugin>FilterReactor</Plugin>
+    <Workspace>Test Workspace</Workspace>
+    <X>50</X>
+    <Y>100</Y>
     <Comparison>
-    	<Term>urn:vocab:clf#useragent</Term>
-    	<Type>contains</Type>
-    	<Value>MSIE</Value>
+      <Term>urn:vocab:clf#useragent</Term>
+      <Type>contains</Type>
+      <Value>MSIE</Value>
     </Comparison>
   </Reactor>
   <Reactor id="urn:uuid:0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
     <Name>Do Nothing</Name>
     <Comment>Filter that does nothing</Comment>
     <Plugin>FilterReactor</Plugin>
+    <Workspace>Test Workspace</Workspace>
+    <X>150</X>
+    <Y>200</Y>
   </Reactor>
   <Connection>
     <From>urn:uuid:153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>
     <To>urn:uuid:0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>
+  </Connection>
+  <Reactor id="urn:uuid:153f6c40-cb78-11dc-0000-0019e3f89cd2">
+    <Name>Only Non-IE Requests</Name>
+    <Comment>Filter events that are requests from IE browsers</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <Workspace>Test Workspace 2</Workspace>
+    <X>50</X>
+    <Y>100</Y>
+    <Comparison>
+      <Term>urn:vocab:clf#useragent</Term>
+      <Type>not-contains</Type>
+      <Value>MSIE</Value>
+    </Comparison>
+  </Reactor>
+  <Reactor id="urn:uuid:0cc21558-cf84-11dc-0000-0019e3f89cd2">
+    <Name>Do Nothing 2</Name>
+    <Comment>another filter that does nothing</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <Workspace>Test Workspace 2</Workspace>
+    <X>250</X>
+    <Y>200</Y>
+  </Reactor>
+  <Connection>
+    <From>urn:uuid:153f6c40-cb78-11dc-0000-0019e3f89cd2</From>
+    <To>urn:uuid:0cc21558-cf84-11dc-0000-0019e3f89cd2</To>
   </Connection>
 </PionConfig>
