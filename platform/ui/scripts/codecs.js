@@ -1,4 +1,4 @@
-dojo.require("dojo.data.ItemFileReadStore");
+dojo.provide("pion.codecs");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Textarea");
@@ -7,11 +7,8 @@ dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
-dojo.require("dijit.layout.SplitContainer");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.grid.Grid");
-dojo.require("dojox.grid._data.model");
-dojo.require("dojox.grid._data.dijitEditors");
 
 var codec_pane_title_height = -1;
 var codec_pane_body_height = 420;
@@ -19,7 +16,6 @@ var accordion_width = -1;
 var unique_codec_id = 1;
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
-var codec_config_items;
 
 var term_store = new dojox.data.XmlStore({url: '/config/vocabularies?id=urn:vocab:clf', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
@@ -43,7 +39,7 @@ function handleCellClick(e) {
 	console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
 	if (e.cellIndex == delete_col_index) {
 		console.debug('Removing row ', e.rowIndex); 
-		grid.removeSelectedRows();
+		codec_grid.removeSelectedRows();
 		var field_attrs = codec_config_store.getValues(selected_codec_pane.config_item, 'Field');
 /**/
 //This block is dependent on fixing a bug in setValues() in XmlStore.js.
@@ -137,7 +133,6 @@ function initCodecConfigPage() {
 	codec_config_store = new dojox.data.XmlStore({url: '/config/codecs'});
 
 	function onComplete(items, request){
-		codec_config_items = items;
 		selected_codec_pane.config_item = items[0];
 		populatePaneFromConfigItem(items[0]);
 
@@ -156,8 +151,8 @@ function initCodecConfigPage() {
 
 	codec_config_store.fetch({ onComplete: onComplete });
 
-	dojo.connect(grid, 'onCellClick', handleCellClick);
-	dojo.connect(grid, 'onApplyCellEdit', handleCellEdit);
+	dojo.connect(codec_grid, 'onCellClick', handleCellClick);
+	dojo.connect(codec_grid, 'onApplyCellEdit', handleCellEdit);
 
 	// Make the accordion just narrow enough to avoid a horizontal scroll bar when
 	// there's a vertical one.
@@ -199,10 +194,10 @@ function initCodecConfigPage() {
 		//dojo.connect(n, 'change', function() {
 			console.debug('changed plugin_type (dojo.query & dojo.connect)');
 			if (n.value == 'LogCodec') {
-				grid.setStructure(gridLayout);
+				codec_grid.setStructure(gridLayout);
 				delete_col_index = 5;
 			} else {
-				grid.setStructure(grid_layout_no_order);
+				codec_grid.setStructure(grid_layout_no_order);
 				delete_col_index = 4;
 			}
 		})
@@ -252,23 +247,9 @@ function initCodecConfigPage() {
 			adjustCodecAccordionSize();
 		})
 	});
-	dojo.query(".dijitButton.delete_row", selected_codec_pane.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() {
-			//console.debug('delete: selected codec is ', selected_codec_pane.title);
 
-			var pane_to_delete = selected_codec_pane;
-			
-			// By doing this, not only is the next pane after the deleted pane selected, rather than the first pane,
-			// but it also bypasses a bug that makes the automatically selected first pane have the wrong size.
-			dijit.byId('codec_config_accordion').forward();
-			
-			dijit.byId('codec_config_accordion').removeChild(pane_to_delete);
-			adjustCodecAccordionSize();
-		})
-	});
-
-	setTimeout("dijit.byId('grid').resize()", 200);
-	setTimeout("dijit.byId('grid').update()", 200);
+	setTimeout("dijit.byId('codec_grid').resize()", 200);
+	setTimeout("dijit.byId('codec_grid').update()", 200);
 }
 
 function setUnsavedChangesTrue() {
@@ -286,10 +267,10 @@ function handlePluginTypeChange() {
 	var form = dijit.byId('codec_form');
 	var form_data = form.getValues();
 	if (form_data.plugin_type == 'LogCodec') {
-		grid.setStructure(gridLayout);
+		codec_grid.setStructure(gridLayout);
 		delete_col_index = 5;
 	} else {
-		grid.setStructure(grid_layout_no_order);
+		codec_grid.setStructure(grid_layout_no_order);
 		delete_col_index = 4;
 	}
 	dojo.addClass(selected_codec_pane.domNode, 'unsaved_changes');
@@ -338,8 +319,8 @@ function populatePaneFromConfigItem(item) {
 	model.setData(selected_codec_pane.field_table);
 
 	// This would be nice and simple, but I can't make it work.
-	//grid.setCellWidth(order_col_index, 0);
-	//grid.updateStructure();
+	//codec_grid.setCellWidth(order_col_index, 0);
+	//codec_grid.updateStructure();
 	
 /*
 	// Build grid_layout_no_order if its needed and hasn't been built yet.
@@ -351,15 +332,15 @@ function populatePaneFromConfigItem(item) {
 */
 
 	if (form_data.plugin_type == 'LogCodec') {
-		grid.setStructure(gridLayout);
+		codec_grid.setStructure(gridLayout);
 		delete_col_index = 5;
 	} else {
-		grid.setStructure(grid_layout_no_order);
+		codec_grid.setStructure(grid_layout_no_order);
 		delete_col_index = 4;
 	}
 	
 	// Wait a bit for the change events on the FilteringSelect widgets to get handled.
-	setTimeout('setUnsavedChangesFalse(), 200');
+	setTimeout(setUnsavedChangesFalse, 0);
 }
 
 function createNewCodecPane(title) {
@@ -428,6 +409,6 @@ function codecPaneSelected(pane) {
 	selected_codec_pane = pane;
 	populatePaneFromConfigItem(pane.config_item);
 
-	setTimeout("dijit.byId('grid').resize()", 200);
-	setTimeout("dijit.byId('grid').update()", 200);
+	setTimeout("dijit.byId('codec_grid').resize()", 200);
+	setTimeout("dijit.byId('codec_grid').update()", 200);
 }

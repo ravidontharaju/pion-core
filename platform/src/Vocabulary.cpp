@@ -163,6 +163,8 @@ Vocabulary::DataType Vocabulary::parseDataType(std::string str)
 		return TYPE_INT32;
 	else if (str == "uint32") 
 		return TYPE_UINT32;
+	else if (str == "int64") 
+		return TYPE_INT64;
 	else if (str == "uint64") 
 		return TYPE_UINT64;
 	else if (str == "float") 

@@ -14,7 +14,7 @@
 	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
 
 	<script type="text/javascript" src="dojo/dojo/dojo.js"
-		djConfig="isDebug: true, parseOnLoad: true"></script>
+		djConfig="isDebug: true, debugAtAllCosts: false, parseOnLoad: true"></script>
 
 	<!-- All these dojo source code files are included here just for debugging 
 		 purposes; by putting them here, the code is available to Firebug. -->
@@ -46,9 +46,11 @@
 	<script type="text/javascript" src="dojo/dojox/gfx/svg.js"></script>
 	<script type="text/javascript" src="dojo/dojox/grid/_data/dijitEditors.js"></script>
 	<script type="text/javascript" src="dojo/dojox/grid/_data/editors.js"></script>
+	<script type="text/javascript" src="dojo/dojox/grid/_grid/focus.js"></script>
 
 	<script type="text/javascript" src="scripts/pion.js"></script>
 	<script type="text/javascript" src="scripts/reactors.js"></script>
+	<script type="text/javascript" src="scripts/vocabularies.js"></script>
 	<script type="text/javascript" src="scripts/codecs.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
 	<script type="text/javascript" src="scripts/system.js"></script>
@@ -97,6 +99,22 @@
 				{ name: 'Comparison', styles: '', width: 15, 
 					editor: dojox.grid.editors.Input},
 				{ name: 'Value', width: 10, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
+
+		var vocab_grid_layout = [{
+			rows: [[
+				{ name: 'ID', styles: '', width: 15 },
+				{ name: 'Type', styles: '', 
+					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+					editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description", keyAttr: "name" }, width: 6},
+				{ name: 'Format', width: 15, styles: ''},
+				{ name: 'Size', width: 4, styles: '', 
+					editor: dojox.grid.editors.Input},
+				{ name: 'Comment', width: 50, styles: '', 
 					editor: dojox.grid.editors.Input},
 				{ name: 'Delete', styles: 'align: center;', width: 4, 
 				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
@@ -202,7 +220,7 @@
 						</span><span class="counterNumbersRight">
 							261,893<br />
 							159,307
-						</span><span class="conterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
+						</span><span class="counterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
 					</div>
 
 				<!-- start tabbed workspaces -->
@@ -222,7 +240,60 @@
 						<h3>simple instructions?</h3>
 					</div>
 					<div id="vocab_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						put accordion, etc here
+						<div dojoType="dijit.layout.LayoutContainer">
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+								<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new">ADD A NEW VOCABULARY</button>
+							</div>
+							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
+								<div id="vocab_config_accordion" dojoType="dijit.layout.AccordionContainer">
+									<div dojoType="dijit.layout.AccordionPane" class="vocab_pane" title="Vocabulary 1">
+										<form id="vocab_form" dojoType="dijit.form.Form">
+											<BR />
+											<table cellpadding="2" cellspacing="0" border="0">
+												<tr>
+													<td><label>Name</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="vocab_name" style="width: 350px;"/></td>
+													<td rowspan="4" valign="top" width="50">&nbsp;</td>
+													<td rowspan="1"><label>Comments</label></td>
+													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="vocab_comment" 
+																						jsId="vocab_comment_widget" style="width: 300px"></textarea></td>
+												</tr>
+												<tr>
+													<td><label>ID</label></td>
+													<td><input dojoType="dijit.form.TextBox" name="vocab_id" style="width: 350px;" disabled="true"/></td>
+													<td rowspan="3">&nbsp;</td>
+												</tr>
+												<tr>
+													<td><label>Locked</label></td>
+													<td><input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="locked"/></td>
+												</tr>
+											</table>
+											<br />
+											<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+												<tr>
+													<td class="matrixMainHeader">
+													Terms
+													</td>
+												</tr><tr>
+													<td style="background-color: #f1f1f1;">
+														<!-- See dojo/dojox/grid/_grid/tundraGrid.css -->
+														<div class="vocab_grid">
+															<div id="vocab_grid"></div>
+														</div>
+														<button id="add_new_term_button" dojoType=dijit.form.Button class="add_new_row">ADD NEW TERM</button>
+													</td>
+												</tr>
+											</table>
+											<div class="save_cancel_delete">
+												<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
+												<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
+												<button dojoType=dijit.form.Button class="delete">Delete Vocabulary</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 				<div id="codec_config" dojoType="dijit.layout.LayoutContainer" title="Codecs">
@@ -272,7 +343,7 @@
 												</tr><tr>
 													<td style="background-color: #f1f1f1;">
 														<div class="codec_grid">
-															<div id="grid" jsId="grid" dojoType="dojox.Grid" model="model"
+															<div id="codec_grid" jsId="codec_grid" dojoType="dojox.Grid" model="model"
 																 structure="gridLayout" singleClickEdit="true"></div>
 														</div>
 														<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
@@ -567,6 +638,58 @@
 	<div dojoType="dijit.Dialog" id="unsaved_changes_dialog" title="Unsaved Changes">
 		<div>Please save or cancel unsaved changes before selecting another Codec.</div>
 		<button dojoType=dijit.form.Button type="submit">OK</button>
+	</div>
+	<div dojoType="dijit.Dialog" id="new_vocabulary_dialog" title="Add New Vocabulary">
+		<table>
+			<tr>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.ValidationTextBox" id="new_vocabulary_id" type="text" name="vocab_id"
+					 regExp="urn:vocab:\w+" required="true"></td>
+			</tr>
+			<tr>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.ValidationTextBox" id="new_vocabulary_name" type="text" name="vocab_name"
+					 regExp="\w.*" required="true"></td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" id="new_vocabulary_comment" name="vocab_comment" class="comment_text_box"/></td>
+			</tr>
+		</table>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Add Vocabulary</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+		</div>
+	</div>
+	<div dojoType="dijit.Dialog" id="new_term_dialog" title="Add New Term to Vocabulary">
+		<table>
+			<tr>
+				<td><label>ID suffix:</label></td>
+				<td><input dojoType="dijit.form.ValidationTextBox" id="new_term_id_suffix" type="text" name="term_id_suffix"
+					 regExp="\w+" required="true"></td>
+			</tr>
+			<tr>
+				<td><label>Type:</label></td>
+				<td><input dojoType="dijit.form.FilteringSelect" id="new_term_type" name="term_type" 
+						store="pion.vocabularies.term_type_store" searchAttr="description" autocomplete="true"/></td>
+			</tr>
+			<tr>
+				<td><label>Format:</label></td>
+				<td>?</td>
+			</tr>
+			<tr>
+				<td><label>Size:</label></td>
+				<td>?</td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" id="new_term_comment" name="term_comment" class="comment_text_box"/></td>
+			</tr>
+		</table>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Add Term</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+		</div>
 	</div>
 <!-- end configuration dialogs -->
 

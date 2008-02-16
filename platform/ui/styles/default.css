@@ -24,7 +24,6 @@ body {
 	filter:alpha(opacity=80);
 	/* CSS3 standard */
 	opacity:0.8;
-	
 }
 
 .counterTitle {
@@ -35,26 +34,24 @@ body {
 	width: 185px;
 	padding: 10px 0 10px 10px;
 	float: left;
-
-	
 }
 
 .counterNumbersRight {
 	z-index: 3;
 	color: #ffffff;
-	font-family: Verdana, Arial, Helvetica, sans-serif;	
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 10px;
 	width: 50px;
 	padding: 10px 10px 10px 0;
 	float: left;
 	text-align: right;
 	line-height: 1.4;
-	
 }
+
 .counterNumbersLeft {
 	z-index: 3;
 	color: #ffffff;
-	font-family: Verdana, Arial, Helvetica, sans-serif;	
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 10px;
 	width: 80px;
@@ -62,16 +59,14 @@ body {
 	float: left;
 	text-align: right;
 	line-height: 1.4;
-	
 }
 
-.conterToggle {
+.counterToggle {
 	z-index: 3;
 	color: #ffffff;
 	width: 15px;
 	padding: 0;
 	float: left;
-	
 }
 
 h1 {
@@ -124,7 +119,6 @@ label {
 	background: url(../images/bg-matrix-inside-header.png) repeat-x;
 	font-size: 12px;
 	border-bottom: 1px solid #cccccc;
-
 }
 
 
@@ -203,7 +197,6 @@ label {
 	border-left: 1px solid #CCCCCC;
 	border-top: 1px solid #CCCCCC;
 	border-bottom: 1px solid #ffffff;
-
 }
 
 #menu .dijitButtonNode {
@@ -288,8 +281,8 @@ This is a duplicate of #reactor_config_content for now.
 /* Sidebar */
 
 #side {
- 	width: 170px;
- 	float: left;
+	width: 170px;
+	float: left;
 	margin: 0 auto 0 20px;
 	padding: 10px 0 0 0;
 }
@@ -411,24 +404,24 @@ This is a duplicate of #reactor_config_content for now.
 .log_files {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
-	}
-		
+}
+
 .FilterReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
-	}
-	
+}
+
 .transform {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
-	}
-	
+}
+
 .data_store {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
-	}
-	
-	/* Tabs */
+}
+
+/* Tabs */
 
 .tundra .dijitTabPaneWrapper {
 	/*
@@ -466,7 +459,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .dj_ie6 .tundra .dijitTabHover,
 .dj_ie6 .tundra .dijitTabCloseButtonHover {
-	background-image: url(../images/bg-tab-hover.png); 
+	background-image: url(../images/bg-tab-hover.png);
 }
 
 .tundra .dijitTabChecked,
@@ -504,9 +497,7 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
-.tundra .save.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .save.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-save-on.png");
 }
 
@@ -523,12 +514,9 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
-.tundra .cancel.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .cancel.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-cancel-on.png");
 }
-
 
 .tundra .delete .dijitButtonNode {
 	background: #ffffff url("../images/button-delete-off.png");
@@ -542,9 +530,7 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
-.tundra .delete.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .delete.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-delete-on.png");
 }
 
@@ -555,9 +541,7 @@ This is a duplicate of #reactor_config_content for now.
 	margin: -3px 0 0 0;
 }
 
-.tundra .delete_row.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .delete_row.dijitButtonHover .dijitButtonNode {
 	background: url("../images/button-delete-row-on.png") no-repeat;
 	background-color: none;
 }
@@ -576,9 +560,7 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
-.tundra .add_new.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .add_new.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-add-on.png");
 }
 
@@ -595,9 +577,7 @@ This is a duplicate of #reactor_config_content for now.
 	padding-right: 2px;
 }
 
-.tundra .add_new_row.dijitButtonHover .dijitButtonNode 
-
-{
+.tundra .add_new_row.dijitButtonHover .dijitButtonNode {
 	background: url("../images/button-add-new-row-on.png");
 }
 
@@ -688,6 +668,11 @@ This is a duplicate of #reactor_config_content for now.
 
 
 .codec_grid {
+	overflow: hidden;
+	height: 180px;
+}
+
+.vocab_grid {
 	overflow: hidden;
 	height: 180px;
 }
