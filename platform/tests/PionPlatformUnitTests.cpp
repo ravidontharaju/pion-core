@@ -100,20 +100,10 @@ void setup_plugins_directory(void)
 	if (! init_done) {
 		pion::PionPlugin::resetPluginDirectories();
 
-#if defined(_MSC_VER)
-	#if defined(_DEBUG) && defined(PION_FULL)
-		pion::PionPlugin::addPluginDirectory("../../bin/Debug_DLL_full");
-	#elif defined(_DEBUG) && !defined(PION_FULL)
-		pion::PionPlugin::addPluginDirectory("../../bin/Debug_DLL");
-	#elif defined(NDEBUG) && defined(PION_FULL)
-		pion::PionPlugin::addPluginDirectory("../../bin/Release_DLL_full");
-	#elif defined(NDEBUG) && !defined(PION_FULL)
-		pion::PionPlugin::addPluginDirectory("../../bin/Release_DLL");
-	#endif
-#elif defined(PION_XCODE)
+#if defined(PION_XCODE)
 		pion::PionPlugin::addPluginDirectory(".");
 #else
-		// same for Unix and Cygwin
+		// same for Unix and Windows (including Cygwin)
 		pion::PionPlugin::addPluginDirectory("../codecs/.libs");
 		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
 #endif
