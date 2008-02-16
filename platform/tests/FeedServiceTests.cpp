@@ -129,9 +129,9 @@ public:
 	void getConnectionInfo(unsigned int& num_reactors, unsigned int& num_input,
 						   unsigned int& num_output)
 	{
-		const boost::regex reactor_conn_regex("<Connection id=\"[^\"]+\" type=\"reactor\">");
-		const boost::regex input_conn_regex("<Connection id=\"[^\"]+\" type=\"input\">");
-		const boost::regex output_conn_regex("<Connection id=\"[^\"]+\" type=\"output\">");
+		const boost::regex reactor_conn_regex("<Type>reactor</Type>");
+		const boost::regex input_conn_regex("<Type>input</Type>");
+		const boost::regex output_conn_regex("<Type>output</Type>");
 		const unsigned int BUF_SIZE = 1023;
 		char buf[BUF_SIZE+1];
 		
@@ -151,7 +151,7 @@ public:
 		}
 	}
 	
-	bool checkConnectionInfo(unsigned int expected_reactors, unsigned int expected_input,
+	void checkConnectionInfo(unsigned int expected_reactors, unsigned int expected_input,
 							 unsigned int expected_output)
 	{
 		unsigned int num_reactors, num_input, num_output;
@@ -184,7 +184,6 @@ public:
 	const std::string	m_combined_id;
 	const std::string	m_ie_filter_id;
 	const std::string	m_do_nothing_id;
-	boost::asio::io_service		m_io_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(FeedServiceTestInterface_S, FeedServiceTestInterface_F)
@@ -194,12 +193,12 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	
 	// initially, there should be only one connection of type "reactor"
 	getConnectionInfo(num_reactors, num_input, num_output);
-	BOOST_CHECK_EQUAL(num_reactors, 1);
-	BOOST_CHECK_EQUAL(num_input, 0);
-	BOOST_CHECK_EQUAL(num_output, 0);
+	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(1));
+	BOOST_CHECK_EQUAL(num_input, static_cast<unsigned int>(0));
+	BOOST_CHECK_EQUAL(num_output, static_cast<unsigned int>(0));
 	
 	// connect a stream to localhost
-	TCPStream output_tcp_stream(m_io_service);
+	TCPStream output_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
 	boost::system::error_code ec;
 	ec = output_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
 	BOOST_REQUIRE(! ec);
@@ -215,7 +214,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	checkConnectionInfo(1, 0, 1);
 	
 	// connect a stream to localhost
-	TCPStream input_tcp_stream(m_io_service);
+	TCPStream input_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
 	ec = input_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
 	BOOST_REQUIRE(! ec);
 	

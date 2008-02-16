@@ -55,6 +55,13 @@ ServiceManager::ServiceManager(PlatformConfig& platform_config)
 	platform_config.getReactionEngine().registerForUpdates(boost::bind(&ServiceManager::updateReactors, this));
 }
 
+ServiceManager::~ServiceManager()
+{
+	// stop servers first
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	m_servers.clear();
+}
+		
 void ServiceManager::openConfigFile(void)
 {
 	boost::mutex::scoped_lock services_lock(m_mutex);

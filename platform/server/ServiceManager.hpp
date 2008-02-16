@@ -109,7 +109,7 @@ public:
 	ServiceManager(PlatformConfig& platform_config);
 	
 	/// virtual destructor
-	virtual ~ServiceManager() {}
+	virtual ~ServiceManager();
 	
 	/// opens an existing config file and loads the data it contains
 	virtual void openConfigFile(void);
@@ -139,6 +139,9 @@ public:
 	 */
 	template<typename WorkFunction>
 	inline void post(WorkFunction work_func) { m_scheduler.getIOService().post(work_func); }
+	
+	/// returns an async I/O service used to schedule work
+	inline boost::asio::io_service& getIOService(void) { return m_scheduler.getIOService(); }
 	
 	/// returns the number of threads that are currently running
 	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }

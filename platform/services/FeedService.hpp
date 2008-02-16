@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/net/TCPStream.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Reactor.hpp>
@@ -62,6 +63,13 @@ public:
 	virtual void start(void) = 0;
 	
 	/**
+	 * sends an HTTP response over the TCP connection
+	 *
+	 * @return true if the response was sent successfully, or false if not
+	 */
+	bool sendResponse(void);
+	
+	/**
 	 * generates a string describing information for a TCP connection
 	 *
 	 * @param tcp_conn TCP connection that will be used to send/receive Events
@@ -87,6 +95,9 @@ protected:
 	/// reference to ReactionEngine used to send Events to Reactors
 	pion::platform::ReactionEngine &	m_reaction_engine;
 	
+	/// primary logging interface used by this class
+	PionLogger							m_logger;	
+
 	/// unique identifier for this particular connection (generated when constructed)
 	const std::string					m_connection_id;
 	
@@ -120,7 +131,7 @@ class FeedWriter
 public:
 	
 	/// virtual destructor
-	virtual ~FeedWriter() {}
+	virtual ~FeedWriter();
 
 	/**
 	 * constructs a new FeedWriter object
@@ -159,7 +170,7 @@ class FeedReader
 public:
 	
 	/// virtual destructor
-	virtual ~FeedReader() {}
+	virtual ~FeedReader();
 	
 	/**
 	 * constructs a new FeedReader object

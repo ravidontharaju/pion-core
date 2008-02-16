@@ -22,6 +22,7 @@
     <Y>200</Y>
   </Reactor>
   <Connection id="dc2ca920-dc1d-11dc-b241-0019e3f89cd2">
+  	<Type>reactor</Type>
     <From>urn:uuid:153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>
     <To>urn:uuid:0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>
   </Connection>
@@ -47,6 +48,7 @@
     <Y>200</Y>
   </Reactor>
   <Connection id="1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2">
+  	<Type>reactor</Type>
     <From>urn:uuid:153f6c40-cb78-11dc-0000-0019e3f89cd2</From>
     <To>urn:uuid:0cc21558-cf84-11dc-0000-0019e3f89cd2</To>
   </Connection>

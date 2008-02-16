@@ -33,9 +33,12 @@ const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 8;
 const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
 const std::string		ReactionEngine::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
+const std::string		ReactionEngine::TYPE_ELEMENT_NAME = "Type";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
-const std::string		ReactionEngine::TYPE_ATTRIBUTE_NAME = "type";
+const std::string		ReactionEngine::CONNECTION_TYPE_REACTOR = "reactor";
+const std::string		ReactionEngine::CONNECTION_TYPE_INPUT = "input";
+const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
 
 
 // ReactionEngine member functions
@@ -78,15 +81,23 @@ void ReactionEngine::openConfigFile(void)
 		if (! ConfigManager::getNodeId(connection_node, connection_id))
 			throw EmptyConnectionIdException(ConfigManager::getConfigFile());
 
+		// make sure that it is a reactor connection type
+		std::string connection_type;
+		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, connection_type, connection_node->children)
+			|| connection_type != CONNECTION_TYPE_REACTOR)
+		{
+			throw BadConnectionTypeException(connection_id);
+		}
+		
 		// get the ID for the Reactor where events come from
 		std::string from_id;
 		if (! ConfigManager::getConfigOption(FROM_ELEMENT_NAME, from_id, connection_node->children))
-			throw EmptyFromException(ConfigManager::getConfigFile());
+			throw EmptyFromException(connection_id);
 		
 		// get the ID for the Reactor where events go to
 		std::string to_id;
 		if (! ConfigManager::getConfigOption(TO_ELEMENT_NAME, to_id, connection_node->children))
-			throw EmptyToException(ConfigManager::getConfigFile());
+			throw EmptyToException(connection_id);
 
 		// add the connection w/o locking
 		addConnectionNoLock(connection_id, from_id, to_id);
@@ -289,19 +300,17 @@ void ReactionEngine::removeTempConnection(const std::string& connection_id)
 		}
 	}
 	
-	// throw exception if the connection was not found
-	if (reactor_id.empty())
-		throw ConnectionNotFoundException(connection_id);
-	
-	if (type_is_output) {
-		// remove the output connection from the Reactor
-		removeConnectionNoLock(reactor_id, connection_id);
+	if (! reactor_id.empty()) {
+		if (type_is_output) {
+			// remove the output connection from the Reactor
+			removeConnectionNoLock(reactor_id, connection_id);
 
-		PION_LOG_DEBUG(m_logger, "Removed temporary Reactor output connection: "
-					   << reactor_id << " -> " << connection_info);
-	} else {
-		PION_LOG_DEBUG(m_logger, "Removed temporary Reactor input connection: "
-					   << reactor_id << " <- " << connection_info);
+			PION_LOG_DEBUG(m_logger, "Removed temporary Reactor output connection: "
+						   << reactor_id << " -> " << connection_info);
+		} else {
+			PION_LOG_DEBUG(m_logger, "Removed temporary Reactor input connection: "
+						   << reactor_id << " <- " << connection_info);
+		}
 	}
 }
 	
@@ -334,6 +343,12 @@ void ReactionEngine::addReactorConnection(const std::string& from_id,
 	if (xmlNewProp(connection_node,
 				   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
 				   reinterpret_cast<const xmlChar*>(connection_id.c_str())) == NULL)
+		throw AddConnectionConfigException(getConnectionAsText(from_id, to_id));
+	
+	// add a "Type" child element to the connection
+	if (xmlNewTextChild(connection_node, NULL,
+						reinterpret_cast<const xmlChar*>(TYPE_ELEMENT_NAME.c_str()),
+						reinterpret_cast<const xmlChar*>(CONNECTION_TYPE_REACTOR.c_str())) == NULL)
 		throw AddConnectionConfigException(getConnectionAsText(from_id, to_id));
 	
 	// add a "From" child element to the connection
@@ -474,45 +489,56 @@ void ReactionEngine::stopNoLock(void)
 	}
 }
 
-void ReactionEngine::writeConnectionsXML(std::ostream& out) const
+void ReactionEngine::writeConnectionsXML(std::ostream& out,
+										 const std::string& only_id) const
 {
-	boost::mutex::scoped_lock engine_lock(m_mutex);
-
 	out << '<' << ROOT_ELEMENT_NAME << '>' << std::endl;
 	
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
 	// iterate through Reactor connections
 	for (ReactorConnectionList::const_iterator reactor_i = m_reactor_connections.begin();
 		 reactor_i != m_reactor_connections.end(); ++reactor_i)
 	{
-		out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
-			<< "=\"" << reactor_i->m_connection_id << "\" " << TYPE_ATTRIBUTE_NAME
-			<< "=\"reactor\">" << std::endl
-			<< "\t<" << FROM_ELEMENT_NAME << '>' << reactor_i->m_from_id << "</"
-			<< FROM_ELEMENT_NAME << '>' << std::endl
-			<< "\t\t<" << TO_ELEMENT_NAME << '>' << reactor_i->m_to_id << "</"
-			<< TO_ELEMENT_NAME << '>' << std::endl
-			<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
+		if (only_id.empty() || reactor_i->m_connection_id == only_id
+			|| reactor_i->m_from_id == only_id || reactor_i->m_to_id == only_id)
+		{
+			out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+				<< "=\"" << reactor_i->m_connection_id << "\">" << std::endl
+				<< "\t\t<" << TYPE_ELEMENT_NAME << '>' << CONNECTION_TYPE_REACTOR
+				<< "</" << TYPE_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << FROM_ELEMENT_NAME << '>' << reactor_i->m_from_id << "</"
+				<< FROM_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << TO_ELEMENT_NAME << '>' << reactor_i->m_to_id << "</"
+				<< TO_ELEMENT_NAME << '>' << std::endl
+				<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
+		}
 	}
 
 	// iterate through temporary connections
 	for (TempConnectionList::const_iterator temp_i = m_temp_connections.begin();
 		 temp_i != m_temp_connections.end(); ++temp_i)
 	{
-		out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
-			<< "=\"" << temp_i->m_connection_id << "\" " << TYPE_ATTRIBUTE_NAME << "=\"";
-		if (temp_i->m_output_connection) {
-			out << "output\">" << std::endl
-				<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_reactor_id
-				<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
-				<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_connection_info;
-		} else {
-			out << "input\">" << std::endl
-				<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_connection_info
-				<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
-				<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_reactor_id;
+		if (only_id.empty() || temp_i->m_connection_id == only_id
+			|| temp_i->m_reactor_id == only_id)
+		{
+			out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+				<< "=\"" << temp_i->m_connection_id << "\">" << std::endl
+				<< "\t\t<" << TYPE_ELEMENT_NAME << '>';
+			if (temp_i->m_output_connection) {
+				out << CONNECTION_TYPE_OUTPUT << "</" << TYPE_ELEMENT_NAME << '>' << std::endl
+					<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_reactor_id
+					<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
+					<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_connection_info;
+			} else {
+				out << CONNECTION_TYPE_INPUT << "</" << TYPE_ELEMENT_NAME << '>' << std::endl
+					<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_connection_info
+					<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
+					<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_reactor_id;
+			}
+			out << "</" << TO_ELEMENT_NAME << '>' << std::endl
+				<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
 		}
-		out << "</" << TO_ELEMENT_NAME << '>' << std::endl
-			<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
 	}
 
 	out << "</" << ROOT_ELEMENT_NAME << '>' << std::endl;

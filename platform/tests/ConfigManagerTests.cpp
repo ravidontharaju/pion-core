@@ -27,5 +27,5 @@ using namespace pion::platform;
 
 BOOST_AUTO_TEST_CASE(checkCreateUUID) {
 	std::string UUID = ConfigManager::createUUID();
-	BOOST_CHECK_EQUAL(UUID.length(), 36);
+	BOOST_CHECK_EQUAL(UUID.length(), static_cast<std::size_t>(36));
 }

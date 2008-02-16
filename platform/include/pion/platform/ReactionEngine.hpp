@@ -55,13 +55,6 @@ public:
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 	
-	/// exception thrown if we are unable to find a connection with the same identifier
-	class ConnectionNotFoundException : public PionException {
-	public:
-		ConnectionNotFoundException(const std::string& connection_id)
-			: PionException("No connection found for identifier: ", connection_id) {}
-	};
-	
 	/// exception thrown if the config file contains a Reactor connection with a missing identifier
 	class EmptyConnectionIdException : public PionException {
 	public:
@@ -69,18 +62,25 @@ public:
 			: PionException("Configuration file includes a connection with an empty identifier: ", config_file) {}
 	};
 
+	/// exception thrown if the config file includes a connection with a bad or missing type
+	class BadConnectionTypeException : public PionException {
+	public:
+		BadConnectionTypeException(const std::string& connection_id)
+			: PionException("Bad connection type in configuration file: ", connection_id) {}
+	};
+	
 	/// exception thrown if the config file includes a connection with a missing From element
 	class EmptyFromException : public PionException {
 	public:
-		EmptyFromException(const std::string& config_file)
-			: PionException("Reactor configuration has a Connection with empty From element: ", config_file) {}
+		EmptyFromException(const std::string& connection_id)
+			: PionException("Reactor configuration has a connection with empty From element: ", connection_id) {}
 	};
 	
 	/// exception thrown if the config file includes a connection with a missing To element
 	class EmptyToException : public PionException {
 	public:
-		EmptyToException(const std::string& config_file)
-			: PionException("Reactor configuration has a Connection with empty To element: ", config_file) {}
+		EmptyToException(const std::string& connection_id)
+			: PionException("Reactor configuration has a connection with empty To element: ", connection_id) {}
 	};
 	
 	/// exception thrown if there is an error adding a Connection element to the config file
@@ -226,11 +226,23 @@ public:
 	void removeReactorConnection(const std::string& from_id, const std::string& to_id);
 	
 	/**
+	 * writes info for particular connections to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the connection info into
+	 * @param only_id include only connections that involve this unique
+	 *                identifier, or include all connections if empty
+	 */
+	void writeConnectionsXML(std::ostream& out, const std::string& connection_id) const;
+
+	/**
 	 * writes connection info for all Reactors to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the connection info into
 	 */
-	void writeConnectionsXML(std::ostream& out) const;
+	inline void writeConnectionsXML(std::ostream& out) const {
+		std::string empty_only_id;
+		writeConnectionsXML(out, empty_only_id);
+	}
 	
 	/**
 	 * schedules an Event to be processed by a Reactor
@@ -290,6 +302,9 @@ public:
 	 */
 	template<typename WorkFunction>
 	inline void post(WorkFunction work_func) { m_scheduler.getIOService().post(work_func); }
+	
+	/// returns an async I/O service used to schedule work
+	inline boost::asio::io_service& getIOService(void) { return m_scheduler.getIOService(); }
 	
 	/// returns the number of threads that are currently running
 	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
@@ -447,18 +462,24 @@ private:
 	/// name of the connection element for Pion XML config files
 	static const std::string		CONNECTION_ELEMENT_NAME;
 	
-	/// name of the comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
+	/// name of the connection type element for Pion XML config files
+	static const std::string		TYPE_ELEMENT_NAME;
 	
 	/// name of the from connection element for Pion XML config files
 	static const std::string		FROM_ELEMENT_NAME;
 	
 	/// name of the to connection element for Pion XML config files
 	static const std::string		TO_ELEMENT_NAME;
-	
-	/// name of the connection type attribute for Pion XML config files
-	static const std::string		TYPE_ATTRIBUTE_NAME;
 
+	/// type identifier for internal reactor connections
+	static const std::string		CONNECTION_TYPE_REACTOR;
+
+	/// type identifier for temporary input connections
+	static const std::string		CONNECTION_TYPE_INPUT;
+
+	/// type identifier for temporary output connections
+	static const std::string		CONNECTION_TYPE_OUTPUT;
+	
 	
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler					m_scheduler;
