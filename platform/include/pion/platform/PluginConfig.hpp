@@ -101,36 +101,6 @@ public:
 	inline xmlNodePtr getPluginConfig(const std::string& plugin_id);
 	
 	/**
-	 * sets configuration parameters for a managed plug-in
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 */
-	inline void setPluginConfig(const std::string& plugin_id,
-								const xmlNodePtr config_ptr);
-	
-	/**
-	 * adds a new plug-in object
-	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 *
-	 * @return std::string string containing the plug-in's auto-generated identifier
-	 */
-	inline std::string addPlugin(const std::string& plugin_type,
-								 const xmlNodePtr config_ptr = NULL);
-	
-	/**
-	 * removes a plug-in object
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 */
-	inline void removePlugin(const std::string& plugin_id);
-	
-	/**
 	 * registers a callback function to be executed whenever plug-ins are updated
 	 *
 	 * @param f the callback function to register
@@ -168,6 +138,36 @@ protected:
 		setLogger(PION_GET_LOGGER("pion.platform.PluginConfig"));
 	}
 
+	/**
+	 * sets configuration parameters for a managed plug-in
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	inline void setPluginConfig(const std::string& plugin_id,
+								const xmlNodePtr config_ptr);
+	
+	/**
+	 * adds a new plug-in object
+	 *
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 *
+	 * @return std::string string containing the plug-in's auto-generated identifier
+	 */
+	inline std::string addPlugin(const std::string& plugin_type,
+								 const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a plug-in object
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 */
+	inline void removePlugin(const std::string& plugin_id);
+	
 	/**
 	 * adds a new plug-in object (without locking or config file updates).  This
 	 * function must be defined properly for any derived classes that wish to

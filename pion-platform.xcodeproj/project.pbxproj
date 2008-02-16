@@ -7,6 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E306A8220D6647260069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8230D6647260069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A82A0D6647670069A023 /* FileService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A320D29C7A300B4C134 /* FileService.cpp */; };
+		E306A82B0D6647680069A023 /* FileService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A330D29C7A300B4C134 /* FileService.hpp */; };
+		E306A8410D66481B0069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8420D66481B0069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A8510D6648460069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8520D6648460069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A8610D66484E0069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8620D66484E0069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A8710D6648570069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8720D6648570069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A8810D6648670069A023 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
+		E306A8820D6648670069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306A8910D66489F0069A023 /* CookieService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A2F0D29C7A300B4C134 /* CookieService.hpp */; };
+		E306A8920D66489F0069A023 /* CookieService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A2E0D29C7A300B4C134 /* CookieService.cpp */; };
+		E306A8930D6648A50069A023 /* AllowNothingService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A2C0D29C7A300B4C134 /* AllowNothingService.cpp */; };
+		E306A8940D6648A60069A023 /* AllowNothingService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A2D0D29C7A300B4C134 /* AllowNothingService.hpp */; };
+		E306A8950D6648AD0069A023 /* EchoService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A300D29C7A300B4C134 /* EchoService.cpp */; };
+		E306A8960D6648AD0069A023 /* EchoService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A310D29C7A300B4C134 /* EchoService.hpp */; };
+		E306A8970D6648B40069A023 /* LogService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A360D29C7A300B4C134 /* LogService.cpp */; };
+		E306A8980D6648B40069A023 /* LogService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A370D29C7A300B4C134 /* LogService.hpp */; };
+		E306A8990D6648BD0069A023 /* HelloService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D8A340D29C7A300B4C134 /* HelloService.cpp */; };
+		E306A89A0D6648BD0069A023 /* HelloService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8A350D29C7A300B4C134 /* HelloService.hpp */; };
+		E306A90F0D665D660069A023 /* FeedServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A90E0D665D660069A023 /* FeedServiceTests.cpp */; };
+		E306A92E0D66614A0069A023 /* libpion-server.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FF965C0D579ABB001E075B /* libpion-server.dylib */; };
+		E306A9350D6661E90069A023 /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
+		E306AA170D6677130069A023 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
+		E306AA180D6677130069A023 /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
+		E306AA190D6677130069A023 /* ConfigManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A9100D665D750069A023 /* ConfigManagerTests.cpp */; };
+		E306AA1A0D6677140069A023 /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
+		E306AA1B0D6677140069A023 /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
+		E306AA1C0D6677150069A023 /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
+		E306AA1D0D6677150069A023 /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E30B43730CFBB4CF00337BA4 /* PluginManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */; };
 		E30B43740CFBB4CF00337BA4 /* PluginManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */; };
 		E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
@@ -113,7 +147,6 @@
 		E36D8C590D29DB1300B4C134 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E36D8C5B0D29DB1500B4C134 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E36F2EE70CA7922100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E39F35070D5137760058A75F /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
 		E3A9CE160D33EDCB0094ECEE /* Codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE130D33EDCB0094ECEE /* Codec.cpp */; };
 		E3A9CE170D33EDCB0094ECEE /* Database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE140D33EDCB0094ECEE /* Database.cpp */; };
 		E3A9CE180D33EDCB0094ECEE /* Reactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */; };
@@ -140,8 +173,6 @@
 		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
 		E3CFE20D0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
-		E3CFF9630D44340800ADB135 /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
-		E3CFF9650D44340800ADB135 /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
 		E3CFF9670D44340800ADB135 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3CFF9690D44340800ADB135 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E3CFF96E0D44345000ADB135 /* FilterReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFF9590D4432DE00ADB135 /* FilterReactor.cpp */; };
@@ -162,11 +193,8 @@
 		E3D045280D564C6B0015545F /* VocabularyManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045260D564C6B0015545F /* VocabularyManager.cpp */; };
 		E3D045390D5693770015545F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3D045320D5693770015545F /* main.cpp */; };
 		E3D046CB0D569F940015545F /* PionPlatformUnitTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */; };
-		E3D046D60D56A10F0015545F /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
-		E3D046D70D56A1100015545F /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
-		E3D046D80D56A1120015545F /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
-		E3D046DB0D56A1190015545F /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
-		E3D046DE0D56A1210015545F /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
+		E3D08F940D64BAEB00C81956 /* TCPStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D08F930D64BAEB00C81956 /* TCPStream.hpp */; };
+		E3D08F950D64BAEB00C81956 /* TCPStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3D08F930D64BAEB00C81956 /* TCPStream.hpp */; };
 		E3E6AE420D5A5E5100A9C68F /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
 		E3E6AE430D5A5E5100A9C68F /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
 		E3E6AE460D5A5E5100A9C68F /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
@@ -178,10 +206,6 @@
 		E3E6AE520D5A5E7F00A9C68F /* FeedService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */; };
 		E3E6AE530D5A5E8000A9C68F /* FeedService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */; };
 		E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
-		E3FF95890D5789BE001E075B /* XMLCodec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E10D29BB8700B4C134 /* XMLCodec.hpp */; };
-		E3FF958A0D5789BE001E075B /* FilterReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFF95A0D4432DE00ADB135 /* FilterReactor.hpp */; };
-		E3FF958C0D5789BE001E075B /* XMLCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E00D29BB8700B4C134 /* XMLCodec.cpp */; };
-		E3FF958D0D5789BE001E075B /* FilterReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFF9590D4432DE00ADB135 /* FilterReactor.cpp */; };
 		E3FF958F0D5789BE001E075B /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3FF95900D5789BE001E075B /* libpion-net.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36D8A5F0D29C9D800B4C134 /* libpion-net.dylib */; };
 		E3FF95910D5789BE001E075B /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
@@ -261,11 +285,165 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		E306A8120D6647260069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A8140D6647260069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A82C0D66477B0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8100D6647260069A023;
+			remoteInfo = FileService;
+		};
+		E306A8390D66481B0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A83B0D66481B0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A8490D6648460069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A84B0D6648460069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A8590D66484E0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A85B0D66484E0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A8690D6648570069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A86B0D6648570069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A8790D6648670069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
+			remoteInfo = "pion-common: dynamic";
+		};
+		E306A87B0D6648670069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
+		E306A8870D66488C0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8770D6648670069A023;
+			remoteInfo = AllowNothingService;
+		};
+		E306A8890D66488C0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8670D6648570069A023;
+			remoteInfo = CookieService;
+		};
+		E306A88B0D66488C0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8570D66484E0069A023;
+			remoteInfo = EchoService;
+		};
+		E306A88D0D66488C0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8370D66481B0069A023;
+			remoteInfo = LogService;
+		};
+		E306A88F0D66488C0069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8470D6648460069A023;
+			remoteInfo = HelloService;
+		};
+		E306A9180D6660E50069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FF96370D579ABB001E075B;
+			remoteInfo = "pion-server: dynamic";
+		};
+		E306A91A0D6660F90069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FF95810D5789BE001E075B;
+			remoteInfo = ConfigService;
+		};
+		E306A91C0D6660F90069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3E6AE380D5A5E5100A9C68F;
+			remoteInfo = FeedService;
+		};
+		E306A9360D6661F40069A023 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E36D8A5E0D29C9D800B4C134;
+			remoteInfo = "pion-net: dynamic";
+		};
 		E32C2ECB0D5D2DB500C2DECB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E3E6AE380D5A5E5100A9C68F /* FeedService */;
+			remoteGlobalIDString = E3E6AE380D5A5E5100A9C68F;
 			remoteInfo = FeedService;
 		};
 		E36D8A620D29CA0400B4C134 /* PBXContainerItemProxy */ = {
@@ -551,6 +729,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E306A8290D6647260069A023 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A8460D66481B0069A023 /* LogService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A8560D6648460069A023 /* HelloService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = HelloService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A8660D66484E0069A023 /* EchoService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = EchoService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A8760D6648570069A023 /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A8860D6648670069A023 /* AllowNothingService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = AllowNothingService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E306A90E0D665D660069A023 /* FeedServiceTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeedServiceTests.cpp; path = platform/tests/FeedServiceTests.cpp; sourceTree = SOURCE_ROOT; };
+		E306A9100D665D750069A023 /* ConfigManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigManagerTests.cpp; path = platform/tests/ConfigManagerTests.cpp; sourceTree = SOURCE_ROOT; };
 		E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PluginManager.hpp; path = common/include/pion/PluginManager.hpp; sourceTree = SOURCE_ROOT; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
 		E319399D0D49601A00DDF224 /* Comparison.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Comparison.cpp; path = platform/src/Comparison.cpp; sourceTree = SOURCE_ROOT; };
@@ -679,6 +865,8 @@
 		E3D045360D5693770015545F /* PlatformService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PlatformService.hpp; path = platform/server/PlatformService.hpp; sourceTree = SOURCE_ROOT; };
 		E3D045370D5693770015545F /* ServiceManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServiceManager.cpp; path = platform/server/ServiceManager.cpp; sourceTree = SOURCE_ROOT; };
 		E3D045380D5693770015545F /* ServiceManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ServiceManager.hpp; path = platform/server/ServiceManager.hpp; sourceTree = SOURCE_ROOT; };
+		E3D08F930D64BAEB00C81956 /* TCPStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TCPStream.hpp; path = net/include/pion/net/TCPStream.hpp; sourceTree = SOURCE_ROOT; };
+		E3D08F960D64BB0A00C81956 /* TCPStreamTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TCPStreamTests.cpp; path = net/tests/TCPStreamTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeedService.cpp; path = platform/services/FeedService.cpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FeedService.hpp; path = platform/services/FeedService.hpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE510D5A5E5100A9C68F /* FeedService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FeedService.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -691,6 +879,60 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E306A8210D6647260069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8220D6647260069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8230D6647260069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A8400D66481B0069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8410D66481B0069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8420D66481B0069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A8500D6648460069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8510D6648460069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8520D6648460069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A8600D66484E0069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8610D66484E0069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8620D66484E0069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A8700D6648570069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8710D6648570069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8720D6648570069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A8800D6648670069A023 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8810D6648670069A023 /* libpion-common.dylib in Frameworks */,
+				E306A8820D6648670069A023 /* libpion-net.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E33288A00BEE5044006D0556 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -799,6 +1041,8 @@
 			files = (
 				E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */,
 				E36D8A660D29CA5000B4C134 /* libpion-platform.dylib in Frameworks */,
+				E306A92E0D66614A0069A023 /* libpion-server.dylib in Frameworks */,
+				E306A9350D6661E90069A023 /* libpion-net.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -863,6 +1107,12 @@
 				E3FF96360D579AB8001E075B /* libpion-server.a */,
 				E3FF965C0D579ABB001E075B /* libpion-server.dylib */,
 				E3E6AE510D5A5E5100A9C68F /* FeedService.so */,
+				E306A8290D6647260069A023 /* FileService.so */,
+				E306A8460D66481B0069A023 /* LogService.so */,
+				E306A8560D6648460069A023 /* HelloService.so */,
+				E306A8660D66484E0069A023 /* EchoService.so */,
+				E306A8760D6648570069A023 /* CookieService.so */,
+				E306A8860D6648670069A023 /* AllowNothingService.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -904,6 +1154,9 @@
 		E36D8A020D29C5E900B4C134 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				E36D8A220D29C75200B4C134 /* TCPConnection.hpp */,
+				E3D08F930D64BAEB00C81956 /* TCPStream.hpp */,
+				E36D8A230D29C75200B4C134 /* TCPServer.hpp */,
 				E36D8A160D29C75200B4C134 /* HTTPMessage.hpp */,
 				E36D8A170D29C75200B4C134 /* HTTPParser.hpp */,
 				E36D8A180D29C75200B4C134 /* HTTPReader.hpp */,
@@ -916,8 +1169,6 @@
 				E36D8A1F0D29C75200B4C134 /* HTTPServer.hpp */,
 				E36D8A200D29C75200B4C134 /* HTTPTypes.hpp */,
 				E36D8A210D29C75200B4C134 /* HTTPWriter.hpp */,
-				E36D8A220D29C75200B4C134 /* TCPConnection.hpp */,
-				E36D8A230D29C75200B4C134 /* TCPServer.hpp */,
 				E36D8A240D29C75200B4C134 /* WebService.hpp */,
 				E3D044CA0D540BE80015545F /* WebServer.hpp */,
 			);
@@ -959,6 +1210,7 @@
 				E36D8A560D29C9B800B4C134 /* HTTPRequestTests.cpp */,
 				E36D8A570D29C9B800B4C134 /* HTTPResponseTests.cpp */,
 				E36D8A580D29C9B800B4C134 /* PionNetUnitTests.cpp */,
+				E3D08F960D64BB0A00C81956 /* TCPStreamTests.cpp */,
 				E36D8A590D29C9B800B4C134 /* TCPServerTests.cpp */,
 				E36D8A5A0D29C9B800B4C134 /* WebServerTests.cpp */,
 			);
@@ -1120,6 +1372,8 @@
 				E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */,
 				E326EF890D2D733700BBCE56 /* CodecTests.cpp */,
 				E378EE710D4A6B06002658FA /* ReactorTests.cpp */,
+				E306A90E0D665D660069A023 /* FeedServiceTests.cpp */,
+				E306A9100D665D750069A023 /* ConfigManagerTests.cpp */,
 				E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */,
 				E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */,
 			);
@@ -1140,6 +1394,54 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		E306A8190D6647260069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A82B0D6647680069A023 /* FileService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A83C0D66481B0069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8980D6648B40069A023 /* LogService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A84C0D6648460069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A89A0D6648BD0069A023 /* HelloService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A85C0D66484E0069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8960D6648AD0069A023 /* EchoService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A86C0D6648570069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8910D66489F0069A023 /* CookieService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A87C0D6648670069A023 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8940D6648A60069A023 /* AllowNothingService.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E332889E0BEE5044006D0556 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1202,6 +1504,7 @@
 				E36D8A7E0D29CAC400B4C134 /* TCPServer.hpp in Headers */,
 				E36D8A7F0D29CAC400B4C134 /* WebService.hpp in Headers */,
 				E3D044CC0D540BE80015545F /* WebServer.hpp in Headers */,
+				E3D08F950D64BAEB00C81956 /* TCPStream.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1225,6 +1528,7 @@
 				E36D8A9B0D29CAEB00B4C134 /* WebService.hpp in Headers */,
 				E36D8A9C0D29CAEC00B4C134 /* TCPConnection.hpp in Headers */,
 				E3D044CB0D540BE80015545F /* WebServer.hpp in Headers */,
+				E3D08F940D64BAEB00C81956 /* TCPStream.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1290,7 +1594,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3CFF9630D44340800ADB135 /* XMLCodec.hpp in Headers */,
 				E3CFF96F0D44345000ADB135 /* FilterReactor.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1309,8 +1612,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3FF95890D5789BE001E075B /* XMLCodec.hpp in Headers */,
-				E3FF958A0D5789BE001E075B /* FilterReactor.hpp in Headers */,
 				E3FF95A60D579280001E075B /* ConfigService.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1366,6 +1667,120 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		E306A8100D6647260069A023 /* FileService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8260D6647260069A023 /* Build configuration list for PBXNativeTarget "FileService" */;
+			buildPhases = (
+				E306A8190D6647260069A023 /* Headers */,
+				E306A81D0D6647260069A023 /* Sources */,
+				E306A8210D6647260069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8110D6647260069A023 /* PBXTargetDependency */,
+				E306A8130D6647260069A023 /* PBXTargetDependency */,
+			);
+			name = FileService;
+			productName = ELFCodec;
+			productReference = E306A8290D6647260069A023 /* FileService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E306A8370D66481B0069A023 /* LogService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8430D66481B0069A023 /* Build configuration list for PBXNativeTarget "LogService" */;
+			buildPhases = (
+				E306A83C0D66481B0069A023 /* Headers */,
+				E306A83E0D66481B0069A023 /* Sources */,
+				E306A8400D66481B0069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8380D66481B0069A023 /* PBXTargetDependency */,
+				E306A83A0D66481B0069A023 /* PBXTargetDependency */,
+			);
+			name = LogService;
+			productName = ELFCodec;
+			productReference = E306A8460D66481B0069A023 /* LogService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E306A8470D6648460069A023 /* HelloService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8530D6648460069A023 /* Build configuration list for PBXNativeTarget "HelloService" */;
+			buildPhases = (
+				E306A84C0D6648460069A023 /* Headers */,
+				E306A84E0D6648460069A023 /* Sources */,
+				E306A8500D6648460069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8480D6648460069A023 /* PBXTargetDependency */,
+				E306A84A0D6648460069A023 /* PBXTargetDependency */,
+			);
+			name = HelloService;
+			productName = ELFCodec;
+			productReference = E306A8560D6648460069A023 /* HelloService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E306A8570D66484E0069A023 /* EchoService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8630D66484E0069A023 /* Build configuration list for PBXNativeTarget "EchoService" */;
+			buildPhases = (
+				E306A85C0D66484E0069A023 /* Headers */,
+				E306A85E0D66484E0069A023 /* Sources */,
+				E306A8600D66484E0069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8580D66484E0069A023 /* PBXTargetDependency */,
+				E306A85A0D66484E0069A023 /* PBXTargetDependency */,
+			);
+			name = EchoService;
+			productName = ELFCodec;
+			productReference = E306A8660D66484E0069A023 /* EchoService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E306A8670D6648570069A023 /* CookieService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8730D6648570069A023 /* Build configuration list for PBXNativeTarget "CookieService" */;
+			buildPhases = (
+				E306A86C0D6648570069A023 /* Headers */,
+				E306A86E0D6648570069A023 /* Sources */,
+				E306A8700D6648570069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8680D6648570069A023 /* PBXTargetDependency */,
+				E306A86A0D6648570069A023 /* PBXTargetDependency */,
+			);
+			name = CookieService;
+			productName = ELFCodec;
+			productReference = E306A8760D6648570069A023 /* CookieService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		E306A8770D6648670069A023 /* AllowNothingService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E306A8830D6648670069A023 /* Build configuration list for PBXNativeTarget "AllowNothingService" */;
+			buildPhases = (
+				E306A87C0D6648670069A023 /* Headers */,
+				E306A87E0D6648670069A023 /* Sources */,
+				E306A8800D6648670069A023 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E306A8780D6648670069A023 /* PBXTargetDependency */,
+				E306A87A0D6648670069A023 /* PBXTargetDependency */,
+			);
+			name = AllowNothingService;
+			productName = ELFCodec;
+			productReference = E306A8860D6648670069A023 /* AllowNothingService.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		E33288A10BEE5044006D0556 /* pion-platform: static */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E33288CA0BEE5103006D0556 /* Build configuration list for PBXNativeTarget "pion-platform: static" */;
@@ -1455,8 +1870,14 @@
 				E3FF959C0D578A95001E075B /* PBXTargetDependency */,
 				E3FF959E0D578A95001E075B /* PBXTargetDependency */,
 				E3FF95A00D578A95001E075B /* PBXTargetDependency */,
+				E306A82D0D66477B0069A023 /* PBXTargetDependency */,
 				E3FF95A20D578A95001E075B /* PBXTargetDependency */,
 				E32C2ECC0D5D2DB500C2DECB /* PBXTargetDependency */,
+				E306A8880D66488C0069A023 /* PBXTargetDependency */,
+				E306A88A0D66488C0069A023 /* PBXTargetDependency */,
+				E306A88C0D66488C0069A023 /* PBXTargetDependency */,
+				E306A88E0D66488C0069A023 /* PBXTargetDependency */,
+				E306A8900D66488C0069A023 /* PBXTargetDependency */,
 			);
 			name = pion;
 			productName = piond;
@@ -1606,10 +2027,14 @@
 			dependencies = (
 				E3EFC6D40D1896930019CCD4 /* PBXTargetDependency */,
 				E3EFC6D60D1896930019CCD4 /* PBXTargetDependency */,
+				E306A9370D6661F40069A023 /* PBXTargetDependency */,
+				E306A9190D6660E50069A023 /* PBXTargetDependency */,
 				E36D8C360D29D83C00B4C134 /* PBXTargetDependency */,
 				E36D8C380D29D83C00B4C134 /* PBXTargetDependency */,
 				E36D8C3A0D29D83C00B4C134 /* PBXTargetDependency */,
 				E378EE740D4AA746002658FA /* PBXTargetDependency */,
+				E306A91B0D6660F90069A023 /* PBXTargetDependency */,
+				E306A91D0D6660F90069A023 /* PBXTargetDependency */,
 			);
 			name = PionPlatformUnitTests;
 			productName = PionReactorUnitTests;
@@ -1701,6 +2126,12 @@
 				E36D8C190D29D7E300B4C134 /* JSONCodec */,
 				E36D8C270D29D7EA00B4C134 /* XMLCodec */,
 				E3CFF95B0D44340800ADB135 /* FilterReactor */,
+				E306A8770D6648670069A023 /* AllowNothingService */,
+				E306A8670D6648570069A023 /* CookieService */,
+				E306A8570D66484E0069A023 /* EchoService */,
+				E306A8370D66481B0069A023 /* LogService */,
+				E306A8100D6647260069A023 /* FileService */,
+				E306A8470D6648460069A023 /* HelloService */,
 				E3FF95810D5789BE001E075B /* ConfigService */,
 				E3E6AE380D5A5E5100A9C68F /* FeedService */,
 				E3EFC68E0D18905C0019CCD4 /* PionPlatformUnitTests */,
@@ -1710,6 +2141,54 @@
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E306A81D0D6647260069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A82A0D6647670069A023 /* FileService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A83E0D66481B0069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8970D6648B40069A023 /* LogService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A84E0D6648460069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8990D6648BD0069A023 /* HelloService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A85E0D66484E0069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8950D6648AD0069A023 /* EchoService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A86E0D6648570069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8920D66489F0069A023 /* CookieService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E306A87E0D6648670069A023 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E306A8930D6648A50069A023 /* AllowNothingService.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E332889F0BEE5044006D0556 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1836,7 +2315,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3CFF9650D44340800ADB135 /* XMLCodec.cpp in Sources */,
 				E3CFF96E0D44345000ADB135 /* FilterReactor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1855,13 +2333,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E39F35070D5137760058A75F /* CodecTests.cpp in Sources */,
 				E3D046CB0D569F940015545F /* PionPlatformUnitTests.cpp in Sources */,
-				E3D046D60D56A10F0015545F /* ComparisonTests.cpp in Sources */,
-				E3D046D70D56A1100015545F /* EventTests.cpp in Sources */,
-				E3D046D80D56A1120015545F /* VocabularyTests.cpp in Sources */,
-				E3D046DB0D56A1190015545F /* ReactorTests.cpp in Sources */,
-				E3D046DE0D56A1210015545F /* VocabularyConfigTests.cpp in Sources */,
+				E306A90F0D665D660069A023 /* FeedServiceTests.cpp in Sources */,
+				E306AA170D6677130069A023 /* CodecTests.cpp in Sources */,
+				E306AA180D6677130069A023 /* ComparisonTests.cpp in Sources */,
+				E306AA190D6677130069A023 /* ConfigManagerTests.cpp in Sources */,
+				E306AA1A0D6677140069A023 /* EventTests.cpp in Sources */,
+				E306AA1B0D6677140069A023 /* ReactorTests.cpp in Sources */,
+				E306AA1C0D6677150069A023 /* VocabularyConfigTests.cpp in Sources */,
+				E306AA1D0D6677150069A023 /* VocabularyTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1869,8 +2349,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3FF958C0D5789BE001E075B /* XMLCodec.cpp in Sources */,
-				E3FF958D0D5789BE001E075B /* FilterReactor.cpp in Sources */,
 				E3FF95A50D579280001E075B /* ConfigService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1924,6 +2402,116 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E306A8110D6647260069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8120D6647260069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8130D6647260069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A8140D6647260069A023 /* PBXContainerItemProxy */;
+		};
+		E306A82D0D66477B0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8100D6647260069A023 /* FileService */;
+			targetProxy = E306A82C0D66477B0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8380D66481B0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8390D66481B0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A83A0D66481B0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A83B0D66481B0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8480D6648460069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8490D6648460069A023 /* PBXContainerItemProxy */;
+		};
+		E306A84A0D6648460069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A84B0D6648460069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8580D66484E0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8590D66484E0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A85A0D66484E0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A85B0D66484E0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8680D6648570069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8690D6648570069A023 /* PBXContainerItemProxy */;
+		};
+		E306A86A0D6648570069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A86B0D6648570069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8780D6648670069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			targetProxy = E306A8790D6648670069A023 /* PBXContainerItemProxy */;
+		};
+		E306A87A0D6648670069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A87B0D6648670069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8880D66488C0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8770D6648670069A023 /* AllowNothingService */;
+			targetProxy = E306A8870D66488C0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A88A0D66488C0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8670D6648570069A023 /* CookieService */;
+			targetProxy = E306A8890D66488C0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A88C0D66488C0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8570D66484E0069A023 /* EchoService */;
+			targetProxy = E306A88B0D66488C0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A88E0D66488C0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8370D66481B0069A023 /* LogService */;
+			targetProxy = E306A88D0D66488C0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A8900D66488C0069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8470D6648460069A023 /* HelloService */;
+			targetProxy = E306A88F0D66488C0069A023 /* PBXContainerItemProxy */;
+		};
+		E306A9190D6660E50069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FF96370D579ABB001E075B /* pion-server: dynamic */;
+			targetProxy = E306A9180D6660E50069A023 /* PBXContainerItemProxy */;
+		};
+		E306A91B0D6660F90069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FF95810D5789BE001E075B /* ConfigService */;
+			targetProxy = E306A91A0D6660F90069A023 /* PBXContainerItemProxy */;
+		};
+		E306A91D0D6660F90069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3E6AE380D5A5E5100A9C68F /* FeedService */;
+			targetProxy = E306A91C0D6660F90069A023 /* PBXContainerItemProxy */;
+		};
+		E306A9370D6661F40069A023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E36D8A5E0D29C9D800B4C134 /* pion-net: dynamic */;
+			targetProxy = E306A9360D6661F40069A023 /* PBXContainerItemProxy */;
+		};
 		E32C2ECC0D5D2DB500C2DECB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E3E6AE380D5A5E5100A9C68F /* FeedService */;
@@ -2212,6 +2800,126 @@
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include ${PROJECT_DIR}/platform/server";
+			};
+			name = Release;
+		};
+		E306A8270D6647260069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = FileService;
+			};
+			name = Debug;
+		};
+		E306A8280D6647260069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = FileService;
+			};
+			name = Release;
+		};
+		E306A8440D66481B0069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = LogService;
+			};
+			name = Debug;
+		};
+		E306A8450D66481B0069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = LogService;
+			};
+			name = Release;
+		};
+		E306A8540D6648460069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = HelloService;
+			};
+			name = Debug;
+		};
+		E306A8550D6648460069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = HelloService;
+			};
+			name = Release;
+		};
+		E306A8640D66484E0069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = EchoService;
+			};
+			name = Debug;
+		};
+		E306A8650D66484E0069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = EchoService;
+			};
+			name = Release;
+		};
+		E306A8740D6648570069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = CookieService;
+			};
+			name = Debug;
+		};
+		E306A8750D6648570069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = CookieService;
+			};
+			name = Release;
+		};
+		E306A8840D6648670069A023 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = AllowNothingService;
+			};
+			name = Debug;
+		};
+		E306A8850D6648670069A023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = "";
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = AllowNothingService;
 			};
 			name = Release;
 		};
@@ -2529,6 +3237,60 @@
 			buildConfigurations = (
 				1DEB923608733DC60010E9CD /* Debug */,
 				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8260D6647260069A023 /* Build configuration list for PBXNativeTarget "FileService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8270D6647260069A023 /* Debug */,
+				E306A8280D6647260069A023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8430D66481B0069A023 /* Build configuration list for PBXNativeTarget "LogService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8440D66481B0069A023 /* Debug */,
+				E306A8450D66481B0069A023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8530D6648460069A023 /* Build configuration list for PBXNativeTarget "HelloService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8540D6648460069A023 /* Debug */,
+				E306A8550D6648460069A023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8630D66484E0069A023 /* Build configuration list for PBXNativeTarget "EchoService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8640D66484E0069A023 /* Debug */,
+				E306A8650D66484E0069A023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8730D6648570069A023 /* Build configuration list for PBXNativeTarget "CookieService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8740D6648570069A023 /* Debug */,
+				E306A8750D6648570069A023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E306A8830D6648670069A023 /* Build configuration list for PBXNativeTarget "AllowNothingService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E306A8840D6648670069A023 /* Debug */,
+				E306A8850D6648670069A023 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

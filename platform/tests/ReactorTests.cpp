@@ -60,6 +60,7 @@ void cleanup_reactor_config_files(void)
 
 	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
 		boost::filesystem::remove(REACTORS_CONFIG_FILE);
+	boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
 
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
@@ -122,6 +123,7 @@ class ReactionEngineBasicTests_F
 {
 public:
 	ReactionEngineBasicTests_F() {
+		boost::filesystem::remove(REACTORS_CONFIG_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.createConfigFile();
 	}
@@ -131,17 +133,17 @@ public:
 BOOST_FIXTURE_TEST_SUITE(ReactionEngineBasicTests_S, ReactionEngineBasicTests_F)
 
 BOOST_AUTO_TEST_CASE(checkAddConnectionForMissingReactor) {
-	BOOST_CHECK_THROW(m_reaction_engine.addConnection("bad_id", "another_bad_id"),
+	BOOST_CHECK_THROW(m_reaction_engine.addReactorConnection("bad_id", "another_bad_id"),
 					  ReactionEngine::ReactorNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE(checkRemoveConnectionForMissingReactor) {
-	BOOST_CHECK_THROW(m_reaction_engine.removeConnection("bad_id", "another_bad_id"),
+	BOOST_CHECK_THROW(m_reaction_engine.removeReactorConnection("bad_id", "another_bad_id"),
 					  ReactionEngine::ReactorNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE(checkAddFilterReactorNoConfig) {
-	std::string reactor_id = m_reaction_engine.addPlugin("FilterReactor");
+	std::string reactor_id = m_reaction_engine.addReactor("FilterReactor");
 	BOOST_CHECK(! reactor_id.empty());
 }
 
@@ -150,17 +152,14 @@ BOOST_AUTO_TEST_SUITE_END()
 
 /// fixture for Reactor connection tests
 class ReactionEngineConnectionTests_F
-	: public ReactionEngineTestInterface_F
+	: public ReactionEngineBasicTests_F
 {
 public:
 	ReactionEngineConnectionTests_F() {
-		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
-		m_reaction_engine.createConfigFile();
-		
-		filter_one_id = m_reaction_engine.addPlugin("FilterReactor");
+		filter_one_id = m_reaction_engine.addReactor("FilterReactor");
 		BOOST_REQUIRE(! filter_one_id.empty());
 
-		filter_two_id = m_reaction_engine.addPlugin("FilterReactor");
+		filter_two_id = m_reaction_engine.addReactor("FilterReactor");
 		BOOST_REQUIRE(! filter_two_id.empty());
 	}
 	virtual ~ReactionEngineConnectionTests_F() {}
@@ -172,12 +171,12 @@ public:
 BOOST_FIXTURE_TEST_SUITE(ReactionEngineConnectionTests_S, ReactionEngineConnectionTests_F)
 
 BOOST_AUTO_TEST_CASE(checkAddThenRemoveReactorConnection) {
-	m_reaction_engine.addConnection(filter_one_id, filter_two_id);
+	m_reaction_engine.addReactorConnection(filter_one_id, filter_two_id);
 	
 	// check config file
 	// ...
 	
-	m_reaction_engine.removeConnection(filter_one_id, filter_two_id);
+	m_reaction_engine.removeReactorConnection(filter_one_id, filter_two_id);
 	
 	// check config file
 	// ...
@@ -192,7 +191,6 @@ class ReactionEngineLogFilterTests_F
 {
 public:
 	ReactionEngineLogFilterTests_F() {
-		boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.openConfigFile();
 	}
@@ -213,8 +211,8 @@ BOOST_AUTO_TEST_CASE(checkSetReactorWorkspace) {
 	xmlAddNextSibling(reactor_config->last, workspace_node);
 
 	// update the Reactor's config
-	BOOST_CHECK_NO_THROW(m_reaction_engine.setPluginConfig(m_ie_filter_id,
-														   reactor_config->children));
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorConfig(m_ie_filter_id,
+															reactor_config->children));
 	xmlFreeNodeList(reactor_config);
 	
 	// check config file
@@ -235,8 +233,8 @@ BOOST_AUTO_TEST_CASE(checkSetReactorCoordinates) {
 	xmlAddNextSibling(reactor_config->last, y_node);
 	
 	// update the Reactor's config
-	BOOST_CHECK_NO_THROW(m_reaction_engine.setPluginConfig(m_ie_filter_id,
-														   reactor_config->children));
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorConfig(m_ie_filter_id,
+														    reactor_config->children));
 	xmlFreeNodeList(reactor_config);
 	
 	// check config file

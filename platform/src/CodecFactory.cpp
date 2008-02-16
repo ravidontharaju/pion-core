@@ -48,7 +48,40 @@ CodecPtr CodecFactory::getCodec(const std::string& codec_id)
 	// while encoding or decoding data streams
 	return codec_ptr->clone();
 }
-	
+
+void CodecFactory::setCodecConfig(const std::string& codec_id,
+								  const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into CodecNotFound exceptions
+	try {
+		PluginConfig<Codec>::setPluginConfig(codec_id, config_ptr);
+	} catch (PluginManager<Codec>::PluginNotFoundException&) {
+		throw CodecNotFoundException(codec_id);
+	}
+}
+
+std::string CodecFactory::addCodec(const std::string& plugin_type,
+								   const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into CodecNotFound exceptions
+	std::string codec_id;
+	try {
+		codec_id = PluginConfig<Codec>::addPlugin(plugin_type, config_ptr);
+	} catch (PluginManager<Codec>::PluginNotFoundException&) {
+		throw CodecNotFoundException(codec_id);
+	}
+	return codec_id;
+}
+
+void CodecFactory::removeCodec(const std::string& codec_id) {
+	// convert PluginNotFound exceptions into CodecNotFound exceptions
+	try {
+		PluginConfig<Codec>::removePlugin(codec_id);
+	} catch (PluginManager<Codec>::PluginNotFoundException&) {
+		throw CodecNotFoundException(codec_id);
+	}
+}
+
 	
 }	// end namespace platform
 }	// end namespace pion

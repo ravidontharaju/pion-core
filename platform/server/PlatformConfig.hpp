@@ -91,7 +91,11 @@ public:
 	PlatformConfig(void);
 	
 	/// virtual destructor
-	virtual ~PlatformConfig() {}
+	virtual ~PlatformConfig() {
+		// make sure that the ReactionEngine stops before the ServiceManager
+		// This will cleanly terminate any temporary Reactor connections first
+		m_reaction_engine.stop();
+	}
 	
 	/// opens an existing platform config file
 	virtual void openConfigFile(void);

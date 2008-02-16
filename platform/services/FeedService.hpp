@@ -21,10 +21,13 @@
 #define __PION_FEEDSERVICE_HEADER__
 
 #include <string>
-#include <boost/function.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/net/TCPStream.hpp>
 #include <pion/platform/Codec.hpp>
+#include <pion/platform/Reactor.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include "PlatformService.hpp"
 
@@ -39,28 +42,38 @@ namespace server {		// begin namespace server (Pion Server)
 class FeedHandler
 {
 public:
-	
-	/// data type for a function that is called when the connection is lost
-	typedef boost::function0<void>		FinishedHandler;
-	
-	
+
 	/// virtual destructor
-	virtual ~FeedHandler() {}
+	virtual ~FeedHandler() { m_tcp_conn->finish(); }
 	
 	/**
 	 * constructs a new FeedHandler object
 	 *
+	 * @param reaction_engine reference to the ReactionEngine
 	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
 	 * @param codec_ptr pointer to the Codec that this handler will use
 	 * @param tcp_conn TCP connection that will be used to send/receive Events
-	 * @param finished_handler function that is called when the connection is lost
 	 */
-	FeedHandler(const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
-				pion::net::TCPConnectionPtr& tcp_conn, FinishedHandler finished_handler)
-		: m_reactor_id(reactor_id), m_codec_ptr(codec_ptr),
-		m_tcp_conn(tcp_conn), m_finished_handler(finished_handler)
-	{}
+	FeedHandler(pion::platform::ReactionEngine &reaction_engine,
+				const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
+				pion::net::TCPConnectionPtr& tcp_conn);
 	
+	/// starts the FeedHandler
+	virtual void start(void) = 0;
+	
+	/**
+	 * generates a string describing information for a TCP connection
+	 *
+	 * @param tcp_conn TCP connection that will be used to send/receive Events
+	 * @return std::string contains information describing this connection
+	 */
+	static std::string createConnectionInfo(pion::net::TCPConnectionPtr& tcp_conn);
+	
+	/// returns the unique identifier for this particular connection
+	inline const std::string& getConnectionId(void) const { return m_connection_id; }
+	
+	/// returns information describing this particular connection
+	inline const std::string& getConnectionInfo(void) const { return m_connection_info; }
 	
 	/// returns the unique identifier for the Reactor that this handler interacts with
 	inline const std::string& getReactorId(void) const { return m_reactor_id; }
@@ -70,6 +83,15 @@ public:
 
 	
 protected:
+	
+	/// reference to ReactionEngine used to send Events to Reactors
+	pion::platform::ReactionEngine &	m_reaction_engine;
+	
+	/// unique identifier for this particular connection (generated when constructed)
+	const std::string					m_connection_id;
+	
+	/// information describing this particular connection (generated when constructed)
+	const std::string					m_connection_info;
 	
 	/// unique identifier for the Reactor that this handler interacts with
 	const std::string					m_reactor_id;
@@ -81,10 +103,10 @@ protected:
 	pion::net::TCPConnectionPtr			m_tcp_conn;
 	
 	/// Wrapper on top of the TCP connection for synchronous stream operations
-	boost::asio::ip::tcp::iostream		m_tcp_stream;
+	pion::net::TCPStream				m_tcp_stream;
 	
-	/// function called after the connection is lost (finished sending)
-	FinishedHandler						m_finished_handler;
+	/// mutex used to protect the FeedHandler's data
+	mutable boost::mutex				m_mutex;	
 };			
 
 	
@@ -92,7 +114,8 @@ protected:
 /// FeedWriter: helper class used to send Events over a TCP connection
 ///
 class FeedWriter
-	: public FeedHandler
+	: public FeedHandler,
+	public boost::enable_shared_from_this<FeedWriter>
 {
 public:
 	
@@ -105,12 +128,10 @@ public:
 	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
 	 * @param codec_ptr pointer to the Codec that this handler will use
 	 * @param tcp_conn TCP connection that will be used to send/receive Events
-	 * @param finished_handler function that is called when the connection is lost
 	 */
-	FeedWriter(const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
-				pion::net::TCPConnectionPtr& tcp_conn, FinishedHandler finished_handler)
-		: FeedHandler(reactor_id, codec_ptr, tcp_conn, finished_handler)
-	{}
+	FeedWriter(pion::platform::ReactionEngine &reaction_engine,
+			   const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
+			   pion::net::TCPConnectionPtr& tcp_conn);
 	
 	/**
 	 * sends an Event over the TCP connection and cleans up if the
@@ -119,12 +140,9 @@ public:
 	 * @param e the Event to send over the TCPConnection
 	 */
 	void writeEvent(pion::platform::EventPtr& e);
-
 	
-private:
-
-	/// mutex used to ensure that only one Event is sent at a time
-	mutable boost::mutex				m_mutex;	
+	/// starts the FeedWriter
+	virtual void start(void);
 };
 
 /// data type used for FeedWriter smart pointers
@@ -135,7 +153,8 @@ typedef boost::shared_ptr<FeedWriter>	FeedWriterPtr;
 /// FeedReader: helper class used to read Events from a TCP connection
 ///
 class FeedReader
-	: public FeedHandler
+	: public FeedHandler,
+	public boost::enable_shared_from_this<FeedReader>
 {
 public:
 	
@@ -149,23 +168,22 @@ public:
 	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
 	 * @param codec_ptr pointer to the Codec that this handler will use
 	 * @param tcp_conn TCP connection that will be used to send/receive Events
-	 * @param finished_handler function that is called when the connection is lost
 	 */
 	FeedReader(pion::platform::ReactionEngine &reaction_engine,
 			   const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
-			   pion::net::TCPConnectionPtr& tcp_conn, FinishedHandler finished_handler)
-		: FeedHandler(reactor_id, codec_ptr, tcp_conn, finished_handler),
-		m_reaction_engine(reaction_engine)
-	{}
+			   pion::net::TCPConnectionPtr& tcp_conn);
 	
-	/// reads a stream of Events and delivers them to a Reactor
-	void readEvents(void);
+	/// called when the Reactor we are sending Events to is being removed
+	void reactorWasRemoved(void);
+	
+	/// starts the FeedReader
+	virtual void start(void);
 
 	
-private:
-	
-	/// reference to ReactionEngine used to send Events to Reactors
-	pion::platform::ReactionEngine &	m_reaction_engine;
+private:	
+
+	/// pointer to the Reactor that Events are sent to
+	pion::platform::Reactor *		m_reactor_ptr;
 };
 
 /// data type used for FeedReader smart pointers
@@ -194,57 +212,6 @@ public:
 	 */
 	virtual void operator()(pion::net::HTTPRequestPtr& request,
 							pion::net::TCPConnectionPtr& tcp_conn);
-	
-	
-private:
-	
-	/**
-	 * binds a new FeedWriter to a TCP connection
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 * @param codec_ptr pointer to the Codec that the handler will use
-	 * @param tcp_conn the TCP connection to which the Events will be sent
-	 */
-	void addFeedWriter(const std::string& reactor_id,
-					   pion::platform::CodecPtr& codec_ptr,
-					   pion::net::TCPConnectionPtr& tcp_conn);
-
-	/**
-	 * reads Events from a TCP connection and delivers them to a Reactor
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 * @param codec_ptr pointer to the Codec that the handler will use
-	 * @param tcp_conn the TCP connection from which the Events will be read
-	 */
-	void addFeedReader(const std::string& reactor_id,
-					   pion::platform::CodecPtr& codec_ptr,
-					   pion::net::TCPConnectionPtr& tcp_conn);
-	
-	/**
-	 * removes a feed handler
-	 *
-	 * @parma connection_id unique identifier for the feed connection
-	 */
-	void removeFeedHandler(const std::string& connection_id);
-	
-	/**
-	 * schedules an Event to be sent using the ServiceManager's thread pool
-	 *
-	 * @param writer_ptr pointer to a FeedWriter that will send the Event
-	 * @param e the Event to send over the TCPConnection
-	 */
-	void scheduleWriteEvent(FeedWriterPtr writer_ptr, pion::platform::EventPtr& e);
-	
-	
-	/// data type for a map of connection identifiers to FeedHandler smart pointers
-	typedef std::map<std::string,boost::shared_ptr<FeedHandler> >	FeedHandlerMap;
-
-	
-	/// collection of feeds generated by this service that are currently active
-	FeedHandlerMap					m_feed_handlers;
-	
-	/// mutex used to protect access to the Feed handlers
-	mutable boost::mutex			m_mutex;	
 };
 
 	

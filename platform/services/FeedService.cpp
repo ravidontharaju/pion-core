@@ -17,7 +17,9 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <sstream>
 #include <boost/bind.hpp>
+#include <pion/net/HTTPResponse.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include "PlatformConfig.hpp"
@@ -30,60 +32,132 @@ using namespace pion::platform;
 namespace pion {		// begin namespace pion
 namespace server {		// begin namespace server (Pion Server)
 
+
+// FeedHandler member functions
+	
+FeedHandler::FeedHandler(pion::platform::ReactionEngine &reaction_engine,
+						 const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
+						 pion::net::TCPConnectionPtr& tcp_conn)
+	: m_reaction_engine(reaction_engine),
+	m_connection_id(ConfigManager::createUUID()),
+	m_connection_info(createConnectionInfo(tcp_conn)),
+	m_reactor_id(reactor_id), m_codec_ptr(codec_ptr),
+	m_tcp_conn(tcp_conn), m_tcp_stream(m_tcp_conn)
+{
+	m_tcp_conn->setLifecycle(TCPConnection::LIFECYCLE_CLOSE);	// make sure it will get closed
+}
+
+std::string FeedHandler::createConnectionInfo(pion::net::TCPConnectionPtr& tcp_conn)
+{
+	std::stringstream ss;
+	ss << tcp_conn->getRemoteIp() << ':' << tcp_conn->getRemotePort();
+	return ss.str();
+}
+	
 	
 // FeedWriter member functions
 
+FeedWriter::FeedWriter(pion::platform::ReactionEngine &reaction_engine,
+					   const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
+					   pion::net::TCPConnectionPtr& tcp_conn)
+	: FeedHandler(reaction_engine, reactor_id, codec_ptr, tcp_conn)
+{}
+	
 void FeedWriter::writeEvent(EventPtr& e)
 {
-	// use mutex to ensure only one Event is sent at a time
-	boost::mutex::scoped_lock queue_lock(m_mutex);
-	if (m_tcp_conn->is_open()) {
+	if (! e) {
+		// Reactor is being removed -> close the connection
+		m_tcp_stream.close();
+		// note that the ReactionEngine will remove the connection for us
+	} else if (! m_tcp_conn->is_open()) {
+		// connection was lost -> tell ReactionEngine to remove the connection
+		m_reaction_engine.removeTempConnection(getConnectionId());
+	} else {
 		try {
 			// send the Event using the codec
 			m_codec_ptr->write(m_tcp_stream, *e);
+			// how often should FeedWriter flush the stream?
+			// for now, it will flush after every event (even though this is not efficient)
+			m_tcp_stream.flush();
 		} catch (std::exception&) {
 			// stop sending Events if we encounter an exception
-			m_finished_handler();
+			m_reaction_engine.removeTempConnection(getConnectionId());
 		}
-	} else {
-		// note that the finished handler removes the connection.  The
-		// connection's EventHandler function should contain the only
-		// smart pointer reference to this object.  Hence, by calling the
-		// finished handler, the object will be destructed.
-		m_finished_handler();
 	}
 }
 	
-
+void FeedWriter::start(void)
+{
+	// tell the ReactionEngine to start sending us Events
+	Reactor::EventHandler event_handler(boost::bind(&FeedWriter::writeEvent,
+													shared_from_this(), _1));
+	m_reaction_engine.addTempConnectionOut(getReactorId(), getConnectionId(),
+										   getConnectionInfo(),
+										   event_handler);
+}
+	
+	
 // FeedReader member functions
 
-void FeedReader::readEvents(void)
+FeedReader::FeedReader(pion::platform::ReactionEngine &reaction_engine,
+					   const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
+					   pion::net::TCPConnectionPtr& tcp_conn)
+	: FeedHandler(reaction_engine, reactor_id, codec_ptr, tcp_conn),
+	m_reactor_ptr(NULL)
+{}
+	
+void FeedReader::reactorWasRemoved(void)
 {
-	// this is certainly not the most efficient way to do this, but
-	// since we can't guarantee that a Reactor hasn't been deleted, we
-	// have send Events by way of the ReactionEngine...
-	EventPtr event_ptr;
-	try {
-		while ((event_ptr = m_codec_ptr->read(m_tcp_stream))) {
-			m_reaction_engine.send(m_reactor_id, event_ptr);
-		}
-	} catch (std::exception&) {}	// just exit gracefully if exception is thrown
+	// set the Reactor pointer to null so that we know to stop sending Events
+	boost::mutex::scoped_lock pointer_lock(m_mutex);
+	m_reactor_ptr = NULL;
+	// close the TCP stream to force it to stop blocking for input
+	m_tcp_stream.close();
 }
 
+void FeedReader::start(void)
+{
+	// initialize the Reactor pointer by registering a connection through ReactionEngine
+	m_reactor_ptr =
+		m_reaction_engine.addTempConnectionIn(getReactorId(), getConnectionId(),
+											  getConnectionInfo(),
+											  boost::bind(&FeedReader::reactorWasRemoved,
+														  shared_from_this()));
+
+	// just stop gracefully if exception is thrown
+	try {
+		// read Events form the TCP connection until it is closed or an error occurs
+		EventPtr event_ptr;
+		while (m_tcp_stream.is_open() && (event_ptr = m_codec_ptr->read(m_tcp_stream))) {
+			boost::mutex::scoped_lock pointer_lock(m_mutex);
+			// stop reading Events if the Reactor was removed
+			if (m_reactor_ptr == NULL)
+				break;
+			(*m_reactor_ptr)(event_ptr);
+		}
+	} catch (std::exception&) {}
+
+	// un-register the connection before exiting
+	// only if the Reactor pointer is not NULL (to prevent deadlock)
+	boost::mutex::scoped_lock pointer_lock(m_mutex);
+	if (m_reactor_ptr != NULL)
+		m_reaction_engine.removeTempConnection(getConnectionId());
+}
+	
 	
 // FeedService member functions
 
 void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
 	// get the reactor_id using the relative request path
-	const std::string reactor_id(getRelativeResource(request->getResource()));
+	const std::string reactor_id(request->getQuery("reactor"));
 	if (reactor_id.empty() || !getConfig().getReactionEngine().hasReactor(reactor_id)) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 	
 	// get the codec_id using the relative request path
-	const std::string codec_id(getRelativeResource(request->getResource()));
+	const std::string codec_id(request->getQuery("codec"));
 	CodecPtr codec_ptr(getConfig().getCodecFactory().getCodec(codec_id));
 	if (codec_id.empty() || !codec_ptr) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
@@ -96,9 +170,16 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 		// request made to receive a stream of Events
 		
 		// first send an HTTP response header, then add a FeedWriter to send Events
-		HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request));
-		writer->send(boost::bind(&FeedService::addFeedWriter, this,
-								 reactor_id, codec_ptr, tcp_conn));
+		HTTPResponse http_response(*request);
+		boost::system::error_code ec;
+		http_response.send(*tcp_conn, ec);
+		
+		if (! ec) {
+			// create a FeedWriter object that will be used to send Events
+			FeedWriterPtr writer_ptr(new FeedWriter(getConfig().getReactionEngine(),
+													reactor_id, codec_ptr, tcp_conn));
+			writer_ptr->start();
+		}
 		
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT
 			   || request->getMethod() == HTTPTypes::REQUEST_METHOD_POST)
@@ -106,10 +187,17 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 
 		// request made to send a stream of Events to a Reactor
 
-		// first send an HTTP response header, then use a FeedReader to read Events
-		HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request));
-		writer->send(boost::bind(&FeedService::addFeedReader, this,
-								 reactor_id, codec_ptr, tcp_conn));
+		// first send an HTTP response header, then add a FeedWriter to send Events
+		HTTPResponse http_response(*request);
+		boost::system::error_code ec;
+		http_response.send(*tcp_conn, ec);
+
+		if (! ec) {
+			// create a FeedReader object that will be used to send Events
+			FeedReaderPtr reader_ptr(new FeedReader(getConfig().getReactionEngine(),
+													reactor_id, codec_ptr, tcp_conn)); 
+			reader_ptr->start();
+		}
 		
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_HEAD) {
 		
@@ -118,73 +206,7 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 		writer->send();
 	}	
 }
-	
-void FeedService::addFeedWriter(const std::string& reactor_id,
-								CodecPtr& codec_ptr,
-								TCPConnectionPtr& tcp_conn)
-{
-	// create a unique connection id
-	const std::string connection_id(ConfigManager::createUUID());
-	
-	// create a FeedWriter object that will be used to send Events
-	FeedWriterPtr writer_ptr(new FeedWriter(reactor_id, codec_ptr, tcp_conn, 
-											boost::bind(&FeedService::removeFeedHandler,
-														this, connection_id)));
-	
-	// insert the FeedWriter into our collection of handlers
-	m_feed_handlers.insert(std::make_pair(connection_id, writer_ptr));
-	
-	// add a temporary connection between the Reactor and the FeedWriter
-	// (the FeedWriter will remove the connection for us when the connection is dropped)
-	Reactor::EventHandler send_handler(boost::bind(&FeedService::scheduleWriteEvent,
-												   this, writer_ptr, _1));
-	getConfig().getReactionEngine().addTempConnection(reactor_id, connection_id,
-													  send_handler);
-}
 
-void FeedService::addFeedReader(const std::string& reactor_id,
-								CodecPtr& codec_ptr,
-								TCPConnectionPtr& tcp_conn)
-{
-	// create a unique connection id
-	const std::string connection_id(ConfigManager::createUUID());
-	
-	// create a FeedReader object that will be used to send Events
-	FeedReaderPtr reader_ptr(new FeedReader(getConfig().getReactionEngine(),
-											reactor_id, codec_ptr, tcp_conn, 
-											boost::bind(&FeedService::removeFeedHandler,
-														this, connection_id)));
-	
-	// insert the FeedReader into our collection of handlers
-	m_feed_handlers.insert(std::make_pair(connection_id, reader_ptr));
-
-	// schedule another thread to start reading Events
-	getConfig().getServiceManager().post(boost::bind(&FeedReader::readEvents, reader_ptr));
-}	
-	
-void FeedService::removeFeedHandler(const std::string& connection_id)
-{
-	// find the FeedHandler matching the connection_id
-	boost::mutex::scoped_lock feed_handlers_lock(m_mutex);
-	FeedHandlerMap::iterator i = m_feed_handlers.find(connection_id);
-	if (i != m_feed_handlers.end()) {
-		// ignore exceptions when trying to remove the connection
-		try {
-			getConfig().getReactionEngine().removeTempConnection(i->second->getReactorId(),
-																 connection_id);
-		} catch (...) {}
-		// remove it from the service's map
-		m_feed_handlers.erase(i);
-	}
-}
-
-void FeedService::scheduleWriteEvent(FeedWriterPtr writer_ptr, EventPtr& e)
-{
-	getConfig().getServiceManager().post(boost::bind(&FeedWriter::writeEvent,
-													 writer_ptr, e));
-}
-	
-	
 }	// end namespace server
 }	// end namespace pion
 

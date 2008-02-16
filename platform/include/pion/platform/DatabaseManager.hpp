@@ -65,6 +65,36 @@ public:
 	 */
 	DatabasePtr getDatabase(const std::string& database_id);
 		
+	/**
+	 * sets configuration parameters for a managed Database
+	 *
+	 * @param database_id unique identifier associated with the Database
+	 * @param config_ptr pointer to a list of XML nodes containing Database
+	 *                   configuration parameters
+	 */
+	void setDatabaseConfig(const std::string& database_id,
+						   const xmlNodePtr config_ptr);
+	
+	/**
+	 * adds a new managed Database
+	 *
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing Database
+	 *                   configuration parameters
+	 *
+	 * @return std::string the new Database's unique identifier
+	 */
+	std::string addDatabase(const std::string& plugin_type,
+							const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a managed Database
+	 *
+	 * @param database_id unique identifier associated with the Database
+	 */
+	void removeDatabase(const std::string& database_id);
+
 	
 private:
 	

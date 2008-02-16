@@ -40,8 +40,8 @@ class CodecFactory;
 class DatabaseManager;
 	
 ///
-/// ReactionEngine: manages all of the registered Reactors,
-///                 and routes Events between them
+/// ReactionEngine: manages all of the registered Reactors and connections,
+///                 and routes Events between Reactors
 ///
 class PION_PLATFORM_API ReactionEngine :
 	public PluginConfig<Reactor>
@@ -55,6 +55,20 @@ public:
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 	
+	/// exception thrown if we are unable to find a connection with the same identifier
+	class ConnectionNotFoundException : public PionException {
+	public:
+		ConnectionNotFoundException(const std::string& connection_id)
+			: PionException("No connection found for identifier: ", connection_id) {}
+	};
+	
+	/// exception thrown if the config file contains a Reactor connection with a missing identifier
+	class EmptyConnectionIdException : public PionException {
+	public:
+		EmptyConnectionIdException(const std::string& config_file)
+			: PionException("Configuration file includes a connection with an empty identifier: ", config_file) {}
+	};
+
 	/// exception thrown if the config file includes a connection with a missing From element
 	class EmptyFromException : public PionException {
 	public:
@@ -124,24 +138,76 @@ public:
 	void updateDatabases(void);
 	
 	/**
-	 * temporarily connects an Event handler to the output of a Reactor (not saved to config)
+	 * sets configuration parameters for a managed Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 */
+	void setReactorConfig(const std::string& reactor_id,
+						  const xmlNodePtr config_ptr);
+	
+	/**
+	 * adds a new managed Reactor
+	 *
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 *
+	 * @return std::string the new Reactor's unique identifier
+	 */
+	std::string addReactor(const std::string& plugin_type,
+						   const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a managed Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	void removeReactor(const std::string& reactor_id);
+	
+	/**
+	 * registers a temporary connection that sends Events to a Reactor
+	 * (not saved to config).  This should be used VERY carefully since the
+	 * Reactor may be removed by another thread, invalidating the pointer that
+	 * is returned to the caller.  Make sure that that the pointer is not used
+	 * after the removed_handler has been called (this will be triggered before
+	 * it is invalidated).
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor events come from
 	 * @param connection_id unique identifier associated with the output connection
+	 * @param connection_info descriptive information for the temporary connection
+	 * @param removed_handler function handler called if the Reactor is removed
+	 *
+	 * @return Reactor* pointer to the Reactor that Events should be sent into
+	 */
+	Reactor *addTempConnectionIn(const std::string& reactor_id, 
+								 const std::string& connection_id,
+								 const std::string& connection_info,
+								 boost::function0<void> removed_handler);
+	
+	/**
+	 * temporarily connects an Event handler to the output of a Reactor
+	 * (not saved to config).  Note that the connection_handler will be sent
+	 * a null EventPtr object as a notification that the Reactor is being removed.
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor events come from
+	 * @param connection_id unique identifier associated with the output connection
+	 * @param connection_info descriptive information for the temporary connection
 	 * @param connection_handler function handler to which Events will be sent
 	 */
-	void addTempConnection(const std::string& reactor_id, 
-						   const std::string& connection_id,
-						   Reactor::EventHandler connection_handler);
+	void addTempConnectionOut(const std::string& reactor_id, 
+							  const std::string& connection_id,
+							  const std::string& connection_info,
+							  Reactor::EventHandler connection_handler);
 	
 	/**
 	 * removes a temporary connection between Reactors (does not change config)
 	 *
-	 * @param reactor_id unique identifier associated with the Reactor events come from
-	 * @param connection_id unique identifier associated with the output connection
+	 * @param connection_id unique identifier associated with the temporary connection
 	 */
-	void removeTempConnection(const std::string& reactor_id,
-							  const std::string& connection_id);
+	void removeTempConnection(const std::string& connection_id);
 
 	/**
 	 * connects the output of one Reactor to the input of another Reactor
@@ -149,7 +215,7 @@ public:
 	 * @param from_id unique identifier associated with the Reactor events come from
 	 * @param to_id unique identifier associated with the Reactor events go to
 	 */
-	void addConnection(const std::string& from_id, const std::string& to_id);
+	void addReactorConnection(const std::string& from_id, const std::string& to_id);
 	
 	/**
 	 * removes an existing connection between Reactors
@@ -157,7 +223,14 @@ public:
 	 * @param from_id unique identifier associated with the Reactor events come from
 	 * @param to_id unique identifier associated with the Reactor events go to
 	 */
-	void removeConnection(const std::string& from_id, const std::string& to_id);
+	void removeReactorConnection(const std::string& from_id, const std::string& to_id);
+	
+	/**
+	 * writes connection info for all Reactors to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the connection info into
+	 */
+	void writeConnectionsXML(std::ostream& out) const;
 	
 	/**
 	 * schedules an Event to be processed by a Reactor
@@ -170,6 +243,15 @@ public:
 		if (reactor_ptr == NULL)
 			throw ReactorNotFoundException(reactor_id);
 		m_scheduler.getIOService().post(boost::bind<void>(boost::ref(*reactor_ptr), e));
+	}
+	
+	/**
+	 * checks to see if a Reactor is recognized (reactor_id is valid)
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	inline bool hasReactor(const std::string& reactor_id) const {
+		return (m_plugins.get(reactor_id) != NULL);
 	}
 	
 	/**
@@ -202,15 +284,6 @@ public:
 	}
 	
 	/**
-	 * checks to see if a Reactor is recognized (reactor_id is valid)
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 */
-	inline bool hasReactor(const std::string& reactor_id) const {
-		return (m_plugins.get(reactor_id) != NULL);
-	}
-
-	/**
 	 * schedules work to be performed by one of the pooled threads
 	 *
 	 * @param work_func work function to be executed
@@ -229,6 +302,68 @@ public:
 	
 	
 private:
+	
+	/// data type used to keep track of temporary reactor connections (i.e. feeds)
+	struct TempConnection {
+		/**
+		 * constructs a new temporary connection object
+		 *
+		 * @param output_connection true if the connection is for Events sent from
+		 *                          the reactor, or false if Events sent to the Reactor
+		 * @param reactor_id unique identifier associated with the Reactor events come from
+		 * @param connection_id unique identifier associated with the output connection
+		 * @param connection_info descriptive information for the temporary connection
+		 * @param removed_handler function handler called if the Reactor is removed
+		 */
+		TempConnection(bool output_connection,
+					   const std::string& reactor_id,
+					   const std::string& connection_id,
+					   const std::string& connection_info,
+					   boost::function0<void> removed_handler)
+			: m_output_connection(output_connection), m_reactor_id(reactor_id),
+			m_connection_id(connection_id), m_connection_info(connection_info),
+			m_removed_handler(removed_handler)
+		{}
+		
+		/// non-virtual destructor
+		~TempConnection() {}
+		
+		const bool						m_output_connection;
+		const std::string				m_reactor_id;
+		const std::string				m_connection_id;
+		const std::string				m_connection_info;
+		boost::function0<void>			m_removed_handler;
+	};
+	
+	/// data type for a collection of temporary connection objects
+	typedef std::list<TempConnection>	TempConnectionList;
+	
+	/// data type used to keep track of (internal) Reactor connections
+	struct ReactorConnection {
+		/**
+		 * constructs a new ReactorConnection object
+		 *
+		 * @param connection_id unique identifier associated with the output connection
+		 * @param from_id unique identifier associated with the Reactor events come from
+		 * @param to_id unique identifier associated with the Reactor events go to
+		 */
+		ReactorConnection(const std::string& connection_id,
+						  const std::string& from_id,
+						  const std::string& to_id)
+			: m_connection_id(connection_id), m_from_id(from_id), m_to_id(to_id)
+		{}
+		
+		/// non-virtual destructor
+		~ReactorConnection() {}
+		
+		const std::string				m_connection_id;
+		const std::string				m_from_id;
+		const std::string				m_to_id;
+	};
+	
+	/// data type for a collection of temporary connection objects
+	typedef std::list<ReactorConnection>	ReactorConnectionList;
+
 	
 	/**
 	 * adds a new plug-in object (without locking or config file updates).  This
@@ -270,13 +405,16 @@ private:
 	/**
 	 * connects the output of one Reactor to the input of another Reactor (without locking)
 	 *
+	 * @param connection_id unique identifier associated with the Reactor connection
 	 * @param from_id unique identifier associated with the Reactor events come from
 	 * @param to_id unique identifier associated with the Reactor events go to
 	 */
-	void addConnectionNoLock(const std::string& from_id, const std::string& to_id);
+	void addConnectionNoLock(const std::string& connection_id,
+							 const std::string& from_id,
+							 const std::string& to_id);
 	
 	/**
-	 * removes an existing connection between Reactors (without locking)
+	 * removes an existing Reactor connection (without locking)
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor events come from
 	 * @param connection_id unique identifier associated with the output connection
@@ -284,6 +422,15 @@ private:
 	void removeConnectionNoLock(const std::string& reactor_id,
 								const std::string& connection_id);
 
+	/**
+	 * removes an existing connection between Reactors from the config file (without locking)
+	 *
+	 * @param from_id unique identifier associated with the Reactor events come from
+	 * @param to_id unique identifier associated with the Reactor events go to
+	 */
+	void removeConnectionConfigNoLock(const std::string& from_id,
+									  const std::string& to_id);
+	
 	/// stops all Event processing (without locking)
 	void stopNoLock(void);
 	
@@ -300,12 +447,18 @@ private:
 	/// name of the connection element for Pion XML config files
 	static const std::string		CONNECTION_ELEMENT_NAME;
 	
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
+	
 	/// name of the from connection element for Pion XML config files
 	static const std::string		FROM_ELEMENT_NAME;
 	
 	/// name of the to connection element for Pion XML config files
 	static const std::string		TO_ELEMENT_NAME;
 	
+	/// name of the connection type attribute for Pion XML config files
+	static const std::string		TYPE_ATTRIBUTE_NAME;
+
 	
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler					m_scheduler;
@@ -316,6 +469,12 @@ private:
 	/// references the global manager of Databases
 	const DatabaseManager&			m_database_mgr;
 	
+	/// a list of the temporary Reactor connections being managed
+	TempConnectionList				m_temp_connections;
+	
+	/// a list of the (permanent) Reactor connections being managed
+	ReactorConnectionList			m_reactor_connections;
+
 	/// true if the reaction engine is running
 	bool							m_is_running;
 };

@@ -49,6 +49,40 @@ DatabasePtr DatabaseManager::getDatabase(const std::string& database_id)
 	return database_ptr->clone();
 }
 
+void DatabaseManager::setDatabaseConfig(const std::string& database_id,
+										const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into DatabaseNotFound exceptions
+	try {
+		PluginConfig<Database>::setPluginConfig(database_id, config_ptr);
+	} catch (PluginManager<Database>::PluginNotFoundException&) {
+		throw DatabaseNotFoundException(database_id);
+	}
+}
+
+std::string DatabaseManager::addDatabase(const std::string& plugin_type,
+										 const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into DatabaseNotFound exceptions
+	std::string database_id;
+	try {
+		database_id = PluginConfig<Database>::addPlugin(plugin_type, config_ptr);
+	} catch (PluginManager<Database>::PluginNotFoundException&) {
+		throw DatabaseNotFoundException(database_id);
+	}
+	return database_id;
+}
+
+void DatabaseManager::removeDatabase(const std::string& database_id)
+{
+	// convert PluginNotFound exceptions into DatabaseNotFound exceptions
+	try {
+		PluginConfig<Database>::removePlugin(database_id);
+	} catch (PluginManager<Database>::PluginNotFoundException&) {
+		throw DatabaseNotFoundException(database_id);
+	}
+}
+	
 	
 }	// end namespace platform
 }	// end namespace pion

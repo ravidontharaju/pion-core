@@ -19,6 +19,12 @@
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
 		</PlatformService>
+		<PlatformService id="urn:service:feed_service">
+			<Name>Data Feed Service</Name>
+			<Comment>Pion platform data feed service</Comment>
+			<Plugin>FeedService</Plugin>
+			<Resource>/feed</Resource>
+		</PlatformService>
 		<WebService id="urn:service:log_service">
 			<Name>Log Service</Name>
 			<Comment>Sends recent log entries</Comment>

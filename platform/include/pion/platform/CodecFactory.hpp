@@ -65,6 +65,35 @@ public:
 	 */
 	CodecPtr getCodec(const std::string& codec_id);
 
+	/**
+	 * sets configuration parameters for a managed Codec
+	 *
+	 * @param codec_id unique identifier associated with the Codec
+	 * @param config_ptr pointer to a list of XML nodes containing Codec
+	 *                   configuration parameters
+	 */
+	void setCodecConfig(const std::string& codec_id, const xmlNodePtr config_ptr);
+
+	/**
+	 * adds a new managed Codec
+	 *
+	 * @param plugin_type the type of plug-in to load (searches plug-in
+	 *                    directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing Codec
+	 *                   configuration parameters
+	 *
+	 * @return std::string the new Codec's unique identifier
+	 */
+	std::string addCodec(const std::string& plugin_type,
+						 const xmlNodePtr config_ptr = NULL);
+	
+	/**
+	 * removes a managed Codec
+	 *
+	 * @param codec_id unique identifier associated with the Codec
+	 */
+	void removeCodec(const std::string& codec_id);
+
 	
 private:
 	

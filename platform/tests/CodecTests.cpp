@@ -191,33 +191,33 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewCodecFactory_S,
 									   boost::mpl::list<NewCodecFactory_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogCodec) {
-	BOOST_CHECK_NO_THROW(F::addPlugin("LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadJSONCodec) {
-	BOOST_CHECK_NO_THROW(F::addPlugin("JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadXMLCodec) {
-	BOOST_CHECK_NO_THROW(F::addPlugin("XMLCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadMultipleCodecs) {
-	BOOST_CHECK_NO_THROW(F::addPlugin("LogCodec"));
-	BOOST_CHECK_NO_THROW(F::addPlugin("JSONCodec"));
-	BOOST_CHECK_NO_THROW(F::addPlugin("XMLCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadUnknownCodec) {
-	BOOST_CHECK_THROW(F::addPlugin("UnknownCodec"), PionPlugin::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::addCodec("UnknownCodec"), PionPlugin::PluginNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigForMissingCodec) {
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, NULL), PluginManager<Codec>::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, NULL), CodecFactory::CodecNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveCodec) {
-	BOOST_CHECK_THROW(F::removePlugin(F::m_codec_id),PluginManager<Codec>::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::removeCodec(F::m_codec_id), CodecFactory::CodecNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
@@ -242,7 +242,7 @@ class CodecFactoryWithCodecLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithCodecLoaded_F() {
 		m_plugin_name = plugin_name;
-		m_codec_id = addPlugin(m_plugin_name);
+		m_codec_id = addCodec(m_plugin_name);
 	}
 	
 	std::string m_plugin_name;
@@ -260,25 +260,25 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveCodec) {
-	BOOST_CHECK_NO_THROW(F::removePlugin(F::m_codec_id));
+	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_codec_id));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigMissingEventType) {
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, NULL), Codec::EmptyEventException);
+	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, NULL), Codec::EmptyEventException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigUnknownEventType) {
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
 	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("NotAType"));
 
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_type_node), Codec::UnknownTermException);
+	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, event_type_node), Codec::UnknownTermException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigEventTypeNotAnObject) {
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
 	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#remotehost"));
 	
-	BOOST_CHECK_THROW(F::setPluginConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
+	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
 	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
 	xmlAddNextSibling(comment_node, event_type_node);
 
-	BOOST_CHECK_NO_THROW(F::setPluginConfig(F::m_codec_id, comment_node));
+	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, comment_node));
 	xmlFreeNodeList(comment_node);
 	
 	// check codec config file
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithLogCodecLoaded_S, boost::
 
 //BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigX) {
 //	...
-//	BOOST_CHECK_NO_THROW(F::setPluginConfig(F::m_codec_id, log_codec_options));
+//	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, log_codec_options));
 //	...
 //}
 
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithJSONCodecLoaded_S, boost:
 
 //BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigX) {
 //	...
-//	BOOST_CHECK_NO_THROW(F::setPluginConfig(F::m_codec_id, json_codec_options));
+//	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, json_codec_options));
 //	...
 //}
 
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithXMLCodecLoaded_S, boost::
 
 //BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigX) {
 //	...
-//	BOOST_CHECK_NO_THROW(F::setPluginConfig(F::m_codec_id, xml_codec_options));
+//	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, xml_codec_options));
 //	...
 //}
 
@@ -342,9 +342,9 @@ BOOST_AUTO_TEST_SUITE_END()
 class CodecFactoryWithMultipleCodecsLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithMultipleCodecsLoaded_F() {
-		m_LogCodec_id = addPlugin(LogCodec_name);
-		m_JSONCodec_id = addPlugin(JSONCodec_name);
-		m_XMLCodec_id = addPlugin(XMLCodec_name);
+		m_LogCodec_id = addCodec(LogCodec_name);
+		m_JSONCodec_id = addCodec(JSONCodec_name);
+		m_XMLCodec_id = addCodec(XMLCodec_name);
 	}
 	
 	std::string m_LogCodec_id;
@@ -362,9 +362,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveCodec) {
-	BOOST_CHECK_NO_THROW(F::removePlugin(F::m_LogCodec_id));
-	BOOST_CHECK_NO_THROW(F::removePlugin(F::m_JSONCodec_id));
-	BOOST_CHECK_NO_THROW(F::removePlugin(F::m_XMLCodec_id));
+	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_LogCodec_id));
+	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_JSONCodec_id));
+	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_XMLCodec_id));
 }
 
 // TODO: check that all the codecs got their vocabulary updated

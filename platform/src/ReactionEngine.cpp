@@ -35,6 +35,7 @@ const std::string		ReactionEngine::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
+const std::string		ReactionEngine::TYPE_ATTRIBUTE_NAME = "type";
 
 
 // ReactionEngine member functions
@@ -72,6 +73,11 @@ void ReactionEngine::openConfigFile(void)
 	xmlNodePtr connection_node = m_config_node_ptr->children;
 	while ( (connection_node = ConfigManager::findConfigNodeByName(CONNECTION_ELEMENT_NAME, connection_node)) != NULL)
 	{
+		// parse new plug-in definition
+		std::string connection_id;
+		if (! ConfigManager::getNodeId(connection_node, connection_id))
+			throw EmptyConnectionIdException(ConfigManager::getConfigFile());
+
 		// get the ID for the Reactor where events come from
 		std::string from_id;
 		if (! ConfigManager::getConfigOption(FROM_ELEMENT_NAME, from_id, connection_node->children))
@@ -83,7 +89,7 @@ void ReactionEngine::openConfigFile(void)
 			throw EmptyToException(ConfigManager::getConfigFile());
 
 		// add the connection w/o locking
-		addConnectionNoLock(from_id, to_id);
+		addConnectionNoLock(connection_id, from_id, to_id);
 
 		// step to the next Reactor connection
 		connection_node = connection_node->next;
@@ -140,52 +146,179 @@ void ReactionEngine::updateDatabases(void)
 	m_plugins.run(boost::bind(&Reactor::updateDatabases, _1,
 							  boost::cref(m_database_mgr)));
 }
+	
+void ReactionEngine::setReactorConfig(const std::string& reactor_id,
+									  const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into ReactorNotFound exceptions
+	try {
+		PluginConfig<Reactor>::setPluginConfig(reactor_id, config_ptr);
+	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
+		throw ReactorNotFoundException(reactor_id);
+	}
+}
 
-void ReactionEngine::addTempConnection(const std::string& reactor_id, 
-									   const std::string& connection_id,
-									   Reactor::EventHandler connection_handler)
+std::string ReactionEngine::addReactor(const std::string& plugin_type,
+									   const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into ReactorNotFound exceptions
+	std::string reactor_id;
+	try {
+		reactor_id = PluginConfig<Reactor>::addPlugin(plugin_type, config_ptr);
+	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
+		throw ReactorNotFoundException(reactor_id);
+	}
+	return reactor_id;
+}
+
+void ReactionEngine::removeReactor(const std::string& reactor_id)
+{
+	// disconnect any Reactor connections involving the Reactor being removed
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	ReactorConnectionList::iterator reactor_i = m_reactor_connections.begin();
+	while (reactor_i != m_reactor_connections.end()) {
+		ReactorConnectionList::iterator current_i = reactor_i++;
+		if (current_i->m_from_id == reactor_id || current_i->m_to_id == reactor_id) {
+			// remove the connection
+			removeConnectionNoLock(current_i->m_from_id, current_i->m_to_id);
+			removeConnectionConfigNoLock(current_i->m_from_id, current_i->m_to_id);
+			m_reactor_connections.erase(current_i);
+		}
+	}
+	
+	// disconnect any temporary output connections involving the Reactor being removed
+	TempConnectionList::iterator connection_i = m_temp_connections.begin();
+	while (connection_i != m_temp_connections.end()) {
+		TempConnectionList::iterator current_i = connection_i++;
+		if (current_i->m_reactor_id == reactor_id) {
+			if (current_i->m_output_connection) {
+				// remove the output connection from the Reactor
+				removeConnectionNoLock(current_i->m_reactor_id, current_i->m_connection_id);
+			}
+			// send notification that the Reactor is being removed
+			current_i->m_removed_handler();
+			// remove the connection
+			m_temp_connections.erase(current_i);
+		}
+	}
+
+	// convert PluginNotFound exceptions into ReactorNotFound exceptions
+	try {
+		// remove the Reactor object
+		PluginConfig<Reactor>::removePlugin(reactor_id);
+	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
+		throw ReactorNotFoundException(reactor_id);
+	}
+}
+
+Reactor *ReactionEngine::addTempConnectionIn(const std::string& reactor_id, 
+											 const std::string& connection_id,
+											 const std::string& connection_info,
+											 boost::function0<void> removed_handler)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
 	
-	// add the connection to memory structures
+	// get a pointer to the Reactor to return to the caller
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	Reactor *reactor_ptr = m_plugins.get(reactor_id);
+	if (reactor_ptr == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
+	// keep track of the temporary connection
+	m_temp_connections.push_back(TempConnection(false, reactor_id, connection_id,
+												connection_info, removed_handler));
+	
+	PION_LOG_DEBUG(m_logger, "Added temporary Reactor input connection: "
+				   << reactor_id << " <- " << connection_info);
+	
+	return reactor_ptr;
+}
+
+void ReactionEngine::addTempConnectionOut(const std::string& reactor_id, 
+										  const std::string& connection_id,
+										  const std::string& connection_info,
+										  Reactor::EventHandler connection_handler)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+	
+	// connect the Reactor to the connection handler
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	Reactor *reactor_ptr = m_plugins.get(reactor_id);
 	if (reactor_ptr == NULL)
 		throw ReactorNotFoundException(reactor_id);
 	reactor_ptr->addConnection(connection_id, connection_handler);
+
+	// if the Reactor is removed, send a null event to the connection
+	EventPtr null_event_ptr;
+	boost::function0<void>	removed_handler(boost::bind(connection_handler, null_event_ptr));
+													
+	// keep track of the temporary connection
+	m_temp_connections.push_back(TempConnection(true, reactor_id, connection_id,
+												connection_info, removed_handler));
 	
-	PION_LOG_DEBUG(m_logger, "Added event handler connection: "
-				   << reactor_id << " -> " << connection_id);
+	PION_LOG_DEBUG(m_logger, "Added temporary Reactor output connection: "
+				   << reactor_id << " -> " << connection_info);
 }
 	
-void ReactionEngine::removeTempConnection(const std::string& reactor_id,
-										  const std::string& connection_id)
+void ReactionEngine::removeTempConnection(const std::string& connection_id)
 { 
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
-	
+
+	// some variables to keep track of for later
+	bool type_is_output = true;
+	std::string reactor_id;
+	std::string connection_info;
+
 	// remove the connection from memory structures
 	boost::mutex::scoped_lock engine_lock(m_mutex);
-	removeConnectionNoLock(reactor_id, connection_id);
-		
-	PION_LOG_DEBUG(m_logger, "Removed event handler connection: "
-				   << reactor_id << " -> " << connection_id);
+	for (TempConnectionList::iterator i = m_temp_connections.begin();
+		 i != m_temp_connections.end(); ++i)
+	{
+		if (i->m_connection_id == connection_id) {
+			type_is_output = i->m_output_connection;
+			reactor_id = i->m_reactor_id;
+			connection_info = i->m_connection_info;
+			m_temp_connections.erase(i);
+			break;
+		}
+	}
+	
+	// throw exception if the connection was not found
+	if (reactor_id.empty())
+		throw ConnectionNotFoundException(connection_id);
+	
+	if (type_is_output) {
+		// remove the output connection from the Reactor
+		removeConnectionNoLock(reactor_id, connection_id);
+
+		PION_LOG_DEBUG(m_logger, "Removed temporary Reactor output connection: "
+					   << reactor_id << " -> " << connection_info);
+	} else {
+		PION_LOG_DEBUG(m_logger, "Removed temporary Reactor input connection: "
+					   << reactor_id << " <- " << connection_info);
+	}
 }
 	
-void ReactionEngine::addConnection(const std::string& from_id,
-								   const std::string& to_id)
+void ReactionEngine::addReactorConnection(const std::string& from_id,
+										  const std::string& to_id)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
 	
+	// generate a unique identifier to represent the connection
+	const std::string connection_id(ConfigManager::createUUID());
+	
 	// add the connection to memory structures
 	boost::mutex::scoped_lock engine_lock(m_mutex);
-	addConnectionNoLock(from_id, to_id);
-
+	addConnectionNoLock(connection_id, from_id, to_id);
+	
 	// add the connection to the config file
 	
 	// create a new node for the connection and add it to the XML config document
@@ -197,6 +330,12 @@ void ReactionEngine::addConnection(const std::string& from_id,
 		throw AddConnectionConfigException(getConnectionAsText(from_id, to_id));
 	}
 
+	// add the "id" attribute
+	if (xmlNewProp(connection_node,
+				   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
+				   reinterpret_cast<const xmlChar*>(connection_id.c_str())) == NULL)
+		throw AddConnectionConfigException(getConnectionAsText(from_id, to_id));
+	
 	// add a "From" child element to the connection
 	if (xmlNewTextChild(connection_node, NULL,
 						reinterpret_cast<const xmlChar*>(FROM_ELEMENT_NAME.c_str()),
@@ -215,8 +354,8 @@ void ReactionEngine::addConnection(const std::string& from_id,
 	PION_LOG_DEBUG(m_logger, "Added reactor connection: " << from_id << " -> " << to_id);
 }
 		
-void ReactionEngine::removeConnection(const std::string& from_id,
-									  const std::string& to_id)
+void ReactionEngine::removeReactorConnection(const std::string& from_id,
+											 const std::string& to_id)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
@@ -225,9 +364,57 @@ void ReactionEngine::removeConnection(const std::string& from_id,
 	// remove the connection from memory structures
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	removeConnectionNoLock(from_id, to_id);
+	for (ReactorConnectionList::iterator i = m_reactor_connections.begin();
+		 i != m_reactor_connections.end(); ++i)
+	{
+		if (i->m_from_id == from_id && i->m_to_id == to_id) {
+			m_reactor_connections.erase(i);
+			break;
+		}
+	}
 	
 	// remove the connection from the config file
+	removeConnectionConfigNoLock(from_id, to_id);
 	
+	PION_LOG_DEBUG(m_logger, "Removed reactor connection: " << from_id << " -> " << to_id);
+}
+	
+void ReactionEngine::addConnectionNoLock(const std::string& connection_id,
+										 const std::string& from_id,
+										 const std::string& to_id)
+{
+	// find the source Reactor
+	Reactor *from_ptr = m_plugins.get(from_id);
+	if (from_ptr == NULL)
+		throw ReactorNotFoundException(from_id);
+
+	// find the destination Reactor
+	Reactor *to_ptr = m_plugins.get(to_id);
+	if (to_ptr == NULL)
+		throw ReactorNotFoundException(to_id);
+	
+	// connect them together
+	from_ptr->addConnection(to_ptr->getId(), boost::ref(*to_ptr));
+
+	// keep track of all Reactor connections
+	m_reactor_connections.push_back(ReactorConnection(connection_id, from_id, to_id));
+}
+
+void ReactionEngine::removeConnectionNoLock(const std::string& reactor_id,
+											const std::string& connection_id)
+{
+	// find the source Reactor
+	Reactor *from_ptr = m_plugins.get(reactor_id);
+	if (from_ptr == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
+	// remove the connection
+	from_ptr->removeConnection(connection_id);
+}
+
+void ReactionEngine::removeConnectionConfigNoLock(const std::string& from_id,
+												  const std::string& to_id)
+{
 	// step through each connection to find the right one
 	xmlNodePtr connection_node = m_config_node_ptr->children;
 	while ( (connection_node = ConfigManager::findConfigNodeByName(CONNECTION_ELEMENT_NAME, connection_node)) != NULL)
@@ -247,53 +434,36 @@ void ReactionEngine::removeConnection(const std::string& from_id,
 		// step to the next Reactor connection
 		connection_node = connection_node->next;
 	}
-
+	
 	// throw exception if connection was not found
 	if (connection_node == NULL)
 		throw RemoveConnectionConfigException(getConnectionAsText(from_id, to_id));
-
+	
 	// remove the connection from the XML tree
 	xmlUnlinkNode(connection_node);
 	xmlFreeNode(connection_node);
 	
 	// save the new XML config file
 	saveConfigFile();
-	
-	PION_LOG_DEBUG(m_logger, "Removed reactor connection: " << from_id << " -> " << to_id);
-}
-		
-void ReactionEngine::addConnectionNoLock(const std::string& from_id,
-										 const std::string& to_id)
-{
-	// find the source Reactor
-	Reactor *from_ptr = m_plugins.get(from_id);
-	if (from_ptr == NULL)
-		throw ReactorNotFoundException(from_id);
-
-	// find the destination Reactor
-	Reactor *to_ptr = m_plugins.get(to_id);
-	if (to_ptr == NULL)
-		throw ReactorNotFoundException(to_id);
-	
-	// connect them together
-	from_ptr->addConnection(to_ptr->getId(), boost::ref(*to_ptr));
-}
-
-void ReactionEngine::removeConnectionNoLock(const std::string& reactor_id,
-											const std::string& connection_id)
-{
-	// find the source Reactor
-	Reactor *from_ptr = m_plugins.get(reactor_id);
-	if (from_ptr == NULL)
-		throw ReactorNotFoundException(reactor_id);
-
-	// remove the connection
-	from_ptr->removeConnection(connection_id);
 }
 
 void ReactionEngine::stopNoLock(void)
 {
 	if (m_is_running) {
+		// terminate all temporary connections
+		for (TempConnectionList::iterator i = m_temp_connections.begin();
+			 i != m_temp_connections.end(); ++i)
+		{
+			if (i->m_output_connection) {
+				// remove the output connection from the Reactor
+				removeConnectionNoLock(i->m_reactor_id, i->m_connection_id);
+			}
+			// send notification that the Reactor is being removed
+			i->m_removed_handler();
+		}
+		m_temp_connections.clear();
+		
+		// stop all reactors
 		PION_LOG_INFO(m_logger, "Stopping all reactors");
 		m_plugins.run(boost::bind(&Reactor::stop, _1));
 
@@ -304,6 +474,50 @@ void ReactionEngine::stopNoLock(void)
 	}
 }
 
+void ReactionEngine::writeConnectionsXML(std::ostream& out) const
+{
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
+	out << '<' << ROOT_ELEMENT_NAME << '>' << std::endl;
+	
+	// iterate through Reactor connections
+	for (ReactorConnectionList::const_iterator reactor_i = m_reactor_connections.begin();
+		 reactor_i != m_reactor_connections.end(); ++reactor_i)
+	{
+		out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+			<< "=\"" << reactor_i->m_connection_id << "\" " << TYPE_ATTRIBUTE_NAME
+			<< "=\"reactor\">" << std::endl
+			<< "\t<" << FROM_ELEMENT_NAME << '>' << reactor_i->m_from_id << "</"
+			<< FROM_ELEMENT_NAME << '>' << std::endl
+			<< "\t\t<" << TO_ELEMENT_NAME << '>' << reactor_i->m_to_id << "</"
+			<< TO_ELEMENT_NAME << '>' << std::endl
+			<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
+	}
+
+	// iterate through temporary connections
+	for (TempConnectionList::const_iterator temp_i = m_temp_connections.begin();
+		 temp_i != m_temp_connections.end(); ++temp_i)
+	{
+		out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+			<< "=\"" << temp_i->m_connection_id << "\" " << TYPE_ATTRIBUTE_NAME << "=\"";
+		if (temp_i->m_output_connection) {
+			out << "output\">" << std::endl
+				<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_reactor_id
+				<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_connection_info;
+		} else {
+			out << "input\">" << std::endl
+				<< "\t\t<" << FROM_ELEMENT_NAME << '>' << temp_i->m_connection_info
+				<< "</" << FROM_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << TO_ELEMENT_NAME << '>' << temp_i->m_reactor_id;
+		}
+		out << "</" << TO_ELEMENT_NAME << '>' << std::endl
+			<< "\t</" << CONNECTION_ELEMENT_NAME << '>' << std::endl;
+	}
+
+	out << "</" << ROOT_ELEMENT_NAME << '>' << std::endl;
+}
+	
 	
 }	// end namespace platform
 }	// end namespace pion

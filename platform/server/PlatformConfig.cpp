@@ -74,8 +74,12 @@ void PlatformConfig::openConfigFile(void)
 		plugin_path = reinterpret_cast<char*>(xml_char_ptr);
 		xmlFree(xml_char_ptr);
 		
-		// add the plug-in path
-		PionPlugin::addPluginDirectory(ConfigManager::resolveRelativePath(plugin_path));
+		// add the plug-in path (only warn if directory not found)
+		try {
+			PionPlugin::addPluginDirectory(ConfigManager::resolveRelativePath(plugin_path));
+		} catch (PionPlugin::DirectoryNotFoundException& e) {
+			PION_LOG_WARN(m_logger, e.what());
+		}
 		
 		// step to the next plug-in path
 		path_node = path_node->next;

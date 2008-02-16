@@ -79,6 +79,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		} else {
 			getConfig().getReactionEngine().writeConfigXML(ss);
 		}
+	} else if (relative_path == "reactors/connections") {
+		getConfig().getReactionEngine().writeConnectionsXML(ss);
 	} else if (relative_path == "services") {
 		if (request->hasQuery("id")) {
 			if (! getConfig().getServiceManager().writeConfigXML(ss, request->getQuery("id"))) {

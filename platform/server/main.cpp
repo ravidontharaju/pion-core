@@ -21,7 +21,7 @@ using namespace pion::server;
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage:   pion [-c SERVICE_CONFIG_FILE]" << std::endl;
+	std::cerr << "usage:   pion [-v] [-c SERVICE_CONFIG_FILE]" << std::endl;
 }
 
 
@@ -29,10 +29,13 @@ void argument_error(void)
 int main (int argc, char *argv[])
 {
 	// get platform config file
+	bool verbose_logging = false;
 	std::string platform_config_file("/etc/pion/platform.xml");
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
-			if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
+			if (argv[argnum][1] == 'v') {
+				verbose_logging = true;
+			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = argv[++argnum];
 			} else {
 				argument_error();
@@ -53,7 +56,11 @@ int main (int argc, char *argv[])
 	
 	// initialize log system (use simple configuration)
 	PionLogger pion_log(PION_GET_LOGGER("pion"));
-	PION_LOG_SETLEVEL_INFO(pion_log);
+	if (verbose_logging) {
+		PION_LOG_SETLEVEL_DEBUG(pion_log);
+	} else {
+		PION_LOG_SETLEVEL_INFO(pion_log);
+	}
 	PION_LOG_CONFIG_BASIC;
 	
 	try {
