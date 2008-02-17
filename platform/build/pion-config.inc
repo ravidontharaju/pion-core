@@ -48,7 +48,7 @@ else
 fi
 # Check for uuid library
 LIBS_SAVED="$LIBS"
-LIBS="$LIBS_SAVED -luuid"
+LIBS="$LIBS_SAVED `$uuid_location/bin/uuid-config --all --libs`"
 AC_MSG_CHECKING(linking with uuid)
 AC_TRY_LINK([#include <uuid.h>],[ uuid_t *ptr; uuid_create(&ptr); return(0); ],
 	[ AC_MSG_RESULT(ok) ],
