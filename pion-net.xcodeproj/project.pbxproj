@@ -1432,11 +1432,9 @@
 				HEADER_SEARCH_PATHS = (
 					"/usr/local/include/boost-1_34_1",
 					/usr/local/include,
-					/opt/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					/opt/local/lib,
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
@@ -1447,6 +1445,10 @@
 					"-lboost_system-mt-d",
 					"-lboost_regex-mt-d",
 					"-lboost_date_time-mt-d",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -1470,11 +1472,9 @@
 				HEADER_SEARCH_PATHS = (
 					"/usr/local/include/boost-1_34_1",
 					/usr/local/include,
-					/opt/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					/opt/local/lib,
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
@@ -1484,6 +1484,10 @@
 					"-lboost_system-mt",
 					"-lboost_regex-mt",
 					"-lboost_date_time-mt",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -1705,6 +1709,10 @@
 					"-lboost_regex-mt-d",
 					"-lboost_date_time-mt-d",
 					"-lboost_unit_test_framework-mt-d",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				PRODUCT_NAME = PionNetUnitTests;
 			};
@@ -1720,6 +1728,10 @@
 					"-lboost_regex-mt",
 					"-lboost_date_time-mt",
 					"-lboost_unit_test_framework-mt",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				PRODUCT_NAME = PionNetUnitTests;
 			};
