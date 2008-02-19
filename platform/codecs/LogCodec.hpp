@@ -251,7 +251,7 @@ private:
 	/// name of the end delimiter attribute for Pion XML config files
 	static const std::string		END_ATTRIBUTE_NAME;	
 	
-	/// maxiumum size of the read buffer
+	/// maximum size of the read buffer
 	static const unsigned int		READ_BUFFER_SIZE;
 	
 

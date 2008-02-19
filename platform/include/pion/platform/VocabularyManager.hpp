@@ -69,7 +69,7 @@ public:
 	class VocabularyNotFoundException : public PionException {
 	public:
 		VocabularyNotFoundException(const std::string& vocab_id)
-			: PionException("Vocabulary has not beed defined: ", vocab_id) {}
+			: PionException("Vocabulary has not been defined: ", vocab_id) {}
 	};
 
 	/// exception thrown if there is an error adding a Vocabulary to the config file
