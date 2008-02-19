@@ -90,10 +90,10 @@ void cleanup_platform_config_files(void)
 class FeedServiceTestInterface_F {
 public:
 	FeedServiceTestInterface_F()
-		: m_common_id("urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68"),
-		m_combined_id("urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68"),
-		m_ie_filter_id("urn:uuid:153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
-		m_do_nothing_id("urn:uuid:0cc21558-cf84-11dc-a9e0-0019e3f89cd2")
+		: m_common_id("a174c3b0-bfcd-11dc-9db2-0016cb926e68"),
+		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
+		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
+		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		

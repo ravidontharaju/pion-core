@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-	<Server id="urn:server:main_server">
+	<Server id="main-server">
 		<Port>8080</Port>
-		<PlatformService id="urn:service:config_service">
+		<PlatformService id="config-service">
 			<Name>Configuration Service</Name>
 			<Comment>Pion platform configuration service</Comment>
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
 		</PlatformService>
-		<PlatformService id="urn:service:feed_service">
+		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>
 			<Comment>Pion platform data feed service</Comment>
 			<Plugin>FeedService</Plugin>

@@ -178,9 +178,6 @@ public:
 	/// returns a string containing a new UUID value
 	static std::string createUUID(void);
 
-	/// returns a unique object identifier (UUID expressed as a URN)
-	static std::string createUniqueObjectId(void);
-
 	/// returns a unique XML filename based on a UUID
 	static std::string createFilename(void);
 
@@ -396,9 +393,6 @@ protected:
 	
 	/// name of the unique identifier attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;
-
-	/// prefix for a UUID type URN
-	static const std::string		URN_UUID_PREFIX;
 
 	
 	/// primary logging interface used by this class

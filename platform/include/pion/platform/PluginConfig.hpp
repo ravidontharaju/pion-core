@@ -271,7 +271,7 @@ inline std::string PluginConfig<PluginType>::addPlugin(const std::string& plugin
 		throw ConfigNotOpenException(getConfigFile());
 	
 	// create the new plug-in and add it to the config file
-	const std::string plugin_id(createUniqueObjectId());
+	const std::string plugin_id(ConfigManager::createUUID());
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
 	addPluginNoLock(plugin_id, plugin_type, config_ptr);
 	addPluginConfig(m_plugin_element, plugin_id, plugin_type, config_ptr);

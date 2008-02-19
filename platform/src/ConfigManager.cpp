@@ -31,13 +31,13 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of ConfigManager
+
 const std::string		ConfigManager::XML_FILE_EXTENSION = ".xml";
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "PionConfig";
 const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
 const std::string		ConfigManager::ID_ATTRIBUTE_NAME = "id";
-const std::string		ConfigManager::URN_UUID_PREFIX = "urn:uuid:";
 
 		
 // ConfigManager member functions
@@ -239,13 +239,6 @@ std::string ConfigManager::createUUID(void)
 	uuid_destroy(u);
 	free(str);
 #endif
-	return result;
-}
-
-std::string ConfigManager::createUniqueObjectId(void)
-{
-	std::string result(URN_UUID_PREFIX);
-	result += createUUID();
 	return result;
 }
 

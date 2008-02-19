@@ -74,8 +74,8 @@ public:
 	ReactionEngineTestInterface_F()
 		: m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_database_mgr),
-		m_combined_id("urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68"),
-		m_ie_filter_id("urn:uuid:153f6c40-cb78-11dc-8fa0-0019e3f89cd2")
+		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
+		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		

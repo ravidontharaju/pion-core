@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-	<Server id="urn:server:main_server">
+	<Server id="main-server">
 		<Port>8080</Port>
-		<WebService id="urn:service:ui_service">
+		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>
 			<Plugin>FileService</Plugin>
@@ -13,34 +13,34 @@
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
 		</WebService>
-		<PlatformService id="urn:service:config_service">
+		<PlatformService id="config-service">
 			<Name>Configuration Service</Name>
 			<Comment>Pion platform configuration service</Comment>
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
 		</PlatformService>
-		<PlatformService id="urn:service:feed_service">
+		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>
 			<Comment>Pion platform data feed service</Comment>
 			<Plugin>FeedService</Plugin>
 			<Resource>/feed</Resource>
 		</PlatformService>
-		<WebService id="urn:service:log_service">
+		<WebService id="log-service">
 			<Name>Log Service</Name>
 			<Comment>Sends recent log entries</Comment>
 			<Plugin>LogService</Plugin>
 			<Resource>/log</Resource>
 		</WebService>
 	</Server>
-	<Server id="urn:server:hello_server">
+	<Server id="hello-server">
 		<Port>8081</Port>
-		<WebService id="urn:service:hello_service">
+		<WebService id="hello-service">
 			<Name>Hello Service</Name>
 			<Comment>Says hello to the world</Comment>
 			<Plugin>HelloService</Plugin>
 			<Resource>/hello</Resource>
 		</WebService>
-		<WebService id="urn:service:echo_service">
+		<WebService id="echo-service">
 			<Name>Echo Service</Name>
 			<Comment>Echoes the HTTP request</Comment>
 			<Plugin>EchoService</Plugin>

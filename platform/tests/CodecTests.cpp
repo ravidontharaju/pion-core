@@ -451,10 +451,10 @@ class CodecFactoryLogFormatTests_F : public CodecFactory {
 public:
 	CodecFactoryLogFormatTests_F()
 		: CodecFactory(m_vocab_mgr),
-		m_common_id("urn:uuid:a174c3b0-bfcd-11dc-9db2-0016cb926e68"),
-		m_combined_id("urn:uuid:3f49f2da-bfe3-11dc-8875-0016cb926e68"),
-		m_extended_id("urn:uuid:23f68d5a-bfec-11dc-81a7-0016cb926e68"),
-		m_justdate_id("urn:uuid:dba9eac2-d8bb-11dc-bebe-001cc02bd66b")
+		m_common_id("a174c3b0-bfcd-11dc-9db2-0016cb926e68"),
+		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
+		m_extended_id("23f68d5a-bfec-11dc-81a7-0016cb926e68"),
+		m_justdate_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b")
 	{
 		setup_logging_for_unit_tests();
 		cleanup_codec_config_files();
