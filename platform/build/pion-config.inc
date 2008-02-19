@@ -2,17 +2,6 @@
 # pion-platform autoconf configuration file
 # -----------------------------------------
 
-# Check for codecs enabled
-AC_ARG_ENABLE([codecs],
-	AC_HELP_STRING([--enable-codecs],[enables building of codec plug-ins (xml, json, or all)]),
-	[enable_codecs=$enableval], [enable_codecs=$enableval])
-
-# Check for data stores enabled
-AC_ARG_ENABLE([databases],
-	AC_HELP_STRING([--enable-databases],[enables building of database plug-ins (sqlite, mysql or all)]),
-	[enable_databases=$enableval], [enable_databases=$enableval])
-
-
 # Check for OSSP UUID library (REQUIRED)
 AC_MSG_CHECKING([for OSSP UUID library (required)])
 AC_ARG_WITH([uuid],
@@ -118,13 +107,6 @@ AC_MSG_CHECKING([for JSON support (yajl)])
 AC_ARG_WITH([yajl],
     AC_HELP_STRING([--with-yajl@<:@=DIR@:>@],[location of Yet Another JSON Library (YAJL)]),
     [ yajl_location=$withval ], [ without_yajl=true ])
-# Check if YAJL location is specified
-if test "$without_yajl" == "true"; then
-	check_codec_enabled=`expr $enable_codecs : '.*\(json\).*' '|' $enable_codecs : '.*\(all\).*'`
-	if test "x$check_codec_enabled" != "x0"; then
-		without_yajl=false
-	fi
-fi
 if test "$without_yajl" != "true"; then
 	AC_MSG_RESULT(yes)
 	# Check for YAJL headers
@@ -160,13 +142,6 @@ AC_MSG_CHECKING([for SQLite database support (sqlite)])
 AC_ARG_WITH([sqlite],
     AC_HELP_STRING([--with-sqlite@<:@=DIR@:>@],[location of SQLite (v3) library]),
     [ sqlite_location=$withval ], [ without_sqlite=true ])
-# Check if SQLite location is specified
-if test "$without_sqlite" == "true"; then
-	check_database_enabled=`expr $enable_databases : '.*\(sqlite\).*' '|' $enable_databases : '.*\(all\).*'`
-	if test "x$check_database_enabled" != "x0"; then
-		without_sqlite=false
-	fi
-fi
 if test "$without_sqlite" != "true"; then
 	AC_MSG_RESULT(yes)
 	# Check for sqlite headers
@@ -201,13 +176,6 @@ AC_MSG_CHECKING([for MySQL database support (mysql)])
 AC_ARG_WITH([mysql],
     AC_HELP_STRING([--with-mysql@<:@=DIR@:>@],[location of MySQL (v5) library]),
     [ mysql_location=$withval ], [ without_mysql=true ])
-# Check if MySQL location is specified
-if test "$without_mysql" == "true"; then
-	check_database_enabled=`expr $enable_databases : '.*\(mysql\).*' '|' $enable_databases : '.*\(all\).*'`
-	if test "x$check_database_enabled" != "x0"; then
-		without_mysql=false
-	fi
-fi
 if test "$without_mysql" != "true"; then
 	AC_MSG_RESULT(yes)
 	# Check for MySQL headers
