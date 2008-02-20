@@ -7,6 +7,11 @@
 // See accompanying file COPYING or copy at http://www.boost.org/LICENSE_1_0.txt
 //
 
+#ifndef _MSC_VER
+	#include <fcntl.h>
+	#include <unistd.h>
+	#include <sys/stat.h>
+#endif
 #include <iostream>
 #include "PlatformConfig.hpp"
 #include "../../net/utils/ShutdownManager.hpp"
@@ -18,11 +23,9 @@ using namespace pion::platform;
 using namespace pion::server;
 
 
-/// displays an error message if the arguments are invalid
-void argument_error(void)
-{
-	std::cerr << "usage:   pion [-v] [-c SERVICE_CONFIG_FILE]" << std::endl;
-}
+// some forward declarations of functions used by main()
+void daemonize_server(void);
+void argument_error(void);
 
 
 /// main control function
@@ -30,11 +33,14 @@ int main (int argc, char *argv[])
 {
 	// get platform config file
 	bool verbose_logging = false;
+	bool run_as_daemon = false;
 	std::string platform_config_file("/etc/pion/platform.xml");
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
 			if (argv[argnum][1] == 'v') {
 				verbose_logging = true;
+			} if (argv[argnum][1] == 'D') {
+				run_as_daemon = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = argv[++argnum];
 			} else {
@@ -47,11 +53,21 @@ int main (int argc, char *argv[])
 		}
 	}
 	
+	/// become a daemon if the -D option is given
+	if (run_as_daemon)
+		daemonize_server();
+	
 	// setup signal handler
 #ifdef PION_WIN32
 	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 #else
+	signal(SIGCHLD, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
 	signal(SIGINT, handle_signal);
+	signal(SIGTERM, handle_signal);
 #endif
 	
 	// initialize log system (use simple configuration)
@@ -63,14 +79,16 @@ int main (int argc, char *argv[])
 	}
 	PION_LOG_CONFIG_BASIC;
 	
+	PlatformConfig platform_cfg;
 	try {
 		// load the platform configuration
-		PlatformConfig platform_cfg;
 		platform_cfg.setConfigFile(platform_config_file);
 		platform_cfg.openConfigFile();
 		
 		// start the ReactionEngine
 		platform_cfg.getReactionEngine().start();
+
+		PION_LOG_INFO(pion_log, "Pion has started successfully");
 
 		// wait for shutdown
 		main_shutdown_manager.wait();
@@ -79,5 +97,46 @@ int main (int argc, char *argv[])
 		PION_LOG_FATAL(pion_log, e.what());
 	}
 
+	PION_LOG_INFO(pion_log, "Pion is shutting down");
+	
 	return 0;
+}
+
+
+/// run server as a daemon
+void daemonize_server(void)
+{
+#ifndef _MSC_VER
+	// adopted from "Unix Daemon Server Programming"
+	// http://www.enderunix.org/docs/eng/daemon.php
+	
+	// return early if already running as a daemon
+	if(getppid()==1) return;
+	
+	// for out the process 
+	int i = fork();
+	if (i<0) exit(1);	// error forking
+	if (i>0) exit(0);	// exit if parent
+	
+	// child (daemon process) continues here after the fork...
+	
+	// obtain a new process group
+	setsid();
+	
+	// close all descriptors
+	for (i=getdtablesize();i>=0;--i) close(i);
+	
+	// bind stdio to /dev/null
+	i=open("/dev/null",O_RDWR); dup(i); dup(i);
+	
+	// restrict file creation mode to 0750
+	umask(027);
+#endif
+}
+
+
+/// displays an error message if the arguments are invalid
+void argument_error(void)
+{
+	std::cerr << "usage:   pion [-c SERVICE_CONFIG_FILE] [-D] [-v]" << std::endl;
 }

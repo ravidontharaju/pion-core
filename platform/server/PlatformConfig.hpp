@@ -136,6 +136,9 @@ private:
 	/// name of the service config element for Pion XML config files
 	static const std::string		SERVICE_CONFIG_ELEMENT_NAME;
 
+	/// name of the log config file element for Pion XML config files
+	static const std::string		LOG_CONFIG_ELEMENT_NAME;
+
 	/// name of the plug-in path element for Pion XML config files
 	static const std::string		PLUGIN_PATH_ELEMENT_NAME;
 

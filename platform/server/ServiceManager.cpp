@@ -36,6 +36,7 @@ const std::string			ServiceManager::SERVER_ELEMENT_NAME = "Server";
 const std::string			ServiceManager::WEB_SERVICE_ELEMENT_NAME = "WebService";
 const std::string			ServiceManager::PLATFORM_SERVICE_ELEMENT_NAME = "PlatformService";
 const std::string			ServiceManager::PORT_ELEMENT_NAME = "Port";
+const std::string			ServiceManager::SSL_KEY_ELEMENT_NAME = "SSLKey";
 const std::string			ServiceManager::RESOURCE_ELEMENT_NAME = "Resource";
 const std::string			ServiceManager::OPTION_ELEMENT_NAME = "Option";
 const std::string			ServiceManager::NAME_ATTRIBUTE_NAME = "name";
@@ -76,6 +77,7 @@ void ServiceManager::openConfigFile(void)
 	// some strings that get re-used a bunch
 	std::string server_id;
 	std::string port_str;
+	std::string ssl_key;
 	std::string service_id;
 	std::string plugin_type;
 	std::string http_resource;
@@ -96,6 +98,18 @@ void ServiceManager::openConfigFile(void)
 		// create the server and add it to our list
 		HTTPServerPtr server_ptr(new HTTPServer(m_scheduler, boost::lexical_cast<unsigned int>(port_str)));
 		m_servers.push_back(server_ptr);
+		
+		// get the ssl key for the server (if defined)
+		if (ConfigManager::getConfigOption(SSL_KEY_ELEMENT_NAME, ssl_key,
+										   server_node->children))
+		{
+			#ifdef PION_HAVE_SSL
+				// enable SSL for the server using the key provided
+				server_ptr->setSSLKeyFile(ConfigManager::resolveRelativePath(ssl_key));
+			#else
+				PION_LOG_WARN(m_logger, "Ignoring SSL keyfile parameter (Pion was not built with SSL support)");
+			#endif
+		}
 		
 		// step through PlatformService configurations
 		xmlNodePtr service_node = server_node->children;

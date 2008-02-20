@@ -209,6 +209,9 @@ private:
 	/// name of the port number element for Pion XML config files
 	static const std::string		PORT_ELEMENT_NAME;
 
+	/// name of the ssl key element for Pion XML config files
+	static const std::string		SSL_KEY_ELEMENT_NAME;
+	
 	/// name of the HTTP resource element for Pion XML config files
 	static const std::string		RESOURCE_ELEMENT_NAME;
 	

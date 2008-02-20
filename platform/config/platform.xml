@@ -5,6 +5,7 @@
 	<DatabaseConfig>databases.xml</DatabaseConfig>
 	<ReactorConfig>reactors.xml</ReactorConfig>
 	<ServiceConfig>services.xml</ServiceConfig>
+	<LogConfig>logconfig.txt</LogConfig>
 	<PluginPath>../../platform/codecs/.libs/</PluginPath>
 	<PluginPath>../../platform/reactors/.libs/</PluginPath>
 	<PluginPath>../../platform/services/.libs/</PluginPath>

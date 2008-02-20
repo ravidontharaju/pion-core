@@ -2,6 +2,7 @@
 <PionConfig xmlns="http://purl.org/pion/config">
 	<Server id="main-server">
 		<Port>8080</Port>
+		<SSLKey>sslkey.pem</SSLKey>
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>

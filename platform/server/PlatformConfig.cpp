@@ -36,6 +36,7 @@ const std::string			PlatformConfig::CODEC_CONFIG_ELEMENT_NAME = "CodecConfig";
 const std::string			PlatformConfig::DATABASE_CONFIG_ELEMENT_NAME = "DatabaseConfig";
 const std::string			PlatformConfig::REACTOR_CONFIG_ELEMENT_NAME = "ReactorConfig";
 const std::string			PlatformConfig::SERVICE_CONFIG_ELEMENT_NAME = "ServiceConfig";
+const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 	
 		
@@ -59,6 +60,17 @@ void PlatformConfig::openConfigFile(void)
 	// open the file and find the "config" root element
 	ConfigManager::openConfigFile();
 
+	#if defined(PION_USE_LOG4CXX) || defined(PION_USE_LOG4CPLUS) || defined(PION_USE_LOG4CPP)
+	// configure logging using LogConfig file (if defined)
+	std::string log_config;
+	if (ConfigManager::getConfigOption(LOG_CONFIG_ELEMENT_NAME, log_config,
+									   m_config_node_ptr->children))
+	{
+		// initialize logging config using the file specified
+		PION_LOG_CONFIG(ConfigManager::resolveRelativePath(log_config));
+	}
+	#endif
+	
 	// Step through plugin path definitions
 	std::string plugin_path;
 	xmlNodePtr path_node = m_config_node_ptr->children;

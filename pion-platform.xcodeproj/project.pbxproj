@@ -2737,11 +2737,9 @@
 					/usr/include/libxml2,
 					"/usr/local/include/boost-1_34_1",
 					/usr/local/include,
-					/opt/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					/opt/local/lib,
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
@@ -2753,6 +2751,10 @@
 					"-lboost_regex-mt-d",
 					"-lboost_date_time-mt-d",
 					"-lboost_signals-mt-d",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 					"-lxml2",
 					"-luuid",
 				);
@@ -2779,11 +2781,9 @@
 					/usr/include/libxml2,
 					"/usr/local/include/boost-1_34_1",
 					/usr/local/include,
-					/opt/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					/opt/local/lib,
 					"$(CONFIGURATION_BUILD_DIR)",
 				);
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
@@ -2794,6 +2794,10 @@
 					"-lboost_regex-mt",
 					"-lboost_date_time-mt",
 					"-lboost_signals-mt",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 					"-lxml2",
 					"-luuid",
 				);
