@@ -88,7 +88,7 @@ void setup_logging_for_unit_tests(void)
 		// configure logging
 		PION_LOG_CONFIG_BASIC;
 		pion::PionLogger log_ptr;
-		log_ptr = PION_GET_LOGGER("pion.platform");
+		log_ptr = PION_GET_LOGGER("pion");
 		PION_LOG_SETLEVEL_WARN(log_ptr);
 	}
 }
