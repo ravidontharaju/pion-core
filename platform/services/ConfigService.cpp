@@ -100,7 +100,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	}
 
 	// prepare the writer object for XML output
-	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request));
+	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
+															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 
 	// send the response

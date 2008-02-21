@@ -870,6 +870,7 @@
 		E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeedService.cpp; path = platform/services/FeedService.cpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FeedService.hpp; path = platform/services/FeedService.hpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE510D5A5E5100A9C68F /* FeedService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FeedService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3EB0F9D0D6E40C40028F500 /* HTTPTypesTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypesTests.cpp; path = net/tests/HTTPTypesTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3EFC68F0D18905C0019CCD4 /* PionPlatformUnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionPlatformUnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95950D5789BE001E075B /* ConfigService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ConfigService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95A30D579280001E075B /* ConfigService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigService.cpp; path = platform/services/ConfigService.cpp; sourceTree = SOURCE_ROOT; };
@@ -1205,14 +1206,15 @@
 		E36D8A0E0D29C6BD00B4C134 /* tests */ = {
 			isa = PBXGroup;
 			children = (
-				E36D8A540D29C9B800B4C134 /* FileServiceTests.cpp */,
+				E36D8A580D29C9B800B4C134 /* PionNetUnitTests.cpp */,
+				E3EB0F9D0D6E40C40028F500 /* HTTPTypesTests.cpp */,
 				E36D8A550D29C9B800B4C134 /* HTTPMessageTests.cpp */,
 				E36D8A560D29C9B800B4C134 /* HTTPRequestTests.cpp */,
 				E36D8A570D29C9B800B4C134 /* HTTPResponseTests.cpp */,
-				E36D8A580D29C9B800B4C134 /* PionNetUnitTests.cpp */,
 				E3D08F960D64BB0A00C81956 /* TCPStreamTests.cpp */,
 				E36D8A590D29C9B800B4C134 /* TCPServerTests.cpp */,
 				E36D8A5A0D29C9B800B4C134 /* WebServerTests.cpp */,
+				E36D8A540D29C9B800B4C134 /* FileServiceTests.cpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";

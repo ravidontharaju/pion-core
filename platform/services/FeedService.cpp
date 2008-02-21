@@ -259,7 +259,8 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_HEAD) {
 		
 		// request is just checking if the reactor is valid -> return OK
-		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request));
+		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
+											  boost::bind(&TCPConnection::finish, tcp_conn)));
 		response_writer->send();
 	}	
 }
