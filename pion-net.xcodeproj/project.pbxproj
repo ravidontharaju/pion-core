@@ -25,10 +25,14 @@
 		E34588A60CDA6E1500332599 /* HTTPResponseWriter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E34588A40CDA6E1500332599 /* HTTPResponseWriter.hpp */; };
 		E34588A70CDA6E1500332599 /* HTTPRequestWriter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E34588A30CDA6E1500332599 /* HTTPRequestWriter.hpp */; };
 		E34588A80CDA6E1500332599 /* HTTPResponseWriter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E34588A40CDA6E1500332599 /* HTTPResponseWriter.hpp */; };
-		E355DB2E0D63D79F0046937E /* TCPServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */; };
-		E355DB2F0D63D7A00046937E /* HTTPRequestTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */; };
-		E355DB300D63D7A10046937E /* FileServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E38F7F6D0CDFDE5000F9A9A7 /* FileServiceTests.cpp */; };
-		E355DB310D63D7A20046937E /* WebServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */; };
+		E352C2C80D6E202200E0ED0A /* WebServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */; };
+		E352C3AF0D6E38E500E0ED0A /* FileServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E38F7F6D0CDFDE5000F9A9A7 /* FileServiceTests.cpp */; };
+		E352C3B00D6E38E500E0ED0A /* HTTPMessageTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E352C2430D6DF25200E0ED0A /* HTTPMessageTests.cpp */; };
+		E352C3B10D6E38E500E0ED0A /* HTTPRequestTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */; };
+		E352C3B20D6E38E600E0ED0A /* HTTPResponseTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E352C2440D6DF25200E0ED0A /* HTTPResponseTests.cpp */; };
+		E352C3B30D6E38E600E0ED0A /* HTTPTypesTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E352C2450D6DF25200E0ED0A /* HTTPTypesTests.cpp */; };
+		E352C3B40D6E38E700E0ED0A /* TCPServerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */; };
+		E352C3B50D6E38E700E0ED0A /* TCPStreamTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B95C830D62651500792919 /* TCPStreamTests.cpp */; };
 		E36D8B0A0D29CF3000B4C134 /* PionUnitTestDefs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8B090D29CF3000B4C134 /* PionUnitTestDefs.hpp */; };
 		E36D8B0B0D29CF3000B4C134 /* PionUnitTestDefs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D8B090D29CF3000B4C134 /* PionUnitTestDefs.hpp */; };
 		E36F2EE70CA7922100120C6D /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
@@ -100,7 +104,6 @@
 		E3B952700CFA5F4500D375E4 /* PluginManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B9526E0CFA5F4500D375E4 /* PluginManager.hpp */; };
 		E3B95C790D62255900792919 /* TCPStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B95C780D62255900792919 /* TCPStream.hpp */; };
 		E3B95C7A0D62255900792919 /* TCPStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B95C780D62255900792919 /* TCPStream.hpp */; };
-		E3B95CEC0D62702200792919 /* TCPStreamTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B95C830D62651500792919 /* TCPStreamTests.cpp */; };
 		E3B9E4EA0CD66DC4007BEFE5 /* HTTPMessage.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B9E49D0CD66BCC007BEFE5 /* HTTPMessage.hpp */; };
 		E3B9E4EC0CD66DC7007BEFE5 /* HTTPMessage.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B9E49D0CD66BCC007BEFE5 /* HTTPMessage.hpp */; };
 		E3B9E55E0CD67640007BEFE5 /* HTTPParser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B9E55B0CD67640007BEFE5 /* HTTPParser.hpp */; };
@@ -367,6 +370,9 @@
 		E34588A40CDA6E1500332599 /* HTTPResponseWriter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPResponseWriter.hpp; path = net/include/pion/net/HTTPResponseWriter.hpp; sourceTree = SOURCE_ROOT; };
 		E34919190BFE5F64001E1387 /* PionHelloServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionHelloServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349191B0BFE5F72001E1387 /* PionWebServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionWebServer; sourceTree = BUILT_PRODUCTS_DIR; };
+		E352C2430D6DF25200E0ED0A /* HTTPMessageTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPMessageTests.cpp; path = net/tests/HTTPMessageTests.cpp; sourceTree = SOURCE_ROOT; };
+		E352C2440D6DF25200E0ED0A /* HTTPResponseTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPResponseTests.cpp; path = net/tests/HTTPResponseTests.cpp; sourceTree = SOURCE_ROOT; };
+		E352C2450D6DF25200E0ED0A /* HTTPTypesTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypesTests.cpp; path = net/tests/HTTPTypesTests.cpp; sourceTree = SOURCE_ROOT; };
 		E352F4190C22F49100A7946C /* CookieService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = CookieService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E36D8A120D29C70C00B4C134 /* PionCommonUnitTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCommonUnitTests.cpp; path = common/tests/PionCommonUnitTests.cpp; sourceTree = SOURCE_ROOT; };
 		E36D8A130D29C70C00B4C134 /* PionCounterTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionCounterTests.cpp; path = common/tests/PionCounterTests.cpp; sourceTree = SOURCE_ROOT; };
@@ -662,9 +668,12 @@
 			isa = PBXGroup;
 			children = (
 				E3CFE3530CD00E3E00016E0F /* PionNetUnitTests.cpp */,
+				E352C2450D6DF25200E0ED0A /* HTTPTypesTests.cpp */,
+				E352C2430D6DF25200E0ED0A /* HTTPMessageTests.cpp */,
+				E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */,
+				E352C2440D6DF25200E0ED0A /* HTTPResponseTests.cpp */,
 				E3B95C830D62651500792919 /* TCPStreamTests.cpp */,
 				E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */,
-				E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */,
 				E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */,
 				E38F7F6D0CDFDE5000F9A9A7 /* FileServiceTests.cpp */,
 			);
@@ -1242,11 +1251,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3CFE3690CD00E8900016E0F /* PionNetUnitTests.cpp in Sources */,
-				E3B95CEC0D62702200792919 /* TCPStreamTests.cpp in Sources */,
-				E355DB2E0D63D79F0046937E /* TCPServerTests.cpp in Sources */,
-				E355DB2F0D63D7A00046937E /* HTTPRequestTests.cpp in Sources */,
-				E355DB300D63D7A10046937E /* FileServiceTests.cpp in Sources */,
-				E355DB310D63D7A20046937E /* WebServerTests.cpp in Sources */,
+				E352C2C80D6E202200E0ED0A /* WebServerTests.cpp in Sources */,
+				E352C3AF0D6E38E500E0ED0A /* FileServiceTests.cpp in Sources */,
+				E352C3B00D6E38E500E0ED0A /* HTTPMessageTests.cpp in Sources */,
+				E352C3B10D6E38E500E0ED0A /* HTTPRequestTests.cpp in Sources */,
+				E352C3B20D6E38E600E0ED0A /* HTTPResponseTests.cpp in Sources */,
+				E352C3B30D6E38E600E0ED0A /* HTTPTypesTests.cpp in Sources */,
+				E352C3B40D6E38E700E0ED0A /* TCPServerTests.cpp in Sources */,
+				E352C3B50D6E38E700E0ED0A /* TCPStreamTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
