@@ -205,8 +205,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 
 	// request an output feed from the "do nothing" reactor
 	HTTPRequest feed_request;
-	feed_request.setResource("/feed");
-	feed_request.setQueryString(makeQueryString(m_do_nothing_id, m_common_id));
+	feed_request.setResource("/feed/" + m_do_nothing_id + "/" + m_common_id);
 	feed_request.send(output_tcp_stream.rdbuf()->getConnection(), ec);
 	BOOST_REQUIRE(! ec);
 	
