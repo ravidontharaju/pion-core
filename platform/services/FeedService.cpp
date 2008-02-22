@@ -217,15 +217,25 @@ void FeedReader::start(void)
 
 void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	// get the reactor_id using the relative request path
-	const std::string reactor_id(request->getQuery("reactor"));
+	// split out the path branches from the HTTP request
+	PathBranches branches;
+	splitPathBranches(branches, request->getResource());
+	
+	// get the reactor_id and codec_id from the path branches in the request
+	if (branches.size() != 2 && !(branches.size()==3 && branches[2].empty())) {
+		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		return;
+	}
+	
+	// get the reactor_id from the first path branche
+	const std::string reactor_id(branches[0]);
 	if (reactor_id.empty() || !getConfig().getReactionEngine().hasReactor(reactor_id)) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 	
-	// get the codec_id using the relative request path
-	const std::string codec_id(request->getQuery("codec"));
+	// get the codec_id from the second path branch
+	const std::string codec_id(branches[1]);
 	CodecPtr codec_ptr(getConfig().getCodecFactory().getCodec(codec_id));
 	if (codec_id.empty() || !codec_ptr) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);

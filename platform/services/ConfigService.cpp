@@ -34,65 +34,66 @@ namespace server {		// begin namespace server (Pion Server)
 
 void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	// get the relative resource path for the request
-	const std::string relative_path(getRelativeResource(request->getResource()));
+	// split out the path branches from the HTTP request
+	PathBranches branches;
+	splitPathBranches(branches, request->getResource());
 
 	// use a stringstream for the response content
 	// since HTTPResponseWriter does not yet have a stream wrapper available
 	std::stringstream ss;
-
-	if (relative_path.empty()) {
+	
+	if (branches.empty()) {
 		getConfig().writeConfigXML(ss);
-	} else if (relative_path == "vocabularies") {
-		if (request->hasQuery("id")) {
-			if (! getConfig().getVocabularyManager().writeConfigXML(ss, request->getQuery("id"))) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
-			}
-		} else {
+	} else if (branches.front() == "vocabularies") {
+		if (branches.size() == 1 || branches[1].empty()) {
 			getConfig().getVocabularyManager().writeConfigXML(ss);
-		}
-	} else if (relative_path == "codecs") {
-		if (request->hasQuery("id")) {
-			if (! getConfig().getCodecFactory().writeConfigXML(ss, request->getQuery("id"))) {
+		} else {
+			if (! getConfig().getVocabularyManager().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
-		} else {
+		}
+	} else if (branches.front() == "codecs") {
+		if (branches.size() == 1 || branches[1].empty()) {
 			getConfig().getCodecFactory().writeConfigXML(ss);
-		}
-	} else if (relative_path == "databases") {
-		if (request->hasQuery("id")) {
-			if (! getConfig().getDatabaseManager().writeConfigXML(ss, request->getQuery("id"))) {
+		} else {
+			if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
-		} else {
+		}
+	} else if (branches.front() == "databases") {
+		if (branches.size() == 1 || branches[1].empty()) {
 			getConfig().getDatabaseManager().writeConfigXML(ss);
-		}
-	} else if (relative_path == "reactors") {
-		if (request->hasQuery("id")) {
-			if (! getConfig().getReactionEngine().writeConfigXML(ss, request->getQuery("id"))) {
+		} else {
+			if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
-		} else {
+		}
+	} else if (branches.front() == "reactors") {
+		if (branches.size() == 1 || branches[1].empty()) {
 			getConfig().getReactionEngine().writeConfigXML(ss);
-		}
-	} else if (relative_path == "connections") {
-		if (request->hasQuery("id")) {
-			getConfig().getReactionEngine().writeConnectionsXML(ss, request->getQuery("id"));
 		} else {
-			getConfig().getReactionEngine().writeConnectionsXML(ss);
-		}
-	} else if (relative_path == "services") {
-		if (request->hasQuery("id")) {
-			if (! getConfig().getServiceManager().writeConfigXML(ss, request->getQuery("id"))) {
+			if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
+		}
+	} else if (branches.front() == "connections") {
+		if (branches.size() == 1 || branches[1].empty()) {
+			getConfig().getReactionEngine().writeConnectionsXML(ss);
 		} else {
+			getConfig().getReactionEngine().writeConnectionsXML(ss, branches[1]);
+		}
+	} else if (branches.front() == "services") {
+		if (branches.size() == 1 || branches[1].empty()) {
 			getConfig().getServiceManager().writeConfigXML(ss);
+		} else {
+			if (! getConfig().getServiceManager().writeConfigXML(ss, branches[1])) {
+				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				return;
+			}
 		}
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);

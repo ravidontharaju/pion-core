@@ -107,6 +107,19 @@ public:
 	
 protected:
 	
+	/// data type for a collection of resource path branches
+	typedef std::vector<std::string>	PathBranches;
+	
+	
+	/**
+	 * splits path branches out of an HTTP request resource
+	 *
+	 * @param branches a collection of path branches extracted
+	 * @param resource the HTTP request resource to extra path branches from
+	 */
+	void splitPathBranches(PathBranches& branches, const std::string& resource);
+	
+	
 	/// returns a const reference to the Platform configuration manager
 	inline const PlatformConfig& getConfig(void) const {
 		if (m_config_ptr == NULL)

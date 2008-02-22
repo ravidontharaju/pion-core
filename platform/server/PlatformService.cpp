@@ -17,6 +17,8 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include "PlatformConfig.hpp"
 #include "PlatformService.hpp"
 
@@ -36,6 +38,13 @@ void PlatformService::setConfig(PlatformConfig& platform_cfg, const xmlNodePtr c
 	PlatformPlugin::setConfig(platform_cfg.getVocabularyManager().getVocabulary(), config_ptr);
 }
 
+void PlatformService::splitPathBranches(PathBranches& branches,
+										const std::string& resource)
+{
+	const std::string relative_path(getRelativeResource(resource));
+	boost::algorithm::split(branches, relative_path, boost::algorithm::is_any_of("/"));
+}
+	
 	
 }	// end namespace server
 }	// end namespace pion
