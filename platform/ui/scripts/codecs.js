@@ -17,7 +17,7 @@ var unique_codec_id = 1;
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
 
-var term_store = new dojox.data.XmlStore({url: '/config/vocabularies?id=urn:vocab:clf', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
+var term_store = new dojox.data.XmlStore({url: '/config/vocabularies/urn:vocab:clf', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
 term_store.fetchItemByIdentity = function(keywordArgs) {

@@ -67,7 +67,7 @@ pion.vocabularies.init = function() {
 	
 	function _populatePaneFromConfigItem(item) {
 		var id = vocab_config_store.getValue(item, '@id');
-		var url = '/config/vocabularies?id=' + id;
+		var url = '/config/vocabularies/' + id;
 	
 		if (selected_pane.vocab_store) {
 			var vocab_store = selected_pane.vocab_store;
@@ -161,7 +161,7 @@ pion.vocabularies.init = function() {
 				var config_accordion = dijit.byId('vocab_config_accordion');
 				for (var i = 1; i < items.length; ++i) {
 					// It would be nice to have the name for the title instead of the ID, but we will have to make a request for 
-					// each vocabulary (e.g. with url = '/config/vocabularies?id=' + id) if we want this.
+					// each vocabulary (e.g. with url = '/config/vocabularies/' + id) if we want this.
 					var title = vocab_config_store.getValue(items[i], '@id');
 					var vocab_pane = _createNewPane(title);
 					vocab_pane.config_item = items[i];
@@ -289,7 +289,7 @@ pion.vocabularies.init = function() {
 			var vocab_pane = _createNewPane(dialogFields.vocab_name);
 			vocab_pane.config_item = item;
 
-			// Temporary code: won't be needed when the server adds the vocab, enabling url = '/config/vocabularies?id=urn:vocab:some_id'
+			// Temporary code: won't be needed when the server adds the vocab, enabling url = '/config/vocabularies/urn:vocab:some_id'
 			vocab_pane.vocab_store = new dojox.data.XmlStore({url: 'not_to_be_used', attributeMap: {'Vocabulary.id': '@id'}});
 			vocab_pane.vocab_item = vocab_pane.vocab_store.newItem({tagName: 'Vocabulary'});
 			vocab_pane.vocab_store.setValue(vocab_pane.vocab_item, '@id', dialogFields.vocab_id);
