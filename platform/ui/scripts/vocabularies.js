@@ -148,23 +148,29 @@ pion.vocabularies.init = function() {
 	selected_pane = dijit.byId('vocab_config_accordion').getChildren()[0];
 	vocab_pane_title_height = selected_pane.getTitleHeight();
 
-	vocab_config_store.fetch({
-		onComplete: function (items, request) {
-			selected_pane.config_item = items[0];
-			_populatePaneFromConfigItem(items[0]);
+	if (file_protocol) {
+		dojo.connect(dojo.byId('add_new_term_button'), 'click', _addNewTermToVocabulary);
+		dijit.byId('vocab_config_accordion').removeChild(selected_pane);
+		_adjustAccordionSize();
+	} else {
+		vocab_config_store.fetch({
+			onComplete: function (items, request) {
+				selected_pane.config_item = items[0];
+				_populatePaneFromConfigItem(items[0]);
 
-			var config_accordion = dijit.byId('vocab_config_accordion');
-			for (var i = 1; i < items.length; ++i) {
-				// It would be nice to have the name for the title instead of the ID, but we will have to make a request for 
-				// each vocabulary (e.g. with url = '/config/vocabularies?id=' + id) if we want this.
-				var title = vocab_config_store.getValue(items[i], '@id');
-				var vocab_pane = _createNewPane(title);
-				vocab_pane.config_item = items[i];
-				config_accordion.addChild(vocab_pane);
+				var config_accordion = dijit.byId('vocab_config_accordion');
+				for (var i = 1; i < items.length; ++i) {
+					// It would be nice to have the name for the title instead of the ID, but we will have to make a request for 
+					// each vocabulary (e.g. with url = '/config/vocabularies?id=' + id) if we want this.
+					var title = vocab_config_store.getValue(items[i], '@id');
+					var vocab_pane = _createNewPane(title);
+					vocab_pane.config_item = items[i];
+					config_accordion.addChild(vocab_pane);
+				}
+				_adjustAccordionSize();
 			}
-			_adjustAccordionSize();
-		}
-	});
+		});
+	}
 	
 	dojo.connect(grid, 'onCellClick', function(e) {
 		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);

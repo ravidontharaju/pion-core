@@ -9,15 +9,21 @@ var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
 var user_config_page_initialized = false;
 var system_config_page_initialized = false;
+var file_protocol = false;
 
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
+
+	file_protocol = (window.location.protocol == "file:");
 	initReactorConfigPage();
 	
-	// do a fetch just to check if the datastore is available
-	term_store.fetch({onError: function(errorData, request){
-		alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
-	}});
+	if (!file_protocol) {
+		// do a fetch just to check if the datastore is available
+		term_store.fetch({onError: function(errorData, request){
+			alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
+			console.debug('window.location.protocol = ', window.location.protocol);
+		}});
+	}
 }
 
 dojo.addOnLoad(init);

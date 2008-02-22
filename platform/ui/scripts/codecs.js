@@ -149,8 +149,12 @@ function initCodecConfigPage() {
 	selected_codec_pane = dijit.byId('codec_config_accordion').getChildren()[0];
 	codec_pane_title_height = selected_codec_pane.getTitleHeight();
 
-	codec_config_store.fetch({ onComplete: onComplete });
-
+	if (file_protocol) {
+		dijit.byId('codec_config_accordion').removeChild(selected_codec_pane);
+	} else {
+		codec_config_store.fetch({ onComplete: onComplete });
+	}
+	
 	dojo.connect(codec_grid, 'onCellClick', handleCellClick);
 	dojo.connect(codec_grid, 'onApplyCellEdit', handleCellEdit);
 

@@ -26,6 +26,10 @@ dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
 });
 
 function initSystemConfigPage() {
+	if (file_protocol) {
+		// Can't do much in this case....
+		return;
+	}
 	dojo.xhrGet({
 		url: '/config',
 		handleAs: 'xml',
