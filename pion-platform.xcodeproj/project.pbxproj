@@ -3158,7 +3158,12 @@
 					"-lboost_regex-mt-d",
 					"-lboost_date_time-mt-d",
 					"-lboost_unit_test_framework-mt-d",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 					"-lxml2",
+					"-luuid",
 				);
 				PRODUCT_NAME = PionPlatformUnitTests;
 			};
@@ -3175,7 +3180,12 @@
 					"-lboost_regex-mt",
 					"-lboost_date_time-mt",
 					"-lboost_unit_test_framework-mt",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 					"-lxml2",
+					"-luuid",
 				);
 				PRODUCT_NAME = PionPlatformUnitTests;
 			};

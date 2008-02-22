@@ -221,8 +221,8 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	PathBranches branches;
 	splitPathBranches(branches, request->getResource());
 	
-	// get the reactor_id and codec_id from the path branches in the request
-	if (branches.size() != 2 && !(branches.size()==3 && branches[2].empty())) {
+	// make sure that there are two extra path branches in the request
+	if (branches.size() != 2) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}

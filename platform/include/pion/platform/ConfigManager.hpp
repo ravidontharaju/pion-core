@@ -172,6 +172,27 @@ public:
 							   xmlNodePtr config_node,
 							   bool include_siblings = false);
 	
+	/**
+	 * write the XML header <?xml ... ?> to an ouput stream
+	 *
+	 * @param out the ostream to write the configuration info into
+	 */
+	static void writeConfigXMLHeader(std::ostream& out);
+	
+	/**
+	 * write out the beginning <PionConfig> block for XML config information
+	 *
+	 * @param out the ostream to write the configuration info into
+	 */
+	static void writeBeginPionConfigXML(std::ostream& out);
+	
+	/**
+	 * write out the end </PionConfig> block for XML config information
+	 *
+	 * @param out the ostream to write the configuration info into
+	 */
+	static void writeEndPionConfigXML(std::ostream& out);
+	
 	/// encodes strings so that they are safe for XML (this &amp; that)
 	static std::string xml_encode(const std::string& str);
 	

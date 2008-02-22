@@ -492,7 +492,7 @@ void ReactionEngine::stopNoLock(void)
 void ReactionEngine::writeConnectionsXML(std::ostream& out,
 										 const std::string& only_id) const
 {
-	out << '<' << ROOT_ELEMENT_NAME << '>' << std::endl;
+	ConfigManager::writeBeginPionConfigXML(out);
 	
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
@@ -541,7 +541,7 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 		}
 	}
 
-	out << "</" << ROOT_ELEMENT_NAME << '>' << std::endl;
+	ConfigManager::writeEndPionConfigXML(out);
 }
 	
 	

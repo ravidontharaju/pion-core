@@ -223,9 +223,9 @@ inline bool PluginConfig<PluginType>::writeConfigXML(std::ostream& out,
 		return false;
 	
 	// found it
-	out << '<' << ConfigManager::ROOT_ELEMENT_NAME << '>' << std::endl;
+	ConfigManager::writeBeginPionConfigXML(out);
 	ConfigManager::writeConfigXML(out, plugin_node, false);
-	out << "</" << ConfigManager::ROOT_ELEMENT_NAME << '>' << std::endl;
+	ConfigManager::writeEndPionConfigXML(out);
 
 	return true;
 }

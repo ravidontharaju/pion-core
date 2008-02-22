@@ -41,8 +41,15 @@ void PlatformService::setConfig(PlatformConfig& platform_cfg, const xmlNodePtr c
 void PlatformService::splitPathBranches(PathBranches& branches,
 										const std::string& resource)
 {
+	// determine the relative path based on the resource bound to this service
 	const std::string relative_path(getRelativeResource(resource));
+	
+	// split out the path branches into a vector
 	boost::algorithm::split(branches, relative_path, boost::algorithm::is_any_of("/"));
+
+	// remove the last element if it is empty
+	if (!branches.empty() && branches.back().empty())
+		branches.pop_back();
 }
 	
 	

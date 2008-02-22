@@ -42,10 +42,13 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// since HTTPResponseWriter does not yet have a stream wrapper available
 	std::stringstream ss;
 	
+	// start responses with the XML header line <?xml ... ?>
+	ConfigManager::writeConfigXMLHeader(ss);
+	
 	if (branches.empty()) {
 		getConfig().writeConfigXML(ss);
 	} else if (branches.front() == "vocabularies") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getVocabularyManager().writeConfigXML(ss);
 		} else {
 			if (! getConfig().getVocabularyManager().writeConfigXML(ss, branches[1])) {
@@ -54,7 +57,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 		}
 	} else if (branches.front() == "codecs") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getCodecFactory().writeConfigXML(ss);
 		} else {
 			if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1])) {
@@ -63,7 +66,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 		}
 	} else if (branches.front() == "databases") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getDatabaseManager().writeConfigXML(ss);
 		} else {
 			if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1])) {
@@ -72,7 +75,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 		}
 	} else if (branches.front() == "reactors") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getReactionEngine().writeConfigXML(ss);
 		} else {
 			if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1])) {
@@ -81,13 +84,13 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 		}
 	} else if (branches.front() == "connections") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getReactionEngine().writeConnectionsXML(ss);
 		} else {
 			getConfig().getReactionEngine().writeConnectionsXML(ss, branches[1]);
 		}
 	} else if (branches.front() == "services") {
-		if (branches.size() == 1 || branches[1].empty()) {
+		if (branches.size() == 1) {
 			getConfig().getServiceManager().writeConfigXML(ss);
 		} else {
 			if (! getConfig().getServiceManager().writeConfigXML(ss, branches[1])) {

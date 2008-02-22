@@ -185,6 +185,22 @@ void ConfigManager::writeConfigXML(std::ostream& out,
 		config_node = config_node->next;
 	}
 }
+
+void ConfigManager::writeConfigXMLHeader(std::ostream& out)
+{
+	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+}
+	
+void ConfigManager::writeBeginPionConfigXML(std::ostream& out)
+{
+	out << '<' << ROOT_ELEMENT_NAME << " xmlns=\""
+		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
+}
+
+void ConfigManager::writeEndPionConfigXML(std::ostream& out)
+{
+	out << "</" << ROOT_ELEMENT_NAME << '>' << std::endl;
+}
 	
 std::string ConfigManager::xml_encode(const std::string& str)
 {
