@@ -32,14 +32,11 @@ void argument_error(void);
 int main (int argc, char *argv[])
 {
 	// get platform config file
-	bool verbose_logging = false;
 	bool run_as_daemon = false;
 	std::string platform_config_file("/etc/pion/platform.xml");
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
-			if (argv[argnum][1] == 'v') {
-				verbose_logging = true;
-			} if (argv[argnum][1] == 'D') {
+			if (argv[argnum][1] == 'D') {
 				run_as_daemon = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = argv[++argnum];
@@ -72,11 +69,11 @@ int main (int argc, char *argv[])
 	
 	// initialize log system (use simple configuration)
 	PionLogger pion_log(PION_GET_LOGGER("pion"));
-	if (verbose_logging) {
-		PION_LOG_SETLEVEL_DEBUG(pion_log);
-	} else {
-		PION_LOG_SETLEVEL_INFO(pion_log);
-	}
+
+	// This level might be overridden if there is a LogConfig file specified in the platform 
+	// configuration (and if using a logging library that supports logging configuration.)
+	PION_LOG_SETLEVEL_INFO(pion_log);
+
 	PION_LOG_CONFIG_BASIC;
 	
 	PlatformConfig platform_cfg;
