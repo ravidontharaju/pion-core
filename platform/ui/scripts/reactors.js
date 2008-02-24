@@ -1,3 +1,4 @@
+dojo.provide("pion.reactors");
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.Dialog");
@@ -29,7 +30,14 @@ var reactors_by_id = {};
 var reactor_config_store;
 var filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
 
-function initReactorConfigPage() {
+pion.reactors.getHeight = function() {
+	// TODO: replace 150 with some computed value
+	return dojo.byId('outer').clientHeight - 150;
+}
+
+pion.reactors.init = function() {
+	dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
+
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 
@@ -325,13 +333,24 @@ function makeReactorMoveable(reactor) {
 	c.b = c.t + c.h - reactor.offsetHeight;
 	console.debug("latest_event: ", latest_event);
 	var cw = dojo.byId("reactor_config_content"); // Move to init()?
+	/**/
+	// The loop below no longer works since changes were made in handling the main stack container.
+	var totalOffsetLeft = cw.offsetLeft;
+	var totalOffsetTop  = cw.offsetTop;
+	cw = dojo.byId("main_stack_container");
+	totalOffsetLeft += cw.offsetLeft;
+	totalOffsetTop  += cw.offsetTop;
+	/**
 	var totalOffsetLeft = 0;
 	var totalOffsetTop  = 0;
 	do {
+		console.debug('cw.id = ', cw.id);
+		console.debug('cw.offsetTop = ', cw.offsetTop);
 		totalOffsetLeft += cw.offsetLeft;
 		totalOffsetTop  += cw.offsetTop;
 		cw = cw.parentNode;
 	} while (cw != document.body);
+	/**/
 	var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
 	console.debug("mouseLeftTop: ", mouseLeftTop);
 	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);

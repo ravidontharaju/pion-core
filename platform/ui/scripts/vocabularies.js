@@ -14,9 +14,13 @@ dojo.require("dojox.xml.DomParser");
 
 pion.vocabularies.term_type_store = new dojo.data.ItemFileReadStore({url: 'termTypes.json'});
 
+pion.vocabularies.getHeight = function() {
+	// set by _adjustAccordionSize
+	return pion.vocabularies.height;
+}
+
 pion.vocabularies.init = function() {
 	var vocab_pane_title_height = -1;
-	var vocab_pane_body_height = 420;
 	var accordion_width = -1;
 	var selected_pane = null;
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
@@ -53,7 +57,7 @@ pion.vocabularies.init = function() {
 		selected_pane.term_table = [];
 		for (var i = 0; i < terms.length; ++i) {
 			var term_table_row = [];
-			term_table_row[0] = vocab_store.getValue(terms[i], '@id');
+			term_table_row[0] = vocab_store.getValue(terms[i], '@id').split('#')[1];
 			term_table_row[1] = vocab_store.getValue(terms[i], 'Type');
 			term_table_row[2] = vocab_store.getValue(term_table_row[1], '@format');
 			term_table_row[3] = vocab_store.getValue(terms[i], 'Size');
@@ -74,7 +78,7 @@ pion.vocabularies.init = function() {
 			/*********************************************************************************/
 			// TEMPORARY CODE!  (Want to avoid calling fetch() for now, until updating the server is enabled.)
 			_populatePaneFromVocabItem(selected_pane.vocab_item, vocab_store);
-			setTimeout(_setUnsavedChangesFalse, 200);
+			setTimeout(_setUnsavedChangesFalse, 500);
 			return;
 			/*********************************************************************************/
 		} else {
@@ -99,14 +103,24 @@ pion.vocabularies.init = function() {
 		});		
 
 		// Wait a bit for the change events on the FilteringSelect widgets to get handled.
-		setTimeout(_setUnsavedChangesFalse, 200);
+		setTimeout(_setUnsavedChangesFalse, 500);
 	}
 
 	function _adjustAccordionSize() {
 		var config_accordion = dijit.byId('vocab_config_accordion');
 		var num_vocabs = config_accordion.getChildren().length;
 		console.debug("num_vocabs = " + num_vocabs);
-		config_accordion.resize({h: vocab_pane_body_height + num_vocabs * vocab_pane_title_height, w: accordion_width});
+
+		// TODO: replace 600 with some computed value, which takes into account the height of the grid 
+		// (in .vocab_grid in defaults.css) and the variable comment box height.
+		var vocab_pane_body_height = 600;
+
+		var accordion_height = vocab_pane_body_height + num_vocabs * vocab_pane_title_height;
+		config_accordion.resize({h: accordion_height, w: accordion_width});
+
+		// TODO: replace 200 with some computed value
+		pion.vocabularies.height = accordion_height + 200;
+		dijit.byId('main_stack_container').resize({h: pion.vocabularies.height});
 	}
 
 	function _paneSelected(pane) {
@@ -259,7 +273,7 @@ pion.vocabularies.init = function() {
 			}
 			return true;
 		};
-		dijit.byId('new_vocabulary_id').setDisplayedValue('urn:vocab:');
+		dijit.byId('new_vocabulary_id').setDisplayedValue('');
 		dijit.byId('new_vocabulary_name').setDisplayedValue('New Vocabulary');
 		dijit.byId('new_vocabulary_comment').setDisplayedValue('');
 
@@ -347,7 +361,7 @@ pion.vocabularies.init = function() {
 		dialog.show();
 		dialog.execute = function(dialogFields) {
 			console.debug('dialogFields = ', dialogFields);
-			var id = vocab_id + '#' + dialogFields.term_id_suffix;
+			var id = dialogFields.term_id_suffix;
 
 			// Eventually, this block will be replaced by a request that causes the server to add the term.
 			/*
@@ -361,7 +375,7 @@ pion.vocabularies.init = function() {
 			*/
 			var element = document.implementation.createDocument('', 'Term', null);
 			var new_term = new dojox.data.XmlItem(element.firstChild, selected_pane.vocab_store);
-			selected_pane.vocab_store.setValue(new_term, '@id', id);
+			selected_pane.vocab_store.setValue(new_term, '@id', vocab_id + '#' + id);
 			selected_pane.vocab_store.setValue(new_term, 'Type', dialogFields.term_type);
 			selected_pane.vocab_store.setValue(new_term, 'Comment', dialogFields.term_comment);			
 			terms.splice(0, 0, new_term);

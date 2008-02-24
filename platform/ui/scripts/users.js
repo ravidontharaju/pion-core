@@ -1,3 +1,4 @@
+dojo.provide("pion.users");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.ValidationTextBox");
@@ -7,13 +8,17 @@ dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
 
 var user_pane_title_height = -1;
-var user_pane_body_height = 190;
 var accordion_width = -1;
 var unique_user_id = 1;
 var selected_user_pane = null;
 var default_user_data;
 
-function initUserConfigPage() {
+pion.users.getHeight = function() {
+	// set by adjustUserAccordionSize
+	return pion.users.height;
+}
+
+pion.users.init = function() {
 	// Get the default data from the HTML.  This will have one member for each text box node,
 	// with value equal to the node's value attribute, or the empty string if it doesn't have one.
 	var form = dijit.byId('user_form');
@@ -95,7 +100,14 @@ function adjustUserAccordionSize() {
 	var user_config_accordion = dijit.byId('user_config_accordion');
 	var num_users = user_config_accordion.getChildren().length;
 	console.debug("num_users = " + num_users);
-	user_config_accordion.resize({h: user_pane_body_height + num_users * user_pane_title_height, w: accordion_width});
+
+	var user_pane_body_height = 190;
+	var accordion_height = user_pane_body_height + num_users * user_pane_title_height;
+	user_config_accordion.resize({h: accordion_height, w: accordion_width});
+
+	// TODO: replace 200 with some computed value
+	pion.users.height = accordion_height + 200;
+	dijit.byId('main_stack_container').resize({h: pion.users.height});
 }
 
 dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);

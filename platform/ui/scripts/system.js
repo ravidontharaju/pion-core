@@ -1,3 +1,4 @@
+dojo.provide("pion.system");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.xml.DomParser");
 dojo.require("dijit.Tree");
@@ -25,7 +26,13 @@ dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
 	}
 });
 
-function initSystemConfigPage() {
+pion.system.getHeight = function() {
+	return 800;
+}
+
+pion.system.init = function() {
+	dijit.byId('main_stack_container').resize({h: pion.system.getHeight()});
+
 	if (file_protocol) {
 		// Can't do much in this case....
 		return;

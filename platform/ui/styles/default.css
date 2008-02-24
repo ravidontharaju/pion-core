@@ -669,12 +669,12 @@ This is a duplicate of #reactor_config_content for now.
 
 .codec_grid {
 	overflow: hidden;
-	height: 180px;
+	height: 360px;
 }
 
 .vocab_grid {
 	overflow: hidden;
-	height: 180px;
+	height: 360px;
 }
 
 #grid {

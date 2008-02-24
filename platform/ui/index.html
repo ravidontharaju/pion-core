@@ -55,38 +55,38 @@
 	<script type="text/javascript" src="scripts/users.js"></script>
 	<script type="text/javascript" src="scripts/system.js"></script>
 	<script type="text/javascript">
-		var gridLayout = [{
+		var codec_grid_layout = [{
 			rows: [[
-				{ name: 'Field Name', styles: '', width: 20, 
-					editor: dojox.grid.editors.Input},
+				{ name: 'Field Name', styles: '', width: 'auto', 
+					editor: dojox.grid.editors.Input },
 				{ name: 'Term', styles: '', 
 					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 20},
-				{ name: 'Start Char', width: 10, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'End Char', width: 10, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input},
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
+				{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input },
+				{ name: 'End Char', width: 3, styles: 'text-align: center;', 
+					editor: dojox.grid.editors.Input },
 				{ name: 'order', 
 					editor: dojox.grid.editors.Dijit,
-					editorClass: "dijit.form.NumberSpinner", width: 5},
-				{ name: 'Delete', styles: 'align: center;', width: 4, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					editorClass: "dijit.form.NumberSpinner", width: 5 },
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
 			]]
 		}];
 
-		// This is very redundant, but dojo.clone can't seem to handle cloning gridLayout.
-		var grid_layout_no_order = [{
+		// This is very redundant, but dojo.clone can't seem to handle cloning codec_grid_layout.
+		var codec_grid_layout_no_order = [{
 			rows: [[
-				{ name: 'Field Name', styles: '', width: 20, 
+				{ name: 'Field Name', styles: '', width: 'auto', 
 					editor: dojox.grid.editors.Input},
 				{ name: 'Term', styles: '', 
 					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 20},
-				{ name: 'Start Char', width: 5, styles: 'text-align: center;', 
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
+				{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
 					editor: dojox.grid.editors.Input},
-				{ name: 'End Char', width: 5, styles: 'text-align: center;', 
+				{ name: 'End Char', width: 3, styles: 'text-align: center;', 
 					editor: dojox.grid.editors.Input},
-				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
 				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 			]]
 		}];
@@ -107,17 +107,17 @@
 
 		var vocab_grid_layout = [{
 			rows: [[
-				{ name: 'ID', styles: '', width: 15 },
+				{ name: 'ID', styles: '', width: 'auto' },
 				{ name: 'Type', styles: '', 
 					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description", keyAttr: "name" }, width: 6},
-				{ name: 'Format', width: 15, styles: ''},
-				{ name: 'Size', width: 4, styles: '', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Comment', width: 50, styles: '', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Delete', styles: 'align: center;', width: 4, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description", keyAttr: "name" }, width: 'auto' },
+				{ name: 'Format', width: 'auto', styles: ''},
+				{ name: 'Size', width: 3, styles: '', 
+					editor: dojox.grid.editors.Input },
+				{ name: 'Comment', width: 'auto', styles: '', 
+					editor: dojox.grid.editors.Input },
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
 			]]
 		}];
 	</script>
@@ -127,8 +127,8 @@
 <!-- data store for codec types -->
 	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="codecTypes.json"></div>
 
-	<div id="outer" dojoType="dijit.layout.LayoutContainer" style="visibility: hidden">
-		<div id="topBar" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+	<div id="outer" style="visibility: hidden">
+		<div id="topBar">
 			<!-- start header -->
 			<div id="logo">
 				<p class="logo"><img src="images/pion-logo.png" width="140" height="64" alt="Pion - Rule Your Data" /></p>
@@ -151,300 +151,277 @@
 			</div>
 			<!-- end main menu -->
 		</div>
-		<div id="bottomBar" dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-			<div id="footer">
-				<hr noshade="noshade" size="1" color="#333333" />
-				<p>&copy; 2008 Atomic Labs, Inc. All rights reserved.</p>
-			</div>
-		</div>
-
-		<div id="main_stack" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-			<div id="main_stack_container" dojoType="dijit.layout.StackContainer">
-				<div id="reactor_config" dojoType="dijit.layout.LayoutContainer" title="Reactors">
-					<!-- start left sidebar -->
-					<div id="side" dojoType="dijit.layout.ContentPane" layoutAlign="left">
-						<div id="sidebarContainer" dojoType="dijit.layout.LayoutContainer">
-							<div id="sidebarTop" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-								<div class="sidebarHeader">Reactor Types</div>
-								<div class="sidebarInstructions">
-									Drag reactors onto Workspace
+		<div id="main_stack_container" dojoType="dijit.layout.StackContainer">
+			<div id="reactor_config" dojoType="dijit.layout.LayoutContainer" title="Reactors">
+				<!-- start left sidebar -->
+				<div id="side" dojoType="dijit.layout.ContentPane" layoutAlign="left">
+					<div id="sidebarContainer" dojoType="dijit.layout.LayoutContainer">
+						<div id="sidebarTop" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+							<div class="sidebarHeader">Reactor Types</div>
+							<div class="sidebarInstructions">
+								Drag reactors onto Workspace
+							</div>
+						</div>
+						<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+							<div class="sidebarHeader">Connect Reactors</div>
+							<div class="sidebarInstructions">
+								Drag to connect Reactors
+							</div>
+							<div class="sidebar">
+								<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
+									<div class="dojoDndItem" dndType="connector" reactor_type="connector"><img src="images/icon-connector.png" width="148" height="25" alt="Connector" /></div>
 								</div>
 							</div>
-							<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<div class="sidebarHeader">Connect Reactors</div>
-								<div class="sidebarInstructions">
-									Drag to connect Reactors
-								</div>
-								<div class="sidebar">
-									<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="connector" reactor_type="connector"><img src="images/icon-connector.png" width="148" height="25" alt="Connector" /></div>
+						</div>
+						<div id="sidebarMain" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
+								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
+									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+										<div class="dojoDndItem" dndType="reactor" reactor_type="log_files"><img src="images/icon-log-files.png" width="148" height="25" alt="Log Files" /></div>
 									</div>
 								</div>
-							</div>
-							<div id="sidebarMain" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-								<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
-									<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
-										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-											<div class="dojoDndItem" dndType="reactor" reactor_type="log_files"><img src="images/icon-log-files.png" width="148" height="25" alt="Log Files" /></div>
-										</div>
+								<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
+									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
+										<div class="dojoDndItem" dndType="reactor" reactor_type="FilterReactor"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="transform"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
 									</div>
-									<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
-										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
-											<div class="dojoDndItem" dndType="reactor" reactor_type="FilterReactor"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
-											<div class="dojoDndItem" dndType="reactor" reactor_type="transform"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
-										</div>
-									</div>
-									<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
-										<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-											<div class="dojoDndItem" dndType="reactor" reactor_type="data_store"><img src="images/icon-data-store.png" width="148" height="25" alt="Data Store" /></div>
-										</div>
+								</div>
+								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
+									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
+										<div class="dojoDndItem" dndType="reactor" reactor_type="data_store"><img src="images/icon-data-store.png" width="148" height="25" alt="Data Store" /></div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-					<!-- end left sidebar -->
-					<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>Reactors Configuration</h1>
+				</div>
+				<!-- end left sidebar -->
+				<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+					<h1>Reactors Configuration</h1>
 
-						<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
-							2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
-							3. Drag arrows to connect Reactors
-						</h3>
-					</div>
-					<div id="counterBackground">
-						<span class="counterTitle">Operations per Second</span>
-						<span class="counterNumbersLeft">
-							Global:<br />
-							Workspace:
-						</span><span class="counterNumbersRight">
-							261,893<br />
-							159,307
-						</span><span class="counterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
-					</div>
+					<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
+						2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
+						3. Drag arrows to connect Reactors
+					</h3>
+				</div>
+				<div id="counterBackground">
+					<span class="counterTitle">Operations per Second</span>
+					<span class="counterNumbersLeft">
+						Global:<br />
+						Workspace:
+					</span><span class="counterNumbersRight">
+						261,893<br />
+						159,307
+					</span><span class="counterToggle"><a href="#"><img src="images/reactor-counter-toggle.png" /></a></span>
+				</div>
 
 				<!-- start tabbed workspaces -->
-					<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
-							<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
-								This text should never be visible!
-							</div>
+				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+					<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
+						<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
+							This text should never be visible!
 						</div>
 					</div>
-					<!-- end tabbed workspaces -->
 				</div>
-				<div id="vocab_config" dojoType="dijit.layout.LayoutContainer" title="Vocabularies">
-					<div id="vocab_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>Vocabulary Configuration</h1>
+				<!-- end tabbed workspaces -->
+			</div>
+			<div id="vocab_config" dojoType="dijit.layout.ContentPane" title="Vocabularies">
+				<div id="vocab_config_header" class="config_header">
+					<h1>Vocabulary Configuration</h1>
 
-						<h3>simple instructions?</h3>
-					</div>
-					<div id="vocab_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						<div dojoType="dijit.layout.LayoutContainer">
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new">ADD A NEW VOCABULARY</button>
-							</div>
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
-								<div id="vocab_config_accordion" dojoType="dijit.layout.AccordionContainer">
-									<div dojoType="dijit.layout.AccordionPane" class="vocab_pane" title="Vocabulary 1">
-										<form id="vocab_form" dojoType="dijit.form.Form">
-											<BR />
-											<table cellpadding="2" cellspacing="0" border="0">
-												<tr>
-													<td><label>Name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="vocab_name" style="width: 350px;"/></td>
-													<td rowspan="4" valign="top" width="50">&nbsp;</td>
-													<td rowspan="1"><label>Comments</label></td>
-													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="vocab_comment" 
-																						jsId="vocab_comment_widget" style="width: 300px"></textarea></td>
-												</tr>
-												<tr>
-													<td><label>ID</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="vocab_id" style="width: 350px;" disabled="true"/></td>
-													<td rowspan="3">&nbsp;</td>
-												</tr>
-												<tr>
-													<td><label>Locked</label></td>
-													<td><input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="locked"/></td>
-												</tr>
-											</table>
-											<br />
-											<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
-												<tr>
-													<td class="matrixMainHeader">
-													Terms
-													</td>
-												</tr><tr>
-													<td style="background-color: #f1f1f1;">
-														<!-- See dojo/dojox/grid/_grid/tundraGrid.css -->
-														<div class="vocab_grid">
-															<div id="vocab_grid"></div>
-														</div>
-														<button id="add_new_term_button" dojoType=dijit.form.Button class="add_new_row">ADD NEW TERM</button>
-													</td>
-												</tr>
-											</table>
-											<div class="save_cancel_delete">
-												<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
-												<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
-												<button dojoType=dijit.form.Button class="delete">Delete Vocabulary</button>
+					<h3>simple instructions?</h3>
+				</div>
+				<div id="vocab_config_content" class="config_content">
+					<div id="vocab_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.AccordionPane" class="vocab_pane" title="Vocabulary 1">
+							<form id="vocab_form" dojoType="dijit.form.Form">
+								<BR />
+								<table cellpadding="2" cellspacing="0" border="0" width="100%">
+									<tr>
+										<td><label>Name</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="vocab_name" style="width: 100%;"/></td>
+										<td rowspan="4" valign="top" width="20">&nbsp;</td>
+										<td rowspan="1"><label>Comments</label></td>
+										<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="vocab_comment" 
+																			jsId="vocab_comment_widget" style="width: 100%"></textarea></td>
+									</tr>
+									<tr>
+										<td><label>ID</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="vocab_id" style="width: 100%;" disabled="true"/></td>
+										<td rowspan="3">&nbsp;</td>
+									</tr>
+									<tr>
+										<td><label>Locked</label></td>
+										<td><input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="locked"/></td>
+									</tr>
+								</table>
+								<br />
+								<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+									<tr>
+										<td class="matrixMainHeader">
+										Terms
+										</td>
+									</tr><tr>
+										<td style="background-color: #f1f1f1;">
+											<!-- See dojo/dojox/grid/_grid/tundraGrid.css -->
+											<div class="vocab_grid">
+												<div id="vocab_grid"></div>
 											</div>
-										</form>
-									</div>
+											<button id="add_new_term_button" dojoType=dijit.form.Button class="add_new_row">ADD NEW TERM</button>
+										</td>
+									</tr>
+								</table>
+								<div class="save_cancel_delete">
+									<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
+									<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
+									<button dojoType=dijit.form.Button class="delete">Delete Vocabulary</button>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
-				</div>
-				<div id="codec_config" dojoType="dijit.layout.LayoutContainer" title="Codecs">
-					<div id="codec_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>Codec Configuration</h1>
-
-						<h3>simple instructions?</h3>
+					<div>
+						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new">ADD A NEW VOCABULARY</button>
 					</div>
-					<div id="codec_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						<div dojoType="dijit.layout.LayoutContainer">
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<button dojoType=dijit.form.Button class="add_new" onClick="addNewCodec">ADD A NEW CODEC</button>
-							</div>
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
-								<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
-									<div dojoType="dijit.layout.AccordionPane" class="codec_pane" title="Codec 1">
-										<form id="codec_form" dojoType="dijit.form.Form">
-											<BR />
-											<table cellpadding="2" cellspacing="0" border="0">
-												<tr>
-													<td><label>Name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 350px;"/></td>
-													<td rowspan="4" valign="top" width="50">&nbsp;</td>
-													<td rowspan="1"><label>Comments</label></td>
-													<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 300px"></textarea></td>
-												</tr>
-												<tr>
-													<td><label>ID</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="ID" style="width: 350px;" disabled="true"/></td>
-													<td rowspan="3">&nbsp;</td>
-												</tr>
-												<tr>
-													<td><label>Plug-In Type</label></td>
-													<td><input dojoType="dijit.form.FilteringSelect" onChange="handlePluginTypeChange" name="plugin_type" store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1"/></td>
-												</tr>
-												<tr>
-													<td><label>Event Type</label></td>
-													<td><input dojoType="dijit.form.FilteringSelect" onChange="setUnsavedChangesTrue" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
-												</tr>
-											</table>
-											<br />
-											<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
-												<tr>
-													<td class="matrixMainHeader">
-													Map Field Names to Terms
-													</td>
-												</tr><tr>
-													<td style="background-color: #f1f1f1;">
-														<div class="codec_grid">
-															<div id="codec_grid" jsId="codec_grid" dojoType="dojox.Grid" model="model"
-																 structure="gridLayout" singleClickEdit="true"></div>
-														</div>
-														<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
-													</td>
-												</tr>
-											</table>
-											<div class="save_cancel_delete">
-												<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
-												<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
-												<button dojoType=dijit.form.Button class="delete">Delete Codec</button>
+				</div>
+			</div>
+			<div id="codec_config" dojoType="dijit.layout.ContentPane" title="Codecs">
+				<div id="codec_config_header" class="config_header">
+					<h1>Codec Configuration</h1>
+
+					<h3>simple instructions?</h3>
+				</div>
+				<div id="codec_config_content" class="config_content">
+					<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.AccordionPane" class="codec_pane" title="Codec 1">
+							<form id="codec_form" dojoType="dijit.form.Form">
+								<BR />
+								<table cellpadding="2" cellspacing="0" border="0" width="100%">
+									<tr>
+										<td><label>Name</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 100%;"/></td>
+										<td rowspan="4" valign="top" width="20">&nbsp;</td>
+										<td rowspan="1"><label>Comments</label></td>
+										<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()" style="width: 100%"></textarea></td>
+									</tr>
+									<tr>
+										<td><label>ID</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="ID" disabled="true" style="width: 100%;"/></td>
+										<td rowspan="3">&nbsp;</td>
+									</tr>
+									<tr>
+										<td><label>Plug-In&nbsp;Type</label></td>
+										<td><input dojoType="dijit.form.FilteringSelect" onChange="handlePluginTypeChange" name="plugin_type" 
+												store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td>
+									</tr>
+									<tr>
+										<td><label>Event&nbsp;Type</label></td>
+										<td><input dojoType="dijit.form.FilteringSelect" onChange="setUnsavedChangesTrue" name="event_type" 
+												store="term_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td>
+									</tr>
+								</table>
+								<br />
+								<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #cccccc;" width="99%">
+									<tr>
+										<td class="matrixMainHeader">
+										Map Field Names to Terms
+										</td>
+									</tr><tr>
+										<td style="background-color: #f1f1f1;">
+											<div class="codec_grid">
+												<div id="codec_grid" jsId="codec_grid" dojoType="dojox.Grid" model="model"
+													 structure="codec_grid_layout" singleClickEdit="true"></div>
 											</div>
-										</form>
-									</div>
+											<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
+										</td>
+									</tr>
+								</table>
+								<div class="save_cancel_delete">
+									<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
+									<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
+									<button dojoType=dijit.form.Button class="delete">Delete Codec</button>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
-				</div>
-				<div id="database_config" dojoType="dijit.layout.LayoutContainer" title="Databases">
-					<div id="database_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>Database Configuration</h1>
-
-						<h3>simple instructions?</h3>
-					</div>
-					<div id="database_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						put accordion, etc here
+					<div>
+						<button dojoType=dijit.form.Button class="add_new" onClick="addNewCodec">ADD A NEW CODEC</button>
 					</div>
 				</div>
+			</div>
+			<div id="database_config" dojoType="dijit.layout.LayoutContainer" title="Databases">
+				<div id="database_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+					<h1>Database Configuration</h1>
 
-				<!--Start Users-->
-				<div id="user_config" dojoType="dijit.layout.LayoutContainer" title="Users">
-					<div id="user_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>Users Configuration</h1>
+					<h3>simple instructions?</h3>
+				</div>
+				<div id="database_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+					put accordion, etc here
+				</div>
+			</div>
 
-						<h3>simple instructions?</h3>
+			<!--Start Users-->
+			<div id="user_config" dojoType="dijit.layout.ContentPane" title="Users">
+				<div id="user_config_header" class="config_header">
+					<h1>Users Configuration</h1>
 
-					</div>
-					<div id="user_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-						<div dojoType="dijit.layout.LayoutContainer">
-							<!--div dojoType="dijit.layout.ContentPane" layoutAlign="top">
-								<button dojoType=dijit.form.Button class="add_new_user" onClick="addNewUser">Add a new User</button>
-							</div-->
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
-								<button dojoType=dijit.form.Button class="add_new" onClick="addNewUser">ADD A NEW USER</button>
-							</div>
-							<div dojoType="dijit.layout.ContentPane" layoutAlign="client">
-								<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
-									<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
-										<form id="user_form" dojoType="dijit.form.Form">
-											<br />
-											<table cellpadding="3" cellspacing="0" border="0">
-												<tr>
-													<td><label>Last name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="last_name"/></td>
-												</tr>
-												<tr>
-													<td><label>First name</label></td>
-													<td><input dojoType="dijit.form.TextBox" name="first_name"/></td>
-												</tr>
-												<tr>
-													<td><label>Username</label></td>
-													<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"/></td>
-												</tr>
-												<tr>
-													<td><label>Password</label></td>
-													<td><input dojoType="dijit.form.TextBox" type="password" name="password"/></td>
-												</tr>
-											</table>
-											<div class="save_cancel_delete">
-												<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-												<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-												<button dojoType=dijit.form.Button class="delete">Delete</button>
-											</div>
-										</form>
-									</div>
+					<h3>simple instructions?</h3>
+
+				</div>
+				<div id="user_config_content" class="config_content">
+					<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
+							<form id="user_form" dojoType="dijit.form.Form">
+								<br />
+								<table cellpadding="3" cellspacing="0" border="0">
+									<tr>
+										<td><label>Last name</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="last_name"/></td>
+									</tr>
+									<tr>
+										<td><label>First name</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="first_name"/></td>
+									</tr>
+									<tr>
+										<td><label>Username</label></td>
+										<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"/></td>
+									</tr>
+									<tr>
+										<td><label>Password</label></td>
+										<td><input dojoType="dijit.form.TextBox" type="password" name="password"/></td>
+									</tr>
+								</table>
+								<div class="save_cancel_delete">
+									<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+									<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+									<button dojoType=dijit.form.Button class="delete">Delete</button>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
-				</div>
-				<!--End Users-->
-
-
-
-				<!--Start System-->
-				<div id="system_config" dojoType="dijit.layout.LayoutContainer" title="System">
-					<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
-						<h1>System Configuration</h1>
-
-						<h3>simple instructions?</h3>
+					<div>
+						<button dojoType=dijit.form.Button class="add_new" onClick="addNewUser">ADD A NEW USER</button>
 					</div>
-					<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client" style="overflow: auto">
+				</div>
+			</div>
+			<!--End Users-->
 
-						<div style="float:left; width:450px; margin-right: 20px;">
+			<!--Start System-->
+			<div id="system_config" dojoType="dijit.layout.LayoutContainer" title="System">
+				<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+					<h1>System Configuration</h1>
+
+					<h3>simple instructions?</h3>
+				</div>
+				<div id="system_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+					<div dojoType="dijit.layout.SplitContainer" orientation="horizontal"
+						sizerWidth="7" activeSizing="true">
+						<div dojoType="dijit.layout.ContentPane" sizeMin="100" sizeShare="50">
 							<h2>Configuration Files</h2>
 							<hr />
-
 							<table cellpadding="5" border="0" class="pathsTable" width="100%">
 								<tr>
-									<td align="right" width="20%"><label>Platform</label></td>
-									<td id="platform_conf_file" width="80%">your/path/here/PlatformConfigFile.xml</td>
+									<td align="right" width="80px"><label>Platform</label></td>
+									<td id="platform_conf_file">your/path/here/PlatformConfigFile.xml</td>
 								</tr>
 								<tr>
 									<td align="right"><label>Vocabularies</label></td>
@@ -474,8 +451,8 @@
 
 							<table cellpadding="5" border="0" class="pathsTable" width="100%">
 								<tr>
-									<td width="20%" align="right"><label>Vocabularies</label></td>
-									<td id="vocab_path" width="80%">your/path/here/VocabularyPath</td>
+									<td align="right" width="80px"><label>Vocabularies</label></td>
+									<td id="vocab_path">your/path/here/VocabularyPath</td>
 								</tr>
 							</table>
 
@@ -486,33 +463,36 @@
 
 							<table id="plugin_paths" cellpadding="5" border="0" class="pathsTable" width="100%">
 								<tr>
-									<td width="20%" align="right"><label>Plug-In 1</label></td>
-									<td width="80%">your/path/here/PluginPath</td>
+									<td align="right" width="80px"><label>Plug-In 1</label></td>
+									<td>your/path/here/PluginPath</td>
 								</tr><tr>
-									<td width="20%" align="right"><label>Plug-In 2</label></td>
-									<td width="80%">your/path/here/PluginPath</td>
+									<td align="right"><label>Plug-In 2</label></td>
+									<td>your/path/here/PluginPath</td>
 								</tr><tr>
-									<td width="20%" align="right"><label>Plug-In 3</label></td>
-									<td width="80%">your/path/here/PluginPath</td>
+									<td align="right"><label>Plug-In 3</label></td>
+									<td>your/path/here/PluginPath</td>
 								</tr>
 							</table>
-
 						</div>
+						<div dojoType="dijit.layout.ContentPane" sizeMin="100" sizeShare="50">
+							<h2>Services</h2>
+							<hr/>
 
-						<!--start servers and services tree-->
-						<h2>Services</h2>
-						<hr/>
-						<div style="float:left; width:auto; margin-right: 20px;">
 							<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->
-							<div id="server_tree"/>
+							<div id="server_tree"></div>
 						</div>
-						<!--end servers and services tree-->
 					</div>
 				</div>
 			</div>
+			<!--End System-->
+		</div>
+		<div id="bottomBar">
+			<div id="footer">
+				<hr noshade="noshade" size="1" color="#333333" />
+				<p>&copy; 2008 Atomic Labs, Inc. All rights reserved.</p>
+			</div>
 		</div>
 	</div>
-	<!--End System-->
 
 
 <!-- start configuration dialogs -->
@@ -644,7 +624,7 @@
 			<tr>
 				<td><label>ID:</label></td>
 				<td><input dojoType="dijit.form.ValidationTextBox" id="new_vocabulary_id" type="text" name="vocab_id"
-					 regExp="urn:vocab:\w+" required="true"></td>
+					 regExp="\w+" required="true"></td>
 			</tr>
 			<tr>
 				<td><label>Name:</label></td>
@@ -664,7 +644,7 @@
 	<div dojoType="dijit.Dialog" id="new_term_dialog" title="Add New Term to Vocabulary">
 		<table>
 			<tr>
-				<td><label>ID suffix:</label></td>
+				<td><label>ID:</label></td>
 				<td><input dojoType="dijit.form.ValidationTextBox" id="new_term_id_suffix" type="text" name="term_id_suffix"
 					 regExp="\w+" required="true"></td>
 			</tr>

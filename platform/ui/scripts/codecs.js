@@ -11,7 +11,6 @@ dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.grid.Grid");
 
 var codec_pane_title_height = -1;
-var codec_pane_body_height = 420;
 var accordion_width = -1;
 var unique_codec_id = 1;
 var selected_codec_pane = null;
@@ -129,7 +128,12 @@ function handleCellEdit(inValue, inRowIndex, inFieldIndex) {
 
 var model = new dojox.grid.data.Table(null, []);
 
-function initCodecConfigPage() {
+pion.codecs.getHeight = function() {
+	// set by adjustCodecAccordionSize
+	return pion.codecs.height;
+}
+
+pion.codecs.init = function() {
 	codec_config_store = new dojox.data.XmlStore({url: '/config/codecs'});
 
 	function onComplete(items, request){
@@ -198,10 +202,10 @@ function initCodecConfigPage() {
 		//dojo.connect(n, 'change', function() {
 			console.debug('changed plugin_type (dojo.query & dojo.connect)');
 			if (n.value == 'LogCodec') {
-				codec_grid.setStructure(gridLayout);
+				codec_grid.setStructure(codec_grid_layout);
 				delete_col_index = 5;
 			} else {
-				codec_grid.setStructure(grid_layout_no_order);
+				codec_grid.setStructure(codec_grid_layout_no_order);
 				delete_col_index = 4;
 			}
 		})
@@ -271,10 +275,10 @@ function handlePluginTypeChange() {
 	var form = dijit.byId('codec_form');
 	var form_data = form.getValues();
 	if (form_data.plugin_type == 'LogCodec') {
-		codec_grid.setStructure(gridLayout);
+		codec_grid.setStructure(codec_grid_layout);
 		delete_col_index = 5;
 	} else {
-		codec_grid.setStructure(grid_layout_no_order);
+		codec_grid.setStructure(codec_grid_layout_no_order);
 		delete_col_index = 4;
 	}
 	dojo.addClass(selected_codec_pane.domNode, 'unsaved_changes');
@@ -327,24 +331,24 @@ function populatePaneFromConfigItem(item) {
 	//codec_grid.updateStructure();
 	
 /*
-	// Build grid_layout_no_order if its needed and hasn't been built yet.
-	// Alas, cloning gridLayout doesn't work.
-	if (form_data.plugin_type != 1 && !grid_layout_no_order) {
-		var grid_layout_no_order = dojo.clone(gridLayout);
-		grid_layout_no_order[0].rows[0].splice(order_col_index, 1);
+	// Build codec_grid_layout_no_order if it's needed and hasn't been built yet.
+	// Alas, cloning codec_grid_layout doesn't work.
+	if (form_data.plugin_type != 1 && !codec_grid_layout_no_order) {
+		var codec_grid_layout_no_order = dojo.clone(codec_grid_layout);
+		codec_grid_layout_no_order[0].rows[0].splice(order_col_index, 1);
 	}
 */
 
 	if (form_data.plugin_type == 'LogCodec') {
-		codec_grid.setStructure(gridLayout);
+		codec_grid.setStructure(codec_grid_layout);
 		delete_col_index = 5;
 	} else {
-		codec_grid.setStructure(grid_layout_no_order);
+		codec_grid.setStructure(codec_grid_layout_no_order);
 		delete_col_index = 4;
 	}
 	
 	// Wait a bit for the change events on the FilteringSelect widgets to get handled.
-	setTimeout(setUnsavedChangesFalse, 0);
+	setTimeout(setUnsavedChangesFalse, 500);
 }
 
 function createNewCodecPane(title) {
@@ -383,7 +387,17 @@ function adjustCodecAccordionSize() {
 	var codec_config_accordion = dijit.byId('codec_config_accordion');
 	var num_codecs = codec_config_accordion.getChildren().length;
 	console.debug("num_codecs = " + num_codecs);
-	codec_config_accordion.resize({h: codec_pane_body_height + num_codecs * codec_pane_title_height, w: accordion_width});
+
+	// TODO: replace 600 with some computed value, which takes into account the height of the grid 
+	// (in .codec_grid in defaults.css) and the variable comment box height.
+	var codec_pane_body_height = 600;
+
+	var accordion_height = codec_pane_body_height + num_codecs * codec_pane_title_height;
+	codec_config_accordion.resize({h: accordion_height, w: accordion_width});
+
+	// TODO: replace 200 with some computed value
+	pion.codecs.height = accordion_height + 200;
+	dijit.byId('main_stack_container').resize({h: pion.codecs.height});
 }
 
 dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
