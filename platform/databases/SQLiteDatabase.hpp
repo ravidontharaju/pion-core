@@ -20,10 +20,6 @@
 #ifndef __PION_SQLITEDATABASE_HEADER__
 #define __PION_SQLITEDATABASE_HEADER__
 
-#if defined _MSC_VER
-	#pragma comment(lib, "sqlite3")
-#endif
-
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Database.hpp>
 #include <sqlite3.h>

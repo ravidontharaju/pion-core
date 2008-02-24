@@ -35,7 +35,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// Database: abstract class for storing and retrieving Events
 ///
-class Database
+class PION_PLATFORM_API Database
 	: public PlatformPlugin
 {
 public:
