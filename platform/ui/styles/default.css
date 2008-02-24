@@ -233,11 +233,8 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 </div>
 */
 
-/*
-This is a duplicate of #workspace_config_header for now.
-*/
 .config_header {
-	height: 110px;
+	height: 70px;
 	margin: 0 0 0 30px;
 }
 

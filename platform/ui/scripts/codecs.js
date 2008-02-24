@@ -395,8 +395,8 @@ function adjustCodecAccordionSize() {
 	var accordion_height = codec_pane_body_height + num_codecs * codec_pane_title_height;
 	codec_config_accordion.resize({h: accordion_height, w: accordion_width});
 
-	// TODO: replace 200 with some computed value
-	pion.codecs.height = accordion_height + 200;
+	// TODO: replace 160 with some computed value  (see adjustUserAccordionSize)
+	pion.codecs.height = accordion_height + 160;
 	dijit.byId('main_stack_container').resize({h: pion.codecs.height});
 }
 

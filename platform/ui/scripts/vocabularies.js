@@ -118,8 +118,8 @@ pion.vocabularies.init = function() {
 		var accordion_height = vocab_pane_body_height + num_vocabs * vocab_pane_title_height;
 		config_accordion.resize({h: accordion_height, w: accordion_width});
 
-		// TODO: replace 200 with some computed value
-		pion.vocabularies.height = accordion_height + 200;
+		// TODO: replace 160 with some computed value  (see adjustUserAccordionSize)
+		pion.vocabularies.height = accordion_height + 160;
 		dijit.byId('main_stack_container').resize({h: pion.vocabularies.height});
 	}
 

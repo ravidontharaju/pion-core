@@ -105,8 +105,10 @@ function adjustUserAccordionSize() {
 	var accordion_height = user_pane_body_height + num_users * user_pane_title_height;
 	user_config_accordion.resize({h: accordion_height, w: accordion_width});
 
-	// TODO: replace 200 with some computed value
-	pion.users.height = accordion_height + 200;
+	// TODO: replace 160 with some computed value
+	// I tried dojo.byId('user_config_header').offsetHeight + dojo.byId('user_config_controls').offsetHeight,
+	// but it's not enough, maybe because of padding.
+	pion.users.height = accordion_height + 160;
 	dijit.byId('main_stack_container').resize({h: pion.users.height});
 }
 
