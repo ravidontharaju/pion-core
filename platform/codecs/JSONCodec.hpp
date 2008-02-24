@@ -30,6 +30,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 ///
 /// JSONCodec: used to encode and decode Events using JSON
+/// (Work in progress...)
 ///
 class JSONCodec :
 	public Codec

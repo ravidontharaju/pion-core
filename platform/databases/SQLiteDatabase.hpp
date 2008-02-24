@@ -35,6 +35,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 ///
 /// SQLiteDatabase: class for storing and retrieving Events using a SQLite database
+/// (Work in progress...)
 ///
 class SQLiteDatabase :
 	public Database
@@ -66,15 +67,6 @@ public:
 	/// closes the database connection
 	virtual void close(void);
 
-	/**
-	 * sets a configuration option
-	 *
-	 * @param option_name the name of the option to change
-	 * @param option_value the value of the option
-	 */
-	virtual void setOption(const std::string& option_name,
-						   const std::string& option_value);
-	
 	/**
 	 * adds a compiled SQL query to the database
 	 *
@@ -160,10 +152,10 @@ private:
 	static const std::string		BACKUP_FILE_EXTENSION;
 	
 	/// filename of the SQLite database
-	std::string		m_database_name;
+	std::string						m_database_name;
 	
 	/// SQLite v3 database handle
-	sqlite3			*m_sqlite_db;
+	sqlite3	*						m_sqlite_db;
 };
 
 	

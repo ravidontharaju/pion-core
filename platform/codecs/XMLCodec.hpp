@@ -30,6 +30,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 ///
 /// XMLCodec: used to encode and decode Events using XML
+/// (Work in progress...)
 ///
 class XMLCodec :
 	public Codec

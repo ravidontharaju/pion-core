@@ -66,15 +66,6 @@ void SQLiteDatabase::close(void)
 	m_sqlite_db = NULL;
 }
 
-void SQLiteDatabase::setOption(const std::string& option_name,
-							   const std::string& option_value)
-{
-	if (option_name == "database_name")
-		m_database_name = option_value;
-	else
-		throw UnknownOptionException(option_name);
-}
-
 Database::QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 											const std::string& sql_query)
 {
