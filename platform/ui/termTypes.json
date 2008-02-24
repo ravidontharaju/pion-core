@@ -2,7 +2,7 @@
 	identifier: "name",
 	items: [
 		{name: 'null', description: 'undefined type'},
-		{name: 'object', description: 'event type'}
+		{name: 'object', description: 'event type'},
 		{name: 'int8', description: 'signed int (8-bit)'},
 		{name: 'uint8', description: 'positive int (8-bit)'},
 		{name: 'int16', description: 'signed int (16-bit)'},
@@ -20,6 +20,6 @@
 		{name: 'char', description: 'fixed-length string'},
 		{name: 'date', description: 'specific date'},
 		{name: 'time', description: 'specific time'},
-		{name: 'datetime', description: 'specific time & date'},
+		{name: 'datetime', description: 'specific time & date'}
 	]
 }
