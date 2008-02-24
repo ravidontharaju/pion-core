@@ -78,7 +78,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		if (branches.size() == 1) {
 			getConfig().getReactionEngine().writeConfigXML(ss);
 		} else {
-			if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1])) {
+			if (branches[1] == "stats") {
+				getConfig().getReactionEngine().writeStatsXML(ss);
+			} else if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}

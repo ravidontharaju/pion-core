@@ -36,6 +36,10 @@ const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
 const std::string		ReactionEngine::TYPE_ELEMENT_NAME = "Type";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
+const std::string		ReactionEngine::STATS_ELEMENT_NAME = "PionStats";
+const std::string		ReactionEngine::EVENTS_IN_ELEMENT_NAME = "EventsIn";
+const std::string		ReactionEngine::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
+const std::string		ReactionEngine::TOTAL_OPS_ELEMENT_NAME = "TotalOps";
 const std::string		ReactionEngine::CONNECTION_TYPE_REACTOR = "reactor";
 const std::string		ReactionEngine::CONNECTION_TYPE_INPUT = "input";
 const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
@@ -489,6 +493,40 @@ void ReactionEngine::stopNoLock(void)
 	}
 }
 
+void ReactionEngine::writeStatsXML(std::ostream& out) const
+{
+	out << '<' << STATS_ELEMENT_NAME << " xmlns=\""
+		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
+	
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
+	// step through each reactor configured
+	std::string reactor_id;
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = ConfigManager::findConfigNodeByName(REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
+	{
+		// get a pointer to the reactor
+		if (getNodeId(reactor_node, reactor_id)) {
+			// write reactor statistics
+			out << "\t<" << REACTOR_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+				<< "=\"" << reactor_id << "\">" << std::endl
+				<< "\t\t<" << EVENTS_IN_ELEMENT_NAME << '>' << getEventsIn(reactor_id)
+				<< "</" << EVENTS_IN_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << EVENTS_OUT_ELEMENT_NAME << '>' << getEventsOut(reactor_id)
+				<< "</" << EVENTS_OUT_ELEMENT_NAME << '>' << std::endl
+				<< "\t</" << REACTOR_ELEMENT_NAME << '>' << std::endl;
+		}
+		// step to the next Reactor
+		reactor_node = reactor_node->next;
+	}
+	
+	// write total operations
+	out << "\t<" << TOTAL_OPS_ELEMENT_NAME << '>' << getTotalOperations()
+		<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
+	
+	out << "</" << STATS_ELEMENT_NAME << '>' << std::endl;
+}
+	
 void ReactionEngine::writeConnectionsXML(std::ostream& out,
 										 const std::string& only_id) const
 {

@@ -226,6 +226,13 @@ public:
 	void removeReactorConnection(const std::string& from_id, const std::string& to_id);
 	
 	/**
+	 * writes Reactor statistics to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the statistics into
+	 */
+	void writeStatsXML(std::ostream& out) const;
+
+	/**
 	 * writes info for particular connections to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the connection info into
@@ -471,6 +478,18 @@ private:
 	/// name of the to connection element for Pion XML config files
 	static const std::string		TO_ELEMENT_NAME;
 
+	/// name of the statistics element for Pion XML config files
+	static const std::string		STATS_ELEMENT_NAME;
+	
+	/// name of the events in element for Pion XML config files
+	static const std::string		EVENTS_IN_ELEMENT_NAME;
+	
+	/// name of the events out element for Pion XML config files
+	static const std::string		EVENTS_OUT_ELEMENT_NAME;
+	
+	/// name of the total operations element for Pion XML config files
+	static const std::string		TOTAL_OPS_ELEMENT_NAME;
+	
 	/// type identifier for internal reactor connections
 	static const std::string		CONNECTION_TYPE_REACTOR;
 

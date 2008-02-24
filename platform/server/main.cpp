@@ -135,5 +135,5 @@ void daemonize_server(void)
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage:   pion [-c SERVICE_CONFIG_FILE] [-D] [-v]" << std::endl;
+	std::cerr << "usage:   pion [-c SERVICE_CONFIG_FILE] [-D]" << std::endl;
 }
