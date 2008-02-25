@@ -295,6 +295,28 @@ public:
 								   const std::string& option_value,
 								   xmlNodePtr parent_node);
 
+	/**
+	 * resolves paths relative to the location of another file
+	 *
+	 * @param base_path_to_file path to a file that will be used if orig_path is relative
+	 * @param orig_path the original path (may be relative or absolute)
+	 *
+	 * @return std::string resolved, absolute path to the file
+	 */
+	static std::string resolveRelativePath(const std::string& base_path_to_file,
+										   const std::string& orig_path);
+	
+	/**
+	 * resolves paths relative to the location of the config file
+	 *
+	 * @param orig_path the original path (may be relative or absolute)
+	 *
+	 * @return std::string resolved, absolute path to the file
+	 */
+	inline std::string resolveRelativePath(const std::string& orig_path) const {
+		return resolveRelativePath(getConfigFile(), orig_path);
+	}
+	
 	
 protected:
 	
@@ -318,15 +340,6 @@ protected:
 	/// creates a backup copy of the config file (if it exists)
 	void backupConfigFile(void);
 	
-	/**
-	 * resolves paths relative to the location of the config file
-	 *
-	 * @param orig_path the original path (may be relative or absolute)
-	 *
-	 * @return std::string resolved, absolute path to the file
-	 */
-	std::string resolveRelativePath(const std::string& orig_path) const;
-
 	/**
 	 * opens a plug-in configuration file and loads all of the plug-ins
 	 * that it contains by calling addPluginNoLock()

@@ -133,7 +133,6 @@ void LogInputReactor::stop(void)
 
 void LogInputReactor::consumeLogs(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	while (true) {
 
 		PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
@@ -161,6 +160,7 @@ void LogInputReactor::consumeLogs(void)
 			// no new logs to consume
 
 			// sleep until it is time to check again
+			boost::mutex::scoped_lock reactor_lock(m_mutex);
 			PION_LOG_DEBUG(m_logger, "No new logs (sleeping for " << m_frequency
 						   << " seconds): " << m_log_directory);
 			PionScheduler::sleep(m_shutdown_thread, reactor_lock, m_frequency, 0);
@@ -203,11 +203,16 @@ void LogInputReactor::consumeLog(const std::string& log_filename)
 	while (! log_stream.eof()) {
 		// read an Event from the log file
 		event_ptr.reset(new Event(m_codec_ptr->getEventType()));
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		if (! m_codec_ptr->read(log_stream, *event_ptr))
 			throw ReadEventException(log_filename);
+		
 		// deliver the Event to connected Reactors
 		incrementEventsIn();
 		deliverEvent(event_ptr);
+
+		// check if we should shutdown
+		if (! m_is_running) break;
 	}
 }
 

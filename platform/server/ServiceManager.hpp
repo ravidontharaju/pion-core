@@ -91,6 +91,13 @@ public:
 			: PionException("Server configuration does not define a port number: ", server_id) {}
 	};
 
+	/// exception thrown if there is an error loading an SSL key file
+	class SSLKeyException : public PionException {
+	public:
+		SSLKeyException(const std::string& key_file)
+			: PionException("Unable to load SSL key file: ", key_file) {}
+	};
+	
 	/// exception used to propagate exceptions thrown by web services
 	class WebServiceException : public PionException {
 	public:

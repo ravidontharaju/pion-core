@@ -105,7 +105,12 @@ void ServiceManager::openConfigFile(void)
 		{
 			#ifdef PION_HAVE_SSL
 				// enable SSL for the server using the key provided
-				server_ptr->setSSLKeyFile(ConfigManager::resolveRelativePath(ssl_key));
+				const std::string path_to_key_file(ConfigManager::resolveRelativePath(ssl_key));
+				try {
+					server_ptr->setSSLKeyFile(path_to_key_file);
+				} catch (std::exception& e) {
+					throw SSLKeyException(path_to_key_file);
+				}
 			#else
 				PION_LOG_WARN(m_logger, "Ignoring SSL keyfile parameter (Pion was not built with SSL support)");
 			#endif

@@ -272,9 +272,15 @@ std::string ConfigManager::createFilename(const std::string& file_path)
 	return boost::filesystem::system_complete(new_path).file_string();
 }
 	
-std::string ConfigManager::resolveRelativePath(const std::string& orig_path) const
+std::string ConfigManager::resolveRelativePath(const std::string& base_path_to_file,
+											   const std::string& orig_path)
 {
-	boost::filesystem::path new_path(boost::filesystem::system_complete(getConfigFile()));
+	// return the original if it is not relative
+	if (boost::filesystem::path(orig_path).is_complete())
+		return orig_path;
+	
+	// build a new path using the config file location as a starting point
+	boost::filesystem::path new_path(boost::filesystem::system_complete(base_path_to_file));
 	new_path.remove_leaf();
 	new_path /= orig_path;
 	return new_path.file_string();

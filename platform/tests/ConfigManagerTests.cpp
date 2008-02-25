@@ -29,3 +29,15 @@ BOOST_AUTO_TEST_CASE(checkCreateUUID) {
 	std::string UUID = ConfigManager::createUUID();
 	BOOST_CHECK_EQUAL(UUID.length(), static_cast<std::size_t>(36));
 }
+
+BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsRelative) {
+	std::string base_path("/opt/pion/config/platform.xml");
+	std::string relative_path("../ui");
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/config/../ui");
+}
+
+BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsNotRelative) {
+	std::string base_path("/opt/pion/config/platform.xml");
+	std::string relative_path("/opt/pion/ui");
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
+}
