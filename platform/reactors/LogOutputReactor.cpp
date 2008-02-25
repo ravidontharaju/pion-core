@@ -18,6 +18,7 @@
 //
 
 #include <boost/filesystem/operations.hpp>
+#include <pion/platform/Reactor.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include "LogOutputReactor.hpp"
 
