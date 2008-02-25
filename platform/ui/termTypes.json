@@ -1,5 +1,5 @@
 {
-	identifier: "name",
+	identifier: "description",
 	items: [
 		{name: 'null', description: 'undefined type'},
 		{name: 'object', description: 'event type'},

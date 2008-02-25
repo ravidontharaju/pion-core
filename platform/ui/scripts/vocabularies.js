@@ -25,6 +25,16 @@ pion.vocabularies.init = function() {
 	var selected_pane = null;
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
 	var delete_col_index = attributes_by_column.length;
+	var term_types_by_description = {};
+	var term_type_descriptions_by_name = {};
+
+	var store = pion.vocabularies.term_type_store;
+	store.fetch({
+		onItem: function (item, request) {
+			term_types_by_description[store.getValue(item, 'description')] = store.getValue(item, 'name');
+			term_type_descriptions_by_name[store.getValue(item, 'name')] = store.getValue(item, 'description');
+		}
+	});
 
 	var vocab_config_store = new dojox.data.XmlStore({url: '/config/vocabularies', rootItem: 'VocabularyConfig', attributeMap: {'VocabularyConfig.id': '@id'}});
  
@@ -58,8 +68,9 @@ pion.vocabularies.init = function() {
 		for (var i = 0; i < terms.length; ++i) {
 			var term_table_row = [];
 			term_table_row[0] = vocab_store.getValue(terms[i], '@id').split('#')[1];
-			term_table_row[1] = vocab_store.getValue(terms[i], 'Type');
-			term_table_row[2] = vocab_store.getValue(term_table_row[1], '@format');
+			var type = vocab_store.getValue(terms[i], 'Type');
+			term_table_row[1] = term_type_descriptions_by_name[type];
+			term_table_row[2] = vocab_store.getValue(type, '@format');
 			term_table_row[3] = vocab_store.getValue(terms[i], 'Size');
 			term_table_row[4] = vocab_store.getValue(terms[i], 'Comment');
 			selected_pane.term_table.push(term_table_row);
@@ -215,7 +226,12 @@ pion.vocabularies.init = function() {
 			store: orig_term.store,
 			element: dojo.clone(orig_term.element)
 		};
-		selected_pane.vocab_store.setValue(modified_term, attribute_to_change, inValue);
+		if (attribute_to_change == 'Type') {
+			var term_type = term_types_by_description[inValue];
+			selected_pane.vocab_store.setValue(modified_term, attribute_to_change, term_type);
+		} else {
+			selected_pane.vocab_store.setValue(modified_term, attribute_to_change, inValue);
+		}
 		terms.splice(inRowIndex, 1, modified_term);
 
 		//This line is dependent on fixing a bug in setValues() in XmlStore.js.
@@ -344,7 +360,7 @@ pion.vocabularies.init = function() {
 			return true;
 		};
 		dijit.byId('new_term_id_suffix').setDisplayedValue('');
-		dijit.byId('new_term_type').setValue('uint32');
+		dijit.byId('new_term_type').setValue('undefined type');
 		dijit.byId('new_term_comment').setDisplayedValue('');
 
 		var dialog = dijit.byId("new_term_dialog");
@@ -376,10 +392,15 @@ pion.vocabularies.init = function() {
 			var element = document.implementation.createDocument('', 'Term', null);
 			var new_term = new dojox.data.XmlItem(element.firstChild, selected_pane.vocab_store);
 			selected_pane.vocab_store.setValue(new_term, '@id', vocab_id + '#' + id);
-			selected_pane.vocab_store.setValue(new_term, 'Type', dialogFields.term_type);
+			var term_type = term_types_by_description[dialogFields.term_type];
+			selected_pane.vocab_store.setValue(new_term, 'Type', term_type);
 			selected_pane.vocab_store.setValue(new_term, 'Comment', dialogFields.term_comment);			
-			terms.splice(0, 0, new_term);
-			selected_pane.vocab_store.setValues(selected_pane.vocab_item, 'Term', terms);
+
+			var new_terms = [new_term];
+			for (var i = 0; i < terms.length; ++i) {
+				new_terms.push(terms[i]);
+			}
+			selected_pane.vocab_store.setValues(selected_pane.vocab_item, 'Term', new_terms);
 
 			grid.addRow([id, dialogFields.term_type, '', '', dialogFields.term_comment]);
 			setTimeout(function() { grid.focus.setFocusIndex(0, 0); }, 0);
