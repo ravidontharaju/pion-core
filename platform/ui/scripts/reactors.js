@@ -664,6 +664,10 @@ dojo.subscribe("mainTabContainer-selectChild", selected);
 function selected(page) {
 	if (page.title == "Add new workspace") {
 		console.debug("'Add new workspace' tab was selected");
+		if (new_workspace_tab_clicked) {
+			console.debug('redundant call');
+			return;
+		}
 		new_workspace_tab_clicked = true;
 		addWorkspace();
 		return;
