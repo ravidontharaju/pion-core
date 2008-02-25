@@ -21,7 +21,6 @@
 #define __PION_FILTERREACTOR_HEADER__
 
 #include <vector>
-#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>

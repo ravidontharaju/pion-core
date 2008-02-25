@@ -20,10 +20,12 @@
 #ifndef __PION_LOGOUTPUTREACTOR_HEADER__
 #define __PION_LOGOUTPUTREACTOR_HEADER__
 
-#include <vector>
-#include <boost/thread/mutex.hpp>
+#include <string>
+#include <fstream>
 #include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
+#include <pion/platform/Codec.hpp>
 #include <pion/platform/Reactor.hpp>
 
 
@@ -33,26 +35,48 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 ///
 /// LogOutputReactor: creates log files that are populated with events
-/// (Work in progress...)
 ///
 class LogOutputReactor :
 	public Reactor
 {
 public:
 
-	/// exception thrown if the LogOutputReactor configuration does not define a Term for a Comparison
-	class EmptyTermException : public PionException {
+	/// exception thrown if the Reactor configuration does not define a Codec
+	class EmptyCodecException : public PionException {
 	public:
-		EmptyTermException(const std::string& reactor_id)
-			: PionException("LogOutputReactor configuration is missing a term identifier: ", reactor_id) {}
+		EmptyCodecException(const std::string& reactor_id)
+			: PionException("LogOutputReactor configuration is missing a required Codec parameter: ", reactor_id) {}
 	};
-		
+	
+	/// exception thrown if the Reactor configuration does not define a Filename
+	class EmptyFilenameException : public PionException {
+	public:
+		EmptyFilenameException(const std::string& reactor_id)
+			: PionException("LogOutputReactor configuration is missing a required Filename parameter: ", reactor_id) {}
+	};
+	
+	/// exception thrown if the Reactor is unable to open a log file for writing
+	class OpenLogException : public PionException {
+	public:
+		OpenLogException(const std::string& log_filename)
+			: PionException("Unable to open log file for writing: ", log_filename) {}
+	};
+	
+	/// exception thrown if the Reactor is unable to write an Event to the log file
+	class WriteToLogException : public PionException {
+	public:
+		WriteToLogException(const std::string& log_filename)
+			: PionException("Unable to write Event to log file: ", log_filename) {}
+	};
+	
 	
 	/// constructs a new LogOutputReactor object
-	LogOutputReactor(void) : Reactor() {}
+	LogOutputReactor(void)
+		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogOutputReactor"))
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~LogOutputReactor() {}
+	virtual ~LogOutputReactor();
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -72,6 +96,12 @@ public:
 	virtual void updateVocabulary(const Vocabulary& v);
 	
 	/**
+	 * this updates the Codecs that are used by this Reactor; it should
+	 * be called whenever any Codec's configuration is updated
+	 */
+	virtual void updateCodecs(void);
+	
+	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
 	 * Only Events which pass all Comparisons in the RuleChain will be
 	 * delivered to the output connections.
@@ -80,11 +110,36 @@ public:
 	 */
 	virtual void operator()(const EventPtr& e);
 	
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+	
 	
 private:
 	
-	/// name of the term element for Pion XML config files
-	static const std::string		COMPARISON_ELEMENT_NAME;
+	/// name of the Codec element for Pion XML config files
+	static const std::string			CODEC_ELEMENT_NAME;
+	
+	/// name of the Filename element for Pion XML config files
+	static const std::string			FILENAME_ELEMENT_NAME;
+	
+	
+	/// primary logging interface used by this class
+	PionLogger							m_logger;
+	
+	/// unique identifier of the Codec that is used for writing Events
+	std::string							m_codec_id;
+	
+	/// pointer to the Codec that is used for writing Events
+	CodecPtr							m_codec_ptr;
+	
+	/// name of the log file to write Events into
+	std::string							m_log_filename;
+	
+	/// output stream for the log that the Reactor is currently writing
+	std::ofstream						m_log_stream;
 };
 
 

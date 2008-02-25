@@ -105,9 +105,9 @@ public:
 	 * @param codec_factory the global factory that manages Codecs
 	 * @param database_mgr the global manager of Databases
 	 */
-	ReactionEngine(const VocabularyManager& vocab_mgr,
-				   const CodecFactory& codec_factory,
-				   const DatabaseManager& database_mgr);
+	ReactionEngine(VocabularyManager& vocab_mgr,
+				   CodecFactory& codec_factory,
+				   DatabaseManager& database_mgr);
 	
 	/// virtual destructor
 	virtual ~ReactionEngine() { stop(); }
@@ -402,11 +402,17 @@ private:
 								 const std::string& plugin_name,
 								 const xmlNodePtr config_ptr)
 	{
-		Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
-		reactor_ptr->setId(plugin_id);
-		reactor_ptr->setScheduler(m_scheduler);
-		if (config_ptr != NULL)
-			reactor_ptr->setConfig(m_vocabulary, config_ptr);
+		try {
+			Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
+			reactor_ptr->setId(plugin_id);
+			reactor_ptr->setScheduler(m_scheduler);
+			reactor_ptr->setCodecFactory(m_codec_factory);
+			reactor_ptr->setDatabaseManager(m_database_mgr);
+			if (config_ptr != NULL)
+				reactor_ptr->setConfig(m_vocabulary, config_ptr);
+		} catch (std::exception& e) {
+			throw PluginException(e.what());
+		}
 	}
 
 	/**
@@ -504,10 +510,10 @@ private:
 	PionScheduler					m_scheduler;
 
 	/// references the global factory that manages Codecs
-	const CodecFactory&				m_codec_factory;
+	CodecFactory &					m_codec_factory;
 
 	/// references the global manager of Databases
-	const DatabaseManager&			m_database_mgr;
+	DatabaseManager &				m_database_mgr;
 	
 	/// a list of the temporary Reactor connections being managed
 	TempConnectionList				m_temp_connections;

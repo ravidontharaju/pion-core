@@ -20,10 +20,17 @@
 #ifndef __PION_LOGINPUTREACTOR_HEADER__
 #define __PION_LOGINPUTREACTOR_HEADER__
 
-#include <vector>
-#include <boost/thread/mutex.hpp>
+#include <set>
+#include <string>
+#include <boost/regex.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/condition.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
+#include <pion/platform/Event.hpp>
+#include <pion/platform/Codec.hpp>
 #include <pion/platform/Reactor.hpp>
 
 
@@ -33,26 +40,77 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 ///
 /// LogInputReactor: consumes log files, converting each entry into an event
-/// (Work in progress...)
 ///
 class LogInputReactor :
 	public Reactor
 {
 public:
 
-	/// exception thrown if the LogInputReactor configuration does not define a Term for a Comparison
-	class EmptyValueException : public PionException {
+	/// exception thrown if the Reactor configuration does not define a Codec
+	class EmptyCodecException : public PionException {
 	public:
-		EmptyValueException(const std::string& reactor_id)
-			: PionException("LogInputReactor configuration is missing a required comparison value: ", reactor_id) {}
+		EmptyCodecException(const std::string& reactor_id)
+			: PionException("LogInputReactor configuration is missing a required Codec parameter: ", reactor_id) {}
+	};
+
+	/// exception thrown if the Reactor configuration does not define a Filename
+	class EmptyFilenameException : public PionException {
+	public:
+		EmptyFilenameException(const std::string& reactor_id)
+			: PionException("LogInputReactor configuration is missing a required Filename parameter: ", reactor_id) {}
 	};
 	
+	/// exception thrown if the Reactor configuration does not define a Directory
+	class EmptyDirectoryException : public PionException {
+	public:
+		EmptyDirectoryException(const std::string& reactor_id)
+			: PionException("LogInputReactor configuration is missing a required Directory parameter: ", reactor_id) {}
+	};
+	
+	/// exception thrown if the directory configured is not found
+	class DirectoryNotFoundException : public PionException {
+	public:
+		DirectoryNotFoundException(const std::string& dir)
+			: PionException("LogInputReactor directory not found: ", dir) {}
+	};
+	
+	/// exception thrown if the directory configuration option is not a directory
+	class NotADirectoryException : public PionException {
+	public:
+		NotADirectoryException(const std::string& dir)
+			: PionException("LogInputReactor Directory parameter is not a directory: ", dir) {}
+	};
+	
+	/// exception thrown if the frequency is not greater than zero
+	class BadFrequencyException : public PionException {
+	public:
+		BadFrequencyException(const std::string& dir)
+			: PionException("LogInputReactor frequency must be greater than zero: ", dir) {}
+	};
+	
+	/// exception thrown if the Reactor is unable to open a log file for reading
+	class OpenLogException : public PionException {
+	public:
+		OpenLogException(const std::string& log_filename)
+			: PionException("Unable to open log file for reading: ", log_filename) {}
+	};
+
+	/// exception thrown if the Reactor encounters an error while reading Events
+	class ReadEventException : public PionException {
+	public:
+		ReadEventException(const std::string& log_filename)
+			: PionException("Unable to read event from log file: ", log_filename) {}
+	};
+
 	
 	/// constructs a new LogInputReactor object
-	LogInputReactor(void) : Reactor() {}
+	LogInputReactor(void)
+		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
+		m_frequency(DEFAULT_FREQUENCY), m_is_running(false)
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~LogInputReactor() {}
+	virtual ~LogInputReactor() { stop(); }
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -72,6 +130,12 @@ public:
 	virtual void updateVocabulary(const Vocabulary& v);
 	
 	/**
+	 * this updates the Codecs that are used by this Reactor; it should
+	 * be called whenever any Codec's configuration is updated
+	 */
+	virtual void updateCodecs(void);
+	
+	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
 	 * Only Events which pass all Comparisons in the RuleChain will be
 	 * delivered to the output connections.
@@ -80,11 +144,88 @@ public:
 	 */
 	virtual void operator()(const EventPtr& e);
 	
+	/// called by the ReactorEngine to start Event processing
+	virtual void start(void);
+	
+	/// called by the ReactorEngine to stop Event processing
+	virtual void stop(void);
+	
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+
 	
 private:
 	
-	/// name of the term element for Pion XML config files
-	static const std::string		COMPARISON_ELEMENT_NAME;
+	/// data structure used to represent a collection of log files
+	typedef std::set<std::string>		LogFileCollection;
+	
+
+	/// periodically checks for new log files and consumes any it finds
+	void consumeLogs(void);
+
+	/**
+	 * consumes the entries in a log file, converting them into Events
+	 *
+	 * @param log_filename the name of the log file to consume
+	 */
+	void consumeLog(const std::string& log_filename);
+	
+	/**
+	 * retrieves a collection of all the log files in the log directory
+	 *
+	 * @param files collection that will represent all matching log files
+	 */
+	void getLogFiles(LogFileCollection& files);
+	
+	
+	/// default frequency that the Reactor will check for new logs (in seconds)
+	static const boost::uint32_t		DEFAULT_FREQUENCY;
+	
+	/// name of the Codec element for Pion XML config files
+	static const std::string			CODEC_ELEMENT_NAME;
+
+	/// name of the Directory element for Pion XML config files
+	static const std::string			DIRECTORY_ELEMENT_NAME;
+
+	/// name of the Filename element for Pion XML config files
+	static const std::string			FILENAME_ELEMENT_NAME;
+
+	/// name of the Frequency element for Pion XML config files
+	static const std::string			FREQUENCY_ELEMENT_NAME;
+
+	
+	/// primary logging interface used by this class
+	PionLogger							m_logger;
+	
+	/// unique identifier of the Codec that is used for reading Events
+	std::string							m_codec_id;
+	
+	/// pointer to the Codec that is used for reading Events
+	CodecPtr							m_codec_ptr;
+	
+	/// frequency that the Reactor will check for new logs (in seconds)
+	boost::uint32_t						m_frequency;
+
+	/// directory that the Reactor will periodically check for new log files
+	std::string							m_log_directory;
+
+	/// regular expression used to find the log files we want to consume
+	boost::regex						m_log_regex;
+	
+	/// contains the names of all log files that have been consumed so far
+	LogFileCollection					m_logs_consumed;
+
+	/// true if the Reactor is "running" (reading files or checking for new ones)
+	bool								m_is_running;
+	
+	/// condition triggered to notify the reader thread it is time to shutdown
+	boost::condition					m_shutdown_thread;
+	
+	/// thread used to periodically check for new log files
+	boost::scoped_ptr<boost::thread>	m_thread;
 };
 
 

@@ -19,11 +19,11 @@
 
 #include <sstream>
 #include <fstream>
-#include <boost/thread/xtime.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/PionUnitTestDefs.hpp>
 #include <pion/net/TCPStream.hpp>
 #include <pion/net/HTTPRequest.hpp>
@@ -109,23 +109,6 @@ public:
 	
 	virtual ~FeedServiceTestInterface_F() {}
 	
-	/**
-	 * put the current thread to sleep for an amount of time
-	 *
-	 * @param nsec number of nanoseconds (10^-9) to sleep for
-	 */
-	inline void sleep_briefly(unsigned long nsec)
-	{
-		boost::xtime stop_time;
-		boost::xtime_get(&stop_time, boost::TIME_UTC);
-		stop_time.nsec += nsec;
-		if (stop_time.nsec >= 1000000000) {
-			stop_time.sec++;
-			stop_time.nsec -= 1000000000;
-		}
-		boost::thread::sleep(stop_time);
-	}
-	
 	void getConnectionInfo(unsigned int& num_reactors, unsigned int& num_input,
 						   unsigned int& num_output)
 	{
@@ -162,7 +145,7 @@ public:
 			{
 				break;
 			}
-			sleep_briefly(100000000); // 0.1 seconds
+			PionScheduler::sleep(0, 100000000); // 0.1 seconds
 		}
 		BOOST_CHECK_EQUAL(num_reactors, expected_reactors);
 		BOOST_CHECK_EQUAL(num_input, expected_input);
@@ -191,9 +174,9 @@ BOOST_FIXTURE_TEST_SUITE(FeedServiceTestInterface_S, FeedServiceTestInterface_F)
 BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	unsigned int num_reactors, num_input, num_output;
 	
-	// initially, there should be only one connection of type "reactor"
+	// initially, there should be only two connections of type "reactor"
 	getConnectionInfo(num_reactors, num_input, num_output);
-	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(1));
+	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(2));
 	BOOST_CHECK_EQUAL(num_input, static_cast<unsigned int>(0));
 	BOOST_CHECK_EQUAL(num_output, static_cast<unsigned int>(0));
 	
@@ -210,7 +193,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(1, 0, 1);
+	checkConnectionInfo(2, 0, 1);
 	
 	// connect a stream to localhost
 	TCPStream input_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
@@ -223,7 +206,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(1, 1, 1);
+	checkConnectionInfo(2, 1, 1);
 
 	// send data from the common log file to the input connection
 	std::ifstream common_log;
@@ -236,17 +219,21 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	input_tcp_stream.close();
 	
 	// re-check the connections recognized
-	checkConnectionInfo(1, 0, 1);
+	checkConnectionInfo(2, 0, 1);
 	
 	// read data in from the output stream
+	bool found_it = false;
 	const unsigned int BUF_SIZE = 1023;
 	char buf[BUF_SIZE+1];
 	while (output_tcp_stream.getline(buf, BUF_SIZE)) {
 		// look for the last Event
 		std::string str(buf);
-		if (str.find("10.0.141.122") != std::string::npos)
+		if (str.find("10.0.141.122") != std::string::npos) {
+			found_it = true;
 			break;
+		}
 	}
+	BOOST_CHECK(found_it);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

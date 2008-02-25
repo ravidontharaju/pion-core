@@ -47,9 +47,9 @@ const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
 
 // ReactionEngine member functions
 	
-ReactionEngine::ReactionEngine(const VocabularyManager& vocab_mgr,
-							   const CodecFactory& codec_factory,
-							   const DatabaseManager& database_mgr)
+ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
+							   CodecFactory& codec_factory,
+							   DatabaseManager& database_mgr)
 	: PluginConfig<Reactor>(vocab_mgr, DEFAULT_CONFIG_FILE, REACTOR_ELEMENT_NAME),
 	m_codec_factory(codec_factory),
 	m_database_mgr(database_mgr),
@@ -70,8 +70,12 @@ void ReactionEngine::openConfigFile(void)
 	if (ConfigManager::configIsOpen())
 		return;
 
-	// open the plug-in config file and load plug-ins
-	ConfigManager::openPluginConfig(m_plugin_element);
+	try {
+		// open the plug-in config file and load plug-ins
+		ConfigManager::openPluginConfig(m_plugin_element);
+	} catch (std::exception& e) {
+		throw PluginException(e.what());
+	}
 	
 	// Step through and process Reactor connections.
 	// This must be done last & independently to ensure that all Reactors have
@@ -152,14 +156,12 @@ void ReactionEngine::clearStats(void)
 	
 void ReactionEngine::updateCodecs(void)
 {
-	m_plugins.run(boost::bind(&Reactor::updateCodecs, _1,
-							  boost::cref(m_codec_factory)));
+	m_plugins.run(boost::bind(&Reactor::updateCodecs, _1));
 }
 
 void ReactionEngine::updateDatabases(void)
 {
-	m_plugins.run(boost::bind(&Reactor::updateDatabases, _1,
-							  boost::cref(m_database_mgr)));
+	m_plugins.run(boost::bind(&Reactor::updateDatabases, _1));
 }
 	
 void ReactionEngine::setReactorConfig(const std::string& reactor_id,

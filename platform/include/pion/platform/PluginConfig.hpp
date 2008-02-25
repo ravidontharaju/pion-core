@@ -25,6 +25,7 @@
 #include <boost/signal.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/PluginManager.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/VocabularyManager.hpp>
@@ -42,6 +43,15 @@ class PluginConfig :
 	public ConfigManager
 {
 public:
+
+	/// exception used to propagate exceptions thrown by Pion plugins
+	class PluginException : public PionException {
+	public:
+		PluginException(const std::string& error_msg)
+			: PionException(error_msg)
+		{}
+	};
+	
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~PluginConfig() {}

@@ -17,6 +17,8 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/thread/mutex.hpp>
+#include <pion/platform/ConfigManager.hpp>
 #include "TransformReactor.hpp"
 
 

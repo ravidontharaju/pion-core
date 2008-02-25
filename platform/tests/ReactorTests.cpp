@@ -18,13 +18,14 @@
 //
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/platform/VocabularyManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include <pion/PionUnitTestDefs.hpp>
+#include <boost/regex.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/thread/xtime.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -47,6 +48,7 @@ extern void cleanup_vocab_config_files(void);
 
 /// static strings used by these unit tests
 static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
+static const std::string NEW_LOG_FILE(get_log_file_dir() + "new.log");
 static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
 static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
 static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
@@ -75,7 +77,9 @@ public:
 		: m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_database_mgr),
 		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
-		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2")
+		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
+		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
+		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
@@ -89,23 +93,6 @@ public:
 	}
 	virtual ~ReactionEngineTestInterface_F() {}
 	
-	/**
-	 * put the current thread to sleep for an amount of time
-	 *
-	 * @param nsec number of nanoseconds (10^-9) to sleep for
-	 */
-	inline void sleep_briefly(unsigned long nsec)
-	{
-		boost::xtime stop_time;
-		boost::xtime_get(&stop_time, boost::TIME_UTC);
-		stop_time.nsec += nsec;
-		if (stop_time.nsec >= 1000000000) {
-			stop_time.sec++;
-			stop_time.nsec -= 1000000000;
-		}
-		boost::thread::sleep(stop_time);
-	}
-	
 	
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
@@ -113,6 +100,8 @@ public:
 	ReactionEngine		m_reaction_engine;
 	const std::string	m_combined_id;
 	const std::string	m_ie_filter_id;
+	const std::string	m_log_reader_id;
+	const std::string	m_log_writer_id;
 	CodecPtr			m_combined_codec;
 };
 
@@ -185,20 +174,20 @@ BOOST_AUTO_TEST_CASE(checkAddThenRemoveReactorConnection) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
-/// fixture for testing filters on log file data
-class ReactionEngineLogFilterTests_F
+/// fixture for testing the filter and log file reactors
+class ReactionEngineLogTests_F
 	: public ReactionEngineTestInterface_F
 {
 public:
-	ReactionEngineLogFilterTests_F() {
+	ReactionEngineLogTests_F() {
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.openConfigFile();
 	}
-	virtual ~ReactionEngineLogFilterTests_F() {}
+	virtual ~ReactionEngineLogTests_F() {}
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(ReactionEngineLogFilterTests_S, ReactionEngineLogFilterTests_F)
+BOOST_FIXTURE_TEST_SUITE(ReactionEngineLogTests_S, ReactionEngineLogTests_F)
 
 BOOST_AUTO_TEST_CASE(checkSetReactorWorkspace) {
 	// get the current configuration for the Reactor
@@ -264,24 +253,58 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	// make sure that the reactor received all of the events read
 	for (int i = 0; i < 10; ++i) {
 		if (m_reaction_engine.getEventsIn(m_ie_filter_id) == events_read) break;
-		sleep_briefly(100000000); // 0.1 seconds
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
 	}
 	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_filter_id), events_read);
 	
-	// make sure that the number of operations matches the events read plus 1
-	// plus 1 because one event (with MSIE) is passed along to the "Do Nothing" reactor
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getTotalOperations() == events_read + 1) break;
-		sleep_briefly(100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), events_read + 1);
-
 	// make sure that only one event passed the filter
 	for (int i = 0; i < 10; ++i) {
 		if (m_reaction_engine.getEventsOut(m_ie_filter_id) == static_cast<boost::uint64_t>(1)) break;
-		sleep_briefly(100000000); // 0.1 seconds
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
 	}
 	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_ie_filter_id), static_cast<boost::uint64_t>(1));
+
+	// make sure that the log input reactor has consumed all of the events
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(4)) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(4));
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(4));
+
+	// make sure that the log output reactor has written all of the events
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsIn(m_log_writer_id) == static_cast<boost::uint64_t>(4)) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_writer_id), static_cast<boost::uint64_t>(4));
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_log_writer_id), static_cast<boost::uint64_t>(4));
+
+	// make sure that the number of operations equals 13
+	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), static_cast<boost::uint64_t>(13));
+	
+	//
+	// check the contents of the new log file
+	//
+	
+	// open up the log file
+	std::ifstream log_stream;
+	log_stream.open(NEW_LOG_FILE.c_str(), std::ios::in);
+	BOOST_REQUIRE(log_stream.is_open());
+	
+	// read each line
+	bool found_it = false;
+	boost::regex last_event_regex(".30/Jan/2008.*10.0.141.122.*pion.*wikipedia.*200");
+	const unsigned int BUF_SIZE = 1023;
+	char buf[BUF_SIZE+1];
+	while (log_stream.getline(buf, BUF_SIZE)) {
+		// look for the last Event
+		if (boost::regex_search(buf, last_event_regex)) {
+			found_it = true;
+			break;
+		}
+	}
+	BOOST_CHECK(found_it);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
