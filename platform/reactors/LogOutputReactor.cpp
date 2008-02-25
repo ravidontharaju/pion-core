@@ -43,9 +43,9 @@ LogOutputReactor::~LogOutputReactor()
 		// remove the log file if no events were written to it
 		if (getEventsOut() == 0) {
 			boost::filesystem::remove(m_log_filename);
-			PION_LOG_INFO(m_logger, "Closing output log file: " << m_log_filename);
-		} else {
 			PION_LOG_INFO(m_logger, "Closing empty output log (removing file): " << m_log_filename);
+		} else {
+			PION_LOG_INFO(m_logger, "Closing output log file: " << m_log_filename);
 		}
 	}
 }
