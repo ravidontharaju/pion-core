@@ -135,6 +135,39 @@ pion.reactors.init = function() {
 							new_workspace_tab_clicked = false;
 						}
 					});
+
+	var DELETE_ME = 0; // a placeholder to demonstrate that the counts are being updated even though for now they're always zero
+	var prev_events_in_for_workspace = 0;
+	setInterval(function() {
+		dojo.xhrGet({
+			url: '/config/reactors/stats',
+			handleAs: 'xml',
+			timeout: 1000,
+			load: function(response, ioArgs) {
+				var node = response.getElementsByTagName('TotalOps')[0];
+				dojo.byId('global_ops').innerHTML = (dojo.isIE? node.xml : node.textContent) + ' (' + ++DELETE_ME + ')';
+				var DELETE_ME_num_reactors_included = 0; // another placeholder to demonstrate that the counts are being updated 
+				var events_in_for_workspace = 0;
+				var reactors = response.getElementsByTagName('Reactor');
+				dojo.forEach(reactors, function(n) {
+					var id = n.getAttribute('id');
+					if (reactors_by_id[id].workspace == workspace_box) {
+						var events_in_node = n.getElementsByTagName('EventsIn')[0];
+						events_in_for_workspace += dojo.isIE? events_in_node.xml : events_in_node.textContent;
+						DELETE_ME_num_reactors_included++;
+					}
+				});
+				var delta = events_in_for_workspace - prev_events_in_for_workspace;
+				dojo.byId('workspace_ops').innerHTML = delta + ' (' + DELETE_ME_num_reactors_included + ')';
+				prev_events_in_for_workspace = events_in_for_workspace;
+				return response;
+			},
+			error: function(response, ioArgs) {
+				console.error('HTTP status code: ', ioArgs.xhr.status);
+				return response;
+			}
+		});
+	}, 1000);
 }
 
 function addWorkspace(name) {
