@@ -398,6 +398,18 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ffcccc; 
 }
 
+.tundra .moveable .dijitToggleButton {
+	border: solid red 1px;
+}
+
+.tundra .moveable .dijitToggleButtonChecked {
+	border: solid green 1px;
+}
+
+.tundra .moveable .ops_per_sec {
+	border: solid blue 1px;
+}
+
 .LogInputReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;

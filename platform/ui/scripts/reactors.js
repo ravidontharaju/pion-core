@@ -353,6 +353,26 @@ function createReactor(name, reactor_type) {
 	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 	new_div.className = "moveable " + reactor_type;
 	new_div.innerHTML = name;
+	
+	// TODO: find a more general way to determine if reactor_type is a collection reactor
+	if (reactor_type == 'LogInputReactor') {
+		var start_stop_button = new dijit.form.ToggleButton();
+		var button_node = start_stop_button.domNode;
+		dojo.connect(button_node, 'click', function() {
+			if (start_stop_button.checked) {
+				console.debug('request start');
+				// request start
+			} else {
+				console.debug('request stop');
+				// request stop
+			}
+		});
+		new_div.appendChild(start_stop_button.domNode);
+	}
+	var ops_per_sec = document.createElement('span');
+	dojo.addClass(ops_per_sec, 'ops_per_sec');
+	ops_per_sec.innerHTML = '12345';
+	new_div.appendChild(ops_per_sec);
 	new_div.setAttribute("reactor_type", reactor_type);
 	new_div.reactor_inputs = [];
 	new_div.reactor_outputs = [];
