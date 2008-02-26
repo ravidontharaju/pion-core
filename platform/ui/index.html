@@ -199,8 +199,7 @@
 							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
 								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="LogInputReactor"><img src="images/icon-log-files.png" width="148" height="25" alt="Log Input" /></div>
-										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img width="148" height="25" alt="Log Output" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="LogInputReactor"><img src="images/icon-log-input.png" width="148" height="25" alt="Log Input" /></div>
 									</div>
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
@@ -211,7 +210,9 @@
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img src="images/icon-log-output.png" width="148" height="25" alt="Log Output" /></div>
+                                        <div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
+										
 									</div>
 								</div>
 							</div>

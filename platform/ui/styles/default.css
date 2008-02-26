@@ -403,10 +403,6 @@ This is a duplicate of #reactor_config_content for now.
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
 }
 
-.LogOutputReactor {
-	background-color: #ffffff;
-	background: url(../images/button-delete-row-on.png) repeat;  /* please replace this! */
-}
 
 .FilterReactor {
 	background-color: #ffffff;
@@ -421,6 +417,11 @@ This is a duplicate of #reactor_config_content for now.
 .SQLiteOutputReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
+}
+
+.LogOutputReactor {
+	background-color: #ffffff;
+	background: url(../images//bg-moveable-storage-logs.png) repeat;
 }
 
 /* Tabs */
