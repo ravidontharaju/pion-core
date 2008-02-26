@@ -398,9 +398,14 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ffcccc; 
 }
 
-.log_files {
+.LogInputReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
+}
+
+.LogOutputReactor {
+	background-color: #ffffff;
+	background: url(../images/button-delete-row-on.png) repeat;  /* please replace this! */
 }
 
 .FilterReactor {
@@ -408,12 +413,12 @@ This is a duplicate of #reactor_config_content for now.
 	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
 }
 
-.transform {
+.TransformReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
 }
 
-.data_store {
+.SQLiteOutputReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
 }
@@ -476,6 +481,9 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
+.reactor_dialog {
+	width: 600px;
+}
 
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */
@@ -672,10 +680,6 @@ This is a duplicate of #reactor_config_content for now.
 .vocab_grid {
 	overflow: hidden;
 	height: 360px;
-}
-
-#grid {
-	border: 1px solid silver;
 }
 
 .tundra .dojoxGrid-header {

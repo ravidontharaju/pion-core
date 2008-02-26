@@ -95,16 +95,34 @@
 			]]
 		}];
 		
+		var reactor_inputs_grid_layout = [{
+			rows: [[
+				{ name: 'From', styles: '', width: 'auto' },
+				{ name: 'Connection ID', styles: '', width: 'auto' },
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
+
+		var reactor_outputs_grid_layout = [{
+			rows: [[
+				{ name: 'To', styles: '', width: 'auto' },
+				{ name: 'Connection ID', styles: '', width: 'auto' },
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			]]
+		}];
+
 		var filter_reactor_grid_layout = [{
 			rows: [[
 				{ name: 'Term', styles: '', 
 					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 15},
-				{ name: 'Comparison', styles: '', width: 15, 
+					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
+				{ name: 'Comparison', styles: '', width: 'auto', 
 					editor: dojox.grid.editors.Input},
-				{ name: 'Value', width: 10, styles: 'text-align: center;', 
+				{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
 					editor: dojox.grid.editors.Input},
-				{ name: 'Delete', styles: 'align: center;', width: 4, 
+				{ name: 'Delete', styles: 'align: center;', width: 3, 
 				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 			]]
 		}];
@@ -181,18 +199,19 @@
 							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
 								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="log_files"><img src="images/icon-log-files.png" width="148" height="25" alt="Log Files" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="LogInputReactor"><img src="images/icon-log-files.png" width="148" height="25" alt="Log Input" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img width="148" height="25" alt="Log Output" /></div>
 									</div>
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
 										<div class="dojoDndItem" dndType="reactor" reactor_type="FilterReactor"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
-										<div class="dojoDndItem" dndType="reactor" reactor_type="transform"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="TransformReactor"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
 									</div>
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="data_store"><img src="images/icon-data-store.png" width="148" height="25" alt="Data Store" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
 									</div>
 								</div>
 							</div>
@@ -494,7 +513,7 @@
 
 <!-- start configuration dialogs -->
 <!-- These are only visible after double-clicking a reactor in the workspace, right-clicking a workspace tab, etc. -->
-	<div dojoType="dijit.Dialog" id="log_files_dialog" title="Log Configuration">
+	<div dojoType="dijit.Dialog" id="LogInputReactor_dialog" class="reactor_dialog" title="Log Input Reactor Configuration">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -513,13 +532,50 @@
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
+		<h3>Input Connections</h3>
+		<div id="LogInputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Output Connections</h3>
+		<div id="LogInputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" title="Filter Configuration" style="width: 600px;">
+	<div dojoType="dijit.Dialog" id="LogOutputReactor_dialog" class="reactor_dialog" title="Log Output Reactor Configuration">
+		<table>
+			<tr>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>ID:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>Event Type:</label></td>
+				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
+			</tr>
+		</table>
+		<h3>Input Connections</h3>
+		<div id="LogOutputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Output Connections</h3>
+		<div id="LogOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+			<button dojoType=dijit.form.Button class="delete">Delete</button>
+		</div>
+	</div>
+	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" class="reactor_dialog" title="Filter Reactor Configuration">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -535,14 +591,20 @@
 			</tr>
 		</table>
 		<div id="filter_reactor_grid" jsId="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
-			 structure="filter_reactor_grid_layout" singleClickEdit="true"></div>
+			 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Input Connections</h3>
+		<div id="FilterReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Output Connections</h3>
+		<div id="FilterReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="transform_dialog" title="Transform Configuration">
+	<div dojoType="dijit.Dialog" id="TransformReactor_dialog" class="reactor_dialog" title="Transform Reactor Configuration">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -561,13 +623,19 @@
 				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
 			</tr>
 		</table>
+		<h3>Input Connections</h3>
+		<div id="TransformReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Output Connections</h3>
+		<div id="TransformReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="data_store_dialog" title="Storage Configuration">
+	<div dojoType="dijit.Dialog" id="SQLiteOutputReactor_dialog" class="reactor_dialog" title="SQLite Output Reactor Configuration">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -582,6 +650,12 @@
 				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
+		<h3>Input Connections</h3>
+		<div id="SQLiteOutputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		<h3>Output Connections</h3>
+		<div id="SQLiteOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 			<button dojoType=dijit.form.Button class="cancel">Cancel</button>

@@ -29,6 +29,8 @@ var workspaces_by_name = {};
 var reactors_by_id = {};
 var reactor_config_store;
 var filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
+var reactor_inputs_grid_model = new dojox.grid.data.Table(null, []);
+var reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
@@ -79,9 +81,10 @@ pion.reactors.init = function() {
 				reactor_config_store.fetch({
 					query: {tagName: 'Connection'},
 					onItem: function(item, request) {
-						var startNode_id = reactor_config_store.getValue(item, 'From').toString();
-						var endNode_id   = reactor_config_store.getValue(item, 'To').toString();
-						console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id);
+						var startNode_id  = reactor_config_store.getValue(item, 'From').toString();
+						var endNode_id    = reactor_config_store.getValue(item, 'To').toString();
+						var connection_id = reactor_config_store.getValue(item, '@id').toString();
+						console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id, ', with ID = ', connection_id);
 
 						var startNode = reactors_by_id[startNode_id];
 						var endNode = reactors_by_id[endNode_id];
@@ -91,8 +94,8 @@ pion.reactors.init = function() {
 						var line = surface.createPolyline().setStroke("black");
 						updateConnectionLine(line, startNode, endNode);
 						
-						startNode.reactor_outputs.push({node: endNode, line: line});
-						endNode.reactor_inputs.push({node: startNode, line: line});
+						startNode.reactor_outputs.push({node: endNode, line: line, id: connection_id});
+						endNode.reactor_inputs.push({node: startNode, line: line, id: connection_id});
 					},
 					onComplete: function(items, request) {
 						console.debug('done fetching Connections');
@@ -136,7 +139,7 @@ pion.reactors.init = function() {
 						}
 					});
 
-	var DELETE_ME = 0; // a placeholder to demonstrate that the counts are being updated even though for now they're always zero
+	var prev_global_ops = 0;
 	var prev_events_in_for_workspace = 0;
 	setInterval(function() {
 		dojo.xhrGet({
@@ -145,8 +148,9 @@ pion.reactors.init = function() {
 			timeout: 1000,
 			load: function(response, ioArgs) {
 				var node = response.getElementsByTagName('TotalOps')[0];
-				dojo.byId('global_ops').innerHTML = (dojo.isIE? node.xml : node.textContent) + ' (' + ++DELETE_ME + ')';
-				var DELETE_ME_num_reactors_included = 0; // another placeholder to demonstrate that the counts are being updated 
+				var global_ops = dojo.isIE? node.xml : node.textContent;
+				dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
+				prev_global_ops = global_ops;
 				var events_in_for_workspace = 0;
 				var reactors = response.getElementsByTagName('Reactor');
 				dojo.forEach(reactors, function(n) {
@@ -154,11 +158,9 @@ pion.reactors.init = function() {
 					if (reactors_by_id[id].workspace == workspace_box) {
 						var events_in_node = n.getElementsByTagName('EventsIn')[0];
 						events_in_for_workspace += dojo.isIE? events_in_node.xml : events_in_node.textContent;
-						DELETE_ME_num_reactors_included++;
 					}
 				});
-				var delta = events_in_for_workspace - prev_events_in_for_workspace;
-				dojo.byId('workspace_ops').innerHTML = delta + ' (' + DELETE_ME_num_reactors_included + ')';
+				dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
 				prev_events_in_for_workspace = events_in_for_workspace;
 				return response;
 			},
@@ -542,8 +544,8 @@ function handleSelectionOfConnectorEndpoint(event, startNode) {
 	var line = surface.createPolyline().setStroke("black");
 	updateConnectionLine(line, startNode, endNode);
 	
-	startNode.reactor_outputs.push({node: endNode, line: line});
-	endNode.reactor_inputs.push({node: startNode, line: line});
+	startNode.reactor_outputs.push({node: endNode, line: line, id: '00000000-0000-0000-0000-000000000000'});
+	endNode.reactor_inputs.push({node: startNode, line: line, id: '00000000-0000-0000-0000-000000000000'});
 }
 
 // Returns true if there is another reactor with the given name.
@@ -580,6 +582,74 @@ function showReactorConfigDialog(reactor) {
 		setTimeout("filter_reactor_grid.resize()", 200);
 		setTimeout("filter_reactor_grid.update()", 200);
 	}
+	
+	var reactor_inputs_table = [];
+	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+		var reactor_inputs_table_row = [];
+		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].node.name;
+		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].id;
+		reactor_inputs_table.push(reactor_inputs_table_row);
+	}
+	reactor_inputs_grid_model.setData(reactor_inputs_table);
+	var reactor_inputs_grid = dijit.byId(reactor_type + '_inputs_grid');
+	setTimeout(function(){
+		reactor_inputs_grid.update();
+		reactor_inputs_grid.resize();
+	}, 200);
+	dojo.connect(reactor_inputs_grid, 'onCellClick', function(e) {
+		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
+		if (e.cellIndex == 2) {
+			console.debug('Removing connection in row ', e.rowIndex); 
+			reactor_inputs_grid.removeSelectedRows();
+
+			var reactor_input = reactor.reactor_inputs[e.rowIndex];
+			var incoming_reactor = reactor_input.node;
+			reactor_input.line.removeShape();
+			reactor.reactor_inputs.splice(e.rowIndex, 1);
+
+			// remove reactor from the outputs of incoming_reactor
+			for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+				if (incoming_reactor.reactor_outputs[j].node == reactor) {
+					incoming_reactor.reactor_outputs.splice(j, 1);
+					break;
+				}
+			}
+		}
+	});
+
+	var reactor_outputs_table = [];
+	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+		var reactor_outputs_table_row = [];
+		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].node.name;
+		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].id;
+		reactor_outputs_table.push(reactor_outputs_table_row);
+	}
+	reactor_outputs_grid_model.setData(reactor_outputs_table);
+	var reactor_outputs_grid = dijit.byId(reactor_type + '_outputs_grid');
+	setTimeout(function(){
+		reactor_outputs_grid.update();
+		reactor_outputs_grid.resize();
+	}, 200);
+	dojo.connect(reactor_outputs_grid, 'onCellClick', function(e) {
+		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
+		if (e.cellIndex == 2) {
+			console.debug('Removing connection in row ', e.rowIndex); 
+			reactor_outputs_grid.removeSelectedRows();
+
+			var reactor_output = reactor.reactor_outputs[e.rowIndex];
+			var outgoing_reactor = reactor_output.node;
+			reactor_output.line.removeShape();
+			reactor.reactor_outputs.splice(e.rowIndex, 1);
+
+			// remove reactor from the inputs of outgoing_reactor
+			for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+				if (outgoing_reactor.reactor_inputs[j].node == reactor) {
+					outgoing_reactor.reactor_inputs.splice(j, 1);
+					break;
+				}
+			}
+		}
+	});
 
 	// The following use forEach to allow either zero or multiple matches.
 	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {
