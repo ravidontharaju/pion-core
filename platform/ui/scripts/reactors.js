@@ -148,7 +148,7 @@ pion.reactors.init = function() {
 			timeout: 1000,
 			load: function(response, ioArgs) {
 				var node = response.getElementsByTagName('TotalOps')[0];
-				var global_ops = dojo.isIE? node.xml : node.textContent;
+				var global_ops = parseInt(dojo.isIE? node.xml : node.textContent);
 				dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
 				prev_global_ops = global_ops;
 				var events_in_for_workspace = 0;
@@ -157,7 +157,7 @@ pion.reactors.init = function() {
 					var id = n.getAttribute('id');
 					if (reactors_by_id[id].workspace == workspace_box) {
 						var events_in_node = n.getElementsByTagName('EventsIn')[0];
-						events_in_for_workspace += dojo.isIE? events_in_node.xml : events_in_node.textContent;
+						events_in_for_workspace += parseInt(dojo.isIE? events_in_node.xml : events_in_node.textContent);
 					}
 				});
 				dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
