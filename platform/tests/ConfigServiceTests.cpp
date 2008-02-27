@@ -92,26 +92,23 @@ public:
 	 * checks if a Reactor is running using the "stat" service
 	 *
 	 * @param reactor_id the unique identifier for the Reactor to check
+	 * @param response uses this HTTP response's content as the stats XML
 	 * @return true if the Reactor is running
 	 */
-	inline bool checkIfReactorIsRunning(const std::string& reactor_id) {
-		// make a request to remove the "log writer" reactor
-		HTTPRequest request;
-		request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
-		request.setResource("/config/reactors/stats");
-		HTTPResponsePtr response_ptr(sendRequest(request));
-		
+	inline bool checkIfReactorIsRunning(const std::string& reactor_id,
+										const HTTPResponse& response)
+	{
 		// check the response status code
-		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
+		BOOST_CHECK_EQUAL(response.getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
 		
 		// parse the response content
-		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
-										   response_ptr->getContentLength());
+		xmlDocPtr doc_ptr = xmlParseMemory(response.getContent(),
+										   response.getContentLength());
 		BOOST_REQUIRE(doc_ptr);
 		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
 		BOOST_REQUIRE(node_ptr);
 		BOOST_REQUIRE(node_ptr->children);
-
+		
 		// look for the Reactor's node
 		xmlNodePtr plugin_node = ConfigManager::findConfigNodeByAttr("Reactor",
 																	 "id", reactor_id,
@@ -122,7 +119,24 @@ public:
 		// find the "Running" element
 		std::string is_running_str;
 		BOOST_REQUIRE(ConfigManager::getConfigOption("Running", is_running_str, plugin_node->children));
+	
 		return(is_running_str == "true");
+	}
+
+	/**
+	 * checks if a Reactor is running using the "stat" service
+	 *
+	 * @param reactor_id the unique identifier for the Reactor to check
+	 * @return true if the Reactor is running
+	 */
+	inline bool checkIfReactorIsRunning(const std::string& reactor_id) {
+		// make a request to remove the "log writer" reactor
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+		request.setResource("/config/reactors/stats");
+		HTTPResponsePtr response_ptr(sendRequest(request));
+
+		return checkIfReactorIsRunning(reactor_id, *response_ptr);
 	}		
 		
 
@@ -147,10 +161,10 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceStopThenStartLogReaderReactor) {
 	HTTPResponsePtr response_ptr(sendRequest(request));
 	
 	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
 	
 	// check to make sure the Reactor is no longer running
-	BOOST_CHECK(! checkIfReactorIsRunning(m_log_reader_id));
+	BOOST_CHECK(! checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
 	
 	// make another request to start it back up again
 	request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
@@ -158,10 +172,10 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceStopThenStartLogReaderReactor) {
 	response_ptr = sendRequest(request);
 	
 	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
 	
 	// check to make sure the Reactor is running again
-	BOOST_CHECK(checkIfReactorIsRunning(m_log_reader_id));
+	BOOST_CHECK(checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewReactor) {

@@ -170,18 +170,16 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// start a Reactor
 				getConfig().getReactionEngine().startReactor(branches[1]);
 
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				// respond by sending all the Reactor stats
+				getConfig().getReactionEngine().writeStatsXML(ss);
 				
 			} else if (branches[2] == "stop") {
 				
 				// stop a Reactor
 				getConfig().getReactionEngine().stopReactor(branches[1]);
 
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				// respond by sending all the Reactor stats
+				getConfig().getReactionEngine().writeStatsXML(ss);
 				
 			} else {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
