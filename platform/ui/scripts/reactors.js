@@ -67,9 +67,10 @@ pion.reactors.init = function() {
 				var dc = dojo.coords(workspace_box.node);
 				latest_event = { clientX: dc.x + parseInt(reactor_config_store.getValue(item, 'X')), clientY: dc.y + parseInt(reactor_config_store.getValue(item, 'Y')) };
 
-				var reactor = createReactor(name, reactor_type);
+				var id = reactor_config_store.getValue(item, '@id');
+				var reactor = createReactor(name, reactor_type, id);
 				reactor.workspace = workspace_box;
-				reactor.id = reactor_config_store.getValue(item, '@id');
+
 				reactors_by_id[reactor.id] = reactor;
 				reactor.comment = reactor_config_store.getValue(item, 'Comment').toString();
 				reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
@@ -345,30 +346,30 @@ function updateConnectionLine(poly, start_node, end_node) {
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
 }
 
-function createReactor(name, reactor_type) {
+function createReactor(name, reactor_type, id) {
 	var new_div = document.createElement("div");
 	workspace_box.reactors.push(new_div);
 	new_div.name = name;
+	new_div.id = id;
 	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
 	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 	new_div.className = "moveable " + reactor_type;
 	new_div.innerHTML = name;
-	
-	// TODO: find a more general way to determine if reactor_type is a collection reactor
-	if (reactor_type == 'LogInputReactor') {
-		var start_stop_button = new dijit.form.ToggleButton();
-		var button_node = start_stop_button.domNode;
-		dojo.connect(button_node, 'click', function() {
-			if (start_stop_button.checked) {
-				console.debug('request start');
-				// request start
-			} else {
-				console.debug('request stop');
-				// request stop
+
+	var run_button = new dijit.form.ToggleButton();
+	run_button.setChecked(true); // reactors start out running
+	var button_node = run_button.domNode;
+	dojo.connect(button_node, 'click', function() {
+		dojo.xhrPut({
+			url: '/config/reactors/' + id + (run_button.checked? '/start' : '/stop'),
+			error: function(response, ioArgs) {
+				console.error('HTTP status code: ', ioArgs.xhr.status);
+				return response;
 			}
 		});
-		new_div.appendChild(start_stop_button.domNode);
-	}
+	});
+	new_div.appendChild(run_button.domNode);
+
 	var ops_per_sec = document.createElement('span');
 	dojo.addClass(ops_per_sec, 'ops_per_sec');
 	ops_per_sec.innerHTML = '12345';
@@ -377,8 +378,8 @@ function createReactor(name, reactor_type) {
 	new_div.reactor_inputs = [];
 	new_div.reactor_outputs = [];
 	return new_div;
-}	
-	
+}
+
 function makeReactorMoveable(reactor) {
 	var m5 = new dojo.dnd.move.parentConstrainedMoveable(reactor, {area: "padding", within: true});
 	var c = m5.constraints();
@@ -480,7 +481,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	for (var i = 2; isDuplicateName('nothing', name); ++i) {
 		name = reactor_type + "_" + i;
 	}
-	var reactor = createReactor(name, reactor_type);
+	var reactor = createReactor(name, reactor_type, '00000000-0000-0000-0000-000000000000');
 
 	//debugger;
 	console.debug("workspace_box.node.lastChild = ", workspace_box.node.lastChild);
