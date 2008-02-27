@@ -77,15 +77,12 @@ public:
 	/**
 	 * adds a new managed Codec
 	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
 	 * @param config_ptr pointer to a list of XML nodes containing Codec
-	 *                   configuration parameters
+	 *                   configuration parameters (must include a Plugin type)
 	 *
 	 * @return std::string the new Codec's unique identifier
 	 */
-	std::string addCodec(const std::string& plugin_type,
-						 const xmlNodePtr config_ptr = NULL);
+	std::string addCodec(const xmlNodePtr config_ptr);
 	
 	/**
 	 * removes a managed Codec
@@ -94,6 +91,18 @@ public:
 	 */
 	void removeCodec(const std::string& codec_id);
 
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Codec
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Codec
+	 */
+	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createPluginConfig(CODEC_ELEMENT_NAME, buf, len);
+	}
+	
 	
 private:
 	

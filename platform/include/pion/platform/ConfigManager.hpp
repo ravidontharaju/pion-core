@@ -212,6 +212,27 @@ public:
 	static std::string createFilename(const std::string& file_path);
 	
 	/**
+	 * returns an XML configuration list for a new Plugin
+	 *
+	 * @param plugin_type the type of new plugin that is being created
+	 *
+	 * @return xmlNodePtr XML configuration list for the new Plugin
+	 */
+	static xmlNodePtr createPluginConfig(const std::string& plugin_type);
+	
+	/**
+	 * uses a memory buffer to generate XML configuration data for a plugin
+	 *
+	 * @param plugin_name the XML element name for the plugin
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Plugin
+	 */
+	static xmlNodePtr createPluginConfig(const std::string& plugin_name,
+										 const char *buf, std::size_t len);
+	
+	/**
 	 * retrieves the unique identifier for an XML document node
 	 *
 	 * @param config_node the node to get the identifier for

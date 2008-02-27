@@ -78,15 +78,12 @@ public:
 	/**
 	 * adds a new managed Database
 	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
 	 * @param config_ptr pointer to a list of XML nodes containing Database
-	 *                   configuration parameters
+	 *                   configuration parameters (must include a Plugin type)
 	 *
 	 * @return std::string the new Database's unique identifier
 	 */
-	std::string addDatabase(const std::string& plugin_type,
-							const xmlNodePtr config_ptr = NULL);
+	std::string addDatabase(const xmlNodePtr config_ptr);
 	
 	/**
 	 * removes a managed Database
@@ -95,6 +92,18 @@ public:
 	 */
 	void removeDatabase(const std::string& database_id);
 
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Database
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Database
+	 */
+	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createPluginConfig(DATABASE_ELEMENT_NAME, buf, len);
+	}
+	
 	
 private:
 	

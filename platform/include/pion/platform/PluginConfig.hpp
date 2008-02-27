@@ -161,15 +161,12 @@ protected:
 	/**
 	 * adds a new plug-in object
 	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
+	 *                   configuration parameters (must include a Plugin type)
 	 *
 	 * @return std::string string containing the plug-in's auto-generated identifier
 	 */
-	inline std::string addPlugin(const std::string& plugin_type,
-								 const xmlNodePtr config_ptr = NULL);
+	inline std::string addPlugin(const xmlNodePtr config_ptr);
 	
 	/**
 	 * removes a plug-in object
@@ -276,15 +273,19 @@ inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_
 }
 
 template <typename PluginType>
-inline std::string PluginConfig<PluginType>::addPlugin(const std::string& plugin_type,
-													   const xmlNodePtr config_ptr)
+inline std::string PluginConfig<PluginType>::addPlugin(const xmlNodePtr config_ptr)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
+
+	// find the plug-in type within the XML configuration
+	std::string plugin_type;
+	const std::string plugin_id(ConfigManager::createUUID());
+	if (config_ptr == NULL || ! getConfigOption(PLUGIN_ELEMENT_NAME, plugin_type, config_ptr))
+		throw EmptyPluginElementException(plugin_id);
 	
 	// create the new plug-in and add it to the config file
-	const std::string plugin_id(ConfigManager::createUUID());
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
 	addPluginNoLock(plugin_id, plugin_type, config_ptr);
 	addPluginConfig(m_plugin_element, plugin_id, plugin_type, config_ptr);

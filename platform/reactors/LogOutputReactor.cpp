@@ -99,8 +99,6 @@ void LogOutputReactor::operator()(const EventPtr& e)
 	PION_ASSERT(m_codec_ptr);
 	PION_ASSERT(m_log_stream.is_open());
 	m_codec_ptr->write(m_log_stream, *e);
-	// for now, we will just flush the stream after every entry
-	m_log_stream.flush();
 	if (! m_log_stream)
 		throw WriteToLogException(m_log_filename);
 	

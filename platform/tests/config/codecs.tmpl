@@ -5,6 +5,7 @@
     <Comment>Codec for the Common Log Format (CLF)</Comment>
     <Plugin>LogCodec</Plugin>
     <EventType>urn:vocab:clf#http-request</EventType>
+    <Flush>true</Flush>
     <Field term="urn:vocab:clf#remotehost">remotehost</Field>
     <Field term="urn:vocab:clf#rfc931">rfc931</Field>
     <Field term="urn:vocab:clf#authuser">authuser</Field>
@@ -18,6 +19,7 @@
     <Comment>Codec for the Combined Log Format (CLF)</Comment>
     <Plugin>LogCodec</Plugin>
     <EventType>urn:vocab:clf#http-request</EventType>
+    <Flush>true</Flush>
     <Field term="urn:vocab:clf#remotehost">remotehost</Field>
     <Field term="urn:vocab:clf#rfc931">rfc931</Field>
     <Field term="urn:vocab:clf#authuser">authuser</Field>
@@ -33,6 +35,7 @@
     <Comment>Codec for the Extended Log Format (ELF)</Comment>
     <Plugin>LogCodec</Plugin>
     <EventType>urn:vocab:clf#http-request</EventType>
+    <Flush>true</Flush>
     <Headers>true</Headers>
     <Field term="urn:vocab:clf#date" start="&quot;" end="&quot;">date</Field>
     <Field term="urn:vocab:clf#remotehost">remotehost</Field>
@@ -45,6 +48,7 @@
     <Comment>Codec for just reading dates</Comment>
     <Plugin>LogCodec</Plugin>
     <EventType>urn:vocab:clf#http-request</EventType>
+    <Flush>true</Flush>
     <Field term="urn:vocab:clf#date" start="&quot;" end="&quot;">date</Field>
   </Codec>
 </PionConfig>

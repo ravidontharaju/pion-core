@@ -79,6 +79,13 @@ const std::string& get_vocabularies_file(void)
 	return VOCABULARY_CONFIG_FILE;
 }
 
+/// returns the full path to the platform.xml config file
+const std::string& get_platform_config_file(void)
+{
+	static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.xml");
+	return PLATFORM_CONFIG_FILE;
+}
+
 /// sets up logging (run once only)
 void setup_logging_for_unit_tests(void)
 {
@@ -136,4 +143,40 @@ void cleanup_vocab_config_files(void)
 	if (boost::filesystem::exists(get_vocabularies_file()))
 		boost::filesystem::remove(get_vocabularies_file());
 	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, get_vocabularies_file());
+}
+
+/// cleans up reactor config files in the working directory
+void cleanup_platform_config_files(void)
+{
+	static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
+	static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
+	static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
+	static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+	static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
+	static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
+	static const std::string PLATFORM_TEMPLATE_FILE(get_config_file_dir() + "platform.tmpl");
+	static const std::string SERVICES_TEMPLATE_FILE(get_config_file_dir() + "services.tmpl");
+	static const std::string SERVICES_CONFIG_FILE(get_config_file_dir() + "services.xml");
+	
+	cleanup_vocab_config_files();
+	
+	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
+		boost::filesystem::remove(REACTORS_CONFIG_FILE);
+	boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
+		boost::filesystem::remove(CODECS_CONFIG_FILE);
+	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
+		boost::filesystem::remove(DATABASES_CONFIG_FILE);
+	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(get_platform_config_file()))
+		boost::filesystem::remove(get_platform_config_file());
+	boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, get_platform_config_file());
+	
+	if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
+		boost::filesystem::remove(SERVICES_CONFIG_FILE);
+	boost::filesystem::copy_file(SERVICES_TEMPLATE_FILE, SERVICES_CONFIG_FILE);
 }

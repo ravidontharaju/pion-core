@@ -37,6 +37,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// split out the path branches from the HTTP request
 	PathBranches branches;
 	splitPathBranches(branches, request->getResource());
+	
+	// use a response in case we want to change any of the headers/etc.
+	// while processing the request
+	HTTPResponsePtr response_ptr(new HTTPResponse(*request));
 
 	// use a stringstream for the response content
 	// since HTTPResponseWriter does not yet have a stream wrapper available
@@ -76,14 +80,116 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		}
 	} else if (branches.front() == "reactors") {
 		if (branches.size() == 1) {
-			getConfig().getReactionEngine().writeConfigXML(ss);
-		} else {
-			if (branches[1] == "stats") {
-				getConfig().getReactionEngine().writeStatsXML(ss);
-			} else if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1])) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for all Reactors
+				getConfig().getReactionEngine().writeConfigXML(ss);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Reactor
+				
+				// convert request content into XML configuration info
+				xmlNodePtr reactor_config_ptr =
+					ReactionEngine::createPluginConfig(request->getContent(),
+													   request->getContentLength());
+				
+				std::string reactor_id;
+				// add the new Reactor to the ReactionEngine
+				try {
+					reactor_id = getConfig().getReactionEngine().addReactor(reactor_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(reactor_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(reactor_config_ptr);
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Reactor's configuration
+				if (! getConfig().getReactionEngine().writeConfigXML(ss, reactor_id))
+					throw ReactionEngine::ReactorNotFoundException(reactor_id);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+
+		} else if (branches[1] == "stats") {
+			getConfig().getReactionEngine().writeStatsXML(ss);
+		} else if (branches.size() == 2) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Reactor's configuration
+
+				if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
+					throw ReactionEngine::ReactorNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Reactor's configuration
+
+												
+				// convert request content into XML configuration info
+				xmlNodePtr reactor_config_ptr =
+					ReactionEngine::createPluginConfig(request->getContent(),
+													   request->getContentLength());
+
+				try {
+					// push the new config into the ReactionEngine
+					getConfig().getReactionEngine().setReactorConfig(branches[1], reactor_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(reactor_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(reactor_config_ptr);
+				
+				// respond with the Reactor's updated configuration
+				if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
+					throw ReactionEngine::ReactorNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Reactor
+
+				getConfig().getReactionEngine().removeReactor(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else if (branches.size() == 3) {
+			if (branches[2] == "start") {
+				
+				// start a Reactor
+				getConfig().getReactionEngine().startReactor(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else if (branches[2] == "stop") {
+				
+				// stop a Reactor
+				getConfig().getReactionEngine().stopReactor(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
 		}
 	} else if (branches.front() == "connections") {
 		if (branches.size() == 1) {
@@ -106,7 +212,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	}
 
 	// prepare the writer object for XML output
-	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
+	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, response_ptr,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 

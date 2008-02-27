@@ -71,7 +71,7 @@ public:
 	/// constructs a new LogCodec object
 	LogCodec(void)
 		: Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
-		m_needs_to_write_headers(false)
+		m_flush_after_write(false), m_needs_to_write_headers(false)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -242,6 +242,9 @@ private:
 	/// name of the headers element for Pion XML config files
 	static const std::string		HEADERS_ELEMENT_NAME;
 	
+	/// name of the flush element for Pion XML config files
+	static const std::string		FLUSH_ELEMENT_NAME;
+	
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string		TERM_ATTRIBUTE_NAME;	
 
@@ -263,6 +266,9 @@ private:
 	
 	/// represents the current sequence of data fields in the log format
 	CurrentFormat					m_format;
+	
+	/// true if the codec should flush the output stream after each write
+	bool							m_flush_after_write;
 	
 	/// true if the codec should write out ELF headers
 	bool							m_needs_to_write_headers;

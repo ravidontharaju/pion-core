@@ -30,6 +30,7 @@ const std::string			LogCodec::CONTENT_TYPE = "text/ascii";
 const std::string			LogCodec::FIELDS_FORMAT_STRING = "#Fields:";
 const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			LogCodec::HEADERS_ELEMENT_NAME = "Headers";
+const std::string			LogCodec::FLUSH_ELEMENT_NAME = "Flush";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
 const std::string			LogCodec::END_ATTRIBUTE_NAME = "end";
@@ -43,6 +44,7 @@ CodecPtr LogCodec::clone(void) const
 	LogCodec *new_codec(new LogCodec());
 	new_codec->copyCodec(*this);
 	boost::mutex::scoped_lock codec_lock(m_mutex);
+	new_codec->m_flush_after_write = m_flush_after_write;
 	new_codec->m_needs_to_write_headers = m_needs_to_write_headers;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term,
@@ -84,6 +86,10 @@ void LogCodec::write(std::ostream& out, const Event& e)
 
 	// write newline for each even record
 	out << '\x0A';
+	
+	// flush the output stream
+	if (m_flush_after_write)
+		out.flush();
 }
 	
 bool LogCodec::read(std::istream& in, Event& e)
@@ -210,7 +216,18 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	Codec::setConfig(v, config_ptr);
 	boost::mutex::scoped_lock codec_lock(m_mutex);
 	
+	// check if the Codec should flush the output stream after each write
+	m_flush_after_write = false;
+	std::string flush_option;
+	if (ConfigManager::getConfigOption(FLUSH_ELEMENT_NAME, flush_option,
+									   config_ptr))
+	{
+		if (flush_option == "true")
+			m_flush_after_write = true;
+	}
+	
 	// check if the Codec should include headers when writing output
+	m_needs_to_write_headers = false;
 	std::string headers_option;
 	if (ConfigManager::getConfigOption(HEADERS_ELEMENT_NAME, headers_option,
 									   config_ptr))

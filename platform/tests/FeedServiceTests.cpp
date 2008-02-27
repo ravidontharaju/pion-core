@@ -40,50 +40,14 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
+extern const std::string& get_platform_config_file(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
-extern void cleanup_vocab_config_files(void);
+extern void cleanup_platform_config_files(void);
 
 
 /// static strings used by these unit tests
 static const std::string COMMON_LOG_FILE(get_log_file_dir() + "common.log");
-static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
-static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
-static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
-static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
-static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
-static const std::string PLATFORM_TEMPLATE_FILE(get_config_file_dir() + "platform.tmpl");
-static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.xml");
-static const std::string SERVICES_TEMPLATE_FILE(get_config_file_dir() + "services.tmpl");
-static const std::string SERVICES_CONFIG_FILE(get_config_file_dir() + "services.xml");
-
-
-/// cleans up reactor config files in the working directory
-void cleanup_platform_config_files(void)
-{
-	cleanup_vocab_config_files();
-	
-	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
-		boost::filesystem::remove(REACTORS_CONFIG_FILE);
-	boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
-		boost::filesystem::remove(CODECS_CONFIG_FILE);
-	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
-
-	if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
-		boost::filesystem::remove(DATABASES_CONFIG_FILE);
-	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
-
-	if (boost::filesystem::exists(PLATFORM_CONFIG_FILE))
-		boost::filesystem::remove(PLATFORM_CONFIG_FILE);
-	boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, PLATFORM_CONFIG_FILE);
-
-	if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
-		boost::filesystem::remove(SERVICES_CONFIG_FILE);
-	boost::filesystem::copy_file(SERVICES_TEMPLATE_FILE, SERVICES_CONFIG_FILE);
-}
 
 
 /// interface class for FeedService tests
@@ -100,11 +64,8 @@ public:
 		cleanup_platform_config_files();
 
 		// start the ServiceManager, etc.
-		m_platform_cfg.setConfigFile(PLATFORM_CONFIG_FILE);
+		m_platform_cfg.setConfigFile(get_platform_config_file());
 		m_platform_cfg.openConfigFile();
-		
-		// start the ReactionEngine
-		m_platform_cfg.getReactionEngine().start();
 	}
 	
 	virtual ~FeedServiceTestInterface_F() {}
@@ -152,16 +113,6 @@ public:
 		BOOST_CHECK_EQUAL(num_output, expected_output);
 	}
 	
-	static inline std::string makeQueryString(const std::string& reactor_id,
-											  const std::string& codec_id)
-	{
-		std::string query_string("reactor=");
-		query_string += reactor_id;
-		query_string += "&codec=";
-		query_string += codec_id;
-		return query_string;
-	}
-
 	PlatformConfig		m_platform_cfg;
 	const std::string	m_common_id;
 	const std::string	m_combined_id;

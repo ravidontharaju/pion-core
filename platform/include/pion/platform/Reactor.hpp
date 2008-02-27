@@ -68,7 +68,8 @@ public:
 	
 	/// constructs a new Reactor object
 	Reactor(void)
-		: m_scheduler_ptr(NULL), m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
+		: m_is_running(false),
+		m_scheduler_ptr(NULL), m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
 		m_x_coordinate(0), m_y_coordinate(0), m_events_in(0), m_events_out(0)
 	{}
 
@@ -77,10 +78,10 @@ public:
 	
 	
 	/// called by the ReactorEngine to start Event processing
-	virtual void start(void) {}
+	virtual void start(void) { m_is_running = true; }
 	
 	/// called by the ReactorEngine to stop Event processing
-	virtual void stop(void) {}
+	virtual void stop(void) { m_is_running = false; }
 	
 	/// resets the Reactor to its initial state
 	virtual void reset(void) { clearStats(); }
@@ -160,6 +161,9 @@ public:
 	/// returns the total number of Events delivered by this Reactor
 	inline boost::uint64_t getEventsOut(void) const { return m_events_out; }
 
+	/// returns true if the Reactor is running
+	inline bool isRunning(void) const { return m_is_running; }
+	
 		
 protected:
 
@@ -187,13 +191,20 @@ protected:
 	 */
 	inline void incrementEventsIn(void) { ++m_events_in; }
 	
+	/// safely increments the incoming Events counter (locks the Reactor's mutex)
+	inline void safeIncrementEventsIn(void) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		incrementEventsIn();
+	}
+	
 	/**
 	 * delivers an Event to the output connections.  This is not thread-safe
 	 * and should be called only when the Reactor's mutex is locked.
 	 *
 	 * @param e pointer to the Event to deliver
+	 * @param return_immediately if true, all delivery will use other threads
 	 */
-	inline void deliverEvent(const EventPtr& e) {
+	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
 		++m_events_out;
 		if (! m_connections.empty()) {
 			OutputConnections::iterator i = m_connections.begin();
@@ -205,26 +216,31 @@ protected:
 			// send to the first Reactor using the same thread
 			// this helps to reduce context switching by ensuring
 			// that the longer processing chains remain unbroken
-			m_connections.begin()->second(e);
+			if (return_immediately)
+				getScheduler().getIOService().post(boost::bind(m_connections.begin()->second, e));
+			else
+				m_connections.begin()->second(e);
 		}
 	}
 	
-	/// safely increments the incoming Events counter (locks the Reactor's mutex)
-	inline void safeIncrementEventsIn(void) {
+	/**
+	 * safely delivers an Event to the output connections (locks the Reactor's mutex)
+	 *
+	 * @param e pointer to the Event to deliver
+	 * @param return_immediately if true, all delivery will use other threads
+	 */
+	inline void safeDeliverEvent(const EventPtr& e, bool return_immediately = false) {
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
-	}
-	
-	/// safely delivers an Event to the output connections (locks the Reactor's mutex)
-	inline void safeDeliverEvent(const EventPtr& e) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		deliverEvent(e);
+		deliverEvent(e, return_immediately);
 	}
 
 	
 	/// used to provide thread safety for the Reactor's data structures
 	boost::mutex					m_mutex;
 	
+	/// will be true if the Reactor is "running"
+	bool							m_is_running;
+
 	
 private:
 

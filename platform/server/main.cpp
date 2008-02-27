@@ -82,9 +82,6 @@ int main (int argc, char *argv[])
 		platform_cfg.setConfigFile(platform_config_file);
 		platform_cfg.openConfigFile();
 		
-		// start the ReactionEngine
-		platform_cfg.getReactionEngine().start();
-
 		PION_LOG_INFO(pion_log, "Pion has started successfully");
 
 		// wait for shutdown

@@ -171,6 +171,21 @@ public:
 	~NewCodecFactory_F() {
 	}
 
+	/**
+	 * returns a valid configuration tree for a Codec
+	 *
+	 * @param plugin_type the type of new plugin that is being created
+	 *
+	 * @return xmlNodePtr XML configuration list for the new Codec
+	 */
+	inline xmlNodePtr createCodecConfig(const std::string& plugin_type) {
+		xmlNodePtr config_ptr(ConfigManager::createPluginConfig(plugin_type));
+		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
+		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
+		xmlAddNextSibling(config_ptr, event_type_node);
+		return config_ptr;
+	}
+	
 	//TODO: rig things up so we can check that m_num_times_mock_called has some expected value
 	void MockCallback(void) {
 		m_num_times_mock_called++;
@@ -191,25 +206,37 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewCodecFactory_S,
 									   boost::mpl::list<NewCodecFactory_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
+	xmlNodePtr config_ptr(F::createCodecConfig("LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlFreeNodeList(config_ptr);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadJSONCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
+	xmlNodePtr config_ptr(F::createCodecConfig("JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlFreeNodeList(config_ptr);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadXMLCodec) {
-	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
+	xmlNodePtr config_ptr(F::createCodecConfig("XMLCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlFreeNodeList(config_ptr);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadMultipleCodecs) {
-	BOOST_CHECK_NO_THROW(F::addCodec("LogCodec"));
-	BOOST_CHECK_NO_THROW(F::addCodec("JSONCodec"));
-	BOOST_CHECK_NO_THROW(F::addCodec("XMLCodec"));
+	xmlNodePtr config_ptr(F::createCodecConfig("LogCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>("JSONCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>("XMLCodec"));
+	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+	xmlFreeNodeList(config_ptr);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadUnknownCodec) {
-	BOOST_CHECK_THROW(F::addCodec("UnknownCodec"), PionPlugin::PluginNotFoundException);
+	xmlNodePtr config_ptr(F::createCodecConfig("UnknownCodec"));
+	BOOST_CHECK_THROW(F::addCodec(config_ptr), PionPlugin::PluginNotFoundException);
+	xmlFreeNodeList(config_ptr);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigForMissingCodec) {
@@ -242,7 +269,9 @@ class CodecFactoryWithCodecLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithCodecLoaded_F() {
 		m_plugin_name = plugin_name;
-		m_codec_id = addCodec(m_plugin_name);
+		xmlNodePtr config_ptr(NewCodecFactory_F::createCodecConfig(plugin_name));
+		m_codec_id = addCodec(config_ptr);
+		xmlFreeNodeList(config_ptr);
 	}
 	
 	std::string m_plugin_name;
@@ -342,9 +371,13 @@ BOOST_AUTO_TEST_SUITE_END()
 class CodecFactoryWithMultipleCodecsLoaded_F : public NewCodecFactory_F {
 public:
 	CodecFactoryWithMultipleCodecsLoaded_F() {
-		m_LogCodec_id = addCodec(LogCodec_name);
-		m_JSONCodec_id = addCodec(JSONCodec_name);
-		m_XMLCodec_id = addCodec(XMLCodec_name);
+		xmlNodePtr config_ptr(NewCodecFactory_F::createCodecConfig(LogCodec_name));
+		m_LogCodec_id = addCodec(config_ptr);
+		xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>(JSONCodec_name));
+		m_JSONCodec_id = addCodec(config_ptr);
+		xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>(XMLCodec_name));
+		m_XMLCodec_id = addCodec(config_ptr);
+		xmlFreeNodeList(config_ptr);
 	}
 	
 	std::string m_LogCodec_id;

@@ -37,6 +37,7 @@ const std::string		ReactionEngine::TYPE_ELEMENT_NAME = "Type";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
 const std::string		ReactionEngine::STATS_ELEMENT_NAME = "PionStats";
+const std::string		ReactionEngine::RUNNING_ELEMENT_NAME = "Running";
 const std::string		ReactionEngine::EVENTS_IN_ELEMENT_NAME = "EventsIn";
 const std::string		ReactionEngine::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
 const std::string		ReactionEngine::TOTAL_OPS_ELEMENT_NAME = "TotalOps";
@@ -115,6 +116,10 @@ void ReactionEngine::openConfigFile(void)
 	}
 	
 	PION_LOG_INFO(m_logger, "Loaded Reactor configuration file: " << ConfigManager::getConfigFile());
+	
+	// start the ReactionEngine
+	engine_lock.unlock();
+	start();
 }
 	
 void ReactionEngine::clearReactorStats(const std::string& reactor_id)
@@ -132,6 +137,8 @@ void ReactionEngine::start(void)
 {
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	if (! m_is_running) {
+		PION_LOG_INFO(m_logger, "Starting the ReactionEngine");
+
 		// notify the thread scheduler that we need it now
 		m_scheduler.addActiveUser();
 
@@ -175,13 +182,12 @@ void ReactionEngine::setReactorConfig(const std::string& reactor_id,
 	}
 }
 
-std::string ReactionEngine::addReactor(const std::string& plugin_type,
-									   const xmlNodePtr config_ptr)
+std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
 {
 	// convert PluginNotFound exceptions into ReactorNotFound exceptions
 	std::string reactor_id;
 	try {
-		reactor_id = PluginConfig<Reactor>::addPlugin(plugin_type, config_ptr);
+		reactor_id = PluginConfig<Reactor>::addPlugin(config_ptr);
 	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
 		throw ReactorNotFoundException(reactor_id);
 	}
@@ -222,6 +228,7 @@ void ReactionEngine::removeReactor(const std::string& reactor_id)
 	// convert PluginNotFound exceptions into ReactorNotFound exceptions
 	try {
 		// remove the Reactor object
+		engine_lock.unlock();
 		PluginConfig<Reactor>::removePlugin(reactor_id);
 	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
 		throw ReactorNotFoundException(reactor_id);
@@ -471,6 +478,8 @@ void ReactionEngine::removeConnectionConfigNoLock(const std::string& from_id,
 void ReactionEngine::stopNoLock(void)
 {
 	if (m_is_running) {
+		PION_LOG_INFO(m_logger, "Stopping the ReactionEngine");
+
 		// terminate all temporary connections
 		for (TempConnectionList::iterator i = m_temp_connections.begin();
 			 i != m_temp_connections.end(); ++i)
@@ -504,17 +513,23 @@ void ReactionEngine::writeStatsXML(std::ostream& out) const
 
 	// step through each reactor configured
 	std::string reactor_id;
+	const Reactor *reactor_ptr;
 	xmlNodePtr reactor_node = m_config_node_ptr->children;
 	while ( (reactor_node = ConfigManager::findConfigNodeByName(REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
 	{
 		// get a pointer to the reactor
-		if (getNodeId(reactor_node, reactor_id)) {
+		if (getNodeId(reactor_node, reactor_id)
+			&& (reactor_ptr = m_plugins.get(reactor_id)) != NULL)
+		{
 			// write reactor statistics
 			out << "\t<" << REACTOR_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
 				<< "=\"" << reactor_id << "\">" << std::endl
-				<< "\t\t<" << EVENTS_IN_ELEMENT_NAME << '>' << getEventsIn(reactor_id)
+				<< "\t\t<" << RUNNING_ELEMENT_NAME << '>'
+				<< (reactor_ptr->isRunning() ? "true" : "false")
+				<< "</" << RUNNING_ELEMENT_NAME << '>' << std::endl
+				<< "\t\t<" << EVENTS_IN_ELEMENT_NAME << '>' << reactor_ptr->getEventsIn()
 				<< "</" << EVENTS_IN_ELEMENT_NAME << '>' << std::endl
-				<< "\t\t<" << EVENTS_OUT_ELEMENT_NAME << '>' << getEventsOut(reactor_id)
+				<< "\t\t<" << EVENTS_OUT_ELEMENT_NAME << '>' << reactor_ptr->getEventsOut()
 				<< "</" << EVENTS_OUT_ELEMENT_NAME << '>' << std::endl
 				<< "\t</" << REACTOR_ELEMENT_NAME << '>' << std::endl;
 		}

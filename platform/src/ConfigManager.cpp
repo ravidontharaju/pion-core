@@ -264,7 +264,54 @@ std::string ConfigManager::createFilename(void)
 	file_name += XML_FILE_EXTENSION;
 	return file_name;
 }
+	
+xmlNodePtr ConfigManager::createPluginConfig(const std::string& plugin_type)
+{
+	xmlNodePtr config_ptr = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(PLUGIN_ELEMENT_NAME.c_str()));
+	xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>(plugin_type.c_str()));
+	return config_ptr;
+}
 
+xmlNodePtr ConfigManager::createPluginConfig(const std::string& plugin_name,
+											 const char *buf, std::size_t len)
+{
+	// sanity check
+	if (buf == NULL || len == 0)
+		return NULL;
+	
+	// parse request payload content as XML
+	xmlNodePtr node_ptr = NULL;
+	xmlDocPtr doc_ptr = xmlParseMemory(buf, len);
+	if (doc_ptr == NULL)
+		return NULL;
+	
+	// find the ROOT element
+	node_ptr = xmlDocGetRootElement(doc_ptr);
+	if ( (node_ptr = xmlDocGetRootElement(doc_ptr)) == NULL
+		|| xmlStrcmp(node_ptr->name,
+					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) )
+	{
+		xmlFreeDoc(doc_ptr);
+		return NULL;
+	}
+	
+	// find the plugin element
+	node_ptr = findConfigNodeByName(plugin_name, node_ptr->children);
+	if (node_ptr == NULL) {
+		xmlFreeDoc(doc_ptr);
+		return NULL;
+	}
+
+	// found the plugin config -> make a copy of it
+	node_ptr = xmlCopyNodeList(node_ptr->children);
+	
+	// free the temporary document
+	xmlFreeDoc(doc_ptr);
+	
+	// return the copied configuration info
+	return node_ptr;
+}
+	
 std::string ConfigManager::createFilename(const std::string& file_path)
 {
 	boost::filesystem::path new_path(file_path);
@@ -468,8 +515,17 @@ bool ConfigManager::setPluginConfig(xmlNodePtr plugin_node_ptr, xmlNodePtr confi
 	xmlNodePtr plugin_type_node = findConfigNodeByName(PLUGIN_ELEMENT_NAME,
 													   plugin_config_copy);
 	if (plugin_type_node != NULL) {
+		// check if we are removing the first node in the list
+		if (plugin_config_copy == plugin_type_node)
+			plugin_config_copy = plugin_type_node->next;
+
+		// remove the Plugin type node (this cannot be changed)
 		xmlUnlinkNode(plugin_type_node);
 		xmlFreeNode(plugin_type_node);
+		
+		// stop early if this is the only node in the configuration
+		if (plugin_config_copy == NULL)
+			return true;
 	}
 	
 	// clean namespaces in config nodes: work-around for libxml namespace bugs

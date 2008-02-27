@@ -132,7 +132,9 @@ BOOST_AUTO_TEST_CASE(checkRemoveConnectionForMissingReactor) {
 }
 
 BOOST_AUTO_TEST_CASE(checkAddFilterReactorNoConfig) {
-	std::string reactor_id = m_reaction_engine.addReactor("FilterReactor");
+	xmlNodePtr config_ptr(ConfigManager::createPluginConfig("FilterReactor"));
+	std::string reactor_id = m_reaction_engine.addReactor(config_ptr);
+	xmlFreeNodeList(config_ptr);
 	BOOST_CHECK(! reactor_id.empty());
 }
 
@@ -145,11 +147,15 @@ class ReactionEngineConnectionTests_F
 {
 public:
 	ReactionEngineConnectionTests_F() {
-		filter_one_id = m_reaction_engine.addReactor("FilterReactor");
+		xmlNodePtr config_ptr(ConfigManager::createPluginConfig("FilterReactor"));
+
+		filter_one_id = m_reaction_engine.addReactor(config_ptr);
 		BOOST_REQUIRE(! filter_one_id.empty());
 
-		filter_two_id = m_reaction_engine.addReactor("FilterReactor");
+		filter_two_id = m_reaction_engine.addReactor(config_ptr);
 		BOOST_REQUIRE(! filter_two_id.empty());
+
+		xmlFreeNodeList(config_ptr);
 	}
 	virtual ~ReactionEngineConnectionTests_F() {}
 	

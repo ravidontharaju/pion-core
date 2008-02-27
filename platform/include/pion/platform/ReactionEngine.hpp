@@ -122,10 +122,10 @@ public:
 	 */
 	void clearReactorStats(const std::string& reactor_id);
 
-	/// starts all Event processing
+	/// starts all Event processing (does not start collection Reactors)
 	void start(void);
 	
-	/// stops all Event processing
+	/// stops all Event processing (stops all Reactors and terminates all connections)
 	void stop(void);
 	
 	/// clears statistic counters for all Reactors
@@ -136,6 +136,24 @@ public:
 
 	/// this updates all of the Databases used by Reactors
 	void updateDatabases(void);
+	
+	/**
+	 * starts Event processing for a collection Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	inline void startReactor(const std::string& reactor_id) {
+		return m_plugins.run(reactor_id, boost::bind(&Reactor::start, _1));
+	}
+
+	/**
+	 * stops Event processing for a collection Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 */
+	inline void stopReactor(const std::string& reactor_id) {
+		return m_plugins.run(reactor_id, boost::bind(&Reactor::stop, _1));
+	}
 	
 	/**
 	 * sets configuration parameters for a managed Reactor
@@ -150,15 +168,12 @@ public:
 	/**
 	 * adds a new managed Reactor
 	 *
-	 * @param plugin_type the type of plug-in to load (searches plug-in
-	 *                    directories and appends extensions)
 	 * @param config_ptr pointer to a list of XML nodes containing Reactor
-	 *                   configuration parameters
+	 *                   configuration parameters (must include a Plugin type)
 	 *
 	 * @return std::string the new Reactor's unique identifier
 	 */
-	std::string addReactor(const std::string& plugin_type,
-						   const xmlNodePtr config_ptr = NULL);
+	std::string addReactor(const xmlNodePtr config_ptr);
 	
 	/**
 	 * removes a managed Reactor
@@ -249,6 +264,18 @@ public:
 	inline void writeConnectionsXML(std::ostream& out) const {
 		std::string empty_only_id;
 		writeConnectionsXML(out, empty_only_id);
+	}
+	
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Reactor
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Reactor
+	 */
+	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createPluginConfig(REACTOR_ELEMENT_NAME, buf, len);
 	}
 	
 	/**
@@ -486,6 +513,9 @@ private:
 
 	/// name of the statistics element for Pion XML config files
 	static const std::string		STATS_ELEMENT_NAME;
+	
+	/// name of the running element for Pion XML config files
+	static const std::string		RUNNING_ELEMENT_NAME;
 	
 	/// name of the events in element for Pion XML config files
 	static const std::string		EVENTS_IN_ELEMENT_NAME;

@@ -106,7 +106,7 @@ public:
 	/// constructs a new LogInputReactor object
 	LogInputReactor(void)
 		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
-		m_frequency(DEFAULT_FREQUENCY), m_is_running(false)
+		m_frequency(DEFAULT_FREQUENCY)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -218,9 +218,6 @@ private:
 	/// contains the names of all log files that have been consumed so far
 	LogFileCollection					m_logs_consumed;
 
-	/// true if the Reactor is "running" (reading files or checking for new ones)
-	bool								m_is_running;
-	
 	/// condition triggered to notify the reader thread it is time to shutdown
 	boost::condition					m_shutdown_thread;
 	

@@ -116,9 +116,6 @@ void FeedWriter::writeEvent(EventPtr& e)
 		try {
 			// send the Event using the codec
 			m_codec_ptr->write(m_tcp_stream, *e);
-			// how often should FeedWriter flush the stream?
-			// for now, it will flush after every event (even though this is not efficient)
-			m_tcp_stream.flush();
 		} catch (std::exception& ex) {
 			// stop sending Events if we encounter an exception
 			PION_LOG_WARN(m_logger, "Error sending event to " << getConnectionInfo()
