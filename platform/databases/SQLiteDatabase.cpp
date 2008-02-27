@@ -113,11 +113,11 @@ void SQLiteDatabase::updateVocabulary(const Vocabulary& v)
 
 
 /// creates new SQLiteDatabase objects
-extern "C" pion::platform::Database *pion_create_SQLiteDatabase(void) {
+extern "C" PION_PLUGIN_API pion::platform::Database *pion_create_SQLiteDatabase(void) {
 	return new pion::platform::SQLiteDatabase();
 }
 
 /// destroys SQLiteDatabase objects
-extern "C" void pion_destroy_SQLiteDatabase(pion::platform::SQLiteDatabase *database_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_SQLiteDatabase(pion::platform::SQLiteDatabase *database_ptr) {
 	delete database_ptr;
 }

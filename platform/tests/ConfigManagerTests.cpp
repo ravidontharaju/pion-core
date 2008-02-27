@@ -33,11 +33,20 @@ BOOST_AUTO_TEST_CASE(checkCreateUUID) {
 BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsRelative) {
 	std::string base_path("/opt/pion/config/platform.xml");
 	std::string relative_path("../ui");
+#if defined(_MSC_VER)
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "c:\\opt\\pion\\config\\..\\ui");
+#else
 	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/config/../ui");
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsNotRelative) {
 	std::string base_path("/opt/pion/config/platform.xml");
+#if defined(_MSC_VER)
+	std::string relative_path("C:\\opt\\pion\\ui");
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "C:\\opt\\pion\\ui");
+#else
 	std::string relative_path("/opt/pion/ui");
 	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
+#endif
 }

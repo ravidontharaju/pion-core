@@ -15,6 +15,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_DLL|Win32"
+			OutputDirectory=".libs"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -22,6 +23,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
+			OutputDirectory=".libs"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -33,6 +35,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
+			OutputDirectory=".libs"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -40,6 +43,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
+			OutputDirectory=".libs"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -65,22 +69,6 @@
 			<File
 				RelativePath=".\SQLiteDatabase.cpp"
 				>
-				<FileConfiguration
-					Name="Debug_DLL|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release_DLL|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
