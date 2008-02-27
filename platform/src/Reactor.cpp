@@ -60,6 +60,19 @@ void Reactor::updateVocabulary(const Vocabulary& v)
 	PlatformPlugin::updateVocabulary(v);
 }	
 	
+void Reactor::addConnection(Reactor& output_reactor)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	
+	// check if it already connected
+	if (m_connections.find(output_reactor.getId()) != m_connections.end())
+		throw AlreadyConnectedException(output_reactor.getId());
+	
+	// add the new connection
+	m_connections.insert(std::make_pair(output_reactor.getId(),
+										OutputConnection(output_reactor)));
+}
+
 void Reactor::addConnection(const std::string& connection_id,
 							EventHandler connection_handler)
 {
@@ -78,7 +91,7 @@ void Reactor::removeConnection(const std::string& connection_id)
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	
 	// find the connection to remove
-	OutputConnections::iterator i = m_connections.find(connection_id);
+	ConnectionMap::iterator i = m_connections.find(connection_id);
 	if (i == m_connections.end())
 		throw ConnectionNotFoundException(connection_id);
 	

@@ -198,7 +198,9 @@ void FeedReader::start(void)
 			// stop reading Events if the Reactor was removed
 			if (m_reactor_ptr == NULL)
 				return;
-			(*m_reactor_ptr)(event_ptr);
+			// discard the event if the Reactor is not running
+			if (m_reactor_ptr->isRunning())
+				(*m_reactor_ptr)(event_ptr);
 		}
 	} catch (std::exception&) {}
 

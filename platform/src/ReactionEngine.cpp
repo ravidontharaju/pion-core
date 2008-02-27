@@ -422,7 +422,7 @@ void ReactionEngine::addConnectionNoLock(const std::string& connection_id,
 		throw ReactorNotFoundException(to_id);
 	
 	// connect them together
-	from_ptr->addConnection(to_ptr->getId(), boost::ref(*to_ptr));
+	from_ptr->addConnection(*to_ptr);
 
 	// keep track of all Reactor connections
 	m_reactor_connections.push_back(ReactorConnection(connection_id, from_id, to_id));

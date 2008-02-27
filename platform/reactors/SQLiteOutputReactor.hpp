@@ -49,7 +49,7 @@ public:
 		
 	
 	/// constructs a new SQLiteOutputReactor object
-	SQLiteOutputReactor(void) : Reactor() {}
+	SQLiteOutputReactor(void) : Reactor() { start(); }
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteOutputReactor() {}

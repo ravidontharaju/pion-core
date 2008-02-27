@@ -132,6 +132,14 @@ public:
 	virtual void operator()(const EventPtr& e) = 0;
 	
 	/**
+	 * connects another Reactor to the output of this Reactor
+	 *
+	 * @param connection_id unique identifier associated with the output connection
+	 * @param output_reactor the Reactor to which output Events will be sent
+	 */
+	void addConnection(Reactor& output_reactor);
+	
+	/**
 	 * connects a handler to the output of this Reactor
 	 *
 	 * @param connection_id unique identifier associated with the output connection
@@ -207,17 +215,18 @@ protected:
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
 		++m_events_out;
 		if (! m_connections.empty()) {
-			OutputConnections::iterator i = m_connections.begin();
 			// iterate through each Reactor after the first one and send the Event
 			// using the scheduler.  This way, the entire thread pool will be used
 			// for processing pipelines
+			ConnectionMap::iterator i = m_connections.begin();
 			while (++i != m_connections.end())
-				getScheduler().getIOService().post(boost::bind(i->second, e));
+				i->second.post(getScheduler().getIOService(), e);
+				
 			// send to the first Reactor using the same thread
 			// this helps to reduce context switching by ensuring
 			// that the longer processing chains remain unbroken
 			if (return_immediately)
-				getScheduler().getIOService().post(boost::bind(m_connections.begin()->second, e));
+				m_connections.begin()->second.post(getScheduler().getIOService(), e);
 			else
 				m_connections.begin()->second(e);
 		}
@@ -244,8 +253,46 @@ protected:
 	
 private:
 
+	/// data type used to represent Reactor output connections
+	class OutputConnection {
+	public:
+		/// default destructor
+		~OutputConnection() {}
+		
+		/// constructs a new OutputConnection to a Reactor
+		explicit OutputConnection(Reactor &reactor)
+			: m_reactor_ptr(&reactor), m_event_handler(boost::ref(reactor))
+		{}
+	
+		/// constructs a new OutputConnection to an EventHandler
+		explicit OutputConnection(EventHandler handler)
+			: m_reactor_ptr(NULL), m_event_handler(handler)
+		{}
+
+		/// sends an Event over the OutputConnection
+		inline void operator()(const EventPtr& event_ptr) {
+			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
+				m_event_handler(event_ptr);
+		}
+		
+		/// schedules an Event to be sent over the OutputConnection
+		inline void post(boost::asio::io_service& io_service,
+						 const EventPtr& event_ptr)
+		{
+			io_service.post(boost::bind(m_event_handler, event_ptr));
+		}
+
+	private:
+		
+		/// points to a Reactor where events should be sent (if not NULL)
+		Reactor *			m_reactor_ptr;
+		
+		/// function object that sends Events over the OutputConnection
+		EventHandler		m_event_handler;
+	};
+	
 	/// data type for a collection of connections to which Events may be sent
-	typedef std::map<std::string,EventHandler>	OutputConnections;
+	typedef std::map<std::string, OutputConnection>	ConnectionMap;
 	
 	
 	/// name of the workspace element for Pion XML config files
@@ -268,7 +315,7 @@ private:
 	DatabaseManager *				m_database_mgr_ptr;
 	
 	/// a collection of connections to which Events may be sent
-	OutputConnections				m_connections;
+	ConnectionMap					m_connections;
 	
 	/// workspace that this Reactor is displayed on (for UI only)
 	std::string						m_workspace;
