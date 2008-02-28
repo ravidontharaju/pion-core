@@ -28,7 +28,7 @@
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 ///
@@ -36,7 +36,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// (Work in progress...)
 ///
 class SQLiteOutputReactor :
-	public Reactor
+	public pion::platform::Reactor
 {
 public:
 
@@ -49,7 +49,7 @@ public:
 		
 	
 	/// constructs a new SQLiteOutputReactor object
-	SQLiteOutputReactor(void) : Reactor() { start(); }
+	SQLiteOutputReactor(void) : pion::platform::Reactor() { start(); }
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteOutputReactor() {}
@@ -61,7 +61,7 @@ public:
 	 * @param config_ptr pointer to a list of XML nodes containing Reactor
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
 	 * this updates the Vocabulary information used by this Reactor; it should
@@ -69,7 +69,7 @@ public:
 	 *
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v);
+	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
@@ -78,7 +78,7 @@ public:
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const EventPtr& e);
+	virtual void operator()(const pion::platform::EventPtr& e);
 	
 	
 private:
@@ -88,7 +88,7 @@ private:
 };
 
 
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

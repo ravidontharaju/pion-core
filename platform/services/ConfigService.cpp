@@ -23,11 +23,12 @@
 #include "ConfigService.hpp"
 
 using namespace pion::net;
+using namespace pion::server;
 using namespace pion::platform;
 
 
 namespace pion {		// begin namespace pion
-namespace server {		// begin namespace server (Pion Server)
+namespace plugins {		// begin namespace plugins
 
 		
 // ConfigService member functions
@@ -269,16 +270,16 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	writer->send();
 }
 	
-}	// end namespace server
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new ConfigService objects
 extern "C" PION_PLUGIN_API pion::server::PlatformService *pion_create_ConfigService(void) {
-	return new pion::server::ConfigService();
+	return new pion::plugins::ConfigService();
 }
 
 /// destroys ConfigService objects
-extern "C" PION_PLUGIN_API void pion_destroy_ConfigService(pion::server::ConfigService *service_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_ConfigService(pion::plugins::ConfigService *service_ptr) {
 	delete service_ptr;
 }

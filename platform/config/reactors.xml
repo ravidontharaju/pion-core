@@ -1,55 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-  <Reactor id="153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
-    <Name>Only IE Requests</Name>
-    <Comment>Filter events that are not requests from IE browsers</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace</Workspace>
+  <Reactor id="b8b0854e-e3f6-11dc-9c56-0019e3f89cd2">
+    <Name>Web Log Reader</Name>
+    <Comment>Consumes web log files in /var/spool/pion</Comment>
+    <Plugin>LogInputReactor</Plugin>
+    <Codec>a174c3b0-bfcd-11dc-9db2-0016cb926e68</Codec>
+	<Directory>/var/spool/pion</Directory>
+    <Filename>.*_access_log</Filename>
+    <Workspace>Log Processing</Workspace>
     <X>50</X>
     <Y>100</Y>
-    <Comparison>
-      <Term>urn:vocab:clf#useragent</Term>
-      <Type>contains</Type>
-      <Value>MSIE</Value>
-    </Comparison>
   </Reactor>
-  <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
-    <Name>Do Nothing</Name>
-    <Comment>Filter that does nothing</Comment>
+  <Reactor id="f4b63cc0-e58e-11dc-8476-0019e3f89cd2">
+    <Name>Do nothing reactor</Name>
+    <Comment>Does nothing -> just for testing</Comment>
     <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace</Workspace>
-    <X>150</X>
-    <Y>200</Y>
+    <Workspace>Log Processing</Workspace>
+    <X>300</X>
+    <Y>100</Y>
   </Reactor>
-  <Connection id="dc2ca920-dc1d-11dc-b241-0019e3f89cd2">
-  	<Type>reactor</Type>
-    <From>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>
-    <To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>
+  <Reactor id="40f1e0b8-e3f9-11dc-8bcd-0019e3f89cd2">
+    <Name>Web Log Writer</Name>
+    <Comment>Writes web log files to /tmp</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <Codec>a174c3b0-bfcd-11dc-9db2-0016cb926e68</Codec>
+    <Filename>/tmp/new.log</Filename>
+    <Workspace>Log Processing</Workspace>
+    <X>300</X>
+    <Y>250</Y>
+  </Reactor>
+  <Connection id="1972c0f6-e58f-11dc-81ca-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>b8b0854e-e3f6-11dc-9c56-0019e3f89cd2</From>
+    <To>f4b63cc0-e58e-11dc-8476-0019e3f89cd2</To>
   </Connection>
-  <Reactor id="153f6c40-cb78-11dc-0000-0019e3f89cd2">
-    <Name>Only Non-IE Requests</Name>
-    <Comment>Filter events that are requests from IE browsers</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace 2</Workspace>
-    <X>50</X>
-    <Y>100</Y>
-    <Comparison>
-      <Term>urn:vocab:clf#useragent</Term>
-      <Type>not-contains</Type>
-      <Value>MSIE</Value>
-    </Comparison>
-  </Reactor>
-  <Reactor id="0cc21558-cf84-11dc-0000-0019e3f89cd2">
-    <Name>Do Nothing 2</Name>
-    <Comment>another filter that does nothing</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace 2</Workspace>
-    <X>250</X>
-    <Y>200</Y>
-  </Reactor>
-  <Connection id="1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2">
-  	<Type>reactor</Type>
-    <From>153f6c40-cb78-11dc-0000-0019e3f89cd2</From>
-    <To>0cc21558-cf84-11dc-0000-0019e3f89cd2</To>
+  <Connection id="5ba36508-e3f9-11dc-9b97-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>f4b63cc0-e58e-11dc-8476-0019e3f89cd2</From>
+    <To>40f1e0b8-e3f9-11dc-8bcd-0019e3f89cd2</To>
   </Connection>
 </PionConfig>

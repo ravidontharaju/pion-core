@@ -20,9 +20,11 @@
 #include "SQLiteDatabase.hpp"
 #include <boost/filesystem/operations.hpp>
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of SQLiteDatabase
@@ -108,16 +110,16 @@ void SQLiteDatabase::updateVocabulary(const Vocabulary& v)
 {
 }
 
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new SQLiteDatabase objects
 extern "C" PION_PLUGIN_API pion::platform::Database *pion_create_SQLiteDatabase(void) {
-	return new pion::platform::SQLiteDatabase();
+	return new pion::plugins::SQLiteDatabase();
 }
 
 /// destroys SQLiteDatabase objects
-extern "C" PION_PLUGIN_API void pion_destroy_SQLiteDatabase(pion::platform::SQLiteDatabase *database_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_SQLiteDatabase(pion::plugins::SQLiteDatabase *database_ptr) {
 	delete database_ptr;
 }

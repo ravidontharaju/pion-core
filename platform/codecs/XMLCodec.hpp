@@ -25,7 +25,7 @@
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 ///
@@ -33,12 +33,12 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// (Work in progress...)
 ///
 class XMLCodec :
-	public Codec
+	public pion::platform::Codec
 {
 public:
 
 	/// constructs a new XMLCodec object
-	XMLCodec(void) : Codec() {}
+	XMLCodec(void) : pion::platform::Codec() {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~XMLCodec() {}
@@ -51,7 +51,7 @@ public:
 	 *
 	 * @return CodecPtr pointer to the cloned copy of the codec
 	 */
-	virtual CodecPtr clone(void) const;
+	virtual pion::platform::CodecPtr clone(void) const;
 
 	/**
 	 * writes an Event to an output stream
@@ -59,7 +59,7 @@ public:
 	 * @param out the output stream to which the Event will be written
 	 * @param e the Event to write to the output stream
 	 */
-	virtual void write(std::ostream& out, const Event& e);
+	virtual void write(std::ostream& out, const pion::platform::Event& e);
 
 	/**
 	 * reads an Event from an input stream
@@ -68,7 +68,7 @@ public:
 	 * @param e the Event read, if any; null if error
 	 * @return true if successful, false otherwise
 	 */
-	virtual bool read(std::istream& in, Event& e);
+	virtual bool read(std::istream& in, pion::platform::Event& e);
 
 	/**
 	 * sets configuration parameters for this Codec
@@ -77,7 +77,7 @@ public:
 	 * @param config_ptr pointer to a list of XML nodes containing Codec
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be
@@ -85,7 +85,7 @@ public:
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v);
+	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	
 private:
@@ -95,7 +95,7 @@ private:
 };
 
 
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

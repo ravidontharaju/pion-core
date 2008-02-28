@@ -21,9 +21,11 @@
 #include <pion/platform/ConfigManager.hpp>
 #include "TransformReactor.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of TransformReactor
@@ -126,16 +128,16 @@ void TransformReactor::operator()(const EventPtr& e)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new TransformReactor objects
 extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_TransformReactor(void) {
-	return new pion::platform::TransformReactor();
+	return new pion::plugins::TransformReactor();
 }
 
 /// destroys TransformReactor objects
-extern "C" PION_PLUGIN_API void pion_destroy_TransformReactor(pion::platform::TransformReactor *reactor_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_TransformReactor(pion::plugins::TransformReactor *reactor_ptr) {
 	delete reactor_ptr;
 }

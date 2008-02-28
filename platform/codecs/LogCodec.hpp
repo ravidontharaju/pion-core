@@ -35,14 +35,14 @@
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 ///
 /// LogCodec: used to encode and decode Events using standard log file formats
 ///
 class LogCodec :
-	public Codec
+	public pion::platform::Codec
 {
 public:
 
@@ -70,7 +70,7 @@ public:
 	
 	/// constructs a new LogCodec object
 	LogCodec(void)
-		: Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
+		: pion::platform::Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
 		m_flush_after_write(false), m_needs_to_write_headers(false)
 	{}
 
@@ -85,7 +85,7 @@ public:
 	 *
 	 * @return CodecPtr pointer to the cloned copy of the codec
 	 */
-	virtual CodecPtr clone(void) const;
+	virtual pion::platform::CodecPtr clone(void) const;
 	
 	/**
 	 * writes an Event to an output stream
@@ -93,7 +93,7 @@ public:
 	 * @param out the output stream to which the Event will be written
 	 * @param e the Event to write to the output stream
 	 */
-	virtual void write(std::ostream& out, const Event& e);
+	virtual void write(std::ostream& out, const pion::platform::Event& e);
 
 	/**
 	 * reads an Event from an input stream
@@ -102,7 +102,7 @@ public:
 	 * @param e the Event read, if any; null if error
 	 * @return true if successful, false otherwise
 	 */
-	virtual bool read(std::istream& in, Event& e);
+	virtual bool read(std::istream& in, pion::platform::Event& e);
 
 	/**
 	 * sets configuration parameters for this Codec
@@ -111,7 +111,7 @@ public:
 	 * @param config_ptr pointer to a list of XML nodes containing Codec
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be
@@ -119,7 +119,7 @@ public:
 	 *
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v);
+	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	/// resets the configuration for this Codec
 	inline void reset(void) {
@@ -140,7 +140,7 @@ private:
 	 * @param delim_end character used to delimit the end of the data field value
 	 */
 	inline void mapFieldToTerm(const std::string& field,
-							   const Vocabulary::Term& term,
+							   const pion::platform::Vocabulary::Term& term,
 							   char delim_start, char delim_end);
 	
 	/**
@@ -162,7 +162,7 @@ private:
 	/// data type used to configure how the log format describes Vocabulary Terms
 	struct LogField {
 		/// constructs a new LogField structure
-		LogField(const std::string& f, const Vocabulary::Term& t, char d_start, char d_end)
+		LogField(const std::string& f, const pion::platform::Vocabulary::Term& t, char d_start, char d_end)
 			: log_field(f), log_term(t), log_delim_start(d_start), log_delim_end(d_end)
 		{}
 
@@ -209,15 +209,15 @@ private:
 		inline void read(const char *buf, boost::any& value);
 
 		/// the name of the field
-		std::string			log_field;
+		std::string							log_field;
 		/// the Vocabulary Term that the data field represents
-		Vocabulary::Term	log_term;
+		pion::platform::Vocabulary::Term	log_term;
 		/// used to encode and decode date_time fields
-		PionTimeFacet		log_time_facet;
+		PionTimeFacet						log_time_facet;
 		/// a character that delimits the beginning of the field value, or '\0' if none
-		char				log_delim_start;
+		char								log_delim_start;
 		/// a character that delimits the end of the field value, or '\0' if none
-		char				log_delim_end;
+		char								log_delim_end;
 	};
 	
 	/// data type for a pointer to a LogField object
@@ -281,15 +281,15 @@ private:
 // inline member functions for LogCodec
 
 inline void LogCodec::mapFieldToTerm(const std::string& field,
-									 const Vocabulary::Term& term,
+									 const pion::platform::Vocabulary::Term& term,
 									 char delim_start, char delim_end)
 {
 	// prepare a new Logfield object
 	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
 	switch (term.term_type) {
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
 			field_ptr->log_time_facet.setFormat(term.term_format);
 			break;
 		default:
@@ -344,46 +344,46 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 		out << log_delim_start;
 	
 	switch(log_term.term_type) {
-		case Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_NULL:
 			writeEmptyValue(out);
 			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
+		case pion::platform::Vocabulary::TYPE_INT8:
+		case pion::platform::Vocabulary::TYPE_INT16:
+		case pion::platform::Vocabulary::TYPE_INT32:
 			out << boost::any_cast<boost::int32_t>(value);
 			break;
-		case Vocabulary::TYPE_INT64:
+		case pion::platform::Vocabulary::TYPE_INT64:
 			out << boost::any_cast<boost::int64_t>(value);
 			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
+		case pion::platform::Vocabulary::TYPE_UINT8:
+		case pion::platform::Vocabulary::TYPE_UINT16:
+		case pion::platform::Vocabulary::TYPE_UINT32:
 			out << boost::any_cast<boost::uint32_t>(value);
 			break;
-		case Vocabulary::TYPE_UINT64:
+		case pion::platform::Vocabulary::TYPE_UINT64:
 			out << boost::any_cast<boost::uint64_t>(value);
 			break;
-		case Vocabulary::TYPE_FLOAT:
+		case pion::platform::Vocabulary::TYPE_FLOAT:
 			out << boost::any_cast<float>(value);
 			break;
-		case Vocabulary::TYPE_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_DOUBLE:
 			out << boost::any_cast<double>(value);
 			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
 			out << boost::any_cast<long double>(value);
 			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+		case pion::platform::Vocabulary::TYPE_STRING:
+		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_CHAR:
 			out << boost::any_cast<const std::string&>(value);
 			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
 			log_time_facet.write(out, boost::any_cast<const PionDateTime&>(value));
 			break;
-		case Vocabulary::TYPE_OBJECT:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
 			// do nothing; this is not supported for Log data streams
 			break;
 	}
@@ -395,57 +395,57 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 inline void LogCodec::LogField::read(const char *buf, boost::any& value)
 {
 	switch(log_term.term_type) {
-		case Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_NULL:
 			value = boost::any();
 			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
+		case pion::platform::Vocabulary::TYPE_INT8:
+		case pion::platform::Vocabulary::TYPE_INT16:
+		case pion::platform::Vocabulary::TYPE_INT32:
 			value = boost::lexical_cast<boost::int32_t>(buf);
 			break;
-		case Vocabulary::TYPE_INT64:
+		case pion::platform::Vocabulary::TYPE_INT64:
 			value = boost::lexical_cast<boost::int64_t>(buf);
 			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
+		case pion::platform::Vocabulary::TYPE_UINT8:
+		case pion::platform::Vocabulary::TYPE_UINT16:
+		case pion::platform::Vocabulary::TYPE_UINT32:
 			value = boost::lexical_cast<boost::uint32_t>(buf);
 			break;
-		case Vocabulary::TYPE_UINT64:
+		case pion::platform::Vocabulary::TYPE_UINT64:
 			value = boost::lexical_cast<boost::uint64_t>(buf);
 			break;
-		case Vocabulary::TYPE_FLOAT:
+		case pion::platform::Vocabulary::TYPE_FLOAT:
 			value = boost::lexical_cast<float>(buf);
 			break;
-		case Vocabulary::TYPE_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_DOUBLE:
 			value = boost::lexical_cast<double>(buf);
 			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
 			value = boost::lexical_cast<long double>(buf);
 			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+		case pion::platform::Vocabulary::TYPE_STRING:
+		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_CHAR:
 			value = std::string(buf);
 			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
 		{
 			PionDateTime dt;
 			log_time_facet.fromString(buf, dt);
 			value = dt;
 			break;
 		}
-		case Vocabulary::TYPE_OBJECT:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
 			// do nothing; this is not supported for Log data streams
 			break;
 	}
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

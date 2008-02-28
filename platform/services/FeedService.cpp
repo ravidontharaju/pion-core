@@ -26,11 +26,12 @@
 #include "FeedService.hpp"
 
 using namespace pion::net;
+using namespace pion::server;
 using namespace pion::platform;
 
 
 namespace pion {		// begin namespace pion
-namespace server {		// begin namespace server (Pion Server)
+namespace plugins {		// begin namespace plugins
 
 
 // FeedHandler member functions
@@ -274,16 +275,16 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	}	
 }
 
-}	// end namespace server
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new FeedService objects
 extern "C" PION_PLUGIN_API pion::server::PlatformService *pion_create_FeedService(void) {
-	return new pion::server::FeedService();
+	return new pion::plugins::FeedService();
 }
 
 /// destroys FeedService objects
-extern "C" PION_PLUGIN_API void pion_destroy_FeedService(pion::server::FeedService *service_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_FeedService(pion::plugins::FeedService *service_ptr) {
 	delete service_ptr;
 }

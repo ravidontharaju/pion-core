@@ -21,9 +21,11 @@
 #include <pion/platform/ConfigManager.hpp>
 #include "FilterReactor.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of FilterReactor
@@ -126,16 +128,16 @@ void FilterReactor::operator()(const EventPtr& e)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new FilterReactor objects
 extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_FilterReactor(void) {
-	return new pion::platform::FilterReactor();
+	return new pion::plugins::FilterReactor();
 }
 
 /// destroys FilterReactor objects
-extern "C" PION_PLUGIN_API void pion_destroy_FilterReactor(pion::platform::FilterReactor *reactor_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_FilterReactor(pion::plugins::FilterReactor *reactor_ptr) {
 	delete reactor_ptr;
 }

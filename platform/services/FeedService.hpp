@@ -34,7 +34,7 @@
 
 
 namespace pion {		// begin namespace pion
-namespace server {		// begin namespace server (Pion Server)
+namespace plugins {		// begin namespace plugins
 
 
 ///
@@ -205,7 +205,7 @@ typedef boost::shared_ptr<FeedReader>	FeedReaderPtr;
 /// FeedService: Platform WebService used to send and receive Event streams
 ///
 class FeedService
-	: public PlatformService
+	: public pion::server::PlatformService
 {
 public:
 	
@@ -226,7 +226,7 @@ public:
 };
 
 	
-}	// end namespace server
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

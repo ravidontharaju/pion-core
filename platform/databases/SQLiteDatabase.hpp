@@ -26,7 +26,7 @@
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 ///
@@ -34,14 +34,14 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// (Work in progress...)
 ///
 class SQLiteDatabase :
-	public Database
+	public pion::platform::Database
 {
 public:
 	
 	/**
 	 * constructs a new SQLiteDatabase object
 	 */
-	SQLiteDatabase(void) : Database(), m_sqlite_db(NULL) {}
+	SQLiteDatabase(void) : pion::platform::Database(), m_sqlite_db(NULL) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteDatabase() { close(); }
@@ -51,7 +51,7 @@ public:
 	 *
 	 * @return DatabasePtr pointer to the cloned copy of the Database
 	 */
-	virtual DatabasePtr clone(void) const;
+	virtual pion::platform::DatabasePtr clone(void) const;
 
 	/**
 	 * opens the database connection
@@ -95,7 +95,7 @@ public:
 	 *
 	 * @return true if the query was successful, false otherwise
 	 */
-	virtual bool runQuery(QueryPtr query_ptr, Event& query_params) const;
+	virtual bool runQuery(QueryPtr query_ptr, pion::platform::Event& query_params) const;
 	
 	/**
 	 * runs a compiled query, ignoring any results returned
@@ -106,7 +106,7 @@ public:
 	 *
 	 * @return true if the query was successful, false otherwise
 	 */
-	virtual bool runQuery(QueryPtr query_ptr, EventPtrCollection& query_params) const;
+	virtual bool runQuery(QueryPtr query_ptr, pion::platform::EventPtrCollection& query_params) const;
 	
 	/**
 	 * runs a compiled query, retrieving zero or more results from the Database
@@ -117,8 +117,8 @@ public:
 	 *
 	 * @return true if the query was successful, false otherwise
 	 */
-	virtual bool runQuery(QueryPtr query_ptr, Event& query_params,
-						  EventPtrCollection& query_results) const;
+	virtual bool runQuery(QueryPtr query_ptr, pion::platform::Event& query_params,
+						  pion::platform::EventPtrCollection& query_results) const;
 	
 	/**
 	 * runs a compiled query, retrieving zero or more results from the Database
@@ -130,8 +130,8 @@ public:
 	 *
 	 * @return true if the query was successful, false otherwise
 	 */
-	virtual bool runQuery(QueryPtr query_ptr, EventPtrCollection& query_params,
-						  EventPtrCollection& query_results) const;
+	virtual bool runQuery(QueryPtr query_ptr, pion::platform::EventPtrCollection& query_params,
+						  pion::platform::EventPtrCollection& query_results) const;
 	
 	/**
 	 * this updates the Vocabulary information used by this Database; it should
@@ -139,7 +139,7 @@ public:
 	 *
 	 * @param v the Vocabulary that this Database will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v);
+	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 
 	
 private:
@@ -155,7 +155,7 @@ private:
 };
 
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

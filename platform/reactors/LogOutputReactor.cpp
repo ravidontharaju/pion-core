@@ -22,9 +22,11 @@
 #include <pion/platform/CodecFactory.hpp>
 #include "LogOutputReactor.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of LogOutputReactor
@@ -107,16 +109,16 @@ void LogOutputReactor::operator()(const EventPtr& e)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new LogOutputReactor objects
 extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_LogOutputReactor(void) {
-	return new pion::platform::LogOutputReactor();
+	return new pion::plugins::LogOutputReactor();
 }
 
 /// destroys LogOutputReactor objects
-extern "C" PION_PLUGIN_API void pion_destroy_LogOutputReactor(pion::platform::LogOutputReactor *reactor_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_LogOutputReactor(pion::plugins::LogOutputReactor *reactor_ptr) {
 	delete reactor_ptr;
 }

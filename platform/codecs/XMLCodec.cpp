@@ -19,9 +19,11 @@
 
 #include "XMLCodec.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of XMLCodec
@@ -62,16 +64,16 @@ void XMLCodec::updateVocabulary(const Vocabulary& v)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new XMLCodec objects
 extern "C" PION_PLUGIN_API pion::platform::Codec *pion_create_XMLCodec(void) {
-	return new pion::platform::XMLCodec();
+	return new pion::plugins::XMLCodec();
 }
 
 /// destroys XMLCodec objects
-extern "C" PION_PLUGIN_API void pion_destroy_XMLCodec(pion::platform::XMLCodec *codec_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_XMLCodec(pion::plugins::XMLCodec *codec_ptr) {
 	delete codec_ptr;
 }

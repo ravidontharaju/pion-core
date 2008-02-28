@@ -25,14 +25,14 @@
 
 
 namespace pion {		// begin namespace pion
-namespace server {		// begin namespace server (Pion Server)
+namespace plugins {		// begin namespace plugins
 
 	
 ///
 /// ConfigService: Platform WebService used to manage configuration
 ///
 class ConfigService
-	: public PlatformService
+	: public pion::server::PlatformService
 {
 public:
 	
@@ -53,7 +53,7 @@ public:
 };
 
 	
-}	// end namespace server
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

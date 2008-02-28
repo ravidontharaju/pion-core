@@ -28,7 +28,7 @@
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 ///
@@ -36,7 +36,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// (Work in progress...)
 ///
 class TransformReactor :
-	public Reactor
+	public pion::platform::Reactor
 {
 public:
 
@@ -82,7 +82,7 @@ public:
 	 * @param config_ptr pointer to a list of XML nodes containing Reactor
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
 	 * this updates the Vocabulary information used by this Reactor; it should
@@ -90,7 +90,7 @@ public:
 	 *
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
-	virtual void updateVocabulary(const Vocabulary& v);
+	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
@@ -99,13 +99,13 @@ public:
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const EventPtr& e);
+	virtual void operator()(const pion::platform::EventPtr& e);
 	
 	
 private:
 	
 	/// data type for a chain of Comparison rules
-	typedef std::vector<Comparison>		RuleChain;
+	typedef std::vector<pion::platform::Comparison>		RuleChain;
 
 	
 	/// name of the term element for Pion XML config files
@@ -129,7 +129,7 @@ private:
 };
 
 
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 #endif

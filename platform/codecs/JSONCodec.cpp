@@ -19,9 +19,11 @@
 
 #include "JSONCodec.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of JSONCodec
@@ -62,16 +64,16 @@ void JSONCodec::updateVocabulary(const Vocabulary& v)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new JSONCodec objects
 extern "C" PION_PLUGIN_API pion::platform::Codec *pion_create_JSONCodec(void) {
-	return new pion::platform::JSONCodec();
+	return new pion::plugins::JSONCodec();
 }
 
 /// destroys JSONCodec objects
-extern "C" PION_PLUGIN_API void pion_destroy_JSONCodec(pion::platform::JSONCodec *codec_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_JSONCodec(pion::plugins::JSONCodec *codec_ptr) {
 	delete codec_ptr;
 }

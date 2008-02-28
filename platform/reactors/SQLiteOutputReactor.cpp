@@ -19,9 +19,11 @@
 
 #include "SQLiteOutputReactor.hpp"
 
+using namespace pion::platform;
+
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of SQLiteOutputReactor
@@ -53,16 +55,16 @@ void SQLiteOutputReactor::operator()(const EventPtr& e)
 }
 	
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new SQLiteOutputReactor objects
 extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_SQLiteOutputReactor(void) {
-	return new pion::platform::SQLiteOutputReactor();
+	return new pion::plugins::SQLiteOutputReactor();
 }
 
 /// destroys SQLiteOutputReactor objects
-extern "C" PION_PLUGIN_API void pion_destroy_SQLiteOutputReactor(pion::platform::SQLiteOutputReactor *reactor_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_SQLiteOutputReactor(pion::plugins::SQLiteOutputReactor *reactor_ptr) {
 	delete reactor_ptr;
 }

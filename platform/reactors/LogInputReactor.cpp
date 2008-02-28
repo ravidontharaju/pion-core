@@ -25,11 +25,12 @@
 #include <pion/platform/CodecFactory.hpp>
 #include "LogInputReactor.hpp"
 
+using namespace pion::platform;
 namespace bfs = boost::filesystem;
 
 
 namespace pion {		// begin namespace pion
-namespace platform {	// begin namespace platform (Pion Platform Library)
+namespace plugins {		// begin namespace plugins
 
 
 // static members of LogInputReactor
@@ -229,16 +230,16 @@ void LogInputReactor::getLogFiles(LogFileCollection& files)
 }
 
 	
-}	// end namespace platform
+}	// end namespace plugins
 }	// end namespace pion
 
 
 /// creates new LogInputReactor objects
 extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_LogInputReactor(void) {
-	return new pion::platform::LogInputReactor();
+	return new pion::plugins::LogInputReactor();
 }
 
 /// destroys LogInputReactor objects
-extern "C" PION_PLUGIN_API void pion_destroy_LogInputReactor(pion::platform::LogInputReactor *reactor_ptr) {
+extern "C" PION_PLUGIN_API void pion_destroy_LogInputReactor(pion::plugins::LogInputReactor *reactor_ptr) {
 	delete reactor_ptr;
 }
