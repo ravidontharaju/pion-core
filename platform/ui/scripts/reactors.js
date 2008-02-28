@@ -47,7 +47,7 @@ pion.reactors.init = function() {
 		addWorkspace();
 		workspace_box = workspace_boxes[0];
 		surface = workspace_box.my_surface;
-		dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);			
+		dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 	} else {
 		reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
 		reactor_config_store.fetch({
@@ -62,17 +62,21 @@ pion.reactors.init = function() {
 				if (!workspace_box) {
 					addWorkspace(workspace_name);
 				}
-				
+				dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
+
 				// This simulates clicking where the reactor should go.
 				var dc = dojo.coords(workspace_box.node);
-				latest_event = { clientX: dc.x + parseInt(reactor_config_store.getValue(item, 'X')), clientY: dc.y + parseInt(reactor_config_store.getValue(item, 'Y')) };
+				pion.reactors.last_x = dc.x + parseInt(reactor_config_store.getValue(item, 'X'));
+				pion.reactors.last_y = dc.y + parseInt(reactor_config_store.getValue(item, 'Y'));
+				//latest_event = { clientX: dc.x + parseInt(reactor_config_store.getValue(item, 'X')), clientY: dc.y + parseInt(reactor_config_store.getValue(item, 'Y')) };
 
 				var id = reactor_config_store.getValue(item, '@id');
 				var reactor = createReactor(name, reactor_type, id);
 				reactor.workspace = workspace_box;
 
 				reactors_by_id[reactor.id] = reactor;
-				reactor.comment = reactor_config_store.getValue(item, 'Comment').toString();
+				var comment = reactor_config_store.getValue(item, 'Comment');
+				reactor.comment = comment? comment.toString() : "";
 				reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
 				workspace_box.node.appendChild(reactor);
 				makeReactorMoveable(reactor);
@@ -91,10 +95,10 @@ pion.reactors.init = function() {
 						var endNode = reactors_by_id[endNode_id];
 						workspace_box = startNode.workspace;
 						surface = workspace_box.my_surface;
-						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);			
+						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 						var line = surface.createPolyline().setStroke("black");
 						updateConnectionLine(line, startNode, endNode);
-						
+
 						startNode.reactor_outputs.push({node: endNode, line: line, id: connection_id});
 						endNode.reactor_inputs.push({node: startNode, line: line, id: connection_id});
 					},
@@ -105,7 +109,7 @@ pion.reactors.init = function() {
 						}
 						workspace_box = workspace_boxes[0];
 						surface = workspace_box.my_surface;
-						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);			
+						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 					}
 				});
 			}
@@ -140,6 +144,7 @@ pion.reactors.init = function() {
 						}
 					});
 
+/*
 	var prev_global_ops = 0;
 	var prev_events_in_for_workspace = 0;
 	setInterval(function() {
@@ -171,6 +176,7 @@ pion.reactors.init = function() {
 			}
 		});
 	}, 1000);
+*/
 }
 
 function addWorkspace(name) {
@@ -288,6 +294,8 @@ function makeScrollHandler(workspace_pane) {
 function updateLatestMouseUpEvent(e) {
 	latest_event = e;
 	console.debug("e = ", e);
+	pion.reactors.last_x = e.clientX;
+	pion.reactors.last_y = e.clientY;
 }
 
 function getNearbyGridPointInBox(constraintBox, currentLeftTop) {
@@ -388,6 +396,8 @@ function makeReactorMoveable(reactor) {
 	c.r = c.l + c.w - reactor.offsetWidth;
 	c.b = c.t + c.h - reactor.offsetHeight;
 	console.debug("latest_event: ", latest_event);
+	console.debug('pion.reactors.last_x = ', pion.reactors.last_x, ', pion.reactors.last_y = ', pion.reactors.last_y);
+
 	var cw = dojo.byId("reactor_config_content"); // Move to init()?
 	/**/
 	// The loop below no longer works since changes were made in handling the main stack container.
@@ -407,7 +417,8 @@ function makeReactorMoveable(reactor) {
 		cw = cw.parentNode;
 	} while (cw != document.body);
 	/**/
-	var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
+	var mouseLeftTop = {l: pion.reactors.last_x - totalOffsetLeft, t: pion.reactors.last_y - totalOffsetTop};
+	//var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
 	console.debug("mouseLeftTop: ", mouseLeftTop);
 	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
 	reactor.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
@@ -481,13 +492,43 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 	for (var i = 2; isDuplicateName('nothing', name); ++i) {
 		name = reactor_type + "_" + i;
 	}
-	var reactor = createReactor(name, reactor_type, '00000000-0000-0000-0000-000000000000');
 
-	//debugger;
-	console.debug("workspace_box.node.lastChild = ", workspace_box.node.lastChild);
-	workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
-
-	makeReactorMoveable(reactor);
+	// For now, we'll just continue faking new reactors except for FilterReactors, because for 
+	// other types, we need more data (e.g. filenames and codec IDs) first.
+	if (reactor_type == 'FilterReactor') {
+		var dc = dojo.coords(workspace_box.node);
+		var X = pion.reactors.last_x - dc.x;
+		var Y = pion.reactors.last_y - dc.y;
+		var post_data = '<PionConfig><Reactor><Name>' + name + '</Name><Plugin>' + reactor_type 
+					  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
+					  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y></Reactor></PionConfig>';
+		console.debug('post_data: ', post_data);
+		dojo.rawXhrPost({
+			url: '/config/reactors',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response){
+				var node = response.getElementsByTagName('Reactor')[0];
+				var id = node.getAttribute('id');
+				console.debug('id (from server): ', id);
+				var reactor = createReactor(name, reactor_type, id);
+				reactors_by_id[id] = reactor;
+				workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
+				makeReactorMoveable(reactor);
+			},
+			error: function(response, ioArgs) {
+				console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
+				return response;
+			}
+		});
+	} else {
+		id = '00000000-0000-0000-0000-000000000000';
+		var reactor = createReactor(name, reactor_type, id);
+		reactors_by_id[id] = reactor;
+		workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
+		makeReactorMoveable(reactor);
+	}
 }
 
 function handleDropOnReactor(source, nodes, copy, target) {
