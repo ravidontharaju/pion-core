@@ -421,6 +421,7 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .moveable .ops_per_sec {
 	margin-left: 60px;
 	font-size: 9px;
+	color: #999999;
 }
 
 .LogInputReactor {
@@ -578,7 +579,7 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 .tundra .add_new .dijitButtonNode {
-	background: #ffffff url("../images/button-add-off.png");
+	background: #ffffff url("../images/button-add-off.png") no-repeat;
 	border: none;
 	color: #366dba;
 	font-size: 16px;
@@ -729,4 +730,8 @@ This is a duplicate of #reactor_config_content for now.
 	background-repeat : repeat-y;
 	margin-left: 19px;
 	zoom: 1;	/* MOW: what the heck is this doing in here? */
+}
+
+.tundra .dijitAccordionPane-selected .dijitAccordionTitle {
+text-decoration: none;
 }
