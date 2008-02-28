@@ -398,16 +398,29 @@ This is a duplicate of #reactor_config_content for now.
 	background: #ffcccc; 
 }
 
-.tundra .moveable .dijitToggleButton {
-	border: solid red 1px;
+.tundra .moveable .dijitToggleButton .dijitButtonNode {
+	width: 16px;
+	height: 16px;
+	background-color: transparent;
+	background: url(../images/control-play.png) repeat-x;
+	margin-left: 20px;
+	border: 0px;
 }
 
-.tundra .moveable .dijitToggleButtonChecked {
-	border: solid green 1px;
+
+.tundra .moveable .dijitToggleButtonChecked .dijitButtonNode {
+	width: 16px;
+	height: 16px;
+	background-color: #ffffff;
+	background: url(../images/control-stop.png) repeat-x;
+	margin-left: 20px;
+	border: 0px;
+		
 }
 
 .tundra .moveable .ops_per_sec {
-	border: solid blue 1px;
+	margin-left: 60px;
+	font-size: 9px;
 }
 
 .LogInputReactor {
@@ -433,7 +446,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .LogOutputReactor {
 	background-color: #ffffff;
-	background: url(../images//bg-moveable-storage-logs.png) repeat;
+	background: url(../images/bg-moveable-storage-logs.png) repeat;
 }
 
 /* Tabs */
