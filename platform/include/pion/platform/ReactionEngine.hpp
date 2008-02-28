@@ -55,6 +55,13 @@ public:
 			: PionException("No reactors found for identifier: ", reactor_id) {}
 	};
 	
+	/// exception thrown if we are unable to find a connection with the same identifier
+	class ConnectionNotFoundException : public PionException {
+	public:
+		ConnectionNotFoundException(const std::string& connection_id)
+			: PionException("No connections found for identifier: ", connection_id) {}
+	};
+	
 	/// exception thrown if the config file contains a Reactor connection with a missing identifier
 	class EmptyConnectionIdException : public PionException {
 	public:
@@ -95,6 +102,14 @@ public:
 	public:
 		RemoveConnectionConfigException(const std::string& connection)
 			: PionException("Unable to remove a Connection from the Reactor configuration file: ", connection) {}
+	};
+	
+	/// exception thrown if the configuration info for a new connection is invalid
+	class BadConnectionConfigException : public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "New Reactor connection configuration is invalid";
+		}
 	};
 	
 	
@@ -229,8 +244,20 @@ public:
 	 *
 	 * @param from_id unique identifier associated with the Reactor events come from
 	 * @param to_id unique identifier associated with the Reactor events go to
+	 *
+	 * @return std::string unique identifier associated with the new Reactor connection
 	 */
-	void addReactorConnection(const std::string& from_id, const std::string& to_id);
+	std::string addReactorConnection(const std::string& from_id, const std::string& to_id);
+	
+	/**
+	 * connects the output of one Reactor to the input of another Reactor
+	 *
+	 * @param content_buf pointer to buffer containing XML config for the connection
+	 * @param content_length size of the content buffer, in bytes
+	 *
+	 * @return std::string unique identifier associated with the new Reactor connection
+	 */
+	std::string addReactorConnection(const char *content_buf, std::size_t content_length);
 	
 	/**
 	 * removes an existing connection between Reactors
@@ -239,6 +266,13 @@ public:
 	 * @param to_id unique identifier associated with the Reactor events go to
 	 */
 	void removeReactorConnection(const std::string& from_id, const std::string& to_id);
+	
+	/**
+	 * removes an existing connection between Reactors
+	 *
+	 * @param connection_id unique identifier associated with the Reactor connection
+	 */
+	void removeReactorConnection(const std::string& connection_id);
 	
 	/**
 	 * writes Reactor statistics to an output stream (as XML)
@@ -251,7 +285,7 @@ public:
 	 * writes info for particular connections to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the connection info into
-	 * @param only_id include only connections that involve this unique
+	 * @param only_id include only the connection that matches this unique
 	 *                identifier, or include all connections if empty
 	 */
 	void writeConnectionsXML(std::ostream& out, const std::string& connection_id) const;

@@ -327,8 +327,8 @@ void ReactionEngine::removeTempConnection(const std::string& connection_id)
 	}
 }
 	
-void ReactionEngine::addReactorConnection(const std::string& from_id,
-										  const std::string& to_id)
+std::string ReactionEngine::addReactorConnection(const std::string& from_id,
+												 const std::string& to_id)
 {
 	// make sure that the plug-in configuration file is open
 	if (! configIsOpen())
@@ -380,8 +380,34 @@ void ReactionEngine::addReactorConnection(const std::string& from_id,
 	saveConfigFile();
 	
 	PION_LOG_DEBUG(m_logger, "Added reactor connection: " << from_id << " -> " << to_id);
+	
+	return connection_id;
 }
-		
+
+std::string ReactionEngine::addReactorConnection(const char *content_buf,
+												 std::size_t content_length)
+{
+	// extract the XML config info from the content buffer
+	xmlNodePtr config_ptr = ConfigManager::createPluginConfig(CONNECTION_ELEMENT_NAME,
+															  content_buf,
+															  content_length);
+	if (config_ptr == NULL)
+		throw BadConnectionConfigException();
+	
+	// get the "From" value
+	std::string from_id;
+	if (! ConfigManager::getConfigOption(FROM_ELEMENT_NAME, from_id, config_ptr))
+		throw BadConnectionConfigException();
+	
+	// get the "To" value
+	std::string to_id;
+	if (! ConfigManager::getConfigOption(TO_ELEMENT_NAME, to_id, config_ptr))
+		throw BadConnectionConfigException();
+	
+	// call addReactorConnection() to do the real work
+	return addReactorConnection(from_id, to_id);
+}
+
 void ReactionEngine::removeReactorConnection(const std::string& from_id,
 											 const std::string& to_id)
 {
@@ -407,6 +433,36 @@ void ReactionEngine::removeReactorConnection(const std::string& from_id,
 	PION_LOG_DEBUG(m_logger, "Removed reactor connection: " << from_id << " -> " << to_id);
 }
 	
+void ReactionEngine::removeReactorConnection(const std::string& connection_id)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+	
+	// find the connection in our memory structures
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	ReactorConnectionList::iterator i = m_reactor_connections.begin();
+	while (i != m_reactor_connections.end()) {
+		if (i->m_connection_id == connection_id)
+			break;
+		++i;
+	}
+	if (i == m_reactor_connections.end())
+		throw ConnectionNotFoundException(connection_id);
+	
+	// remove the connection between the reactors
+	removeConnectionNoLock(i->m_from_id, i->m_to_id);
+	
+	// remove the connection from the config file
+	removeConnectionConfigNoLock(i->m_from_id, i->m_to_id);
+	
+	PION_LOG_DEBUG(m_logger, "Removed reactor connection: "
+				   << i->m_from_id << " -> " << i->m_to_id);
+
+	// remove the connection from memory structures
+	m_reactor_connections.erase(i);
+}
+
 void ReactionEngine::addConnectionNoLock(const std::string& connection_id,
 										 const std::string& from_id,
 										 const std::string& to_id)
@@ -549,6 +605,7 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 {
 	ConfigManager::writeBeginPionConfigXML(out);
 	
+	bool found_one = false;
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
 	// iterate through Reactor connections
@@ -558,6 +615,7 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 		if (only_id.empty() || reactor_i->m_connection_id == only_id
 			|| reactor_i->m_from_id == only_id || reactor_i->m_to_id == only_id)
 		{
+			found_one = true;
 			out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
 				<< "=\"" << reactor_i->m_connection_id << "\">" << std::endl
 				<< "\t\t<" << TYPE_ELEMENT_NAME << '>' << CONNECTION_TYPE_REACTOR
@@ -577,6 +635,7 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 		if (only_id.empty() || temp_i->m_connection_id == only_id
 			|| temp_i->m_reactor_id == only_id)
 		{
+			found_one = true;
 			out << "\t<" << CONNECTION_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
 				<< "=\"" << temp_i->m_connection_id << "\">" << std::endl
 				<< "\t\t<" << TYPE_ELEMENT_NAME << '>';
@@ -596,6 +655,9 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 		}
 	}
 
+	if (! found_one && ! only_id.empty())
+		throw ConnectionNotFoundException(only_id);
+	
 	ConfigManager::writeEndPionConfigXML(out);
 }
 	

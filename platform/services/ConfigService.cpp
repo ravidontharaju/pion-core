@@ -119,8 +119,13 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 
 		} else if (branches[1] == "stats") {
+			
+			// send statistics for all Reactors
 			getConfig().getReactionEngine().writeStatsXML(ss);
+			
 		} else if (branches.size() == 2) {
+			// branches[1] == reactor_id
+			
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Reactor's configuration
 
@@ -189,11 +194,56 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
+		
 	} else if (branches.front() == "connections") {
+		
 		if (branches.size() == 1) {
-			getConfig().getReactionEngine().writeConnectionsXML(ss);
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				
+				// retrieve configuration for all Reactor connections
+				getConfig().getReactionEngine().writeConnectionsXML(ss);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// create a new Reactor connection
+				std::string connection_id = getConfig().getReactionEngine().addReactorConnection(request->getContent(),
+																								 request->getContentLength());
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new connection's configuration
+				getConfig().getReactionEngine().writeConnectionsXML(ss, connection_id);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
 		} else {
-			getConfig().getReactionEngine().writeConnectionsXML(ss, branches[1]);
+			// branches[1] == connection_id
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				
+				// retrieve configuration for specific Reactor connections
+				getConfig().getReactionEngine().writeConnectionsXML(ss, branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+
+				// remove an existing Reactor connection
+				getConfig().getReactionEngine().removeReactorConnection(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
 		}
 	} else if (branches.front() == "services") {
 		if (branches.size() == 1) {

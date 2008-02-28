@@ -61,9 +61,9 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 
 	// make sure that the directory exists
 	if (! boost::filesystem::exists(m_log_directory) )
-		throw DirectoryNotFoundException(getId());
+		throw DirectoryNotFoundException(m_log_directory);
 	if (! boost::filesystem::is_directory(m_log_directory) )
-		throw NotADirectoryException(getId());
+		throw NotADirectoryException(m_log_directory);
 	
 	// get the filename regex to use for finding log files
 	std::string filename_str;

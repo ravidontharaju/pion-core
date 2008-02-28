@@ -265,4 +265,63 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveLogWriterReactor) {
 	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasReactor(m_log_writer_id));
 }
 
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewConnection) {
+	std::string connection_config_str = "<PionConfig><Connection>"
+	"<Type>reactor</Type>"
+	"<From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>"
+	"<To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>"
+	"</Connection></PionConfig>";
+	
+	// make a request to add a new Reactor
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_POST);
+	request.setResource("/config/connections/");
+	request.setContentLength(connection_config_str.size());
+	memcpy(request.createContentBuffer(), connection_config_str.c_str(), connection_config_str.size());
+	HTTPResponsePtr response_ptr(sendRequest(request));
+	
+	// check the response status code
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_CREATED);
+	
+	// parse the response content
+	xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
+									   response_ptr->getContentLength());
+	BOOST_REQUIRE(doc_ptr);
+	xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+	BOOST_REQUIRE(node_ptr);
+	BOOST_REQUIRE(node_ptr->children);
+	
+	// look for the Connection's node
+	node_ptr = ConfigManager::findConfigNodeByName("Connection", node_ptr->children);
+	BOOST_REQUIRE(node_ptr);
+	
+	// get the Connection's identifier
+	std::string connection_id;
+	BOOST_REQUIRE(ConfigManager::getNodeId(node_ptr, connection_id));
+
+	// make sure that the connection was added
+	std::stringstream ss;
+	// note: this would throw if the connection is not recognized
+	BOOST_CHECK_NO_THROW(m_platform_cfg.getReactionEngine().writeConnectionsXML(ss, connection_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveConnection) {
+	const std::string connection_id("1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2");
+	// make a request to remove the connection
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
+	request.setResource("/config/connections/" + connection_id);
+	HTTPResponsePtr response_ptr(sendRequest(request));
+	
+	// check the response status code
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	
+	// make sure that the connection was removed
+	std::stringstream ss;
+	// note: this should throw if the connection is not recognized
+	BOOST_CHECK_THROW(m_platform_cfg.getReactionEngine().writeConnectionsXML(ss, connection_id),
+					  ReactionEngine::ConnectionNotFoundException);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
