@@ -147,7 +147,7 @@
 <body class="tundra">
 
 <!-- data store for codec types -->
-	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="codecTypes.json"></div>
+	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="plugins/codecs.json"></div>
 
 	<div id="outer" style="visibility: hidden">
 		<div id="topBar">
@@ -331,7 +331,7 @@
 									<tr>
 										<td><label>Plug-In&nbsp;Type</label></td>
 										<td><input dojoType="dijit.form.FilteringSelect" onChange="handlePluginTypeChange" name="plugin_type" 
-												store="codecTypeStore" searchAttr="type_id" autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td>
+												store="codecTypeStore" searchAttr="label" autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td>
 									</tr>
 									<tr>
 										<td><label>Event&nbsp;Type</label></td>

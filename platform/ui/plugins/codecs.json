@@ -1,0 +1,8 @@
+{
+	identifier: 'plugin',
+	items: [
+		{plugin: 'LogCodec',  label: 'Log Format Codec'},
+		{plugin: 'JSONCodec', label: 'JSON Codec'},
+		{plugin: 'XMLCodec',  label: 'XML Codec'}
+	]
+}

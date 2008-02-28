@@ -144,7 +144,6 @@ pion.reactors.init = function() {
 						}
 					});
 
-/*
 	var prev_global_ops = 0;
 	var prev_events_in_for_workspace = 0;
 	setInterval(function() {
@@ -176,7 +175,6 @@ pion.reactors.init = function() {
 			}
 		});
 	}, 1000);
-*/
 }
 
 function addWorkspace(name) {
