@@ -260,13 +260,18 @@ private:
 		~OutputConnection() {}
 		
 		/// constructs a new OutputConnection to a Reactor
-		explicit OutputConnection(Reactor &reactor)
-			: m_reactor_ptr(&reactor), m_event_handler(boost::ref(reactor))
+		explicit OutputConnection(Reactor* reactor)
+			: m_reactor_ptr(reactor), m_event_handler(boost::ref(*reactor))
 		{}
-	
+
 		/// constructs a new OutputConnection to an EventHandler
 		explicit OutputConnection(EventHandler handler)
 			: m_reactor_ptr(NULL), m_event_handler(handler)
+		{}
+
+		/// standard copy constructor
+		OutputConnection(const OutputConnection& c)
+			: m_reactor_ptr(c.m_reactor_ptr), m_event_handler(c.m_event_handler)
 		{}
 
 		/// sends an Event over the OutputConnection

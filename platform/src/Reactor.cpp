@@ -70,7 +70,7 @@ void Reactor::addConnection(Reactor& output_reactor)
 	
 	// add the new connection
 	m_connections.insert(std::make_pair(output_reactor.getId(),
-										OutputConnection(output_reactor)));
+										OutputConnection(&output_reactor)));
 }
 
 void Reactor::addConnection(const std::string& connection_id,
