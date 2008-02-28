@@ -144,37 +144,39 @@ pion.reactors.init = function() {
 						}
 					});
 
-	var prev_global_ops = 0;
-	var prev_events_in_for_workspace = 0;
-	setInterval(function() {
-		dojo.xhrGet({
-			url: '/config/reactors/stats',
-			handleAs: 'xml',
-			timeout: 1000,
-			load: function(response, ioArgs) {
-				var node = response.getElementsByTagName('TotalOps')[0];
-				var global_ops = parseInt(dojo.isIE? node.xml : node.textContent);
-				dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
-				prev_global_ops = global_ops;
-				var events_in_for_workspace = 0;
-				var reactors = response.getElementsByTagName('Reactor');
-				dojo.forEach(reactors, function(n) {
-					var id = n.getAttribute('id');
-					if (reactors_by_id[id].workspace == workspace_box) {
-						var events_in_node = n.getElementsByTagName('EventsIn')[0];
-						events_in_for_workspace += parseInt(dojo.isIE? events_in_node.xml : events_in_node.textContent);
-					}
-				});
-				dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
-				prev_events_in_for_workspace = events_in_for_workspace;
-				return response;
-			},
-			error: function(response, ioArgs) {
-				console.error('HTTP status code: ', ioArgs.xhr.status);
-				return response;
-			}
-		});
-	}, 1000);
+	if (!file_protocol) {
+		var prev_global_ops = 0;
+		var prev_events_in_for_workspace = 0;
+		setInterval(function() {
+			dojo.xhrGet({
+				url: '/config/reactors/stats',
+				handleAs: 'xml',
+				timeout: 1000,
+				load: function(response, ioArgs) {
+					var node = response.getElementsByTagName('TotalOps')[0];
+					var global_ops = parseInt(dojo.isIE? node.xml : node.textContent);
+					dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
+					prev_global_ops = global_ops;
+					var events_in_for_workspace = 0;
+					var reactors = response.getElementsByTagName('Reactor');
+					dojo.forEach(reactors, function(n) {
+						var id = n.getAttribute('id');
+						if (reactors_by_id[id].workspace == workspace_box) {
+							var events_in_node = n.getElementsByTagName('EventsIn')[0];
+							events_in_for_workspace += parseInt(dojo.isIE? events_in_node.xml : events_in_node.textContent);
+						}
+					});
+					dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
+					prev_events_in_for_workspace = events_in_for_workspace;
+					return response;
+				},
+				error: function(response, ioArgs) {
+					console.error('HTTP status code: ', ioArgs.xhr.status);
+					return response;
+				}
+			});
+		}, 1000);
+	}
 }
 
 function addWorkspace(name) {
@@ -493,7 +495,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 
 	// For now, we'll just continue faking new reactors except for FilterReactors, because for 
 	// other types, we need more data (e.g. filenames and codec IDs) first.
-	if (reactor_type == 'FilterReactor') {
+	if (reactor_type == 'FilterReactor' && !file_protocol) {
 		var dc = dojo.coords(workspace_box.node);
 		var X = pion.reactors.last_x - dc.x;
 		var Y = pion.reactors.last_y - dc.y;
