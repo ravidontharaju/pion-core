@@ -133,8 +133,19 @@ pion.codecs.getHeight = function() {
 	return pion.codecs.height;
 }
 
+pion.codecs.config_store = new dojox.data.XmlStore({url: '/config/codecs'});
+
+// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+pion.codecs.config_store.fetchItemByIdentity = function(keywordArgs) {
+	pion.codecs.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
+}
+pion.codecs.config_store.getIdentity = function(item) {
+	return pion.codecs.config_store.getValue(item, '@id');
+}
+
+
 pion.codecs.init = function() {
-	codec_config_store = new dojox.data.XmlStore({url: '/config/codecs'});
+	codec_config_store = pion.codecs.config_store;
 
 	function onComplete(items, request){
 		selected_codec_pane.config_item = items[0];

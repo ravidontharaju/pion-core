@@ -53,11 +53,16 @@
 	<script type="text/javascript" src="dojo/dojox/grid/_grid/edit.js"></script>
 
 	<script type="text/javascript" src="scripts/pion.js"></script>
+
+	<!-- These are also included here just for debugging.  Only pion.js must be included,
+		 the rest are dojo.require'd as needed. -->
 	<script type="text/javascript" src="scripts/reactors.js"></script>
 	<script type="text/javascript" src="scripts/vocabularies.js"></script>
 	<script type="text/javascript" src="scripts/codecs.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
 	<script type="text/javascript" src="scripts/system.js"></script>
+	<script type="text/javascript" src="plugins/reactors/Reactor.js"></script>
+	<script type="text/javascript" src="plugins/reactors/FilterReactor.js"></script>
 	<script type="text/javascript">
 		var codec_grid_layout = [{
 			rows: [[
@@ -211,7 +216,7 @@
 								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
 										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img src="images/icon-log-output.png" width="148" height="25" alt="Log Output" /></div>
-                                        <div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
 										
 									</div>
 								</div>
@@ -569,35 +574,6 @@
 			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<h3>Output Connections</h3>
 		<div id="LogOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
-			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>
-	</div>
-	<div dojoType="dijit.Dialog" id="FilterReactor_dialog" class="reactor_dialog" title="Filter Reactor Configuration">
-		<table>
-			<tr>
-				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
-			</tr>
-			<tr>
-				<td><label>ID:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
-			</tr>
-			<tr>
-				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
-			</tr>
-		</table>
-		<div id="filter_reactor_grid" jsId="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
-			 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<h3>Input Connections</h3>
-		<div id="FilterReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
-			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<h3>Output Connections</h3>
-		<div id="FilterReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
 			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>

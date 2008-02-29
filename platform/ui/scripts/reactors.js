@@ -1,4 +1,5 @@
 dojo.provide("pion.reactors");
+dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.Dialog");
@@ -40,6 +41,17 @@ pion.reactors.getHeight = function() {
 pion.reactors.init = function() {
 	dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
 
+	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/reactors.json'});
+
+	pion.reactors.plugin_data_store.fetch({
+		onItem: function(item) {
+			reactor_package = "plugins.reactors." + item.plugin;
+			dojo.require(reactor_package);
+
+			// TODO: add reactor icon to sidebar
+		}
+	});
+
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 
@@ -74,11 +86,11 @@ pion.reactors.init = function() {
 				var reactor = createReactor(name, reactor_type, id);
 				reactor.workspace = workspace_box;
 
-				reactors_by_id[reactor.id] = reactor;
+				reactors_by_id[id] = reactor;
 				var comment = reactor_config_store.getValue(item, 'Comment');
 				reactor.comment = comment? comment.toString() : "";
 				reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
-				workspace_box.node.appendChild(reactor);
+				workspace_box.node.appendChild(reactor.domNode);
 				makeReactorMoveable(reactor);
 			},
 			onComplete: function(items, request) {
@@ -91,16 +103,16 @@ pion.reactors.init = function() {
 						var connection_id = reactor_config_store.getValue(item, '@id').toString();
 						console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id, ', with ID = ', connection_id);
 
-						var startNode = reactors_by_id[startNode_id];
-						var endNode = reactors_by_id[endNode_id];
-						workspace_box = startNode.workspace;
+						var start_reactor = reactors_by_id[startNode_id];
+						var end_reactor   = reactors_by_id[endNode_id];
+						workspace_box = start_reactor.workspace;
 						surface = workspace_box.my_surface;
 						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 						var line = surface.createPolyline().setStroke("black");
-						updateConnectionLine(line, startNode, endNode);
+						updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
 
-						startNode.reactor_outputs.push({node: endNode, line: line, id: connection_id});
-						endNode.reactor_inputs.push({node: startNode, line: line, id: connection_id});
+						start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
+						end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
 					},
 					onComplete: function(items, request) {
 						console.debug('done fetching Connections');
@@ -356,40 +368,21 @@ function updateConnectionLine(poly, start_node, end_node) {
 
 function createReactor(name, reactor_type, id) {
 	var new_div = document.createElement("div");
-	workspace_box.reactors.push(new_div);
-	new_div.name = name;
-	new_div.id = id;
-	var reactor_target = new dojo.dnd.Target(new_div, {accept: ["connector"]});
-	dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
-	new_div.className = "moveable " + reactor_type;
-	new_div.innerHTML = name;
-
-	var run_button = new dijit.form.ToggleButton();
-	run_button.setChecked(true); // reactors start out running
-	var button_node = run_button.domNode;
-	dojo.connect(button_node, 'click', function() {
-		dojo.xhrPut({
-			url: '/config/reactors/' + id + (run_button.checked? '/start' : '/stop'),
-			error: function(response, ioArgs) {
-				console.error('HTTP status code: ', ioArgs.xhr.status);
-				return response;
-			}
-		});
-	});
-	new_div.appendChild(run_button.domNode);
-
-	var ops_per_sec = document.createElement('span');
-	dojo.addClass(ops_per_sec, 'ops_per_sec');
-	ops_per_sec.innerHTML = '12345';
-	new_div.appendChild(ops_per_sec);
-	new_div.setAttribute("reactor_type", reactor_type);
-	new_div.reactor_inputs = [];
-	new_div.reactor_outputs = [];
-	return new_div;
+	plugin_class_name = "plugins.reactors." + reactor_type;
+	var plugin_class = dojo.getObject(plugin_class_name);
+	if (plugin_class) {
+		console.debug('found class ', plugin_class_name);
+		var reactor = new plugin_class({name: name, uuid: id}, new_div);
+	} else {
+		console.debug('class ', plugin_class_name, ' not found; using plugins.reactors.Reactor instead.');
+		var reactor = new plugins.reactors.Reactor({name: name, plugin: reactor_type, uuid: id}, new_div);
+	}
+	workspace_box.reactors.push(reactor);
+	return reactor;
 }
 
 function makeReactorMoveable(reactor) {
-	var m5 = new dojo.dnd.move.parentConstrainedMoveable(reactor, {area: "padding", within: true});
+	var m5 = new dojo.dnd.move.parentConstrainedMoveable(reactor.domNode, {area: "padding", within: true});
 	var c = m5.constraints();
 	// Since parts of the constraintBox are not calculated until onFirstMove() is called,
 	// calculate them here.
@@ -421,12 +414,12 @@ function makeReactorMoveable(reactor) {
 	//var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
 	console.debug("mouseLeftTop: ", mouseLeftTop);
 	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
-	reactor.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
-	reactor.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
-	reactor.style.position = "absolute";
+	reactor.domNode.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
+	reactor.domNode.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
+	reactor.domNode.style.position = "absolute";
 
 	// Add a context menu for the new reactor.
-	var menu = new dijit.Menu({targetNodeIds: [reactor]});
+	var menu = new dijit.Menu({targetNodeIds: [reactor.domNode]});
 	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(reactor);} }));
 	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(reactor);} }));
 
@@ -447,13 +440,10 @@ function makeReactorMoveable(reactor) {
 
 		//console.debug("reactor = ", reactor);
 		for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-			//console.debug("reactor.reactor_inputs[", i, "].node = ", reactor.reactor_inputs[i].node);
-			//console.debug("reactor.reactor_inputs[", i, "].line.rawNode = ", reactor.reactor_inputs[i].line.rawNode);
-			updateConnectionLine(reactor.reactor_inputs[i].line, reactor.reactor_inputs[i].node, reactor);
+			updateConnectionLine(reactor.reactor_inputs[i].line, reactor.reactor_inputs[i].source.domNode, reactor.domNode);
 		}
 		for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-			//console.debug("reactor.reactor_outputs[", i, "] = ", reactor.reactor_outputs[i]);
-			updateConnectionLine(reactor.reactor_outputs[i].line, reactor, reactor.reactor_outputs[i].node);
+			updateConnectionLine(reactor.reactor_outputs[i].line, reactor.domNode, reactor.reactor_outputs[i].sink.domNode);
 		}
 	};
 /*
@@ -467,7 +457,7 @@ function makeReactorMoveable(reactor) {
 }
 
 function handleDropOnWorkspace(source, nodes, copy, target) {
-	console.debug("handleDropOnWorkspace called, target.node.id = ", target.node.id, ", workspace_box.node.id = ", workspace_box.node.id);
+	console.debug("handleDropOnWorkspace called, target.node = ", target.node, ", workspace_box.node = ", workspace_box.node);
 	if (target != workspace_box) {
 		// So why was handleDropOnWorkspace called?  Because the manager is using a global canDrop flag.
 		// I added 
@@ -493,16 +483,36 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 		name = reactor_type + "_" + i;
 	}
 
-	// For now, we'll just continue faking new reactors except for FilterReactors, because for 
-	// other types, we need more data (e.g. filenames and codec IDs) first.
-	if (reactor_type == 'FilterReactor' && !file_protocol) {
+	var dialog_class_name = 'plugins.reactors.' + reactor_type + 'InitDialog';
+	var dialog_class = dojo.getObject(dialog_class_name);
+	if (dialog_class) {
+		var dialog = new dialog_class();
+	} else {
+		var dialog = new plugins.reactors.ReactorInitDialog({title: reactor_type + ' Initialization'});
+	}
+
+	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', dialog, 'onCancel')
+	});
+	dialog.show();
+	dialog.execute = function(dialogFields) {
+		console.debug(dialogFields);
 		var dc = dojo.coords(workspace_box.node);
 		var X = pion.reactors.last_x - dc.x;
 		var Y = pion.reactors.last_y - dc.y;
-		var post_data = '<PionConfig><Reactor><Name>' + name + '</Name><Plugin>' + reactor_type 
+		var post_data = '<PionConfig><Reactor><Plugin>' + reactor_type 
 					  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
-					  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y></Reactor></PionConfig>';
+					  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
+		for (var tag in dialogFields) {
+			console.debug('dialogFields.tag = ', dialogFields[tag]);
+			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+		}
+		post_data += '</Reactor></PionConfig>';
 		console.debug('post_data: ', post_data);
+		
 		dojo.rawXhrPost({
 			url: '/config/reactors',
 			contentType: "text/xml",
@@ -512,9 +522,11 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 				var node = response.getElementsByTagName('Reactor')[0];
 				var id = node.getAttribute('id');
 				console.debug('id (from server): ', id);
-				var reactor = createReactor(name, reactor_type, id);
+				var reactor = createReactor(dialogFields.Name, reactor_type, id);
+				reactor.comment = dialogFields.Comment;
 				reactors_by_id[id] = reactor;
-				workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
+				reactor.workspace = workspace_box;
+				workspace_box.node.replaceChild(reactor.domNode, workspace_box.node.lastChild);
 				makeReactorMoveable(reactor);
 			},
 			error: function(response, ioArgs) {
@@ -522,18 +534,12 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 				return response;
 			}
 		});
-	} else {
-		id = '00000000-0000-0000-0000-000000000000';
-		var reactor = createReactor(name, reactor_type, id);
-		reactors_by_id[id] = reactor;
-		workspace_box.node.replaceChild(reactor, workspace_box.node.lastChild);
-		makeReactorMoveable(reactor);
 	}
 }
 
 function handleDropOnReactor(source, nodes, copy, target) {
 	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
-	console.debug("target.targetState = ", target.targetState, ", isTracking = ", workspace_box.isTracking, ', target.node.lastChild = ', target.node.lastChild);
+	//console.debug("target.targetState = ", target.targetState, ", isTracking = ", workspace_box.isTracking, ', target.node.lastChild = ', target.node.lastChild);
 
 	// If target is not a reactor, return.  This happens when dropping reactors on the workspace, and seems to be a dnd bug. 
 	if (!target.node.hasAttribute('reactor_type')) return;
@@ -580,7 +586,7 @@ function handleDropOnReactor(source, nodes, copy, target) {
 		});
 	console.debug("created mouseConnection");
 
-	// the startpoint of the connection will be target.node, i.e. the node the connector was dropped on
+	// the startpoint of the connection will be the widget at target.node, i.e. the reactor the connector was dropped on
 	wrapperWithStartpoint = function(event) {
 		dojo.disconnect(mouseConnection);
 		console.debug("disconnected mouseConnection");
@@ -593,27 +599,49 @@ function handleDropOnReactor(source, nodes, copy, target) {
 	// TODO: disable everything except clicking on moveable's.
 }
 
-function handleSelectionOfConnectorEndpoint(event, startNode) {
+function handleSelectionOfConnectorEndpoint(event, source_target) {
 	workspace_box.isTracking = false;
 	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
-	console.debug('startNode = ', startNode);
-	var endNode = event.target;
-	console.debug('endNode = ', endNode);
+	var source_reactor = dijit.byNode(source_target);
+	console.debug('source_reactor = ', source_reactor);
+	var sink_reactor = dijit.byNode(event.target);
+	console.debug('sink_reactor = ', sink_reactor);
 
 	// Disconnect the click handlers on all moveable's.
 	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
-	var line = surface.createPolyline().setStroke("black");
-	updateConnectionLine(line, startNode, endNode);
-	
-	startNode.reactor_outputs.push({node: endNode, line: line, id: '00000000-0000-0000-0000-000000000000'});
-	endNode.reactor_inputs.push({node: startNode, line: line, id: '00000000-0000-0000-0000-000000000000'});
+	var post_data = '<PionConfig><Connection><Type>reactor</Type>'
+				  + '<From>' + source_reactor.uuid + '</From>'
+				  + '<To>' + sink_reactor.uuid + '</To>'
+				  + '</Connection></PionConfig>';
+	dojo.rawXhrPost({
+		url: '/config/connections',
+		contentType: "text/xml",
+		handleAs: "xml",
+		postData: post_data,
+		load: function(response){
+			var node = response.getElementsByTagName('Connection')[0];
+			var id = node.getAttribute('id');
+			console.debug('connection id (from server): ', id);
+
+			var line = surface.createPolyline().setStroke("black");
+			updateConnectionLine(line, source_reactor.domNode, sink_reactor.domNode);
+
+			source_reactor.reactor_outputs.push({sink: sink_reactor, line: line, id: id});
+			sink_reactor.reactor_inputs.push({source: source_reactor, line: line, id: id});
+		},
+		error: function(response, ioArgs) {
+			console.error('Error from rawXhrPost to /config/connections.  HTTP status code: ', ioArgs.xhr.status);
+			return response;
+		}
+	});
 }
 
 // Returns true if there is another reactor with the given name.
 // TODO: Should we check all the workspaces here instead of just the current one?
 function isDuplicateName(reactor, name) {
 	for (var i = 0; i < workspace_box.reactors.length; ++i) {
+		console.debug('name = ', name, ', workspace_box.reactors[i].name = ', workspace_box.reactors[i].name);
 		if (workspace_box.reactors[i] != reactor && workspace_box.reactors[i].name == name) {
 			return true;
 		}
@@ -622,13 +650,16 @@ function isDuplicateName(reactor, name) {
 }
 
 function showReactorConfigDialog(reactor) {
-	var reactor_type = reactor.getAttribute("reactor_type");
-	var dialog = dijit.byId(reactor_type + "_dialog");
+	if (reactor.plugin == 'FilterReactor') {
+		var dialog = new plugins.reactors.FilterReactorDialog();
+	} else {
+		var dialog = new plugins.reactors.ReactorDialog({title: reactor.plugin + ' Configuration'});
+	}
  	dijit.byNode(dojo.query("input[name='name']",    dialog.domNode)[0]).setValue(reactor.name);
-	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.id);
+	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.uuid);
 	dijit.byNode(dojo.query("input[name='comment']", dialog.domNode)[0]).setValue(reactor.comment);
 
-	if (reactor_type == 'FilterReactor') {
+	if (reactor.plugin == 'FilterReactor') {
 		if (!reactor.comparison_table) {
 			reactor.comparison_table = [];
 			for (var i = 0; i < reactor.comparisons.length; ++i) {
@@ -641,19 +672,22 @@ function showReactorConfigDialog(reactor) {
 			}
 		}
 		filter_reactor_grid_model.setData(reactor.comparison_table);
-		setTimeout("filter_reactor_grid.resize()", 200);
-		setTimeout("filter_reactor_grid.update()", 200);
+		var filter_reactor_grid = dialog.filter_reactor_grid;
+		setTimeout(function(){
+			filter_reactor_grid.update();
+			filter_reactor_grid.resize();
+		}, 200);
 	}
-	
+
 	var reactor_inputs_table = [];
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
 		var reactor_inputs_table_row = [];
-		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].node.name;
-		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].id;
+		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].source.name;
+		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].uuid;
 		reactor_inputs_table.push(reactor_inputs_table_row);
 	}
 	reactor_inputs_grid_model.setData(reactor_inputs_table);
-	var reactor_inputs_grid = dijit.byId(reactor_type + '_inputs_grid');
+	var reactor_inputs_grid = dialog.reactor_inputs_grid;
 	setTimeout(function(){
 		reactor_inputs_grid.update();
 		reactor_inputs_grid.resize();
@@ -665,13 +699,13 @@ function showReactorConfigDialog(reactor) {
 			reactor_inputs_grid.removeSelectedRows();
 
 			var reactor_input = reactor.reactor_inputs[e.rowIndex];
-			var incoming_reactor = reactor_input.node;
+			var incoming_reactor = reactor_input.source;
 			reactor_input.line.removeShape();
 			reactor.reactor_inputs.splice(e.rowIndex, 1);
 
 			// remove reactor from the outputs of incoming_reactor
 			for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-				if (incoming_reactor.reactor_outputs[j].node == reactor) {
+				if (incoming_reactor.reactor_outputs[j].sink == reactor) {
 					incoming_reactor.reactor_outputs.splice(j, 1);
 					break;
 				}
@@ -682,12 +716,12 @@ function showReactorConfigDialog(reactor) {
 	var reactor_outputs_table = [];
 	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
 		var reactor_outputs_table_row = [];
-		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].node.name;
-		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].id;
+		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].sink.name;
+		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].uuid;
 		reactor_outputs_table.push(reactor_outputs_table_row);
 	}
 	reactor_outputs_grid_model.setData(reactor_outputs_table);
-	var reactor_outputs_grid = dijit.byId(reactor_type + '_outputs_grid');
+	var reactor_outputs_grid = dialog.reactor_outputs_grid;
 	setTimeout(function(){
 		reactor_outputs_grid.update();
 		reactor_outputs_grid.resize();
@@ -699,13 +733,13 @@ function showReactorConfigDialog(reactor) {
 			reactor_outputs_grid.removeSelectedRows();
 
 			var reactor_output = reactor.reactor_outputs[e.rowIndex];
-			var outgoing_reactor = reactor_output.node;
+			var outgoing_reactor = reactor_output.sink;
 			reactor_output.line.removeShape();
 			reactor.reactor_outputs.splice(e.rowIndex, 1);
 
 			// remove reactor from the inputs of outgoing_reactor
 			for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-				if (outgoing_reactor.reactor_inputs[j].node == reactor) {
+				if (outgoing_reactor.reactor_inputs[j].source == reactor) {
 					outgoing_reactor.reactor_inputs.splice(j, 1);
 					break;
 				}
@@ -734,13 +768,13 @@ function showReactorConfigDialog(reactor) {
 	dialog.execute = function(dialogFields) { updateReactorConfig(dialogFields, reactor); }
 }
 
-function updateReactorConfig(dialogFields, node) {
-	node.name = dialogFields.name;
-	node.firstChild.nodeValue = dialogFields.name;
-	node.comment = dialogFields.comment;
+function updateReactorConfig(dialogFields, reactor) {
+	reactor.name = dialogFields.name;
+	reactor.domNode.firstChild.nodeValue = dialogFields.name;
+	reactor.comment = dialogFields.comment;
 	if (dialogFields.event_type) {
-		node.event_type = dialogFields.event_type;
-		console.debug('node.event_type set to ', node.event_type);
+		reactor.event_type = dialogFields.event_type;
+		console.debug('reactor.event_type set to ', reactor.event_type);
 	}
 }
 
@@ -759,31 +793,31 @@ function deleteReactor(reactor) {
 	// Remove the reactor from the outputs of incoming reactors and the inputs of
 	// incoming reactors, and remove the lines connecting them.
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-		var incomingReactor = reactor.reactor_inputs[i];
-		incomingReactor.line.removeShape();
+		var incoming_reactor = reactor.reactor_inputs[i].source;
+		reactor.reactor_inputs[i].line.removeShape();
 		
-		// remove reactor from the outputs of incomingReactor
-		for (var j = 0; j < incomingReactor.node.reactor_outputs.length; ++j) {
-			if (incomingReactor.node.reactor_outputs[j] == reactor) {
-				incomingReactor.node.reactor_outputs.splice(j, 1);
+		// remove reactor from the outputs of incoming_reactor
+		for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+			if (incoming_reactor.reactor_outputs[j] == reactor) {
+				incoming_reactor.reactor_outputs.splice(j, 1);
 			}
 		}
 	}
 	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-		var outgoingReactor = reactor.reactor_outputs[i];
-		outgoingReactor.line.removeShape();
+		var outgoing_reactor = reactor.reactor_outputs[i].sink;
+		reactor.reactor_outputs[i].line.removeShape();
 
-		// remove reactor from the inputs of outgoingReactor
-		for (var j = 0; j < outgoingReactor.node.reactor_inputs.length; ++j) {
-			if (outgoingReactor.node.reactor_inputs[j] == reactor) {
-				outgoingReactor.node.reactor_inputs.splice(j, 1);
+		// remove reactor from the inputs of outgoing_reactor
+		for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+			if (outgoing_reactor.reactor_inputs[j] == reactor) {
+				outgoing_reactor.reactor_inputs.splice(j, 1);
 			}
 		}
 	}
 
 	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
 	// itself from the list of reactors.
-	workspace_box.node.removeChild(reactor);
+	workspace_box.node.removeChild(reactor.domNode);
 	for (var j = 0; j < workspace_box.reactors.length; ++j) {
 		if (workspace_box.reactors[j] == reactor) {
 			workspace_box.reactors.splice(j, 1);

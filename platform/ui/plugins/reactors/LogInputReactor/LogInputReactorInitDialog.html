@@ -1,0 +1,34 @@
+<div class="dijitDialog reactor_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Log File Input Reactor Initialization</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<table>
+			<tr>
+				<td><label>Name:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>Comments:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td>
+			</tr>
+			<tr>
+				<td><label>Codec:</label></td>
+				<td><input dojoType="dijit.form.FilteringSelect" name="Codec" store="pion.codecs.config_store" searchAttr="Name"/></td>
+			</tr>
+			<tr>
+				<td><label>Directory:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="Directory"/></td>
+			</tr>
+			<tr>
+				<td><label>Filename Regex:</label></td>
+				<td><input dojoType="dijit.form.TextBox" name="Filename"/></td>
+			</tr>
+		</table>
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
+	</div>
+	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
+</div>
