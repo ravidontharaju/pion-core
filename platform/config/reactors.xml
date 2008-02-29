@@ -22,7 +22,7 @@
   <Reactor id="40f1e0b8-e3f9-11dc-8bcd-0019e3f89cd2">
     <Name>Web Log Writer</Name>
     <Comment>Writes web log files to /tmp</Comment>
-    <Plugin>FilterReactor</Plugin>
+    <Plugin>LogOutputReactor</Plugin>
     <Codec>a174c3b0-bfcd-11dc-9db2-0016cb926e68</Codec>
     <Filename>/tmp/new.log</Filename>
     <Workspace>Log Processing</Workspace>
