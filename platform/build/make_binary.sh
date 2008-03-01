@@ -2,10 +2,17 @@
 
 LIB_DIRECTORY=/usr/local/lib
 PLUGIN_LIB_SUFFIX=so
-SHARED_LIB_SUFFIX=dylib
-BOOST_SUFFIX=-mt-1_34_1
-UUID_LIB=libuuid.16
-LOG4CXX_LIB=liblog4cxx.10
+if test "$2" == "osx"; then
+	SHARED_LIB_SUFFIX=dylib
+	BOOST_SUFFIX=*-mt-1_34_1.$SHARED_LIB_SUFFIX
+	UUID_LIB=libuuid.16.$SHARED_LIB_SUFFIX
+	LOG4CXX_LIB=liblog4cxx.10.$SHARED_LIB_SUFFIX
+else
+	SHARED_LIB_SUFFIX=so
+	BOOST_SUFFIX=*-mt-1_34_1.$SHARED_LIB_SUFFIX.1.34.1
+	UUID_LIB=libuuid.$SHARED_LIB_SUFFIX.16
+	LOG4CXX_LIB=liblog4cxx.$SHARED_LIB_SUFFIX.10
+fi
 
 # Determine package name and binary output directory based on args
 if test "x$1" != "x"; then
@@ -31,14 +38,14 @@ mkdir $BIN_DIRECTORY/ui
 
 # copy our third party library files into "libs"
 echo "Copying binary files.."
-cp $LIB_DIRECTORY/$UUID_LIB.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/$LOG4CXX_LIB.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_thread$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_system$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_filesystem$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_regex$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_date_time$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/libboost_signals$BOOST_SUFFIX.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/$UUID_LIB $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/$LOG4CXX_LIB $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_thread$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_system$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_filesystem$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_regex$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_date_time$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_signals$BOOST_SUFFIX $BIN_DIRECTORY/libs
 
 # copy the Pion shared library files into "libs"
 cp common/src/.libs/libpion-common-*.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
