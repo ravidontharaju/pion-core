@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+	<VocabularyConfig>../../platform/config/vocabularies.xml</VocabularyConfig>
+	<CodecConfig>../../platform/config/codecs.xml</CodecConfig>
+	<DatabaseConfig>../../platform/config/databases.xml</DatabaseConfig>
+	<ReactorConfig>../../platform/config/reactors.xml</ReactorConfig>
+	<ServiceConfig>services.xml</ServiceConfig>
+	<LogConfig>../../platform/config/logconfig.txt</LogConfig>
+	<PluginPath>../../platform/codecs/.libs/</PluginPath>
+	<PluginPath>../../platform/reactors/.libs/</PluginPath>
+	<PluginPath>../../platform/services/.libs/</PluginPath>
+	<PluginPath>../../net/services/.libs/</PluginPath>
+</PionConfig>

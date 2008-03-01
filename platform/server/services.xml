@@ -2,14 +2,14 @@
 <PionConfig xmlns="http://purl.org/pion/config">
 	<Server id="main-server">
 		<Port>8080</Port>
-		<SSLKey>sslkey.pem</SSLKey>
+		<SSLKey>../../platform/config/sslkey.pem</SSLKey>
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>
 			<Plugin>FileService</Plugin>
 			<Resource>/</Resource>
-			<Option name="file">./ui/index.html</Option>
-			<Option name="directory">./ui/</Option>
+			<Option name="file">../../platform/ui/index.html</Option>
+			<Option name="directory">../../platform/ui/</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
