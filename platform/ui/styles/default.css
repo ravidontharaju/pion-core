@@ -26,6 +26,10 @@ body {
 	opacity:0.8;
 }
 
+#counterBackground.hidden {
+	width: 15px;
+}
+
 .counterTitle {
 	z-index: 3;
 	color: #ffffff;
@@ -34,6 +38,10 @@ body {
 	width: 185px;
 	padding: 10px 0 10px 10px;
 	float: left;
+}
+
+.hidden .counterTitle {
+	display: none;
 }
 
 .counterNumbersRight {
@@ -46,6 +54,10 @@ body {
 	float: left;
 	text-align: right;
 	line-height: 1.4;
+}
+
+.hidden .counterNumbersRight {
+	display: none;
 }
 
 .counterNumbersLeft {
@@ -61,12 +73,28 @@ body {
 	line-height: 1.4;
 }
 
+.hidden .counterNumbersLeft {
+	display: none;
+}
+
 .counterToggle {
 	z-index: 3;
 	color: #ffffff;
 	width: 15px;
 	padding: 0;
 	float: left;
+}
+
+#ops_toggle_button {
+	width: 15px;
+	height: 50px;
+	border: 0;
+	padding: 0;
+	background: url("../images/reactor-counter-toggle.png");
+}
+
+.hidden #ops_toggle_button {
+	background: url("../images/control-play.png");
 }
 
 h1 {

@@ -41,6 +41,15 @@ pion.reactors.getHeight = function() {
 pion.reactors.init = function() {
 	dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
 
+	var ops_toggle_button = dijit.byId('ops_toggle_button');
+	dojo.connect(ops_toggle_button.domNode, 'click', function() {
+		if (ops_toggle_button.checked) {
+			dojo.addClass(dojo.byId('counterBackground'), 'hidden');
+		} else {
+			dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
+		}
+	});
+
 	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/reactors.json'});
 
 	pion.reactors.plugin_data_store.fetch({
@@ -160,33 +169,39 @@ pion.reactors.init = function() {
 		var prev_global_ops = 0;
 		var prev_events_in_for_workspace = 0;
 		setInterval(function() {
-			dojo.xhrGet({
-				url: '/config/reactors/stats',
-				handleAs: 'xml',
-				timeout: 1000,
-				load: function(response, ioArgs) {
-					var node = response.getElementsByTagName('TotalOps')[0];
-					var global_ops = parseInt(dojo.isIE? node.xml : node.textContent);
-					dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
-					prev_global_ops = global_ops;
-					var events_in_for_workspace = 0;
-					var reactors = response.getElementsByTagName('Reactor');
-					dojo.forEach(reactors, function(n) {
-						var id = n.getAttribute('id');
-						if (reactors_by_id[id].workspace == workspace_box) {
-							var events_in_node = n.getElementsByTagName('EventsIn')[0];
-							events_in_for_workspace += parseInt(dojo.isIE? events_in_node.xml : events_in_node.textContent);
-						}
-					});
-					dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
-					prev_events_in_for_workspace = events_in_for_workspace;
-					return response;
-				},
-				error: function(response, ioArgs) {
-					console.error('HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
+			if (!ops_toggle_button.checked) {
+				dojo.xhrGet({
+					url: '/config/reactors/stats',
+					handleAs: 'xml',
+					timeout: 1000,
+					load: function(response, ioArgs) {
+						var node = response.getElementsByTagName('TotalOps')[0];
+						var global_ops = parseInt(dojo.isIE? node.xml : node.textContent);
+						dojo.byId('global_ops').innerHTML = global_ops - prev_global_ops;
+						prev_global_ops = global_ops;
+						var events_in_for_workspace = 0;
+						var reactors = response.getElementsByTagName('Reactor');
+						dojo.forEach(reactors, function(n) {
+							var id = n.getAttribute('id');
+							var reactor = reactors_by_id[id];
+							if (reactor.workspace == workspace_box) {
+								var events_in_node = n.getElementsByTagName('EventsIn')[0];
+								var events_in = parseInt(dojo.isIE? events_in_node.xml : events_in_node.textContent);
+								reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
+								reactor.prev_events_in = events_in;
+								events_in_for_workspace += events_in;
+							}
+						});
+						dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
+						prev_events_in_for_workspace = events_in_for_workspace;
+						return response;
+					},
+					error: function(response, ioArgs) {
+						console.error('HTTP status code: ', ioArgs.xhr.status);
+						return response;
+					}
+				});
+			}
 		}, 1000);
 	}
 }

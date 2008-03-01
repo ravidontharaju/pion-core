@@ -18,6 +18,7 @@ dojo.declare("plugins.reactors.Reactor",
 			console.debug('Reactor.postCreate: ', this.domNode);
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];
+			this.prev_events_in = 0;
 			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
 			dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 
@@ -40,10 +41,10 @@ dojo.declare("plugins.reactors.Reactor",
 			});
 			this.domNode.appendChild(run_button.domNode);
 
-			var ops_per_sec = document.createElement('span');
-			dojo.addClass(ops_per_sec, 'ops_per_sec');
-			ops_per_sec.innerHTML = '12345';
-			this.domNode.appendChild(ops_per_sec);
+			this.ops_per_sec = document.createElement('span');
+			dojo.addClass(this.ops_per_sec, 'ops_per_sec');
+			this.ops_per_sec.innerHTML = '12345';
+			this.domNode.appendChild(this.ops_per_sec);
 			this.domNode.setAttribute("reactor_type", this.plugin);
 
 			var store = pion.reactors.plugin_data_store;
