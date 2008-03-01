@@ -19,6 +19,7 @@ http://www.pion.org/projects/pion-platform/documentation/libraries
 This distribution includes the following files:
 
 README.txt         This README file
+HISTORY.txt        Pion Platform version history (or "change log")
 LICENSE.txt        The GNU Affero General Public License
 Pion.app           Mac OS X (10.5 / Intel) binary application
 

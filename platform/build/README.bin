@@ -22,8 +22,9 @@ config/            Directory containing Pion configuration files
 libs/              Directory containing Pion & third party library files
 plugins/           Directory containing Pion plugin files
 ui/                Directory containing Pion user interface files
-pion               the Pion server executable
+pion               The Pion Platform server executable
 start_pion.sh      Unix shell script used to start Pion
+HISTORY.txt        Pion Platform version history (or "change log")
 LICENSE.txt        The GNU Affero General Public License
 README.txt         This README file
 

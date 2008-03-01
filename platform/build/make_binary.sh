@@ -71,6 +71,7 @@ cp platform/server/.libs/pion $BIN_DIRECTORY
 
 # copy other misc files
 cp COPYING $BIN_DIRECTORY/LICENSE.txt
+cp ChangeLog $BIN_DIRECTORY/HISTORY.txt
 cp platform/build/README.bin $BIN_DIRECTORY/README.txt
 cp platform/build/start_pion.sh $BIN_DIRECTORY
 
@@ -96,6 +97,7 @@ if test "$2" == "osx"; then
 	cp platform/build/appIcon.icns $OSX_BIN_DIRECTORY/Pion.app/Contents/Resources
 	# Copy other misc files
 	cp COPYING $OSX_BIN_DIRECTORY/LICENSE.txt
+	cp ChangeLog $OSX_BIN_DIRECTORY/HISTORY.txt
 	cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt
 	(cd bin/osx; zip -qr9 $TARBALL_NAME-app.zip $PACKAGE_NAME)
 	mv ./bin/osx/$TARBALL_NAME-app.zip ./bin/
