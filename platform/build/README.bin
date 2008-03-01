@@ -43,14 +43,39 @@ http://www.pion.org/projects/pion-platform/tour
 To stop Pion, type Ctrl-C if it is running in the foreground, or
 "killall pion" if it is running in the background.
 
+Please note that this is an ALPHA release.  It is intended for preview
+purposes only, and is missing important functionality that we plan to include
+in the final 1.0 release.  Certain aspects of Pion may change substantially
+in future releases.  Do not use this release for any production purposes,
+since it may not be compatible with future releases, and it is likely that
+it may cause you to lose data.
+
+This release has the following limitations:
+
+a) User authentication has not yet been implemented.  You can create, edit
+   and remove user accounts using the UI, but this data is not currently
+   being saved or used in any way.
+
+b) The following plugins are not functional: JSONCodec, XMLCodec and the
+   TransformReactor
+
+c) The LogInputReactor is missing a significant amount of functionality that
+   we plan to add in future releases.
+
+d) The LogOutputReactor does not support log file rotation or compression.
+
+e) The running states of Reactors (started/stopped) are not saved in the
+   configuration files, and therefore are lost if the server is restarted.
+
+Please see our ticket-tracking system for more information on planned
+functionality, known problems, or to report bugs:
+http://www.pion.org/ticket-tracking
+
 For online assistance, please see our user forums at:
 http://www.pion.org/forum
 
 Also, our mailing lists are available at:
 http://www.pion.org/mailing-lists
-
-To report problems, please see our ticket-tracking system at:
-http://www.pion.org/ticket-tracking
 
 For commercial support & maintenance, alternative licensing options and
 professional services, please contact Atomic Labs, Inc. at:
