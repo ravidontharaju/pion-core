@@ -790,39 +790,54 @@ function deleteReactorIfConfirmed(reactor) {
 function deleteReactor(reactor) {
 	console.debug('deleting ', reactor.name);
 
-	// Remove the reactor from the outputs of incoming reactors and the inputs of
-	// incoming reactors, and remove the lines connecting them.
-	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-		var incoming_reactor = reactor.reactor_inputs[i].source;
-		reactor.reactor_inputs[i].line.removeShape();
-		
-		// remove reactor from the outputs of incoming_reactor
-		for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-			if (incoming_reactor.reactor_outputs[j] == reactor) {
-				incoming_reactor.reactor_outputs.splice(j, 1);
-			}
-		}
-	}
-	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-		var outgoing_reactor = reactor.reactor_outputs[i].sink;
-		reactor.reactor_outputs[i].line.removeShape();
+	dojo.xhrDelete({
+		url: '/config/reactors/' + reactor.uuid,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			console.debug('xhrDelete for url = /config/reactors/', reactor.uuid, '; HTTP status code: ', ioArgs.xhr.status);
 
-		// remove reactor from the inputs of outgoing_reactor
-		for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-			if (outgoing_reactor.reactor_inputs[j] == reactor) {
-				outgoing_reactor.reactor_inputs.splice(j, 1);
+			// Remove the reactor from the outputs of incoming reactors and the inputs of
+			// incoming reactors, and remove the lines connecting them.
+			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+				var incoming_reactor = reactor.reactor_inputs[i].source;
+				reactor.reactor_inputs[i].line.removeShape();
+				
+				// remove reactor from the outputs of incoming_reactor
+				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+					if (incoming_reactor.reactor_outputs[j] == reactor) {
+						incoming_reactor.reactor_outputs.splice(j, 1);
+					}
+				}
 			}
-		}
-	}
+			for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+				var outgoing_reactor = reactor.reactor_outputs[i].sink;
+				reactor.reactor_outputs[i].line.removeShape();
 
-	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
-	// itself from the list of reactors.
-	workspace_box.node.removeChild(reactor.domNode);
-	for (var j = 0; j < workspace_box.reactors.length; ++j) {
-		if (workspace_box.reactors[j] == reactor) {
-			workspace_box.reactors.splice(j, 1);
+				// remove reactor from the inputs of outgoing_reactor
+				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+					if (outgoing_reactor.reactor_inputs[j] == reactor) {
+						outgoing_reactor.reactor_inputs.splice(j, 1);
+					}
+				}
+			}
+
+			// Remove the reactor's node from the DOM tree, and finally, remove the reactor
+			// itself from the list of reactors.
+			workspace_box.node.removeChild(reactor.domNode);
+			for (var j = 0; j < workspace_box.reactors.length; ++j) {
+				if (workspace_box.reactors[j] == reactor) {
+					workspace_box.reactors.splice(j, 1);
+				}
+			}
+
+			return response;
+		},
+		error: function(response, ioArgs) {
+			console.error('HTTP status code: ', ioArgs.xhr.status);
+			return response;
 		}
-	}
+	});	
 }
 
 dojo.subscribe("mainTabContainer-selectChild", selected);
