@@ -64,17 +64,32 @@ cp platform/server/.libs/pion $BIN_DIRECTORY
 
 # copy other misc files
 cp COPYING $BIN_DIRECTORY/LICENSE.txt
+cp platform/build/README.bin $BIN_DIRECTORY/README.txt
 cp platform/build/start_pion.sh $BIN_DIRECTORY
 
 # create tarballs & zip file
 echo "Creating binary tarballs.."
-(cd bin; tar cfz $PACKAGE_NAME.tar.gz $PACKAGE_NAME)
-(cd bin; tar cfj $PACKAGE_NAME.tar.bz2 $PACKAGE_NAME)
-(cd bin; zip -qr9 $PACKAGE_NAME.zip $PACKAGE_NAME)
+if test "x$2" != "x"; then
+	TARBALL_NAME=$PACKAGE_NAME-$2
+else
+	TARBALL_NAME=$PACKAGE_NAME
+fi
+(cd bin; tar cfz $TARBALL_NAME.tar.gz $PACKAGE_NAME)
+(cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME)
+(cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME)
 
 if test "$2" == "osx"; then
 	# Build application bundle for Mac OS X
+	OSX_BIN_DIRECTORY=./bin/osx/$PACKAGE_NAME
 	echo "Building Mac OS X application bundle.."
-	rm -rf ./bin/Pion.app
-	platypus -V "0.5.3" -a "Pion CEP Platform" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $BIN_DIRECTORY/LICENSE.txt -f $BIN_DIRECTORY/config -f $BIN_DIRECTORY/libs -f $BIN_DIRECTORY/pion -f $BIN_DIRECTORY/plugins -f $BIN_DIRECTORY/ui -I org.pion.Pion platform/build/start_osx.sh ./bin/Pion
+	rm -rf ./bin/osx
+	mkdir -p ./bin/osx/$PACKAGE_NAME
+	platypus -V $1 -a "Pion CEP Platform" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $BIN_DIRECTORY/config -f $BIN_DIRECTORY/libs -f $BIN_DIRECTORY/pion -f $BIN_DIRECTORY/plugins -f $BIN_DIRECTORY/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_BIN_DIRECTORY/Pion
+	# Platypus' icon support is broken; copy file into .app package
+	cp platform/build/appIcon.icns $OSX_BIN_DIRECTORY/Pion.app/Contents/Resources
+	# Copy other misc files
+	cp COPYING $OSX_BIN_DIRECTORY/LICENSE.txt
+	cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt
+	(cd bin/osx; zip -qr9 $TARBALL_NAME-app.zip $PACKAGE_NAME)
+	mv ./bin/osx/$TARBALL_NAME-app.zip ./bin/
 fi

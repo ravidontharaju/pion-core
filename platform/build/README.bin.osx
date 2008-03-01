@@ -1,0 +1,45 @@
+Pion Platform: a development platform for Complex Event Processing (CEP)
+
+Copyright (C) 2007-2008 Atomic Labs, Inc.
+
+Home page:  http://www.pion.org
+
+The Pion Platform is published under the GNU Affero General Public License.
+See LICENSE.txt for licensing information.  Alternative commercial licenses
+are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
+
+Pion's source code can be downloaded from our website at:
+http://www.pion.org/projects/pion-platform/download
+
+This binary distribution may include several third party libraries which are
+used by Pion.  A list of these libraries along with license information and
+links to download source code is available at the following URL:
+http://www.pion.org/projects/pion-platform/documentation/libraries
+
+This distribution includes the following files:
+
+README.txt         This README file
+LICENSE.txt        The GNU Affero General Public License
+Pion.app           Mac OS X (10.5 / Intel) binary application
+
+To start Pion, just double-click on the Pion.app (or "Pion") application.
+This will start the Pion server and open a log window on your desktop.
+Once the server is running, open your favorite web browser and point it to
+the following URL:  https://localhost:8080
+
+This will open the Pion user interface to the "Reactors configuration" page.
+For an intro to Pion's user interface, please see the online tour at:
+http://www.pion.org/projects/pion-platform/tour
+
+For online assistance, please see our user forums at:
+http://www.pion.org/forum
+
+Also, our mailing lists are available at:
+http://www.pion.org/mailing-lists
+
+To report problems, please see our ticket-tracking system at:
+http://www.pion.org/ticket-tracking
+
+For commercial support & maintenance, alternative licensing options and
+professional services, please contact Atomic Labs, Inc. at:
+http://www.atomiclabs.com/contact/

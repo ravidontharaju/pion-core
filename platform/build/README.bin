@@ -1,0 +1,56 @@
+Pion Platform: a development platform for Complex Event Processing (CEP)
+
+Copyright (C) 2007-2008 Atomic Labs, Inc.
+
+Home page:  http://www.pion.org
+
+The Pion Platform is published under the GNU Affero General Public License.
+See LICENSE.txt for licensing information.  Alternative commercial licenses
+are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
+
+Pion's source code can be downloaded from our website at:
+http://www.pion.org/projects/pion-platform/download
+
+This binary distribution may include several third party libraries which are
+used by Pion.  A list of these libraries along with license information and
+links to download source code is available at the following URL:
+http://www.pion.org/projects/pion-platform/documentation/libraries
+
+This distribution includes the following files:
+
+config/            Directory containing Pion configuration files
+libs/              Directory containing Pion & third party library files
+plugins/           Directory containing Pion plugin files
+ui/                Directory containing Pion user interface files
+pion               the Pion server executable
+start_pion.sh      Unix shell script used to start Pion
+LICENSE.txt        The GNU Affero General Public License
+README.txt         This README file
+
+To start Pion, just run the "./start_pion.sh" script from a command shell.
+This will setup your environment paths and start the Pion server executable.
+To run Pion as a background daemon, run "./start_pion.sh -D" 
+
+Once the server is running, open your favorite web browser and point it to
+the following URL:
+https://localhost:8080
+
+This will open the Pion user interface to the "Reactors configuration" page.
+For an intro to Pion's user interface, please see the online tour at:
+http://www.pion.org/projects/pion-platform/tour
+
+To stop Pion, type Ctrl-C if it is running in the foreground, or
+"killall pion" if it is running in the background.
+
+For online assistance, please see our user forums at:
+http://www.pion.org/forum
+
+Also, our mailing lists are available at:
+http://www.pion.org/mailing-lists
+
+To report problems, please see our ticket-tracking system at:
+http://www.pion.org/ticket-tracking
+
+For commercial support & maintenance, alternative licensing options and
+professional services, please contact Atomic Labs, Inc. at:
+http://www.atomiclabs.com/contact/
