@@ -789,7 +789,7 @@ function showReactorConfigDialog(reactor) {
 
 function updateReactorConfig(dialogFields, reactor) {
 	reactor.name = dialogFields.name;
-	reactor.domNode.firstChild.nodeValue = dialogFields.name;
+	reactor.name_span.innerHTML = dialogFields.name;
 	reactor.comment = dialogFields.comment;
 	if (dialogFields.event_type) {
 		reactor.event_type = dialogFields.event_type;
