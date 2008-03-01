@@ -262,10 +262,12 @@ function addWorkspace(name) {
 	new_workspace.isTracking = false;
 
 	// Add a context menu, for both the workspace content pane and the tab button.
-	var menu = new dijit.Menu({targetNodeIds: [workspace_pane.controlButton.domNode, new_workspace.node]});
-	menu.addChild(new dijit.MenuItem({ label: "Edit workspace configuration", onClick: function(){showWorkspaceConfigDialog(workspace_pane);} }));
-	menu.addChild(new dijit.MenuItem({ label: "Delete workspace", onClick: function(){deleteWorkspaceIfConfirmed(workspace_pane);} }));
-
+	if (!firefox_on_mac) {
+		var menu = new dijit.Menu({targetNodeIds: [workspace_pane.controlButton.domNode, new_workspace.node]});
+		menu.addChild(new dijit.MenuItem({ label: "Edit workspace configuration", onClick: function(){showWorkspaceConfigDialog(workspace_pane);} }));
+		menu.addChild(new dijit.MenuItem({ label: "Delete workspace", onClick: function(){deleteWorkspaceIfConfirmed(workspace_pane);} }));
+	}
+	
 	new_workspace.node.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 	workspace_pane.controlButton.domNode.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 /*
@@ -434,11 +436,13 @@ function makeReactorMoveable(reactor) {
 	reactor.domNode.style.position = "absolute";
 
 	// Add a context menu for the new reactor.
-	var menu = new dijit.Menu({targetNodeIds: [reactor.domNode]});
-	menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(reactor);} }));
-	menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(reactor);} }));
-
-	dojo.connect(reactor, 'dblclick', function(event) {
+	if (!firefox_on_mac) {
+		var menu = new dijit.Menu({targetNodeIds: [reactor.domNode]});
+		menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(reactor);} }));
+		menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(reactor);} }));
+	}
+	
+	dojo.connect(reactor.domNode, 'dblclick', function(event) {
 		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
 		showReactorConfigDialog(reactor);
 	});

@@ -16,11 +16,13 @@ var codec_config_page_initialized = false;
 var user_config_page_initialized = false;
 var system_config_page_initialized = false;
 var file_protocol = false;
+var firefox_on_mac;
 
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
 
 	file_protocol = (window.location.protocol == "file:");
+	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
 	pion.reactors.init();
 	
 	if (!file_protocol) {
