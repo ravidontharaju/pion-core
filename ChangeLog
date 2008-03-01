@@ -1,8 +1,25 @@
+Version 0.5.4 (2008-03-07)
+==========================
+
+* HTTPMessage header names now use case-insensitive comparisons (#79)
+* Fixed parsing errors when chunked content included extra whitespace (#73)
+* Fixed HTTP parsing errors when there was no "Content-Length" header (#78)
+* Fixed a bug that caused HTTPServer to not find resources correctly (#85)
+* HTTPServer now lets you bind any function object to resources (#69)
+* Moved plugins functionality from HTTPServer into a new WebServer class (#69)
+* PionScheduler is no longer a singleton; now is a member of TCPServer (#86)
+* PionScheduler can now be extended to provide alternative algorithms (#86)
+* Added TCPStream: a std::basic_iostream wrapper around TCPConnection
+* Added getRemotePort() and getRemoteEndpoint() members to TCPConnection
+* Web service plugins are now functions objects; no more handleRequest()
+* Moved web service plugins into the pion::plugins namespace
+
+
 Version 0.5.2 (2007-12-17)
 ==========================
 
-* Added support for parsing chunked HTTP requests and responses
-* Refactored PluginManager out of HTTPServer service management code
+* Added support for parsing chunked HTTP requests and responses (#37)
+* Refactored PluginManager out of HTTPServer service management code (#62)
 
 
 Version 0.4.2 (2007-12-14)
