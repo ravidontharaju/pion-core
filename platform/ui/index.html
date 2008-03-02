@@ -118,20 +118,6 @@
 			]]
 		}];
 
-		var filter_reactor_grid_layout = [{
-			rows: [[
-				{ name: 'Term', styles: '', 
-					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
-				{ name: 'Comparison', styles: '', width: 'auto', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Delete', styles: 'align: center;', width: 3, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-			]]
-		}];
-
 		var vocab_grid_layout = [{
 			rows: [[
 				{ name: 'ID', styles: '', width: 'auto' },

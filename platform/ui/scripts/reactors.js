@@ -1,5 +1,6 @@
 dojo.provide("pion.reactors");
 dojo.require("plugins.reactors.Reactor");
+dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.Dialog");
@@ -32,6 +33,10 @@ var reactor_config_store;
 var filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
 var reactor_inputs_grid_model = new dojox.grid.data.Table(null, []);
 var reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
+
+pion.reactors.config_store = null;
+
+pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: 'comparisonTypes.json'});
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
@@ -71,6 +76,7 @@ pion.reactors.init = function() {
 		dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 	} else {
 		reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
+		pion.reactors.config_store = reactor_config_store;
 		reactor_config_store.fetch({
 			query: {tagName: 'Reactor'},
 			onItem: function(item, request) {
@@ -85,20 +91,21 @@ pion.reactors.init = function() {
 				}
 				dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 
-				// This simulates clicking where the reactor should go.
-				var dc = dojo.coords(workspace_box.node);
-				pion.reactors.last_x = dc.x + parseInt(reactor_config_store.getValue(item, 'X'));
-				pion.reactors.last_y = dc.y + parseInt(reactor_config_store.getValue(item, 'Y'));
-				//latest_event = { clientX: dc.x + parseInt(reactor_config_store.getValue(item, 'X')), clientY: dc.y + parseInt(reactor_config_store.getValue(item, 'Y')) };
-
 				var id = reactor_config_store.getValue(item, '@id');
 				var reactor = createReactor(name, reactor_type, id);
+				reactor.item = item;
 				reactor.workspace = workspace_box;
+				reactor.X = parseInt(reactor_config_store.getValue(item, 'X'));
+				reactor.Y = parseInt(reactor_config_store.getValue(item, 'Y'));
+
+				// This simulates clicking where the reactor should go.
+				var dc = dojo.coords(workspace_box.node);
+				pion.reactors.last_x = dc.x + reactor.X;
+				pion.reactors.last_y = dc.y + reactor.Y;
 
 				reactors_by_id[id] = reactor;
 				var comment = reactor_config_store.getValue(item, 'Comment');
 				reactor.comment = comment? comment.toString() : "";
-				reactor.comparisons = reactor_config_store.getValues(item, 'Comparison');
 				workspace_box.node.appendChild(reactor.domNode);
 				makeReactorMoveable(reactor);
 			},
@@ -526,7 +533,7 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 					  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
 					  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
 		for (var tag in dialogFields) {
-			console.debug('dialogFields.tag = ', dialogFields[tag]);
+			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 		}
 		post_data += '</Reactor></PionConfig>';
@@ -545,6 +552,8 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 				reactor.comment = dialogFields.Comment;
 				reactors_by_id[id] = reactor;
 				reactor.workspace = workspace_box;
+				reactor.X = X;
+				reactor.Y = Y;
 				workspace_box.node.replaceChild(reactor.domNode, workspace_box.node.lastChild);
 				makeReactorMoveable(reactor);
 			},
@@ -670,33 +679,13 @@ function isDuplicateName(reactor, name) {
 
 function showReactorConfigDialog(reactor) {
 	if (reactor.plugin == 'FilterReactor') {
-		var dialog = new plugins.reactors.FilterReactorDialog();
+		var dialog = new plugins.reactors.FilterReactorDialog({reactor: reactor});
 	} else {
-		var dialog = new plugins.reactors.ReactorDialog({title: reactor.plugin + ' Configuration'});
+		var dialog = new plugins.reactors.ReactorDialog({title: reactor.plugin + ' Configuration', reactor: reactor});
 	}
- 	dijit.byNode(dojo.query("input[name='name']",    dialog.domNode)[0]).setValue(reactor.name);
+ 	dijit.byNode(dojo.query("input[name='Name']",    dialog.domNode)[0]).setValue(reactor.name);
 	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.uuid);
-	dijit.byNode(dojo.query("input[name='comment']", dialog.domNode)[0]).setValue(reactor.comment);
-
-	if (reactor.plugin == 'FilterReactor') {
-		if (!reactor.comparison_table) {
-			reactor.comparison_table = [];
-			for (var i = 0; i < reactor.comparisons.length; ++i) {
-				var comparison_table_row = [];
-				console.debug('reactor.comparisons[i] = ', reactor.comparisons[i]);
-				comparison_table_row[0] = reactor_config_store.getValue(reactor.comparisons[i], 'Term');
-				comparison_table_row[1] = reactor_config_store.getValue(reactor.comparisons[i], 'Type');
-				comparison_table_row[2] = reactor_config_store.getValue(reactor.comparisons[i], 'Value');
-				reactor.comparison_table.push(comparison_table_row);
-			}
-		}
-		filter_reactor_grid_model.setData(reactor.comparison_table);
-		var filter_reactor_grid = dialog.filter_reactor_grid;
-		setTimeout(function(){
-			filter_reactor_grid.update();
-			filter_reactor_grid.resize();
-		}, 200);
-	}
+	dijit.byNode(dojo.query("input[name='Comment']", dialog.domNode)[0]).setValue(reactor.comment);
 
 	var reactor_inputs_table = [];
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
@@ -784,17 +773,6 @@ function showReactorConfigDialog(reactor) {
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
 	dialog.show();
-	dialog.execute = function(dialogFields) { updateReactorConfig(dialogFields, reactor); }
-}
-
-function updateReactorConfig(dialogFields, reactor) {
-	reactor.name = dialogFields.name;
-	reactor.name_span.innerHTML = dialogFields.name;
-	reactor.comment = dialogFields.comment;
-	if (dialogFields.event_type) {
-		reactor.event_type = dialogFields.event_type;
-		console.debug('reactor.event_type set to ', reactor.event_type);
-	}
 }
 
 function deleteReactorIfConfirmed(reactor) {
@@ -883,8 +861,8 @@ function selected(page) {
 function expandWorkspaceIfNeeded() {
 	if (!surface) return; // the workspace isn't ready yet
 
-	console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth);
-	console.debug('workspace_box.node.offsetHeight = ', workspace_box.node.offsetHeight);
+	//console.debug('workspace_box.node.offsetWidth = ', workspace_box.node.offsetWidth);
+	//console.debug('workspace_box.node.offsetHeight = ', workspace_box.node.offsetHeight);
 
 	// If the window was resized, the dimensions of the workspace's contentPane probably changed.
 	// new_width and new_height are the new width and height of the viewing area.

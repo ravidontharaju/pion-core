@@ -9,7 +9,7 @@
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
+				<td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td>
 			</tr>
 			<tr>
 				<td><label>ID:</label></td>
@@ -17,12 +17,13 @@
 			</tr>
 			<tr>
 				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
+				<td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td>
 			</tr>
 		</table>
 	</div>
 	<div dojoAttachPoint="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
 		 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
 		 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
