@@ -13,6 +13,7 @@
 	#include <sys/stat.h>
 #endif
 #include <iostream>
+#include <boost/filesystem/operations.hpp>
 #include "PlatformConfig.hpp"
 #include "../../net/utils/ShutdownManager.hpp"
 
@@ -39,7 +40,7 @@ int main (int argc, char *argv[])
 			if (argv[argnum][1] == 'D') {
 				run_as_daemon = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
-				platform_config_file = argv[++argnum];
+				platform_config_file = boost::filesystem::system_complete(argv[++argnum]).normalize().file_string();
 			} else {
 				argument_error();
 				return 1;

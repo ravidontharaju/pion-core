@@ -21,7 +21,9 @@
 #define __PION_PLATFORMCONFIG_HEADER__
 
 #include <string>
+#include <vector>
 #include <libxml/tree.h>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/ConfigManager.hpp>
@@ -100,6 +102,13 @@ public:
 	/// opens an existing platform config file
 	virtual void openConfigFile(void);
 	
+	/**
+	 * writes the platform configuration to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration into
+	 */
+	virtual void writeConfigXML(std::ostream& out) const;
+
 	/// returns a reference to the global VocabularyManager
 	inline pion::platform::VocabularyManager& getVocabularyManager(void) { return m_vocab_mgr; }
 	
@@ -114,6 +123,9 @@ public:
 	
 	/// returns a reference to the global ServiceManager
 	inline ServiceManager& getServiceManager(void) { return m_service_mgr; }
+
+	/// returns the name of the logging configuration file
+	inline const std::string& getLogConfigFile(void) const { return m_log_config_file; }
 	
 	
 private:
@@ -121,9 +133,12 @@ private:
 	/// default name of the vocabulary config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
+	/// name of the platform config element for Pion XML config files
+	static const std::string		PLATFORM_CONFIG_ELEMENT_NAME;
+
 	/// name of the vocabulary config element for Pion XML config files
 	static const std::string		VOCABULARY_CONFIG_ELEMENT_NAME;
-
+	
 	/// name of the codec config element for Pion XML config files
 	static const std::string		CODEC_CONFIG_ELEMENT_NAME;
 	
@@ -139,6 +154,9 @@ private:
 	/// name of the log config file element for Pion XML config files
 	static const std::string		LOG_CONFIG_ELEMENT_NAME;
 
+	/// name of the vocabulary path element for Pion XML config files
+	static const std::string		VOCABULARY_PATH_ELEMENT_NAME;
+	
 	/// name of the plug-in path element for Pion XML config files
 	static const std::string		PLUGIN_PATH_ELEMENT_NAME;
 
@@ -157,6 +175,15 @@ private:
 	
 	/// global manager of PlatformServices
 	ServiceManager							m_service_mgr;
+	
+	/// name of the logging configuration file
+	std::string								m_log_config_file;
+	
+	/// collection of plugin paths that were successfully added
+	std::vector<std::string>				m_plugin_paths;
+	
+	/// mutex to make class thread-safe
+	mutable boost::mutex					m_mutex;	
 };
 
 

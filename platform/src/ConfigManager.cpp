@@ -330,6 +330,7 @@ std::string ConfigManager::resolveRelativePath(const std::string& base_path_to_f
 	boost::filesystem::path new_path(boost::filesystem::system_complete(base_path_to_file));
 	new_path.remove_leaf();
 	new_path /= orig_path;
+	new_path.normalize();
 	return new_path.file_string();
 }
 

@@ -31,12 +31,14 @@ namespace server {		// begin namespace server (Pion Server)
 // static members of PlatformConfig
 	
 const std::string			PlatformConfig::DEFAULT_CONFIG_FILE = "platform.xml";
+const std::string			PlatformConfig::PLATFORM_CONFIG_ELEMENT_NAME = "PlatformConfig";
 const std::string			PlatformConfig::VOCABULARY_CONFIG_ELEMENT_NAME = "VocabularyConfig";
 const std::string			PlatformConfig::CODEC_CONFIG_ELEMENT_NAME = "CodecConfig";
 const std::string			PlatformConfig::DATABASE_CONFIG_ELEMENT_NAME = "DatabaseConfig";
 const std::string			PlatformConfig::REACTOR_CONFIG_ELEMENT_NAME = "ReactorConfig";
 const std::string			PlatformConfig::SERVICE_CONFIG_ELEMENT_NAME = "ServiceConfig";
 const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
+const std::string			PlatformConfig::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 	
 		
@@ -53,6 +55,8 @@ PlatformConfig::PlatformConfig(void)
 
 void PlatformConfig::openConfigFile(void)
 {
+	boost::mutex::scoped_lock platform_lock(m_mutex);
+
 	// just return if it's already open
 	if (configIsOpen())
 		return;
@@ -62,16 +66,20 @@ void PlatformConfig::openConfigFile(void)
 
 	#if defined(PION_USE_LOG4CXX) || defined(PION_USE_LOG4CPLUS) || defined(PION_USE_LOG4CPP)
 	// configure logging using LogConfig file (if defined)
-	std::string log_config;
-	if (ConfigManager::getConfigOption(LOG_CONFIG_ELEMENT_NAME, log_config,
+	if (ConfigManager::getConfigOption(LOG_CONFIG_ELEMENT_NAME, m_log_config_file,
 									   m_config_node_ptr->children))
 	{
 		// initialize logging config using the file specified
-		PION_LOG_CONFIG(ConfigManager::resolveRelativePath(log_config));
+		m_log_config_file = ConfigManager::resolveRelativePath(m_log_config_file);
+		PION_LOG_CONFIG(m_log_config_file);
+	} else {
+		m_log_config_file.erase();
 	}
 	#endif
 	
 	// Step through plugin path definitions
+	m_plugin_paths.clear();
+	PionPlugin::resetPluginDirectories();
 	std::string plugin_path;
 	xmlNodePtr path_node = m_config_node_ptr->children;
 	while ( (path_node = ConfigManager::findConfigNodeByName(PLUGIN_PATH_ELEMENT_NAME, path_node)) != NULL)
@@ -88,7 +96,9 @@ void PlatformConfig::openConfigFile(void)
 		
 		// add the plug-in path (only warn if directory not found)
 		try {
-			PionPlugin::addPluginDirectory(ConfigManager::resolveRelativePath(plugin_path));
+			plugin_path = ConfigManager::resolveRelativePath(plugin_path);
+			PionPlugin::addPluginDirectory(plugin_path);
+			m_plugin_paths.push_back(plugin_path);
 		} catch (PionPlugin::DirectoryNotFoundException& e) {
 			PION_LOG_WARN(m_logger, e.what());
 		}
@@ -144,6 +154,39 @@ void PlatformConfig::openConfigFile(void)
 	m_service_mgr.openConfigFile();
 	
 	PION_LOG_INFO(m_logger, "Loaded platform configuration file: " << m_config_file);
+}
+
+void PlatformConfig::writeConfigXML(std::ostream& out) const
+{
+	ConfigManager::writeBeginPionConfigXML(out);
+	
+	out << "\t<" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << getConfigFile()
+		<< "</" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << m_vocab_mgr.getConfigFile()
+		<< "</" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << CODEC_CONFIG_ELEMENT_NAME << '>' << m_codec_factory.getConfigFile()
+		<< "</" << CODEC_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << DATABASE_CONFIG_ELEMENT_NAME << '>' << m_database_mgr.getConfigFile()
+		<< "</" << DATABASE_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << REACTOR_CONFIG_ELEMENT_NAME << '>' << m_reaction_engine.getConfigFile()
+		<< "</" << REACTOR_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << SERVICE_CONFIG_ELEMENT_NAME << '>' << m_service_mgr.getConfigFile()
+		<< "</" << SERVICE_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << LOG_CONFIG_ELEMENT_NAME << '>' << getLogConfigFile()
+		<< "</" << LOG_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << VOCABULARY_PATH_ELEMENT_NAME << '>' << m_vocab_mgr.getVocabularyPath()
+		<< "</" << VOCABULARY_PATH_ELEMENT_NAME << '>' << std::endl;
+	
+	boost::mutex::scoped_lock platform_lock(m_mutex);
+	for (std::vector<std::string>::const_iterator path_it = m_plugin_paths.begin();
+		 path_it != m_plugin_paths.end(); ++path_it)
+	{
+		out << "\t<" << PLUGIN_PATH_ELEMENT_NAME << '>' << *path_it
+			<< "</" << PLUGIN_PATH_ELEMENT_NAME << '>' << std::endl;
+	}
+	platform_lock.unlock();
+	
+	ConfigManager::writeEndPionConfigXML(out);
 }
 
 	
