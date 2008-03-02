@@ -49,7 +49,9 @@ public:
 	ConfigServiceTestInterface_F()
 		: m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
 		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
-		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2")
+		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
+		m_date_codec_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b"),
+		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
@@ -137,13 +139,117 @@ public:
 		HTTPResponsePtr response_ptr(sendRequest(request));
 
 		return checkIfReactorIsRunning(reactor_id, *response_ptr);
-	}		
+	}	
+	
+	/**
+	 * uses the ConfigService to add a new resource (plugin, connection, etc.)
+	 *
+	 * @param resource the resource to add
+	 * @param element_name the name of the resource's XML config element
+	 * @param config_str XML config for the new resource
+	 *
+	 * @return std::string unique identifier for the new resource
+	 */
+	inline std::string checkAddResource(const std::string& resource,
+										const std::string& element_name,
+										const std::string& config_str)
+	{
+		// make a request to add a new resource
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_POST);
+		request.setResource(resource);
+		request.setContentLength(config_str.size());
+		memcpy(request.createContentBuffer(), config_str.c_str(), config_str.size());
+		HTTPResponsePtr response_ptr(sendRequest(request));
+		
+		// check the response status code
+		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_CREATED);
+		
+		// parse the response content
+		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
+										   response_ptr->getContentLength());
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		
+		// look for the resource's node
+		node_ptr = ConfigManager::findConfigNodeByName(element_name, node_ptr->children);
+		BOOST_REQUIRE(node_ptr);
+		std::string resource_id;
+		BOOST_REQUIRE(ConfigManager::getNodeId(node_ptr, resource_id));
+	 
+		return resource_id;
+	}
+	
+	/**
+	 * uses the ConfigService to update a resource (plugin, connection, etc.)
+	 *
+	 * @param resource the resource to update
+	 * @param element_name the name of the resource's XML config element
+	 * @param config_str XML config for the new resource
+	 * @param check_opt_name name of an option to check
+	 * @param check_opt_value value that the option should be assigned to
+	 */
+	inline void checkUpdateResource(const std::string& resource,
+									const std::string& element_name,
+									const std::string& config_str,
+									const std::string& check_opt_name,
+									const std::string& check_opt_value)
+	{
+		// make a request to update the resource's configuration
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
+		request.setResource(resource);
+		request.setContentLength(config_str.size());
+		memcpy(request.createContentBuffer(), config_str.c_str(), config_str.size());
+		HTTPResponsePtr response_ptr(sendRequest(request));
+		
+		// check the response status code
+		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
+		
+		// parse the response content
+		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
+										   response_ptr->getContentLength());
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		
+		// look for the resource's node
+		node_ptr = ConfigManager::findConfigNodeByName(element_name, node_ptr->children);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		
+		// find the option element
+		std::string value_str;
+		BOOST_REQUIRE(ConfigManager::getConfigOption(check_opt_name, value_str, node_ptr->children));
+		BOOST_CHECK_EQUAL(value_str, check_opt_value);
+	}
+
+	/**
+	 * uses the ConfigService to remove a resource (plugin, connection, etc.)
+	 *
+	 * @param resource the resource representing the item to remove
+	 */
+	inline void checkDeleteResource(const std::string& resource) {
+		// make a request to remove the "log writer" reactor
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
+		request.setResource(resource);
+		HTTPResponsePtr response_ptr(sendRequest(request));
+		
+		// check the response status code
+		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	}
 		
 
 	PlatformConfig		m_platform_cfg;
 	const std::string	m_log_reader_id;
 	const std::string	m_log_writer_id;
 	const std::string	m_do_nothing_id;
+	const std::string	m_date_codec_id;
+	const std::string	m_embedded_db_id;
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConfigServiceTestInterface_S, ConfigServiceTestInterface_F)
@@ -184,32 +290,10 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewReactor) {
 		"</Reactor></PionConfig>";
 	
 	// make a request to add a new Reactor
-	HTTPRequest request;
-	request.setMethod(HTTPTypes::REQUEST_METHOD_POST);
-	request.setResource("/config/reactors/");
-	request.setContentLength(reactor_config_str.size());
-	memcpy(request.createContentBuffer(), reactor_config_str.c_str(), reactor_config_str.size());
-	HTTPResponsePtr response_ptr(sendRequest(request));
-	
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_CREATED);
-	
-	// parse the response content
-	xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
-									   response_ptr->getContentLength());
-	BOOST_REQUIRE(doc_ptr);
-	xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
-	BOOST_REQUIRE(node_ptr);
-	BOOST_REQUIRE(node_ptr->children);
-	
-	// look for the Reactor's node
-	node_ptr = ConfigManager::findConfigNodeByName("Reactor", node_ptr->children);
-	BOOST_REQUIRE(node_ptr);
-	std::string reactor_id;
-	BOOST_REQUIRE(ConfigManager::getNodeId(node_ptr, reactor_id));
+	std::string reactor_id = checkAddResource("/config/reactors", "Reactor", reactor_config_str);
 	
 	// make sure that the Reactor was created
-	BOOST_CHECK(m_platform_cfg.getReactionEngine().hasReactor(reactor_id));
+	BOOST_CHECK(m_platform_cfg.getReactionEngine().hasPlugin(reactor_id));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateLogWriterReactorConfig) {
@@ -222,82 +306,27 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateLogWriterReactorConfig) {
 		"</Reactor></PionConfig>";
 	
 	// make a request to update the "log writer" Reactor
-	HTTPRequest request;
-	request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
-	request.setResource("/config/reactors/" + m_log_writer_id);
-	request.setContentLength(reactor_config_str.size());
-	memcpy(request.createContentBuffer(), reactor_config_str.c_str(), reactor_config_str.size());
-	HTTPResponsePtr response_ptr(sendRequest(request));
-	
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
-	
-	// parse the response content
-	xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
-									   response_ptr->getContentLength());
-	BOOST_REQUIRE(doc_ptr);
-	xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
-	BOOST_REQUIRE(node_ptr);
-	BOOST_REQUIRE(node_ptr->children);
-	
-	// look for the Reactor's node
-	node_ptr = ConfigManager::findConfigNodeByName("Reactor", node_ptr->children);
-	BOOST_REQUIRE(node_ptr);
-	BOOST_REQUIRE(node_ptr->children);
-	
-	// find the "Filename" element
-	std::string filename_str;
-	BOOST_REQUIRE(ConfigManager::getConfigOption("Filename", filename_str, node_ptr->children));
-	BOOST_CHECK_EQUAL(filename_str, "/tmp/new.log");
+	checkUpdateResource("/config/reactors/" + m_log_writer_id, "Reactor",
+						reactor_config_str, "Filename", "/tmp/new.log");
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveLogWriterReactor) {
 	// make a request to remove the "log writer" reactor
-	HTTPRequest request;
-	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
-	request.setResource("/config/reactors/" + m_log_writer_id);
-	HTTPResponsePtr response_ptr(sendRequest(request));
-
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	checkDeleteResource("/config/reactors/" + m_log_writer_id);
 
 	// make sure that the Reactor was removed
-	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasReactor(m_log_writer_id));
+	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasPlugin(m_log_writer_id));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewConnection) {
 	std::string connection_config_str = "<PionConfig><Connection>"
-	"<Type>reactor</Type>"
-	"<From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>"
-	"<To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>"
-	"</Connection></PionConfig>";
+		"<Type>reactor</Type>"
+		"<From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>"
+		"<To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>"
+		"</Connection></PionConfig>";
 	
 	// make a request to add a new Reactor
-	HTTPRequest request;
-	request.setMethod(HTTPTypes::REQUEST_METHOD_POST);
-	request.setResource("/config/connections/");
-	request.setContentLength(connection_config_str.size());
-	memcpy(request.createContentBuffer(), connection_config_str.c_str(), connection_config_str.size());
-	HTTPResponsePtr response_ptr(sendRequest(request));
-	
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_CREATED);
-	
-	// parse the response content
-	xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
-									   response_ptr->getContentLength());
-	BOOST_REQUIRE(doc_ptr);
-	xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
-	BOOST_REQUIRE(node_ptr);
-	BOOST_REQUIRE(node_ptr->children);
-	
-	// look for the Connection's node
-	node_ptr = ConfigManager::findConfigNodeByName("Connection", node_ptr->children);
-	BOOST_REQUIRE(node_ptr);
-	
-	// get the Connection's identifier
-	std::string connection_id;
-	BOOST_REQUIRE(ConfigManager::getNodeId(node_ptr, connection_id));
+	std::string connection_id = checkAddResource("/config/connections", "Connection", connection_config_str);
 
 	// make sure that the connection was added
 	std::stringstream ss;
@@ -307,14 +336,9 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewConnection) {
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveConnection) {
 	const std::string connection_id("1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2");
+
 	// make a request to remove the connection
-	HTTPRequest request;
-	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
-	request.setResource("/config/connections/" + connection_id);
-	HTTPResponsePtr response_ptr(sendRequest(request));
-	
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+	checkDeleteResource("/config/connections/" + connection_id);
 	
 	// make sure that the connection was removed
 	std::stringstream ss;
@@ -323,5 +347,72 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveConnection) {
 					  ReactionEngine::ConnectionNotFoundException);
 }
 
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewCodec) {
+	std::string codec_config_str = "<PionConfig><Codec>"
+		"<Plugin>LogCodec</Plugin>"
+		"<EventType>urn:vocab:clf#http-request</EventType>"
+		"</Codec></PionConfig>";
+	
+	// make a request to add a new Codec
+	std::string codec_id = checkAddResource("/config/codecs", "Codec", codec_config_str);
+	
+	// make sure that the Codec was created
+	BOOST_CHECK(m_platform_cfg.getCodecFactory().hasPlugin(codec_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateDateCodecConfig) {
+	std::string codec_config_str = "<PionConfig><Codec>"
+		"<Name>Updated Date</Name>"
+		"<Comment>Updated codec for just dates</Comment>"
+		"<Plugin>LogCodec</Plugin>"
+		"<EventType>urn:vocab:clf#http-request</EventType>"
+		"<Field term=\"urn:vocab:clf#date\" start=\"[\" end=\"]\">date</Field>"
+		"</Codec></PionConfig>";
+	
+	// make a request to update the "log writer" Reactor
+	checkUpdateResource("/config/codecs/" + m_date_codec_id, "Codec",
+						codec_config_str, "Name", "Updated Date");
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveDateCodec) {
+	// make a request to remove the "just the date" codec
+	checkDeleteResource("/config/codecs/" + m_date_codec_id);
+
+	// make sure that the Reactor was removed
+	BOOST_CHECK(! m_platform_cfg.getCodecFactory().hasPlugin(m_date_codec_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewDatabase) {
+	std::string database_config_str = "<PionConfig><Database>"
+		"<Plugin>SQLiteDatabase</Plugin>"
+		"</Database></PionConfig>";
+	
+	// make a request to add a new Database
+	std::string database_id = checkAddResource("/config/databases", "Database", database_config_str);
+	
+	// make sure that the Database was created
+	BOOST_CHECK(m_platform_cfg.getDatabaseManager().hasPlugin(database_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateEmbeddedDatabaseConfig) {
+	std::string database_config_str = "<PionConfig><Database>"
+		"<Name>Updated Storage Database</Name>"
+		"<Comment>Embedded SQLite database for storing events</Comment>"
+		"<Plugin>SQLiteDatabase</Plugin>"
+		"<Filename>/tmp/updated.db</Filename>"
+		"</Database></PionConfig>";
+	
+	// make a request to update the "log writer" Reactor
+	checkUpdateResource("/config/databases/" + m_embedded_db_id, "Database",
+						database_config_str, "Filename", "/tmp/updated.db");
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveEmbeddedDatabase) {
+	// make a request to remove the "embedded storage" Database
+	checkDeleteResource("/config/databases/" + m_embedded_db_id);
+	
+	// make sure that the Database was removed
+	BOOST_CHECK(! m_platform_cfg.getDatabaseManager().hasPlugin(m_embedded_db_id));
+}
 
 BOOST_AUTO_TEST_SUITE_END()

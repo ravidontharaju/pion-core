@@ -233,7 +233,7 @@ public:
 	 */
 	template <typename VocabularyUpdateFunction>
 	inline void registerForUpdates(VocabularyUpdateFunction f) const {
-		boost::mutex::scoped_lock manager_lock(m_mutex);
+		boost::mutex::scoped_lock signal_lock(m_signal_mutex);
 		m_signal_vocabulary_updated.connect(f);
 	}
 	
@@ -275,7 +275,7 @@ public:
 private:
 
 	/**
-	 * updates a Vocabulary by calling a an update function for the
+	 * updates a Vocabulary by calling an update function for the
 	 * VocabularyConfig object.  The function should return void and take
 	 * a Vocabulary* as its first and only parameter.
 	 * 
@@ -289,6 +289,8 @@ private:
 		if (i == m_vocab_map.end())
 			throw VocabularyNotFoundException(vocab_id);
 		f(i->second);
+		manager_lock.unlock();
+		boost::mutex::scoped_lock signal_lock(m_signal_mutex);
 		m_signal_vocabulary_updated();
 	}
 	
@@ -325,6 +327,9 @@ private:
 	/// signal triggered whenever a Vocabulary is modified
 	mutable boost::signal0<void>		m_signal_vocabulary_updated;
 
+	/// mutex used to protect the updated signal handler
+	mutable boost::mutex				m_signal_mutex;	
+	
 	/// mutex to make class thread-safe
 	mutable boost::mutex				m_mutex;	
 };

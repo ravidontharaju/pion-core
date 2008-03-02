@@ -326,15 +326,6 @@ public:
 	}
 	
 	/**
-	 * checks to see if a Reactor is recognized (reactor_id is valid)
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor
-	 */
-	inline bool hasReactor(const std::string& reactor_id) const {
-		return (m_plugins.get(reactor_id) != NULL);
-	}
-	
-	/**
 	 * returns the total number operations performed by all managed Reactors
 	 *
 	 * @return boost::uint64_t number of operations performed

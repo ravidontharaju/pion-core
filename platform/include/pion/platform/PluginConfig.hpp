@@ -111,13 +111,22 @@ public:
 	inline xmlNodePtr getPluginConfig(const std::string& plugin_id);
 	
 	/**
+	 * checks to see if a plugin is recognized (plugin_id is valid)
+	 *
+	 * @param plugin_id unique identifier associated with the plugin
+	 */
+	inline bool hasPlugin(const std::string& plugin_id) const {
+		return (m_plugins.get(plugin_id) != NULL);
+	}
+	
+	/**
 	 * registers a callback function to be executed whenever plug-ins are updated
 	 *
 	 * @param f the callback function to register
 	 */
 	template <typename PluginUpdateFunction>
 	inline void registerForUpdates(PluginUpdateFunction f) const {
-		boost::mutex::scoped_lock plugins_lock(m_mutex);
+		boost::mutex::scoped_lock signal_lock(m_signal_mutex);
 		m_signal_plugins_updated.connect(f);
 	}
 
@@ -209,6 +218,9 @@ protected:
 	/// signal triggered whenever a plug-in is modified
 	mutable boost::signal0<void>	m_signal_plugins_updated;
 
+	/// mutex used to protect the updated signal handler
+	mutable boost::mutex			m_signal_mutex;	
+
 	/// mutex to make class thread-safe
 	mutable boost::mutex			m_mutex;	
 };
@@ -267,9 +279,13 @@ inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_
 										 boost::cref(m_vocabulary), config_ptr));
 	ConfigManager::setPluginConfig(m_plugin_element, plugin_id, config_ptr);
 	
+	// unlock class mutex to prevent deadlock
+	plugins_lock.unlock();
+
 	// send notifications
-	m_signal_plugins_updated();
 	PION_LOG_DEBUG(m_logger, "Updated " << m_plugin_element << " configuration (" << plugin_id << ')');
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_plugins_updated();
 }
 
 template <typename PluginType>
@@ -290,9 +306,14 @@ inline std::string PluginConfig<PluginType>::addPlugin(const xmlNodePtr config_p
 	addPluginNoLock(plugin_id, plugin_type, config_ptr);
 	addPluginConfig(m_plugin_element, plugin_id, plugin_type, config_ptr);
 	
+	// unlock class mutex to prevent deadlock
+	plugins_lock.unlock();
+
 	// send notifications
-	m_signal_plugins_updated();
 	PION_LOG_DEBUG(m_logger, "Loaded " << m_plugin_element << " (" << plugin_type << "): " << plugin_id);
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_plugins_updated();
+	signal_lock.unlock();
 	
 	// return the plug-in's (new) identifier
 	return plugin_id;
@@ -310,9 +331,13 @@ inline void PluginConfig<PluginType>::removePlugin(const std::string& plugin_id)
 	m_plugins.remove(plugin_id);
 	removePluginConfig(m_plugin_element, plugin_id);
 	
+	// unlock class mutex to prevent deadlock
+	plugins_lock.unlock();
+
 	// send notifications
-	m_signal_plugins_updated();
 	PION_LOG_DEBUG(m_logger, "Removed " << m_plugin_element << ": " << plugin_id);
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_plugins_updated();
 }
 
 

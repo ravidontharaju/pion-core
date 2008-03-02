@@ -121,11 +121,14 @@ void VocabularyManager::openConfigFile(void)
 		// step to the next Vocabulary configuration
 		config_node = config_node->next;
 	}
+	
+	// unlock class mutex to prevent deadlock
+	manager_lock.unlock();
 
 	// notify everyone that the vocabulary was updated
-	m_signal_vocabulary_updated();
-	
 	PION_LOG_INFO(m_logger, "Loaded global Vocabulary configuration file: " << m_config_file);
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_vocabulary_updated();
 }
 	
 bool VocabularyManager::writeConfigXML(std::ostream& out,
@@ -185,10 +188,13 @@ void VocabularyManager::addVocabulary(const std::string& vocab_id,
 	// save the new XML config file
 	saveConfigFile();
 	
-	// notify everyone that the vocabulary was updated
-	m_signal_vocabulary_updated();
+	// unlock class mutex to prevent deadlock
+	manager_lock.unlock();
 	
+	// notify everyone that the vocabulary was updated
 	PION_LOG_DEBUG(m_logger, "Added new Vocabulary: " << vocab_id);
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_vocabulary_updated();
 }
 
 void VocabularyManager::removeVocabulary(const std::string& vocab_id)
@@ -218,11 +224,14 @@ void VocabularyManager::removeVocabulary(const std::string& vocab_id)
 	
 	// save the new XML config file
 	saveConfigFile();
+
+	// unlock class mutex to prevent deadlock
+	manager_lock.unlock();
 	
 	// notify everyone that the vocabulary was updated
-	m_signal_vocabulary_updated();
-	
 	PION_LOG_DEBUG(m_logger, "Removed Vocabulary: " << vocab_id);
+	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
+	m_signal_vocabulary_updated();
 }
 	
 void VocabularyManager::setVocabularyPath(const std::string& vocab_path)

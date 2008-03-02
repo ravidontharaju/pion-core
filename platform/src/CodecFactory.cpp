@@ -62,14 +62,7 @@ void CodecFactory::setCodecConfig(const std::string& codec_id,
 
 std::string CodecFactory::addCodec(const xmlNodePtr config_ptr)
 {
-	// convert PluginNotFound exceptions into CodecNotFound exceptions
-	std::string codec_id;
-	try {
-		codec_id = PluginConfig<Codec>::addPlugin(config_ptr);
-	} catch (PluginManager<Codec>::PluginNotFoundException&) {
-		throw CodecNotFoundException(codec_id);
-	}
-	return codec_id;
+	return PluginConfig<Codec>::addPlugin(config_ptr);
 }
 
 void CodecFactory::removeCodec(const std::string& codec_id) {

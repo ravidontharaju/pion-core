@@ -7,6 +7,7 @@
 	<ServiceConfig>services.xml</ServiceConfig>
 	<LogConfig>../../platform/config/logconfig.txt</LogConfig>
 	<PluginPath>../../platform/codecs/.libs/</PluginPath>
+	<PluginPath>../../platform/databases/.libs/</PluginPath>
 	<PluginPath>../../platform/reactors/.libs/</PluginPath>
 	<PluginPath>../../platform/services/.libs/</PluginPath>
 	<PluginPath>../../net/services/.libs/</PluginPath>

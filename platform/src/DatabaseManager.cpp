@@ -62,14 +62,7 @@ void DatabaseManager::setDatabaseConfig(const std::string& database_id,
 
 std::string DatabaseManager::addDatabase(const xmlNodePtr config_ptr)
 {
-	// convert PluginNotFound exceptions into DatabaseNotFound exceptions
-	std::string database_id;
-	try {
-		database_id = PluginConfig<Database>::addPlugin(config_ptr);
-	} catch (PluginManager<Database>::PluginNotFoundException&) {
-		throw DatabaseNotFoundException(database_id);
-	}
-	return database_id;
+	return PluginConfig<Database>::addPlugin(config_ptr);
 }
 
 void DatabaseManager::removeDatabase(const std::string& database_id)

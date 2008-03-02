@@ -229,7 +229,7 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	
 	// get the reactor_id from the first path branche
 	const std::string reactor_id(branches[0]);
-	if (reactor_id.empty() || !getConfig().getReactionEngine().hasReactor(reactor_id)) {
+	if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}

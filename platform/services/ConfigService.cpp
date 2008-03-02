@@ -62,24 +62,199 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 		}
 	} else if (branches.front() == "codecs") {
+		//
+		// BEGIN CODECS CONFIG
+		//
 		if (branches.size() == 1) {
-			getConfig().getCodecFactory().writeConfigXML(ss);
-		} else {
-			if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1])) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				
+				// retrieve configuration for all Codecs
+				getConfig().getCodecFactory().writeConfigXML(ss);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Codec
+				
+				// convert request content into XML configuration info
+				xmlNodePtr codec_config_ptr =
+					CodecFactory::createPluginConfig(request->getContent(),
+													 request->getContentLength());
+				
+				std::string codec_id;
+				// add the new Codec to the CodecFactory
+				try {
+					codec_id = getConfig().getCodecFactory().addCodec(codec_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(codec_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(codec_config_ptr);
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Codec's configuration
+				if (! getConfig().getCodecFactory().writeConfigXML(ss, codec_id))
+					throw CodecFactory::CodecNotFoundException(branches[1]);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
+			
+		} else if (branches.size() == 2) {
+			// branches[1] == codec_id
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Codec's configuration
+				
+				if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1]))
+					throw CodecFactory::CodecNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Codec's configuration
+				
+				// convert request content into XML configuration info
+				xmlNodePtr codec_config_ptr =
+					CodecFactory::createPluginConfig(request->getContent(),
+													 request->getContentLength());
+				
+				try {
+					// push the new config into the CodecFactory
+					getConfig().getCodecFactory().setCodecConfig(branches[1], codec_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(codec_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(codec_config_ptr);
+				
+				// respond with the Codec's updated configuration
+				if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1]))
+					throw CodecFactory::CodecNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Codec
+				
+				getConfig().getCodecFactory().removeCodec(branches[1]);
+				
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
 		}
+		//
+		// END CODECS CONFIG
+		//
 	} else if (branches.front() == "databases") {
+		//
+		// BEGIN DATABASES CONFIG
+		//
 		if (branches.size() == 1) {
-			getConfig().getDatabaseManager().writeConfigXML(ss);
-		} else {
-			if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1])) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				
+				// retrieve configuration for all Databases
+				getConfig().getDatabaseManager().writeConfigXML(ss);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Database
+				
+				// convert request content into XML configuration info
+				xmlNodePtr database_config_ptr =
+					DatabaseManager::createPluginConfig(request->getContent(),
+														request->getContentLength());
+				
+				std::string database_id;
+				// add the new Database to the DatabaseManager
+				try {
+					database_id = getConfig().getDatabaseManager().addDatabase(database_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(database_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(database_config_ptr);
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Database's configuration
+				if (! getConfig().getDatabaseManager().writeConfigXML(ss, database_id))
+					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
+			
+		} else if (branches.size() == 2) {
+			// branches[1] == database_id
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Database's configuration
+				
+				if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1]))
+					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Database's configuration
+				
+				// convert request content into XML configuration info
+				xmlNodePtr database_config_ptr =
+					DatabaseManager::createPluginConfig(request->getContent(),
+														request->getContentLength());
+				
+				try {
+					// push the new config into the DatabaseManager
+					getConfig().getDatabaseManager().setDatabaseConfig(branches[1], database_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(database_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(database_config_ptr);
+				
+				// respond with the Database's updated configuration
+				if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1]))
+					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Database
+				
+				getConfig().getDatabaseManager().removeDatabase(branches[1]);
+				
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
 		}
+		//
+		// END DATABASES CONFIG
+		//
 	} else if (branches.front() == "reactors") {
+		//
+		// BEGIN REACTORS CONFIG
+		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
@@ -195,7 +370,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
-		
+		//
+		// END REACTORS CONFIG
+		//
 	} else if (branches.front() == "connections") {
 		
 		if (branches.size() == 1) {
