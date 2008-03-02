@@ -1,0 +1,6 @@
+{
+	identifier: 'plugin',
+	items: [
+		{plugin: 'SQLiteDatabase', label: 'SQLite Database'}
+	]
+}

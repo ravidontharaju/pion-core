@@ -8,11 +8,13 @@ dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 dojo.require("pion.reactors");
 dojo.require("pion.vocabularies");
 dojo.require("pion.codecs");
+dojo.require("pion.databases");
 dojo.require("pion.users");
 dojo.require("pion.system");
 
 var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
+var database_config_page_initialized = false;
 var user_config_page_initialized = false;
 var system_config_page_initialized = false;
 var file_protocol = false;
@@ -55,6 +57,13 @@ function configPageSelected(page) {
 		} else {
 			pion.codecs.init();
 			codec_config_page_initialized = true;
+		}
+	} else if (page.title == "Databases") {
+		if (database_config_page_initialized) {
+			dijit.byId('main_stack_container').resize({h: pion.databases.getHeight()});
+		} else {
+			pion.databases.init();
+			database_config_page_initialized = true;
 		}
 	} else if (page.title == "Users") {
 		if (user_config_page_initialized) {

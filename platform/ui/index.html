@@ -59,6 +59,7 @@
 	<script type="text/javascript" src="scripts/reactors.js"></script>
 	<script type="text/javascript" src="scripts/vocabularies.js"></script>
 	<script type="text/javascript" src="scripts/codecs.js"></script>
+	<script type="text/javascript" src="scripts/databases.js"></script>
 	<script type="text/javascript" src="scripts/users.js"></script>
 	<script type="text/javascript" src="scripts/system.js"></script>
 	<script type="text/javascript" src="plugins/reactors/Reactor.js"></script>
@@ -137,8 +138,9 @@
 </head>
 <body class="tundra">
 
-<!-- data store for codec types -->
+<!-- data stores of plugin types -->
 	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="plugins/codecs.json"></div>
+	<div dojoType="dojo.data.ItemFileReadStore" jsId="databaseTypeStore" url="plugins/databases.json"></div>
 
 	<div id="outer" style="visibility: hidden">
 		<div id="topBar">
@@ -364,7 +366,42 @@
 					<h1>Database Configuration</h1>
 				</div>
 				<div id="database_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
-					put accordion, etc here
+					<div id="database_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.AccordionPane" class="database_pane" title="Database 1">
+							<form id="database_form" dojoType="dijit.form.Form">
+								<BR />
+								<table cellpadding="2" cellspacing="0" border="0" width="100%">
+									<tr>
+										<td><label>Name</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="name" style="width: 100%;"/></td>
+										<td rowspan="4" valign="top" width="20">&nbsp;</td>
+										<td rowspan="1"><label>Comments</label></td>
+										<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" 
+																		jsId="database_comment_widget" style="width: 100%"></textarea></td>
+									</tr>
+									<tr>
+										<td><label>ID</label></td>
+										<td><input dojoType="dijit.form.TextBox" name="ID" disabled="true" style="width: 100%;"/></td>
+										<td rowspan="3">&nbsp;</td>
+									</tr>
+									<tr>
+										<td><label>Plug-In&nbsp;Type</label></td>
+										<td><input dojoType="dijit.form.FilteringSelect" jsId="database_plugin_type" name="plugin_type" 
+												store="databaseTypeStore" searchAttr="label" autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td>
+									</tr>
+								</table>
+								<br />
+								<div class="save_cancel_delete">
+									<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
+									<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
+									<button dojoType=dijit.form.Button class="delete">Delete Codec</button>
+								</div>
+							</form>
+						</div>
+					</div>
+					<div>
+						<button id="add_new_database_button" dojoType=dijit.form.Button class="add_new">ADD A NEW DATABASE</button>
+					</div>
 				</div>
 			</div>
 
