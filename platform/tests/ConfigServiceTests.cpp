@@ -51,7 +51,8 @@ public:
 		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
 		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
 		m_date_codec_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b"),
-		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
+		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68"),
+		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
@@ -250,6 +251,8 @@ public:
 	const std::string	m_do_nothing_id;
 	const std::string	m_date_codec_id;
 	const std::string	m_embedded_db_id;
+	const std::string	m_vocab_a_id;
+	const std::string	m_big_int_id;
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConfigServiceTestInterface_S, ConfigServiceTestInterface_F)
@@ -413,6 +416,80 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveEmbeddedDatabase) {
 	
 	// make sure that the Database was removed
 	BOOST_CHECK(! m_platform_cfg.getDatabaseManager().hasPlugin(m_embedded_db_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewVocabulary) {
+	const std::string vocab_c_id("urn:vocab:test_c");
+	std::string vocab_config_str = "<PionConfig><Vocabulary>"
+		"<Name>Vocabulary C</Name>"
+		"</Vocabulary></PionConfig>";
+	
+	// make a request to add a new Vocabulary
+	std::string vocab_id = checkAddResource("/config/vocabularies/" + vocab_c_id,
+											"Vocabulary", vocab_config_str);
+	BOOST_CHECK_EQUAL(vocab_id, vocab_c_id);
+	
+	// make sure that the Vocabulary was created
+	BOOST_CHECK(m_platform_cfg.getVocabularyManager().hasVocabulary(vocab_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateTestAVocabulary) {
+	std::string vocab_config_str = "<PionConfig><Vocabulary>"
+		"<Name>Vocabulary A</Name>"
+		"<Comment>Locked Vocabulary for Unit Tests</Comment>"
+		"<Locked>true</Locked>"
+		"</Vocabulary></PionConfig>";
+	
+	// make a request to update the "test a" Vocabulary
+	checkUpdateResource("/config/vocabularies/" + m_vocab_a_id, "Vocabulary",
+						vocab_config_str, "Locked", "true");
+	
+	// try to update the Vocabulary
+	BOOST_CHECK_THROW(m_platform_cfg.getVocabularyManager().removeTerm(m_vocab_a_id,
+																	   m_big_int_id),
+					  VocabularyConfig::VocabularyIsLockedException);
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveTestAVocabulary) {
+	// make a request to remove the "test a" Vocabulary
+	checkDeleteResource("/config/vocabularies/" + m_vocab_a_id);
+	
+	// make sure that the Database was removed
+	BOOST_CHECK(! m_platform_cfg.getVocabularyManager().hasVocabulary(m_vocab_a_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewTerm) {
+	const std::string new_term_id("urn:vocab:test#a-new-term");
+	std::string term_config_str = "<PionConfig><Term>"
+		"<Type>uint64</Type>"
+		"</Term></PionConfig>";
+	
+	// make a request to add a new Term
+	std::string term_id = checkAddResource("/config/terms/" + new_term_id,
+										   "Term", term_config_str);
+	BOOST_CHECK_EQUAL(term_id, new_term_id);
+	
+	// make sure that the Term was created
+	BOOST_CHECK(m_platform_cfg.getVocabularyManager().hasTerm(term_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateBigIntTerm) {
+	std::string term_config_str = "<PionConfig><Term>"
+		"<Type>int32</Type>"
+		"<Comment>A big integer</Comment>"
+		"</Term></PionConfig>";
+	
+	// make a request to update the "big integer" Term
+	checkUpdateResource("/config/terms/" + m_big_int_id, "Term",
+						term_config_str, "Type", "int32");
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveBigIntTerm) {
+	// make a request to remove the "big integer" Term
+	checkDeleteResource("/config/terms/" + m_big_int_id);
+	
+	// make sure that the Term was removed
+	BOOST_CHECK(! m_platform_cfg.getVocabularyManager().hasTerm(m_big_int_id));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

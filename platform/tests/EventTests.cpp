@@ -33,9 +33,9 @@ extern void setup_logging_for_unit_tests(void);
 class EventTests_F {
 public:
 	EventTests_F()
-		: m_null_term("urn:pion:null-term"), m_plain_int_term("urn:pion:plain-old-int"),
-		m_big_int_term("urn:pion:big-int"), m_fixed_term("urn:pion:fixed-text"),
-		m_date_term("urn:pion:date"), m_object_term("urn:pion:simple-object")
+		: m_null_term("urn:vocab:test#null-term"), m_plain_int_term("urn:vocab:test#plain-old-int"),
+		m_big_int_term("urn:vocab:test#big-int"), m_fixed_term("urn:vocab:test#fixed-text"),
+		m_date_term("urn:vocab:test#date"), m_object_term("urn:vocab:test#simple-object")
 	{
 		setup_logging_for_unit_tests();
 		// initialize our initial term set

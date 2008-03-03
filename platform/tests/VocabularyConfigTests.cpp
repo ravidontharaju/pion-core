@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateNewConfigFile) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTermBeforeOpening) {
-	Vocabulary::Term new_term("urn:pion:new-null-term");
+	Vocabulary::Term new_term("urn:vocab:test#new-null-term");
 	BOOST_CHECK_THROW(F::addTerm(new_term), ConfigManager::ConfigNotOpenException);
 }
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileWasCreated) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTerm) {
 	// create a new term to add
-	Vocabulary::Term new_term("urn:pion:new-float-number");
+	Vocabulary::Term new_term("urn:vocab:test#new-float-number");
 	new_term.term_type = Vocabulary::TYPE_FLOAT;
 	new_term.term_comment = "A floating-point number";
 	
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeAfterAddingTerm) {
 	// create a new term to add
-	Vocabulary::Term new_term("urn:pion:new-float-number");
+	Vocabulary::Term new_term("urn:vocab:test#new-float-number");
 	new_term.term_type = Vocabulary::TYPE_FLOAT;
 	new_term.term_comment = "A floating-point number";
 	
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeComment) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddDuplicateTerm) {
 	// check throw if we try adding a term with the same ID as an existing term
-	Vocabulary::Term temp_term("urn:pion:simple-object");
+	Vocabulary::Term temp_term("urn:vocab:test#simple-object");
 	BOOST_CHECK_THROW(F::addTerm(temp_term), Vocabulary::DuplicateTermException);
 }
 
@@ -243,10 +243,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTermFailures) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
-	F::removeTerm("urn:pion:null-term");
+	F::removeTerm("urn:vocab:test#null-term");
 	
 	// make sure Term is gone
-	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:pion:null-term"), Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:vocab:test#null-term"), Vocabulary::UNDEFINED_TERM_REF);
 	
 	// make sure that the TermRef is still valid (should point to the undefined Term)
 	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_ref, Vocabulary::UNDEFINED_TERM_REF);
@@ -254,12 +254,12 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterRemovingTerm) {
 	// first check that the expected expression is in the file before removing the Term
-	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Term id=\"urn:pion:null-term\"/>")));
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Term id=\"urn:vocab:test#null-term\"/>")));
 
-	F::removeTerm("urn:pion:null-term");
+	F::removeTerm("urn:vocab:test#null-term");
 	
 	// now check that the expression is no longer in the file
-	BOOST_CHECK(!F::configFileContainsExpression(boost::regex("<Term id=\"urn:pion:null-term\"/>")));
+	BOOST_CHECK(!F::configFileContainsExpression(boost::regex("<Term id=\"urn:vocab:test#null-term\"/>")));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -289,18 +289,18 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsFive) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdValues) {
 	// check term_id values
-	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_id, "urn:pion:null-term");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_id, "urn:pion:plain-old-int");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_id, "urn:pion:big-int");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_id, "urn:pion:fixed-text");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_id, "urn:pion:date");
-	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_id, "urn:pion:simple-object");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_id, "urn:pion:null-term");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_id, "urn:pion:plain-old-int");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_id, "urn:pion:big-int");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_id, "urn:pion:fixed-text");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_id, "urn:pion:date");
-	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_id, "urn:pion:simple-object");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_id, "urn:vocab:test#null-term");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[2].term_id, "urn:vocab:test#plain-old-int");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[3].term_id, "urn:vocab:test#big-int");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[4].term_id, "urn:vocab:test#fixed-text");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[5].term_id, "urn:vocab:test#date");
+	BOOST_CHECK_EQUAL(F::m_vocabulary[6].term_id, "urn:vocab:test#simple-object");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_id, "urn:vocab:test#null-term");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[2].term_id, "urn:vocab:test#plain-old-int");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[3].term_id, "urn:vocab:test#big-int");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[4].term_id, "urn:vocab:test#fixed-text");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[5].term_id, "urn:vocab:test#date");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[6].term_id, "urn:vocab:test#simple-object");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentValues) {
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDataTypeFormats) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 	// create a new term to add
-	Vocabulary::Term new_term("urn:pion:floating-point-number");
+	Vocabulary::Term new_term("urn:vocab:test#floating-point-number");
 	new_term.term_type = Vocabulary::TYPE_FLOAT;
 	new_term.term_comment = "A floating-point number";
 	
@@ -395,11 +395,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 	// remove the Term
-	F::removeTerm("urn:pion:null-term");
+	F::removeTerm("urn:vocab:test#null-term");
 	
 	// make sure it is gone
-	BOOST_CHECK_EQUAL(F::m_vocabulary.findTerm("urn:pion:null-term"), Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:pion:null-term"), Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK_EQUAL(F::m_vocabulary.findTerm("urn:vocab:test#null-term"), Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:vocab:test#null-term"), Vocabulary::UNDEFINED_TERM_REF);
 	
 	// make sure that the TermRef is still valid (should point to the undefined Term)
 	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_ref, Vocabulary::UNDEFINED_TERM_REF);
@@ -408,16 +408,16 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateExistingTerm) {
 	// update the null term so that it is a string
-	Vocabulary::Term updated_term("urn:pion:null-term");
+	Vocabulary::Term updated_term("urn:vocab:test#null-term");
 	updated_term.term_type = Vocabulary::TYPE_STRING;
 	updated_term.term_comment = "No longer a null term (now a string)!";
 	F::updateTerm(updated_term);
 	
 	// check Term member values
-	Vocabulary::TermRef term_ref = F::m_vocabulary.findTerm("urn:pion:null-term");
+	Vocabulary::TermRef term_ref = F::m_vocabulary.findTerm("urn:vocab:test#null-term");
 	BOOST_CHECK_EQUAL(F::m_vocabulary[term_ref].term_type, updated_term.term_type);
 	BOOST_CHECK_EQUAL(F::m_vocabulary[term_ref].term_comment, updated_term.term_comment);
-	term_ref = F::getVocabulary().findTerm("urn:pion:null-term");
+	term_ref = F::getVocabulary().findTerm("urn:vocab:test#null-term");
 	BOOST_CHECK_EQUAL(F::getVocabulary()[term_ref].term_type, updated_term.term_type);
 	BOOST_CHECK_EQUAL(F::getVocabulary()[term_ref].term_comment, updated_term.term_comment);	
 
@@ -455,15 +455,15 @@ BOOST_AUTO_TEST_SUITE_END()
 class VocabularyConfigWithNewTermAdded_F : public VocabularyConfigWithNewConfigFileOpen_F {
 public:
 	VocabularyConfigWithNewTermAdded_F()
-		: m_new_term("urn:pion:new-float-number"),
-		  m_expectedExpression("<Term id=\"urn:pion:new-float-number\">\\s*"
+		: m_new_term("urn:vocab:test#new-float-number"),
+		  m_expectedExpression("<Term id=\"urn:vocab:test#new-float-number\">\\s*"
 							   "<Type>float</Type>\\s*"
 							   "<Comment>A floating-point number</Comment>\\s*"
 							   "</Term>"),
 		  m_updated_term_ptr(NULL)
 	{
 		// create a new term to add
-		//Vocabulary::Term new_term("urn:pion:new-float-number");
+		//Vocabulary::Term new_term("urn:vocab:test#new-float-number");
 		m_new_term.term_type = Vocabulary::TYPE_FLOAT;
 		m_new_term.term_comment = "A floating-point number";
 		
@@ -536,7 +536,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateTermWithTermNotAdded) {
 	// call updateTerm() with a different Term, i.e. one with a different ID than the Term that was added
-	Vocabulary::Term different_term("urn:pion:something-new");
+	Vocabulary::Term different_term("urn:vocab:test#something-new");
 	BOOST_CHECK_THROW(F::updateTerm(different_term), Vocabulary::TermNotFoundException);
 }
 
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterUpdatingTerm) {
 	BOOST_CHECK(!F::configFileContainsExpression(F::m_expectedExpression));
 
 	// check that an updated expression is in the file
-	boost::regex newExpectedExpression("<Term id=\"urn:pion:new-float-number\">\\s*"
+	boost::regex newExpectedExpression("<Term id=\"urn:vocab:test#new-float-number\">\\s*"
 									   "<Type>string</Type>\\s*"
 									   "<Comment>was a float, now a string</Comment>\\s*"
 									   "</Term>");
@@ -693,13 +693,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentAccessors) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkTermIds) {
 	// check term_id values
 	const Vocabulary& universal_vocab = F::getVocabulary();
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:null-term") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:plain-old-int") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:big-int") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:fixed-text") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:simple-object") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:b-null-term") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:pion:b-int") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#null-term") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#plain-old-int") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#big-int") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#fixed-text") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#simple-object") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test_b#b-null-term") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test_b#b-int") != Vocabulary::UNDEFINED_TERM_REF);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

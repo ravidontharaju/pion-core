@@ -341,6 +341,18 @@ public:
 		return i->second->getComment();
 	}
 
+	/// returns true if a particular Vocabulary is defined
+	inline bool hasVocabulary(const std::string& vocab_id) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
+		return (m_vocab_map.find(vocab_id) != m_vocab_map.end());
+	}
+	
+	/// returns true if a particular Vocabulary Term is defined
+	inline bool hasTerm(const std::string& term_id) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
+		return (m_vocabulary.findTerm(term_id) != Vocabulary::UNDEFINED_TERM_REF);
+	}
+	
 	/// returns a const reference to the universal Vocabulary
 	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
 

@@ -34,12 +34,12 @@ extern void setup_logging_for_unit_tests(void);
 class ComparisonTests_F {
 public:
 	ComparisonTests_F()
-		: m_plain_int_term("urn:pion:plain-int"),
-		m_string_term("urn:pion:simple-string"),
-		m_date_time_term("urn:pion:date-time"),
-		m_date_term("urn:pion:date"),
-		m_time_term("urn:pion:time"),
-		m_object_term("urn:pion:simple-object")
+		: m_plain_int_term("urn:vocab:test#plain-int"),
+		m_string_term("urn:vocab:test#simple-string"),
+		m_date_time_term("urn:vocab:test#date-time"),
+		m_date_term("urn:vocab:test#date"),
+		m_time_term("urn:vocab:test#time"),
+		m_object_term("urn:vocab:test#simple-object")
 	{
 		setup_logging_for_unit_tests();
 		// initialize our initial term set
