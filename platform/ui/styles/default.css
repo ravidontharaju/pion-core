@@ -94,7 +94,7 @@ body {
 }
 
 .hidden #ops_toggle_button {
-	background: url("../images/control-play.png");
+	background: url("../images/reactor-counter-toggle-in.png");
 }
 
 h1 {
@@ -412,6 +412,11 @@ This is a duplicate of #reactor_config_content for now.
 
 /* for moveable items, e.g. reactors in a workspace */
 
+.name {
+	width: 140px;
+	overflow: hidden;
+	font-size: 12px;
+}
 
 
 .moveable {
@@ -429,6 +434,7 @@ This is a duplicate of #reactor_config_content for now.
 	height: 16px;
 	background-color: transparent;
 	background: url(../images/control-play.png) repeat-x;
+	margin-left: 20px;	
 	border: 0px;
 }
 
