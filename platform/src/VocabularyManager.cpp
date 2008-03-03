@@ -166,7 +166,7 @@ void VocabularyManager::writeTermConfigXML(std::ostream& out) const
 {
 	ConfigManager::writeBeginPionConfigXML(out);
 	boost::mutex::scoped_lock manager_lock(m_mutex);
-	for (Vocabulary::TermRef ref = 0; ref < m_vocabulary.size(); ++ref) {
+	for (Vocabulary::TermRef ref = 1; ref <= m_vocabulary.size(); ++ref) {
 		if (m_vocabulary[ref].term_ref != Vocabulary::UNDEFINED_TERM_REF) {
 			VocabularyConfig::writeTermConfigXML(out, m_vocabulary[ref]);
 		}

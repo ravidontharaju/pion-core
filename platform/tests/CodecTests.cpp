@@ -574,7 +574,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecName) {
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecComment) {
 	BOOST_CHECK_EQUAL(m_common_codec->getComment(), "Codec for the Common Log Format (CLF)");
-	BOOST_CHECK_EQUAL(m_combined_codec->getComment(), "Codec for the Combined Log Format (CLF)");
+	BOOST_CHECK_EQUAL(m_combined_codec->getComment(), "Codec for the Combined Log Format (DLF)");
 	BOOST_CHECK_EQUAL(m_extended_codec->getComment(), "Codec for the Extended Log Format (ELF)");
 }
 
