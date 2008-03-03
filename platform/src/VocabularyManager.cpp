@@ -146,6 +146,34 @@ bool VocabularyManager::writeConfigXML(std::ostream& out,
 	return true;
 }
 	
+bool VocabularyManager::writeTermConfigXML(std::ostream& out,
+										   const std::string& term_id) const
+{
+	boost::mutex::scoped_lock manager_lock(m_mutex);
+
+	Vocabulary::TermRef term_ref = m_vocabulary.findTerm(term_id);
+	if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		return false;
+
+	ConfigManager::writeBeginPionConfigXML(out);
+	VocabularyConfig::writeTermConfigXML(out, m_vocabulary[term_ref]);
+	ConfigManager::writeEndPionConfigXML(out);
+
+	return true;
+}
+	
+void VocabularyManager::writeTermConfigXML(std::ostream& out) const
+{
+	ConfigManager::writeBeginPionConfigXML(out);
+	boost::mutex::scoped_lock manager_lock(m_mutex);
+	for (Vocabulary::TermRef ref = 0; ref < m_vocabulary.size(); ++ref) {
+		if (m_vocabulary[ref].term_ref != Vocabulary::UNDEFINED_TERM_REF) {
+			VocabularyConfig::writeTermConfigXML(out, m_vocabulary[ref]);
+		}
+	}
+	ConfigManager::writeEndPionConfigXML(out);
+}
+	
 void VocabularyManager::addVocabulary(const std::string& vocab_id,
 									  const std::string& vocab_name,
 									  const std::string& vocab_comment)
@@ -195,6 +223,27 @@ void VocabularyManager::addVocabulary(const std::string& vocab_id,
 	PION_LOG_DEBUG(m_logger, "Added new Vocabulary: " << vocab_id);
 	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
 	m_signal_vocabulary_updated();
+}
+
+void VocabularyManager::addVocabulary(const std::string& vocab_id,
+									  const char *content_buf,
+									  std::size_t content_length)
+{
+	std::string vocab_name;
+	std::string vocab_comment;
+
+	// extract the XML config info from the content buffer
+	xmlNodePtr config_ptr = ConfigManager::createResourceConfig(VocabularyConfig::getVocabularyElementName(),
+																content_buf, content_length);
+	if (config_ptr != NULL) {
+		// get the "Name" value
+		ConfigManager::getConfigOption(NAME_ELEMENT_NAME, vocab_name, config_ptr);
+		// get the "Comment" value
+		ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, vocab_comment, config_ptr);
+	}
+	
+	// call addVocabulary() to do the real work
+	addVocabulary(vocab_id, vocab_name, vocab_comment);
 }
 
 void VocabularyManager::removeVocabulary(const std::string& vocab_id)

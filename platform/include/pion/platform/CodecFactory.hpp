@@ -99,8 +99,8 @@ public:
 	 *
 	 * @return xmlNodePtr XML configuration list for the Codec
 	 */
-	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
-		return ConfigManager::createPluginConfig(CODEC_ELEMENT_NAME, buf, len);
+	static xmlNodePtr createCodecConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(CODEC_ELEMENT_NAME, buf, len);
 	}
 	
 	

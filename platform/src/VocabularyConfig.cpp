@@ -30,8 +30,6 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 	
 const std::string			VocabularyConfig::DEFAULT_CONFIG_FILE = "vocabulary.xml";
 const std::string			VocabularyConfig::VOCABULARY_ELEMENT_NAME = "Vocabulary";
-const std::string			VocabularyConfig::NAME_ELEMENT_NAME = "Name";
-const std::string			VocabularyConfig::COMMENT_ELEMENT_NAME = "Comment";
 const std::string			VocabularyConfig::LOCKED_ELEMENT_NAME = "Locked";
 const std::string			VocabularyConfig::TERM_ELEMENT_NAME = "Term";
 const std::string			VocabularyConfig::TYPE_ELEMENT_NAME = "Type";
@@ -101,7 +99,7 @@ void VocabularyConfig::createConfigFile(void)
 	// save the new XML config file
 	saveConfigFile();
 }
-	
+
 void VocabularyConfig::openConfigFile(void)
 {
 	// just return if it's already open
@@ -150,49 +148,7 @@ void VocabularyConfig::openConfigFile(void)
 			if (! getNodeId(cur_node, new_term_id))
 				throw Vocabulary::EmptyTermIdException();
 			Vocabulary::Term new_term(new_term_id);
-			
-			// find the existing "type" node (if any)
-			xmlNodePtr type_node = findConfigNodeByName(TYPE_ELEMENT_NAME,
-														cur_node->children);
-			if (type_node != NULL) {
-				// found a type node (if not found we can leave it as "NULL" (the default)
-				xml_char_ptr = xmlNodeGetContent(type_node);
-				if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-					if (xml_char_ptr != NULL)
-						xmlFree(xml_char_ptr);
-					throw EmptyTypeException(new_term.term_id);
-				}
-				
-				// set the term's data type
-				const std::string new_term_type(reinterpret_cast<char*>(xml_char_ptr));
-				xmlFree(xml_char_ptr);
-				new_term.term_type = Vocabulary::parseDataType(new_term_type);
-				
-				// check for "size" attribute only if type is "char"
-				if (new_term.term_type == Vocabulary::TYPE_CHAR) {
-					// use a default size of '1' for char data type
-					new_term.term_size = 1;
-					xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()));
-					if (xml_char_ptr != NULL) {
-						if (xml_char_ptr[0] != '\0')
-							new_term.term_size = strtoul(reinterpret_cast<char*>(xml_char_ptr), NULL, 10);
-						// make sure it is not equal to 0 (change to 1 if it is)
-						if (new_term.term_size == 0)
-							new_term.term_size = 1;
-						xmlFree(xml_char_ptr);
-					}
-				}
-			}
-
-			// check for "format" attribute
-			xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
-			if (xml_char_ptr != NULL) {
-				new_term.term_format = reinterpret_cast<char*>(xml_char_ptr);
-				xmlFree(xml_char_ptr);
-			}				
-			
-			// find the existing "comment" node (if any)
-			getConfigOption(COMMENT_ELEMENT_NAME, new_term.term_comment, cur_node->children);
+			parseTermConfig(new_term, cur_node->children);
 
 			// add the new term (finished parsing basic config)
 			m_vocabulary.addTerm(new_term);
@@ -287,6 +243,28 @@ void VocabularyConfig::setLocked(bool b)
 		// save the new XML config file
 		saveConfigFile();
 	}
+}
+
+void VocabularyConfig::setConfig(const xmlNodePtr config_ptr)
+{
+	// get the "Name" value
+	std::string new_name;
+	ConfigManager::getConfigOption(NAME_ELEMENT_NAME, new_name, config_ptr);
+	if (new_name != m_name)
+		setName(new_name);
+
+	// get the "Comment" value
+	std::string new_comment;
+	ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, new_comment, config_ptr);
+	if (new_comment != m_comment)
+		setComment(new_comment);
+
+	// get the "Locked" value
+	std::string new_locked_str;
+	ConfigManager::getConfigOption(LOCKED_ELEMENT_NAME, new_locked_str, config_ptr);
+	const bool new_locked = (new_locked_str == "true");
+	if (new_locked != m_is_locked)
+		setLocked(new_locked);
 }
 
 void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
@@ -439,7 +417,7 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 	
 	PION_LOG_DEBUG(m_logger, "Updated Vocabulary Term: " << t.term_id);
 }
-	
+
 void VocabularyConfig::removeTerm(const std::string& term_id)
 {
 	// make sure that the Vocabulary configuration file is open
@@ -469,5 +447,82 @@ void VocabularyConfig::removeTerm(const std::string& term_id)
 	PION_LOG_DEBUG(m_logger, "Removed Vocabulary Term: " << term_id);
 }
 
+void VocabularyConfig::writeTermConfigXML(std::ostream& out,
+										  const Vocabulary::Term& t)
+{
+	// begin Term XML
+	out << "\t<" << TERM_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME << "=\""
+		<< t.term_id << "\">" << std::endl;
+
+	// Type element
+	out << "\t\t<" << TYPE_ELEMENT_NAME;
+	if (t.term_type == Vocabulary::TYPE_CHAR)
+		out << ' ' << SIZE_ATTRIBUTE_NAME << "=\"" << t.term_size << '\"';
+	else if (! t.term_format.empty())
+		out << ' ' << FORMAT_ATTRIBUTE_NAME << "=\"" << t.term_format << '\"';
+	out << '>' << Vocabulary::getDataTypeAsString(t.term_type)
+		<< "</" << TYPE_ELEMENT_NAME << '>' << std::endl;
+	
+	// Comment element
+	if (! t.term_comment.empty()) {
+		out << "\t\t<" << COMMENT_ELEMENT_NAME << '>' << t.term_comment
+			<< "</" << COMMENT_ELEMENT_NAME << '>' << std::endl;
+	}
+	
+	// end Term XML
+	out << "\t</" << TERM_ELEMENT_NAME << '>' << std::endl;
+}
+
+void VocabularyConfig::parseTermConfig(Vocabulary::Term& new_term,
+									   const xmlNodePtr config_ptr)
+{
+	xmlChar *xml_char_ptr;
+	
+	// find the existing "type" node (if any)
+	xmlNodePtr type_node = findConfigNodeByName(TYPE_ELEMENT_NAME, config_ptr);
+	if (type_node == NULL) {
+		new_term.term_type = Vocabulary::TYPE_NULL;
+	} else {
+		// found a type node (if not found we can leave it as "NULL" (the default)
+		xml_char_ptr = xmlNodeGetContent(type_node);
+		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+			if (xml_char_ptr != NULL)
+				xmlFree(xml_char_ptr);
+			throw EmptyTypeException(new_term.term_id);
+		}
+		
+		// set the term's data type
+		const std::string new_term_type(reinterpret_cast<char*>(xml_char_ptr));
+		xmlFree(xml_char_ptr);
+		new_term.term_type = Vocabulary::parseDataType(new_term_type);
+		
+		// check for "size" attribute only if type is "char"
+		if (new_term.term_type == Vocabulary::TYPE_CHAR) {
+			// use a default size of '1' for char data type
+			new_term.term_size = 1;
+			xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(SIZE_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr != NULL) {
+				if (xml_char_ptr[0] != '\0')
+					new_term.term_size = strtoul(reinterpret_cast<char*>(xml_char_ptr), NULL, 10);
+				// make sure it is not equal to 0 (change to 1 if it is)
+				if (new_term.term_size == 0)
+					new_term.term_size = 1;
+				xmlFree(xml_char_ptr);
+			}
+		}
+	}
+	
+	// check for "format" attribute
+	xml_char_ptr = xmlGetProp(type_node, reinterpret_cast<const xmlChar*>(FORMAT_ATTRIBUTE_NAME.c_str()));
+	if (xml_char_ptr != NULL) {
+		new_term.term_format = reinterpret_cast<char*>(xml_char_ptr);
+		xmlFree(xml_char_ptr);
+	}				
+	
+	// find the existing "comment" node (if any)
+	getConfigOption(COMMENT_ELEMENT_NAME, new_term.term_comment, config_ptr);
+}
+
+	
 }	// end namespace platform
 }	// end namespace pion

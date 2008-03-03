@@ -131,20 +131,13 @@ public:
 			: PionException("Tried adding a duplicate term to the Vocabulary: ", term_id) {}
 	};
 	
-	/// exception thrown if there is a problem finding the Term to update
-	class UpdateTermNotFoundException : public PionException {
+	/// exception thrown if there is a problem finding a Term
+	class TermNotFoundException : public PionException {
 	public:
-		UpdateTermNotFoundException(const std::string& term_id)
-			: PionException("Unable to find the Term to update: ", term_id) {}
+		TermNotFoundException(const std::string& term_id)
+			: PionException("Unable to find Term identifier: ", term_id) {}
 	};
-	
-	/// exception thrown if there is a problem finding the Term to remove
-	class RemoveTermNotFoundException : public PionException {
-	public:
-		RemoveTermNotFoundException(const std::string& term_id)
-			: PionException("Unable to find the Vocabulary Term to remove: ", term_id) {}
-	};
-	
+
 	
 	/// constructs a new Vocabulary instance
 	Vocabulary(void);

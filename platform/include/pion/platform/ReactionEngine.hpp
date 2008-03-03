@@ -285,8 +285,8 @@ public:
 	 * writes info for particular connections to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the connection info into
-	 * @param only_id include only the connection that matches this unique
-	 *                identifier, or include all connections if empty
+	 * @param connection_id include only the connection that matches this unique
+	 *                      identifier, or include all connections if empty
 	 */
 	void writeConnectionsXML(std::ostream& out, const std::string& connection_id) const;
 
@@ -308,8 +308,8 @@ public:
 	 *
 	 * @return xmlNodePtr XML configuration list for the Reactor
 	 */
-	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
-		return ConfigManager::createPluginConfig(REACTOR_ELEMENT_NAME, buf, len);
+	static xmlNodePtr createReactorConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(REACTOR_ELEMENT_NAME, buf, len);
 	}
 	
 	/**

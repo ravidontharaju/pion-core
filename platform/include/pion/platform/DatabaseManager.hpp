@@ -100,8 +100,8 @@ public:
 	 *
 	 * @return xmlNodePtr XML configuration list for the Database
 	 */
-	static xmlNodePtr createPluginConfig(const char *buf, std::size_t len) {
-		return ConfigManager::createPluginConfig(DATABASE_ELEMENT_NAME, buf, len);
+	static xmlNodePtr createDatabaseConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(DATABASE_ELEMENT_NAME, buf, len);
 	}
 	
 	

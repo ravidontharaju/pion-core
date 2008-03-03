@@ -37,6 +37,8 @@ const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "PionConfig";
 const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
+const std::string		ConfigManager::NAME_ELEMENT_NAME = "Name";
+const std::string		ConfigManager::COMMENT_ELEMENT_NAME = "Comment";
 const std::string		ConfigManager::ID_ATTRIBUTE_NAME = "id";
 
 		
@@ -272,8 +274,8 @@ xmlNodePtr ConfigManager::createPluginConfig(const std::string& plugin_type)
 	return config_ptr;
 }
 
-xmlNodePtr ConfigManager::createPluginConfig(const std::string& plugin_name,
-											 const char *buf, std::size_t len)
+xmlNodePtr ConfigManager::createResourceConfig(const std::string& resource_name,
+											   const char *buf, std::size_t len)
 {
 	// sanity check
 	if (buf == NULL || len == 0)
@@ -295,14 +297,14 @@ xmlNodePtr ConfigManager::createPluginConfig(const std::string& plugin_name,
 		return NULL;
 	}
 	
-	// find the plugin element
-	node_ptr = findConfigNodeByName(plugin_name, node_ptr->children);
+	// find the resource element
+	node_ptr = findConfigNodeByName(resource_name, node_ptr->children);
 	if (node_ptr == NULL) {
 		xmlFreeDoc(doc_ptr);
 		return NULL;
 	}
 
-	// found the plugin config -> make a copy of it
+	// found the resource config -> make a copy of it
 	node_ptr = xmlCopyNodeList(node_ptr->children);
 	
 	// free the temporary document

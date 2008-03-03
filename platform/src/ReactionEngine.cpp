@@ -381,9 +381,9 @@ std::string ReactionEngine::addReactorConnection(const char *content_buf,
 												 std::size_t content_length)
 {
 	// extract the XML config info from the content buffer
-	xmlNodePtr config_ptr = ConfigManager::createPluginConfig(CONNECTION_ELEMENT_NAME,
-															  content_buf,
-															  content_length);
+	xmlNodePtr config_ptr = ConfigManager::createResourceConfig(CONNECTION_ELEMENT_NAME,
+																content_buf,
+																content_length);
 	if (config_ptr == NULL)
 		throw BadConnectionConfigException();
 	

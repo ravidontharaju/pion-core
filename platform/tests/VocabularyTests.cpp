@@ -140,10 +140,10 @@ BOOST_AUTO_TEST_CASE(checkVocabularyAddDuplicateTerm) {
 
 BOOST_AUTO_TEST_CASE(checkVocabularyRemoveTermFailures) {
 	// try to remove Term using empty ID
-	BOOST_CHECK_THROW(removeTerm(""), Vocabulary::RemoveTermNotFoundException);
+	BOOST_CHECK_THROW(removeTerm(""), Vocabulary::TermNotFoundException);
 	
 	// try to remove Term using an unknown ID
-	BOOST_CHECK_THROW(removeTerm("unknown"), Vocabulary::RemoveTermNotFoundException);
+	BOOST_CHECK_THROW(removeTerm("unknown"), Vocabulary::TermNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE(checkVocabularyAddNewTerm) {

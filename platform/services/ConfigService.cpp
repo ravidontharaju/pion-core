@@ -51,16 +51,180 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	ConfigManager::writeConfigXMLHeader(ss);
 	
 	if (branches.empty()) {
+
+		// send platform configuration info
 		getConfig().writeConfigXML(ss);
+		
 	} else if (branches.front() == "vocabularies") {
+		//
+		// BEGIN VOCABULARIES CONFIG
+		//
 		if (branches.size() == 1) {
+			
+			// returns a list of all Vocabularies
 			getConfig().getVocabularyManager().writeConfigXML(ss);
-		} else {
-			if (! getConfig().getVocabularyManager().writeConfigXML(ss, branches[1])) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
+			
+		} else if (branches.size() == 2) {
+			// branches[1] == vocabulary_id
+			const std::string vocab_id(branches[1]);
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Vocabulary's configuration
+				
+				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
+					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Vocabulary
+				getConfig().getVocabularyManager().addVocabulary(vocab_id,
+																 request->getContent(),
+																 request->getContentLength());
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Vocabulary's configuration
+				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
+					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Vocabulary's configuration
+				
+				// convert request content into XML configuration info
+				xmlNodePtr vocab_config_ptr =
+					VocabularyConfig::createVocabularyConfig(request->getContent(),
+															 request->getContentLength());
+				
+				try {
+					// push the new config into the VocabularyManager
+					getConfig().getVocabularyManager().setVocabularyConfig(vocab_id, vocab_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(vocab_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(vocab_config_ptr);
+				
+				// respond with the Vocabulary's updated configuration
+				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
+					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Vocabulary
+				
+				getConfig().getVocabularyManager().removeVocabulary(vocab_id);
+				
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
 		}
+		//
+		// END VOCABULARIES CONFIG
+		//
+	} else if (branches.front() == "terms") {
+		//
+		// BEGIN TERMS CONFIG
+		//
+		if (branches.size() == 1) {
+			
+			// returns a list of all Vocabularies
+			getConfig().getVocabularyManager().writeTermConfigXML(ss);
+			
+		} else if (branches.size() == 2) {
+			// branches[1] == term_id
+			const std::string term_id(branches[1]);
+			const std::string vocab_id(term_id.substr(0, term_id.find_last_of('#')));
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Vocabulary Term's configuration
+				
+				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
+					throw Vocabulary::TermNotFoundException(term_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Vocabulary Term
+				
+				// convert request content into XML configuration info
+				xmlNodePtr term_config_ptr =
+					VocabularyConfig::createTermConfig(request->getContent(),
+													   request->getContentLength());
+				
+				// add the new Vocabulary Term to the VocabularyManager
+				try {
+					getConfig().getVocabularyManager().addTerm(vocab_id, term_id,
+															   term_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(term_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(term_config_ptr);
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Vocabulary Term's configuration
+				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
+					throw Vocabulary::TermNotFoundException(term_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Vocabulary's configuration
+				
+				// convert request content into XML configuration info
+				xmlNodePtr term_config_ptr =
+					VocabularyConfig::createTermConfig(request->getContent(),
+													   request->getContentLength());
+				
+				// get the Vocabulary name and comment from the XML config
+				
+				try {
+					// push the new config into the VocabularyManager
+					getConfig().getVocabularyManager().updateTerm(vocab_id, term_id,
+																  term_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(term_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(term_config_ptr);
+				
+				// respond with the Vocabulary Term's updated configuration
+				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
+					throw Vocabulary::TermNotFoundException(term_id);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Vocabulary Term
+				
+				getConfig().getVocabularyManager().removeTerm(vocab_id, term_id);
+				
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
+		}
+		//
+		// END TERMS CONFIG
+		//
 	} else if (branches.front() == "codecs") {
 		//
 		// BEGIN CODECS CONFIG
@@ -77,8 +241,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// convert request content into XML configuration info
 				xmlNodePtr codec_config_ptr =
-					CodecFactory::createPluginConfig(request->getContent(),
-													 request->getContentLength());
+					CodecFactory::createCodecConfig(request->getContent(),
+													request->getContentLength());
 				
 				std::string codec_id;
 				// add the new Codec to the CodecFactory
@@ -118,8 +282,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// convert request content into XML configuration info
 				xmlNodePtr codec_config_ptr =
-					CodecFactory::createPluginConfig(request->getContent(),
-													 request->getContentLength());
+					CodecFactory::createCodecConfig(request->getContent(),
+													request->getContentLength());
 				
 				try {
 					// push the new config into the CodecFactory
@@ -172,8 +336,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// convert request content into XML configuration info
 				xmlNodePtr database_config_ptr =
-					DatabaseManager::createPluginConfig(request->getContent(),
-														request->getContentLength());
+					DatabaseManager::createDatabaseConfig(request->getContent(),
+														  request->getContentLength());
 				
 				std::string database_id;
 				// add the new Database to the DatabaseManager
@@ -213,8 +377,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// convert request content into XML configuration info
 				xmlNodePtr database_config_ptr =
-					DatabaseManager::createPluginConfig(request->getContent(),
-														request->getContentLength());
+					DatabaseManager::createDatabaseConfig(request->getContent(),
+														  request->getContentLength());
 				
 				try {
 					// push the new config into the DatabaseManager
@@ -267,8 +431,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// convert request content into XML configuration info
 				xmlNodePtr reactor_config_ptr =
-					ReactionEngine::createPluginConfig(request->getContent(),
-													   request->getContentLength());
+					ReactionEngine::createReactorConfig(request->getContent(),
+														request->getContentLength());
 				
 				std::string reactor_id;
 				// add the new Reactor to the ReactionEngine
@@ -314,8 +478,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 												
 				// convert request content into XML configuration info
 				xmlNodePtr reactor_config_ptr =
-					ReactionEngine::createPluginConfig(request->getContent(),
-													   request->getContentLength());
+					ReactionEngine::createReactorConfig(request->getContent(),
+														request->getContentLength());
 
 				try {
 					// push the new config into the ReactionEngine
@@ -374,7 +538,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		// END REACTORS CONFIG
 		//
 	} else if (branches.front() == "connections") {
-		
+		//
+		// BEGIN CONNECTIONS CONFIG
+		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				
@@ -423,7 +589,13 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
 		}
+		//
+		// END CONNECTIONS CONFIG
+		//
 	} else if (branches.front() == "services") {
+		//
+		// BEGIN SERVICES CONFIG
+		//
 		if (branches.size() == 1) {
 			getConfig().getServiceManager().writeConfigXML(ss);
 		} else {
@@ -432,6 +604,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				return;
 			}
 		}
+		//
+		// END SERVICES CONFIG
+		//
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;

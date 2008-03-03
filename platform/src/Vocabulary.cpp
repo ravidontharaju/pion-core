@@ -87,13 +87,13 @@ void Vocabulary::updateTerm(const Term& t)
 {
 	// make sure the term_id is not empty
 	if (t.term_id.empty())
-		throw UpdateTermNotFoundException(t.term_id);
+		throw TermNotFoundException(t.term_id);
 
 	// find the Term to update
 	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	TermStringMap::const_iterator i = m_uri_map.find(t.term_id);
 	if (i == m_uri_map.end())
-		throw UpdateTermNotFoundException(t.term_id);
+		throw TermNotFoundException(t.term_id);
 	Term *term_ptr = i->second;
 	
 	// update the values in memory
@@ -107,13 +107,13 @@ void Vocabulary::removeTerm(const std::string& term_id)
 {
 	// make sure the term_id is not empty
 	if (term_id.empty())
-		throw RemoveTermNotFoundException(term_id);
+		throw TermNotFoundException(term_id);
 	
 	// find the Term to remove
 	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 	TermStringMap::iterator uri_iterator = m_uri_map.find(term_id);
 	if (uri_iterator == m_uri_map.end())
-		throw RemoveTermNotFoundException(term_id);
+		throw TermNotFoundException(term_id);
 	Term *term_ptr = uri_iterator->second;
 	
 	// remove the Term from the URI map

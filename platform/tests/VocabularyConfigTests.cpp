@@ -236,10 +236,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddDuplicateTerm) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTermFailures) {
 	// try to remove Term using empty ID
-	BOOST_CHECK_THROW(F::removeTerm(""), Vocabulary::RemoveTermNotFoundException);
+	BOOST_CHECK_THROW(F::removeTerm(""), Vocabulary::TermNotFoundException);
 	
 	// try to remove Term using an unknown ID
-	BOOST_CHECK_THROW(F::removeTerm("unknown"), Vocabulary::RemoveTermNotFoundException);
+	BOOST_CHECK_THROW(F::removeTerm("unknown"), Vocabulary::TermNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateTerm) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateTermWithTermNotAdded) {
 	// call updateTerm() with a different Term, i.e. one with a different ID than the Term that was added
 	Vocabulary::Term different_term("urn:pion:something-new");
-	BOOST_CHECK_THROW(F::updateTerm(different_term), Vocabulary::UpdateTermNotFoundException);
+	BOOST_CHECK_THROW(F::updateTerm(different_term), Vocabulary::TermNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterUpdatingTerm) {

@@ -221,16 +221,16 @@ public:
 	static xmlNodePtr createPluginConfig(const std::string& plugin_type);
 	
 	/**
-	 * uses a memory buffer to generate XML configuration data for a plugin
+	 * uses a memory buffer to generate XML configuration data for a resource
 	 *
-	 * @param plugin_name the XML element name for the plugin
+	 * @param resource_name the XML element name for the resource
 	 * @param buf pointer to a memory buffer containing configuration data
 	 * @param len number of bytes available in the memory buffer
 	 *
-	 * @return xmlNodePtr XML configuration list for the Plugin
+	 * @return xmlNodePtr XML configuration list for the resource
 	 */
-	static xmlNodePtr createPluginConfig(const std::string& plugin_name,
-										 const char *buf, std::size_t len);
+	static xmlNodePtr createResourceConfig(const std::string& resource_name,
+										   const char *buf, std::size_t len);
 	
 	/**
 	 * retrieves the unique identifier for an XML document node
@@ -445,6 +445,12 @@ protected:
 	
 	/// name of the plug-in type element for Pion XML config files
 	static const std::string		PLUGIN_ELEMENT_NAME;
+	
+	/// name of the descriptive name element for Pion XML config files
+	static const std::string		NAME_ELEMENT_NAME;
+	
+	/// name of the comment element for Pion XML config files
+	static const std::string		COMMENT_ELEMENT_NAME;
 	
 	/// name of the unique identifier attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;

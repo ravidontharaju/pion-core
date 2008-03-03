@@ -121,8 +121,28 @@ public:
 	 *
 	 * @param out the ostream to write the configuration tree into
 	 * @param vocab_id the unique identifier for the Vocabulary
+	 *
+	 * @return true if the Vocabulary was successfully found
 	 */
 	bool writeConfigXML(std::ostream& out, const std::string& vocab_id) const;
+
+	/**
+	 * writes Term configuration info to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Term configuration info into
+	 * @param term_id include only the Term that matches this unique identifier,
+	 *                or include all Terms if it is empty
+	 *
+	 * @return true if the Term was successfully found
+	 */
+	bool writeTermConfigXML(std::ostream& out, const std::string& term_id) const;
+	
+	/**
+	 * writes configuration info for all Terms to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Term configuration info into
+	 */
+	void writeTermConfigXML(std::ostream& out) const;
 
 	/**
 	 * creates a new, empty vocabulary
@@ -136,6 +156,16 @@ public:
 					   const std::string& vocab_comment);
 	
 	/**
+	 * creates a new, empty vocabulary
+	 *
+	 * @param vocab_id the unique identifier for the Vocabulary to create
+	 * @param content_buf pointer to buffer containing XML config for the Vocabulary
+	 * @param content_length size of the content buffer, in bytes
+	 */
+	void addVocabulary(const std::string& vocab_id, const char *content_buf,
+					   std::size_t content_length);
+
+	/**
 	 * removes an existing vocabulary and deletes the associated config file
 	 *
 	 * @param vocab_id the unique identifier for the Vocabulary to remove
@@ -148,6 +178,20 @@ public:
 	 * @param vocab_path the new path where config files will be created
 	 */
 	void setVocabularyPath(const std::string& vocab_path);
+	
+	/**
+	 * sets configuration parameters for an existing vocabulary
+	 *
+	 * @param vocab_id the unique identifier for the Vocabulary to update
+	 * @param config_ptr pointer to a list of XML nodes containing vocabulary
+	 *                   configuration parameters
+	 */
+	void setVocabularyConfig(const std::string& vocab_id,
+							 const xmlNodePtr config_ptr)
+	{
+		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::setConfig,
+											   _1, config_ptr));
+	}
 	
 	/**
 	 * changes the descriptive name assigned to a Vocabulary
@@ -201,6 +245,22 @@ public:
 	}
 	
 	/**
+	 * adds a new Term to a Vocabulary
+	 *
+	 * @param vocab_id the unique identifier for the Vocabulary to modify
+	 * @param term_id the unique identifier for the Term to add
+	 * @param config_ptr pointer to a list of XML nodes containing term
+	 *                   configuration parameters
+	 */
+	inline void addTerm(const std::string& vocab_id,
+						const std::string& term_id,
+						const xmlNodePtr config_ptr)
+	{
+		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::addTerm,
+											   _1, boost::cref(term_id), config_ptr));
+	}
+	
+	/**
 	 * update the settings for a Term
 	 *
 	 * @param vocab_id the unique identifier for the Vocabulary to modify
@@ -211,6 +271,22 @@ public:
 	{
 		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::updateTerm,
 											   _1, boost::cref(t)));
+	}
+	
+	/**
+	 * update the settings for a Term
+	 *
+	 * @param vocab_id the unique identifier for the Vocabulary to modify
+	 * @param term_id the unique identifier for the Term to modify
+	 * @param config_ptr pointer to a list of XML nodes containing term
+	 *                   configuration parameters
+	 */
+	inline void updateTerm(const std::string& vocab_id,
+						   const std::string& term_id,
+						   const xmlNodePtr config_ptr)
+	{
+		updateVocabulary(vocab_id, boost::bind(&VocabularyConfig::updateTerm,
+											   _1, boost::cref(term_id), config_ptr));
 	}
 	
 	/**

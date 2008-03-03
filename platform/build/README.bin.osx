@@ -25,7 +25,7 @@ Pion.app           Mac OS X (10.5 / Intel) binary application
 
 To start Pion, just double-click on the Pion.app (or "Pion") application.
 This will start the Pion server and open a log window on your desktop.
-Once the server is running, open your favorite web browser and point it to
+Once the server is running, open your (Firefox) web browser and point it to
 the following URL:  https://localhost:8080
 
 This will open the Pion user interface to the "Reactors configuration" page.
@@ -53,7 +53,13 @@ c) The LogInputReactor is missing a significant amount of functionality that
 
 d) The LogOutputReactor does not support log file rotation or compression.
 
-e) The running states of Reactors (started/stopped) are not saved in the
+e) Currently, only the Firefox web browser works properly with the UI.  We
+   plan to add support for additional browsers (namely IE and Safari) soon.
+
+f) If you drag a reactor over top an existing reactor within the workspace,
+   it sometimes becomes un-droppable.  Drag around existing reactors instead.
+
+g) The running states of Reactors (started/stopped) are not saved in the
    configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned

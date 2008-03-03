@@ -131,6 +131,9 @@ public:
 	/// sets the locked boolean for this Vocabulary
 	void setLocked(bool b);
 	
+	/// sets the general configuration for this Vocabulary
+	void setConfig(const xmlNodePtr config_ptr);
+	
 	/**
 	 * adds a new Term to the Vocabulary
 	 *
@@ -139,12 +142,38 @@ public:
 	void addTerm(const Vocabulary::Term& new_term);
 	
 	/**
+	 * adds a new Term to the Vocabulary
+	 *
+	 * @param term_id unique identifier for the Term to add
+	 * @param config_ptr pointer to a list of XML nodes containing term
+	 *                   configuration parameters
+	 */
+	inline void addTerm(const std::string& term_id, const xmlNodePtr config_ptr) {
+		Vocabulary::Term new_term(term_id);
+		parseTermConfig(new_term, config_ptr);
+		addTerm(new_term);
+	}
+
+	/**
 	 * update the settings for a Term
 	 *
 	 * @param t the Term to update (t.term_id is used to find the Term to change)
 	 */
 	void updateTerm(const Vocabulary::Term& t);
 
+	/**
+	 * update the settings for a Term
+	 *
+	 * @param term_id unique identifier for the Term to modify
+	 * @param config_ptr pointer to a list of XML nodes containing term
+	 *                   configuration parameters
+	 */
+	inline void updateTerm(const std::string& term_id, const xmlNodePtr config_ptr) {
+		Vocabulary::Term updated_term(term_id);
+		parseTermConfig(updated_term, config_ptr);
+		updateTerm(updated_term);
+	}
+	
 	/**
 	 * removes a Term from the Vocabulary (use with caution!!!)
 	 *
@@ -179,6 +208,53 @@ public:
 	/// returns a reference to the local Vocabulary configuration
 	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
 
+	/// returns the vocabulary (root) XML element name
+	static inline const std::string& getVocabularyElementName(void) {
+		return VOCABULARY_ELEMENT_NAME;
+	}
+	
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Vocabulary
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Vocabulary
+	 */
+	static xmlNodePtr createVocabularyConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(VOCABULARY_ELEMENT_NAME, buf, len);
+	}
+	
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Vocabulary Term
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Vocabulary Term
+	 */
+	static xmlNodePtr createTermConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(TERM_ELEMENT_NAME, buf, len);
+	}
+	
+	/**
+	 * writes Term configuration info to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Term configuration info into
+	 * @param t the term to use for configuration information
+	 */
+	static void writeTermConfigXML(std::ostream& out, const Vocabulary::Term& t);
+
+	/**
+	 * parses Term configuration information from an XML tree
+	 *
+	 * @param new_term this Term will be updated with the XML configuration info
+	 * @param config_ptr pointer to a list of XML nodes containing term
+	 *                   configuration parameters
+	 */
+	static void parseTermConfig(Vocabulary::Term& new_term,
+								const xmlNodePtr config_ptr);
+	
 	
 private:
 
@@ -199,12 +275,6 @@ private:
 	/// name of the vocabulary (root) element for Pion XML config files
 	static const std::string		VOCABULARY_ELEMENT_NAME;
 
-	/// name of the descriptive name element for Pion XML config files
-	static const std::string		NAME_ELEMENT_NAME;
-	
-	/// name of the comment element for Pion XML config files
-	static const std::string		COMMENT_ELEMENT_NAME;
-	
 	/// name of the locked element for Pion XML config files
 	static const std::string		LOCKED_ELEMENT_NAME;
 	
