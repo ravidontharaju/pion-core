@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-	<Vocabulary id="urn:vocab:clf">
-		<Name>Common Log Format</Name>
-		<Comment>Vocabulary for the Common and Combined Log Formats (CLF); from http://www.w3.org/Daemon/User/Config/Logging.html#common-logfile-format</Comment>
+	<Vocabulary id="urn:vocab:clickstream">
+		<Name>Clickstream</Name>
+		<Comment>Vocabulary for describing clickstream (website traffic) events.</Comment>
 		<Locked>true</Locked>
-		<Term id="urn:vocab:clf#remotehost">
+		<Term id="urn:vocab:clickstream#remotehost">
 			<Type>shortstring</Type>
 			<Comment>Remote hostname (or IP number if DNS hostname is not available)</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#rfc931">
+		<Term id="urn:vocab:clickstream#rfc931">
 			<Type>shortstring</Type>
 			<Comment>The remote logname of the user</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#authuser">
+		<Term id="urn:vocab:clickstream#authuser">
 			<Type>shortstring</Type>
 			<Comment>The username as which the user has authenticated himself</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#date">
+		<Term id="urn:vocab:clickstream#date">
 			<Type format="%d/%b/%Y:%H:%M:%S %q">datetime</Type>
 			<Comment>Date and time of the request</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#request">
+		<Term id="urn:vocab:clickstream#request">
 			<Type>string</Type>
 			<Comment>The request line exactly as it came from the client</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#status">
+		<Term id="urn:vocab:clickstream#status">
 			<Type>uint16</Type>
 			<Comment>The HTTP status code returned to the client</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#bytes">
+		<Term id="urn:vocab:clickstream#bytes">
 			<Type>uint32</Type>
 			<Comment>The content-length of the document transferred</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#referer">
+		<Term id="urn:vocab:clickstream#referer">
 			<Type>string</Type>
 			<Comment>The Referer HTTP request header</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#useragent">
+		<Term id="urn:vocab:clickstream#useragent">
 			<Type>string</Type>
 			<Comment>The User-Agent HTTP request header</Comment>
 		</Term>
-		<Term id="urn:vocab:clf#http-request">
+		<Term id="urn:vocab:clickstream#http-request">
 			<Type>object</Type>
 			<Comment>A individual HTTP request</Comment>
 		</Term>

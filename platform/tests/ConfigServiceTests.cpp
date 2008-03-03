@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveConnection) {
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewCodec) {
 	std::string codec_config_str = "<PionConfig><Codec>"
 		"<Plugin>LogCodec</Plugin>"
-		"<EventType>urn:vocab:clf#http-request</EventType>"
+		"<EventType>urn:vocab:clickstream#http-request</EventType>"
 		"</Codec></PionConfig>";
 	
 	// make a request to add a new Codec
@@ -368,8 +368,8 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateDateCodecConfig) {
 		"<Name>Updated Date</Name>"
 		"<Comment>Updated codec for just dates</Comment>"
 		"<Plugin>LogCodec</Plugin>"
-		"<EventType>urn:vocab:clf#http-request</EventType>"
-		"<Field term=\"urn:vocab:clf#date\" start=\"[\" end=\"]\">date</Field>"
+		"<EventType>urn:vocab:clickstream#http-request</EventType>"
+		"<Field term=\"urn:vocab:clickstream#date\" start=\"[\" end=\"]\">date</Field>"
 		"</Codec></PionConfig>";
 	
 	// make a request to update the "log writer" Reactor

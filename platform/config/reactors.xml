@@ -8,7 +8,7 @@
     <X>50</X>
     <Y>100</Y>
     <Comparison>
-      <Term>urn:vocab:clf#useragent</Term>
+      <Term>urn:vocab:clickstream#useragent</Term>
       <Type>contains</Type>
       <Value>MSIE</Value>
     </Comparison>
@@ -34,7 +34,7 @@
     <X>50</X>
     <Y>100</Y>
     <Comparison>
-      <Term>urn:vocab:clf#useragent</Term>
+      <Term>urn:vocab:clickstream#useragent</Term>
       <Type>not-contains</Type>
       <Value>MSIE</Value>
     </Comparison>

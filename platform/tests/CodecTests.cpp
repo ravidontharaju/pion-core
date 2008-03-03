@@ -181,7 +181,7 @@ public:
 	inline xmlNodePtr createCodecConfig(const std::string& plugin_type) {
 		xmlNodePtr config_ptr(ConfigManager::createPluginConfig(plugin_type));
 		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
+		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
 		xmlAddNextSibling(config_ptr, event_type_node);
 		return config_ptr;
 	}
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigUnknownEventType) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigEventTypeNotAnObject) {
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#remotehost"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#remotehost"));
 	
 	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
 }
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
 	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Comment"));
 	xmlNodeSetContent(comment_node,  reinterpret_cast<const xmlChar*>("A new comment"));
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clf#http-request"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
 	xmlAddNextSibling(comment_node, event_type_node);
 
 	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, comment_node));
@@ -513,15 +513,15 @@ public:
 		m_date_codec = getCodec(m_justdate_id);
 		BOOST_CHECK(m_date_codec);
 
-		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#remotehost");
-		m_rfc931_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#rfc931");
-		m_authuser_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#authuser");
-		m_date_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#date");
-		m_request_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#request");
-		m_status_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#status");
-		m_bytes_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#bytes");
-		m_referer_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#referer");
-		m_useragent_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#useragent");
+		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#remotehost");
+		m_rfc931_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#rfc931");
+		m_authuser_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#authuser");
+		m_date_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#date");
+		m_request_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#request");
+		m_status_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#status");
+		m_bytes_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#bytes");
+		m_referer_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#referer");
+		m_useragent_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 	}
 	~CodecFactoryLogFormatTests_F() {}
 	
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE(checkGetCodec) {
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecEventTypes) {
-	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clf#http-request");
+	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#http-request");
 	BOOST_CHECK_EQUAL(m_common_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_combined_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_extended_codec->getEventType(), event_type_ref);
