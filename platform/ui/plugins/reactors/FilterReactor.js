@@ -76,7 +76,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 		},
 		execute: function(dialogFields) {
 			this.reactor.name = dialogFields.Name;
-			this.reactor.name_span.innerHTML = dialogFields.Name;
+			this.reactor.name_div.innerHTML = dialogFields.Name;
 			this.reactor.comment = dialogFields.Comment;
 
 			var put_data = '<PionConfig><Reactor><Plugin>FileReactor'

@@ -22,10 +22,10 @@ dojo.declare("plugins.reactors.Reactor",
 			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
 			dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
 
-			this.name_span = document.createElement('span');
-			this.name_span.innerHTML = this.name;
-			dojo.addClass(this.name_span, 'name');
-			this.domNode.appendChild(this.name_span);
+			this.name_div = document.createElement('div');
+			this.name_div.innerHTML = this.name;
+			dojo.addClass(this.name_div, 'name');
+			this.domNode.appendChild(this.name_div);
 
 			var _this = this;
 
