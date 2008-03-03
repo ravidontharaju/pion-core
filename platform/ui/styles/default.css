@@ -422,8 +422,6 @@ This is a duplicate of #reactor_config_content for now.
 	height: 40px;
 	font-size: 14px;
 	font-weight: bold;
-	vertical-align: middle;
-	background: #ffcccc; 
 }
 
 .tundra .moveable .dijitToggleButton .dijitButtonNode {
@@ -431,7 +429,6 @@ This is a duplicate of #reactor_config_content for now.
 	height: 16px;
 	background-color: transparent;
 	background: url(../images/control-play.png) repeat-x;
-	margin-left: 20px;
 	border: 0px;
 }
 
@@ -621,7 +618,7 @@ This is a duplicate of #reactor_config_content for now.
 
 
 .tundra .add_new.dijitButtonHover .dijitButtonNode {
-	background: #ffffff url("../images/button-add-on.png");
+	background: #ffffff url("../images/button-add-on.png") no-repeat;
 }
 
 
@@ -680,6 +677,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .tundra .user_pane .dijitAccordionTitle{
 	text-decoration: underline;
+	
 }
 
 
@@ -694,6 +692,10 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .codec_pane .dijitAccordionTitle{
 	text-decoration: underline;
 }
+
+/*.tundra .dijitAccordionPaneFocused .dijitAccordionTitle .codec_pane {
+	text-decoration: none;
+}*/
 
 
 /* for drag-and-drop items in the System configuration page*/
@@ -729,12 +731,12 @@ This is a duplicate of #reactor_config_content for now.
 
 .codec_grid {
 	overflow: hidden;
-	height: 360px;
+	height: 180px;
 }
 
 .vocab_grid {
 	overflow: hidden;
-	height: 360px;
+	height: 180px;
 }
 
 .tundra .dojoxGrid-header {
