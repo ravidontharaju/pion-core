@@ -24,10 +24,11 @@ dojo.declare("plugins.reactors.Reactor",
 
 			this.name_span = document.createElement('span');
 			this.name_span.innerHTML = this.name;
+			dojo.addClass(this.name_span, 'name');
 			this.domNode.appendChild(this.name_span);
 
 			var _this = this;
-			
+
 			var run_button = new dijit.form.ToggleButton();
 			var button_node = run_button.domNode;
 			dojo.connect(button_node, 'click', function() {
