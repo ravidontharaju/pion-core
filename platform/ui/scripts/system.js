@@ -44,19 +44,23 @@ pion.system.init = function() {
 		load: function(response, ioArgs) {
 			console.debug('in load()');
 			if (dojo.isIE) {
+				dojo.byId('platform_conf_file').innerHTML = response.getElementsByTagName('PlatformConfig')[0].xml;
 				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].xml;
 				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].xml;
 				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].xml;
 				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].xml;
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].xml;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].xml;
+				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].xml;
 			} else {
+				dojo.byId('platform_conf_file').innerHTML = response.getElementsByTagName('PlatformConfig')[0].textContent;
 				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].textContent;
 				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].textContent;
 				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].textContent;
 				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].textContent;
+				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].textContent;
 			}
 
 			// in the plugin paths table, save the first placeholder row node for cloning and then remove all rows
@@ -80,20 +84,6 @@ pion.system.init = function() {
 				var plugin_path = dojo.isIE? plugin_paths[i].xml : plugin_paths[i].textContent;
 				row_nodes[i].getElementsByTagName('td')[1].innerHTML = plugin_path;
 			}
-			return response;
-		},
-		error: function(response, ioArgs) {
-			console.error('HTTP status code: ', ioArgs.xhr.status);
-			return response;
-		}
-	});
-	dojo.xhrGet({
-		url: '/config/vocabularies',
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			var node = response.getElementsByTagName('VocabularyPath')[0];
-			dojo.byId('vocab_path').innerHTML = dojo.isIE? node.xml : node.textContent;
 			return response;
 		},
 		error: function(response, ioArgs) {
