@@ -414,6 +414,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .name {
 	width: 140px;
+	height: 20px;
 	overflow: hidden;
 	font-size: 12px;
 }
