@@ -1,55 +1,47 @@
 dojo.provide("pion.databases");
+dojo.require("plugins.databases.Database");
+dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
-
-pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'});
 
 pion.databases.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.databases.height;
 }
 
+pion.databases._adjustAccordionSize = function() {
+	var config_accordion = dijit.byId('database_config_accordion');
+	var num_databases = config_accordion.getChildren().length;
+	console.debug("num_databases = " + num_databases);
+
+	// TODO: replace 200 with some computed value
+	var database_pane_body_height = 200;
+
+	var title_height = 0;
+	if (num_databases > 0) {
+		var first_pane = config_accordion.getChildren()[0];
+		var title_height = first_pane.getTitleHeight();
+	}
+	var accordion_height = database_pane_body_height + num_databases * title_height;
+
+	// Make the accordion just narrow enough to avoid a horizontal scroll bar when
+	// there's a vertical one.
+	var accordion_width = config_accordion.domNode.clientWidth - 15;
+
+	config_accordion.resize({h: accordion_height, w: accordion_width});
+
+	// TODO: replace 160 with some computed value  (see adjustUserAccordionSize)
+	pion.databases.height = accordion_height + 160;
+	dijit.byId('main_stack_container').resize({h: pion.databases.height});
+}
+
 pion.databases.init = function() {
-	var database_pane_title_height = -1;
-	var accordion_width = -1;
 	var selected_pane = null;
 
-	function _populatePaneFromConfigItem(item) {
-		var store = pion.databases.config_store;
-		var form_data = {};
-		form_data.name = store.getValue(item, 'Name');
-		form_data.ID = store.getValue(item, '@id') || '';
-		var xml_item = store.getValue(item, 'Comment');
-		form_data.comment = xml_item? xml_item.element.firstChild.nodeValue : '';
-		form_data.plugin_type = store.getValue(item, 'Plugin');
-
-		var form = dijit.byId('database_form');
-		form.setValues(form_data);
-		selected_pane.title = form_data.name;
-		var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', selected_pane.domNode)[0];
-		title_node.firstChild.nodeValue = selected_pane.title;
-
-		// Wait a bit for the change events on the FilteringSelect widgets to get handled.
-		setTimeout(_setUnsavedChangesFalse, 500);
-	}
-
-	function _adjustAccordionSize() {
-		var config_accordion = dijit.byId('database_config_accordion');
-		var num_databases = config_accordion.getChildren().length;
-		console.debug("num_databases = " + num_databases);
-
-		// TODO: replace 200 with some computed value
-		var database_pane_body_height = 200;
-
-		var accordion_height = database_pane_body_height + num_databases * database_pane_title_height;
-		config_accordion.resize({h: accordion_height, w: accordion_width});
-
-		// TODO: replace 160 with some computed value  (see adjustUserAccordionSize)
-		pion.databases.height = accordion_height + 160;
-		dijit.byId('main_stack_container').resize({h: pion.databases.height});
-	}
+	pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'});
+	pion.databases.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/databases.json'});
 
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
@@ -57,7 +49,7 @@ pion.databases.init = function() {
 		if (pane == selected_pane) {
 			return;
 		}
-		if (dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
+		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
 			var dialog = dijit.byId('unsaved_changes_dialog');
 			dialog.show();
 			
@@ -66,57 +58,68 @@ pion.databases.init = function() {
 			return;
 		}
 
-		// Move all the DOM nodes for the form from the previously selected pane to the newly selected one.
-		var form_node_to_move = dojo.query('form', selected_pane.domNode)[0];
-		form_node_to_move.parentNode.replaceChild(document.createElement('form'), form_node_to_move);
-		var form_node_to_replace = dojo.query('form', pane.domNode)[0];
-		form_node_to_replace.parentNode.replaceChild(form_node_to_move, form_node_to_replace);
-
-		// Update selected_pane, so _populatePaneFromConfigItem() and the form buttons will now act on the newly selected database.
 		selected_pane = pane;
-		_populatePaneFromConfigItem(pane.config_item);
+		
+		// TODO: When should we use the item we have rather than querying the store?  Should we 
+		// always do a query in case the configuration has been updated in some other way?
+		// Is there a clean way to avoid another query after we've just created a database (and
+		// received a response that has all the info we need)?
+		/*
+		if (pane.config_item) {
+			pane.populateFromConfigItem(pane.config_item);
+		} else {
+			console.debug('Fetching item ', pane.uuid);
+			var store = pion.databases.config_store;
+			store.fetch({
+				query: {'@id': pane.uuid},
+				onItem: function(item) {
+					pane.config_item = item;
+					pane.populateFromConfigItem(item);
+				}
+			});
+		}
+		*/
+		console.debug('Fetching item ', pane.uuid);
+		var store = pion.databases.config_store;
+		store.fetch({
+			query: {'@id': pane.uuid},
+			onItem: function(item) {
+				console.debug('item: ', item);
+				pane.populateFromConfigItem(item);
+			}
+		});
 	}
 
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);
 
 	function _createNewPane(title) {
 		var database_pane_node = document.createElement('span');
-		var empty_form_node = document.createElement('form');
-		database_pane_node.appendChild(empty_form_node);
-		var database_pane = new dijit.layout.AccordionPane({ 'class': 'database_pane', title: title }, database_pane_node);
+		var database_pane = new plugins.databases.DatabasePane({ 'class': 'database_pane', title: title }, database_pane_node);
 		return database_pane;
 	}
 
-	selected_pane = dijit.byId('database_config_accordion').getChildren()[0];
-	console.debug('selected_pane = ', selected_pane);
-	database_pane_title_height = selected_pane.getTitleHeight();
-
 	if (file_protocol) {
-		dijit.byId('database_config_accordion').removeChild(selected_pane);
-		_adjustAccordionSize();
+		pion.databases._adjustAccordionSize();
 	} else {
 		pion.databases.config_store.fetch({
 			onComplete: function (items, request) {
-				selected_pane.config_item = items[0];
-				_populatePaneFromConfigItem(items[0]);
-
 				var config_accordion = dijit.byId('database_config_accordion');
-				for (var i = 1; i < items.length; ++i) {
+				for (var i = 0; i < items.length; ++i) {
 					var title = pion.databases.config_store.getValue(items[i], 'Name');
 					var database_pane = _createNewPane(title);
 					database_pane.config_item = items[i];
+					database_pane.uuid = pion.databases.config_store.getValue(items[i], '@id');
 					config_accordion.addChild(database_pane);
 				}
-				_adjustAccordionSize();
+				pion.databases._adjustAccordionSize();
+
+				var first_pane = config_accordion.getChildren()[0];
+				config_accordion.selectChild(first_pane);
 			}
 		});
 	}
 
-	// Make the accordion just narrow enough to avoid a horizontal scroll bar when
-	// there's a vertical one.
-	accordion_width = dijit.byId('database_config_accordion').domNode.clientWidth - 15;
-
-	_adjustAccordionSize();
+	pion.databases._adjustAccordionSize();
 
 	function _isDuplicateDatabaseId(id) {
 		var databases = dijit.byId('database_config_accordion').getChildren();
@@ -139,9 +142,50 @@ pion.databases.init = function() {
 	}
 
 	function _addNewDatabase() {
-		alert('Database Configuration is read-only for now.');
-		return;
+		var dialog = new plugins.databases.DatabaseInitDialog({title: 'Add New Database'});
 		
+		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+		dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
+			dojo.connect(n, 'click', dialog, 'onCancel')
+		});
+		dialog.show();
+		dialog.execute = function(dialogFields) {
+			console.debug(dialogFields);
+			var post_data = '<PionConfig><Database>';
+			for (var tag in dialogFields) {
+				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			}
+			post_data += '</Database></PionConfig>';
+			console.debug('post_data: ', post_data);
+			
+			dojo.rawXhrPost({
+				url: '/config/databases',
+				contentType: "text/xml",
+				handleAs: "xml",
+				postData: post_data,
+				load: function(response){
+					var node = response.getElementsByTagName('Database')[0];
+					var id = node.getAttribute('id');
+					console.debug('id (from server): ', id);
+					var database = new plugins.databases.Database(id, dialogFields);
+					var database_config_accordion = dijit.byId('database_config_accordion');
+					var database_pane = _createNewPane(dialogFields.Name);
+					database_pane.uuid = id;
+					database_config_accordion.addChild(database_pane);
+					pion.databases._adjustAccordionSize();
+					database_config_accordion.selectChild(database_pane);
+				},
+				error: function(response, ioArgs) {
+					console.error('Error from rawXhrPost to /config/databases.  HTTP status code: ', ioArgs.xhr.status);
+					return response;
+				}
+			});
+		}
+
+		/*
 		dijit.byId('new_database_id').isValid = function(isFocused) {
 			if (!this.validator(this.textbox.value, this.constraints)) {
 				this.invalidMessage = "Invalid Database name";
@@ -164,83 +208,8 @@ pion.databases.init = function() {
 			}
 			return true;
 		};
-		dijit.byId('new_database_id').setDisplayedValue('');
-		dijit.byId('new_database_name').setDisplayedValue('New Database');
-		dijit.byId('new_database_comment').setDisplayedValue('');
-
-		var dialog = dijit.byId("new_database_dialog");
-		dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-			dojo.connect(n, 'click', dialog, 'onCancel')
-		});
-		dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
-			dijit.byNode(n).onClick = function() { return dialog.isValid(); };
-		});
-
-		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
-
-		dialog.show();
-		dialog.execute = function(dialogFields) {
-			var database_config_accordion = dijit.byId('database_config_accordion');
-			if (!database_config_accordion.hasChildren()) {
-				// It would be nice to have code here to workaround the sizing bug that occurs after 
-				// deleting all the panes and then adding one.
-			}
-
-			var database_pane = _createNewPane(dialogFields.database_name);
-			database_pane.config_item = item;
-
-			database_config_accordion.addChild(database_pane);
-			_adjustAccordionSize();
-			database_config_accordion.selectChild(database_pane);
-			console.debug("database_config_accordion.domNode.style.height = " + database_config_accordion.domNode.style.height);
-
-			dijit.byId('database_form').setValues(dialogFields);
-
-			// Eventually, this block will be replaced by a request that causes the server to add the item.
-			var item = pion.databases.config_store.newItem({tagName: 'Database'});
-			pion.databases.config_store.setValue(item, 'Name', dialogFields.database_name);
-		}
+		*/
 	}
 
-	function _setUnsavedChangesTrue() {
-		// disable for now
-		return;
-
-		console.debug('_setUnsavedChangesTrue called');
-		if (selected_pane) {
-			dojo.addClass(selected_pane.domNode, 'unsaved_changes');
-		}
-	}
-
-	function _setUnsavedChangesFalse() {
-		console.debug('_setUnsavedChangesFalse called');
-		if (selected_pane) {
-			dojo.removeClass(selected_pane.domNode, 'unsaved_changes');
-		}
-	}
-
-	function _handlePluginTypeChange() {
-		console.debug('changed plugin_type (_handlePluginTypeChange)');
-		dojo.addClass(selected_pane.domNode, 'unsaved_changes');
-	}
-
-	dojo.connect(dojo.byId('database_plugin_type'), 'change', _handlePluginTypeChange);
 	dojo.connect(dojo.byId('add_new_database_button'), 'click', _addNewDatabase);
-	dojo.connect(database_comment_widget, 'onChange', _setUnsavedChangesTrue);
-
-	dojo.query(".dijitButton.save", selected_pane.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() {
-			alert('Database Configuration is read-only for now.');
-		})
-	});
-	dojo.query(".dijitButton.cancel", selected_pane.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() {
-		})
-	});
-	dojo.query(".dijitButton.delete", selected_pane.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() {
-			alert('Database Configuration is read-only for now.');
-		})
-	});
 }
