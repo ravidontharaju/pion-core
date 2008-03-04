@@ -399,9 +399,9 @@ function adjustCodecAccordionSize() {
 	var num_codecs = codec_config_accordion.getChildren().length;
 	console.debug("num_codecs = " + num_codecs);
 
-	// TODO: replace 600 with some computed value, which takes into account the height of the grid 
+	// TODO: replace 420 with some computed value, which takes into account the height of the grid 
 	// (in .codec_grid in defaults.css) and the variable comment box height.
-	var codec_pane_body_height = 600;
+	var codec_pane_body_height = 420;
 
 	var accordion_height = codec_pane_body_height + num_codecs * codec_pane_title_height;
 	codec_config_accordion.resize({h: accordion_height, w: accordion_width});
