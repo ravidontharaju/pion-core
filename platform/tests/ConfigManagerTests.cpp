@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsRelative) {
 	std::string base_path("/opt/pion/config/platform.xml");
 	std::string relative_path("../ui");
 #if defined(_MSC_VER)
-	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "c:\\opt\\pion\\config\\..\\ui");
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "c:\\opt\\pion\\ui");
 #else
 	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
 #endif
