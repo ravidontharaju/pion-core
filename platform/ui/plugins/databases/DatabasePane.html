@@ -9,14 +9,13 @@
 		><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'
 			class='dijitAccordionBody' wairole="tabpanel"
 			><form dojoAttachPoint="database_form" dojoType="dijit.form.Form"
-				><table cellpadding="2" cellspacing="0" border="0" width="100%"
+				><br /><table cellpadding="2" cellspacing="0" border="0" width="100%"
 					><tr
 						><td><label>Name</label></td
 						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="name" style="width: 100%;"/></td
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="4" valign="top"><textarea dojoType="dijit.form.TextBox" name="comment" 
-														 dojoAttachEvent="onChange:markAsChanged" style="width: 95%"></textarea></td
+						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="comment" dojoAttachEvent="onChange:markAsChanged"></textarea></td
 					></tr
 					><tr
 						><td><label>ID</label></td

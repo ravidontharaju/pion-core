@@ -113,6 +113,7 @@ h3 {
 
 a {
 	color: #333333;
+	text-decoration: none;
 }
 
 a.header {
@@ -413,10 +414,11 @@ This is a duplicate of #reactor_config_content for now.
 /* for moveable items, e.g. reactors in a workspace */
 
 .name {
-	width: 140px;
+	width: 132px;
 	height: 20px;
 	overflow: hidden;
 	font-size: 12px;
+	white-space: nowrap;
 }
 
 
@@ -674,6 +676,25 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 
+/* Vocab Config Styles */
+
+
+.tundra .vocab_pane .dijitAccordionBody{
+	padding-left: 10px;
+	height: auto;
+}
+
+
+/* Database Config Styles */
+
+
+.tundra .database_pane .dijitAccordionBody{
+	padding-left: 10px;
+	height: auto;
+}
+
+
+
 /* Users Config Styles */
 
 
@@ -682,10 +703,6 @@ This is a duplicate of #reactor_config_content for now.
 	height: auto;
 }
 
-.tundra .user_pane .dijitAccordionTitle{
-	text-decoration: underline;
-	
-}
 
 
 /* Codecs Config Styles */
@@ -695,14 +712,6 @@ This is a duplicate of #reactor_config_content for now.
 	padding-left: 10px;
 	height: auto;
 }
-
-.tundra .codec_pane .dijitAccordionTitle{
-	text-decoration: underline;
-}
-
-/*.tundra .dijitAccordionPaneFocused .dijitAccordionTitle .codec_pane {
-	text-decoration: none;
-}*/
 
 
 /* for drag-and-drop items in the System configuration page*/
@@ -770,5 +779,23 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 .tundra .dijitAccordionPane-selected .dijitAccordionTitle {
-text-decoration: none;
+	text-decoration: none;
+	background-image: url("../images/accordion-title-bg.png");
+	color: #ffffff;
+}
+
+
+.tundra .collectionHeader .dijitAccordionTitle {
+	background-image: none;
+	color:#333333;
+}
+
+.tundra .processingHeader .dijitAccordionTitle {
+	background-image: none;
+	color:#333333;	
+}
+
+.tundra .storageHeader .dijitAccordionTitle {
+	background-image: none;
+	color:#333333;	
 }
