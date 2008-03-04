@@ -648,8 +648,8 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
 	var post_data = '<PionConfig><Connection><Type>reactor</Type>'
-				  + '<From>' + source_reactor.uuid + '</From>'
-				  + '<To>' + sink_reactor.uuid + '</To>'
+				  + '<From>' + source_reactor.config.@id + '</From>'
+				  + '<To>' + sink_reactor.config.@id + '</To>'
 				  + '</Connection></PionConfig>';
 	dojo.rawXhrPost({
 		url: '/config/connections',
@@ -701,8 +701,8 @@ function showReactorConfigDialog(reactor) {
 	var reactor_inputs_table = [];
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
 		var reactor_inputs_table_row = [];
-		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].source.name;
-		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].uuid;
+		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].source.config.Name;
+		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].id;
 		reactor_inputs_table.push(reactor_inputs_table_row);
 	}
 	reactor_inputs_grid_model.setData(reactor_inputs_table);
@@ -715,28 +715,41 @@ function showReactorConfigDialog(reactor) {
 		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
 		if (e.cellIndex == 2) {
 			console.debug('Removing connection in row ', e.rowIndex); 
-			reactor_inputs_grid.removeSelectedRows();
-
 			var reactor_input = reactor.reactor_inputs[e.rowIndex];
-			var incoming_reactor = reactor_input.source;
-			reactor_input.line.removeShape();
-			reactor.reactor_inputs.splice(e.rowIndex, 1);
+			dojo.xhrDelete({
+				url: '/config/connections/' + reactor_input.id,
+				handleAs: 'xml',
+				timeout: 5000,
+				load: function(response, ioArgs) {
+					console.debug('xhrDelete for url = /config/connections/', reactor_input.id, '; HTTP status code: ', ioArgs.xhr.status);
+					reactor_inputs_grid.removeSelectedRows();
 
-			// remove reactor from the outputs of incoming_reactor
-			for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-				if (incoming_reactor.reactor_outputs[j].sink == reactor) {
-					incoming_reactor.reactor_outputs.splice(j, 1);
-					break;
+					var incoming_reactor = reactor_input.source;
+					reactor_input.line.removeShape();
+					reactor.reactor_inputs.splice(e.rowIndex, 1);
+
+					// remove reactor from the outputs of incoming_reactor
+					for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+						if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+							incoming_reactor.reactor_outputs.splice(j, 1);
+							break;
+						}
+					}
+					return response;
+				},
+				error: function(response, ioArgs) {
+					console.error('HTTP status code: ', ioArgs.xhr.status);
+					return response;
 				}
-			}
+			});
 		}
 	});
 
 	var reactor_outputs_table = [];
 	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
 		var reactor_outputs_table_row = [];
-		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].sink.name;
-		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].uuid;
+		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].sink.config.Name;
+		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].id;
 		reactor_outputs_table.push(reactor_outputs_table_row);
 	}
 	reactor_outputs_grid_model.setData(reactor_outputs_table);
@@ -749,20 +762,33 @@ function showReactorConfigDialog(reactor) {
 		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
 		if (e.cellIndex == 2) {
 			console.debug('Removing connection in row ', e.rowIndex); 
-			reactor_outputs_grid.removeSelectedRows();
-
 			var reactor_output = reactor.reactor_outputs[e.rowIndex];
-			var outgoing_reactor = reactor_output.sink;
-			reactor_output.line.removeShape();
-			reactor.reactor_outputs.splice(e.rowIndex, 1);
+			dojo.xhrDelete({
+				url: '/config/connections/' + reactor_output.id,
+				handleAs: 'xml',
+				timeout: 5000,
+				load: function(response, ioArgs) {
+					console.debug('xhrDelete for url = /config/connections/', reactor_output.id, '; HTTP status code: ', ioArgs.xhr.status);
+					reactor_outputs_grid.removeSelectedRows();
 
-			// remove reactor from the inputs of outgoing_reactor
-			for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-				if (outgoing_reactor.reactor_inputs[j].source == reactor) {
-					outgoing_reactor.reactor_inputs.splice(j, 1);
-					break;
+					var outgoing_reactor = reactor_output.sink;
+					reactor_output.line.removeShape();
+					reactor.reactor_outputs.splice(e.rowIndex, 1);
+
+					// remove reactor from the inputs of outgoing_reactor
+					for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+						if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+							outgoing_reactor.reactor_inputs.splice(j, 1);
+							break;
+						}
+					}
+					return response;
+				},
+				error: function(response, ioArgs) {
+					console.error('HTTP status code: ', ioArgs.xhr.status);
+					return response;
 				}
-			}
+			});
 		}
 	});
 
