@@ -682,6 +682,7 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .vocab_pane .dijitAccordionBody{
 	padding-left: 10px;
 	height: auto;
+	background: url("../images/bg-accordion-pane.png");	
 }
 
 
@@ -691,6 +692,7 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .database_pane .dijitAccordionBody{
 	padding-left: 10px;
 	height: auto;
+	background: url("../images/bg-accordion-pane.png");	
 }
 
 
@@ -701,6 +703,7 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .user_pane .dijitAccordionBody{
 	padding-left: 10px;
 	height: auto;
+	background: url("../images/bg-accordion-pane.png");
 }
 
 
@@ -711,6 +714,7 @@ This is a duplicate of #reactor_config_content for now.
 .tundra .codec_pane .dijitAccordionBody{
 	padding-left: 10px;
 	height: auto;
+	background: url("../images/bg-accordion-pane.png");
 }
 
 
@@ -783,7 +787,6 @@ This is a duplicate of #reactor_config_content for now.
 	background-image: url("../images/accordion-title-bg.png");
 	color: #ffffff;
 }
-
 
 .tundra .collectionHeader .dijitAccordionTitle {
 	background-image: none;
