@@ -20,10 +20,10 @@ var term_store = new dojox.data.XmlStore({url: '/config/terms', rootItem: 'Term'
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
 term_store.fetchItemByIdentity = function(keywordArgs) {
-	term_store.fetch({query: {id: keywordArgs.identity}, onItem: keywordArgs.onItem});
+	term_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
 }
 term_store.getIdentity = function(item) {
-	return term_store.getValue(item, 'id');
+	return term_store.getValue(item, '@id');
 }
 
 var attributes_by_column = [];

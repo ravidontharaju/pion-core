@@ -1,6 +1,6 @@
 <div class="dijitDialog reactor_dialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
-	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Filter Reactor Configuration</span>
+	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Log Input Reactor Configuration</span>
 	<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: hide">
 		<span dojoAttachPoint="closeText" class="closeText">x</span>
 	</span>
@@ -20,12 +20,21 @@
 					><td><label>Comments:</label></td
 					><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
 				></tr
+				><tr
+					><td><label>Codec:</label></td
+					><td><input dojoType="dijit.form.FilteringSelect" name="Codec" store="pion.codecs.config_store" searchAttr="Name"/></td
+				></tr
+				><tr
+					><td><label>Directory:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Directory"/></td
+				></tr
+				><tr
+					><td><label>Filename Regex:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Filename"/></td
+				></tr
 			></table
 		></form
 	</div>
-	<div dojoAttachPoint="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
-		 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
 		 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>

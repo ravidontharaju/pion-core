@@ -5,7 +5,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 	[ plugins.reactors.Reactor ],
 	{
 		postCreate: function(){
-			this.plugin = 'TransformReactor';
+			this.config.Plugin = 'TransformReactor';
 			this.inherited("postCreate", arguments);
 		}
 	}

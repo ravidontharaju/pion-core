@@ -5,7 +5,7 @@ dojo.declare("plugins.reactors.LogInputReactor",
 	[ plugins.reactors.Reactor ],
 	{
 		postCreate: function(){
-			this.plugin = 'LogInputReactor';
+			this.config.Plugin = 'LogInputReactor';
 			console.debug('LogInputReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments); 
 		}

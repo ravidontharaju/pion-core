@@ -5,7 +5,7 @@ dojo.declare("plugins.reactors.LogOutputReactor",
 	[ plugins.reactors.Reactor ],
 	{
 		postCreate: function(){
-			this.plugin = 'LogOutputReactor';
+			this.config.Plugin = 'LogOutputReactor';
 			console.debug('LogOutputReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments); 
 		}

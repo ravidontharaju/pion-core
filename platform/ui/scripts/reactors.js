@@ -59,7 +59,7 @@ pion.reactors.init = function() {
 
 	pion.reactors.plugin_data_store.fetch({
 		onItem: function(item) {
-			reactor_package = "plugins.reactors." + item.plugin;
+			reactor_package = "plugins.reactors." + pion.reactors.plugin_data_store.getValue(item, 'plugin');
 			dojo.require(reactor_package);
 
 			// TODO: add reactor icon to sidebar
@@ -81,31 +81,33 @@ pion.reactors.init = function() {
 			query: {tagName: 'Reactor'},
 			onItem: function(item, request) {
 				console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
-				var name = reactor_config_store.getValue(item, 'Name').toString();
-				//console.debug('name = ', reactor_config_store.getValue(item, 'Name').toString());
-				var reactor_type = reactor_config_store.getValue(item, 'Plugin').toString();
-				var workspace_name = reactor_config_store.getValue(item, 'Workspace').toString();
-				workspace_box = workspaces_by_name[workspace_name];
+				
+				var config = {};
+				var attributes = reactor_config_store.getAttributes(item);
+				for (var i = 0; i < attributes.length; ++i) {
+					if (attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
+						config[attributes[i]] = reactor_config_store.getValue(item, attributes[i]).toString();
+					}
+				}
+				console.dir(config);
+
+				workspace_box = workspaces_by_name[config.Workspace];
 				if (!workspace_box) {
-					addWorkspace(workspace_name);
+					addWorkspace(config.Workspace);
 				}
 				dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 
-				var id = reactor_config_store.getValue(item, '@id');
-				var reactor = createReactor(name, reactor_type, id);
+				var reactor = createReactor(config);
+				reactors_by_id[config.@id] = reactor;
 				reactor.item = item;
 				reactor.workspace = workspace_box;
-				reactor.X = parseInt(reactor_config_store.getValue(item, 'X'));
-				reactor.Y = parseInt(reactor_config_store.getValue(item, 'Y'));
+				console.debug('X, Y = ', config.X, ', ', config.Y);
 
 				// This simulates clicking where the reactor should go.
 				var dc = dojo.coords(workspace_box.node);
-				pion.reactors.last_x = dc.x + reactor.X;
-				pion.reactors.last_y = dc.y + reactor.Y;
+				pion.reactors.last_x = dc.x + parseInt(config.X);
+				pion.reactors.last_y = dc.y + parseInt(config.Y);
 
-				reactors_by_id[id] = reactor;
-				var comment = reactor_config_store.getValue(item, 'Comment');
-				reactor.comment = comment? comment.toString() : "";
 				workspace_box.node.appendChild(reactor.domNode);
 				makeReactorMoveable(reactor);
 			},
@@ -390,16 +392,16 @@ function updateConnectionLine(poly, start_node, end_node) {
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
 }
 
-function createReactor(name, reactor_type, id) {
+function createReactor(config) {
 	var new_div = document.createElement("div");
-	plugin_class_name = "plugins.reactors." + reactor_type;
+	plugin_class_name = "plugins.reactors." + config.Plugin;
 	var plugin_class = dojo.getObject(plugin_class_name);
 	if (plugin_class) {
 		console.debug('found class ', plugin_class_name);
-		var reactor = new plugin_class({name: name, uuid: id}, new_div);
+		var reactor = new plugin_class({config: config}, new_div);
 	} else {
 		console.debug('class ', plugin_class_name, ' not found; using plugins.reactors.Reactor instead.');
-		var reactor = new plugins.reactors.Reactor({name: name, plugin: reactor_type, uuid: id}, new_div);
+		var reactor = new plugins.reactors.Reactor({config: config}, new_div);
 	}
 	workspace_box.reactors.push(reactor);
 	return reactor;
@@ -546,14 +548,21 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 			postData: post_data,
 			load: function(response){
 				var node = response.getElementsByTagName('Reactor')[0];
-				var id = node.getAttribute('id');
-				console.debug('id (from server): ', id);
-				var reactor = createReactor(dialogFields.Name, reactor_type, id);
-				reactor.comment = dialogFields.Comment;
-				reactors_by_id[id] = reactor;
+				var config = { '@id': node.getAttribute('id') };
+				var attribute_nodes = node.childNodes;
+				//console.debug('attribute_nodes: ', attribute_nodes);
+				//console.dir(attribute_nodes);
+				for (var i = 0; i < attribute_nodes.length; ++i) {
+					if (attribute_nodes[i].firstChild) {
+						config[attribute_nodes[i].tagName] = attribute_nodes[i].firstChild.nodeValue;
+					}
+				}
+				//console.debug('config (from server): ', config);
+				//console.dir(config);
+				var reactor = createReactor(config);
+				//console.debug('config.@id: ', config.@id);
+				reactors_by_id[config.@id] = reactor;
 				reactor.workspace = workspace_box;
-				reactor.X = X;
-				reactor.Y = Y;
 				workspace_box.node.replaceChild(reactor.domNode, workspace_box.node.lastChild);
 				makeReactorMoveable(reactor);
 			},
@@ -678,14 +687,16 @@ function isDuplicateName(reactor, name) {
 }
 
 function showReactorConfigDialog(reactor) {
-	if (reactor.plugin == 'FilterReactor') {
-		var dialog = new plugins.reactors.FilterReactorDialog({reactor: reactor});
+	var dialog_class_name = 'plugins.reactors.' + reactor.config.Plugin + 'Dialog';
+	console.debug('dialog_class_name = ', dialog_class_name);
+	var dialog_class = dojo.getObject(dialog_class_name);
+	if (dialog_class) {
+		var dialog = new dialog_class({reactor: reactor});
 	} else {
-		var dialog = new plugins.reactors.ReactorDialog({title: reactor.plugin + ' Configuration', reactor: reactor});
+		var dialog = new plugins.reactors.ReactorDialog({title: reactor.config.Plugin + ' Configuration', reactor: reactor});
 	}
- 	dijit.byNode(dojo.query("input[name='Name']",    dialog.domNode)[0]).setValue(reactor.name);
-	dijit.byNode(dojo.query("input[name='ID']",      dialog.domNode)[0]).setValue(reactor.uuid);
-	dijit.byNode(dojo.query("input[name='Comment']", dialog.domNode)[0]).setValue(reactor.comment);
+	console.debug('reactor.config.@id: ', reactor.config.@id);
+	dialog.form.setValues(reactor.config);
 
 	var reactor_inputs_table = [];
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
@@ -785,14 +796,14 @@ function deleteReactorIfConfirmed(reactor) {
 }
 
 function deleteReactor(reactor) {
-	console.debug('deleting ', reactor.name);
+	console.debug('deleting ', reactor.config.Name);
 
 	dojo.xhrDelete({
-		url: '/config/reactors/' + reactor.uuid,
+		url: '/config/reactors/' + reactor.config.@id,
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
-			console.debug('xhrDelete for url = /config/reactors/', reactor.uuid, '; HTTP status code: ', ioArgs.xhr.status);
+			console.debug('xhrDelete for url = /config/reactors/', reactor.config.@id, '; HTTP status code: ', ioArgs.xhr.status);
 
 			// Remove the reactor from the outputs of incoming reactors and the inputs of
 			// incoming reactors, and remove the lines connecting them.

@@ -6,7 +6,7 @@ dojo.declare("plugins.reactors.FilterReactor",
 	[ plugins.reactors.Reactor ],
 	{
 		postCreate: function(){
-			this.plugin = 'FilterReactor';
+			this.config.Plugin = 'FilterReactor';
 			console.debug('FilterReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments);
 			this.comparisons = [];
@@ -40,7 +40,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			var _this = this;
 			var store = pion.reactors.config_store;
 			store.fetch({
-				query: {'@id': this.reactor.uuid},
+				query: {'@id': this.reactor.config.@id},
 				onItem: function(item) {
 					var comparisons = store.getValues(item, 'Comparison');
 					var comparison_table = [];
@@ -75,16 +75,17 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
 		execute: function(dialogFields) {
-			this.reactor.name = dialogFields.Name;
+			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = dialogFields.Name;
-			this.reactor.comment = dialogFields.Comment;
 
 			var put_data = '<PionConfig><Reactor><Plugin>FileReactor'
-						  + '</Plugin><Workspace>' + this.reactor.workspace.my_content_pane.title 
-						  + '</Workspace><X>' + this.reactor.X + '</X><Y>' + this.reactor.Y + '</Y>';
+						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
+						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
 			for (var tag in dialogFields) {
-				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-				put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				if (tag != '@id') {
+					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+					put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				}
 			}
 			var num_comparisons = filter_reactor_grid_model.getRowCount();
 			for (var i = 0; i < num_comparisons; ++i) {
@@ -96,7 +97,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			console.debug('put_data: ', put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.reactor.uuid,
+				url: '/config/reactors/' + this.reactor.config.@id,
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,

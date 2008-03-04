@@ -5,7 +5,7 @@ dojo.declare("plugins.reactors.SQLiteOutputReactor",
 	[ plugins.reactors.Reactor ],
 	{
 		postCreate: function(){
-			this.plugin = 'SQLiteOutputReactor';
+			this.config.Plugin = 'SQLiteOutputReactor';
 			this.inherited("postCreate", arguments);
 		}
 	}

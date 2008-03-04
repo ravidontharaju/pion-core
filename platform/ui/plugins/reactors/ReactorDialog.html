@@ -5,21 +5,23 @@
 		<span dojoAttachPoint="closeText" class="closeText">x</span>
 	</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
-		<table>
-			<tr>
-				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
-			</tr>
-			<tr>
-				<td><label>ID:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
-			</tr>
-			<tr>
-				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
-			</tr>
-		</table>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><form dojoAttachPoint="form" dojoType="dijit.form.Form"
+			><table
+				><tr
+					><td><label>Name:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+				></tr
+				><tr
+					><td><label>ID:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+				></tr
+				><tr
+					><td><label>Comments:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+				></tr
+			></table
+		></form
 	</div>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
