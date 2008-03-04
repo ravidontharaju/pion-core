@@ -1,16 +1,25 @@
-Running piond:
---------------
+Running pion:
+-------------
 
-Make sure "C:\Boost\Lib" is on your path.
+Make sure the following are on your path (with appropriate changes if you 
+installed anything in other than the suggested location):
 
-If you got the source code from the Subversion repository and haven't yet run
-Doxygen, then run Doxygen from <PION_NET_HOME>\docs.  (The documentation is
-used as part of the test.)
+C:\Boost\Lib
+C:\iconv-1.9.2\bin
+C:\libxml2-2.6.30\bin
+C:\zlib-1.2.3\bin
 
-To test piond, run it from the project directory with the following command line args: 
+and for the PION_FULL configurations,
 
-	-c ..\tests\vcpiond.conf
+C:\log4cxx\bin
+C:\apache\bin
 
-To run from within the IDE, go to piond Property Pages -> Debugging,
-and set 'Command Arguments' to the above.
+
+To run pion.exe from the command line, run it from the project directory with 
+arguments '-c platform.xml', e.g.
+
+C:\pion-platform\platform\server>..\..\bin\debug_dll_full\pion.exe -c platform.xml
+
+To run pion.exe from within the IDE, go to pion Property Pages -> Debugging,
+and set 'Command Arguments' to: -c platform.xml
 
