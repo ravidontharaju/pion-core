@@ -1,6 +1,11 @@
 Running pion:
 -------------
 
+NOTE: currently, only the PION_FULL configurations work correctly, so unless
+you want to debug the code, stick with configurations Debug_DLL_full and
+Release_DLL_full.
+
+
 Make sure the following are on your path (with appropriate changes if you 
 installed anything in other than the suggested location):
 

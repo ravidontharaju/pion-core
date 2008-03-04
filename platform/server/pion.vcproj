@@ -173,14 +173,6 @@
 			RelativePath=".\README.msvc"
 			>
 		</File>
-		<File
-			RelativePath="..\tests\testpiond.html"
-			>
-		</File>
-		<File
-			RelativePath="..\tests\vcpiond.conf"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
