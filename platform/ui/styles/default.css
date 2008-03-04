@@ -134,7 +134,7 @@ label {
 	background: url(../images/bg-matrix-main-header.png) repeat-x;
 	font-size: 13px;
 	font-weight: bold;
-	border-bottom: 1px solid #cccccc;
+	border-bottom: 1px solid #999999;
 }
 
 .matrixInsideHeader {
