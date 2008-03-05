@@ -681,6 +681,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .tundra .vocab_pane .dijitAccordionBody{
 	padding-left: 10px;
+	padding-right: 10px;
 	height: auto;
 	background: url("../images/bg-accordion-pane.png");	
 }
@@ -713,6 +714,7 @@ This is a duplicate of #reactor_config_content for now.
 
 .tundra .codec_pane .dijitAccordionBody{
 	padding-left: 10px;
+	padding-right: 10px;	
 	height: auto;
 	background: url("../images/bg-accordion-pane.png");
 }
