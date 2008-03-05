@@ -12,23 +12,27 @@
 				><br /><table cellpadding="5" cellspacing="0" border="0" width="100%"
 					><tr
 						><td><label>Name</label></td
-						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="name" style="width: 100%;"/></td
+						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="comment" dojoAttachEvent="onChange:markAsChanged"></textarea></td
+						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment" dojoAttachEvent="onChange:markAsChanged"></textarea></td
 					></tr
 					><tr
 						><td><label>ID</label></td
-						><td><input dojoType="dijit.form.TextBox" name="ID" disabled="true" style="width: 100%;"/></td
+						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
 						><td rowspan="3">&nbsp;</td
 					></tr
 					><tr
 						><td><label>Plug-In&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.TextBox" name="plugin_type" disabled="true" style="width: 100%;"/></td
+						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
+					></tr
+					><tr
+						><td><label>Filename</label></td
+						><td><input dojoType="dijit.form.TextBox" name="Filename" style="width: 100%;"/></td
 					></tr
 				></table
 				><hr noshade="noshade" size="1" color="#999999"
-                ><div class="save_cancel_delete"
+				><div class="save_cancel_delete"
 					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save" type="submit">Save Changes</button
 					><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
 					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete">Delete Database</button

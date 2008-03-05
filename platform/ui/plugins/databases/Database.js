@@ -40,17 +40,25 @@ dojo.declare("plugins.databases.DatabasePane",
 		widgetsInTemplate: true,
 		populateFromConfigItem: function(item) {
 			var store = pion.databases.config_store;
-			var form_data = {};
-			form_data.name = store.getValue(item, 'Name');
-			form_data.ID = store.getValue(item, '@id') || '';
-			var xml_item = store.getValue(item, 'Comment');
-			form_data.comment = (xml_item && xml_item.element.firstChild)? xml_item.element.firstChild.nodeValue : '';
-			form_data.plugin_type = store.getValue(item, 'Plugin');
+			var config = {};
+			var attributes = store.getAttributes(item);
+			for (var i = 0; i < attributes.length; ++i) {
+				if (attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
+					config[attributes[i]] = store.getValue(item, attributes[i]).toString();
+				}
+			}
+			console.dir(config);
+			this.database_form.setValues(config);
 
-			var form = this.database_form;
-			form.setValues(form_data);
-			console.debug('form_data = ', form_data);
-			this.title = form_data.name;
+			// The comment field needs to be set separately, because dijit.form.Form.setValues doesn't handle <textarea> elements.
+			// It would be great if the comment could be an <input> with dojoType="dijit.form.Textarea", but for some reason, this
+			// doesn't work inside a template.  The comment field can't be assigned an id, because that would cause an error if
+			// there were multiple databases.  That suggests using a dojoAttachPoint, but that doesn't work.  So, I have to do a query.
+			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
+			comment_node.value = config.Comment;
+
+			console.debug('config = ', config);
+			this.title = config.Name;
 			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
 			title_node.firstChild.nodeValue = this.title;
 
@@ -67,14 +75,21 @@ dojo.declare("plugins.databases.DatabasePane",
 		},
 		save: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
+			var config = this.database_form.getValues();
 
-			var form_data = this.database_form.getValues();
-			var put_data = '<PionConfig><Database><Plugin>' + form_data.plugin_type
-						 + '</Plugin><Name>' + form_data.name
-						 + '</Name><Comment>' + form_data.comment
-						 + '</Comment></Database></PionConfig>';
+			// see comment in populateFromConfigItem about comment field
+			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
+			config.Comment = comment_node.value;
+
+			var put_data = '<PionConfig><Database>';
+			for (var tag in config) {
+				if (tag != '@id') {
+					console.debug('config[', tag, '] = ', config[tag]);
+					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+				}
+			}
+			put_data += '</Database></PionConfig>';
 			console.debug('put_data: ', put_data);
-
 			_this = this;
 			dojo.rawXhrPut({
 				url: '/config/databases/' + this.uuid,
@@ -127,7 +142,7 @@ dojo.declare("plugins.databases.DatabasePane",
 					console.error('HTTP status code: ', ioArgs.xhr.status);
 					return response;
 				}
-			});	
+			});
 		},
 		markAsChanged: function() {
 			console.debug('markAsChanged');
