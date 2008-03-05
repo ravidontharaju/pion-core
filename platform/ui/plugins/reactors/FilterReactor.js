@@ -9,7 +9,56 @@ dojo.declare("plugins.reactors.FilterReactor",
 			this.config.Plugin = 'FilterReactor';
 			console.debug('FilterReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments);
-			this.comparisons = [];
+			var store = pion.reactors.config_store;
+			var _this = this;
+			this.comparison_table = [];
+			store.fetch({
+				query: {'@id': this.config.@id},
+				onItem: function(item) {
+					var comparisons = store.getValues(item, 'Comparison');
+					for (var i = 0; i < comparisons.length; ++i) {
+						var comparison_table_row = [];
+						//console.debug('comparisons[', i, '] = ', comparisons[i]);
+						comparison_table_row[0] = store.getValue(comparisons[i], 'Term');
+						comparison_table_row[1] = store.getValue(comparisons[i], 'Type');
+						comparison_table_row[2] = store.getValue(comparisons[i], 'Value');
+						_this.comparison_table.push(comparison_table_row);
+					}
+				}
+			});
+		},
+		handleMoveStop: function(mover) {
+			this.config.X = mover.host.node.offsetLeft;
+			this.config.Y = mover.host.node.offsetTop;
+
+			var put_data = '<PionConfig><Reactor>';
+			for (var tag in this.config) {
+				if (tag != '@id' && tag != 'Comparison') {
+					console.debug('dialogFields[', tag, '] = ', this.config[tag]);
+					put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
+				}
+			}
+			for (var i = 0; i < this.comparison_table.length; ++i) {
+				var row = this.comparison_table[i];
+				console.debug('frag: <Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value>');
+				put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
+			}
+			put_data += '</Reactor></PionConfig>';
+			console.debug('put_data: ', put_data);
+
+			dojo.rawXhrPut({
+				url: '/config/reactors/' + this.config.@id,
+				contentType: "text/xml",
+				handleAs: "xml",
+				putData: put_data,
+				load: function(response){
+					console.debug('response: ', response);
+				},
+				error: function(response, ioArgs) {
+					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
+					return response;
+				}
+			});
 		}
 	}
 );
@@ -38,21 +87,21 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
+			this.reactor.comparison_table = [];
 			var store = pion.reactors.config_store;
 			store.fetch({
 				query: {'@id': this.reactor.config.@id},
 				onItem: function(item) {
 					var comparisons = store.getValues(item, 'Comparison');
-					var comparison_table = [];
 					for (var i = 0; i < comparisons.length; ++i) {
 						var comparison_table_row = [];
 						//console.debug('comparisons[', i, '] = ', comparisons[i]);
 						comparison_table_row[0] = store.getValue(comparisons[i], 'Term');
 						comparison_table_row[1] = store.getValue(comparisons[i], 'Type');
 						comparison_table_row[2] = store.getValue(comparisons[i], 'Value');
-						comparison_table.push(comparison_table_row);
+						_this.reactor.comparison_table.push(comparison_table_row);
 					}
-					filter_reactor_grid_model.setData(comparison_table);
+					filter_reactor_grid_model.setData(_this.reactor.comparison_table);
 					var grid = _this.filter_reactor_grid;
 					dojo.connect(grid, 'onCellClick', grid, _this._handleCellClick);
 					dojo.connect(_this.add_new_comparison_button.domNode, 'click', grid, _this._handleAddNewComparison);

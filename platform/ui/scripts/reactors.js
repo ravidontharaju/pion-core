@@ -97,19 +97,14 @@ pion.reactors.init = function() {
 				}
 				dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 
-				var reactor = createReactor(config);
+				var reactor_node = document.createElement("div");
+				workspace_box.node.appendChild(reactor_node);
+				var reactor = createReactor(config, reactor_node);
 				reactors_by_id[config.@id] = reactor;
 				reactor.item = item;
 				reactor.workspace = workspace_box;
+				workspace_box.reactors.push(reactor);
 				console.debug('X, Y = ', config.X, ', ', config.Y);
-
-				// This simulates clicking where the reactor should go.
-				var dc = dojo.coords(workspace_box.node);
-				pion.reactors.last_x = dc.x + parseInt(config.X);
-				pion.reactors.last_y = dc.y + parseInt(config.Y);
-
-				workspace_box.node.appendChild(reactor.domNode);
-				makeReactorMoveable(reactor);
 			},
 			onComplete: function(items, request) {
 				console.debug('done fetching Reactors');
@@ -392,96 +387,17 @@ function updateConnectionLine(poly, start_node, end_node) {
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
 }
 
-function createReactor(config) {
-	var new_div = document.createElement("div");
+function createReactor(config, node) {
 	plugin_class_name = "plugins.reactors." + config.Plugin;
 	var plugin_class = dojo.getObject(plugin_class_name);
 	if (plugin_class) {
 		console.debug('found class ', plugin_class_name);
-		var reactor = new plugin_class({config: config}, new_div);
+		var reactor = new plugin_class({config: config}, node);
 	} else {
 		console.debug('class ', plugin_class_name, ' not found; using plugins.reactors.Reactor instead.');
-		var reactor = new plugins.reactors.Reactor({config: config}, new_div);
+		var reactor = new plugins.reactors.Reactor({config: config}, node);
 	}
-	workspace_box.reactors.push(reactor);
 	return reactor;
-}
-
-function makeReactorMoveable(reactor) {
-	var m5 = new dojo.dnd.move.parentConstrainedMoveable(reactor.domNode, {area: "padding", within: true});
-	var c = m5.constraints();
-	// Since parts of the constraintBox are not calculated until onFirstMove() is called,
-	// calculate them here.
-	c.r = c.l + c.w - reactor.offsetWidth;
-	c.b = c.t + c.h - reactor.offsetHeight;
-	console.debug("latest_event: ", latest_event);
-	console.debug('pion.reactors.last_x = ', pion.reactors.last_x, ', pion.reactors.last_y = ', pion.reactors.last_y);
-
-	var cw = dojo.byId("reactor_config_content"); // Move to init()?
-	/**/
-	// The loop below no longer works since changes were made in handling the main stack container.
-	var totalOffsetLeft = cw.offsetLeft;
-	var totalOffsetTop  = cw.offsetTop;
-	cw = dojo.byId("main_stack_container");
-	totalOffsetLeft += cw.offsetLeft;
-	totalOffsetTop  += cw.offsetTop;
-	/**
-	var totalOffsetLeft = 0;
-	var totalOffsetTop  = 0;
-	do {
-		console.debug('cw.id = ', cw.id);
-		console.debug('cw.offsetTop = ', cw.offsetTop);
-		totalOffsetLeft += cw.offsetLeft;
-		totalOffsetTop  += cw.offsetTop;
-		cw = cw.parentNode;
-	} while (cw != document.body);
-	/**/
-	var mouseLeftTop = {l: pion.reactors.last_x - totalOffsetLeft, t: pion.reactors.last_y - totalOffsetTop};
-	//var mouseLeftTop = {l: latest_event.clientX - totalOffsetLeft, t: latest_event.clientY - totalOffsetTop};
-	console.debug("mouseLeftTop: ", mouseLeftTop);
-	var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
-	reactor.domNode.style.top  = workspace_box.my_content_pane.domNode.scrollTop  + newLeftTop.t + "px";
-	reactor.domNode.style.left = workspace_box.my_content_pane.domNode.scrollLeft + newLeftTop.l + "px";
-	reactor.domNode.style.position = "absolute";
-
-	// Add a context menu for the new reactor.
-	if (!firefox_on_mac) {
-		var menu = new dijit.Menu({targetNodeIds: [reactor.domNode]});
-		menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(reactor);} }));
-		menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(reactor);} }));
-	}
-	
-	dojo.connect(reactor.domNode, 'dblclick', function(event) {
-		event.stopPropagation(); // so the workspace configuration dialog won't also pop up
-		showReactorConfigDialog(reactor);
-	});
-
-	// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
-	// getNearbyGridPointInBox() takes care of both.  Note that parts of this.constraintBox are not calculated until
-	// onFirstMove() is called.
-	m5.onMove = function(mover, leftTop) {
-		//console.debug("In m5.onMove, this.constraintBox = ", this.constraintBox);
-		//console.debug("leftTop = ", leftTop);
-		var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
-		//console.debug("newLeftTop = ", newLeftTop);
-		dojo.marginBox(mover.node, newLeftTop);
-
-		//console.debug("reactor = ", reactor);
-		for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-			updateConnectionLine(reactor.reactor_inputs[i].line, reactor.reactor_inputs[i].source.domNode, reactor.domNode);
-		}
-		for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-			updateConnectionLine(reactor.reactor_outputs[i].line, reactor.domNode, reactor.reactor_outputs[i].sink.domNode);
-		}
-	};
-/*
-	// This doesn't do anything, because the constrained onMove doesn't call onMoving.
-	dojo.connect(m5, "onMoving", function(mover, leftTop){
-		console.debug("m5 is moving");
-		leftTop.l -= leftTop.l % STEP;
-		leftTop.t -= leftTop.t % STEP;
-	});
-/**/
 }
 
 function handleDropOnWorkspace(source, nodes, copy, target) {
@@ -559,12 +475,13 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 				}
 				//console.debug('config (from server): ', config);
 				//console.dir(config);
-				var reactor = createReactor(config);
+				var reactor_node = document.createElement("div");
+				workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
+				var reactor = createReactor(config, reactor_node);
 				//console.debug('config.@id: ', config.@id);
 				reactors_by_id[config.@id] = reactor;
 				reactor.workspace = workspace_box;
-				workspace_box.node.replaceChild(reactor.domNode, workspace_box.node.lastChild);
-				makeReactorMoveable(reactor);
+				workspace_box.reactors.push(reactor);
 			},
 			error: function(response, ioArgs) {
 				console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
