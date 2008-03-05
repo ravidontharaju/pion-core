@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <pion/platform/Reactor.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include "DatabaseOutputReactor.hpp"
