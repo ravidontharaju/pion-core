@@ -39,6 +39,10 @@
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E319399E0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
 		E319399F0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
+		E329D2190D7DF39C00229FD5 /* Query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2180D7DF39C00229FD5 /* Query.hpp */; };
+		E329D21A0D7DF39C00229FD5 /* Query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2180D7DF39C00229FD5 /* Query.hpp */; };
+		E329D23A0D7E24AF00229FD5 /* DatabaseOutputReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E329D2380D7E24AF00229FD5 /* DatabaseOutputReactor.cpp */; };
+		E329D23B0D7E24AF00229FD5 /* DatabaseOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E36D88B10D29BA0E00B4C134 /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
@@ -190,8 +194,6 @@
 		E3C1B3E50D71DD02006B8329 /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = E3C1B3E30D71DD02006B8329 /* sqlite3.h */; };
 		E3C1B3FA0D71DEB5006B8329 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3C1B3FB0D71DEB5006B8329 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
-		E3C1B4050D71DF13006B8329 /* SQLiteOutputReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C1B3550D71D55D006B8329 /* SQLiteOutputReactor.cpp */; };
-		E3C1B4060D71DF13006B8329 /* SQLiteOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3C1B3560D71D55D006B8329 /* SQLiteOutputReactor.hpp */; };
 		E3C1B4240D71FD41006B8329 /* LogInputReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C1B30F0D71D0CC006B8329 /* LogInputReactor.cpp */; };
 		E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
@@ -911,6 +913,9 @@
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
 		E319399D0D49601A00DDF224 /* Comparison.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Comparison.cpp; path = platform/src/Comparison.cpp; sourceTree = SOURCE_ROOT; };
 		E326EF890D2D733700BBCE56 /* CodecTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CodecTests.cpp; path = platform/tests/CodecTests.cpp; sourceTree = SOURCE_ROOT; };
+		E329D2180D7DF39C00229FD5 /* Query.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Query.hpp; path = platform/include/pion/platform/Query.hpp; sourceTree = SOURCE_ROOT; };
+		E329D2380D7E24AF00229FD5 /* DatabaseOutputReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DatabaseOutputReactor.cpp; path = platform/reactors/DatabaseOutputReactor.cpp; sourceTree = SOURCE_ROOT; };
+		E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DatabaseOutputReactor.hpp; path = platform/reactors/DatabaseOutputReactor.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-platform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-platform.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-platform.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-platform.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349BEB00D3E578A008AB9E6 /* Comparison.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Comparison.hpp; path = platform/include/pion/platform/Comparison.hpp; sourceTree = SOURCE_ROOT; };
@@ -1020,13 +1025,11 @@
 		E3C1B3320D71D26E006B8329 /* LogOutputReactor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogOutputReactor.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C1B3440D71D4F3006B8329 /* TransformReactor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = TransformReactor.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C1B3540D71D50F006B8329 /* SQLiteDatabase.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = SQLiteDatabase.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		E3C1B3550D71D55D006B8329 /* SQLiteOutputReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SQLiteOutputReactor.cpp; path = platform/reactors/SQLiteOutputReactor.cpp; sourceTree = SOURCE_ROOT; };
-		E3C1B3560D71D55D006B8329 /* SQLiteOutputReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SQLiteOutputReactor.hpp; path = platform/reactors/SQLiteOutputReactor.hpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3570D71D55D006B8329 /* TransformReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransformReactor.cpp; path = platform/reactors/TransformReactor.cpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3580D71D55D006B8329 /* TransformReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TransformReactor.hpp; path = platform/reactors/TransformReactor.hpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3E20D71DD02006B8329 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = platform/databases/sqlite3.c; sourceTree = SOURCE_ROOT; };
 		E3C1B3E30D71DD02006B8329 /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = platform/databases/sqlite3.h; sourceTree = SOURCE_ROOT; };
-		E3C1B3FF0D71DEB5006B8329 /* SQLiteOutputReactor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = SQLiteOutputReactor.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3C1B3FF0D71DEB5006B8329 /* DatabaseOutputReactor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = DatabaseOutputReactor.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComparisonTests.cpp; path = platform/tests/ComparisonTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionScheduler.hpp; path = common/include/pion/PionScheduler.hpp; sourceTree = SOURCE_ROOT; };
 		E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionScheduler.cpp; path = common/src/PionScheduler.cpp; sourceTree = SOURCE_ROOT; };
@@ -1347,7 +1350,7 @@
 				E3C1B3320D71D26E006B8329 /* LogOutputReactor.so */,
 				E3C1B3440D71D4F3006B8329 /* TransformReactor.so */,
 				E3C1B3540D71D50F006B8329 /* SQLiteDatabase.so */,
-				E3C1B3FF0D71DEB5006B8329 /* SQLiteOutputReactor.so */,
+				E3C1B3FF0D71DEB5006B8329 /* DatabaseOutputReactor.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1376,8 +1379,8 @@
 				E3C1B30F0D71D0CC006B8329 /* LogInputReactor.cpp */,
 				E3C1B3120D71D0CC006B8329 /* LogOutputReactor.hpp */,
 				E3C1B3110D71D0CC006B8329 /* LogOutputReactor.cpp */,
-				E3C1B3560D71D55D006B8329 /* SQLiteOutputReactor.hpp */,
-				E3C1B3550D71D55D006B8329 /* SQLiteOutputReactor.cpp */,
+				E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */,
+				E329D2380D7E24AF00229FD5 /* DatabaseOutputReactor.cpp */,
 			);
 			name = reactors;
 			sourceTree = "<group>";
@@ -1536,6 +1539,7 @@
 				E36D88B00D29BA0E00B4C134 /* VocabularyManager.hpp */,
 				E3CFFB200D45263A00ADB135 /* PlatformPlugin.hpp */,
 				E36D88A60D29BA0E00B4C134 /* Codec.hpp */,
+				E329D2180D7DF39C00229FD5 /* Query.hpp */,
 				E36D88A90D29BA0E00B4C134 /* Database.hpp */,
 				E36D88AD0D29BA0E00B4C134 /* Reactor.hpp */,
 				E3CFFC260D45359C00ADB135 /* PluginConfig.hpp */,
@@ -1705,6 +1709,7 @@
 				E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */,
 				E3CFFB210D45263A00ADB135 /* PlatformPlugin.hpp in Headers */,
 				E3CFFC270D45359C00ADB135 /* PluginConfig.hpp in Headers */,
+				E329D2190D7DF39C00229FD5 /* Query.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1726,6 +1731,7 @@
 				E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */,
 				E3CFFB220D45263A00ADB135 /* PlatformPlugin.hpp in Headers */,
 				E3CFFC280D45359C00ADB135 /* PluginConfig.hpp in Headers */,
+				E329D21A0D7DF39C00229FD5 /* Query.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1872,7 +1878,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3C1B4060D71DF13006B8329 /* SQLiteOutputReactor.hpp in Headers */,
+				E329D23B0D7E24AF00229FD5 /* DatabaseOutputReactor.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2343,9 +2349,9 @@
 			productReference = E3C1B3540D71D50F006B8329 /* SQLiteDatabase.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		E3C1B3F00D71DEB5006B8329 /* SQLiteOutputReactor */ = {
+		E3C1B3F00D71DEB5006B8329 /* DatabaseOutputReactor */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E3C1B3FC0D71DEB5006B8329 /* Build configuration list for PBXNativeTarget "SQLiteOutputReactor" */;
+			buildConfigurationList = E3C1B3FC0D71DEB5006B8329 /* Build configuration list for PBXNativeTarget "DatabaseOutputReactor" */;
 			buildPhases = (
 				E3C1B3F50D71DEB5006B8329 /* Headers */,
 				E3C1B3F70D71DEB5006B8329 /* Sources */,
@@ -2357,9 +2363,9 @@
 				E3C1B3F10D71DEB5006B8329 /* PBXTargetDependency */,
 				E3C1B3F30D71DEB5006B8329 /* PBXTargetDependency */,
 			);
-			name = SQLiteOutputReactor;
+			name = DatabaseOutputReactor;
 			productName = ELFCodec;
-			productReference = E3C1B3FF0D71DEB5006B8329 /* SQLiteOutputReactor.so */;
+			productReference = E3C1B3FF0D71DEB5006B8329 /* DatabaseOutputReactor.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		E3CFF95B0D44340800ADB135 /* FilterReactor */ = {
@@ -2522,7 +2528,7 @@
 				E3C1B3350D71D4F3006B8329 /* TransformReactor */,
 				E3C1B3130D71D261006B8329 /* LogInputReactor */,
 				E3C1B3230D71D26E006B8329 /* LogOutputReactor */,
-				E3C1B3F00D71DEB5006B8329 /* SQLiteOutputReactor */,
+				E3C1B3F00D71DEB5006B8329 /* DatabaseOutputReactor */,
 				E306A8770D6648670069A023 /* AllowNothingService */,
 				E306A8670D6648570069A023 /* CookieService */,
 				E306A8570D66484E0069A023 /* EchoService */,
@@ -2745,7 +2751,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3C1B4050D71DF13006B8329 /* SQLiteOutputReactor.cpp in Sources */,
+				E329D23A0D7E24AF00229FD5 /* DatabaseOutputReactor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3138,12 +3144,12 @@
 		};
 		E3C1B4010D71DEE2006B8329 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E3C1B3F00D71DEB5006B8329 /* SQLiteOutputReactor */;
+			target = E3C1B3F00D71DEB5006B8329 /* DatabaseOutputReactor */;
 			targetProxy = E3C1B4000D71DEE2006B8329 /* PBXContainerItemProxy */;
 		};
 		E3C1B4030D71DEF2006B8329 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E3C1B3F00D71DEB5006B8329 /* SQLiteOutputReactor */;
+			target = E3C1B3F00D71DEB5006B8329 /* DatabaseOutputReactor */;
 			targetProxy = E3C1B4020D71DEF2006B8329 /* PBXContainerItemProxy */;
 		};
 		E3CFF95C0D44340800ADB135 /* PBXTargetDependency */ = {
@@ -3735,7 +3741,7 @@
 				EXECUTABLE_EXTENSION = so;
 				EXECUTABLE_PREFIX = "";
 				INSTALL_PATH = /usr/local/lib;
-				PRODUCT_NAME = SQLiteOutputReactor;
+				PRODUCT_NAME = DatabaseOutputReactor;
 			};
 			name = Debug;
 		};
@@ -3745,7 +3751,7 @@
 				EXECUTABLE_EXTENSION = so;
 				EXECUTABLE_PREFIX = "";
 				INSTALL_PATH = /usr/local/lib;
-				PRODUCT_NAME = SQLiteOutputReactor;
+				PRODUCT_NAME = DatabaseOutputReactor;
 			};
 			name = Release;
 		};
@@ -4079,7 +4085,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E3C1B3FC0D71DEB5006B8329 /* Build configuration list for PBXNativeTarget "SQLiteOutputReactor" */ = {
+		E3C1B3FC0D71DEB5006B8329 /* Build configuration list for PBXNativeTarget "DatabaseOutputReactor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E3C1B3FD0D71DEB5006B8329 /* Debug */,

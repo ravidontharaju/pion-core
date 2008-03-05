@@ -305,12 +305,12 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateLogWriterReactorConfig) {
 		"<Comment>Writes a new log file using ELF (Updated)</Comment>"
 		"<Plugin>LogOutputReactor</Plugin>"
 		"<Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>"
-		"<Filename>/tmp/new.log</Filename>"
+		"<Filename>../logs/new.log</Filename>"
 		"</Reactor></PionConfig>";
 	
 	// make a request to update the "log writer" Reactor
 	checkUpdateResource("/config/reactors/" + m_log_writer_id, "Reactor",
-						reactor_config_str, "Filename", "/tmp/new.log");
+						reactor_config_str, "Filename", "../logs/new.log");
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveLogWriterReactor) {
@@ -388,6 +388,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveDateCodec) {
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewDatabase) {
 	std::string database_config_str = "<PionConfig><Database>"
 		"<Plugin>SQLiteDatabase</Plugin>"
+		"<Filename>new.db</Filename>"
 		"</Database></PionConfig>";
 	
 	// make a request to add a new Database
@@ -402,12 +403,12 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateEmbeddedDatabaseConfig) {
 		"<Name>Updated Storage Database</Name>"
 		"<Comment>Embedded SQLite database for storing events</Comment>"
 		"<Plugin>SQLiteDatabase</Plugin>"
-		"<Filename>/tmp/updated.db</Filename>"
+		"<Filename>updated.db</Filename>"
 		"</Database></PionConfig>";
 	
 	// make a request to update the "log writer" Reactor
 	checkUpdateResource("/config/databases/" + m_embedded_db_id, "Database",
-						database_config_str, "Filename", "/tmp/updated.db");
+						database_config_str, "Filename", "updated.db");
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveEmbeddedDatabase) {

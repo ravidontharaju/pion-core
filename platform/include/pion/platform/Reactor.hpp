@@ -36,10 +36,6 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-// some forward declarations for class Reactor
-class CodecFactory;
-class DatabaseManager;
-	
 ///
 /// Reactor: used to process Events, and to deliver the same or new Events to other Reactors
 ///
@@ -68,8 +64,7 @@ public:
 	
 	/// constructs a new Reactor object
 	Reactor(void)
-		: m_is_running(false),
-		m_scheduler_ptr(NULL), m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
+		: m_is_running(false), m_scheduler_ptr(NULL), 
 		m_x_coordinate(0), m_y_coordinate(0), m_events_in(0), m_events_out(0)
 	{}
 
@@ -156,13 +151,7 @@ public:
 
 	/// sets the scheduler that will be used to deliver Events to other Reactors
 	inline void setScheduler(PionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
-	
-	/// sets the CodecFactory that will used by the Reactor to obtain Codecs
-	inline void setCodecFactory(CodecFactory& factory) { m_codec_factory_ptr = & factory; }
-	
-	/// sets the DatabaseManager that will used by the Reactor to obtain Databases
-	inline void setDatabaseManager(DatabaseManager& mgr) { m_database_mgr_ptr = & mgr; }
-	
+
 	/// returns the total number of Events received by this Reactor
 	inline boost::uint64_t getEventsIn(void) const { return m_events_in; }
 		
@@ -180,19 +169,7 @@ protected:
 		PION_ASSERT(m_scheduler_ptr != NULL);
 		return *m_scheduler_ptr;
 	}
-	
-	/// returns the CodecFactory to use for obtaining new Codecs
-	inline CodecFactory& getCodecFactory(void) {
-		PION_ASSERT(m_codec_factory_ptr != NULL);
-		return *m_codec_factory_ptr;
-	}
-	
-	/// returns the DatabaseManager to use for obtaining new Databases
-	inline DatabaseManager& getDatabaseManager(void) {
-		PION_ASSERT(m_database_mgr_ptr != NULL);
-		return *m_database_mgr_ptr;
-	}
-
+		
 	/**
 	 * increments the incoming Events counter.  This is not thread-safe and
 	 * should be called only when the Reactor's mutex is locked.
@@ -312,12 +289,6 @@ private:
 	
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler *					m_scheduler_ptr;
-	
-	/// pointer to the CodecFactory, used by the Reactor to obtain Codecs
-	CodecFactory *					m_codec_factory_ptr;
-	
-	/// pointer to the DatabaseManager, used by the Reactor to obtain Databases
-	DatabaseManager *				m_database_mgr_ptr;
 	
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;

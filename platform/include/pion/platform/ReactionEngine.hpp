@@ -460,8 +460,11 @@ private:
 			reactor_ptr->setScheduler(m_scheduler);
 			reactor_ptr->setCodecFactory(m_codec_factory);
 			reactor_ptr->setDatabaseManager(m_database_mgr);
+			reactor_ptr->setReactionEngine(*this);
 			if (config_ptr != NULL)
 				reactor_ptr->setConfig(m_vocabulary, config_ptr);
+		} catch (PionPlugin::PluginNotFoundException& e) {
+			throw;
 		} catch (std::exception& e) {
 			throw PluginException(e.what());
 		}

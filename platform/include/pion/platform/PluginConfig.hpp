@@ -199,10 +199,14 @@ protected:
 								 const std::string& plugin_name,
 								 const xmlNodePtr config_ptr)
 	{
-		PluginType *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
-		new_plugin_ptr->setId(plugin_id);
-		if (config_ptr != NULL)
-			new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+		try {
+			PluginType *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
+			new_plugin_ptr->setId(plugin_id);
+			if (config_ptr != NULL)
+				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+		} catch (std::exception& e) {
+			throw PluginException(e.what());
+		}
 	}
 	
 	

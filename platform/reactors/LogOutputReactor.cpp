@@ -20,6 +20,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 #include "LogOutputReactor.hpp"
 
 using namespace pion::platform;
@@ -67,6 +68,9 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// get the filename regex to use for finding log files
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_log_filename, config_ptr))
 		throw EmptyFilenameException(getId());
+	
+	// resolve paths relative to the ReactionEngine's config file location
+	m_log_filename = getReactionEngine().resolveRelativePath(m_log_filename);
 	
 	// open up the file for writing
 	m_log_stream.open(m_log_filename.c_str(), std::ios::out | std::ios::app | std::ios::binary);

@@ -23,6 +23,7 @@
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 #include "LogInputReactor.hpp"
 
 using namespace pion::platform;
@@ -59,6 +60,9 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 	// get the directory where the Reactor will look for new log files
 	if (! ConfigManager::getConfigOption(DIRECTORY_ELEMENT_NAME, m_log_directory, config_ptr))
 		throw EmptyDirectoryException(getId());
+	
+	// resolve paths relative to the ReactionEngine's config file location
+	m_log_directory = getReactionEngine().resolveRelativePath(m_log_directory);
 
 	// make sure that the directory exists
 	if (! boost::filesystem::exists(m_log_directory) )

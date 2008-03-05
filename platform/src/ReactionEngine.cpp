@@ -71,12 +71,8 @@ void ReactionEngine::openConfigFile(void)
 	if (ConfigManager::configIsOpen())
 		return;
 
-	try {
-		// open the plug-in config file and load plug-ins
-		ConfigManager::openPluginConfig(m_plugin_element);
-	} catch (std::exception& e) {
-		throw PluginException(e.what());
-	}
+	// open the plug-in config file and load plug-ins
+	ConfigManager::openPluginConfig(m_plugin_element);
 	
 	// Step through and process Reactor connections.
 	// This must be done last & independently to ensure that all Reactors have

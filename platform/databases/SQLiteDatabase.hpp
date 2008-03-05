@@ -21,6 +21,7 @@
 #define __PION_SQLITEDATABASE_HEADER__
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include <pion/platform/Database.hpp>
 #include <sqlite3.h>
 
@@ -31,20 +32,36 @@ namespace plugins {		// begin namespace plugins
 
 ///
 /// SQLiteDatabase: class for storing and retrieving Events using a SQLite database
-/// (Work in progress...)
 ///
 class SQLiteDatabase :
 	public pion::platform::Database
 {
 public:
 	
+	/// exception thrown if the SQLiteDatabase configuration does not define a Filename
+	class EmptyFilenameException : public PionException {
+	public:
+		EmptyFilenameException(const std::string& database_id)
+			: PionException("SQLiteDatabase configuration is missing a required Filename parameter: ", database_id) {}
+	};
+
+	/// exception thrown if the the SQLite API returns an unexpected result
+	class SQLiteAPIException : public PionException {
+	public:
+		SQLiteAPIException(const std::string& sqlite_error_msg)
+			: PionException("SQLiteDatabase API error: ", sqlite_error_msg) {}
+	};
+	
+	
 	/**
 	 * constructs a new SQLiteDatabase object
 	 */
-	SQLiteDatabase(void) : pion::platform::Database(), m_sqlite_db(NULL) {}
+	SQLiteDatabase(void)
+		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL)
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~SQLiteDatabase() { close(); }
+	virtual ~SQLiteDatabase() { m_query_map.clear(); close(); }
 	
 	/**
 	 * clones the Database, returning a pointer to the cloned copy
@@ -62,84 +79,224 @@ public:
 	
 	/// closes the database connection
 	virtual void close(void);
+	
+	/// returns true if the database connection is open
+	virtual bool is_open(void) const { return m_sqlite_db != NULL; }
 
+	/**
+	 * runs a simple query, ignoring any results returned
+	 *
+	 * @param sql_query SQL query to execute
+	 */
+	virtual void runQuery(const std::string& sql_query);
+	
 	/**
 	 * adds a compiled SQL query to the database
 	 *
 	 * @param query_id string used to uniquely identify the type of query
 	 * @param sql_query SQL query to compile and cache for later use
 	 */
-	virtual QueryPtr addQuery(QueryID query_id, const std::string& sql_query);
+	virtual pion::platform::QueryPtr addQuery(pion::platform::QueryID query_id,
+											  const std::string& sql_query);
 	
 	/**
-	 * runs a simple query, ignoring any results returned
-	 *
-	 * @param sql_query SQL query to execute
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(const std::string& sql_query) const;
-	
-	/**
-	 * runs a compiled parameterless query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr) const;
-	
-	/**
-	 * runs a compiled query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params an Event containing parameters to bind to the query
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, pion::platform::Event& query_params) const;
-	
-	/**
-	 * runs a compiled query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params a collection of Event pointers containing
-	 *                     parameters to bind to the query
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, pion::platform::EventPtrCollection& query_params) const;
-	
-	/**
-	 * runs a compiled query, retrieving zero or more results from the Database
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params an Event containing parameters to bind to the query
-	 * @param query_results a collection of Event pointers containing the results
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, pion::platform::Event& query_params,
-						  pion::platform::EventPtrCollection& query_results) const;
-	
-	/**
-	 * runs a compiled query, retrieving zero or more results from the Database
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params a collection of Event pointers containing
-	 *                     parameters to bind to the query
-	 * @param query_results a collection of Event pointers containing the results
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, pion::platform::EventPtrCollection& query_params,
-						  pion::platform::EventPtrCollection& query_results) const;
-	
-	/**
-	 * this updates the Vocabulary information used by this Database; it should
-	 * be called whenever the global Vocabulary is updated
+	 * sets configuration parameters for this Database
 	 *
 	 * @param v the Vocabulary that this Database will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing Database
+	 *                   configuration parameters
 	 */
-	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
+
+	/**
+	 * throws an API exception using the most recent log message set for a database
+	 *
+	 * @param db_ptr pointer to a SQLite database to use
+	 */
+	static inline void throwAPIException(sqlite3 *db_ptr) {
+		PION_ASSERT(db_ptr != NULL);
+		std::string error_msg(sqlite3_errmsg(db_ptr));
+		throw SQLiteAPIException(error_msg);
+	}
+	
+		
+protected:
+	
+	/**
+	 * returns the SQLite data type for a given Pion Vocabulary data type
+	 *
+	 * @param term_type the Pion Vocabulary data type
+	 *
+	 * @return int SQLITE_NULL, SQLITE_INTEGER, SQLITE_FLOAT, SQLITE_TEXT or SQLITE_BLOB
+	 */
+	static inline int getSQLiteType(const pion::platform::Vocabulary::DataType term_type);
+	
+	/**
+	 * returns the SQLite affinity for a given Pion Vocabulary data type
+	 *
+	 * @param term_type the Pion Vocabulary data type
+	 *
+	 * @return std::string "NONE", "INTEGER", "REAL", "TEXT" or "NONE"
+	 */
+	static inline std::string getSQLiteAffinity(const pion::platform::Vocabulary::DataType term_type);
+
+	/// returns a string containing the SQLite API error message
+	inline std::string getSQLiteError(void);
+
+	
+	///
+	/// SQLiteQuery: a compiled query used by SQLite databases
+	///
+	class SQLiteQuery
+		: public pion::platform::Query
+	{
+	public:
+		
+		/// virtual destructor releases the prepared statement
+		virtual ~SQLiteQuery() { sqlite3_finalize(m_sqlite_stmt); }
+		
+		/**
+		 * constructs a new SQLiteQuery object
+		 *
+		 * @param database reference to the Database used to perform the query
+		 * @param sqlite_db the SQLite database that this query belongs to
+		 */
+		SQLiteQuery(const std::string& sql_query, sqlite3 *db_ptr);
+
+		/**
+		 * binds a std::string value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindString(unsigned int param, const std::string& value) {
+			if (sqlite3_bind_text(m_sqlite_stmt, param, value.c_str(),
+								  value.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a string (const char *) value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindString(unsigned int param, const char *value) {
+			if (sqlite3_bind_text(m_sqlite_stmt, param, value,
+								  -1, SQLITE_TRANSIENT) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds an integer value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindInt(unsigned int param, const boost::int32_t value) {
+			if (sqlite3_bind_int(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds an unsigned integer value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindUInt(unsigned int param, const boost::uint32_t value) {
+			if (sqlite3_bind_int(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a big integer value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindBigInt(unsigned int param, const boost::int64_t value) {
+			if (sqlite3_bind_int64(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds an unsigned big integer value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindUBigInt(unsigned int param, const boost::uint64_t value) {
+			if (sqlite3_bind_int64(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a floating point number value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindFloat(unsigned int param, const float value) {
+			if (sqlite3_bind_double(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a double floating point number value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindDouble(unsigned int param, const double value) {
+			if (sqlite3_bind_double(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a long double floating point number value to a query parameter
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindLongDouble(unsigned int param, const long double value) {
+			if (sqlite3_bind_double(m_sqlite_stmt, param, value) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * binds a date_time value to a query parameter (use bindString() instead)
+		 * 
+		 * @param param the query parameter number to which the value will be bound
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindDateTime(unsigned int param, const PionDateTime& value) {
+			// store it as an iso extended string
+			std::string as_string(boost::posix_time::to_iso_extended_string(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param, as_string.c_str(),
+								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+		
+		/**
+		 * runs the compiled query
+		 *
+		 * @return true if there is a result row available
+		 */
+		virtual bool run(void);
+
+		/// resets the compiled query so that it can be run again
+		virtual void reset(void) { sqlite3_reset(m_sqlite_stmt); }
+		
+		
+	private:
+		
+		/// points to the SQLite database that this query belongs to
+		sqlite3 *			m_sqlite_db;
+
+		/// points to a SQLite prepared statement used for this Query
+		sqlite3_stmt *		m_sqlite_stmt;
+	};
 
 	
 private:
@@ -147,13 +304,105 @@ private:
 	/// extension added to the name of backup files
 	static const std::string		BACKUP_FILE_EXTENSION;
 	
+	/// name of the Filename element for Pion XML config files
+	static const std::string		FILENAME_ELEMENT_NAME;
+
+	
 	/// filename of the SQLite database
 	std::string						m_database_name;
 	
 	/// SQLite v3 database handle
 	sqlite3	*						m_sqlite_db;
+	
+	/// points the an error message returned from a SQLite API call
+	char *							m_error_ptr;
 };
 
+
+	
+// inline member functions for SQLiteDatabase
+	
+inline int SQLiteDatabase::getSQLiteType(const pion::platform::Vocabulary::DataType term_type)
+{
+	switch(term_type) {
+		case pion::platform::Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
+			return SQLITE_NULL;
+			break;
+		case pion::platform::Vocabulary::TYPE_INT8:
+		case pion::platform::Vocabulary::TYPE_INT16:
+		case pion::platform::Vocabulary::TYPE_INT32:
+		case pion::platform::Vocabulary::TYPE_INT64:
+		case pion::platform::Vocabulary::TYPE_UINT8:
+		case pion::platform::Vocabulary::TYPE_UINT16:
+		case pion::platform::Vocabulary::TYPE_UINT32:
+		case pion::platform::Vocabulary::TYPE_UINT64:
+			return SQLITE_INTEGER;
+			break;
+		case pion::platform::Vocabulary::TYPE_FLOAT:
+		case pion::platform::Vocabulary::TYPE_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+			return SQLITE_FLOAT;
+			break;
+		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+		case pion::platform::Vocabulary::TYPE_STRING:
+		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
+			return SQLITE_TEXT;
+			break;
+	}
+}
+
+inline std::string SQLiteDatabase::getSQLiteAffinity(const pion::platform::Vocabulary::DataType term_type)
+{
+	std::string affinity;
+	switch(term_type) {
+		case pion::platform::Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
+			affinity = "NONE";
+			break;
+		case pion::platform::Vocabulary::TYPE_INT8:
+		case pion::platform::Vocabulary::TYPE_INT16:
+		case pion::platform::Vocabulary::TYPE_INT32:
+		case pion::platform::Vocabulary::TYPE_INT64:
+		case pion::platform::Vocabulary::TYPE_UINT8:
+		case pion::platform::Vocabulary::TYPE_UINT16:
+		case pion::platform::Vocabulary::TYPE_UINT32:
+		case pion::platform::Vocabulary::TYPE_UINT64:
+			affinity = "INTEGER";
+			break;
+		case pion::platform::Vocabulary::TYPE_FLOAT:
+		case pion::platform::Vocabulary::TYPE_DOUBLE:
+		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+			affinity = "REAL";
+			break;
+		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+		case pion::platform::Vocabulary::TYPE_STRING:
+		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
+			affinity = "TEXT";
+			break;
+	}
+	return affinity;
+}
+
+inline std::string SQLiteDatabase::getSQLiteError(void)
+{
+	std::string error_str;
+	if (m_error_ptr != NULL) {
+		error_str = m_error_ptr;
+		sqlite3_free(m_error_ptr);
+		m_error_ptr = NULL;
+	}
+	return error_str;
+}
+	
 	
 }	// end namespace plugins
 }	// end namespace pion

@@ -31,7 +31,10 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // forward declarations
 class Vocabulary;
-
+class CodecFactory;
+class DatabaseManager;
+class ReactionEngine;	
+	
 ///
 /// PlatformPlugin: interface class extended by all Pion Platform plug-ins
 ///
@@ -41,7 +44,10 @@ class PION_PLATFORM_API PlatformPlugin
 public:
 
 	/// constructs a new PlatformPlugin object
-	PlatformPlugin(void) {}
+	PlatformPlugin(void) :
+		m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
+		m_reaction_engine_ptr(NULL)
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~PlatformPlugin() {}
@@ -82,6 +88,15 @@ public:
 	/// returns the descriptive comment for this plug-in
 	inline const std::string& getComment(void) const { return m_plugin_comment; }
 
+	/// sets the CodecFactory that will used by the plugin to access Codecs
+	inline void setCodecFactory(CodecFactory& factory) { m_codec_factory_ptr = & factory; }
+	
+	/// sets the DatabaseManager that will used by the plugin to access Databases
+	inline void setDatabaseManager(DatabaseManager& mgr) { m_database_mgr_ptr = & mgr; }
+	
+	/// sets the ReactionEngine that will used by the plugin to access Reactors
+	inline void setReactionEngine(ReactionEngine& engine) { m_reaction_engine_ptr = & engine; }
+
 	
 protected:
 	
@@ -90,6 +105,24 @@ protected:
 		m_plugin_id = pp.m_plugin_id;
 		m_plugin_name = pp.m_plugin_name;
 		m_plugin_comment = pp.m_plugin_comment;
+	}
+	
+	/// returns the CodecFactory to use for accessing Codecs
+	inline CodecFactory& getCodecFactory(void) {
+		PION_ASSERT(m_codec_factory_ptr != NULL);
+		return *m_codec_factory_ptr;
+	}
+	
+	/// returns the DatabaseManager to use for accessing Databases
+	inline DatabaseManager& getDatabaseManager(void) {
+		PION_ASSERT(m_database_mgr_ptr != NULL);
+		return *m_database_mgr_ptr;
+	}
+	
+	/// returns the ReactionEngine to use for accessing Reactors
+	inline ReactionEngine& getReactionEngine(void) {
+		PION_ASSERT(m_reaction_engine_ptr != NULL);
+		return *m_reaction_engine_ptr;
 	}
 	
 	
@@ -110,6 +143,15 @@ private:
 
 	/// descriptive comment for this Codec
 	std::string						m_plugin_comment;
+	
+	/// pointer to the CodecFactory, used by the plugin to access Codecs
+	CodecFactory *					m_codec_factory_ptr;
+	
+	/// pointer to the DatabaseManager, used by the plugin to access Databases
+	DatabaseManager *				m_database_mgr_ptr;
+	
+	/// pointer to the ReactionEngine, used by the plugin to access Reactors
+	ReactionEngine *				m_reaction_engine_ptr;
 };
 
 	

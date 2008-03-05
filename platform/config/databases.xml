@@ -4,5 +4,6 @@
     <Name>Embedded Storage Database</Name>
     <Comment>Embedded SQLite database for storing events</Comment>
     <Plugin>SQLiteDatabase</Plugin>
+    <Filename>pion.db</Filename>
   </Database>
 </PionConfig>

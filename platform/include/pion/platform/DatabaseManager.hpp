@@ -105,6 +105,37 @@ public:
 	}
 	
 	
+protected:
+	
+	/**
+	 * adds a new plug-in object (without locking or config file updates).  This
+	 * function must be defined properly for any derived classes that wish to
+	 * use openPluginConfig().
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param plugin_name the name of the plug-in to load (searches
+	 *                    plug-in directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	virtual void addPluginNoLock(const std::string& plugin_id,
+								 const std::string& plugin_name,
+								 const xmlNodePtr config_ptr)
+	{
+		try {
+			Database *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
+			new_plugin_ptr->setId(plugin_id);
+			new_plugin_ptr->setDatabaseManager(*this);
+			if (config_ptr != NULL)
+				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+		} catch (PionPlugin::PluginNotFoundException& e) {
+			throw;
+		} catch (std::exception& e) {
+			throw PluginException(e.what());
+		}
+	}
+	
+	
 private:
 	
 	/// default name of the database config file

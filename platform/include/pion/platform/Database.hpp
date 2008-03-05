@@ -26,12 +26,13 @@
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
+#include <pion/platform/Query.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-
+	
 ///
 /// Database: abstract class for storing and retrieving Events
 ///
@@ -40,21 +41,29 @@ class PION_PLATFORM_API Database
 {
 public:
 	
+	/// exception thrown if the database is busy & the query should be tried again later
+	class DatabaseBusyException : public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "Database is busy.  Try again later";
+		}
+	};
+
+	/// exception thrown if a Query cannot be found
+	class QueryNotFoundException : public PionException {
+	public:
+		QueryNotFoundException(const std::string& query_id)
+			: PionException("Unable find database query identified by: ", query_id) {}
+	};
+
 	/// exception thrown if there is an error opening a Database
 	class OpenDatabaseException : public PionException {
 	public:
 		OpenDatabaseException(const std::string& db_name)
 			: PionException("Unable to open database: ", db_name) {}
 	};
+	
 
-	
-	/// data type used to uniquely identify a specific type of database query
-	typedef std::string		QueryID;
-	
-	/// data type representing a pre-compiled query
-	typedef void *			QueryPtr;
-
-	
 	/// constructs a new Database object
 	Database(void) {}
 	
@@ -68,12 +77,10 @@ public:
 	 * @return QueryPtr pointer to the compiled query
 	 */
 	inline QueryPtr getQuery(QueryID query_id) const {
-		QueryPtr query_ptr = NULL;
-		boost::mutex::scoped_lock database_lock(m_mutex);
 		QueryMap::const_iterator i = m_query_map.find(query_id);
-		if (i != m_query_map.end())
-			query_ptr = i->second;
-		return query_ptr;
+		if (i == m_query_map.end())
+			throw QueryNotFoundException(query_id);
+		return i->second;
 	}
 	
 	/**
@@ -93,6 +100,16 @@ public:
 	/// closes the database connection
 	virtual void close(void) = 0;
 
+	/// returns true if the database connection is open
+	virtual bool is_open(void) const = 0;
+
+	/**
+	 * runs a simple query, ignoring any results returned
+	 *
+	 * @param sql_query SQL query to execute
+	 */
+	virtual void runQuery(const std::string& sql_query) = 0;
+	
 	/**
 	 * adds a compiled SQL query to the database
 	 *
@@ -100,66 +117,6 @@ public:
 	 * @param sql_query SQL query to compile and cache for later use
 	 */
 	virtual QueryPtr addQuery(QueryID query_id, const std::string& sql_query) = 0;
-	
-	/**
-	 * runs a simple query, ignoring any results returned
-	 *
-	 * @param sql_query SQL query to execute
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(const std::string& sql_query) const = 0;
-	
-	/**
-	 * runs a compiled parameterless query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr) const = 0;
-	
-	/**
-	 * runs a compiled query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params an Event containing parameters to bind to the query
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, Event& query_params) const = 0;
-	
-	/**
-	 * runs a compiled query, ignoring any results returned
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params a collection of Event pointers containing parameters to bind to the query
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, EventPtrCollection& query_params) const = 0;
-
-	/**
-	 * runs a compiled query, retrieving zero or more results from the Database
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params an Event containing parameters to bind to the query
-	 * @param query_results a collection of Event pointers containing the results
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, Event& query_params,
-						  EventPtrCollection& query_results) const = 0;
-	
-	/**
-	 * runs a compiled query, retrieving zero or more results from the Database
-	 *
-	 * @param query_ptr pointer to a compiled query to execute
-	 * @param query_params a collection of Event pointers containing parameters to bind to the query
-	 * @param query_results a collection of Event pointers containing the results
-	 *
-	 * @return true if the query was successful, false otherwise
-	 */
-	virtual bool runQuery(QueryPtr query_ptr, EventPtrCollection& query_params,
-						  EventPtrCollection& query_results) const = 0;
 	
 	/**
 	 * sets configuration parameters for this Database
@@ -170,23 +127,12 @@ public:
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
 	
-	/**
-	 * this updates the Vocabulary information used by this Database; 
-	 * it should be called whenever the global Vocabulary is updated
-	 *
-	 * @param v the Vocabulary that this Database will use to describe Terms
-	 */
-	virtual void updateVocabulary(const Vocabulary& v);
-		
 	
 protected:
 
 	/// protected copy function (use clone() instead)
 	inline void copyDatabase(const Database& d) {
-		copyPlugin(d);
-
-		// copy query map??
-		// ...
+		PlatformPlugin::copyPlugin(d);
 	}
 	
 	
@@ -194,21 +140,8 @@ protected:
 	typedef PION_HASH_MAP<QueryID, QueryPtr, PION_HASH(QueryID) >		QueryMap;
 
 	
-	/// name of the database element for Pion XML config files
-	static const std::string		DATABASE_ELEMENT_NAME;
-	
-	/// name of the table element for Pion XML config files
-	static const std::string		TABLE_ELEMENT_NAME;
-	
-	/// name of the field element for Pion XML config files
-	static const std::string		FIELD_ELEMENT_NAME;
-	
-
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap						m_query_map;
-
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;
 };	
 
 	

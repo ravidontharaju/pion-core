@@ -7,4 +7,4 @@ pion_platform_include_HEADERS = Event.hpp Comparison.hpp ConfigManager.hpp \
 	Vocabulary.hpp VocabularyConfig.hpp VocabularyManager.hpp \
 	PlatformPlugin.hpp Codec.hpp Database.hpp Reactor.hpp \
 	PluginConfig.hpp CodecFactory.hpp DatabaseManager.hpp \
-	ReactionEngine.hpp 
+	ReactionEngine.hpp Query.hpp

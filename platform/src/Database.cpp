@@ -24,12 +24,6 @@ namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of Database
-const std::string			Database::DATABASE_ELEMENT_NAME = "Database";
-const std::string			Database::TABLE_ELEMENT_NAME = "Table";
-const std::string			Database::FIELD_ELEMENT_NAME = "Field";
-	
-		
 // Database member functions
 	
 void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -37,11 +31,6 @@ void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	PlatformPlugin::setConfig(v, config_ptr);
 }
 
-void Database::updateVocabulary(const Vocabulary& v)
-{
-	PlatformPlugin::updateVocabulary(v);
-}	
-	
 	
 }	// end namespace platform
 }	// end namespace pion

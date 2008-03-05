@@ -6,7 +6,7 @@ AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include
 
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
 pion_plugins_LTLIBRARIES = FilterReactor.la TransformReactor.la \
-	LogInputReactor.la LogOutputReactor.la SQLiteOutputReactor.la
+	LogInputReactor.la LogOutputReactor.la DatabaseOutputReactor.la
 
 FilterReactor_la_SOURCES = FilterReactor.hpp FilterReactor.cpp
 FilterReactor_la_LDFLAGS = -no-undefined -module -avoid-version
@@ -28,9 +28,9 @@ LogOutputReactor_la_LDFLAGS = -no-undefined -module -avoid-version
 LogOutputReactor_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 LogOutputReactor_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
 
-SQLiteOutputReactor_la_SOURCES = SQLiteOutputReactor.hpp SQLiteOutputReactor.cpp
-SQLiteOutputReactor_la_LDFLAGS = -no-undefined -module -avoid-version
-SQLiteOutputReactor_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
-SQLiteOutputReactor_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
+DatabaseOutputReactor_la_SOURCES = DatabaseOutputReactor.hpp DatabaseOutputReactor.cpp
+DatabaseOutputReactor_la_LDFLAGS = -no-undefined -module -avoid-version
+DatabaseOutputReactor_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
+DatabaseOutputReactor_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
 
 EXTRA_DIST = *.vcproj
