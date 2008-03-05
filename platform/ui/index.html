@@ -206,7 +206,7 @@
 								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
 									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
 										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img src="images/icon-log-output.png" width="148" height="25" alt="Log Output" /></div>
-										<div class="dojoDndItem" dndType="reactor" reactor_type="SQLiteOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="SQLite Output" /></div>
+										<div class="dojoDndItem" dndType="reactor" reactor_type="DatabaseOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="Database Output" /></div>
 										
 									</div>
 								</div>
@@ -541,7 +541,7 @@
 			<button dojoType=dijit.form.Button class="delete">Delete</button>
 		</div>
 	</div>
-	<div dojoType="dijit.Dialog" id="SQLiteOutputReactor_dialog" class="reactor_dialog" title="SQLite Output Reactor Configuration">
+	<div dojoType="dijit.Dialog" id="DatabaseOutputReactor_dialog" class="reactor_dialog" title="Database Output Reactor Configuration">
 		<table>
 			<tr>
 				<td><label>Name:</label></td>
@@ -557,10 +557,10 @@
 			</tr>
 		</table>
 		<h3>Input Connections</h3>
-		<div id="SQLiteOutputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
+		<div id="DatabaseOutputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
 			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<h3>Output Connections</h3>
-		<div id="SQLiteOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
+		<div id="DatabaseOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
 			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
