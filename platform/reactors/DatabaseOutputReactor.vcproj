@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="SQLiteOutputReactor"
+	Name="DatabaseOutputReactor"
 	ProjectGUID="{141DB220-D65A-4236-9A13-9A1C186CE97B}"
 	>
 	<Platforms>
@@ -63,7 +63,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\SQLiteOutputReactor.cpp"
+				RelativePath=".\DatabaseOutputReactor.cpp"
 				>
 			</File>
 		</Filter>
@@ -73,7 +73,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\SQLiteOutputReactor.hpp"
+				RelativePath=".\DatabaseOutputReactor.hpp"
 				>
 			</File>
 		</Filter>
