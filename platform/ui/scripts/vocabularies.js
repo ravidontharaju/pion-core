@@ -122,9 +122,9 @@ pion.vocabularies.init = function() {
 		var num_vocabs = config_accordion.getChildren().length;
 		console.debug("num_vocabs = " + num_vocabs);
 
-		// TODO: replace 395 with some computed value, which takes into account the height of the grid 
+		// TODO: replace 400 with some computed value, which takes into account the height of the grid 
 		// (in .vocab_grid in defaults.css) and the variable comment box height.
-		var vocab_pane_body_height = 395;
+		var vocab_pane_body_height = 400;
 
 		var accordion_height = vocab_pane_body_height + num_vocabs * vocab_pane_title_height;
 		config_accordion.resize({h: accordion_height, w: accordion_width});
