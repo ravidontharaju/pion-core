@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/lexical_cast.hpp>
 #include <pion/platform/Comparison.hpp>
 
 
@@ -80,12 +81,54 @@ void Comparison::configure(const ComparisonType type,
 	if (! checkForValidType(type))
 		throw InvalidTypeForTermException();
 	
-	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX)
+	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
 		m_value = boost::regex(value);
-	else if (isStringType(type))
+	} else if (isStringType(type)) {
 		m_value = value;
-	else
-		throw InvalidValueForTypeException();
+	} else if (! isGenericType(type)) {		// note: generic type just ignores the value
+		// convert string to be the same type as the term
+		switch(m_term.term_type) {
+			case Vocabulary::TYPE_NULL:
+			case Vocabulary::TYPE_OBJECT:
+				break;
+			case Vocabulary::TYPE_INT8:
+			case Vocabulary::TYPE_INT16:
+			case Vocabulary::TYPE_INT32:
+				m_value = boost::lexical_cast<boost::int32_t>(value);
+				break;
+			case Vocabulary::TYPE_INT64:
+				m_value = boost::lexical_cast<boost::int64_t>(value);
+				break;
+			case Vocabulary::TYPE_UINT8:
+			case Vocabulary::TYPE_UINT16:
+			case Vocabulary::TYPE_UINT32:
+				m_value = boost::lexical_cast<boost::uint32_t>(value);
+				break;
+			case Vocabulary::TYPE_UINT64:
+				m_value = boost::lexical_cast<boost::uint64_t>(value);
+				break;
+			case Vocabulary::TYPE_FLOAT:
+				m_value = boost::lexical_cast<float>(value);
+				break;
+			case Vocabulary::TYPE_DOUBLE:
+				m_value = boost::lexical_cast<double>(value);
+				break;
+			case Vocabulary::TYPE_LONG_DOUBLE:
+				m_value = boost::lexical_cast<long double>(value);
+				break;
+			case Vocabulary::TYPE_SHORT_STRING:
+			case Vocabulary::TYPE_STRING:
+			case Vocabulary::TYPE_LONG_STRING:
+			case Vocabulary::TYPE_CHAR:
+				m_value = value;	// this should actually be handled above
+				break;
+			case Vocabulary::TYPE_DATE_TIME:
+			case Vocabulary::TYPE_DATE:
+			case Vocabulary::TYPE_TIME:
+				m_value = boost::lexical_cast<PionDateTime>(value);
+				break;
+		}
+	}
 	
 	m_type = type;
 	m_match_all_values = match_all_values;

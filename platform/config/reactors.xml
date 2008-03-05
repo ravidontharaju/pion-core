@@ -1,55 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-  <Reactor id="153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
-    <Name>Only IE Requests</Name>
-    <Comment>Filter events that are not requests from IE browsers</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace</Workspace>
-    <X>50</X>
-    <Y>100</Y>
-    <Comparison>
-      <Term>urn:vocab:clickstream#useragent</Term>
-      <Type>contains</Type>
-      <Value>MSIE</Value>
-    </Comparison>
-  </Reactor>
   <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
-    <Name>Do Nothing</Name>
-    <Comment>Filter that does nothing</Comment>
+    <Name>Event Router</Name>
+    <Comment>Does nothing but routes events</Comment>
     <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace</Workspace>
-    <X>150</X>
-    <Y>200</Y>
-  </Reactor>
-  <Connection id="dc2ca920-dc1d-11dc-b241-0019e3f89cd2">
-  	<Type>reactor</Type>
-    <From>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>
-    <To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>
-  </Connection>
-  <Reactor id="153f6c40-cb78-11dc-0000-0019e3f89cd2">
-    <Name>Only Non-IE Requests</Name>
-    <Comment>Filter events that are requests from IE browsers</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace 2</Workspace>
-    <X>50</X>
-    <Y>100</Y>
-    <Comparison>
-      <Term>urn:vocab:clickstream#useragent</Term>
-      <Type>not-contains</Type>
-      <Value>MSIE</Value>
-    </Comparison>
-  </Reactor>
-  <Reactor id="0cc21558-cf84-11dc-0000-0019e3f89cd2">
-    <Name>Do Nothing 2</Name>
-    <Comment>another filter that does nothing</Comment>
-    <Plugin>FilterReactor</Plugin>
-    <Workspace>Test Workspace 2</Workspace>
+    <Workspace>Web Log Processing</Workspace>
     <X>250</X>
     <Y>200</Y>
   </Reactor>
-  <Connection id="1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2">
-  	<Type>reactor</Type>
-    <From>153f6c40-cb78-11dc-0000-0019e3f89cd2</From>
-    <To>0cc21558-cf84-11dc-0000-0019e3f89cd2</To>
+  <Reactor id="153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
+    <Plugin>FilterReactor</Plugin>
+    <Name>File Not Found</Name>
+    <Comment>Finds requests for files that were not found (404 status code)</Comment>
+    <Workspace>Web Log Processing</Workspace>
+    <X>450</X>
+    <Y>150</Y>
+    <Comparison>
+      <Term>urn:vocab:clickstream#status</Term>
+      <Type>equals</Type>
+      <Value>404</Value>
+    </Comparison>
+  </Reactor>
+  <Reactor id="7af9ae36-eaf1-11dc-9096-0019e3f89cd2">
+    <Plugin>LogOutputReactor</Plugin>
+    <Name>Not Found Log</Name>
+    <Comment>Generates a new log file containing requests for files not found</Comment>
+    <Workspace>Web Log Processing</Workspace>
+    <X>450</X>
+    <Y>50</Y>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Filename>not_found.log</Filename>
+    <Format>date request status</Format>
+    <Flush>true</Flush>
+  </Reactor>
+  <Reactor id="3205a532-eae1-11dc-937c-0019e3f89cd2">
+    <Name>Home Page Requests</Name>
+    <Comment>Finds requests for the home page</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <Workspace>Web Log Processing</Workspace>
+    <X>450</X>
+    <Y>250</Y>
+    <Comparison>
+      <Term>urn:vocab:clickstream#request</Term>
+      <Type>starts-with</Type>
+      <Value>GET / HTTP</Value>
+    </Comparison>
+  </Reactor>
+  <Reactor id="3ad3e114-eae2-11dc-9b4c-0019e3f89cd2">
+    <Plugin>LogOutputReactor</Plugin>
+    <Name>Home Page Log</Name>
+    <Comment>Generates a new log file containing home page requests</Comment>
+    <Workspace>Web Log Processing</Workspace>
+    <X>450</X>
+    <Y>350</Y>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Filename>home_page.log</Filename>
+    <Format>date remotehost request</Format>
+    <Flush>true</Flush>
+  </Reactor>
+  <Connection id="27d4b2c2-eaed-11dc-876b-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</From>
+    <To>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</To>
+  </Connection>
+  <Connection id="747b1482-eaf1-11dc-8d5b-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>
+    <To>7af9ae36-eaf1-11dc-9096-0019e3f89cd2</To>
+  </Connection>
+  <Connection id="dc2ca920-dc1d-11dc-b241-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</From>
+    <To>3205a532-eae1-11dc-937c-0019e3f89cd2</To>
+  </Connection>
+  <Connection id="568a9f4c-eae2-11dc-966d-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
+    <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
   </Connection>
 </PionConfig>

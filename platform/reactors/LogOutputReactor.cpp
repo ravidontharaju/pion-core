@@ -46,9 +46,9 @@ LogOutputReactor::~LogOutputReactor()
 		// remove the log file if no events were written to it
 		if (getEventsOut() == 0) {
 			boost::filesystem::remove(m_log_filename);
-			PION_LOG_INFO(m_logger, "Closing empty output log (removing file): " << m_log_filename);
+			PION_LOG_DEBUG(m_logger, "Closing empty output log (removing file): " << m_log_filename);
 		} else {
-			PION_LOG_INFO(m_logger, "Closing output log file: " << m_log_filename);
+			PION_LOG_DEBUG(m_logger, "Closing output log file: " << m_log_filename);
 		}
 	}
 }
@@ -77,7 +77,7 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	if (! m_log_stream.is_open())
 		throw OpenLogException(m_log_filename);
 
-	PION_LOG_INFO(m_logger, "Opened output log file: " << m_log_filename);
+	PION_LOG_DEBUG(m_logger, "Opened output log file: " << m_log_filename);
 }
 	
 void LogOutputReactor::updateVocabulary(const Vocabulary& v)
