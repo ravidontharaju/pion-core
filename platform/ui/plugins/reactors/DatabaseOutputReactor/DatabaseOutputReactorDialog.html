@@ -1,6 +1,6 @@
 <div class="dijitDialog reactor_dialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
-	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Filter Reactor Configuration</span>
+	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Database Output Reactor Configuration</span>
 	<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: hide">
 		<span dojoAttachPoint="closeText" class="closeText">x</span>
 	</span>
@@ -19,11 +19,19 @@
 				><td><label>Comments:</label></td
 				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
 			></tr
+			><tr
+				><td><label>Database:</label></td
+				><td><input dojoType="dijit.form.FilteringSelect" name="Database" store="pion.databases.config_store" searchAttr="Name"/></td
+			></tr
+			><tr
+				><td><label>Table:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Table"/></td
+			></tr
 		></table
-	</div>
-	<div dojoAttachPoint="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
-		 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
+	></div>
+	<div dojoAttachPoint="grid" dojoType="dojox.Grid" model="plugins.reactors.DatabaseOutputReactorDialog.grid_model"
+		 structure="plugins.reactors.DatabaseOutputReactorDialog.grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<button dojoAttachPoint="add_new_term_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewTerm" class="add_new_row">ADD NEW TERM</button>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
 		 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>

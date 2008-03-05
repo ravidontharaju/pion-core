@@ -81,7 +81,7 @@ pion.reactors.init = function() {
 			query: {tagName: 'Reactor'},
 			onItem: function(item, request) {
 				console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
-				
+
 				var config = {};
 				var attributes = reactor_config_store.getAttributes(item);
 				for (var i = 0; i < attributes.length; ++i) {
@@ -613,7 +613,7 @@ function showReactorConfigDialog(reactor) {
 		var dialog = new plugins.reactors.ReactorDialog({title: reactor.config.Plugin + ' Configuration', reactor: reactor});
 	}
 	console.debug('reactor.config.@id: ', reactor.config.@id);
-	dialog.form.setValues(reactor.config);
+	dialog.setValues(reactor.config);
 
 	var reactor_inputs_table = [];
 	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {

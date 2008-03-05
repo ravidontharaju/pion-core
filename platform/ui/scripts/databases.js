@@ -11,6 +11,16 @@ pion.databases.getHeight = function() {
 	return pion.databases.height;
 }
 
+pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'});
+
+// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+pion.databases.config_store.fetchItemByIdentity = function(keywordArgs) {
+	pion.databases.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
+}
+pion.databases.config_store.getIdentity = function(item) {
+	return pion.databases.config_store.getValue(item, '@id');
+}
+
 pion.databases._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('database_config_accordion');
 	var num_databases = config_accordion.getChildren().length;
@@ -40,7 +50,6 @@ pion.databases._adjustAccordionSize = function() {
 pion.databases.init = function() {
 	var selected_pane = null;
 
-	pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'});
 	pion.databases.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/databases.json'});
 
 	function _paneSelected(pane) {

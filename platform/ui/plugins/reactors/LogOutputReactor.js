@@ -1,4 +1,5 @@
 dojo.provide("plugins.reactors.LogOutputReactor");
+dojo.require("pion.codecs");
 dojo.require("plugins.reactors.Reactor");
 
 dojo.declare("plugins.reactors.LogOutputReactor",

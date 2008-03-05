@@ -449,7 +449,6 @@ This is a duplicate of #reactor_config_content for now.
 	background: url(../images/control-stop.png) repeat-x;
 	margin-left: 20px;
 	border: 0px;
-		
 }
 
 .tundra .moveable .ops_per_sec {
@@ -474,7 +473,7 @@ This is a duplicate of #reactor_config_content for now.
 	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
 }
 
-.SQLiteOutputReactor {
+.DatabaseOutputReactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
 }
