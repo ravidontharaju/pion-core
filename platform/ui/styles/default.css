@@ -782,11 +782,19 @@ This is a duplicate of #reactor_config_content for now.
 	zoom: 1;	/* MOW: what the heck is this doing in here? */
 }
 
+/*Accordion Title Styles */
+
+
+.tundra .dijitAccordionPane .dijitAccordionTitle {
+	text-decoration: underline; 
+}
+
 .tundra .dijitAccordionPane-selected .dijitAccordionTitle {
 	text-decoration: none;
 	background-image: url("../images/accordion-title-bg.png");
 	color: #ffffff;
 }
+
 
 .tundra .collectionHeader .dijitAccordionTitle {
 	background-image: none;
