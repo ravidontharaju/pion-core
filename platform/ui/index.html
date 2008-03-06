@@ -65,44 +65,10 @@
 	<script type="text/javascript" src="scripts/system.js"></script>
 	<script type="text/javascript" src="plugins/reactors/Reactor.js"></script>
 	<script type="text/javascript" src="plugins/reactors/FilterReactor.js"></script>
+	<script type="text/javascript" src="plugins/reactors/DatabaseOutputReactor.js"></script>
+	<script type="text/javascript" src="plugins/codecs/Codec.js"></script>
 	<script type="text/javascript" src="plugins/databases/Database.js"></script>
 	<script type="text/javascript">
-		var codec_grid_layout = [{
-			rows: [[
-				{ name: 'Field Name', styles: '', width: 'auto', 
-					editor: dojox.grid.editors.Input },
-				{ name: 'Term', styles: '', 
-					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
-				{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input },
-				{ name: 'End Char', width: 3, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input },
-				{ name: 'order', 
-					editor: dojox.grid.editors.Dijit,
-					editorClass: "dijit.form.NumberSpinner", width: 5 },
-				{ name: 'Delete', styles: 'align: center;', width: 3, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
-			]]
-		}];
-
-		// This is very redundant, but dojo.clone can't seem to handle cloning codec_grid_layout.
-		var codec_grid_layout_no_order = [{
-			rows: [[
-				{ name: 'Field Name', styles: '', width: 'auto', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Term', styles: '', 
-					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
-				{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'End Char', width: 3, styles: 'text-align: center;', 
-					editor: dojox.grid.editors.Input},
-				{ name: 'Delete', styles: 'align: center;', width: 3, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-			]]
-		}];
-		
 		var reactor_inputs_grid_layout = [{
 			rows: [[
 				{ name: 'From', styles: '', width: 'auto' },
@@ -306,55 +272,6 @@
 				</div>
 				<div id="codec_config_content" class="config_content">
 					<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
-						<div dojoType="dijit.layout.AccordionPane" class="codec_pane" title="Codec 1">
-							<form id="codec_form" dojoType="dijit.form.Form"><br />
-								<table cellpadding="4" cellspacing="0" border="0" width="100%">
-									<tr>
-										<td><label>Name</label></td>
-										<td><input dojoType="dijit.form.TextBox" name="codec_name" style="width: 100%;"/></td>
-										<td rowspan="4" valign="top" width="20">&nbsp;</td>
-										<td rowspan="1"><label>Comments</label></td>
-										<td rowspan="4" valign="top"><textarea dojoType="dijit.form.Textarea" name="comment" onchange="setUnsavedChangesTrue()"></textarea></td>
-									</tr>
-									<tr>
-										<td><label>ID</label></td>
-										<td><input dojoType="dijit.form.TextBox" name="ID" disabled="true" style="width: 100%;"/></td>
-										<td rowspan="3">&nbsp;</td>
-									</tr>
-									<tr>
-										<td><label>Plug-In&nbsp;Type</label></td>
-										<td><input dojoType="dijit.form.FilteringSelect" onChange="handlePluginTypeChange" name="plugin_type" 
-												store="codecTypeStore" searchAttr="label" autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td>
-									</tr>
-									<tr>
-										<td><label>Event&nbsp;Type</label></td>
-										<td><input dojoType="dijit.form.FilteringSelect" onChange="setUnsavedChangesTrue" name="event_type" 
-												store="term_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td>
-									</tr>
-								</table>
-								<br />
-								<table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #999999;" width="99%">
-									<tr>
-										<td class="matrixMainHeader">
-										Map Field Names to Terms
-										</td>
-									</tr><tr>
-										<td style="background-color: #f1f1f1;">
-											<div class="codec_grid">
-												<div id="codec_grid" jsId="codec_grid" dojoType="dojox.Grid" model="model"
-													 structure="codec_grid_layout" singleClickEdit="true"></div>
-											</div>
-											<button dojoType=dijit.form.Button class="add_new_row" onClick="addNewRowForCodec">ADD NEW ROW</button>
-										</td>
-									</tr>
-								</table>
-								<div class="save_cancel_delete">
-									<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
-									<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
-									<button dojoType=dijit.form.Button class="delete">Delete Codec</button>
-								</div>
-							</form>
-						</div>
 					</div>
 					<div>
 						<button dojoType=dijit.form.Button class="add_new" onClick="addNewCodec">ADD A NEW CODEC</button>

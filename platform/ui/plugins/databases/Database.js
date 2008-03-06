@@ -1,4 +1,5 @@
 dojo.provide("plugins.databases.Database");
+dojo.require("pion.databases");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 
