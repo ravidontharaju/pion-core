@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
   <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
-    <Plugin>FilterReactor</Plugin>
     <Name>Event Router</Name>
     <Comment>Does nothing but routes events</Comment>
+    <Plugin>FilterReactor</Plugin>
     <Workspace>Web Log Processing</Workspace>
     <X>200</X>
     <Y>200</Y>
@@ -99,21 +99,5 @@
     <Type>reactor</Type>
     <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
     <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
-  </Connection>
-  <Reactor id="730347ae-eb9c-11dc-a14e-001cc02bd66b">
-    <Plugin>LogInputReactor</Plugin>
-    <Workspace>Web Log Processing</Workspace>
-    <X>20</X>
-    <Y>290</Y>
-    <Name>Web Logs</Name>
-    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
-    <Directory>/var/spool/pion</Directory>
-    <Filename>dlf.log</Filename>
-    <Comment/>
-  </Reactor>
-  <Connection id="c769b256-eb9c-11dc-9ec5-001cc02bd66b">
-    <Type>reactor</Type>
-    <From>730347ae-eb9c-11dc-a14e-001cc02bd66b</From>
-    <To>a8928460-eb0c-11dc-9b68-0019e3f89cd2</To>
   </Connection>
 </PionConfig>
