@@ -16,7 +16,7 @@
 						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment" dojoAttachEvent="onChange:markAsChanged"></textarea></td
+						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
 					></tr
 					><tr
 						><td><label>ID</label></td
@@ -29,7 +29,7 @@
 					></tr
 					><tr
 						><td><label>Event&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" 
+						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
 								store="term_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
 					></tr
 				></table

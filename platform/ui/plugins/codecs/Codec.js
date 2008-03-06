@@ -46,8 +46,11 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.order_col_index = 4;
 			this.delete_col_index = 5;
 			var _this = this;
-			dojo.connect(this.codec_grid, 'onCellClick', this.codec_grid, _this._handleCellClick);
+			dojo.connect(this.codec_grid, 'onCellClick', this, _this._handleCellClick);
 			dojo.connect(this.codec_grid, 'onApplyCellEdit', this, _this._handleCellEdit);
+
+			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
+			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });			
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.codecs.config_store;
@@ -123,22 +126,17 @@ dojo.declare("plugins.codecs.CodecPane",
 			var node = this.domNode;
 			setTimeout(function() { dojo.removeClass(node, 'unsaved_changes'); }, 500);
 		},
-		setUnsavedChangesTrue: function() {
-			dojo.addClass(this.domNode, 'unsaved_changes');
-		},
-		setUnsavedChangesFalse: function() {
-			console.debug('removeClass');
-			dojo.removeClass(this.domNode, 'unsaved_changes');
-		},
 		_handleCellClick: function(e) {
 			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
 			if (e.cellIndex == this.delete_col_index) {
+				dojo.addClass(this.domNode, 'unsaved_changes');
 				console.debug('Removing row ', e.rowIndex); 
-				this.removeSelectedRows();
+				this.codec_grid.removeSelectedRows();
 			}
 		},
 		_handleCellEdit: function(inValue, inRowIndex, inFieldIndex) {
 			console.debug('inValue = ', inValue, ', inRowIndex = ', inRowIndex, ', inFieldIndex = ', inFieldIndex);
+			dojo.addClass(this.domNode, 'unsaved_changes');
 			if (inFieldIndex == this.order_col_index) {
 				var old_order = this.order_map[inRowIndex];
 				var order_map = this.order_map;
@@ -173,6 +171,7 @@ dojo.declare("plugins.codecs.CodecPane",
 		},
 		_handleAddNewField: function() {
 			console.debug('_handleAddNewField');
+			this.markAsChanged();
 			this.codec_grid.addRow([]);
 		},
 		save: function () {
