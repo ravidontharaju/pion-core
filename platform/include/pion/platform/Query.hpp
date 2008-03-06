@@ -65,16 +65,18 @@ public:
 	 * 
 	 * @param param the query parameter number to which the value will be bound (starting with 0)
 	 * @param value the value to bind to the query parameter
+	 * @param copy_value if true, the string will be copied into a temporary buffer
 	 */
-	virtual void bindString(unsigned int param, const std::string& value) = 0;
+	virtual void bindString(unsigned int param, const std::string& value, bool copy_value = true) = 0;
 	
 	/**
 	 * binds a string (const char *) value to a query parameter
 	 * 
 	 * @param param the query parameter number to which the value will be bound (starting with 0)
 	 * @param value the value to bind to the query parameter
+	 * @param copy_value if true, the string will be copied into a temporary buffer
 	 */
-	virtual void bindString(unsigned int param, const char *value) = 0;
+	virtual void bindString(unsigned int param, const char *value, bool copy_value = true) = 0;
 	
 	/**
 	 * binds an integer value to a query parameter
@@ -146,8 +148,9 @@ public:
 	 *
 	 * @param field_map mapping of Vocabulary Terms to Database fields
 	 * @param e the Event containing data to bind to the query
+	 * @param copy_strings if true, the strings will be copied into temporary buffers
 	 */
-	inline void bindEvent(const FieldMap& field_map, const Event& e);
+	inline void bindEvent(const FieldMap& field_map, const Event& e, bool copy_strings = true);
 	
 	/**
 	 * runs the compiled query
@@ -184,7 +187,7 @@ private:
 
 // inline member functions for Query
 	
-inline void Query::bindEvent(const FieldMap& field_map, const Event& e)
+inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool copy_strings)
 {
 	unsigned int param = 0;
 	for (Query::FieldMap::const_iterator field_it = field_map.begin();
@@ -228,7 +231,7 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e)
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-					bindString(param, boost::any_cast<const std::string&>(*any_ptr));
+					bindString(param, boost::any_cast<const std::string&>(*any_ptr), copy_strings);
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:

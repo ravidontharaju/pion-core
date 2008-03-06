@@ -99,9 +99,17 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	// create the database table if it does not yet exist
 	m_database_ptr->createTable(m_field_map, m_table_name);
 	
-	// prepare the query to insert new events into the table
+	// prepare the query used to insert new events into the table
 	m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
 	PION_ASSERT(m_insert_query_ptr);
+
+	// prepare the query used to begin new transactions
+	m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
+	PION_ASSERT(m_begin_transaction_ptr);
+
+	// prepare the query used to commit transactions
+	m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
+	PION_ASSERT(m_commit_transaction_ptr);
 }
 	
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
@@ -117,23 +125,31 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	
 void DatabaseOutputReactor::operator()(const EventPtr& e)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	incrementEventsIn();
+	if (isRunning()) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		incrementEventsIn();
 
-	PION_ASSERT(m_database_ptr);
-	PION_ASSERT(m_database_ptr->is_open());
+		PION_ASSERT(m_database_ptr);
+		PION_ASSERT(m_database_ptr->is_open());
 	
-	// bind the event to the insert query
-	m_insert_query_ptr->bindEvent(m_field_map, *e);
-	
-	// execute the query
-	m_insert_query_ptr->run();
-	
-	// reset the query
-	m_insert_query_ptr->reset();
+		// bind the event to the insert query
+		m_insert_query_ptr->bindEvent(m_field_map, *e, false);
 
-	// deliver the event to other Reactors (if any are connected)
-	deliverEvent(e);
+		// begin a new transaction
+		m_begin_transaction_ptr->run();
+		m_begin_transaction_ptr->reset();
+	
+		// execute the query to insert the record
+		m_insert_query_ptr->run();
+		m_insert_query_ptr->reset();
+
+		// end & commit the transaction
+		m_commit_transaction_ptr->run();
+		m_commit_transaction_ptr->reset();
+
+		// deliver the event to other Reactors (if any are connected)
+		deliverEvent(e);
+	}
 }
 
 	

@@ -137,6 +137,20 @@ public:
 	 */
 	virtual QueryPtr prepareInsertQuery(const Query::FieldMap& field_map,
 										const std::string& table_name) = 0;
+
+	/**
+	 * returns the query that is used to begin new transactions
+	 *
+	 * @return QueryPtr smart pointer to the "begin transaction" query
+	 */
+	virtual QueryPtr getBeginTransactionQuery(void) = 0;
+	
+	/**
+	 * returns the query that is used to end and commit transactions
+	 *
+	 * @return QueryPtr smart pointer to the "commit transaction" query
+	 */
+	virtual QueryPtr getCommitTransactionQuery(void) = 0;
 	
 	/**
 	 * sets configuration parameters for this Database
@@ -164,6 +178,13 @@ protected:
 	static const std::string				INSERT_QUERY_ID;	
 	
 	
+	/// unique identifier used to represent the "begin transaction" query
+	static const std::string				BEGIN_QUERY_ID;	
+
+	/// unique identifier used to represent the "commit transaction" query
+	static const std::string				COMMIT_QUERY_ID;	
+
+
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap								m_query_map;
 };	

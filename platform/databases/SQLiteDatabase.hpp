@@ -118,6 +118,20 @@ public:
 	 */
 	virtual pion::platform::QueryPtr prepareInsertQuery(const pion::platform::Query::FieldMap& field_map,
 														const std::string& table_name);
+
+	/**
+	 * returns the query that is used to begin new transactions
+	 *
+	 * @return QueryPtr smart pointer to the "begin transaction" query
+	 */
+	virtual pion::platform::QueryPtr getBeginTransactionQuery(void);
+	
+	/**
+	 * returns the query that is used to end and commit transactions
+	 *
+	 * @return QueryPtr smart pointer to the "commit transaction" query
+	 */
+	virtual pion::platform::QueryPtr getCommitTransactionQuery(void);
 	
 	/**
 	 * sets configuration parameters for this Database
@@ -198,10 +212,11 @@ protected:
 		 * 
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
+		 * @param copy_value if true, the string will be copied into a temporary buffer
 		 */
-		virtual void bindString(unsigned int param, const std::string& value) {
+		virtual void bindString(unsigned int param, const std::string& value, bool copy_value = true) {
 			if (sqlite3_bind_text(m_sqlite_stmt, param+1, value.c_str(),
-								  value.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+								  value.size(), (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 		
@@ -210,10 +225,11 @@ protected:
 		 * 
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
+		 * @param copy_value if true, the string will be copied into a temporary buffer
 		 */
-		virtual void bindString(unsigned int param, const char *value) {
+		virtual void bindString(unsigned int param, const char *value, bool copy_value = true) {
 			if (sqlite3_bind_text(m_sqlite_stmt, param+1, value,
-								  -1, SQLITE_TRANSIENT) != SQLITE_OK)
+								  -1, (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 		

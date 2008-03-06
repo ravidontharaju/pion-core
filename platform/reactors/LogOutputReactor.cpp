@@ -98,18 +98,20 @@ void LogOutputReactor::updateCodecs(void)
 	
 void LogOutputReactor::operator()(const EventPtr& e)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	incrementEventsIn();
+	if (isRunning()) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		incrementEventsIn();
 	
-	// write the Event to the log file
-	PION_ASSERT(m_codec_ptr);
-	PION_ASSERT(m_log_stream.is_open());
-	m_codec_ptr->write(m_log_stream, *e);
-	if (! m_log_stream)
-		throw WriteToLogException(m_log_filename);
+		// write the Event to the log file
+		PION_ASSERT(m_codec_ptr);
+		PION_ASSERT(m_log_stream.is_open());
+		m_codec_ptr->write(m_log_stream, *e);
+		if (! m_log_stream)
+			throw WriteToLogException(m_log_filename);
 	
-	// deliver the Event to other Reactors
-	deliverEvent(e);
+		// deliver the Event to other Reactors
+		deliverEvent(e);
+	}
 }
 	
 	

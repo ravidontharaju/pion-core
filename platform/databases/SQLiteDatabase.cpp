@@ -138,7 +138,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 		if (++field_it != field_map.end())
 			create_table_sql += ", ";
 	}	
-	create_table_sql += " )";
+	create_table_sql += " );";
 	
 	// run the SQL query to create the table
 	runQuery(create_table_sql);
@@ -170,12 +170,30 @@ QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
 		if (++field_it != field_map.end())
 			insert_sql += ", ";
 	}	
-	insert_sql += " )";
+	insert_sql += " );";
 	
 	// compile the SQL query into a prepared statement
 	return addQuery(Database::INSERT_QUERY_ID, insert_sql);
 }
-	
+
+QueryPtr SQLiteDatabase::getBeginTransactionQuery(void)
+{
+	PION_ASSERT(is_open());
+	QueryMap::const_iterator i = m_query_map.find(BEGIN_QUERY_ID);
+	if (i == m_query_map.end())
+		return addQuery(BEGIN_QUERY_ID, "BEGIN DEFERRED TRANSACTION;");
+	return i->second;
+}	
+
+QueryPtr SQLiteDatabase::getCommitTransactionQuery(void)
+{
+	PION_ASSERT(is_open());
+	QueryMap::const_iterator i = m_query_map.find(COMMIT_QUERY_ID);
+	if (i == m_query_map.end())
+		return addQuery(COMMIT_QUERY_ID, "COMMIT TRANSACTION;");
+	return i->second;
+}	
+
 	
 // SQLiteDatabase::SQLiteQuery member functions
 	

@@ -139,6 +139,12 @@ private:
 	
 	/// pointer to an prepared statement used to insert events
 	pion::platform::QueryPtr				m_insert_query_ptr;
+
+	/// pointer to an prepared statement used to begin transactions
+	pion::platform::QueryPtr				m_begin_transaction_ptr;
+
+	/// pointer to an prepared statement used to end & commit transactions
+	pion::platform::QueryPtr				m_commit_transaction_ptr;
 };
 
 

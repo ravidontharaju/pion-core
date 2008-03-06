@@ -106,9 +106,11 @@ void LogInputReactor::updateCodecs(void)
 
 void LogInputReactor::operator()(const EventPtr& e)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	incrementEventsIn();
-	deliverEvent(e);
+	if (isRunning()) {
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		incrementEventsIn();
+		deliverEvent(e);
+	}
 }
 	
 void LogInputReactor::start(void)
