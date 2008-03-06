@@ -73,6 +73,10 @@ f) If you drag a reactor over top an existing reactor within the workspace,
 g) The running states of Reactors (started/stopped) are not saved in the
    configuration files, and therefore are lost if the server is restarted.
 
+h) You must hit <enter> after making any changes within the user interface
+   configuration grids.  If you hit the "save" button before hitting <enter>,
+   your change will not be saved.
+
 Please see our ticket-tracking system for more information on planned
 functionality, known problems, or to report bugs:
 http://www.pion.org/ticket-tracking

@@ -113,6 +113,8 @@ void setup_plugins_directory(void)
 		// same for Unix and Windows (including Cygwin)
 		pion::PionPlugin::addPluginDirectory("../codecs/.libs");
 		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
+		pion::PionPlugin::addPluginDirectory("../databases/.libs");
+		pion::PionPlugin::addPluginDirectory("../services/.libs");
 #endif
 	}
 }

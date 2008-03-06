@@ -54,6 +54,7 @@ public:
 		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68"),
 		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int")
 	{
+		// get everything setup first
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
 		cleanup_platform_config_files();

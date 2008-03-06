@@ -108,44 +108,37 @@ public:
 	 * @param e pointer to the Event to process
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
-	
-	
-protected:
-	
-	/// creates a database table for output, if it does not already exist
-	void createTable(void);
-	
+		
 	
 private:
 	
-	/// data type for a map of Term references to database field names
-	typedef std::map<pion::platform::Vocabulary::TermRef, std::string>	FieldMap;
-	
-	
 	/// name of the database element for Pion XML config files
-	static const std::string			DATABASE_ELEMENT_NAME;
+	static const std::string				DATABASE_ELEMENT_NAME;
 
 	/// name of the table element for Pion XML config files
-	static const std::string			TABLE_ELEMENT_NAME;
+	static const std::string				TABLE_ELEMENT_NAME;
 
 	/// name of the field element for Pion XML config files
-	static const std::string			FIELD_ELEMENT_NAME;
+	static const std::string				FIELD_ELEMENT_NAME;
 	
 	/// name of the Term ID attribute for Pion XML config files
-	static const std::string			TERM_ATTRIBUTE_NAME;	
-	
+	static const std::string				TERM_ATTRIBUTE_NAME;	
+
 	
 	/// unique identifier for the database that is used to store events
-	std::string							m_database_id;
-	
+	std::string								m_database_id;
+
 	/// name of the table into which events will be stored
-	std::string							m_table_name;
-	
-	/// pointer to the database that is used to store events
-	pion::platform::DatabasePtr			m_database_ptr;
+	std::string								m_table_name;
 	
 	/// maps Term references to database field names
-	FieldMap							m_field_map;
+	pion::platform::Query::FieldMap			m_field_map;
+
+	/// pointer to the database that is used to store events
+	pion::platform::DatabasePtr				m_database_ptr;
+	
+	/// pointer to an prepared statement used to insert events
+	pion::platform::QueryPtr				m_insert_query_ptr;
 };
 
 

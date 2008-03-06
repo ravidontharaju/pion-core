@@ -40,7 +40,6 @@ const std::string			SQLiteDatabase::FILENAME_ELEMENT_NAME = "Filename";
 void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Database::setConfig(v, config_ptr);
-	close();
 	
 	// get the Filename of the database
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_database_name, config_ptr))
@@ -48,9 +47,6 @@ void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	
 	// resolve paths relative to the DatabaseManager's config file location
 	m_database_name = getDatabaseManager().resolveRelativePath(m_database_name);
-	
-	// open up the database
-	open(false);
 }
 
 DatabasePtr SQLiteDatabase::clone(void) const
@@ -58,7 +54,6 @@ DatabasePtr SQLiteDatabase::clone(void) const
 	SQLiteDatabase *db_ptr(new SQLiteDatabase());
 	db_ptr->copyDatabase(*this);
 	db_ptr->m_database_name = m_database_name;
-	db_ptr->open(false);
 	return DatabasePtr(db_ptr);
 }
 	
@@ -120,7 +115,68 @@ QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 	return query_ptr;
 }
 
+void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
+								 const std::string& table_name)
+{
+	PION_ASSERT(is_open());
 
+	// build a SQL query to create the output table if it doesn't yet exist
+	std::string create_table_sql = "CREATE TABLE IF NOT EXISTS ";
+	create_table_sql += table_name;
+	create_table_sql += " ( ";
+	
+	// add an auto-incrementing primary key (transactional table)
+	create_table_sql += table_name;
+	create_table_sql += "_key INTEGER PRIMARY KEY AUTOINCREMENT, ";
+	
+	// add database fields for each mapping configured
+	Query::FieldMap::const_iterator field_it = field_map.begin();
+	while (field_it != field_map.end()) {
+		create_table_sql += field_it->second.first;
+		create_table_sql += ' ';
+		create_table_sql += SQLiteDatabase::getSQLiteAffinity(field_it->second.second.term_type);
+		if (++field_it != field_map.end())
+			create_table_sql += ", ";
+	}	
+	create_table_sql += " )";
+	
+	// run the SQL query to create the table
+	runQuery(create_table_sql);
+}
+
+QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
+											const std::string& table_name)
+{
+	PION_ASSERT(is_open());
+
+	// build a SQL query that can be used to insert a new record
+	std::string insert_sql = "INSERT INTO ";
+	insert_sql += table_name;
+	insert_sql += " ( ";
+	
+	// add database fields for each mapping configured
+	Query::FieldMap::const_iterator field_it = field_map.begin();
+	while (field_it != field_map.end()) {
+		insert_sql += field_it->second.first;
+		if (++field_it != field_map.end())
+			insert_sql += ", ";
+	}	
+	insert_sql += " ) VALUES ( ";
+	
+	// use ? character for values, since this will be a prepared statement
+	field_it = field_map.begin();
+	while (field_it != field_map.end()) {
+		insert_sql += '?';
+		if (++field_it != field_map.end())
+			insert_sql += ", ";
+	}	
+	insert_sql += " )";
+	
+	// compile the SQL query into a prepared statement
+	return addQuery(Database::INSERT_QUERY_ID, insert_sql);
+}
+	
+	
 // SQLiteDatabase::SQLiteQuery member functions
 	
 	

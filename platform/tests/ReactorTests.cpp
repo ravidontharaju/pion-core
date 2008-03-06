@@ -49,10 +49,13 @@ extern void cleanup_vocab_config_files(void);
 /// static strings used by these unit tests
 static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
 static const std::string NEW_LOG_FILE(get_log_file_dir() + "new.log");
+static const std::string NEW_DATABASE_FILE(get_log_file_dir() + "clickstream.db");
 static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
 static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
 static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
+static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
 
 
 /// cleans up reactor config files in the working directory
@@ -67,6 +70,10 @@ void cleanup_reactor_config_files(void)
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
 	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
+
+	if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
+		boost::filesystem::remove(DATABASES_CONFIG_FILE);
+	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
 }
 
 
@@ -79,15 +86,21 @@ public:
 		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
 		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
-		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68")
+		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
+		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
+		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
 	{
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
 		cleanup_reactor_config_files();
+		
 		m_vocab_mgr.setConfigFile(get_vocabularies_file());
 		m_vocab_mgr.openConfigFile();
 		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
 		m_codec_factory.openConfigFile();
+		m_database_mgr.setConfigFile(DATABASES_CONFIG_FILE);
+		m_database_mgr.openConfigFile();
+		
 		m_combined_codec = m_codec_factory.getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);
 	}
@@ -102,6 +115,8 @@ public:
 	const std::string	m_ie_filter_id;
 	const std::string	m_log_reader_id;
 	const std::string	m_log_writer_id;
+	const std::string	m_clickstream_id;
+	const std::string	m_embedded_db_id;
 	CodecPtr			m_combined_codec;
 };
 
@@ -180,20 +195,22 @@ BOOST_AUTO_TEST_CASE(checkAddThenRemoveReactorConnection) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
-/// fixture for testing the filter and log file reactors
-class ReactionEngineLogTests_F
+/// fixture for testing reactors (with the ReactionEngine already running)
+class ReactionEngineAlreadyRunningTests_F
 	: public ReactionEngineTestInterface_F
 {
 public:
-	ReactionEngineLogTests_F() {
+	ReactionEngineAlreadyRunningTests_F() {
+		boost::filesystem::remove(NEW_LOG_FILE);
+		boost::filesystem::remove(NEW_DATABASE_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.openConfigFile();
 	}
-	virtual ~ReactionEngineLogTests_F() {}
+	virtual ~ReactionEngineAlreadyRunningTests_F() {}
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(ReactionEngineLogTests_S, ReactionEngineLogTests_F)
+BOOST_FIXTURE_TEST_SUITE(ReactionEngineAlreadyRunningTests_S, ReactionEngineAlreadyRunningTests_F)
 
 BOOST_AUTO_TEST_CASE(checkSetReactorWorkspace) {
 	// get the current configuration for the Reactor
@@ -237,9 +254,6 @@ BOOST_AUTO_TEST_CASE(checkSetReactorCoordinates) {
 }
 
 BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
-	// start the reaction engine
-	m_reaction_engine.start();
-	
 	// open the CLF log file
 	std::ifstream in;
 	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
@@ -311,6 +325,51 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 		}
 	}
 	BOOST_CHECK(found_it);
+}
+
+BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
+	// open the CLF log file
+	std::ifstream in;
+	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
+	BOOST_REQUIRE(in.is_open());
+	
+	// push events from the log file into the data store reactor
+	boost::uint64_t events_read = 0;
+	EventPtr event_ptr;
+	while ((event_ptr = m_combined_codec->read(in))) {
+		++events_read;
+		m_reaction_engine.send(m_clickstream_id, event_ptr);
+	}
+	
+	// make sure that four events were read from the log
+	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(4));
+	
+	// make sure that the reactor received all of the events read
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsIn(m_clickstream_id) == events_read) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_clickstream_id), events_read);
+	
+	//
+	// check the contents of the new database
+	//
+	
+	// open the database
+	DatabasePtr db_ptr = m_database_mgr.getDatabase(m_embedded_db_id);
+	BOOST_REQUIRE(db_ptr);
+	db_ptr->open();
+	BOOST_REQUIRE(db_ptr->is_open());
+	
+	// prepare a query
+	QueryPtr query_ptr = db_ptr->addQuery("urn:query:select_all", "SELECT * FROM clickstream");
+	BOOST_REQUIRE(query_ptr);
+	
+	// count the number of records returned
+	unsigned int db_records = 0;
+	while (query_ptr->run())
+		++db_records;
+	BOOST_CHECK_EQUAL(db_records, events_read);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

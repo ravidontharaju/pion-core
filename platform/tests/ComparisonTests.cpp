@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(checkThrowIfInvalidType) {
 BOOST_AUTO_TEST_CASE(checkThrowIfInvalidValue) {
 	Comparison c(m_plain_int_term);
 	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_EQUALS), Comparison::InvalidValueForTypeException);
-	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_LESS_THAN, "28"), Comparison::InvalidValueForTypeException);
+	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_LESS_THAN, "error"), Comparison::InvalidValueForTypeException);
 	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_GREATER_THAN, 28.3), Comparison::InvalidValueForTypeException);
 }
 

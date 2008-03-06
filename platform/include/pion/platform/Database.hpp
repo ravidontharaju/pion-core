@@ -20,9 +20,9 @@
 #ifndef __PION_DATABASE_HEADER__
 #define __PION_DATABASE_HEADER__
 
+#include <map>
 #include <string>
 #include <pion/PionConfig.hpp>
-#include <pion/PionHashMap.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
@@ -63,7 +63,7 @@ public:
 			: PionException("Unable to open database: ", db_name) {}
 	};
 	
-
+	
 	/// constructs a new Database object
 	Database(void) {}
 	
@@ -119,6 +119,26 @@ public:
 	virtual QueryPtr addQuery(QueryID query_id, const std::string& sql_query) = 0;
 	
 	/**
+	 * creates a database table for output, if it does not already exist
+	 *
+	 * @param field_map mapping of Vocabulary Terms to Database fields
+	 * @param table_name name of the table to create
+	 */
+	virtual void createTable(const Query::FieldMap& field_map,
+							 const std::string& table_name) = 0;
+	
+	/**
+	 * prepares the query that is used to insert events
+	 *
+	 * @param field_map mapping of Vocabulary Terms to Database fields
+	 * @param table_name name of the table to insert events into
+	 *
+	 * @return QueryPtr smart pointer to the new query for inserting events
+	 */
+	virtual QueryPtr prepareInsertQuery(const Query::FieldMap& field_map,
+										const std::string& table_name) = 0;
+	
+	/**
 	 * sets configuration parameters for this Database
 	 *
 	 * @param v the Vocabulary that this Database will use to describe Terms
@@ -137,16 +157,20 @@ protected:
 	
 	
 	/// data type that maps query identifiers to pointers of compiled queries
-	typedef PION_HASH_MAP<QueryID, QueryPtr, PION_HASH(QueryID) >		QueryMap;
-
+	typedef std::map<QueryID, QueryPtr>		QueryMap;
+	
+	
+	/// unique identifier used to represent the "insert event" query
+	static const std::string				INSERT_QUERY_ID;	
+	
 	
 	/// used to keep track of all the database's pre-compiled queries
-	QueryMap						m_query_map;
+	QueryMap								m_query_map;
 };	
 
 	
 /// data type used for Database smart pointers
-typedef boost::shared_ptr<Database>		DatabasePtr;
+typedef boost::shared_ptr<Database>			DatabasePtr;
 
 	
 //

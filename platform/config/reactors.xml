@@ -5,8 +5,25 @@
     <Comment>Does nothing but routes events</Comment>
     <Plugin>FilterReactor</Plugin>
     <Workspace>Web Log Processing</Workspace>
-    <X>250</X>
+    <X>200</X>
     <Y>200</Y>
+  </Reactor>
+  <Reactor id="a8928460-eb0c-11dc-9b68-0019e3f89cd2">
+    <Name>Clickstream DataStore</Name>
+    <Comment>Stores clickstream events into a SQLite database</Comment>
+    <Plugin>DatabaseOutputReactor</Plugin>
+    <Workspace>Web Log Processing</Workspace>
+    <X>250</X>
+    <Y>300</Y>
+    <Database>e75d88f0-e7df-11dc-a76c-0016cb926e68</Database>
+    <Table>clickstream</Table>
+    <Field term="urn:vocab:clickstream#remotehost">remotehost</Field>
+    <Field term="urn:vocab:clickstream#rfc931">rfc931</Field>
+    <Field term="urn:vocab:clickstream#authuser">authuser</Field>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
   </Reactor>
   <Reactor id="153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
     <Plugin>FilterReactor</Plugin>
@@ -58,6 +75,11 @@
     <Format>date remotehost request</Format>
     <Flush>true</Flush>
   </Reactor>
+  <Connection id="8284dd30-eb1c-11dc-85a5-0019e3f89cd2">
+    <Type>reactor</Type>
+    <From>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</From>
+    <To>a8928460-eb0c-11dc-9b68-0019e3f89cd2</To>
+  </Connection>
   <Connection id="27d4b2c2-eaed-11dc-876b-0019e3f89cd2">
     <Type>reactor</Type>
     <From>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</From>

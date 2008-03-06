@@ -23,7 +23,12 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+	
+// static members of Database
 
+const std::string			Database::INSERT_QUERY_ID = "urn:sql:insert-event";
+
+	
 // Database member functions
 	
 void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)

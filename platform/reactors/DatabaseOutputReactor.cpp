@@ -50,6 +50,8 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		throw EmptyDatabaseException(getId());
 	m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 	PION_ASSERT(m_database_ptr);
+	m_database_ptr->open();
+	PION_ASSERT(m_database_ptr->is_open());
 	
 	// get the name of the table to store events in
 	if (! ConfigManager::getConfigOption(TABLE_ELEMENT_NAME, m_table_name, config_ptr))
@@ -88,14 +90,18 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 			throw UnknownTermException(term_id);
 		
 		// add the field mapping
-		m_field_map[term_ref] = field_name;
+		m_field_map.insert(std::make_pair(term_ref, std::make_pair(field_name, v[term_ref])));
 		
 		// step to the next field mapping
 		field_node = field_node->next;
 	}
 	
 	// create the database table if it does not yet exist
-	createTable();
+	m_database_ptr->createTable(m_field_map, m_table_name);
+	
+	// prepare the query to insert new events into the table
+	m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+	PION_ASSERT(m_insert_query_ptr);
 }
 	
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
@@ -103,6 +109,10 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Reactor base class that might be needed
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::updateVocabulary(v);
+	
+	// update Term mappings (note: references never change for a given id)
+	for (Query::FieldMap::iterator i = m_field_map.begin(); i != m_field_map.end(); ++i)
+		i->second.second = v[i->first];
 }
 	
 void DatabaseOutputReactor::operator()(const EventPtr& e)
@@ -111,34 +121,21 @@ void DatabaseOutputReactor::operator()(const EventPtr& e)
 	incrementEventsIn();
 
 	PION_ASSERT(m_database_ptr);
+	PION_ASSERT(m_database_ptr->is_open());
 	
-	// add a record for the event in the database output table
+	// bind the event to the insert query
+	m_insert_query_ptr->bindEvent(m_field_map, *e);
 	
-	// ...
+	// execute the query
+	m_insert_query_ptr->run();
 	
-	
+	// reset the query
+	m_insert_query_ptr->reset();
+
+	// deliver the event to other Reactors (if any are connected)
 	deliverEvent(e);
 }
-	
-void DatabaseOutputReactor::createTable(void)
-{
-	// build a SQL query to create the output table if it doesn't yet exist
-	std::string create_query = "CREATE TABLE IF NOT EXISTS ";
-	create_query += m_table_name;
-	create_query += " ( ";
-	
-	
-	
-	// ...
-	
-	
-	
-	create_query += " )";
-	
-	// ...
-	
-}
-		
+
 	
 }	// end namespace plugins
 }	// end namespace pion
