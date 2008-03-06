@@ -525,17 +525,12 @@ function handleDropOnReactor(source, nodes, copy, target) {
 	workspace_box.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
 	var xOffset = dojo.byId("reactor_config_content").offsetLeft;
 	var yOffset = dojo.byId("reactor_config_content").offsetTop;
+	yOffset += dojo.byId("reactor_config").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
 	mouseConnection = dojo.connect(workspace_box.node, 'onmousemove', 
 		function(event) {
-			var x2 = event.layerX;
-			var y2 = event.layerY;
-			if (event.target.tagName != 'svg') {
-				//console.debug('event.target = ', event.target);
-				//console.dir(event.target);
-				x2 += event.target.offsetLeft;
-				y2 += event.target.offsetTop;
-			}
+			var x2 = event.clientX - xOffset;
+			var y2 = event.clientY - yOffset;
 			workspace_box.trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])
 		});
 	console.debug("created mouseConnection");
@@ -559,6 +554,10 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 	var source_reactor = dijit.byNode(source_target);
 	console.debug('source_reactor = ', source_reactor);
 	var sink_reactor = dijit.byNode(event.target);
+	if (!sink_reactor) {
+		// This will happen, e.g., when clicking on the name div of the reactor.
+		sink_reactor = dijit.byNode(event.target.parentNode);
+	}
 	console.debug('sink_reactor = ', sink_reactor);
 
 	// Disconnect the click handlers on all moveable's.
