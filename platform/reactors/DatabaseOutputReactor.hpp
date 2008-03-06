@@ -21,9 +21,13 @@
 #define __PION_DATABASEOUTPUTREACTOR_HEADER__
 
 #include <vector>
-#include <boost/thread/mutex.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/condition.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionLogger.hpp>
+#include <pion/platform/Event.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/Database.hpp>
 
@@ -55,6 +59,13 @@ public:
 			: PionException("DatabaseOutputReactor configuration is missing a required Table parameter: ", reactor_id) {}
 	};
 	
+	/// exception thrown if there are no database field mappings in the configuration
+	class NoFieldsException : public PionException {
+	public:
+		NoFieldsException(const std::string& reactor_id)
+			: PionException("DatabaseOutputReactor configuration must contain at least one field mapping: ", reactor_id) {}
+	};
+	
 	/// exception thrown if the DatabaseOutputReactor configuration includes an empty field name
 	class EmptyFieldException : public PionException {
 	public:
@@ -78,10 +89,14 @@ public:
 
 	
 	/// constructs a new DatabaseOutputReactor object
-	DatabaseOutputReactor(void) : pion::platform::Reactor() { start(); }
+	DatabaseOutputReactor(void)
+		: pion::platform::Reactor(),
+		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
+		m_queue_max(DEFAULT_QUEUE_SIZE), m_num_queued(0)
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~DatabaseOutputReactor() {}
+	virtual ~DatabaseOutputReactor() { stop(); }
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -109,8 +124,31 @@ public:
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
 		
+	/// called by the ReactorEngine to start Event processing
+	virtual void start(void);
+	
+	/// called by the ReactorEngine to stop Event processing
+	virtual void stop(void);
+	
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+
 	
 private:
+	
+	/// function used by the writer thread to store events to the database
+	void insertEvents(void);
+	
+	
+	/// data type for a collection of queued Events
+	typedef std::vector<pion::platform::EventPtr>	EventQueue;
+
+	
+	/// default maximum number of events that may be queued for insertion
+	static const boost::uint32_t			DEFAULT_QUEUE_SIZE;
 	
 	/// name of the database element for Pion XML config files
 	static const std::string				DATABASE_ELEMENT_NAME;
@@ -121,10 +159,16 @@ private:
 	/// name of the field element for Pion XML config files
 	static const std::string				FIELD_ELEMENT_NAME;
 	
+	/// name of the queue size element for Pion XML config files
+	static const std::string				QUEUE_SIZE_ELEMENT_NAME;
+	
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string				TERM_ATTRIBUTE_NAME;	
 
 	
+	/// primary logging interface used by this class
+	PionLogger								m_logger;
+
 	/// unique identifier for the database that is used to store events
 	std::string								m_database_id;
 
@@ -145,6 +189,24 @@ private:
 
 	/// pointer to an prepared statement used to end & commit transactions
 	pion::platform::QueryPtr				m_commit_transaction_ptr;
+	
+	/// collection of events queued for storage to the database
+	EventQueue								m_event_queue;
+	
+	/// maximum number of events that may be queued for insertion
+	boost::uint32_t							m_queue_max;
+	
+	/// number of events that are currently queued for storage to the database
+	boost::uint32_t							m_num_queued;
+	
+	/// condition triggered to notify the writer thread to save events to the database
+	boost::condition						m_wakeup_writer;
+	
+	/// condition triggered to notify all threads that the the queue was flushed
+	boost::condition						m_flushed_queue;
+
+	/// thread used to store events to the database
+	boost::scoped_ptr<boost::thread>		m_thread;
 };
 
 

@@ -31,9 +31,11 @@ namespace plugins {		// begin namespace plugins
 
 // static members of DatabaseOutputReactor
 
+const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 100;
 const std::string			DatabaseOutputReactor::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
+const std::string			DatabaseOutputReactor::QUEUE_SIZE_ELEMENT_NAME = "QueueSize";
 const std::string			DatabaseOutputReactor::TERM_ATTRIBUTE_NAME = "term";
 
 	
@@ -45,13 +47,22 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::setConfig(v, config_ptr);
 	
+	// get the maximum number of events that may be queued for insertion
+	std::string queue_size_str;
+	if (ConfigManager::getConfigOption(QUEUE_SIZE_ELEMENT_NAME, queue_size_str, config_ptr)) {
+		m_queue_max = boost::lexical_cast<boost::uint32_t>(queue_size_str);
+		if (m_queue_max < 1) m_queue_max = 1;
+	} else m_queue_max = DEFAULT_QUEUE_SIZE;
+
+	// prepare the event queue
+	while (m_event_queue.size() < m_queue_max)
+		m_event_queue.push_back( EventPtr() );
+
 	// get the database to use
 	if (! ConfigManager::getConfigOption(DATABASE_ELEMENT_NAME, m_database_id, config_ptr))
 		throw EmptyDatabaseException(getId());
 	m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 	PION_ASSERT(m_database_ptr);
-	m_database_ptr->open();
-	PION_ASSERT(m_database_ptr->is_open());
 	
 	// get the name of the table to store events in
 	if (! ConfigManager::getConfigOption(TABLE_ELEMENT_NAME, m_table_name, config_ptr))
@@ -95,21 +106,12 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		// step to the next field mapping
 		field_node = field_node->next;
 	}
+	if (m_field_map.empty())
+		throw NoFieldsException(getId());
 	
-	// create the database table if it does not yet exist
-	m_database_ptr->createTable(m_field_map, m_table_name);
-	
-	// prepare the query used to insert new events into the table
-	m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
-	PION_ASSERT(m_insert_query_ptr);
-
-	// prepare the query used to begin new transactions
-	m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
-	PION_ASSERT(m_begin_transaction_ptr);
-
-	// prepare the query used to commit transactions
-	m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
-	PION_ASSERT(m_commit_transaction_ptr);
+	// start up the reactor
+	reactor_lock.unlock();
+	start();
 }
 	
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
@@ -129,26 +131,122 @@ void DatabaseOutputReactor::operator()(const EventPtr& e)
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
 
-		PION_ASSERT(m_database_ptr);
-		PION_ASSERT(m_database_ptr->is_open());
-	
-		// bind the event to the insert query
-		m_insert_query_ptr->bindEvent(m_field_map, *e, false);
-
-		// begin a new transaction
-		m_begin_transaction_ptr->run();
-		m_begin_transaction_ptr->reset();
-	
-		// execute the query to insert the record
-		m_insert_query_ptr->run();
-		m_insert_query_ptr->reset();
-
-		// end & commit the transaction
-		m_commit_transaction_ptr->run();
-		m_commit_transaction_ptr->reset();
+		// if the event queue is full, we need to wait for the writer..
+		while (m_num_queued >= m_queue_max) {
+			m_wakeup_writer.notify_one();
+			m_flushed_queue.wait(reactor_lock);
+			if (! isRunning())
+				return;
+		}
+			
+		// add the event to the insert queue
+		m_event_queue[m_num_queued] = e;
+		
+		// signal the writer thread if the queue is full
+		if (++m_num_queued == m_queue_max)
+			m_wakeup_writer.notify_one();
 
 		// deliver the event to other Reactors (if any are connected)
 		deliverEvent(e);
+	}
+}
+
+void DatabaseOutputReactor::start(void)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	if (! m_is_running) {
+		m_is_running = true;
+
+		// spawn a new thread that will be used to save events to the database
+		PION_LOG_DEBUG(m_logger, "Starting database output thread: " << getId());
+		m_thread.reset(new boost::thread(boost::bind(&DatabaseOutputReactor::insertEvents, this)));
+		
+		// wait for the writer thread to startup
+		m_flushed_queue.wait(reactor_lock);
+	}
+}
+
+void DatabaseOutputReactor::stop(void)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	if (m_is_running) {
+		// set flag to notify reader thread to shutdown
+		PION_LOG_DEBUG(m_logger, "Stopping database output thread: " << getId());
+		m_is_running = false;
+		m_wakeup_writer.notify_one();
+		reactor_lock.unlock();
+
+		// wait for reader thread to shutdown
+		m_thread->join();
+	}
+}
+
+void DatabaseOutputReactor::insertEvents(void)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	
+	try {
+		// open up the database if it isn't already open
+		PION_ASSERT(m_database_ptr);
+		m_database_ptr->open();
+		PION_ASSERT(m_database_ptr->is_open());
+
+		// create the database table if it does not yet exist
+		m_database_ptr->createTable(m_field_map, m_table_name);
+		
+		// prepare the query used to insert new events into the table
+		m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+		PION_ASSERT(m_insert_query_ptr);
+		
+		// prepare the query used to begin new transactions
+		m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
+		PION_ASSERT(m_begin_transaction_ptr);
+		
+		// prepare the query used to commit transactions
+		m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
+		PION_ASSERT(m_commit_transaction_ptr);
+
+		// notify all threads that we have started up
+		m_flushed_queue.notify_all();
+
+		while (m_is_running) {
+			// wait until it is time to go!
+			m_wakeup_writer.wait(reactor_lock);
+			
+			// check for spurious wake-ups
+			if (m_num_queued != 0) {
+				PION_ASSERT(m_database_ptr);
+				PION_ASSERT(m_database_ptr->is_open());
+				PION_ASSERT(m_insert_query_ptr);
+				PION_ASSERT(m_begin_transaction_ptr);
+				PION_ASSERT(m_commit_transaction_ptr);
+				
+				// begin a new transaction
+				m_begin_transaction_ptr->run();
+				m_begin_transaction_ptr->reset();
+
+				// step through the event queue, inserting each event individually
+				for (unsigned int n = 0; n < m_num_queued; ++n) {
+					// bind the event to the insert query
+					m_insert_query_ptr->bindEvent(m_field_map, *m_event_queue[n], false);
+					// execute the query to insert the record
+					m_insert_query_ptr->run();
+					m_insert_query_ptr->reset();
+				}
+				
+				// end & commit the transaction
+				m_commit_transaction_ptr->run();
+				m_commit_transaction_ptr->reset();
+
+				// done flushing the queue! notify all pending inserters
+				m_num_queued = 0;
+				m_flushed_queue.notify_all();
+			}
+		}
+	} catch (std::exception& e) {
+		PION_LOG_FATAL(m_logger, e.what());
+		m_is_running = false;
+		m_flushed_queue.notify_all();
 	}
 }
 

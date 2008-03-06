@@ -70,10 +70,10 @@ public:
 	
 	
 	/// constructs a new TransformReactor object
-	TransformReactor(void) : Reactor() { start(); }
+	TransformReactor(void) : Reactor() {}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~TransformReactor() {}
+	virtual ~TransformReactor() { stop(); }
 	
 	/**
 	 * sets configuration parameters for this Reactor

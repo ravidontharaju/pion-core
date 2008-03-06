@@ -73,12 +73,10 @@ public:
 	/// constructs a new LogOutputReactor object
 	LogOutputReactor(void)
 		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogOutputReactor"))
-	{
-		start();
-	}
+	{}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~LogOutputReactor();
+	virtual ~LogOutputReactor() { stop(); }
 	
 	/**
 	 * sets configuration parameters for this Reactor
@@ -112,6 +110,12 @@ public:
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
 	
+	/// called by the ReactorEngine to start Event processing
+	virtual void start(void);
+	
+	/// called by the ReactorEngine to stop Event processing
+	virtual void stop(void);
+
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
 	

@@ -69,10 +69,10 @@ public:
 	
 	
 	/// constructs a new FilterReactor object
-	FilterReactor(void) : Reactor() { start(); }
+	FilterReactor(void) : Reactor() {}
 	
 	/// virtual destructor: this class is meant to be extended
-	virtual ~FilterReactor() {}
+	virtual ~FilterReactor() { stop(); }
 	
 	/**
 	 * sets configuration parameters for this Reactor

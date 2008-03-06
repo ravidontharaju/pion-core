@@ -99,6 +99,10 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// step to the next Comparison rule
 		comparison_node = comparison_node->next;
 	}
+
+	// start up the reactor
+	reactor_lock.unlock();
+	start();
 }
 	
 void FilterReactor::updateVocabulary(const Vocabulary& v)

@@ -149,6 +149,11 @@ QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
 {
 	PION_ASSERT(is_open());
 
+	// exit early if it already exists
+	QueryMap::const_iterator query_it = m_query_map.find(INSERT_QUERY_ID);
+	if (query_it != m_query_map.end())
+		return query_it->second;
+	
 	// build a SQL query that can be used to insert a new record
 	std::string insert_sql = "INSERT INTO ";
 	insert_sql += table_name;

@@ -99,6 +99,10 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		// step to the next Comparison rule
 		comparison_node = comparison_node->next;
 	}
+	
+	// start up the reactor
+	reactor_lock.unlock();
+	start();
 }
 	
 void TransformReactor::updateVocabulary(const Vocabulary& v)

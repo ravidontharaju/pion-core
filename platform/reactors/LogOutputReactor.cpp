@@ -38,21 +38,6 @@ const std::string			LogOutputReactor::FILENAME_ELEMENT_NAME = "Filename";
 	
 // LogOutputReactor member functions
 
-LogOutputReactor::~LogOutputReactor()
-{
-	// close the log file if it is open
-	if (m_log_stream.is_open()) {
-		m_log_stream.close();
-		// remove the log file if no events were written to it
-		if (getEventsOut() == 0) {
-			boost::filesystem::remove(m_log_filename);
-			PION_LOG_DEBUG(m_logger, "Closing empty output log (removing file): " << m_log_filename);
-		} else {
-			PION_LOG_DEBUG(m_logger, "Closing output log file: " << m_log_filename);
-		}
-	}
-}
-	
 void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
@@ -71,13 +56,10 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	
 	// resolve paths relative to the ReactionEngine's config file location
 	m_log_filename = getReactionEngine().resolveRelativePath(m_log_filename);
-	
-	// open up the file for writing
-	m_log_stream.open(m_log_filename.c_str(), std::ios::out | std::ios::app | std::ios::binary);
-	if (! m_log_stream.is_open())
-		throw OpenLogException(m_log_filename);
-
-	PION_LOG_DEBUG(m_logger, "Opened output log file: " << m_log_filename);
+		
+	// start up the reactor
+	reactor_lock.unlock();
+	start();
 }
 	
 void LogOutputReactor::updateVocabulary(const Vocabulary& v)
@@ -114,6 +96,42 @@ void LogOutputReactor::operator()(const EventPtr& e)
 	}
 }
 	
+void LogOutputReactor::start(void)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	if (! m_is_running) {
+		// open up the file for writing
+		m_log_stream.open(m_log_filename.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+		if (! m_log_stream.is_open())
+			throw OpenLogException(m_log_filename);
+		PION_LOG_DEBUG(m_logger, "Opened output log file: " << m_log_filename);
+
+		m_is_running = true;
+	}
+}
+
+void LogOutputReactor::stop(void)
+{
+	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	if (m_is_running) {
+		// close the log file if it is open
+		if (m_log_stream.is_open()) {
+			m_log_stream.close();
+			// remove the log file if no events were written to it
+			if (getEventsOut() == 0) {
+				boost::filesystem::remove(m_log_filename);
+				PION_LOG_DEBUG(m_logger, "Closing empty output log (removing file): " << m_log_filename);
+			} else {
+				PION_LOG_DEBUG(m_logger, "Closing output log file: " << m_log_filename);
+			}
+			// clear any pending error flags to be safe
+			m_log_stream.clear();
+		}
+		
+		m_is_running = false;
+	}
+}
+
 	
 }	// end namespace plugins
 }	// end namespace pion
