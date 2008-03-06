@@ -424,7 +424,7 @@ pion.vocabularies.init = function() {
 
 	dojo.connect(dojo.byId('add_new_vocab_button'), 'click', _addNewVocabulary);
 	dojo.connect(dojo.byId('add_new_term_button'), 'click', _addNewTermToVocabulary);
-	dojo.connect(vocab_comment_widget, 'onChange', _setUnsavedChangesTrue);
+	dojo.connect(dojo.byId('vocab_comment_widget'), 'change', _setUnsavedChangesTrue);
 
 	dojo.query("input", selected_pane.domNode).forEach(function(n) {
 		console.debug('input: n = ', n);
