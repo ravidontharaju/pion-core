@@ -258,34 +258,40 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(ConfigServiceTestInterface_S, ConfigServiceTestInterface_F)
 
-BOOST_AUTO_TEST_CASE(checkConfigServiceLogReaderReactorStartsOutRunning) {
-	// check to make sure the Reactor starts out 
-	BOOST_CHECK(checkIfReactorIsRunning(m_log_reader_id));
+BOOST_AUTO_TEST_CASE(checkConfigServiceReactorStartingStates) {
+	// check to make sure the "log reader" collection reactor starts out stopped
+	BOOST_CHECK(! checkIfReactorIsRunning(m_log_reader_id));
+
+	// check to make sure the "do nothing" processing reactor starts out running
+	BOOST_CHECK(checkIfReactorIsRunning(m_do_nothing_id));
+
+	// check to make sure the "log writer" storage reactor starts out running
+	BOOST_CHECK(checkIfReactorIsRunning(m_log_writer_id));
 }
-	
-BOOST_AUTO_TEST_CASE(checkConfigServiceStopThenStartLogReaderReactor) {
-	// make a request to stop the "log reader" reactor
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceStartThenStopLogReaderReactor) {
+	// make a request to start the "log reader" reactor
 	HTTPRequest request;
 	request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
-	request.setResource("/config/reactors/" + m_log_reader_id + "/stop");
+	request.setResource("/config/reactors/" + m_log_reader_id + "/start");
 	HTTPResponsePtr response_ptr(sendRequest(request));
+	
+	// check the response status code
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
+	
+	// check to make sure the Reactor is running
+	BOOST_CHECK(checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
+	
+	// make another request to start it back up again
+	request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
+	request.setResource("/config/reactors/" + m_log_reader_id + "/stop");
+	response_ptr = sendRequest(request);
 	
 	// check the response status code
 	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
 	
 	// check to make sure the Reactor is no longer running
 	BOOST_CHECK(! checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
-	
-	// make another request to start it back up again
-	request.setMethod(HTTPTypes::REQUEST_METHOD_PUT);
-	request.setResource("/config/reactors/" + m_log_reader_id + "/start");
-	response_ptr = sendRequest(request);
-	
-	// check the response status code
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
-	
-	// check to make sure the Reactor is running again
-	BOOST_CHECK(checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewReactor) {

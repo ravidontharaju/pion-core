@@ -254,6 +254,9 @@ BOOST_AUTO_TEST_CASE(checkSetReactorCoordinates) {
 }
 
 BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
+	// start the log reader reactor
+	m_reaction_engine.startReactor(m_log_reader_id);
+	
 	// open the CLF log file
 	std::ifstream in;
 	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
