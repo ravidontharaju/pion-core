@@ -15,7 +15,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			store.fetch({
 				query: {'@id': this.config.@id},
 				onItem: function(item) {
-					var field_mappings = store.getValues(item, 'Comparison');
+					var field_mappings = store.getValues(item, 'Field');
 					for (var i = 0; i < field_mappings.length; ++i) {
 						var row = [];
 						row[0] = store.getValue(field_mappings[i], 'text()');
