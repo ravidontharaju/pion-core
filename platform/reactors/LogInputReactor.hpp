@@ -105,7 +105,8 @@ public:
 	
 	/// constructs a new LogInputReactor object
 	LogInputReactor(void)
-		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
+		: Reactor(TYPE_COLLECTION),
+		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
 		m_frequency(DEFAULT_FREQUENCY)
 	{}
 	

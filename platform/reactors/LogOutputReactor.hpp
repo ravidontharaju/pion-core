@@ -72,7 +72,8 @@ public:
 	
 	/// constructs a new LogOutputReactor object
 	LogOutputReactor(void)
-		: Reactor(), m_logger(PION_GET_LOGGER("pion.LogOutputReactor"))
+		: Reactor(TYPE_STORAGE),
+		m_logger(PION_GET_LOGGER("pion.LogOutputReactor"))
 	{}
 	
 	/// virtual destructor: this class is meant to be extended

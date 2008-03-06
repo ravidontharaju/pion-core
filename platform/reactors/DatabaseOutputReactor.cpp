@@ -108,10 +108,6 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	}
 	if (m_field_map.empty())
 		throw NoFieldsException(getId());
-	
-	// start up the reactor
-	reactor_lock.unlock();
-	start();
 }
 	
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)

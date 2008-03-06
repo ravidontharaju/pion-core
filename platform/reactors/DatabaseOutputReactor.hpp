@@ -90,7 +90,7 @@ public:
 	
 	/// constructs a new DatabaseOutputReactor object
 	DatabaseOutputReactor(void)
-		: pion::platform::Reactor(),
+		: pion::platform::Reactor(TYPE_STORAGE),
 		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_num_queued(0)
 	{}

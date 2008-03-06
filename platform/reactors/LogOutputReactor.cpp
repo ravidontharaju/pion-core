@@ -56,10 +56,6 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	
 	// resolve paths relative to the ReactionEngine's config file location
 	m_log_filename = getReactionEngine().resolveRelativePath(m_log_filename);
-		
-	// start up the reactor
-	reactor_lock.unlock();
-	start();
 }
 	
 void LogOutputReactor::updateVocabulary(const Vocabulary& v)

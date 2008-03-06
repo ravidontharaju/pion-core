@@ -463,6 +463,8 @@ private:
 			reactor_ptr->setReactionEngine(*this);
 			if (config_ptr != NULL)
 				reactor_ptr->setConfig(m_vocabulary, config_ptr);
+			if (reactor_ptr->getType() != Reactor::TYPE_COLLECTION)
+				reactor_ptr->start();
 		} catch (PionPlugin::PluginNotFoundException& e) {
 			throw;
 		} catch (std::exception& e) {

@@ -61,10 +61,15 @@ public:
 			: PionException("Tried removing an unknown connection: ", reactor_id) {}
 	};
 	
+	/// data type used to describe the type of Reactor
+	enum ReactorType {
+		TYPE_COLLECTION, TYPE_PROCESSING, TYPE_STORAGE
+	};
+	
 	
 	/// constructs a new Reactor object
-	Reactor(void)
-		: m_is_running(false), m_scheduler_ptr(NULL), 
+	Reactor(const ReactorType type)
+		: m_is_running(false), m_type(type), m_scheduler_ptr(NULL), 
 		m_x_coordinate(0), m_y_coordinate(0), m_events_in(0), m_events_out(0)
 	{}
 
@@ -160,6 +165,9 @@ public:
 
 	/// returns true if the Reactor is running
 	inline bool isRunning(void) const { return m_is_running; }
+	
+	/// returns the type of Reactor (collection, processing, storage)
+	inline ReactorType getType(void) const { return m_type; }
 	
 		
 protected:
@@ -286,6 +294,9 @@ private:
 	/// name of the "y coordinate" element for Pion XML config files
 	static const std::string		Y_COORDINATE_ELEMENT_NAME;
 
+	
+	/// the type of Reactor (collection, processing or storage)
+	const ReactorType				m_type;
 	
 	/// used to schedule the delivery of events to Reactors for processing
 	PionScheduler *					m_scheduler_ptr;
