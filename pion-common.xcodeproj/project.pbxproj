@@ -583,6 +583,10 @@
 					"-lboost_system-mt-d",
 					"-lboost_regex-mt-d",
 					"-lboost_date_time-mt-d",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -620,6 +624,10 @@
 					"-lboost_system-mt",
 					"-lboost_regex-mt",
 					"-lboost_date_time-mt",
+					"-llog4cxx",
+					"-lssl",
+					"-lcrypto",
+					"-lz",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
