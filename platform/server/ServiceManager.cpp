@@ -61,6 +61,7 @@ ServiceManager::~ServiceManager()
 	// stop servers first
 	boost::mutex::scoped_lock services_lock(m_mutex);
 	m_servers.clear();
+	m_scheduler.shutdown();
 }
 		
 void ServiceManager::openConfigFile(void)

@@ -125,7 +125,7 @@ public:
 				   DatabaseManager& database_mgr);
 	
 	/// virtual destructor
-	virtual ~ReactionEngine() { stop(); }
+	virtual ~ReactionEngine() { stop(); m_scheduler.shutdown(); }
 	
 	/// opens an existing configuration file and loads the plug-ins it contains
 	virtual void openConfigFile(void);

@@ -358,6 +358,9 @@ BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
 	// check the contents of the new database
 	//
 	
+	// first stop the data store reactor to make sure the events get flushed
+	m_reaction_engine.stopReactor(m_clickstream_id);
+	
 	// open the database
 	DatabasePtr db_ptr = m_database_mgr.getDatabase(m_embedded_db_id);
 	BOOST_REQUIRE(db_ptr);
