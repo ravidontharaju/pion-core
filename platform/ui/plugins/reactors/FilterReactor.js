@@ -70,7 +70,7 @@ var filter_reactor_grid_layout = [{
 			editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
 		{ name: 'Comparison', styles: '', width: 'auto', 
 			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: pion.reactors.comparison_type_store } },
+			editorProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 		{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
 			editor: dojox.grid.editors.Input},
 		{ name: 'Delete', styles: 'align: center;', width: 3, 
@@ -114,13 +114,17 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 		},
 		_handleCellClick: function(e) {
 			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-			if (e.cellIndex == 3) {
+			if (e.cellIndex == 1) { // clicked in comparison column
+				var term = filter_reactor_grid_model.getDatum(e.rowIndex, 0).toString();
+				console.debug('term = ', term, ', pion.codecs.term_categories_by_id[term] = ', pion.codecs.term_categories_by_id[term]);
+				filter_reactor_grid_layout[0].rows[0][1].editorProps.query.category = pion.codecs.term_categories_by_id[term];
+			} else if (e.cellIndex == 3) { // clicked in delete column
 				console.debug('Removing row ', e.rowIndex); 
 				this.removeSelectedRows();
 			}
 		},
 		_handleAddNewComparison: function() {
-			this.addRow([]);
+			this.addRow([0, 'true']);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
 		execute: function(dialogFields) {

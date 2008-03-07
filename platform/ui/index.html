@@ -427,64 +427,6 @@
 
 <!-- start configuration dialogs -->
 <!-- These are only visible after double-clicking a reactor in the workspace, right-clicking a workspace tab, etc. -->
-	<div dojoType="dijit.Dialog" id="TransformReactor_dialog" class="reactor_dialog" title="Transform Reactor Configuration">
-		<table>
-			<tr>
-				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
-			</tr>
-			<tr>
-				<td><label>ID:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
-			</tr>
-			<tr>
-				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
-			</tr>
-			<tr>
-				<td><label>Event Type:</label></td>
-				<td><input dojoType="dijit.form.FilteringSelect" name="event_type" store="term_store" searchAttr="id" autocomplete="true"/></td>
-			</tr>
-		</table>
-		<h3>Input Connections</h3>
-		<div id="TransformReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
-			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<h3>Output Connections</h3>
-		<div id="TransformReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
-			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>
-	</div>
-	<div dojoType="dijit.Dialog" id="DatabaseOutputReactor_dialog" class="reactor_dialog" title="Database Output Reactor Configuration">
-		<table>
-			<tr>
-				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="name" class="name_text_box"/></td>
-			</tr>
-			<tr>
-				<td><label>ID:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="ID" class="id_text_box" disabled="true"/></td>
-			</tr>
-			<tr>
-				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
-			</tr>
-		</table>
-		<h3>Input Connections</h3>
-		<div id="DatabaseOutputReactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
-			 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<h3>Output Connections</h3>
-		<div id="DatabaseOutputReactor_outputs_grid" dojoType="dojox.Grid" model="reactor_outputs_grid_model"
-			 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>
-	</div>
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
 		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
 		<div id="are_you_sure">Are you sure you want to delete?</div>

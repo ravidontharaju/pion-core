@@ -1,4 +1,5 @@
 dojo.provide("pion.codecs");
+dojo.require("pion.vocabularies");
 dojo.require("plugins.codecs.Codec");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
@@ -23,6 +24,22 @@ term_store.fetchItemByIdentity = function(keywordArgs) {
 term_store.getIdentity = function(item) {
 	return term_store.getValue(item, '@id');
 }
+
+pion.codecs.term_categories_by_id = {};
+
+term_store.fetch({
+	onItem: function(item) {
+		var type = term_store.getValue(item, 'Type').toString();
+		var id   = term_store.getIdentity(item);
+		console.debug('type = ', type, ', id = ', id);
+		pion.vocabularies.term_type_store.fetch({
+			query: {name: type},
+			onItem: function(item) {
+				pion.codecs.term_categories_by_id[id] = pion.vocabularies.term_type_store.getValue(item, 'category');
+			}
+		});
+	}
+});
 
 pion.codecs.getHeight = function() {
 	// set by adjustCodecAccordionSize
