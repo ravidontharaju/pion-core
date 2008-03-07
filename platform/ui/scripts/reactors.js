@@ -195,6 +195,11 @@ pion.reactors.init = function() {
 								reactor.prev_events_in = events_in;
 								events_in_for_workspace += events_in;
 							}
+							var is_running_node = n.getElementsByTagName('Running')[0];
+							var is_running_string = dojo.isIE? is_running_node.xml : is_running_node.textContent;
+							var is_running = (is_running_string == 'true');
+							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
+							reactor.run_button.setChecked(is_running);
 						});
 						dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
 						prev_events_in_for_workspace = events_in_for_workspace;

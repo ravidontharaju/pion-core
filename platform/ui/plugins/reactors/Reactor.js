@@ -24,18 +24,18 @@ dojo.declare("plugins.reactors.Reactor",
 
 			var _this = this;
 
-			var run_button = new dijit.form.ToggleButton();
-			var button_node = run_button.domNode;
+			this.run_button = new dijit.form.ToggleButton();
+			var button_node = this.run_button.domNode;
 			dojo.connect(button_node, 'click', function() {
 				dojo.xhrPut({
-					url: '/config/reactors/' + _this.config.@id + (run_button.checked? '/start' : '/stop'),
+					url: '/config/reactors/' + _this.config.@id + (_this.run_button.checked? '/start' : '/stop'),
 					error: function(response, ioArgs) {
 						console.error('HTTP status code: ', ioArgs.xhr.status);
 						return response;
 					}
 				});
 			});
-			this.domNode.appendChild(run_button.domNode);
+			this.domNode.appendChild(button_node);
 
 			this.ops_per_sec = document.createElement('span');
 			dojo.addClass(this.ops_per_sec, 'ops_per_sec');
@@ -51,7 +51,7 @@ dojo.declare("plugins.reactors.Reactor",
 					_this.category = store.getValue(item, 'category');
 
 					if (_this.category != 'collection') {
-						run_button.setChecked(true); // all reactors except collectors start out running
+						_this.run_button.setChecked(true); // all reactors except collectors start out running
 					}
 				}
 			});
