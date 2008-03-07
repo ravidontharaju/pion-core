@@ -60,9 +60,8 @@ b) User authentication has not yet been implemented.  You can create, edit
    being saved or used in any way.
 
 c) The "Vocabularies" section of the user interface is currently read-only.
-   Any changes that you make within the user interface will not be saved to
-   the server.  You can add, change and remove vocabularies by modifying the
-   XML configuration files directly, although we recommend that you wait =)
+   You can add, change and remove vocabularies by modifying the XML
+   configuration files directly, although we recommend that you don't. =)
 
 d) If you drag a reactor over top an existing reactor within the workspace,
    it sometimes becomes un-droppable.  Drag around existing reactors instead.

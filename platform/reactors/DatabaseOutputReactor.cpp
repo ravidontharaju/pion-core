@@ -31,7 +31,7 @@ namespace plugins {		// begin namespace plugins
 
 // static members of DatabaseOutputReactor
 
-const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 100;
+const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 1000;
 const std::string			DatabaseOutputReactor::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
