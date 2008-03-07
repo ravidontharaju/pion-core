@@ -92,14 +92,14 @@
 				{ name: 'ID', styles: '', width: 'auto' },
 				{ name: 'Type', styles: '', 
 					editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-					editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description", keyAttr: "name" }, width: 'auto' },
+					editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description", keyAttr: "name", disabled: 'true' }, width: 'auto' },
 				{ name: 'Format', width: 'auto', styles: ''},
-				{ name: 'Size', width: 3, styles: '', 
-					editor: dojox.grid.editors.Input },
-				{ name: 'Comment', width: 'auto', styles: '', 
-					editor: dojox.grid.editors.Input },
+				//{ name: 'Size', width: 3, styles: '', editor: dojox.grid.editors.Input },
+				//{ name: 'Comment', width: 'auto', styles: '', editor: dojox.grid.editors.Input },
+				{ name: 'Size', width: 3, styles: '' },
+				{ name: 'Comment', width: 'auto', styles: '' },
 				{ name: 'Delete', styles: 'align: center;', width: 3, 
-				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
+				  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" disabled="true" /></button>' },
 			]]
 		}];
 	</script>
@@ -221,11 +221,11 @@
 								<table cellpadding="5" cellspacing="0" border="0" width="100%">
 									<tr>
 										<td><label>Name</label></td>
-										<td><input dojoType="dijit.form.TextBox" name="vocab_name" style="width: 100%;"/></td>
+										<td><input dojoType="dijit.form.TextBox" name="vocab_name" style="width: 100%;" disabled="true"/></td>
 										<td rowspan="4" valign="top" width="20">&nbsp;</td>
 										<td rowspan="1"><label>Comments</label></td>
-										<td rowspan="4" valign="top"><textarea style="width: 95%;" rows="3" name="vocab_comment" 
-																			id="vocab_comment_widget"></textarea></td>
+										<td rowspan="4" valign="top"><textarea style="width: 95%;" rows="3" name="vocab_comment" class="comment" 
+																			id="vocab_comment_widget" disabled="true"></textarea></td>
 									</tr>
 									<tr>
 										<td><label>ID</label></td>
@@ -234,7 +234,7 @@
 									</tr>
 									<tr>
 										<td><label>Locked</label></td>
-										<td><input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="locked"/></td>
+										<td><input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="locked"/ disabled="true"></td>
 									</tr>
 								</table>
 								<br />
@@ -254,15 +254,15 @@
 									</tr>
 								</table>
 								<div class="save_cancel_delete">
-									<button dojoType=dijit.form.Button class="save" type="submit">Save Changes</button>
-									<button dojoType=dijit.form.Button class="cancel">Cancel Changes</button>
-									<button dojoType=dijit.form.Button class="delete">Delete Vocabulary</button>
+									<button dojoType=dijit.form.Button class="save" type="submit" disabled="true">Save Changes</button>
+									<button dojoType=dijit.form.Button class="cancel" disabled="true">Cancel Changes</button>
+									<button dojoType=dijit.form.Button class="delete" disabled="true">Delete Vocabulary</button>
 								</div>
 							</form>
 						</div>
 					</div>
 					<div>
-						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new">ADD A NEW VOCABULARY</button>
+						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new" disabled="true">ADD A NEW VOCABULARY</button>
 					</div>
 				</div>
 			</div>

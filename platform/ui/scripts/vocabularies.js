@@ -37,7 +37,7 @@ pion.vocabularies.init = function() {
 	});
 
 	var vocab_config_store = new dojox.data.XmlStore({url: '/config/vocabularies', rootItem: 'VocabularyConfig', attributeMap: {'VocabularyConfig.id': '@id'}});
- 
+
 	var grid = new dojox.Grid({
 			"model": new dojox.grid.data.Table(null, []),
 			singleClickEdit: true,
@@ -59,6 +59,11 @@ pion.vocabularies.init = function() {
 		console.debug("from vocab_store.getValue(vocab_item, 'Locked'): form_data.checkboxes = ", form_data.checkboxes);
 		var form = dijit.byId('vocab_form');
 		form.setValues(form_data);
+
+		// See comments in plugins.databases.DatabasePane.populateFromConfigItem.
+		var comment_node = dojo.query('textarea.comment', form.domNode)[0];
+		comment_node.value = form_data.vocab_comment;
+
 		selected_pane.title = form_data.vocab_name;
 		var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', selected_pane.domNode)[0];
 		title_node.innerHTML = selected_pane.title;
@@ -435,6 +440,11 @@ pion.vocabularies.init = function() {
 			var form = dijit.byId('vocab_form');
 			console.debug('save: selected vocabulary is ', selected_pane.title, ', form.getValues() = ', form.getValues());
 			var form_data = form.getValues();
+
+			// See comments in _populatePaneFromVocabItem.
+			var comment_node = dojo.query('textarea.comment', form.domNode)[0];
+			form_data.vocab_comment = comment_node.value;
+
 			selected_pane.vocab_store.setValue(selected_pane.vocab_item, 'Name', form_data.vocab_name);
 			selected_pane.vocab_store.setValue(selected_pane.vocab_item, 'Comment', form_data.vocab_comment);
 			selected_pane.vocab_store.setValue(selected_pane.vocab_item, 'Locked', dojo.indexOf(form_data.checkboxes, 'locked') >= 0? 'true' : 'false');
