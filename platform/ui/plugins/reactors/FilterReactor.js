@@ -28,6 +28,9 @@ dojo.declare("plugins.reactors.FilterReactor",
 			});
 		},
 		handleMoveStop: function(mover) {
+			if (this.config.X == mover.host.node.offsetLeft && this.config.Y == mover.host.node.offsetTop) {
+				return;
+			}
 			this.config.X = mover.host.node.offsetLeft;
 			this.config.Y = mover.host.node.offsetTop;
 

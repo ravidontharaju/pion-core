@@ -113,6 +113,9 @@ dojo.declare("plugins.reactors.Reactor",
 			dojo.connect(m5, "onMoveStop", this, this.handleMoveStop);
 		},
 		handleMoveStop: function(mover) {
+			if (this.config.X == mover.host.node.offsetLeft && this.config.Y == mover.host.node.offsetTop) {
+				return;
+			}
 			this.config.X = mover.host.node.offsetLeft;
 			this.config.Y = mover.host.node.offsetTop;
 
