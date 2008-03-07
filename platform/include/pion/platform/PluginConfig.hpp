@@ -320,8 +320,13 @@ inline void PluginConfig<PluginType>::removePlugin(const std::string& plugin_id)
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
 
-	// remove it from memory and the configuration file
+	// first store a smart pointer to the shared library code
+	// this guarantees it will not be released until after the updated signal
+	// has been called, and all users of these types of plugins have released them
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
+	PionPluginPtr<PluginType> plugin_lib_ptr(m_plugins.getLibPtr(plugin_id));
+
+	// remove it from memory and the configuration file
 	m_plugins.remove(plugin_id);
 	removePluginConfig(m_plugin_element, plugin_id);
 	

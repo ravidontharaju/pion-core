@@ -115,11 +115,23 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Reactor base class that might be needed
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::updateVocabulary(v);
+	if (m_database_ptr)
+		m_database_ptr->updateVocabulary(v);
 	
 	// update Term mappings (note: references never change for a given id)
 	for (Query::FieldMap::iterator i = m_field_map.begin(); i != m_field_map.end(); ++i)
 		i->second.second = v[i->first];
 }
+	
+void DatabaseOutputReactor::updateDatabases(void)
+{
+	// just check to see if the database was deleted (if so, stop now!)
+	if (! getDatabaseManager().hasPlugin(m_database_id)) {
+		stop();
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		m_database_ptr.reset();
+	}
+}	
 	
 void DatabaseOutputReactor::operator()(const EventPtr& e)
 {
@@ -189,18 +201,18 @@ void DatabaseOutputReactor::insertEvents(void)
 
 		// create the database table if it does not yet exist
 		m_database_ptr->createTable(m_field_map, m_table_name);
-		
+				
 		// prepare the query used to insert new events into the table
-		m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
-		PION_ASSERT(m_insert_query_ptr);
+		QueryPtr insert_query_ptr(m_database_ptr->prepareInsertQuery(m_field_map, m_table_name));
+		PION_ASSERT(insert_query_ptr);
 		
 		// prepare the query used to begin new transactions
-		m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
-		PION_ASSERT(m_begin_transaction_ptr);
+		QueryPtr begin_transaction_ptr(m_database_ptr->getBeginTransactionQuery());
+		PION_ASSERT(begin_transaction_ptr);
 		
 		// prepare the query used to commit transactions
-		m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
-		PION_ASSERT(m_commit_transaction_ptr);
+		QueryPtr commit_transaction_ptr(m_database_ptr->getCommitTransactionQuery());
+		PION_ASSERT(commit_transaction_ptr);
 
 		// notify all threads that we have started up
 		m_flushed_queue.notify_all();
@@ -213,26 +225,26 @@ void DatabaseOutputReactor::insertEvents(void)
 			if (m_num_queued != 0) {
 				PION_ASSERT(m_database_ptr);
 				PION_ASSERT(m_database_ptr->is_open());
-				PION_ASSERT(m_insert_query_ptr);
-				PION_ASSERT(m_begin_transaction_ptr);
-				PION_ASSERT(m_commit_transaction_ptr);
+				PION_ASSERT(insert_query_ptr);
+				PION_ASSERT(begin_transaction_ptr);
+				PION_ASSERT(commit_transaction_ptr);
 				
 				// begin a new transaction
-				m_begin_transaction_ptr->run();
-				m_begin_transaction_ptr->reset();
+				begin_transaction_ptr->run();
+				begin_transaction_ptr->reset();
 
 				// step through the event queue, inserting each event individually
 				for (unsigned int n = 0; n < m_num_queued; ++n) {
 					// bind the event to the insert query
-					m_insert_query_ptr->bindEvent(m_field_map, *m_event_queue[n], false);
+					insert_query_ptr->bindEvent(m_field_map, *m_event_queue[n], false);
 					// execute the query to insert the record
-					m_insert_query_ptr->run();
-					m_insert_query_ptr->reset();
+					insert_query_ptr->run();
+					insert_query_ptr->reset();
 				}
 				
 				// end & commit the transaction
-				m_commit_transaction_ptr->run();
-				m_commit_transaction_ptr->reset();
+				commit_transaction_ptr->run();
+				commit_transaction_ptr->reset();
 
 				// done flushing the queue! notify all pending inserters
 				m_num_queued = 0;

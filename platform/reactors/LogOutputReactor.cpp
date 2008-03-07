@@ -69,9 +69,16 @@ void LogOutputReactor::updateVocabulary(const Vocabulary& v)
 
 void LogOutputReactor::updateCodecs(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
-	PION_ASSERT(m_codec_ptr);
+	// check if the codec was deleted (if so, stop now!)
+	if (! getCodecFactory().hasPlugin(m_codec_id)) {
+		stop();
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		m_codec_ptr.reset();
+	} else {
+		// update the codec pointer
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+	}
 }
 	
 void LogOutputReactor::operator()(const EventPtr& e)

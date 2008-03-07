@@ -116,6 +116,12 @@ public:
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	/**
+	 * this updates the Databases that are used by this Reactor; it should
+	 * be called whenever any Database's configuration is updated
+	 */
+	virtual void updateDatabases(void);
+	
+	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
 	 * Only Events which pass all Comparisons in the RuleChain will be
 	 * delivered to the output connections.
@@ -180,15 +186,6 @@ private:
 
 	/// pointer to the database that is used to store events
 	pion::platform::DatabasePtr				m_database_ptr;
-	
-	/// pointer to an prepared statement used to insert events
-	pion::platform::QueryPtr				m_insert_query_ptr;
-
-	/// pointer to an prepared statement used to begin transactions
-	pion::platform::QueryPtr				m_begin_transaction_ptr;
-
-	/// pointer to an prepared statement used to end & commit transactions
-	pion::platform::QueryPtr				m_commit_transaction_ptr;
 	
 	/// collection of events queued for storage to the database
 	EventQueue								m_event_queue;
