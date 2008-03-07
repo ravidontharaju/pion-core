@@ -154,7 +154,55 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorInitDialog.html"),
 		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
-		widgetsInTemplate: true
+		widgetsInTemplate: true,
+		execute: function(dialogFields) {
+			console.debug(dialogFields);
+			console.debug('this.plugin = ', this.plugin);
+			var dc = dojo.coords(workspace_box.node);
+			var X = pion.reactors.last_x - dc.x;
+			var Y = pion.reactors.last_y - dc.y;
+			var post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
+						  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
+						  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
+			for (var tag in dialogFields) {
+				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			}
+			post_data += '</Reactor></PionConfig>';
+			console.debug('post_data: ', post_data);
+			
+			dojo.rawXhrPost({
+				url: '/config/reactors',
+				contentType: "text/xml",
+				handleAs: "xml",
+				postData: post_data,
+				load: function(response){
+					var node = response.getElementsByTagName('Reactor')[0];
+					var config = { '@id': node.getAttribute('id') };
+					var attribute_nodes = node.childNodes;
+					//console.debug('attribute_nodes: ', attribute_nodes);
+					//console.dir(attribute_nodes);
+					for (var i = 0; i < attribute_nodes.length; ++i) {
+						if (attribute_nodes[i].firstChild) {
+							config[attribute_nodes[i].tagName] = attribute_nodes[i].firstChild.nodeValue;
+						}
+					}
+					//console.debug('config (from server): ', config);
+					//console.dir(config);
+					var reactor_node = document.createElement("div");
+					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
+					var reactor = createReactor(config, reactor_node);
+					//console.debug('config.@id: ', config.@id);
+					reactors_by_id[config.@id] = reactor;
+					reactor.workspace = workspace_box;
+					workspace_box.reactors.push(reactor);
+				},
+				error: function(response, ioArgs) {
+					console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
+					return response;
+				}
+			});
+		}
 	}
 );
 

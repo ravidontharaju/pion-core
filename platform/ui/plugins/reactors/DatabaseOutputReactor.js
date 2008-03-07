@@ -66,7 +66,92 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/DatabaseOutputReactor/DatabaseOutputReactorInitDialog.html"),
 		templateString: "",
-		widgetsInTemplate: true
+		widgetsInTemplate: true,
+		postCreate: function(){
+			this.plugin = 'DatabaseOutputReactor';
+			this.inherited("postCreate", arguments);
+			_this = this;
+			this.submit_button.onClick = function() { return _this.isValid(); };
+			plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData([]);
+			var grid = this.grid;
+			dojo.connect(grid, 'onCellClick', grid, this._handleCellClick);
+			dojo.connect(this.add_new_term_button.domNode, 'click', grid, this._handleAddNewTerm);
+			setTimeout(function(){
+				grid.update();
+				grid.resize();
+			}, 200);
+		},
+		isValid: function() {
+			if (plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount() == 0) {
+				return false;
+			}
+			return true;
+		},
+		_handleCellClick: function(e) {
+			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
+			if (e.cellIndex == 2) {
+				console.debug('Removing row ', e.rowIndex); 
+				this.removeSelectedRows();
+			}
+		},
+		_handleAddNewTerm: function() {
+			this.addRow([]);
+			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
+		},
+		execute: function(dialogFields) {
+			console.debug(dialogFields);
+			console.debug('this.plugin = ', this.plugin);
+			var dc = dojo.coords(workspace_box.node);
+			var X = pion.reactors.last_x - dc.x;
+			var Y = pion.reactors.last_y - dc.y;
+			var post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
+						  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
+						  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
+			for (var tag in dialogFields) {
+				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			}
+			var num_field_mappings = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount();
+			for (var i = 0; i < num_field_mappings; ++i) {
+				var row = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRow(i);
+				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
+				post_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
+			}
+			post_data += '</Reactor></PionConfig>';
+			console.debug('post_data: ', post_data);
+			
+			dojo.rawXhrPost({
+				url: '/config/reactors',
+				contentType: "text/xml",
+				handleAs: "xml",
+				postData: post_data,
+				load: function(response){
+					var node = response.getElementsByTagName('Reactor')[0];
+					var config = { '@id': node.getAttribute('id') };
+					var attribute_nodes = node.childNodes;
+					//console.debug('attribute_nodes: ', attribute_nodes);
+					//console.dir(attribute_nodes);
+					for (var i = 0; i < attribute_nodes.length; ++i) {
+						if (attribute_nodes[i].firstChild) {
+							config[attribute_nodes[i].tagName] = attribute_nodes[i].firstChild.nodeValue;
+						}
+					}
+					//console.debug('config (from server): ', config);
+					//console.dir(config);
+					var reactor_node = document.createElement("div");
+					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
+					var reactor = createReactor(config, reactor_node);
+					//console.debug('config.@id: ', config.@id);
+					reactors_by_id[config.@id] = reactor;
+					reactor.workspace = workspace_box;
+					workspace_box.reactors.push(reactor);
+				},
+				error: function(response, ioArgs) {
+					console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
+					return response;
+				}
+			});
+		}
 	}
 );
 

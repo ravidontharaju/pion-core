@@ -22,8 +22,11 @@
 			></tr
 		></table
 	></div>
+	<div dojoAttachPoint="grid" dojoType="dojox.Grid" model="plugins.reactors.DatabaseOutputReactorDialog.grid_model"
+		 structure="plugins.reactors.DatabaseOutputReactorDialog.grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<button dojoAttachPoint="add_new_term_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewTerm" class="add_new_row">ADD NEW TERM</button>
 	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="save" dojoAttachPoint="submit_button" type="submit">Save</button>
 		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
 	</div>
 	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
