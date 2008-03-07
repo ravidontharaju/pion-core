@@ -52,30 +52,38 @@ it may cause you to lose data.
 
 This release has the following limitations:
 
-a) User authentication has not yet been implemented.  You can create, edit
+a) Currently, only the Firefox web browser works properly with the UI.  We
+   plan to add support for additional browsers (namely IE and Safari) soon.
+
+b) User authentication has not yet been implemented.  You can create, edit
    and remove user accounts using the UI, but this data is not currently
    being saved or used in any way.
 
-b) The following plugins are not functional: JSONCodec, XMLCodec and the
-   TransformReactor
+c) The "Vocabularies" section of the user interface is currently read-only.
+   Any changes that you make within the user interface will not be saved to
+   the server.  You can add, change and remove vocabularies by modifying the
+   XML configuration files directly, although we recommend that you wait =)
 
-c) The LogInputReactor is missing a significant amount of functionality that
-   we plan to add in future releases.
-
-d) The LogOutputReactor does not support log file rotation or compression.
-
-e) Currently, only the Firefox web browser works properly with the UI.  We
-   plan to add support for additional browsers (namely IE and Safari) soon.
-
-f) If you drag a reactor over top an existing reactor within the workspace,
+d) If you drag a reactor over top an existing reactor within the workspace,
    it sometimes becomes un-droppable.  Drag around existing reactors instead.
 
-g) The running states of Reactors (started/stopped) are not saved in the
-   configuration files, and therefore are lost if the server is restarted.
-
-h) You must hit <enter> after making any changes within the user interface
+e) You must hit <enter> after making any changes within the user interface
    configuration grids.  If you hit the "save" button before hitting <enter>,
    your change will not be saved.
+
+f) You must stop, and then start some Reactors for them to recognize certain
+   configuration changes.
+
+g) The following plugins are not functional: JSONCodec, XMLCodec and the
+   TransformReactor
+
+h) The LogInputReactor is missing a significant amount of functionality that
+   we plan to add in future releases.
+
+i) The LogOutputReactor does not support log file rotation or compression.
+
+j) The running states of Reactors (started/stopped) are not saved in the
+   configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned
 functionality, known problems, or to report bugs:
