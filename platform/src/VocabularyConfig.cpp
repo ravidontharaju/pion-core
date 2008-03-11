@@ -238,7 +238,7 @@ void VocabularyConfig::setLocked(bool b)
 	if (m_vocabulary_node != NULL) {
 		// note that setting the value to "" (empty) removes the node
 		const std::string new_locked_value(m_is_locked ? "true" : "");
-		if (! updateConfigOption(LOCKED_ELEMENT_NAME, "true", m_vocabulary_node))
+		if (! updateConfigOption(LOCKED_ELEMENT_NAME, new_locked_value, m_vocabulary_node))
 			throw UpdateVocabularyException(getConfigFile());
 		// save the new XML config file
 		saveConfigFile();

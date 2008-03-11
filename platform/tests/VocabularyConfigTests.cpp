@@ -228,6 +228,19 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeComment) {
 	BOOST_CHECK_EQUAL(F::getComment(), new_value);
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeLocking) {
+	F::setLocked(true);
+	BOOST_CHECK_EQUAL(F::getLocked(), true);
+	F::setLocked(true);
+	BOOST_CHECK_EQUAL(F::getLocked(), true);
+	F::setLocked(false);
+	BOOST_CHECK_EQUAL(F::getLocked(), false);
+	F::setLocked(false);
+	BOOST_CHECK_EQUAL(F::getLocked(), false);
+	F::setLocked(true);
+	BOOST_CHECK_EQUAL(F::getLocked(), true);
+}
+
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddDuplicateTerm) {
 	// check throw if we try adding a term with the same ID as an existing term
 	Vocabulary::Term temp_term("urn:vocab:test#simple-object");
@@ -448,6 +461,15 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingComment) {
 	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Comment>A new comment</Comment>")));
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterChangingLock) {
+	F::setLocked(true);
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Locked>true</Locked>")));
+	F::setLocked(false);
+	bool explicitly_false = F::configFileContainsExpression(boost::regex("<Locked>false</Locked>"));
+	bool implicitly_false = !F::configFileContainsExpression(boost::regex("<Locked>"));
+	BOOST_CHECK(explicitly_false || implicitly_false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -553,6 +575,66 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterUpdatingTerm) {
 									   "<Comment>was a float, now a string</Comment>\\s*"
 									   "</Term>");
 	BOOST_CHECK(!F::configFileContainsExpression(F::m_expectedExpression));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture for unit tests on an open VocabularyConfig after locking it
+class LockedVocabularyConfig_F : public VocabularyConfigWithPreExistingConfigFileOpen_F {
+public:
+	LockedVocabularyConfig_F()
+	{
+		setLocked(true);
+		BOOST_CHECK_EQUAL(getLocked(), true);
+	}
+	~LockedVocabularyConfig_F() {
+	}
+};
+
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(LockedVocabularyConfig_S, 
+									   boost::mpl::list<LockedVocabularyConfig_F>)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkChangeName) {
+	const std::string new_value("new name for test");
+	F::setName(new_value);
+	BOOST_CHECK_EQUAL(F::getName(), new_value);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUnlock) {
+	F::setLocked(false);
+	BOOST_CHECK_EQUAL(F::getLocked(), false);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddTerm) {
+	Vocabulary::Term new_term("urn:vocab:test#another-float");
+	new_term.term_type = Vocabulary::TYPE_FLOAT;
+	BOOST_CHECK_THROW(F::addTerm(new_term), VocabularyConfig::VocabularyIsLockedException);
+
+	// make sure Term was not added
+	BOOST_CHECK(F::getVocabulary().findTerm("urn:vocab:test#another-float") == Vocabulary::UNDEFINED_TERM_REF);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateTerm) {
+	Vocabulary::TermRef term_ref = F::getVocabulary().findTerm("urn:vocab:test#big-int");
+	Vocabulary::DataType original_type = F::getVocabulary()[term_ref].term_type;
+	std::string original_comment = F::getVocabulary()[term_ref].term_comment;
+
+	Vocabulary::Term updated_term("urn:vocab:test#big-int");
+	updated_term.term_type = Vocabulary::TYPE_UINT32;
+	updated_term.term_comment = "not quite so big int";
+	BOOST_CHECK_THROW(F::updateTerm(updated_term), VocabularyConfig::VocabularyIsLockedException);
+
+	// make sure Term was not updated
+	BOOST_CHECK_EQUAL(F::getVocabulary()[term_ref].term_type, original_type);
+	BOOST_CHECK_EQUAL(F::getVocabulary()[term_ref].term_comment, original_comment);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
+	BOOST_CHECK_THROW(F::removeTerm("urn:vocab:test#null-term"), VocabularyConfig::VocabularyIsLockedException);
+
+	// make sure Term was not removed
+	BOOST_CHECK(F::getVocabulary().findTerm("urn:vocab:test#null-term") != Vocabulary::UNDEFINED_TERM_REF);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
