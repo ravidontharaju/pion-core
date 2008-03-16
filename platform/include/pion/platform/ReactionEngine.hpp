@@ -365,9 +365,6 @@ public:
 	/// returns an async I/O service used to schedule work
 	inline boost::asio::io_service& getIOService(void) { return m_scheduler.getIOService(); }
 	
-	/// returns the number of threads that are currently running
-	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
-	
 	/// returns the number of threads currently in use
 	inline boost::uint32_t getNumThreads(void) const { return m_scheduler.getNumThreads(); }
 	
@@ -567,7 +564,7 @@ private:
 	
 	
 	/// used to schedule the delivery of events to Reactors for processing
-	PionScheduler					m_scheduler;
+	PionSingleServiceScheduler		m_scheduler;
 
 	/// references the global factory that manages Codecs
 	CodecFactory &					m_codec_factory;

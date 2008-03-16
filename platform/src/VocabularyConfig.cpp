@@ -136,7 +136,6 @@ void VocabularyConfig::openConfigFile(void)
 	}
 
 	// load Vocabulary Terms
-	xmlChar *xml_char_ptr;
 	for (xmlNodePtr cur_node = m_vocabulary_node->children;
 		 cur_node != NULL; cur_node = cur_node->next)
 	{

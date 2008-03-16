@@ -150,9 +150,6 @@ public:
 	/// returns an async I/O service used to schedule work
 	inline boost::asio::io_service& getIOService(void) { return m_scheduler.getIOService(); }
 	
-	/// returns the number of threads that are currently running
-	inline boost::uint32_t getRunningThreads(void) const { return m_scheduler.getRunningThreads(); }
-	
 	/// returns the number of threads currently in use
 	inline boost::uint32_t getNumThreads(void) const { return m_scheduler.getNumThreads(); }
 	
@@ -233,7 +230,7 @@ private:
 	PlatformConfig &				m_platform_config;
 	
 	/// used to manage a worker thread pool shared by all servers
-	PionScheduler					m_scheduler;
+	PionSingleServiceScheduler		m_scheduler;
 	
 	/// collection of HTTP servers
 	ServerList						m_servers;
