@@ -46,10 +46,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// use a stringstream for the response content
 	// since HTTPResponseWriter does not yet have a stream wrapper available
 	std::stringstream ss;
-	
-	// start responses with the XML header line <?xml ... ?>
-	ConfigManager::writeConfigXMLHeader(ss);
-	
+
 	if (branches.empty()) {
 
 		// send platform configuration info

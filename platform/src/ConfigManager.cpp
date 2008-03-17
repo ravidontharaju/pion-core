@@ -195,6 +195,7 @@ void ConfigManager::writeConfigXMLHeader(std::ostream& out)
 	
 void ConfigManager::writeBeginPionConfigXML(std::ostream& out)
 {
+	writeConfigXMLHeader(out);
 	out << '<' << ROOT_ELEMENT_NAME << " xmlns=\""
 		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
 }

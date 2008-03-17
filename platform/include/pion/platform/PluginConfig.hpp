@@ -87,6 +87,7 @@ public:
 	 */
 	virtual void writeConfigXML(std::ostream& out) const {
 		boost::mutex::scoped_lock plugins_lock(m_mutex);
+		ConfigManager::writeConfigXMLHeader(out);
 		ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
 	}
 	

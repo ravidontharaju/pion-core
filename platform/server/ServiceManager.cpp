@@ -247,6 +247,7 @@ bool ServiceManager::writeConfigXML(std::ostream& out,
 		return false;
 	
 	// found it
+	ConfigManager::writeConfigXMLHeader(out);
 	ConfigManager::writeConfigXML(out, server_node, false);
 	return true;
 }

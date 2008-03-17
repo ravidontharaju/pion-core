@@ -142,6 +142,7 @@ bool VocabularyManager::writeConfigXML(std::ostream& out,
 		return false;
 	
 	// found it
+	ConfigManager::writeConfigXMLHeader(out);
 	vocab_iterator->second->writeConfigXML(out);
 	return true;
 }

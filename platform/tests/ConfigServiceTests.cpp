@@ -243,6 +243,9 @@ public:
 		
 		// check the response status code
 		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+
+		// make sure there's no content
+		BOOST_CHECK_EQUAL(response_ptr->getContentLength(), 0);
 	}
 		
 
