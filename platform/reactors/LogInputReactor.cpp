@@ -216,7 +216,7 @@ void LogInputReactor::consumeLog(const std::string& log_filename)
 	EventPtr event_ptr;
 	while (! log_stream.eof()) {
 		// read an Event from the log file
-		event_ptr.reset(new Event(m_codec_ptr->getEventType()));
+		event_ptr = new Event(m_codec_ptr->getEventType());
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		if (! m_codec_ptr->read(log_stream, *event_ptr))
 			throw ReadEventException(log_filename);

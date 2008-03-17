@@ -22,7 +22,8 @@
 
 #include <list>
 #include <boost/any.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
+#include <boost/detail/atomic_count.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
@@ -52,14 +53,18 @@ public:
 	virtual ~Event() {}
 	
 	/// standard copy constructor
-	Event(const Event& e) : m_event_type(e.m_event_type), m_parms(e.m_parms) {}
+	Event(const Event& e)
+		: m_event_type(e.m_event_type), m_parms(e.m_parms), m_references(0)
+	{}
 	
 	/**
 	 * constructs a new Event object
 	 *
 	 * @param type the type of Event that is being created
 	 */
-	Event(const EventType t) : m_event_type(t) {}
+	Event(const EventType t)
+		: m_event_type(t), m_references(0)
+	{}
 	
 	/// adds all the terms from another Event into this one
 	inline const Event& operator+=(const Event& e) {
@@ -445,7 +450,13 @@ public:
 	
 	/// returns the type of Event that this is
 	inline EventType getType(void) const { return m_event_type; }
-	
+
+	/// increments the reference count for this Event (for intrusive_ptr only!)
+	inline void addReference(void) { ++m_references; }
+
+	/// decrements the reference count for this Event (for intrusive_ptr only!)
+	inline boost::uint32_t removeReference(void) { return --m_references; }
+
 	/// clear all data contained within the Event
 	inline void clear(void) { m_parms.clear(); }
 
@@ -457,24 +468,41 @@ private:
 
 	
 	/// returned if a value for a Term has not been defined
-	static const boost::any		NULL_PARAMETER_VALUE;
+	static const boost::any			NULL_PARAMETER_VALUE;
 
 	/// used to identify what type of Event this is (using Terms of type OBJECT)
-	const EventType				m_event_type;
+	const EventType					m_event_type;
 	
 	/// event parameters: maps numeric term identifiers to values
-	ParameterMap				m_parms;
+	ParameterMap					m_parms;
+	
+	/// the number of intrusive_ptr references to this Event
+	boost::detail::atomic_count		m_references;
 };
 
 
+/// increments the reference count for an Event (for intrusive_ptr only!)
+inline void intrusive_ptr_add_ref(Event *e)
+{
+	e->addReference();
+}
+
+/// decrements the reference count for an Event (for intrusive_ptr only!)
+inline void intrusive_ptr_release(Event *e)
+{
+	if (e->removeReference() == 0)
+		delete e;
+}
+
+
 /// data type used for Event smart pointers
-typedef boost::shared_ptr<Event>	EventPtr;
+typedef boost::intrusive_ptr<Event>		EventPtr;
 
 /// data type for a collections of Events
-typedef std::list<Event>			EventCollection;
+typedef std::list<Event>				EventCollection;
 
 /// data type for a collections of Events
-typedef std::list<EventPtr>			EventPtrCollection;
+typedef std::list<EventPtr>				EventPtrCollection;
 	
 
 }	// end namespace platform

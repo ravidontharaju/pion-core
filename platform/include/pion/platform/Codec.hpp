@@ -151,7 +151,7 @@ public:
 		EventPtr event_ptr(new Event(m_event_type));
 		while (read(in, *event_ptr)) {
 			c.push_back(event_ptr);
-			event_ptr.reset(new Event(m_event_type));
+			event_ptr = new Event(m_event_type);
 		}
 		return(! c.empty());
 	}
@@ -165,7 +165,7 @@ public:
 	inline EventPtr read(std::istream& in) {
 		EventPtr event_ptr(new Event(getEventType()));
 		if (! read(in, *event_ptr))
-			event_ptr.reset();
+			event_ptr = NULL;
 		return event_ptr;
 	}
 	
