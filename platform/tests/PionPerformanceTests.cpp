@@ -26,6 +26,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <pion/PionScheduler.hpp>
+#include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
 using namespace std;
@@ -201,6 +203,8 @@ public:
 		: PerformanceTest("EventAllocTwoThreadTest")
 	{
 		setCountDescription("events");
+		// block if the queue exceeds 100,000 items
+		m_queue.max_size(100000);
 	}
 
 	/// virtual destructor
@@ -222,20 +226,19 @@ protected:
 	inline void generate(void) {
 		while (isRunning()) {
 			EventPtr e(new Event(0));
-			boost::mutex::scoped_lock lock(m_mutex);
 			m_queue.push(e);
-			m_condition.notify_one();
 		}
 	}
 
 	/// frees EventPtr objects in the shared queue
 	inline void consume(void) {
-		boost::mutex::scoped_lock lock(m_mutex);
+		EventPtr event_ptr;
 		while (isRunning()) {
-			while (isRunning() && m_queue.empty())
-				m_condition.wait(lock);
+			// sleep 1/8 second if the queue is empty
+			while (isRunning() && !m_queue.pop(event_ptr)) {
+				PionScheduler::sleep(0, 125000000);
+			}
 			if (! isRunning()) break;
-			m_queue.pop();
 			++m_counter;
 		}
 	}
@@ -244,13 +247,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	std::queue<EventPtr>				m_queue;
-	
-	/// used to protect the shared queue
-	boost::mutex						m_mutex;
-	
-	/// triggered when EventPtr objects are available in the queue
-	boost::condition					m_condition;
+	PionLockedQueue<EventPtr>			m_queue;
 	
 	/// thread used to generate EventPtr objects
 	boost::scoped_ptr<boost::thread>	m_generate_thread;
