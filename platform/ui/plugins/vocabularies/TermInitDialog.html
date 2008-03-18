@@ -1,0 +1,39 @@
+<div class="dijitDialog vocabulary_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Term Initialization</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>ID:</label></td
+				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="@id"
+					 regExp="\w+" required="true"></td
+			></tr
+			><tr
+				><td><label>Type:</label></td
+				><td><input dojoType="dijit.form.FilteringSelect" name="Type" dojoAttachEvent="onChange: _handleTypeChange"
+						store="pion.vocabularies.term_type_store" searchAttr="description" 
+						autocomplete="true" value="1" style="width: 100%;" style="width: 100%;"/></td
+			></tr
+			><tr
+				><td><label>Comments:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+			></tr
+			><tr
+				><td><label>Format:</label></td
+				><td><input dojoAttachPoint="format_widget" dojoType="dijit.form.ValidationTextBox" type="text" name="Format" disabled="true" 
+					 regExp=".*%.*"></td
+			></tr
+			><tr
+				><td><label>Size:</label></td
+				><td><input dojoAttachPoint="size_widget" dojoType="dijit.form.ValidationTextBox" type="text" name="Size" disabled="true" 
+					 regExp="[1-9][0-9]*"></td
+			></tr
+		></table
+	></div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
+	</div>
+	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
+</div>
