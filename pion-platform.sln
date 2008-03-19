@@ -138,6 +138,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DatabaseOutputReactor", "platform\reactors\DatabaseOutputReactor.vcproj", "{141DB220-D65A-4236-9A13-9A1C186CE97B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D} = {7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D}
+		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PerformanceTests", "platform\tests\PerformanceTests.vcproj", "{24146E85-8908-49CD-9274-953E56869809}"
