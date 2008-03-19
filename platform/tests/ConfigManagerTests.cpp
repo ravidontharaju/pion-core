@@ -50,3 +50,63 @@ BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsNotRelative) {
 	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
 #endif
 }
+
+BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithSomeValidInputs) {
+	xmlNodePtr p;
+
+	char buf1[] = "<PionConfig><resource1></resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf1, strlen(buf1)));
+	BOOST_CHECK(p == NULL);
+
+	char buf2[] = "<PionConfig><resource1>value1</resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf2, strlen(buf2)));
+	BOOST_CHECK(p != NULL);
+	BOOST_CHECK(p->children == NULL);
+
+	char buf3[] = "<PionConfig><resource1><tag1></tag1></resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf3, strlen(buf3)));
+	BOOST_CHECK(p != NULL);
+	BOOST_CHECK(p->children == NULL);
+
+	char buf4[] = "<PionConfig><resource1><tag1>value1</tag1></resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf4, strlen(buf4)));
+	BOOST_CHECK(p != NULL);
+	BOOST_CHECK(p->children != NULL);
+
+	char buf5[] = "<PionConfig><resource1><tag1 attr=\"attr1\"></tag1></resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf5, strlen(buf5)));
+	BOOST_CHECK(p != NULL);
+	BOOST_CHECK(p->children == NULL);
+
+	char buf6[] = "<PionConfig><resource1><tag1 attr1=\"1\" attr2=\"2\">value1</tag1></resource1></PionConfig>";
+	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf6, strlen(buf6)));
+	BOOST_CHECK(p != NULL);
+	BOOST_CHECK(p->children != NULL);
+}
+
+BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithMissingConfigElement) {
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", NULL, 100), ConfigManager::BadXMLBufferException);
+
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", "", 0), ConfigManager::BadXMLBufferException);
+
+	char buf2[] = "<otherTag></otherTag>";
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf2, strlen(buf2)), ConfigManager::MissingRootElementException);
+}
+
+BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithMissingResourceElement) {
+	char buf[] = "<PionConfig></PionConfig>";
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf, strlen(buf)), ConfigManager::MissingResourceElementException);
+
+	char buf2[] = "<PionConfig><otherTag></otherTag></PionConfig>";
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf2, strlen(buf2)), ConfigManager::MissingResourceElementException);
+}
+
+BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithIncompleteInput) {
+	char buf[] = "<PionConfig><resource1></resource1>";
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf, strlen(buf)), ConfigManager::XMLBufferParsingException);
+}
+
+BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithBadlyFormedInput) {
+	char buf[] = "<PionConfig><resource1<></resource1></PionConfig>";
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf, strlen(buf)), ConfigManager::XMLBufferParsingException);
+}

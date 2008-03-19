@@ -73,6 +73,16 @@ public:
 	public:
 		MissingRootElementException(const std::string& config_file)
 		: PionException("Configuration file is missing the root config element: ", config_file) {}
+
+		MissingRootElementException(const char* buffer)
+		: PionException("Root config element not found in buffer: ", buffer) {}
+	};
+
+	/// exception thrown if the requested resource element is not found
+	class MissingResourceElementException : public PionException {
+	public:
+		MissingResourceElementException(const std::string& resource_name)
+		: PionException("Could not find element for specified resource: ", resource_name) {}
 	};
 
 	/// exception thrown if there is an error initializing a new config file's root element
@@ -87,6 +97,20 @@ public:
 	public:
 		ReadConfigException(const std::string& config_file)
 		: PionException("Unable to read config file: ", config_file) {}
+	};
+
+	/// exception thrown if the buffer is NULL or has length zero
+	class BadXMLBufferException : public PionException {
+	public:
+		BadXMLBufferException(void)
+		: PionException("NULL buffer pointer or buffer length is zero") {}
+	};
+
+	/// exception thrown if there is an error parsing XML from memory
+	class XMLBufferParsingException : public PionException {
+	public:
+		XMLBufferParsingException(const char* buffer)
+		: PionException("Unable to parse buffer: ", buffer) {}
 	};
 
 	/// exception thrown if there is an error adding a plug-in to the config file

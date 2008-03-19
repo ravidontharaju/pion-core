@@ -280,29 +280,28 @@ xmlNodePtr ConfigManager::createResourceConfig(const std::string& resource_name,
 {
 	// sanity check
 	if (buf == NULL || len == 0)
-		return NULL;
+		throw BadXMLBufferException();
 	
 	// parse request payload content as XML
 	xmlNodePtr node_ptr = NULL;
 	xmlDocPtr doc_ptr = xmlParseMemory(buf, len);
 	if (doc_ptr == NULL)
-		return NULL;
-	
+		throw XMLBufferParsingException(buf);
+
 	// find the ROOT element
-	node_ptr = xmlDocGetRootElement(doc_ptr);
 	if ( (node_ptr = xmlDocGetRootElement(doc_ptr)) == NULL
 		|| xmlStrcmp(node_ptr->name,
 					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) )
 	{
 		xmlFreeDoc(doc_ptr);
-		return NULL;
+		// buf is missing the root "PionConfig" element 
+		throw MissingRootElementException(buf);
 	}
-	
 	// find the resource element
 	node_ptr = findConfigNodeByName(resource_name, node_ptr->children);
 	if (node_ptr == NULL) {
 		xmlFreeDoc(doc_ptr);
-		return NULL;
+		throw MissingResourceElementException(resource_name);
 	}
 
 	// found the resource config -> make a copy of it

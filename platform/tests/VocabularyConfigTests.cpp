@@ -171,6 +171,29 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeAfterAddingTerm) {
 	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(1));
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterAddingTerm) {
+	// create a new term to add
+	Vocabulary::Term new_term("urn:vocab:test#new-float-number");
+	new_term.term_type = Vocabulary::TYPE_FLOAT;
+	new_term.term_comment = "A floating-point number";
+	
+	// add the term to the vocabulary
+	F::addTerm(new_term);
+	
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Term id=\"urn:vocab:test#new-float-number\"")));
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Type>float</Type>")));
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterAddingEmptyTerm) {
+	// create a new term without specifying a type
+	Vocabulary::Term new_term("urn:vocab:test#empty");
+	
+	// add the term to the vocabulary
+	F::addTerm(new_term);
+	
+	BOOST_CHECK(F::configFileContainsExpression(boost::regex("<Type>null</Type>")));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 	

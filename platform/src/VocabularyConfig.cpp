@@ -295,11 +295,9 @@ void VocabularyConfig::addTerm(const Vocabulary::Term& new_term)
 				   reinterpret_cast<const xmlChar*>(new_term.term_id.c_str())) == NULL)
 		throw AddTermConfigException(new_term.term_id);
 
-	// add a type child element to the term if it is not null
-	if (new_term.term_type != Vocabulary::TYPE_NULL) {
-		if (! addNewTermTypeConfig(new_term_node, new_term))
-			throw AddTermConfigException(new_term.term_id);
-	}
+	// add a type child element to the term 
+	if (! addNewTermTypeConfig(new_term_node, new_term))
+		throw AddTermConfigException(new_term.term_id);
 
 	// add a comment child element to the term if it is not empty
 	if (! new_term.term_comment.empty()) {
