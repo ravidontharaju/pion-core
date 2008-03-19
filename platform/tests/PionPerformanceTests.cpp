@@ -203,8 +203,6 @@ public:
 		: PerformanceTest("EventAllocTwoThreadTest")
 	{
 		setCountDescription("events");
-		// block if the queue exceeds 100,000 items
-		m_queue.max_size(100000);
 	}
 
 	/// virtual destructor
