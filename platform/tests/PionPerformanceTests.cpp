@@ -25,6 +25,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/pool/pool_alloc.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/PionLockedQueue.hpp>
@@ -46,23 +47,22 @@ public:
 	 *
 	 * @param test_description used to describe the performance test
 	 */
-	PerformanceTest(const std::string& test_description)
-		: m_counter(0), m_last_count(0),
-		m_sample_sum(0), m_total_samples(0), m_samples_remaining(30),
-		m_count_description("counter"), m_test_description(test_description),
-		m_service(), m_timer(m_service), m_is_running(true)
+	PerformanceTest(void)
+		: m_counter(0), m_is_running(true), m_last_count(0),
+		m_sample_sum(0), m_total_samples(0), m_samples_remaining(10),
+		m_count_description("counter"), m_service(), m_timer(m_service)
 	{
 		scheduleSample();
 	}
 	
 	/// virtual destructor -> this class should be extended
-	virtual ~PerformanceTest() {}
+	virtual ~PerformanceTest() { stop(); }
 
 	/// starts the performance test
 	virtual void start(void) = 0;
 	
 	/// stops the performance test
-	virtual void stop(void) { m_is_running = false; }
+	virtual void stop(void) { if (m_is_running) stopTest(); }
 
 	/// runs the performance test
 	virtual void run(void) {
@@ -77,6 +77,12 @@ public:
 	
 protected:
 
+	/// stops the performance test
+	virtual void stopTest(void) { m_is_running=false; }
+
+	/// sets a description for the performance test
+	inline void setTestDescription(const std::string& d) { m_test_description=d; }
+
 	/// sets a description for the counter
 	inline void setCountDescription(const std::string& d) { m_count_description=d; }
 
@@ -85,7 +91,10 @@ protected:
 
 	
 	/// the current value of the counter
-	boost::uint64_t					m_counter;
+	volatile boost::uint64_t			m_counter;
+
+	/// true if the performance test is running
+	volatile bool						m_is_running;
 
 
 private:
@@ -133,54 +142,48 @@ private:
 	std::string						m_count_description;
 	
 	/// a description of the performance test
-	const std::string				m_test_description;
+	std::string						m_test_description;
 	
 	/// a service used to schedule counter samples
 	boost::asio::io_service			m_service;
 	
 	/// a timer used to schedule counter samples
 	boost::asio::deadline_timer		m_timer;
-	
-	/// true if the performance test is running
-	bool							m_is_running;
 };
 
 
 ///
-/// EventAllocTest: tests the performance of allocating and freeing EventPtr's
+/// AllocTest: base class to test the performance of allocating and freeing objects
 ///
-class EventAllocTest :
+class AllocTest :
 	public PerformanceTest
 {
 public:
 
 	/// default constructor
-	EventAllocTest(void)
-		: PerformanceTest("EventAllocTest")
-	{
+	AllocTest(void) {
+		setTestDescription("AllocTest");
 		setCountDescription("allocs");
 	}
 
 	/// virtual destructor
-	virtual ~EventAllocTest() {
-		if (m_count_thread) m_count_thread->join();
-	}
+	virtual ~AllocTest() { stop(); }
 
 	/// starts the performance test
 	virtual void start(void) {
-		m_count_thread.reset(new boost::thread(boost::bind(&EventAllocTest::countAllocs, this)));
+		m_count_thread.reset(new boost::thread(boost::bind(&AllocTest::countAllocs, this)));
 	}
 
-	
-private:
+protected:
+
+	/// stops the performance test
+	virtual void stopTest(void) {
+		m_is_running = false;
+		if (m_count_thread) m_count_thread->join();
+	}
 
 	/// counts the creation and deletion of EventPtr objects
-	inline void countAllocs(void) {
-		while (isRunning()) {
-			EventPtr e(new Event(0));
-			++m_counter;
-		}
-	}
+	virtual void countAllocs(void) = 0;
 	
 
 	/// thread used to create and delete EventPtr objects
@@ -190,52 +193,189 @@ private:
 
 
 ///
-/// EventAllocTwoThreadTest: tests the performance of creating EventPtr objects in one
-///                          thread and deleting them in another thread
+/// EventAllocTest: tests the performance of allocating and freeing EventPtr's
 ///
-class EventAllocTwoThreadTest :
+class EventAllocTest :
+	public AllocTest
+{
+public:
+
+	/// default constructor
+	EventAllocTest(void) {
+		setTestDescription("EventAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventAllocTest() { stop(); }
+
+private:
+
+	/// updates the contents of new events created
+	virtual void updateEvent(EventPtr& e) {}
+	
+	/// counts the creation and deletion of EventPtr objects
+	virtual void countAllocs(void) {
+		while (isRunning()) {
+			EventPtr e(new Event(0));
+			updateEvent(e);
+			++m_counter;
+		}
+	}
+};
+
+
+/// data type for an Event pool allocator
+typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
+	boost::details::pool::default_mutex, 10240 >	EventPoolAlloc;
+
+
+///
+/// EventPoolAllocTest: tests the performance of allocating and freeing Event's using boost::fast_pool_allocator
+///
+class EventPoolAllocTest :
+	public EventAllocTest
+{
+public:
+
+	/// default constructor
+	EventPoolAllocTest(void) {
+		setTestDescription("EventPoolAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventPoolAllocTest() { stop(); }
+
+private:	
+
+	/// counts the creation and deletion of EventPtr objects
+	virtual void countAllocs(void) {
+		while (isRunning()) {
+			Event *event_ptr = EventPoolAlloc::allocate();
+			EventPoolAlloc::deallocate(event_ptr);
+			++m_counter;
+		}
+	}
+};
+
+
+///
+/// CLFEventAllocTest: tests the performance of allocating and freeing EventPtr's
+///                    that contain common log format data
+///
+class CLFEventAllocTest :
+	public EventAllocTest
+{
+public:
+
+	/// default constructor
+	CLFEventAllocTest(void) {
+		setTestDescription("CLFEventAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~CLFEventAllocTest() { stop(); }
+
+private:
+
+	/// updates the contents of new events created
+	virtual void updateEvent(EventPtr& e) {
+		e->setString(1, "10.0.19.111");
+		e->setString(2, "05/Apr/2007:05:37:11 -0600");
+		e->setString(3, "GET /robots.txt HTTP/1.0");
+		e->setUInt(4, 404);
+		e->setUInt(5, 208);
+	}
+};
+
+
+///
+/// AllocTwoThreadTest: tests the performance of creating empty objects
+///                     in one thread and deleting them in another thread
+///
+class AllocTwoThreadTest :
 	public PerformanceTest
 {
 public:
 
 	/// default constructor
-	EventAllocTwoThreadTest(void)
-		: PerformanceTest("EventAllocTwoThreadTest")
-	{
+	AllocTwoThreadTest(void) {
+		setTestDescription("AllocTwoThreadTest");
 		setCountDescription("events");
 	}
 
 	/// virtual destructor
-	virtual ~EventAllocTwoThreadTest() {
-		if (m_generate_thread) m_generate_thread->join();
-		if (m_consumer_thread) m_consumer_thread->join();
-	}
+	virtual ~AllocTwoThreadTest() { stop(); }
 
 	/// starts the performance test
 	virtual void start(void) {
-		m_generate_thread.reset(new boost::thread(boost::bind(&EventAllocTwoThreadTest::generate, this)));
-		m_consumer_thread.reset(new boost::thread(boost::bind(&EventAllocTwoThreadTest::consume, this)));
+		m_generate_thread.reset(new boost::thread(boost::bind(&AllocTwoThreadTest::generate, this)));
+		m_consumer_thread.reset(new boost::thread(boost::bind(&AllocTwoThreadTest::consume, this)));
 	}
 
 
 protected:
 
+	/// stops the performance test
+	virtual void stopTest(void) {
+		m_is_running = false;
+		if (m_generate_thread) m_generate_thread->join();
+		if (m_consumer_thread) m_consumer_thread->join();
+	}
+
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(void) {
+	virtual void generate(void) = 0;
+
+	/// frees EventPtr objects in the shared queue
+	virtual void consume(void) = 0;
+
+
+	/// thread used to generate EventPtr objects
+	boost::scoped_ptr<boost::thread>	m_generate_thread;
+
+	/// thread used to consume EventPtr objects
+	boost::scoped_ptr<boost::thread>	m_consumer_thread;
+};
+
+
+///
+/// EventAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
+///                          in one thread and deleting them in another thread
+///
+class EventAllocTwoThreadTest :
+	public AllocTwoThreadTest
+{
+public:
+
+	/// default constructor
+	EventAllocTwoThreadTest(void) {
+		setTestDescription("EventAllocTwoThreadTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventAllocTwoThreadTest() { stop(); }
+
+
+protected:
+
+	/// updates the contents of new events created
+	virtual void updateEvent(EventPtr& e) {}
+
+	/// creates EventPtr objects and pushes them into a shared queue
+	virtual void generate(void) {
 		while (isRunning()) {
 			EventPtr e(new Event(0));
+			updateEvent(e);
 			m_queue.push(e);
 		}
 	}
 
 	/// frees EventPtr objects in the shared queue
-	inline void consume(void) {
+	virtual void consume(void) {
 		EventPtr event_ptr;
 		while (isRunning()) {
 			// sleep 1/8 second if the queue is empty
-			while (isRunning() && !m_queue.pop(event_ptr)) {
+			while (isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
-			}
 			if (! isRunning()) break;
 			++m_counter;
 		}
@@ -246,12 +386,87 @@ private:
 
 	/// a shared queue of EventPtr objects
 	PionLockedQueue<EventPtr>			m_queue;
-	
-	/// thread used to generate EventPtr objects
-	boost::scoped_ptr<boost::thread>	m_generate_thread;
+};
 
-	/// thread used to consume EventPtr objects
-	boost::scoped_ptr<boost::thread>	m_consumer_thread;
+
+///
+/// EventPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
+///                              in one thread and deleting them in another thread using
+///                              boost::fast_pool_allocator
+///
+class EventPoolAllocTwoThreadTest :
+	public AllocTwoThreadTest
+{
+public:
+
+	/// default constructor
+	EventPoolAllocTwoThreadTest(void) {
+		setTestDescription("EventPoolAllocTwoThreadTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventPoolAllocTwoThreadTest() { stop(); }
+
+
+protected:
+
+	/// creates EventPtr objects and pushes them into a shared queue
+	inline void generate(void) {
+		while (isRunning()) {
+			Event *event_ptr = EventPoolAlloc::allocate();
+			m_queue.push(event_ptr);
+		}
+	}
+
+	/// frees EventPtr objects in the shared queue
+	inline void consume(void) {
+		Event *event_ptr(NULL);
+		while (isRunning()) {
+			// sleep 1/8 second if the queue is empty
+			while (isRunning() && !m_queue.pop(event_ptr))
+				PionScheduler::sleep(0, 125000000);
+			EventPoolAlloc::deallocate(event_ptr);
+			if (! isRunning()) break;
+			++m_counter;
+		}
+	}
+	
+	
+private:
+
+	/// a shared queue of EventPtr objects
+	PionLockedQueue<Event*>				m_queue;
+};
+
+
+///
+/// CLFEventAllocTwoThreadTest: tests the performance of creating EventPtr objects that
+///                             that contain common log format data in one thread and
+///                             deleting them in another thread
+///
+class CLFEventAllocTwoThreadTest :
+	public EventAllocTwoThreadTest
+{
+public:
+
+	/// default constructor
+	CLFEventAllocTwoThreadTest(void) {
+		setTestDescription("CLFEventAllocTwoThreadTest");
+	}
+
+	/// virtual destructor
+	virtual ~CLFEventAllocTwoThreadTest() { stop(); }
+
+protected:
+
+	/// updates the contents of new events created
+	virtual void updateEvent(EventPtr& e) {
+		e->setString(1, "10.0.19.111");
+		e->setString(2, "05/Apr/2007:05:37:11 -0600");
+		e->setString(3, "GET /robots.txt HTTP/1.0");
+		e->setUInt(4, 404);
+		e->setUInt(5, 208);
+	}
 };
 
 
@@ -265,8 +480,24 @@ int main(void) {
 	test_ptr.reset(new EventAllocTest);
 	test_ptr->run();
 	
+	// run the EventPoolAllocTest
+	test_ptr.reset(new EventPoolAllocTest);
+	test_ptr->run();
+	
+	// run the CLFEventAllocTest
+	test_ptr.reset(new CLFEventAllocTest);
+	test_ptr->run();
+
 	// run the EventAllocTwoThreadTest
 	test_ptr.reset(new EventAllocTwoThreadTest);
+	test_ptr->run();
+
+	// run the EventPoolAllocTwoThreadTest
+	test_ptr.reset(new EventPoolAllocTwoThreadTest);
+	test_ptr->run();
+
+	// run the CLFEventAllocTwoThreadTest
+	test_ptr.reset(new CLFEventAllocTwoThreadTest);
 	test_ptr->run();
 	
 	return 0;
