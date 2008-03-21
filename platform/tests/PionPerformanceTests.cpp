@@ -17,14 +17,11 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <queue>
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/condition.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <pion/PionScheduler.hpp>
@@ -216,7 +213,7 @@ private:
 	/// counts the creation and deletion of EventPtr objects
 	virtual void countAllocs(void) {
 		while (isRunning()) {
-			EventPtr e(new Event(0));
+			EventPtr e(EventFactory::create(Vocabulary::UNDEFINED_TERM_REF));
 			updateEvent(e);
 			++m_counter;
 		}
@@ -363,7 +360,7 @@ protected:
 	/// creates EventPtr objects and pushes them into a shared queue
 	virtual void generate(void) {
 		while (isRunning()) {
-			EventPtr e(new Event(0));
+			EventPtr e(EventFactory::create(Vocabulary::UNDEFINED_TERM_REF));
 			updateEvent(e);
 			m_queue.push(e);
 		}

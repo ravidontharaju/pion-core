@@ -119,18 +119,6 @@ public:
 	 * writes a collection of Events to an output stream
 	 *
 	 * @param out the output stream to which the Event will be written
-	 * @param c the collection of Events to write to the output stream
-	 */
-	inline void write(std::ostream& out, const EventCollection& c) {
-		for (EventCollection::const_iterator i = c.begin(); i != c.end(); ++i) {
-			write(out, *i);
-		}
-	}
-
-	/**
-	 * writes a collection of Events to an output stream
-	 *
-	 * @param out the output stream to which the Event will be written
 	 * @param c the collection of pointers to Events to write to the output stream
 	 */
 	inline void write(std::ostream& out, const EventPtrCollection& c) {
@@ -148,10 +136,10 @@ public:
 	 */
 	inline bool read(std::istream& in, EventPtrCollection& c) {
 		if (!c.empty()) c.clear();
-		EventPtr event_ptr(new Event(m_event_type));
+		EventPtr event_ptr(EventFactory::create(m_event_type));
 		while (read(in, *event_ptr)) {
 			c.push_back(event_ptr);
-			event_ptr = new Event(m_event_type);
+			event_ptr = EventFactory::create(m_event_type);
 		}
 		return(! c.empty());
 	}
@@ -163,9 +151,9 @@ public:
 	 * @return EventPtr& pointer to the event read, if any; null if error
 	 */
 	inline EventPtr read(std::istream& in) {
-		EventPtr event_ptr(new Event(getEventType()));
+		EventPtr event_ptr(EventFactory::create(getEventType()));
 		if (! read(in, *event_ptr))
-			event_ptr = NULL;
+			event_ptr.reset();
 		return event_ptr;
 	}
 	

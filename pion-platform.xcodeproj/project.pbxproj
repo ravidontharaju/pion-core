@@ -229,6 +229,8 @@
 		E3E6AE4D0D5A5E5100A9C68F /* libpion-server.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E3FF965C0D579ABB001E075B /* libpion-server.dylib */; };
 		E3E6AE520D5A5E7F00A9C68F /* FeedService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */; };
 		E3E6AE530D5A5E8000A9C68F /* FeedService.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */; };
+		E3EA071C0D91A43800564698 /* PionLockedQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3EA071B0D91A43800564698 /* PionLockedQueue.hpp */; };
+		E3EA071D0D91A43800564698 /* PionLockedQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3EA071B0D91A43800564698 /* PionLockedQueue.hpp */; };
 		E3EF11F00D74DB2A00A17A90 /* PionPlatformUnitTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */; };
 		E3EFC6940D18908F0019CCD4 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3FBA74E0D8F125E00D66A53 /* PionPerformanceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3FBA7370D8F119900D66A53 /* PionPerformanceTests.cpp */; };
@@ -800,14 +802,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E36F2E250CA789CD00120C6D /* pion-common: dynamic */;
+			remoteGlobalIDString = E36F2E250CA789CD00120C6D;
 			remoteInfo = "pion-common: dynamic";
 		};
 		E3FBA74B0D8F120300D66A53 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E33288B70BEE50B4006D0556 /* pion-platform: dynamic */;
+			remoteGlobalIDString = E33288B70BEE50B4006D0556;
 			remoteInfo = "pion-platform: dynamic";
 		};
 		E3FF95830D5789BE001E075B /* PBXContainerItemProxy */ = {
@@ -1073,11 +1075,12 @@
 		E3E6AE360D5A5E4100A9C68F /* FeedService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FeedService.cpp; path = platform/services/FeedService.cpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE370D5A5E4100A9C68F /* FeedService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FeedService.hpp; path = platform/services/FeedService.hpp; sourceTree = SOURCE_ROOT; };
 		E3E6AE510D5A5E5100A9C68F /* FeedService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FeedService.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3EA071B0D91A43800564698 /* PionLockedQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionLockedQueue.hpp; path = common/include/pion/PionLockedQueue.hpp; sourceTree = SOURCE_ROOT; };
 		E3EB0F9D0D6E40C40028F500 /* HTTPTypesTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPTypesTests.cpp; path = net/tests/HTTPTypesTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigServiceTests.cpp; path = platform/tests/ConfigServiceTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3EFC68F0D18905C0019CCD4 /* PionPlatformUnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionPlatformUnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FBA7370D8F119900D66A53 /* PionPerformanceTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionPerformanceTests.cpp; path = platform/tests/PionPerformanceTests.cpp; sourceTree = SOURCE_ROOT; };
-		E3FBA7450D8F11F000D66A53 /* PionPerformanceTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = PionPerformanceTests; path = bin/Debug/PionPerformanceTests; sourceTree = "<group>"; };
+		E3FBA7450D8F11F000D66A53 /* PionPerformanceTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PionPerformanceTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95950D5789BE001E075B /* ConfigService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = ConfigService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3FF95A30D579280001E075B /* ConfigService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigService.cpp; path = platform/services/ConfigService.cpp; sourceTree = SOURCE_ROOT; };
 		E3FF95A40D579280001E075B /* ConfigService.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConfigService.hpp; path = platform/services/ConfigService.hpp; sourceTree = SOURCE_ROOT; };
@@ -1612,6 +1615,7 @@
 				E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */,
 				E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */,
 				E36D8B8B0D29D40600B4C134 /* PionUnitTestDefs.hpp */,
+				E3EA071B0D91A43800564698 /* PionLockedQueue.hpp */,
 			);
 			name = include;
 			sourceTree = "<group>";
@@ -1851,6 +1855,7 @@
 				E30B43740CFBB4CF00337BA4 /* PluginManager.hpp in Headers */,
 				E36D8B8D0D29D40600B4C134 /* PionUnitTestDefs.hpp in Headers */,
 				E3A9D16A0D367F040094ECEE /* PionDateTime.hpp in Headers */,
+				E3EA071D0D91A43800564698 /* PionLockedQueue.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1868,6 +1873,7 @@
 				E30B43730CFBB4CF00337BA4 /* PluginManager.hpp in Headers */,
 				E36D8B8C0D29D40600B4C134 /* PionUnitTestDefs.hpp in Headers */,
 				E3A9D1690D367F040094ECEE /* PionDateTime.hpp in Headers */,
+				E3EA071C0D91A43800564698 /* PionLockedQueue.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3920,29 +3926,16 @@
 		E3FBA7470D8F11F100D66A53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
 				PRODUCT_NAME = PionPerformanceTests;
-				ZERO_LINK = YES;
 			};
 			name = Debug;
 		};
 		E3FBA7480D8F11F100D66A53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
 				PRODUCT_NAME = PionPerformanceTests;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};

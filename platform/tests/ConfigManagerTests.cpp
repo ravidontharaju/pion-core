@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsNotRelative) {
 }
 
 BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithSomeValidInputs) {
-	xmlNodePtr p;
+	xmlNodePtr p(NULL);
 
 	char buf1[] = "<PionConfig><resource1></resource1></PionConfig>";
 	BOOST_CHECK_NO_THROW(p = ConfigManager::createResourceConfig("resource1", buf1, strlen(buf1)));

@@ -27,6 +27,20 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of Event
 const boost::any	Event::NULL_PARAMETER_VALUE;
 	
+	
+// static members of EventFactory
+EventFactory *			EventFactory::m_instance_ptr = NULL;
+boost::once_flag		EventFactory::m_instance_flag = BOOST_ONCE_INIT;
+
+	
+// PionScheduler member functions
+
+void EventFactory::createInstance(void)
+{
+	static EventFactory factory_instance;
+	m_instance_ptr = &factory_instance;
+}
+
 
 }	// end namespace platform
 }	// end namespace pion

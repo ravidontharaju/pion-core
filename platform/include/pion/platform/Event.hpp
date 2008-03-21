@@ -23,6 +23,7 @@
 #include <list>
 #include <boost/any.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/thread/once.hpp>
 #include <boost/detail/atomic_count.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
@@ -481,6 +482,86 @@ private:
 };
 
 
+///
+/// EventPtr: data type used for dynamic Event smart pointers
+///
+class EventPtr :
+	public boost::intrusive_ptr<Event>
+{
+public:
+	/// default constructor (public is OK)
+	EventPtr(void) {}
+	/// copy constructor (public is OK)
+	EventPtr(const EventPtr& ptr) : boost::intrusive_ptr<Event>(ptr) {}
+	/// reset the pointer to be undefined
+	inline void reset(void) { EventPtr temp; swap(temp); }
+protected:
+	/// protected constructor: only allow EventFactory to create EventPtr objects
+	EventPtr(Event *ptr) : boost::intrusive_ptr<Event>(ptr) {}
+	/// protect assignment of pointers
+	inline EventPtr& operator=(Event *ptr) { boost::intrusive_ptr<Event>::operator=(ptr); return *this; }
+	/// only EventFactory can construct new pointers that are not null
+	friend class EventFactory;
+};
+
+/// data type for a collections of Events
+typedef std::list<EventPtr>				EventPtrCollection;
+	
+	
+///
+/// EventFactory: used to create and destroy dynamic EventPtr objects
+///
+class PION_PLATFORM_API EventFactory :
+	private boost::noncopyable
+{
+public:
+	
+	/// default destructor
+	~EventFactory() {}
+	
+	/**
+	 * creates and returns a new EventPtr, a reference-counting smart pointer
+	 * that automatically deletes the Event when there are no more references
+	 *
+	 * @param type the type of Event that is being created
+	 */
+	static inline EventPtr create(const Event::EventType t) {
+		return new Event(t);
+	}
+
+	/// destroys an EventPtr; this should only be called by intrusive_ptr_release()
+	static inline void destroy(Event *ptr) {
+		delete ptr;
+	}
+	
+	
+private:
+	
+	/// private constructor for singleton pattern
+	EventFactory(void) {}
+
+	/// creates the singleton instance, protected by boost::call_once
+	static void createInstance(void);
+
+	/**
+     * return an instance of the EventFactory singleton
+	 * 
+     * @return EventFactory& instance of EventFactory
+	 */
+	inline static EventFactory& getInstance(void) {
+		boost::call_once(EventFactory::createInstance, m_instance_flag);
+		return *m_instance_ptr;
+	}
+
+
+	/// points to the singleton instance after creation
+	static EventFactory *			m_instance_ptr;
+	
+	/// used for thread-safe singleton pattern
+	static boost::once_flag			m_instance_flag;
+};
+
+
 /// increments the reference count for an Event (for intrusive_ptr only!)
 inline void intrusive_ptr_add_ref(Event *e)
 {
@@ -491,19 +572,9 @@ inline void intrusive_ptr_add_ref(Event *e)
 inline void intrusive_ptr_release(Event *e)
 {
 	if (e->removeReference() == 0)
-		delete e;
+		EventFactory::destroy(e);
 }
 
-
-/// data type used for Event smart pointers
-typedef boost::intrusive_ptr<Event>		EventPtr;
-
-/// data type for a collections of Events
-typedef std::list<Event>				EventCollection;
-
-/// data type for a collections of Events
-typedef std::list<EventPtr>				EventPtrCollection;
-	
 
 }	// end namespace platform
 }	// end namespace pion
