@@ -146,22 +146,13 @@
 						<div id="sidebarMain" dojoType="dijit.layout.ContentPane" layoutAlign="client">
 							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
 								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
-									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="LogInputReactor"><img src="images/icon-log-input.png" width="148" height="25" alt="Log Input" /></div>
-									</div>
+									<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
-									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="FilterReactor"><img src="images/icon-filter.png" width="148" height="25" alt="Filter" /></div>
-										<div class="dojoDndItem" dndType="reactor" reactor_type="TransformReactor"><img src="images/icon-transform.png" width="148" height="25" alt="Transform" /></div>
-									</div>
+									<div jsId="processingReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
 								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
-									<div dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true">
-										<div class="dojoDndItem" dndType="reactor" reactor_type="LogOutputReactor"><img src="images/icon-log-output.png" width="148" height="25" alt="Log Output" /></div>
-										<div class="dojoDndItem" dndType="reactor" reactor_type="DatabaseOutputReactor"><img src="images/icon-data-store.png" width="148" height="25" alt="Database Output" /></div>
-										
-									</div>
+									<div jsId="storageReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
 							</div>
 						</div>
@@ -191,7 +182,6 @@
 				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
 					<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
 						<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
-							This text should never be visible!
 						</div>
 					</div>
 				</div>

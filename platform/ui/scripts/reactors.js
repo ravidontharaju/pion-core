@@ -57,12 +57,39 @@ pion.reactors.init = function() {
 
 	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/reactors.json'});
 
+	var dndSourceReactorCreator = function(item, hint) {
+		var node = dojo.doc.createElement("div");
+		node.id = dojo.dnd.getUniqueId();
+		node.className = "dojoDndItem";
+		node.setAttribute('reactor_type', item.reactor_type);
+		var img_node = dojo.doc.createElement("img");
+		node.appendChild(img_node);
+		img_node.setAttribute('src', item.src);
+		img_node.setAttribute('width', 148);
+		img_node.setAttribute('height', 25);
+		img_node.setAttribute('alt', item.label);
+		return {node: node, data: item, type: ["reactor"]};
+	}
+
+	// 'collectionReactors', 'processingReactors', and 'storageReactors' are objects of type dojo.dnd.Source,
+	// defined via markup in index.html.  Here we'll index them by their category and override each one's creator method.
+	var reactor_buckets = {collection: collectionReactors, processing: processingReactors, storage: storageReactors};
+	for (var category in reactor_buckets) {
+		reactor_buckets[category].creator = dndSourceReactorCreator;
+	}
+
+	// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
+	// accordion pane of the sidebar, add a reactor icon which can be dragged onto a workspace.
 	pion.reactors.plugin_data_store.fetch({
 		onItem: function(item) {
-			reactor_package = "plugins.reactors." + pion.reactors.plugin_data_store.getValue(item, 'plugin');
+			var plugin = pion.reactors.plugin_data_store.getValue(item, 'plugin');
+			reactor_package = "plugins.reactors." + plugin;
 			dojo.require(reactor_package);
-
-			// TODO: add reactor icon to sidebar
+ 			var category = pion.reactors.plugin_data_store.getValue(item, 'category');
+			var label = pion.reactors.plugin_data_store.getValue(item, 'label');
+			var icon = pion.reactors.plugin_data_store.getValue(item, 'icon');
+			console.debug('input = ', {reactor_type: plugin, src: icon, alt: label});
+			reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon, alt: label}]);
 		}
 	});
 
@@ -415,16 +442,15 @@ function handleDropOnWorkspace(source, nodes, copy, target) {
 		//alert("huh?");
 		return;
 	}
-	//console.debug("nodes[0]: ", nodes[0]);
-	//console.debug("nodes[0].getAttribute('dndType'): ", nodes[0].getAttribute('dndType'));
-	if (nodes[0].getAttribute("dndType") != "reactor") {
-		// This should not be reached, since the workspace targets are only supposed to accept reactors, but it is.
-		console.debug("dropped object is not a reactor");
+
+	// We need to duplicate the acceptance check that was done in onDndDrop(), since handleDropOnWorkspace() is called 
+	// whenever onDndDrop() is called.
+	// TODO: see if it would make more sense to have
+	//		new_workspace.creator = handleDropOnWorkspace  (appropriately rewritten)
+	// rather than
+	//		dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, new_workspace); })
+	if (!target.checkAcceptance(source, nodes))
 		return;
-	}
-	//debugger;
-	console.debug(copy ? "Copying from" : "Moving from", source);
-	console.debug("nodes: ", nodes);
 
 	var reactor_type = nodes[0].getAttribute("reactor_type");
 	var name = reactor_type + '_1';

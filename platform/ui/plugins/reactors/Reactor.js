@@ -39,7 +39,7 @@ dojo.declare("plugins.reactors.Reactor",
 
 			this.ops_per_sec = document.createElement('span');
 			dojo.addClass(this.ops_per_sec, 'ops_per_sec');
-			this.ops_per_sec.innerHTML = '12345';
+			this.ops_per_sec.innerHTML = '0';
 			this.domNode.appendChild(this.ops_per_sec);
 			this.domNode.setAttribute("reactor_type", this.config.Plugin);
 
