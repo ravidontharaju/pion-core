@@ -22,7 +22,7 @@
 		></table
 	</div>
 	<div dojoAttachPoint="filter_reactor_grid" dojoType="dojox.Grid" model="filter_reactor_grid_model"
-		 structure="filter_reactor_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+		 singleClickEdit="true" autoHeight="true"></div>
 	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onclick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="reactor_inputs_grid_model"
@@ -35,5 +35,4 @@
 		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
 		<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
 	</div>
-	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
 </div>

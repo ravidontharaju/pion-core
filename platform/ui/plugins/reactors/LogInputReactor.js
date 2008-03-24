@@ -16,7 +16,6 @@ dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/LogInputReactor/LogInputReactorInitDialog.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'LogInputReactor';
@@ -30,7 +29,6 @@ dojo.declare("plugins.reactors.LogInputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/LogInputReactor/LogInputReactorDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true
 	}
 );

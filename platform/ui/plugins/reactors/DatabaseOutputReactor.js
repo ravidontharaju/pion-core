@@ -2,6 +2,7 @@ dojo.provide("plugins.reactors.DatabaseOutputReactor");
 dojo.require("pion.databases");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojox.grid.Grid");
+dojo.require("pion.codecs"); // term_store
 
 dojo.declare("plugins.reactors.DatabaseOutputReactor",
 	[ plugins.reactors.Reactor ],
@@ -68,7 +69,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/DatabaseOutputReactor/DatabaseOutputReactorInitDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'DatabaseOutputReactor';
@@ -162,7 +162,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/DatabaseOutputReactor/DatabaseOutputReactorDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
@@ -249,7 +248,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			editor: dojox.grid.editors.Input},
 		{ name: 'Term', styles: '', 
 			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
+			editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
 		{ name: 'Delete', styles: 'align: center;', width: 3, 
 		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 	]]

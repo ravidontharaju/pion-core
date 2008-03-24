@@ -17,7 +17,6 @@ dojo.declare("plugins.reactors.LogOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/LogOutputReactor/LogOutputReactorInitDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'LogOutputReactor';
@@ -30,7 +29,6 @@ dojo.declare("plugins.reactors.LogOutputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/LogOutputReactor/LogOutputReactorDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true
 	}
 );

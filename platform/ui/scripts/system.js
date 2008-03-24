@@ -113,10 +113,18 @@ pion.system.init = function() {
 		return server_store.getValue(item, '@id');
 	}
 
-	var server_tree = new dijit.Tree({
+	var myModel = new dijit.tree.ForestStoreModel({
 		store: server_store,
-		childrenAttr: ['childNodes'],
+		query: {tagName: 'Server'},
+		rootId: 'serverRoot',
+		childrenAttrs: ["childNodes"]
+	});
+	var server_tree = new dijit.Tree({
+		model: myModel,
+		showRoot: false,
 		getLabel: function(item) {
+			if (item.root)
+				return; // Since we're not showing the root, we don't need a label, and since the root isn't an item in the store, the next line would fail.
 			var label = server_store.getValue(item, 'tagName');
 			
 			// Because @id is the identity attribute, the following returns null rather than undefined if the item doesn't have attribute @id.

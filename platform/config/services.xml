@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
 	<Server id="main-server">
 		<Port>8080</Port>
@@ -10,6 +10,16 @@
 			<Resource>/</Resource>
 			<Option name="file">./ui/index.html</Option>
 			<Option name="directory">./ui/</Option>
+			<Option name="cache">1</Option>
+			<Option name="scan">2</Option>
+			<Option name="writable">false</Option>
+		</WebService>
+		<WebService id="compiled-js-service">
+			<Name>Compiled Javascript Service</Name>
+			<Comment>Delivers Dojo and Pion files from a Dojo custom build</Comment>
+			<Plugin>FileService</Plugin>
+			<Resource>/pion-ui</Resource>
+			<Option name="directory">C:/pion-ui/</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>

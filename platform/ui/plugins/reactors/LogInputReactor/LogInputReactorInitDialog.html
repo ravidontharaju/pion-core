@@ -1,5 +1,5 @@
-<div class="dijitDialog reactor_dialog">
-	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+<div class="dijitDialog reactor_dialog" tabindex="-1" waiRole="dialog" waiState="labelledby-${id}_title">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Log File Input Reactor Initialization</span>
 	</div>
 	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
@@ -30,5 +30,4 @@
 		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
 	</div>
-	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
 </div>

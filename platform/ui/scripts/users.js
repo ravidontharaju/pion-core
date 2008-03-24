@@ -112,8 +112,6 @@ function adjustUserAccordionSize() {
 	dijit.byId('main_stack_container').resize({h: pion.users.height});
 }
 
-dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);
-
 function userPaneSelected(pane) {
 	console.debug('Selected ' + pane.title);
 
@@ -134,3 +132,5 @@ function userPaneSelected(pane) {
 	// Update selected_user_pane, so the form buttons will now act on the newly selected user.
 	selected_user_pane = pane;
 }
+
+dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);

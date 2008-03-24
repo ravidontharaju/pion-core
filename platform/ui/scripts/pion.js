@@ -23,13 +23,15 @@ var firefox_on_mac;
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
 
+	dojo.subscribe("main_stack_container-selectChild", configPageSelected);
+
 	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
 	pion.reactors.init();
-	
+
 	if (!file_protocol) {
 		// do a fetch just to check if the datastore is available
-		term_store.fetch({onError: function(errorData, request){
+		pion.codecs.term_store.fetch({onError: function(errorData, request){
 			alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
 			console.debug('window.location.protocol = ', window.location.protocol);
 		}});
@@ -37,8 +39,6 @@ var init = function() {
 }
 
 dojo.addOnLoad(init);
-
-dojo.subscribe("main_stack_container-selectChild", configPageSelected);
 
 function configPageSelected(page) {
 	console.debug('Selected ' + page.title + ' configuration page');

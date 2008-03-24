@@ -21,7 +21,7 @@
 			><tr
 				><td><label>Event&nbsp;Type</label></td
 				><td><input dojoType="dijit.form.FilteringSelect" name="EventType" query="{Type:'object'}" 
-						store="term_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
+						store="pion.codecs.term_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
 			></tr
 		></table
 	></div>
@@ -29,5 +29,4 @@
 		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
 	</div>
-	<span dojoAttachPoint="tabEnd" dojoAttachEvent="onfocus:_cycleFocus" tabindex="0"></span>
 </div>

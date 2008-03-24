@@ -17,6 +17,12 @@ dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.gfx");
 dojo.require("dojox.grid.Grid");
 
+dojo.require("plugins.reactors.LogInputReactor");
+dojo.require("plugins.reactors.LogOutputReactor");
+dojo.require("plugins.reactors.FilterReactor");
+dojo.require("plugins.reactors.TransformReactor");
+dojo.require("plugins.reactors.DatabaseOutputReactor");
+
 // configuration parameters
 var STEP = 10;
 var minimum_workspace_width = 2000;
@@ -55,7 +61,8 @@ pion.reactors.init = function() {
 		}
 	});
 
-	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/reactors.json'});
+	var url = dojo.moduleUrl('plugins', 'reactors.json');
+	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
 	var dndSourceReactorCreator = function(item, hint) {
 		var node = dojo.doc.createElement("div");
@@ -84,12 +91,17 @@ pion.reactors.init = function() {
 		onItem: function(item) {
 			var plugin = pion.reactors.plugin_data_store.getValue(item, 'plugin');
 			reactor_package = "plugins.reactors." + plugin;
-			dojo.require(reactor_package);
+			// TODO: check if the package is already loaded, and if not, call dojo.require.
+			//dojo.req   uire(reactor_package);
  			var category = pion.reactors.plugin_data_store.getValue(item, 'category');
 			var label = pion.reactors.plugin_data_store.getValue(item, 'label');
 			var icon = pion.reactors.plugin_data_store.getValue(item, 'icon');
-			console.debug('input = ', {reactor_type: plugin, src: icon, alt: label});
-			reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon, alt: label}]);
+			var icon_url = dojo.moduleUrl('plugins.reactors', icon);
+			console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
+			reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
+		},
+		onError: function(errorData, request) {
+			console.debug('Error fetching from reactors.json: ', errorData);
 		}
 	});
 
@@ -226,7 +238,7 @@ pion.reactors.init = function() {
 							var is_running_string = dojo.isIE? is_running_node.xml : is_running_node.textContent;
 							var is_running = (is_running_string == 'true');
 							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-							reactor.run_button.setChecked(is_running);
+							reactor.run_button.setAttribute('checked', is_running);
 						});
 						dojo.byId('workspace_ops').innerHTML = events_in_for_workspace - prev_events_in_for_workspace;
 						prev_events_in_for_workspace = events_in_for_workspace;
@@ -434,14 +446,18 @@ function createReactor(config, node) {
 
 function handleDropOnWorkspace(source, nodes, copy, target) {
 	console.debug("handleDropOnWorkspace called, target.node = ", target.node, ", workspace_box.node = ", workspace_box.node);
-	if (target != workspace_box) {
-		// So why was handleDropOnWorkspace called?  Because the manager is using a global canDrop flag.
-		// I added 
-		//		if(this.targetState == "Disabled"){ break; }
-		// to onDndDrop(), but that's too late to prevent handleDropOnWorkspace from getting called.
-		//alert("huh?");
-		return;
-	}
+
+	// Remove connectors that are added to the workspace as a consequence of being dropped on a reactor.
+	// They shouldn't be added, because the workspace is disabled as a target when a connector is being moved, but
+	// there is a bug in dojo.dnd.Source.onDndDrop.  Alternatively, this can be avoided by adding 
+	//		if(this.targetState == "Disabled"){ break; }
+	// near the beginning of dojo.dnd.Source.onDndDrop.
+	dojo.query('.dojoDndItem', workspace_box.node).forEach(function(n) {
+		if (n.getAttribute("dndType") == "connector") {
+			console.debug('Removing ', n);
+			workspace_box.node.removeChild(n);
+		}
+	});
 
 	// We need to duplicate the acceptance check that was done in onDndDrop(), since handleDropOnWorkspace() is called 
 	// whenever onDndDrop() is called.
@@ -772,10 +788,8 @@ function deleteReactor(reactor) {
 			console.error('HTTP status code: ', ioArgs.xhr.status);
 			return response;
 		}
-	});	
+	});
 }
-
-dojo.subscribe("mainTabContainer-selectChild", selected);
 
 function selected(page) {
 	if (page.title == "Add new workspace") {
@@ -795,6 +809,8 @@ function selected(page) {
 	// in case the window was resized since the workspace was last selected
 	expandWorkspaceIfNeeded();
 }
+
+dojo.subscribe("mainTabContainer-selectChild", selected);
 
 function expandWorkspaceIfNeeded() {
 	if (!surface) return; // the workspace isn't ready yet

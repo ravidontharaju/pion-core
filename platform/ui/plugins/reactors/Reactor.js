@@ -51,7 +51,7 @@ dojo.declare("plugins.reactors.Reactor",
 					_this.category = store.getValue(item, 'category');
 
 					if (_this.category != 'collection') {
-						_this.run_button.setChecked(true); // all reactors except collectors start out running
+						_this.run_button.setAttribute('checked', true); // all reactors except collectors start out running
 					}
 				}
 			});
@@ -156,7 +156,6 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorInitDialog.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true,
 		execute: function(dialogFields) {
 			console.debug(dialogFields);
@@ -193,7 +192,10 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					//console.debug('config (from server): ', config);
 					//console.dir(config);
 					var reactor_node = document.createElement("div");
+
+					// Replace the dnd reactor with the new reactor node.
 					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
+
 					var reactor = createReactor(config, reactor_node);
 					//console.debug('config.@id: ', config.@id);
 					reactors_by_id[config.@id] = reactor;
@@ -213,7 +215,6 @@ dojo.declare("plugins.reactors.ReactorDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorDialog.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true,
 		reactor: '',
 		execute: function(dialogFields) {

@@ -15,22 +15,22 @@ dojo.require("dojox.grid.Grid");
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
 
-var term_store = new dojox.data.XmlStore({url: '/config/terms', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
+pion.codecs.term_store = new dojox.data.XmlStore({url: '/config/terms', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
-term_store.fetchItemByIdentity = function(keywordArgs) {
-	term_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
+pion.codecs.term_store.fetchItemByIdentity = function(keywordArgs) {
+	pion.codecs.term_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
 }
-term_store.getIdentity = function(item) {
-	return term_store.getValue(item, '@id');
+pion.codecs.term_store.getIdentity = function(item) {
+	return pion.codecs.term_store.getValue(item, '@id');
 }
 
 pion.codecs.term_categories_by_id = {};
 
-term_store.fetch({
+pion.codecs.term_store.fetch({
 	onItem: function(item) {
-		var type = term_store.getValue(item, 'Type').toString();
-		var id   = term_store.getIdentity(item);
+		var type = pion.codecs.term_store.getValue(item, 'Type').toString();
+		var id   = pion.codecs.term_store.getIdentity(item);
 		console.debug('type = ', type, ', id = ', id);
 		pion.vocabularies.term_type_store.fetch({
 			query: {name: type},
@@ -59,7 +59,8 @@ pion.codecs.config_store.getIdentity = function(item) {
 pion.codecs.init = function() {
 	codec_config_store = pion.codecs.config_store;
 
-	pion.codecs.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/codecs.json'});
+	var url = dojo.moduleUrl('plugins', 'codecs.json');
+	pion.codecs.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
 	function onComplete(items, request){
 		var config_accordion = dijit.byId('codec_config_accordion');
@@ -161,8 +162,6 @@ function adjustCodecAccordionSize() {
 	dijit.byId('main_stack_container').resize({h: pion.codecs.height});
 }
 
-dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
-
 function codecPaneSelected(pane) {
 	console.debug('Selected ' + pane.title);
 
@@ -189,3 +188,5 @@ function codecPaneSelected(pane) {
 		}
 	});
 }
+
+dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);

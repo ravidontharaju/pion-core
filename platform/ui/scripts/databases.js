@@ -50,7 +50,8 @@ pion.databases._adjustAccordionSize = function() {
 pion.databases.init = function() {
 	var selected_pane = null;
 
-	pion.databases.plugin_data_store = new dojo.data.ItemFileReadStore({url: 'plugins/databases.json'});
+	var url = dojo.moduleUrl('plugins', 'databases.json');
+	pion.databases.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
@@ -152,7 +153,7 @@ pion.databases.init = function() {
 
 	function _addNewDatabase() {
 		var dialog = new plugins.databases.DatabaseInitDialog({title: 'Add New Database'});
-		
+
 		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
@@ -169,7 +170,7 @@ pion.databases.init = function() {
 			}
 			post_data += '</Database></PionConfig>';
 			console.debug('post_data: ', post_data);
-			
+
 			dojo.rawXhrPost({
 				url: '/config/databases',
 				contentType: "text/xml",

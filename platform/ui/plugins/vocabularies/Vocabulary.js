@@ -35,7 +35,6 @@ dojo.declare("plugins.vocabularies.VocabularyInitDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/VocabularyInitDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
@@ -66,25 +65,24 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/TermInitDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		_handleTypeChange: function(type) {
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
-				this.format_widget.setDisabled(false);
+				this.format_widget.setAttribute('disabled', false);
 				this.format_widget.setValue('%Y');
 				this.format_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.format_widget.setDisabled(true);
+				this.format_widget.setAttribute('disabled', true);
 				this.format_widget.setValue('');
 				this.format_widget.domNode.style.visibility = 'hidden';
 			}
 			if (type == 'fixed-length string') {
-				this.size_widget.setDisabled(false);
+				this.size_widget.setAttribute('disabled', false);
 				this.size_widget.setValue('1');
 				this.size_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.size_widget.setDisabled(true);
+				this.size_widget.setAttribute('disabled', true);
 				this.size_widget.setValue('');
 				this.size_widget.domNode.style.visibility = 'hidden';
 			}
@@ -111,11 +109,9 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 	[ dijit.layout.AccordionPane ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/VocabularyPane.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
-			this.attributes_by_column = ['text()', '@term', '@start', '@end'];
 			this.delete_col_index = 5;
 			var _this = this;
 			dojo.connect(this.vocab_grid, 'onCellClick', this, _this._handleCellClick);
@@ -210,15 +206,21 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.config.Name = this.vocab_store.getValue(this.vocab_item, 'Name');
 			this.config.Comment = this.vocab_store.getValue(this.vocab_item, 'Comment');
 			var xml_item = this.vocab_store.getValue(this.vocab_item, 'Locked');
-			this.config.Locked = xml_item && xml_item.toString() == 'true';
+			this.config.Locked = (typeof xml_item !== "undefined") && xml_item.toString() == 'true';
 			console.dir(this.config);
 			
-			this.name.setDisabled(this.config.Locked);
+			this.name.setAttribute('disabled', this.config.Locked);
 			this.comment.disabled = this.config.Locked;
-			this.add_new_term_button.setDisabled(this.config.Locked);
+			this.add_new_term_button.setAttribute('disabled', this.config.Locked);
 			if (this.config.Locked) {
+				if (!plugins.vocabularies.VocabularyPane.read_only_grid_layout) {
+					plugins.vocabularies.initGridLayouts();
+				}
 				this.vocab_grid.setStructure(plugins.vocabularies.VocabularyPane.read_only_grid_layout);
 			} else {
+				if (!plugins.vocabularies.VocabularyPane.grid_layout) {
+					plugins.vocabularies.initGridLayouts();
+				}
 				this.vocab_grid.setStructure(plugins.vocabularies.VocabularyPane.grid_layout);
 			}
 			this.vocab_grid.update();
@@ -388,14 +390,6 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					if (size && size != '-') {
 						post_data += ' size="' + size + '"';
 					}
-					/*
-					if (store.getValue(item, 'Format')) {
-						post_data += ' format="' + store.getValue(item, 'Format') + '"';
-					}
-					if (store.getValue(item, 'Size')) {
-						post_data += ' size="' + store.getValue(item, 'Size') + '"';
-					}
-					*/
 					post_data += '>' + pion.vocabularies.term_types_by_description[store.getValue(item, 'Type')] + '</Type>';
 					if (store.getValue(item, 'Comment')) {
 						post_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
@@ -447,9 +441,9 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.vocab_grid.model.requestRows();
 			this.populateFromVocabStore();
 		},
-		delete: function () {
+		delete2: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			console.debug('delete: selected vocabulary is ', this.title);
+			console.debug('delete2: selected vocabulary is ', this.title);
 			_this = this;
 			dojo.xhrDelete({
 				url: '/config/vocabularies/' + this.config.@id,
@@ -479,25 +473,27 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 	}
 );
 
-plugins.vocabularies.VocabularyPane.grid_layout = [{
-	rows: [[
-		{ name: 'ID',      field: 'ID',      width: 'auto', styles: '' },
-		{ name: 'Type',    field: 'Type',    width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-															editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description"} },
-		{ name: 'Format',  field: 'Format',  width: 10,     styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
-		{ name: 'Size',    field: 'Size',    width: 3,      styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
-		{ name: 'Comment', field: 'Comment', width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.TextBox", editorProps: {} },
-		{ name: 'Delete',					 width: 3,      styles: 'align: center;',  
-		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
-	]]
-}];
+plugins.vocabularies.initGridLayouts = function() {
+	plugins.vocabularies.VocabularyPane.grid_layout = [{
+		rows: [[
+			{ name: 'ID',      field: 'ID',      width: 'auto', styles: '' },
+			{ name: 'Type',    field: 'Type',    width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+																editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description"} },
+			{ name: 'Format',  field: 'Format',  width: 10,     styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
+			{ name: 'Size',    field: 'Size',    width: 3,      styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
+			{ name: 'Comment', field: 'Comment', width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.TextBox", editorProps: {} },
+			{ name: 'Delete',					 width: 3,      styles: 'align: center;',  
+			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
+		]]
+	}];
 
-plugins.vocabularies.VocabularyPane.read_only_grid_layout = [{
-	rows: [[
-		{ field: 'ID',      width: 'auto', styles: '' },
-		{ field: 'Type',    width: 'auto', styles: '' },
-		{ field: 'Format',  width: 10,     styles: '' },
-		{ field: 'Size',    width: 3,      styles: '' },
-		{ field: 'Comment', width: 'auto', styles: '' }
-	]]
-}];
+	plugins.vocabularies.VocabularyPane.read_only_grid_layout = [{
+		rows: [[
+			{ field: 'ID',      width: 'auto', styles: '' },
+			{ field: 'Type',    width: 'auto', styles: '' },
+			{ field: 'Format',  width: 10,     styles: '' },
+			{ field: 'Size',    width: 3,      styles: '' },
+			{ field: 'Comment', width: 'auto', styles: '' }
+		]]
+	}];
+}

@@ -29,7 +29,6 @@ dojo.declare("plugins.codecs.CodecInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/CodecInitDialog.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true
 	}
 );
@@ -38,7 +37,6 @@ dojo.declare("plugins.codecs.CodecPane",
 	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/CodecPane.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
@@ -111,9 +109,15 @@ dojo.declare("plugins.codecs.CodecPane",
 			}
 			*/
 			if (config.Plugin == 'LogCodec') {
+				if (!plugins.codecs.CodecPane.grid_layout) {
+					plugins.codecs.initGridLayouts();
+				}
 				grid.setStructure(plugins.codecs.CodecPane.grid_layout);
 				this.delete_col_index = 5;
 			} else {
+				if (!plugins.codecs.CodecPane.grid_layout_no_order) {
+					plugins.codecs.initGridLayouts();
+				}
 				grid.setStructure(plugins.codecs.CodecPane.grid_layout_no_order);
 				this.delete_col_index = 4;
 			}
@@ -247,9 +251,9 @@ dojo.declare("plugins.codecs.CodecPane",
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			this.populateFromConfigItem(this.config_item);
 		},
-		delete: function () {
+		delete2: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			console.debug('delete: selected codec is ', this.title);
+			console.debug('delete2: selected codec is ', this.title);
 			_this = this;
 			dojo.xhrDelete({
 				url: '/config/codecs/' + this.uuid,
@@ -283,38 +287,40 @@ dojo.declare("plugins.codecs.CodecPane",
 
 plugins.codecs.CodecPane.grid_model = new dojox.grid.data.Table(null, []);
 
-plugins.codecs.CodecPane.grid_layout = [{
-	rows: [[
-		{ name: 'Field Name', styles: '', width: 'auto', 
-			editor: dojox.grid.editors.Input },
-		{ name: 'Term', styles: '', 
-			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
-		{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
-			editor: dojox.grid.editors.Input },
-		{ name: 'End Char', width: 3, styles: 'text-align: center;', 
-			editor: dojox.grid.editors.Input },
-		{ name: 'order', 
-			editor: dojox.grid.editors.Dijit,
-			editorClass: "dijit.form.NumberSpinner", width: 5 },
-		{ name: 'Delete', styles: 'align: center;', width: 3, 
-		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
-	]]
-}];
+plugins.codecs.initGridLayouts = function() {
+	plugins.codecs.CodecPane.grid_layout = [{
+		rows: [[
+			{ name: 'Field Name', styles: '', width: 'auto', 
+				editor: dojox.grid.editors.Input },
+			{ name: 'Term', styles: '', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+				editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
+			{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Input },
+			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Input },
+			{ name: 'order', 
+				editor: dojox.grid.editors.Dijit,
+				editorClass: "dijit.form.NumberSpinner", width: 5 },
+			{ name: 'Delete', styles: 'align: center;', width: 3, 
+			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
+		]]
+	}];
 
-// This is very redundant, but dojo.clone can't seem to handle cloning grid_layout.
-plugins.codecs.CodecPane.grid_layout_no_order = [{
-	rows: [[
-		{ name: 'Field Name', styles: '', width: 'auto', 
-			editor: dojox.grid.editors.Input},
-		{ name: 'Term', styles: '', 
-			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
-		{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
-			editor: dojox.grid.editors.Input},
-		{ name: 'End Char', width: 3, styles: 'text-align: center;', 
-			editor: dojox.grid.editors.Input},
-		{ name: 'Delete', styles: 'align: center;', width: 3, 
-		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-	]]
-}];
+	// This is very redundant, but dojo.clone can't seem to handle cloning grid_layout.
+	plugins.codecs.CodecPane.grid_layout_no_order = [{
+		rows: [[
+			{ name: 'Field Name', styles: '', width: 'auto', 
+				editor: dojox.grid.editors.Input},
+			{ name: 'Term', styles: '', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+				editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
+			{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Input},
+			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Input},
+			{ name: 'Delete', styles: 'align: center;', width: 3, 
+			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+		]]
+	}];
+}

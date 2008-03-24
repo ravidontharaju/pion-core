@@ -1,6 +1,7 @@
 dojo.provide("plugins.reactors.FilterReactor");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojox.grid.Grid");
+dojo.require("pion.codecs"); // term_store
 
 dojo.declare("plugins.reactors.FilterReactor",
 	[ plugins.reactors.Reactor ],
@@ -66,30 +67,32 @@ dojo.declare("plugins.reactors.FilterReactor",
 	}
 );
 
-var filter_reactor_grid_layout = [{
-	rows: [[
-		{ name: 'Term', styles: '', 
-			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
-		{ name: 'Comparison', styles: '', width: 'auto', 
-			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-		{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
-			editor: dojox.grid.editors.Input},
-		{ name: 'Delete', styles: 'align: center;', width: 3, 
-		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-	]]
-}];
+plugins.reactors.initFilterReactorGridLayout = function() {
+	plugins.reactors.filter_reactor_grid_layout = [{
+		rows: [[
+			{ name: 'Term', styles: '', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+				editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
+			{ name: 'Comparison', styles: '', width: 'auto', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
+				editorProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
+			{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Input},
+			{ name: 'Delete', styles: 'align: center;', width: 3, 
+			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+		]]
+	}];
+}
 
 dojo.declare("plugins.reactors.FilterReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/FilterReactor/FilterReactorDialog.html"),
-		templateString: "",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
+			plugins.reactors.initFilterReactorGridLayout();
 			this.reactor.comparison_table = [];
 			var store = pion.reactors.config_store;
 			store.fetch({
@@ -120,7 +123,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			if (e.cellIndex == 1) { // clicked in comparison column
 				var term = filter_reactor_grid_model.getDatum(e.rowIndex, 0).toString();
 				console.debug('term = ', term, ', pion.codecs.term_categories_by_id[term] = ', pion.codecs.term_categories_by_id[term]);
-				filter_reactor_grid_layout[0].rows[0][1].editorProps.query.category = pion.codecs.term_categories_by_id[term];
+				plugins.reactors.filter_reactor_grid_layout[0].rows[0][1].editorProps.query.category = pion.codecs.term_categories_by_id[term];
 			} else if (e.cellIndex == 3) { // clicked in delete column
 				console.debug('Removing row ', e.rowIndex); 
 				this.removeSelectedRows();

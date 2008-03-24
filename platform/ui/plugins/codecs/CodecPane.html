@@ -30,7 +30,7 @@
 					><tr
 						><td><label>Event&nbsp;Type</label></td
 						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
-								store="term_store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
+								store="pion.codecs.term_store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
 					></tr
 				></table
 				><br/
@@ -41,7 +41,7 @@
 						><td style="background-color: #f1f1f1;"
 							><div class="codec_grid"
 								><div dojoAttachPoint="codec_grid" dojoType="dojox.Grid" model="plugins.codecs.CodecPane.grid_model"
-									 structure="plugins.codecs.CodecPane.grid_layout" singleClickEdit="true"></div
+									 singleClickEdit="true"></div
 							></div
 							><button dojoType=dijit.form.Button class="add_new_row" dojoAttachEvent="onClick:_handleAddNewField">ADD NEW ROW</button
 						></td
@@ -49,9 +49,9 @@
 				></table
 				><hr noshade="noshade" size="1" color="#999999"
 				><div class="save_cancel_delete"
-					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save" type="submit">Save Changes</button
+					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button
 					><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
-					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete">Delete Codec</button
+					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete2">Delete Codec</button
 				></div
 			></form
 		></div

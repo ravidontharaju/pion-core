@@ -28,7 +28,6 @@ dojo.declare("plugins.databases.DatabaseInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabaseInitDialog.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true
 	}
 );
@@ -37,7 +36,6 @@ dojo.declare("plugins.databases.DatabasePane",
 	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabasePane.html"),
-		templateString: "",       // Necessary to keep Dijit from using templateString in dijit.Dialog
 		widgetsInTemplate: true,
 		populateFromConfigItem: function(item) {
 			var store = pion.databases.config_store;
@@ -119,9 +117,9 @@ dojo.declare("plugins.databases.DatabasePane",
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			this.populateFromConfigItem(this.config_item);
 		},
-		delete: function () {
+		delete2: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			console.debug('delete: selected database is ', this.title);
+			console.debug('delete2: selected database is ', this.title);
 			_this = this;
 			dojo.xhrDelete({
 				url: '/config/databases/' + this.uuid,

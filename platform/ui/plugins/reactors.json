@@ -1,10 +1,10 @@
 {
 	identifier: 'plugin',
 	items: [
-		{plugin: 'FilterReactor',         category: 'processing', label: 'Filter Reactor'          , icon: 'plugins/reactors/FilterReactor/icon-filter.png'},
-		{plugin: 'TransformReactor',      category: 'processing', label: 'Transformation Reactor'  , icon: 'plugins/reactors/TransformReactor/icon-transform.png'},
-		{plugin: 'LogInputReactor',       category: 'collection', label: 'Log File Input Reactor'  , icon: 'plugins/reactors/LogInputReactor/icon-log-input.png'},
-		{plugin: 'LogOutputReactor',      category: 'storage',    label: 'Log File Output Reactor' , icon: 'plugins/reactors/LogOutputReactor/icon-log-output.png'},
-		{plugin: 'DatabaseOutputReactor', category: 'storage',    label: 'Embedded Storage Reactor', icon: 'plugins/reactors/DatabaseOutputReactor/icon-data-store.png'}
+		{plugin: 'FilterReactor',         category: 'processing', label: 'Filter Reactor'          , icon: 'FilterReactor/icon-filter.png'},
+		{plugin: 'TransformReactor',      category: 'processing', label: 'Transformation Reactor'  , icon: 'TransformReactor/icon-transform.png'},
+		{plugin: 'LogInputReactor',       category: 'collection', label: 'Log File Input Reactor'  , icon: 'LogInputReactor/icon-log-input.png'},
+		{plugin: 'LogOutputReactor',      category: 'storage',    label: 'Log File Output Reactor' , icon: 'LogOutputReactor/icon-log-output.png'},
+		{plugin: 'DatabaseOutputReactor', category: 'storage',    label: 'Embedded Storage Reactor', icon: 'DatabaseOutputReactor/icon-data-store.png'}
 	]
 }

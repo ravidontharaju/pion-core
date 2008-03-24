@@ -8,16 +8,26 @@
 	<title>Pion&trade;, Rule Your Data</title>
 
 	<style type="text/css">
-		@import "dojo/dijit/themes/tundra/tundra.css";
-		@import "dojo/dojox/grid/_grid/tundraGrid.css";
+		@import "pion-ui/dijit/themes/tundra/tundra.css";
+		@import "pion-ui/dojox/grid/_grid/tundraGrid.css";
 	</style>
 	<link href="styles/default.css" rel="stylesheet" type="text/css" media="screen" />
 
-	<script type="text/javascript" src="dojo/dojo/dojo.js"
+	<!--
+	<script type="text/javascript" src="pion-ui/dojo/dojo.js"
 		djConfig="isDebug: false, debugAtAllCosts: false, parseOnLoad: true"></script>
+	<script type="text/javascript" src="pion-ui/dojo/pion-dojo.js"></script>
+	-->
+	<script type="text/javascript" src="dojo-src/dojo/dojo.js"
+		djConfig="isDebug: true, debugAtAllCosts: false, parseOnLoad: true"></script>
+	<script type="text/javascript" src="dojo-src/dojox/gfx.js"></script>
+	<script type="text/javascript" src="scripts/pion.js"></script>
+	<!--
+	-->
 
 	<!-- All these dojo source code files are included here just for debugging 
 		 purposes; by putting them here, the code is available to Firebug. -->
+	<!--
 	<script type="text/javascript" src="dojo/dojo/dnd/Mover.js"></script>
 	<script type="text/javascript" src="dojo/dojo/dnd/Moveable.js"></script>
 	<script type="text/javascript" src="dojo/dojo/dnd/move.js"></script>
@@ -31,6 +41,7 @@
 	<script type="text/javascript" src="dojo/dijit/dijit.js"></script>
 	<script type="text/javascript" src="dojo/dijit/Dialog.js"></script>
 	<script type="text/javascript" src="dojo/dijit/_Widget.js"></script>
+	<script type="text/javascript" src="dojo/dijit/_Templated.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/_FormWidget.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/Form.js"></script>
 	<script type="text/javascript" src="dojo/dijit/form/TextBox.js"></script>
@@ -54,11 +65,15 @@
 	<script type="text/javascript" src="dojo/dojox/grid/_data/model.js"></script>
 	<script type="text/javascript" src="dojo/dojox/grid/_grid/focus.js"></script>
 	<script type="text/javascript" src="dojo/dojox/grid/_grid/edit.js"></script>
+	-->
 
+	<!--
 	<script type="text/javascript" src="scripts/pion.js"></script>
+	-->
 
 	<!-- These are also included here just for debugging.  Only pion.js must be included,
 		 the rest are dojo.require'd as needed. -->
+	<!--
 	<script type="text/javascript" src="scripts/reactors.js"></script>
 	<script type="text/javascript" src="scripts/vocabularies.js"></script>
 	<script type="text/javascript" src="scripts/codecs.js"></script>
@@ -71,6 +86,10 @@
 	<script type="text/javascript" src="plugins/codecs/Codec.js"></script>
 	<script type="text/javascript" src="plugins/databases/Database.js"></script>
 	<script type="text/javascript" src="plugins/vocabularies/Vocabulary.js"></script>
+	-->
+	<!--
+	-->
+
 	<script type="text/javascript">
 		var reactor_inputs_grid_layout = [{
 			rows: [[
@@ -92,11 +111,6 @@
 	</script>
 </head>
 <body class="tundra">
-
-<!-- data stores of plugin types -->
-	<div dojoType="dojo.data.ItemFileReadStore" jsId="codecTypeStore" url="plugins/codecs.json"></div>
-	<div dojoType="dojo.data.ItemFileReadStore" jsId="databaseTypeStore" url="plugins/databases.json"></div>
-
 	<div id="outer" style="visibility: hidden">
 		<div id="topBar">
 			<!-- start header -->
