@@ -20,6 +20,7 @@
 #ifndef __PION_EVENT_HEADER__
 #define __PION_EVENT_HEADER__
 
+#include <map>
 #include <list>
 #include <boost/any.hpp>
 #include <boost/intrusive_ptr.hpp>
@@ -27,7 +28,6 @@
 #include <boost/detail/atomic_count.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionHashMap.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -47,7 +47,7 @@ public:
 	typedef Vocabulary::TermRef		EventType;
 	
 	/// data type for a map of numeric type identifiers to values
-	typedef PION_HASH_MULTIMAP<Vocabulary::TermRef, boost::any>	ParameterMap;
+	typedef std::multimap<Vocabulary::TermRef, boost::any>	ParameterMap;
 
 	
 	/// virtual destructor: you may extend this class

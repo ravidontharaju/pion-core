@@ -190,7 +190,7 @@ protected:
 
 
 ///
-/// EventAllocTest: tests the performance of allocating and freeing EventPtr's
+/// EventAllocTest: tests the performance of allocating and freeing Event's
 ///
 class EventAllocTest :
 	public AllocTest
@@ -204,6 +204,74 @@ public:
 
 	/// virtual destructor
 	virtual ~EventAllocTest() { stop(); }
+
+private:
+
+	/// counts the creation and deletion of EventPtr objects
+	virtual void countAllocs(void) {
+		while (isRunning()) {
+			Event *event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF);
+			delete event_ptr;
+			++m_counter;
+		}
+	}
+};
+
+
+/// data type for an Event pool allocator
+typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
+	boost::details::pool::default_mutex, 10240 >	EventPoolAlloc;
+
+
+///
+/// EventPoolAllocTest: tests the performance of allocating and freeing Event's
+///                     using boost::fast_pool_allocator
+///
+class EventPoolAllocTest :
+	public AllocTest
+{
+public:
+
+	/// default constructor
+	EventPoolAllocTest(void) {
+		setTestDescription("EventPoolAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventPoolAllocTest() { stop(); }
+
+private:	
+
+	/// counts the creation and deletion of EventPtr objects
+	virtual void countAllocs(void) {
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
+		while (isRunning()) {
+			mem_ptr = EventPoolAlloc::allocate();
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			event_ptr->~Event();
+			EventPoolAlloc::deallocate(event_ptr);
+			++m_counter;
+		}
+	}
+};
+
+
+///
+/// EventPtrAllocTest: tests the performance of allocating and freeing EventPtr's
+///
+class EventPtrAllocTest :
+	public AllocTest
+{
+public:
+
+	/// default constructor
+	EventPtrAllocTest(void) {
+		setTestDescription("EventPtrAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventPtrAllocTest() { stop(); }
 
 private:
 
@@ -221,56 +289,22 @@ private:
 };
 
 
-/// data type for an Event pool allocator
-typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
-	boost::details::pool::default_mutex, 10240 >	EventPoolAlloc;
-
-
 ///
-/// EventPoolAllocTest: tests the performance of allocating and freeing Event's using boost::fast_pool_allocator
-///
-class EventPoolAllocTest :
-	public EventAllocTest
-{
-public:
-
-	/// default constructor
-	EventPoolAllocTest(void) {
-		setTestDescription("EventPoolAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~EventPoolAllocTest() { stop(); }
-
-private:	
-
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) {
-		while (isRunning()) {
-			Event *event_ptr = EventPoolAlloc::allocate();
-			EventPoolAlloc::deallocate(event_ptr);
-			++m_counter;
-		}
-	}
-};
-
-
-///
-/// CLFEventAllocTest: tests the performance of allocating and freeing EventPtr's
+/// CLFEventPtrAllocTest: tests the performance of allocating and freeing EventPtr's
 ///                    that contain common log format data
 ///
-class CLFEventAllocTest :
-	public EventAllocTest
+class CLFEventPtrAllocTest :
+	public EventPtrAllocTest
 {
 public:
 
 	/// default constructor
-	CLFEventAllocTest(void) {
-		setTestDescription("CLFEventAllocTest");
+	CLFEventPtrAllocTest(void) {
+		setTestDescription("CLFEventPtrAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~CLFEventAllocTest() { stop(); }
+	virtual ~CLFEventPtrAllocTest() { stop(); }
 
 private:
 
@@ -335,21 +369,21 @@ protected:
 
 
 ///
-/// EventAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
-///                          in one thread and deleting them in another thread
+/// EventPtrAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
+///                             in one thread and deleting them in another thread
 ///
-class EventAllocTwoThreadTest :
+class EventPtrAllocTwoThreadTest :
 	public AllocTwoThreadTest
 {
 public:
 
 	/// default constructor
-	EventAllocTwoThreadTest(void) {
-		setTestDescription("EventAllocTwoThreadTest");
+	EventPtrAllocTwoThreadTest(void) {
+		setTestDescription("EventPtrAllocTwoThreadTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventAllocTwoThreadTest() { stop(); }
+	virtual ~EventPtrAllocTwoThreadTest() { stop(); }
 
 
 protected:
@@ -376,6 +410,9 @@ protected:
 			if (! isRunning()) break;
 			++m_counter;
 		}
+		// consume the rest of the queue to make sure generate() doesn't hang
+		while (m_queue.pop(event_ptr))
+			++m_counter;
 	}
 	
 	
@@ -409,8 +446,11 @@ protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
 	inline void generate(void) {
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
 		while (isRunning()) {
-			Event *event_ptr = EventPoolAlloc::allocate();
+			mem_ptr = EventPoolAlloc::allocate();
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
 			m_queue.push(event_ptr);
 		}
 	}
@@ -422,8 +462,15 @@ protected:
 			// sleep 1/8 second if the queue is empty
 			while (isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
+			event_ptr->~Event();
 			EventPoolAlloc::deallocate(event_ptr);
 			if (! isRunning()) break;
+			++m_counter;
+		}
+		// consume the rest of the queue to make sure generate() doesn't hang
+		while (m_queue.pop(event_ptr)) {
+			event_ptr->~Event();
+			EventPoolAlloc::deallocate(event_ptr);
 			++m_counter;
 		}
 	}
@@ -437,22 +484,22 @@ private:
 
 
 ///
-/// CLFEventAllocTwoThreadTest: tests the performance of creating EventPtr objects that
-///                             that contain common log format data in one thread and
-///                             deleting them in another thread
+/// CLFEventPtrAllocTwoThreadTest: tests the performance of creating EventPtr objects that
+///                                that contain common log format data in one thread and
+///                                deleting them in another thread
 ///
-class CLFEventAllocTwoThreadTest :
-	public EventAllocTwoThreadTest
+class CLFEventPtrAllocTwoThreadTest :
+	public EventPtrAllocTwoThreadTest
 {
 public:
 
 	/// default constructor
-	CLFEventAllocTwoThreadTest(void) {
-		setTestDescription("CLFEventAllocTwoThreadTest");
+	CLFEventPtrAllocTwoThreadTest(void) {
+		setTestDescription("CLFEventPtrAllocTwoThreadTest");
 	}
 
 	/// virtual destructor
-	virtual ~CLFEventAllocTwoThreadTest() { stop(); }
+	virtual ~CLFEventPtrAllocTwoThreadTest() { stop(); }
 
 protected:
 
@@ -481,20 +528,24 @@ int main(void) {
 	test_ptr.reset(new EventPoolAllocTest);
 	test_ptr->run();
 	
-	// run the CLFEventAllocTest
-	test_ptr.reset(new CLFEventAllocTest);
+	// run the EventPtrAllocTest
+	test_ptr.reset(new EventPtrAllocTest);
+	test_ptr->run();
+	
+	// run the CLFEventPtrAllocTest
+	test_ptr.reset(new CLFEventPtrAllocTest);
 	test_ptr->run();
 
-	// run the EventAllocTwoThreadTest
-	test_ptr.reset(new EventAllocTwoThreadTest);
+	// run the EventPtrAllocTwoThreadTest
+	test_ptr.reset(new EventPtrAllocTwoThreadTest);
 	test_ptr->run();
 
 	// run the EventPoolAllocTwoThreadTest
 	test_ptr.reset(new EventPoolAllocTwoThreadTest);
 	test_ptr->run();
 
-	// run the CLFEventAllocTwoThreadTest
-	test_ptr.reset(new CLFEventAllocTwoThreadTest);
+	// run the CLFEventPtrAllocTwoThreadTest
+	test_ptr.reset(new CLFEventPtrAllocTwoThreadTest);
 	test_ptr->run();
 	
 	return 0;
