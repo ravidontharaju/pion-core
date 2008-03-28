@@ -45,7 +45,6 @@ CodecPtr LogCodec::clone(void) const
 {
 	LogCodec *new_codec(new LogCodec());
 	new_codec->copyCodec(*this);
-	boost::mutex::scoped_lock codec_lock(m_mutex);
 	new_codec->m_flush_after_write = m_flush_after_write;
 	new_codec->m_needs_to_write_headers = m_needs_to_write_headers;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
@@ -60,7 +59,6 @@ void LogCodec::write(std::ostream& out, const Event& e)
 	const Event::ParameterValue *value_ptr;
 	
 	// iterate through each field in the current format
-	boost::mutex::scoped_lock codec_lock(m_mutex);
 	
 	// write the ELF headers if necessary
 	if (m_needs_to_write_headers) {
@@ -140,10 +138,9 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 		c = buf_ptr->sgetc();
 	}
 
-	boost::mutex::scoped_lock codec_lock(m_mutex);
+	// iterate through each field in the format
 	CurrentFormat::const_iterator i = m_format.begin();
 
-	// iterate through each field in the format
 	while (i != m_format.end()) {
 		const char delim_start = (*i)->log_delim_start;
 		const char delim_end = (*i)->log_delim_end;
@@ -237,7 +234,6 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// first set config options for the Codec base class
 	reset();
 	Codec::setConfig(v, config_ptr);
-	boost::mutex::scoped_lock codec_lock(m_mutex);
 	
 	// check if the Codec should flush the output stream after each write
 	m_flush_after_write = false;
@@ -316,7 +312,6 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 	Codec::updateVocabulary(v);
 
 	/// copy Term data over from the updated Vocabulary
-	boost::mutex::scoped_lock codec_lock(m_mutex);
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		/// we can assume for now that Term reference values will never change
 		(*i)->log_term = v[(*i)->log_term.term_ref];

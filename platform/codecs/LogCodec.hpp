@@ -25,7 +25,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
@@ -123,7 +122,6 @@ public:
 	
 	/// resets the configuration for this Codec
 	inline void reset(void) {
-		boost::mutex::scoped_lock codec_lock(m_mutex);
 		m_field_map.clear();
 		m_format.clear();
 	}
@@ -272,9 +270,6 @@ private:
 	
 	/// true if the codec should write out ELF headers
 	bool							m_needs_to_write_headers;
-
-	/// mutex used to protect the field mappings
-	mutable boost::mutex			m_mutex;	
 };
 
 
