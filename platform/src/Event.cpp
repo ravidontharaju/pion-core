@@ -25,7 +25,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of Event
-const boost::any	Event::NULL_PARAMETER_VALUE;
+const Event::ParameterValue	Event::NULL_PARAMETER_VALUE;
 	
 	
 // static members of EventFactory

@@ -90,10 +90,10 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	e[m_fixed_term.term_ref] = short_msg_str;
 	e[m_date_term.term_ref] = PionDateTime(boost::gregorian::date(2007, 4, 5));
 
-	const boost::any *value_ptr = e.getPointer(m_plain_int_term.term_ref);
+	const Event::ParameterValue *value_ptr = e.getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
-	BOOST_CHECK_EQUAL(boost::any_cast<boost::int32_t>(*value_ptr), 24);
-	BOOST_CHECK_EQUAL(boost::any_cast<boost::uint64_t>(e[m_big_int_term.term_ref]), 2025221224UL);
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(*value_ptr), 24);
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(e[m_big_int_term.term_ref]), 2025221224UL);
 	BOOST_CHECK_EQUAL(e.getString(m_fixed_term.term_ref), short_msg_str);
 	PionDateTime pdt = e.getDateTime(m_date_term.term_ref);
 	BOOST_CHECK_EQUAL(pdt.date().year(), 2007);

@@ -198,7 +198,7 @@ private:
 		 * @param out the output stream to which the value will be written
 		 * @param value the value to write
 		 */
-		inline void write(std::ostream& out, const boost::any& value);
+		inline void write(std::ostream& out, const pion::platform::Event::ParameterValue& value);
 		
 		/**
 		 * reads the value for a single field
@@ -206,7 +206,7 @@ private:
 		 * @param buf array of bytes to read the value from
 		 * @param value the value to read
 		 */
-		inline void read(const char *buf, boost::any& value);
+		inline void read(const char *buf, pion::platform::Event::ParameterValue& value);
 
 		/// the name of the field
 		std::string							log_field;
@@ -338,7 +338,7 @@ inline void LogCodec::writeHeaders(std::ostream& out) const
 	
 // inline member functions for LogCodec::LogField
 
-inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value)
+inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::Event::ParameterValue& value)
 {
 	if (log_delim_start != '\0')
 		out << log_delim_start;
@@ -350,38 +350,38 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
-			out << boost::any_cast<boost::int32_t>(value);
+			out << boost::get<boost::int32_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_INT64:
-			out << boost::any_cast<boost::int64_t>(value);
+			out << boost::get<boost::int64_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT8:
 		case pion::platform::Vocabulary::TYPE_UINT16:
 		case pion::platform::Vocabulary::TYPE_UINT32:
-			out << boost::any_cast<boost::uint32_t>(value);
+			out << boost::get<boost::uint32_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT64:
-			out << boost::any_cast<boost::uint64_t>(value);
+			out << boost::get<boost::uint64_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_FLOAT:
-			out << boost::any_cast<float>(value);
+			out << boost::get<float>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_DOUBLE:
-			out << boost::any_cast<double>(value);
+			out << boost::get<double>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-			out << boost::any_cast<long double>(value);
+			out << boost::get<long double>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_CHAR:
-			out << boost::any_cast<const std::string&>(value);
+			out << boost::get<const std::string&>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
-			log_time_facet.write(out, boost::any_cast<const PionDateTime&>(value));
+			log_time_facet.write(out, boost::get<const PionDateTime&>(value));
 			break;
 		case pion::platform::Vocabulary::TYPE_OBJECT:
 			// do nothing; this is not supported for Log data streams
@@ -392,11 +392,11 @@ inline void LogCodec::LogField::write(std::ostream& out, const boost::any& value
 		out << log_delim_end;
 }
 
-inline void LogCodec::LogField::read(const char *buf, boost::any& value)
+inline void LogCodec::LogField::read(const char *buf, pion::platform::Event::ParameterValue& value)
 {
 	switch(log_term.term_type) {
 		case pion::platform::Vocabulary::TYPE_NULL:
-			value = boost::any();
+			value = pion::platform::Event::ParameterValue();
 			break;
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:

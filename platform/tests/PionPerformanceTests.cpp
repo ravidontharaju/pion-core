@@ -28,6 +28,13 @@
 #include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
+#ifndef _MSC_VER
+	// for tests that use the GNU "multithread" allocator included with GCC
+	#include <ext/mt_allocator.h>
+	/// data type for an Event allocator that uses the GCC "multithread" allocator
+	typedef __gnu_cxx::__mt_alloc<pion::platform::Event>	EventGCCPoolAlloc;
+#endif
+
 using namespace std;
 using namespace pion;
 using namespace pion::platform;
@@ -220,25 +227,25 @@ private:
 
 /// data type for an Event pool allocator
 typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
-	boost::details::pool::default_mutex, 10240 >	EventPoolAlloc;
+	boost::details::pool::default_mutex, 10240 >	EventBoostPoolAlloc;
 
 
 ///
-/// EventPoolAllocTest: tests the performance of allocating and freeing Event's
-///                     using boost::fast_pool_allocator
+/// EventBoostPoolAllocTest: tests the performance of allocating and freeing Event's
+///                          using boost::fast_pool_allocator
 ///
-class EventPoolAllocTest :
+class EventBoostPoolAllocTest :
 	public AllocTest
 {
 public:
 
 	/// default constructor
-	EventPoolAllocTest(void) {
-		setTestDescription("EventPoolAllocTest");
+	EventBoostPoolAllocTest(void) {
+		setTestDescription("EventBoostPoolAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventPoolAllocTest() { stop(); }
+	virtual ~EventBoostPoolAllocTest() { stop(); }
 
 private:	
 
@@ -247,14 +254,54 @@ private:
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			mem_ptr = EventPoolAlloc::allocate();
+			mem_ptr = EventBoostPoolAlloc::allocate();
 			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
 			event_ptr->~Event();
-			EventPoolAlloc::deallocate(event_ptr);
+			EventBoostPoolAlloc::deallocate(event_ptr);
 			++m_counter;
 		}
 	}
 };
+
+
+#ifndef _MSC_VER
+///
+/// EventGCCPoolAllocTest: tests the performance of allocating and freeing Event's
+///                        using the GCC "multithread" allocator
+///
+class EventGCCPoolAllocTest :
+	public AllocTest
+{
+public:
+
+	/// default constructor
+	EventGCCPoolAllocTest(void) {
+		setTestDescription("EventGCCPoolAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventGCCPoolAllocTest() { stop(); }
+
+private:	
+
+	/// counts the creation and deletion of EventPtr objects
+	virtual void countAllocs(void) {
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
+		while (isRunning()) {
+			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			event_ptr->~Event();
+			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			++m_counter;
+		}
+	}
+
+
+	/// memory pool allocator
+	EventGCCPoolAlloc	m_pool_alloc;
+};
+#endif
 
 
 ///
@@ -411,8 +458,7 @@ protected:
 			++m_counter;
 		}
 		// consume the rest of the queue to make sure generate() doesn't hang
-		while (m_queue.pop(event_ptr))
-			++m_counter;
+		while (m_queue.pop(event_ptr)) ;
 	}
 	
 	
@@ -472,22 +518,22 @@ private:
 
 
 ///
-/// EventPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
-///                              in one thread and deleting them in another thread using
-///                              boost::fast_pool_allocator
+/// EventBoostPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
+///                                   in one thread and deleting them in another thread using
+///                                   boost::fast_pool_allocator
 ///
-class EventPoolAllocTwoThreadTest :
+class EventBoostPoolAllocTwoThreadTest :
 	public AllocTwoThreadTest
 {
 public:
 
 	/// default constructor
-	EventPoolAllocTwoThreadTest(void) {
-		setTestDescription("EventPoolAllocTwoThreadTest");
+	EventBoostPoolAllocTwoThreadTest(void) {
+		setTestDescription("EventBoostPoolAllocTwoThreadTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventPoolAllocTwoThreadTest() { stop(); }
+	virtual ~EventBoostPoolAllocTwoThreadTest() { stop(); }
 
 
 protected:
@@ -497,7 +543,7 @@ protected:
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			mem_ptr = EventPoolAlloc::allocate();
+			mem_ptr = EventBoostPoolAlloc::allocate();
 			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
 			m_queue.push(event_ptr);
 		}
@@ -511,15 +557,14 @@ protected:
 			while (isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
 			event_ptr->~Event();
-			EventPoolAlloc::deallocate(event_ptr);
+			EventBoostPoolAlloc::deallocate(event_ptr);
 			if (! isRunning()) break;
 			++m_counter;
 		}
 		// consume the rest of the queue to make sure generate() doesn't hang
 		while (m_queue.pop(event_ptr)) {
 			event_ptr->~Event();
-			EventPoolAlloc::deallocate(event_ptr);
-			++m_counter;
+			EventBoostPoolAlloc::deallocate(event_ptr);
 		}
 	}
 	
@@ -529,6 +574,70 @@ private:
 	/// a shared queue of EventPtr objects
 	PionLockedQueue<Event*>				m_queue;
 };
+
+
+#ifndef _MSC_VER
+///
+/// EventGCCPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
+///                                 in one thread and deleting them in another thread using
+///                                 the GCC "multithread" allocator
+///
+class EventGCCPoolAllocTwoThreadTest :
+	public AllocTwoThreadTest
+{
+public:
+
+	/// default constructor
+	EventGCCPoolAllocTwoThreadTest(void) {
+		setTestDescription("EventGCCPoolAllocTwoThreadTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventGCCPoolAllocTwoThreadTest() { stop(); }
+
+
+protected:
+
+	/// creates EventPtr objects and pushes them into a shared queue
+	inline void generate(void) {
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
+		while (isRunning()) {
+			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			m_queue.push(event_ptr);
+		}
+	}
+
+	/// frees EventPtr objects in the shared queue
+	inline void consume(void) {
+		Event *event_ptr(NULL);
+		while (isRunning()) {
+			// sleep 1/8 second if the queue is empty
+			while (isRunning() && !m_queue.pop(event_ptr))
+				PionScheduler::sleep(0, 125000000);
+			event_ptr->~Event();
+			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			if (! isRunning()) break;
+			++m_counter;
+		}
+		// consume the rest of the queue to make sure generate() doesn't hang
+		while (m_queue.pop(event_ptr)) {
+			event_ptr->~Event();
+			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+		}
+	}
+	
+	
+private:
+
+	/// a shared queue of EventPtr objects
+	PionLockedQueue<Event*, 1000000, 100000000>			m_queue;
+
+	/// memory pool allocator
+	EventGCCPoolAlloc	m_pool_alloc;
+};
+#endif
 
 
 ///
@@ -572,10 +681,16 @@ int main(void) {
 	test_ptr.reset(new EventAllocTest);
 	test_ptr->run();
 	
-	// run the EventPoolAllocTest
-	test_ptr.reset(new EventPoolAllocTest);
+	// run the EventBoostPoolAllocTest
+	test_ptr.reset(new EventBoostPoolAllocTest);
 	test_ptr->run();
 	
+#ifndef _MSC_VER
+	// run the EventGCCPoolAllocTest
+	test_ptr.reset(new EventGCCPoolAllocTest);
+	test_ptr->run();
+#endif
+
 	// run the EventPtrAllocTest
 	test_ptr.reset(new EventPtrAllocTest);
 	test_ptr->run();
@@ -592,9 +707,15 @@ int main(void) {
 	test_ptr.reset(new EventPtrAllocTwoThreadTest);
 	test_ptr->run();
 
-	// run the EventPoolAllocTwoThreadTest
-	test_ptr.reset(new EventPoolAllocTwoThreadTest);
+	// run the EventBoostPoolAllocTwoThreadTest
+	test_ptr.reset(new EventBoostPoolAllocTwoThreadTest);
 	test_ptr->run();
+
+#ifndef _MSC_VER
+	// run the EventGCCPoolAllocTwoThreadTest
+	test_ptr.reset(new EventGCCPoolAllocTwoThreadTest);
+	test_ptr->run();
+#endif
 
 	// run the CLFEventPtrAllocTwoThreadTest
 	test_ptr.reset(new CLFEventPtrAllocTwoThreadTest);

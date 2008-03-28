@@ -20,7 +20,6 @@
 #ifndef __PION_COMPARISON_HEADER__
 #define __PION_COMPARISON_HEADER__
 
-#include <boost/any.hpp>
 #include <boost/regex.hpp>
 #include <boost/logic/tribool.hpp>
 #include <pion/PionConfig.hpp>
@@ -210,7 +209,7 @@ public:
 	inline ComparisonType getType(void) const { return m_type; }
 	
 	/// returns the value that the Vocabulary Term is compared to
-	inline const boost::any& getValue(void) const { return m_value; }
+	inline const Event::ParameterValue& getValue(void) const { return m_value; }
 
 	/// returns true if all Vocabulary Term values must match
 	inline bool getMatchAllValues(void) const { return m_match_all_values; }
@@ -270,9 +269,9 @@ private:
 	template <typename T>
 	class CompareEquals {
 	public:
-		CompareEquals(const boost::any& value) : m_value(boost::any_cast<const T&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const T&>(event_value) == m_value;
+		CompareEquals(const Event::ParameterValue& value) : m_value(boost::get<const T&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const T&>(event_value) == m_value;
 		}
 	private:
 		const T&	m_value;
@@ -282,9 +281,9 @@ private:
 	template <typename T>
 	class CompareGreaterThan {
 	public:
-		CompareGreaterThan(const boost::any& value) : m_value(boost::any_cast<const T&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const T&>(event_value) > m_value;
+		CompareGreaterThan(const Event::ParameterValue& value) : m_value(boost::get<const T&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const T&>(event_value) > m_value;
 		}
 	private:
 		const T&	m_value;
@@ -294,9 +293,9 @@ private:
 	template <typename T>
 	class CompareLessThan {
 	public:
-		CompareLessThan(const boost::any& value) : m_value(boost::any_cast<const T&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const T&>(event_value) < m_value;
+		CompareLessThan(const Event::ParameterValue& value) : m_value(boost::get<const T&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const T&>(event_value) < m_value;
 		}
 	private:
 		const T&	m_value;
@@ -306,9 +305,9 @@ private:
 	template <typename T>
 	class CompareGreaterOrEqual {
 	public:
-		CompareGreaterOrEqual(const boost::any& value) : m_value(boost::any_cast<const T&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const T&>(event_value) >= m_value;
+		CompareGreaterOrEqual(const Event::ParameterValue& value) : m_value(boost::get<const T&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const T&>(event_value) >= m_value;
 		}
 	private:
 		const T&	m_value;
@@ -318,9 +317,9 @@ private:
 	template <typename T>
 	class CompareLessOrEqual {
 	public:
-		CompareLessOrEqual(const boost::any& value) : m_value(boost::any_cast<const T&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const T&>(event_value) <= m_value;
+		CompareLessOrEqual(const Event::ParameterValue& value) : m_value(boost::get<const T&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const T&>(event_value) <= m_value;
 		}
 	private:
 		const T&	m_value;
@@ -329,9 +328,9 @@ private:
 	/// helper class used to determine if one string contains another
 	class CompareStringContains {
 	public:
-		CompareStringContains(const boost::any& value) : m_value(boost::any_cast<const std::string&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const std::string&>(event_value).find(m_value) != std::string::npos;
+		CompareStringContains(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const std::string&>(event_value).find(m_value) != std::string::npos;
 		}
 	private:
 		const std::string&	m_value;
@@ -340,10 +339,10 @@ private:
 	/// helper class used to determine if one string starts with another
 	class CompareStringStartsWith {
 	public:
-		CompareStringStartsWith(const boost::any& value) : m_value(boost::any_cast<const std::string&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return (boost::any_cast<const std::string&>(event_value).size() >= m_value.size()
-					&& boost::any_cast<const std::string&>(event_value).substr(0, m_value.size()) == m_value);
+		CompareStringStartsWith(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return (boost::get<const std::string&>(event_value).size() >= m_value.size()
+					&& boost::get<const std::string&>(event_value).substr(0, m_value.size()) == m_value);
 		}
 	private:
 		const std::string&	m_value;
@@ -352,10 +351,10 @@ private:
 	/// helper class used to determine if one string ends with another
 	class CompareStringEndsWith {
 	public:
-		CompareStringEndsWith(const boost::any& value) : m_value(boost::any_cast<const std::string&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return (boost::any_cast<const std::string&>(event_value).size() >= m_value.size()
-					&& boost::any_cast<const std::string&>(event_value).substr((boost::any_cast<const std::string&>(event_value).size() - m_value.size()),
+		CompareStringEndsWith(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return (boost::get<const std::string&>(event_value).size() >= m_value.size()
+					&& boost::get<const std::string&>(event_value).substr((boost::get<const std::string&>(event_value).size() - m_value.size()),
 																			   m_value.size()) == m_value);
 		}
 	private:
@@ -365,9 +364,9 @@ private:
 	/// helper class used to determine if one string is ordered before another
 	class CompareStringOrderedBefore {
 	public:
-		CompareStringOrderedBefore(const boost::any& value) : m_value(boost::any_cast<const std::string&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const std::string&>(event_value).compare(m_value) < 0;
+		CompareStringOrderedBefore(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const std::string&>(event_value).compare(m_value) < 0;
 		}
 	private:
 		const std::string&	m_value;
@@ -376,9 +375,9 @@ private:
 	/// helper class used to determine if one string is ordered after another
 	class CompareStringOrderedAfter {
 	public:
-		CompareStringOrderedAfter(const boost::any& value) : m_value(boost::any_cast<const std::string&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const std::string&>(event_value).compare(m_value) > 0;
+		CompareStringOrderedAfter(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const std::string&>(event_value).compare(m_value) > 0;
 		}
 	private:
 		const std::string&	m_value;
@@ -387,9 +386,9 @@ private:
 	/// helper class used to determine if a string matches a regular expression
 	class CompareStringRegex {
 	public:
-		CompareStringRegex(const boost::any& value) : m_regex(boost::any_cast<const boost::regex&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::regex_match(boost::any_cast<const std::string&>(event_value), m_regex);
+		CompareStringRegex(const boost::regex& value) : m_regex(value) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::regex_match(boost::get<const std::string&>(event_value), m_regex);
 		}
 	private:
 		const boost::regex&	m_regex;
@@ -398,9 +397,9 @@ private:
 	/// helper class used to determine if two date_time values are equivalent
 	class CompareSameDateTime {
 	public:
-		CompareSameDateTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value) == m_value;
+		CompareSameDateTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value) == m_value;
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -409,9 +408,9 @@ private:
 	/// helper class used to determine if one date_time value is earlier than another
 	class CompareEarlierDateTime {
 	public:
-		CompareEarlierDateTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value) < m_value;
+		CompareEarlierDateTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value) < m_value;
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -420,9 +419,9 @@ private:
 	/// helper class used to determine if one date_time value is later than another
 	class CompareLaterDateTime {
 	public:
-		CompareLaterDateTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value) > m_value;
+		CompareLaterDateTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value) > m_value;
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -431,9 +430,9 @@ private:
 	/// helper class used to determine if one date_time value is the same as or earlier than another
 	class CompareSameOrEarlierDateTime {
 	public:
-		CompareSameOrEarlierDateTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value) <= m_value;
+		CompareSameOrEarlierDateTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value) <= m_value;
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -442,9 +441,9 @@ private:
 	/// helper class used to determine if one date_time value is the same as or later than another
 	class CompareSameOrLaterDateTime {
 	public:
-		CompareSameOrLaterDateTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value) >= m_value;
+		CompareSameOrLaterDateTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value) >= m_value;
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -453,9 +452,9 @@ private:
 	/// helper class used to determine if two dates are equivalent
 	class CompareSameDate {
 	public:
-		CompareSameDate(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).date() == m_value.date();
+		CompareSameDate(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).date() == m_value.date();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -464,9 +463,9 @@ private:
 	/// helper class used to determine if one date is earlier than another
 	class CompareEarlierDate {
 	public:
-		CompareEarlierDate(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).date() < m_value.date();
+		CompareEarlierDate(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).date() < m_value.date();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -475,9 +474,9 @@ private:
 	/// helper class used to determine if one date is later than another
 	class CompareLaterDate {
 	public:
-		CompareLaterDate(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).date() > m_value.date();
+		CompareLaterDate(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).date() > m_value.date();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -486,9 +485,9 @@ private:
 	/// helper class used to determine if one date is the same as or earlier than another
 	class CompareSameOrEarlierDate {
 	public:
-		CompareSameOrEarlierDate(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).date() <= m_value.date();
+		CompareSameOrEarlierDate(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).date() <= m_value.date();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -497,9 +496,9 @@ private:
 	/// helper class used to determine if one date is the same as or later than another
 	class CompareSameOrLaterDate {
 	public:
-		CompareSameOrLaterDate(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).date() >= m_value.date();
+		CompareSameOrLaterDate(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).date() >= m_value.date();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -508,9 +507,9 @@ private:
 	/// helper class used to determine if two times of day are equivalent
 	class CompareSameTime {
 	public:
-		CompareSameTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).time_of_day() == m_value.time_of_day();
+		CompareSameTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).time_of_day() == m_value.time_of_day();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -519,9 +518,9 @@ private:
 	/// helper class used to determine if one time of day is earlier than another
 	class CompareEarlierTime {
 	public:
-		CompareEarlierTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).time_of_day() < m_value.time_of_day();
+		CompareEarlierTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).time_of_day() < m_value.time_of_day();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -530,9 +529,9 @@ private:
 	/// helper class used to determine if one time of day is later than another
 	class CompareLaterTime {
 	public:
-		CompareLaterTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).time_of_day() > m_value.time_of_day();
+		CompareLaterTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).time_of_day() > m_value.time_of_day();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -541,9 +540,9 @@ private:
 	/// helper class used to determine if one time of day is the same as or earlier than another
 	class CompareSameOrEarlierTime {
 	public:
-		CompareSameOrEarlierTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).time_of_day() <= m_value.time_of_day();
+		CompareSameOrEarlierTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).time_of_day() <= m_value.time_of_day();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -552,9 +551,9 @@ private:
 	/// helper class used to determine if one time of day is the same as or later than another
 	class CompareSameOrLaterTime {
 	public:
-		CompareSameOrLaterTime(const boost::any& value) : m_value(boost::any_cast<const PionDateTime&>(value)) {}
-		inline bool operator()(const boost::any& event_value) const {
-			return boost::any_cast<const PionDateTime&>(event_value).time_of_day() >= m_value.time_of_day();
+		CompareSameOrLaterTime(const Event::ParameterValue& value) : m_value(boost::get<const PionDateTime&>(value)) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return boost::get<const PionDateTime&>(event_value).time_of_day() >= m_value.time_of_day();
 		}
 	private:
 		const PionDateTime&	m_value;
@@ -593,7 +592,10 @@ private:
 	ComparisonType				m_type;
 	
 	/// the value that the Vocabulary Term is compared to
-	boost::any					m_value;
+	Event::ParameterValue			m_value;
+
+	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
+	boost::regex				m_regex;
 
 	/// true if all values for the Vocabulary Term must match
 	bool						m_match_all_values;
@@ -1042,7 +1044,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringRegex comparison_func(m_value);
+					CompareStringRegex comparison_func(m_regex);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -1207,33 +1209,33 @@ inline void Comparison::configure(const ComparisonType type,
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_INT16:
 		case Vocabulary::TYPE_INT32:
-			if (boost::any_cast<boost::int32_t>(&m_value) == NULL)
+			if (boost::get<boost::int32_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_UINT16:
 		case Vocabulary::TYPE_UINT32:
-			if (boost::any_cast<boost::uint32_t>(&m_value) == NULL)
+			if (boost::get<boost::uint32_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_INT64:
-			if (boost::any_cast<boost::int64_t>(&m_value) == NULL)
+			if (boost::get<boost::int64_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_UINT64:
-			if (boost::any_cast<boost::uint64_t>(&m_value) == NULL)
+			if (boost::get<boost::uint64_t>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_FLOAT:
-			if (boost::any_cast<float>(&m_value) == NULL)
+			if (boost::get<float>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_DOUBLE:
-			if (boost::any_cast<double>(&m_value) == NULL)
+			if (boost::get<double>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_LONG_DOUBLE:
-			if (boost::any_cast<long double>(&m_value) == NULL)
+			if (boost::get<long double>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_SHORT_STRING:
@@ -1241,17 +1243,16 @@ inline void Comparison::configure(const ComparisonType type,
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 			if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
-				if (boost::any_cast<boost::regex>(&m_value) == NULL)
-					throw InvalidValueForTypeException();
+				throw InvalidValueForTypeException();
 			} else {
-				if (boost::any_cast<std::string>(&m_value) == NULL)
+				if (boost::get<std::string>(&m_value) == NULL)
 					throw InvalidValueForTypeException();
 			}
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
 		case Vocabulary::TYPE_TIME:
-			if (boost::any_cast<PionDateTime>(&m_value) == NULL)
+			if (boost::get<PionDateTime>(&m_value) == NULL)
 				throw InvalidValueForTypeException();
 			break;
 	}

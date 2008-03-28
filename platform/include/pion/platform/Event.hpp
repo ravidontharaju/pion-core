@@ -22,9 +22,10 @@
 
 #include <map>
 #include <list>
-#include <boost/any.hpp>
+#include <boost/variant.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/thread/once.hpp>
+#include <boost/pool/pool_alloc.hpp>
 #include <boost/detail/atomic_count.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
@@ -45,9 +46,20 @@ public:
 
 	/// used to identify the type of Event (TermRef maps to Terms of type OBJECT)
 	typedef Vocabulary::TermRef		EventType;
-	
+
+	/// data type that holds the values for Event parameters	
+	typedef boost::variant<std::string, boost::int32_t, boost::uint32_t,
+		boost::int64_t, boost::uint64_t, float, double, long double,
+		long long double, PionDateTime>		ParameterValue;
+
+	/// data type for a pool allocator used by the Event ParameterMaps
+	typedef boost::fast_pool_allocator<std::pair<Vocabulary::TermRef, ParameterValue>,
+		boost::default_user_allocator_new_delete,
+		boost::details::pool::default_mutex, 1024 >	ParameterMapAlloc;
+
 	/// data type for a map of numeric type identifiers to values
-	typedef std::multimap<Vocabulary::TermRef, boost::any>	ParameterMap;
+	typedef std::multimap<Vocabulary::TermRef, ParameterValue,
+		std::less<Vocabulary::TermRef>, ParameterMapAlloc>	ParameterMap;
 
 	
 	/// virtual destructor: you may extend this class
@@ -68,7 +80,7 @@ public:
 	{}
 	
 	/// adds all the terms from another Event into this one
-	inline const Event& operator+=(const Event& e) {
+	inline Event& operator+=(const Event& e) {
 		for (ParameterMap::const_iterator i = e.m_parms.begin();
 			 i != e.m_parms.end(); ++i)
 		{
@@ -77,14 +89,20 @@ public:
 		return *this;
 	}
 	
+	/// assignment operator
+	Event& operator=(const Event& e) {
+		clear();
+		return operator+=(e);
+	}
+
 	/**
 	 * returns a reference to the value for a particular term, and adds the term
 	 * if it does not already exist
 	 * 
 	 * @param term_ref numeric identifier for the term
-	 * @return boost::any& value currently assigned to the term (may be null)
+	 * @return ParameterValue& value currently assigned to the term (may be null)
 	 */
-	inline boost::any& operator[](const Vocabulary::TermRef& term_ref) {
+	inline ParameterValue& operator[](const Vocabulary::TermRef& term_ref) {
 		ParameterMap::iterator i = m_parms.find(term_ref);
 		if (i == m_parms.end())
 			i = m_parms.insert(std::make_pair(term_ref, NULL_PARAMETER_VALUE));
@@ -95,9 +113,9 @@ public:
 	 * returns a const reference to the value for a particular term
 	 * 
 	 * @param term_ref numeric identifier for the term
-	 * @return boost::any& value currently assigned to the term (may be NULL_PARAMETER_VALUE)
+	 * @return ParameterValue& value currently assigned to the term (may be NULL_PARAMETER_VALUE)
 	 */
-	inline const boost::any& operator[](const Vocabulary::TermRef& term_ref) const {
+	inline const ParameterValue& operator[](const Vocabulary::TermRef& term_ref) const {
 		ParameterMap::const_iterator i = m_parms.find(term_ref);
 		return((i==m_parms.end()) ? NULL_PARAMETER_VALUE : i->second);
 	}
@@ -106,228 +124,210 @@ public:
 	 * returns the value for a particular term, or null if it does not exist
 	 * 
 	 * @param term_ref numeric identifier for the term
-	 * @return const boost::any* pointer to the value currently assigned to
+	 * @return const ParameterValue* pointer to the value currently assigned to
 	 *                           the term (null if not found)
 	 */
-	inline const boost::any *getPointer(const Vocabulary::TermRef& term_ref) const {
+	inline const ParameterValue *getPointer(const Vocabulary::TermRef& term_ref) const {
 		ParameterMap::const_iterator i = m_parms.find(term_ref);
 		return (i==m_parms.end() ? NULL : &(i->second));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value of a string field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of a string field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const std::string& the value of the field
 	 */
 	inline const std::string& getString(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(std::string))
-		return boost::any_cast<const std::string&>(operator[](term_ref));
+		PION_ASSERT(boost::get<std::string>(& operator[](term_ref)));
+		return boost::get<const std::string&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of a string field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a string field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return std::string& the value of the field
 	 */
 	inline std::string& getString(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(std::string))
-		return boost::any_cast<std::string&>(operator[](term_ref));
+		PION_ASSERT(boost::get<std::string>(& operator[](term_ref)));
+		return boost::get<std::string&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value of an integer field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of an integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::int32_t& getInt(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int32_t))
-		return boost::any_cast<const boost::int32_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::int32_t>(& operator[](term_ref)));
+		return boost::get<const boost::int32_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of an integer field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of an integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return std::string& the value of the field
 	 */
 	inline boost::int32_t& getInt(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int32_t))
-		return boost::any_cast<boost::int32_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::int32_t>(& operator[](term_ref)));
+		return boost::get<boost::int32_t&>(operator[](term_ref));
 	}
 
 	/**
-	 * shorthand for retrieving the (const) value of an unsigned integer field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of an unsigned integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::uint32_t& getUInt(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint32_t))
-		return boost::any_cast<const boost::uint32_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::uint32_t>(& operator[](term_ref)));
+		return boost::get<const boost::uint32_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of an unsigned integer field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of an unsigned integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return std::string& the value of the field
 	 */
 	inline boost::uint32_t& getUInt(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint32_t))
-		return boost::any_cast<boost::uint32_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::uint32_t>(& operator[](term_ref)));
+		return boost::get<boost::uint32_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value of a big integer field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of a big integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::int64_t& getBigInt(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int64_t))
-		return boost::any_cast<const boost::int64_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::int64_t>(& operator[](term_ref)));
+		return boost::get<const boost::int64_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of a big integer field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a big integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return std::string& the value of the field
 	 */
 	inline boost::int64_t& getBigInt(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::int64_t))
-		return boost::any_cast<boost::int64_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::int64_t>(& operator[](term_ref)));
+		return boost::get<boost::int64_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value of an unsigned big integer field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of an unsigned big integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const std::string& the value of the field
 	 */
 	inline const boost::uint64_t& getUBigInt(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint64_t))
-		return boost::any_cast<const boost::uint64_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::uint64_t>(& operator[](term_ref)));
+		return boost::get<const boost::uint64_t&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of an unsigned big integer field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of an unsigned big integer field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return std::string& the value of the field
 	 */
 	inline boost::uint64_t& getUBigInt(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(boost::uint64_t))
-		return boost::any_cast<boost::uint64_t&>(operator[](term_ref));
+		PION_ASSERT(boost::get<boost::uint64_t>(& operator[](term_ref)));
+		return boost::get<boost::uint64_t&>(operator[](term_ref));
 	}
 
 	/**
-	 * shorthand for retrieving the (const) value of a floating point number field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of a floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const float& the value of the field
 	 */
 	inline const float& getFloat(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(float))
-		return boost::any_cast<const float&>(operator[](term_ref));
+		PION_ASSERT(boost::get<float>(& operator[](term_ref)));
+		return boost::get<const float&>(operator[](term_ref));
 	}
 
 	/**
-	 * shorthand for retrieving the value of a floating point number field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return float& the value of the field
 	 */
 	inline float& getFloat(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(float))
-		return boost::any_cast<float&>(operator[](term_ref));
+		PION_ASSERT(boost::get<float>(& operator[](term_ref)));
+		return boost::get<float&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value of a double floating point number field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of a double floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const double& the value of the field
 	 */
 	inline const double& getDouble(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(double))
-		return boost::any_cast<const double&>(operator[](term_ref));
+		PION_ASSERT(boost::get<double>(& operator[](term_ref)));
+		return boost::get<const double&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of a double floating point number field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a double floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return double& the value of the field
 	 */
 	inline double& getDouble(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(double))
-		return boost::any_cast<double&>(operator[](term_ref));
+		PION_ASSERT(boost::get<double>(& operator[](term_ref)));
+		return boost::get<double&>(operator[](term_ref));
 	}
 
 	/**
-	 * shorthand for retrieving the (const) value of a long double floating point number field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value of a long double floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const long double& the value of the field
 	 */
 	inline const long double& getLongDouble(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(long double))
-		return boost::any_cast<const long double&>(operator[](term_ref));
+		PION_ASSERT(boost::get<long double>(& operator[](term_ref)));
+		return boost::get<const long double&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of a long double floating point number field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a long double floating point number field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return double& the value of the field
 	 */
 	inline long double& getLongDouble(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(long double))
-		return boost::any_cast<long double&>(operator[](term_ref));
+		PION_ASSERT(boost::get<long double>(& operator[](term_ref)));
+		return boost::get<long double&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the (const) value date_time field;
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the (const) value date_time field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return const PionDateTime& the value of the field
 	 */
 	inline const PionDateTime& getDateTime(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(operator[](term_ref).type()==typeid(PionDateTime))
-		return boost::any_cast<const PionDateTime&>(operator[](term_ref));
+		PION_ASSERT(boost::get<PionDateTime&>(& operator[](term_ref)));
+		return boost::get<const PionDateTime&>(operator[](term_ref));
 	}
 	
 	/**
-	 * shorthand for retrieving the value of a date_time field; 
-	 * will throw a bad_any_cast exception if the term is not defined
+	 * shorthand for retrieving the value of a date_time field
 	 * 
 	 * @param term_ref numeric identifier for the term
 	 * @return PionDateTime& the value of the field
 	 */
 	inline PionDateTime& getDateTime(const Vocabulary::TermRef& term_ref) {
-		PION_ASSERT(operator[](term_ref).type()==typeid(PionDateTime))
-		return boost::any_cast<PionDateTime&>(operator[](term_ref));
+		PION_ASSERT(boost::get<PionDateTime&>(& operator[](term_ref)));
+		return boost::get<PionDateTime&>(operator[](term_ref));
 	}
 
 	/**
@@ -338,7 +338,7 @@ public:
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const char *value) {
 		std::string str(value);
-		m_parms.insert(std::make_pair(term_ref, boost::any(str)));
+		m_parms.insert(std::make_pair(term_ref, ParameterValue(str)));
 	}
 	
 	/**
@@ -464,12 +464,8 @@ public:
 
 private:
 	
-	/// assignment is not permitted
-	const Event& operator=(const Event& e);
-
-	
 	/// returned if a value for a Term has not been defined
-	static const boost::any			NULL_PARAMETER_VALUE;
+	static const ParameterValue			NULL_PARAMETER_VALUE;
 
 	/// used to identify what type of Event this is (using Terms of type OBJECT)
 	const EventType					m_event_type;
@@ -516,6 +512,11 @@ class PION_PLATFORM_API EventFactory :
 {
 public:
 	
+	/// data type for a pool allocator used by the Event ParameterMaps
+	typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
+		boost::details::pool::default_mutex, 1024 >	PoolAllocator;
+
+
 	/// default destructor
 	~EventFactory() {}
 	
@@ -526,12 +527,14 @@ public:
 	 * @param type the type of Event that is being created
 	 */
 	static inline EventPtr create(const Event::EventType t) {
-		return new Event(t);
+		void *mem_ptr = PoolAllocator::allocate();
+		return new (mem_ptr) Event(t);
 	}
 
 	/// destroys an EventPtr; this should only be called by intrusive_ptr_release()
 	static inline void destroy(Event *ptr) {
-		delete ptr;
+		ptr->~Event();
+		PoolAllocator::deallocate(ptr);
 	}
 	
 	

@@ -193,8 +193,8 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 	for (Query::FieldMap::const_iterator field_it = field_map.begin();
 		 field_it != field_map.end(); ++field_it)
 	{
-		const boost::any *any_ptr = e.getPointer(field_it->first);
-		if (any_ptr == NULL) {
+		const Event::ParameterValue *value_ptr = e.getPointer(field_it->first);
+		if (value_ptr == NULL) {
 			bindNull(param);
 		} else {
 			switch(field_it->second.second.term_type) {
@@ -205,38 +205,38 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 				case Vocabulary::TYPE_INT8:
 				case Vocabulary::TYPE_INT16:
 				case Vocabulary::TYPE_INT32:
-					bindInt(param, boost::any_cast<boost::int32_t>(*any_ptr));
+					bindInt(param, boost::get<boost::int32_t>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_INT64:
-					bindBigInt(param, boost::any_cast<boost::int64_t>(*any_ptr));
+					bindBigInt(param, boost::get<boost::int64_t>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_UINT8:
 				case Vocabulary::TYPE_UINT16:
 				case Vocabulary::TYPE_UINT32:
-					bindUInt(param, boost::any_cast<boost::uint32_t>(*any_ptr));
+					bindUInt(param, boost::get<boost::uint32_t>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_UINT64:
-					bindUBigInt(param, boost::any_cast<boost::uint64_t>(*any_ptr));
+					bindUBigInt(param, boost::get<boost::uint64_t>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_FLOAT:
-					bindFloat(param, boost::any_cast<float>(*any_ptr));
+					bindFloat(param, boost::get<float>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_DOUBLE:
-					bindDouble(param, boost::any_cast<double>(*any_ptr));
+					bindDouble(param, boost::get<double>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_LONG_DOUBLE:
-					bindLongDouble(param, boost::any_cast<long double>(*any_ptr));
+					bindLongDouble(param, boost::get<long double>(*value_ptr));
 					break;
 				case Vocabulary::TYPE_SHORT_STRING:
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-					bindString(param, boost::any_cast<const std::string&>(*any_ptr), copy_strings);
+					bindString(param, boost::get<const std::string&>(*value_ptr), copy_strings);
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:
 				case Vocabulary::TYPE_TIME:
-					bindDateTime(param, boost::any_cast<const PionDateTime&>(*any_ptr));
+					bindDateTime(param, boost::get<const PionDateTime&>(*value_ptr));
 					break;
 			}
 		}

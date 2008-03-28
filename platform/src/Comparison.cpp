@@ -82,7 +82,7 @@ void Comparison::configure(const ComparisonType type,
 		throw InvalidTypeForTermException();
 	
 	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
-		m_value = boost::regex(value);
+		m_regex = value;
 	} else if (isStringType(type)) {
 		m_value = value;
 	} else if (! isGenericType(type)) {		// note: generic type just ignores the value
@@ -146,7 +146,7 @@ void Comparison::configure(const ComparisonType type)
 		throw InvalidValueForTypeException();
 	
 	m_type = type;
-	m_value = boost::any();
+	m_value = Event::ParameterValue();
 	m_match_all_values = false;
 }
 	

@@ -57,7 +57,7 @@ CodecPtr LogCodec::clone(void) const
 	
 void LogCodec::write(std::ostream& out, const Event& e)
 {
-	const boost::any *value_ptr;
+	const Event::ParameterValue *value_ptr;
 	
 	// iterate through each field in the current format
 	boost::mutex::scoped_lock codec_lock(m_mutex);
