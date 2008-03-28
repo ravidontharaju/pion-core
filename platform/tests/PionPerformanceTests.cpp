@@ -289,10 +289,10 @@ private:
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
+			mem_ptr = m_pool_alloc.allocate(1);
 			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 			++m_counter;
 		}
 	}
@@ -603,7 +603,7 @@ protected:
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
+			mem_ptr = m_pool_alloc.allocate(1);
 			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
 			m_queue.push(event_ptr);
 		}
@@ -617,14 +617,14 @@ protected:
 			while (isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 			if (! isRunning()) break;
 			++m_counter;
 		}
 		// consume the rest of the queue to make sure generate() doesn't hang
 		while (m_queue.pop(event_ptr)) {
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 		}
 	}
 	
