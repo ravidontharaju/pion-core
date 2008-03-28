@@ -40,6 +40,7 @@ const boost::uint32_t		LogInputReactor::DEFAULT_FREQUENCY = 1;
 const std::string			LogInputReactor::CODEC_ELEMENT_NAME = "Codec";
 const std::string			LogInputReactor::DIRECTORY_ELEMENT_NAME = "Directory";
 const std::string			LogInputReactor::FILENAME_ELEMENT_NAME = "Filename";
+const std::string			LogInputReactor::JUST_ONE_ELEMENT_NAME = "JustOne";
 const std::string			LogInputReactor::FREQUENCY_ELEMENT_NAME = "Frequency";
 
 	
@@ -76,6 +77,16 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 		throw EmptyFilenameException(getId());
 	m_log_regex = filename_str;
 	
+	// check if the the Reactor should only read the first Event & duplicate it (for testing)
+	m_just_one = false;
+	std::string just_one_option;
+	if (ConfigManager::getConfigOption(JUST_ONE_ELEMENT_NAME, just_one_option,
+									   config_ptr))
+	{
+		if (just_one_option == "true")
+			m_just_one = true;
+	}
+
 	// get the frequency to check for new logs (if defined)
 	std::string frequency_str;
 	if (ConfigManager::getConfigOption(FREQUENCY_ELEMENT_NAME, frequency_str, config_ptr)) {
@@ -218,8 +229,13 @@ void LogInputReactor::consumeLog(const std::string& log_filename)
 		// read an Event from the log file
 		event_ptr = EventFactory::create(m_codec_ptr->getEventType());
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		if (! m_codec_ptr->read(log_stream, *event_ptr))
+		if (! m_codec_ptr->read(log_stream, *event_ptr)) {
+			// disregard read failures at end of file
+			if (log_stream.eof())
+				break;
 			throw ReadEventException(log_filename);
+		}
+		if (m_just_one) break;	// stop if we're only reading one event
 		
 		// deliver the Event to connected Reactors
 		incrementEventsIn();
@@ -227,6 +243,21 @@ void LogInputReactor::consumeLog(const std::string& log_filename)
 
 		// check if we should shutdown
 		if (! m_is_running) break;
+	}
+
+	if (m_just_one) {
+		EventPtr original_event_ptr(event_ptr);
+		// just duplicate the event repeatedly until the Reactor is stopped
+		while (m_is_running) {
+			// duplicate the original event
+			event_ptr = EventFactory::create(m_codec_ptr->getEventType());
+			*event_ptr += *original_event_ptr;
+
+			// deliver the Event to connected Reactors
+			boost::mutex::scoped_lock reactor_lock(m_mutex);
+			incrementEventsIn();
+			deliverEvent(event_ptr);
+		}
 	}
 }
 

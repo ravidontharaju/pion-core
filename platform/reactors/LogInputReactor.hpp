@@ -107,7 +107,7 @@ public:
 	LogInputReactor(void)
 		: Reactor(TYPE_COLLECTION),
 		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
-		m_frequency(DEFAULT_FREQUENCY)
+		m_just_one(false), m_frequency(DEFAULT_FREQUENCY)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -194,6 +194,9 @@ private:
 	/// name of the Filename element for Pion XML config files
 	static const std::string			FILENAME_ELEMENT_NAME;
 
+	/// name of the JustOne element for Pion XML config files
+	static const std::string			JUST_ONE_ELEMENT_NAME;
+
 	/// name of the Frequency element for Pion XML config files
 	static const std::string			FREQUENCY_ELEMENT_NAME;
 
@@ -206,6 +209,9 @@ private:
 	
 	/// pointer to the Codec that is used for reading Events
 	pion::platform::CodecPtr			m_codec_ptr;
+
+	/// only reads one Event entry and duplicates it continuously (for testing)
+	bool						m_just_one;
 	
 	/// frequency that the Reactor will check for new logs (in seconds)
 	boost::uint32_t						m_frequency;

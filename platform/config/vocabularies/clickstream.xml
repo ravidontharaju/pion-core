@@ -17,7 +17,7 @@
 			<Comment>The username as which the user has authenticated himself</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#date">
-			<Type format="%d/%b/%Y:%H:%M:%S %q">datetime</Type>
+			<Type format="%d/%b/%Y:%H:%M:%S %q">shortstring</Type>
 			<Comment>Date and time of the request</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#request">

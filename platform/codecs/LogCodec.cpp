@@ -94,30 +94,39 @@ void LogCodec::write(std::ostream& out, const Event& e)
 		out.flush();
 }
 	
-bool LogCodec::read(std::istream& in, Event& e)
+bool LogCodec::read(std::istream& input_stream, Event& e)
 {
-	int c = '\0';
 	char *read_ptr;
 	char * const read_start = m_read_buf.get();
 	const char * const read_end = read_start + READ_BUFFER_SIZE;
+	typedef std::istream::traits_type traits_type;
+	std::basic_streambuf<std::istream::char_type, std::istream::traits_type> *buf_ptr = input_stream.rdbuf();
+	std::istream::int_type c = buf_ptr->sgetc();
 
-	// skip space characters at beginning of line
-	while (! in.eof() ) {
-		c = in.peek();
-		if (c == ' ') {
-			in.get();
+	// skip empty lines and space characters at beginning of line
+	while (true) {
+		if (traits_type::eq_int_type(c, traits_type::eof())) {
+			input_stream.setstate(std::ios::eofbit);
+			return false;
+		} else if (c == ' ' || c == '\x0A' || c == '\x0D') {
+			buf_ptr->sbumpc();
 		} else if (c == '#') {
 			// ignore comment line
 			read_ptr = read_start;
 			do {
-				c = in.get();
+				c = buf_ptr->sbumpc();
+				// check for premature eof
+				if (traits_type::eq_int_type(c, traits_type::eof())) {
+					input_stream.setstate(std::ios::eofbit);
+					return false;
+				}
 				// read in the comment in case it is a format change
 				if (read_ptr < read_end)
 					*(read_ptr++) = c;
 			} while (c != '\x0A' && c != '\x0D');
 			// consume \r\n or \n\r
-			if (c == '\x0A' && in.peek() == '\x0D' || c == '\x0D' && in.peek() == '\x0A')
-				in.get();
+			if (c == '\x0A' && buf_ptr->sgetc() == '\x0D' || c == '\x0D' && buf_ptr->sgetc() == '\x0A')
+				buf_ptr->sbumpc();
 			// check if it is a format change
 			*read_ptr = '\0';
 			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
@@ -128,6 +137,7 @@ bool LogCodec::read(std::istream& in, Event& e)
 		} else {
 			break;
 		}
+		c = buf_ptr->sgetc();
 	}
 
 	boost::mutex::scoped_lock codec_lock(m_mutex);
@@ -140,20 +150,23 @@ bool LogCodec::read(std::istream& in, Event& e)
 
 		// ignore input until we reach the start char (if defined)
 		if (delim_start != '\0') {
-			while (! in.eof() ) {
-				c = in.get();
+			while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
+				c = buf_ptr->sbumpc();
 				if (c == delim_start)
 					break;
 			}
 		}
 		
 		// eof before we started reading a field
-		if (in.eof()) return false;
+		if (traits_type::eq_int_type(c, traits_type::eof())) {
+			input_stream.setstate(std::ios::eofbit);
+			return false;
+		}
 		
 		// parse the field contents
 		read_ptr = read_start;
-		while (! in.eof() ) {
-			c = in.get();
+		c = buf_ptr->sbumpc();
+		while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
 			if (c == '\x0A' || c == '\x0D' || c == delim_end
 				|| (delim_end=='\0' && c == ' ') )
 			{
@@ -166,10 +179,15 @@ bool LogCodec::read(std::istream& in, Event& e)
 				*(read_ptr++) = c;
 			else if (read_ptr == read_end)
 				*(read_ptr++) = '\0';
+			c = buf_ptr->sbumpc();
 		}
 		
 		// eof before we were able to parse a field
-		if (read_ptr == read_start) return false;
+		if (read_ptr == read_start) {
+			if (traits_type::eq_int_type(c, traits_type::eof()))
+				input_stream.setstate(std::ios::eofbit);
+			return false;
+		}
 		
 		// only set values that are not null
 		if (*read_start != '\0' && !(delim_start == '\0'
@@ -183,14 +201,14 @@ bool LogCodec::read(std::istream& in, Event& e)
 		++i;
 		if (i == m_format.end()) {
 			// end of format
-			while (c != '\x0A' && c != '\x0D' && !in.eof()) {
-				c = in.get();
+			while (c != '\x0A' && c != '\x0D' && !traits_type::eq_int_type(c, traits_type::eof())) {
+				c = buf_ptr->sbumpc();
 			}
-			if (c == '\x0A' && in.peek() == '\x0D'
-				|| c == '\x0D' && in.peek() == '\x0A')
+			if (c == '\x0A' && buf_ptr->sgetc() == '\x0D'
+				|| c == '\x0D' && buf_ptr->sgetc() == '\x0A')
 			{
 				// consume \r\n or \n\r
-				in.get();
+				buf_ptr->sbumpc();
 			}
 		} else {
 			// not the end of format
@@ -198,16 +216,19 @@ bool LogCodec::read(std::istream& in, Event& e)
 			if (c == '\x0A' || c == '\x0D')
 				return false;
 			// skip space characters in between fields
-			while (! in.eof() ) {
-				c = in.peek();
+			while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
+				c = buf_ptr->sgetc();
 				if (c == ' ')
-					in.get();
+					buf_ptr->sbumpc();
 				else
 					break;
 			}
 		}
 	}
 			
+	if (traits_type::eq_int_type(c, traits_type::eof()))
+		input_stream.setstate(std::ios::eofbit);
+		
 	return true;
 }
 

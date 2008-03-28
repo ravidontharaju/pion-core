@@ -424,6 +424,54 @@ private:
 
 
 ///
+/// IntAllocTwoThreadTest: tests the raw basline performance of the PionLockedQueue
+///
+class IntAllocTwoThreadTest :
+	public AllocTwoThreadTest
+{
+public:
+
+	/// default constructor
+	IntAllocTwoThreadTest(void) {
+		setTestDescription("IntAllocTwoThreadTest");
+	}
+
+	/// virtual destructor
+	virtual ~IntAllocTwoThreadTest() { stop(); }
+
+
+protected:
+
+	/// pushes ints into a shared queue
+	virtual void generate(void) {
+		int n = 0;
+		while (isRunning())
+			m_queue.push(n);
+	}
+
+	/// removes ints from the shared queue
+	virtual void consume(void) {
+		int n = 0;
+		while (isRunning()) {
+			// sleep 1/8 second if the queue is empty
+			while (isRunning() && !m_queue.pop(n))
+				PionScheduler::sleep(0, 125000000);
+			if (! isRunning()) break;
+			++m_counter;
+		}
+		// consume the rest of the queue to make sure generate() doesn't hang
+		while (m_queue.pop(n)) ;
+	}
+	
+	
+private:
+
+	/// a shared queue of integers
+	PionLockedQueue<int>			m_queue;
+};
+
+
+///
 /// EventPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
 ///                              in one thread and deleting them in another thread using
 ///                              boost::fast_pool_allocator
@@ -534,6 +582,10 @@ int main(void) {
 	
 	// run the CLFEventPtrAllocTest
 	test_ptr.reset(new CLFEventPtrAllocTest);
+	test_ptr->run();
+
+	// run the IntAllocTwoThreadTest
+	test_ptr.reset(new IntAllocTwoThreadTest);
 	test_ptr->run();
 
 	// run the EventPtrAllocTwoThreadTest
