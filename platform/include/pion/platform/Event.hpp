@@ -32,6 +32,12 @@
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
+#ifdef __GNUC__
+	// use the "multithread" allocator included with GCC, if available
+	// since it is MUCH faster than Boost's pool allocator
+	#include <ext/mt_allocator.h>
+#endif
+
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
@@ -52,14 +58,20 @@ public:
 		boost::int64_t, boost::uint64_t, float, double, long double,
 		long long double, PionDateTime>		ParameterValue;
 
-	/// data type for a pool allocator used by the Event ParameterMaps
-	typedef boost::fast_pool_allocator<std::pair<Vocabulary::TermRef, ParameterValue>,
-		boost::default_user_allocator_new_delete,
-		boost::details::pool::default_mutex, 1024 >	ParameterMapAlloc;
+	/// GCC versions 4.0 and earlier do not support complicated allocator types =(
+	#if !defined(__GNUC__) || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0))
+		/// data type for a pool allocator used by the Event ParameterMaps
+		typedef boost::fast_pool_allocator<std::pair<Vocabulary::TermRef, ParameterValue>,
+			boost::default_user_allocator_new_delete,
+			boost::details::pool::default_mutex, 1024 >	ParameterMapAlloc;
 
-	/// data type for a map of numeric type identifiers to values
-	typedef std::multimap<Vocabulary::TermRef, ParameterValue,
-		std::less<Vocabulary::TermRef>, ParameterMapAlloc>	ParameterMap;
+		/// data type for a map of numeric type identifiers to values
+		typedef std::multimap<Vocabulary::TermRef, ParameterValue,
+			std::less<Vocabulary::TermRef>, ParameterMapAlloc>	ParameterMap;
+	#else
+		/// data type for a map of numeric type identifiers to values
+		typedef std::multimap<Vocabulary::TermRef, ParameterValue>	ParameterMap;
+	#endif
 
 	
 	/// virtual destructor: you may extend this class
@@ -511,10 +523,16 @@ class PION_PLATFORM_API EventFactory :
 	private boost::noncopyable
 {
 public:
-	
-	/// data type for a pool allocator used by the Event ParameterMaps
-	typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
-		boost::details::pool::default_mutex, 1024 >	PoolAllocator;
+
+	/// only use GCC allocator if version >= 4.1 (older versions are too slow!)
+	#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
+		/// data type for an Event allocator that uses the GCC "multithread" allocator
+		typedef __gnu_cxx::__mt_alloc<pion::platform::Event>	PoolAllocator;
+	#else
+		/// data type for a pool allocator used by the Event ParameterMaps
+		typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
+			boost::details::pool::default_mutex, 1024 >			PoolAllocator;
+	#endif
 
 
 	/// default destructor
@@ -527,14 +545,22 @@ public:
 	 * @param type the type of Event that is being created
 	 */
 	static inline EventPtr create(const Event::EventType t) {
-		void *mem_ptr = PoolAllocator::allocate();
+		#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
+			void *mem_ptr = getInstance().m_pool_alloc.allocate(1);
+		#else
+			void *mem_ptr = PoolAllocator::allocate();
+		#endif
 		return new (mem_ptr) Event(t);
 	}
 
 	/// destroys an EventPtr; this should only be called by intrusive_ptr_release()
 	static inline void destroy(Event *ptr) {
 		ptr->~Event();
-		PoolAllocator::deallocate(ptr);
+		#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
+			getInstance().m_pool_alloc.deallocate(ptr, 1);
+		#else
+			PoolAllocator::deallocate(ptr);
+		#endif
 	}
 	
 	
@@ -562,6 +588,11 @@ private:
 	
 	/// used for thread-safe singleton pattern
 	static boost::once_flag			m_instance_flag;
+	
+	#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 0)
+		/// very fast, thread-safe memory pool allocator
+		PoolAllocator				m_pool_alloc;
+	#endif
 };
 
 

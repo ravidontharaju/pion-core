@@ -28,7 +28,7 @@
 #include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
-#ifndef _MSC_VER
+#ifdef __GNUC__
 	// for tests that use the GNU "multithread" allocator included with GCC
 	#include <ext/mt_allocator.h>
 	/// data type for an Event allocator that uses the GCC "multithread" allocator
@@ -264,7 +264,7 @@ private:
 };
 
 
-#ifndef _MSC_VER
+#ifdef __GNUC__
 ///
 /// EventGCCPoolAllocTest: tests the performance of allocating and freeing Event's
 ///                        using the GCC "multithread" allocator
@@ -576,7 +576,7 @@ private:
 };
 
 
-#ifndef _MSC_VER
+#ifdef __GNUC__
 ///
 /// EventGCCPoolAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
 ///                                 in one thread and deleting them in another thread using
@@ -632,7 +632,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockedQueue<Event*, 1000000, 100000000>			m_queue;
+	PionLockedQueue<Event*>			m_queue;
 
 	/// memory pool allocator
 	EventGCCPoolAlloc	m_pool_alloc;
@@ -685,7 +685,7 @@ int main(void) {
 	test_ptr.reset(new EventBoostPoolAllocTest);
 	test_ptr->run();
 	
-#ifndef _MSC_VER
+#ifdef __GNUC__
 	// run the EventGCCPoolAllocTest
 	test_ptr.reset(new EventGCCPoolAllocTest);
 	test_ptr->run();
@@ -711,7 +711,7 @@ int main(void) {
 	test_ptr.reset(new EventBoostPoolAllocTwoThreadTest);
 	test_ptr->run();
 
-#ifndef _MSC_VER
+#ifdef __GNUC__
 	// run the EventGCCPoolAllocTwoThreadTest
 	test_ptr.reset(new EventGCCPoolAllocTwoThreadTest);
 	test_ptr->run();
