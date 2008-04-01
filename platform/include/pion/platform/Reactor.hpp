@@ -200,13 +200,29 @@ protected:
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
 		++m_events_out;
 		if (! m_connections.empty()) {
+			// simple scheduling just iterates through connections and use the
+			// same thread to carry the event through all the reaction chains
+			for (ConnectionMap::iterator i = m_connections.begin();
+				 i != m_connections.end(); ++i)
+			{
+				if (return_immediately)
+					i->second.post(getScheduler().getIOService(), e);
+				else
+					i->second(e);
+			}
+			
+			// the following scheduling policy makes better use of available
+			// CPU cores by scheduling multiple threads to handle alternate
+			// processing branches.  unfortunately, the overhead from passing
+			// an event between threads seems to slow things down substantially..
+#if 0
 			// iterate through each Reactor after the first one and send the Event
 			// using the scheduler.  This way, the entire thread pool will be used
 			// for processing pipelines
 			ConnectionMap::iterator i = m_connections.begin();
 			while (++i != m_connections.end())
 				i->second.post(getScheduler().getIOService(), e);
-				
+			
 			// send to the first Reactor using the same thread
 			// this helps to reduce context switching by ensuring
 			// that the longer processing chains remain unbroken
@@ -214,6 +230,7 @@ protected:
 				m_connections.begin()->second.post(getScheduler().getIOService(), e);
 			else
 				m_connections.begin()->second(e);
+#endif
 		}
 	}
 	
@@ -269,7 +286,8 @@ private:
 		inline void post(boost::asio::io_service& io_service,
 						 const EventPtr& event_ptr)
 		{
-			io_service.post(boost::bind(m_event_handler, event_ptr));
+			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
+				io_service.post(boost::bind(m_event_handler, event_ptr));
 		}
 
 	private:
