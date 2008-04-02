@@ -473,6 +473,11 @@ pion.reactors.handleDropOnWorkspace = function(source, nodes, copy, target) {
 	if (!target.checkAcceptance(source, nodes))
 		return;
 
+	// If not the current workspace, ignore the drop.
+	// TODO: once the problems with disabling targets are fixed, this should be handled by disabling all but the current workspace.
+	if (target != pion.reactors.workspace_box)
+		return;
+
 	var reactor_type = nodes[0].getAttribute("reactor_type");
 
 	var dialog_class_name = 'plugins.reactors.' + reactor_type + 'InitDialog';
