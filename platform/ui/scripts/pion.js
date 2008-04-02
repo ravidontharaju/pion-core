@@ -1,5 +1,5 @@
-dojo.registerModulePath("pion", "../../scripts");
-dojo.registerModulePath("plugins", "../../plugins");
+dojo.registerModulePath("pion", "/scripts");
+dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.layout.StackContainer");
 dojo.require("dijit.layout.SplitContainer");

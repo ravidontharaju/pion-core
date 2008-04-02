@@ -3,6 +3,7 @@ dojo.require("dijit.Dialog");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.form.Button");
 dojo.require("dojox.grid.Grid");
+dojo.require("pion.reactors");
 
 dojo.declare("plugins.reactors.Reactor",
 	[dijit._Widget],
@@ -15,7 +16,7 @@ dojo.declare("plugins.reactors.Reactor",
 			this.reactor_outputs = [];
 			this.prev_events_in = 0;
 			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
-			dojo.connect(reactor_target, "onDndDrop", handleDropOnReactor);
+			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
 
 			this.name_div = document.createElement('div');
 			this.name_div.innerHTML = this.config.Name;
@@ -28,7 +29,7 @@ dojo.declare("plugins.reactors.Reactor",
 			var button_node = this.run_button.domNode;
 			dojo.connect(button_node, 'click', function() {
 				dojo.xhrPut({
-					url: '/config/reactors/' + _this.config.@id + (_this.run_button.checked? '/start' : '/stop'),
+					url: '/config/reactors/' + _this.config['@id'] + (_this.run_button.checked? '/start' : '/stop'),
 					error: function(response, ioArgs) {
 						console.error('HTTP status code: ', ioArgs.xhr.status);
 						return response;
@@ -68,7 +69,7 @@ dojo.declare("plugins.reactors.Reactor",
 
 			var mouseLeftTop = {l: this.config.X, t: this.config.Y};
 			console.debug("mouseLeftTop: ", mouseLeftTop);
-			var newLeftTop = getNearbyGridPointInBox(c, mouseLeftTop);
+			var newLeftTop = pion.reactors.getNearbyGridPointInBox(c, mouseLeftTop);
 			this.domNode.style.top  = newLeftTop.t + "px";
 			this.domNode.style.left = newLeftTop.l + "px";
 			this.domNode.style.position = "absolute";
@@ -76,13 +77,13 @@ dojo.declare("plugins.reactors.Reactor",
 			// Add a context menu for the new reactor.
 			if (!firefox_on_mac) {
 				var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
-				menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){showReactorConfigDialog(_this);} }));
-				menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){deleteReactorIfConfirmed(_this);} }));
+				menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
+				menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 			}
 			
 			dojo.connect(this.domNode, 'dblclick', function(event) {
 				event.stopPropagation(); // so the workspace configuration dialog won't also pop up
-				showReactorConfigDialog(_this);
+				pion.reactors.showReactorConfigDialog(_this);
 			});
 
 			// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
@@ -91,15 +92,15 @@ dojo.declare("plugins.reactors.Reactor",
 			m5.onMove = function(mover, leftTop) {
 				//console.debug("In m5.onMove, this.constraintBox = ", this.constraintBox);
 				//console.debug("leftTop = ", leftTop);
-				var newLeftTop = getNearbyGridPointInBox(this.constraintBox, leftTop);
+				var newLeftTop = pion.reactors.getNearbyGridPointInBox(this.constraintBox, leftTop);
 				//console.debug("newLeftTop = ", newLeftTop);
 				dojo.marginBox(mover.node, newLeftTop);
 
 				for (var i = 0; i < _this.reactor_inputs.length; ++i) {
-					updateConnectionLine(_this.reactor_inputs[i].line, _this.reactor_inputs[i].source.domNode, _this.domNode);
+					pion.reactors.updateConnectionLine(_this.reactor_inputs[i].line, _this.reactor_inputs[i].source.domNode, _this.domNode);
 				}
 				for (var i = 0; i < _this.reactor_outputs.length; ++i) {
-					updateConnectionLine(_this.reactor_outputs[i].line, _this.domNode, _this.reactor_outputs[i].sink.domNode);
+					pion.reactors.updateConnectionLine(_this.reactor_outputs[i].line, _this.domNode, _this.reactor_outputs[i].sink.domNode);
 				}
 			};
 			/*
@@ -130,7 +131,7 @@ dojo.declare("plugins.reactors.Reactor",
 			console.debug('put_data: ', put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config.@id,
+				url: '/config/reactors/' + this.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,
@@ -160,6 +161,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 		execute: function(dialogFields) {
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
+			var workspace_box = pion.reactors.workspace_box;
 			var dc = dojo.coords(workspace_box.node);
 			var X = pion.reactors.last_x - dc.x;
 			var Y = pion.reactors.last_y - dc.y;
@@ -196,9 +198,8 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					// Replace the dnd reactor with the new reactor node.
 					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
 
-					var reactor = createReactor(config, reactor_node);
-					//console.debug('config.@id: ', config.@id);
-					reactors_by_id[config.@id] = reactor;
+					var reactor = pion.reactors.createReactor(config, reactor_node);
+					pion.reactors.reactors_by_id[config['@id']] = reactor;
 					reactor.workspace = workspace_box;
 					workspace_box.reactors.push(reactor);
 				},
@@ -234,7 +235,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			console.debug('put_data: ', put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.reactor.config.@id,
+				url: '/config/reactors/' + this.reactor.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,

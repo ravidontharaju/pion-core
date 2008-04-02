@@ -14,7 +14,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			var _this = this;
 			this.field_mapping_table = [];
 			store.fetch({
-				query: {'@id': this.config.@id},
+				query: {'@id': this.config['@id']},
 				onItem: function(item) {
 					var field_mappings = store.getValues(item, 'Field');
 					for (var i = 0; i < field_mappings.length; ++i) {
@@ -49,7 +49,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			console.debug('put_data: ', put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config.@id,
+				url: '/config/reactors/' + this.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,
@@ -104,6 +104,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 		execute: function(dialogFields) {
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
+			var workspace_box = pion.reactors.workspace_box;
 			var dc = dojo.coords(workspace_box.node);
 			var X = pion.reactors.last_x - dc.x;
 			var Y = pion.reactors.last_y - dc.y;
@@ -143,9 +144,8 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 					//console.dir(config);
 					var reactor_node = document.createElement("div");
 					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
-					var reactor = createReactor(config, reactor_node);
-					//console.debug('config.@id: ', config.@id);
-					reactors_by_id[config.@id] = reactor;
+					var reactor = pion.reactors.createReactor(config, reactor_node);
+					pion.reactors.reactors_by_id[config['@id']] = reactor;
 					reactor.workspace = workspace_box;
 					workspace_box.reactors.push(reactor);
 				},
@@ -169,7 +169,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.reactor.field_mapping_table = [];
 			var store = pion.reactors.config_store;
 			store.fetch({
-				query: {'@id': this.reactor.config.@id},
+				query: {'@id': this.reactor.config['@id']},
 				onItem: function(item) {
 					var field_mappings = store.getValues(item, 'Field');
 					for (var i = 0; i < field_mappings.length; ++i) {
@@ -224,7 +224,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			console.debug('put_data: ', put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.reactor.config.@id,
+				url: '/config/reactors/' + this.reactor.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,

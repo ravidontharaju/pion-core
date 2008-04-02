@@ -89,8 +89,8 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 		},
 		execute: function(dialogFields) {
 			var pane = pion.vocabularies.selected_pane;
-			item_object = {
-				ID: dialogFields.@id,
+			var item_object = {
+				ID: dialogFields['@id'],
 				Type: dialogFields.Type,
 				Comment: dialogFields.Comment
 			};
@@ -120,7 +120,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			dojo.connect(this.vocab_grid, 'onCellFocus', function(e){console.debug('***** onCellFocus: e.index = ', e.index, ', e.fieldIndex = ', e.fieldIndex, ', e = ', e)});
 			dojo.connect(this.vocab_grid, 'onStartEdit', function(inCell, inRowIndex){console.debug('***** onStartEdit: inCell = ', inCell, ', inRowIndex = ', inRowIndex)});
 
-			this.url = '/config/vocabularies/' + this.config.@id;
+			this.url = '/config/vocabularies/' + this.config['@id'];
 			console.debug('url = ', this.url);
 			this.vocab_store = new dojox.data.XmlStore({url: this.url, attributeMap: {'Vocabulary.id': '@id'}});
 			this.vocab_term_store = new dojox.data.XmlStore({url: this.url, rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
@@ -180,12 +180,12 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					setTimeout(function(){
 						_this.vocab_grid.update();
 						_this.vocab_grid.resize();
-					}, 500);		
+					}, 500);
 				}
 			});
 
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
-			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });			
+			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 		},
 		populateFromVocabStore: function() {
 			var _this = this;
@@ -315,7 +315,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			console.debug('put_data: ', put_data);
 			_this = this;
 			dojo.rawXhrPut({
-				url: '/config/vocabularies/' + this.config.@id,
+				url: '/config/vocabularies/' + this.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: put_data,
@@ -338,7 +338,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 
 			store._saveCustom = function(saveCompleteCallback, saveFailedCallback) {
 				for (var ID in this._pending._modifiedItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config.@id + '#' + ID);
+					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					this.fetchItemByIdentity({
 						identity: ID,
@@ -378,7 +378,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					});
 				}
 				for (var ID in this._pending._newItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config.@id + '#' + ID);
+					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					var item = this._pending._newItems[ID];
 					var post_data = '<PionConfig><Term><Type';
@@ -414,7 +414,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					});
 				}
 				for (var ID in this._pending._deletedItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config.@id + '#' + ID);
+					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					dojo.xhrDelete({
 						url: url,
@@ -446,7 +446,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			console.debug('delete2: selected vocabulary is ', this.title);
 			_this = this;
 			dojo.xhrDelete({
-				url: '/config/vocabularies/' + this.config.@id,
+				url: '/config/vocabularies/' + this.config['@id'],
 				handleAs: 'xml',
 				timeout: 5000,
 				load: function(response, ioArgs) {

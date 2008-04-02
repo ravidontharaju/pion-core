@@ -2,6 +2,7 @@ dojo.provide("plugins.codecs.Codec");
 dojo.require("pion.codecs");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
+dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.dtl.filter.htmlstrings");
 
 dojo.declare("plugins.codecs.Codec",

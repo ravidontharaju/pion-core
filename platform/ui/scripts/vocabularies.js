@@ -1,3 +1,4 @@
+//alert('vocabularies.js 1');
 dojo.provide("pion.vocabularies");
 dojo.require("plugins.vocabularies.Vocabulary");
 dojo.require("dojo.data.ItemFileReadStore");
@@ -148,7 +149,7 @@ pion.vocabularies.init = function() {
 			post_data += '<Comment>' + dialogFields.Comment + '</Comment>';
 			post_data += '</Vocabulary></PionConfig>';
 			console.debug('post_data: ', post_data);
-			var full_id = 'urn:vocab:' + dialogFields.@id;
+			var full_id = 'urn:vocab:' + dialogFields['@id'];
 			
 			dojo.rawXhrPost({
 				url: '/config/vocabularies/' + full_id,
