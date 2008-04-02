@@ -93,6 +93,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			this.inherited("postCreate", arguments);
 			var _this = this;
 			plugins.reactors.initFilterReactorGridLayout();
+			this.filter_reactor_grid.setStructure(plugins.reactors.filter_reactor_grid_layout);
 			this.reactor.comparison_table = [];
 			var store = pion.reactors.config_store;
 			store.fetch({
