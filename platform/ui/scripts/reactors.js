@@ -745,7 +745,7 @@ function deleteReactor(reactor) {
 				
 				// remove reactor from the outputs of incoming_reactor
 				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-					if (incoming_reactor.reactor_outputs[j] == reactor) {
+					if (incoming_reactor.reactor_outputs[j].sink == reactor) {
 						incoming_reactor.reactor_outputs.splice(j, 1);
 					}
 				}
@@ -756,7 +756,7 @@ function deleteReactor(reactor) {
 
 				// remove reactor from the inputs of outgoing_reactor
 				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-					if (outgoing_reactor.reactor_inputs[j] == reactor) {
+					if (outgoing_reactor.reactor_inputs[j].source == reactor) {
 						outgoing_reactor.reactor_inputs.splice(j, 1);
 					}
 				}
