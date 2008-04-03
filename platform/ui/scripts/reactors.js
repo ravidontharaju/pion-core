@@ -290,6 +290,7 @@ function addWorkspace(name) {
 	dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ pion.reactors.handleDropOnWorkspace(source, nodes, copy, new_workspace); });
 	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
 	new_workspace.my_content_pane = workspace_pane;
+	new_workspace.onEmpty = function(workspace_pane){};
 	workspace_pane.my_workspace_box = new_workspace;
 	workspaces_by_name[title] = new_workspace;
 	workspace_boxes[i] = new_workspace;
@@ -776,6 +777,9 @@ function deleteReactor(reactor) {
 					workspace_box.reactors.splice(j, 1);
 				}
 			}
+			if (workspace_box.reactors.length == 0) {
+				workspace_box.onEmpty(workspace_box.my_content_pane);
+			}
 
 			return response;
 		},
@@ -916,8 +920,14 @@ function isDuplicateWorkspaceName(workspace_pane, name) {
 }
 
 function deleteWorkspaceIfConfirmed(workspace_pane) {
+	// If workspace is empty, don't bother with a confirmation dialog.
+	if (workspace_pane.my_workspace_box.reactors.length == 0) {
+		_deleteEmptyWorkspace(workspace_pane);
+		return;
+	}
+
 	var dialog = dijit.byId('delete_confirmation_dialog');
-	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete workspace '" + workspace_pane.title + "'?";
+	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete workspace '" + workspace_pane.title + "' and all the reactors it contains?";
 	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteWorkspace(workspace_pane); };
 	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
 	dialog.show();
@@ -925,8 +935,20 @@ function deleteWorkspaceIfConfirmed(workspace_pane) {
 }
 
 function deleteWorkspace(workspace_pane) {
+	var copy_of_reactor_array = [];
+	for (var i = 0; i < workspace_pane.my_workspace_box.reactors.length; ++i) {
+		copy_of_reactor_array[i] = workspace_pane.my_workspace_box.reactors[i];
+	}
+	for (i = 0; i < copy_of_reactor_array.length; ++i) {
+		deleteReactor(copy_of_reactor_array[i]);
+	}
+
+	// Wait until all the reactors have been deleted, then remove the workspace.
+	dojo.connect(workspace_pane.my_workspace_box, 'onEmpty', _deleteEmptyWorkspace);
+}
+
+function _deleteEmptyWorkspace(workspace_pane) {
 	console.debug('deleting ', workspace_pane.title);
-	
 	for (var j = 0; j < workspace_boxes.length; ++j) {
 		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
 			workspace_boxes.splice(j, 1);
