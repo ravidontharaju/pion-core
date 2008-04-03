@@ -55,7 +55,7 @@ public:
 	/// data type that holds the values for Event parameters	
 	typedef boost::variant<std::string, boost::int32_t, boost::uint32_t,
 		boost::int64_t, boost::uint64_t, float, double, long double,
-		long long double, PionDateTime>		ParameterValue;
+		PionDateTime>		ParameterValue;
 
 	// new+delete seems best bet for the time being...
 	#if 0
