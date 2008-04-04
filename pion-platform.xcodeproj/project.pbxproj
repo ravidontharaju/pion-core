@@ -3382,13 +3382,14 @@
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					BOOST_TEST_DYN_LINK,
 					_REENTRANT,
 					PION_XCODE,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"/usr/local/include/boost-1_34_1",
+					"/usr/local/include/boost-1_35",
 					/usr/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -3398,12 +3399,12 @@
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
 				OTHER_CPLUSPLUSFLAGS = "-fkeep-inline-functions";
 				OTHER_LDFLAGS = (
-					"-lboost_thread-mt-d",
-					"-lboost_filesystem-mt-d",
-					"-lboost_system-mt-d",
-					"-lboost_regex-mt-d",
-					"-lboost_date_time-mt-d",
-					"-lboost_signals-mt-d",
+					"-lboost_thread-mt-1_35",
+					"-lboost_filesystem-mt-1_35",
+					"-lboost_system-mt-1_35",
+					"-lboost_regex-mt-1_35",
+					"-lboost_date_time-mt-1_35",
+					"-lboost_signals-mt-1_35",
 					"-llog4cxx",
 					"-lssl",
 					"-lcrypto",
@@ -3425,6 +3426,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					BOOST_TEST_DYN_LINK,
 					_REENTRANT,
 					NDEBUG,
 					PION_XCODE,
@@ -3432,7 +3434,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/include/libxml2,
-					"/usr/local/include/boost-1_34_1",
+					"/usr/local/include/boost-1_35",
 					/usr/local/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -3441,12 +3443,12 @@
 				);
 				OBJROOT = "$(PROJECT_DIR)/bin/tmp";
 				OTHER_LDFLAGS = (
-					"-lboost_thread-mt",
-					"-lboost_filesystem-mt",
-					"-lboost_system-mt",
-					"-lboost_regex-mt",
-					"-lboost_date_time-mt",
-					"-lboost_signals-mt",
+					"-lboost_thread-mt-1_35",
+					"-lboost_filesystem-mt-1_35",
+					"-lboost_system-mt-1_35",
+					"-lboost_regex-mt-1_35",
+					"-lboost_date_time-mt-1_35",
+					"-lboost_signals-mt-1_35",
 					"-llog4cxx",
 					"-lssl",
 					"-lcrypto",
@@ -3914,12 +3916,13 @@
 			buildSettings = {
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lboost_thread-mt-d",
-					"-lboost_filesystem-mt-d",
-					"-lboost_system-mt-d",
-					"-lboost_regex-mt-d",
-					"-lboost_date_time-mt-d",
-					"-lboost_unit_test_framework-mt-d",
+					"-lboost_thread-mt-1_35",
+					"-lboost_filesystem-mt-1_35",
+					"-lboost_system-mt-1_35",
+					"-lboost_regex-mt-1_35",
+					"-lboost_date_time-mt-1_35",
+					"-lboost_signals-mt-1_35",
+					"-lboost_unit_test_framework-mt-1_35",
 					"-llog4cxx",
 					"-lssl",
 					"-lcrypto",
@@ -3936,12 +3939,13 @@
 			buildSettings = {
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lboost_thread-mt",
-					"-lboost_filesystem-mt",
-					"-lboost_system-mt",
-					"-lboost_regex-mt",
-					"-lboost_date_time-mt",
-					"-lboost_unit_test_framework-mt",
+					"-lboost_thread-mt-1_35",
+					"-lboost_filesystem-mt-1_35",
+					"-lboost_system-mt-1_35",
+					"-lboost_regex-mt-1_35",
+					"-lboost_date_time-mt-1_35",
+					"-lboost_signals-mt-1_35",
+					"-lboost_unit_test_framework-mt-1_35",
 					"-llog4cxx",
 					"-lssl",
 					"-lcrypto",
