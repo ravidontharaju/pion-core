@@ -25,7 +25,7 @@
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <pion/PionScheduler.hpp>
-#include <pion/PionLockedQueue.hpp>
+#include <pion/PionLockFreeQueue.hpp>
 #include <pion/platform/Event.hpp>
 
 #ifdef __GNUC__
@@ -659,7 +659,7 @@ protected:
 
 
 ///
-/// IntAllocTwoThreadQueueTest: tests the raw basline performance of the PionLockedQueue
+/// IntAllocTwoThreadQueueTest: tests the raw basline performance of the PionLockFreeQueue
 ///
 class IntAllocTwoThreadQueueTest :
 	public AllocTwoThreadQueueTest
@@ -702,7 +702,7 @@ protected:
 private:
 
 	/// a shared queue of integers
-	PionLockedQueue<int>			m_queue;
+	PionLockFreeQueue<int>			m_queue;
 };
 
 
@@ -761,7 +761,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockedQueue<Event*>				m_queue;
+	PionLockFreeQueue<Event*>				m_queue;
 };
 
 
@@ -815,7 +815,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockedQueue<Event*>				m_queue;
+	PionLockFreeQueue<Event*>				m_queue;
 };
 
 
@@ -875,7 +875,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockedQueue<Event*>			m_queue;
+	PionLockFreeQueue<Event*>			m_queue;
 
 	/// memory pool allocator
 	EventGCCPoolAlloc	m_pool_alloc;
@@ -933,7 +933,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockedQueue<EventPtr>			m_queue;
+	PionLockFreeQueue<EventPtr>			m_queue;
 };
 
 
