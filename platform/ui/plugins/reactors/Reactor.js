@@ -12,6 +12,7 @@ dojo.declare("plugins.reactors.Reactor",
 		postCreate: function(){
 			this.inherited("postCreate", arguments); 
 			console.debug('Reactor.postCreate: ', this.domNode);
+			this.special_config_elements = ['@id'];
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];
 			this.prev_events_in = 0;
@@ -120,21 +121,24 @@ dojo.declare("plugins.reactors.Reactor",
 			this.config.X = mover.host.node.offsetLeft;
 			this.config.Y = mover.host.node.offsetTop;
 
-			var put_data = '<PionConfig><Reactor>';
+			this.put_data = '<PionConfig><Reactor>';
 			for (var tag in this.config) {
-				if (tag != '@id') {
+				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
 					console.debug('dialogFields[', tag, '] = ', this.config[tag]);
-					put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
+					this.put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
 				}
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
+			if (this._insertCustomData) {
+				this._insertCustomData();
+			}
+			this.put_data += '</Reactor></PionConfig>';
+			console.debug('put_data: ', this.put_data);
 
 			dojo.rawXhrPut({
 				url: '/config/reactors/' + this.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
-				putData: put_data,
+				putData: this.put_data,
 				load: function(response){
 					console.debug('response: ', response);
 				},
@@ -165,21 +169,24 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			var dc = dojo.coords(workspace_box.node);
 			var X = pion.reactors.last_x - dc.x;
 			var Y = pion.reactors.last_y - dc.y;
-			var post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
-						  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
-						  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
+			this.post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
+						   + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
+						   + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
 			for (var tag in dialogFields) {
 				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 			}
-			post_data += '</Reactor></PionConfig>';
-			console.debug('post_data: ', post_data);
+			if (this._insertCustomData) {
+				this._insertCustomData();
+			}
+			this.post_data += '</Reactor></PionConfig>';
+			console.debug('post_data: ', this.post_data);
 			
 			dojo.rawXhrPost({
 				url: '/config/reactors',
 				contentType: "text/xml",
 				handleAs: "xml",
-				postData: post_data,
+				postData: this.post_data,
 				load: function(response){
 					var node = response.getElementsByTagName('Reactor')[0];
 					var config = { '@id': node.getAttribute('id') };
@@ -222,23 +229,26 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = dialogFields.Name;
 
-			var put_data = '<PionConfig><Reactor><Plugin>' + this.reactor.config.Plugin
+			this.put_data = '<PionConfig><Reactor><Plugin>' + this.reactor.config.Plugin
 						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
 						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
 			for (var tag in dialogFields) {
 				if (tag != '@id') {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+					this.put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 				}
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
+			if (this._insertCustomData) {
+				this._insertCustomData();
+			}
+			this.put_data += '</Reactor></PionConfig>';
+			console.debug('put_data: ', this.put_data);
 
 			dojo.rawXhrPut({
 				url: '/config/reactors/' + this.reactor.config['@id'],
 				contentType: "text/xml",
 				handleAs: "xml",
-				putData: put_data,
+				putData: this.put_data,
 				load: function(response){
 					console.debug('response: ', response);
 				},

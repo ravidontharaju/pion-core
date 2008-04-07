@@ -10,6 +10,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 		postCreate: function(){
 			this.config.Plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
+			this.special_config_elements.push('Field');
 			var store = pion.reactors.config_store;
 			var _this = this;
 			this.field_mapping_table = [];
@@ -26,41 +27,12 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 				}
 			});
 		},
-		handleMoveStop: function(mover) {
-			if (this.config.X == mover.host.node.offsetLeft && this.config.Y == mover.host.node.offsetTop) {
-				return;
-			}
-			this.config.X = mover.host.node.offsetLeft;
-			this.config.Y = mover.host.node.offsetTop;
-
-			var put_data = '<PionConfig><Reactor>';
-			for (var tag in this.config) {
-				if (tag != '@id' && tag != 'Field') {
-					console.debug('dialogFields[', tag, '] = ', this.config[tag]);
-					put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
-				}
-			}
+		_insertCustomData: function() {
 			for (var i = 0; i < this.field_mapping_table.length; ++i) {
 				var row = this.field_mapping_table[i];
 				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
+				this.put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
-
-			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config['@id'],
-				contentType: "text/xml",
-				handleAs: "xml",
-				putData: put_data,
-				load: function(response){
-					console.debug('response: ', response);
-				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
 		}
 	}
 );
@@ -101,59 +73,13 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			this.addRow([]);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
-		execute: function(dialogFields) {
-			console.debug(dialogFields);
-			console.debug('this.plugin = ', this.plugin);
-			var workspace_box = pion.reactors.workspace_box;
-			var dc = dojo.coords(workspace_box.node);
-			var X = pion.reactors.last_x - dc.x;
-			var Y = pion.reactors.last_y - dc.y;
-			var post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
-						  + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
-						  + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
-			for (var tag in dialogFields) {
-				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
-			}
+		_insertCustomData: function() {
 			var num_field_mappings = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount();
 			for (var i = 0; i < num_field_mappings; ++i) {
 				var row = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRow(i);
 				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				post_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
+				this.post_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
 			}
-			post_data += '</Reactor></PionConfig>';
-			console.debug('post_data: ', post_data);
-			
-			dojo.rawXhrPost({
-				url: '/config/reactors',
-				contentType: "text/xml",
-				handleAs: "xml",
-				postData: post_data,
-				load: function(response){
-					var node = response.getElementsByTagName('Reactor')[0];
-					var config = { '@id': node.getAttribute('id') };
-					var attribute_nodes = node.childNodes;
-					//console.debug('attribute_nodes: ', attribute_nodes);
-					//console.dir(attribute_nodes);
-					for (var i = 0; i < attribute_nodes.length; ++i) {
-						if (attribute_nodes[i].firstChild) {
-							config[attribute_nodes[i].tagName] = attribute_nodes[i].firstChild.nodeValue;
-						}
-					}
-					//console.debug('config (from server): ', config);
-					//console.dir(config);
-					var reactor_node = document.createElement("div");
-					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
-					var reactor = pion.reactors.createReactor(config, reactor_node);
-					pion.reactors.reactors_by_id[config['@id']] = reactor;
-					reactor.workspace = workspace_box;
-					workspace_box.reactors.push(reactor);
-				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
 		}
 	}
 );
@@ -201,41 +127,13 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.addRow([]);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
-		execute: function(dialogFields) {
-			dojo.mixin(this.reactor.config, dialogFields);
-			this.reactor.name_div.innerHTML = dialogFields.Name;
-
-			var put_data = '<PionConfig><Reactor><Plugin>FileReactor'
-						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
-						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
-			for (var tag in dialogFields) {
-				if (tag != '@id') {
-					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
-				}
-			}
+		_insertCustomData: function() {
 			var num_field_mappings = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount();
 			for (var i = 0; i < num_field_mappings; ++i) {
 				var row = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRow(i);
 				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
+				this.put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
-
-			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.reactor.config['@id'],
-				contentType: "text/xml",
-				handleAs: "xml",
-				putData: put_data,
-				load: function(response){
-					console.debug('response: ', response);
-				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
 		}
 	}
 );

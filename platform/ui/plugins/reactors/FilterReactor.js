@@ -10,6 +10,7 @@ dojo.declare("plugins.reactors.FilterReactor",
 			this.config.Plugin = 'FilterReactor';
 			console.debug('FilterReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments);
+			this.special_config_elements.push('Comparison');
 			var store = pion.reactors.config_store;
 			var _this = this;
 			this.comparison_table = [];
@@ -28,41 +29,12 @@ dojo.declare("plugins.reactors.FilterReactor",
 				}
 			});
 		},
-		handleMoveStop: function(mover) {
-			if (this.config.X == mover.host.node.offsetLeft && this.config.Y == mover.host.node.offsetTop) {
-				return;
-			}
-			this.config.X = mover.host.node.offsetLeft;
-			this.config.Y = mover.host.node.offsetTop;
-
-			var put_data = '<PionConfig><Reactor>';
-			for (var tag in this.config) {
-				if (tag != '@id' && tag != 'Comparison') {
-					console.debug('dialogFields[', tag, '] = ', this.config[tag]);
-					put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
-				}
-			}
+		_insertCustomData: function() {
 			for (var i = 0; i < this.comparison_table.length; ++i) {
 				var row = this.comparison_table[i];
 				console.debug('frag: <Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value>');
-				put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
+				this.put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
-
-			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config['@id'],
-				contentType: "text/xml",
-				handleAs: "xml",
-				putData: put_data,
-				load: function(response){
-					console.debug('response: ', response);
-				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
 		}
 	}
 );
@@ -134,41 +106,13 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			this.addRow([0, 'true']);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
-		execute: function(dialogFields) {
-			dojo.mixin(this.reactor.config, dialogFields);
-			this.reactor.name_div.innerHTML = dialogFields.Name;
-
-			var put_data = '<PionConfig><Reactor><Plugin>FileReactor'
-						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
-						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
-			for (var tag in dialogFields) {
-				if (tag != '@id') {
-					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
-				}
-			}
+		_insertCustomData: function() {
 			var num_comparisons = pion.reactors.filter_reactor_grid_model.getRowCount();
 			for (var i = 0; i < num_comparisons; ++i) {
 				var row = pion.reactors.filter_reactor_grid_model.getRow(i);
 				console.debug('frag: <Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value>');
-				put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
+				this.put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
 			}
-			put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', put_data);
-
-			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.reactor.config['@id'],
-				contentType: "text/xml",
-				handleAs: "xml",
-				putData: put_data,
-				load: function(response){
-					console.debug('response: ', response);
-				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
-			});
 		}
 	}
 );
