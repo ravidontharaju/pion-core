@@ -62,6 +62,8 @@ pion.codecs.init = function() {
 	var url = dojo.moduleUrl('plugins', 'codecs.json');
 	pion.codecs.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
+	dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
+
 	function onComplete(items, request){
 		var config_accordion = dijit.byId('codec_config_accordion');
 		for (var i = 0; i < items.length; ++i) {
@@ -188,5 +190,3 @@ function codecPaneSelected(pane) {
 		}
 	});
 }
-
-dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
