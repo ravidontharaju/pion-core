@@ -25,10 +25,10 @@
 #include <boost/bind.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionScheduler.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/PluginConfig.hpp>
+#include <pion/platform/ReactionScheduler.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -322,7 +322,7 @@ public:
 		Reactor *reactor_ptr = m_plugins.get(reactor_id);
 		if (reactor_ptr == NULL)
 			throw ReactorNotFoundException(reactor_id);
-		m_scheduler.getIOService().post(boost::bind<void>(boost::ref(*reactor_ptr), e));
+		m_scheduler.post(boost::bind<void>(boost::ref(*reactor_ptr), e));
 	}
 	
 	/**
@@ -360,10 +360,7 @@ public:
 	 * @param work_func work function to be executed
 	 */
 	template<typename WorkFunction>
-	inline void post(WorkFunction work_func) { m_scheduler.getIOService().post(work_func); }
-	
-	/// returns an async I/O service used to schedule work
-	inline boost::asio::io_service& getIOService(void) { return m_scheduler.getIOService(); }
+	inline void post(WorkFunction work_func) { m_scheduler.post(work_func); }
 	
 	/// returns the number of threads currently in use
 	inline boost::uint32_t getNumThreads(void) const { return m_scheduler.getNumThreads(); }
@@ -564,7 +561,7 @@ private:
 	
 	
 	/// used to schedule the delivery of events to Reactors for processing
-	PionSingleServiceScheduler		m_scheduler;
+	ReactionScheduler				m_scheduler;
 
 	/// references the global factory that manages Codecs
 	CodecFactory &					m_codec_factory;

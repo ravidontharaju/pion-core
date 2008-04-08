@@ -52,6 +52,8 @@
 		E329D21A0D7DF39C00229FD5 /* Query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2180D7DF39C00229FD5 /* Query.hpp */; };
 		E329D23A0D7E24AF00229FD5 /* DatabaseOutputReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E329D2380D7E24AF00229FD5 /* DatabaseOutputReactor.cpp */; };
 		E329D23B0D7E24AF00229FD5 /* DatabaseOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */; };
+		E32F26D10DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
+		E32F26D20DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E36D88B10D29BA0E00B4C134 /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
@@ -945,6 +947,7 @@
 		E329D2180D7DF39C00229FD5 /* Query.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Query.hpp; path = platform/include/pion/platform/Query.hpp; sourceTree = SOURCE_ROOT; };
 		E329D2380D7E24AF00229FD5 /* DatabaseOutputReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DatabaseOutputReactor.cpp; path = platform/reactors/DatabaseOutputReactor.cpp; sourceTree = SOURCE_ROOT; };
 		E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DatabaseOutputReactor.hpp; path = platform/reactors/DatabaseOutputReactor.hpp; sourceTree = SOURCE_ROOT; };
+		E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ReactionScheduler.hpp; path = platform/include/pion/platform/ReactionScheduler.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-platform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-platform.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-platform.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-platform.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E349BEB00D3E578A008AB9E6 /* Comparison.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Comparison.hpp; path = platform/include/pion/platform/Comparison.hpp; sourceTree = SOURCE_ROOT; };
@@ -1597,6 +1600,7 @@
 				E3CFFC260D45359C00ADB135 /* PluginConfig.hpp */,
 				E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */,
 				E36D88AA0D29BA0E00B4C134 /* DatabaseManager.hpp */,
+				E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */,
 				E36D88AC0D29BA0E00B4C134 /* ReactionEngine.hpp */,
 			);
 			name = include;
@@ -1764,6 +1768,7 @@
 				E3CFFB210D45263A00ADB135 /* PlatformPlugin.hpp in Headers */,
 				E3CFFC270D45359C00ADB135 /* PluginConfig.hpp in Headers */,
 				E329D2190D7DF39C00229FD5 /* Query.hpp in Headers */,
+				E32F26D10DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1786,6 +1791,7 @@
 				E3CFFB220D45263A00ADB135 /* PlatformPlugin.hpp in Headers */,
 				E3CFFC280D45359C00ADB135 /* PluginConfig.hpp in Headers */,
 				E329D21A0D7DF39C00229FD5 /* Query.hpp in Headers */,
+				E32F26D20DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

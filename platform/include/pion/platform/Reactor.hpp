@@ -27,10 +27,10 @@
 #include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
-#include <pion/PionScheduler.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
+#include <pion/platform/ReactionScheduler.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -155,7 +155,7 @@ public:
 	void removeConnection(const std::string& connection_id);
 
 	/// sets the scheduler that will be used to deliver Events to other Reactors
-	inline void setScheduler(PionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
+	inline void setScheduler(ReactionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
 
 	/// returns the total number of Events received by this Reactor
 	inline boost::uint64_t getEventsIn(void) const { return m_events_in; }
@@ -173,7 +173,7 @@ public:
 protected:
 
 	/// returns the task scheduler used by the ReactionEngine
-	inline PionScheduler& getScheduler(void) {
+	inline ReactionScheduler& getScheduler(void) {
 		PION_ASSERT(m_scheduler_ptr != NULL);
 		return *m_scheduler_ptr;
 	}
@@ -200,37 +200,34 @@ protected:
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
 		++m_events_out;
 		if (! m_connections.empty()) {
+#if 0
 			// simple scheduling just iterates through connections and use the
 			// same thread to carry the event through all the reaction chains
 			for (ConnectionMap::iterator i = m_connections.begin();
 				 i != m_connections.end(); ++i)
 			{
 				if (return_immediately)
-					i->second.post(getScheduler().getIOService(), e);
+					i->second.post(getScheduler(), e);
 				else
 					i->second(e);
 			}
-			
-			// the following scheduling policy makes better use of available
-			// CPU cores by scheduling multiple threads to handle alternate
-			// processing branches.  unfortunately, the overhead from passing
-			// an event between threads seems to slow things down substantially..
-#if 0
+#endif
 			// iterate through each Reactor after the first one and send the Event
 			// using the scheduler.  This way, the entire thread pool will be used
 			// for processing pipelines
 			ConnectionMap::iterator i = m_connections.begin();
 			while (++i != m_connections.end())
-				i->second.post(getScheduler().getIOService(), e);
+				i->second.post(getScheduler(), e);
 			
 			// send to the first Reactor using the same thread
 			// this helps to reduce context switching by ensuring
 			// that the longer processing chains remain unbroken
-			if (return_immediately)
-				m_connections.begin()->second.post(getScheduler().getIOService(), e);
-			else
-				m_connections.begin()->second(e);
-#endif
+			if (m_connections.begin()->second.isRunning()) {
+				if (return_immediately)
+					m_connections.begin()->second.post(getScheduler(), e);
+				else
+					m_connections.begin()->second(e);
+			}
 		}
 	}
 	
@@ -276,6 +273,11 @@ private:
 			: m_reactor_ptr(c.m_reactor_ptr), m_event_handler(c.m_event_handler)
 		{}
 
+		/// returns true if the output connection is running
+		inline bool isRunning(void) {
+			return (m_reactor_ptr == NULL || m_reactor_ptr->isRunning());
+		}
+		
 		/// sends an Event over the OutputConnection
 		inline void operator()(const EventPtr& event_ptr) {
 			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
@@ -283,11 +285,9 @@ private:
 		}
 		
 		/// schedules an Event to be sent over the OutputConnection
-		inline void post(boost::asio::io_service& io_service,
-						 const EventPtr& event_ptr)
-		{
+		inline void post(ReactionScheduler& scheduler, const EventPtr& event_ptr) {
 			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
-				io_service.post(boost::bind(m_event_handler, event_ptr));
+				scheduler.post(boost::bind<void>(m_event_handler, event_ptr));
 		}
 
 	private:
@@ -317,7 +317,7 @@ private:
 	const ReactorType				m_type;
 	
 	/// used to schedule the delivery of events to Reactors for processing
-	PionScheduler *					m_scheduler_ptr;
+	ReactionScheduler *				m_scheduler_ptr;
 	
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;
