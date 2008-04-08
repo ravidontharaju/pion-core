@@ -21,11 +21,13 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(PION_NET_HOME)\include&quot;"
+				AdditionalIncludeDirectories="C:\apache\apr\include;&quot;$(PION_NET_HOME)\include&quot;"
 				PreprocessorDefinitions="_CONSOLE"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libapr-1.lib"
+				AdditionalLibraryDirectories="C:\apache\bin"
 				SubSystem="1"
 			/>
 		</Configuration>
@@ -38,11 +40,13 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(PION_NET_HOME)\include&quot;"
+				AdditionalIncludeDirectories="C:\apache\apr\include;&quot;$(PION_NET_HOME)\include&quot;"
 				PreprocessorDefinitions="_CONSOLE"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libapr-1.lib"
+				AdditionalLibraryDirectories="C:\apache\bin"
 				SubSystem="1"
 			/>
 		</Configuration>
@@ -54,11 +58,13 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(PION_NET_HOME)\include&quot;"
+				AdditionalIncludeDirectories="C:\apache\apr\include;&quot;$(PION_NET_HOME)\include&quot;"
 				PreprocessorDefinitions="_CONSOLE;PION_FULL"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libapr-1.lib"
+				AdditionalLibraryDirectories="C:\apache\bin"
 				SubSystem="1"
 			/>
 		</Configuration>
@@ -71,11 +77,13 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(PION_NET_HOME)\include&quot;"
+				AdditionalIncludeDirectories="C:\apache\apr\include;&quot;$(PION_NET_HOME)\include&quot;"
 				PreprocessorDefinitions="_CONSOLE;PION_FULL"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libapr-1.lib"
+				AdditionalLibraryDirectories="C:\apache\bin"
 				SubSystem="1"
 			/>
 		</Configuration>
