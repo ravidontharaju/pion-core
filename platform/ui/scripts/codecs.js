@@ -42,7 +42,7 @@ pion.codecs.term_store.fetch({
 });
 
 pion.codecs.getHeight = function() {
-	// set by adjustCodecAccordionSize
+	// set by _adjustAccordionSize
 	return pion.codecs.height;
 }
 
@@ -73,7 +73,7 @@ pion.codecs.init = function() {
 			codec_pane.uuid = pion.codecs.config_store.getValue(items[i], '@id');
 			config_accordion.addChild(codec_pane);
 		}
-		adjustCodecAccordionSize();
+		pion.codecs._adjustAccordionSize();
 
 		var first_pane = config_accordion.getChildren()[0];
 		config_accordion.selectChild(first_pane);
@@ -84,6 +84,8 @@ pion.codecs.init = function() {
 	} else {
 		codec_config_store.fetch({ onComplete: onComplete });
 	}
+
+	dojo.connect(dojo.byId('add_new_codec_button'), 'click', addNewCodec);
 }
 
 function createNewCodecPane(title) {
@@ -99,7 +101,7 @@ function addNewCodec() {
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
 	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel')
+		dojo.connect(n, 'click', dialog, 'onCancel');
 	});
 	dialog.show();
 	dialog.execute = function(dialogFields) {
@@ -126,7 +128,7 @@ function addNewCodec() {
 				var codec_pane = createNewCodecPane(dialogFields.Name);
 				codec_pane.uuid = id;
 				codec_config_accordion.addChild(codec_pane);
-				adjustCodecAccordionSize();
+				pion.codecs._adjustAccordionSize();
 				codec_config_accordion.selectChild(codec_pane);
 			},
 			error: function(response, ioArgs) {
@@ -137,19 +139,19 @@ function addNewCodec() {
 	}
 }
 
-function adjustCodecAccordionSize() {
+pion.codecs._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('codec_config_accordion');
 	var num_codecs = config_accordion.getChildren().length;
 	console.debug("num_codecs = " + num_codecs);
 
-	// TODO: replace 460 with some computed value, which takes into account the height of the grid 
+	// TODO: replace 475 with some computed value, which takes into account the height of the grid 
 	// (in .codec_grid in defaults.css) and the variable comment box height.
-	var codec_pane_body_height = 460;
+	var codec_pane_body_height = 475;
 
 	var title_height = 0;
 	if (num_codecs > 0) {
 		var first_pane = config_accordion.getChildren()[0];
-		var title_height = first_pane.getTitleHeight();
+		title_height = first_pane.getTitleHeight();
 	}
 	var accordion_height = codec_pane_body_height + num_codecs * title_height;
 

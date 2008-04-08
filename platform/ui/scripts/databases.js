@@ -26,13 +26,13 @@ pion.databases._adjustAccordionSize = function() {
 	var num_databases = config_accordion.getChildren().length;
 	console.debug("num_databases = " + num_databases);
 
-	// TODO: replace 200 with some computed value
-	var database_pane_body_height = 200;
+	// TODO: replace 210 with some computed value
+	var database_pane_body_height = 210;
 
 	var title_height = 0;
 	if (num_databases > 0) {
 		var first_pane = config_accordion.getChildren()[0];
-		var title_height = first_pane.getTitleHeight();
+		title_height = first_pane.getTitleHeight();
 	}
 	var accordion_height = database_pane_body_height + num_databases * title_height;
 

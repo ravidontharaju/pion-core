@@ -212,6 +212,10 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 				},
 				error: function(response, ioArgs) {
 					console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
+
+					// Remove the dnd reactor.
+					workspace_box.node.removeChild(workspace_box.node.lastChild);
+
 					return response;
 				}
 			});

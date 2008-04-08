@@ -268,7 +268,7 @@ dojo.declare("plugins.codecs.CodecPane",
 					dijit.byId('codec_config_accordion').forward();
 					
 					dijit.byId('codec_config_accordion').removeChild(_this);
-					adjustCodecAccordionSize();
+					pion.codecs._adjustAccordionSize();
 
 					return response;
 				},

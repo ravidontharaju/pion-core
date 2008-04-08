@@ -160,6 +160,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					_this.model = new dojox.grid.data.DojoData(null, null, {store: _this.working_store, query: {Type: '*'}});
 					_this.model.requestRows();
 					//console.debug(_this.url, ': _this.model.data = ', _this.model.data);
+					/*
 					function updateStatus(){
 						var p = _this.model.store._pending;
 						var key, nCnt = 0, mCnt = 0, dCnt = 0;
@@ -169,7 +170,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 						//dojo.byId("model_status").innerHTML = 'model.store: ' + nCnt + ' newItems, ' + mCnt + ' modifiedItems, ' + dCnt + ' deletedItems';
 						console.debug('model.store: ' + nCnt + ' newItems, ' + mCnt + ' modifiedItems, ' + dCnt + ' deletedItems');
 					}
-
+					*/
 					_this.vocab_grid.setModel(_this.model);
 					//console.debug(_this.url, ': _this.vocab_grid.model.data = ', _this.vocab_grid.model.data);
 					
@@ -203,8 +204,11 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			});
 		},
 		populateFromVocabItem: function() {
-			this.config.Name = this.vocab_store.getValue(this.vocab_item, 'Name');
-			this.config.Comment = this.vocab_store.getValue(this.vocab_item, 'Comment');
+			this.config.Name = this.vocab_store.getValue(this.vocab_item, 'Name').toString();
+			var comment = this.vocab_store.getValue(this.vocab_item, 'Comment');
+			if (comment) {
+				this.config.Comment = comment.toString();
+			}
 			var xml_item = this.vocab_store.getValue(this.vocab_item, 'Locked');
 			this.config.Locked = (typeof xml_item !== "undefined") && xml_item.toString() == 'true';
 			console.dir(this.config);
@@ -335,10 +339,11 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		saveChangedTerms: function() {
 			var store = this.working_store;
 			var _this = this;
+			var ID, url;
 
 			store._saveCustom = function(saveCompleteCallback, saveFailedCallback) {
-				for (var ID in this._pending._modifiedItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+				for (ID in this._pending._modifiedItems) {
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					this.fetchItemByIdentity({
 						identity: ID,
@@ -377,8 +382,8 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 						}
 					});
 				}
-				for (var ID in this._pending._newItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+				for (ID in this._pending._newItems) {
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					var item = this._pending._newItems[ID];
 					var post_data = '<PionConfig><Term><Type';
@@ -413,8 +418,8 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 						}
 					});
 				}
-				for (var ID in this._pending._deletedItems) {
-					var url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+				for (ID in this._pending._deletedItems) {
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
 					console.debug('_saveCustom: url = ', url);
 					dojo.xhrDelete({
 						url: url,
@@ -483,7 +488,7 @@ plugins.vocabularies.initGridLayouts = function() {
 			{ name: 'Size',    field: 'Size',    width: 3,      styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
 			{ name: 'Comment', field: 'Comment', width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.TextBox", editorProps: {} },
 			{ name: 'Delete',					 width: 3,      styles: 'align: center;',  
-			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
+			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' }
 		]]
 	}];
 
