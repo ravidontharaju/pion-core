@@ -459,7 +459,7 @@ private:
 				reactor_ptr->setConfig(m_vocabulary, config_ptr);
 			if (reactor_ptr->getType() != Reactor::TYPE_COLLECTION)
 				reactor_ptr->start();
-		} catch (PionPlugin::PluginNotFoundException& e) {
+		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;
 		} catch (std::exception& e) {
 			throw PluginException(e.what());

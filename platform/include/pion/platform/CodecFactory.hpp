@@ -126,7 +126,7 @@ protected:
 			new_plugin_ptr->setCodecFactory(*this);
 			if (config_ptr != NULL)
 				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
-		} catch (PionPlugin::PluginNotFoundException& e) {
+		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;
 		} catch (std::exception& e) {
 			throw PluginException(e.what());

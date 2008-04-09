@@ -109,7 +109,7 @@ void ServiceManager::openConfigFile(void)
 				const std::string path_to_key_file(ConfigManager::resolveRelativePath(ssl_key));
 				try {
 					server_ptr->setSSLKeyFile(path_to_key_file);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					throw SSLKeyException(path_to_key_file);
 				}
 			#else

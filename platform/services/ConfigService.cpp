@@ -97,7 +97,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				try {
 					// push the new config into the VocabularyManager
 					getConfig().getVocabularyManager().setVocabularyConfig(vocab_id, vocab_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(vocab_config_ptr);
 					throw;
 				}
@@ -162,7 +162,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				try {
 					getConfig().getVocabularyManager().addTerm(vocab_id, term_id,
 															   term_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(term_config_ptr);
 					throw;
 				}
@@ -190,7 +190,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					// push the new config into the VocabularyManager
 					getConfig().getVocabularyManager().updateTerm(vocab_id, term_id,
 																  term_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(term_config_ptr);
 					throw;
 				}
@@ -245,7 +245,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// add the new Codec to the CodecFactory
 				try {
 					codec_id = getConfig().getCodecFactory().addCodec(codec_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(codec_config_ptr);
 					throw;
 				}
@@ -285,7 +285,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				try {
 					// push the new config into the CodecFactory
 					getConfig().getCodecFactory().setCodecConfig(branches[1], codec_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(codec_config_ptr);
 					throw;
 				}
@@ -340,7 +340,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// add the new Database to the DatabaseManager
 				try {
 					database_id = getConfig().getDatabaseManager().addDatabase(database_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(database_config_ptr);
 					throw;
 				}
@@ -380,7 +380,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				try {
 					// push the new config into the DatabaseManager
 					getConfig().getDatabaseManager().setDatabaseConfig(branches[1], database_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(database_config_ptr);
 					throw;
 				}
@@ -435,7 +435,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// add the new Reactor to the ReactionEngine
 				try {
 					reactor_id = getConfig().getReactionEngine().addReactor(reactor_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(reactor_config_ptr);
 					throw;
 				}
@@ -481,7 +481,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				try {
 					// push the new config into the ReactionEngine
 					getConfig().getReactionEngine().setReactorConfig(branches[1], reactor_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(reactor_config_ptr);
 					throw;
 				}

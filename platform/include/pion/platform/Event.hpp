@@ -22,7 +22,14 @@
 
 #include <map>
 #include <list>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4181) // qualifier applied to reference type
+#endif
 #include <boost/variant.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #include <boost/intrusive_ptr.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/detail/atomic_count.hpp>
