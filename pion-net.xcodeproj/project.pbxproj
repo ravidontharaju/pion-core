@@ -126,6 +126,10 @@
 		E3B9E5620CD67640007BEFE5 /* HTTPResponse.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B9E55C0CD67640007BEFE5 /* HTTPResponse.hpp */; };
 		E3B9E5660CD67797007BEFE5 /* HTTPParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B9E5640CD67797007BEFE5 /* HTTPParser.cpp */; };
 		E3B9E5680CD67797007BEFE5 /* HTTPParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B9E5640CD67797007BEFE5 /* HTTPParser.cpp */; };
+		E3CA02120DA7E05E0025F8CF /* HTTPCookieAuth.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CA02110DA7E05E0025F8CF /* HTTPCookieAuth.hpp */; };
+		E3CA02130DA7E05E0025F8CF /* HTTPCookieAuth.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CA02110DA7E05E0025F8CF /* HTTPCookieAuth.hpp */; };
+		E3CA02150DA7E0750025F8CF /* HTTPCookieAuth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CA02140DA7E0750025F8CF /* HTTPCookieAuth.cpp */; };
+		E3CA02160DA7E0750025F8CF /* HTTPCookieAuth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CA02140DA7E0750025F8CF /* HTTPCookieAuth.cpp */; };
 		E3CFE2090CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20A0CCFF7D500016E0F /* PionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */; };
 		E3CFE20C0CCFF7F000016E0F /* PionScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */; };
@@ -441,6 +445,8 @@
 		E3B9E55C0CD67640007BEFE5 /* HTTPResponse.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = HTTPResponse.hpp; path = net/include/pion/net/HTTPResponse.hpp; sourceTree = SOURCE_ROOT; };
 		E3B9E5640CD67797007BEFE5 /* HTTPParser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPParser.cpp; path = net/src/HTTPParser.cpp; sourceTree = SOURCE_ROOT; };
 		E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPRequestTests.cpp; path = net/tests/HTTPRequestTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3CA02110DA7E05E0025F8CF /* HTTPCookieAuth.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPCookieAuth.hpp; path = net/include/pion/net/HTTPCookieAuth.hpp; sourceTree = SOURCE_ROOT; };
+		E3CA02140DA7E0750025F8CF /* HTTPCookieAuth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPCookieAuth.cpp; path = net/src/HTTPCookieAuth.cpp; sourceTree = SOURCE_ROOT; };
 		E3CFDF4E0CD2630200BDF1F3 /* ShutdownManager.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = ShutdownManager.hpp; path = net/utils/ShutdownManager.hpp; sourceTree = "<group>"; };
 		E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionScheduler.hpp; path = common/include/pion/PionScheduler.hpp; sourceTree = SOURCE_ROOT; };
 		E3CFE20B0CCFF7F000016E0F /* PionScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionScheduler.cpp; path = common/src/PionScheduler.cpp; sourceTree = SOURCE_ROOT; };
@@ -666,6 +672,7 @@
 				E34588A40CDA6E1500332599 /* HTTPResponseWriter.hpp */,
 				E39E265B0D93828D005A7225 /* HTTPAuth.hpp */,
 				E39E265C0D93828D005A7225 /* HTTPBasicAuth.hpp */,
+				E3CA02110DA7E05E0025F8CF /* HTTPCookieAuth.hpp */,
 				E3B2A2D50CADD57E001A9A8D /* HTTPServer.hpp */,
 				E3B2A2DB0CADD57E001A9A8D /* WebService.hpp */,
 				E38108E20D53ACE100C9B63D /* WebServer.hpp */,
@@ -684,6 +691,7 @@
 				E345889E0CDA695F00332599 /* HTTPWriter.cpp */,
 				E39E26640D9382E3005A7225 /* HTTPAuth.cpp */,
 				E39E26650D9382E3005A7225 /* HTTPBasicAuth.cpp */,
+				E3CA02140DA7E0750025F8CF /* HTTPCookieAuth.cpp */,
 				E3B2A2F20CADD598001A9A8D /* HTTPServer.cpp */,
 				E38108E50D53ACFA00C9B63D /* WebServer.cpp */,
 			);
@@ -805,6 +813,7 @@
 				E39E265E0D93828D005A7225 /* HTTPAuth.hpp in Headers */,
 				E39E265F0D93828D005A7225 /* HTTPBasicAuth.hpp in Headers */,
 				E39E26600D93828D005A7225 /* PionUser.hpp in Headers */,
+				E3CA02120DA7E05E0025F8CF /* HTTPCookieAuth.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -832,6 +841,7 @@
 				E39E26610D93828D005A7225 /* HTTPAuth.hpp in Headers */,
 				E39E26620D93828D005A7225 /* HTTPBasicAuth.hpp in Headers */,
 				E39E26630D93828D005A7225 /* PionUser.hpp in Headers */,
+				E3CA02130DA7E05E0025F8CF /* HTTPCookieAuth.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1216,6 +1226,7 @@
 				E38108E60D53ACFA00C9B63D /* WebServer.cpp in Sources */,
 				E39E26660D9382E3005A7225 /* HTTPAuth.cpp in Sources */,
 				E39E26670D9382E3005A7225 /* HTTPBasicAuth.cpp in Sources */,
+				E3CA02150DA7E0750025F8CF /* HTTPCookieAuth.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1233,6 +1244,7 @@
 				E38108E70D53ACFA00C9B63D /* WebServer.cpp in Sources */,
 				E39E26680D9382E3005A7225 /* HTTPAuth.cpp in Sources */,
 				E39E26690D9382E3005A7225 /* HTTPBasicAuth.cpp in Sources */,
+				E3CA02160DA7E0750025F8CF /* HTTPCookieAuth.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
