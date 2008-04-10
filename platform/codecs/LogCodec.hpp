@@ -66,10 +66,18 @@ public:
 			: PionException("LogCodec configuration maps field to an unknown term: ", term_id) {}
 	};
 
+	/// exception thrown if the Codec is unable to parse a format
+	class BadFormatException : public PionException {
+	public:
+		BadFormatException(const std::string& term_id)
+			: PionException("LogCodec format contains an unknown term: ", term_id) {}
+	};
+
 	
 	/// constructs a new LogCodec object
 	LogCodec(void)
 		: pion::platform::Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
+		m_read_end(m_read_buf.get() + READ_BUFFER_SIZE),
 		m_flush_after_write(false), m_needs_to_write_headers(false)
 	{}
 
@@ -129,34 +137,6 @@ public:
 	
 private:
 
-	/**
-	 * maps a data field to a Vocabulary Term
-	 *
-	 * @param field the name of the data field
-	 * @param term the Vocabulary Term to map the data field to
-	 * @param delim_start character used to delimit the start of the data field value
-	 * @param delim_end character used to delimit the end of the data field value
-	 */
-	inline void mapFieldToTerm(const std::string& field,
-							   const pion::platform::Vocabulary::Term& term,
-							   char delim_start, char delim_end);
-	
-	/**
-	 * changes the current format used by the Codec
-	 *
-	 * @param fmt the new format to use (a sequence of field names separated by spaces)
-	 * @return true if the format was successfully changed; false if error
-	 */
-	inline bool changeFormat(char *fmt);
-	
-	/**
-	 * writes the ELF version number and field format headers
-	 *
-	 * @param out the output stream to which the headers will be written
-	 */
-	inline void writeHeaders(std::ostream& out) const;
-
-	
 	/// data type used to configure how the log format describes Vocabulary Terms
 	struct LogField {
 		/// constructs a new LogField structure
@@ -217,16 +197,64 @@ private:
 		/// a character that delimits the end of the field value, or '\0' if none
 		char								log_delim_end;
 	};
-	
+
 	/// data type for a pointer to a LogField object
 	typedef boost::shared_ptr<LogField>		LogFieldPtr;
 	
 	/// data type that maps field names to LogFields
-	typedef PION_HASH_MAP<std::string, LogFieldPtr, PION_HASH_STRING >	FieldMap;
+	typedef PION_HASH_MAP<std::string,
+		LogFieldPtr, PION_HASH_STRING >		FieldMap;
 
 	/// data type that keeps track of the log file's current field format
-	typedef std::vector<LogFieldPtr>	CurrentFormat;
+	typedef std::vector<LogFieldPtr>		CurrentFormat;
 
+	/// traits_type used for the standard char-istream 
+	typedef std::istream::traits_type		traits_type;
+
+	/// data type used to represent a standard char-istream streambuf
+	typedef std::basic_streambuf<std::istream::char_type,
+		std::istream::traits_type>		streambuf_type;
+
+	/// data type used to represent an integer value resulting from an istream read
+	typedef std::istream::int_type			int_type;
+
+
+	/**
+	 * maps a data field to a Vocabulary Term
+	 *
+	 * @param field the name of the data field
+	 * @param term the Vocabulary Term to map the data field to
+	 * @param delim_start character used to delimit the start of the data field value
+	 * @param delim_end character used to delimit the end of the data field value
+	 */
+	inline void mapFieldToTerm(const std::string& field,
+							   const pion::platform::Vocabulary::Term& term,
+							   char delim_start, char delim_end);
+	
+	/**
+	 * changes the current format used by the Codec
+	 *
+	 * @param fmt the new format to use (a sequence of field names separated by spaces)
+	 */
+	inline void changeFormat(char *fmt);
+
+	/**
+	 * writes the ELF version number and field format headers
+	 *
+	 * @param out the output stream to which the headers will be written
+	 */
+	inline void writeHeaders(std::ostream& out) const;
+
+	/**
+	 * skips ssequences of whitespace characters and comments, and detects and
+	 * handles any field format changes (for ELF only)
+	 *
+	 * @param buf_ptr pointer to an istream streambuf used for reading
+	 * 
+	 * @param return int_type value of the next byte available to be consumed
+	 */
+	inline int_type consumeWhiteSpaceAndComments(streambuf_type *buf_ptr);
+		
 	
 	/// content type used by this Codec
 	static const std::string		CONTENT_TYPE;
@@ -258,6 +286,9 @@ private:
 
 	/// memory buffer used to read events
 	boost::scoped_array<char>		m_read_buf;
+
+	/// pointer to the end of the read buffer
+	const char * const			m_read_end;
 	
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
@@ -296,7 +327,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field,
 	m_format.push_back(field_ptr);
 }
 	
-inline bool LogCodec::changeFormat(char *fmt)
+inline void LogCodec::changeFormat(char *fmt)
 {
 	m_format.clear();
 	char *ptr;
@@ -311,11 +342,11 @@ inline bool LogCodec::changeFormat(char *fmt)
 		if (*ptr == '\0' || *ptr == '\n' || *ptr == '\r') last_field = true;
 		*ptr = '\0';
 		FieldMap::const_iterator i = m_field_map.find(fmt);
-		if (i == m_field_map.end()) return false;
+		if (i == m_field_map.end())
+			throw BadFormatException(fmt);
 		m_format.push_back(i->second);
 		fmt = ptr + 1;
 	}
-	return true;
 }
 	
 inline void LogCodec::writeHeaders(std::ostream& out) const
@@ -330,7 +361,41 @@ inline void LogCodec::writeHeaders(std::ostream& out) const
 	out << '\x0A';
 }
 
+inline LogCodec::int_type LogCodec::consumeWhiteSpaceAndComments(streambuf_type *buf_ptr)
+{
+	int_type c = buf_ptr->sgetc();
+	while (! traits_type::eq_int_type(c, traits_type::eof())) {
+		if (c == ' ' || c == '\x0A' || c == '\x0D') {
+			c = buf_ptr->snextc();
+		} else if (c == '#') {
+			// ignore comment line
+			char * const read_start = m_read_buf.get();
+			char *read_ptr = read_start;
+			read_ptr = read_start;
+			c = buf_ptr->snextc();
+			while (! traits_type::eq_int_type(c, traits_type::eof())) {
+				// check for end of line
+				if (c == '\x0A' || c == '\x0D')
+					break;
+				// read in the comment in case it is a format change
+				if (read_ptr < m_read_end)
+					*(read_ptr++) = c;
+				// get the next character
+				c = buf_ptr->snextc();
+			}
+			// check if it is a format change
+			*read_ptr = '\0';
+			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
+			if (FIELDS_FORMAT_STRING == read_start)
+				changeFormat(read_start + FIELDS_FORMAT_STRING.size() + 1);
+		} else {
+			break;
+		}
+	}
+	return c;
+}
 	
+
 // inline member functions for LogCodec::LogField
 
 inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::Event::ParameterValue& value)

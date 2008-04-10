@@ -94,63 +94,36 @@ void LogCodec::write(std::ostream& out, const Event& e)
 	
 bool LogCodec::read(std::istream& input_stream, Event& e)
 {
-	char *read_ptr;
-	char * const read_start = m_read_buf.get();
-	const char * const read_end = read_start + READ_BUFFER_SIZE;
-	typedef std::istream::traits_type traits_type;
-	std::basic_streambuf<std::istream::char_type, std::istream::traits_type> *buf_ptr = input_stream.rdbuf();
-	std::istream::int_type c = buf_ptr->sgetc();
+	streambuf_type *buf_ptr = input_stream.rdbuf();
+	int_type c;
 
 	// skip empty lines and space characters at beginning of line
-	while (true) {
-		if (traits_type::eq_int_type(c, traits_type::eof())) {
-			input_stream.setstate(std::ios::eofbit);
-			return false;
-		} else if (c == ' ' || c == '\x0A' || c == '\x0D') {
-			buf_ptr->sbumpc();
-		} else if (c == '#') {
-			// ignore comment line
-			read_ptr = read_start;
-			do {
-				c = buf_ptr->sbumpc();
-				// check for premature eof
-				if (traits_type::eq_int_type(c, traits_type::eof())) {
-					input_stream.setstate(std::ios::eofbit);
-					return false;
-				}
-				// read in the comment in case it is a format change
-				if (read_ptr < read_end)
-					*(read_ptr++) = c;
-			} while (c != '\x0A' && c != '\x0D');
-			// consume \r\n or \n\r
-			if (c == '\x0A' && buf_ptr->sgetc() == '\x0D' || c == '\x0D' && buf_ptr->sgetc() == '\x0A')
-				buf_ptr->sbumpc();
-			// check if it is a format change
-			*read_ptr = '\0';
-			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
-			if (FIELDS_FORMAT_STRING == read_start) {
-				if (! changeFormat(read_start + FIELDS_FORMAT_STRING.size() + 1))
-					return false;
-			}
-		} else {
-			break;
-		}
-		c = buf_ptr->sgetc();
+	c = consumeWhiteSpaceAndComments(buf_ptr);
+	if (traits_type::eq_int_type(c, traits_type::eof())) {
+		input_stream.setstate(std::ios::eofbit);
+		return false;
 	}
 
 	// iterate through each field in the format
 	CurrentFormat::const_iterator i = m_format.begin();
+	char delim_start;
+	char delim_end;
+	char * read_ptr;
+	char * const read_start = m_read_buf.get();
 
 	while (i != m_format.end()) {
-		const char delim_start = (*i)->log_delim_start;
-		const char delim_end = (*i)->log_delim_end;
+		delim_start = (*i)->log_delim_start;
+		delim_end = (*i)->log_delim_end;
 
 		// ignore input until we reach the start char (if defined)
 		if (delim_start != '\0') {
 			while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
-				c = buf_ptr->sbumpc();
-				if (c == delim_start)
+				if (c == delim_start) {
+					// skip over delimiter
+					c = buf_ptr->snextc();
 					break;
+				}
+				c = buf_ptr->snextc();
 			}
 		}
 		
@@ -162,7 +135,6 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 		
 		// parse the field contents
 		read_ptr = read_start;
-		c = buf_ptr->sbumpc();
 		while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
 			if (c == '\x0A' || c == '\x0D' || c == delim_end
 				|| (delim_end=='\0' && c == ' ') )
@@ -170,13 +142,15 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 				// we've reached the end of the field contents
 				// increment the pointer so we know it's finished
 				*(read_ptr++) = '\0';
+				if (c == delim_end)
+					c = buf_ptr->snextc();	// skip over delimiter
 				break;
 			}
-			if (read_ptr < read_end)
+			if (read_ptr < m_read_end)
 				*(read_ptr++) = c;
-			else if (read_ptr == read_end)
+			else if (read_ptr == m_read_end)
 				*(read_ptr++) = '\0';
-			c = buf_ptr->sbumpc();
+			c = buf_ptr->snextc();
 		}
 		
 		// eof before we were able to parse a field
@@ -198,27 +172,25 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 		++i;
 		if (i == m_format.end()) {
 			// end of format
-			while (c != '\x0A' && c != '\x0D' && !traits_type::eq_int_type(c, traits_type::eof())) {
-				c = buf_ptr->sbumpc();
-			}
-			if (c == '\x0A' && buf_ptr->sgetc() == '\x0D'
-				|| c == '\x0D' && buf_ptr->sgetc() == '\x0A')
-			{
-				// consume \r\n or \n\r
-				buf_ptr->sbumpc();
-			}
+			// skip empty lines and space characters at end of line
+			c = consumeWhiteSpaceAndComments(buf_ptr);
+			break;
 		} else {
 			// not the end of format
-			// check if end of line reached prematurely
-			if (c == '\x0A' || c == '\x0D')
-				return false;
-			// skip space characters in between fields
-			while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
-				c = buf_ptr->sgetc();
-				if (c == ' ')
-					buf_ptr->sbumpc();
-				else
+			while (true) {
+				if (c == ' ') {
+					// skip space characters in between fields
+					c = buf_ptr->snextc();
+				} else if (c == '\x0A' || c == '\x0D') {
+					// end of line reached prematurely
+					return false;
+				} else if (traits_type::eq_int_type(c, traits_type::eof())) {
+					// end of file reached prematurely
+					input_stream.setstate(std::ios::eofbit);
+					return false;
+				} else {
 					break;
+				}
 			}
 		}
 	}
