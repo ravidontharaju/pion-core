@@ -160,6 +160,9 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					_this.model = new dojox.grid.data.DojoData(null, null, {store: _this.working_store, query: {Type: '*'}});
 					_this.model.requestRows();
 					//console.debug(_this.url, ': _this.model.data = ', _this.model.data);
+
+					_this.vocab_grid.setModel(_this.model);
+					//console.debug(_this.url, ': _this.vocab_grid.model.data = ', _this.vocab_grid.model.data);
 					/*
 					function updateStatus(){
 						var p = _this.model.store._pending;
@@ -170,14 +173,11 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 						//dojo.byId("model_status").innerHTML = 'model.store: ' + nCnt + ' newItems, ' + mCnt + ' modifiedItems, ' + dCnt + ' deletedItems';
 						console.debug('model.store: ' + nCnt + ' newItems, ' + mCnt + ' modifiedItems, ' + dCnt + ' deletedItems');
 					}
-					*/
-					_this.vocab_grid.setModel(_this.model);
-					//console.debug(_this.url, ': _this.vocab_grid.model.data = ', _this.vocab_grid.model.data);
-					
+
 					// These will get called by, e.g., dojox.grid.data.Rows.rowChange, via notify.
 					_this.vocab_grid.modelRowChange = updateStatus;
 					_this.vocab_grid.modelDatumChange = updateStatus;
-					
+					*/
 					setTimeout(function(){
 						_this.vocab_grid.update();
 						_this.vocab_grid.resize();
