@@ -233,12 +233,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		EventPtr event_ptr;
 		do {
 			// read an Event from the log file (convert into an Event using the Codec)
-        	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 			event_ptr = EventFactory::create(m_codec_ptr->getEventType());
 			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
 				throw ReadEventException(m_log_file);
-			// done with the codec (which is all that needs protecting here)
-			//reactor_lock.unlock();
 
 			// check if only Event should be read
 			if (m_just_one) {
