@@ -18,8 +18,8 @@
 //
 
 #include <fstream>
-#include <boost/thread/mutex.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/CodecFactory.hpp>
@@ -49,7 +49,7 @@ const std::string			LogInputReactor::FREQUENCY_ELEMENT_NAME = "Frequency";
 void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	Reactor::setConfig(v, config_ptr);
 	
 	// get the Codec that the Reactor should use
@@ -102,7 +102,7 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 void LogInputReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	Reactor::updateVocabulary(v);
 	if (m_codec_ptr)
 		m_codec_ptr->updateVocabulary(v);
@@ -113,11 +113,11 @@ void LogInputReactor::updateCodecs(void)
 	// check if the codec was deleted (if so, stop now!)
 	if (! getCodecFactory().hasPlugin(m_codec_id)) {
 		stop();
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+	    boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 		m_codec_ptr.reset();
 	} else {
 		// update the codec pointer
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+    	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 		m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
 	}
 }
@@ -130,138 +130,176 @@ void LogInputReactor::operator()(const EventPtr& e)
 		deliverEvent(e);
 	}
 }
-	
+
 void LogInputReactor::start(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	if (! m_is_running) {
-		// spawn a new thread to consume log files
-		PION_LOG_DEBUG(m_logger, "Starting input log thread: " << getId());
-		m_thread.reset(new boost::thread(boost::bind(&LogInputReactor::consumeLogs, this)));
+		// schedule a check for new log files
+		scheduleLogFileCheck(0);
 		m_is_running = true;
 	}
 }
 	
 void LogInputReactor::stop(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	if (m_is_running) {
 		// set flag to notify reader thread to shutdown
 		PION_LOG_DEBUG(m_logger, "Stopping input log thread: " << getId());
 		m_is_running = false;
-		m_shutdown_thread.notify_one();
-		reactor_lock.unlock();
-		// wait for reader thread to shutdown
-		m_thread->join();
+		m_timer_ptr.reset();
 	}
 }
 
-void LogInputReactor::consumeLogs(void)
+void LogInputReactor::scheduleLogFileCheck(boost::uint32_t seconds)
 {
-	while (true) {
-
-		PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
-
-		// get the current logs located in the log directory
-		LogFileCollection current_logs;
-		getLogFiles(current_logs);
-
-		// remove logs from the consumed collection that are no longer there
-		LogFileCollection::iterator temp_itr;
-		LogFileCollection::iterator log_itr = m_logs_consumed.begin();
-		while (log_itr != m_logs_consumed.end()) {
-			temp_itr = log_itr++;
-			if (current_logs.find(*temp_itr) == current_logs.end())
-				m_logs_consumed.erase(temp_itr);
-		}
-		
-		// check for an existing log that has not yet been consumed
-		for (log_itr = current_logs.begin(); log_itr != current_logs.end(); ++log_itr) {
-			if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())
-				break;
-		}
-			
-		if (log_itr == current_logs.end()) {
-			// no new logs to consume
-
-			// sleep until it is time to check again
-			boost::mutex::scoped_lock reactor_lock(m_mutex);
-			PION_LOG_DEBUG(m_logger, "No new logs (sleeping for " << m_frequency
-						   << " seconds): " << m_log_directory);
-			PionScheduler::sleep(m_shutdown_thread, reactor_lock, m_frequency, 0);
-			
-		} else {
-			// found a new log to consume
-			
-			PION_LOG_DEBUG(m_logger, "Found a new log file to consume: " << *log_itr);
-			
-			// catch and log any exceptions from consuming the log
-			try {
-				consumeLog(*log_itr);
-			} catch (std::exception& e) {
-				PION_LOG_ERROR(m_logger, e.what());
-			}
-			m_logs_consumed.insert(*log_itr);
-
-			PION_LOG_DEBUG(m_logger, "Finished consuming log file: " << *log_itr);
-		}
-
-		// check if we should shutdown
-		if (! m_is_running) break;
+	if (seconds == 0) {
+		getScheduler().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
+	} else {
+		if (! m_timer_ptr)
+			m_timer_ptr.reset(new boost::asio::deadline_timer(getScheduler().getIOService()));
+		m_timer_ptr->expires_from_now(boost::posix_time::seconds(seconds));
+		m_timer_ptr->async_wait(boost::bind(&LogInputReactor::checkForLogFiles, this));
 	}
 }
 
-void LogInputReactor::consumeLog(const std::string& log_filename)
+void LogInputReactor::checkForLogFiles(void)
 {
-	// re-calculate the full path to the file
-	bfs::path full_path(m_log_directory);
-	full_path /= log_filename;
+	// make sure that the reactor is still running
+	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+	if (! isRunning())
+		return;
 
-	// open up the log file for reading
-	std::ifstream log_stream;
-	log_stream.open(full_path.file_string().c_str(), std::ios::in | std::ios::binary);
-	if (! log_stream.is_open())
-		throw OpenLogException(log_filename);
+	PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
+
+	// get the current logs located in the log directory
+	LogFileCollection current_logs;
+	getLogFilesInLogDirectory(current_logs);
+
+	// remove logs from the consumed collection that are no longer there
+	LogFileCollection::iterator temp_itr;
+	LogFileCollection::iterator log_itr = m_logs_consumed.begin();
+	while (log_itr != m_logs_consumed.end()) {
+		temp_itr = log_itr++;
+		if (current_logs.find(*temp_itr) == current_logs.end())
+			m_logs_consumed.erase(temp_itr);
+	}
 	
-	// convert the log entries into Events using the Codec
-	EventPtr event_ptr;
-	while (! log_stream.eof()) {
-		// read an Event from the log file
-		event_ptr = EventFactory::create(m_codec_ptr->getEventType());
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		if (! m_codec_ptr->read(log_stream, *event_ptr)) {
-			// disregard read failures at end of file
-			if (log_stream.eof())
-				break;
-			throw ReadEventException(log_filename);
-		}
-		if (m_just_one) break;	// stop if we're only reading one event
-		
-		// deliver the Event to connected Reactors
-		incrementEventsIn();
-		deliverEvent(event_ptr);
-
-		// check if we should shutdown
-		if (! m_is_running) break;
+	// check for an existing log that has not yet been consumed
+	for (log_itr = current_logs.begin(); log_itr != current_logs.end(); ++log_itr) {
+		if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())
+			break;
 	}
+		
+	if (log_itr == current_logs.end()) {
+		// no new logs to consume
 
-	if (m_just_one) {
-		EventPtr original_event_ptr(event_ptr);
-		// just duplicate the event repeatedly until the Reactor is stopped
-		while (m_is_running) {
-			// duplicate the original event
-			event_ptr = EventFactory::create(m_codec_ptr->getEventType());
-			*event_ptr += *original_event_ptr;
+		// sleep until it is time to check again
+		PION_LOG_DEBUG(m_logger, "No new logs (sleeping for " << m_frequency
+					   << " seconds): " << m_log_directory);
+		scheduleLogFileCheck(m_frequency);
+		
+	} else {
+		// found a new log to consume
+		m_logs_consumed.insert(*log_itr);
+		
+		// re-calculate the full path to the file
+		bfs::path full_path(m_log_directory);
+		full_path /= *log_itr;
+		m_log_file = full_path.file_string();
 
-			// deliver the Event to connected Reactors
-			boost::mutex::scoped_lock reactor_lock(m_mutex);
-			incrementEventsIn();
-			deliverEvent(event_ptr);
-		}
+		PION_LOG_DEBUG(m_logger, "Found a new log file to consume: " << m_log_file);
+		scheduleReadFromLog(true);
 	}
 }
 
-void LogInputReactor::getLogFiles(LogFileCollection& files)
+void LogInputReactor::readFromLog(bool use_one_thread)
+{
+	// make sure that the reactor is still running
+	if (! isRunning())
+		return;
+
+	try {
+		// open up the log file for reading (if not open already)
+		if (! m_log_stream.is_open()) {
+			m_log_stream.open(m_log_file.c_str(), std::ios::in | std::ios::binary);
+			if (! m_log_stream.is_open())
+				throw OpenLogException(m_log_file);
+			else if (m_log_stream.eof())
+				throw EmptyLogException(m_log_file);
+		}
+		
+		EventPtr event_ptr;
+		do {
+			// read an Event from the log file (convert into an Event using the Codec)
+        	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+			event_ptr = EventFactory::create(m_codec_ptr->getEventType());
+			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
+				throw ReadEventException(m_log_file);
+			// done with the codec (which is all that needs protecting here)
+			//reactor_lock.unlock();
+
+			// check if only Event should be read
+			if (m_just_one) {
+				PION_LOG_DEBUG(m_logger, "JustOne: generating lots of event copies for testing");
+				m_log_stream.close();
+				m_log_stream.clear();
+				
+				// just duplicate the event repeatedly until the Reactor is stopped
+				EventPtr original_event_ptr(event_ptr);
+				while (isRunning()) {
+					// duplicate the original event
+					event_ptr = EventFactory::create(m_codec_ptr->getEventType());
+					*event_ptr += *original_event_ptr;
+					// deliver the Event to connected Reactors
+					incrementEventsIn();
+					deliverEvent(event_ptr);
+				}
+				break;
+			}
+
+			// check for end of file
+			if (m_log_stream.eof()) {
+				// all done with this log file
+				PION_LOG_DEBUG(m_logger, "Finished consuming log file: " << m_log_file);
+				m_log_stream.close();
+				m_log_stream.clear();
+
+				// check for more logs
+				scheduleLogFileCheck(0);
+
+				// deliver the Event to connected Reactors
+				incrementEventsIn();
+				deliverEvent(event_ptr);
+				break;
+			} else {
+				// more available: schedule another read operation?
+				if (! use_one_thread) {
+					scheduleReadFromLog(false);
+
+					// deliver the Event to connected Reactors
+					incrementEventsIn();
+					deliverEvent(event_ptr);
+					break;
+				}
+
+				// deliver the Event to connected Reactors
+				incrementEventsIn();
+				deliverEvent(event_ptr);
+			}
+
+		} while (isRunning()); 
+
+	} catch (std::exception& e) {
+		PION_LOG_ERROR(m_logger, e.what());
+		m_log_stream.close();
+		m_log_stream.clear();
+		scheduleLogFileCheck(0);
+	}
+}
+
+void LogInputReactor::getLogFilesInLogDirectory(LogFileCollection& files)
 {
 	bfs::path dir_path(m_log_directory);
 	for (bfs::directory_iterator itr(dir_path); itr!=bfs::directory_iterator(); ++itr) {

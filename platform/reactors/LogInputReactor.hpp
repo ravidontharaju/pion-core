@@ -22,10 +22,9 @@
 
 #include <set>
 #include <string>
+#include <boost/asio.hpp>
 #include <boost/regex.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/condition.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
@@ -95,6 +94,13 @@ public:
 			: PionException("Unable to open log file for reading: ", log_filename) {}
 	};
 
+	/// exception thrown if the Reactor tries to consume a log file that is empty
+	class EmptyLogException : public PionException {
+	public:
+		EmptyLogException(const std::string& log_filename)
+			: PionException("Log file is empty: ", log_filename) {}
+	};
+	
 	/// exception thrown if the Reactor encounters an error while reading Events
 	class ReadEventException : public PionException {
 	public:
@@ -136,15 +142,15 @@ public:
 	 */
 	virtual void updateCodecs(void);
 	
-	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
-	 *
-	 * @param e pointer to the Event to process
-	 */
-	virtual void operator()(const pion::platform::EventPtr& e);
-	
+    /**
+     * processes an Event by comparing its data to the configured RuleChain.
+     * Only Events which pass all Comparisons in the RuleChain will be
+     * delivered to the output connections.
+     *
+     * @param e pointer to the Event to process
+     */
+    virtual void operator()(const pion::platform::EventPtr& e);
+
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
 	
@@ -156,30 +162,47 @@ public:
 	
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
-
 	
+		
 private:
 	
 	/// data structure used to represent a collection of log files
 	typedef std::set<std::string>		LogFileCollection;
 	
 
-	/// periodically checks for new log files and consumes any it finds
-	void consumeLogs(void);
+	/**
+	 * schedules a timer to check for new log files
+	 *
+	 * @param seconds the number of seconds to wait before checking for new logs
+	 */
+	void scheduleLogFileCheck(boost::uint32_t seconds);
+	
+	/// checks for new log files
+	void checkForLogFiles(void);
 
 	/**
-	 * consumes the entries in a log file, converting them into Events
+	 * schedules another thread to read an event from the log file
 	 *
-	 * @param log_filename the name of the log file to consume
+	 * @param use_one_thread if true, a single thread will be used to consume the entire file
 	 */
-	void consumeLog(const std::string& log_filename);
+	inline void scheduleReadFromLog(bool use_one_thread) {
+		getScheduler().post(boost::bind(&LogInputReactor::readFromLog,
+										this, use_one_thread));
+	}
+	
+	/**
+	 * consumes one entry from the log file and converts it into an Event
+	 *
+	 * @param use_one_thread if true, a single thread will be used to consume the entire file
+	 */
+	void readFromLog(bool use_one_thread);
 	
 	/**
 	 * retrieves a collection of all the log files in the log directory
 	 *
 	 * @param files collection that will represent all matching log files
 	 */
-	void getLogFiles(LogFileCollection& files);
+	void getLogFilesInLogDirectory(LogFileCollection& files);
 	
 	
 	/// default frequency that the Reactor will check for new logs (in seconds)
@@ -211,7 +234,7 @@ private:
 	pion::platform::CodecPtr			m_codec_ptr;
 
 	/// only reads one Event entry and duplicates it continuously (for testing)
-	bool						m_just_one;
+	bool								m_just_one;
 	
 	/// frequency that the Reactor will check for new logs (in seconds)
 	boost::uint32_t						m_frequency;
@@ -224,12 +247,15 @@ private:
 	
 	/// contains the names of all log files that have been consumed so far
 	LogFileCollection					m_logs_consumed;
-
-	/// condition triggered to notify the reader thread it is time to shutdown
-	boost::condition					m_shutdown_thread;
 	
-	/// thread used to periodically check for new log files
-	boost::scoped_ptr<boost::thread>	m_thread;
+	/// the filename of the log file currently being consumed (includes full path)
+	std::string							m_log_file;
+	
+	/// input file stream used to read the contents of log files
+	std::ifstream						m_log_stream;
+
+	/// pointer to a timer used to schedule the check for new log files
+	boost::scoped_ptr<boost::asio::deadline_timer>	m_timer_ptr;
 };
 
 

@@ -33,7 +33,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// ReactionScheduler: scheduler used to route Events for the ReactionEngine
 /// 
 class ReactionScheduler :
-	public PionMultiThreadScheduler
+	public PionSingleServiceScheduler
 {
 public:
 	
@@ -61,6 +61,14 @@ public:
 			PION_LOG_INFO(m_logger, "Starting thread scheduler");
 			m_is_running = true;
 			
+			// schedule a work item to make sure that the service doesn't complete
+			m_service.reset();
+			keepRunning(m_service, m_timer);
+
+			// start a thread that will be used to handle io_service requests
+			m_service_thread.reset(new boost::thread( boost::bind(&boost::asio::io_service::run,
+																  boost::ref(m_service)) ));
+			
 			// start multiple threads to handle async tasks
 			for (boost::uint32_t n = 0; n < m_num_threads; ++n) {
 				boost::shared_ptr<boost::thread> new_thread(new boost::thread(
@@ -69,14 +77,21 @@ public:
 			}
 		}
 	}		
-
-	/// returns an async I/O service used to schedule work
-	virtual boost::asio::io_service& getIOService(void) {
-		throw NoServiceException();
-		// just used to suppress warnings
-		return *(new boost::asio::io_service());
-	}
 	
+	/// stops all threads used to perform work
+	virtual void stopThreads(void) {
+		PionSingleServiceScheduler::stopThreads();
+		if (m_service_thread)
+			m_service_thread->join();
+	}
+
+	/// finishes all threads used to perform work
+	virtual void finishThreads(void) {
+		PionSingleServiceScheduler::finishThreads();
+		m_thread_pool.clear();
+		m_service_thread.reset();
+	}
+
 	/**
 	 * schedules work to be performed by one of the pooled threads
 	 *
@@ -106,7 +121,10 @@ protected:
 	typedef boost::function0<void>		Reaction;
 
 	/// a queue of Events that are scheduled to be delivered to Reactors
-	PionLockedQueue<Reaction>		m_reaction_queue;
+	PionLockedQueue<Reaction>			m_reaction_queue;
+
+	/// thread that is used to handle io_service requests
+	boost::shared_ptr<boost::thread>	m_service_thread;
 };
 	
 	
