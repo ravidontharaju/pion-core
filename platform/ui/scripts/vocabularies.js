@@ -54,7 +54,7 @@ pion.vocabularies.isDuplicateVocabularyId = function(id) {
 	var vocabularies = dijit.byId('vocab_config_accordion').getChildren();
 	var full_id = 'urn:vocab:' + id;
 	for (var i = 0; i < vocabularies.length; ++i) {
-		if (pion.vocabularies.config_store.getValue(vocabularies[i].config_item, '@id') == full_id) {
+		if (vocabularies[i].config['@id'] == full_id) {
 			return true;
 		}
 	}
@@ -121,7 +121,6 @@ pion.vocabularies.init = function() {
 				// each vocabulary (e.g. with url = '/config/vocabularies/' + id) if we want this.
 				var id = pion.vocabularies.config_store.getValue(items[i], '@id');
 				var vocab_pane = _createNewPane({config: {'@id': id}, title: id});
-				vocab_pane.config_item = items[i];
 				config_accordion.addChild(vocab_pane);
 			}
 			pion.vocabularies._adjustAccordionSize();
