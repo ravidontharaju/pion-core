@@ -370,10 +370,8 @@ inline LogCodec::int_type LogCodec::consumeWhiteSpaceAndComments(streambuf_type 
 		} else if (c == '#') {
 			// ignore comment line
 			char * const read_start = m_read_buf.get();
-			char *read_ptr = read_start;
-			read_ptr = read_start;
-			c = buf_ptr->snextc();
-			while (! traits_type::eq_int_type(c, traits_type::eof())) {
+			char * read_ptr = read_start;
+			do {
 				// check for end of line
 				if (c == '\x0A' || c == '\x0D')
 					break;
@@ -382,7 +380,7 @@ inline LogCodec::int_type LogCodec::consumeWhiteSpaceAndComments(streambuf_type 
 					*(read_ptr++) = c;
 				// get the next character
 				c = buf_ptr->snextc();
-			}
+			} while (! traits_type::eq_int_type(c, traits_type::eof()));
 			// check if it is a format change
 			*read_ptr = '\0';
 			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
