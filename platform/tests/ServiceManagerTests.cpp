@@ -87,8 +87,11 @@ BOOST_FIXTURE_TEST_SUITE(ServicesConfigFile_S, ServicesConfigFile_F)
 BOOST_AUTO_TEST_CASE(checkCanReadValidRedirect) {
 	startWritingServicesConfigFile();
 
-	// add a correctly formatted redirect element
-	m_services_config_file << "        <Redirect requested-resource=\"/redirect-me\">/target-resource</Redirect>\n";
+	// add a correctly formatted Redirect element
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Source>/redirect-me</Source>\n"
+						   << "            <Target>/resource2</Target>\n"
+						   << "        </Redirect>\n";
 
 	finishWritingServicesConfigFile();
 
@@ -96,35 +99,72 @@ BOOST_AUTO_TEST_CASE(checkCanReadValidRedirect) {
 	BOOST_CHECK_NO_THROW(m_service_manager->openConfigFile());
 }
 
-BOOST_AUTO_TEST_CASE(checkRedirectWithEmptyRequestedResource) {
+BOOST_AUTO_TEST_CASE(checkRedirectWithNoSource) {
 	startWritingServicesConfigFile();
 
-	// add a redirect element with no requested resource attribute
-	m_services_config_file << "        <Redirect>/target-resource</Redirect>\n";
+	// add a Redirect element with no Source node
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Target>/resource2</Target>\n"
+						   << "        </Redirect>\n";
 
 	finishWritingServicesConfigFile();
 
 	// try to parse the services config file and confirm the correct exception is thrown
-	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::EmptyRequestedResourceException);
+	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::RedirectMissingSourceException);
 }
 
-BOOST_AUTO_TEST_CASE(checkRedirectWithNoRedirectSpecified) {
+BOOST_AUTO_TEST_CASE(checkRedirectWithEmptySource) {
 	startWritingServicesConfigFile();
 
-	// add a redirect element with no resource to redirect to specified
-	m_services_config_file << "        <Redirect requested-resource=\"/redirect-me\"></Redirect>\n";
+	// add a Redirect element with empty Source node
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Source></Source>\n"
+						   << "            <Target>/resource2</Target>\n"
+						   << "        </Redirect>\n";
 
 	finishWritingServicesConfigFile();
 
 	// try to parse the services config file and confirm the correct exception is thrown
-	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::EmptyRedirectException);
+	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::RedirectMissingSourceException);
+}
+
+BOOST_AUTO_TEST_CASE(checkRedirectWithNoTarget) {
+	startWritingServicesConfigFile();
+
+	// add a Redirect element with no Target node
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Source>/redirect-me</Source>\n"
+						   << "        </Redirect>\n";
+
+	finishWritingServicesConfigFile();
+
+	// try to parse the services config file and confirm the correct exception is thrown
+	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::RedirectMissingTargetException);
+}
+
+BOOST_AUTO_TEST_CASE(checkRedirectWithEmptyTarget) {
+	startWritingServicesConfigFile();
+
+	// add a Redirect element with no Target node
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Source>/redirect-me</Source>\n"
+						   << "            <Target></Target>\n"
+						   << "        </Redirect>\n";
+
+	finishWritingServicesConfigFile();
+
+	// try to parse the services config file and confirm the correct exception is thrown
+	BOOST_CHECK_THROW(m_service_manager->openConfigFile(), ServiceManager::RedirectMissingTargetException);
 }
 
 BOOST_AUTO_TEST_CASE(checkRedirectElementHasDesiredEffect) {
 	// write a services config file that redirects /xyz to /hello and loads the HelloService for resource /hello 
 	startWritingServicesConfigFile();
-	m_services_config_file << "        <Redirect requested-resource=\"/xyz\">/hello</Redirect>\n";
-	m_services_config_file << "        <WebService id=\"hello-service\">\n"
+	m_services_config_file << "        <Redirect>\n"
+						   << "            <Source>/xyz</Source>\n"
+						   << "            <Target>/hello</Target>\n"
+						   << "        </Redirect>\n"
+						   << "        <WebService id=\"hello-service\">\n"
 						   << "            <Name>Hello Service</Name>\n"
 						   << "            <Plugin>HelloService</Plugin>\n"
 						   << "            <Resource>/hello</Resource>\n"

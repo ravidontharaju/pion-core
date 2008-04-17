@@ -98,18 +98,18 @@ public:
 			: PionException("Unable to load SSL key file: ", key_file) {}
 	};
 
-	/// exception thrown if the config file contains a Redirect element with no requested resource specified
-	class EmptyRequestedResourceException : public PionException {
+	/// exception thrown if the config file contains a Redirect element with no Source specified
+	class RedirectMissingSourceException : public PionException {
 	public:
-		EmptyRequestedResourceException(const std::string& server_id)
-			: PionException("Service configuration Redirect element does not specify a requested resource: ", server_id) {}
+		RedirectMissingSourceException(const std::string& server_id)
+			: PionException("Service configuration Redirect element does not specify a Source: ", server_id) {}
 	};
 
-	/// exception thrown if the config file contains a Redirect element with no redirect specified
-	class EmptyRedirectException : public PionException {
+	/// exception thrown if the config file contains a Redirect element with no Target specified
+	class RedirectMissingTargetException : public PionException {
 	public:
-		EmptyRedirectException(const std::string& server_id)
-			: PionException("Service configuration Redirect element does not specify a resource to redirect to: ", server_id) {}
+		RedirectMissingTargetException(const std::string& server_id)
+			: PionException("Service configuration Redirect element does not specify a Target: ", server_id) {}
 	};
 
 	/// exception used to propagate exceptions thrown by web services
@@ -234,8 +234,11 @@ private:
 	/// name of the resource redirection element for Pion XML config files
 	static const std::string		REDIRECT_ELEMENT_NAME;
 
-	/// name of the requested resource attribute in redirection elements for Pion XML config files
-	static const std::string		REQUESTED_RESOURCE_ATTRIBUTE_NAME;
+	/// name of an element specifying the source of a redirect for Pion XML config files
+	static const std::string		REDIRECT_SOURCE_ELEMENT_NAME;
+
+	/// name of an element specifying the target of a redirect for Pion XML config files
+	static const std::string		REDIRECT_TARGET_ELEMENT_NAME;
 
 	/// name of the HTTP resource element for Pion XML config files
 	static const std::string		RESOURCE_ELEMENT_NAME;

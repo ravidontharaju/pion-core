@@ -38,7 +38,8 @@ const std::string			ServiceManager::PLATFORM_SERVICE_ELEMENT_NAME = "PlatformSer
 const std::string			ServiceManager::PORT_ELEMENT_NAME = "Port";
 const std::string			ServiceManager::SSL_KEY_ELEMENT_NAME = "SSLKey";
 const std::string			ServiceManager::REDIRECT_ELEMENT_NAME = "Redirect";
-const std::string			ServiceManager::REQUESTED_RESOURCE_ATTRIBUTE_NAME = "requested-resource";
+const std::string			ServiceManager::REDIRECT_SOURCE_ELEMENT_NAME = "Source";
+const std::string			ServiceManager::REDIRECT_TARGET_ELEMENT_NAME = "Target";
 const std::string			ServiceManager::RESOURCE_ELEMENT_NAME = "Resource";
 const std::string			ServiceManager::OPTION_ELEMENT_NAME = "Option";
 const std::string			ServiceManager::NAME_ATTRIBUTE_NAME = "name";
@@ -81,6 +82,8 @@ void ServiceManager::openConfigFile(void)
 	std::string server_id;
 	std::string port_str;
 	std::string ssl_key;
+	std::string redirect_source;
+	std::string redirect_target;
 	std::string service_id;
 	std::string plugin_type;
 	std::string http_resource;
@@ -122,29 +125,16 @@ void ServiceManager::openConfigFile(void)
 		// step through resource redirections
 		xmlNodePtr redirect_node = server_node->children;
 		while ((redirect_node = ConfigManager::findConfigNodeByName(REDIRECT_ELEMENT_NAME, redirect_node)) != NULL) {
-			// get the resource name to add a redirection for
-			xmlChar *xml_char_ptr = xmlGetProp(redirect_node, reinterpret_cast<const xmlChar*>(REQUESTED_RESOURCE_ATTRIBUTE_NAME.c_str()));
-			if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
-				if (xml_char_ptr != NULL)
-					xmlFree(xml_char_ptr);
-				throw EmptyRequestedResourceException(server_id);
-			}
-			const std::string requested_resource(reinterpret_cast<char*>(xml_char_ptr));
-			xmlFree(xml_char_ptr);
+			// get the source of the redirection 
+			if (!getConfigOption(REDIRECT_SOURCE_ELEMENT_NAME, redirect_source, redirect_node->children))
+				throw RedirectMissingSourceException(server_id);
 
-			// get the resource to redirect to
-			xml_char_ptr = xmlNodeGetContent(redirect_node);
-			if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
-				if (xml_char_ptr != NULL)
-					xmlFree(xml_char_ptr);
-				throw EmptyRedirectException(server_id);
-			}
-			const std::string redirect_value(reinterpret_cast<char*>(xml_char_ptr));
-			xmlFree(xml_char_ptr);
+			// get the target of the redirection 
+			if (!getConfigOption(REDIRECT_TARGET_ELEMENT_NAME, redirect_target, redirect_node->children))
+				throw RedirectMissingTargetException(server_id);
 
-			server_ptr->addRedirect(requested_resource, redirect_value);
+			server_ptr->addRedirect(redirect_source, redirect_target);
 
-			// step to the next definition
 			redirect_node = redirect_node->next;
 		}
 
