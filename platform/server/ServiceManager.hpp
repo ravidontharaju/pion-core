@@ -97,7 +97,21 @@ public:
 		SSLKeyException(const std::string& key_file)
 			: PionException("Unable to load SSL key file: ", key_file) {}
 	};
-	
+
+	/// exception thrown if the config file contains a Redirect element with no requested resource specified
+	class EmptyRequestedResourceException : public PionException {
+	public:
+		EmptyRequestedResourceException(const std::string& server_id)
+			: PionException("Service configuration Redirect element does not specify a requested resource: ", server_id) {}
+	};
+
+	/// exception thrown if the config file contains a Redirect element with no redirect specified
+	class EmptyRedirectException : public PionException {
+	public:
+		EmptyRedirectException(const std::string& server_id)
+			: PionException("Service configuration Redirect element does not specify a resource to redirect to: ", server_id) {}
+	};
+
 	/// exception used to propagate exceptions thrown by web services
 	class WebServiceException : public PionException {
 	public:
@@ -216,7 +230,13 @@ private:
 
 	/// name of the ssl key element for Pion XML config files
 	static const std::string		SSL_KEY_ELEMENT_NAME;
-	
+
+	/// name of the resource redirection element for Pion XML config files
+	static const std::string		REDIRECT_ELEMENT_NAME;
+
+	/// name of the requested resource attribute in redirection elements for Pion XML config files
+	static const std::string		REQUESTED_RESOURCE_ATTRIBUTE_NAME;
+
 	/// name of the HTTP resource element for Pion XML config files
 	static const std::string		RESOURCE_ELEMENT_NAME;
 	

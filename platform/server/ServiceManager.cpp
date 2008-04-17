@@ -37,11 +37,13 @@ const std::string			ServiceManager::WEB_SERVICE_ELEMENT_NAME = "WebService";
 const std::string			ServiceManager::PLATFORM_SERVICE_ELEMENT_NAME = "PlatformService";
 const std::string			ServiceManager::PORT_ELEMENT_NAME = "Port";
 const std::string			ServiceManager::SSL_KEY_ELEMENT_NAME = "SSLKey";
+const std::string			ServiceManager::REDIRECT_ELEMENT_NAME = "Redirect";
+const std::string			ServiceManager::REQUESTED_RESOURCE_ATTRIBUTE_NAME = "requested-resource";
 const std::string			ServiceManager::RESOURCE_ELEMENT_NAME = "Resource";
 const std::string			ServiceManager::OPTION_ELEMENT_NAME = "Option";
 const std::string			ServiceManager::NAME_ATTRIBUTE_NAME = "name";
-	
-		
+
+
 // ServiceManager member functions
 
 ServiceManager::ServiceManager(PlatformConfig& platform_config)
@@ -63,7 +65,7 @@ ServiceManager::~ServiceManager()
 	m_servers.clear();
 	m_scheduler.shutdown();
 }
-		
+
 void ServiceManager::openConfigFile(void)
 {
 	boost::mutex::scoped_lock services_lock(m_mutex);
@@ -99,7 +101,7 @@ void ServiceManager::openConfigFile(void)
 		// create the server and add it to our list
 		HTTPServerPtr server_ptr(new HTTPServer(m_scheduler, boost::lexical_cast<unsigned int>(port_str)));
 		m_servers.push_back(server_ptr);
-		
+
 		// get the ssl key for the server (if defined)
 		if (ConfigManager::getConfigOption(SSL_KEY_ELEMENT_NAME, ssl_key,
 										   server_node->children))
@@ -116,7 +118,36 @@ void ServiceManager::openConfigFile(void)
 				PION_LOG_WARN(m_logger, "Ignoring SSL keyfile parameter (Pion was not built with SSL support)");
 			#endif
 		}
-		
+
+		// step through resource redirections
+		xmlNodePtr redirect_node = server_node->children;
+		while ((redirect_node = ConfigManager::findConfigNodeByName(REDIRECT_ELEMENT_NAME, redirect_node)) != NULL) {
+			// get the resource name to add a redirection for
+			xmlChar *xml_char_ptr = xmlGetProp(redirect_node, reinterpret_cast<const xmlChar*>(REQUESTED_RESOURCE_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw EmptyRequestedResourceException(server_id);
+			}
+			const std::string requested_resource(reinterpret_cast<char*>(xml_char_ptr));
+			xmlFree(xml_char_ptr);
+
+			// get the resource to redirect to
+			xml_char_ptr = xmlNodeGetContent(redirect_node);
+			if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw EmptyRedirectException(server_id);
+			}
+			const std::string redirect_value(reinterpret_cast<char*>(xml_char_ptr));
+			xmlFree(xml_char_ptr);
+
+			server_ptr->addRedirect(requested_resource, redirect_value);
+
+			// step to the next definition
+			redirect_node = redirect_node->next;
+		}
+
 		// step through PlatformService configurations
 		xmlNodePtr service_node = server_node->children;
 		while ( (service_node = ConfigManager::findConfigNodeByName(PLATFORM_SERVICE_ELEMENT_NAME, service_node)) != NULL)

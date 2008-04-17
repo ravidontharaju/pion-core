@@ -115,6 +115,7 @@ void setup_plugins_directory(void)
 		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
 		pion::PionPlugin::addPluginDirectory("../databases/.libs");
 		pion::PionPlugin::addPluginDirectory("../services/.libs");
+		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
 #endif
 	}
 }

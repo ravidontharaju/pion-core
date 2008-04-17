@@ -322,6 +322,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ServiceManagerTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\VocabularyConfigTests.cpp"
 				>
 			</File>
