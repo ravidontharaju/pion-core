@@ -14,10 +14,6 @@ dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.grid.Grid");
 dojo.require("dojox.xml.DomParser");
 
-pion.vocabularies.term_type_store = new dojo.data.ItemFileReadStore({url: 'termTypes.json'});
-pion.vocabularies.term_types_by_description = {};
-pion.vocabularies.term_type_descriptions_by_name = {};
-
 pion.vocabularies.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.vocabularies.height;
@@ -78,13 +74,7 @@ pion.vocabularies.init = function() {
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
 	var delete_col_index = attributes_by_column.length;
 
-	var store = pion.vocabularies.term_type_store;
-	store.fetch({
-		onItem: function (item, request) {
-			pion.vocabularies.term_types_by_description[store.getValue(item, 'description')] = store.getValue(item, 'name');
-			pion.vocabularies.term_type_descriptions_by_name[store.getValue(item, 'name')] = store.getValue(item, 'description');
-		}
-	});
+	pion.terms.initDescriptionLookups();
 
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
@@ -114,7 +104,7 @@ pion.vocabularies.init = function() {
 	}
 
 	pion.vocabularies.config_store.fetch({
-		onComplete: function (items, request) {
+		onComplete: function(items, request) {
 			var config_accordion = dijit.byId('vocab_config_accordion');
 			for (var i = 0; i < items.length; ++i) {
 				// It would be nice to have the name for the title instead of the ID, but we will have to make a request for 

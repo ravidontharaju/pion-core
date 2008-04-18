@@ -11,6 +11,7 @@ dojo.require("pion.codecs");
 dojo.require("pion.databases");
 dojo.require("pion.users");
 dojo.require("pion.system");
+dojo.require("pion.terms");
 
 var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
@@ -27,11 +28,12 @@ var init = function() {
 
 	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
+	pion.terms.init();
 	pion.reactors.init();
 
 	if (!file_protocol) {
 		// do a fetch just to check if the datastore is available
-		pion.codecs.term_store.fetch({onError: function(errorData, request){
+		pion.terms.store.fetch({onError: function(errorData, request){
 			alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
 			console.debug('window.location.protocol = ', window.location.protocol);
 		}});

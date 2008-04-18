@@ -1,5 +1,4 @@
 dojo.provide("pion.codecs");
-dojo.require("pion.vocabularies");
 dojo.require("plugins.codecs.Codec");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
@@ -14,32 +13,6 @@ dojo.require("dojox.grid.Grid");
 
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
-
-pion.codecs.term_store = new dojox.data.XmlStore({url: '/config/terms', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
-
-// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
-pion.codecs.term_store.fetchItemByIdentity = function(keywordArgs) {
-	pion.codecs.term_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
-}
-pion.codecs.term_store.getIdentity = function(item) {
-	return pion.codecs.term_store.getValue(item, '@id');
-}
-
-pion.codecs.term_categories_by_id = {};
-
-pion.codecs.term_store.fetch({
-	onItem: function(item) {
-		var type = pion.codecs.term_store.getValue(item, 'Type').toString();
-		var id   = pion.codecs.term_store.getIdentity(item);
-		console.debug('type = ', type, ', id = ', id);
-		pion.vocabularies.term_type_store.fetch({
-			query: {name: type},
-			onItem: function(item) {
-				pion.codecs.term_categories_by_id[id] = pion.vocabularies.term_type_store.getValue(item, 'category');
-			}
-		});
-	}
-});
 
 pion.codecs.getHeight = function() {
 	// set by _adjustAccordionSize

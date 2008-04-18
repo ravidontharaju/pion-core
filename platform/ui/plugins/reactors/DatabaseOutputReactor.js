@@ -2,7 +2,7 @@ dojo.provide("plugins.reactors.DatabaseOutputReactor");
 dojo.require("pion.databases");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojox.grid.Grid");
-dojo.require("pion.codecs"); // term_store
+dojo.require("pion.terms");
 
 dojo.declare("plugins.reactors.DatabaseOutputReactor",
 	[ plugins.reactors.Reactor ],
@@ -146,7 +146,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			editor: dojox.grid.editors.Input},
 		{ name: 'Term', styles: '', 
 			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
+			editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
 		{ name: 'Delete', styles: 'align: center;', width: 3, 
 		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 	]]

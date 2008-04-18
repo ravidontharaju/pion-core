@@ -1,4 +1,5 @@
 dojo.provide("plugins.vocabularies.Vocabulary");
+dojo.require("pion.terms");
 dojo.require("pion.vocabularies");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
@@ -139,7 +140,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					var new_item = {};
 					new_item.ID = _this.vocab_term_store.getValue(item, '@id').split('#')[1];
 					var type = _this.vocab_term_store.getValue(item, 'Type');
-					new_item.Type = pion.vocabularies.term_type_descriptions_by_name[type.toString()];
+					new_item.Type = pion.terms.type_descriptions_by_name[type.toString()];
 					new_item.Format = _this.vocab_term_store.getValue(type, '@format');
 					new_item.Size = _this.vocab_term_store.getValue(type, '@size');
 					var comment = _this.vocab_term_store.getValue(item, 'Comment');
@@ -195,7 +196,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				onError: function(errorData, request) {
 					console.debug('dojo.data error: errorData = ' + errorData + ', request = ', request);
 				},
-				onComplete: function (items, request) {
+				onComplete: function(items, request) {
 					// TODO: check that there was exactly one item returned?
 					console.debug('vocab_store.fetch.onComplete: items.length = ', items.length);
 					_this.vocab_item = items[0];
@@ -357,7 +358,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 							if (size && size != '-') {
 								put_data += ' size="' + size + '"';
 							}
-							put_data += '>' + pion.vocabularies.term_types_by_description[store.getValue(item, 'Type')] + '</Type>';
+							put_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
 							if (store.getValue(item, 'Comment')) {
 								put_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
 							}
@@ -395,7 +396,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					if (size && size != '-') {
 						post_data += ' size="' + size + '"';
 					}
-					post_data += '>' + pion.vocabularies.term_types_by_description[store.getValue(item, 'Type')] + '</Type>';
+					post_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
 					if (store.getValue(item, 'Comment')) {
 						post_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
 					}
@@ -440,13 +441,13 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			}
 			store.save({});
 		},
-		cancel: function () {
+		cancel: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			this.working_store.revert();
 			this.vocab_grid.model.requestRows();
 			this.populateFromVocabStore();
 		},
-		delete2: function () {
+		delete2: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			console.debug('delete2: selected vocabulary is ', this.title);
 			_this = this;
@@ -483,7 +484,7 @@ plugins.vocabularies.initGridLayouts = function() {
 		rows: [[
 			{ name: 'ID',      field: 'ID',      width: 'auto', styles: '' },
 			{ name: 'Type',    field: 'Type',    width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-																editorProps: {store: pion.vocabularies.term_type_store, searchAttr: "description"} },
+																editorProps: {store: pion.terms.type_store, searchAttr: "description"} },
 			{ name: 'Format',  field: 'Format',  width: 10,     styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
 			{ name: 'Size',    field: 'Size',    width: 3,      styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
 			{ name: 'Comment', field: 'Comment', width: 'auto', styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.TextBox", editorProps: {} },

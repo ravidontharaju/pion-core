@@ -1,5 +1,6 @@
 dojo.provide("plugins.codecs.Codec");
 dojo.require("pion.codecs");
+dojo.require("pion.terms");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.form.FilteringSelect");
@@ -179,7 +180,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.markAsChanged();
 			this.codec_grid.addRow([]);
 		},
-		save: function () {
+		save: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			var config = this.form.getValues();
 
@@ -248,11 +249,11 @@ dojo.declare("plugins.codecs.CodecPane",
 				}
 			});
 		},
-		cancel: function () {
+		cancel: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			this.populateFromConfigItem(this.config_item);
 		},
-		delete2: function () {
+		delete2: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			console.debug('delete2: selected codec is ', this.title);
 			_this = this;
@@ -295,7 +296,7 @@ plugins.codecs.initGridLayouts = function() {
 				editor: dojox.grid.editors.Input },
 			{ name: 'Term', styles: '', 
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-				editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
+				editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
 			{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Input },
 			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
@@ -315,7 +316,7 @@ plugins.codecs.initGridLayouts = function() {
 				editor: dojox.grid.editors.Input},
 			{ name: 'Term', styles: '', 
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-				editorProps: {store: pion.codecs.term_store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
+				editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
 			{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Input},
 			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
