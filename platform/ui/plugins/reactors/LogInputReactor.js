@@ -29,7 +29,13 @@ dojo.declare("plugins.reactors.LogInputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/LogInputReactor/LogInputReactorDialog.html"),
-		widgetsInTemplate: true
+		widgetsInTemplate: true,
+		postCreate: function(){
+			this.inherited("postCreate", arguments);
+			if (this.reactor.config.JustOne != 'true') {
+				this.reactor.config.JustOne = 'false';
+			}
+		}
 	}
 );
 
