@@ -12,6 +12,12 @@ body {
 	color: #333333;
 }
 
+
+.tundra .dijitTextBox {
+	padding: 2px;
+}
+	
+
 #counterBackground {
 	position:absolute;
 	top: 121px;
@@ -49,7 +55,7 @@ body {
 	color: #ffffff;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	width: 50px;
+	width: 60px;
 	padding: 10px 10px 10px 0;
 	float: left;
 	text-align: right;
@@ -66,7 +72,7 @@ body {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 10px;
-	width: 80px;
+	width: 70px;
 	padding: 10px 0 10px 0;
 	float: left;
 	text-align: right;
@@ -452,7 +458,7 @@ This is a duplicate of #reactor_config_content for now.
 }
 
 .tundra .moveable .ops_per_sec {
-	margin-left: 60px;
+	margin-left: 45px;
 	font-size: 9px;
 	color: #999999;
 }
@@ -786,9 +792,9 @@ This is a duplicate of #reactor_config_content for now.
 	text-decoration: underline; 
 }
 
-.tundra .dijitAccordionPane-selected .dijitAccordionTitle {
+.tundra .dijitAccordionTitle-selected {
 	text-decoration: none;
-	background-image: url("../images/accordion-title-bg.png");
+	background: url("../images/accordion-title-bg.png");
 	color: #ffffff;
 }
 
