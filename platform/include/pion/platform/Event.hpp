@@ -52,7 +52,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// Event: an item of structured data that represents something of interest
 ///
 template <typename CharType, typename AllocType>
-class PION_PLATFORM_API BasicEvent
+class BasicEvent
 	: private boost::noncopyable
 {
 public:
