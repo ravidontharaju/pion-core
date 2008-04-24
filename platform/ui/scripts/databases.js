@@ -15,7 +15,7 @@ pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'}
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
 pion.databases.config_store.fetchItemByIdentity = function(keywordArgs) {
-	pion.databases.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
+	pion.databases.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 }
 pion.databases.config_store.getIdentity = function(item) {
 	return pion.databases.config_store.getValue(item, '@id');
@@ -96,7 +96,8 @@ pion.databases.init = function() {
 			onItem: function(item) {
 				console.debug('item: ', item);
 				pane.populateFromConfigItem(item);
-			}
+			},
+			onError: pion.handleFetchError
 		});
 	}
 
@@ -125,7 +126,8 @@ pion.databases.init = function() {
 
 				var first_pane = config_accordion.getChildren()[0];
 				config_accordion.selectChild(first_pane);
-			}
+			},
+			onError: pion.handleFetchError
 		});
 	}
 
@@ -188,10 +190,7 @@ pion.databases.init = function() {
 					pion.databases._adjustAccordionSize();
 					database_config_accordion.selectChild(database_pane);
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPost to /config/databases.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 			});
 		}
 

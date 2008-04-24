@@ -183,7 +183,8 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 						_this.vocab_grid.update();
 						_this.vocab_grid.resize();
 					}, 500);
-				}
+				},
+				onError: pion.handleFetchError
 			});
 
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
@@ -193,15 +194,13 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			var _this = this;
 			this.vocab_store.fetch({
 				query: {'tagName': 'Vocabulary'}, 
-				onError: function(errorData, request) {
-					console.debug('dojo.data error: errorData = ' + errorData + ', request = ', request);
-				},
 				onComplete: function(items, request) {
 					// TODO: check that there was exactly one item returned?
 					console.debug('vocab_store.fetch.onComplete: items.length = ', items.length);
 					_this.vocab_item = items[0];
 					_this.populateFromVocabItem();
-				}
+				},
+				onError: pion.handleFetchError
 			});
 		},
 		populateFromVocabItem: function() {
@@ -330,11 +329,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					// Yes, this is redundant, but unfortunately, 'response' is not an item, as needed by populateFromVocabItem.
 					_this.populateFromVocabStore();
 				},
-				error: function(response, ioArgs) {
-					console.dir(ioArgs);
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
 			});
 		},
 		saveChangedTerms: function() {
@@ -374,13 +369,10 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 									console.debug('rawXhrPut for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
 									return response;
 								},
-								error: function(response, ioArgs) {
-									console.dir(ioArgs);
-									console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-									return response;
-								}
+								error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
 							});
-						}
+						},
+						onError: pion.handleFetchError
 					});
 				}
 				for (ID in this._pending._newItems) {
@@ -412,11 +404,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 							console.debug('rawXhrPost for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
 							return response;
 						},
-						error: function(response, ioArgs) {
-							console.dir(ioArgs);
-							console.error('Error from rawXhrPost to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-							return response;
-						}
+						error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 					});
 				}
 				for (ID in this._pending._deletedItems) {
@@ -430,10 +418,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 							console.debug('xhrDelete for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
 							return response;
 						},
-						error: function(response, ioArgs) {
-							console.error('Error from xhrDelete to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-							return response;
-						}
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
 					});
 				}
 				//TODO: need to keep track of all the responses, and call saveCompleteCallback or saveFailedCallback, as appropriate.
@@ -466,10 +451,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					pion.vocabularies._adjustAccordionSize();
 					return response;
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from xhrDelete to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
 			});
 		},
 		markAsChanged: function() {

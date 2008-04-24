@@ -13,6 +13,7 @@
 		<Permit>/dojo-src</Permit>
 		<Permit>/images</Permit>
 		<Permit>/plugins</Permit>
+		<Permit>/resources</Permit>
 		<Permit>/scripts</Permit>
 		<Permit>/styles</Permit>
 		<Login>/login</Login>

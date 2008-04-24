@@ -26,7 +26,8 @@ dojo.declare("plugins.reactors.FilterReactor",
 						comparison_table_row[2] = store.getValue(comparisons[i], 'Value');
 						_this.comparison_table.push(comparison_table_row);
 					}
-				}
+				},
+				onError: pion.handleFetchError
 			});
 		},
 		_insertCustomData: function() {
@@ -88,7 +89,8 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 						grid.update();
 						grid.resize();
 					}, 200);
-				}
+				},
+				onError: pion.handleFetchError
 			});
 		},
 		_handleCellClick: function(e) {

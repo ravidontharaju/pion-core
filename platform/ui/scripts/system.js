@@ -86,10 +86,7 @@ pion.system.init = function() {
 			}
 			return response;
 		},
-		error: function(response, ioArgs) {
-			console.error('HTTP status code: ', ioArgs.xhr.status);
-			return response;
-		}
+		error: pion.handleXhrGetError
 	});
 
 	dojo.byId('platform_conf_file').firstChild.nodeValue = 'actual/path/here/PlatformConfigFile.xml';
@@ -113,14 +110,28 @@ pion.system.init = function() {
 		return server_store.getValue(item, '@id');
 	}
 
-	var myModel = new dijit.tree.ForestStoreModel({
+	pion.system.myModel = new dijit.tree.ForestStoreModel({
 		store: server_store,
 		query: {tagName: 'Server'},
 		rootId: 'serverRoot',
 		childrenAttrs: ["childNodes"]
 	});
-	var server_tree = new dijit.Tree({
-		model: myModel,
+
+	// This is a kludge.  We should be able to just pass pion.handleFetchError to dijit.tree.ForestStoreModel and
+	// let it deal with the error handling, but it doesn't have any hooks for that yet.
+	// If and when it does, we can get rid of this superfluous fetch and just call pion.system.buildTree() directly.
+	server_store.fetch({
+		query: {tagName: 'Server'},
+		onComplete: function() {
+			pion.system.buildTree();
+		},
+		onError: pion.handleFetchError
+	});
+}
+
+pion.system.buildTree = function() {
+	new dijit.Tree({
+		model: pion.system.myModel,
 		showRoot: false,
 		getLabel: function(item) {
 			if (item.root)
@@ -145,6 +156,7 @@ pion.system.init = function() {
 	}, dojo.byId('server_tree'));
 }
 
+/*
 function handleServerTreeItem(item, request) {
 	var attrs = server_store.getAttributes(item);
 	console.debug('got item with attributes ', attrs);
@@ -159,3 +171,4 @@ function handleServerTreeItem(item, request) {
 function buildTree() {
 	var server_tree = new dijit.Tree({store: server_store, labelAttr:"name", childrenAttr:["services"]}, dojo.byId('server_tree'));
 }
+*/

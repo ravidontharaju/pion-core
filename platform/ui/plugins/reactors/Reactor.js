@@ -31,10 +31,7 @@ dojo.declare("plugins.reactors.Reactor",
 			dojo.connect(button_node, 'click', function() {
 				dojo.xhrPut({
 					url: '/config/reactors/' + _this.config['@id'] + (_this.run_button.checked? '/start' : '/stop'),
-					error: function(response, ioArgs) {
-						console.error('HTTP status code: ', ioArgs.xhr.status);
-						return response;
-					}
+					error: pion.getXhrErrorHandler(dojo.xhrPut)
 				});
 			});
 			this.domNode.appendChild(button_node);
@@ -142,10 +139,7 @@ dojo.declare("plugins.reactors.Reactor",
 				load: function(response){
 					console.debug('response: ', response);
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
 		}
 	}
@@ -210,14 +204,14 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					reactor.workspace = workspace_box;
 					workspace_box.reactors.push(reactor);
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPost to /config/reactors.  HTTP status code: ', ioArgs.xhr.status);
-
-					// Remove the dnd reactor.
-					workspace_box.node.removeChild(workspace_box.node.lastChild);
-
-					return response;
-				}
+				error: pion.getXhrErrorHandler(
+					dojo.rawXhrPost,
+					{postData: this.post_data},
+					function() {
+						// Remove the dnd reactor.
+						workspace_box.node.removeChild(workspace_box.node.lastChild);
+					}
+				)
 			});
 		}
 	}
@@ -256,10 +250,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 				load: function(response){
 					console.debug('response: ', response);
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
 		}
 	}

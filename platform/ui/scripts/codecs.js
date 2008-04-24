@@ -23,7 +23,7 @@ pion.codecs.config_store = new dojox.data.XmlStore({url: '/config/codecs'});
 
 // fetchItemByIdentity and getIdentity are needed for FilteringSelect.
 pion.codecs.config_store.fetchItemByIdentity = function(keywordArgs) {
-	pion.codecs.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem});
+	pion.codecs.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 }
 pion.codecs.config_store.getIdentity = function(item) {
 	return pion.codecs.config_store.getValue(item, '@id');
@@ -55,7 +55,7 @@ pion.codecs.init = function() {
 	if (file_protocol) {
 		dijit.byId('codec_config_accordion').removeChild(selected_codec_pane);
 	} else {
-		codec_config_store.fetch({ onComplete: onComplete });
+		codec_config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
 	}
 
 	dojo.connect(dojo.byId('add_new_codec_button'), 'click', addNewCodec);
@@ -104,10 +104,7 @@ function addNewCodec() {
 				pion.codecs._adjustAccordionSize();
 				codec_config_accordion.selectChild(codec_pane);
 			},
-			error: function(response, ioArgs) {
-				console.error('Error from rawXhrPost to /config/codecs.  HTTP status code: ', ioArgs.xhr.status);
-				return response;
-			}
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 		});
 	}
 }
@@ -162,6 +159,7 @@ function codecPaneSelected(pane) {
 		onItem: function(item) {
 			console.debug('item: ', item);
 			pane.populateFromConfigItem(item);
-		}
+		},
+		onError: pion.handleFetchError
 	});
 }

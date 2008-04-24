@@ -116,7 +116,8 @@ pion.vocabularies.init = function() {
 			pion.vocabularies._adjustAccordionSize();
 			var first_pane = config_accordion.getChildren()[0];
 			config_accordion.selectChild(first_pane);
-		}
+		},
+		onError: pion.handleFetchError
 	});
 
 	function _addNewVocabulary() {
@@ -153,10 +154,7 @@ pion.vocabularies.init = function() {
 					pion.vocabularies._adjustAccordionSize();
 					vocab_config_accordion.selectChild(vocab_pane);
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPost to /config/vocabularies.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 			});
 		}
 	}

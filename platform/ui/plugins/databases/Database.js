@@ -104,13 +104,11 @@ dojo.declare("plugins.databases.DatabasePane",
 						onItem: function(item) {
 							_this.config_item = item;
 							_this.populateFromConfigItem(item);
-						}
+						},
+						onError: pion.handleFetchError
 					});
 				},
-				error: function(response, ioArgs) {
-					console.error('Error from rawXhrPut to ', this.url, '.  HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
 			});
 		},
 		cancel: function () {
@@ -137,10 +135,7 @@ dojo.declare("plugins.databases.DatabasePane",
 
 					return response;
 				},
-				error: function(response, ioArgs) {
-					console.error('HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
 			});
 		},
 		markAsChanged: function() {

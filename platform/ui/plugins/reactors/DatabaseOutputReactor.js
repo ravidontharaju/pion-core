@@ -24,7 +24,8 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 						row[1] = store.getValue(field_mappings[i], '@term');
 						_this.field_mapping_table.push(row);
 					}
-				}
+				},
+				onError: pion.handleFetchError
 			});
 		},
 		_insertCustomData: function() {
@@ -113,7 +114,8 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 						grid.update();
 						grid.resize();
 					}, 200);
-				}
+				},
+				onError: pion.handleFetchError
 			});
 		},
 		_handleCellClick: function(e) {

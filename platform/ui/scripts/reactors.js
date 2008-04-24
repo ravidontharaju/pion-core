@@ -1,9 +1,9 @@
 dojo.provide("pion.reactors");
+dojo.require("pion.login");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.dnd.move");
 dojo.require("dojo.dnd.Source");
-dojo.require("dijit.Dialog");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
@@ -249,10 +249,7 @@ pion.reactors.init = function() {
 						prev_events_in_for_workspace = events_in_for_workspace;
 						return response;
 					},
-					error: function(response, ioArgs) {
-						console.error('HTTP status code: ', ioArgs.xhr.status);
-						return response;
-					}
+					error: pion.handleXhrGetError
 				});
 			}
 		}, 1000);
@@ -592,10 +589,7 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 			source_reactor.reactor_outputs.push({sink: sink_reactor, line: line, id: id});
 			sink_reactor.reactor_inputs.push({source: source_reactor, line: line, id: id});
 		},
-		error: function(response, ioArgs) {
-			console.error('Error from rawXhrPost to /config/connections.  HTTP status code: ', ioArgs.xhr.status);
-			return response;
-		}
+		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 	});
 }
 
@@ -649,10 +643,7 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 					}
 					return response;
 				},
-				error: function(response, ioArgs) {
-					console.error('HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
 			});
 		}
 	});
@@ -696,10 +687,7 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 					}
 					return response;
 				},
-				error: function(response, ioArgs) {
-					console.error('HTTP status code: ', ioArgs.xhr.status);
-					return response;
-				}
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
 			});
 		}
 	});
@@ -783,10 +771,7 @@ function deleteReactor(reactor) {
 
 			return response;
 		},
-		error: function(response, ioArgs) {
-			console.error('HTTP status code: ', ioArgs.xhr.status);
-			return response;
-		}
+		error: pion.getXhrErrorHandler(dojo.xhrDelete)
 	});
 }
 
