@@ -24,20 +24,16 @@ namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
-// static members of Event
-const Event::ParameterValue	Event::NULL_PARAMETER_VALUE;
-	
-	
 // static members of EventFactory
-EventFactory *			EventFactory::m_instance_ptr = NULL;
-boost::once_flag		EventFactory::m_instance_flag = BOOST_ONCE_INIT;
+EventFactory::EventAllocatorFactory *	EventFactory::EventAllocatorFactory::m_instance_ptr = NULL;
+boost::once_flag						EventFactory::EventAllocatorFactory::m_instance_flag = BOOST_ONCE_INIT;
 
 	
 // PionScheduler member functions
 
-void EventFactory::createInstance(void)
+void EventFactory::EventAllocatorFactory::createInstance(void)
 {
-	static EventFactory factory_instance;
+	static EventAllocatorFactory factory_instance;
 	m_instance_ptr = &factory_instance;
 }
 

@@ -264,10 +264,13 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 
 	// push events from the log file into the IE filter reactor
 	boost::uint64_t events_read = 0;
+	EventFactory event_factory;
 	EventPtr event_ptr;
-	while ((event_ptr = m_combined_codec->read(in))) {
+	event_factory.create(event_ptr, m_combined_codec->getEventType());
+	while (m_combined_codec->read(in, *event_ptr)) {
 		++events_read;
 		m_reaction_engine.send(m_ie_filter_id, event_ptr);
+		event_factory.create(event_ptr, m_combined_codec->getEventType());
 	}
 	
 	// make sure that four events were read from the log
@@ -338,10 +341,13 @@ BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
 	
 	// push events from the log file into the data store reactor
 	boost::uint64_t events_read = 0;
+	EventFactory event_factory;
 	EventPtr event_ptr;
-	while ((event_ptr = m_combined_codec->read(in))) {
+	event_factory.create(event_ptr, m_combined_codec->getEventType());
+	while (m_combined_codec->read(in, *event_ptr)) {
 		++events_read;
 		m_reaction_engine.send(m_clickstream_id, event_ptr);
+		event_factory.create(event_ptr, m_combined_codec->getEventType());
 	}
 	
 	// make sure that four events were read from the log

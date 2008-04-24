@@ -84,7 +84,7 @@ void Comparison::configure(const ComparisonType type,
 	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
 		m_regex = value;
 	} else if (isStringType(type)) {
-		m_value = value;
+		m_str_value = value;
 	} else if (! isGenericType(type)) {		// note: generic type just ignores the value
 		try {
 			// convert string to be the same type as the term
@@ -121,7 +121,7 @@ void Comparison::configure(const ComparisonType type,
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-					m_value = value;	// this should actually be handled above
+					m_str_value = value;	// this should actually be handled above
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:

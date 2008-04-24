@@ -22,6 +22,8 @@
 
 #include <boost/regex.hpp>
 #include <boost/logic/tribool.hpp>
+#include <boost/algorithm/string/compare.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -137,7 +139,7 @@ public:
 	/// standard copy constructor
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
-		m_match_all_values(c.m_match_all_values)
+		m_str_value(c.m_str_value), m_match_all_values(c.m_match_all_values)
 	{}
 
 	
@@ -325,12 +327,25 @@ private:
 		const T&	m_value;
 	};
 
+	/// helper class used to determine if one string matches another
+	class CompareStringExactMatch {
+	public:
+		CompareStringExactMatch(const std::string& value) : m_value(value) {}
+		inline bool operator()(const Event::ParameterValue& event_value) const {
+			return m_value == boost::get<const Event::SimpleString&>(event_value).get();
+		}
+	private:
+		const std::string&	m_value;
+	};
+
 	/// helper class used to determine if one string contains another
 	class CompareStringContains {
 	public:
-		CompareStringContains(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		CompareStringContains(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::get<const std::string&>(event_value).find(m_value) != std::string::npos;
+			return boost::algorithm::contains(
+				boost::get<const Event::SimpleString&>(event_value).get(),
+				m_value.c_str());
 		}
 	private:
 		const std::string&	m_value;
@@ -339,10 +354,11 @@ private:
 	/// helper class used to determine if one string starts with another
 	class CompareStringStartsWith {
 	public:
-		CompareStringStartsWith(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		CompareStringStartsWith(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return (boost::get<const std::string&>(event_value).size() >= m_value.size()
-					&& boost::get<const std::string&>(event_value).substr(0, m_value.size()) == m_value);
+			return boost::algorithm::starts_with(
+				boost::get<const Event::SimpleString&>(event_value).get(),
+				m_value.c_str());
 		}
 	private:
 		const std::string&	m_value;
@@ -351,11 +367,11 @@ private:
 	/// helper class used to determine if one string ends with another
 	class CompareStringEndsWith {
 	public:
-		CompareStringEndsWith(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		CompareStringEndsWith(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return (boost::get<const std::string&>(event_value).size() >= m_value.size()
-					&& boost::get<const std::string&>(event_value).substr((boost::get<const std::string&>(event_value).size() - m_value.size()),
-																			   m_value.size()) == m_value);
+			return boost::algorithm::ends_with(
+				boost::get<const Event::SimpleString&>(event_value).get(),
+				m_value.c_str());
 		}
 	private:
 		const std::string&	m_value;
@@ -364,9 +380,12 @@ private:
 	/// helper class used to determine if one string is ordered before another
 	class CompareStringOrderedBefore {
 	public:
-		CompareStringOrderedBefore(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		CompareStringOrderedBefore(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::get<const std::string&>(event_value).compare(m_value) < 0;
+			boost::algorithm::is_less p;
+			return boost::algorithm::lexicographical_compare(
+				boost::get<const Event::SimpleString&>(event_value).get(),
+				m_value.c_str(), p);
 		}
 	private:
 		const std::string&	m_value;
@@ -375,9 +394,11 @@ private:
 	/// helper class used to determine if one string is ordered after another
 	class CompareStringOrderedAfter {
 	public:
-		CompareStringOrderedAfter(const Event::ParameterValue& value) : m_value(boost::get<const std::string&>(value)) {}
+		CompareStringOrderedAfter(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::get<const std::string&>(event_value).compare(m_value) > 0;
+			boost::algorithm::is_less p;
+			return boost::algorithm::lexicographical_compare(m_value.c_str(),
+				boost::get<const Event::SimpleString&>(event_value).get(), p);
 		}
 	private:
 		const std::string&	m_value;
@@ -388,7 +409,8 @@ private:
 	public:
 		CompareStringRegex(const boost::regex& value) : m_regex(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::regex_match(boost::get<const std::string&>(event_value), m_regex);
+			return boost::regex_match(
+				boost::get<const Event::SimpleString&>(event_value).get(), m_regex);
 		}
 	private:
 		const boost::regex&	m_regex;
@@ -560,7 +582,7 @@ private:
 	};
 	
 	/// data type for a range of values assigned to a Vocabulary Term
-	typedef std::pair<Event::ParameterMap::const_iterator, Event::ParameterMap::const_iterator>		ValuesRange;
+	typedef std::pair<Event::ConstIterator, Event::ConstIterator>	ValuesRange;
 	
 
 	/**
@@ -591,8 +613,11 @@ private:
 	/// identifies what type of Comparison this is
 	ComparisonType				m_type;
 	
-	/// the value that the Vocabulary Term is compared to
-	Event::ParameterValue			m_value;
+	/// the value that the Vocabulary Term is compared to (if not string or regex type)
+	Event::ParameterValue		m_value;
+	
+	/// the string that the Vocabulary Term is compared to (if string comparison type)
+	std::string					m_str_value;
 
 	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
 	boost::regex				m_regex;
@@ -610,10 +635,10 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 {
 	boost::tribool result = boost::indeterminate;
 
-	for (Event::ParameterMap::const_iterator i = values_range.first;
+	for (Event::ConstIterator i = values_range.first;
 		 i != values_range.second; ++i)
 	{
-		if (comparison_func(i->second)) {
+		if (comparison_func(i->value)) {
 			if (! m_match_all_values) {
 				result = true;
 				break;
@@ -635,9 +660,7 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 inline bool Comparison::evaluate(const Event& e) const
 {
 	/// get a range of iterators representing all the values for the Term
-	std::pair<Event::ParameterMap::const_iterator, Event::ParameterMap::const_iterator>
-		values_range = e.getParameterMap().equal_range(m_term.term_ref);
-	
+	ValuesRange values_range = e.equal_range(m_term.term_ref);
 	bool result = false;
 	
 	switch (m_type) {
@@ -648,10 +671,10 @@ inline bool Comparison::evaluate(const Event& e) const
 			result = true;
 			break;
 		case TYPE_IS_DEFINED:
-			result = (values_range.first != e.getParameterMap().end());
+			result = (values_range.first != e.end());
 			break;
 		case TYPE_IS_NOT_DEFINED:
-			result = (values_range.first == e.getParameterMap().end());
+			result = (values_range.first == e.end());
 			break;
 
 		case TYPE_EQUALS:
@@ -930,7 +953,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareEquals<std::string> comparison_func(m_value);
+					CompareStringExactMatch comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -949,7 +972,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringContains comparison_func(m_value);
+					CompareStringContains comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -968,7 +991,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringStartsWith comparison_func(m_value);
+					CompareStringStartsWith comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -987,7 +1010,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringEndsWith comparison_func(m_value);
+					CompareStringEndsWith comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -1006,7 +1029,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringOrderedBefore comparison_func(m_value);
+					CompareStringOrderedBefore comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -1025,7 +1048,7 @@ inline bool Comparison::evaluate(const Event& e) const
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				{
-					CompareStringOrderedAfter comparison_func(m_value);
+					CompareStringOrderedAfter comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
 					break;
 				}
@@ -1242,12 +1265,7 @@ inline void Comparison::configure(const ComparisonType type,
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
-			if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
-				throw InvalidValueForTypeException();
-			} else {
-				if (boost::get<std::string>(&m_value) == NULL)
-					throw InvalidValueForTypeException();
-			}
+			throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:

@@ -182,9 +182,9 @@ private:
 		 * reads the value for a single field
 		 *
 		 * @param buf array of bytes to read the value from
-		 * @param value the value to read
+		 * @param e the Event to read the field for
 		 */
-		inline void read(const char *buf, pion::platform::Event::ParameterValue& value);
+		inline void read(const char *buf, pion::platform::Event& e);
 
 		/// the name of the field
 		std::string							log_field;
@@ -434,7 +434,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_CHAR:
-			out << boost::get<const std::string&>(value);
+			out << boost::get<const pion::platform::Event::SimpleString&>(value).get();
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -450,42 +450,45 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		out << log_delim_end;
 }
 
-inline void LogCodec::LogField::read(const char *buf, pion::platform::Event::ParameterValue& value)
+inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 {
 	switch(log_term.term_type) {
 		case pion::platform::Vocabulary::TYPE_NULL:
-			value = pion::platform::Event::ParameterValue();
+			// do nothing -> just ignore the empty field
+			break;
+		case pion::platform::Vocabulary::TYPE_OBJECT:
+			// do nothing; this is not supported for Log data streams
 			break;
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
-			value = boost::lexical_cast<boost::int32_t>(buf);
+			e.setInt(log_term.term_ref, boost::lexical_cast<boost::int32_t>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_INT64:
-			value = boost::lexical_cast<boost::int64_t>(buf);
+			e.setBigInt(log_term.term_ref, boost::lexical_cast<boost::int64_t>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT8:
 		case pion::platform::Vocabulary::TYPE_UINT16:
 		case pion::platform::Vocabulary::TYPE_UINT32:
-			value = boost::lexical_cast<boost::uint32_t>(buf);
+			e.setUInt(log_term.term_ref, boost::lexical_cast<boost::uint32_t>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT64:
-			value = boost::lexical_cast<boost::uint64_t>(buf);
+			e.setUBigInt(log_term.term_ref, boost::lexical_cast<boost::uint64_t>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_FLOAT:
-			value = boost::lexical_cast<float>(buf);
+			e.setFloat(log_term.term_ref, boost::lexical_cast<float>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_DOUBLE:
-			value = boost::lexical_cast<double>(buf);
+			e.setDouble(log_term.term_ref, boost::lexical_cast<double>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-			value = boost::lexical_cast<long double>(buf);
+			e.setLongDouble(log_term.term_ref, boost::lexical_cast<long double>(buf));
 			break;
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_CHAR:
-			value = std::string(buf);
+			e.setString(log_term.term_ref, buf);
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -493,12 +496,9 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event::Par
 		{
 			PionDateTime dt;
 			log_time_facet.fromString(buf, dt);
-			value = dt;
+			e.setDateTime(log_term.term_ref, dt);
 			break;
 		}
-		case pion::platform::Vocabulary::TYPE_OBJECT:
-			// do nothing; this is not supported for Log data streams
-			break;
 	}
 }
 	

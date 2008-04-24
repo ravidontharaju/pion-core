@@ -166,7 +166,7 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 									 && read_start[1] == '\0') )
 		{
 			// parse the value we have extracted
-			(*i)->read(read_start, e[(*i)->log_term.term_ref]);
+			(*i)->read(read_start, e);
 		}
 		
 		++i;

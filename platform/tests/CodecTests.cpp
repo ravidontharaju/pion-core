@@ -525,6 +525,7 @@ public:
 	}
 	~CodecFactoryLogFormatTests_F() {}
 	
+	EventFactory		m_event_factory;
 	const std::string	m_common_id;
 	const std::string	m_combined_id;
 	const std::string	m_extended_id;
@@ -581,9 +582,9 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecComment) {
 BOOST_AUTO_TEST_CASE(checkJustDateCodecReadEntry) {
 	BOOST_REQUIRE(m_date_codec);
 	std::stringstream ss("\"05/Apr/2007:05:37:11 -0600\"\n");
-	Event e(m_date_codec->getEventType());
-	BOOST_REQUIRE(m_date_codec->read(ss, e));
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref).date(),
+	EventPtr event_ptr(m_event_factory.create(m_date_codec->getEventType()));
+	BOOST_REQUIRE(m_date_codec->read(ss, *event_ptr));
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref).date(),
 					  boost::gregorian::date(2007, 4, 5));
 }
 
@@ -594,86 +595,86 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 	BOOST_REQUIRE(in.is_open());
 	
 	// read the first record
-	Event e(m_common_codec->getEventType());
-	BOOST_REQUIRE(m_common_codec->read(in, e));
+	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
+	BOOST_REQUIRE(m_common_codec->read(in, *event_ptr));
 	// check the first data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.19.111");
-	BOOST_CHECK(! e.isDefined(m_rfc931_ref));
-	BOOST_CHECK(! e.isDefined(m_authuser_ref));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.19.111");
+	BOOST_CHECK(! event_ptr->isDefined(m_rfc931_ref));
+	BOOST_CHECK(! event_ptr->isDefined(m_authuser_ref));
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 4, 5),
 								   boost::posix_time::time_duration(5, 37, 11)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /robots.txt HTTP/1.0");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 404UL);
-	BOOST_CHECK_EQUAL(e.getUInt(m_bytes_ref), 208UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /robots.txt HTTP/1.0");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 404UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 208UL);
 
 	// read the second record
-	e.clear();
-	BOOST_REQUIRE(m_common_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_common_codec->read(in, *event_ptr));
 	// check the second data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.31.104");
-	BOOST_CHECK_EQUAL(e.getString(m_rfc931_ref), "ab");
-	BOOST_CHECK(! e.isDefined(m_authuser_ref));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.31.104");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_rfc931_ref), "ab");
+	BOOST_CHECK(! event_ptr->isDefined(m_authuser_ref));
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 6, 8),
 								   boost::posix_time::time_duration(7, 20, 2)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /community/ HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(e.getUInt(m_bytes_ref), 3546UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /community/ HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 3546UL);
 
 	// read the third record
-	e.clear();
-	BOOST_REQUIRE(m_common_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_common_codec->read(in, *event_ptr));
 	// check the third data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.2.104");
-	BOOST_CHECK(! e.isDefined(m_rfc931_ref));
-	BOOST_CHECK_EQUAL(e.getString(m_authuser_ref), "cd");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.2.104");
+	BOOST_CHECK(! event_ptr->isDefined(m_rfc931_ref));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_authuser_ref), "cd");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 9, 24),
 								   boost::posix_time::time_duration(12, 13, 3)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /default.css HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(e.getUInt(m_bytes_ref), 6698UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /default.css HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 6698UL);
 
 	// read the forth record
-	e.clear();
-	BOOST_REQUIRE(m_common_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_common_codec->read(in, *event_ptr));
 	// check the forth data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.141.122");
-	BOOST_CHECK_EQUAL(e.getString(m_rfc931_ref), "ef");
-	BOOST_CHECK_EQUAL(e.getString(m_authuser_ref), "gh");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.141.122");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_rfc931_ref), "ef");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_authuser_ref), "gh");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2008, 1, 30),
 								   boost::posix_time::time_duration(15, 26, 7)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /pion/ HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(e.getUInt(m_bytes_ref), 7058UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /pion/ HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 7058UL);
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatJustOneField) {
-	Event e(m_common_codec->getEventType());
-	e.setString(m_remotehost_ref, "192.168.0.1");
+	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
+	event_ptr->setString(m_remotehost_ref, "192.168.0.1");
 	std::stringstream ss;
-	m_common_codec->write(ss, e);
+	m_common_codec->write(ss, *event_ptr);
 	BOOST_CHECK_EQUAL(ss.str(), "192.168.0.1 - - [] \"\" - -\x0A");
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatAllFields) {
-	Event e(m_common_codec->getEventType());
-	e.setString(m_remotehost_ref, "192.168.10.10");
-	e.setString(m_rfc931_ref, "greg");
-	e.setString(m_authuser_ref, "bob");
-	e.setDateTime(m_date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10),
-										   boost::posix_time::time_duration(12, 31, 0)));
-	e.setString(m_request_ref, "GET / HTTP/1.1");
-	e.setUInt(m_status_ref, 302);
-	e.setUInt(m_bytes_ref, 116);
+	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
+	event_ptr->setString(m_remotehost_ref, "192.168.10.10");
+	event_ptr->setString(m_rfc931_ref, "greg");
+	event_ptr->setString(m_authuser_ref, "bob");
+	event_ptr->setDateTime(m_date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10),
+													boost::posix_time::time_duration(12, 31, 0)));
+	event_ptr->setString(m_request_ref, "GET / HTTP/1.1");
+	event_ptr->setUInt(m_status_ref, 302);
+	event_ptr->setUInt(m_bytes_ref, 116);
 	std::stringstream ss;
-	m_common_codec->write(ss, e);
+	m_common_codec->write(ss, *event_ptr);
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
 	BOOST_CHECK_EQUAL(ss.str(), "192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET / HTTP/1.1\" 302 116\x0A");
 }
@@ -685,36 +686,36 @@ BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {
 	BOOST_REQUIRE(in.is_open());
 	
 	// read the first record
-	Event e(m_combined_codec->getEventType());
-	BOOST_REQUIRE(m_combined_codec->read(in, e));
-	BOOST_CHECK_EQUAL(e.getString(m_referer_ref), "http://www.example.com/start.html");
-	BOOST_CHECK_EQUAL(e.getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
+	EventPtr event_ptr(m_event_factory.create(m_combined_codec->getEventType()));
+	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.example.com/start.html");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
 	
 	// read the second record
-	e.clear();
-	BOOST_REQUIRE(m_combined_codec->read(in, e));
-	BOOST_CHECK_EQUAL(e.getString(m_referer_ref), "http://www.atomiclabs.com/");
-	BOOST_CHECK_EQUAL(e.getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
+	event_ptr->clear();
+	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.atomiclabs.com/");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
 	
 	// read the third record
-	e.clear();
-	BOOST_REQUIRE(m_combined_codec->read(in, e));
-	BOOST_CHECK_EQUAL(e.getString(m_referer_ref), "http://www.google.com/");
-	BOOST_CHECK_EQUAL(e.getString(m_useragent_ref), "Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.7a) Gecko/20040614 Firefox/0.9.0+");
+	event_ptr->clear();
+	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.google.com/");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.7a) Gecko/20040614 Firefox/0.9.0+");
 	
 	// read the forth record
-	e.clear();
-	BOOST_REQUIRE(m_combined_codec->read(in, e));
-	BOOST_CHECK_EQUAL(e.getString(m_referer_ref), "http://www.wikipedia.com/");
-	BOOST_CHECK_EQUAL(e.getString(m_useragent_ref), "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+	event_ptr->clear();
+	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.wikipedia.com/");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 }
 
 BOOST_AUTO_TEST_CASE(checkCombinedCodecWriteJustExtraFields) {
-	Event e(m_combined_codec->getEventType());
-	e.setString(m_referer_ref, "http://www.atomiclabs.com/");
-	e.setString(m_useragent_ref, "Mozilla/4.08 [en] (Win98; I ;Nav)");
+	EventPtr event_ptr(m_event_factory.create(m_combined_codec->getEventType()));
+	event_ptr->setString(m_referer_ref, "http://www.atomiclabs.com/");
+	event_ptr->setString(m_useragent_ref, "Mozilla/4.08 [en] (Win98; I ;Nav)");
 	std::stringstream ss;
-	m_combined_codec->write(ss, e);
+	m_combined_codec->write(ss, *event_ptr);
 	BOOST_CHECK_EQUAL(ss.str(), "- - - [] \"\" - - \"http://www.atomiclabs.com/\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"\x0A");
 }
 
@@ -725,66 +726,66 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
 	BOOST_REQUIRE(in.is_open());
 	
 	// read the first record
-	Event e(m_extended_codec->getEventType());
-	BOOST_REQUIRE(m_extended_codec->read(in, e));
+	EventPtr event_ptr(m_event_factory.create(m_extended_codec->getEventType()));
+	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
 	// check the third data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.2.104");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.2.104");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 9, 24),
 								   boost::posix_time::time_duration(12, 13, 3)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /default.css HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /default.css HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
 	
 	// read the second record
-	e.clear();
-	BOOST_REQUIRE(m_extended_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
 	// check the forth data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.141.122");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.141.122");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2008, 1, 30),
 								   boost::posix_time::time_duration(15, 26, 7)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /pion/ HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /pion/ HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
 
 	// read the third record
-	e.clear();
-	BOOST_REQUIRE(m_extended_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
 	// check the first data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.19.111");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.19.111");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 4, 5),
 								   boost::posix_time::time_duration(5, 37, 11)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /robots.txt HTTP/1.0");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 404UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /robots.txt HTTP/1.0");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 404UL);
 	
 	// read the forth record
-	e.clear();
-	BOOST_REQUIRE(m_extended_codec->read(in, e));
+	event_ptr->clear();
+	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
 	// check the second data
-	BOOST_CHECK_EQUAL(e.getString(m_remotehost_ref), "10.0.31.104");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "10.0.31.104");
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(e.getDateTime(m_date_ref),
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
 					  PionDateTime(boost::gregorian::date(2007, 6, 8),
 								   boost::posix_time::time_duration(7, 20, 2)));
-	BOOST_CHECK_EQUAL(e.getString(m_request_ref), "GET /community/ HTTP/1.1");
-	BOOST_CHECK_EQUAL(e.getUInt(m_status_ref), 200UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /community/ HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
 	
 }
 
 BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
-	Event e(m_extended_codec->getEventType());
-	e.setString(m_remotehost_ref, "192.168.10.10");
-	e.setDateTime(m_date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10),
+	EventPtr event_ptr(m_event_factory.create(m_extended_codec->getEventType()));
+	event_ptr->setString(m_remotehost_ref, "192.168.10.10");
+	event_ptr->setDateTime(m_date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10),
 										   boost::posix_time::time_duration(12, 31, 0)));
-	e.setString(m_request_ref, "GET / HTTP/1.1");
-	e.setString(m_referer_ref, "http://www.atomiclabs.com/");
-	e.setUInt(m_status_ref, 302);
+	event_ptr->setString(m_request_ref, "GET / HTTP/1.1");
+	event_ptr->setString(m_referer_ref, "http://www.atomiclabs.com/");
+	event_ptr->setUInt(m_status_ref, 302);
 	std::stringstream ss;
-	m_extended_codec->write(ss, e);
-	m_extended_codec->write(ss, e);
+	m_extended_codec->write(ss, *event_ptr);
+	m_extended_codec->write(ss, *event_ptr);
 	BOOST_CHECK_EQUAL(ss.str(), "#Version: 1.0\x0A#Fields: date remotehost request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
 }
 

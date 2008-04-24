@@ -70,6 +70,7 @@ public:
 	~ComparisonTests_F() {
 	}
 
+	EventFactory		m_event_factory;
 	Vocabulary			m_vocabulary;
 	Vocabulary::Term	m_plain_int_term;
 	Vocabulary::Term	m_string_term;
@@ -96,250 +97,301 @@ BOOST_AUTO_TEST_CASE(checkThrowIfInvalidValue) {
 }
 
 BOOST_AUTO_TEST_CASE(checkGenericComparisons) {
-	Event e(m_object_term.term_ref);
-	e.setInt(m_plain_int_term.term_ref, 100);
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setInt(m_plain_int_term.term_ref, 100);
 	Comparison c(m_plain_int_term);
 	
 	c.configure(Comparison::TYPE_FALSE);
-	BOOST_CHECK(! c.evaluate(e));
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_TRUE);
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_IS_DEFINED);
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	Comparison c2(m_date_term);
 	c2.configure(Comparison::TYPE_IS_NOT_DEFINED);
-	BOOST_CHECK(c2.evaluate(e));
+	BOOST_CHECK(c2.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkInt16Comparisons) {
-	Event e(m_object_term.term_ref);
-	e.setInt(m_plain_int_term.term_ref, 100);
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setInt(m_plain_int_term.term_ref, 100);
 	Comparison c(m_plain_int_term);
 	
 	c.configure(Comparison::TYPE_EQUALS, static_cast<boost::int32_t>(100));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_NOT_EQUALS, static_cast<boost::int32_t>(101));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_GREATER_THAN, static_cast<boost::int32_t>(99));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_LESS_THAN, static_cast<boost::int32_t>(101));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_GREATER_OR_EQUAL, static_cast<boost::int32_t>(100));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_GREATER_OR_EQUAL, static_cast<boost::int32_t>(10));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_LESS_OR_EQUAL, static_cast<boost::int32_t>(100));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_LESS_OR_EQUAL, static_cast<boost::int32_t>(1000));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkStringComparisons) {
-	Event e(m_object_term.term_ref);
-	e.setString(m_string_term.term_ref, "Atomic");
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setString(m_string_term.term_ref, "Atomic");
 	Comparison c(m_string_term);
 	
 	c.configure(Comparison::TYPE_EXACT_MATCH, "Atomic");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
+	c.configure(Comparison::TYPE_EXACT_MATCH, "Atom");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_EXACT_MATCH, "Atom");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_EXACT_MATCH, "Pion");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_EXACT_MATCH, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_CONTAINS, "tom");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_CONTAINS, "tack");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_CONTAINS, "tack");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_CONTAINS, "tom");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_STARTS_WITH, "At");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
+	c.configure(Comparison::TYPE_STARTS_WITH, "Add");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_STARTS_WITH, "Add");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_STARTS_WITH, "mic");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_STARTS_WITH, "At");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_ENDS_WITH, "mic");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
+	c.configure(Comparison::TYPE_ENDS_WITH, "mack");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_ENDS_WITH, "Bic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_ENDS_WITH, "tom");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
+	c.configure(Comparison::TYPE_NOT_ENDS_WITH, "mic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
 	c.configure(Comparison::TYPE_ORDERED_BEFORE, "Bat");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
+	c.configure(Comparison::TYPE_ORDERED_BEFORE, "Ata");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
 	c.configure(Comparison::TYPE_NOT_ORDERED_BEFORE, "Ata");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	
+	c.configure(Comparison::TYPE_NOT_ORDERED_BEFORE, "Bat");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_ORDERED_AFTER, "Ata");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
+	c.configure(Comparison::TYPE_ORDERED_AFTER, "Bat");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
 	c.configure(Comparison::TYPE_NOT_ORDERED_AFTER, "Bat");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
+	c.configure(Comparison::TYPE_NOT_ORDERED_AFTER, "Ata");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
 	c.configure(Comparison::TYPE_REGEX, "^A.o.*c$");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
+	c.configure(Comparison::TYPE_REGEX, "Bat");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	
 	c.configure(Comparison::TYPE_NOT_REGEX, "A+");
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_NOT_REGEX, "A.*c");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkDateTimeComparisons) {
-	Event e(m_object_term.term_ref);
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	PionTimeFacet f(m_date_time_term.term_format);	
-	e.setDateTime(m_date_time_term.term_ref, f.fromString("2007-12-22 12:22:22"));
+	event_ptr->setDateTime(m_date_time_term.term_ref, f.fromString("2007-12-22 12:22:22"));
 	Comparison c(m_date_time_term);
 	
 	// DateTime comparisons
 	c.configure(Comparison::TYPE_SAME_DATE_TIME, f.fromString("2007-12-22 12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_SAME_DATE_TIME, f.fromString("2007-12-22 12:12:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_EARLIER_DATE_TIME, f.fromString("2007-12-22 14:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_LATER_DATE_TIME, f.fromString("2007-12-21 12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE_TIME, f.fromString("2007-12-22 12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE_TIME, f.fromString("2007-12-22 12:22:23"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE_TIME, f.fromString("2007-12-22 12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE_TIME, f.fromString("2007-12-21 12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	f.setFormat("%Y-%m-%d");
 	
 	// Date comparisons
 	c.configure(Comparison::TYPE_SAME_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_SAME_DATE, f.fromString("2006-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_EARLIER_DATE, f.fromString("2008-01-20"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_LATER_DATE, f.fromString("2006-12-21"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE, f.fromString("2007-12-23"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE, f.fromString("2007-09-20"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	f.setFormat("%H:%M:%S");
 	
 	// Time comparisons
 	c.configure(Comparison::TYPE_SAME_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_SAME_TIME, f.fromString("12:12:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_EARLIER_TIME, f.fromString("14:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_LATER_TIME, f.fromString("10:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_TIME, f.fromString("12:22:23"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_TIME, f.fromString("09:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkDateComparisons) {
-	Event e(m_object_term.term_ref);
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	PionTimeFacet f("%Y-%m-%d");
-	e.setDateTime(m_date_term.term_ref, f.fromString("2007-12-22"));
+	event_ptr->setDateTime(m_date_term.term_ref, f.fromString("2007-12-22"));
 	Comparison c(m_date_term);
 	
 	// Date comparisons
 	c.configure(Comparison::TYPE_SAME_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_SAME_DATE, f.fromString("2006-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_EARLIER_DATE, f.fromString("2008-01-20"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_LATER_DATE, f.fromString("2006-12-21"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_DATE, f.fromString("2007-12-23"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE, f.fromString("2007-12-22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_DATE, f.fromString("2007-09-20"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkTimeComparisons) {
-	Event e(m_object_term.term_ref);
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	PionTimeFacet f("%H:%M:%S");
-	e.setDateTime(m_time_term.term_ref, f.fromString("12:22:22"));
+	event_ptr->setDateTime(m_time_term.term_ref, f.fromString("12:22:22"));
 	Comparison c(m_time_term);
 	
 	// Time comparisons
 	c.configure(Comparison::TYPE_SAME_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_NOT_SAME_TIME, f.fromString("12:12:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_EARLIER_TIME, f.fromString("14:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_LATER_TIME, f.fromString("10:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_EARLIER_TIME, f.fromString("12:22:23"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_TIME, f.fromString("12:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 	
 	c.configure(Comparison::TYPE_SAME_OR_LATER_TIME, f.fromString("09:22:22"));
-	BOOST_CHECK(c.evaluate(e));
+	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

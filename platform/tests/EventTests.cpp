@@ -70,6 +70,7 @@ public:
 		m_vocabulary.addTerm(m_object_term);
 	}
 
+	EventFactory		m_event_factory;
 	Vocabulary			m_vocabulary;
 	Vocabulary::Term	m_null_term;
 	Vocabulary::Term	m_plain_int_term;
@@ -81,24 +82,86 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(EventTests_S, EventTests_F)
 
+BOOST_AUTO_TEST_CASE(checkEmptyEventValues) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	BOOST_CHECK(event_ptr->empty());
+	BOOST_CHECK(event_ptr->begin() == event_ptr->end());
+	BOOST_CHECK(event_ptr->find(m_null_term.term_ref) == event_ptr->end());
+	BOOST_CHECK(event_ptr->getPointer(m_null_term.term_ref) == NULL);
+	BOOST_CHECK(! event_ptr->isDefined(m_null_term.term_ref));
+
+	std::pair<Event::ConstIterator,Event::ConstIterator> range =
+		event_ptr->equal_range(m_null_term.term_ref);
+	BOOST_CHECK(range.first == range.second);
+	BOOST_CHECK(range.first == event_ptr->end());
+	BOOST_CHECK(range.second == event_ptr->end());
+}
+
 BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	addAllTerms();
 	std::string short_msg_str("short msg");
-	Event e(m_object_term.term_ref);
-	e.setInt(m_plain_int_term.term_ref, 24);
-	e.setUBigInt(m_big_int_term.term_ref, 2025221224);
-	e[m_fixed_term.term_ref] = short_msg_str;
-	e[m_date_term.term_ref] = PionDateTime(boost::gregorian::date(2007, 4, 5));
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setInt(m_plain_int_term.term_ref, 24);
+	event_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224);
+	event_ptr->setString(m_fixed_term.term_ref, short_msg_str);
+	event_ptr->setDateTime(m_date_term.term_ref, PionDateTime(boost::gregorian::date(2007, 4, 5)));
 
-	const Event::ParameterValue *value_ptr = e.getPointer(m_plain_int_term.term_ref);
+	const Event::ParameterValue *value_ptr = event_ptr->getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
 	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(*value_ptr), 24);
-	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(e[m_big_int_term.term_ref]), 2025221224UL);
-	BOOST_CHECK_EQUAL(e.getString(m_fixed_term.term_ref), short_msg_str);
-	PionDateTime pdt = e.getDateTime(m_date_term.term_ref);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_fixed_term.term_ref), short_msg_str);
+	PionDateTime pdt = event_ptr->getDateTime(m_date_term.term_ref);
 	BOOST_CHECK_EQUAL(pdt.date().year(), 2007);
 	BOOST_CHECK_EQUAL(pdt.date().month(), 4);
 	BOOST_CHECK_EQUAL(pdt.date().day(), 5);
+}
+
+BOOST_AUTO_TEST_CASE(checkMultipleTermValues) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setInt(m_plain_int_term.term_ref, 10);
+	event_ptr->setInt(m_plain_int_term.term_ref, 100);
+	event_ptr->setInt(m_plain_int_term.term_ref, 1000);
+	event_ptr->setInt(m_plain_int_term.term_ref, 10000);
+	
+	BOOST_CHECK(! event_ptr->empty());
+	BOOST_CHECK(event_ptr->isDefined(m_plain_int_term.term_ref));
+	BOOST_CHECK(event_ptr->find(m_plain_int_term.term_ref) != event_ptr->end());
+	BOOST_CHECK_EQUAL(event_ptr->getInt(m_plain_int_term.term_ref) % 10, 0);
+	
+	std::pair<Event::ConstIterator,Event::ConstIterator> range =
+		event_ptr->equal_range(m_plain_int_term.term_ref);
+	BOOST_CHECK(range.first == event_ptr->begin());
+	BOOST_CHECK(range.first != range.second);
+	BOOST_CHECK(range.first != event_ptr->end());
+
+	Event::ConstIterator i = range.first;
+	BOOST_REQUIRE(i != event_ptr->end());
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(i->value), 10);
+	++i;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(i->value), 100);
+	++i;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(i->value), 1000);
+	++i;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(i->value), 10000);
+	++i;
+	BOOST_CHECK(i == range.second);
+	BOOST_CHECK(i == event_ptr->end());
+}
+
+BOOST_AUTO_TEST_CASE(checkEventOperatorPlusEquals) {
+	EventPtr a_ptr(m_event_factory.create(m_object_term.term_ref));
+	EventPtr b_ptr(m_event_factory.create(m_object_term.term_ref));
+	a_ptr->setInt(m_plain_int_term.term_ref, 10);
+	b_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224UL);
+	*a_ptr += *b_ptr;
+	BOOST_CHECK(a_ptr->isDefined(m_plain_int_term.term_ref));
+	BOOST_CHECK(b_ptr->isDefined(m_big_int_term.term_ref));
+	BOOST_CHECK_EQUAL(a_ptr->getInt(m_plain_int_term.term_ref), 10);
+	BOOST_CHECK_EQUAL(b_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -22,10 +22,11 @@
 #include <boost/bind.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <pion/PionScheduler.hpp>
-#include <pion/PionLockFreeQueue.hpp>
+#include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
 #ifdef __GNUC__
@@ -36,6 +37,10 @@
 		__gnu_cxx::__per_type_pool_policy<pion::platform::Event,
 		__gnu_cxx::__pool, true> >	EventGCCPoolAlloc;
 #endif
+
+/// data type for a shared Event pool allocator using boost::fast_pool_allocator
+typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
+
 
 using namespace std;
 using namespace pion;
@@ -49,7 +54,7 @@ class PerformanceTest {
 public:
 
 	/// the number of samples to take (one per second)
-	enum { NUM_SAMPLES = 30 };
+	enum { NUM_SAMPLES = 10 };
 
 
 	/**
@@ -166,8 +171,10 @@ private:
 
 
 ///
-/// AllocTest: base class to test the performance of allocating and freeing objects
+/// AllocTest: tests the performance of simultaneously generating objects
+///            using 1 or more threads
 ///
+template <unsigned int NumThreads = 1>
 class AllocTest :
 	public PerformanceTest
 {
@@ -175,232 +182,30 @@ public:
 
 	/// default constructor
 	AllocTest(void) {
-		setTestDescription("AllocTest");
-		setCountDescription("allocs");
+		for (unsigned int n = 0; n < NumThreads; ++n)
+			m_counters[n] = 0;
+		PerformanceTest::setTestDescription("AllocTest");
+		PerformanceTest::setCountDescription("events");
 	}
 
 	/// virtual destructor
-	virtual ~AllocTest() { stop(); }
+	virtual ~AllocTest() { PerformanceTest::stop(); }
 
 	/// starts the performance test
 	virtual void start(void) {
-		m_count_thread.reset(new boost::thread(boost::bind(&AllocTest::countAllocs, this)));
+		for (unsigned int n = 0; n < NumThreads; ++n) {
+			m_threads[n].reset(new boost::thread(boost::bind(&AllocTest::generate,
+															 this, boost::ref(m_counters[n]))));
+		}
 	}
-
-protected:
-
-	/// stops the performance test
-	virtual void stopTest(void) {
-		m_is_running = false;
-		if (m_count_thread) m_count_thread->join();
-	}
-
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) = 0;
 	
-
-	/// thread used to create and delete EventPtr objects
-	boost::scoped_ptr<boost::thread>	m_count_thread;
-};
-
-
-
-///
-/// EventAllocTest: tests the performance of allocating and freeing Event's
-///
-class EventAllocTest :
-	public AllocTest
-{
-public:
-
-	/// default constructor
-	EventAllocTest(void) {
-		setTestDescription("EventAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~EventAllocTest() { stop(); }
-
-private:
-
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) {
-		while (isRunning()) {
-			Event *event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF);
-			delete event_ptr;
-			++m_counter;
-		}
-	}
-};
-
-
-/// data type for an Event pool allocator
-typedef boost::fast_pool_allocator<Event, boost::default_user_allocator_new_delete,
-	boost::details::pool::default_mutex, 10240 >	EventBoostPoolAlloc;
-
-
-///
-/// EventBoostPoolAllocTest: tests the performance of allocating and freeing Event's
-///                          using boost::fast_pool_allocator
-///
-class EventBoostPoolAllocTest :
-	public AllocTest
-{
-public:
-
-	/// default constructor
-	EventBoostPoolAllocTest(void) {
-		setTestDescription("EventBoostPoolAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~EventBoostPoolAllocTest() { stop(); }
-
-private:	
-
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) {
-		void *mem_ptr(NULL);
-		Event *event_ptr(NULL);
-		while (isRunning()) {
-			mem_ptr = EventBoostPoolAlloc::allocate();
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
-			event_ptr->~Event();
-			EventBoostPoolAlloc::deallocate(event_ptr);
-			++m_counter;
-		}
-	}
-};
-
-
-#ifdef __GNUC__
-///
-/// EventGCCPoolAllocTest: tests the performance of allocating and freeing Event's
-///                        using the GCC "multithread" allocator
-///
-class EventGCCPoolAllocTest :
-	public AllocTest
-{
-public:
-
-	/// default constructor
-	EventGCCPoolAllocTest(void) {
-		setTestDescription("EventGCCPoolAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~EventGCCPoolAllocTest() { stop(); }
-
-private:	
-
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) {
-		void *mem_ptr(NULL);
-		Event *event_ptr(NULL);
-		while (isRunning()) {
-			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
-			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
-			++m_counter;
-		}
-	}
-
-
-	/// memory pool allocator
-	EventGCCPoolAlloc	m_pool_alloc;
-};
-#endif
-
-
-///
-/// EventPtrAllocTest: tests the performance of allocating and freeing EventPtr's
-///
-class EventPtrAllocTest :
-	public AllocTest
-{
-public:
-
-	/// default constructor
-	EventPtrAllocTest(void) {
-		setTestDescription("EventPtrAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~EventPtrAllocTest() { stop(); }
-
-private:
-
-	/// updates the contents of new events created
-	virtual void updateEvent(EventPtr& e) {}
-	
-	/// counts the creation and deletion of EventPtr objects
-	virtual void countAllocs(void) {
-		while (isRunning()) {
-			EventPtr e(EventFactory::create(Vocabulary::UNDEFINED_TERM_REF));
-			updateEvent(e);
-			++m_counter;
-		}
-	}
-};
-
-
-///
-/// CLFEventPtrAllocTest: tests the performance of allocating and freeing EventPtr's
-///                       that contain common log format data
-///
-class CLFEventPtrAllocTest :
-	public EventPtrAllocTest
-{
-public:
-
-	/// default constructor
-	CLFEventPtrAllocTest(void) {
-		setTestDescription("CLFEventPtrAllocTest");
-	}
-
-	/// virtual destructor
-	virtual ~CLFEventPtrAllocTest() { stop(); }
-
-private:
-
-	/// updates the contents of new events created
-	virtual void updateEvent(EventPtr& e) {
-		e->setString(1, "10.0.19.111");
-		e->setString(2, "05/Apr/2007:05:37:11 -0600");
-		e->setString(3, "GET /robots.txt HTTP/1.0");
-		e->setUInt(4, 404);
-		e->setUInt(5, 208);
-	}
-};
-
-
-///
-/// AllocTwoThreadTest: tests the performance of simultaneously generating objects
-///                     using two threads
-///
-class AllocTwoThreadTest :
-	public PerformanceTest
-{
-public:
-
-	/// default constructor
-	AllocTwoThreadTest(void) :
-		m_counter2(0)
-	{
-		setTestDescription("AllocTwoThreadTest");
-		setCountDescription("events");
-	}
-
-	/// virtual destructor
-	virtual ~AllocTwoThreadTest() { stop(); }
-
-	/// starts the performance test
-	virtual void start(void) {
-		m_generate1_thread.reset(new boost::thread(boost::bind(&AllocTwoThreadTest::generate,
-			this, boost::ref(m_counter))));
-		m_generate2_thread.reset(new boost::thread(boost::bind(&AllocTwoThreadTest::generate,
-			this, boost::ref(m_counter2))));
+	/// sets the test description, including the number of threads used
+	inline void setTestDescriptionWithThreads(const std::string& description) {
+		std::string d(description);
+		d += " (";
+		d += boost::lexical_cast<std::string>(NumThreads);
+		d += " threads)";
+		PerformanceTest::setTestDescription(d);
 	}
 
 
@@ -408,56 +213,58 @@ protected:
 
 	/// returns the current counter value
 	virtual boost::uint64_t getCurrentCount(void) {
-		return m_counter + m_counter2;
+		boost::uint64_t result = 0;
+		for (unsigned int n = 0; n < NumThreads; ++n)
+			result += m_counters[n];
+		return result;
 	}
 
 	/// stops the performance test
 	virtual void stopTest(void) {
 		m_is_running = false;
-		if (m_generate1_thread) m_generate1_thread->join();
-		if (m_generate2_thread) m_generate2_thread->join();
+		for (unsigned int n = 0; n < NumThreads; ++n) {
+			if (m_threads[n]) m_threads[n]->join();
+		}
 	}
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	virtual void generate(volatile boost::uint64_t& thread_counter) = 0;
+	virtual void generate(boost::uint64_t& thread_counter) = 0;
 
 
-	/// the current value of the counter for thread #2
-	volatile boost::uint64_t			m_counter2;
+	/// an array of counters used by the generation threads
+	boost::array<boost::uint64_t, NumThreads>					m_counters;
 
-	/// thread used to generate EventPtr objects
-	boost::scoped_ptr<boost::thread>	m_generate1_thread;
-
-	/// thread used to generate EventPtr objects
-	boost::scoped_ptr<boost::thread>	m_generate2_thread;
+	/// a collection of threads used to perform allocations
+	boost::array<boost::scoped_ptr<boost::thread>, NumThreads>	m_threads;
 };
 
 
 ///
-/// EventAllocTwoThreadTest: tests the performance of simultaneously generating
-///                          Event objects in two threads using new/delete
+/// EventAllocTest: tests the performance of simultaneously generating
+///                 Event objects in 1 or more threads using new/delete
 ///
-class EventAllocTwoThreadTest :
-	public AllocTwoThreadTest
+template <unsigned int NumThreads = 1>
+class EventAllocTest :
+	public AllocTest<NumThreads>
 {
 public:
 
 	/// default constructor
-	EventAllocTwoThreadTest(void) {
-		setTestDescription("EventAllocTwoThreadTest");
+	EventAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("EventAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventAllocTwoThreadTest() { stop(); }
+	virtual ~EventAllocTest() { PerformanceTest::stop(); }
 
 
 protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(volatile boost::uint64_t& thread_counter) {
+	virtual void generate(boost::uint64_t& thread_counter) {
 		Event *event_ptr(NULL);
-		while (isRunning()) {
-			event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF);
+		while (PerformanceTest::isRunning()) {
+			event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			delete event_ptr;
 			++thread_counter;
 		}
@@ -466,32 +273,34 @@ protected:
 
 
 ///
-/// EventBoostPoolAllocTwoThreadTest: tests the performance of simultaneously generating
-///                                   Event objects in two threads using the boost::fast_pool_allocator
+/// EventSharedBoostPoolAllocTest: tests the performance of simultaneously
+///                                generating Event objects in 1 or more threads
+///                                using a shared boost::fast_pool_allocator
 ///
-class EventBoostPoolAllocTwoThreadTest :
-	public AllocTwoThreadTest
+template <unsigned int NumThreads = 1>
+class EventSharedBoostPoolAllocTest :
+	public AllocTest<NumThreads>
 {
 public:
 
 	/// default constructor
-	EventBoostPoolAllocTwoThreadTest(void) {
-		setTestDescription("EventBoostPoolAllocTwoThreadTest");
+	EventSharedBoostPoolAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("EventSharedBoostPoolAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventBoostPoolAllocTwoThreadTest() { stop(); }
+	virtual ~EventSharedBoostPoolAllocTest() { PerformanceTest::stop(); }
 
 
 protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(volatile boost::uint64_t& thread_counter) {
+	virtual void generate(boost::uint64_t& thread_counter) {
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
-		while (isRunning()) {
+		while (PerformanceTest::isRunning()) {
 			mem_ptr = EventBoostPoolAlloc::allocate();
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			event_ptr->~Event();
 			EventBoostPoolAlloc::deallocate(event_ptr);
 			++thread_counter;
@@ -500,66 +309,179 @@ protected:
 };
 
 
-#ifdef __GNUC__
 ///
-/// EventGCCPoolAllocTwoThreadTest: tests the performance of simultaneously generating
-///                                 Event objects in two threads using GCC "multithread" allocator
+/// EventUniqueBoostPoolAllocTest: tests the performance of simultaneously
+///                                generating Event objects in 1 or more threads
+///                                using unique instances of boost::fast_pool_allocator
 ///
-class EventGCCPoolAllocTwoThreadTest :
-	public AllocTwoThreadTest
+template <unsigned int NumThreads = 1>
+class EventUniqueBoostPoolAllocTest :
+	public AllocTest<NumThreads>
 {
 public:
-
-	/// default constructor
-	EventGCCPoolAllocTwoThreadTest(void) {
-		setTestDescription("EventGCCPoolAllocTwoThreadTest");
-		// tune the allocator
-		__gnu_cxx::__pool_base::_Tune mt_tune(8, 5120, 8, 5120*1024, 32, 10, false);
-		m_pool_alloc._M_set_options(mt_tune);
+	
+	/**
+	 * default constructor
+	 *
+	 * @param lock_pool if true, a lock will be acquired each time the memory pool is accessed
+	 */
+	explicit EventUniqueBoostPoolAllocTest(bool lock_pool = true)
+		: m_lock_pool_access(lock_pool)
+	{
+		if (lock_pool)
+			AllocTest<NumThreads>::setTestDescriptionWithThreads("EventUniqueBoostPoolAllocTest (with locks)");
+		else
+			AllocTest<NumThreads>::setTestDescriptionWithThreads("EventUniqueBoostPoolAllocTest (no locks)");
 	}
-
+	
 	/// virtual destructor
-	virtual ~EventGCCPoolAllocTwoThreadTest() { stop(); }
-
+	virtual ~EventUniqueBoostPoolAllocTest() { PerformanceTest::stop(); }
+	
+	
 protected:
-
+	
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(volatile boost::uint64_t& thread_counter) {
+	virtual void generate(boost::uint64_t& thread_counter) {
+		boost::pool<> local_pool_alloc(sizeof(Event));
+		boost::mutex pool_mutex;
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
-		while (isRunning()) {
-			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+		
+		if (m_lock_pool_access) {
+			while (PerformanceTest::isRunning()) {
+				boost::mutex::scoped_lock pool_malloc_lock(pool_mutex);
+				mem_ptr = local_pool_alloc.malloc();
+				pool_malloc_lock.unlock();
+				
+				event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
+				event_ptr->~Event();
+				
+				boost::mutex::scoped_lock pool_free_lock(pool_mutex);
+				local_pool_alloc.free(event_ptr);
+				pool_free_lock.unlock();
+				
+				++thread_counter;
+			}
+		} else {
+			while (PerformanceTest::isRunning()) {
+				mem_ptr = local_pool_alloc.malloc();
+				event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
+				event_ptr->~Event();
+				local_pool_alloc.free(event_ptr);
+				++thread_counter;
+			}
+		}
+	}
+	
+	/// true if a lock will be acquired each time the memory pool is accessed
+	bool	m_lock_pool_access;
+};
+
+
+#ifdef __GNUC__
+///
+/// EventSharedGCCPoolAllocTest: tests the performance of simultaneously 
+///                              generating Event objects in 1 or more threads
+///                              using a shared GCC "multithread" allocator
+///
+template <unsigned int NumThreads = 1>
+class EventSharedGCCPoolAllocTest :
+	public AllocTest<NumThreads>
+{
+public:
+	
+	/// default constructor
+	explicit EventSharedGCCPoolAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("EventSharedGCCPoolAllocTest");
+		// tune the allocator
+		__gnu_cxx::__pool_base::_Tune mt_tune(8, 5120, 8, 4096 - 4 * sizeof(void*), 128, 10, false);
+		m_pool_alloc._M_set_options(mt_tune);
+	}
+	
+	/// virtual destructor
+	virtual ~EventSharedGCCPoolAllocTest() { PerformanceTest::stop(); }
+	
+protected:
+	
+	/// creates EventPtr objects and pushes them into a shared queue
+	virtual void generate(boost::uint64_t& thread_counter) {
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
+		while (PerformanceTest::isRunning()) {
+			mem_ptr = m_pool_alloc.allocate(1);
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 			++thread_counter;
 		}
 	}
 	
 private:
-
+	
 	/// memory pool allocator
 	EventGCCPoolAlloc	m_pool_alloc;
+};
+
+
+///
+/// EventUniqueGCCPoolAllocTest: tests the performance of simultaneously generating
+///                              Event objects in 1 or more threads using unique 
+///                              instances of the GCC "multithread" allocator
+///
+template <unsigned int NumThreads = 1>
+class EventUniqueGCCPoolAllocTest :
+	public AllocTest<NumThreads>
+{
+public:
+
+	/// default constructor
+	EventUniqueGCCPoolAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("EventUniqueGCCPoolAllocTest");
+	}
+
+	/// virtual destructor
+	virtual ~EventUniqueGCCPoolAllocTest() { PerformanceTest::stop(); }
+
+protected:
+
+	/// creates EventPtr objects and pushes them into a shared queue
+	virtual void generate(boost::uint64_t& thread_counter) {
+		EventGCCPoolAlloc	local_pool_alloc;
+		__gnu_cxx::__pool_base::_Tune mt_tune(8, 5120, 8, 4096 - 4 * sizeof(void*), 128, 10, false);
+		local_pool_alloc._M_set_options(mt_tune);
+
+		void *mem_ptr(NULL);
+		Event *event_ptr(NULL);
+		
+		while (PerformanceTest::isRunning()) {
+			mem_ptr = local_pool_alloc.allocate(1);
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
+			event_ptr->~Event();
+			local_pool_alloc.deallocate(event_ptr, 1);
+			++thread_counter;
+		}
+	}
 };
 #endif
 
 
 ///
-/// EventPtrAllocTwoThreadTest: tests the performance of creating empty EventPtr objects
-///                             using two threads
+/// EventPtrAllocTest: tests the performance of creating empty EventPtr objects
+///                    using 1 or more threads
 ///
-class EventPtrAllocTwoThreadTest :
-	public AllocTwoThreadTest
+template <unsigned int NumThreads = 1>
+class EventPtrAllocTest :
+	public AllocTest<NumThreads>
 {
 public:
 
 	/// default constructor
-	EventPtrAllocTwoThreadTest(void) {
-		setTestDescription("EventPtrAllocTwoThreadTest");
+	EventPtrAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("EventPtrAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~EventPtrAllocTwoThreadTest() { stop(); }
+	virtual ~EventPtrAllocTest() { PerformanceTest::stop(); }
 
 
 protected:
@@ -568,10 +490,11 @@ protected:
 	virtual void updateEvent(EventPtr& e) {}
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	virtual void generate(volatile boost::uint64_t& thread_counter) {
+	virtual void generate(boost::uint64_t& thread_counter) {
 		EventPtr e;
-		while (isRunning()) {
-			e = EventFactory::create(Vocabulary::UNDEFINED_TERM_REF);
+		EventFactory f;
+		while (PerformanceTest::isRunning()) {
+			e = f.create(Vocabulary::UNDEFINED_TERM_REF);
 			updateEvent(e);
 			++thread_counter;
 		}
@@ -580,21 +503,22 @@ protected:
 
 
 ///
-/// CLFEventPtrAllocTwoThreadTest: tests the performance of creating EventPtr objects that
-///                                contain common log format data using two threads
+/// CLFEventPtrAllocTest: tests the performance of creating EventPtr objects that
+///                       contain common log format data using 1 or more threads
 ///
-class CLFEventPtrAllocTwoThreadTest :
-	public EventPtrAllocTwoThreadTest
+template <unsigned int NumThreads = 1>
+class CLFEventPtrAllocTest :
+	public EventPtrAllocTest<NumThreads>
 {
 public:
 
 	/// default constructor
-	CLFEventPtrAllocTwoThreadTest(void) {
-		setTestDescription("CLFEventPtrAllocTwoThreadTest");
+	CLFEventPtrAllocTest(void) {
+		AllocTest<NumThreads>::setTestDescriptionWithThreads("CLFEventPtrAllocTest");
 	}
 
 	/// virtual destructor
-	virtual ~CLFEventPtrAllocTwoThreadTest() { stop(); }
+	virtual ~CLFEventPtrAllocTest() { PerformanceTest::stop(); }
 
 protected:
 
@@ -659,7 +583,7 @@ protected:
 
 
 ///
-/// IntAllocTwoThreadQueueTest: tests the raw basline performance of the PionLockFreeQueue
+/// IntAllocTwoThreadQueueTest: tests the raw basline performance of the PionLockedQueue
 ///
 class IntAllocTwoThreadQueueTest :
 	public AllocTwoThreadQueueTest
@@ -702,7 +626,7 @@ protected:
 private:
 
 	/// a shared queue of integers
-	PionLockFreeQueue<int>			m_queue;
+	PionLockedQueue<int>			m_queue;
 };
 
 
@@ -728,18 +652,18 @@ public:
 protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(void) {
+	virtual void generate(void) {
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
 			mem_ptr = EventBoostPoolAlloc::allocate();
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			m_queue.push(event_ptr);
 		}
 	}
 
 	/// frees EventPtr objects in the shared queue
-	inline void consume(void) {
+	virtual void consume(void) {
 		Event *event_ptr(NULL);
 		while (isRunning()) {
 			// sleep 1/8 second if the queue is empty
@@ -761,7 +685,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockFreeQueue<Event*>				m_queue;
+	PionLockedQueue<Event*>				m_queue;
 };
 
 
@@ -786,16 +710,16 @@ public:
 protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(void) {
+	virtual void generate(void) {
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF);
+			event_ptr = new Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			m_queue.push(event_ptr);
 		}
 	}
 
 	/// frees EventPtr objects in the shared queue
-	inline void consume(void) {
+	virtual void consume(void) {
 		Event *event_ptr(NULL);
 		while (isRunning()) {
 			// sleep 1/8 second if the queue is empty
@@ -815,7 +739,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockFreeQueue<Event*>				m_queue;
+	PionLockedQueue<Event*>				m_queue;
 };
 
 
@@ -842,32 +766,32 @@ public:
 protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
-	inline void generate(void) {
+	virtual void generate(void) {
 		void *mem_ptr(NULL);
 		Event *event_ptr(NULL);
 		while (isRunning()) {
-			mem_ptr = m_pool_alloc.allocate(sizeof(Event));
-			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF);
+			mem_ptr = m_pool_alloc.allocate(1);
+			event_ptr = new (mem_ptr) Event(Vocabulary::UNDEFINED_TERM_REF, NULL);
 			m_queue.push(event_ptr);
 		}
 	}
 
 	/// frees EventPtr objects in the shared queue
-	inline void consume(void) {
+	virtual void consume(void) {
 		Event *event_ptr(NULL);
 		while (isRunning()) {
 			// sleep 1/8 second if the queue is empty
 			while (isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 			if (! isRunning()) break;
 			++m_counter;
 		}
 		// consume the rest of the queue to make sure generate() doesn't hang
 		while (m_queue.pop(event_ptr)) {
 			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, sizeof(Event));
+			m_pool_alloc.deallocate(event_ptr, 1);
 		}
 	}
 	
@@ -875,7 +799,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockFreeQueue<Event*>			m_queue;
+	PionLockedQueue<Event*>			m_queue;
 
 	/// memory pool allocator
 	EventGCCPoolAlloc	m_pool_alloc;
@@ -908,8 +832,9 @@ protected:
 
 	/// creates EventPtr objects and pushes them into a shared queue
 	virtual void generate(void) {
+		EventFactory f;
 		while (isRunning()) {
-			EventPtr e(EventFactory::create(Vocabulary::UNDEFINED_TERM_REF));
+			EventPtr e(f.create(Vocabulary::UNDEFINED_TERM_REF));
 			updateEvent(e);
 			m_queue.push(e);
 		}
@@ -933,7 +858,7 @@ protected:
 private:
 
 	/// a shared queue of EventPtr objects
-	PionLockFreeQueue<EventPtr>			m_queue;
+	PionLockedQueue<EventPtr>			m_queue;
 };
 
 
@@ -973,51 +898,90 @@ protected:
 ///
 int main(void) {
 	boost::scoped_ptr<PerformanceTest> test_ptr;
-
-	// run the EventAllocTest
-	test_ptr.reset(new EventAllocTest);
+/*
+	// run the EventAllocTest with one thread
+	test_ptr.reset(new EventAllocTest<1>());
 	test_ptr->run();
-	
-	// run the EventBoostPoolAllocTest
-	test_ptr.reset(new EventBoostPoolAllocTest);
+
+	// run the EventAllocTest with two threads
+	test_ptr.reset(new EventAllocTest<2>());
+	test_ptr->run();
+
+	// run the EventSharedBoostPoolAllocTest with one thread
+	test_ptr.reset(new EventSharedBoostPoolAllocTest<1>());
+	test_ptr->run();
+
+	// run the EventSharedBoostPoolAllocTest with two threads
+	test_ptr.reset(new EventSharedBoostPoolAllocTest<2>());
+	test_ptr->run();
+
+	// run the EventUniqueBoostPoolAllocTest with one thread
+	test_ptr.reset(new EventUniqueBoostPoolAllocTest<1>(false));
+	test_ptr->run();
+
+	// run the EventUniqueBoostPoolAllocTest with two threads
+	test_ptr.reset(new EventUniqueBoostPoolAllocTest<2>(false));
+	test_ptr->run();
+
+	// run the EventUniqueBoostPoolAllocTest with three threads
+	test_ptr.reset(new EventUniqueBoostPoolAllocTest<3>(false));
+	test_ptr->run();
+
+	// run the EventUniqueBoostPoolAllocTest with four threads
+	test_ptr.reset(new EventUniqueBoostPoolAllocTest<4>(false));
 	test_ptr->run();
 	
 #ifdef __GNUC__
-	// run the EventGCCPoolAllocTest
-	test_ptr.reset(new EventGCCPoolAllocTest);
+	// run the EventSharedGCCPoolAllocTest with one thread
+	test_ptr.reset(new EventSharedGCCPoolAllocTest<1>());
+	test_ptr->run();
+
+	// run the EventSharedGCCPoolAllocTest with two threads
+	test_ptr.reset(new EventSharedGCCPoolAllocTest<2>());
+	test_ptr->run();
+
+	// run the EventUniqueGCCPoolAllocTest with one thread
+	test_ptr.reset(new EventUniqueGCCPoolAllocTest<1>());
+	test_ptr->run();
+
+	// run the EventUniqueGCCPoolAllocTest with two threads
+	test_ptr.reset(new EventUniqueGCCPoolAllocTest<2>());
 	test_ptr->run();
 #endif
 
-	// run the EventPtrAllocTest
-	test_ptr.reset(new EventPtrAllocTest);
-	test_ptr->run();
-	
-	// run the CLFEventPtrAllocTest
-	test_ptr.reset(new CLFEventPtrAllocTest);
+	// run the EventPtrAllocTest with one thread
+	test_ptr.reset(new EventPtrAllocTest<1>());
 	test_ptr->run();
 
-	// run the EventAllocTwoThreadTest
-	test_ptr.reset(new EventAllocTwoThreadTest);
+	// run the EventPtrAllocTest with two threads
+	test_ptr.reset(new EventPtrAllocTest<2>());
 	test_ptr->run();
 
-	// run the EventBoostPoolAllocTwoThreadTest
-	test_ptr.reset(new EventBoostPoolAllocTwoThreadTest);
+	// run the EventPtrAllocTest with three threads
+	test_ptr.reset(new EventPtrAllocTest<3>());
 	test_ptr->run();
 
-#ifdef __GNUC__
-	// run the EventGCCPoolAllocTwoThreadTest
-	test_ptr.reset(new EventGCCPoolAllocTwoThreadTest);
+	// run the EventPtrAllocTest with four threads
+	test_ptr.reset(new EventPtrAllocTest<4>());
 	test_ptr->run();
-#endif
+*/
 
-	// run the EventPtrAllocTwoThreadTest
-	test_ptr.reset(new EventPtrAllocTwoThreadTest);
-	test_ptr->run();
-
-	// run the CLFEventPtrAllocTwoThreadTest
-	test_ptr.reset(new CLFEventPtrAllocTwoThreadTest);
+	// run the CLFEventPtrAllocTest with one thread
+	test_ptr.reset(new CLFEventPtrAllocTest<1>());
 	test_ptr->run();
 
+	// run the CLFEventPtrAllocTest with two threads
+	test_ptr.reset(new CLFEventPtrAllocTest<2>());
+	test_ptr->run();
+
+	// run the CLFEventPtrAllocTest with three threads
+	test_ptr.reset(new CLFEventPtrAllocTest<3>());
+	test_ptr->run();
+
+	// run the CLFEventPtrAllocTest with four threads
+	test_ptr.reset(new CLFEventPtrAllocTest<4>());
+	test_ptr->run();
+/*
 	// run the IntAllocTwoThreadQueueTest
 	test_ptr.reset(new IntAllocTwoThreadQueueTest);
 	test_ptr->run();
@@ -1043,6 +1007,6 @@ int main(void) {
 	// run the CLFEventPtrAllocTwoThreadQueueTest
 	test_ptr.reset(new CLFEventPtrAllocTwoThreadQueueTest);
 	test_ptr->run();
-	
+*/
 	return 0;
 }

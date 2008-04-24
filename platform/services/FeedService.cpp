@@ -103,7 +103,7 @@ void FeedWriter::writeEvent(EventPtr& e)
 				   << " (" << getConnectionId() << ')');
 	// lock the mutex to ensure that only one Event is sent at a time
 	boost::mutex::scoped_lock send_lock(m_mutex);
-	if (! e) {
+	if (e.get() == NULL) {
 		// Reactor is being removed -> close the connection
 		m_tcp_stream.close();
 		// note that the ReactionEngine will remove the connection for us
@@ -191,8 +191,11 @@ void FeedReader::start(void)
 	// just stop gracefully if exception is thrown
 	try {
 		// read Events form the TCP connection until it is closed or an error occurs
+		const Event::EventType event_type(m_codec_ptr->getEventType());
+		EventFactory event_factory;
 		EventPtr event_ptr;
-		while (m_tcp_stream.is_open() && (event_ptr = m_codec_ptr->read(m_tcp_stream))) {
+		event_factory.create(event_ptr, event_type);
+		while (m_tcp_stream.is_open() && m_codec_ptr->read(m_tcp_stream, *event_ptr)) {
 			PION_LOG_DEBUG(m_logger, "Read new event from " << getConnectionInfo()
 						   << " (" << getConnectionId() << ')');
 			boost::mutex::scoped_lock pointer_lock(m_mutex);
@@ -202,6 +205,8 @@ void FeedReader::start(void)
 			// discard the event if the Reactor is not running
 			if (m_reactor_ptr->isRunning())
 				(*m_reactor_ptr)(event_ptr);
+			pointer_lock.unlock();
+			event_factory.create(event_ptr, event_type);
 		}
 	} catch (std::exception&) {}
 

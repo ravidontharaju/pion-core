@@ -230,11 +230,14 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				throw EmptyLogException(m_log_file);
 		}
 		
+		const Event::EventType event_type(m_codec_ptr->getEventType());
+		EventFactory event_factory;
 		EventPtr event_ptr;
 		do {
+			// get a new event from the EventFactory
+			event_factory.create(event_ptr, event_type);
 			// read an Event from the log file (convert into an Event using the Codec)
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
-			event_ptr = EventFactory::create(m_codec_ptr->getEventType());
 			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
 				throw ReadEventException(m_log_file);
 
@@ -248,7 +251,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				EventPtr original_event_ptr(event_ptr);
 				while (isRunning()) {
 					// duplicate the original event
-					event_ptr = EventFactory::create(m_codec_ptr->getEventType());
+					event_factory.create(event_ptr, event_type);
 					*event_ptr += *original_event_ptr;
 					// deliver the Event to connected Reactors
 					incrementEventsIn();

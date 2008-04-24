@@ -116,42 +116,15 @@ public:
 	virtual void updateVocabulary(const Vocabulary& v);
 
 	/**
-	 * writes a collection of Events to an output stream
-	 *
-	 * @param out the output stream to which the Event will be written
-	 * @param c the collection of pointers to Events to write to the output stream
-	 */
-	inline void write(std::ostream& out, const EventPtrCollection& c) {
-		for (EventPtrCollection::const_iterator i = c.begin(); i != c.end(); ++i) {
-			write(out, **i);
-		}
-	}
-	
-	/**
-	 * reads a collection of Events from an input stream
-	 *
-	 * @param in the input stream to read the Event from
-	 * @param c the collection of pointers to Events read, if any; null if error
-	 * @return true if successful, false otherwise
-	 */
-	inline bool read(std::istream& in, EventPtrCollection& c) {
-		if (!c.empty()) c.clear();
-		EventPtr event_ptr(EventFactory::create(m_event_type));
-		while (read(in, *event_ptr)) {
-			c.push_back(event_ptr);
-			event_ptr = EventFactory::create(m_event_type);
-		}
-		return(! c.empty());
-	}
-	
-	/**
 	 * reads an Event from an input stream
 	 *
 	 * @param in the input stream to read the Event from
+	 * @param f the factory to use to create new Events
+	 *
 	 * @return EventPtr& pointer to the event read, if any; null if error
 	 */
-	inline EventPtr read(std::istream& in) {
-		EventPtr event_ptr(EventFactory::create(getEventType()));
+	inline EventPtr read(std::istream& in, EventFactory& f) {
+		EventPtr event_ptr(f.create(getEventType()));
 		if (! read(in, *event_ptr))
 			event_ptr.reset();
 		return event_ptr;
