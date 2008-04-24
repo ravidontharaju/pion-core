@@ -55,6 +55,11 @@ template <typename CharType, typename AllocType>
 class PION_PLATFORM_API BasicEvent
 	: private boost::noncopyable
 {
+public:
+
+	/// forward declaration for use by IteratorBase
+	struct ParameterNode;
+
 protected:
 
 	/// base class used to define Event parameter iterator types
@@ -113,9 +118,10 @@ protected:
 		friend class boost::iterator_core_access;
 		
 		/// bypass security for IteratorBase with other Node Types
-		template <class OtherNodeValue> friend class IteratorBase;
-		
-		
+		/// NOTE: MSVC doesn't seem to work with friend templates
+		friend class IteratorBase<const ParameterNode>;
+		friend class IteratorBase<ParameterNode>;
+
 		/// pointer to an Event parameter node
 		NodeType *		m_param_ptr;
 	};
