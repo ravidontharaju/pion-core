@@ -14,7 +14,7 @@ pion.terms.store.getIdentity = function(item) {
 
 pion.terms.categories_by_id = {};
 
-pion.terms.type_store = new dojo.data.ItemFileReadStore({url: 'termTypes.json'});
+pion.terms.type_store = new dojo.data.ItemFileReadStore({url: '/resources/termTypes.json'});
 pion.terms.types_by_description = {};
 pion.terms.type_descriptions_by_name = {};
 

@@ -41,7 +41,7 @@ pion.reactors.filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.reactor_inputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.config_store = null;
-pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: 'comparisonTypes.json'});
+pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: '/resources/comparisonTypes.json'});
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
