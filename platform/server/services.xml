@@ -3,6 +3,20 @@
 	<Server id="main-server">
 		<Port>8080</Port>
 		<SSLKey>../../platform/config/sslkey.pem</SSLKey>
+		<Redirect>
+			<Source>/</Source>
+			<Target>/index.html</Target>
+		</Redirect>
+		<Restrict>/</Restrict>
+		<Permit>/index.html</Permit>
+		<Permit>/dojo</Permit>
+		<Permit>/dojo-src</Permit>
+		<Permit>/images</Permit>
+		<Permit>/plugins</Permit>
+		<Permit>/scripts</Permit>
+		<Permit>/styles</Permit>
+		<Login>/login</Login>
+		<Logout>/logout</Logout>
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>

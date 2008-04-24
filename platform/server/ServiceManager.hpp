@@ -246,10 +246,30 @@ private:
 	/// name of the WebService option element for Pion XML config files
 	static const std::string		OPTION_ELEMENT_NAME;
 	
+	/// name of the Authentication element for Pion XML config files
+	static const std::string		AUTH_ELEMENT_NAME;
+	
+	/// name of the "Restricted-by-Authentication" element for Pion XML config files
+	static const std::string		AUTH_RESTRICT_ELEMENT_NAME;
+
+	/// name of the "Permit-by-Authentication" element for Pion XML config files
+	static const std::string		AUTH_PERMIT_ELEMENT_NAME;
+
+	/// name of the Authentication Type element for Pion XML config files
+	static const std::string		AUTH_TYPE_ELEMENT_NAME;
+
+	/// name of the Authentication Login URL element for Pion XML config files
+	static const std::string		AUTH_LOGIN_ELEMENT_NAME;
+
+	/// name of the Authentication Logout URL element for Pion XML config files
+	static const std::string		AUTH_LOGOUT_ELEMENT_NAME;
+
+	/// name of the Authentication Redirect URL element for Pion XML config files
+	static const std::string		AUTH_REDIRECT_ELEMENT_NAME;
+
 	/// name of the option name attribute for Pion XML config files
 	static const std::string		NAME_ATTRIBUTE_NAME;
-		
-	
+
 	/// reference to the Pion platform configuration manager
 	PlatformConfig &				m_platform_config;
 	

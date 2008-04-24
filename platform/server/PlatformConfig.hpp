@@ -32,6 +32,7 @@
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include "ServiceManager.hpp"
+#include "UserManager.hpp"
 
 
 namespace pion {		// begin namespace pion
@@ -81,6 +82,13 @@ public:
 			: PionException("Platform configuration file does not define a Service configuration file: ", config_file) {}
 	};
 	
+	/// exception thrown if the config file does not contain a UserConfig element
+	class MissingUserConfigException : public PionException {
+	public:
+		MissingUserConfigException(const std::string& config_file)
+			: PionException("Platform configuration file does not define a User configuration file: ", config_file) {}
+	};
+	
 	/// exception thrown if the config file contains an empty PluginPath definition
 	class EmptyPluginPathException : public PionException {
 	public:
@@ -124,9 +132,12 @@ public:
 	/// returns a reference to the global ServiceManager
 	inline ServiceManager& getServiceManager(void) { return m_service_mgr; }
 
+	/// returns a pointer to the global UserManager
+	inline UserManagerPtr getUserManagerPtr(void) { return m_user_mgr_ptr; }
+
 	/// returns the name of the logging configuration file
 	inline const std::string& getLogConfigFile(void) const { return m_log_config_file; }
-	
+
 	
 private:
 	
@@ -150,6 +161,9 @@ private:
 	
 	/// name of the service config element for Pion XML config files
 	static const std::string		SERVICE_CONFIG_ELEMENT_NAME;
+
+	/// name of the user config element for Pion XML config files
+	static const std::string		USER_CONFIG_ELEMENT_NAME;
 
 	/// name of the log config file element for Pion XML config files
 	static const std::string		LOG_CONFIG_ELEMENT_NAME;
@@ -175,7 +189,10 @@ private:
 	
 	/// global manager of PlatformServices
 	ServiceManager							m_service_mgr;
-	
+
+	/// global manager of Users
+	UserManagerPtr							m_user_mgr_ptr;
+
 	/// name of the logging configuration file
 	std::string								m_log_config_file;
 	

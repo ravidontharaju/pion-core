@@ -3,6 +3,9 @@
 	<Server id="main-server">
 		<Port>8080</Port>
 		<SSLKey>sslkey.pem</SSLKey>
+		<Restrict>/config</Restrict>
+		<Restrict>/feed</Restrict>
+		<Restrict>/log</Restrict>
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>

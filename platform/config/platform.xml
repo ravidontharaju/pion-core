@@ -5,6 +5,7 @@
 	<DatabaseConfig>databases.xml</DatabaseConfig>
 	<ReactorConfig>reactors.xml</ReactorConfig>
 	<ServiceConfig>services.xml</ServiceConfig>
+	<UserConfig>users.xml</UserConfig>
 	<LogConfig>logconfig.txt</LogConfig>
 	<PluginPath>../plugins</PluginPath>
 </PionConfig>

@@ -17,6 +17,8 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <pion/net/HTTPBasicAuth.hpp>
+#include <pion/net/HTTPCookieAuth.hpp>
 #include "PlatformConfig.hpp"
 #include "ServiceManager.hpp"
 
@@ -42,9 +44,16 @@ const std::string			ServiceManager::REDIRECT_SOURCE_ELEMENT_NAME = "Source";
 const std::string			ServiceManager::REDIRECT_TARGET_ELEMENT_NAME = "Target";
 const std::string			ServiceManager::RESOURCE_ELEMENT_NAME = "Resource";
 const std::string			ServiceManager::OPTION_ELEMENT_NAME = "Option";
+const std::string			ServiceManager::AUTH_ELEMENT_NAME = "Auth";
+const std::string			ServiceManager::AUTH_TYPE_ELEMENT_NAME = "Type";
+const std::string			ServiceManager::AUTH_RESTRICT_ELEMENT_NAME = "Restrict";
+const std::string			ServiceManager::AUTH_PERMIT_ELEMENT_NAME = "Permit";
+const std::string			ServiceManager::AUTH_LOGIN_ELEMENT_NAME = "Login";
+const std::string			ServiceManager::AUTH_LOGOUT_ELEMENT_NAME = "Logout";
+const std::string			ServiceManager::AUTH_REDIRECT_ELEMENT_NAME = "AuthRedirect";
 const std::string			ServiceManager::NAME_ATTRIBUTE_NAME = "name";
-
-
+	
+		
 // ServiceManager member functions
 
 ServiceManager::ServiceManager(PlatformConfig& platform_config)
@@ -104,6 +113,55 @@ void ServiceManager::openConfigFile(void)
 		// create the server and add it to our list
 		HTTPServerPtr server_ptr(new HTTPServer(m_scheduler, boost::lexical_cast<unsigned int>(port_str)));
 		m_servers.push_back(server_ptr);
+
+		// get the Authentication configuration
+		HTTPAuthPtr auth_ptr(new HTTPCookieAuth(m_platform_config.getUserManagerPtr()));
+		std::string value;
+
+		if(ConfigManager::getConfigOption(AUTH_LOGIN_ELEMENT_NAME, value,server_node->children)){
+			auth_ptr->setOption("login",value);
+		}
+		if(ConfigManager::getConfigOption(AUTH_LOGOUT_ELEMENT_NAME, value,server_node->children)){
+			auth_ptr->setOption("logout",value);
+		}
+		if(ConfigManager::getConfigOption(AUTH_REDIRECT_ELEMENT_NAME, value,server_node->children)){
+			auth_ptr->setOption("redirect",value);
+		}
+		// step through restricted URL definitions
+		xmlNodePtr restrict_node=server_node->children;
+		while ( (restrict_node = ConfigManager::findConfigNodeByName(AUTH_RESTRICT_ELEMENT_NAME, restrict_node)) != NULL)
+		{
+			// get the  value
+			std::string restrict_value;
+			xmlChar *xml_char_ptr = xmlNodeGetContent(restrict_node);
+			if (xml_char_ptr != NULL) {
+				restrict_value = reinterpret_cast<char*>(xml_char_ptr);
+				xmlFree(xml_char_ptr);
+				auth_ptr->addRestrict(restrict_value);
+			}
+
+			// step to the next definition
+			restrict_node = restrict_node->next;
+		}
+
+		// step through permitted URL definitions
+		xmlNodePtr permit_node=server_node->children;
+		while ( (permit_node = ConfigManager::findConfigNodeByName(AUTH_PERMIT_ELEMENT_NAME, permit_node)) != NULL)
+		{
+			// get the  value
+			std::string permit_value;
+			xmlChar *xml_char_ptr = xmlNodeGetContent(permit_node);
+			if (xml_char_ptr != NULL) {
+				permit_value = reinterpret_cast<char*>(xml_char_ptr);
+				xmlFree(xml_char_ptr);
+				auth_ptr->addPermit(permit_value);
+			}
+
+			// step to the next definition
+			permit_node = permit_node->next;
+		}
+		// set up authentication for given server
+		server_ptr->setAuthentication(auth_ptr);
 
 		// get the ssl key for the server (if defined)
 		if (ConfigManager::getConfigOption(SSL_KEY_ELEMENT_NAME, ssl_key,

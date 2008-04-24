@@ -37,6 +37,7 @@ const std::string			PlatformConfig::CODEC_CONFIG_ELEMENT_NAME = "CodecConfig";
 const std::string			PlatformConfig::DATABASE_CONFIG_ELEMENT_NAME = "DatabaseConfig";
 const std::string			PlatformConfig::REACTOR_CONFIG_ELEMENT_NAME = "ReactorConfig";
 const std::string			PlatformConfig::SERVICE_CONFIG_ELEMENT_NAME = "ServiceConfig";
+const std::string			PlatformConfig::USER_CONFIG_ELEMENT_NAME = "UserConfig";
 const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
 const std::string			PlatformConfig::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
@@ -48,7 +49,7 @@ PlatformConfig::PlatformConfig(void)
 	: ConfigManager(DEFAULT_CONFIG_FILE),
 	m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_database_mgr),
-	m_service_mgr(*this)
+	m_service_mgr(*this), m_user_mgr_ptr(new UserManager)
 {
 	setLogger(PION_GET_LOGGER("pion.server.PlatformConfig"));
 }
@@ -152,7 +153,16 @@ void PlatformConfig::openConfigFile(void)
 	// open the ServiceManager configuration
 	m_service_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_service_mgr.openConfigFile();
-	
+
+	// get the UserManager config file
+	if (! ConfigManager::getConfigOption(USER_CONFIG_ELEMENT_NAME, config_file,
+										 m_config_node_ptr->children))
+		throw MissingUserConfigException(getConfigFile());
+
+	// open the UserManager configuration
+	m_user_mgr_ptr->setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_user_mgr_ptr->openConfigFile();
+
 	PION_LOG_INFO(m_logger, "Loaded platform configuration file: " << m_config_file);
 }
 
@@ -172,6 +182,8 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 		<< "</" << REACTOR_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << SERVICE_CONFIG_ELEMENT_NAME << '>' << m_service_mgr.getConfigFile()
 		<< "</" << SERVICE_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << USER_CONFIG_ELEMENT_NAME << '>' << m_user_mgr_ptr->getConfigFile()
+		<< "</" << USER_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << LOG_CONFIG_ELEMENT_NAME << '>' << getLogConfigFile()
 		<< "</" << LOG_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << VOCABULARY_PATH_ELEMENT_NAME << '>' << m_vocab_mgr.getVocabularyPath()

@@ -186,6 +186,14 @@
 		E3B2B85A0D9C5DD4005D6E88 /* HTTPBasicAuth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B2B8560D9C5DD4005D6E88 /* HTTPBasicAuth.cpp */; };
 		E3B3A05F0CD4F81600F9EA6D /* PionLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */; };
 		E3B3A0600CD4F81600F9EA6D /* PionLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */; };
+		E3B898ED0DA8189700BEF60F /* HTTPCookieAuth.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B898EC0DA8189700BEF60F /* HTTPCookieAuth.hpp */; };
+		E3B898EE0DA8189700BEF60F /* HTTPCookieAuth.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B898EC0DA8189700BEF60F /* HTTPCookieAuth.hpp */; };
+		E3B898F00DA818B400BEF60F /* HTTPCookieAuth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B898EF0DA818B400BEF60F /* HTTPCookieAuth.cpp */; };
+		E3B898F10DA818B400BEF60F /* HTTPCookieAuth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B898EF0DA818B400BEF60F /* HTTPCookieAuth.cpp */; };
+		E3B898F40DA818D100BEF60F /* UserManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B898F20DA818D100BEF60F /* UserManager.cpp */; };
+		E3B898F50DA818D100BEF60F /* UserManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B898F30DA818D100BEF60F /* UserManager.hpp */; };
+		E3B898F60DA818D100BEF60F /* UserManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B898F20DA818D100BEF60F /* UserManager.cpp */; };
+		E3B898F70DA818D100BEF60F /* UserManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B898F30DA818D100BEF60F /* UserManager.hpp */; };
 		E3C1B31D0D71D261006B8329 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3C1B31E0D71D261006B8329 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E3C1B32D0D71D26E006B8329 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
@@ -1054,6 +1062,10 @@
 		E3B2B8550D9C5DD4005D6E88 /* HTTPAuth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPAuth.cpp; path = net/src/HTTPAuth.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2B8560D9C5DD4005D6E88 /* HTTPBasicAuth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPBasicAuth.cpp; path = net/src/HTTPBasicAuth.cpp; sourceTree = SOURCE_ROOT; };
 		E3B3A05E0CD4F81600F9EA6D /* PionLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PionLogger.cpp; path = common/src/PionLogger.cpp; sourceTree = SOURCE_ROOT; };
+		E3B898EC0DA8189700BEF60F /* HTTPCookieAuth.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPCookieAuth.hpp; path = net/include/pion/net/HTTPCookieAuth.hpp; sourceTree = SOURCE_ROOT; };
+		E3B898EF0DA818B400BEF60F /* HTTPCookieAuth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPCookieAuth.cpp; path = net/src/HTTPCookieAuth.cpp; sourceTree = SOURCE_ROOT; };
+		E3B898F20DA818D100BEF60F /* UserManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UserManager.cpp; path = platform/server/UserManager.cpp; sourceTree = SOURCE_ROOT; };
+		E3B898F30DA818D100BEF60F /* UserManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UserManager.hpp; path = platform/server/UserManager.hpp; sourceTree = SOURCE_ROOT; };
 		E3C1B30F0D71D0CC006B8329 /* LogInputReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LogInputReactor.cpp; path = platform/reactors/LogInputReactor.cpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3100D71D0CC006B8329 /* LogInputReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LogInputReactor.hpp; path = platform/reactors/LogInputReactor.hpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3110D71D0CC006B8329 /* LogOutputReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LogOutputReactor.cpp; path = platform/reactors/LogOutputReactor.cpp; sourceTree = SOURCE_ROOT; };
@@ -1465,6 +1477,7 @@
 				E3B2B84E0D9C5DA9005D6E88 /* PionUser.hpp */,
 				E3B2B84C0D9C5DA9005D6E88 /* HTTPAuth.hpp */,
 				E3B2B84D0D9C5DA9005D6E88 /* HTTPBasicAuth.hpp */,
+				E3B898EC0DA8189700BEF60F /* HTTPCookieAuth.hpp */,
 				E36D8A1F0D29C75200B4C134 /* HTTPServer.hpp */,
 				E36D8A200D29C75200B4C134 /* HTTPTypes.hpp */,
 				E36D8A210D29C75200B4C134 /* HTTPWriter.hpp */,
@@ -1494,6 +1507,7 @@
 				E36D8A270D29C77100B4C134 /* HTTPReader.cpp */,
 				E3B2B8550D9C5DD4005D6E88 /* HTTPAuth.cpp */,
 				E3B2B8560D9C5DD4005D6E88 /* HTTPBasicAuth.cpp */,
+				E3B898EF0DA818B400BEF60F /* HTTPCookieAuth.cpp */,
 				E36D8A280D29C77100B4C134 /* HTTPServer.cpp */,
 				E36D8A290D29C77100B4C134 /* HTTPTypes.cpp */,
 				E36D8A2A0D29C77100B4C134 /* HTTPWriter.cpp */,
@@ -1558,6 +1572,8 @@
 				E3D045370D5693770015545F /* ServiceManager.cpp */,
 				E3D045340D5693770015545F /* PlatformConfig.hpp */,
 				E3D045330D5693770015545F /* PlatformConfig.cpp */,
+				E3B898F30DA818D100BEF60F /* UserManager.hpp */,
+				E3B898F20DA818D100BEF60F /* UserManager.cpp */,
 			);
 			name = server;
 			sourceTree = "<group>";
@@ -1819,6 +1835,7 @@
 				E3B2B8520D9C5DA9005D6E88 /* HTTPAuth.hpp in Headers */,
 				E3B2B8530D9C5DA9005D6E88 /* HTTPBasicAuth.hpp in Headers */,
 				E3B2B8540D9C5DA9005D6E88 /* PionUser.hpp in Headers */,
+				E3B898EE0DA8189700BEF60F /* HTTPCookieAuth.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1846,6 +1863,7 @@
 				E3B2B84F0D9C5DA9005D6E88 /* HTTPAuth.hpp in Headers */,
 				E3B2B8500D9C5DA9005D6E88 /* HTTPBasicAuth.hpp in Headers */,
 				E3B2B8510D9C5DA9005D6E88 /* PionUser.hpp in Headers */,
+				E3B898ED0DA8189700BEF60F /* HTTPCookieAuth.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1997,6 +2015,7 @@
 				E3FF96690D579B35001E075B /* PlatformConfig.hpp in Headers */,
 				E3FF966B0D579B36001E075B /* PlatformService.hpp in Headers */,
 				E3FF966D0D579B37001E075B /* ServiceManager.hpp in Headers */,
+				E3B898F50DA818D100BEF60F /* UserManager.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2021,6 +2040,7 @@
 				E3FF966F0D579B3D001E075B /* PlatformConfig.hpp in Headers */,
 				E3FF96710D579B3E001E075B /* PlatformService.hpp in Headers */,
 				E3FF96730D579B3F001E075B /* ServiceManager.hpp in Headers */,
+				E3B898F70DA818D100BEF60F /* UserManager.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2733,6 +2753,7 @@
 				E3D044CF0D540C040015545F /* WebServer.cpp in Sources */,
 				E3B2B8590D9C5DD4005D6E88 /* HTTPAuth.cpp in Sources */,
 				E3B2B85A0D9C5DD4005D6E88 /* HTTPBasicAuth.cpp in Sources */,
+				E3B898F10DA818B400BEF60F /* HTTPCookieAuth.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2750,6 +2771,7 @@
 				E3D044CE0D540C040015545F /* WebServer.cpp in Sources */,
 				E3B2B8570D9C5DD4005D6E88 /* HTTPAuth.cpp in Sources */,
 				E3B2B8580D9C5DD4005D6E88 /* HTTPBasicAuth.cpp in Sources */,
+				E3B898F00DA818B400BEF60F /* HTTPCookieAuth.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2917,6 +2939,7 @@
 				E3FF96680D579B35001E075B /* PlatformConfig.cpp in Sources */,
 				E3FF966A0D579B36001E075B /* PlatformService.cpp in Sources */,
 				E3FF966C0D579B37001E075B /* ServiceManager.cpp in Sources */,
+				E3B898F40DA818D100BEF60F /* UserManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2940,6 +2963,7 @@
 				E3FF966E0D579B3C001E075B /* PlatformConfig.cpp in Sources */,
 				E3FF96700D579B3D001E075B /* PlatformService.cpp in Sources */,
 				E3FF96720D579B3E001E075B /* ServiceManager.cpp in Sources */,
+				E3B898F60DA818D100BEF60F /* UserManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

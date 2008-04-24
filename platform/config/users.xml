@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+	<User id="test1">
+		<Password>123456</Password>
+	</User>
+	<User id="test2">
+		<PasswordHash>1F2E3G</PasswordHash>
+	</User>
+	<User id="test3">
+		<Password>123456</Password>
+	</User>
+	<User id="test4">
+		<Password>123456</Password>
+	</User>
+</PionConfig>

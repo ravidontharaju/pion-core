@@ -160,6 +160,8 @@ void cleanup_platform_config_files(void)
 	static const std::string PLATFORM_TEMPLATE_FILE(get_config_file_dir() + "platform.tmpl");
 	static const std::string SERVICES_TEMPLATE_FILE(get_config_file_dir() + "services.tmpl");
 	static const std::string SERVICES_CONFIG_FILE(get_config_file_dir() + "services.xml");
+	static const std::string USERS_TEMPLATE_FILE(get_config_file_dir() + "users.tmpl");
+	static const std::string USERS_CONFIG_FILE(get_config_file_dir() + "users.xml");
 	
 	cleanup_vocab_config_files();
 	
@@ -182,4 +184,8 @@ void cleanup_platform_config_files(void)
 	if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
 		boost::filesystem::remove(SERVICES_CONFIG_FILE);
 	boost::filesystem::copy_file(SERVICES_TEMPLATE_FILE, SERVICES_CONFIG_FILE);
+
+	if (boost::filesystem::exists(USERS_CONFIG_FILE))
+		boost::filesystem::remove(USERS_CONFIG_FILE);
+	boost::filesystem::copy_file(USERS_TEMPLATE_FILE, USERS_CONFIG_FILE);
 }
