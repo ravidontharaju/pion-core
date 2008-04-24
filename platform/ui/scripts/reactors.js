@@ -99,9 +99,7 @@ pion.reactors.init = function() {
 			console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
 			reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
 		},
-		onError: function(errorData, request) {
-			console.debug('Error fetching from reactors.json: ', errorData);
-		}
+		onError: pion.handleFetchError
 	});
 
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
@@ -175,9 +173,11 @@ pion.reactors.init = function() {
 						pion.reactors.workspace_box = workspace_boxes[0];
 						surface = pion.reactors.workspace_box.my_surface;
 						dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
-					}
+					},
+					onError: pion.handleFetchError
 				});
-			}
+			},
+			onError: pion.handleFetchError
 		});
 	}
 
