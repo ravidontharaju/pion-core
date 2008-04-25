@@ -46,6 +46,18 @@ typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
 /// default queue type used when there is at least 1 consumer thread
 #define DEFAULT_QUEUE	pion::PionLockedQueue
 
+/// define template parameters used for producer/consumer tests
+/// NOTE: MSVC does not play well with template-template parameters!
+#ifdef _MSC_VER
+	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
+		unsigned int ConsumerThreads = 0
+#else
+	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
+		unsigned int ConsumerThreads = 0, \
+		template <typename T> class QueueType = DEFAULT_QUEUE
+#endif
+
+
 using namespace std;
 using namespace pion;
 using namespace pion::platform;
@@ -288,9 +300,7 @@ protected:
 ///
 /// IntAllocTest: tests the raw basline performance of the queue type
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class IntAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -342,9 +352,7 @@ private:
 /// EventAllocTest: tests the performance of simultaneously generating
 ///                 Event objects in 1 or more threads using new/delete
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class EventAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -404,9 +412,7 @@ private:
 ///                                generating Event objects in 1 or more threads
 ///                                using a shared boost::fast_pool_allocator
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class EventSharedBoostPoolAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -471,9 +477,7 @@ private:
 ///                                generating Event objects in 1 or more threads
 ///                                using unique instances of boost::fast_pool_allocator
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class EventUniqueBoostPoolAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -574,9 +578,7 @@ private:
 ///                              generating Event objects in 1 or more threads
 ///                              using a shared GCC "multithread" allocator
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class EventSharedGCCPoolAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -646,9 +648,7 @@ private:
 /// EventPtrAllocTest: tests the performance of creating empty EventPtr objects
 ///                    using 1 or more threads
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class EventPtrAllocTest :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
@@ -705,9 +705,7 @@ private:
 /// CLFEventPtrAllocTest: tests the performance of creating EventPtr objects that
 ///                       contain common log format data using 1 or more threads
 ///
-template <unsigned int ProducerThreads = 1,
-	unsigned int ConsumerThreads = 0,
-	template <typename> class QueueType = DEFAULT_QUEUE >
+template < TEST_TEMPLATE_PARAMS >
 class CLFEventPtrAllocTest :
 	public EventPtrAllocTest<ProducerThreads, ConsumerThreads, QueueType>
 {
