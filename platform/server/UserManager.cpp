@@ -22,66 +22,72 @@
 namespace pion {		// begin namespace pion
 namespace server {		// begin namespace server (Pion Server)
 
+
+// static members of UserManager
+
 const std::string			UserManager::DEFAULT_CONFIG_FILE = "users.xml";
 const std::string			UserManager::USER_ELEMENT_NAME = "User";
-const std::string			UserManager::USERNAME_ELEMENT_NAME = "Name";
 const std::string			UserManager::PASSWORD_ELEMENT_NAME = "Password";
-const std::string			UserManager::PASSWORD_HASH_ELEMENT_NAME = "PasswordHash";
+
+
+// UserManager member functions
 
 UserManager::UserManager(void)
-: ConfigManager(DEFAULT_CONFIG_FILE)
+	: ConfigManager(DEFAULT_CONFIG_FILE)
 {
 	setLogger(PION_GET_LOGGER("pion.server.UserManager"));
 }
 
-
-bool UserManager::parseUserConfig(const std::string& user_id,const xmlNodePtr config_ptr,bool update)
+bool UserManager::updateUserManager(const std::string& user_id,
+	xmlNodePtr config_ptr, bool password_encrypted, bool new_user)
 {
 	bool ret=false;
 	std::string password;
-	// try to get this user password 
-	if (ConfigManager::getConfigOption(PASSWORD_ELEMENT_NAME, password,config_ptr)) {
-		if(!update){
-			ret = PionUserManager::addUser(user_id,password);
-		}
-		else{
-			ret = PionUserManager::updateUser(user_id,password);
-		}
 
-		if(!ret){
-			PION_LOG_WARN(m_logger, "Ignoring user ["+user_id+"] with dublicate username");
-		}
-	}
-	else if(ConfigManager::getConfigOption(PASSWORD_HASH_ELEMENT_NAME, password,config_ptr)){ // try to get password hash
-#ifdef PION_HAVE_SSL
-		/*
-		if(!update){
-			ret = PionUserManager::addUserHash(user_id,password);
-		}
-		else{
-			ret = PionUserManager::updateUserHash(user_id,password);
-		}
+	// try to find the user's password in the XML config
+	xmlNodePtr password_node = findConfigNodeByName(PASSWORD_ELEMENT_NAME, config_ptr);
+	if (password_node == NULL) 
+		throw NoPasswordException(getConfigFile());	// not found
 
-		if(!ret){
-			PION_LOG_WARN(m_logger, "Ignoring user ["+user_id+"] with dublicate username");
+	// get password value
+	xmlChar *xml_char_ptr = xmlNodeGetContent(password_node);
+	if (xml_char_ptr == NULL)
+		throw NoPasswordException(getConfigFile());	// no password content
+	password = reinterpret_cast<char*>(xml_char_ptr);
+	xmlFree(xml_char_ptr);
+	if (password.empty())
+		throw NoPasswordException(getConfigFile());	// no password content
+
+	if (password_encrypted) {
+		// password is already encrypted
+		if (new_user) {
+			// add new user
+			ret = PionUserManager::addUserHash(user_id, password);
+		} else {
+			// update existing user
+			ret = PionUserManager::updateUserHash(user_id, password);
 		}
-		*/
-		PION_LOG_WARN(m_logger, "Ignoring user ["+user_id+"] with password hash parameter  (to be implemented) ");
-#else
-		PION_LOG_WARN(m_logger, "Ignoring user ["+user_id+"] with password hash parameter  (Pion was not built with SSL support)");
-#endif
-	}
-	else{
-		PION_LOG_WARN(m_logger, "Ignoring user ["+user_id+"] with no password/hash parameter defined");
+	} else {
+		// password is not encrypted
+		if (new_user) {
+			// add new user
+			ret = PionUserManager::addUser(user_id, password);
+		} else {
+			// update existing user
+			ret = PionUserManager::updateUser(user_id, password);
+		}
+		
+		// update password in config tree so that it is saved in secure format
+		password = PionUserManager::getUser(user_id)->getPassword();
+		xmlNodeSetContent(password_node,  reinterpret_cast<const xmlChar*>(password.c_str()));
 	}
 
 	return ret;
 }
 
-
 void UserManager::openConfigFile(void)
 {
-	boost::mutex::scoped_lock services_lock(m_mutex);
+	boost::mutex::scoped_lock users_lock(m_mutex);
 
 	// just return if it's already open
 	if (configIsOpen())
@@ -91,19 +97,18 @@ void UserManager::openConfigFile(void)
 	ConfigManager::openConfigFile();
 
 	// some strings that get re-used a bunch
-	std::string username;
-	std::string password;
-	std::string password_hash;;
+	std::string user_id;
 
 	// step through user configurations
 	xmlNodePtr user_node = m_config_node_ptr->children;
 	while ( (user_node = ConfigManager::findConfigNodeByName(USER_ELEMENT_NAME, user_node)) != NULL)
 	{
-		// get the unique identifier for the Server
-		if (! getNodeId(user_node, username))
-			throw NoUsernameException(getConfigFile());
+		// get the unique identifier for the User (username)
+		if (! getNodeId(user_node, user_id))
+			throw NoUserIdException(getConfigFile());
 
-		parseUserConfig(username,user_node->children);
+		// add user to authentication manager
+		updateUserManager(user_id, user_node->children, true, true);
 
 		// step to the next user definition
 		user_node = user_node->next;
@@ -112,27 +117,26 @@ void UserManager::openConfigFile(void)
 	PION_LOG_INFO(m_logger, "Loaded Users configuration file: " << m_config_file);
 }
 
-
 void UserManager::writeConfigXML(std::ostream& out) const 
 {
-	boost::mutex::scoped_lock lock(m_mutex);
-
+	boost::mutex::scoped_lock users_lock(m_mutex);
 	ConfigManager::writeBeginPionConfigXML(out);
 	ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
 	ConfigManager::writeEndPionConfigXML(out);
 }
 
 bool UserManager::writeConfigXML(std::ostream& out,
-									const std::string& user_name) const
+									const std::string& user_id) const
 {
 	// find the plug-in element in the XML config document
-	boost::mutex::scoped_lock services_lock(m_mutex);
+	boost::mutex::scoped_lock users_lock(m_mutex);
 	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME,
 		ID_ATTRIBUTE_NAME,
-		user_name,
+		user_id,
 		m_config_node_ptr->children);
+
 	if (user_node == NULL)
-		return false;
+		return false;	// not found
 
 	// found it
 	ConfigManager::writeBeginPionConfigXML(out);
@@ -142,37 +146,38 @@ bool UserManager::writeConfigXML(std::ostream& out,
 	return true;
 }
 
-std::string UserManager::addUser(const std::string& user_id,const xmlNodePtr config_ptr)
+std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_ptr)
 {
-	boost::mutex::scoped_lock services_lock(m_mutex);
+	boost::mutex::scoped_lock users_lock(m_mutex);
+
 	// Sanity check
 	if (user_id.empty())
-		throw NoUsernameException(getConfigFile());
+		throw NoUserIdException(getConfigFile());
 
 	// process new user configuration
-	if(parseUserConfig(user_id,config_ptr)){
+	if (updateUserManager(user_id, config_ptr, false, true)) {
 		// add it to the XML scheme
-		// create a new node for the plug-in and add it to the XML config document
+
+		// create a new node for the User and add it to the XML config document
 		xmlNodePtr new_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(USER_ELEMENT_NAME.c_str()));
 		if (new_node == NULL)
-			throw AddPluginConfigException("User");
+			throw AddUserConfigException(getConfigFile());
 		if ((new_node=xmlAddChild(m_config_node_ptr, new_node)) == NULL) {
 			xmlFreeNode(new_node);
-			throw AddPluginConfigException("User");
+			throw AddUserConfigException(getConfigFile());
 		}
 
-		// set the id attribute for the plug-in element
+		// set the id attribute for the User element
 		if (xmlNewProp(new_node, reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
 			reinterpret_cast<const xmlChar*>(user_id.c_str())) == NULL)
-			throw AddPluginConfigException("User");
+			throw AddUserConfigException(getConfigFile());
 
 		// update the configuration parameters (if any)
 		if (config_ptr != NULL) {
 			if (! setPluginConfig(new_node, config_ptr))
-				throw AddPluginConfigException("User");
+				throw AddUserConfigException(getConfigFile());
 		}
-	}
-	else{
+	} else {
 		throw BadXMLBufferException();
 	}
 
@@ -182,43 +187,50 @@ std::string UserManager::addUser(const std::string& user_id,const xmlNodePtr con
 	return user_id;
 }
 
-void UserManager::setUserConfig(const std::string& user_id,
-				   const xmlNodePtr config_ptr)
+void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_ptr)
 {
 	// Sanity check
 	if (user_id.empty())
-		throw NoUsernameException(getConfigFile());
+		throw NoUserIdException(getConfigFile());
 
-	boost::mutex::scoped_lock services_lock(m_mutex);
+	// Find existing user configuration
+	boost::mutex::scoped_lock users_lock(m_mutex);
 	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME,
 		ID_ATTRIBUTE_NAME,
 		user_id,
 		m_config_node_ptr->children);
+		
 	if (user_node == NULL)
-		throw UserNotFoundException(user_id);
+		throw UserNotFoundException(user_id);	// not found
 
+	// update the user authentication configuration
+	updateUserManager(user_id, config_ptr, false, false);
+
+	// update the configuration in the XML tree
 	if (! setPluginConfig(user_node, config_ptr))
-		throw AddPluginConfigException("User");
-
+		throw UpdateUserConfigException(getConfigFile());
+		
 	// save the new XML config file
 	saveConfigFile();
 }
 
 bool UserManager::removeUser(const std::string& user_id)
 {
-	boost::mutex::scoped_lock services_lock(m_mutex);
 	bool ret;
 
+	boost::mutex::scoped_lock users_lock(m_mutex);
 	ret = PionUserManager::removeUser(user_id);
-	if(ret){
-		removePluginConfig(USER_ELEMENT_NAME,user_id);
+	if (ret) {
+		removePluginConfig(USER_ELEMENT_NAME, user_id);
 		// save the new XML config file
 		saveConfigFile();
 	}
+
 	return ret;
 }
 
-xmlNodePtr UserManager::createUserConfig(std::string& user_id,const char *buf, std::size_t len) 
+xmlNodePtr UserManager::createUserConfig(std::string& user_id,
+	const char *buf, std::size_t len) 
 {
 	// sanity check
 	if (buf == NULL || len == 0)
@@ -246,7 +258,7 @@ xmlNodePtr UserManager::createUserConfig(std::string& user_id,const char *buf, s
 		throw MissingResourceElementException(USER_ELEMENT_NAME);
 	}
 
-	// get user_id ( username) 
+	// get user_id (username) 
 	getNodeId(node_ptr, user_id);
 
 	// found the resource config -> make a copy of it
