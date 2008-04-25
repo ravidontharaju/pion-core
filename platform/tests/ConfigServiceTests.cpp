@@ -247,6 +247,52 @@ public:
 		// make sure there's no content
 		BOOST_CHECK_EQUAL(response_ptr->getContentLength(), static_cast<size_t>(0));
 	}
+	
+	/**
+	 * checks to see if the user is able to login and make authenticated requests
+	 *
+	 * @param username user_id or name of the user
+	 * @param password plaintext password for the user
+	 *
+	 * @return true if the user was able to login successfully
+	 */
+	inline bool checkUserLogin(const std::string& username, const std::string& password) {
+		// prepare a login request
+		std::string login_resource("/login?user=");
+		login_resource += username;
+		login_resource += "&pass=";
+		login_resource += password;
+
+		// make a request to login
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+		request.setResource(login_resource);
+		HTTPResponsePtr response_ptr(sendRequest(request));
+		
+		// check that the response is OK
+		if (response_ptr->getStatusCode() != 204)
+			return false;
+		
+		BOOST_CHECK_EQUAL(response_ptr->getContentLength(), 0UL);
+		BOOST_CHECK(response_ptr->hasHeader(HTTPTypes::HEADER_SET_COOKIE));
+		
+		// get the session cookie
+		std::string cookie = response_ptr->getHeader(HTTPTypes::HEADER_SET_COOKIE);
+		BOOST_CHECK(! cookie.empty());
+		
+		// now make sure that the cookie works for a restricted resource request
+		request.setResource("/echo");
+		request.addHeader(HTTPTypes::HEADER_COOKIE, cookie);
+		response_ptr = sendRequest(request);
+		
+		// check that the response is OK
+		if (response_ptr->getStatusCode() != 200)
+			return false;
+
+		BOOST_CHECK(response_ptr->getContentLength() > 0);
+		
+		return true;
+	}		
 		
 
 	PlatformConfig		m_platform_cfg;
@@ -503,6 +549,17 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveBigIntTerm) {
 	BOOST_CHECK(! m_platform_cfg.getVocabularyManager().hasTerm(m_big_int_id));
 }
 
+BOOST_AUTO_TEST_CASE(checkEchoServiceIsProtected) {
+	// make a request to get echo service
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+	request.setResource("/echo");
+	HTTPResponsePtr response_ptr(sendRequest(request));
+	
+	// check that the response is "not authorized"
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), 401);
+}
+
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewUser) {
 	std::string user_config_str = 
 		"<PionConfig><User id=\"unittest\">"
@@ -513,11 +570,16 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewUser) {
 
 	// make a request to add a new user
 	std::string user_id = checkAddResource("/config/users", "User", user_config_str);
+	BOOST_CHECK_EQUAL(user_id, "unittest");
 
 	// make sure that the user was added
 	std::stringstream ss;
+
 	// note: this would return false if user not recognized
 	BOOST_CHECK(m_platform_cfg.getUserManagerPtr()->writeConfigXML(ss, user_id));
+	
+	// make sure that the user can login
+	BOOST_CHECK(checkUserLogin(user_id, "deadmeat"));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUser) {
@@ -532,19 +594,28 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUser) {
 	// make a request to update "test1" user
 	checkUpdateResource("/config/users/" + user_id, "User",
 		user_config_str, "LastName", "Runner");
-}
 
+	// make sure that the user can login with the new password
+	BOOST_CHECK(checkUserLogin(user_id, "deadmeat"));
+}
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveUser) {
 	const std::string user_id("test1");
+
+	// make sure that the user can login before being deleted (sanity)
+	BOOST_CHECK(checkUserLogin(user_id, "123456"));
 
 	// make a request to remove the connection
 	checkDeleteResource("/config/users/" + user_id);
 
 	// make sure that the user was added
 	std::stringstream ss;
+
 	// note: this would return false if user not recognized
 	BOOST_CHECK(!m_platform_cfg.getUserManagerPtr()->writeConfigXML(ss, user_id));
+
+	// make sure that the user can no longer login
+	BOOST_CHECK(!checkUserLogin(user_id, "123456"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

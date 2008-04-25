@@ -120,9 +120,7 @@ void UserManager::openConfigFile(void)
 void UserManager::writeConfigXML(std::ostream& out) const 
 {
 	boost::mutex::scoped_lock users_lock(m_mutex);
-	ConfigManager::writeBeginPionConfigXML(out);
 	ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
-	ConfigManager::writeEndPionConfigXML(out);
 }
 
 bool UserManager::writeConfigXML(std::ostream& out,

@@ -32,7 +32,6 @@
 #include <boost/pool/pool.hpp>
 #include <boost/thread/tss.hpp>
 #include <boost/thread/once.hpp>
-#include <boost/thread/mutex.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/atomic_count.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -47,7 +46,7 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-
+	
 ///
 /// Event: an item of structured data that represents something of interest
 ///
@@ -540,20 +539,23 @@ public:
 		insert(term_ref, createSimpleString(value.c_str(), value.size()));
 	}
 	
+	/// returns the number of references to this Event
+	inline boost::uint32_t getReferences(void) const { return m_references; }
+	
+	
+protected:
+	
+	/// allow the EventPtr class to update references, etc.
+	friend class EventPtr;
+	
 	/// increments the reference count for this Event
 	inline void addReference(void) { ++m_references; }
 	
 	/// decrements the reference count for this Event
 	inline boost::uint32_t removeReference(void) { return --m_references; }
 	
-	/// returns the number of references to this Event
-	inline boost::uint32_t getReferences(void) const { return m_references; }
-	
 	/// returns a pointer to the Event's allocator
 	inline AllocType *getAllocator(void) { return m_alloc_ptr; }
-	
-	
-protected:
 	
 	/**
 	 * inserts a new parameter into the Event
