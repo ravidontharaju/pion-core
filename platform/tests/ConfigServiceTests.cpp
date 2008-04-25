@@ -503,5 +503,49 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveBigIntTerm) {
 	BOOST_CHECK(! m_platform_cfg.getVocabularyManager().hasTerm(m_big_int_id));
 }
 
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewUser) {
+	std::string user_config_str = 
+		"<PionConfig><User id=\"unittest\">"
+		"<FirstName>Johnnie</FirstName>"
+		"<LastName>Walker</LastName>"
+		"<Password>deadmeat</Password>"
+		"</User></PionConfig>";
+
+	// make a request to add a new user
+	std::string user_id = checkAddResource("/config/users", "User", user_config_str);
+
+	// make sure that the user was added
+	std::stringstream ss;
+	// note: this would return false if user not recognized
+	BOOST_CHECK(m_platform_cfg.getUserManagerPtr()->writeConfigXML(ss, user_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUser) {
+	const std::string user_id("test1");
+	std::string user_config_str = 
+		"<PionConfig><User>"
+		"<FirstName>Johnnie</FirstName>"
+		"<LastName>Runner</LastName>"
+		"<Password>deadmeat</Password>"
+		"</User></PionConfig>";
+
+	// make a request to update "test1" user
+	checkUpdateResource("/config/users/" + user_id, "User",
+		user_config_str, "LastName", "Runner");
+}
+
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveUser) {
+	const std::string user_id("test1");
+
+	// make a request to remove the connection
+	checkDeleteResource("/config/users/" + user_id);
+
+	// make sure that the user was added
+	std::stringstream ss;
+	// note: this would return false if user not recognized
+	BOOST_CHECK(!m_platform_cfg.getUserManagerPtr()->writeConfigXML(ss, user_id));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -604,6 +604,101 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		// END SERVICES CONFIG
 		//
+	} else if (branches.front() == "users") {
+		//
+		// BEGIN USERS CONFIG
+		//
+		if (branches.size() == 1) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for all Users
+				getConfig().getUserManagerPtr()->writeConfigXML(ss);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+
+				// add (create) a new user
+
+				// convert request content into XML configuration info
+				std::string user_id;
+				xmlNodePtr user_config_ptr =
+					UserManager::createUserConfig(
+					user_id,
+					request->getContent(),
+					request->getContentLength());
+
+				// add the new User to the UserManager
+				try {
+					user_id = getConfig().getUserManagerPtr()->addUser(user_id,user_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(user_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(user_config_ptr);
+
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+				// respond with the new Users's configuration
+				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, user_id))
+					throw UserManager::UserNotFoundException(branches[1]);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+
+		} else {
+			// branches[1] == user_id
+
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for specific User
+				getConfig().getUserManagerPtr()->writeConfigXML(ss, branches[1]);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing user
+
+				// convert request content into XML configuration info
+				std::string user_id;
+				xmlNodePtr user_config_ptr =
+					UserManager::createUserConfig(
+					user_id,
+					request->getContent(),
+					request->getContentLength());
+
+				// add the new User to the UserManager
+				try {
+					getConfig().getUserManagerPtr()->setUserConfig(branches[1], user_config_ptr);
+				} catch (std::exception& e) {
+					xmlFreeNodeList(user_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(user_config_ptr);
+
+				// respond with the new Users's configuration
+				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, branches[1]))
+					throw UserManager::UserNotFoundException(branches[1]);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+
+				// remove an existing User
+				getConfig().getUserManagerPtr()->removeUser(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+		}
+		//
+		// END USERS CONFIG
+		//
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;

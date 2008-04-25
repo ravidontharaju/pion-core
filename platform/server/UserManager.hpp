@@ -52,6 +52,13 @@ public:
 			: PionException("Service configuration file includes a User without a unique username: ", config_file) {}
 	};
 
+	/// exception thrown if a User cannot be found
+	class UserNotFoundException : public PionException {
+	public:
+		UserNotFoundException(const std::string& user_id)
+			: PionException("No user found for identifier: ", user_id) {}
+	};
+
 public:
 	/// construct a new UserManager Instance
 	UserManager();
@@ -79,6 +86,44 @@ public:
 	bool writeConfigXML(std::ostream& out, const std::string& user_name) const;
 
 	/**
+	* uses a memory buffer to generate XML configuration data for a User
+	*
+	* @param buf pointer to a memory buffer containing configuration data
+	* @param len number of bytes available in the memory buffer
+	*
+	* @return xmlNodePtr XML configuration list for the User
+	*/
+	static xmlNodePtr createUserConfig(std::string& user_id,const char *buf, std::size_t len);
+
+	/**
+	* adds a new managed User
+	*
+	* @param user_id unique identifier associated with the User
+	* @param config_ptr pointer to a list of XML nodes containing User
+	*                   configuration parameters 
+	*
+	* @return std::string the new User's unique identifier
+	*/
+	std::string addUser(const std::string& user_id,const xmlNodePtr config_ptr);
+
+	/**
+	* sets (updates) configuration parameters for a managed User
+	*
+	* @param user_id unique identifier associated with the User
+	* @param config_ptr pointer to a list of XML nodes containing User
+	*                   configuration parameters
+	*/
+	void setUserConfig(const std::string& user_id,const xmlNodePtr config_ptr);
+
+	/**
+	* removes a managed User
+	*
+	* @param user_id unique identifier associated with the User ( username)
+	*/
+	virtual bool removeUser(const std::string& user_id);
+
+
+	/**
 	* writes the entire configuration tree to an output stream (as XML)
 	* without Password element
 	*
@@ -93,6 +138,10 @@ public:
 	* @param out the ostream to write the configuration tree into
 	*/
 	//bool writeConfigXMLnoPassword(std::ostream& out, const std::string& user_name) const;
+
+private:
+
+	bool parseUserConfig(const std::string& user_id,const xmlNodePtr config_ptr,bool update=false);
 
 private:
 
