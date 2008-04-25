@@ -51,6 +51,7 @@ typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
 #ifdef _MSC_VER
 	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
 		unsigned int ConsumerThreads = 0
+	#define QueueType pion::PionLockedQueue
 #else
 	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
 		unsigned int ConsumerThreads = 0, \
@@ -707,7 +708,11 @@ private:
 ///
 template < TEST_TEMPLATE_PARAMS >
 class CLFEventPtrAllocTest :
+#ifdef _MSC_VER
+	public EventPtrAllocTest<ProducerThreads, ConsumerThreads>
+#else
 	public EventPtrAllocTest<ProducerThreads, ConsumerThreads, QueueType>
+#endif
 {
 public:
 
