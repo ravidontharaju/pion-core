@@ -708,7 +708,7 @@ private:
 
 
 /// default allocator used to handle memory operations for Pion Events
-typedef PionPoolAllocator<8, 128>			EventAllocator;
+typedef PionPoolAllocator<16, 256>			EventAllocator;
 
 /// default data type used for Pion Events
 typedef BasicEvent<char, EventAllocator>	Event;
