@@ -236,6 +236,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		do {
 			// get a new event from the EventFactory
 			event_factory.create(event_ptr, event_type);
+
 			// read an Event from the log file (convert into an Event using the Codec)
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
@@ -246,6 +247,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				PION_LOG_DEBUG(m_logger, "JustOne: generating lots of event copies for testing");
 				m_log_stream.close();
 				m_log_stream.clear();
+				reactor_lock.unlock();
 				
 				// just duplicate the event repeatedly until the Reactor is stopped
 				EventPtr original_event_ptr(event_ptr);
@@ -254,6 +256,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 					event_factory.create(event_ptr, event_type);
 					*event_ptr += *original_event_ptr;
 					// deliver the Event to connected Reactors
+					boost::unique_lock<boost::mutex> delivery_lock(m_mutex);
 					incrementEventsIn();
 					deliverEvent(event_ptr);
 				}
