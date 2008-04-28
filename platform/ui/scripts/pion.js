@@ -29,8 +29,13 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 			// redo the request when the login succeeds
 			var h = dojo.connect(pion.login, "onLoginSuccess", function(){ dojo.disconnect(h); xhrFunc(ioArgs.args)});
 		} else {
+			// if user logged out, exit and go to main login page
+			if (!dojo.cookie("logged_in")) {
+				location.replace('login.html');
+			}
+
 			// make user log in, then redo the request
-			pion.login.doLogin(function(){xhrFunc(ioArgs.args)});
+			pion.login.doLoginDialog(function(){xhrFunc(ioArgs.args)});
 		}
 		return;
 	} else {
@@ -60,8 +65,13 @@ pion.handleFetchError = function(errorData, request) {
 			// redo the request when the login succeeds
 			var h = dojo.connect(pion.login, "onLoginSuccess", function(){ dojo.disconnect(h); request.store.fetch(request); });
 		} else {
+			// if user logged out, exit and go to main login page
+			if (!dojo.cookie("logged_in")) {
+				location.replace('login.html');
+			}
+
 			// make user log in, then redo the request
-			pion.login.doLogin(function(){request.store.fetch(request)});
+			pion.login.doLoginDialog(function(){request.store.fetch(request)});
 		}
 		return;
 	}
@@ -84,12 +94,18 @@ var init = function() {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
+			// The user must be logged in since the request succeeded.
+			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
+
 			pion.terms.init();
 			pion.reactors.init();
 		},
 		error: function(response, ioArgs) {
 			if (ioArgs.xhr.status == 401) {
-				pion.login.doLogin(function(){
+				if (!dojo.cookie("logged_in")) {
+					location.replace('login.html'); // exit and go to main login page
+				}
+				pion.login.doLoginDialog(function(){
 					pion.terms.init();
 					pion.reactors.init();
 				});

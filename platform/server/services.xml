@@ -9,6 +9,7 @@
 		</Redirect>
 		<Restrict>/</Restrict>
 		<Permit>/index.html</Permit>
+		<Permit>/login.html</Permit>
 		<Permit>/dojo</Permit>
 		<Permit>/dojo-src</Permit>
 		<Permit>/images</Permit>
