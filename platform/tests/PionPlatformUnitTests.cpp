@@ -23,6 +23,10 @@
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
 
+#ifdef PION_HAVE_SSL
+    #include <openssl/ssl.h>
+#endif
+
 #define BOOST_TEST_MODULE pion-platform-unit-tests
 #include <boost/test/unit_test.hpp>
 
@@ -97,6 +101,11 @@ void setup_logging_for_unit_tests(void)
 		pion::PionLogger log_ptr;
 		log_ptr = PION_GET_LOGGER("pion");
 		PION_LOG_SETLEVEL_WARN(log_ptr);
+		
+#ifdef PION_HAVE_SSL
+		// initialize the OpenSSL library
+        SSL_library_init();
+#endif
 	}
 }
 

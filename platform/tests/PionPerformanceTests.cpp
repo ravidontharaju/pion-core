@@ -31,6 +31,10 @@
 #include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
+#ifdef PION_HAVE_SSL
+	#include <openssl/ssl.h>
+#endif
+
 #ifdef __GNUC__
 	// for tests that use the GNU "multithread" allocator included with GCC
 	#include <ext/mt_allocator.h>
@@ -741,6 +745,12 @@ protected:
 /// main control function for Pion performance tests
 ///
 int main(void) {
+
+#ifdef PION_HAVE_SSL
+	// initialize the OpenSSL library
+	SSL_library_init();
+#endif
+
 	boost::scoped_ptr<PerformanceTest> test_ptr;
 /*
 	// run the EventAllocTest with one thread

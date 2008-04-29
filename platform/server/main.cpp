@@ -12,6 +12,11 @@
 	#include <unistd.h>
 	#include <sys/stat.h>
 #endif
+
+#ifdef PION_HAVE_SSL
+	#include <openssl/ssl.h>
+#endif
+
 #include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include "PlatformConfig.hpp"
@@ -77,6 +82,11 @@ int main (int argc, char *argv[])
 
 	PION_LOG_CONFIG_BASIC;
 	
+#ifdef PION_HAVE_SSL
+	// initialize the OpenSSL library
+	SSL_library_init();
+#endif
+
 	PlatformConfig platform_cfg;
 	try {
 		// load the platform configuration
