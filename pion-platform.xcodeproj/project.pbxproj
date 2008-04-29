@@ -504,7 +504,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E306A8570D66484E0069A023 /* EchoService */;
+			remoteGlobalIDString = E306A8570D66484E0069A023;
 			remoteInfo = EchoService;
 		};
 		E36D8A620D29CA0400B4C134 /* PBXContainerItemProxy */ = {
@@ -3431,6 +3431,10 @@
 		1DEB923608733DC60010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+				);
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
@@ -3470,12 +3474,17 @@
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include ${PROJECT_DIR}/platform/server";
+				VALID_ARCHS = "ppc64 ppc7400 ppc970 i386 x86_64 ppc";
 			};
 			name = Debug;
 		};
 		1DEB923708733DC60010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
 				GCC_MODEL_TUNING = G5;
@@ -3514,6 +3523,7 @@
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
 				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/common/include ${PROJECT_DIR}/net/include ${PROJECT_DIR}/platform/include ${PROJECT_DIR}/platform/server";
+				VALID_ARCHS = "ppc64 ppc7400 ppc970 i386 x86_64 ppc";
 			};
 			name = Release;
 		};

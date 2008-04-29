@@ -168,7 +168,17 @@ private:
 	bool updateUserManager(const std::string& user_id, xmlNodePtr config_ptr,
 		bool password_encrypted, bool new_user);
 
+	/**
+	 * sets configuration parameters for a user in the configuration file
+	 *
+	 * @param user_node_ptr pointer to the existing user element node
+	 * @param config_ptr pointer to the new configuration parameters
+	 *
+	 * @return true if successful, false if there was an error
+	 */
+	bool setUserConfig(xmlNodePtr user_node_ptr, xmlNodePtr config_ptr);
 
+	
 private:
 
 	/// default name of the user config file

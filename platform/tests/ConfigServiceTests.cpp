@@ -185,19 +185,43 @@ public:
 	}
 	
 	/**
+	 * finds the configuration parameters for a particular element
+	 *
+	 * @param doc_ptr pointer to an XML document to parse
+	 * @param element_name name of the element to search for
+	 *
+	 * @return xmlNodePtr pointer to a list of configuration parameter nodes
+	 */
+	inline xmlNodePtr findConfigForResource(xmlDocPtr doc_ptr,
+											const std::string& element_name)
+	{
+		// find the root element and check children
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		
+		// look for the resource's node
+		node_ptr = ConfigManager::findConfigNodeByName(element_name, node_ptr->children);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		
+		// return child nodes for resource element
+		return node_ptr->children;
+	}
+	
+	/**
 	 * uses the ConfigService to update a resource (plugin, connection, etc.)
 	 *
 	 * @param resource the resource to update
 	 * @param element_name the name of the resource's XML config element
 	 * @param config_str XML config for the new resource
-	 * @param check_opt_name name of an option to check
-	 * @param check_opt_value value that the option should be assigned to
+	 *
+	 * @return xmlDocPtr pointer to an XML document containing the response
 	 */
-	inline void checkUpdateResource(const std::string& resource,
-									const std::string& element_name,
-									const std::string& config_str,
-									const std::string& check_opt_name,
-									const std::string& check_opt_value)
+	inline xmlDocPtr checkUpdateResource(const std::string& resource,
+										 const std::string& element_name,
+										 const std::string& config_str)
 	{
 		// make a request to update the resource's configuration
 		HTTPRequest request;
@@ -213,20 +237,40 @@ public:
 		// parse the response content
 		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
 										   response_ptr->getContentLength());
-		BOOST_REQUIRE(doc_ptr);
-		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
-		BOOST_REQUIRE(node_ptr);
-		BOOST_REQUIRE(node_ptr->children);
 		
-		// look for the resource's node
-		node_ptr = ConfigManager::findConfigNodeByName(element_name, node_ptr->children);
+		return doc_ptr;
+	}
+	
+	/**
+	 * uses the ConfigService to update a resource (plugin, connection, etc.)
+	 *
+	 * @param resource the resource to update
+	 * @param element_name the name of the resource's XML config element
+	 * @param config_str XML config for the new resource
+	 * @param check_opt_name name of an option to check
+	 * @param check_opt_value value that the option should be assigned to
+	 */
+	inline void checkUpdateResource(const std::string& resource,
+									const std::string& element_name,
+									const std::string& config_str,
+									const std::string& check_opt_name,
+									const std::string& check_opt_value)
+	{
+		// update the resource & get the response as an XML doc
+		xmlDocPtr doc_ptr = checkUpdateResource(resource, element_name, config_str);
+		BOOST_REQUIRE(doc_ptr);
+
+		// look for the resource configuration parameters
+		xmlNodePtr node_ptr = findConfigForResource(doc_ptr, element_name);
 		BOOST_REQUIRE(node_ptr);
-		BOOST_REQUIRE(node_ptr->children);
 		
 		// find the option element
 		std::string value_str;
-		BOOST_REQUIRE(ConfigManager::getConfigOption(check_opt_name, value_str, node_ptr->children));
+		BOOST_REQUIRE(ConfigManager::getConfigOption(check_opt_name, value_str, node_ptr));
 		BOOST_CHECK_EQUAL(value_str, check_opt_value);
+
+		// free the response document
+		xmlFreeDoc(doc_ptr);
 	}
 
 	/**
@@ -582,21 +626,90 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewUser) {
 	BOOST_CHECK(checkUserLogin(user_id, "deadmeat"));
 }
 
-BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUser) {
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUserPassword) {
 	const std::string user_id("test1");
+	std::string user_config_str = 
+		"<PionConfig><User>"
+		"<Password>deadmeat</Password>"
+		"</User></PionConfig>";
+
+	// make a request to update password for "test1" user
+	// note: returned password should be encrypted
+	checkUpdateResource("/config/users/" + user_id, "User",
+		user_config_str, "Password", "4a0eb7f8e7a2977b83aba35f3ab698ceff44792e");
+
+	// make sure that the user can login with the new password
+	BOOST_CHECK(checkUserLogin(user_id, "deadmeat"));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateUserNames) {
+	const std::string user_id("test1");
+
+	// note: we're re-sending the encrypted password, which the server
+	// should recognize means that it hasn't changed
 	std::string user_config_str = 
 		"<PionConfig><User>"
 		"<FirstName>Johnnie</FirstName>"
 		"<LastName>Runner</LastName>"
-		"<Password>deadmeat</Password>"
+		"<Password>7c4a8d09ca3762af61e59520943dc26494f8941b</Password>"
 		"</User></PionConfig>";
+	
+	// make sure that the user can login before changes (sanity)
+	BOOST_CHECK(checkUserLogin(user_id, "123456"));
 
 	// make a request to update "test1" user
 	checkUpdateResource("/config/users/" + user_id, "User",
-		user_config_str, "LastName", "Runner");
+						user_config_str, "LastName", "Runner");
+	
+	// make sure that the user can login with the same password
+	BOOST_CHECK(checkUserLogin(user_id, "123456"));
 
-	// make sure that the user can login with the new password
-	BOOST_CHECK(checkUserLogin(user_id, "deadmeat"));
+	// next, just change the user's first name
+	user_config_str = 
+		"<PionConfig><User>"
+		"<FirstName>John</FirstName>"
+		"<LastName>Runner</LastName>"
+		"<Password>7c4a8d09ca3762af61e59520943dc26494f8941b</Password>"
+		"</User></PionConfig>";
+	
+	// make a request to update "test1" user
+	// update the resource & get the response as an XML doc
+	xmlDocPtr doc_ptr = checkUpdateResource("/config/users/" + user_id, "User",
+											user_config_str);
+	BOOST_REQUIRE(doc_ptr);
+	
+	// get the new resource configuration parameters
+	xmlNodePtr node_ptr = findConfigForResource(doc_ptr, "User");
+	BOOST_REQUIRE(node_ptr);
+
+	// make sure that the FirstName == John
+	std::string firstname_str;
+	BOOST_CHECK(ConfigManager::getConfigOption("FirstName", firstname_str, node_ptr));
+	BOOST_CHECK_EQUAL(firstname_str, "John");
+	
+	// find the "FirstName" node
+	xmlNodePtr tmp_ptr = ConfigManager::findConfigNodeByName("FirstName", node_ptr);
+	BOOST_REQUIRE(tmp_ptr);
+
+	// make sure there are no other "FirstName" nodes
+	BOOST_CHECK(ConfigManager::findConfigNodeByName("FirstName", tmp_ptr->next) == NULL);
+
+	// find the "LastName" node
+	tmp_ptr = ConfigManager::findConfigNodeByName("LastName", node_ptr);
+	BOOST_REQUIRE(tmp_ptr);
+	
+	// make sure there are no other "LastName" nodes
+	BOOST_CHECK(ConfigManager::findConfigNodeByName("LastName", tmp_ptr->next) == NULL);
+	
+	// find the "Password" node
+	tmp_ptr = ConfigManager::findConfigNodeByName("Password", node_ptr);
+	BOOST_REQUIRE(tmp_ptr);
+	
+	// make sure there are no other "Password" nodes
+	BOOST_CHECK(ConfigManager::findConfigNodeByName("Password", tmp_ptr->next) == NULL);
+	
+	// make sure that the user can login with the same password
+	BOOST_CHECK(checkUserLogin(user_id, "123456"));
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveUser) {

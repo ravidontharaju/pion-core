@@ -74,15 +74,50 @@ bool UserManager::updateUserManager(const std::string& user_id,
 			ret = PionUserManager::addUser(user_id, password);
 		} else {
 			// update existing user
-			ret = PionUserManager::updateUser(user_id, password);
+			
+			// check if the password matches the existing encrypted value
+			// this may happen if the user is being updated, but the password
+			// is not modified (the client will send the existing encrypted password)
+			if (password == PionUserManager::getUser(user_id)->getPassword()) {
+				// it does match -> the password is not being changed!
+				password_encrypted = true;
+				// no need to update the user!
+				//ret = PionUserManager::updateUserHash(user_id, password);
+			} else {
+				// it doesn't match -> assume that the password IS being changed
+				ret = PionUserManager::updateUser(user_id, password);
+			}
 		}
 		
 		// update password in config tree so that it is saved in secure format
-		password = PionUserManager::getUser(user_id)->getPassword();
-		xmlNodeSetContent(password_node,  reinterpret_cast<const xmlChar*>(password.c_str()));
+		// re-check flag since it might be changed
+		if (! password_encrypted)	{
+			password = PionUserManager::getUser(user_id)->getPassword();
+			xmlNodeSetContent(password_node,  reinterpret_cast<const xmlChar*>(password.c_str()));
+		}
 	}
 
 	return ret;
+}
+
+bool UserManager::setUserConfig(xmlNodePtr user_node_ptr, xmlNodePtr config_ptr)
+{
+	// create a copy of the user config parameters
+	xmlNodePtr user_config_copy = xmlCopyNodeList(config_ptr);
+	if (user_config_copy == NULL)
+		return false;
+
+	// nuke the existing user config
+	xmlFreeNodeList(user_node_ptr->children);
+	user_node_ptr->children = NULL;
+	
+	// add the new user config elements
+	if (xmlAddChildList(user_node_ptr, user_config_copy) == NULL) {
+		xmlFreeNodeList(user_config_copy);
+		return false;
+	}
+	
+	return true;
 }
 
 void UserManager::openConfigFile(void)
@@ -172,7 +207,7 @@ std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_p
 
 		// update the configuration parameters (if any)
 		if (config_ptr != NULL) {
-			if (! setPluginConfig(new_node, config_ptr))
+			if (! setUserConfig(new_node, config_ptr))
 				throw AddUserConfigException(getConfigFile());
 		}
 	} else {
@@ -205,7 +240,7 @@ void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_pt
 	updateUserManager(user_id, config_ptr, false, false);
 
 	// update the configuration in the XML tree
-	if (! setPluginConfig(user_node, config_ptr))
+	if (! setUserConfig(user_node, config_ptr))
 		throw UpdateUserConfigException(getConfigFile());
 		
 	// save the new XML config file
