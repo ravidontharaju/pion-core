@@ -100,4 +100,145 @@
     <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
     <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
   </Connection>
+  <Reactor id="3fc4c2f4-10c3-11dd-8222-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>30</X>
+    <Y>60</Y>
+    <Name>web logs 0-3</Name>
+    <Comment/>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>dlf[0-3]</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="5db5b732-10c3-11dd-9dd3-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>30</X>
+    <Y>120</Y>
+    <Name>web logs 4-5</Name>
+    <Comment/>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>dlf[4-5]</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="9768318a-10c3-11dd-b82b-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>30</X>
+    <Y>180</Y>
+    <Name>web logs 6-7</Name>
+    <Comment/>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>dlf[6-7]</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="ad924b62-10c3-11dd-bbcc-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>30</X>
+    <Y>240</Y>
+    <Name>web logs 8-9</Name>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>dlf[8-9]</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="e4a77866-10c3-11dd-ab48-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>390</X>
+    <Y>60</Y>
+    <Name>simple log a</Name>
+    <Comment/>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>elf</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="4b21bfb6-10c4-11dd-970c-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>390</X>
+    <Y>120</Y>
+    <Name>simple log b</Name>
+    <Comment/>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>elf</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="a1839938-10c4-11dd-9e71-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>390</X>
+    <Y>180</Y>
+    <Name>simple log c</Name>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>elf</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="b0ce87c2-10c4-11dd-98ea-001cc02bd66b">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>390</X>
+    <Y>240</Y>
+    <Name>simple log d</Name>
+    <Comment/>
+    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>elf</Filename>
+    <Frequency/>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="1ea9f450-162b-11dd-ae5a-0019e3f89cd2">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>210</X>
+    <Y>60</Y>
+    <Name>stock log a</Name>
+    <Codec>90eb7478-1629-11dd-81cb-0019e3f89cd2</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>stocks</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="460ee33e-162b-11dd-854b-0019e3f89cd2">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>210</X>
+    <Y>120</Y>
+    <Name>stock log b</Name>
+    <Comment/>
+    <Codec>90eb7478-1629-11dd-81cb-0019e3f89cd2</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>stocks</Filename>
+    <Frequency/>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="5082204c-162b-11dd-b16a-0019e3f89cd2">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>210</X>
+    <Y>180</Y>
+    <Name>stock log c</Name>
+    <Codec>90eb7478-1629-11dd-81cb-0019e3f89cd2</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>stocks</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
+  <Reactor id="5e08dd50-162b-11dd-8db5-0019e3f89cd2">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Performance Tests</Workspace>
+    <X>210</X>
+    <Y>240</Y>
+    <Name>stock log d</Name>
+    <Codec>90eb7478-1629-11dd-81cb-0019e3f89cd2</Codec>
+    <Directory>/var/spool/pion</Directory>
+    <Filename>stocks</Filename>
+    <JustOne>true</JustOne>
+  </Reactor>
 </PionConfig>

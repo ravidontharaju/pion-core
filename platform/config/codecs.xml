@@ -40,4 +40,12 @@
     <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
   </Codec>
+  <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
+    <Plugin>LogCodec</Plugin>
+    <Name>Stock Price Log</Name>
+    <EventType>urn:vocab:stocks#stock_event</EventType>
+    <Comment>Codec for log files with stock prices</Comment>
+    <Field term="urn:vocab:stocks#symbol">symbol</Field>
+    <Field term="urn:vocab:stocks#price">price</Field>
+  </Codec>
 </PionConfig>
