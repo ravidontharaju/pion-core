@@ -54,6 +54,9 @@ pion.login.onLoginSuccess = function() {
 	dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
 }
 
+pion.login.latestUsername = "";
+pion.login.latestPassword = "";
+
 pion.login.doLoginDialog = function(login_success_callback) {
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
@@ -63,9 +66,12 @@ pion.login.doLoginDialog = function(login_success_callback) {
 		pion.login.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.login.LoginDialog({});
+	dialog.setValues({Username: pion.login.latestUsername, Password: pion.login.latestPassword});
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		console.debug('dialogFields = ', dialogFields);
+		pion.login.latestUsername = dialogFields.Username;
+		pion.login.latestPassword = dialogFields.Password;
 		dojo.xhrGet({
 			url: '/login?user=' + dialogFields.Username + '&pass=' + dialogFields.Password,
 			preventCache: true,
