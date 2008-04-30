@@ -18,6 +18,11 @@ AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 
+# Setup doxygen support
+DX_DOXYGEN_FEATURE(ON)
+DX_HTML_FEATURE(ON)
+DX_INIT_DOXYGEN(pion-net, net/doc/Doxyfile, net/doc/html)
+
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
 CXXFLAGS="-DPION_NETWORK_LIBRARY"
