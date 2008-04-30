@@ -96,6 +96,7 @@
 	<script type="text/javascript" src="plugins/codecs/Codec.js"></script>
 	<script type="text/javascript" src="plugins/databases/Database.js"></script>
 	<script type="text/javascript" src="plugins/vocabularies/Vocabulary.js"></script>
+	<script type="text/javascript" src="scripts/widgets/User.js"></script>
 	-->
 
 	<script type="text/javascript">
@@ -269,33 +270,6 @@
 				</div>
 				<div id="user_config_content" class="config_content">
 					<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
-						<div dojoType="dijit.layout.AccordionPane" class="user_pane" title="User 1">
-							<form id="user_form" dojoType="dijit.form.Form"><br />
-								<table cellpadding="5" cellspacing="0" border="0">
-									<tr>
-										<td><label>Last name</label></td>
-										<td><input dojoType="dijit.form.TextBox" name="last_name"/></td>
-									</tr>
-									<tr>
-										<td><label>First name</label></td>
-										<td><input dojoType="dijit.form.TextBox" name="first_name"/></td>
-									</tr>
-									<tr>
-										<td><label>Username</label></td>
-										<td><input dojoType="dijit.form.ValidationTextBox" name="username" regExp="[\w-]+"/></td>
-									</tr>
-									<tr>
-										<td><label>Password</label></td>
-										<td><input dojoType="dijit.form.TextBox" type="password" name="password"/></td>
-									</tr>
-								</table><hr noshade="noshade" size="1" color="#999999">
-								<div class="save_cancel_delete">
-									<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-									<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-									<button dojoType=dijit.form.Button class="delete">Delete</button>
-								</div>
-							</form>
-						</div>
 					</div>
 					<div id="user_config_controls">
 						<button dojoType=dijit.form.Button class="add_new" onClick="addNewUser">ADD A NEW USER</button>

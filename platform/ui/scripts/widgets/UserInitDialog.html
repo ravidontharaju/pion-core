@@ -1,0 +1,29 @@
+<div class="dijitDialog user_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Add New User</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>Username</label></td
+				><td><input dojoType="dijit.form.ValidationTextBox" regExp="[\w-]+" name="@id"/></td
+			></tr
+			><tr
+				><td><label>Last name</label></td
+				><td><input dojoType="dijit.form.TextBox" name="LastName"/></td
+			></tr
+			><tr
+				><td><label>First name</label></td
+				><td><input dojoType="dijit.form.TextBox" name="FirstName"/></td
+			></tr
+			><tr
+				><td><label>Password</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Password" type="password"/></td
+			></tr
+		></table
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
+	</div>
+</div>

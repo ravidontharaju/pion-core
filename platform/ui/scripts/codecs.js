@@ -131,7 +131,7 @@ pion.codecs._adjustAccordionSize = function() {
 
 	config_accordion.resize({h: accordion_height, w: accordion_width});
 
-	// TODO: replace 160 with some computed value  (see adjustUserAccordionSize)
+	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
 	pion.codecs.height = accordion_height + 160;
 	dijit.byId('main_stack_container').resize({h: pion.codecs.height});
 }
