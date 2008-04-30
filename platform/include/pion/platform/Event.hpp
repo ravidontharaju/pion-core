@@ -41,7 +41,7 @@
 
 
 /// uncomment the following to use pool allocators for Event memory management
-//#define PION_EVENT_USE_POOL_ALLOCATORS
+#define PION_EVENT_USE_POOL_ALLOCATORS
 
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
 	#include <boost/thread/tss.hpp>
