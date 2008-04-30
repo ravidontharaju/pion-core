@@ -33,6 +33,10 @@
 
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
+	#if defined _MSC_VER
+		#pragma comment(lib, "ssleay32")
+		#pragma comment(lib, "libeay32")
+	#endif 
 #endif
 
 #ifdef __GNUC__
@@ -752,7 +756,7 @@ int main(void) {
 #endif
 
 	boost::scoped_ptr<PerformanceTest> test_ptr;
-/*
+
 	// run the EventAllocTest with one thread
 	test_ptr.reset(new EventAllocTest<1>());
 	test_ptr->run();
@@ -814,7 +818,6 @@ int main(void) {
 	// run the CLFEventPtrAllocTest with four threads
 	test_ptr.reset(new CLFEventPtrAllocTest<4>());
 	test_ptr->run();
-*/
 
 	// run the IntAllocTest with 1 producer & 1 consumer
 	test_ptr.reset(new IntAllocTest<1, 1>());
