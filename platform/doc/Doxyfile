@@ -38,7 +38,7 @@ PROJECT_NUMBER         = 0.5.5
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = 
+OUTPUT_DIRECTORY       = platform/doc
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -462,7 +462,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = ../../common/include ../../common/src ../../net/include ../../net/src ../../net/services ../../net/utils ../include ../src ../codecs ../databases ../reactors ../services ../server
+INPUT                  = common/include common/src net/include net/src net/services net/utils platform/include platform/src platform/codecs platform/databases platform/reactors platform/services platform/server
 
 # This tag can be used to specify the character encoding of the source files that 
 # doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
