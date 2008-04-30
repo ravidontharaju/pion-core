@@ -243,6 +243,13 @@ public:
 		PerformanceTest::setTestDescription(d);
 	}
 
+	/// work function that does nothing
+	void doNothing(void) {}
+    
+	/// work function that just bumps the counter
+	void bumpCounter(boost::uint64_t& thread_counter) { ++thread_counter; }
+    
+
 protected:
 
 	/// returns the current counter value
@@ -260,7 +267,7 @@ protected:
 
 	/// stops the performance test
 	virtual void stopTest(void) {
-		m_is_running = false;
+		PerformanceTest::stopTest();	// sets m_is_running = false
 		for (unsigned int n = 0; n < ConsumerThreads; ++n) {
 			if (m_consumer_threads[n]) m_consumer_threads[n]->join();
 		}
@@ -306,55 +313,175 @@ protected:
 };
 
 
+/// data type used to represent an item of work
+typedef boost::function0<void>	WorkItem;
+
+
 ///
-/// IntAllocTest: tests the raw basline performance of the queue type
+/// WorkTestIoService: tests the raw basline performance of using asio's
+///                    io_service class to distribute work items
 ///
-template < TEST_TEMPLATE_PARAMS >
-class IntAllocTest :
+template <unsigned int ProducerThreads = 1, unsigned int ConsumerThreads = 0>
+class WorkTestIoService :
 	public AllocTest<ProducerThreads, ConsumerThreads>
 {
 public:
 	
 	/// default constructor
-	IntAllocTest(void) {
-		AllocTest<ProducerThreads, ConsumerThreads>::setTestDescriptionWithThreads("IntAllocTest");
+	WorkTestIoService(void)
+		: m_service(), m_timer(m_service)
+	{
+		AllocTest<ProducerThreads, ConsumerThreads>::setTestDescriptionWithThreads("WorkTestIoService");
+		keepRunning();
 	}
 	
 	/// virtual destructor
-	virtual ~IntAllocTest() { PerformanceTest::stop(); }
+	virtual ~WorkTestIoService() { PerformanceTest::stop(); }
 	
 protected:
 	
-	/// thread function used to produce objects
+    /// number of seconds a timer should wait for to keep the IO services running
+    enum { KEEP_RUNNING_TIMER_SECONDS = 100 };
+	
+	
+	/// stops the performance test
+	virtual void stopTest(void) {
+		PerformanceTest::stopTest();	// sets m_is_running = false
+		m_timer.cancel();
+		AllocTest<ProducerThreads, ConsumerThreads>::stopTest();
+	}
+	
+	/// thread function used to produce work
 	virtual void produce(boost::uint64_t& thread_counter) {
-		int n = 0;
+		WorkItem work(boost::bind(&AllocTest<ProducerThreads, ConsumerThreads>::bumpCounter, this,
+								  boost::ref(AllocTest<ProducerThreads, ConsumerThreads>::m_consumer_counters[0])));
 		while (PerformanceTest::isRunning()) {
 			if (ConsumerThreads > 0)
-				m_queue.push(n);
+				m_service.post(work);
 			++thread_counter;
 		}
 	}
 	
-	/// thread function used to consume objects
+	/// thread function used to consume work
 	virtual void consume(boost::uint64_t& thread_counter) {
-		int n = 0;
+		m_service.run();
+	}
+	
+	/// function used to keep the io_service running
+    void keepRunning(void) {
+        if (PerformanceTest::isRunning()) {
+            // schedule this again to make sure the service doesn't complete
+            m_timer.expires_from_now(boost::posix_time::seconds(KEEP_RUNNING_TIMER_SECONDS));
+            m_timer.async_wait(boost::bind(&WorkTestIoService<ProducerThreads, ConsumerThreads>::keepRunning, this));
+        }
+    }
+	
+	
+    /// a service used to queue work objects
+    boost::asio::io_service         m_service;
+	
+    /// timer used to periodically check for shutdown
+    boost::asio::deadline_timer     m_timer;
+};
+
+
+///
+/// WorkTestSleepingQueue: tests the raw basline performance of using a queue 
+///                        with sleeping consumers to distribute work items
+///
+template < TEST_TEMPLATE_PARAMS >
+class WorkTestSleepingQueue :
+	public AllocTest<ProducerThreads, ConsumerThreads>
+{
+public:
+	
+	/// default constructor
+	WorkTestSleepingQueue(void) {
+		AllocTest<ProducerThreads, ConsumerThreads>::setTestDescriptionWithThreads("WorkTestSleepingQueue");
+	}
+	
+	/// virtual destructor
+	virtual ~WorkTestSleepingQueue() { PerformanceTest::stop(); }
+	
+protected:
+	
+	/// thread function used to produce work
+	virtual void produce(boost::uint64_t& thread_counter) {
+		WorkItem work(boost::bind(&AllocTest<ProducerThreads, ConsumerThreads>::doNothing, this));
+		while (PerformanceTest::isRunning()) {
+			if (ConsumerThreads > 0)
+				m_queue.push(work);
+			++thread_counter;
+		}
+	}
+	
+	/// thread function used to consume work
+	virtual void consume(boost::uint64_t& thread_counter) {
+		WorkItem work;
 		while (PerformanceTest::isRunning()) {
 			// sleep 1/8 second if the queue is empty
-			while (PerformanceTest::isRunning() && !m_queue.pop(n))
+			while (PerformanceTest::isRunning() && !m_queue.pop(work))
 				PionScheduler::sleep(0, 125000000);
+			if (! PerformanceTest::isRunning()) break;
+			work();
+			++thread_counter;
+		}
+		// consume the rest of the queue to make sure generate() doesn't hang
+		while (m_queue.pop(work)) ;
+	}
+	
+	
+	/// a shared queue of work
+	QueueType<WorkItem>			m_queue;
+};
+
+
+///
+/// WorkTestBlockingQueue: tests the raw basline performance of using a queue 
+///                        with blocking consumers to distribute work items
+///
+template < TEST_TEMPLATE_PARAMS >
+class WorkTestBlockingQueue :
+	public WorkTestSleepingQueue<ProducerThreads, ConsumerThreads>
+{
+public:
+	
+	/// default constructor
+	WorkTestBlockingQueue(void) {
+		AllocTest<ProducerThreads, ConsumerThreads>::setTestDescriptionWithThreads("WorkTestBlockingQueue");
+	}
+	
+	/// virtual destructor
+	virtual ~WorkTestBlockingQueue() { PerformanceTest::stop(); }
+	
+protected:
+	
+	/// stops the performance test
+	virtual void stopTest(void) {
+		PerformanceTest::stopTest();	// sets m_is_running = false
+
+		// make sure the consumer gets work after m_is_running == false
+		if (ConsumerThreads > 0)
+			WorkTestSleepingQueue<ProducerThreads, ConsumerThreads>::m_queue.push(
+				boost::bind(&AllocTest<ProducerThreads, ConsumerThreads>::doNothing, this));
+		
+		// stop the threads
+		AllocTest<ProducerThreads, ConsumerThreads>::stopTest();
+	}
+
+	/// thread function used to consume objects
+	virtual void consume(boost::uint64_t& thread_counter) {
+		WorkItem work;
+		typename QueueType<WorkItem>::IdleThreadInfo thread_info;
+		while (PerformanceTest::isRunning()) {
+			WorkTestSleepingQueue<ProducerThreads, ConsumerThreads>::m_queue.pop(work, thread_info);
 			if (! PerformanceTest::isRunning()) break;
 			++thread_counter;
 		}
 		// consume the rest of the queue to make sure generate() doesn't hang
-		while (m_queue.pop(n)) ;
+		while (WorkTestSleepingQueue<ProducerThreads, ConsumerThreads>::m_queue.pop(work)) ;
 	}
-	
-private:
-	
-	/// a shared queue of integers
-	QueueType<int>			m_queue;
 };
-
 
 
 ///
@@ -756,7 +883,7 @@ int main(void) {
 #endif
 
 	boost::scoped_ptr<PerformanceTest> test_ptr;
-
+/*
 	// run the EventAllocTest with one thread
 	test_ptr.reset(new EventAllocTest<1>());
 	test_ptr->run();
@@ -786,7 +913,7 @@ int main(void) {
 	test_ptr.reset(new EventSharedGCCPoolAllocTest<2>());
 	test_ptr->run();
 #endif
-
+*/
 	// run the EventPtrAllocTest with one thread
 	test_ptr.reset(new EventPtrAllocTest<1>());
 	test_ptr->run();
@@ -819,14 +946,30 @@ int main(void) {
 	test_ptr.reset(new CLFEventPtrAllocTest<4>());
 	test_ptr->run();
 
-	// run the IntAllocTest with 1 producer & 1 consumer
-	test_ptr.reset(new IntAllocTest<1, 1>());
+	// run the WorkTestIoService with 1 producer & 1 consumer
+	test_ptr.reset(new WorkTestIoService<1, 1>());
 	test_ptr->run();
  
-	// run the IntAllocTest with 2 producer & 2 consumers
-	test_ptr.reset(new IntAllocTest<2, 2>());
+	// run the WorkTestSleepingQueue with 1 producer & 1 consumer
+	test_ptr.reset(new WorkTestSleepingQueue<1, 1>());
+	test_ptr->run();
+	
+	// run the WorkTestBlockingQueue with 1 producer & 1 consumer
+	test_ptr.reset(new WorkTestBlockingQueue<1, 1>());
+	test_ptr->run();
+	
+	// run the WorkTestIoService with 2 producers & 2 consumers
+	test_ptr.reset(new WorkTestIoService<2, 2>());
 	test_ptr->run();
 
+	// run the WorkTestSleepingQueue with 2 producers & 2 consumers
+	test_ptr.reset(new WorkTestSleepingQueue<2, 2>());
+	test_ptr->run();
+	
+	// run the WorkTestBlockingQueue with 2 producers & 2 consumers
+	test_ptr.reset(new WorkTestBlockingQueue<2, 2>());
+	test_ptr->run();
+	
 	// run the EventAllocTest with 1 producer & 1 consumer
 	test_ptr.reset(new EventAllocTest<1, 1>());
 	test_ptr->run();

@@ -29,7 +29,6 @@
 #ifdef _MSC_VER
 	#pragma warning(pop)
 #endif
-#include <boost/thread/tss.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/atomic_count.hpp>
@@ -42,9 +41,10 @@
 
 
 /// uncomment the following to use pool allocators for Event memory management
-#define PION_EVENT_USE_POOL_ALLOCATORS
+//#define PION_EVENT_USE_POOL_ALLOCATORS
 
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
+	#include <boost/thread/tss.hpp>
 	#include <pion/PionPoolAllocator.hpp>
 #else
 	#include <cstdlib>
@@ -900,12 +900,17 @@ private:
 		 */
 		inline static EventAllocator& getAllocator(void) {
 			boost::call_once(EventAllocatorFactory::createInstance, m_instance_flag);
-			EventAllocator *alloc_ptr = m_instance_ptr->m_thread_alloc.get();
+			EventAllocator *alloc_ptr;
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+			alloc_ptr = m_instance_ptr->m_thread_alloc.get();
 			if (alloc_ptr == NULL) {
 				// create and store a new thread-specific allocator
 				alloc_ptr = new EventAllocator();
 				m_instance_ptr->m_thread_alloc.reset(alloc_ptr);
 			}
+#else
+			alloc_ptr = & m_instance_ptr->m_single_alloc;
+#endif
 			return *alloc_ptr;
 		}
 
@@ -914,21 +919,28 @@ private:
 		
 		/// private constructor for singleton pattern
 		EventAllocatorFactory(void)
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
 			: m_thread_alloc(&EventAllocatorFactory::releaseAllocator)
+#endif
 		{}
 		
 		/// creates the singleton instance, protected by boost::call_once
 		static void createInstance(void);
 		
 		/// used by thread_specific_ptr to release allocators
-		inline static void releaseAllocator(EventAllocator *ptr) {
+		static void releaseAllocator(EventAllocator *ptr) {
 			// do nothing since other threads may still need to dealloate Events!
 			//delete ptr;
 		}
 		
 		
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
 		/// points to a thread-specific allocator used to create and destroy Events
 		boost::thread_specific_ptr<EventAllocator>		m_thread_alloc;
+#else
+		/// use a single EventAllocator instance if not using memory pools
+		EventAllocator									m_single_alloc;
+#endif
 		
 		/// points to the singleton instance after creation
 		static EventAllocatorFactory *					m_instance_ptr;
