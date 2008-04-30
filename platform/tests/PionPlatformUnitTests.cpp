@@ -102,6 +102,12 @@ void setup_logging_for_unit_tests(void)
 		log_ptr = PION_GET_LOGGER("pion");
 		PION_LOG_SETLEVEL_WARN(log_ptr);
 		
+#if defined(PION_XCODE)
+		// suppress missing plugin directory warnings in XCode
+		log_ptr = PION_GET_LOGGER("pion.server.PlatformConfig");
+		PION_LOG_SETLEVEL_ERROR(log_ptr);
+#endif
+		
 #ifdef PION_HAVE_SSL
 		// initialize the OpenSSL library
         SSL_library_init();
