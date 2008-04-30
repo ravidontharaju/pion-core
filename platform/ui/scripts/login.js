@@ -55,7 +55,6 @@ pion.login.onLoginSuccess = function() {
 }
 
 pion.login.latestUsername = "";
-pion.login.latestPassword = "";
 
 pion.login.doLoginDialog = function(login_success_callback) {
 	pion.login.login_pending = true;
@@ -66,12 +65,11 @@ pion.login.doLoginDialog = function(login_success_callback) {
 		pion.login.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.login.LoginDialog({});
-	dialog.setValues({Username: pion.login.latestUsername, Password: pion.login.latestPassword});
+	dialog.setValues({Username: pion.login.latestUsername});
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		console.debug('dialogFields = ', dialogFields);
 		pion.login.latestUsername = dialogFields.Username;
-		pion.login.latestPassword = dialogFields.Password;
 		dojo.xhrGet({
 			url: '/login?user=' + dialogFields.Username + '&pass=' + dialogFields.Password,
 			preventCache: true,
