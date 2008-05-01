@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="SQLiteDatabase"
 	ProjectGUID="{B3EBCA6F-F8BA-44CD-9790-5C3B115CBE3B}"
+	RootNamespace="SQLiteDatabase"
 	>
 	<Platforms>
 		<Platform
@@ -32,6 +33,11 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
 			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="sqlite3.lib"
+				ModuleDefinitionFile=""
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
@@ -52,6 +58,11 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
 			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="sqlite3.lib"
+				ModuleDefinitionFile=""
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -63,10 +74,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\sqlite3.c"
-				>
-			</File>
-			<File
 				RelativePath=".\SQLiteDatabase.cpp"
 				>
 			</File>
@@ -76,10 +83,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\sqlite3.h"
-				>
-			</File>
 			<File
 				RelativePath=".\SQLiteDatabase.hpp"
 				>
