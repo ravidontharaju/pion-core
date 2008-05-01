@@ -66,6 +66,14 @@ pion.login.doLoginDialog = function(login_success_callback) {
 	}
 	var dialog = new pion.login.LoginDialog({});
 	dialog.setValues({Username: pion.login.latestUsername});
+	dojo.connect(dialog.domNode, 'onkeypress', 
+		function(event) {
+			if (event.keyCode == dojo.keys.ENTER) {
+				dialog.execute(dialog.getValues()); 
+				dialog.destroyRecursive();
+			}
+		}
+	);
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		console.debug('dialogFields = ', dialogFields);
