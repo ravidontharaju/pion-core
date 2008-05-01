@@ -6,12 +6,14 @@ if test "$2" == "osx"; then
 	SHARED_LIB_SUFFIX=dylib
 	BOOST_SUFFIX=*-mt-1_35.$SHARED_LIB_SUFFIX
 	UUID_LIB=libuuid.16.$SHARED_LIB_SUFFIX
-	LOG4CXX_LIB=liblog4cxx.10.$SHARED_LIB_SUFFIX
+	LOG4CXX_LIB=liblog4cxx.$SHARED_LIB_SUFFIX
+	SQLITE_LIB=libsqlite3.$SHARED_LIB_SUFFIX
 else
 	SHARED_LIB_SUFFIX=so
 	BOOST_SUFFIX=*-mt-1_35.$SHARED_LIB_SUFFIX.1.35.0
 	UUID_LIB=libuuid.$SHARED_LIB_SUFFIX.16
 	LOG4CXX_LIB=liblog4cxx.$SHARED_LIB_SUFFIX.10
+	SQLITE_LIB=libsqlite3.$SHARED_LIB_SUFFIX
 fi
 
 # Determine package name and binary output directory based on args
@@ -40,6 +42,7 @@ mkdir $BIN_DIRECTORY/ui
 echo "Copying binary files.."
 cp $LIB_DIRECTORY/$UUID_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$LOG4CXX_LIB $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_thread$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_system$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_filesystem$BOOST_SUFFIX $BIN_DIRECTORY/libs

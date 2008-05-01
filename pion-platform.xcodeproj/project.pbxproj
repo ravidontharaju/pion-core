@@ -215,8 +215,6 @@
 		E3C1B3600D71D595006B8329 /* LogOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3C1B3120D71D0CC006B8329 /* LogOutputReactor.hpp */; };
 		E3C1B3610D71D5AA006B8329 /* SQLiteDatabase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E40D29BBA000B4C134 /* SQLiteDatabase.cpp */; };
 		E3C1B3620D71D5AB006B8329 /* SQLiteDatabase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88E50D29BBA000B4C134 /* SQLiteDatabase.hpp */; };
-		E3C1B3E40D71DD02006B8329 /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = E3C1B3E20D71DD02006B8329 /* sqlite3.c */; };
-		E3C1B3E50D71DD02006B8329 /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = E3C1B3E30D71DD02006B8329 /* sqlite3.h */; };
 		E3C1B3FA0D71DEB5006B8329 /* libpion-common.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E36F2E260CA789CD00120C6D /* libpion-common.dylib */; };
 		E3C1B3FB0D71DEB5006B8329 /* libpion-platform.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E33288B80BEE50B4006D0556 /* libpion-platform.dylib */; };
 		E3C1B4240D71FD41006B8329 /* LogInputReactor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C1B30F0D71D0CC006B8329 /* LogInputReactor.cpp */; };
@@ -1063,7 +1061,7 @@
 		E3A9CE140D33EDCB0094ECEE /* Database.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Database.cpp; path = platform/src/Database.cpp; sourceTree = SOURCE_ROOT; };
 		E3A9CE150D33EDCB0094ECEE /* Reactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Reactor.cpp; path = platform/src/Reactor.cpp; sourceTree = SOURCE_ROOT; };
 		E3A9D1680D367F040094ECEE /* PionDateTime.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionDateTime.hpp; path = common/include/pion/PionDateTime.hpp; sourceTree = SOURCE_ROOT; };
-		E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionConfig.hpp; path = common/include/pion/PionConfig.hpp; sourceTree = SOURCE_ROOT; };
+		E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 30; name = PionConfig.hpp; path = common/include/pion/PionConfig.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2690CADC46B001A9A8D /* PionException.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionException.hpp; path = common/include/pion/PionException.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionHashMap.hpp; path = common/include/pion/PionHashMap.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A26B0CADC46B001A9A8D /* PionLogger.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionLogger.hpp; path = common/include/pion/PionLogger.hpp; sourceTree = SOURCE_ROOT; };
@@ -1089,8 +1087,6 @@
 		E3C1B3540D71D50F006B8329 /* SQLiteDatabase.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = SQLiteDatabase.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C1B3570D71D55D006B8329 /* TransformReactor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransformReactor.cpp; path = platform/reactors/TransformReactor.cpp; sourceTree = SOURCE_ROOT; };
 		E3C1B3580D71D55D006B8329 /* TransformReactor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TransformReactor.hpp; path = platform/reactors/TransformReactor.hpp; sourceTree = SOURCE_ROOT; };
-		E3C1B3E20D71DD02006B8329 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = platform/databases/sqlite3.c; sourceTree = SOURCE_ROOT; };
-		E3C1B3E30D71DD02006B8329 /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = platform/databases/sqlite3.h; sourceTree = SOURCE_ROOT; };
 		E3C1B3FF0D71DEB5006B8329 /* DatabaseOutputReactor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = DatabaseOutputReactor.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComparisonTests.cpp; path = platform/tests/ComparisonTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3CFE2080CCFF7D500016E0F /* PionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionScheduler.hpp; path = common/include/pion/PionScheduler.hpp; sourceTree = SOURCE_ROOT; };
@@ -1604,8 +1600,6 @@
 		E3A316E10CFCCA720020656F /* databases */ = {
 			isa = PBXGroup;
 			children = (
-				E3C1B3E30D71DD02006B8329 /* sqlite3.h */,
-				E3C1B3E20D71DD02006B8329 /* sqlite3.c */,
 				E36D88E50D29BBA000B4C134 /* SQLiteDatabase.hpp */,
 				E36D88E40D29BBA000B4C134 /* SQLiteDatabase.cpp */,
 			);
@@ -1975,7 +1969,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3C1B3620D71D5AB006B8329 /* SQLiteDatabase.hpp in Headers */,
-				E3C1B3E50D71DD02006B8329 /* sqlite3.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2350,6 +2343,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E36F2E270CA78A0100120C6D /* Build configuration list for PBXNativeTarget "pion-common: dynamic" */;
 			buildPhases = (
+				E3CCF5270DCA791B001F51CB /* ShellScript */,
 				E36F2E220CA789CD00120C6D /* Headers */,
 				E36F2E230CA789CD00120C6D /* Sources */,
 				E36F2E240CA789CD00120C6D /* Frameworks */,
@@ -2367,6 +2361,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E36F2E410CA78A7000120C6D /* Build configuration list for PBXNativeTarget "pion-common: static" */;
 			buildPhases = (
+				E3CCF5010DCA74A2001F51CB /* ShellScript */,
 				E36F2E2A0CA78A0400120C6D /* Headers */,
 				E36F2E2B0CA78A0400120C6D /* Sources */,
 				E36F2E2C0CA78A0400120C6D /* Frameworks */,
@@ -2670,6 +2665,36 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		E3CCF5010DCA74A2001F51CB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			comments = "Generate PionConfig.hpp file";
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if !(test -r \"$PROJECT_DIR/common/include/pion/PionConfig.hpp\"); then\n\tcp $PROJECT_DIR/common/include/pion/PionConfig.hpp.xcode $PROJECT_DIR/common/include/pion/PionConfig.hpp\nfi";
+		};
+		E3CCF5270DCA791B001F51CB /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if !(test -r \"$PROJECT_DIR/common/include/pion/PionConfig.hpp\"); then\n\tcp $PROJECT_DIR/common/include/pion/PionConfig.hpp.xcode $PROJECT_DIR/common/include/pion/PionConfig.hpp\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		E306A81D0D6647260069A023 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -2876,7 +2901,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3C1B3610D71D5AA006B8329 /* SQLiteDatabase.cpp in Sources */,
-				E3C1B3E40D71DD02006B8329 /* sqlite3.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3470,6 +3494,7 @@
 					"-lz",
 					"-lxml2",
 					"-luuid",
+					"-lsqlite3",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -3519,6 +3544,7 @@
 					"-lz",
 					"-lxml2",
 					"-luuid",
+					"-lsqlite3",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";

@@ -138,37 +138,38 @@ AC_SUBST(PION_JSON_LIB)
 
 
 # Check for SQLite library
-#AC_MSG_CHECKING([for SQLite database support (sqlite)])
-#AC_ARG_WITH([sqlite],
-#    AC_HELP_STRING([--with-sqlite@<:@=DIR@:>@],[location of SQLite (v3) library]),
-#    [ sqlite_location=$withval ], [ without_sqlite=true ])
-#if test "$without_sqlite" != "true"; then
-#	AC_MSG_RESULT(yes)
-#	# Check for sqlite headers
-#	if test "x$sqlite_location" != "xyes"; then
-#		CPPFLAGS="$CPPFLAGS -I$sqlite_location/include"
-#		LDFLAGS="$LDFLAGS -L$sqlite_location/lib"
-#	fi
-#	AC_CHECK_HEADERS([sqlite3.h],,AC_MSG_ERROR([Unable to find the SQLite headers]))
-#	# Check for SQLite library
-#	LIBS_SAVED="$LIBS"
-#	LIBS="$LIBS_SAVED -lsqlite3"
-#	AC_MSG_CHECKING(linking with SQLite)
-#	AC_TRY_LINK([#include <sqlite3.h>],[ sqlite3_libversion_number(); return(0); ],
-#		[ AC_MSG_RESULT(ok) ],
-#		[ AC_MSG_RESULT(failed)
-#		  AC_MSG_ERROR(Unable to link with the SQLite library)
-#		])
-#	LIBS="$LIBS_SAVED"
-#	PION_SQLITE_LIB="-lsqlite3"
-#	# Found the SQLite library
-#	PION_HAVE_SQLITE="-DPION_HAVE_SQLITE"
-#else
-#	# Display notice if SQLite is disabled
-#	AC_MSG_RESULT(no)
-#fi
-#AC_SUBST(PION_HAVE_SQLITE)
-#AC_SUBST(PION_SQLITE_LIB)
+AC_MSG_CHECKING([for SQLite database support (sqlite)])
+AC_ARG_WITH([sqlite],
+    AC_HELP_STRING([--with-sqlite@<:@=DIR@:>@],[location of SQLite (v3) library]),
+    [ sqlite_location=$withval ], [ without_sqlite=true ])
+if test "$without_sqlite" != "true"; then
+	AC_MSG_RESULT(yes)
+	# Check for sqlite headers
+	if test "x$sqlite_location" != "xyes"; then
+		CPPFLAGS="$CPPFLAGS -I$sqlite_location/include"
+		LDFLAGS="$LDFLAGS -L$sqlite_location/lib"
+	fi
+	AC_CHECK_HEADERS([sqlite3.h],,AC_MSG_ERROR([Unable to find the SQLite headers]))
+	# Check for SQLite library
+	LIBS_SAVED="$LIBS"
+	LIBS="$LIBS_SAVED -lsqlite3"
+	AC_MSG_CHECKING(linking with SQLite)
+	AC_TRY_LINK([#include <sqlite3.h>],[ sqlite3_libversion_number(); return(0); ],
+		[ AC_MSG_RESULT(ok) ],
+		[ AC_MSG_RESULT(failed)
+		  AC_MSG_ERROR(Unable to link with the SQLite library)
+		])
+	LIBS="$LIBS_SAVED"
+	PION_SQLITE_LIB="-lsqlite3"
+	# Found the SQLite library
+	PION_HAVE_SQLITE="-DPION_HAVE_SQLITE"
+	PION_DATABASES="$PION_DATABASES SQLiteDatabase.la"
+else
+	# Display notice if SQLite is disabled
+	AC_MSG_RESULT(no)
+fi
+AC_SUBST(PION_HAVE_SQLITE)
+AC_SUBST(PION_SQLITE_LIB)
 
 
 # Check for MySQL library
@@ -204,5 +205,6 @@ fi
 AC_SUBST(PION_HAVE_MYSQL)
 AC_SUBST(PION_MYSQL_LIB)
 
-PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB"
+PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB $PION_SQLITE_LIB $PION_MYSQL_LIB"
 AC_SUBST(PION_PLATFORM_LIBS)
+AC_SUBST(PION_DATABASES)
