@@ -237,14 +237,16 @@ label {
 #menu .dijitButtonNode {
 	background: none;
 	background-color: #9e9e9e;
+	margin-right: 5px;
+	margin-top: 4px;
 }
 
 
-#menu span
-{
-	//padding-right: 20px;
+#menu span {
 	padding-right: 5px;
 }
+
+
 /*
 A highly simplified extract of the generated HTML for a stack controller with two buttons, with the second one selected.
 

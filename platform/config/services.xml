@@ -6,6 +6,7 @@
 		<Restrict>/config</Restrict>
 		<Restrict>/feed</Restrict>
 		<Restrict>/log</Restrict>
+		<Permit>/login.html</Permit>		
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>
