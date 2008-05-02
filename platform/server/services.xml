@@ -25,12 +25,12 @@
 			<Comment>Delivers user interface files</Comment>
 			<Plugin>FileService</Plugin>
 			<Resource>/</Resource>
-			<Option name="file">../../platform/ui/index.html</Option>
 			<Option name="directory">../../platform/ui/</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
 		</WebService>
+		<!--
 		<WebService id="dojo-src-service">
 			<Name>Dojo Source Service</Name>
 			<Comment>Delivers Dojo source files (for debugging)</Comment>
@@ -41,6 +41,7 @@
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
 		</WebService>
+		-->
 		<PlatformService id="config-service">
 			<Name>Configuration Service</Name>
 			<Comment>Pion platform configuration service</Comment>

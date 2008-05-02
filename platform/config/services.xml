@@ -3,16 +3,28 @@
 	<Server id="main-server">
 		<Port>8080</Port>
 		<SSLKey>sslkey.pem</SSLKey>
-		<Restrict>/config</Restrict>
-		<Restrict>/feed</Restrict>
-		<Restrict>/log</Restrict>
-		<Permit>/login.html</Permit>		
+		<Redirect>
+			<Source>/</Source>
+			<Target>/index.html</Target>
+		</Redirect>
+		<Restrict>/</Restrict>
+		<Permit>/index.html</Permit>
+		<Permit>/login.html</Permit>
+		<Permit>/dojo</Permit>
+		<Permit>/dojo-src</Permit>
+		<Permit>/dojo-release</Permit>
+		<Permit>/images</Permit>
+		<Permit>/plugins</Permit>
+		<Permit>/resources</Permit>
+		<Permit>/scripts</Permit>
+		<Permit>/styles</Permit>
+		<Login>/login</Login>
+		<Logout>/logout</Logout>
 		<WebService id="ui-service">
 			<Name>User Interface Service</Name>
 			<Comment>Delivers user interface files</Comment>
 			<Plugin>FileService</Plugin>
 			<Resource>/</Resource>
-			<Option name="file">./ui/index.html</Option>
 			<Option name="directory">./ui/</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
