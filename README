@@ -18,7 +18,7 @@ Build and installation summary:
 # make check	(this will build and run Pion's unit tests)
 # make install	(this may require superuser/Administrator privileges)
 
-Starting with 0.6.0, Pion REQUIRES the Boost C++ libraries (version 1.35.0
+Starting with 0.5.6, Pion REQUIRES the Boost C++ libraries (version 1.35.0
 or greater). Please see the README.boost file within the "common/doc"
 subdirectory for instructions on how to download, build and install Boost.
 

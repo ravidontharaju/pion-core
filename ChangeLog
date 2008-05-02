@@ -1,3 +1,16 @@
+Version 0.5.6 (2008-05-02)
+==========================
+
+* Added support for user authentication using cookies and HTTP Basic-Auth
+* Added support to HTTPServer to redirect/rewrite HTTP requests internally
+* Updated HTTPRequest to track the original resource requested when redirected
+* Refactored PionScheduler so that two scheduling policies are now provided
+* Added PionLockedQueue and PionLockFreeQueue based on Michael & Scott's work
+* Added "make docs" Unix build option that uses Doxygen to build all the docs
+* Unix build scripts now support dynamic versions of the Boost.UnitTest libs
+* Boost 1.35.0 or later is now REQUIRED (it includes ASIO); see README.boost
+
+
 Version 0.5.4 (2008-03-07)
 ==========================
 
