@@ -25,6 +25,7 @@ DX_INIT_DOXYGEN(pion-platform, platform/doc/Doxyfile, platform/doc/html)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
+CFLAGS="-DPION_PLATFORM"
 CXXFLAGS="-DPION_PLATFORM"
 
 # Currently only the embedded common library can be used
