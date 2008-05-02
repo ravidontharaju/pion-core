@@ -42,6 +42,8 @@ bool UserManager::updateUserManager(const std::string& user_id,
 	xmlNodePtr config_ptr, bool password_encrypted, bool new_user)
 {
 	bool ret=false;
+	
+#ifdef PION_HAVE_SSL
 	std::string password;
 
 	// try to find the user's password in the XML config
@@ -96,6 +98,7 @@ bool UserManager::updateUserManager(const std::string& user_id,
 			xmlNodeSetContent(password_node,  reinterpret_cast<const xmlChar*>(password.c_str()));
 		}
 	}
+#endif
 
 	return ret;
 }
@@ -133,17 +136,27 @@ void UserManager::openConfigFile(void)
 
 	// some strings that get re-used a bunch
 	std::string user_id;
+	
+	// keeps track of whether or not we logged a "missing openssl" error
+	bool logged_error_msg = false;
 
 	// step through user configurations
 	xmlNodePtr user_node = m_config_node_ptr->children;
 	while ( (user_node = ConfigManager::findConfigNodeByName(USER_ELEMENT_NAME, user_node)) != NULL)
 	{
+#ifdef PION_HAVE_SSL
 		// get the unique identifier for the User (username)
 		if (! getNodeId(user_node, user_id))
 			throw NoUserIdException(getConfigFile());
 
 		// add user to authentication manager
 		updateUserManager(user_id, user_node->children, true, true);
+#else
+		if (! logged_error_msg) {
+			PION_LOG_ERROR(m_logger, "Missing OpenSSL library: user management is disabled!");
+			logged_error_msg = true;
+		}
+#endif
 
 		// step to the next user definition
 		user_node = user_node->next;
@@ -181,6 +194,8 @@ bool UserManager::writeConfigXML(std::ostream& out,
 
 std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_ptr)
 {
+#ifdef PION_HAVE_SSL
+
 	boost::mutex::scoped_lock users_lock(m_mutex);
 
 	// Sanity check
@@ -216,7 +231,10 @@ std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_p
 
 	// save the new XML config file
 	saveConfigFile();
-
+#else
+	throw MissingOpenSSLException();
+#endif
+	
 	return user_id;
 }
 
@@ -226,6 +244,7 @@ void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_pt
 	if (user_id.empty())
 		throw NoUserIdException(getConfigFile());
 
+#ifdef PION_HAVE_SSL
 	// Find existing user configuration
 	boost::mutex::scoped_lock users_lock(m_mutex);
 	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME,
@@ -245,12 +264,16 @@ void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_pt
 		
 	// save the new XML config file
 	saveConfigFile();
+#else
+	throw MissingOpenSSLException();
+#endif
 }
 
 bool UserManager::removeUser(const std::string& user_id)
 {
-	bool ret;
+	bool ret = false;
 
+#ifdef PION_HAVE_SSL
 	boost::mutex::scoped_lock users_lock(m_mutex);
 	ret = PionUserManager::removeUser(user_id);
 	if (ret) {
@@ -258,7 +281,10 @@ bool UserManager::removeUser(const std::string& user_id)
 		// save the new XML config file
 		saveConfigFile();
 	}
-
+#else
+	throw MissingOpenSSLException();
+#endif
+	
 	return ret;
 }
 

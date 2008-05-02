@@ -593,6 +593,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveBigIntTerm) {
 	BOOST_CHECK(! m_platform_cfg.getVocabularyManager().hasTerm(m_big_int_id));
 }
 
+#ifdef PION_HAVE_SSL
 BOOST_AUTO_TEST_CASE(checkEchoServiceIsProtected) {
 	// make a request to get echo service
 	HTTPRequest request;
@@ -730,6 +731,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveUser) {
 	// make sure that the user can no longer login
 	BOOST_CHECK(!checkUserLogin(user_id, "123456"));
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
 

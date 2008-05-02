@@ -43,6 +43,14 @@ class PION_SERVER_API UserManager :
 {
 public:
 
+	/// exception thrown if Pion is built without support for OpenSSL
+	class MissingOpenSSLException : public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "Missing OpenSSL library: user management is disabled!";
+		}
+	};
+	
 	/// exception thrown if the config file contains a Server with an empty or missing identifier
 	class NoUserIdException : public PionException {
 	public:
