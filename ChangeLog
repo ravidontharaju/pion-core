@@ -1,3 +1,25 @@
+Version 0.5.6 (2008-05-02)
+==========================
+
+* Added support for user authentication and user management in the UI
+* Added support for adding, changing and deleting Vocabularies in the UI
+* Updated UI to support the Internet Explorer and Safari web browsers
+* Improved performance of Event memory operations & ReactionEngine scheduling
+* Made SQLite external: use --with-sqlite to enable support for Unix builds
+* Fixed compatibility problems with RHEL5 that was causing unit tests to fail
+* Added "JustOne" parameter to LogInputReactor for performance/load testing
+* Vocabulary locks in the UI should now correctly prevent any modifications
+* Fixed some bugs with the display of Comparisons in FilterReactors dialogs
+* Fixed a bug that displayed non-existing connections to deleted Reactors
+* Fixed problems with using multiple Reactor workspaces in the UI
+* Deleting a Reactor workspace in the UI now deletes all Reactors it contains
+* Updated JavaScript to use Dojo 1.1.1 and optimized UI code for size/speed
+* Added a "stocks" vocabulary and code, to server as another metadata example
+* Added "make docs" Unix build option that uses Doxygen to build all the docs
+* Unix build scripts now support dynamic versions of the Boost.UnitTest libs
+* Boost 1.35.0 or later is now REQUIRED (it includes ASIO); see README.boost
+
+
 Version 0.5.4 (2008-03-07)
 ==========================
 
