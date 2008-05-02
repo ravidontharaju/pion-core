@@ -29,7 +29,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of ReactionEngine
 	
-const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 8;
+const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 32;
 const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
 const std::string		ReactionEngine::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
