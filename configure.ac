@@ -25,6 +25,7 @@ DX_INIT_DOXYGEN(pion-common, common/doc/Doxyfile, common/doc/html)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
+CFLAGS="-DPION_COMMON_LIBRARY"
 CXXFLAGS="-DPION_COMMON_LIBRARY"
 
 # Include pion-config.m4
