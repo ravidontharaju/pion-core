@@ -39,7 +39,7 @@
 	#endif 
 #endif
 
-#ifdef __GNUC__
+#if 0
 	// for tests that use the GNU "multithread" allocator included with GCC
 	#include <ext/mt_allocator.h>
 	/// data type for an Event allocator that uses the GCC "multithread" allocator
@@ -708,7 +708,7 @@ private:
 };
 
 
-#ifdef __GNUC__
+#if 0
 ///
 /// EventSharedGCCPoolAllocTest: tests the performance of simultaneously 
 ///                              generating Event objects in 1 or more threads
@@ -904,7 +904,7 @@ int main(void) {
 	test_ptr.reset(new EventUniqueBoostPoolAllocTest<1>(false));
 	test_ptr->run();
 
-#ifdef __GNUC__
+#if 0
 	// run the EventSharedGCCPoolAllocTest with one thread
 	test_ptr.reset(new EventSharedGCCPoolAllocTest<1>());
 	test_ptr->run();
