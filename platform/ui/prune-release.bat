@@ -3,6 +3,7 @@ rem remove most unneeded files from dojo-release
 rem remove top level unneeded folders
 rmdir /S /Q dojo-release\pion
 rmdir /S /Q dojo-release\plugins
+rmdir /S /Q dojo-release\resources
 rmdir /S /Q dojo-release\util
 
 rem remove everything from dojo except resources\, nls\pion-dojo_en*.js and a few top level files.
