@@ -25,6 +25,7 @@ DX_INIT_DOXYGEN(pion-net, net/doc/Doxyfile, net/doc/html)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
+CFLAGS="-DPION_NETWORK_LIBRARY"
 CXXFLAGS="-DPION_NETWORK_LIBRARY"
 
 # Currently only the embedded common library can be used
