@@ -601,7 +601,7 @@ BOOST_AUTO_TEST_CASE(checkEchoServiceIsProtected) {
 	HTTPResponsePtr response_ptr(sendRequest(request));
 	
 	// check that the response is "not authorized"
-	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), 401);
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), 401UL);
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewUser) {
