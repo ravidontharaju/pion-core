@@ -21,12 +21,12 @@ This distribution includes the following files:
 README.txt         This README file
 HISTORY.txt        Pion Platform version history (or "change log")
 LICENSE.txt        The GNU Affero General Public License
-Pion.app           Mac OS X (10.5 / Intel) binary application
+Pion.app           Mac OS X (10.5 Universal) binary application
 
 To start Pion, just double-click on the Pion.app (or "Pion") application.
 This will start the Pion server and open a log window on your desktop.
-Once the server is running, open your (Firefox) web browser and point it to
-the following URL:  https://localhost:8080
+Once the server is running, open your (Firefox or IE7) web browser and point
+it to the following URL:  https://localhost:8080
 
 This will open the Pion user interface to the "Reactors configuration" page.
 For an intro to Pion's user interface, please see the online tour at:
@@ -41,36 +41,27 @@ it may cause you to lose data.
 
 This release has the following limitations:
 
-a) Currently, only the Firefox web browser works properly with the UI.  We
-   plan to add support for additional browsers (namely IE and Safari) soon.
+a) Currently, the Safari web browser seems to have serious problems with SSL.
 
-b) User authentication has not yet been implemented.  You can create, edit
-   and remove user accounts using the UI, but this data is not currently
-   being saved or used in any way.
-
-c) The "Vocabularies" section of the user interface is currently read-only.
-   You can add, change and remove vocabularies by modifying the XML
-   configuration files directly, although we recommend that you don't. =)
-
-d) If you drag a reactor over top an existing reactor within the workspace,
+b) If you drag a reactor over top an existing reactor within the workspace,
    it sometimes becomes un-droppable.  Drag around existing reactors instead.
 
-e) You must hit <enter> after making any changes within the user interface
+c) You must hit <enter> after making any changes within the user interface
    configuration grids.  If you hit the "save" button before hitting <enter>,
    your change will not be saved.
 
-f) You must stop, and then start some Reactors for them to recognize certain
+d) You must stop, and then start some Reactors for them to recognize certain
    configuration changes.
 
-g) The following plugins are not functional: JSONCodec, XMLCodec and the
+e) The following plugins are not functional: JSONCodec, XMLCodec and the
    TransformReactor
 
-h) The LogInputReactor is missing a significant amount of functionality that
+f) The LogInputReactor is missing a significant amount of functionality that
    we plan to add in future releases.
 
-i) The LogOutputReactor does not support log file rotation or compression.
+g) The LogOutputReactor does not support log file rotation or compression.
 
-j) The running states of Reactors (started/stopped) are not saved in the
+h) The running states of Reactors (started/stopped) are not saved in the
    configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned
