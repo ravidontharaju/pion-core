@@ -1,0 +1,23 @@
+How to do a Dojo custom build of the Pion UI:
+
+* Bring pion.profile.js up to date, with any new required modules or prefixes added.
+
+* Make sure a source version of Dojo is installed at C:\dojo-release-1.1.0-src\.
+  (If not, download http://download.dojotoolkit.org/current-dev/dojo-release-1.1.0-src.zip
+  and extract it into C:.)
+
+* Run build.bat, which calls C:\dojo-release-1.1.0-src\util\buildscripts\build.bat
+  with the appropriate parameters, and with pion.profile.js in the right place.
+  This results in a release folder C:\dojo-release-1.1.0-src\release\dojo-release.
+
+* Run copy-subset.bat, to copy a sufficient subset of files from the release folder 
+  to the local release folder (ui/dojo-release), overwriting the current files.
+
+* Make sure that the local release folder is actually sufficient, by trying to open 
+  the Pion UI in a browser.  copy-subset.bat might occasionally need to be updated 
+  to reflect new required files.  (Updating might also be desirable to remove more 
+  unneeded files.  In this case, files that are longer being copied will have to be 
+  manually deleted from the repository, since the local dojo-release is under source 
+  control.)
+
+* Once the new local dojo-release is ready, commit any files that have changed.
