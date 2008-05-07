@@ -92,7 +92,7 @@ pion.users._adjustAccordionSize = function() {
 	var num_users = config_accordion.getChildren().length;
 	console.debug("num_users = " + num_users);
 
-	var user_pane_body_height = 200;
+	var user_pane_body_height = 210;
 	var title_height = 0;
 	if (num_users > 0) {
 		var first_pane = config_accordion.getChildren()[0];
@@ -122,7 +122,7 @@ function userPaneSelected(pane) {
 	if (selected_user_pane && dojo.hasClass(selected_user_pane.domNode, 'unsaved_changes')) {
 		var dialog = dijit.byId('unsaved_changes_dialog');
 		dialog.show();
-		
+
 		// Return to the previously selected pane.
 		setTimeout("dijit.byId('user_config_accordion').selectChild(selected_user_pane)", 500);
 		return;
@@ -139,6 +139,10 @@ function userPaneSelected(pane) {
 		},
 		onError: pion.handleFetchError
 	});
+
+	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	var slide_duration = dijit.byId('user_config_accordion').duration;
+	setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 }
 
 dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);

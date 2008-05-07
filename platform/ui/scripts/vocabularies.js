@@ -93,6 +93,10 @@ pion.vocabularies.init = function() {
 		selected_pane = pane;
 		pion.vocabularies.selected_pane = selected_pane;
 		pane.populateFromVocabStore();
+
+		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+		var slide_duration = dijit.byId('vocab_config_accordion').duration;
+		setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 	}
 
 	dojo.subscribe("vocab_config_accordion-selectChild", _paneSelected);

@@ -62,14 +62,14 @@ pion.databases.init = function() {
 		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
 			var dialog = dijit.byId('unsaved_changes_dialog');
 			dialog.show();
-			
+
 			// Return to the previously selected pane.
 			setTimeout(function(){dijit.byId('database_config_accordion').selectChild(selected_pane);}, 500);
 			return;
 		}
 
 		selected_pane = pane;
-		
+
 		// TODO: When should we use the item we have rather than querying the store?  Should we 
 		// always do a query in case the configuration has been updated in some other way?
 		// Is there a clean way to avoid another query after we've just created a database (and
@@ -99,6 +99,10 @@ pion.databases.init = function() {
 			},
 			onError: pion.handleFetchError
 		});
+
+		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+		var slide_duration = dijit.byId('database_config_accordion').duration;
+		setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 	}
 
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);

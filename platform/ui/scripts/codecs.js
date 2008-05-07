@@ -50,7 +50,7 @@ pion.codecs.init = function() {
 
 		var first_pane = config_accordion.getChildren()[0];
 		config_accordion.selectChild(first_pane);
-	}	
+	}
 
 	if (file_protocol) {
 		dijit.byId('codec_config_accordion').removeChild(selected_codec_pane);
@@ -162,4 +162,8 @@ function codecPaneSelected(pane) {
 		},
 		onError: pion.handleFetchError
 	});
+
+	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	var slide_duration = dijit.byId('codec_config_accordion').duration;
+	setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 }

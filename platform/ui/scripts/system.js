@@ -80,7 +80,7 @@ pion.system.init = function() {
 					row_nodes[i] = dojo.clone(row_node_to_clone);
 					plugin_paths_table.appendChild(row_nodes[i]);
 				}
-				row_nodes[i].getElementsByTagName('label')[0].innerHTML = 'Plug-In Path ' + (i + 1);
+				row_nodes[i].getElementsByTagName('label')[0].innerHTML = 'Plugin Path ' + (i + 1);
 				var plugin_path = dojo.isIE? plugin_paths[i].xml : plugin_paths[i].textContent;
 				row_nodes[i].getElementsByTagName('td')[1].innerHTML = plugin_path;
 			}
