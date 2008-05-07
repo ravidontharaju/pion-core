@@ -10,8 +10,6 @@
 		<Restrict>/</Restrict>
 		<Permit>/index.html</Permit>
 		<Permit>/login.html</Permit>
-		<Permit>/dojo</Permit>
-		<Permit>/dojo-src</Permit>
 		<Permit>/dojo-release</Permit>
 		<Permit>/images</Permit>
 		<Permit>/plugins</Permit>
@@ -31,6 +29,7 @@
 			<Option name="writable">false</Option>
 		</WebService>
 		<!--
+		<Permit>/dojo-src</Permit>
 		<WebService id="dojo-src-service">
 			<Name>Dojo Source Service</Name>
 			<Comment>Delivers Dojo source files (for debugging)</Comment>

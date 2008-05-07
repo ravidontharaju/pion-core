@@ -10,8 +10,6 @@
 		<Restrict>/</Restrict>
 		<Permit>/index.html</Permit>
 		<Permit>/login.html</Permit>
-		<Permit>/dojo</Permit>
-		<Permit>/dojo-src</Permit>
 		<Permit>/dojo-release</Permit>
 		<Permit>/images</Permit>
 		<Permit>/plugins</Permit>
