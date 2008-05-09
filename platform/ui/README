@@ -6,9 +6,14 @@ only a handful of files need to be loaded.  However, if you want to edit or debu
 the Pion UI source code (in ui/scripts, ui/plugins and ui/resources), you will need 
 your own copy of Dojo: download 
 http://download.dojotoolkit.org/current-dev/dojo-release-1.1.0-src.zip
-and extract it into C:.  Then follow the directions in index.html about how to use
-the source code instead of the built code, and uncomment the block in services.xml
-defining dojo-src-service.
+and extract it into C:, or get it from Subversion:
+svn co http://svn.dojotoolkit.org/src/tags/release-1.1.0/ C:\dojo-release-1.1.0-src
+(For non-Windows systems, install it anywhere, and see notes below.)
+
+Uncomment the block in services.xml defining dojo-src-service, and if Dojo was 
+installed elsewhere than C:\dojo-release-1.1.0-src, change the "directory" Option 
+to the actual directory.  Follow the directions in index.html about how to use
+the source code instead of the built code.
 
 If you make changes and want to do a new Dojo custom build, see 
-dojo-custom-build/README. 
+dojo-custom-build/README.  (Not yet implemented for non-Windows systems.)

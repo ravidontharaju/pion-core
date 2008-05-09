@@ -8,6 +8,7 @@ copy /y %releaseDir%\dojo\dojo.js              ..\dojo-release\dojo\dojo.js
 copy /y %releaseDir%\dojo\pion-dojo.js         ..\dojo-release\dojo\pion-dojo.js
 copy /y %releaseDir%\dojo\build.txt            ..\dojo-release\dojo\build.txt
 copy /y %releaseDir%\dojo\LICENSE              ..\dojo-release\dojo\LICENSE
+copy /y %releaseDir%\dojo\_firebug             ..\dojo-release\dojo\_firebug
 
 copy /y %releaseDir%\dijit\templates           ..\dojo-release\dijit\templates
 copy /y %releaseDir%\dijit\themes\*.css        ..\dojo-release\dijit\themes
