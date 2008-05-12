@@ -49,22 +49,24 @@ bool UserManager::updateUserManager(const std::string& user_id,
 	// try to find the user's password in the XML config
 	xmlNodePtr password_node = findConfigNodeByName(PASSWORD_ELEMENT_NAME, config_ptr);
 	if (password_node == NULL) 
-		throw NoPasswordException(getConfigFile());	// not found
+		throw NoPasswordException(user_id);	// not found
 
 	// get password value
 	xmlChar *xml_char_ptr = xmlNodeGetContent(password_node);
 	if (xml_char_ptr == NULL)
-		throw NoPasswordException(getConfigFile());	// no password content
+		throw NoPasswordException(user_id);	// no password content
 	password = reinterpret_cast<char*>(xml_char_ptr);
 	xmlFree(xml_char_ptr);
 	if (password.empty())
-		throw NoPasswordException(getConfigFile());	// no password content
+		throw NoPasswordException(user_id);	// no password content
 
 	if (password_encrypted) {
 		// password is already encrypted
 		if (new_user) {
 			// add new user
 			ret = PionUserManager::addUserHash(user_id, password);
+			if (!ret) 
+				throw DuplicateUserException(user_id);
 		} else {
 			// update existing user
 			ret = PionUserManager::updateUserHash(user_id, password);
@@ -74,6 +76,8 @@ bool UserManager::updateUserManager(const std::string& user_id,
 		if (new_user) {
 			// add new user
 			ret = PionUserManager::addUser(user_id, password);
+			if (!ret) 
+				throw DuplicateUserException(user_id);
 		} else {
 			// update existing user
 			
@@ -147,7 +151,7 @@ void UserManager::openConfigFile(void)
 #ifdef PION_HAVE_SSL
 		// get the unique identifier for the User (username)
 		if (! getNodeId(user_node, user_id))
-			throw NoUserIdException(getConfigFile());
+			throw MissingUserIdInConfigFileException(getConfigFile());
 
 		// add user to authentication manager
 		updateUserManager(user_id, user_node->children, true, true);
@@ -200,7 +204,7 @@ std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_p
 
 	// Sanity check
 	if (user_id.empty())
-		throw NoUserIdException(getConfigFile());
+		throw EmptyUserIdException();
 
 	// process new user configuration
 	if (updateUserManager(user_id, config_ptr, false, true)) {
@@ -226,7 +230,7 @@ std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_p
 				throw AddUserConfigException(getConfigFile());
 		}
 	} else {
-		throw BadXMLBufferException();
+		throw UserUpdateFailedException(user_id);
 	}
 
 	// save the new XML config file
@@ -242,7 +246,7 @@ void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_pt
 {
 	// Sanity check
 	if (user_id.empty())
-		throw NoUserIdException(getConfigFile());
+		throw EmptyUserIdException();
 
 #ifdef PION_HAVE_SSL
 	// Find existing user configuration

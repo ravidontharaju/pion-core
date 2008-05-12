@@ -35,7 +35,7 @@ namespace server {	// begin namespace server (Pion Server)
 
 
 /**
- * UserManager : Manages a collection of platform users
+ * UserManager : Manages a collection of platform Users
  */
 class PION_SERVER_API UserManager :
 	public pion::platform::ConfigManager,
@@ -47,52 +47,65 @@ public:
 	class MissingOpenSSLException : public std::exception {
 	public:
 		virtual const char* what() const throw() {
-			return "Missing OpenSSL library: user management is disabled!";
+			return "Missing OpenSSL library: User management is disabled!";
 		}
 	};
 	
-	/// exception thrown if the config file contains a Server with an empty or missing identifier
-	class NoUserIdException : public PionException {
+	/// exception thrown if the config file contains a User with an empty or missing identifier
+	class MissingUserIdInConfigFileException : public PionException {
 	public:
-		NoUserIdException(const std::string& config_file)
-			: PionException("Service configuration file includes a User without a unique identifier: ", config_file) {}
+		MissingUserIdInConfigFileException(const std::string& config_file)
+			: PionException("Users configuration file includes a User without a unique identifier: ", config_file) {}
 	};
 
-	/// exception thrown if the config file contains a Server with an empty or missing password
+	/// exception thrown if a user_id parameter is found to be empty
+	class EmptyUserIdException : public PionException {
+	public:
+		EmptyUserIdException()
+			: PionException("The specified User identifier is empty.") {}
+	};
+
+	/// exception thrown if a request is made to add or update a User with a configuration with an empty or missing password
 	class NoPasswordException : public PionException {
 	public:
-		NoPasswordException(const std::string& config_file)
-			: PionException("Service configuration file includes a User without a password: ", config_file) {}
+		NoPasswordException(const std::string& user_id)
+			: PionException("The specified User configuration has an empty or missing password.  Specified User identifier: ", user_id) {}
 	};
 
-	/// exception thrown if a duplicate User is found in the configuration file
+	/// exception thrown if a request is made to add a User when a User with the same ID has already been added
 	class DuplicateUserException : public PionException {
 	public:
 		DuplicateUserException(const std::string& user_id)
-			: PionException("Service configuration file includes a duplicate User: ", user_id) {}
+			: PionException("A User already exists with the specified ID: ", user_id) {}
 	};
 
 	/// exception thrown if a User cannot be found
 	class UserNotFoundException : public PionException {
 	public:
 		UserNotFoundException(const std::string& user_id)
-			: PionException("No user found for identifier: ", user_id) {}
+			: PionException("No User found for identifier: ", user_id) {}
 	};
 
-	/// exception thrown if there is an error adding a user to the config file
+	/// exception thrown if there is an error adding a User to the config file
 	class AddUserConfigException : public PionException {
 	public:
 		AddUserConfigException(const std::string& config_file)
-			: PionException("Unable to add a user to the configuration file: ", config_file) {}
+			: PionException("Unable to add a User to the configuration file: ", config_file) {}
 	};
 	
-	/// exception thrown if there is an error updating a user in the config file
+	/// exception thrown if there is an error updating a User in the config file
 	class UpdateUserConfigException : public PionException {
 	public:
 		UpdateUserConfigException(const std::string& config_file)
-			: PionException("Unable to update a user in the configuration file: ", config_file) {}
+			: PionException("Unable to update a User in the configuration file: ", config_file) {}
 	};
 
+	/// exception thrown if a User update failed
+	class UserUpdateFailedException : public PionException {
+	public:
+		UserUpdateFailedException(const std::string& user_id)
+			: PionException("Unable to update User with identifier: ", user_id) {}
+	};
 
 public:
 
@@ -113,7 +126,7 @@ public:
 	virtual void writeConfigXML(std::ostream& out) const;
 
 	/**
-	 * writes the configuration data for a particular user (as XML)
+	 * writes the configuration data for a particular User (as XML)
 	 *
 	 * @param out the ostream to write the configuration tree into
 	 * @param user_id unique identifier associated with the User
@@ -123,6 +136,7 @@ public:
 	/**
 	 * uses a memory buffer to generate XML configuration data for a User
 	 *
+	 * @param user_id will get the unique identifier associated with the User
 	 * @param buf pointer to a memory buffer containing configuration data
 	 * @param len number of bytes available in the memory buffer
 	 *
@@ -161,15 +175,15 @@ public:
 private:
 
 	/**
-	 * parses user configuration info from a XML config tree
-	 * and uses it to update the user authentication manager
+	 * parses User configuration info from a XML config tree
+	 * and uses it to update the User authentication manager
 	 *
 	 * @param user_id unique identifier associated with the User
 	 * @param config_ptr pointer to a list of XML nodes containing User
 	 *                   configuration parameters
 	 * @param password_encrypted true if the password is encrypted; if not,
 	 *                           the XML nodes will be updated with encrypted format
-	 * @param new_user true if a new user is being created
+	 * @param new_user true if a new User is being created
 	 *
 	 * @return true if successful
 	 */
@@ -177,9 +191,9 @@ private:
 		bool password_encrypted, bool new_user);
 
 	/**
-	 * sets configuration parameters for a user in the configuration file
+	 * sets configuration parameters for a User in the configuration file
 	 *
-	 * @param user_node_ptr pointer to the existing user element node
+	 * @param user_node_ptr pointer to the existing User element node
 	 * @param config_ptr pointer to the new configuration parameters
 	 *
 	 * @return true if successful, false if there was an error
@@ -189,7 +203,7 @@ private:
 	
 private:
 
-	/// default name of the user config file
+	/// default name of the User config file
 	static const std::string			DEFAULT_CONFIG_FILE;
 
 	/// name of the USER element for Pion XML config files

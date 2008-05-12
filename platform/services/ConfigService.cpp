@@ -629,7 +629,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// add the new User to the UserManager
 				try {
 					user_id = getConfig().getUserManagerPtr()->addUser(user_id,user_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(user_config_ptr);
 					throw;
 				}
@@ -639,7 +639,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
 
-				// respond with the new Users's configuration
+				// respond with the new User's configuration
 				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, user_id))
 					throw UserManager::UserNotFoundException(branches[1]);
 
@@ -671,7 +671,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// add the new User to the UserManager
 				try {
 					getConfig().getUserManagerPtr()->setUserConfig(branches[1], user_config_ptr);
-				} catch (std::exception& e) {
+				} catch (std::exception&) {
 					xmlFreeNodeList(user_config_ptr);
 					throw;
 				}

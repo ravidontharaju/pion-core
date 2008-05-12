@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterUpdatingTerm) {
 									   "<Type>string</Type>\\s*"
 									   "<Comment>was a float, now a string</Comment>\\s*"
 									   "</Term>");
-	BOOST_CHECK(!F::configFileContainsExpression(F::m_expectedExpression));
+	BOOST_CHECK(F::configFileContainsExpression(newExpectedExpression));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
