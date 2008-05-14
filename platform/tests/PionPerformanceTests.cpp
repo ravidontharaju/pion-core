@@ -31,14 +31,6 @@
 #include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
 
-#ifdef PION_HAVE_SSL
-	#include <openssl/ssl.h>
-	#if defined _MSC_VER
-		#pragma comment(lib, "ssleay32")
-		#pragma comment(lib, "libeay32")
-	#endif 
-#endif
-
 #if 0
 	// for tests that use the GNU "multithread" allocator included with GCC
 	#include <ext/mt_allocator.h>
@@ -876,11 +868,6 @@ protected:
 /// main control function for Pion performance tests
 ///
 int main(void) {
-
-#ifdef PION_HAVE_SSL
-	// initialize the OpenSSL library
-	SSL_library_init();
-#endif
 
 	boost::scoped_ptr<PerformanceTest> test_ptr;
 /*
