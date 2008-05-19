@@ -51,7 +51,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogService", "net\services\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "common\src\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "net\tests\UnitTests.vcproj", "{5AD25B42-E2C0-4D08-985B-E8F115D19D56}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionNetUnitTests", "net\tests\PionNetUnitTests.vcproj", "{5AD25B42-E2C0-4D08-985B-E8F115D19D56}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8C8A8E46-4588-4CE1-B624-89C36EA5209E} = {8C8A8E46-4588-4CE1-B624-89C36EA5209E}
 		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
