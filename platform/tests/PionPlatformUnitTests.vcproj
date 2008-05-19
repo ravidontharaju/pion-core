@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="UnitTests"
+	Name="PionPlatformUnitTests"
 	ProjectGUID="{BE12B953-FECB-470B-AC62-24FA5BC419D8}"
-	RootNamespace="UnitTests"
+	RootNamespace="PionPlatformUnitTests"
 	>
 	<Platforms>
 		<Platform
