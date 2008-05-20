@@ -30,6 +30,7 @@
 	#pragma warning(pop)
 #endif
 #include <boost/thread/once.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/atomic_count.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -891,7 +892,18 @@ private:
 	public:
 		
 		/// non-virtual destructor
-		~EventAllocatorFactory() {}
+		~EventAllocatorFactory() {
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+			// lock the EventAllocator tracker
+			boost::unique_lock<boost::mutex> tracker_lock(m_instance_ptr->m_tracker_mutex);
+			// destruct all the EventAllocators that have been generated
+			for (std::vector<EventAllocator*>::iterator i = m_alloc_tracker.begin();
+				 i != m_alloc_tracker.end(); ++i)
+			{
+				delete *i;
+			}
+#endif
+		}
 		
 		/**
 		 * return an instance of the EventFactory singleton
@@ -907,6 +919,9 @@ private:
 				// create and store a new thread-specific allocator
 				alloc_ptr = new EventAllocator();
 				m_instance_ptr->m_thread_alloc.reset(alloc_ptr);
+				// add the allocator to the EventAllocator tracker
+				boost::unique_lock<boost::mutex> tracker_lock(m_instance_ptr->m_tracker_mutex);
+				m_instance_ptr->m_alloc_tracker.push_back(alloc_ptr);
 			}
 #else
 			alloc_ptr = & m_instance_ptr->m_single_alloc;
@@ -930,6 +945,9 @@ private:
 		/// used by thread_specific_ptr to release allocators
 		static void releaseAllocator(EventAllocator *ptr) {
 			// do nothing since other threads may still need to dealloate Events!
+			// instead, all EventAllocators will be deallocated within
+			// the EventAllocatorFactory destructor so that they are not
+			// detected as "leaks"
 			//delete ptr;
 		}
 		
@@ -937,6 +955,13 @@ private:
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
 		/// points to a thread-specific allocator used to create and destroy Events
 		boost::thread_specific_ptr<EventAllocator>		m_thread_alloc;
+		
+		/// used to keep track of all of the EventAllocators so that they can
+		/// be deallocated within EventAllocatorFactory's destructor
+		std::vector<EventAllocator*>					m_alloc_tracker;
+		
+		/// used to protect access to the m_alloc_tracker container
+		boost::mutex									m_tracker_mutex;
 #else
 		/// use a single EventAllocator instance if not using memory pools
 		EventAllocator									m_single_alloc;
