@@ -244,6 +244,22 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	BOOST_CHECK(! c.evaluate(*event_ptr));
 }
 
+BOOST_AUTO_TEST_CASE(checkComparisonCopyWorksForRegex) {
+	// prepare event
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setString(m_string_term.term_ref, "Atomic");
+
+	// prepare original comparison
+	Comparison c_orig(m_string_term);
+	c_orig.configure(Comparison::TYPE_REGEX, "^A.o.*c$");
+
+	// create a copy
+	Comparison c_copy(c_orig);
+
+	// make sure it works correctly
+	BOOST_CHECK(c_copy.evaluate(*event_ptr));
+}
+
 BOOST_AUTO_TEST_CASE(checkDateTimeComparisons) {
 	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	PionTimeFacet f(m_date_time_term.term_format);	

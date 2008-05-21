@@ -139,7 +139,8 @@ public:
 	/// standard copy constructor
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
-		m_str_value(c.m_str_value), m_match_all_values(c.m_match_all_values)
+		m_str_value(c.m_str_value), m_regex(c.m_regex),
+		m_match_all_values(c.m_match_all_values)
 	{}
 
 	
