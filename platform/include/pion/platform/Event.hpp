@@ -278,7 +278,7 @@ public:
 			tree_algo::equal_range(&m_param_tree, term_ref, m_key_compare);
 		while (range.first != range.second) {
 			node_ptr = range.first;
-			++ range.first;
+			range.first = tree_algo::next_node(range.first);
 			tree_algo::erase(&m_param_tree, node_ptr);
 			destroyParameter(node_ptr);
 		}
@@ -906,9 +906,9 @@ private:
 		}
 		
 		/**
-		 * return an instance of the EventFactory singleton
+		 * return an EventAllocator to use for the current thread
 		 * 
-		 * @return EventFactory& instance of EventFactory
+		 * @return EventAllocator& reference to the thread's EventAllocator
 		 */
 		inline static EventAllocator& getAllocator(void) {
 			boost::call_once(EventAllocatorFactory::createInstance, m_instance_flag);
@@ -942,7 +942,7 @@ private:
 		/// creates the singleton instance, protected by boost::call_once
 		static void createInstance(void);
 		
-		/// used by thread_specific_ptr to release allocators
+		/// used by thread_specific_ptr to release allocators when threads exit
 		static void releaseAllocator(EventAllocator *ptr) {
 			// do nothing since other threads may still need to dealloate Events!
 			// instead, all EventAllocators will be deallocated within

@@ -152,6 +152,13 @@ BOOST_AUTO_TEST_CASE(checkMultipleTermValues) {
 	BOOST_CHECK(i == event_ptr->end());
 }
 
+BOOST_AUTO_TEST_CASE(checkClearTermValues) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setInt(m_plain_int_term.term_ref, 10);
+	event_ptr->setInt(m_plain_int_term.term_ref, 100);
+	event_ptr->clear(m_plain_int_term.term_ref);
+}
+
 BOOST_AUTO_TEST_CASE(checkEventOperatorPlusEquals) {
 	EventPtr a_ptr(m_event_factory.create(m_object_term.term_ref));
 	EventPtr b_ptr(m_event_factory.create(m_object_term.term_ref));
