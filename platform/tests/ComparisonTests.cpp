@@ -237,11 +237,16 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	c.configure(Comparison::TYPE_REGEX, "Bat");
 	BOOST_CHECK(! c.evaluate(*event_ptr));
 	
-	c.configure(Comparison::TYPE_NOT_REGEX, "A+");
+	c.configure(Comparison::TYPE_NOT_REGEX, "AA+");
 	BOOST_CHECK(c.evaluate(*event_ptr));
 
 	c.configure(Comparison::TYPE_NOT_REGEX, "A.*c");
 	BOOST_CHECK(! c.evaluate(*event_ptr));
+
+	event_ptr->clear(m_string_term.term_ref);
+	event_ptr->setString(m_string_term.term_ref, "GET /favicon.ico HTTP/1.1");
+	c.configure(Comparison::TYPE_REGEX, "\.(png|gif|jpg|jpeg|ico)");
+	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkComparisonCopyWorksForRegex) {

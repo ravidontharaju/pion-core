@@ -410,7 +410,9 @@ private:
 	public:
 		CompareStringRegex(const boost::regex& value) : m_regex(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::regex_match(
+			// note: regex_match must match the ENTIRE string; use regex_search
+			// instead to match any part of the string
+			return boost::regex_search(
 				boost::get<const Event::SimpleString&>(event_value).get(), m_regex);
 		}
 	private:
