@@ -178,11 +178,7 @@ public:
 		inline bool operator==(const SimpleString& rhs) const {
 			if (m_len != rhs.m_len)
 				return false;
-			for (std::size_t i = 0; i < m_len; ++i) {
-				if (m_ptr[i] != rhs.m_ptr[i])
-					return false;
-			}
-			return true;
+			return (strncmp(m_ptr, rhs.m_ptr, m_len) == 0);
 		}
 
 		/// returns a raw pointer to the character array

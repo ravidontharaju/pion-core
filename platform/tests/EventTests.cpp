@@ -196,7 +196,12 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	pv2 = Event::SimpleString(buf2, strlen(buf2));
 	BOOST_CHECK(pv1 == pv2);
 
-	buf1[2] = '\0';
+	char buf3[] = "abd";
+	pv2 = Event::SimpleString(buf3, strlen(buf3));
+	BOOST_CHECK(!(pv1 == pv2));
+
+	char buf4[] = "ab";
+	pv2 = Event::SimpleString(buf4, strlen(buf4));
 	BOOST_CHECK(!(pv1 == pv2));
 }
 
