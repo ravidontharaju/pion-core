@@ -173,7 +173,18 @@ public:
 			m_len = str.m_len;
 			return *this;
 		}
-		
+
+		/// equality operator
+		inline bool operator==(const SimpleString& rhs) const {
+			if (m_len != rhs.m_len)
+				return false;
+			for (std::size_t i = 0; i < m_len; ++i) {
+				if (m_ptr[i] != rhs.m_ptr[i])
+					return false;
+			}
+			return true;
+		}
+
 		/// returns a raw pointer to the character array
 		inline const CharType *get(void) const { return m_ptr; }
 		

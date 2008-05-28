@@ -164,11 +164,40 @@ BOOST_AUTO_TEST_CASE(checkEventOperatorPlusEquals) {
 	EventPtr b_ptr(m_event_factory.create(m_object_term.term_ref));
 	a_ptr->setInt(m_plain_int_term.term_ref, 10);
 	b_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224UL);
+
+	BOOST_CHECK(!a_ptr->isDefined(m_big_int_term.term_ref));
 	*a_ptr += *b_ptr;
+	BOOST_CHECK(a_ptr->isDefined(m_big_int_term.term_ref));
+	BOOST_CHECK_EQUAL(a_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
+
 	BOOST_CHECK(a_ptr->isDefined(m_plain_int_term.term_ref));
 	BOOST_CHECK(b_ptr->isDefined(m_big_int_term.term_ref));
 	BOOST_CHECK_EQUAL(a_ptr->getInt(m_plain_int_term.term_ref), 10);
 	BOOST_CHECK_EQUAL(b_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
+}
+
+BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
+	Event::ParameterValue pv1 = boost::int32_t(4);
+	Event::ParameterValue pv2 = boost::int32_t(4);
+	BOOST_CHECK(pv1 == pv2);
+
+	pv2 = boost::int32_t(5);
+	//BOOST_CHECK(pv1 != pv2); // can't use this because boost::variant doesn't define operator!=
+	BOOST_CHECK(!(pv1 == pv2));
+
+	pv2 = 5.0;
+	BOOST_CHECK(!(pv1 == pv2));
+
+	char buf1[] = "abc";
+	pv1 = Event::SimpleString(buf1, strlen(buf1));
+	BOOST_CHECK(!(pv1 == pv2));
+
+	char buf2[] = "abc";
+	pv2 = Event::SimpleString(buf2, strlen(buf2));
+	BOOST_CHECK(pv1 == pv2);
+
+	buf1[2] = '\0';
+	BOOST_CHECK(!(pv1 == pv2));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
