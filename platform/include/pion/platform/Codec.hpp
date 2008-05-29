@@ -64,7 +64,20 @@ public:
 			: PionException("Codec configuration defines a non-object event type: ", event_type) {}
 	};
 
-	
+	/// exception thrown by updateVocabulary if a Term in use by the Codec is no longer defined
+	class TermNoLongerDefinedException : public PionException {
+	public:
+		TermNoLongerDefinedException(const std::string& term_id)
+			: PionException("A needed Term is no longer defined in the Vocabulary: ", term_id) {}
+	};
+
+	/// exception thrown if a Codec tries to read into an Event of a type different from what it's configured for
+	class WrongEventTypeException : public PionException {
+	public:
+		WrongEventTypeException(void)
+			: PionException("Event is not of the expected type") {}
+	};
+
 	/// constructs a new Codec object
 	Codec(void) : m_event_type(Vocabulary::UNDEFINED_TERM_REF) {}
 	

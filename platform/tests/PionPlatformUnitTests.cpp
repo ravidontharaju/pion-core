@@ -154,7 +154,7 @@ void cleanup_vocab_config_files(void)
 	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, get_vocabularies_file());
 }
 
-/// cleans up reactor config files in the working directory
+/// cleans up platform config files in the working directory
 void cleanup_platform_config_files(void)
 {
 	static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");

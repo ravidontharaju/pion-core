@@ -27,7 +27,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/bind.hpp>
-#include <libxml/tree.h>
 #include <fstream>
 
 using namespace pion;
@@ -52,22 +51,23 @@ static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tm
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
 
 
-/// cleans up codec config files in the working directory
-void cleanup_codec_config_files(void)
+/// cleans up config files relevant to Codecs in the working directory
+void cleanup_codec_config_files(bool copy_codec_config_file)
 {
 	cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
+	if (copy_codec_config_file)
+		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 }
 
 
 class PluginPtrReadyToAddCodec_F : public PionPluginPtr<Codec> {
 public:
-	PluginPtrReadyToAddCodec_F() { 
+	PluginPtrReadyToAddCodec_F() {
 		setup_logging_for_unit_tests();
-		cleanup_codec_config_files();
-		setup_plugins_directory();		
+		setup_plugins_directory();
 	}
 };
 
@@ -101,7 +101,7 @@ public:
 		if (m_codec) destroy(m_codec);
 	}
 
-	Codec* m_codec;	
+	Codec* m_codec;
 	std::string m_plugin_name;
 };
 
@@ -114,7 +114,7 @@ typedef boost::mpl::list<PluginPtrWithCodecLoaded_F<LogCodec_name>,
 						 PluginPtrWithCodecLoaded_F<JSONCodec_name>,
 						 PluginPtrWithCodecLoaded_F<XMLCodec_name> > codec_fixture_list;
 
-// PluginPtrWithCodecLoaded_S contains tests that should pass for any codec
+// PluginPtrWithCodecLoaded_S contains tests that should pass for any type of Codec
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(PluginPtrWithCodecLoaded_S, codec_fixture_list)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIsOpenReturnsTrue) {
@@ -138,21 +138,436 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDestroyDoesntThrowExceptionAfterCreat
 BOOST_AUTO_TEST_SUITE_END()
 
 
+typedef enum { CREATED, CLONED, MANUFACTURED } LINEAGE;
+
+template<const char* plugin_type, LINEAGE lineage>
+class CodecPtr_F {
+public:
+	CodecPtr_F() : m_config_ptr(NULL) {
+		setup_logging_for_unit_tests();
+		setup_plugins_directory();
+		cleanup_codec_config_files(true);
+		BOOST_REQUIRE(lineage == CREATED || lineage == CLONED || lineage == MANUFACTURED);
+		if (lineage == MANUFACTURED) {
+			p.reset(); // MANUFACTURED is only allowed for derived classes that support it.  See checkLineageIsOK.
+		} else {
+			m_ppp.open(plugin_type);
+			m_original_codec_ptr = CodecPtr(m_ppp.create());
+			BOOST_REQUIRE(lineage == CREATED || lineage == CLONED);
+			p = (lineage == CREATED? m_original_codec_ptr : m_original_codec_ptr->clone());
+			BOOST_REQUIRE(p);
+		}
+		m_codec_type = plugin_type;
+	}
+	~CodecPtr_F() {
+		if (m_config_ptr) {
+			xmlFreeNodeList(m_config_ptr);
+		}
+	}
+
+	// From a string representation of a Codec configuration, obtain an xmlNodePtr that
+	// points to a list of all the child nodes, as needed by Codec::setConfig().
+	void parseConfig(const std::string& config_str, xmlNodePtr& config_ptr) {
+		xmlDocPtr doc_ptr = xmlParseMemory(config_str.c_str(), config_str.size());
+		BOOST_REQUIRE(doc_ptr);
+		config_ptr = xmlDocGetRootElement(doc_ptr)->children;
+		BOOST_REQUIRE(config_ptr);
+	}
+
+	CodecPtr p; // This is what's actually playing the role of fixture, i.e., F::p is being tested, not F itself.
+	xmlNodePtr m_config_ptr;
+
+	// If you feel the need to use this in a test, you should probably instead move the test to a more specific test suite.
+	// This is here to make it easy to temporarily skip tests that belong here, but don't pass yet.
+	std::string m_codec_type;
+
+protected:
+	CodecPtr m_original_codec_ptr;
+	PionPluginPtr<Codec> m_ppp;
+};
+
+#define SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS \
+	if (m_codec_type == "JSONCodec") { \
+		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because JSONCodec is incomplete."); \
+		return; \
+	} \
+	if (m_codec_type == "XMLCodec") { \
+		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because XMLCodec is incomplete."); \
+		return; \
+	} 
+
+typedef boost::mpl::list<
+	CodecPtr_F<LogCodec_name, CREATED>,
+	CodecPtr_F<LogCodec_name, CLONED>,
+	CodecPtr_F<JSONCodec_name, CREATED>,
+	CodecPtr_F<JSONCodec_name, CLONED>,
+	CodecPtr_F<XMLCodec_name, CREATED>,
+	CodecPtr_F<XMLCodec_name, CLONED>
+> CodecPtr_fixture_list;
+
+// CodecPtr_S contains tests that should pass for any type of Codec
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtr_S, CodecPtr_fixture_list)
+
+// This will fail if the fixture template is instantiated with a lineage inappropriate for this test suite, e.g. MANUFACTURED.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLineageIsOK) {
+	BOOST_REQUIRE(p);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetContentType) {
+	// Exact values are tested elsewhere, in tests of specific Codecs.
+	BOOST_CHECK(F::p->getContentType() != "");
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
+	BOOST_CHECK_EQUAL(F::p->getEventType(), Vocabulary::UNDEFINED_TERM_REF);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetId) {
+	// Would it be better if this threw an exception?
+	BOOST_CHECK(F::p->getId() == "");
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(Vocabulary::UNDEFINED_TERM_REF));
+	std::stringstream ss("some text\n");
+
+	// Currently, this is returning true for LogCodecs.  Although a case can be made for this,
+	// in that it's succeeding in reading zero fields, it seems misleading.
+	// Should this throw an exception instead, e.g., something like EmptyFieldMap?
+	// Should it return false, since it didn't read anything?
+	// Or is it OK?
+	BOOST_WARN(F::p->read(ss, *ep) == false);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedTypeAndEmptyString) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(Vocabulary::UNDEFINED_TERM_REF));
+	std::stringstream ss("");
+
+	// See comments in previous test, checkReadWithEventOfUndefinedType.
+	BOOST_CHECK(F::p->read(ss, *ep) == false);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+	Event::EventType some_type = vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(some_type));
+	std::stringstream ss("some text\n");
+	BOOST_CHECK_THROW(F::p->read(ss, *ep), Codec::WrongEventTypeException);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
+	// Prepare some valid input for Codec::setConfig().
+	std::string event_type_1 = "urn:vocab:clickstream#http-request";
+	parseConfig("<Codec>"
+					"<EventType>" + event_type_1 + "</EventType>"
+				"</Codec>",
+				m_config_ptr);
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+
+	// Confirm that setConfig() returns.
+	BOOST_CHECK_NO_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr));
+
+	// Check that Codec::getEventType() returns the EventType specified in the configuration.
+	Event::EventType event_type_ref = vocab_mgr.getVocabulary().findTerm(event_type_1);
+	BOOST_CHECK_EQUAL(F::p->getEventType(), event_type_ref);
+}
+
+// This is just one basic test of Codec::clone(), which is primarily being tested via fixtures
+// CodecPtr_F<*, CLONED>, ConfiguredCodecPtr_F<*, CLONED>, etc.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkClone) {
+	// Note that p might already be a clone, depending on the fixture.
+	BOOST_CHECK(F::p->clone());
+
+	// just one simple check of 'cloneness'
+	BOOST_CHECK(F::p->clone()->getContentType() == F::p->getContentType());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+template<const char* plugin_type, LINEAGE lineage>
+class ConfiguredCodecPtr_F : public CodecPtr_F<plugin_type, lineage> {
+public:
+	ConfiguredCodecPtr_F() : NAME_1("Test Codec"),
+							 EVENT_TYPE_1("urn:vocab:clickstream#http-request"),
+							 FIELD_TERM_1("urn:vocab:clickstream#bytes"),
+							 FIELD_NAME_1("bytes")
+	{
+		// Prepare a valid Codec configuration string.
+		parseConfig("<Codec>"
+						"<Plugin>" + std::string(plugin_type) + "</Plugin>"
+						"<Name>" + NAME_1 + "</Name>"
+						"<EventType>" + EVENT_TYPE_1 + "</EventType>"
+						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_1 + "</Field>"
+					"</Codec>",
+					m_config_ptr);
+
+		// Initialize the VocabularyManager.
+		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.openConfigFile();
+
+		// Make a configured CodecPtr of the specified lineage.
+		if (lineage == MANUFACTURED) {
+			CodecFactory factory(m_vocab_mgr);
+			factory.setConfigFile(CODECS_CONFIG_FILE);
+			factory.openConfigFile();
+			std::string codec_id = factory.addCodec(m_config_ptr);
+			p = factory.getCodec(codec_id);
+		} else {
+			m_original_codec_ptr->setConfig(m_vocab_mgr.getVocabulary(), m_config_ptr);
+			p = (lineage == CREATED? m_original_codec_ptr : m_original_codec_ptr->clone());
+		}
+	}
+	~ConfiguredCodecPtr_F() {
+	}
+
+	const std::string NAME_1;
+	const std::string EVENT_TYPE_1;
+	const std::string FIELD_TERM_1;
+	const std::string FIELD_NAME_1;
+	VocabularyManager m_vocab_mgr;
+};
+
+// This might eventually become part of Event itself, but first it would need to, at least,
+// be updated to accommodate reordered Event entries, and have tests of its own.
+bool operator==(const Event& e1, const Event& e2) {
+	Event::ConstIterator it_1 = e1.begin();
+	Event::ConstIterator it_2 = e2.begin();
+	while (it_1 != e1.end() && it_2 != e2.end()) {
+		if (it_1->term_ref != it_2->term_ref)
+			return false;
+		//if (it_1->value != it_2->value)	// boost::variant doesn't define operator!=
+		if (!(it_1->value == it_2->value))
+			return false;
+		++it_1;
+		++it_2;
+	}
+	return (it_1 == e1.end() && it_2 == e2.end());
+}
+
+typedef boost::mpl::list<
+	ConfiguredCodecPtr_F<LogCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<LogCodec_name, CLONED>,
+	ConfiguredCodecPtr_F<LogCodec_name, MANUFACTURED>,
+	ConfiguredCodecPtr_F<JSONCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<JSONCodec_name, CLONED>,
+	ConfiguredCodecPtr_F<JSONCodec_name, MANUFACTURED>,
+	ConfiguredCodecPtr_F<XMLCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<XMLCodec_name, CLONED>,
+	ConfiguredCodecPtr_F<XMLCodec_name, MANUFACTURED>
+> ConfiguredCodecPtr_fixture_list;
+
+// ConfiguredCodecPtr_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtr_S, ConfiguredCodecPtr_fixture_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetName) {
+	BOOST_CHECK_EQUAL(F::p->getName(), NAME_1);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetComment) {
+	BOOST_CHECK_EQUAL(F::p->getComment(), "");
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
+	Event::EventType expected_event_type_ref = m_vocab_mgr.getVocabulary().findTerm(EVENT_TYPE_1);
+	BOOST_CHECK_EQUAL(F::p->getEventType(), expected_event_type_ref);
+}
+
+// This is just one basic test of Codec::clone(), which is primarily being tested via fixtures
+// CodecPtr_F<*, CLONED>, ConfiguredCodecPtr_F<*, CLONED>, etc.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkClone) {
+	// Note that p might already be a clone, depending on the fixture.
+	BOOST_CHECK(F::p->clone());
+
+	// just one simple check of 'cloneness'
+	BOOST_CHECK(F::p->clone()->getContentType() == F::p->getContentType());
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEmptyString) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(F::p->getEventType()));
+	std::stringstream ss("");
+	BOOST_CHECK(F::p->read(ss, *ep) == false);
+}
+
+// It's convenient to have this test in this suite, but note that the input string can't be
+// universally valid, so read() could legitimately throw a different exception due to the
+// input string, without ever touching the event.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(Vocabulary::UNDEFINED_TERM_REF));
+	std::stringstream ss("some text\n");
+	BOOST_CHECK_THROW(F::p->read(ss, *ep), Codec::WrongEventTypeException);
+}
+
+// See comment for previous test, checkReadWithEventOfUndefinedType.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	Event::EventType other_type = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+	BOOST_REQUIRE(other_type != F::p->getEventType());
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(other_type));
+	std::stringstream ss("some text\n");
+	BOOST_CHECK_THROW(F::p->read(ss, *ep), Codec::WrongEventTypeException);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkWriteOutputsSomething) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventAllocator ea;
+	Event e(F::p->getEventType(), &ea);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, e));
+	BOOST_CHECK(!out.str().empty());
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	event_ptr->setUInt(bytes_ref, 42);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
+	BOOST_CHECK(F::p->read(in, *event_ptr_2));
+	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), 42);
+	BOOST_CHECK(*event_ptr == *event_ptr_2);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
+	BOOST_CHECK(F::p->read(in, *event_ptr_2));
+	BOOST_CHECK(event_ptr_2->empty());
+	BOOST_CHECK(*event_ptr == *event_ptr_2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+typedef boost::mpl::list<
+	ConfiguredCodecPtr_F<LogCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<LogCodec_name, CLONED>,
+	ConfiguredCodecPtr_F<JSONCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<JSONCodec_name, CLONED>,
+	ConfiguredCodecPtr_F<XMLCodec_name, CREATED>,
+	ConfiguredCodecPtr_F<XMLCodec_name, CLONED>
+> ConfiguredCodecPtrNoFactory_fixture_list;
+
+// ConfiguredCodecPtrNoFactory_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, ConfiguredCodecPtrNoFactory_fixture_list)
+
+// This test needs to be in the "No Factory" suite, because in the case where the
+// Codec is created by a factory, calling m_vocab_mgr.removeTerm() automatically calls
+// updateVocabulary() on the Codec.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
+	m_vocab_mgr.removeTerm("urn:vocab:clickstream", FIELD_TERM_1);
+	BOOST_CHECK_THROW(F::p->updateVocabulary(m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
+}
+
+// This test needs to be in the "No Factory" suite, because in the case where the
+// Codec is created by a factory, calling m_vocab_mgr.updateTerm() automatically calls
+// updateVocabulary() on the Codec.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
+	const Vocabulary& v = m_vocab_mgr.getVocabulary();
+	Vocabulary::TermRef term_ref = v.findTerm(FIELD_TERM_1);
+	Vocabulary::Term modified_term = v[term_ref];
+	modified_term.term_comment = "A modified comment";
+	m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
+	m_vocab_mgr.updateTerm("urn:vocab:clickstream", modified_term);
+
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(m_vocab_mgr.getVocabulary()));
+
+	// TODO: write some tests that check that updateVocabulary() actually does something.
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+typedef ConfiguredCodecPtr_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
+BOOST_FIXTURE_TEST_SUITE(ConfiguredLogCodecPtr_S, ConfiguredLogCodecPtr_F)
+
+BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(p->getEventType()));
+	std::istringstream in("500\n"); // EventType has only one field, FIELD_TERM_1 (urn:vocab:clickstream#bytes)
+	BOOST_CHECK(p->read(in, *event_ptr));
+
+	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(bytes_ref), 500);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+typedef ConfiguredCodecPtr_F<JSONCodec_name, CREATED> ConfiguredJSONCodecPtr_F;
+BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
+
+BOOST_AUTO_TEST_SUITE_END()
+
+typedef ConfiguredCodecPtr_F<JSONCodec_name, CREATED> ConfiguredXMLCodecPtr_F;
+BOOST_FIXTURE_TEST_SUITE(ConfiguredXMLCodecPtr_S, ConfiguredXMLCodecPtr_F)
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(codecFactoryCreationAndDestruction_S)
+
 BOOST_AUTO_TEST_CASE(checkCodecFactoryConstructor) {
 	VocabularyManager vocab_mgr;
 	BOOST_CHECK_NO_THROW(CodecFactory codecFactory(vocab_mgr));
 }
 
+BOOST_AUTO_TEST_CASE(checkCodecFactoryDestructor) {
+	VocabularyManager vocab_mgr;
+	CodecFactory* codecFactory = new CodecFactory(vocab_mgr);
+	BOOST_CHECK_NO_THROW(delete codecFactory);
+}
+
+BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterCodecFactoryDestroyed) {
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+	{
+		CodecFactory codecFactory(vocab_mgr);
+	}
+
+	// This is a placeholder to alert people that this test is failing, without
+	// having to actually call the offending line of code, which crashes the tests.
+	BOOST_FAIL("This test would cause a crash if the next line were executed");
+
+	// The problem here is that vocab_mgr is trying to signal the destroyed factory,
+	// which had registered with it for updates.
+	vocab_mgr.setLocked("urn:vocab:clickstream", false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 class NewCodecFactory_F : public CodecFactory {
 public:
-	NewCodecFactory_F() : CodecFactory(m_vocab_mgr) 
-	{
+	NewCodecFactory_F() : CodecFactory(m_vocab_mgr) {
 		setup_logging_for_unit_tests();
-		cleanup_codec_config_files();
+		cleanup_codec_config_files(false);
 		
 		if (! m_config_loaded) {
-			setup_plugins_directory();		
+			setup_plugins_directory();
 			// load the CLF vocabulary
 			m_vocab_mgr.setConfigFile(get_vocabularies_file());
 			m_vocab_mgr.openConfigFile();
@@ -164,7 +579,7 @@ public:
 		// create a new codec configuration file
 		setConfigFile(CODECS_CONFIG_FILE);
 		createConfigFile();
-		
+
 		// check new codec config file
 		// ...
 	}
@@ -185,20 +600,13 @@ public:
 		xmlAddNextSibling(config_ptr, event_type_node);
 		return config_ptr;
 	}
-	
-	//TODO: rig things up so we can check that m_num_times_mock_called has some expected value
-	void MockCallback(void) {
-		m_num_times_mock_called++;
-	}
 
 	std::string m_codec_id;
 	static VocabularyManager m_vocab_mgr;
-	static int m_num_times_mock_called;
 	static bool m_config_loaded;
 };
 
 VocabularyManager	NewCodecFactory_F::m_vocab_mgr;
-int					NewCodecFactory_F::m_num_times_mock_called = 0;
 bool				NewCodecFactory_F::m_config_loaded = false;
 
 
@@ -251,16 +659,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
 	BOOST_CHECK_THROW(F::getCodec(F::m_codec_id), CodecFactory::CodecNotFoundException);
 }
 
-// TODO: write some tests that check that the callback actually gets called when it should
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRegisterForUpdates) {
-	BOOST_CHECK_NO_THROW(F::registerForUpdates(boost::bind(&NewCodecFactory_F::MockCallback, this)));
-}
-
-// TODO: write some tests that check that updateVocabulary() actually does something
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabulary) {
-	BOOST_CHECK_NO_THROW(F::updateVocabulary());
-}
-
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -273,7 +671,7 @@ public:
 		m_codec_id = addCodec(config_ptr);
 		xmlFreeNodeList(config_ptr);
 	}
-	
+
 	std::string m_plugin_name;
 };
 
@@ -281,7 +679,7 @@ typedef boost::mpl::list<CodecFactoryWithCodecLoaded_F<LogCodec_name>,
 						 CodecFactoryWithCodecLoaded_F<JSONCodec_name>,
 						 CodecFactoryWithCodecLoaded_F<XMLCodec_name> > codec_fixture_list_2;
 
-// CodecFactoryWithCodecLoaded_S contains tests that should pass for any codec
+// CodecFactoryWithCodecLoaded_S contains tests that should pass for any type of Codec
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithCodecLoaded_S, codec_fixture_list_2)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
@@ -306,7 +704,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigUnknownEventType) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigEventTypeNotAnObject) {
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
 	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#remotehost"));
-	
+
 	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
 }
 
@@ -319,15 +717,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
 
 	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, comment_node));
 	xmlFreeNodeList(comment_node);
-	
+
 	// check codec config file
 	// ...
 }
-
-// TODO: is there a way to get the plugin name from the factory?
-//BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetPluginNameReturnsPluginName) {
-//	BOOST_CHECK_EQUAL(F::getPluginName(F::m_codec_id), F::m_plugin_name);
-//}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -379,7 +772,7 @@ public:
 		m_XMLCodec_id = addCodec(config_ptr);
 		xmlFreeNodeList(config_ptr);
 	}
-	
+
 	std::string m_LogCodec_id;
 	std::string m_JSONCodec_id;
 	std::string m_XMLCodec_id;
@@ -422,30 +815,12 @@ typedef boost::mpl::list<CodecFactoryWithCodecPtr_F<LogCodec_name>,
 						 CodecFactoryWithCodecPtr_F<JSONCodec_name>,
 						 CodecFactoryWithCodecPtr_F<XMLCodec_name> > codec_fixture_list_3;
 
-// CodecFactoryWithCodecPtr_S contains tests that should pass for any codec
+// CodecFactoryWithCodecPtr_S contains tests that should pass for any type of Codec.
+// It's empty now because the tests that were in it are now in ConfiguredCodecPtr_S,
+// but I'll leave it for now since the fixture's still being used, and it might be
+// a good place for tests that are specific to factory generated Codecs and need
+// access to the factory.
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithCodecPtr_S, codec_fixture_list_3)
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetOption) {
-	//BOOST_CHECK_THROW(F::m_codec_ptr->setOption("NotAnOption", "value1"), Codec::UnknownOptionException);
-}
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkClone) {
-	BOOST_CHECK(F::m_codec_ptr->clone());
-
-	// just one simple check of 'cloneness' for now
-	BOOST_CHECK(F::m_codec_ptr->clone()->getContentType() == F::m_codec_ptr->getContentType());
-}
-
-// TODO: is there a way to get the plugin name?
-//BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetPluginNameReturnsPluginName) {
-//	BOOST_CHECK_EQUAL(F::m_codec_ptr->getPluginName(), F::m_plugin_name);
-//}
-
-// TODO: write some tests that check that updateVocabulary() actually does something
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabulary) {
-	Vocabulary v;
-	BOOST_CHECK_NO_THROW(F::m_codec_ptr->updateVocabulary(v));
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -490,20 +865,20 @@ public:
 		m_justdate_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b")
 	{
 		setup_logging_for_unit_tests();
-		cleanup_codec_config_files();
+		cleanup_codec_config_files(false);
 		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 
 		if (! m_config_loaded) {
-			setup_plugins_directory();		
+			setup_plugins_directory();
 			// load the CLF vocabulary
 			m_vocab_mgr.setConfigFile(get_vocabularies_file());
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
-		
+
 		setConfigFile(CODECS_CONFIG_FILE);
 		openConfigFile();
-		
+
 		m_common_codec = getCodec(m_common_id);
 		BOOST_CHECK(m_common_codec);
 		m_combined_codec = getCodec(m_combined_id);
@@ -524,7 +899,7 @@ public:
 		m_useragent_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 	}
 	~CodecFactoryLogFormatTests_F() {}
-	
+
 	EventFactory		m_event_factory;
 	const std::string	m_common_id;
 	const std::string	m_combined_id;
@@ -593,7 +968,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 	std::ifstream in;
 	in.open(COMMON_LOG_FILE.c_str(), std::ios::in);
 	BOOST_REQUIRE(in.is_open());
-	
+
 	// read the first record
 	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
 	BOOST_REQUIRE(m_common_codec->read(in, *event_ptr));
@@ -684,25 +1059,25 @@ BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {
 	std::ifstream in;
 	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
 	BOOST_REQUIRE(in.is_open());
-	
+
 	// read the first record
 	EventPtr event_ptr(m_event_factory.create(m_combined_codec->getEventType()));
 	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.example.com/start.html");
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
-	
+
 	// read the second record
 	event_ptr->clear();
 	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.atomiclabs.com/");
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/4.08 [en] (Win98; I ;Nav)");
-	
+
 	// read the third record
 	event_ptr->clear();
 	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_referer_ref), "http://www.google.com/");
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_useragent_ref), "Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.7a) Gecko/20040614 Firefox/0.9.0+");
-	
+
 	// read the forth record
 	event_ptr->clear();
 	BOOST_REQUIRE(m_combined_codec->read(in, *event_ptr));
@@ -724,7 +1099,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
 	std::ifstream in;
 	in.open(EXTENDED_LOG_FILE.c_str(), std::ios::in);
 	BOOST_REQUIRE(in.is_open());
-	
+
 	// read the first record
 	EventPtr event_ptr(m_event_factory.create(m_extended_codec->getEventType()));
 	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
@@ -736,7 +1111,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
 								   boost::posix_time::time_duration(12, 13, 3)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /default.css HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
-	
+
 	// read the second record
 	event_ptr->clear();
 	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
@@ -760,7 +1135,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
 								   boost::posix_time::time_duration(5, 37, 11)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /robots.txt HTTP/1.0");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 404UL);
-	
+
 	// read the forth record
 	event_ptr->clear();
 	BOOST_REQUIRE(m_extended_codec->read(in, *event_ptr));
@@ -772,7 +1147,6 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
 								   boost::posix_time::time_duration(7, 20, 2)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /community/ HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
-	
 }
 
 BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {

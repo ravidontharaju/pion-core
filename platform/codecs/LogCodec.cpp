@@ -94,6 +94,9 @@ void LogCodec::write(std::ostream& out, const Event& e)
 	
 bool LogCodec::read(std::istream& input_stream, Event& e)
 {
+	if (e.getType() != getEventType())
+		throw WrongEventTypeException();
+
 	streambuf_type *buf_ptr = input_stream.rdbuf();
 	int_type c;
 
@@ -287,6 +290,10 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		/// we can assume for now that Term reference values will never change
 		(*i)->log_term = v[(*i)->log_term.term_ref];
+
+		// check if the Term has been removed (i.e. replaced by the "null" term)
+		if ((*i)->log_term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw TermNoLongerDefinedException((*i)->log_term.term_id);
 	}
 }
 
