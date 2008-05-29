@@ -318,6 +318,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PluginConfigTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ReactorTests.cpp"
 				>
 			</File>
