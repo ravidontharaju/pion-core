@@ -187,11 +187,11 @@ protected:
 };
 
 #define SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS \
-	if (m_codec_type == "JSONCodec") { \
+	if (F::m_codec_type == "JSONCodec") { \
 		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because JSONCodec is incomplete."); \
 		return; \
 	} \
-	if (m_codec_type == "XMLCodec") { \
+	if (F::m_codec_type == "XMLCodec") { \
 		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because XMLCodec is incomplete."); \
 		return; \
 	} 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtr_S, CodecPtr_fixture_list)
 
 // This will fail if the fixture template is instantiated with a lineage inappropriate for this test suite, e.g. MANUFACTURED.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLineageIsOK) {
-	BOOST_REQUIRE(p);
+	BOOST_REQUIRE(F::p);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetContentType) {
@@ -268,13 +268,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 	parseConfig("<Codec>"
 					"<EventType>" + event_type_1 + "</EventType>"
 				"</Codec>",
-				m_config_ptr);
+				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() returns.
-	BOOST_CHECK_NO_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr));
+	BOOST_CHECK_NO_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr));
 
 	// Check that Codec::getEventType() returns the EventType specified in the configuration.
 	Event::EventType event_type_ref = vocab_mgr.getVocabulary().findTerm(event_type_1);
@@ -309,7 +309,7 @@ public:
 						"<EventType>" + EVENT_TYPE_1 + "</EventType>"
 						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_1 + "</Field>"
 					"</Codec>",
-					m_config_ptr);
+					this->m_config_ptr);
 
 		// Initialize the VocabularyManager.
 		m_vocab_mgr.setConfigFile(get_vocabularies_file());
@@ -320,11 +320,11 @@ public:
 			CodecFactory factory(m_vocab_mgr);
 			factory.setConfigFile(CODECS_CONFIG_FILE);
 			factory.openConfigFile();
-			std::string codec_id = factory.addCodec(m_config_ptr);
-			p = factory.getCodec(codec_id);
+			std::string codec_id = factory.addCodec(this->m_config_ptr);
+			this->p = factory.getCodec(codec_id);
 		} else {
-			m_original_codec_ptr->setConfig(m_vocab_mgr.getVocabulary(), m_config_ptr);
-			p = (lineage == CREATED? m_original_codec_ptr : m_original_codec_ptr->clone());
+			this->m_original_codec_ptr->setConfig(m_vocab_mgr.getVocabulary(), this->m_config_ptr);
+			this->p = (lineage == CREATED? this->m_original_codec_ptr : this->m_original_codec_ptr->clone());
 		}
 	}
 	~ConfiguredCodecPtr_F() {
@@ -370,7 +370,7 @@ typedef boost::mpl::list<
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtr_S, ConfiguredCodecPtr_fixture_list)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetName) {
-	BOOST_CHECK_EQUAL(F::p->getName(), NAME_1);
+	BOOST_CHECK_EQUAL(F::p->getName(), F::NAME_1);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetComment) {
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetComment) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
-	Event::EventType expected_event_type_ref = m_vocab_mgr.getVocabulary().findTerm(EVENT_TYPE_1);
+	Event::EventType expected_event_type_ref = F::m_vocab_mgr.getVocabulary().findTerm(F::EVENT_TYPE_1);
 	BOOST_CHECK_EQUAL(F::p->getEventType(), expected_event_type_ref);
 }
 
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
 // See comment for previous test, checkReadWithEventOfUndefinedType.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
-	Event::EventType other_type = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+	Event::EventType other_type = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 	BOOST_REQUIRE(other_type != F::p->getEventType());
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(other_type));
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(F::FIELD_TERM_1);
 	event_ptr->setUInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
@@ -479,23 +479,23 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, Configured
 // updateVocabulary() on the Codec.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
-	m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
-	m_vocab_mgr.removeTerm("urn:vocab:clickstream", FIELD_TERM_1);
-	BOOST_CHECK_THROW(F::p->updateVocabulary(m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
+	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
+	F::m_vocab_mgr.removeTerm("urn:vocab:clickstream", F::FIELD_TERM_1);
+	BOOST_CHECK_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
 }
 
 // This test needs to be in the "No Factory" suite, because in the case where the
 // Codec is created by a factory, calling m_vocab_mgr.updateTerm() automatically calls
 // updateVocabulary() on the Codec.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
-	const Vocabulary& v = m_vocab_mgr.getVocabulary();
-	Vocabulary::TermRef term_ref = v.findTerm(FIELD_TERM_1);
+	const Vocabulary& v = F::m_vocab_mgr.getVocabulary();
+	Vocabulary::TermRef term_ref = v.findTerm(F::FIELD_TERM_1);
 	Vocabulary::Term modified_term = v[term_ref];
 	modified_term.term_comment = "A modified comment";
-	m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
-	m_vocab_mgr.updateTerm("urn:vocab:clickstream", modified_term);
+	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
+	F::m_vocab_mgr.updateTerm("urn:vocab:clickstream", modified_term);
 
-	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(m_vocab_mgr.getVocabulary()));
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()));
 
 	// TODO: write some tests that check that updateVocabulary() actually does something.
 }
