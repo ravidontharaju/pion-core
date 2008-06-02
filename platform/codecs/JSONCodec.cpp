@@ -43,6 +43,10 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 {
 }
 
+void JSONCodec::finish(std::ostream& out)
+{
+}
+
 bool JSONCodec::read(std::istream& in, Event& e)
 {
 	return false;

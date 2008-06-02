@@ -62,6 +62,13 @@ public:
 	virtual void write(std::ostream& out, const pion::platform::Event& e);
 
 	/**
+	 * writes the JSON array end token ']' to an output stream and frees the JSON generator
+	 *
+	 * @param out the output stream to which the token will be written
+	 */
+	virtual void finish(std::ostream& out);
+
+	/**
 	 * reads an Event from an input stream
 	 *
 	 * @param in the input stream to read the Event from

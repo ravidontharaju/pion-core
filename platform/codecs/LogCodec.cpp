@@ -84,7 +84,7 @@ void LogCodec::write(std::ostream& out, const Event& e)
 			out << ' ';
 	}
 
-	// write newline for each even record
+	// write newline for each event record
 	out << '\x0A';
 	
 	// flush the output stream
@@ -104,6 +104,7 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 	c = consumeWhiteSpaceAndComments(buf_ptr);
 	if (traits_type::eq_int_type(c, traits_type::eof())) {
 		input_stream.setstate(std::ios::eofbit);
+		e.clear();
 		return false;
 	}
 

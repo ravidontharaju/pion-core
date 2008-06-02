@@ -103,6 +103,13 @@ public:
 	virtual void write(std::ostream& out, const pion::platform::Event& e);
 
 	/**
+	 * writes any needed footers (currently none for LogCodec) to an output stream
+	 *
+	 * @param out the output stream to which the footers will be written
+	 */
+	virtual void finish(std::ostream& out) {};
+
+	/**
 	 * reads an Event from an input stream
 	 *
 	 * @param in the input stream to read the Event from
@@ -127,7 +134,7 @@ public:
 	 * @param v the Vocabulary that this Codec will use to describe Terms
 	 */
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
-	
+
 	/// resets the configuration for this Codec
 	inline void reset(void) {
 		m_field_map.clear();
@@ -246,7 +253,7 @@ private:
 	inline void writeHeaders(std::ostream& out) const;
 
 	/**
-	 * skips ssequences of whitespace characters and comments, and detects and
+	 * skips sequences of whitespace characters and comments, and detects and
 	 * handles any field format changes (for ELF only)
 	 *
 	 * @param buf_ptr pointer to an istream streambuf used for reading
@@ -275,10 +282,10 @@ private:
 	static const std::string		TERM_ATTRIBUTE_NAME;	
 
 	/// name of the start delimiter attribute for Pion XML config files
-	static const std::string		START_ATTRIBUTE_NAME;	
+	static const std::string		START_ATTRIBUTE_NAME;
 
 	/// name of the end delimiter attribute for Pion XML config files
-	static const std::string		END_ATTRIBUTE_NAME;	
+	static const std::string		END_ATTRIBUTE_NAME;
 	
 	/// maximum size of the read buffer
 	static const unsigned int		READ_BUFFER_SIZE;
@@ -288,7 +295,7 @@ private:
 	boost::scoped_array<char>		m_read_buf;
 
 	/// pointer to the end of the read buffer
-	const char * const			m_read_end;
+	const char * const				m_read_end;
 	
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;

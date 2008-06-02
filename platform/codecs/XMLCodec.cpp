@@ -43,6 +43,10 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 {
 }
 
+void XMLCodec::finish(std::ostream& out)
+{
+}
+
 bool XMLCodec::read(std::istream& in, Event& e)
 {
 	return false;

@@ -446,6 +446,26 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	event_ptr->setUInt(bytes_ref, 42);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	BOOST_CHECK_NO_THROW(F::p->finish(out));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
+	BOOST_CHECK(F::p->read(in, *event_ptr_2));
+	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), 42);
+	BOOST_CHECK(*event_ptr == *event_ptr_2);
+
+	BOOST_CHECK(!F::p->read(in, *event_ptr_2));
+	BOOST_CHECK(event_ptr_2->empty());
+}
+
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
 	EventFactory event_factory;

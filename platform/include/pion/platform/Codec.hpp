@@ -103,6 +103,14 @@ public:
 	virtual void write(std::ostream& out, const Event& e) = 0;
 
 	/**
+	 * writes any needed footers (e.g. closing tag, JSON array end token, etc.) to an output stream
+	 * and does any related cleanup
+	 *
+	 * @param out the output stream to which the footers will be written
+	 */
+	virtual void finish(std::ostream& out) = 0;
+
+	/**
 	 * reads an Event from an input stream
 	 *
 	 * @param in the input stream to read the Event from
