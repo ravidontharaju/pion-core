@@ -103,7 +103,7 @@ public:
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 
-		m_config_file_path = std::string("config/") + m_config_file;
+		m_config_file_path = std::string("config/") + this->m_config_file;
 	}
 	~PluginConfig_F() {
 	}
@@ -131,15 +131,15 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAccessors) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateConfigFile) {
-	boost::filesystem::remove(m_config_file_path);
-	BOOST_CHECK(!boost::filesystem::exists(m_config_file_path));
-	BOOST_CHECK_NO_THROW(F::setConfigFile(m_config_file_path));
+	boost::filesystem::remove(F::m_config_file_path);
+	BOOST_CHECK(!boost::filesystem::exists(F::m_config_file_path));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(F::m_config_file_path));
 	BOOST_CHECK_NO_THROW(F::createConfigFile());
-	BOOST_CHECK(boost::filesystem::exists(m_config_file_path));
+	BOOST_CHECK(boost::filesystem::exists(F::m_config_file_path));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFile) {
-	BOOST_CHECK_NO_THROW(F::setConfigFile(m_config_file_path));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(F::m_config_file_path));
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetPluginConfig) {
 	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Comment"));
 	xmlNodeSetContent(comment_node,  reinterpret_cast<const xmlChar*>("A new comment"));
 
-	BOOST_CHECK_THROW(F::setPluginConfig("some_id", comment_node), DCPluginConfig::ConfigNotOpenException);
+	BOOST_CHECK_THROW(F::setPluginConfig("some_id", comment_node), ConfigManager::ConfigNotOpenException);
 	xmlFreeNodeList(comment_node);
 }
 
@@ -159,25 +159,27 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabulary) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+static int g_num_times_mock_called = 0;
+
+void MockCallback(void) {
+	g_num_times_mock_called++;
+}
+
+
 template <typename DefaultConstructablePluginConfig>
 class OpenPluginConfig_F : public PluginConfig_F<DefaultConstructablePluginConfig> {
 public:
 	OpenPluginConfig_F() {
-		m_plugin = NULL;
-		BOOST_CHECK_NO_THROW(setConfigFile(m_config_file_path));
-		BOOST_CHECK_NO_THROW(openConfigFile());
+		this->m_plugin = NULL;
+		BOOST_CHECK_NO_THROW(setConfigFile(this->m_config_file_path));
+		BOOST_CHECK_NO_THROW(PluginConfig_F<DefaultConstructablePluginConfig>::openConfigFile());
 	}
 	~OpenPluginConfig_F() {
 	}
 
-	void MockCallback(void) {
-		g_num_times_mock_called++;
-	}
-
-	typename DCPluginConfig::plugin_type* m_plugin;
+	typename DefaultConstructablePluginConfig::plugin_type* m_plugin;
 };
 
-static int g_num_times_mock_called = 0;
 
 typedef boost::mpl::list<OpenPluginConfig_F<DCCodecFactory>, OpenPluginConfig_F<DCDatabaseManager>, OpenPluginConfig_F<DCReactionEngine> > OpenPluginConfig_fixture_list;
 
@@ -199,13 +201,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddPlugin) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemovePlugin) {
-	BOOST_CHECK_THROW(F::removePlugin("123"), PluginManager<F::plugin_type>::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::removePlugin("123"), typename PluginManager<typename F::plugin_type>::PluginNotFoundException);
 
 	std::string id = F::addPlugin(F::m_config_ptr);
 	BOOST_CHECK_NO_THROW(F::removePlugin(id));
 	BOOST_CHECK(!F::hasPlugin(id));
 
-	BOOST_CHECK_THROW(F::removePlugin(id), PluginManager<F::plugin_type>::PluginNotFoundException);
+	BOOST_CHECK_THROW(F::removePlugin(id), typename PluginManager<typename F::plugin_type>::PluginNotFoundException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHasPlugin) {
@@ -226,21 +228,21 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetWithUnknownId) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetIdReturnsId) {
 	std::string id = F::addPlugin(F::m_config_ptr);
 
-	BOOST_CHECK_NO_THROW(m_plugin = F::m_plugins.get(id));
-	BOOST_CHECK_EQUAL(m_plugin->getId(), id);
+	BOOST_CHECK_NO_THROW(this->m_plugin = F::m_plugins.get(id));
+	BOOST_CHECK_EQUAL(this->m_plugin->getId(), id);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetPluginNameReturnsPluginName) {
 	std::string id = F::addPlugin(F::m_config_ptr);
 
-	PionPluginPtr<F::plugin_type> p = F::m_plugins.getLibPtr(id);
-	BOOST_CHECK_EQUAL(p.getPluginName(), m_concrete_plugin_class);
+	PionPluginPtr<typename F::plugin_type> p = F::m_plugins.getLibPtr(id);
+	BOOST_CHECK_EQUAL(p.getPluginName(), this->m_concrete_plugin_class);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRegisterForUpdates) {
-	BOOST_CHECK_NO_THROW(F::registerForUpdates(boost::bind(&OpenPluginConfig_F::MockCallback, this)));
+	BOOST_CHECK_NO_THROW(F::registerForUpdates(boost::bind(&MockCallback)));
 
-	BOOST_CHECK_NO_THROW(F::setConfigFile(m_config_file_path));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(F::m_config_file_path));
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 
 	g_num_times_mock_called = 0;
@@ -249,7 +251,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRegisterForUpdates) {
 
 	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Comment"));
 	xmlNodeSetContent(comment_node,  reinterpret_cast<const xmlChar*>("A new comment"));
-	xmlAddNextSibling(m_config_ptr, comment_node);
+	xmlAddNextSibling(this->m_config_ptr, comment_node);
 	BOOST_CHECK_NO_THROW(F::setPluginConfig(id, F::m_config_ptr));
 	BOOST_CHECK(g_num_times_mock_called == 2);
 }

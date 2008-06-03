@@ -8,7 +8,12 @@ check_PROGRAMS = PionPlatformUnitTests
 bin_PROGRAMS = PionPerformanceTests
 TESTS = $(check_PROGRAMS)
 
-PionPlatformUnitTests_SOURCES = PionPlatformUnitTests.cpp VocabularyTests.cpp VocabularyConfigTests.cpp CodecTests.cpp EventTests.cpp ComparisonTests.cpp ReactorTests.cpp FeedServiceTests.cpp ConfigManagerTests.cpp ConfigServiceTests.cpp ServiceManagerTests.cpp
+PionPlatformUnitTests_SOURCES = \
+	CodecTests.cpp ComparisonTests.cpp ConfigManagerTests.cpp \
+	ConfigServiceTests.cpp EventTests.cpp FeedServiceTests.cpp \
+	PionPlatformUnitTests.cpp PluginConfigTests.cpp ReactorTests.cpp \
+	ServiceManagerTests.cpp UserManagerTests.cpp \
+	VocabularyConfigTests.cpp VocabularyTests.cpp
 PionPlatformUnitTests_LDADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @BOOST_TEST_LIB@ @PION_PLATFORM_LIBS@
 PionPlatformUnitTests_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
