@@ -302,7 +302,11 @@ private:
 	
 	/// represents the current sequence of data fields in the log format
 	CurrentFormat					m_format;
-	
+
+	/// the largest TermRef in the current format
+	pion::platform::Vocabulary::TermRef
+									m_max_term_ref;
+
 	/// true if the codec should flush the output stream after each write
 	bool							m_flush_after_write;
 	

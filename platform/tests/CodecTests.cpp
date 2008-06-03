@@ -302,7 +302,7 @@ public:
 							 FIELD_TERM_1("urn:vocab:clickstream#bytes"),
 							 FIELD_NAME_1("bytes")
 	{
-		// Prepare a valid Codec configuration string.
+		// Create and parse a valid Codec configuration string.
 		parseConfig("<Codec>"
 						"<Plugin>" + std::string(plugin_type) + "</Plugin>"
 						"<Name>" + NAME_1 + "</Name>"
@@ -311,10 +311,20 @@ public:
 					"</Codec>",
 					this->m_config_ptr);
 
+		initVocabularyManager();
+		makeConfiguredCodecPtr();
+	}
+	~ConfiguredCodecPtr_F() {
+	}
+
+protected:
+	void initVocabularyManager() {
 		// Initialize the VocabularyManager.
 		m_vocab_mgr.setConfigFile(get_vocabularies_file());
 		m_vocab_mgr.openConfigFile();
+	}
 
+	void makeConfiguredCodecPtr() {
 		// Make a configured CodecPtr of the specified lineage.
 		if (lineage == MANUFACTURED) {
 			CodecFactory factory(m_vocab_mgr);
@@ -326,8 +336,6 @@ public:
 			this->m_original_codec_ptr->setConfig(m_vocab_mgr.getVocabulary(), this->m_config_ptr);
 			this->p = (lineage == CREATED? this->m_original_codec_ptr : this->m_original_codec_ptr->clone());
 		}
-	}
-	~ConfiguredCodecPtr_F() {
 	}
 
 	const std::string NAME_1;
@@ -521,6 +529,75 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+template<const char* plugin_type, LINEAGE lineage>
+class CodecPtrWithRepeatedFieldTerms_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
+public:
+	CodecPtrWithRepeatedFieldTerms_F() : ConfiguredCodecPtr_F(), FIELD_NAME_2("more_bytes") {
+		// Create and parse a valid Codec configuration string.
+		parseConfig("<Codec>"
+						"<Plugin>" + std::string(plugin_type) + "</Plugin>"
+						"<Name>" + NAME_1 + "</Name>"
+						"<EventType>" + EVENT_TYPE_1 + "</EventType>"
+						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_1 + "</Field>"
+						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_2 + "</Field>"
+					"</Codec>",
+					m_config_ptr);
+
+		initVocabularyManager();
+		makeConfiguredCodecPtr();
+	}
+	~CodecPtrWithRepeatedFieldTerms_F() {
+	}
+
+	const std::string FIELD_NAME_2;
+};
+
+typedef boost::mpl::list<
+	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, CREATED>,
+	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, CLONED>,
+	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, MANUFACTURED>,
+	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, CREATED>,
+	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, CLONED>,
+	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, MANUFACTURED>,
+	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, CREATED>,
+	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, CLONED>,
+	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, MANUFACTURED>
+> CodecPtrWithRepeatedFieldTerms_fixture_list;
+
+// CodecPtrWithRepeatedFieldTerms_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtrWithRepeatedFieldTerms_S, CodecPtrWithRepeatedFieldTerms_fixture_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
+	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	event_ptr->setUInt(bytes_ref, 42);
+	event_ptr->setUInt(bytes_ref, 123);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	BOOST_CHECK_NO_THROW(F::p->finish(out));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr reconstituted_event_ptr(event_factory.create(F::p->getEventType()));
+	BOOST_CHECK(F::p->read(in, *reconstituted_event_ptr));
+
+	// check that the event that was read in is the same as the original event
+	Event::ConstIterator it = reconstituted_event_ptr->begin();
+	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), 42);
+	it++;
+	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), 123);
+	BOOST_CHECK(*event_ptr == *reconstituted_event_ptr);
+
+	// check that if you try to read another event after the last one, read() returns false and the returned event is empty
+	BOOST_CHECK(!F::p->read(in, *reconstituted_event_ptr));
+	BOOST_CHECK(reconstituted_event_ptr->empty());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 typedef ConfiguredCodecPtr_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredLogCodecPtr_S, ConfiguredLogCodecPtr_F)
