@@ -63,6 +63,34 @@ void cleanup_codec_config_files(bool copy_codec_config_file)
 }
 
 
+BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeCodecPtr) {
+	PionPluginPtr<Codec> ppp;
+	CodecPtr p;
+	setup_plugins_directory();
+	ppp.open("LogCodec");
+	p = CodecPtr(ppp.create());
+	BOOST_CHECK_EQUAL(p->getContentType(), "text/ascii");
+}
+
+BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredAfterCodecPtr) {
+	// This is a placeholder to alert people that this test is failing, without
+	// having to actually crash the tests.
+	BOOST_FAIL("This test would cause a crash if the code below were not commented out");
+
+	// The only difference between this test and checkPionPluginPtrDeclaredBeforeCodecPtr is that
+	// the first two lines are swapped.  In this case, when p goes out of scope, it crashes.
+
+/*
+	CodecPtr p;
+	PionPluginPtr<Codec> ppp;
+	setup_plugins_directory();
+	ppp.open("LogCodec");
+	p = CodecPtr(ppp.create());
+	BOOST_CHECK_EQUAL(p->getContentType(), "text/ascii");
+*/
+}
+
+
 class PluginPtrReadyToAddCodec_F : public PionPluginPtr<Codec> {
 public:
 	PluginPtrReadyToAddCodec_F() {
@@ -174,6 +202,10 @@ public:
 		BOOST_REQUIRE(config_ptr);
 	}
 
+protected:
+	PionPluginPtr<Codec> m_ppp;
+
+public:
 	CodecPtr p; // This is what's actually playing the role of fixture, i.e., F::p is being tested, not F itself.
 	xmlNodePtr m_config_ptr;
 
@@ -183,7 +215,7 @@ public:
 
 protected:
 	CodecPtr m_original_codec_ptr;
-	PionPluginPtr<Codec> m_ppp;
+	//PionPluginPtr<Codec> m_ppp; // If this were here instead of above, the tests would crash.
 };
 
 #define SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS \
@@ -458,7 +490,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(F::FIELD_TERM_1);
 	event_ptr->setUInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
@@ -534,19 +566,19 @@ BOOST_AUTO_TEST_SUITE_END()
 template<const char* plugin_type, LINEAGE lineage>
 class CodecPtrWithRepeatedFieldTerms_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
 public:
-	CodecPtrWithRepeatedFieldTerms_F() : ConfiguredCodecPtr_F(), FIELD_NAME_2("more_bytes") {
+	CodecPtrWithRepeatedFieldTerms_F() : FIELD_NAME_2("more_bytes") {
 		// Create and parse a valid Codec configuration string.
 		parseConfig("<Codec>"
 						"<Plugin>" + std::string(plugin_type) + "</Plugin>"
-						"<Name>" + NAME_1 + "</Name>"
-						"<EventType>" + EVENT_TYPE_1 + "</EventType>"
-						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_1 + "</Field>"
-						"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_2 + "</Field>"
+						"<Name>" + this->NAME_1 + "</Name>"
+						"<EventType>" + this->EVENT_TYPE_1 + "</EventType>"
+						"<Field term=\"" + this->FIELD_TERM_1 + "\">" + this->FIELD_NAME_1 + "</Field>"
+						"<Field term=\"" + this->FIELD_TERM_1 + "\">" + this->FIELD_NAME_2 + "</Field>"
 					"</Codec>",
-					m_config_ptr);
+					this->m_config_ptr);
 
-		initVocabularyManager();
-		makeConfiguredCodecPtr();
+		this->initVocabularyManager();
+		this->makeConfiguredCodecPtr();
 	}
 	~CodecPtrWithRepeatedFieldTerms_F() {
 	}
@@ -573,7 +605,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(F::FIELD_TERM_1);
 	event_ptr->setUInt(bytes_ref, 42);
 	event_ptr->setUInt(bytes_ref, 123);
 	std::ostringstream out;
