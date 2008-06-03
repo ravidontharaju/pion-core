@@ -482,7 +482,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	std::istringstream in(output_str);
 	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
 	BOOST_CHECK(F::p->read(in, *event_ptr_2));
-	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), 42);
+	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), static_cast<boost::uint32_t>(42));
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 }
 
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	std::istringstream in(output_str);
 	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
 	BOOST_CHECK(F::p->read(in, *event_ptr_2));
-	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), 42);
+	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), static_cast<boost::uint32_t>(42));
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 
 	BOOST_CHECK(!F::p->read(in, *event_ptr_2));
@@ -618,9 +618,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 
 	// check that the event that was read in is the same as the original event
 	Event::ConstIterator it = reconstituted_event_ptr->begin();
-	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), 42);
+	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), static_cast<boost::uint32_t>(42));
 	it++;
-	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), 123);
+	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), static_cast<boost::uint32_t>(123));
 	BOOST_CHECK(*event_ptr == *reconstituted_event_ptr);
 
 	// check that if you try to read another event after the last one, read() returns false and the returned event is empty
@@ -641,7 +641,7 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	BOOST_CHECK(p->read(in, *event_ptr));
 
 	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(bytes_ref), 500);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(bytes_ref), static_cast<boost::uint32_t>(500));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
