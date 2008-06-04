@@ -37,7 +37,6 @@
 		E30B43740CFBB4CF00337BA4 /* PluginManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */; };
 		E30D893D0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
 		E30D893E0CCE8BDA005C483D /* PionCounter.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E30D893C0CCE8BDA005C483D /* PionCounter.hpp */; };
-		E3168A160D7F7A6300D23CE6 /* ConfigServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */; };
 		E319399E0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
 		E319399F0D49601A00DDF224 /* Comparison.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E319399D0D49601A00DDF224 /* Comparison.cpp */; };
 		E329D2190D7DF39C00229FD5 /* Query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2180D7DF39C00229FD5 /* Query.hpp */; };
@@ -52,14 +51,18 @@
 		E35FD5B70DC2A2470090C187 /* PionPoolAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */; };
 		E35FD5B80DC2A2470090C187 /* PionLockFreeQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */; };
 		E35FD5B90DC2A2470090C187 /* PionPoolAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */; };
-		E35FD5BA0DC2A27B0090C187 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
-		E35FD5BB0DC2A27C0090C187 /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
-		E35FD5BC0DC2A27C0090C187 /* ConfigManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A9100D665D750069A023 /* ConfigManagerTests.cpp */; };
-		E35FD5BD0DC2A27E0090C187 /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
-		E35FD5BE0DC2A27E0090C187 /* FeedServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A90E0D665D660069A023 /* FeedServiceTests.cpp */; };
-		E35FD5BF0DC2A2800090C187 /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
-		E35FD5C00DC2A2810090C187 /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
-		E35FD5C10DC2A2810090C187 /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
+		E3642B790DF5F97600C79941 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
+		E3642BDF0DF61D4100C79941 /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
+		E3642BE00DF61D4100C79941 /* ConfigManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A9100D665D750069A023 /* ConfigManagerTests.cpp */; };
+		E3642BE10DF61D4200C79941 /* ConfigServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */; };
+		E3642BE20DF61D4200C79941 /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
+		E3642BE30DF61D4200C79941 /* FeedServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A90E0D665D660069A023 /* FeedServiceTests.cpp */; };
+		E3642BE40DF61D4400C79941 /* PluginConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */; };
+		E3642BE50DF61D4500C79941 /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
+		E3642BE60DF61D4500C79941 /* ServiceManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1B0DF5E7F700C79941 /* ServiceManagerTests.cpp */; };
+		E3642BE70DF61D4600C79941 /* UserManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1C0DF5E7F700C79941 /* UserManagerTests.cpp */; };
+		E3642BE80DF61D4600C79941 /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
+		E3642BE90DF61D4600C79941 /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E36D88B10D29BA0E00B4C134 /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
 		E36D88B20D29BA0E00B4C134 /* CodecFactory.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */; };
 		E36D88B30D29BA0E00B4C134 /* ConfigManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A80D29BA0E00B4C134 /* ConfigManager.hpp */; };
@@ -504,6 +507,41 @@
 			proxyType = 1;
 			remoteGlobalIDString = E306A8570D66484E0069A023;
 			remoteInfo = EchoService;
+		};
+		E3642B610DF5F7B400C79941 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8770D6648670069A023;
+			remoteInfo = AllowNothingService;
+		};
+		E3642B630DF5F7B400C79941 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8670D6648570069A023;
+			remoteInfo = CookieService;
+		};
+		E3642B650DF5F7B400C79941 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8370D66481B0069A023;
+			remoteInfo = LogService;
+		};
+		E3642B670DF5F7B400C79941 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8100D6647260069A023;
+			remoteInfo = FileService;
+		};
+		E3642B690DF5F7B400C79941 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 08FB7793FE84155DC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E306A8470D6648460069A023;
+			remoteInfo = HelloService;
 		};
 		E36D8A620D29CA0400B4C134 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -970,6 +1008,9 @@
 		E349BEB00D3E578A008AB9E6 /* Comparison.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Comparison.hpp; path = platform/include/pion/platform/Comparison.hpp; sourceTree = SOURCE_ROOT; };
 		E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionLockFreeQueue.hpp; path = common/include/pion/PionLockFreeQueue.hpp; sourceTree = SOURCE_ROOT; };
 		E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionPoolAllocator.hpp; path = common/include/pion/PionPoolAllocator.hpp; sourceTree = SOURCE_ROOT; };
+		E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PluginConfigTests.cpp; path = platform/tests/PluginConfigTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3642B1B0DF5E7F700C79941 /* ServiceManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ServiceManagerTests.cpp; path = platform/tests/ServiceManagerTests.cpp; sourceTree = SOURCE_ROOT; };
+		E3642B1C0DF5E7F700C79941 /* UserManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UserManagerTests.cpp; path = platform/tests/UserManagerTests.cpp; sourceTree = SOURCE_ROOT; };
 		E36D88A60D29BA0E00B4C134 /* Codec.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Codec.hpp; path = platform/include/pion/platform/Codec.hpp; sourceTree = SOURCE_ROOT; };
 		E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CodecFactory.hpp; path = platform/include/pion/platform/CodecFactory.hpp; sourceTree = SOURCE_ROOT; };
 		E36D88A80D29BA0E00B4C134 /* ConfigManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConfigManager.hpp; path = platform/include/pion/platform/ConfigManager.hpp; sourceTree = SOURCE_ROOT; };
@@ -1697,6 +1738,9 @@
 		E3EFC67F0D188DC80019CCD4 /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */,
+				E3642B1B0DF5E7F700C79941 /* ServiceManagerTests.cpp */,
+				E3642B1C0DF5E7F700C79941 /* UserManagerTests.cpp */,
 				E3FBA7370D8F119900D66A53 /* PionPerformanceTests.cpp */,
 				E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */,
 				E36D88E60D29BBC800B4C134 /* EventTests.cpp */,
@@ -2536,6 +2580,11 @@
 				E306A91B0D6660F90069A023 /* PBXTargetDependency */,
 				E306A91D0D6660F90069A023 /* PBXTargetDependency */,
 				E35FD51A0DC295470090C187 /* PBXTargetDependency */,
+				E3642B620DF5F7B400C79941 /* PBXTargetDependency */,
+				E3642B640DF5F7B400C79941 /* PBXTargetDependency */,
+				E3642B660DF5F7B400C79941 /* PBXTargetDependency */,
+				E3642B680DF5F7B400C79941 /* PBXTargetDependency */,
+				E3642B6A0DF5F7B400C79941 /* PBXTargetDependency */,
 			);
 			name = PionPlatformUnitTests;
 			productName = PionReactorUnitTests;
@@ -2935,15 +2984,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3EF11F00D74DB2A00A17A90 /* PionPlatformUnitTests.cpp in Sources */,
-				E3168A160D7F7A6300D23CE6 /* ConfigServiceTests.cpp in Sources */,
-				E35FD5BA0DC2A27B0090C187 /* CodecTests.cpp in Sources */,
-				E35FD5BB0DC2A27C0090C187 /* ComparisonTests.cpp in Sources */,
-				E35FD5BC0DC2A27C0090C187 /* ConfigManagerTests.cpp in Sources */,
-				E35FD5BD0DC2A27E0090C187 /* EventTests.cpp in Sources */,
-				E35FD5BE0DC2A27E0090C187 /* FeedServiceTests.cpp in Sources */,
-				E35FD5BF0DC2A2800090C187 /* ReactorTests.cpp in Sources */,
-				E35FD5C00DC2A2810090C187 /* VocabularyConfigTests.cpp in Sources */,
-				E35FD5C10DC2A2810090C187 /* VocabularyTests.cpp in Sources */,
+				E3642B790DF5F97600C79941 /* CodecTests.cpp in Sources */,
+				E3642BDF0DF61D4100C79941 /* ComparisonTests.cpp in Sources */,
+				E3642BE00DF61D4100C79941 /* ConfigManagerTests.cpp in Sources */,
+				E3642BE10DF61D4200C79941 /* ConfigServiceTests.cpp in Sources */,
+				E3642BE20DF61D4200C79941 /* EventTests.cpp in Sources */,
+				E3642BE30DF61D4200C79941 /* FeedServiceTests.cpp in Sources */,
+				E3642BE40DF61D4400C79941 /* PluginConfigTests.cpp in Sources */,
+				E3642BE50DF61D4500C79941 /* ReactorTests.cpp in Sources */,
+				E3642BE60DF61D4500C79941 /* ServiceManagerTests.cpp in Sources */,
+				E3642BE70DF61D4600C79941 /* UserManagerTests.cpp in Sources */,
+				E3642BE80DF61D4600C79941 /* VocabularyConfigTests.cpp in Sources */,
+				E3642BE90DF61D4600C79941 /* VocabularyTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3133,6 +3185,31 @@
 			isa = PBXTargetDependency;
 			target = E306A8570D66484E0069A023 /* EchoService */;
 			targetProxy = E35FD5190DC295470090C187 /* PBXContainerItemProxy */;
+		};
+		E3642B620DF5F7B400C79941 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8770D6648670069A023 /* AllowNothingService */;
+			targetProxy = E3642B610DF5F7B400C79941 /* PBXContainerItemProxy */;
+		};
+		E3642B640DF5F7B400C79941 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8670D6648570069A023 /* CookieService */;
+			targetProxy = E3642B630DF5F7B400C79941 /* PBXContainerItemProxy */;
+		};
+		E3642B660DF5F7B400C79941 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8370D66481B0069A023 /* LogService */;
+			targetProxy = E3642B650DF5F7B400C79941 /* PBXContainerItemProxy */;
+		};
+		E3642B680DF5F7B400C79941 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8100D6647260069A023 /* FileService */;
+			targetProxy = E3642B670DF5F7B400C79941 /* PBXContainerItemProxy */;
+		};
+		E3642B6A0DF5F7B400C79941 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E306A8470D6648460069A023 /* HelloService */;
+			targetProxy = E3642B690DF5F7B400C79941 /* PBXContainerItemProxy */;
 		};
 		E36D8A630D29CA0400B4C134 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
