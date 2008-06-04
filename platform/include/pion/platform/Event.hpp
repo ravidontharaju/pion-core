@@ -900,7 +900,13 @@ private:
 		
 		/// non-virtual destructor
 		~EventAllocatorFactory() {
-#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+			// disabling release of memory for EventAllocators for now...
+			// this seems to cause crashes during shutdown for gcc-optimizized
+			// builds.   I suspect it has something to do with the order of
+			// static variable destruction during shutdown, but could be another
+			// problem being masked out...  -Mike
+#if 0
+//#ifdef PION_EVENT_USE_POOL_ALLOCATORS
 			// lock the EventAllocator tracker
 			boost::unique_lock<boost::mutex> tracker_lock(m_instance_ptr->m_tracker_mutex);
 			// destruct all the EventAllocators that have been generated
