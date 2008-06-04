@@ -202,7 +202,10 @@ void LogInputReactor::checkForLogFiles(void)
 		
 	} else {
 		// found a new log to consume
-		m_logs_consumed.insert(*log_itr);
+		if (! m_just_one) {
+			// only track the log as being consumed if "JustOne" is disabled
+			m_logs_consumed.insert(*log_itr);
+		}
 		
 		// re-calculate the full path to the file
 		bfs::path full_path(m_log_directory);
@@ -242,7 +245,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
 				throw ReadEventException(m_log_file);
 
-			// check if only Event should be read
+			// check if only the first Event should be read
 			if (m_just_one) {
 				PION_LOG_DEBUG(m_logger, "JustOne: generating lots of event copies for testing");
 				m_log_stream.close();
