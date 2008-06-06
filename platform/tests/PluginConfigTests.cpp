@@ -50,6 +50,8 @@ DatabaseManager g_database_mgr(g_vocab_mgr);
 class PluginConfigFixture {
 public:
 	PluginConfigFixture(const std::string& concrete_plugin_class) {
+		setup_logging_for_unit_tests();
+		setup_plugins_directory();
 		m_concrete_plugin_class = concrete_plugin_class;
 		BOOST_REQUIRE_NO_THROW(m_config_ptr = ConfigManager::createPluginConfig(m_concrete_plugin_class));
 	}
@@ -100,10 +102,7 @@ template <typename DefaultConstructablePluginConfig>
 class PluginConfig_F : public DefaultConstructablePluginConfig {
 public:
 	PluginConfig_F() {
-		setup_logging_for_unit_tests();
-		setup_plugins_directory();
-
-		m_config_file_path = std::string("config/") + this->m_config_file;
+		m_config_file_path = get_config_file_dir() + this->m_config_file;
 	}
 	~PluginConfig_F() {
 	}
