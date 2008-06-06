@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
 	<Server id="main-server">
-		<Port>8080</Port>
-		<SSLKey>sslkey.pem</SSLKey>
+		<Port>8888</Port>
+		<!-- <SSLKey>sslkey.pem</SSLKey> -->
 		<Redirect>
 			<Source>/</Source>
 			<Target>/index.html</Target>
