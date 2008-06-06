@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 
 	event_ptr->clear(m_string_term.term_ref);
 	event_ptr->setString(m_string_term.term_ref, "GET /favicon.ico HTTP/1.1");
-	c.configure(Comparison::TYPE_REGEX, "\.(png|gif|jpg|jpeg|ico)");
+	c.configure(Comparison::TYPE_REGEX, "\\.(png|gif|jpg|jpeg|ico)");
 	BOOST_CHECK(c.evaluate(*event_ptr));
 }
 

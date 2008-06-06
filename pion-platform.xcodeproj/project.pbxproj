@@ -45,24 +45,24 @@
 		E329D23B0D7E24AF00229FD5 /* DatabaseOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */; };
 		E32F26D10DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
 		E32F26D20DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
+		E340674D0DF9F8B2007EE07B /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
+		E340674E0DF9F8B3007EE07B /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
+		E340674F0DF9F8B3007EE07B /* ConfigManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A9100D665D750069A023 /* ConfigManagerTests.cpp */; };
+		E34067500DF9F8B4007EE07B /* ConfigServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */; };
+		E34067510DF9F8B4007EE07B /* FeedServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A90E0D665D660069A023 /* FeedServiceTests.cpp */; };
+		E34067520DF9F8B6007EE07B /* PluginConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */; };
+		E34067530DF9F8B7007EE07B /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
+		E34067540DF9F8B7007EE07B /* ServiceManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1B0DF5E7F700C79941 /* ServiceManagerTests.cpp */; };
+		E34067550DF9F8B8007EE07B /* UserManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1C0DF5E7F700C79941 /* UserManagerTests.cpp */; };
+		E34067560DF9F8B8007EE07B /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
+		E34067570DF9F8B8007EE07B /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E35FD5B60DC2A2470090C187 /* PionLockFreeQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */; };
 		E35FD5B70DC2A2470090C187 /* PionPoolAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */; };
 		E35FD5B80DC2A2470090C187 /* PionLockFreeQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */; };
 		E35FD5B90DC2A2470090C187 /* PionPoolAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */; };
-		E3642B790DF5F97600C79941 /* CodecTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326EF890D2D733700BBCE56 /* CodecTests.cpp */; };
-		E3642BDF0DF61D4100C79941 /* ComparisonTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */; };
-		E3642BE00DF61D4100C79941 /* ConfigManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A9100D665D750069A023 /* ConfigManagerTests.cpp */; };
-		E3642BE10DF61D4200C79941 /* ConfigServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */; };
 		E3642BE20DF61D4200C79941 /* EventTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E60D29BBC800B4C134 /* EventTests.cpp */; };
-		E3642BE30DF61D4200C79941 /* FeedServiceTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E306A90E0D665D660069A023 /* FeedServiceTests.cpp */; };
-		E3642BE40DF61D4400C79941 /* PluginConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */; };
-		E3642BE50DF61D4500C79941 /* ReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E378EE710D4A6B06002658FA /* ReactorTests.cpp */; };
-		E3642BE60DF61D4500C79941 /* ServiceManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1B0DF5E7F700C79941 /* ServiceManagerTests.cpp */; };
-		E3642BE70DF61D4600C79941 /* UserManagerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3642B1C0DF5E7F700C79941 /* UserManagerTests.cpp */; };
-		E3642BE80DF61D4600C79941 /* VocabularyConfigTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E80D29BBC800B4C134 /* VocabularyConfigTests.cpp */; };
-		E3642BE90DF61D4600C79941 /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E36D88B10D29BA0E00B4C134 /* Codec.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A60D29BA0E00B4C134 /* Codec.hpp */; };
 		E36D88B20D29BA0E00B4C134 /* CodecFactory.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A70D29BA0E00B4C134 /* CodecFactory.hpp */; };
 		E36D88B30D29BA0E00B4C134 /* ConfigManager.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E36D88A80D29BA0E00B4C134 /* ConfigManager.hpp */; };
@@ -2984,18 +2984,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3EF11F00D74DB2A00A17A90 /* PionPlatformUnitTests.cpp in Sources */,
-				E3642B790DF5F97600C79941 /* CodecTests.cpp in Sources */,
-				E3642BDF0DF61D4100C79941 /* ComparisonTests.cpp in Sources */,
-				E3642BE00DF61D4100C79941 /* ConfigManagerTests.cpp in Sources */,
-				E3642BE10DF61D4200C79941 /* ConfigServiceTests.cpp in Sources */,
 				E3642BE20DF61D4200C79941 /* EventTests.cpp in Sources */,
-				E3642BE30DF61D4200C79941 /* FeedServiceTests.cpp in Sources */,
-				E3642BE40DF61D4400C79941 /* PluginConfigTests.cpp in Sources */,
-				E3642BE50DF61D4500C79941 /* ReactorTests.cpp in Sources */,
-				E3642BE60DF61D4500C79941 /* ServiceManagerTests.cpp in Sources */,
-				E3642BE70DF61D4600C79941 /* UserManagerTests.cpp in Sources */,
-				E3642BE80DF61D4600C79941 /* VocabularyConfigTests.cpp in Sources */,
-				E3642BE90DF61D4600C79941 /* VocabularyTests.cpp in Sources */,
+				E340674D0DF9F8B2007EE07B /* CodecTests.cpp in Sources */,
+				E340674E0DF9F8B3007EE07B /* ComparisonTests.cpp in Sources */,
+				E340674F0DF9F8B3007EE07B /* ConfigManagerTests.cpp in Sources */,
+				E34067500DF9F8B4007EE07B /* ConfigServiceTests.cpp in Sources */,
+				E34067510DF9F8B4007EE07B /* FeedServiceTests.cpp in Sources */,
+				E34067520DF9F8B6007EE07B /* PluginConfigTests.cpp in Sources */,
+				E34067530DF9F8B7007EE07B /* ReactorTests.cpp in Sources */,
+				E34067540DF9F8B7007EE07B /* ServiceManagerTests.cpp in Sources */,
+				E34067550DF9F8B8007EE07B /* UserManagerTests.cpp in Sources */,
+				E34067560DF9F8B8007EE07B /* VocabularyConfigTests.cpp in Sources */,
+				E34067570DF9F8B8007EE07B /* VocabularyTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3542,6 +3542,7 @@
 				GCC_MODEL_TUNING = "";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					PION_HAVE_JSON,
 					BOOST_TEST_DYN_LINK,
 					_REENTRANT,
 					PION_XCODE,
@@ -3572,6 +3573,7 @@
 					"-lxml2",
 					"-luuid",
 					"-lsqlite3",
+					"-lyajl",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";
@@ -3592,6 +3594,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					PION_HAVE_JSON,
 					BOOST_TEST_DYN_LINK,
 					_REENTRANT,
 					NDEBUG,
@@ -3622,6 +3625,7 @@
 					"-lxml2",
 					"-luuid",
 					"-lsqlite3",
+					"-lyajl",
 				);
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 				SYMROOT = "$(PROJECT_DIR)/bin";

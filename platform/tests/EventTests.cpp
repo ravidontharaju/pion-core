@@ -82,6 +82,19 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(EventTests_S, EventTests_F)
 
+BOOST_AUTO_TEST_CASE(checkEventAllocatorIsOk) {
+	EventAllocator event_alloc;
+
+	void *mem_ptr = event_alloc.malloc(sizeof(Event));
+	Event *event_ptr = new (mem_ptr) Event(m_object_term.term_ref, &event_alloc);
+	event_ptr->setInt(m_plain_int_term.term_ref, 24);
+	event_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224);
+	event_ptr->setDateTime(m_date_term.term_ref, PionDateTime(boost::gregorian::date(2007, 4, 5)));
+	
+	event_ptr->~Event();
+	event_alloc.free(event_ptr, sizeof(Event));	
+}
+
 BOOST_AUTO_TEST_CASE(checkEmptyEventValues) {
 	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	BOOST_CHECK(event_ptr->empty());

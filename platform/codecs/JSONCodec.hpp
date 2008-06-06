@@ -62,8 +62,8 @@ public:
 	/// constructs a new JSONCodec object
 	JSONCodec(void)
 		: pion::platform::Codec(),
-		m_no_events_written(true), m_no_events_read(true),
-		m_flush_after_write(false), m_yajl_generator(NULL), m_yajl_handle(NULL)
+		m_flush_after_write(false), m_yajl_generator(NULL), m_yajl_handle(NULL),
+		m_no_events_written(true), m_no_events_read(true)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended

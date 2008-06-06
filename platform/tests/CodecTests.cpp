@@ -663,9 +663,9 @@ static const std::string FIELD_NAME_INT_16  = "plain-old-int";
 static const std::string FIELD_TERM_UINT_64 = "urn:vocab:test#big-int";
 static const std::string FIELD_NAME_UINT_64 = "big-int";
 static const boost::int16_t  E1_FIELD_VALUE_INT_16  = 500;
-static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
 static const boost::int16_t  E2_FIELD_VALUE_INT_16  = 0;
-static const boost::uint64_t E2_FIELD_VALUE_UINT_64 = 0x0123456789ABCDEF;
+static const boost::uint64_t E2_FIELD_VALUE_UINT_64 = 0x0123456789ABCDEFULL;
 
 template<const char* plugin_type, LINEAGE lineage>
 class CodecPtrWithVariousFieldTerms_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
@@ -679,8 +679,8 @@ public:
 			"<Field term=\"" + FIELD_TERM_UINT_64 + "\">" + FIELD_NAME_UINT_64 + "</Field>"
 		"</Codec></PionConfig>") {
 
-		m_event_ptr = event_factory.create(p->getEventType());
-		m_vocab = &m_vocab_mgr.getVocabulary();
+		m_event_ptr = event_factory.create(this->p->getEventType());
+		m_vocab = &this->m_vocab_mgr.getVocabulary();
 	}
 	~CodecPtrWithVariousFieldTerms_F() {
 	}
@@ -713,7 +713,7 @@ BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
 
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
-	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
 
 	std::ostringstream oss;
 	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
-	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
 
 	// This time, the terms are not in the order in which they appear in the configuration.
 	std::ostringstream oss;
