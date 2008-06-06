@@ -226,11 +226,13 @@ protected:
 	PionPluginPtr<Codec> m_ppp;
 };
 
-#define SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS \
+#define SKIP_WITH_WARNING_FOR_JSON_CODECS \
 	if (F::m_codec_type == "JSONCodec") { \
 		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because JSONCodec is incomplete."); \
 		return; \
-	} \
+	}
+
+#define SKIP_WITH_WARNING_FOR_XML_CODECS \
 	if (F::m_codec_type == "XMLCodec") { \
 		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because XMLCodec is incomplete."); \
 		return; \
@@ -290,7 +292,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedTypeAndEmptyS
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
@@ -470,7 +472,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEmptyString) {
 // universally valid, so read() could legitimately throw a different exception due to the
 // input string, without ever touching the event.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(Vocabulary::UNDEFINED_TERM_REF));
 	std::stringstream ss("some text\n");
@@ -479,7 +481,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
 
 // See comment for previous test, checkReadWithEventOfUndefinedType.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	Event::EventType other_type = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 	BOOST_REQUIRE(other_type != F::p->getEventType());
 	EventFactory event_factory;
@@ -489,7 +491,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkWriteOutputsSomething) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventAllocator ea;
 	Event e(F::p->getEventType(), &ea);
 	std::ostringstream out;
@@ -498,7 +500,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkWriteOutputsSomething) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
@@ -514,7 +516,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
@@ -534,7 +536,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	std::ostringstream out;
@@ -565,7 +568,8 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, Configured
 // Codec is created by a factory, calling m_vocab_mgr.removeTerm() automatically calls
 // updateVocabulary() on the Codec.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
 	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
 	F::m_vocab_mgr.removeTerm("urn:vocab:clickstream", FIELD_TERM_1);
 	BOOST_CHECK_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
@@ -624,7 +628,7 @@ typedef boost::mpl::list<
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtrWithRepeatedFieldTerms_S, CodecPtrWithRepeatedFieldTerms_fixture_list)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
-	SKIP_WITH_WARNING_FOR_UNFINISHED_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
@@ -653,30 +657,195 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
-typedef ConfiguredCodecPtr_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
+static const std::string EVENT_TYPE_2       = "urn:vocab:test#simple-object";
+static const std::string FIELD_TERM_INT_16  = "urn:vocab:test#plain-old-int";
+static const std::string FIELD_NAME_INT_16  = "plain-old-int";
+static const std::string FIELD_TERM_UINT_64 = "urn:vocab:test#big-int";
+static const std::string FIELD_NAME_UINT_64 = "big-int";
+static const boost::int16_t  E1_FIELD_VALUE_INT_16  = 500;
+static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+static const boost::int16_t  E2_FIELD_VALUE_INT_16  = 0;
+static const boost::uint64_t E2_FIELD_VALUE_UINT_64 = 0x0123456789ABCDEF;
+
+template<const char* plugin_type, LINEAGE lineage>
+class CodecPtrWithVariousFieldTerms_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
+public:
+	CodecPtrWithVariousFieldTerms_F() : ConfiguredCodecPtr_F<plugin_type, lineage>(
+		"<PionConfig><Codec>"
+			"<Plugin>" + std::string(plugin_type) + "</Plugin>"
+			"<Name>" + NAME_1 + "</Name>"
+			"<EventType>" + EVENT_TYPE_2 + "</EventType>"
+			"<Field term=\"" + FIELD_TERM_INT_16 + "\">" + FIELD_NAME_INT_16 + "</Field>"
+			"<Field term=\"" + FIELD_TERM_UINT_64 + "\">" + FIELD_NAME_UINT_64 + "</Field>"
+		"</Codec></PionConfig>") {
+
+		m_event_ptr = event_factory.create(p->getEventType());
+		m_vocab = &m_vocab_mgr.getVocabulary();
+	}
+	~CodecPtrWithVariousFieldTerms_F() {
+	}
+
+	EventFactory event_factory;
+	EventPtr m_event_ptr;
+	const Vocabulary* m_vocab;
+};
+
+typedef CodecPtrWithVariousFieldTerms_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredLogCodecPtr_S, ConfiguredLogCodecPtr_F)
 
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
-	EventFactory event_factory;
-	EventPtr event_ptr(event_factory.create(p->getEventType()));
-	std::istringstream in("500\n"); // EventType has only one field, FIELD_TERM_1 (urn:vocab:clickstream#bytes)
-	BOOST_CHECK(p->read(in, *event_ptr));
+	std::ostringstream oss;
+	oss << E1_FIELD_VALUE_INT_16 << " "
+		<< E1_FIELD_VALUE_UINT_64 << "\n";
+	std::istringstream in(oss.str());
 
-	Vocabulary::TermRef bytes_ref = m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(bytes_ref), static_cast<boost::uint32_t>(500));
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-typedef ConfiguredCodecPtr_F<JSONCodec_name, CREATED> ConfiguredJSONCodecPtr_F;
+
+typedef CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CREATED> ConfiguredJSONCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
+
+BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
+	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+
+	std::ostringstream oss;
+	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
+		<< ", \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
+		<< " }";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
+	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00;
+
+	// This time, the terms are not in the order in which they appear in the configuration.
+	std::ostringstream oss;
+	oss << "{ \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
+		<< ", \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
+		<< " }";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
+	std::ostringstream oss;
+	oss << "[ { \"" << FIELD_NAME_INT_16  << "\": " << E1_FIELD_VALUE_INT_16
+		<<  " , \"" << FIELD_NAME_UINT_64 << "\": " << E1_FIELD_VALUE_UINT_64
+		<<  " }"
+		<< ", { \"" << FIELD_NAME_INT_16  << "\": " << E2_FIELD_VALUE_INT_16
+		<<  " , \"" << FIELD_NAME_UINT_64 << "\": " << E2_FIELD_VALUE_UINT_64
+		<<  " } "
+		<< "]";
+	std::istringstream in(oss.str());
+
+	// read and verify the first event
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+
+	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
+	Event::ConstIterator it = m_event_ptr->begin();
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>( it->value), E1_FIELD_VALUE_INT_16);
+	it++;
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(it->value), E1_FIELD_VALUE_UINT_64);
+	it++;
+	BOOST_CHECK(it == m_event_ptr->end());
+
+	// read and verify the second event
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
+
+	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
+	it = m_event_ptr->begin();
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>( it->value), E2_FIELD_VALUE_INT_16);
+	it++;
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(it->value), E2_FIELD_VALUE_UINT_64);
+	it++;
+	BOOST_CHECK(it == m_event_ptr->end());
+}
+
+BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
+	// initialize the event
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+
+	// Write a string with the expected output.
+	// Due to YAJL limitations, 64-bit integers are output as quoted strings.
+	std::ostringstream oss;
+	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
+		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
+		<< "}";
+	std::string expected_output_string = oss.str();
+
+	// Confirm that the output is as expected.
+	std::ostringstream out;
+	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
+	BOOST_CHECK_EQUAL(out.str(), expected_output_string);
+}
+
+BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
+	// This time, the terms are not set in the order in which they appear in the configuration.
+	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+
+	// The terms should still be output in the order in which they appear in the configuration.
+	std::ostringstream oss;
+	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
+		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
+		<< "}";
+	std::string expected_output_string = oss.str();
+
+	// Confirm that the output is as expected.
+	std::ostringstream out;
+	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
+	BOOST_CHECK_EQUAL(out.str(), expected_output_string);
+}
+
+BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
+	// initialize the event
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+
+	// This time there should be a ']' at the end, to indicate that there are no more events.
+	std::ostringstream oss;
+	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
+		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
+		<< "}]";
+	std::string expected_output_string = oss.str();
+
+	// Confirm that the output is as expected.
+	std::ostringstream out;
+	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
+	BOOST_REQUIRE_NO_THROW(p->finish(out));
+	BOOST_CHECK_EQUAL(out.str(), expected_output_string);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-typedef ConfiguredCodecPtr_F<JSONCodec_name, CREATED> ConfiguredXMLCodecPtr_F;
+
+typedef CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CREATED> ConfiguredXMLCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredXMLCodecPtr_S, ConfiguredXMLCodecPtr_F)
 
 BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(codecFactoryCreationAndDestruction_S)
 
