@@ -222,7 +222,50 @@ dojo.declare("plugins.reactors.ReactorDialog",
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorDialog.html"),
 		widgetsInTemplate: true,
+		postCreate: function(){
+			this.inherited("postCreate", arguments);
+			var _this = this;
+			setTimeout(function(){
+				// ensures _position() gets called after this.domNode gets its final size
+				_this._position();
+			}, 200);
+		},
 		reactor: '',
+		_position: function(){
+			// copied from: http://trac.dojotoolkit.org/ticket/5286
+			// summary: position modal dialog in center of screen
+			
+			if(dojo.hasClass(dojo.body(),"dojoMove")){ return; }
+			var viewport = dijit.getViewport();
+			var mb = dojo.marginBox(this.domNode);
+
+			var style = this.domNode.style;
+			style.left = Math.floor((viewport.l + (viewport.w - mb.w)/2)) + "px";
+			
+			// Change to avoid the dialog being outside the viewport
+			var top = Math.floor((viewport.t + (viewport.h - mb.h)/2));
+			
+			// A standard margin is nice to have for layout reasons
+			// I think it should be proportional to the page height
+			var margin = Math.floor(viewport.h/30);
+			
+			// The top can't be less than viewport top
+			if (top - margin < viewport.t)
+			{
+				top = viewport.t + margin;
+			}
+			
+			// If the height of the box is the same or bigger than the viewport
+			// it means that the box should be made scrollable and a bottom should be set
+			if (mb.h + margin*2 >= viewport.h){
+				style.overflow = "auto";
+				// The bottom is margin - the scroll of the page
+				style.bottom = (margin - viewport.t) + "px";
+			}
+			style.top = top + "px";
+			viewport = dijit.getViewport();
+			mb = dojo.marginBox(this.domNode);
+		},
 		execute: function(dialogFields) {
 			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = dialogFields.Name;
