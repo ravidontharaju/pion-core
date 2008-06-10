@@ -124,8 +124,8 @@ protected:
 		PION_ASSERT(m_reaction_engine_ptr != NULL);
 		return *m_reaction_engine_ptr;
 	}
-	
-	
+
+
 private:
 	
 	/// name of the descriptive name element for Pion XML config files
@@ -135,13 +135,13 @@ private:
 	static const std::string		COMMENT_ELEMENT_NAME;
 
 
-	/// uniquely identifies this particular Codec
+	/// uniquely identifies this particular Plugin
 	std::string						m_plugin_id;
 
-	/// descriptive name for this Codec
+	/// descriptive name for this Plugin
 	std::string						m_plugin_name;
 
-	/// descriptive comment for this Codec
+	/// descriptive comment for this Plugin
 	std::string						m_plugin_comment;
 	
 	/// pointer to the CodecFactory, used by the plugin to access Codecs
