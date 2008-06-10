@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="PlatformPlugins"
 	ProjectGUID="{52F60A68-06E3-4245-BF7D-9BD2F170D9FF}"
+	RootNamespace="PlatformPlugins"
 	>
 	<Platforms>
 		<Platform
@@ -17,21 +18,61 @@
 			Name="Debug_DLL|Win32"
 			ConfigurationType="10"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove all files from all *\.libs folders"
+				CommandLine="del /Q codecs\.libs\*.*&#x0D;&#x0A;del /Q databases\.libs\*.*&#x0D;&#x0A;del /Q reactors\.libs\*.*&#x0D;&#x0A;del /Q services\.libs\*.*"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copy the plugin DLLs for the current configuration into *\.libs"
+				CommandLine="copy $(ProjectDir)codecs\$(ConfigurationName)\*.dll $(ProjectDir)codecs\.libs&#x0D;&#x0A;copy $(ProjectDir)databases\$(ConfigurationName)\*.dll $(ProjectDir)databases\.libs&#x0D;&#x0A;copy $(ProjectDir)reactors\$(ConfigurationName)\*.dll $(ProjectDir)reactors\.libs&#x0D;&#x0A;copy $(ProjectDir)services\$(ConfigurationName)\*.dll $(ProjectDir)services\.libs&#x0D;&#x0A;"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
 			ConfigurationType="10"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove all files from all *\.libs folders"
+				CommandLine="del /Q codecs\.libs\*.*&#x0D;&#x0A;del /Q databases\.libs\*.*&#x0D;&#x0A;del /Q reactors\.libs\*.*&#x0D;&#x0A;del /Q services\.libs\*.*"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copy the plugin DLLs for the current configuration into *\.libs"
+				CommandLine="copy $(ProjectDir)codecs\$(ConfigurationName)\*.dll $(ProjectDir)codecs\.libs&#x0D;&#x0A;copy $(ProjectDir)databases\$(ConfigurationName)\*.dll $(ProjectDir)databases\.libs&#x0D;&#x0A;copy $(ProjectDir)reactors\$(ConfigurationName)\*.dll $(ProjectDir)reactors\.libs&#x0D;&#x0A;copy $(ProjectDir)services\$(ConfigurationName)\*.dll $(ProjectDir)services\.libs&#x0D;&#x0A;"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
 			ConfigurationType="10"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove all files from all *\.libs folders"
+				CommandLine="del /Q codecs\.libs\*.*&#x0D;&#x0A;del /Q databases\.libs\*.*&#x0D;&#x0A;del /Q reactors\.libs\*.*&#x0D;&#x0A;del /Q services\.libs\*.*"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copy the plugin DLLs for the current configuration into *\.libs"
+				CommandLine="copy $(ProjectDir)codecs\$(ConfigurationName)\*.dll $(ProjectDir)codecs\.libs&#x0D;&#x0A;copy $(ProjectDir)databases\$(ConfigurationName)\*.dll $(ProjectDir)databases\.libs&#x0D;&#x0A;copy $(ProjectDir)reactors\$(ConfigurationName)\*.dll $(ProjectDir)reactors\.libs&#x0D;&#x0A;copy $(ProjectDir)services\$(ConfigurationName)\*.dll $(ProjectDir)services\.libs&#x0D;&#x0A;"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
 			ConfigurationType="10"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove all files from all *\.libs folders"
+				CommandLine="del /Q codecs\.libs\*.*&#x0D;&#x0A;del /Q databases\.libs\*.*&#x0D;&#x0A;del /Q reactors\.libs\*.*&#x0D;&#x0A;del /Q services\.libs\*.*"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copy the plugin DLLs for the current configuration into *\.libs"
+				CommandLine="copy $(ProjectDir)codecs\$(ConfigurationName)\*.dll $(ProjectDir)codecs\.libs&#x0D;&#x0A;copy $(ProjectDir)databases\$(ConfigurationName)\*.dll $(ProjectDir)databases\.libs&#x0D;&#x0A;copy $(ProjectDir)reactors\$(ConfigurationName)\*.dll $(ProjectDir)reactors\.libs&#x0D;&#x0A;copy $(ProjectDir)services\$(ConfigurationName)\*.dll $(ProjectDir)services\.libs&#x0D;&#x0A;"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>

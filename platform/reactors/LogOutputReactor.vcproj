@@ -15,7 +15,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_DLL|Win32"
-			OutputDirectory=".libs"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -23,7 +23,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
-			OutputDirectory=".libs"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -35,7 +35,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
-			OutputDirectory=".libs"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
@@ -43,7 +43,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
-			OutputDirectory=".libs"
+			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
