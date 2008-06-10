@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="PlatformPlugins"
+	ProjectGUID="{52F60A68-06E3-4245-BF7D-9BD2F170D9FF}"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug_DLL|Win32"
+			ConfigurationType="10"
+			>
+		</Configuration>
+		<Configuration
+			Name="Debug_DLL_full|Win32"
+			ConfigurationType="10"
+			>
+		</Configuration>
+		<Configuration
+			Name="Release_DLL|Win32"
+			ConfigurationType="10"
+			>
+		</Configuration>
+		<Configuration
+			Name="Release_DLL_full|Win32"
+			ConfigurationType="10"
+			>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
