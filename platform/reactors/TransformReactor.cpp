@@ -36,6 +36,11 @@ const std::string			TransformReactor::TYPE_ELEMENT_NAME = "Type";
 const std::string			TransformReactor::VALUE_ELEMENT_NAME = "Value";
 const std::string			TransformReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
 
+const std::string			TransformReactor::ALL_CONDITIONS_ELEMENT_NAME = "AllConditions";
+
+const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
+//const std::string			TransformReactor::
+
 	
 // TransformReactor member functions
 
@@ -47,7 +52,16 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	
 	// clear the current configuration
 	m_rules.clear();
-	
+	m_all_conditions = false;
+
+	// check if all the Comparisons should match before starting Transformations
+	std::string all_conditions_str;
+	if (ConfigManager::getConfigOption(ALL_CONDITIONS_ELEMENT_NAME, all_conditions_str, config_ptr))
+	{
+		if (all_conditions_str == "true")
+			m_all_conditions = true;
+	}
+
 	// next, parse each comparison rule
 	xmlNodePtr comparison_node = config_ptr;
 	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
@@ -99,6 +113,58 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		// step to the next Comparison rule
 		comparison_node = comparison_node->next;
 	}
+
+	// now, parse transformation rules
+	xmlNodePtr transformation_node = config_ptr;
+	while ( (transformation_node = ConfigManager::findConfigNodeByName(TRANSFORMATION_ELEMENT_NAME, transformation_node)) != NULL)
+	{
+		// parse new Transformation rule
+		
+		// get the Term used for the Transformation rule
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
+											 transformation_node->children))
+			throw EmptyTermException(getId());
+		
+		// make sure that the Term is valid
+		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw UnknownTermException(getId());
+
+		// get the Comparison type & make sure that it is valid
+		std::string type_str;
+		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, type_str,
+											 transformation_node->children))
+			throw EmptyTypeException(getId());
+		// note: parseComparisonType will throw if it is invalid
+		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(type_str);
+
+		// get the value parameter (only if type is not generic)
+		std::string value_str;
+		if (! Comparison::isGenericType(comparison_type)) {
+			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
+												 transformation_node->children))
+				throw EmptyValueException(getId());
+		}
+		
+		// check if the Comparison should match all values for the given Term
+		bool match_all_values = false;
+		std::string match_all_values_str;
+		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
+										   comparison_node->children))
+		{
+			if (match_all_values_str == "true")
+				match_all_values = true;
+		}
+		
+		// add the Comparison
+		Comparison new_comparison(v[term_ref]);
+		new_comparison.configure(comparison_type, value_str, match_all_values);
+		m_rules.push_back(new_comparison);
+		
+		// step to the next Comparison rule
+		transformation_node = transformation_node->next;
+	}
 }
 	
 void TransformReactor::updateVocabulary(const Vocabulary& v)
@@ -119,12 +185,36 @@ void TransformReactor::operator()(const EventPtr& e)
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
 
-		// all comparisons in the rule chain must pass for the Event to be delivered
-		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-			if (! i->evaluate(*e))
-				return;
-		}
+		// For EventFilter: all comparisons in the rule chain must pass for the Event to be delivered
 
+		// For TransformReactor: if all comparisons pass, then transform, otherwise just deliver
+
+		// If m_all_conditions
+		//	all conditions must match before transformations take place
+		//	-> any condition failure = don't do transformation
+		// If !m_all_conditions
+		//	any condition is ok for transformations
+		//	-> first successful condition = do transformation
+		// If no conditions, then transformations immediately take place
+
+		// The efficacy of separately testing for m_rules.empty() is questionable, depends on default case...
+
+		bool do_transformations = true;
+		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
+			if (! i->evaluate(*e)) {
+				if (m_all_conditions) {
+					do_transformations = false;
+					break;
+				}
+			} else {
+				if (!m_all_conditions)
+					break;
+			}
+		}
+		if (do_transformations)
+			; // TODO: Do Transformation
+
+		// Transformation is done, deliver original event
 		deliverEvent(e);
 	}
 }

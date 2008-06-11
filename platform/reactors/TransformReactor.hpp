@@ -122,10 +122,19 @@ private:
 
 	/// name of the 'match all values' element for Pion XML config files
 	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
-	
+
+	/// name of the XML part containing transformation rules
+	static const std::string		TRANSFORMATION_ELEMENT_NAME;	
+
+	/// Do all the conditions have to be met before transformation activates
+	static const std::string		ALL_CONDITIONS_ELEMENT_NAME;
+
 	
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;
+
+	/// should all the conditions match before transformations take place
+	bool							m_all_conditions;
 };
 
 
