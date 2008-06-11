@@ -17,6 +17,7 @@
 		<Configuration
 			Name="Debug_DLL|Win32"
 			ConfigurationType="10"
+			InheritedPropertySheets="..\common\build\pion.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -32,6 +33,7 @@
 		<Configuration
 			Name="Debug_DLL_full|Win32"
 			ConfigurationType="10"
+			InheritedPropertySheets="..\common\build\pion.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -47,6 +49,7 @@
 		<Configuration
 			Name="Release_DLL|Win32"
 			ConfigurationType="10"
+			InheritedPropertySheets="..\common\build\pion.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -62,6 +65,7 @@
 		<Configuration
 			Name="Release_DLL_full|Win32"
 			ConfigurationType="10"
+			InheritedPropertySheets="..\common\build\pion.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
