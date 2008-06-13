@@ -300,6 +300,14 @@
 			<File
 				RelativePath=".\ConfigServiceTests.cpp"
 				>
+				<FileConfiguration
+					Name="Debug_DLL_full|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\EventTests.cpp"

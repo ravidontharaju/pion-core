@@ -126,8 +126,8 @@ public:
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 
 	struct JSONField {
-		JSONField(const std::string& f, const pion::platform::Vocabulary::Term& t, int ordinal)
-			: field_name(f), term(t), ordinal(ordinal)
+		JSONField(const std::string& f, const pion::platform::Vocabulary::Term& t)
+			: field_name(f), term(t)
 		{}
 
 		/// the name of the field
@@ -135,12 +135,9 @@ public:
 
 		/// the Vocabulary Term that the data field represents
 		pion::platform::Vocabulary::Term	term;
-
-		/// the order in which the field occurs in the configuration
-		int ordinal;
 	};
 
-	/// data type for a pointer to a JSONField object
+	/// data type for a shared pointer to a JSONField object
 	typedef boost::shared_ptr<JSONField>	JSONFieldPtr;
 	
 	/// data type that maps field names to Terms
@@ -151,14 +148,15 @@ public:
 	/// an ordered list of the fields in the current configuration
 	typedef std::vector<JSONFieldPtr>		CurrentFormat;
 
-	/// representation of a JSON object corresponding to an Event, indexed according to the configuration
-	typedef std::vector<std::string>		JSONObject;
+	/// representation of a JSON object corresponding to an Event
+	typedef PION_HASH_MULTIMAP<pion::platform::Vocabulary::TermRef, std::string>
+											JSONObject;
 
+	/// data type for a shared pointer to a JSONObject object
 	typedef boost::shared_ptr<JSONObject>	JSONObjectPtr;
 
 	/// queue of parsed JSONObjects 
 	typedef std::queue<JSONObjectPtr>		JSONObjectQueue;
-
 
 private:
 
@@ -174,8 +172,7 @@ private:
 	 * @param term the Vocabulary Term to map the data field to
 	 */
 	inline void mapFieldToTerm(const std::string& field,
-							   const pion::platform::Vocabulary::Term& term,
-							   int ordinal);
+							   const pion::platform::Vocabulary::Term& term);
 
 
 	/// content type used by this Codec
@@ -194,12 +191,12 @@ private:
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
 
+	/// used to map TermRefs to the DataType of their Term
+	std::map<pion::platform::Vocabulary::TermRef, pion::platform::Vocabulary::DataType>
+									m_term_type_map;
+
 	/// represents the sequence of data fields in the current configuration
 	CurrentFormat					m_format;
-
-	/// the largest TermRef in the current configuration
-	pion::platform::Vocabulary::TermRef
-									m_max_term_ref;
 
 	/// true if the codec should flush the output stream after each write
 	bool							m_flush_after_write;
@@ -227,10 +224,12 @@ private:
 // inline member functions for JSONCodec
 
 inline void JSONCodec::mapFieldToTerm(const std::string& field,
-									  const pion::platform::Vocabulary::Term& term,
-									  int ordinal)
+									  const pion::platform::Vocabulary::Term& term)
 {
-	JSONFieldPtr field_ptr(new JSONField(field, term, ordinal));
+	if (m_field_map[field])
+		throw PionException("Duplicate Field Name");
+
+	JSONFieldPtr field_ptr(new JSONField(field, term));
 
 	// add it to the mapping of field names
 	m_field_map[field] = field_ptr;
@@ -247,7 +246,7 @@ struct Context {
 	const JSONCodec::FieldMap& field_map;
 	JSONCodec::JSONObjectQueue& json_object_queue;
 	JSONCodec::JSONObjectPtr json_object_ptr;
-	int ordinal;
+	pion::platform::Vocabulary::TermRef term_ref;
 };
 
 }	// end namespace plugins

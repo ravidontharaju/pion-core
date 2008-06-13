@@ -43,9 +43,9 @@ CodecPtr JSONCodec::clone(void) const
 	JSONCodec *new_codec(new JSONCodec());
 	new_codec->copyCodec(*this);
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
-		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term, (*i)->ordinal);
+		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term);
 	}
-	new_codec->m_max_term_ref = m_max_term_ref;
+	new_codec->m_term_type_map = m_term_type_map;
 	return CodecPtr(new_codec);
 }
 
@@ -62,52 +62,44 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 	// output '{' to mark the beginning of the event
 	yajl_gen_map_open(m_yajl_generator);
 
-	typedef boost::shared_ptr<Event::ValuesRange> ValuesRangePtr;
-	std::vector<ValuesRangePtr> term_ref_ranges(m_max_term_ref + 1);
-
 	// iterate through each field in the current format
 	CurrentFormat::const_iterator i;
 	for (i = m_format.begin(); i != m_format.end(); ++i) {
-		// get the range of values for the TermRef, if we don't have it yet
+		// get the range of values for the field Term
 		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
-		if (!term_ref_ranges[term_ref])
-			term_ref_ranges[term_ref] = ValuesRangePtr(new Event::ValuesRange(e.equal_range(term_ref)));
+		Event::ValuesRange range = e.equal_range(term_ref);
 
-		// if there are no more values for the TermRef, skip this field, else write the next value and increment the start of the range
-		if (term_ref_ranges[term_ref]->first == term_ref_ranges[term_ref]->second) {
-			// TODO: this may result in incorrect output if there are multiple fields with the same TermRef in the configuration.
-			// Figure out what to do in this case.
-		} else {
+		// generate a JSON name/value pair for each value
+		for (Event::ConstIterator i2 = range.first; i2 != range.second; ++i2) {
 			yajl_gen_string(m_yajl_generator, (unsigned char*)(*i)->field_name.c_str(), (*i)->field_name.size());
 			switch ((*i)->term.term_type) {
 				case pion::platform::Vocabulary::TYPE_INT8:
 				case pion::platform::Vocabulary::TYPE_INT16:
 				case pion::platform::Vocabulary::TYPE_INT32:
-					yajl_gen_integer(m_yajl_generator, boost::get<boost::int32_t>(term_ref_ranges[term_ref]->first->value));
+					yajl_gen_integer(m_yajl_generator, boost::get<boost::int32_t>(i2->value));
 					break;
 				case pion::platform::Vocabulary::TYPE_INT64:
 					{
 						std::ostringstream oss;
-						oss << boost::get<boost::int64_t>(term_ref_ranges[term_ref]->first->value);
+						oss << boost::get<boost::int64_t>(i2->value);
 						yajl_gen_string(m_yajl_generator, (unsigned char*)oss.str().c_str(), oss.str().size());
 					}
 					break;
 				case pion::platform::Vocabulary::TYPE_UINT8:
 				case pion::platform::Vocabulary::TYPE_UINT16:
 				case pion::platform::Vocabulary::TYPE_UINT32:
-					yajl_gen_integer(m_yajl_generator, boost::get<boost::uint32_t>(term_ref_ranges[term_ref]->first->value));
+					yajl_gen_integer(m_yajl_generator, boost::get<boost::uint32_t>(i2->value));
 					break;
 				case pion::platform::Vocabulary::TYPE_UINT64:
 					{
 						std::ostringstream oss;
-						oss << boost::get<boost::uint64_t>(term_ref_ranges[term_ref]->first->value);
+						oss << boost::get<boost::uint64_t>(i2->value);
 						yajl_gen_string(m_yajl_generator, (unsigned char*)oss.str().c_str(), oss.str().size());
 					}
 					break;
 				default:
 					throw PionException("not supported yet");
 			}
-			++term_ref_ranges[term_ref]->first;
 		}
 	}
 
@@ -147,7 +139,16 @@ int number_handler(void* ctx, const char* number_char_ptr, unsigned int number_l
 {
 	Context* c = (Context*)ctx;
 	JSONCodec::JSONObject& json_object = *c->json_object_ptr;
-	json_object[c->ordinal] = std::string(number_char_ptr, number_len);
+	json_object.insert(std::make_pair(c->term_ref, std::string(number_char_ptr, number_len)));
+
+	return 1;
+}
+
+int string_handler(void* ctx, const unsigned char* string_val, unsigned int string_len)
+{
+	Context* c = (Context*)ctx;
+	JSONCodec::JSONObject& json_object = *c->json_object_ptr;
+	json_object.insert(std::make_pair(c->term_ref, std::string((char*)string_val, string_len)));
 
 	return 1;
 }
@@ -156,7 +157,7 @@ int map_key_handler(void* ctx, const unsigned char* stringVal, unsigned int stri
 {
 	Context* c = (Context*)ctx;
 	JSONCodec::FieldMap::const_iterator i = c->field_map.find(std::string((char*)stringVal, stringLen));
-	c->ordinal = i->second->ordinal;
+	c->term_ref = i->second->term.term_ref;
 
 	return 1;
 }
@@ -164,7 +165,7 @@ int map_key_handler(void* ctx, const unsigned char* stringVal, unsigned int stri
 int start_map_handler(void* ctx)
 {
 	Context* c = (Context*)ctx;
-	c->json_object_ptr = JSONCodec::JSONObjectPtr(new JSONCodec::JSONObject(c->field_map.size()));
+	c->json_object_ptr = JSONCodec::JSONObjectPtr(new JSONCodec::JSONObject);
 	
 	return 1;
 }
@@ -193,7 +194,7 @@ static yajl_callbacks callbacks = {
 	NULL,
 	NULL,
 	number_handler,
-	NULL,
+	string_handler,
 	start_map_handler,
 	map_key_handler,
 	end_map_handler,
@@ -244,28 +245,25 @@ bool JSONCodec::read(std::istream& in, Event& e)
 	m_json_object_queue.pop();
 	const JSONCodec::JSONObject& json_object = *json_object_ptr;
 
-	for (CurrentFormat::size_type i = 0; i < m_format.size(); ++i) {
-		const std::string& value_str = json_object[i];
-		// TODO: handle case value_str.empty()
-
-		const pion::platform::Vocabulary::Term& term = m_format[i]->term;
-
-		switch (term.term_type) {
+	for (JSONCodec::JSONObject::const_iterator i = json_object.begin(); i != json_object.end(); ++i) {
+		const pion::platform::Vocabulary::TermRef term_ref = i->first;
+		const std::string& value_str = i->second;
+		switch (m_term_type_map[term_ref]) {
 			case pion::platform::Vocabulary::TYPE_INT8:
 			case pion::platform::Vocabulary::TYPE_INT16:
 			case pion::platform::Vocabulary::TYPE_INT32:
-				e.setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value_str));
+				e.setInt(term_ref, boost::lexical_cast<boost::int32_t>(value_str));
 				break;
 			case pion::platform::Vocabulary::TYPE_INT64:
-				e.setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value_str));
+				e.setBigInt(term_ref, boost::lexical_cast<boost::int64_t>(value_str));
 				break;
 			case pion::platform::Vocabulary::TYPE_UINT8:
 			case pion::platform::Vocabulary::TYPE_UINT16:
 			case pion::platform::Vocabulary::TYPE_UINT32:
-				e.setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value_str));
+				e.setUInt(term_ref, boost::lexical_cast<boost::uint32_t>(value_str));
 				break;
 			case pion::platform::Vocabulary::TYPE_UINT64:
-				e.setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value_str));
+				e.setUBigInt(term_ref, boost::lexical_cast<boost::uint64_t>(value_str));
 				break;
 
 			// TODO: handle other cases
@@ -274,7 +272,6 @@ bool JSONCodec::read(std::istream& in, Event& e)
 				return false;
 		}
 	}
-
 	return true;
 }
 
@@ -287,15 +284,13 @@ void JSONCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// TODO: options
 
 	// next, map the fields to Terms
-	int ordinal = 0;
-	m_max_term_ref = 0;
 	xmlNodePtr codec_field_node = config_ptr;
 	while ( (codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL) {
 		// parse new field mapping
 
 		// start with the name of the field (element content)
 		xmlChar *xml_char_ptr = xmlNodeGetContent(codec_field_node);
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
 			if (xml_char_ptr != NULL)
 				xmlFree(xml_char_ptr);
 			throw EmptyFieldException(getId());
@@ -305,7 +300,7 @@ void JSONCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 
 		// next get the Term we want to map to
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
 			if (xml_char_ptr != NULL)
 				xmlFree(xml_char_ptr);
 			throw EmptyTermException(getId());
@@ -319,14 +314,17 @@ void JSONCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			throw UnknownTermException(term_id);
 
 		// add the field mapping
-		mapFieldToTerm(field_name, v[term_ref], ordinal);
-		++ordinal;
+		mapFieldToTerm(field_name, v[term_ref]);
 
 		// step to the next field mapping
 		codec_field_node = codec_field_node->next;
+	}
 
-		if (term_ref > m_max_term_ref)
-			m_max_term_ref = term_ref;
+	m_term_type_map.clear();
+	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
+		if (m_term_type_map.find(i->second->term.term_ref) != m_term_type_map.end())
+			throw PionException("Duplicate Field Term");
+		m_term_type_map[i->second->term.term_ref] = i->second->term.term_type;
 	}
 }
 

@@ -51,12 +51,13 @@ CodecPtr LogCodec::clone(void) const
 		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term,
 								  (*i)->log_delim_start, (*i)->log_delim_end);
 	}
-	new_codec->m_max_term_ref = m_max_term_ref;
 	return CodecPtr(new_codec);
 }
 	
 void LogCodec::write(std::ostream& out, const Event& e)
 {
+	const Event::ParameterValue *value_ptr;
+	
 	// iterate through each field in the current format
 	
 	// write the ELF headers if necessary
@@ -65,24 +66,16 @@ void LogCodec::write(std::ostream& out, const Event& e)
 		m_needs_to_write_headers = false;
 	}
 
-	typedef std::pair<pion::platform::Event::ConstIterator, pion::platform::Event::ConstIterator> TermRefRange;
-	typedef boost::shared_ptr<TermRefRange> TermRefRangePtr;
-	std::vector<TermRefRangePtr> term_ref_ranges(m_max_term_ref + 1);
-
 	CurrentFormat::const_iterator i = m_format.begin();
 	while (i != m_format.end()) {
-		// get the range of values for the TermRef, if we don't have it yet
-		pion::platform::Vocabulary::TermRef term_ref = (*i)->log_term.term_ref;
-		if (!term_ref_ranges[term_ref])
-			term_ref_ranges[term_ref] = TermRefRangePtr(new TermRefRange(e.equal_range(term_ref)));
+		// get the value for the field
+		value_ptr = e.getPointer((*i)->log_term.term_ref);
 
-		// if there are no more values for the TermRef, write an empty value, else write the next value and increment the start of the range
-		if (term_ref_ranges[term_ref]->first == term_ref_ranges[term_ref]->second) {
+		// check if the value is undefined
+		if (value_ptr == NULL)
 			(*i)->writeEmptyValue(out);
-		} else {
-			(*i)->write(out, term_ref_ranges[term_ref]->first->value);
-			++term_ref_ranges[term_ref]->first;
-		}
+		else
+			(*i)->write(out, *value_ptr);
 
 		// iterate to the next field
 		++i;
@@ -98,7 +91,7 @@ void LogCodec::write(std::ostream& out, const Event& e)
 	if (m_flush_after_write)
 		out.flush();
 }
-	
+
 bool LogCodec::read(std::istream& input_stream, Event& e)
 {
 	if (e.getType() != getEventType())
@@ -239,7 +232,6 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	}
 	
 	// next, map the fields to Terms
-	m_max_term_ref = 0;
 	xmlNodePtr codec_field_node = config_ptr;
 	while ( (codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL)
 	{
@@ -287,9 +279,6 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		
 		// step to the next field mapping
 		codec_field_node = codec_field_node->next;
-
-		if (term_ref > m_max_term_ref)
-			m_max_term_ref = term_ref;
 	}
 }
 

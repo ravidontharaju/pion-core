@@ -27,6 +27,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/bind.hpp>
+#include <boost/regex.hpp>
 #include <fstream>
 
 using namespace pion;
@@ -323,6 +324,56 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 	BOOST_CHECK_EQUAL(F::p->getEventType(), event_type_ref);
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTheSameName) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	parseConfig("<PionConfig><Codec>"
+					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
+					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
+				"</Codec></PionConfig>",
+				m_config_ptr);
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+
+	// Confirm that setConfig() throws an exception.
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDifferentNames) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	parseConfig("<PionConfig><Codec>"
+					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
+					"<Field term=\"urn:vocab:test#plain-old-int\">B</Field>"
+				"</Codec></PionConfig>",
+				m_config_ptr);
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+
+	// Confirm that setConfig() throws an exception.
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+}
+
+// This is definitely ambiguous for a JSONCodec.  (It can't distinguish between big-int and plain-old-int.)
+// It's not ambiguous for a LogCodec, but it's still probably not a good idea to have two columns with the same name.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	parseConfig("<PionConfig><Codec>"
+					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
+					"<Field term=\"urn:vocab:test#big-int\">A</Field>"
+				"</Codec></PionConfig>",
+				m_config_ptr);
+	VocabularyManager vocab_mgr;
+	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.openConfigFile();
+
+	// Confirm that setConfig() throws an exception.
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+}
+
 // This is just one basic test of Codec::clone(), which is primarily being tested via fixtures
 // CodecPtr_F<*, CLONED>, ConfiguredCodecPtr_F<*, CLONED>, etc.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkClone) {
@@ -550,6 +601,25 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 }
 
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteWithMultipleValuesForATerm) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	event_ptr->setUInt(bytes_ref, 42);
+	event_ptr->setUInt(bytes_ref, 82);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
+
+	// The only guarantee we can make for a generic Codec is that we can read the event
+	// and one of the values that was set for the term is in the reconstituted event.
+	BOOST_CHECK(F::p->read(in, *event_ptr_2));
+	BOOST_CHECK(event_ptr_2->getUInt(bytes_ref) % 40 == 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 typedef boost::mpl::list<
@@ -589,69 +659,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
 	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()));
 
 	// TODO: write some tests that check that updateVocabulary() actually does something.
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-static const std::string FIELD_NAME_2 = "more_bytes";
-
-template<const char* plugin_type, LINEAGE lineage>
-class CodecPtrWithRepeatedFieldTerms_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
-public:
-	CodecPtrWithRepeatedFieldTerms_F() : ConfiguredCodecPtr_F<plugin_type, lineage>(
-		"<PionConfig><Codec>"
-			"<Plugin>" + std::string(plugin_type) + "</Plugin>"
-			"<Name>" + NAME_1 + "</Name>"
-			"<EventType>" + EVENT_TYPE_1 + "</EventType>"
-			"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_1 + "</Field>"
-			"<Field term=\"" + FIELD_TERM_1 + "\">" + FIELD_NAME_2 + "</Field>"
-		"</Codec></PionConfig>") {
-	}
-	~CodecPtrWithRepeatedFieldTerms_F() {
-	}
-};
-
-typedef boost::mpl::list<
-	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, CREATED>,
-	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, CLONED>,
-	CodecPtrWithRepeatedFieldTerms_F<LogCodec_name, MANUFACTURED>,
-	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, CREATED>,
-	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, CLONED>,
-	CodecPtrWithRepeatedFieldTerms_F<JSONCodec_name, MANUFACTURED>,
-	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, CREATED>,
-	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, CLONED>,
-	CodecPtrWithRepeatedFieldTerms_F<XMLCodec_name, MANUFACTURED>
-> CodecPtrWithRepeatedFieldTerms_fixture_list;
-
-// CodecPtrWithRepeatedFieldTerms_S contains tests that should pass for any type of Codec.
-BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtrWithRepeatedFieldTerms_S, CodecPtrWithRepeatedFieldTerms_fixture_list)
-
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-	EventFactory event_factory;
-	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	event_ptr->setUInt(bytes_ref, 42);
-	event_ptr->setUInt(bytes_ref, 123);
-	std::ostringstream out;
-	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
-	BOOST_CHECK_NO_THROW(F::p->finish(out));
-	std::string output_str = out.str();
-	std::istringstream in(output_str);
-	EventPtr reconstituted_event_ptr(event_factory.create(F::p->getEventType()));
-	BOOST_CHECK(F::p->read(in, *reconstituted_event_ptr));
-
-	// check that the event that was read in is the same as the original event
-	Event::ConstIterator it = reconstituted_event_ptr->begin();
-	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), static_cast<boost::uint32_t>(42));
-	it++;
-	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(it->value), static_cast<boost::uint32_t>(123));
-	BOOST_CHECK(*event_ptr == *reconstituted_event_ptr);
-
-	// check that if you try to read another event after the last one, read() returns false and the returned event is empty
-	BOOST_CHECK(!F::p->read(in, *reconstituted_event_ptr));
-	BOOST_CHECK(reconstituted_event_ptr->empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -782,6 +789,31 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 	BOOST_CHECK(it == m_event_ptr->end());
 }
 
+BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
+	std::ostringstream oss;
+	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << 105
+		<< ", \"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
+		<< ", \"" << FIELD_NAME_INT_16  << "\": " << 205
+		<< " }";
+	std::istringstream in(oss.str());
+
+	// Check that an event can be read from the input.
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	// Check that both input values are present in the event for the multiple-valued term.
+	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab->findTerm(FIELD_TERM_INT_16);
+	Event::ValuesRange range = m_event_ptr->equal_range(multiple_valued_term_ref);
+	Event::ConstIterator i = range.first;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK(boost::get<boost::int32_t>(i->value) % 100 == 5);
+	BOOST_REQUIRE(++i != range.second);
+	BOOST_CHECK(boost::get<boost::int32_t>(i->value) % 100 == 5);
+	BOOST_REQUIRE(++i == range.second);
+
+	// Finally, check the value of the non-multiple valued term.
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+}
+
 BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 	// initialize the event
 	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
@@ -790,7 +822,7 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 	// Write a string with the expected output.
 	// Due to YAJL limitations, 64-bit integers are output as quoted strings.
 	std::ostringstream oss;
-	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
+	oss << "[{\"" << FIELD_NAME_INT_16 << "\":" << E1_FIELD_VALUE_INT_16
 		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
 		<< "}";
 	std::string expected_output_string = oss.str();
@@ -808,7 +840,7 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 
 	// The terms should still be output in the order in which they appear in the configuration.
 	std::ostringstream oss;
-	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
+	oss << "[{\"" << FIELD_NAME_INT_16 << "\":" << E1_FIELD_VALUE_INT_16
 		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
 		<< "}";
 	std::string expected_output_string = oss.str();
@@ -836,6 +868,46 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
 	BOOST_REQUIRE_NO_THROW(p->finish(out));
 	BOOST_CHECK_EQUAL(out.str(), expected_output_string);
+}
+
+BOOST_AUTO_TEST_CASE(checkWriteWithMultipleValuesForATerm) {
+	// Initialize the event, setting a value twice for one of the terms.
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 105);
+	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), 12345);
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 205);
+
+	// Output the event.
+	std::ostringstream out;
+	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
+
+	// Prepare a regular expression for a name value pair.
+	// Note that numerical values can occur with or without quotes.
+	const boost::regex name_value_pair("\"([\\w-]+)\":\\s*\"?(\\d+)\"?");
+
+	// Confirm that there are 3 name/value pairs and save them.
+	std::string out_str = out.str();
+	std::string::const_iterator start = out_str.begin();
+	std::string::const_iterator end   = out_str.end(); 
+	typedef std::pair<std::string, std::string> string_pair;
+	std::vector<string_pair> v;
+	boost::match_results<std::string::const_iterator> m;
+	BOOST_REQUIRE(boost::regex_search(start, end, m, name_value_pair));
+	v.push_back(make_pair(m[1], m[2]));
+	start = m[0].second;
+	BOOST_REQUIRE(boost::regex_search(start, end, m, name_value_pair));
+	v.push_back(make_pair(m[1], m[2]));
+	start = m[0].second;
+	BOOST_REQUIRE(boost::regex_search(start, end, m, name_value_pair));
+	v.push_back(make_pair(m[1], m[2]));
+	start = m[0].second;
+
+	// Next token should be '}'.
+	BOOST_CHECK(boost::regex_match(start, end, boost::regex("\\s*\\}.*")));
+
+	// Confirm that the three pairs we found are the ones we expected (in any order).
+	BOOST_CHECK(find(v.begin(), v.end(), string_pair("plain-old-int", "105")) != v.end());
+	BOOST_CHECK(find(v.begin(), v.end(), string_pair("plain-old-int", "205")) != v.end());
+	BOOST_CHECK(find(v.begin(), v.end(), string_pair("big-int", "12345")) != v.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

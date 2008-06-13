@@ -220,7 +220,7 @@ private:
 
 	/// data type used to represent a standard char-istream streambuf
 	typedef std::basic_streambuf<std::istream::char_type,
-		std::istream::traits_type>		streambuf_type;
+		std::istream::traits_type>			streambuf_type;
 
 	/// data type used to represent an integer value resulting from an istream read
 	typedef std::istream::int_type			int_type;
@@ -303,10 +303,6 @@ private:
 	/// represents the current sequence of data fields in the log format
 	CurrentFormat					m_format;
 
-	/// the largest TermRef in the current format
-	pion::platform::Vocabulary::TermRef
-									m_max_term_ref;
-
 	/// true if the codec should flush the output stream after each write
 	bool							m_flush_after_write;
 	
@@ -321,6 +317,14 @@ inline void LogCodec::mapFieldToTerm(const std::string& field,
 									 const pion::platform::Vocabulary::Term& term,
 									 char delim_start, char delim_end)
 {
+	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
+		if (i->second->log_term.term_ref == term.term_ref)
+			throw PionException("Duplicate Field Term");
+	}
+
+	if (m_field_map[field])
+		throw PionException("Duplicate Field Name");
+
 	// prepare a new Logfield object
 	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
 	switch (term.term_type) {
