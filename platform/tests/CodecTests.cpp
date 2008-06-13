@@ -331,13 +331,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTh
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 				"</Codec></PionConfig>",
-				m_config_ptr);
+				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDifferentNames) {
@@ -347,13 +347,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDi
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">B</Field>"
 				"</Codec></PionConfig>",
-				m_config_ptr);
+				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
 }
 
 // This is definitely ambiguous for a JSONCodec.  (It can't distinguish between big-int and plain-old-int.)
@@ -365,13 +365,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#big-int\">A</Field>"
 				"</Codec></PionConfig>",
-				m_config_ptr);
+				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
 }
 
 // This is just one basic test of Codec::clone(), which is primarily being tested via fixtures
