@@ -584,9 +584,6 @@ private:
 		const PionDateTime&	m_value;
 	};
 	
-	/// data type for a range of values assigned to a Vocabulary Term
-	typedef std::pair<Event::ConstIterator, Event::ConstIterator>	ValuesRange;
-	
 
 	/**
 	 * checks if a given comparison type is valid for the Vocabulary Term
@@ -607,7 +604,7 @@ private:
 	 */
 	template <typename ComparisonFunction>
 	inline bool checkComparison(const ComparisonFunction& comparison_func,
-								const ValuesRange& values_range) const;
+								const Event::ValuesRange& values_range) const;
 		
 	
 	/// identifies the Vocabulary Term to examine
@@ -634,7 +631,7 @@ private:
 	
 template <typename ComparisonFunction>
 inline bool Comparison::checkComparison(const ComparisonFunction& comparison_func,
-										const ValuesRange& values_range) const
+										const Event::ValuesRange& values_range) const
 {
 	boost::tribool result = boost::indeterminate;
 
@@ -663,7 +660,7 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 inline bool Comparison::evaluate(const Event& e) const
 {
 	/// get a range of iterators representing all the values for the Term
-	ValuesRange values_range = e.equal_range(m_term.term_ref);
+	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
 	bool result = false;
 	
 	switch (m_type) {

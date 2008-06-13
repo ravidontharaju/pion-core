@@ -233,6 +233,9 @@ public:
 	/// data type used to iterate const Event parameters
 	typedef IteratorBase<ParameterNode const>	ConstIterator;
 	
+	/// data type for a range of values assigned to a Vocabulary Term
+	typedef std::pair<ConstIterator, ConstIterator>
+												ValuesRange;
 	
 	/**
 	 * constructs a new BasicEvent object
@@ -307,8 +310,7 @@ public:
 	 * @param term_ref numeric identifier for the term
 	 * @return std::pair<Iterator,Iterator> range of parameter iterators for the term
 	 */
-	inline std::pair<ConstIterator,ConstIterator>
-		equal_range(const Vocabulary::TermRef& term_ref) const
+	inline ValuesRange equal_range(const Vocabulary::TermRef& term_ref) const
 	{
 		std::pair<ParameterNode*, ParameterNode*> range =
 			tree_algo::equal_range(&m_param_tree, term_ref, m_key_compare);

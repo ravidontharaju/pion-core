@@ -103,8 +103,7 @@ BOOST_AUTO_TEST_CASE(checkEmptyEventValues) {
 	BOOST_CHECK(event_ptr->getPointer(m_null_term.term_ref) == NULL);
 	BOOST_CHECK(! event_ptr->isDefined(m_null_term.term_ref));
 
-	std::pair<Event::ConstIterator,Event::ConstIterator> range =
-		event_ptr->equal_range(m_null_term.term_ref);
+	Event::ValuesRange range = event_ptr->equal_range(m_null_term.term_ref);
 	BOOST_CHECK(range.first == range.second);
 	BOOST_CHECK(range.first == event_ptr->end());
 	BOOST_CHECK(range.second == event_ptr->end());
@@ -142,8 +141,7 @@ BOOST_AUTO_TEST_CASE(checkMultipleTermValues) {
 	BOOST_CHECK(event_ptr->find(m_plain_int_term.term_ref) != event_ptr->end());
 	BOOST_CHECK_EQUAL(event_ptr->getInt(m_plain_int_term.term_ref) % 10, 0);
 	
-	std::pair<Event::ConstIterator,Event::ConstIterator> range =
-		event_ptr->equal_range(m_plain_int_term.term_ref);
+	Event::ValuesRange range = event_ptr->equal_range(m_plain_int_term.term_ref);
 	BOOST_CHECK(range.first == event_ptr->begin());
 	BOOST_CHECK(range.first != range.second);
 	BOOST_CHECK(range.first != event_ptr->end());

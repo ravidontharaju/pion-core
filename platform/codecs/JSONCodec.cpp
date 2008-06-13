@@ -62,9 +62,8 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 	// output '{' to mark the beginning of the event
 	yajl_gen_map_open(m_yajl_generator);
 
-	typedef std::pair<pion::platform::Event::ConstIterator, pion::platform::Event::ConstIterator> TermRefRange;
-	typedef boost::shared_ptr<TermRefRange> TermRefRangePtr;
-	std::vector<TermRefRangePtr> term_ref_ranges(m_max_term_ref + 1);
+	typedef boost::shared_ptr<Event::ValuesRange> ValuesRangePtr;
+	std::vector<ValuesRangePtr> term_ref_ranges(m_max_term_ref + 1);
 
 	// iterate through each field in the current format
 	CurrentFormat::const_iterator i;
@@ -72,7 +71,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 		// get the range of values for the TermRef, if we don't have it yet
 		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
 		if (!term_ref_ranges[term_ref])
-			term_ref_ranges[term_ref] = TermRefRangePtr(new TermRefRange(e.equal_range(term_ref)));
+			term_ref_ranges[term_ref] = ValuesRangePtr(new Event::ValuesRange(e.equal_range(term_ref)));
 
 		// if there are no more values for the TermRef, skip this field, else write the next value and increment the start of the range
 		if (term_ref_ranges[term_ref]->first == term_ref_ranges[term_ref]->second) {
