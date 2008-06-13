@@ -64,6 +64,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 
 	// iterate through each field in the current format
 	CurrentFormat::const_iterator i;
+	std::string value_str;
 	for (i = m_format.begin(); i != m_format.end(); ++i) {
 		// get the range of values for the field Term
 		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
@@ -79,11 +80,8 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 					yajl_gen_integer(m_yajl_generator, boost::get<boost::int32_t>(i2->value));
 					break;
 				case pion::platform::Vocabulary::TYPE_INT64:
-					{
-						std::ostringstream oss;
-						oss << boost::get<boost::int64_t>(i2->value);
-						yajl_gen_string(m_yajl_generator, (unsigned char*)oss.str().c_str(), oss.str().size());
-					}
+					value_str = boost::lexical_cast<std::string>(boost::get<boost::int64_t>(i2->value));
+					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
 					break;
 				case pion::platform::Vocabulary::TYPE_UINT8:
 				case pion::platform::Vocabulary::TYPE_UINT16:
@@ -91,11 +89,8 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 					yajl_gen_integer(m_yajl_generator, boost::get<boost::uint32_t>(i2->value));
 					break;
 				case pion::platform::Vocabulary::TYPE_UINT64:
-					{
-						std::ostringstream oss;
-						oss << boost::get<boost::uint64_t>(i2->value);
-						yajl_gen_string(m_yajl_generator, (unsigned char*)oss.str().c_str(), oss.str().size());
-					}
+					value_str = boost::lexical_cast<std::string>(boost::get<boost::uint64_t>(i2->value));
+					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
 					break;
 				default:
 					throw PionException("not supported yet");
