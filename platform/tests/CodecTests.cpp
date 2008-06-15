@@ -588,7 +588,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
 	SKIP_WITH_WARNING_FOR_XML_CODECS
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	std::ostringstream out;
@@ -639,7 +638,6 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, Configured
 // updateVocabulary() on the Codec.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
 	SKIP_WITH_WARNING_FOR_XML_CODECS
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
 	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
 	F::m_vocab_mgr.removeTerm("urn:vocab:clickstream", FIELD_TERM_1);
 	BOOST_CHECK_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
@@ -664,7 +662,74 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
-static const std::string EVENT_TYPE_2       = "urn:vocab:test#simple-object";
+static const std::string EVENT_TYPE_2 = "urn:vocab:test#simple-object";
+
+template<const char* plugin_type, LINEAGE lineage>
+class ReconfiguredCodecPtr_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
+public:
+	ReconfiguredCodecPtr_F() {
+		// Add a new term to the Vocabulary.
+		std::string config_str = "<PionConfig><Term><Type>float</Type></Term></PionConfig>";
+		this->m_vocab_mgr.addTerm("urn:vocab:test",
+								  "urn:vocab:test#float-term-1",
+								  ConfigManager::createResourceConfig("Term", config_str.c_str(), config_str.size()));
+
+		// Reconfigure the Codec, with a different event type and a field using the new term.
+		parseConfig("<PionConfig><Codec>"
+						"<EventType>" + EVENT_TYPE_2 + "</EventType>"
+						"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
+						"<Field term=\"urn:vocab:test#float-term-1\">B</Field>"
+					"</Codec></PionConfig>",
+					this->m_config_ptr);
+		this->p->setConfig(this->m_vocab_mgr.getVocabulary(), this->m_config_ptr);
+	}
+	virtual ~ReconfiguredCodecPtr_F() {
+	}
+};
+
+typedef boost::mpl::list<
+	ReconfiguredCodecPtr_F<LogCodec_name, CREATED>,
+	ReconfiguredCodecPtr_F<LogCodec_name, CLONED>,
+	ReconfiguredCodecPtr_F<LogCodec_name, MANUFACTURED>,
+	ReconfiguredCodecPtr_F<JSONCodec_name, CREATED>,
+	ReconfiguredCodecPtr_F<JSONCodec_name, CLONED>,
+	ReconfiguredCodecPtr_F<JSONCodec_name, MANUFACTURED>,
+	ReconfiguredCodecPtr_F<XMLCodec_name, CREATED>,
+	ReconfiguredCodecPtr_F<XMLCodec_name, CLONED>,
+	ReconfiguredCodecPtr_F<XMLCodec_name, MANUFACTURED>
+> ReconfiguredCodecPtr_fixture_list;
+
+// ReconfiguredCodecPtr_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ReconfiguredCodecPtr_S, ReconfiguredCodecPtr_fixture_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
+	// Confirm that we get the new event type.
+	Event::EventType expected_event_type_ref = F::m_vocab_mgr.getVocabulary().findTerm(EVENT_TYPE_2);
+	BOOST_CHECK_EQUAL(F::p->getEventType(), expected_event_type_ref);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef term_ref_A = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:test#plain-old-int");
+	event_ptr->setInt(term_ref_A, 42);
+	Vocabulary::TermRef term_ref_B = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:test#float-term-1");
+	event_ptr->setFloat(term_ref_B, 1.23F);
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	std::string output_str = out.str();
+	std::istringstream in(output_str);
+	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
+	BOOST_CHECK(F::p->read(in, *event_ptr_2));
+	BOOST_CHECK_EQUAL(event_ptr_2->getInt(term_ref_A), static_cast<boost::int32_t>(42));
+	BOOST_CHECK_EQUAL(event_ptr_2->getFloat(term_ref_B), 1.23F);
+	BOOST_CHECK(*event_ptr == *event_ptr_2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 static const std::string FIELD_TERM_INT_16  = "urn:vocab:test#plain-old-int";
 static const std::string FIELD_NAME_INT_16  = "plain-old-int";
 static const std::string FIELD_TERM_UINT_64 = "urn:vocab:test#big-int";

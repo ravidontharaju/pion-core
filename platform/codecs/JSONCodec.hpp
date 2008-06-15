@@ -20,6 +20,8 @@
 #ifndef __PION_JSONCODEC_HEADER__
 #define __PION_JSONCODEC_HEADER__
 
+#include <vector>
+#include <map>
 #include <queue>
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Codec.hpp>
@@ -125,6 +127,12 @@ public:
 	 */
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 
+	/// resets the configuration for this Codec
+	inline void reset(void) {
+		m_field_map.clear();
+		m_format.clear();
+	}
+	
 	struct JSONField {
 		JSONField(const std::string& f, const pion::platform::Vocabulary::Term& t)
 			: field_name(f), term(t)

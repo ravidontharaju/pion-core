@@ -20,6 +20,8 @@
 #include <yajl/yajl_parse.h>
 #include <yajl/yajl_gen.h>
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/Event.hpp>
+#include <pion/platform/Vocabulary.hpp>
 #include "JSONCodec.hpp"
 
 using namespace pion::platform;
@@ -91,6 +93,12 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_UINT64:
 					value_str = boost::lexical_cast<std::string>(boost::get<boost::uint64_t>(i2->value));
 					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
+					break;
+				case pion::platform::Vocabulary::TYPE_FLOAT:
+					yajl_gen_double(m_yajl_generator, boost::get<float>(i2->value));
+					break;
+				case pion::platform::Vocabulary::TYPE_DOUBLE:
+					yajl_gen_double(m_yajl_generator, boost::get<double>(i2->value));
 					break;
 				default:
 					throw PionException("not supported yet");
@@ -260,6 +268,12 @@ bool JSONCodec::read(std::istream& in, Event& e)
 			case pion::platform::Vocabulary::TYPE_UINT64:
 				e.setUBigInt(term_ref, boost::lexical_cast<boost::uint64_t>(value_str));
 				break;
+			case pion::platform::Vocabulary::TYPE_FLOAT:
+				e.setFloat(term_ref, boost::lexical_cast<float>(value_str));
+				break;
+			case pion::platform::Vocabulary::TYPE_DOUBLE:
+				e.setDouble(term_ref, boost::lexical_cast<double>(value_str));
+				break;
 
 			// TODO: handle other cases
 
@@ -273,7 +287,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 void JSONCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Codec base class
-	m_field_map.clear();
+	reset();
 	Codec::setConfig(v, config_ptr);
 
 	// TODO: options
@@ -328,7 +342,15 @@ void JSONCodec::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Codec base class that might be needed
 	Codec::updateVocabulary(v);
 
-	// ...
+	/// copy Term data over from the updated Vocabulary
+	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
+		/// we can assume for now that Term reference values will never change
+		(*i)->term = v[(*i)->term.term_ref];
+
+		// check if the Term has been removed (i.e. replaced by the "null" term)
+		if ((*i)->term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw TermNoLongerDefinedException((*i)->term.term_id);
+	}
 }
 
 
