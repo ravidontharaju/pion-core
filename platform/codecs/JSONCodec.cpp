@@ -100,6 +100,12 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_DOUBLE:
 					yajl_gen_double(m_yajl_generator, boost::get<double>(i2->value));
 					break;
+				case pion::platform::Vocabulary::TYPE_DATE_TIME:
+				case pion::platform::Vocabulary::TYPE_DATE:
+				case pion::platform::Vocabulary::TYPE_TIME:
+					(*i)->time_facet.toString(value_str, boost::get<const PionDateTime&>(i2->value));
+					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
+					break;
 				default:
 					throw PionException("not supported yet");
 			}
@@ -346,6 +352,17 @@ void JSONCodec::updateVocabulary(const Vocabulary& v)
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		/// we can assume for now that Term reference values will never change
 		(*i)->term = v[(*i)->term.term_ref];
+
+		// for date/time types, update time_facet
+		switch ((*i)->term.term_type) {
+			case pion::platform::Vocabulary::TYPE_DATE_TIME:
+			case pion::platform::Vocabulary::TYPE_DATE:
+			case pion::platform::Vocabulary::TYPE_TIME:
+				(*i)->time_facet.setFormat((*i)->term.term_format);
+				break;
+			default:
+				break; // do nothing
+		}
 
 		// check if the Term has been removed (i.e. replaced by the "null" term)
 		if ((*i)->term.term_ref == Vocabulary::UNDEFINED_TERM_REF)

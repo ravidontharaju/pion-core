@@ -143,6 +143,9 @@ public:
 
 		/// the Vocabulary Term that the data field represents
 		pion::platform::Vocabulary::Term	term;
+
+		/// used to encode and decode date_time fields
+		PionTimeFacet						time_facet;
 	};
 
 	/// data type for a shared pointer to a JSONField object
@@ -237,7 +240,17 @@ inline void JSONCodec::mapFieldToTerm(const std::string& field,
 	if (m_field_map[field])
 		throw PionException("Duplicate Field Name");
 
+	// prepare a new JSON field object
 	JSONFieldPtr field_ptr(new JSONField(field, term));
+	switch (term.term_type) {
+		case pion::platform::Vocabulary::TYPE_DATE_TIME:
+		case pion::platform::Vocabulary::TYPE_DATE:
+		case pion::platform::Vocabulary::TYPE_TIME:
+			field_ptr->time_facet.setFormat(term.term_format);
+			break;
+		default:
+			break; // do nothing
+	}
 
 	// add it to the mapping of field names
 	m_field_map[field] = field_ptr;

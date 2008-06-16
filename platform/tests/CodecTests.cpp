@@ -621,47 +621,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteWithMultipleValuesFo
 
 BOOST_AUTO_TEST_SUITE_END()
 
-typedef boost::mpl::list<
-	ConfiguredCodecPtr_F<LogCodec_name, CREATED>,
-	ConfiguredCodecPtr_F<LogCodec_name, CLONED>,
-	ConfiguredCodecPtr_F<JSONCodec_name, CREATED>,
-	ConfiguredCodecPtr_F<JSONCodec_name, CLONED>,
-	ConfiguredCodecPtr_F<XMLCodec_name, CREATED>,
-	ConfiguredCodecPtr_F<XMLCodec_name, CLONED>
-> ConfiguredCodecPtrNoFactory_fixture_list;
-
-// ConfiguredCodecPtrNoFactory_S contains tests that should pass for any type of Codec.
-BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, ConfiguredCodecPtrNoFactory_fixture_list)
-
-// This test needs to be in the "No Factory" suite, because in the case where the
-// Codec is created by a factory, calling m_vocab_mgr.removeTerm() automatically calls
-// updateVocabulary() on the Codec.
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
-	F::m_vocab_mgr.removeTerm("urn:vocab:clickstream", FIELD_TERM_1);
-	BOOST_CHECK_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()), Codec::TermNoLongerDefinedException);
-}
-
-// This test needs to be in the "No Factory" suite, because in the case where the
-// Codec is created by a factory, calling m_vocab_mgr.updateTerm() automatically calls
-// updateVocabulary() on the Codec.
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
-	const Vocabulary& v = F::m_vocab_mgr.getVocabulary();
-	Vocabulary::TermRef term_ref = v.findTerm(FIELD_TERM_1);
-	Vocabulary::Term modified_term = v[term_ref];
-	modified_term.term_comment = "A modified comment";
-	F::m_vocab_mgr.setLocked("urn:vocab:clickstream", false);
-	F::m_vocab_mgr.updateTerm("urn:vocab:clickstream", modified_term);
-
-	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(F::m_vocab_mgr.getVocabulary()));
-
-	// TODO: write some tests that check that updateVocabulary() actually does something.
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
 static const std::string EVENT_TYPE_2 = "urn:vocab:test#simple-object";
 
 template<const char* plugin_type, LINEAGE lineage>
@@ -734,6 +693,8 @@ static const std::string FIELD_TERM_INT_16  = "urn:vocab:test#plain-old-int";
 static const std::string FIELD_NAME_INT_16  = "plain-old-int";
 static const std::string FIELD_TERM_UINT_64 = "urn:vocab:test#big-int";
 static const std::string FIELD_NAME_UINT_64 = "big-int";
+static const std::string FIELD_TERM_DATE    = "urn:vocab:test#date";
+static const std::string FIELD_NAME_DATE    = "date";
 static const boost::int16_t  E1_FIELD_VALUE_INT_16  = 500;
 static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
 static const boost::int16_t  E2_FIELD_VALUE_INT_16  = 0;
@@ -747,8 +708,9 @@ public:
 			"<Plugin>" + std::string(plugin_type) + "</Plugin>"
 			"<Name>" + NAME_1 + "</Name>"
 			"<EventType>" + EVENT_TYPE_2 + "</EventType>"
-			"<Field term=\"" + FIELD_TERM_INT_16 + "\">" + FIELD_NAME_INT_16 + "</Field>"
+			"<Field term=\"" + FIELD_TERM_INT_16  + "\">" + FIELD_NAME_INT_16  + "</Field>"
 			"<Field term=\"" + FIELD_TERM_UINT_64 + "\">" + FIELD_NAME_UINT_64 + "</Field>"
+			"<Field term=\"" + FIELD_TERM_DATE    + "\">" + FIELD_NAME_DATE    + "</Field>"
 		"</Codec></PionConfig>") {
 
 		m_event_ptr = event_factory.create(this->p->getEventType());
@@ -762,13 +724,81 @@ public:
 	const Vocabulary* m_vocab;
 };
 
+typedef boost::mpl::list<
+	CodecPtrWithVariousFieldTerms_F<LogCodec_name, CREATED>,
+	CodecPtrWithVariousFieldTerms_F<LogCodec_name, CLONED>,
+	CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CREATED>,
+	CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CLONED>,
+	CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CREATED>,
+	CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CLONED>
+> ConfiguredCodecPtrNoFactory_fixture_list;
+
+// ConfiguredCodecPtrNoFactory_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, ConfiguredCodecPtrNoFactory_fixture_list)
+
+// This test needs to be in the "No Factory" suite, because in the case where the
+// Codec is created by a factory, calling m_vocab_mgr.removeTerm() automatically calls
+// updateVocabulary() on the Codec.
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
+	F::m_vocab_mgr.removeTerm("urn:vocab:test", FIELD_TERM_INT_16);
+	BOOST_CHECK_THROW(F::p->updateVocabulary(*F::m_vocab), Codec::TermNoLongerDefinedException);
+}
+
+// See comment for checkUpdateVocabularyWithOneTermRemoved().
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+	Vocabulary::TermRef term_ref = F::m_vocab->findTerm(FIELD_TERM_INT_16);
+	Vocabulary::Term modified_term = (*F::m_vocab)[term_ref];
+	modified_term.term_comment = "A modified comment";
+	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
+	F::m_vocab_mgr.updateTerm("urn:vocab:test", modified_term);
+
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab));
+}
+
+// See comment for checkUpdateVocabularyWithOneTermRemoved().
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithDateFormatChanged) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
+	// Create an Event with some known value for the date field.
+	EventFactory event_factory;
+	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
+	Vocabulary::TermRef date_ref = F::m_vocab->findTerm(FIELD_TERM_DATE);
+	event_ptr->setDateTime(date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10)));
+
+	// Output the Event and confirm that the date appears in the expected format.
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	std::string out_str = out.str();
+	BOOST_CHECK(boost::regex_search(out_str, boost::regex("2008-01-10")));
+
+	// Update the date format.
+	Vocabulary::Term modified_term = (*F::m_vocab)[date_ref];
+	modified_term.term_format = "%m/%d/%y";
+	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
+	F::m_vocab_mgr.updateTerm("urn:vocab:test", modified_term);
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab));
+
+	// Output the Event again and check that the date appears in the new format.
+	std::ostringstream out2;
+	BOOST_CHECK_NO_THROW(F::p->write(out2, *event_ptr));
+	out_str = out2.str();
+	BOOST_CHECK(boost::regex_search(out_str, boost::regex("01/10/08")));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 typedef CodecPtrWithVariousFieldTerms_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredLogCodecPtr_S, ConfiguredLogCodecPtr_F)
 
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	std::ostringstream oss;
 	oss << E1_FIELD_VALUE_INT_16 << " "
-		<< E1_FIELD_VALUE_UINT_64 << "\n";
+		<< E1_FIELD_VALUE_UINT_64 << " "
+		<< "-" << "\n"; // leave the date field empty for now
 	std::istringstream in(oss.str());
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));

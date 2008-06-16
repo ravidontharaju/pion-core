@@ -292,6 +292,17 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 		/// we can assume for now that Term reference values will never change
 		(*i)->log_term = v[(*i)->log_term.term_ref];
 
+		// for date/time types, update log_time_facet
+		switch ((*i)->log_term.term_type) {
+			case pion::platform::Vocabulary::TYPE_DATE_TIME:
+			case pion::platform::Vocabulary::TYPE_DATE:
+			case pion::platform::Vocabulary::TYPE_TIME:
+				(*i)->log_time_facet.setFormat((*i)->log_term.term_format);
+				break;
+			default:
+				break; // do nothing
+		}
+
 		// check if the Term has been removed (i.e. replaced by the "null" term)
 		if ((*i)->log_term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw TermNoLongerDefinedException((*i)->log_term.term_id);
