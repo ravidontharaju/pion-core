@@ -816,17 +816,23 @@ BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
 	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
+	const int YEAR = 2008;
+	const int MONTH = 6;
+	const int DAY = 16;
 
 	std::ostringstream oss;
 	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
 		<< ", \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
+		<< ", \"" << FIELD_NAME_DATE    << "\": " << "\"" << YEAR << "-" << MONTH << "-" << DAY << "\""
 		<< " }";
 	std::istringstream in(oss.str());
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
 }
 
 BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {

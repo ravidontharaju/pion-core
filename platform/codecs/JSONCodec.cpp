@@ -47,7 +47,7 @@ CodecPtr JSONCodec::clone(void) const
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term);
 	}
-	new_codec->m_term_type_map = m_term_type_map;
+	new_codec->m_JSON_field_ptr_map = m_JSON_field_ptr_map;
 	return CodecPtr(new_codec);
 }
 
@@ -257,7 +257,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 	for (JSONCodec::JSONObject::const_iterator i = json_object.begin(); i != json_object.end(); ++i) {
 		const pion::platform::Vocabulary::TermRef term_ref = i->first;
 		const std::string& value_str = i->second;
-		switch (m_term_type_map[term_ref]) {
+		switch (m_JSON_field_ptr_map[term_ref]->term.term_type) {
 			case pion::platform::Vocabulary::TYPE_INT8:
 			case pion::platform::Vocabulary::TYPE_INT16:
 			case pion::platform::Vocabulary::TYPE_INT32:
@@ -280,6 +280,15 @@ bool JSONCodec::read(std::istream& in, Event& e)
 			case pion::platform::Vocabulary::TYPE_DOUBLE:
 				e.setDouble(term_ref, boost::lexical_cast<double>(value_str));
 				break;
+			case pion::platform::Vocabulary::TYPE_DATE_TIME:
+			case pion::platform::Vocabulary::TYPE_DATE:
+			case pion::platform::Vocabulary::TYPE_TIME:
+			{
+				PionDateTime dt;
+				m_JSON_field_ptr_map[term_ref]->time_facet.fromString(value_str, dt);
+				e.setDateTime(term_ref, dt);
+				break;
+			}
 
 			// TODO: handle other cases
 
@@ -335,11 +344,11 @@ void JSONCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		codec_field_node = codec_field_node->next;
 	}
 
-	m_term_type_map.clear();
+	m_JSON_field_ptr_map.clear();
 	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
-		if (m_term_type_map.find(i->second->term.term_ref) != m_term_type_map.end())
+		if (m_JSON_field_ptr_map.find(i->second->term.term_ref) != m_JSON_field_ptr_map.end())
 			throw PionException("Duplicate Field Term");
-		m_term_type_map[i->second->term.term_ref] = i->second->term.term_type;
+		m_JSON_field_ptr_map[i->second->term.term_ref] = i->second;
 	}
 }
 

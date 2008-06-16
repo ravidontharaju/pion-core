@@ -202,9 +202,9 @@ private:
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
 
-	/// used to map TermRefs to the DataType of their Term
-	std::map<pion::platform::Vocabulary::TermRef, pion::platform::Vocabulary::DataType>
-									m_term_type_map;
+	/// used to map TermRefs to JSONFieldPtrs
+	std::map<pion::platform::Vocabulary::TermRef, JSONFieldPtr>
+									m_JSON_field_ptr_map;
 
 	/// represents the sequence of data fields in the current configuration
 	CurrentFormat					m_format;
