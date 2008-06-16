@@ -161,6 +161,9 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		Comparison new_comparison(v[term_ref]);
 		new_comparison.configure(comparison_type, value_str, match_all_values);
 		m_rules.push_back(new_comparison);
+
+		// TODO: Add same/different term rule, Add destination term
+		// TODO: Add transformation rule
 		
 		// step to the next Comparison rule
 		transformation_node = transformation_node->next;
@@ -211,8 +214,14 @@ void TransformReactor::operator()(const EventPtr& e)
 					break;
 			}
 		}
-		if (do_transformations)
-			; // TODO: Do Transformation
+		if (do_transformations) {
+			// TODO: Do Transformation
+			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {
+				if (i->evaluate(*e)) {
+					i->transform(*e);	// TODO: Take into consideration the change of destination
+				}
+			}
+		}
 
 		// Transformation is done, deliver original event
 		deliverEvent(e);

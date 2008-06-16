@@ -25,6 +25,7 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/Comparison.hpp>
+#include <pion/platform/Transform.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -107,6 +108,8 @@ private:
 	/// data type for a chain of Comparison rules
 	typedef std::vector<pion::platform::Comparison>		RuleChain;
 
+	/// data type for a chain of Transform rules
+	typedef std::vector<pion::platform::Transform>		TransformChain;
 	
 	/// name of the term element for Pion XML config files
 	static const std::string		COMPARISON_ELEMENT_NAME;
@@ -132,6 +135,9 @@ private:
 	
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;
+
+	/// chain of Transformations
+	TransformChain						m_transforms;
 
 	/// should all the conditions match before transformations take place
 	bool							m_all_conditions;
