@@ -52,6 +52,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	
 	// clear the current configuration
 	m_rules.clear();
+	m_transforms.clear();
 	m_all_conditions = false;
 
 	// check if all the Comparisons should match before starting Transformations
@@ -158,9 +159,9 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		}
 		
 		// add the Comparison
-		Comparison new_comparison(v[term_ref]);
-		new_comparison.configure(comparison_type, value_str, match_all_values);
-		m_rules.push_back(new_comparison);
+		Transform new_transform(v[term_ref]);
+		new_transform.configure(comparison_type, value_str, match_all_values);
+		m_transforms.push_back(new_transform);
 
 		// TODO: Add same/different term rule, Add destination term
 		// TODO: Add transformation rule
@@ -178,6 +179,9 @@ void TransformReactor::updateVocabulary(const Vocabulary& v)
 
 	// update Vocabulary for each of the rules
 	for (RuleChain::iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
+		i->updateVocabulary(v);
+	}
+	for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); ++i) {
 		i->updateVocabulary(v);
 	}
 }
@@ -215,16 +219,19 @@ void TransformReactor::operator()(const EventPtr& e)
 			}
 		}
 		if (do_transformations) {
-			// TODO: Do Transformation
+			EventPtr new_e;
+			*new_e += *e;
 			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {
-				if (i->evaluate(*e)) {
-					i->transform(*e);	// TODO: Take into consideration the change of destination
+				if (i->evaluate(*e)) {		// Evaluations are based on original event
+					i->transform(*e);		// TODO: Take into consideration the change of destination
 				}
 			}
+			deliverEvent(new_e);			// Deliver the modified event
 		}
 
 		// Transformation is done, deliver original event
-		deliverEvent(e);
+		if (m_deliver_original)
+			deliverEvent(e);
 	}
 }
 	

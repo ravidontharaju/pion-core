@@ -38,57 +38,36 @@ class PION_PLATFORM_API Transform :
 {
 public:
 
-	/// if the Type matches on a field, then the action will take place
-	/// all Types yield a "SET action" except REGEX
-	enum TransformationType {
-		TYPE_FALSE = 0,						// always false
-		TYPE_TRUE,							// always true
-		TYPE_IS_DEFINED,					// true if at least one value is defined
-		TYPE_IS_NOT_DEFINED,				// true if no values are defined
-		// numeric operations
-		TYPE_EQUALS,
-		TYPE_NOT_EQUALS,
-		TYPE_GREATER_THAN,
-		TYPE_LESS_THAN,
-		TYPE_GREATER_OR_EQUAL,
-		TYPE_LESS_OR_EQUAL,
-		// string operations
-		TYPE_EXACT_MATCH,
-		TYPE_NOT_EXACT_MATCH,
-		TYPE_CONTAINS,
-		TYPE_NOT_CONTAINS,
-		TYPE_STARTS_WITH,
-		TYPE_NOT_STARTS_WITH,
-		TYPE_ENDS_WITH,
-		TYPE_NOT_ENDS_WITH,
-		TYPE_ORDERED_BEFORE,
-		TYPE_NOT_ORDERED_BEFORE,
-		TYPE_ORDERED_AFTER,
-		TYPE_NOT_ORDERED_AFTER,
-		TYPE_REGEX,
-		TYPE_NOT_REGEX,
-		// date_time operations
-		TYPE_SAME_DATE_TIME,
-		TYPE_NOT_SAME_DATE_TIME,
-		TYPE_EARLIER_DATE_TIME,
-		TYPE_LATER_DATE_TIME,
-		TYPE_SAME_OR_EARLIER_DATE_TIME,
-		TYPE_SAME_OR_LATER_DATE_TIME,
-		// date operations
-		TYPE_SAME_DATE,
-		TYPE_NOT_SAME_DATE,
-		TYPE_EARLIER_DATE,
-		TYPE_LATER_DATE,
-		TYPE_SAME_OR_EARLIER_DATE,
-		TYPE_SAME_OR_LATER_DATE,
-		// time of day operations
-		TYPE_SAME_TIME,
-		TYPE_NOT_SAME_TIME,
-		TYPE_EARLIER_TIME,
-		TYPE_LATER_TIME,
-		TYPE_SAME_OR_EARLIER_TIME,
-		TYPE_SAME_OR_LATER_TIME,
-	};
+	/// For everything but regexp, what is the "set" value
+	std::string					m_set_value;
+
+	/// Substitute in-place, or create new term
+	bool						m_set_inplace;
+
+	/// identifies the Vocabulary Term to set
+	Vocabulary::Term			m_set_term;
+
+	/// virtual destructor: you may extend this class
+	virtual ~Transform() {}
+
+	/**
+	 * constructs a new Comparison
+	 *
+	 * @param term the term that will be examined
+	 */
+	explicit Transform(const Vocabulary::Term& term)
+		: Comparison(term), m_set_value(NULL), m_set_inplace(false), m_set_term(NULL)
+//		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false)
+	{}
+
+/*
+	/// standard copy constructor
+	Transform(const Comparison& c)
+		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
+		m_str_value(c.m_str_value), m_regex(c.m_regex),
+		m_match_all_values(c.m_match_all_values)
+	{}
+*/
 
 	/**
 	 * evaluates the result of the Comparison

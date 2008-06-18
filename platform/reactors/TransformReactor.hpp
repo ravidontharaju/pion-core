@@ -137,10 +137,13 @@ private:
 	RuleChain						m_rules;
 
 	/// chain of Transformations
-	TransformChain						m_transforms;
+	TransformChain					m_transforms;
 
 	/// should all the conditions match before transformations take place
 	bool							m_all_conditions;
+
+	/// deliver original event
+	bool							m_deliver_original;
 };
 
 
