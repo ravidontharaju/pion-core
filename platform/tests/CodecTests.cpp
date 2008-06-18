@@ -227,12 +227,6 @@ protected:
 	PionPluginPtr<Codec> m_ppp;
 };
 
-#define SKIP_WITH_WARNING_FOR_JSON_CODECS \
-	if (F::m_codec_type == "JSONCodec") { \
-		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because JSONCodec is incomplete."); \
-		return; \
-	}
-
 #define SKIP_WITH_WARNING_FOR_XML_CODECS \
 	if (F::m_codec_type == "XMLCodec") { \
 		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because XMLCodec is incomplete."); \
@@ -415,7 +409,9 @@ public:
 protected:
 	// enables a derived fixture to pass in its own configuration string before the Codec is constructed
 	ConfiguredCodecPtr_F(const std::string& config_str) : m_vocab_mgr(), m_factory(NULL) {
-		initFixture(config_str);
+		// a derived fixture can pass in an empty string to bypass initFixture()
+		if (!config_str.empty())
+			initFixture(config_str);
 	}
 
 	VocabularyManager m_vocab_mgr;
@@ -441,6 +437,7 @@ private:
 		m_factory->openConfigFile();
 	}
 
+protected:
 	void makeConfiguredCodecPtr() {
 		// Make a configured CodecPtr of the specified lineage.
 		if (lineage == MANUFACTURED) {
@@ -454,6 +451,7 @@ private:
 		}
 	}
 
+private:
 	CodecFactory* m_factory;
 };
 
@@ -1049,6 +1047,303 @@ BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterCodecFactoryDestroyed) {
 	// which had registered with it for updates.
 	vocab_mgr.setLocked("urn:vocab:clickstream", false);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+template<const char* plugin_type, LINEAGE lineage>
+class CodecPtrWithFieldsOfAllTypes_F : public ConfiguredCodecPtr_F<plugin_type, lineage> {
+public:
+	CodecPtrWithFieldsOfAllTypes_F() : ConfiguredCodecPtr_F<plugin_type, lineage>("") {
+		initVocabularyManagerFromScratch();
+
+		// Configure the Codec with one field for every Term.
+		// Delimiters are ignored by Codecs that don't need them, e.g. JSONCodec or XMLCodec.
+		parseConfig("<PionConfig><Codec>"
+						"<EventType>urn:vocab:v1#object-term-1</EventType>"
+						"<Field term=\"urn:vocab:v1#null-term-1\">null-1</Field>"
+						"<Field term=\"urn:vocab:v1#int8-term-1\">int8-1</Field>"
+						"<Field term=\"urn:vocab:v1#uint8-term-1\">uint8-1</Field>"
+						"<Field term=\"urn:vocab:v1#int16-term-1\">int16-1</Field>"
+						"<Field term=\"urn:vocab:v1#uint16-term-1\">uint16-1</Field>"
+						"<Field term=\"urn:vocab:v1#int32-term-1\">int32-1</Field>"
+						"<Field term=\"urn:vocab:v1#uint32-term-1\">uint32-1</Field>"
+						"<Field term=\"urn:vocab:v1#int64-term-1\">int64-1</Field>"
+						"<Field term=\"urn:vocab:v1#uint64-term-1\">uint64-1</Field>"
+						"<Field term=\"urn:vocab:v1#float-term-1\">float-1</Field>"
+						"<Field term=\"urn:vocab:v1#double-term-1\">double-1</Field>"
+						"<Field term=\"urn:vocab:v1#longdouble-term-1\">longdouble-1</Field>"
+						"<Field term=\"urn:vocab:v1#shortstring-term-1\" start=\"&quot;\" end=\"&quot;\">shortstring-1</Field>"
+						"<Field term=\"urn:vocab:v1#string-term-1\" start=\"&quot;\" end=\"&quot;\">string-1</Field>"
+						"<Field term=\"urn:vocab:v1#longstring-term-1\" start=\"&quot;\" end=\"&quot;\">longstring-1</Field>"
+						"<Field term=\"urn:vocab:v1#datetime-term-1\" start=\"[\" end=\"]\">datetime-1</Field>"
+						"<Field term=\"urn:vocab:v1#date-term-1\">date-1</Field>"
+						"<Field term=\"urn:vocab:v1#time-term-1\">time-1</Field>"
+						"<Field term=\"urn:vocab:v1#char-term-1\" start=\"&quot;\" end=\"&quot;\">char-1</Field>"
+					"</Codec></PionConfig>",
+					this->m_config_ptr);
+		makeConfiguredCodecPtr();
+
+		m_event_ptr_in = this->m_event_factory.create(this->p->getEventType());
+		m_event_ptr_out = this->m_event_factory.create(this->p->getEventType());
+		m_vocab = &this->m_vocab_mgr.getVocabulary();
+	}
+	virtual ~CodecPtrWithFieldsOfAllTypes_F() {
+	}
+
+	const Vocabulary* m_vocab;
+	EventFactory m_event_factory;
+	EventPtr m_event_ptr_in;
+	EventPtr m_event_ptr_out;
+
+private:
+	// "from scratch" means without using any pre-existing files
+	void initVocabularyManagerFromScratch() {
+		if (boost::filesystem::exists(get_vocabularies_file()))
+			boost::filesystem::remove(get_vocabularies_file());
+		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.createConfigFile();
+		m_vocab_mgr.addVocabulary("urn:vocab:v1", "v1", "no comment");
+
+		// one Term for every value of Vocabulary::DataType
+		addTerm("null-term-1", "<Type>null</Type>");
+		addTerm("int8-term-1", "<Type>int8</Type>");
+		addTerm("uint8-term-1", "<Type>uint8</Type>");
+		addTerm("int16-term-1", "<Type>int16</Type>");
+		addTerm("uint16-term-1", "<Type>uint16</Type>");
+		addTerm("int32-term-1", "<Type>int32</Type>");
+		addTerm("uint32-term-1", "<Type>uint32</Type>");
+		addTerm("int64-term-1", "<Type>int64</Type>");
+		addTerm("uint64-term-1", "<Type>uint64</Type>");
+		addTerm("float-term-1", "<Type>float</Type>");
+		addTerm("double-term-1", "<Type>double</Type>");
+		addTerm("longdouble-term-1", "<Type>longdouble</Type>");
+		addTerm("shortstring-term-1", "<Type>shortstring</Type>");
+		addTerm("string-term-1", "<Type>string</Type>");
+		addTerm("longstring-term-1", "<Type>longstring</Type>");
+		addTerm("datetime-term-1", "<Type format=\"%Y-%m-%d %H:%M:%S\">datetime</Type>");
+		addTerm("date-term-1", "<Type format=\"%Y-%m-%d\">date</Type>");
+		addTerm("time-term-1", "<Type format=\"%H:%M:%S\">time</Type>");
+		addTerm("char-term-1", "<Type size=\"10\">char</Type>");
+		addTerm("object-term-1", "<Type>object</Type>");
+	}
+
+	void addTerm(const std::string& term_name, const std::string& inner_term_config) {
+		std::string config_str = "<PionConfig><Term>" + inner_term_config + "</Term></PionConfig>";
+		std::string term_id = std::string("urn:vocab:v1#") + term_name;
+		this->m_vocab_mgr.addTerm("urn:vocab:v1", term_id,
+								  ConfigManager::createResourceConfig("Term", config_str.c_str(), config_str.size()));
+	}
+};
+
+// MANUFACTURED not included here, because it requires codecs.xml, the default version of which
+// uses urn:vocab:clickstream.
+typedef boost::mpl::list<
+	CodecPtrWithFieldsOfAllTypes_F<LogCodec_name, CREATED>,
+	CodecPtrWithFieldsOfAllTypes_F<LogCodec_name, CLONED>,
+	CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CREATED>,
+	CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CLONED>,
+	CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CREATED>,
+	CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CLONED>
+> CodecPtrWithFieldsOfAllTypes_fixture_list;
+
+// CodecPtrWithFieldsOfAllTypes_S contains tests that should pass for any type of Codec.
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtrWithFieldsOfAllTypes_S, CodecPtrWithFieldsOfAllTypes_fixture_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
+	// Set one value for every Term in urn:vocab:v1, except the null Term and the object Term.
+	// TODO: object Terms aren't supported for LogCodecs, but could they be for some Codecs?
+	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1"),       -8);
+	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1"),       8);
+	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1"),      -16);
+	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1"),      16);
+	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1"),      -32);
+	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1"),      32);
+	m_event_ptr_in->setBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1"),      -64);
+	m_event_ptr_in->setUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1"),      64);
+	m_event_ptr_in->setFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1"),       1.01234e-30F);
+	m_event_ptr_in->setDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1"),      1.0123456789012345e-300);
+	m_event_ptr_in->setLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1"),  1.0123456789012345e+300L);
+	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "abc");
+	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "123");
+	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "XYZ");
+	PionDateTime date_time = PionTimeFacet("%Y-%m-%d %H:%M:%S").fromString("2008-06-17 10:22:01");
+	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1"),    date_time);
+	PionDateTime date = PionTimeFacet("%Y-%m-%d").fromString("2008-06-17");
+	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1"),        date);
+	PionDateTime time = PionTimeFacet("%H:%M:%S").fromString("10:22:01");
+	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1"),        time);
+	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "0123456789");
+
+	// Write out the Event and read the output into a new Event.
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	std::istringstream in(out.str());
+	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+
+	// Check that the reconstituted Event is the same as the original Event.
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1")),       -8);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1")),       8);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1")),      -16);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1")),      16);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1")),      -32);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1")),      32);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1")),      -64);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1")),      64);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1")),       1.01234e-30F);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1")),      1.0123456789012345e-300);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1")),  1.0123456789012345e+300L);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "abc");
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "123");
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "XYZ");
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1")),    date_time);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1")),        date);
+	// Can't use BOOST_CHECK_EQUAL, because it uses operator<< on its inputs, which crashes for PionDateTimes without a date.
+	BOOST_CHECK(      m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1")) ==      time);
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "0123456789");
+	BOOST_CHECK(*m_event_ptr_in == *m_event_ptr_out);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingPartialDateTimes) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
+	// Pass in a complete date time to a term that only handles dates and a term that only handles times.
+	PionTimeFacet time_facet("%Y-%m-%d %H:%M:%S");
+	PionDateTime date_time = time_facet.fromString("2008-06-17 10:22:01");
+	m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"), date_time);
+	m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"), date_time);
+
+	// Write out the Event and read the output into a new Event.
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	std::istringstream in(out.str());
+	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+
+	// Check that the date part of the reconstituted date Term value is the same as the date part of the input.
+	PionDateTime date_term_value = m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"));
+	BOOST_CHECK_EQUAL(date_term_value.date(), date_time.date());
+
+	// Check that the time part of the reconstituted time Term value is the same as the time part of the input.
+	PionDateTime time_term_value = m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"));
+	BOOST_CHECK_EQUAL(time_term_value.time_of_day(), date_time.time_of_day());
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingComplexStrings) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
+	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "  word1  word2  ");
+	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "\"quoted string\"");
+	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "a \"quoted\" substring");
+	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "one \" here");
+
+	// Write out the Event and read the output into a new Event.
+	std::ostringstream out;
+	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	std::istringstream in(out.str());
+	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+
+	// Check that the reconstituted Event is the same as the original Event.
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
+	if (F::m_codec_type == "LogCodec") { \
+		// LogCodec can't handle quotes yet (assuming quotes are being used as delimiters).
+		BOOST_WARN_MESSAGE(false, "Skipping this rest of this test for LogCodec fixture because LogCodec can't handle it yet."); \
+		return; \
+	}
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkFixedLengthCharTerm) {
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
+	// Create three strings with length less than, equal to and greater than the length of the fixed-length Term.
+	std::string undersized = "< 10";
+	std::string just_right = "exactly 10";
+	std::string oversized  = "more than 10 chars";
+
+	// Write out three Events with the fixed-length Term value set to each of these strings.
+	EventPtr event_ptr_1 = F::m_event_factory.create(this->p->getEventType());
+	EventPtr event_ptr_2 = F::m_event_factory.create(this->p->getEventType());
+	EventPtr event_ptr_3 = F::m_event_factory.create(this->p->getEventType());
+	event_ptr_1->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), undersized);
+	event_ptr_2->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), just_right);
+	event_ptr_3->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), oversized);
+	std::ostringstream out;
+	F::p->write(out, *event_ptr_1);
+	F::p->write(out, *event_ptr_2);
+	F::p->write(out, *event_ptr_3);
+
+	// Read in the three Events.
+	EventPtr event_ptr_out_1 = F::m_event_factory.create(this->p->getEventType());
+	EventPtr event_ptr_out_2 = F::m_event_factory.create(this->p->getEventType());
+	EventPtr event_ptr_out_3 = F::m_event_factory.create(this->p->getEventType());
+	std::istringstream in(out.str());
+	BOOST_CHECK(F::p->read(in, *event_ptr_out_1));
+	BOOST_CHECK(F::p->read(in, *event_ptr_out_2));
+	BOOST_CHECK(F::p->read(in, *event_ptr_out_3));
+
+	// Check that the value of the fixed-length Term is correct in all cases.
+	BOOST_CHECK_EQUAL(event_ptr_out_1->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), undersized);
+	BOOST_CHECK_EQUAL(event_ptr_out_2->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), just_right);
+	BOOST_CHECK_EQUAL(event_ptr_out_3->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), oversized.substr(0, 10));
+
+	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+typedef CodecPtrWithFieldsOfAllTypes_F<LogCodec_name, CREATED> LogCodecPtrWithFieldsOfAllTypes_F;
+BOOST_FIXTURE_TEST_SUITE(LogCodecPtrWithFieldsOfAllTypes_S, LogCodecPtrWithFieldsOfAllTypes_F)
+
+BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
+	// make an input string with empty values for all terms except the char (fixed-length) Term
+	std::string str = "- - - - - - - - - - - - - \"\" \"\" \"\" [] - - \"more than 10 chars\"";
+
+	// read in an Event from the string
+	std::istringstream in(str);
+	BOOST_CHECK(p->read(in, *m_event_ptr_out));
+
+	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+
+	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+typedef CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CREATED> JSONCodecPtrWithFieldsOfAllTypes_F;
+BOOST_FIXTURE_TEST_SUITE(JSONCodecPtrWithFieldsOfAllTypes_S, JSONCodecPtrWithFieldsOfAllTypes_F)
+
+BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
+	// make a JSON input string with just a char (fixed-length) Term
+	std::string str = "[{\"char-1\": \"more than 10 chars\"}]";
+
+	// read in an Event from the string
+	std::istringstream in(str);
+	BOOST_CHECK(p->read(in, *m_event_ptr_out));
+
+	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
+	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+
+	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+typedef CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CREATED> XMLCodecPtrWithFieldsOfAllTypes_F;
+BOOST_FIXTURE_TEST_SUITE(XMLCodecPtrWithFieldsOfAllTypes_S, XMLCodecPtrWithFieldsOfAllTypes_F)
+
+/*
+BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
+
+}
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
 

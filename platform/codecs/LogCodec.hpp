@@ -440,17 +440,24 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			out << boost::get<float>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_DOUBLE:
-			out << boost::get<double>(value);
+			// using boost::lexical_cast<std::string> ensures precision appropriate to type double
+			out << boost::lexical_cast<std::string>(boost::get<double>(value));
 			break;
 		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-			out << boost::get<long double>(value);
+			// using boost::lexical_cast<std::string> ensures precision appropriate to type long double
+			out << boost::lexical_cast<std::string>(boost::get<long double>(value));
 			break;
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-		case pion::platform::Vocabulary::TYPE_CHAR:
 			out << boost::get<const pion::platform::Event::SimpleString&>(value).get();
 			break;
+		case pion::platform::Vocabulary::TYPE_CHAR:
+		{
+			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
+			out.write(ss.get(), ss.size() < log_term.term_size? ss.size() : log_term.term_size);
+			break;
+		}
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
@@ -502,8 +509,14 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-		case pion::platform::Vocabulary::TYPE_CHAR:
 			e.setString(log_term.term_ref, buf);
+			break;
+		case pion::platform::Vocabulary::TYPE_CHAR:
+			if (strlen(buf) > log_term.term_size) {
+				e.setString(log_term.term_ref, std::string(buf, log_term.term_size));
+			} else {
+				e.setString(log_term.term_ref, buf);
+			}
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:

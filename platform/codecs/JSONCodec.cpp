@@ -67,6 +67,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 	// iterate through each field in the current format
 	CurrentFormat::const_iterator i;
 	std::string value_str;
+	const pion::platform::Event::SimpleString* ss;
 	for (i = m_format.begin(); i != m_format.end(); ++i) {
 		// get the range of values for the field Term
 		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
@@ -76,6 +77,9 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 		for (Event::ConstIterator i2 = range.first; i2 != range.second; ++i2) {
 			yajl_gen_string(m_yajl_generator, (unsigned char*)(*i)->field_name.c_str(), (*i)->field_name.size());
 			switch ((*i)->term.term_type) {
+				case pion::platform::Vocabulary::TYPE_NULL:
+					// TODO: should we output an empty string instead of nothing?
+					break;
 				case pion::platform::Vocabulary::TYPE_INT8:
 				case pion::platform::Vocabulary::TYPE_INT16:
 				case pion::platform::Vocabulary::TYPE_INT32:
@@ -98,7 +102,25 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 					yajl_gen_double(m_yajl_generator, boost::get<float>(i2->value));
 					break;
 				case pion::platform::Vocabulary::TYPE_DOUBLE:
-					yajl_gen_double(m_yajl_generator, boost::get<double>(i2->value));
+					// using boost::lexical_cast<std::string> ensures precision appropriate to type double
+					value_str = boost::lexical_cast<std::string>(boost::get<double>(i2->value));
+					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
+					break;
+				case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+					// using boost::lexical_cast<std::string> ensures precision appropriate to type long double
+					value_str = boost::lexical_cast<std::string>(boost::get<long double>(i2->value));
+					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
+					break;
+				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+				case pion::platform::Vocabulary::TYPE_STRING:
+				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					yajl_gen_string(m_yajl_generator, (unsigned char*)ss->get(), ss->size());
+					break;
+				case pion::platform::Vocabulary::TYPE_CHAR:
+					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					yajl_gen_string(m_yajl_generator, (unsigned char*)ss->get(),
+									ss->size() < (*i)->term.term_size? ss->size() : (*i)->term.term_size);
 					break;
 				case pion::platform::Vocabulary::TYPE_DATE_TIME:
 				case pion::platform::Vocabulary::TYPE_DATE:
@@ -257,7 +279,11 @@ bool JSONCodec::read(std::istream& in, Event& e)
 	for (JSONCodec::JSONObject::const_iterator i = json_object.begin(); i != json_object.end(); ++i) {
 		const pion::platform::Vocabulary::TermRef term_ref = i->first;
 		const std::string& value_str = i->second;
-		switch (m_JSON_field_ptr_map[term_ref]->term.term_type) {
+		const pion::platform::Vocabulary::Term& term = m_JSON_field_ptr_map[term_ref]->term;
+		switch (term.term_type) {
+			case pion::platform::Vocabulary::TYPE_NULL:
+				// do nothing
+				break;
 			case pion::platform::Vocabulary::TYPE_INT8:
 			case pion::platform::Vocabulary::TYPE_INT16:
 			case pion::platform::Vocabulary::TYPE_INT32:
@@ -280,6 +306,21 @@ bool JSONCodec::read(std::istream& in, Event& e)
 			case pion::platform::Vocabulary::TYPE_DOUBLE:
 				e.setDouble(term_ref, boost::lexical_cast<double>(value_str));
 				break;
+			case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+				e.setLongDouble(term_ref, boost::lexical_cast<long double>(value_str));
+				break;
+			case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+			case pion::platform::Vocabulary::TYPE_STRING:
+			case pion::platform::Vocabulary::TYPE_LONG_STRING:
+				e.setString(term_ref, value_str);
+				break;
+			case pion::platform::Vocabulary::TYPE_CHAR:
+				if (value_str.size() > term.term_size) {
+					e.setString(term_ref, std::string(value_str, 0, term.term_size));
+				} else {
+					e.setString(term_ref, value_str);
+				}
+				break;
 			case pion::platform::Vocabulary::TYPE_DATE_TIME:
 			case pion::platform::Vocabulary::TYPE_DATE:
 			case pion::platform::Vocabulary::TYPE_TIME:
@@ -289,9 +330,6 @@ bool JSONCodec::read(std::istream& in, Event& e)
 				e.setDateTime(term_ref, dt);
 				break;
 			}
-
-			// TODO: handle other cases
-
 			default:
 				return false;
 		}
