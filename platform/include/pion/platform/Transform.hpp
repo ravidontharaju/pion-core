@@ -28,6 +28,7 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
+#include <pion/platform/Comparison.hpp>
 
 
 namespace pion {		// begin namespace pion

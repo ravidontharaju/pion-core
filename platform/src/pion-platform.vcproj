@@ -309,6 +309,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Transform.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Vocabulary.cpp"
 				>
 			</File>
@@ -368,6 +372,10 @@
 			</File>
 			<File
 				RelativePath="..\include\pion\platform\Reactor.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pion\platform\Transform.hpp"
 				>
 			</File>
 			<File
