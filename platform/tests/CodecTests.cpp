@@ -1102,7 +1102,7 @@ public:
 						"<Field term=\"urn:vocab:v1#char-term-1\" start=\"&quot;\" end=\"&quot;\">char-1</Field>"
 					"</Codec></PionConfig>",
 					this->m_config_ptr);
-		makeConfiguredCodecPtr();
+		ConfiguredCodecPtr_F<plugin_type,lineage>::makeConfiguredCodecPtr();
 
 		m_event_ptr_in = this->m_event_factory.create(this->p->getEventType());
 		m_event_ptr_out = this->m_event_factory.create(this->p->getEventType());
@@ -1121,9 +1121,9 @@ private:
 	void initVocabularyManagerFromScratch() {
 		if (boost::filesystem::exists(get_vocabularies_file()))
 			boost::filesystem::remove(get_vocabularies_file());
-		m_vocab_mgr.setConfigFile(get_vocabularies_file());
-		m_vocab_mgr.createConfigFile();
-		m_vocab_mgr.addVocabulary("urn:vocab:v1", "v1", "no comment");
+		this->m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		this->m_vocab_mgr.createConfigFile();
+		this->m_vocab_mgr.addVocabulary("urn:vocab:v1", "v1", "no comment");
 
 		// one Term for every value of Vocabulary::DataType
 		addTerm("null-term-1", "<Type>null</Type>");
@@ -1175,55 +1175,55 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 
 	// Set one value for every Term in urn:vocab:v1, except the null Term and the object Term.
 	// TODO: object Terms aren't supported for LogCodecs, but could they be for some Codecs?
-	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1"),       -8);
-	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1"),       8);
-	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1"),      -16);
-	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1"),      16);
-	m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1"),      -32);
-	m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1"),      32);
-	m_event_ptr_in->setBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1"),      -64);
-	m_event_ptr_in->setUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1"),      64);
-	m_event_ptr_in->setFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1"),       1.01234e-30F);
-	m_event_ptr_in->setDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1"),      1.0123456789012345e-300);
-	m_event_ptr_in->setLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1"),  1.0123456789012345e+300L);
-	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "abc");
-	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "123");
-	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "XYZ");
+	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1"),       -8);
+	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1"),       8);
+	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1"),      -16);
+	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1"),      16);
+	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1"),      -32);
+	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1"),      32);
+	F::m_event_ptr_in->setBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1"),      -64);
+	F::m_event_ptr_in->setUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1"),      64);
+	F::m_event_ptr_in->setFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1"),       1.01234e-30F);
+	F::m_event_ptr_in->setDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1"),      1.0123456789012345e-300);
+	F::m_event_ptr_in->setLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1"),  1.0123456789012345e+300L);
+	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "abc");
+	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "123");
+	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "XYZ");
 	PionDateTime date_time = PionTimeFacet("%Y-%m-%d %H:%M:%S").fromString("2008-06-17 10:22:01");
-	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1"),    date_time);
+	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1"),    date_time);
 	PionDateTime date = PionTimeFacet("%Y-%m-%d").fromString("2008-06-17");
-	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1"),        date);
+	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1"),        date);
 	PionDateTime time = PionTimeFacet("%H:%M:%S").fromString("10:22:01");
-	m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1"),        time);
-	m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "0123456789");
+	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1"),        time);
+	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "0123456789");
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
-	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	BOOST_CHECK_NO_THROW(F::p->write(out, *F::m_event_ptr_in));
 	std::istringstream in(out.str());
-	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the reconstituted Event is the same as the original Event.
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1")),       -8);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1")),       8);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1")),      -16);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1")),      16);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1")),      -32);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1")),      32);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1")),      -64);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1")),      64);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1")),       1.01234e-30F);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1")),      1.0123456789012345e-300);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1")),  1.0123456789012345e+300L);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "abc");
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "123");
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "XYZ");
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1")),    date_time);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1")),        date);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1")),       -8);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1")),       8U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1")),      -16);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1")),      16U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1")),      -32);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1")),      32U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1")),      -64);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1")),      64U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1")),       1.01234e-30F);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1")),      1.0123456789012345e-300);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1")),  1.0123456789012345e+300L);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "abc");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "123");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "XYZ");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1")),    date_time);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1")),        date);
 	// Can't use BOOST_CHECK_EQUAL, because it uses operator<< on its inputs, which crashes for PionDateTimes without a date.
-	BOOST_CHECK(      m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1")) ==      time);
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "0123456789");
-	BOOST_CHECK(*m_event_ptr_in == *m_event_ptr_out);
+	BOOST_CHECK(      F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1")) ==      time);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "0123456789");
+	BOOST_CHECK(*F::m_event_ptr_in == *F::m_event_ptr_out);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingPartialDateTimes) {
@@ -1232,48 +1232,48 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingPartialDateTimes) 
 	// Pass in a complete date time to a term that only handles dates and a term that only handles times.
 	PionTimeFacet time_facet("%Y-%m-%d %H:%M:%S");
 	PionDateTime date_time = time_facet.fromString("2008-06-17 10:22:01");
-	m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"), date_time);
-	m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"), date_time);
+	F::m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"), date_time);
+	F::m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"), date_time);
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
-	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	BOOST_CHECK_NO_THROW(F::p->write(out, *F::m_event_ptr_in));
 	std::istringstream in(out.str());
-	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the date part of the reconstituted date Term value is the same as the date part of the input.
-	PionDateTime date_term_value = m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"));
+	PionDateTime date_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"));
 	BOOST_CHECK_EQUAL(date_term_value.date(), date_time.date());
 
 	// Check that the time part of the reconstituted time Term value is the same as the time part of the input.
-	PionDateTime time_term_value = m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"));
+	PionDateTime time_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"));
 	BOOST_CHECK_EQUAL(time_term_value.time_of_day(), date_time.time_of_day());
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingComplexStrings) {
 	SKIP_WITH_WARNING_FOR_XML_CODECS
 
-	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "  word1  word2  ");
-	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "\"quoted string\"");
-	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "a \"quoted\" substring");
-	m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "one \" here");
+	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "  word1  word2  ");
+	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "\"quoted string\"");
+	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "a \"quoted\" substring");
+	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "one \" here");
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
-	BOOST_CHECK_NO_THROW(F::p->write(out, *m_event_ptr_in));
+	BOOST_CHECK_NO_THROW(F::p->write(out, *F::m_event_ptr_in));
 	std::istringstream in(out.str());
-	BOOST_CHECK(F::p->read(in, *m_event_ptr_out));
+	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the reconstituted Event is the same as the original Event.
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
 	if (F::m_codec_type == "LogCodec") { \
 		// LogCodec can't handle quotes yet (assuming quotes are being used as delimiters).
 		BOOST_WARN_MESSAGE(false, "Skipping this rest of this test for LogCodec fixture because LogCodec can't handle it yet."); \
 		return; \
 	}
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkFixedLengthCharTerm) {
@@ -1325,10 +1325,10 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 
 	// read in an Event from the string
 	std::istringstream in(str);
-	BOOST_CHECK(p->read(in, *m_event_ptr_out));
+	BOOST_CHECK(p->read(in, *this->m_event_ptr_out));
 
 	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
 
 	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
 }
@@ -1345,10 +1345,10 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 
 	// read in an Event from the string
 	std::istringstream in(str);
-	BOOST_CHECK(p->read(in, *m_event_ptr_out));
+	BOOST_CHECK(p->read(in, *this->m_event_ptr_out));
 
 	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
-	BOOST_CHECK_EQUAL(m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
 
 	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
 }
