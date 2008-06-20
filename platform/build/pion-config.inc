@@ -6,7 +6,7 @@
 AC_MSG_CHECKING([for OSSP UUID library (required)])
 AC_ARG_WITH([uuid],
     AC_HELP_STRING([--with-uuid@<:@=DIR@:>@],[location of OSSP UUID library]),
-    [ uuuid_location=$withval ], [ without_uuid=true ])
+    [ uuid_location=$withval ], [ without_uuid=true ])
 # Check for uuid headers
 if test "x$uuid_location" == "xyes"; then
 	AC_MSG_RESULT(checking default locations)
