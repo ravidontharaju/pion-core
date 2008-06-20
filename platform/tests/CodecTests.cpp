@@ -694,7 +694,15 @@ static const std::string FIELD_NAME_UINT_64 = "big-int";
 static const std::string FIELD_TERM_DATE    = "urn:vocab:test#date";
 static const std::string FIELD_NAME_DATE    = "date";
 static const boost::int16_t  E1_FIELD_VALUE_INT_16  = 500;
+#if _MSC_VER == 1500  // 1500 == VC++ 9.0
+// This value uses all 64 bits, but only 18 decimal digits, thus avoiding a bug
+// in VC9 that occurs with 19 decimal digit numbers.
+// Boost regression test lexical_cast_test is also failing because of this bug; 
+// see http://www.boost.org/development/tests/release-1_35_0/developer/conversion.html.
+static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0x8A00FF00FF00FF00ULL;
+#else
 static const boost::uint64_t E1_FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
+#endif
 static const boost::int16_t  E2_FIELD_VALUE_INT_16  = 0;
 static const boost::uint64_t E2_FIELD_VALUE_UINT_64 = 0x0123456789ABCDEFULL;
 
@@ -813,7 +821,13 @@ BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
 
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+#if _MSC_VER == 1500  // 1500 == VC++ 9.0
+	BOOST_WARN_MESSAGE(false, "working around a bug in VC9");
+	// This value uses all 64 bits, but only 18 decimal digits; see comments for E1_FIELD_VALUE_UINT_64.
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0x8A00FF00FF00FF00ULL;
+#else
 	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
+#endif
 	const int YEAR = 2008;
 	const int MONTH = 6;
 	const int DAY = 16;
@@ -835,7 +849,13 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+#if _MSC_VER == 1500  // 1500 == VC++ 9.0
+	BOOST_WARN_MESSAGE(false, "working around a bug in VC9");
+	// This value uses all 64 bits, but only 18 decimal digits; see comments for E1_FIELD_VALUE_UINT_64.
+	const boost::uint64_t FIELD_VALUE_UINT_64 = 0x8A00FF00FF00FF00ULL;
+#else
 	const boost::uint64_t FIELD_VALUE_UINT_64 = 0xFF00FF00FF00FF00ULL;
+#endif
 
 	// This time, the terms are not in the order in which they appear in the configuration.
 	std::ostringstream oss;
