@@ -211,11 +211,17 @@ int end_map_handler(void* ctx)
 
 int start_array_handler(void* ctx)
 {
+	Context* c = (Context*)ctx;
+	c->m_array_started = true;
+
 	return 1;
 }
 
 int end_array_handler(void* ctx)
 {
+	Context* c = (Context*)ctx;
+	c->m_array_ended = true;
+
 	return 1;
 }
 
@@ -243,28 +249,56 @@ bool JSONCodec::read(std::istream& in, Event& e)
 
 	e.clear();
 
-	if (m_no_events_read) {
+	if (m_first_read_attempt) {
 		yajl_parser_config cfg = { 1, 1 };
 		m_context = boost::shared_ptr<Context>(new Context(m_field_map, m_json_object_queue));
 		m_yajl_handle = yajl_alloc(&callbacks, &cfg, (void*)m_context.get());
-		m_no_events_read = false;
+		m_first_read_attempt = false;
+	}
+
+	if (!m_context->m_array_started) {
+
+		// consume white space
+		streambuf_type* buf_ptr = in.rdbuf();
+		int_type c = buf_ptr->sgetc();
+		while (1) {
+			if (traits_type::eq_int_type(c, traits_type::eof()))
+				return false;
+			if (c == ' ' || c == '\t' || c == '\x0A' || c == '\x0D') {
+				c = buf_ptr->snextc();
+			} else {
+				break;
+			}
+		}
+
+		// first non-whitespace char must be '['
+		if (c != '[')
+			throw PionException("input stream is not a JSON array");
+
+		// Since c has not been consumed, m_context->m_array_started will be set to true
+		// the first time yajl_parse is called.
 	}
 
 	while (m_json_object_queue.empty()) {
+		if (m_context->m_array_ended)
+			// TODO: Do we need a way for the caller to distinguish between the case where there is
+			// currently not enough data in the stream to parse an Event and the case where the
+			// end marker of the Event sequence has been reached?
+			return false;
+
 		std::streamsize num_bytes_read = in.readsome(data, READ_BUFFER_SIZE - 1);
 		if (num_bytes_read == 0)
 			return false;
 
 		data[num_bytes_read] = 0;
-
-		size_t len = strlen(data);
-		yajl_status stat = yajl_parse(m_yajl_handle, (unsigned char*)data, len);
+		yajl_status stat = yajl_parse(m_yajl_handle, (unsigned char*)data, num_bytes_read);
 
 		if (stat == yajl_status_ok) {
-			// The queue should have an event now.
-			break;
+			// The end of the JSON array was parsed.  Events might have been added to the queue
+			// before the end was reached, so continue.
+			PION_ASSERT(m_context->m_array_ended);
 		} else if (stat == yajl_status_insufficient_data) {
-			// The queue might or might not have an event now, so continue.
+			// The queue might or might not have an Event now, so continue.
 			// If the queue is still empty, more data will be read in.
 		} else {
 			// TODO: handle yajl_status_client_canceled and yajl_status_error

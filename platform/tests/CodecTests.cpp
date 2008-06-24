@@ -274,7 +274,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
 	// Should this throw an exception instead, e.g., something like EmptyFieldMap?
 	// Should it return false, since it didn't read anything?
 	// Or is it OK?
-	BOOST_WARN(F::p->read(ss, *ep) == false);
+	/////////BOOST_WARN(F::p->read(ss, *ep) == false);
+	BOOST_WARN_THROW(F::p->read(ss, *ep), PionException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedTypeAndEmptyString) {
@@ -283,11 +284,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedTypeAndEmptyS
 	std::stringstream ss("");
 
 	// See comments in previous test, checkReadWithEventOfUndefinedType.
-	BOOST_CHECK(F::p->read(ss, *ep) == false);
+	/////////BOOST_WARN(F::p->read(ss, *ep) == false);
+	BOOST_WARN_THROW(F::p->read(ss, *ep), PionException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
@@ -319,7 +320,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTheSameName) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	parseConfig("<PionConfig><Codec>"
 					"<EventType>urn:vocab:clickstream#http-request</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
@@ -335,7 +335,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTh
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDifferentNames) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	parseConfig("<PionConfig><Codec>"
 					"<EventType>urn:vocab:clickstream#http-request</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
@@ -353,7 +352,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDi
 // This is definitely ambiguous for a JSONCodec.  (It can't distinguish between big-int and plain-old-int.)
 // It's not ambiguous for a LogCodec, but it's still probably not a good idea to have two columns with the same name.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	parseConfig("<PionConfig><Codec>"
 					"<EventType>urn:vocab:clickstream#http-request</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
@@ -510,18 +508,23 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkClone) {
 	BOOST_CHECK(F::p->clone()->getContentType() == F::p->getContentType());
 }
 
+// Need Codec specific versions of this - an empty string is not valid XML, nor does it
+// constitute a JSON array, so XMLCodec and JSONCodec should throw an exception.
+// See checkReadWithEmptyEventArray, checkReadWithEmptyRootElement and
+// ConfiguredLogCodecPtr_S::checkReadWithEmptyString.
+/*
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEmptyString) {
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(F::p->getEventType()));
 	std::stringstream ss("");
 	BOOST_CHECK(F::p->read(ss, *ep) == false);
 }
+*/
 
 // It's convenient to have this test in this suite, but note that the input string can't be
 // universally valid, so read() could legitimately throw a different exception due to the
 // input string, without ever touching the event.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(Vocabulary::UNDEFINED_TERM_REF));
 	std::stringstream ss("some text\n");
@@ -530,7 +533,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
 
 // See comment for previous test, checkReadWithEventOfUndefinedType.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
-	SKIP_WITH_WARNING_FOR_XML_CODECS
 	Event::EventType other_type = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 	BOOST_REQUIRE(other_type != F::p->getEventType());
 	EventFactory event_factory;
@@ -800,6 +802,13 @@ BOOST_AUTO_TEST_SUITE_END()
 typedef CodecPtrWithVariousFieldTerms_F<LogCodec_name, CREATED> ConfiguredLogCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredLogCodecPtr_S, ConfiguredLogCodecPtr_F)
 
+BOOST_AUTO_TEST_CASE(checkReadWithEmptyString) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(p->getEventType()));
+	std::stringstream ss("");
+	BOOST_CHECK(p->read(ss, *ep) == false);
+}
+
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	std::ostringstream oss;
 	oss << E1_FIELD_VALUE_INT_16 << " "
@@ -819,6 +828,14 @@ BOOST_AUTO_TEST_SUITE_END()
 typedef CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CREATED> ConfiguredJSONCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
 
+BOOST_AUTO_TEST_CASE(checkReadWithEmptyEventArray) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(p->getEventType()));
+	std::stringstream ss("[]");
+	BOOST_CHECK(p->read(ss, *ep) == false);
+	BOOST_CHECK(p->read(ss, *ep) == false);
+}
+
 BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	const boost::int16_t FIELD_VALUE_INT_16 = 500;
 #if _MSC_VER == 1500  // 1500 == VC++ 9.0
@@ -833,10 +850,10 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 	const int DAY = 16;
 
 	std::ostringstream oss;
-	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
-		<< ", \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
-		<< ", \"" << FIELD_NAME_DATE    << "\": " << "\"" << YEAR << "-" << MONTH << "-" << DAY << "\""
-		<< " }";
+	oss << "[{ \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
+		<<  ", \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
+		<<  ", \"" << FIELD_NAME_DATE    << "\": " << "\"" << YEAR << "-" << MONTH << "-" << DAY << "\""
+		<<  "}";
 	std::istringstream in(oss.str());
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
@@ -859,8 +876,8 @@ BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 
 	// This time, the terms are not in the order in which they appear in the configuration.
 	std::ostringstream oss;
-	oss << "{ \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
-		<< ", \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
+	oss << "[{ \"" << FIELD_NAME_UINT_64 << "\": " << FIELD_VALUE_UINT_64
+		<<  ", \"" << FIELD_NAME_INT_16  << "\": " << FIELD_VALUE_INT_16
 		<< " }";
 	std::istringstream in(oss.str());
 
@@ -868,6 +885,16 @@ BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 
 	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
 	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
+	std::ostringstream oss;
+	oss << " \n\t[{ \"" << FIELD_NAME_INT_16  << "\": " << E1_FIELD_VALUE_INT_16 << " }";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
 }
 
 BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
@@ -910,9 +937,9 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 
 BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
 	std::ostringstream oss;
-	oss << "{ \"" << FIELD_NAME_INT_16  << "\": " << 105
-		<< ", \"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
-		<< ", \"" << FIELD_NAME_INT_16  << "\": " << 205
+	oss << "[{ \"" << FIELD_NAME_INT_16  << "\": " << 105
+		<<  ", \"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
+		<<  ", \"" << FIELD_NAME_INT_16  << "\": " << 205
 		<< " }";
 	std::istringstream in(oss.str());
 
@@ -1034,6 +1061,131 @@ BOOST_AUTO_TEST_SUITE_END()
 
 typedef CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CREATED> ConfiguredXMLCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredXMLCodecPtr_S, ConfiguredXMLCodecPtr_F)
+
+BOOST_AUTO_TEST_CASE(checkReadWithEmptyRootElement) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(p->getEventType()));
+	std::stringstream ss("<Events></Events>");
+	BOOST_CHECK(p->read(ss, *ep) == false);
+	BOOST_CHECK(p->read(ss, *ep) == false);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
+	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = E1_FIELD_VALUE_UINT_64;
+	const int YEAR = 2008;
+	const int MONTH = 6;
+	const int DAY = 16;
+
+	std::ostringstream oss;
+	oss << "<Events><Event>" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "<" << FIELD_NAME_DATE    << ">" << YEAR << "-" << MONTH << "-" << DAY << "</" << FIELD_NAME_DATE << ">" 
+		<< "</Event></Events>";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
+}
+
+BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
+	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = E1_FIELD_VALUE_UINT_64;
+
+	// This time, the terms are not in the order in which they appear in the configuration.
+	std::ostringstream oss;
+	oss << "<Events><Event>" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "</Event></Events>";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
+	std::ostringstream oss;
+	oss << " \n\t<Events><Event>" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << E1_FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "</Event></Events>";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
+	std::ostringstream oss;
+	oss << "<Events><Event>" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << E1_FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << E1_FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "</Event><Event>"
+		<< "<" << FIELD_NAME_INT_16  << ">" << E2_FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << E2_FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "</Event></Events>";
+	std::istringstream in(oss.str());
+
+	// read and verify the first event
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+
+	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
+	Event::ConstIterator it = m_event_ptr->begin();
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>( it->value), E1_FIELD_VALUE_INT_16);
+	it++;
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(it->value), E1_FIELD_VALUE_UINT_64);
+	it++;
+	BOOST_CHECK(it == m_event_ptr->end());
+
+	// read and verify the second event
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
+
+	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
+	it = m_event_ptr->begin();
+	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>( it->value), E2_FIELD_VALUE_INT_16);
+	it++;
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(it->value), E2_FIELD_VALUE_UINT_64);
+	it++;
+	BOOST_CHECK(it == m_event_ptr->end());
+}
+
+BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
+	std::ostringstream oss;
+	oss << "<Events><Event>" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << 105                    << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << E1_FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << 205                    << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "</Event></Events>";
+	std::istringstream in(oss.str());
+
+	// Check that an event can be read from the input.
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	// Check that both input values are present in the event for the multiple-valued term.
+	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab->findTerm(FIELD_TERM_INT_16);
+	Event::ValuesRange range = m_event_ptr->equal_range(multiple_valued_term_ref);
+	Event::ConstIterator i = range.first;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK(boost::get<boost::int32_t>(i->value) % 100 == 5);
+	BOOST_REQUIRE(++i != range.second);
+	BOOST_CHECK(boost::get<boost::int32_t>(i->value) % 100 == 5);
+	BOOST_REQUIRE(++i == range.second);
+
+	// Finally, check the value of the non-multiple valued term.
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

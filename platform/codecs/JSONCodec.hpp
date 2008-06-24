@@ -65,7 +65,7 @@ public:
 	JSONCodec(void)
 		: pion::platform::Codec(),
 		m_flush_after_write(false), m_yajl_generator(NULL), m_yajl_handle(NULL),
-		m_no_events_written(true), m_no_events_read(true)
+		m_no_events_written(true), m_first_read_attempt(true)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -132,7 +132,8 @@ public:
 		m_field_map.clear();
 		m_format.clear();
 	}
-	
+
+	/// data type used to configure the formatting of Vocabulary Terms
 	struct JSONField {
 		JSONField(const std::string& f, const pion::platform::Vocabulary::Term& t)
 			: field_name(f), term(t)
@@ -158,6 +159,16 @@ public:
 
 	/// an ordered list of the fields in the current configuration
 	typedef std::vector<JSONFieldPtr>		CurrentFormat;
+
+	/// traits_type used for the standard char-istream 
+	typedef std::istream::traits_type		traits_type;
+
+	/// data type used to represent a standard char-istream streambuf
+	typedef std::basic_streambuf<std::istream::char_type,
+		std::istream::traits_type>			streambuf_type;
+
+	/// data type used to represent an integer value resulting from an istream read
+	typedef std::istream::int_type			int_type;
 
 	/// representation of a JSON object corresponding to an Event
 	typedef PION_HASH_MULTIMAP<pion::platform::Vocabulary::TermRef, std::string>
@@ -209,7 +220,7 @@ private:
 	/// represents the sequence of data fields in the current configuration
 	CurrentFormat					m_format;
 
-	/// true if the codec should flush the output stream after each write
+	/// true if the Codec should flush the output stream after each write
 	bool							m_flush_after_write;
 
 	/// pointer to JSON generator
@@ -218,17 +229,17 @@ private:
 	/// pointer to JSON parser
 	yajl_handle						m_yajl_handle;
 
-	/// queue of events parsed by the JSON parser
+	/// queue of Events parsed by the JSON parser
 	JSONObjectQueue					m_json_object_queue;
 
 	/// context passed to the YAJL parser
 	boost::shared_ptr<Context>		m_context;
 
-	/// keeps track of whether a first event has been written yet
+	/// keeps track of whether a first Event has been written yet
 	bool							m_no_events_written;
 
-	/// keeps track of whether a first event has been read yet
-	bool							m_no_events_read;
+	/// keeps track of whether a first Event has been read yet
+	bool							m_first_read_attempt;
 };
 
 
@@ -262,12 +273,16 @@ inline void JSONCodec::mapFieldToTerm(const std::string& field,
 // TODO: put this somewhere
 struct Context {
 	Context(const JSONCodec::FieldMap& field_map, JSONCodec::JSONObjectQueue& json_object_queue)
-		: field_map(field_map), json_object_queue(json_object_queue) {}
+		: field_map(field_map), json_object_queue(json_object_queue)
+		, m_array_started(false), m_array_ended(false)
+	{}
 
 	const JSONCodec::FieldMap& field_map;
 	JSONCodec::JSONObjectQueue& json_object_queue;
 	JSONCodec::JSONObjectPtr json_object_ptr;
 	pion::platform::Vocabulary::TermRef term_ref;
+	bool m_array_started;
+	bool m_array_ended;
 };
 
 }	// end namespace plugins
