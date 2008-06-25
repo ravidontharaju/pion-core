@@ -160,16 +160,6 @@ public:
 	/// an ordered list of the fields in the current configuration
 	typedef std::vector<JSONFieldPtr>		CurrentFormat;
 
-	/// traits_type used for the standard char-istream 
-	typedef std::istream::traits_type		traits_type;
-
-	/// data type used to represent a standard char-istream streambuf
-	typedef std::basic_streambuf<std::istream::char_type,
-		std::istream::traits_type>			streambuf_type;
-
-	/// data type used to represent an integer value resulting from an istream read
-	typedef std::istream::int_type			int_type;
-
 	/// representation of a JSON object corresponding to an Event
 	typedef PION_HASH_MULTIMAP<pion::platform::Vocabulary::TermRef, std::string>
 											JSONObject;
@@ -182,10 +172,16 @@ public:
 
 private:
 
+	/// traits_type used for the standard char-istream 
+	typedef std::istream::traits_type		traits_type;
+
 	/// data type used to represent a standard char-istream streambuf
 	typedef std::basic_streambuf<
 		std::istream::char_type,
 		std::istream::traits_type>	streambuf_type;
+
+	/// data type used to represent an integer value resulting from an istream read
+	typedef std::istream::int_type			int_type;
 
 	/**
 	 * maps a data field to a Vocabulary Term
