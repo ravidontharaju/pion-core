@@ -11,6 +11,8 @@ dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.grid.Grid");
 
+dojo.require("plugins.codecs.LogCodec");
+
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec
 
@@ -41,7 +43,8 @@ pion.codecs.init = function() {
 		var config_accordion = dijit.byId('codec_config_accordion');
 		for (var i = 0; i < items.length; ++i) {
 			var title = pion.codecs.config_store.getValue(items[i], 'Name');
-			var codec_pane = createNewCodecPane(title);
+			var plugin = pion.codecs.config_store.getValue(items[i], 'Plugin');
+			var codec_pane = createNewCodecPane(title, plugin);
 			codec_pane.config_item = items[i];
 			codec_pane.uuid = pion.codecs.config_store.getValue(items[i], '@id');
 			config_accordion.addChild(codec_pane);
@@ -61,9 +64,17 @@ pion.codecs.init = function() {
 	dojo.connect(dojo.byId('add_new_codec_button'), 'click', addNewCodec);
 }
 
-function createNewCodecPane(title) {
+function createNewCodecPane(title, plugin) {
 	var codec_pane_node = document.createElement('span');
-	var codec_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: title }, codec_pane_node);
+	var pane_class_name = 'plugins.codecs.' + plugin + 'Pane';
+	var pane_class = dojo.getObject(pane_class_name);
+	if (pane_class) {
+		console.debug('found class ', pane_class_name);
+		var codec_pane = new pane_class({ 'class': 'codec_pane', title: title }, codec_pane_node);
+	} else {
+		console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
+		var codec_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: title }, codec_pane_node);
+	}
 	return codec_pane;
 }
 
@@ -96,9 +107,17 @@ function addNewCodec() {
 				var node = response.getElementsByTagName('Codec')[0];
 				var id = node.getAttribute('id');
 				console.debug('id (from server): ', id);
-				var codec = new plugins.codecs.Codec(id, dialogFields);
+				var plugin_class_name = 'plugins.codecs.' + dialogFields.Plugin;
+				var plugin_class = dojo.getObject(plugin_class_name);
+				if (plugin_class) {
+					console.debug('found class ', plugin_class_name);
+					var codec = new plugin_class(id, dialogFields);
+				} else {
+					console.debug('class ', plugin_class_name, ' not found; using plugins.codecs.Codec instead.');
+					var codec = new plugins.codecs.Codec(id, dialogFields);
+				}
 				var codec_config_accordion = dijit.byId('codec_config_accordion');
-				var codec_pane = createNewCodecPane(dialogFields.Name);
+				var codec_pane = createNewCodecPane(dialogFields.Name, dialogFields.Plugin);
 				codec_pane.uuid = id;
 				codec_config_accordion.addChild(codec_pane);
 				pion.codecs._adjustAccordionSize();

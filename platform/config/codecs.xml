@@ -48,4 +48,13 @@
     <Field term="urn:vocab:stocks#symbol">symbol</Field>
     <Field term="urn:vocab:stocks#price">price</Field>
   </Codec>
+  <Codec id="db719c4d-7ad0-449d-94b7-b51b4789c81b">
+    <Plugin>JSONCodec</Plugin>
+    <Name>JSON Log Format</Name>
+    <EventType>urn:vocab:clickstream#http-request</EventType>
+    <Comment/>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+  </Codec>
 </PionConfig>
