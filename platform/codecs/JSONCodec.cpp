@@ -36,6 +36,7 @@ const std::string			JSONCodec::CONTENT_TYPE = "text/json";
 const std::string			JSONCodec::FIELD_ELEMENT_NAME = "Field"; // TODO: Shouldn't this really be Codec::FIELD_ELEMENT_NAME?
 const std::string			JSONCodec::TERM_ATTRIBUTE_NAME = "term"; // TODO: Shouldn't this really be Codec::TERM_ATTRIBUTE_NAME?
 const unsigned int			JSONCodec::READ_BUFFER_SIZE = 4096;	     // TODO: What should this be?
+std::string					JSONCodec::INDENT_STRING = "\t";
 
 
 // JSONCodec member functions
@@ -55,7 +56,8 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 {
 	if (m_no_events_written) {
 		yajl_gen_config conf;
-		conf.beautify = 0;
+		conf.beautify = 1;
+		conf.indentString = INDENT_STRING.c_str();
 		m_yajl_generator = yajl_gen_alloc(&conf);
 		yajl_gen_array_open(m_yajl_generator);
 		m_no_events_written = false;
@@ -242,8 +244,6 @@ static yajl_callbacks callbacks = {
 
 bool JSONCodec::read(std::istream& in, Event& e)
 {
-	char data[READ_BUFFER_SIZE];
-
 	if (e.getType() != getEventType())
 		throw WrongEventTypeException();
 
@@ -286,11 +286,21 @@ bool JSONCodec::read(std::istream& in, Event& e)
 			// end marker of the Event sequence has been reached?
 			return false;
 
-		std::streamsize num_bytes_read = in.readsome(data, READ_BUFFER_SIZE - 1);
+		// read up to READ_BUFFER_SIZE bytes into a buffer from the input stream
+		char data[READ_BUFFER_SIZE];
+		streambuf_type* buf_ptr = in.rdbuf();
+		char* p = data;
+		std::streamsize num_bytes_read;
+		for (num_bytes_read = 0; num_bytes_read < READ_BUFFER_SIZE; ++num_bytes_read) {
+			*p = buf_ptr->sbumpc();
+			if (traits_type::eq_int_type(*p, traits_type::eof()))
+				break;
+			++p;
+		}
+
 		if (num_bytes_read == 0)
 			return false;
 
-		data[num_bytes_read] = 0;
 		yajl_status stat = yajl_parse(m_yajl_handle, (unsigned char*)data, num_bytes_read);
 
 		if (stat == yajl_status_ok) {

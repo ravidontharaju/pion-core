@@ -205,6 +205,9 @@ private:
 	/// maximum size of the read buffer
 	static const unsigned int		READ_BUFFER_SIZE;
 
+	/// used by YAJL for indenting JSON output
+	static std::string				INDENT_STRING;
+
 
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;

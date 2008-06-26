@@ -968,9 +968,11 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 	// Write a string with the expected output.
 	// Due to YAJL limitations, 64-bit integers are output as quoted strings.
 	std::ostringstream oss;
-	oss << "[{\"" << FIELD_NAME_INT_16 << "\":" << E1_FIELD_VALUE_INT_16
-		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
-		<< "}";
+	oss << "[\n"
+		<< "\t{\n"
+		<< "\t\t\"" << FIELD_NAME_INT_16  << "\": " << E1_FIELD_VALUE_INT_16 << ",\n" 
+		<< "\t\t\"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"\n" 
+		<< "\t}";
 	std::string expected_output_string = oss.str();
 
 	// Confirm that the output is as expected.
@@ -986,9 +988,11 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 
 	// The terms should still be output in the order in which they appear in the configuration.
 	std::ostringstream oss;
-	oss << "[{\"" << FIELD_NAME_INT_16 << "\":" << E1_FIELD_VALUE_INT_16
-		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
-		<< "}";
+	oss << "[\n"
+		<< "\t{\n"
+		<< "\t\t\"" << FIELD_NAME_INT_16  << "\": " << E1_FIELD_VALUE_INT_16 << ",\n" 
+		<< "\t\t\"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"\n" 
+		<< "\t}";
 	std::string expected_output_string = oss.str();
 
 	// Confirm that the output is as expected.
@@ -1004,9 +1008,12 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 
 	// This time there should be a ']' at the end, to indicate that there are no more events.
 	std::ostringstream oss;
-	oss << "[{\"" << FIELD_NAME_INT_16  << "\":" << E1_FIELD_VALUE_INT_16
-		<< ",\"" << FIELD_NAME_UINT_64 << "\":" << "\"" << E1_FIELD_VALUE_UINT_64 << "\"" 
-		<< "}]";
+	oss << "[\n"
+		<< "\t{\n"
+		<< "\t\t\"" << FIELD_NAME_INT_16  << "\": " << E1_FIELD_VALUE_INT_16 << ",\n" 
+		<< "\t\t\"" << FIELD_NAME_UINT_64 << "\": " << "\"" << E1_FIELD_VALUE_UINT_64 << "\"\n" 
+		<< "\t}\n"
+		<< "]\n";
 	std::string expected_output_string = oss.str();
 
 	// Confirm that the output is as expected.
