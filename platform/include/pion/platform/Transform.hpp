@@ -35,18 +35,30 @@ namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
 class PION_PLATFORM_API Transform : 
-	public pion::platform::Comparison
+	public Comparison
+//	public pion::platform::Comparison
 {
 public:
 
-	/// For everything but regexp, what is the "set" value
-	std::string					m_set_value;
-
 	/// Substitute in-place, or create new term
-	bool						m_set_inplace;
+	bool						m_tr_set_inplace;
 
 	/// identifies the Vocabulary Term to set
-	Vocabulary::Term			m_set_term;
+	Vocabulary::Term			m_tr_set_term;
+
+	/// identifies what type of Comparison this is
+	ComparisonType				m_tr_set_type;
+	
+	/// the value that the Vocabulary Term is compared to (if not string or regex type)
+	Event::ParameterValue		m_tr_set_value;
+	
+	/// the string that the Vocabulary Term is compared to (if string comparison type)
+	std::string					m_tr_set_str_value;
+
+	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
+	boost::regex				m_tr_set_regex;
+
+
 
 	/// virtual destructor: you may extend this class
 	virtual ~Transform() {}
@@ -57,8 +69,7 @@ public:
 	 * @param term the term that will be examined
 	 */
 	explicit Transform(const Vocabulary::Term& term)
-		: Comparison(term), m_set_value(NULL), m_set_inplace(false), m_set_term(NULL)
-//		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false)
+		: Comparison(term), m_tr_set_term(term)
 	{}
 
 /*
@@ -71,15 +82,23 @@ public:
 */
 
 	/**
-	 * evaluates the result of the Comparison
+	 * transforms event terms
 	 *
-	 * @param e the Event to evaluate
+	 * @param e the Event to transform
 	 *
-	 * @return true if the Comparison succeeded; false if it did not
+	 * @return true if the Transformation occured; false if it did not
 	 */
-	inline bool transform(const Event& e) const
+	inline bool transform(EventPtr& e) const
 	{
-		return true;	// TODO: Actually do the transformation
+		if (evaluate(*e)) {
+			if (m_tr_set_inplace) {
+				e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
+			} else {
+				e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
+			}
+			return true;	// TODO: Actually do the transformation
+		}
+		return false;
 	}
 };
 

@@ -68,7 +68,12 @@ public:
 		EmptyValueException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration is missing a required comparison value: ", reactor_id) {}
 	};
-	
+
+	class EmptyTransformationException : public PionException {
+	public:
+		EmptyTransformationException(const std::string& reactor_id)
+			: PionException("TransformReactor configuration is missing the set value: ", reactor_id) {}
+	};
 	
 	/// constructs a new TransformReactor object
 	TransformReactor(void) : Reactor(TYPE_PROCESSING) {}
@@ -132,6 +137,14 @@ private:
 	/// Do all the conditions have to be met before transformation activates
 	static const std::string		ALL_CONDITIONS_ELEMENT_NAME;
 
+	/// Deliver original (in additions to modified)
+	static const std::string		DELIVER_ORIGINAL_NAME;
+
+	/// Value to set transformation result
+	static const std::string		TRANSFORMATION_SET_VALUE_NAME;
+
+	/// Does transformation occur in-place (or add)
+	static const std::string		TRANSFORMATION_INPLACE_NAME;
 	
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;

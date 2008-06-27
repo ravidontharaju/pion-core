@@ -37,9 +37,13 @@ const std::string			TransformReactor::VALUE_ELEMENT_NAME = "Value";
 const std::string			TransformReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
 
 const std::string			TransformReactor::ALL_CONDITIONS_ELEMENT_NAME = "AllConditions";
+const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
 
 const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
-//const std::string			TransformReactor::
+// We'll re-use the "Term"
+const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
+const std::string			TransformReactor::TRANSFORMATION_INPLACE_NAME = "InPlace";
+
 
 	
 // TransformReactor member functions
@@ -54,6 +58,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	m_rules.clear();
 	m_transforms.clear();
 	m_all_conditions = false;
+	m_deliver_original = false;
 
 	// check if all the Comparisons should match before starting Transformations
 	std::string all_conditions_str;
@@ -61,6 +66,13 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	{
 		if (all_conditions_str == "true")
 			m_all_conditions = true;
+	}
+
+	std::string deliver_original_str;
+	if (ConfigManager::getConfigOption(DELIVER_ORIGINAL_NAME, deliver_original_str, config_ptr))
+	{
+		if (deliver_original_str == "true")
+			m_deliver_original = true;
 	}
 
 	// next, parse each comparison rule
@@ -152,12 +164,27 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		bool match_all_values = false;
 		std::string match_all_values_str;
 		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
-										   comparison_node->children))
+										   transformation_node->children))
 		{
 			if (match_all_values_str == "true")
 				match_all_values = true;
 		}
-		
+
+		std::string set_value_str;
+		if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_VALUE_NAME, set_value_str,
+											transformation_node->children))
+			throw EmptyTransformationException(getId());
+// 	e->setString(m_set_term.term_ref, m_set_value);
+
+		bool transformation_inplace = false;
+		std::string transformation_inplace_str;
+		if (ConfigManager::getConfigOption(TRANSFORMATION_INPLACE_NAME, transformation_inplace_str,
+											transformation_node->children))
+		{
+			if (transformation_inplace_str == "true")
+				transformation_inplace = true;
+		}
+
 		// add the Comparison
 		Transform new_transform(v[term_ref]);
 		new_transform.configure(comparison_type, value_str, match_all_values);
@@ -219,17 +246,19 @@ void TransformReactor::operator()(const EventPtr& e)
 			}
 		}
 		if (do_transformations) {
-			EventPtr new_e;
-			*new_e += *e;
+			EventPtr new_e;					// Create a mutable copy of event
+			*new_e += *e;					// Populate all terms from original event
 			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {
-				if (i->evaluate(*e)) {		// Evaluations are based on original event
-					i->transform(*e);		// TODO: Take into consideration the change of destination
-				}
+				i->transform(new_e);
+//				if (i->evaluate(*e)) {		// Evaluations are based on original event
+//					i->transform(*new_e);	// TODO: Take into consideration the change of destination
+//				}
 			}
 			deliverEvent(new_e);			// Deliver the modified event
 		}
 
 		// Transformation is done, deliver original event
+		// Should this only be done, if filter rules applied (m_all_conditions)
 		if (m_deliver_original)
 			deliverEvent(e);
 	}
