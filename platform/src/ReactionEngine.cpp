@@ -59,8 +59,8 @@ ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
 	setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));
 	m_scheduler.setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));
 	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
-	m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
-	m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
+	m_codec_connection = m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
+	m_db_connection = m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
 }
 
 void ReactionEngine::openConfigFile(void)

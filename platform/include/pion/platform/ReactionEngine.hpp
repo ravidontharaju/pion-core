@@ -575,6 +575,12 @@ private:
 	/// a list of the (permanent) Reactor connections being managed
 	ReactorConnectionList			m_reactor_connections;
 
+	/// connection to this object from the CodecFactory
+	boost::signals::scoped_connection	m_codec_connection;
+	
+	/// connection to this object from the DatabaseManager
+	boost::signals::scoped_connection	m_db_connection;
+		
 	/// true if the reaction engine is running
 	bool							m_is_running;
 };

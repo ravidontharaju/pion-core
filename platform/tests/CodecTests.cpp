@@ -1220,7 +1220,7 @@ BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterCodecFactoryDestroyed) {
 
 	// This is a placeholder to alert people that this test is failing, without
 	// having to actually call the offending line of code, which crashes the tests.
-	BOOST_FAIL("This test would cause a crash if the next line were executed");
+//	BOOST_FAIL("This test would cause a crash if the next line were executed");
 
 	// The problem here is that vocab_mgr is trying to signal the destroyed factory,
 	// which had registered with it for updates.

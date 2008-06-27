@@ -124,11 +124,12 @@ public:
 	 * registers a callback function to be executed whenever plug-ins are updated
 	 *
 	 * @param f the callback function to register
+	 * @return boost::signals::connection object representing the signal connection
 	 */
 	template <typename PluginUpdateFunction>
-	inline void registerForUpdates(PluginUpdateFunction f) const {
+	inline boost::signals::connection registerForUpdates(PluginUpdateFunction f) const {
 		boost::mutex::scoped_lock signal_lock(m_signal_mutex);
-		m_signal_plugins_updated.connect(f);
+		return m_signal_plugins_updated.connect(f);
 	}
 
 	/// this updates the Vocabularies used by all plug-ins
@@ -154,7 +155,7 @@ protected:
 		m_vocabulary(vocab_mgr.getVocabulary()),
 		m_plugin_element(plugin_element)
 	{
-		vocab_mgr.registerForUpdates(boost::bind(&PluginConfig::updateVocabulary, this));
+		m_vocab_connection = vocab_mgr.registerForUpdates(boost::bind(&PluginConfig::updateVocabulary, this));
 		setLogger(PION_GET_LOGGER("pion.platform.PluginConfig"));
 	}
 
@@ -210,6 +211,9 @@ protected:
 	/// collection of plug-in objects being managed
 	PluginManager<PluginType>		m_plugins;
 
+	/// connection to this object from the VocabularyManager
+	boost::signals::scoped_connection	m_vocab_connection;
+	
 	/// signal triggered whenever a plug-in is modified
 	mutable boost::signal0<void>	m_signal_plugins_updated;
 

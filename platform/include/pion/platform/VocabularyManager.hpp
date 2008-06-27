@@ -307,11 +307,12 @@ public:
 	 * registers a callback function to be executed whenever a Vocabulary is updated
 	 *
 	 * @param f the callback function to register
+	 * @return boost::signals::connection object representing the signal connection
 	 */
 	template <typename VocabularyUpdateFunction>
-	inline void registerForUpdates(VocabularyUpdateFunction f) const {
+	inline boost::signals::connection registerForUpdates(VocabularyUpdateFunction f) const {
 		boost::mutex::scoped_lock signal_lock(m_signal_mutex);
-		m_signal_vocabulary_updated.connect(f);
+		return m_signal_vocabulary_updated.connect(f);
 	}
 	
 	/**
