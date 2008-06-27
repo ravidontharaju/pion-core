@@ -43,7 +43,7 @@ const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformat
 // We'll re-use the "Term"
 const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
 const std::string			TransformReactor::TRANSFORMATION_INPLACE_NAME = "InPlace";
-
+const std::string			TransformReactor::TRANSFORMATION_SET_TYPE_NAME = "SetType";
 
 	
 // TransformReactor member functions
@@ -183,6 +183,13 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		{
 			if (transformation_inplace_str == "true")
 				transformation_inplace = true;
+		}
+
+		std::string transformation_set_type;
+		if (! transformation_inplace) {
+			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_TYPE_NAME, transformation_set_type,
+											transformation_node->children))
+				throw EmptySetTypeException(getId());
 		}
 
 		// add the Comparison

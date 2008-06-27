@@ -74,6 +74,12 @@ public:
 		EmptyTransformationException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration is missing the set value: ", reactor_id) {}
 	};
+
+	class EmptySetTypeException : public PionException {
+	public:
+		EmptySetTypeException(const std::string& reactor_id)
+			: PionException("TransformReactor configuration is missing the set type value: ", reactor_id) {}
+	};
 	
 	/// constructs a new TransformReactor object
 	TransformReactor(void) : Reactor(TYPE_PROCESSING) {}
@@ -145,6 +151,9 @@ private:
 
 	/// Does transformation occur in-place (or add)
 	static const std::string		TRANSFORMATION_INPLACE_NAME;
+
+	/// Set Term (if not InPlace)
+	static const std::string		TRANSFORMATION_SET_TYPE_NAME;
 	
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;
