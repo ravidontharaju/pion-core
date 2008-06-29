@@ -34,7 +34,8 @@ class Vocabulary;
 class CodecFactory;
 class DatabaseManager;
 class ReactionEngine;	
-	
+class ProtocolFactory;
+
 ///
 /// PlatformPlugin: interface class extended by all Pion Platform plug-ins
 ///
@@ -46,7 +47,7 @@ public:
 	/// constructs a new PlatformPlugin object
 	PlatformPlugin(void) :
 		m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
-		m_reaction_engine_ptr(NULL)
+		m_reaction_engine_ptr(NULL), m_protocol_factory_ptr(NULL)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -97,6 +98,8 @@ public:
 	/// sets the ReactionEngine that will used by the plugin to access Reactors
 	inline void setReactionEngine(ReactionEngine& engine) { m_reaction_engine_ptr = & engine; }
 
+	/// sets the ReactionEngine that will used by the plugin to access Reactors
+	inline void setProtocolFactory(ProtocolFactory& factory) { m_protocol_factory_ptr = & factory; }
 	
 protected:
 	
@@ -125,6 +128,11 @@ protected:
 		return *m_reaction_engine_ptr;
 	}
 
+	/// returns the ReactionEngine to use for accessing Reactors
+	inline ProtocolFactory& getProtocolFactory(void) {
+		PION_ASSERT(m_protocol_factory_ptr != NULL);
+		return *m_protocol_factory_ptr;
+	}
 
 private:
 	
@@ -152,6 +160,9 @@ private:
 	
 	/// pointer to the ReactionEngine, used by the plugin to access Reactors
 	ReactionEngine *				m_reaction_engine_ptr;
+
+	/// pointer to the ProtocolFactory, used by the plugin to access NetworkProtocols
+	ProtocolFactory *				m_protocol_factory_ptr;
 };
 
 	
