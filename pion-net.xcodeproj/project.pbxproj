@@ -76,6 +76,7 @@
 		E3B1C9490E17EA6F00640970 /* HTTPMessageParser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B1C9470E17EA6F00640970 /* HTTPMessageParser.hpp */; };
 		E3B1C94B0E17EAB700640970 /* HTTPMessageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B1C94A0E17EAB700640970 /* HTTPMessageParser.cpp */; };
 		E3B1C94C0E17EAB700640970 /* HTTPMessageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B1C94A0E17EAB700640970 /* HTTPMessageParser.cpp */; };
+		E3B1C9CE0E17F5AD00640970 /* HTTPParserTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E3B1C9CD0E17F5AD00640970 /* HTTPParserTests.cpp */; };
 		E3B2A26D0CADC46B001A9A8D /* PionConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */; };
 		E3B2A26E0CADC46B001A9A8D /* PionException.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A2690CADC46B001A9A8D /* PionException.hpp */; };
 		E3B2A26F0CADC46B001A9A8D /* PionHashMap.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */; };
@@ -423,6 +424,7 @@
 		E39E26650D9382E3005A7225 /* HTTPBasicAuth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPBasicAuth.cpp; path = net/src/HTTPBasicAuth.cpp; sourceTree = SOURCE_ROOT; };
 		E3B1C9470E17EA6F00640970 /* HTTPMessageParser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPMessageParser.hpp; path = net/include/pion/net/HTTPMessageParser.hpp; sourceTree = SOURCE_ROOT; };
 		E3B1C94A0E17EAB700640970 /* HTTPMessageParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPMessageParser.cpp; path = net/src/HTTPMessageParser.cpp; sourceTree = SOURCE_ROOT; };
+		E3B1C9CD0E17F5AD00640970 /* HTTPParserTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTPParserTests.cpp; path = net/tests/HTTPParserTests.cpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2680CADC46B001A9A8D /* PionConfig.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionConfig.hpp; path = common/include/pion/PionConfig.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A2690CADC46B001A9A8D /* PionException.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionException.hpp; path = common/include/pion/PionException.hpp; sourceTree = SOURCE_ROOT; };
 		E3B2A26A0CADC46B001A9A8D /* PionHashMap.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionHashMap.hpp; path = common/include/pion/PionHashMap.hpp; sourceTree = SOURCE_ROOT; };
@@ -720,6 +722,7 @@
 				E352C2430D6DF25200E0ED0A /* HTTPMessageTests.cpp */,
 				E3B9E56A0CD677BE007BEFE5 /* HTTPRequestTests.cpp */,
 				E352C2440D6DF25200E0ED0A /* HTTPResponseTests.cpp */,
+				E3B1C9CD0E17F5AD00640970 /* HTTPParserTests.cpp */,
 				E3B95C830D62651500792919 /* TCPStreamTests.cpp */,
 				E3CFE3540CD00E3E00016E0F /* TCPServerTests.cpp */,
 				E3CFE3550CD00E3E00016E0F /* WebServerTests.cpp */,
@@ -1337,6 +1340,7 @@
 				E352C3B40D6E38E700E0ED0A /* TCPServerTests.cpp in Sources */,
 				E352C3B50D6E38E700E0ED0A /* TCPStreamTests.cpp in Sources */,
 				E355B97C0DC27531005D66D5 /* WebServerTests.cpp in Sources */,
+				E3B1C9CE0E17F5AD00640970 /* HTTPParserTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
