@@ -291,7 +291,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 		streambuf_type* buf_ptr = in.rdbuf();
 		char* p = data;
 		std::streamsize num_bytes_read;
-		for (num_bytes_read = 0; num_bytes_read < READ_BUFFER_SIZE; ++num_bytes_read) {
+		for (num_bytes_read = 0; num_bytes_read < static_cast<std::streamsize>(READ_BUFFER_SIZE); ++num_bytes_read) {
 			*p = buf_ptr->sbumpc();
 			if (traits_type::eq_int_type(*p, traits_type::eof()))
 				break;

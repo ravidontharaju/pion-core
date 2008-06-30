@@ -141,8 +141,10 @@ void UserManager::openConfigFile(void)
 	// some strings that get re-used a bunch
 	std::string user_id;
 	
+#ifndef PION_HAVE_SSL
 	// keeps track of whether or not we logged a "missing openssl" error
 	bool logged_error_msg = false;
+#endif
 
 	// step through user configurations
 	xmlNodePtr user_node = m_config_node_ptr->children;

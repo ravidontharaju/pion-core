@@ -95,7 +95,7 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 
 		// Generate an XML element for each value.
 		for (Event::ConstIterator i2 = range.first; i2 != range.second; ++i2) {
-			int rc;
+			int rc = 0;
 			switch ((*i)->term.term_type) {
 				case pion::platform::Vocabulary::TYPE_NULL:
 					// TODO: should we output an empty element instead of nothing?
