@@ -40,12 +40,10 @@ const std::string			TransformReactor::ALL_CONDITIONS_ELEMENT_NAME = "AllConditio
 const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
 
 const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
-// We'll re-use the "Term"
 const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
 const std::string			TransformReactor::TRANSFORMATION_INPLACE_NAME = "InPlace";
-const std::string			TransformReactor::TRANSFORMATION_SET_TYPE_NAME = "SetType";
+const std::string			TransformReactor::TRANSFORMATION_SET_TERM_NAME = "SetTerm";
 
-	
 // TransformReactor member functions
 
 void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -174,7 +172,6 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_VALUE_NAME, set_value_str,
 											transformation_node->children))
 			throw EmptyTransformationException(getId());
-// 	e->setString(m_set_term.term_ref, m_set_value);
 
 		bool transformation_inplace = false;
 		std::string transformation_inplace_str;
@@ -185,21 +182,26 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 				transformation_inplace = true;
 		}
 
-		std::string transformation_set_type;
+		std::string transformation_set_term;
 		if (! transformation_inplace) {
-			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_TYPE_NAME, transformation_set_type,
+			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_TERM_NAME, transformation_set_term,
 											transformation_node->children))
-				throw EmptySetTypeException(getId());
+				throw EmptySetTermException(getId());
 		}
 
-		// add the Comparison
-		Transform new_transform(v[term_ref]);
+		Vocabulary::TermRef set_term_ref = Vocabulary::UNDEFINED_TERM_REF;
+		if (! transformation_set_term.empty()) {
+			set_term_ref = v.findTerm(transformation_set_term);
+			if (set_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+				throw UnknownTermException(getId());
+		}
+
+		// add the Transformation
+		Transform new_transform(v[term_ref], v[set_term_ref]);
 		new_transform.configure(comparison_type, value_str, match_all_values);
+		new_transform.configure_transform(transformation_inplace, transformation_set_term);
 		m_transforms.push_back(new_transform);
 
-		// TODO: Add same/different term rule, Add destination term
-		// TODO: Add transformation rule
-		
 		// step to the next Comparison rule
 		transformation_node = transformation_node->next;
 	}

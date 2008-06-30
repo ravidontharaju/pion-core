@@ -64,13 +64,15 @@ public:
 	virtual ~Transform() {}
 
 	/**
-	 * constructs a new Comparison
+	 * constructs a new Transform rule
 	 *
 	 * @param term the term that will be examined
+	 * @param set_term the term that will be set (if not InPlace)
 	 */
-	explicit Transform(const Vocabulary::Term& term)
-		: Comparison(term), m_tr_set_term(term)
-	{}
+	explicit Transform(const Vocabulary::Term& term, const Vocabulary::Term& set_term)
+		: Comparison(term), m_tr_set_term(set_term)
+	{
+	}
 
 /*
 	/// standard copy constructor
@@ -80,6 +82,19 @@ public:
 		m_match_all_values(c.m_match_all_values)
 	{}
 */
+
+	/**
+	 * configure the transformation rule
+	 *
+	 * @param transformation_inplace does the transformation occur on the same parameter that matches
+	 * @param transformation_set_term what value does the transformation set the parameter to
+	 */
+	void configure_transform(bool transformation_inplace, const std::string& transformation_set_term)
+	{
+		m_tr_set_inplace = transformation_inplace;
+		m_tr_set_str_value = transformation_set_term;
+		// TODO: m_tr_set_value, m_tr_set_regex
+	}
 
 	/**
 	 * transforms event terms
