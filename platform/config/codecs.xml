@@ -57,4 +57,13 @@
     <Field term="urn:vocab:clickstream#request">request</Field>
     <Field term="urn:vocab:clickstream#date">date</Field>
   </Codec>
+  <Codec id="cb2d3067-ea60-4a94-8602-2da28c7a3d40">
+    <Plugin>XMLCodec</Plugin>
+    <Name>XML Log Format</Name>
+    <EventType>urn:vocab:clickstream#http-request</EventType>
+    <Comment/>
+    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+  </Codec>
 </PionConfig>

@@ -119,6 +119,7 @@ void LogOutputReactor::stop(void)
 	if (m_is_running) {
 		// close the log file if it is open
 		if (m_log_stream.is_open()) {
+			m_codec_ptr->finish(m_log_stream);
 			m_log_stream.close();
 			// remove the log file if no events were written to it
 			if (getEventsOut() == 0) {
