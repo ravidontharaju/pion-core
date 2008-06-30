@@ -18,6 +18,7 @@
 //
 
 #include <libxml/tree.h>
+#include <libxml/xmlwriter.h>
 #include <libxml/xmlreader.h>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Event.hpp>
@@ -44,24 +45,174 @@ CodecPtr XMLCodec::clone(void) const
 {
 	XMLCodec *new_codec(new XMLCodec());
 	new_codec->copyCodec(*this);
+	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
+		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term);
+	}
+	new_codec->m_XML_field_ptr_map = m_XML_field_ptr_map;
 	return CodecPtr(new_codec);
 }
 
 void XMLCodec::write(std::ostream& out, const Event& e)
 {
+	if (m_no_events_written) {
+		m_buf = xmlBufferCreate();
+		if (m_buf == NULL)
+			throw PionException("Error creating xmlBuffer");
+
+		m_xml_writer = xmlNewTextWriterMemory(m_buf, 0 /* no compression */);
+		if (m_xml_writer == NULL) 
+			throw PionException("Error creating xmlTextWriter");
+
+		// Initialize indentation.
+		if (xmlTextWriterSetIndent(m_xml_writer, 1) < 0)
+			throw PionException("xmlTextWriter failed to turn on indentation");
+		if (xmlTextWriterSetIndentString(m_xml_writer, (xmlChar*)"\t") < 0)
+			throw PionException("xmlTextWriter failed to set the indent string");
+		
+		// Write an XML header.
+		if (xmlTextWriterStartDocument(m_xml_writer, NULL, "UTF-8", NULL) < 0)
+			throw PionException("xmlTextWriter failed to write the start of the document");
+
+		// Start the root element, named "Events".
+		if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)"Events") < 0)
+			throw PionException("xmlTextWriter failed to write a start-tag");
+
+		m_no_events_written = false;
+	}
+
+	if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)"Event") < 0)
+		throw PionException("xmlTextWriter failed to write an Event start-tag");
+
+	// Iterate through each field in the current format.
+	CurrentFormat::const_iterator i;
+	std::string value_str;
+	const pion::platform::Event::SimpleString* ss;
+	for (i = m_format.begin(); i != m_format.end(); ++i) {
+		// Get the range of values for the field Term.
+		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
+		Event::ValuesRange range = e.equal_range(term_ref);
+		xmlChar* field_name = (xmlChar*)(*i)->field_name.c_str();
+
+		// Generate an XML element for each value.
+		for (Event::ConstIterator i2 = range.first; i2 != range.second; ++i2) {
+			int rc;
+			switch ((*i)->term.term_type) {
+				case pion::platform::Vocabulary::TYPE_NULL:
+					// TODO: should we output an empty element instead of nothing?
+					break;
+				case pion::platform::Vocabulary::TYPE_INT8:
+				case pion::platform::Vocabulary::TYPE_INT16:
+				case pion::platform::Vocabulary::TYPE_INT32:
+					rc = xmlTextWriterWriteFormatElement(m_xml_writer, field_name, "%d", boost::get<boost::int32_t>(i2->value));
+					break;
+				case pion::platform::Vocabulary::TYPE_INT64:
+					value_str = boost::lexical_cast<std::string>(boost::get<boost::int64_t>(i2->value));
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
+					break;
+				case pion::platform::Vocabulary::TYPE_UINT8:
+				case pion::platform::Vocabulary::TYPE_UINT16:
+				case pion::platform::Vocabulary::TYPE_UINT32:
+					rc = xmlTextWriterWriteFormatElement(m_xml_writer, field_name, "%d", boost::get<boost::uint32_t>(i2->value));
+					break;
+				case pion::platform::Vocabulary::TYPE_UINT64:
+					value_str = boost::lexical_cast<std::string>(boost::get<boost::uint64_t>(i2->value));
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
+					break;
+				case pion::platform::Vocabulary::TYPE_FLOAT:
+					rc = xmlTextWriterWriteFormatElement(m_xml_writer, field_name, "%g", boost::get<float>(i2->value));
+					break;
+				case pion::platform::Vocabulary::TYPE_DOUBLE:
+					// Using boost::lexical_cast<std::string> ensures precision appropriate to type double.
+					value_str = boost::lexical_cast<std::string>(boost::get<double>(i2->value));
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
+					break;
+				case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+					// Using boost::lexical_cast<std::string> ensures precision appropriate to type long double.
+					value_str = boost::lexical_cast<std::string>(boost::get<long double>(i2->value));
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
+					break;
+
+				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+				case pion::platform::Vocabulary::TYPE_STRING:
+				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)ss->get());
+					break;
+				case pion::platform::Vocabulary::TYPE_CHAR:
+					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					if (ss->size() <= (*i)->term.term_size) {
+						rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)ss->get());
+					} else {
+						std::string trunc_str(ss->get(), (*i)->term.term_size);
+						rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)trunc_str.c_str());
+					}
+					break;
+
+				case pion::platform::Vocabulary::TYPE_DATE_TIME:
+				case pion::platform::Vocabulary::TYPE_DATE:
+				case pion::platform::Vocabulary::TYPE_TIME:
+					(*i)->time_facet.toString(value_str, boost::get<const PionDateTime&>(i2->value));
+					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
+					break;
+				default:
+					throw PionException("not supported yet");
+			}
+			if (rc < 0)
+				throw PionException("xmlTextWriter failed to write a Term element");
+		}
+	}
+
+	if (xmlTextWriterEndElement(m_xml_writer) < 0)
+		throw PionException("xmlTextWriter failed to write an Event end-tag");
+
+	if (xmlTextWriterFlush(m_xml_writer) < 0)
+		throw PionException("Error flushing XML writer");
+	out.write((char*)m_buf->content, m_buf->use);
+
+	xmlBufferEmpty(m_buf);
+
+	if (m_flush_after_write)
+		out.flush();
 }
 
 void XMLCodec::finish(std::ostream& out)
 {
+	if (m_no_events_written)
+		return;
+
+	// Write the 'Events' end-tag.
+    if (xmlTextWriterEndDocument(m_xml_writer) < 0)
+		throw PionException("xmlTextWriter failed to write end of document");
+
+	// Send all remaining data to the output stream.
+	if (xmlTextWriterFlush(m_xml_writer) < 0)
+		throw PionException("Error flushing XML writer");
+	out.write((char*)m_buf->content, m_buf->use);
+
+	// We're done with the writer, so release it and the buffer it uses.
+	xmlFreeTextWriter(m_xml_writer);
+	m_xml_writer = NULL;
+    xmlBufferFree(m_buf);
+	m_buf = NULL;
 }
 
-int	xmlInputReadCallback(void* context, char* buffer, int len)
+int	XMLCodec::xmlInputReadCallback(void* context, char* buffer, int len)
 {
-	std::istream* p = (std::istream*)context;
-	return p->readsome(buffer, len);
+	// Read up to len bytes into a buffer from the input stream.
+	streambuf_type* buf_ptr = ((std::istream*)context)->rdbuf();
+	char* p = buffer;
+	std::streamsize num_bytes_read;
+	for (num_bytes_read = 0; num_bytes_read < len; ++num_bytes_read) {
+		*p = buf_ptr->sbumpc();
+		if (traits_type::eq_int_type(*p, traits_type::eof()))
+			break;
+		++p;
+	}
+
+	return num_bytes_read;
 }
 
-int	xmlInputCloseCallback(void* context)
+int	XMLCodec::xmlInputCloseCallback(void* context)
 {
 	return 0;
 }
@@ -76,7 +227,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 	if (m_first_read_attempt) {
 		if (m_field_map.empty())
 			throw PionException("Codec is not configured yet.");
-	    m_xml_reader = xmlReaderForIO(xmlInputReadCallback, xmlInputCloseCallback, (void*)(&in), NULL, NULL, 0);
+	    m_xml_reader = xmlReaderForIO(xmlInputReadCallback, xmlInputCloseCallback, (void*)(&in), NULL, NULL, XML_PARSE_NOBLANKS);
 		if (!m_xml_reader)
 			throw PionException("failed to create XML parser");
 		m_first_read_attempt = false;
@@ -96,6 +247,10 @@ bool XMLCodec::read(std::istream& in, Event& e)
 
 	// parse the input until the 'Event' end-tag is found
 	while (1) {
+		// First check whether the Event element has already been closed (due to empty-element tag <Event/>).
+		if (xmlTextReaderIsEmptyElement(m_xml_reader))
+			break;
+
 		if (xmlTextReaderRead(m_xml_reader) != 1)
 			throw PionException("XML parser error");
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
@@ -231,10 +386,29 @@ void XMLCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 
 void XMLCodec::updateVocabulary(const Vocabulary& v)
 {
-	// first update anything in the Codec base class that might be needed
+	// First update anything in the Codec base class that might be needed.
 	Codec::updateVocabulary(v);
-	
-	// ...
+
+	/// Copy Term data over from the updated Vocabulary.
+	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
+		/// We can assume for now that Term reference values will never change.
+		(*i)->term = v[(*i)->term.term_ref];
+
+		// For date/time types, update time_facet.
+		switch ((*i)->term.term_type) {
+			case pion::platform::Vocabulary::TYPE_DATE_TIME:
+			case pion::platform::Vocabulary::TYPE_DATE:
+			case pion::platform::Vocabulary::TYPE_TIME:
+				(*i)->time_facet.setFormat((*i)->term.term_format);
+				break;
+			default:
+				break; // do nothing
+		}
+
+		// Check if the Term has been removed (i.e. replaced by the "null" term).
+		if ((*i)->term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw TermNoLongerDefinedException((*i)->term.term_id);
+	}
 }
 	
 	

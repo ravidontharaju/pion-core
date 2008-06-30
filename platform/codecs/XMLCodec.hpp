@@ -23,6 +23,9 @@
 #include <vector>
 #include <map>
 #include <queue>
+#include <libxml/tree.h>
+#include <libxml/xmlwriter.h>
+#include <libxml/xmlreader.h>
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Codec.hpp>
 
@@ -57,14 +60,18 @@ public:
 	/// constructs a new XMLCodec object
 	XMLCodec(void) :
 		pion::platform::Codec(),
-		m_xml_reader(NULL),
-		m_first_read_attempt(true)
+		m_flush_after_write(false), m_xml_writer(NULL), m_buf(NULL), m_xml_reader(NULL),
+		m_no_events_written(true), m_first_read_attempt(true)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~XMLCodec() {
 		if (m_xml_reader)
 			xmlFreeTextReader(m_xml_reader);
+		if (m_xml_writer)
+			xmlFreeTextWriter(m_xml_writer);
+		if (m_buf)
+			xmlBufferFree(m_buf);
 	}
 	
 	/// returns an HTTP content type that is used by this Codec
@@ -121,6 +128,7 @@ public:
 	/// resets the configuration for this Codec
 	inline void reset(void) {
 		m_field_map.clear();
+		m_format.clear();
 	}
 	
 	/// data type used to configure the formatting of Vocabulary Terms
@@ -152,6 +160,14 @@ public:
 
 private:
 
+	/// traits_type used for the standard char-istream 
+	typedef std::istream::traits_type		traits_type;
+
+	/// data type used to represent a standard char-istream streambuf
+	typedef std::basic_streambuf<
+		std::istream::char_type,
+		std::istream::traits_type>			streambuf_type;
+
 	/**
 	 * maps a data field to a Vocabulary Term
 	 *
@@ -160,6 +176,12 @@ private:
 	 */
 	inline void mapFieldToTerm(const std::string& field,
 							   const pion::platform::Vocabulary::Term& term);
+
+	// Callback for xmlReaderForIO() to read more data.
+	static int	xmlInputReadCallback(void* context, char* buffer, int len);
+
+	// Callback for xmlReaderForIO(), called when it's done reading.
+	static int	xmlInputCloseCallback(void* context);
 
 
 	/// content type used by this Codec
@@ -182,8 +204,23 @@ private:
 	std::map<pion::platform::Vocabulary::TermRef, XMLFieldPtr>
 									m_XML_field_ptr_map;
 
+	/// represents the sequence of data fields in the current configuration
+	CurrentFormat					m_format;
+
+	/// true if the Codec should flush the output stream after each write
+	bool							m_flush_after_write;
+
+	/// pointer to XML writer
+    xmlTextWriterPtr				m_xml_writer;
+
+	/// buffer used by xmlTextWriter
+    xmlBufferPtr					m_buf;
+
 	/// pointer to XML parser
     xmlTextReaderPtr				m_xml_reader;
+
+	/// keeps track of whether a first Event has been written yet
+	bool							m_no_events_written;
 
 	/// keeps track of whether a first Event has been read yet
 	bool							m_first_read_attempt;
@@ -212,6 +249,9 @@ inline void XMLCodec::mapFieldToTerm(const std::string& field,
 
 	// add it to the mapping of field names
 	m_field_map[field] = field_ptr;
+
+	// append the new field to the current format
+	m_format.push_back(field_ptr);
 }
 
 }	// end namespace plugins
