@@ -553,6 +553,11 @@ This is a duplicate of #reactor_config_content for now.
 	width: 600px;
 }
 
+.transform_reactor_dialog {
+	width: 800px;
+}
+
+
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */
 

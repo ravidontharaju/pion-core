@@ -12,7 +12,7 @@ dojo.declare("plugins.reactors.Reactor",
 		postCreate: function(){
 			this.inherited("postCreate", arguments); 
 			console.debug('Reactor.postCreate: ', this.domNode);
-			this.special_config_elements = ['@id'];
+			this.special_config_elements = ['@id', 'options'];
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];
 			this.prev_events_in = 0;
@@ -274,17 +274,19 @@ dojo.declare("plugins.reactors.ReactorDialog",
 						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
 						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
 			for (var tag in dialogFields) {
-				if (tag != '@id') {
+				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 					this.put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 				}
 			}
 			if (this._insertCustomData) {
-				this._insertCustomData();
+				// dialogFields.options can and should be undefined for Reactors without dialog options.
+				this._insertCustomData(dialogFields.options);
 			}
 			this.put_data += '</Reactor></PionConfig>';
 			console.debug('put_data: ', this.put_data);
 
+			var _this = this;
 			dojo.rawXhrPut({
 				url: '/config/reactors/' + this.reactor.config['@id'],
 				contentType: "text/xml",
@@ -292,6 +294,9 @@ dojo.declare("plugins.reactors.ReactorDialog",
 				putData: this.put_data,
 				load: function(response){
 					console.debug('response: ', response);
+					if (_this.reactor._updateCustomData) {
+						_this.reactor._updateCustomData();
+					}
 				},
 				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});

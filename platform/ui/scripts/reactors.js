@@ -38,10 +38,13 @@ var reactor_config_store;
 pion.reactors.workspace_box = null;
 pion.reactors.reactors_by_id = {};
 pion.reactors.filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
+pion.reactors.transform_reactor_comparison_grid_model = new dojox.grid.data.Table(null, []);
+pion.reactors.transform_reactor_transformation_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.reactor_inputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.config_store = null;
 pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: '/resources/comparisonTypes.json'});
+pion.reactors.generic_comparison_types = [];
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
@@ -83,6 +86,14 @@ pion.reactors.init = function() {
 	for (var category in reactor_buckets) {
 		reactor_buckets[category].creator = dndSourceReactorCreator;
 	}
+
+	var store = pion.reactors.comparison_type_store;
+	store.fetch({
+		query: {category: 'generic'},
+		onItem: function(item) {
+				pion.reactors.generic_comparison_types.push(store.getValue(item, 'name'));
+		}
+	});
 
 	// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
 	// accordion pane of the sidebar, add a reactor icon which can be dragged onto a workspace.
