@@ -29,11 +29,13 @@ bool Transform::checkForValidSetType(const Vocabulary::DataType type) const
 {
 	bool result = false;
 	
+	// This could be done with a simple if... but I like to make sure all cases are covered
+	// by letting the compiler warn about unhandled cases
 	switch (type) {
 		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_NULL:
 			result = false;
 			break;
-		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_INT16:
