@@ -21,7 +21,9 @@
 #define __HTTP_PROTOCOL_HEADER__
 
 #include <pion/platform/Protocol.hpp>
-#include <pion/net/HTTPMessageParser.hpp>
+#include <pion/net/HTTPParser.hpp>
+#include <pion/net/HTTPRequest.hpp>
+#include <pion/net/HTTPResponse.hpp>
 
 namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
@@ -58,10 +60,18 @@ public:
 
 private:
 
-	void generateEvent(pion::net::HTTPMessage& msg, pion::platform::EventPtr& event_ptr_ref);
+	/**
+	 * generates a new Event using the existing HTTP request and 
+	 * response objects 
+	 * 
+	 * @param event_ptr_ref pointer assigned to the new Event
+	 */
+	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
 
-	pion::net::HTTPMessageParser	m_request_parser;
-	pion::net::HTTPMessageParser	m_response_parser;
+	pion::net::HTTPParser	m_request_parser;
+	pion::net::HTTPParser	m_response_parser;
+	pion::net::HTTPRequest  m_request;
+	pion::net::HTTPResponse m_response;
 };
 
 

@@ -27,19 +27,23 @@ namespace plugins {		// begin namespace plugins
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  pion::platform::EventPtr& event_ptr_ref)
 {
-	pion::net::HTTPMessageParser& parser = request ? m_request_parser : m_response_parser;
-
 	// parse the data
-	boost::tribool rc = parser.readNext(ptr, len);
+	boost::tribool rc;
+	if (request) {
+		m_request_parser.setReadBuffer(ptr, len);
+		rc = m_request_parser.parse(m_request);
+	} else {
+		m_response_parser.setReadBuffer(ptr, len);
+		rc = m_response_parser.parse(m_response);
+	}
 
 	// message has been fully parsed, generate an event
-	if(rc == true) 
-	{
-		generateEvent(parser.getMessage(), event_ptr_ref); 
-		if(request) 
-		{
-			// HTTPResponse is recommended to be initialized with the original request
-			m_response_parser.setRequest(dynamic_cast<pion::net::HTTPRequest&>(parser.getMessage())); 
+	if (rc == true) {
+		if (request) {
+			// update response to "know" about the request (this influences parsing)
+			m_response.updateRequestInfo(m_request);
+		} else {
+			generateEvent(event_ptr_ref); 
 		}
 	}
 
@@ -55,7 +59,7 @@ boost::shared_ptr<pion::platform::Protocol> HTTPProtocol::clone(void) const
 }
 
 
-void HTTPProtocol::generateEvent(HTTPMessage& msg, pion::platform::EventPtr& event_ptr_ref)
+void HTTPProtocol::generateEvent(pion::platform::EventPtr& event_ptr_ref)
 {
 	// TODO: generate pion event from the message
 }
@@ -63,12 +67,13 @@ void HTTPProtocol::generateEvent(HTTPMessage& msg, pion::platform::EventPtr& eve
 }	// end namespace plugins
 }	// end namespace pion
 
-/// creates new LogCodec objects
+
+/// creates new HTTPProtocol objects
 extern "C" PION_PLUGIN_API pion::platform::Protocol *pion_create_HTTPProtocol(void) {
 	return new pion::plugins::HTTPProtocol();
 }
 
-/// destroys LogCodec objects
+/// destroys HTTPProtocol objects
 extern "C" PION_PLUGIN_API void pion_destroy_HTTPProtocol(pion::plugins::HTTPProtocol *protocol_ptr) {
 	delete protocol_ptr;
 }
