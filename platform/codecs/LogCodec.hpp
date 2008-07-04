@@ -453,6 +453,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			out << boost::get<const pion::platform::Event::SimpleString&>(value).get();
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_REGEX:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
 			out.write(ss.get(), ss.size() < log_term.term_size? ss.size() : log_term.term_size);
@@ -512,6 +513,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 			e.setString(log_term.term_ref, buf);
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_REGEX:
 			if (strlen(buf) > log_term.term_size) {
 				e.setString(log_term.term_ref, std::string(buf, log_term.term_size));
 			} else {

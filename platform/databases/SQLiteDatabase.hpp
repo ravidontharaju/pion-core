@@ -393,6 +393,7 @@ inline int SQLiteDatabase::getSQLiteType(const pion::platform::Vocabulary::DataT
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_REGEX:
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
@@ -428,6 +429,7 @@ inline std::string SQLiteDatabase::getSQLiteAffinity(const pion::platform::Vocab
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_CHAR:
+		case pion::platform::Vocabulary::TYPE_REGEX:
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:

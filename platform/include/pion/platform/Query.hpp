@@ -231,6 +231,7 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
+				case Vocabulary::TYPE_REGEX:
 					bindString(param,
 						boost::get<const Event::SimpleString&>(*value_ptr).get(),
 						copy_strings);

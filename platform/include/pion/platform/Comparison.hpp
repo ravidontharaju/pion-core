@@ -1265,6 +1265,7 @@ inline void Comparison::configure(const ComparisonType type,
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_REGEX:
 			throw InvalidValueForTypeException();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
