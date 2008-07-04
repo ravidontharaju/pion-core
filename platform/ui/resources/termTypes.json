@@ -20,6 +20,7 @@
 		{name: 'char', description: 'fixed-length string', category: 'string'},
 		{name: 'date', description: 'specific date', category: 'date'},
 		{name: 'time', description: 'specific time', category: 'time'},
-		{name: 'datetime', description: 'specific time & date', category: 'date_time'}
+		{name: 'datetime', description: 'specific time & date', category: 'date_time'},
+		{name: 'regex', description: 'regular expression', category: 'string'}
 	]
 }

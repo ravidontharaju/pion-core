@@ -30,10 +30,10 @@ bool Transform::checkForValidSetType(const Vocabulary::DataType type) const
 	bool result = false;
 	
 	switch (type) {
-		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
 			result = false;
 			break;
+		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_INT16:

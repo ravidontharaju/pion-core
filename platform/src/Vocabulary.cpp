@@ -187,6 +187,8 @@ Vocabulary::DataType Vocabulary::parseDataType(std::string str)
 		return TYPE_TIME;
 	else if (str == "char") 
 		return TYPE_CHAR;
+	else if (str == "regex") 
+		return TYPE_REGEX;
 	else if (str == "object") 
 		return TYPE_OBJECT;
 	
@@ -253,6 +255,9 @@ std::string Vocabulary::getDataTypeAsString(const DataType data_type)
 			break;
 		case TYPE_CHAR:
 			str = "char";
+			break;
+		case TYPE_REGEX:
+			str = "regex";
 			break;
 		case TYPE_OBJECT:
 			str = "object";
