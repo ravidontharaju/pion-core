@@ -189,7 +189,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 				throw EmptySetTermException(getId());
 		}
 
-		Vocabulary::TermRef set_term_ref = Vocabulary::UNDEFINED_TERM_REF;
+		Vocabulary::TermRef set_term_ref = term_ref;
 		if (! transformation_set_term.empty()) {
 			set_term_ref = v.findTerm(transformation_set_term);
 			if (set_term_ref == Vocabulary::UNDEFINED_TERM_REF)
