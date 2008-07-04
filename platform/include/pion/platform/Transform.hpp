@@ -58,7 +58,8 @@ public:
 	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
 	boost::regex				m_tr_set_regex;
 
-
+	/// let's use a variant to contain any of the three types of set value
+//	boost::variant<std::string,Event::ParameterValue,boost::regex> m_tr_set;
 
 	/// virtual destructor: you may extend this class
 	virtual ~Transform() {}
@@ -82,6 +83,8 @@ public:
 		m_match_all_values(c.m_match_all_values)
 	{}
 */
+	bool checkForValidSetType(const Vocabulary::DataType type) const;
+	void setSetValue(const std::string& transformation_set_value);
 
 	/**
 	 * configure the transformation rule
@@ -89,11 +92,11 @@ public:
 	 * @param transformation_inplace does the transformation occur on the same parameter that matches
 	 * @param transformation_set_term what value does the transformation set the parameter to
 	 */
-	void configure_transform(bool transformation_inplace, const std::string& transformation_set_term)
+	void configure_transform(bool transformation_inplace, const std::string& transformation_set_value)
 	{
 		m_tr_set_inplace = transformation_inplace;
-		m_tr_set_str_value = transformation_set_term;
-		// TODO: m_tr_set_value, m_tr_set_regex
+		// Set the appropriate m_tr_set value, depending on the data type
+		setSetValue(transformation_set_value);
 	}
 
 	/**
@@ -107,11 +110,56 @@ public:
 	{
 		if (evaluate(*e)) {
 			if (m_tr_set_inplace) {
-				e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
-			} else {
-				e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
+				// TODO: Rip out the original, matching term
 			}
-			return true;	// TODO: Actually do the transformation
+			e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
+			switch (m_tr_set_term.term_type) {
+				case Vocabulary::TYPE_NULL:
+				case Vocabulary::TYPE_OBJECT:
+					// do nothing
+					break;
+				case Vocabulary::TYPE_INT8:
+				case Vocabulary::TYPE_INT16:
+				case Vocabulary::TYPE_INT32:
+					e->setInt(m_tr_set_term.term_type, boost::get<const boost::uint32_t&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_INT64:
+					e->setBigInt(m_tr_set_term.term_type, boost::get<const boost::uint64_t&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_UINT8:
+				case Vocabulary::TYPE_UINT16:
+				case Vocabulary::TYPE_UINT32:
+					e->setUInt(m_tr_set_term.term_type, boost::get<const boost::uint32_t&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_UINT64:
+					e->setUInt(m_tr_set_term.term_type, boost::get<const boost::uint64_t&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_FLOAT:
+					e->setFloat(m_tr_set_term.term_type, boost::get<const float&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_DOUBLE:
+					e->setDouble(m_tr_set_term.term_type, boost::get<const double&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_LONG_DOUBLE:
+					e->setLongDouble(m_tr_set_term.term_type, boost::get<const long double&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_SHORT_STRING:
+				case Vocabulary::TYPE_STRING:
+				case Vocabulary::TYPE_LONG_STRING:
+				case Vocabulary::TYPE_CHAR:
+					e->setString(m_tr_set_term.term_type, m_tr_set_str_value);
+					break;
+				case Vocabulary::TYPE_DATE_TIME:
+				case Vocabulary::TYPE_DATE:
+				case Vocabulary::TYPE_TIME:
+					e->setDateTime(m_tr_set_term.term_type, boost::get<const PionDateTime&>(m_tr_set_value));
+					break;
+				case Vocabulary::TYPE_REGEX:
+					// TODO: Do the real Regex transformation
+//					e->setString(m_tr_set_term.term_type, m_tr_set_regex);
+					break;
+			}
+			return true;
 		}
 		return false;
 	}

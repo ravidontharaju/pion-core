@@ -168,7 +168,6 @@ private:
 	bool							m_deliver_original;
 };
 
-
 }	// end namespace plugins
 }	// end namespace pion
 

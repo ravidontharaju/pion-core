@@ -25,5 +25,97 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+bool Transform::checkForValidSetType(const Vocabulary::DataType type) const
+{
+	bool result = false;
+	
+	switch (type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+			result = false;
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_INT32:
+		case Vocabulary::TYPE_UINT32:
+		case Vocabulary::TYPE_INT64:
+		case Vocabulary::TYPE_UINT64:
+		case Vocabulary::TYPE_FLOAT:
+		case Vocabulary::TYPE_DOUBLE:
+		case Vocabulary::TYPE_LONG_DOUBLE:
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+		case Vocabulary::TYPE_REGEX:
+			result = true;
+			break;
+	}
+	return result;
+}
+
+
+void Transform::setSetValue(const std::string& value_str)
+{
+	if (! checkForValidSetType(m_tr_set_term.term_type))
+		throw InvalidTypeForTermException();
+	
+	try {
+		// convert string to be the same type as the term
+		switch (m_tr_set_term.term_type) {
+			case Vocabulary::TYPE_NULL:
+			case Vocabulary::TYPE_OBJECT:
+				// do nothing
+				break;
+			case Vocabulary::TYPE_INT8:
+			case Vocabulary::TYPE_INT16:
+			case Vocabulary::TYPE_INT32:
+				m_tr_set_value = boost::lexical_cast<boost::int32_t>(value_str);
+				break;
+			case Vocabulary::TYPE_INT64:
+				m_tr_set_value = boost::lexical_cast<boost::int64_t>(value_str);
+				break;
+			case Vocabulary::TYPE_UINT8:
+			case Vocabulary::TYPE_UINT16:
+			case Vocabulary::TYPE_UINT32:
+				m_tr_set_value = boost::lexical_cast<boost::uint32_t>(value_str);
+				break;
+			case Vocabulary::TYPE_UINT64:
+				m_tr_set_value = boost::lexical_cast<boost::uint64_t>(value_str);
+				break;
+			case Vocabulary::TYPE_FLOAT:
+				m_tr_set_value = boost::lexical_cast<float>(value_str);
+				break;
+			case Vocabulary::TYPE_DOUBLE:
+				m_tr_set_value = boost::lexical_cast<double>(value_str);
+				break;
+			case Vocabulary::TYPE_LONG_DOUBLE:
+				m_tr_set_value = boost::lexical_cast<long double>(value_str);
+				break;
+			case Vocabulary::TYPE_SHORT_STRING:
+			case Vocabulary::TYPE_STRING:
+			case Vocabulary::TYPE_LONG_STRING:
+			case Vocabulary::TYPE_CHAR:
+				m_tr_set_str_value = value_str;
+				break;
+			case Vocabulary::TYPE_DATE_TIME:
+			case Vocabulary::TYPE_DATE:
+			case Vocabulary::TYPE_TIME:
+				m_tr_set_value = boost::lexical_cast<PionDateTime>(value_str);
+				break;
+			case Vocabulary::TYPE_REGEX:
+				m_tr_set_regex = value_str;
+				break;
+		}
+	} catch (...) {
+		throw InvalidValueForTypeException();
+	}
+}
+
 }
 }

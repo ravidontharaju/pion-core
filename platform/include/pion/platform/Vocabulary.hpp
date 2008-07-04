@@ -70,6 +70,7 @@ public:
 		TYPE_DATE,				///< represents a specific date using term_format
 		TYPE_TIME,				///< represents a specific time of day using term_format
 		TYPE_CHAR,				///< fixed-length string of size term_size
+		TYPE_REGEX,				///< regular expression in Transformation
 		TYPE_OBJECT				///< object may contain other terms (boost::any)
 	};
 	

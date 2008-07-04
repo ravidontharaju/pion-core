@@ -199,7 +199,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		// add the Transformation
 		Transform new_transform(v[term_ref], v[set_term_ref]);
 		new_transform.configure(comparison_type, value_str, match_all_values);
-		new_transform.configure_transform(transformation_inplace, transformation_set_term);
+		new_transform.configure_transform(transformation_inplace, set_value_str);
 		m_transforms.push_back(new_transform);
 
 		// step to the next Comparison rule
@@ -255,7 +255,10 @@ void TransformReactor::operator()(const EventPtr& e)
 			}
 		}
 		if (do_transformations) {
-			EventPtr new_e;					// Create a mutable copy of event
+			EventFactory event_factory;
+			EventPtr new_e;
+			event_factory.create(new_e, e->getType());	// TODO: Instead of maintaining same type, allow change
+
 			*new_e += *e;					// Populate all terms from original event
 			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {
 				i->transform(new_e);
