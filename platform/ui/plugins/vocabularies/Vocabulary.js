@@ -425,6 +425,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				saveCompleteCallback();
 			}
 			store.save({});
+			pion.terms.buildMapOfCategoriesByTerm();
 		},
 		cancel: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');

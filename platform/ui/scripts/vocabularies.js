@@ -74,8 +74,6 @@ pion.vocabularies.init = function() {
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
 	var delete_col_index = attributes_by_column.length;
 
-	pion.terms.initDescriptionLookups();
-
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
 
