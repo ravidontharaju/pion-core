@@ -46,6 +46,16 @@ typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
 /// default queue type used when there is at least 1 consumer thread
 #define DEFAULT_QUEUE	pion::PionLockedQueue
 
+#define GCC_VERSION (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION >= 40200
+// NOTE: Dirty hack, but g++ 4.2.3 does not like the QueueType that is passed
+// TODO: find out, what specifically is wrong with the QueueType...
+// TODO: find out if the issue persists with g++ 4.3.x
+#define _MSC_VER
+#endif
+
 /// define template parameters used for producer/consumer tests
 /// NOTE: MSVC does not play well with template-template parameters!
 #ifdef _MSC_VER
