@@ -56,6 +56,7 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
 	
+	setup_logging_for_unit_tests();
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
 	setup_plugins_directory();
@@ -66,6 +67,8 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
+
+	setup_logging_for_unit_tests();
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
 	setup_plugins_directory();
@@ -79,17 +82,20 @@ BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
 BOOST_AUTO_TEST_SUITE(protocolFactoryCreationAndDestruction_S)
 
 BOOST_AUTO_TEST_CASE(checkProtocolFactoryConstructor) {
+	setup_logging_for_unit_tests();
 	VocabularyManager vocab_mgr;
 	BOOST_CHECK_NO_THROW(ProtocolFactory protocolFactory(vocab_mgr));
 }
 
 BOOST_AUTO_TEST_CASE(checkProtocolFactoryDestructor) {
+	setup_logging_for_unit_tests();
 	VocabularyManager vocab_mgr;
 	ProtocolFactory* protocolFactory = new ProtocolFactory(vocab_mgr);
 	BOOST_CHECK_NO_THROW(delete protocolFactory);
 }
 
 BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
+	setup_logging_for_unit_tests();
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
