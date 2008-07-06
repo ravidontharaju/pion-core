@@ -20,12 +20,13 @@
 #include "HTTPProtocol.hpp"
 
 using namespace pion::net;
+using namespace pion::platform;
 
 namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
-									  pion::platform::EventPtr& event_ptr_ref)
+									  EventPtr& event_ptr_ref)
 {
 	// parse the data
 	boost::tribool rc;
@@ -42,30 +43,53 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 		if (request) {
 			// update response to "know" about the request (this influences parsing)
 			m_response.updateRequestInfo(m_request);
+			 // wait until the response is parsed before generating an event
+			rc = boost::indeterminate;
 		} else {
 			generateEvent(event_ptr_ref); 
 		}
 	}
 
+	PION_ASSERT((event_ptr_ref.get() != NULL) || (rc != true));
 	return rc;
 }
 
-boost::shared_ptr<pion::platform::Protocol> HTTPProtocol::clone(void) const
+boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 {
 	HTTPProtocol* retval = new HTTPProtocol;
 	retval->copyProtocol(*this);
 
-	return pion::platform::ProtocolPtr(retval);
+	return ProtocolPtr(retval);
 }
 
-
-void HTTPProtocol::generateEvent(pion::platform::EventPtr& event_ptr_ref)
+void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 {
-	// TODO: generate pion event from the message
+	const Event::EventType event_type(getEventType());
+	EventFactory event_factory;
+
+	// get a new event from the EventFactory
+	event_factory.create(event_ptr_ref, event_type);
+
+	(*event_ptr_ref).setString(m_request_term_ref, m_request.getOriginalResource());
+	// TODO: set other message terms
+}
+
+void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
+{
+	Protocol::setConfig(v, config_ptr);
+
+	std::string request_term_name = "urn:vocab:clickstream#request";
+	m_request_term_ref = v.findTerm(request_term_name);
+
+	if (m_request_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(request_term_name);
+
+	// TODO: initialize other terms here
 }
 
 }	// end namespace plugins
 }	// end namespace pion
+
 
 
 /// creates new HTTPProtocol objects

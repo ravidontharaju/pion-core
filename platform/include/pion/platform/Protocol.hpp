@@ -92,7 +92,13 @@ public:
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len, 
 			pion::platform::EventPtr& event_ptr )=0;
 
-
+	/**
+	 * sets configuration parameters for this Protocol
+	 *
+	 * @param v the Vocabulary that this Protocol will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing Protocol
+	 *                   configuration parameters
+	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**

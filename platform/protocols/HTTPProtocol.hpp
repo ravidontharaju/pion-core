@@ -58,6 +58,15 @@ public:
 	 */
 	virtual boost::shared_ptr<Protocol> clone(void) const;
 
+	/**
+	 * sets configuration parameters for this Protocol
+	 *
+	 * @param v the Vocabulary that this Protocol will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing Protocol
+	 *                   configuration parameters
+	 */
+	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
+
 private:
 
 	/**
@@ -72,6 +81,8 @@ private:
 	pion::net::HTTPParser	m_response_parser;
 	pion::net::HTTPRequest  m_request;
 	pion::net::HTTPResponse m_response;
+
+	pion::platform::Vocabulary::TermRef	m_request_term_ref; //urn:vocab:clickstream#request
 };
 
 
