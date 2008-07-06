@@ -21,6 +21,7 @@
 #include <pion/PionPlugin.hpp>
 #include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/PionUnitTestDefs.hpp>
@@ -45,6 +46,7 @@ extern void cleanup_vocab_config_files(void);
 
 VocabularyManager g_vocab_mgr;
 CodecFactory g_codec_factory(g_vocab_mgr);
+ProtocolFactory g_protocol_factory(g_vocab_mgr);
 DatabaseManager g_database_mgr(g_vocab_mgr);
 
 class PluginConfigFixture {
@@ -90,7 +92,7 @@ public:
 
 class DCReactionEngine : public ReactionEngine, public PluginConfigFixture {
 public:
-	DCReactionEngine(void) : ReactionEngine(g_vocab_mgr, g_codec_factory, g_database_mgr),
+	DCReactionEngine(void) : ReactionEngine(g_vocab_mgr, g_codec_factory, g_protocol_factory, g_database_mgr),
 							 PluginConfigFixture("FilterReactor")
 	{
 	}

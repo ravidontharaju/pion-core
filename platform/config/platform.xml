@@ -8,4 +8,5 @@
 	<UserConfig>users.xml</UserConfig>
 	<LogConfig>logconfig.txt</LogConfig>
 	<PluginPath>../plugins</PluginPath>
+	<ProtocolConfig>protocols.xml</ProtocolConfig>
 </PionConfig>

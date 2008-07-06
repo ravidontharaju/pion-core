@@ -30,6 +30,7 @@
 #include <pion/platform/VocabularyManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include "ServiceManager.hpp"
 #include "UserManager.hpp"
@@ -59,6 +60,13 @@ public:
 	public:
 		MissingCodecConfigException(const std::string& config_file)
 			: PionException("Platform configuration file does not define a Codec configuration file: ", config_file) {}
+	};
+	
+	/// exception thrown if the config file does not contain a ProtocolConfig element
+	class MissingProtocolConfigException : public PionException {
+	public:
+		MissingProtocolConfigException(const std::string& config_file)
+			: PionException("Platform configuration file does not define a Protocol configuration file: ", config_file) {}
 	};
 	
 	/// exception thrown if the config file does not contain a DatabaseConfig element
@@ -123,6 +131,8 @@ public:
 	/// returns a reference to the global CodecFactory
 	inline pion::platform::CodecFactory& getCodecFactory(void) { return m_codec_factory; }
 	
+	/// returns a reference to the global ProtocolFactory
+	inline pion::platform::ProtocolFactory& getProtocolFactory(void) { return m_protocol_factory; }
 	/// returns a reference to the global DatabaseManager
 	inline pion::platform::DatabaseManager& getDatabaseManager(void) { return m_database_mgr; }
 	
@@ -153,6 +163,9 @@ private:
 	/// name of the codec config element for Pion XML config files
 	static const std::string		CODEC_CONFIG_ELEMENT_NAME;
 	
+	/// name of the protocol config element for Pion XML config files
+	static const std::string		PROTOCOL_CONFIG_ELEMENT_NAME;
+	
 	/// name of the database config element for Pion XML config files
 	static const std::string		DATABASE_CONFIG_ELEMENT_NAME;
 	
@@ -181,6 +194,9 @@ private:
 	/// global manager of Codecs
 	pion::platform::CodecFactory			m_codec_factory;
 	
+	/// global manager of Protocols
+	pion::platform::ProtocolFactory			m_protocol_factory;
+
 	/// global manager of Databases
 	pion::platform::DatabaseManager			m_database_mgr;
 	

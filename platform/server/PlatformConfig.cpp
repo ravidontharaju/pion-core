@@ -34,6 +34,7 @@ const std::string			PlatformConfig::DEFAULT_CONFIG_FILE = "platform.xml";
 const std::string			PlatformConfig::PLATFORM_CONFIG_ELEMENT_NAME = "PlatformConfig";
 const std::string			PlatformConfig::VOCABULARY_CONFIG_ELEMENT_NAME = "VocabularyConfig";
 const std::string			PlatformConfig::CODEC_CONFIG_ELEMENT_NAME = "CodecConfig";
+const std::string			PlatformConfig::PROTOCOL_CONFIG_ELEMENT_NAME = "ProtocolConfig";
 const std::string			PlatformConfig::DATABASE_CONFIG_ELEMENT_NAME = "DatabaseConfig";
 const std::string			PlatformConfig::REACTOR_CONFIG_ELEMENT_NAME = "ReactorConfig";
 const std::string			PlatformConfig::SERVICE_CONFIG_ELEMENT_NAME = "ServiceConfig";
@@ -48,7 +49,8 @@ const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 PlatformConfig::PlatformConfig(void)
 	: ConfigManager(DEFAULT_CONFIG_FILE),
 	m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
-	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_database_mgr),
+	m_protocol_factory(m_vocab_mgr), 
+	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 	m_service_mgr(*this), m_user_mgr_ptr(new UserManager)
 {
 	setLogger(PION_GET_LOGGER("pion.server.PlatformConfig"));
@@ -127,6 +129,15 @@ void PlatformConfig::openConfigFile(void)
 	m_codec_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_codec_factory.openConfigFile();
 	
+	// get the ProtocolFactory config file
+	if (! ConfigManager::getConfigOption(PROTOCOL_CONFIG_ELEMENT_NAME, config_file,
+										 m_config_node_ptr->children))
+		throw MissingProtocolConfigException(getConfigFile());
+	
+	// open the ProtocolFactory configuration
+	m_protocol_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_protocol_factory.openConfigFile();
+
 	// get the DatabaseManager config file
 	if (! ConfigManager::getConfigOption(DATABASE_CONFIG_ELEMENT_NAME, config_file,
 										 m_config_node_ptr->children))
@@ -175,6 +186,7 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 		<< "\t<" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << m_vocab_mgr.getConfigFile()
 		<< "</" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << CODEC_CONFIG_ELEMENT_NAME << '>' << m_codec_factory.getConfigFile()
+		<< "\t<" << PROTOCOL_CONFIG_ELEMENT_NAME << '>' << m_protocol_factory.getConfigFile()
 		<< "</" << CODEC_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << DATABASE_CONFIG_ELEMENT_NAME << '>' << m_database_mgr.getConfigFile()
 		<< "</" << DATABASE_CONFIG_ELEMENT_NAME << '>' << std::endl

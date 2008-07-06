@@ -123,7 +123,6 @@ protected:
 		try {
 			Protocol *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
 			new_plugin_ptr->setId(plugin_id);
-			new_plugin_ptr->setProtocolFactory(*this);
 			if (config_ptr != NULL)
 				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
 		} catch (PionPlugin::PluginNotFoundException&) {

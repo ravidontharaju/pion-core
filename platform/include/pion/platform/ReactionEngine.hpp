@@ -37,6 +37,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // forward declarations
 class VocabularyManager;
 class CodecFactory;
+class ProtocolFactory;
 class DatabaseManager;
 	
 ///
@@ -122,6 +123,7 @@ public:
 	 */
 	ReactionEngine(VocabularyManager& vocab_mgr,
 				   CodecFactory& codec_factory,
+				   ProtocolFactory& protocol_factory,
 				   DatabaseManager& database_mgr);
 	
 	/// virtual destructor
@@ -453,6 +455,7 @@ private:
 			reactor_ptr->setId(plugin_id);
 			reactor_ptr->setScheduler(m_scheduler);
 			reactor_ptr->setCodecFactory(m_codec_factory);
+			reactor_ptr->setProtocolFactory(m_protocol_factory);
 			reactor_ptr->setDatabaseManager(m_database_mgr);
 			reactor_ptr->setReactionEngine(*this);
 			if (config_ptr != NULL)
@@ -565,6 +568,9 @@ private:
 
 	/// references the global factory that manages Codecs
 	CodecFactory &					m_codec_factory;
+
+	/// references the global factory that manages Protocols
+	ProtocolFactory &					m_protocol_factory;
 
 	/// references the global manager of Databases
 	DatabaseManager &				m_database_mgr;

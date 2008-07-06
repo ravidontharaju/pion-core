@@ -121,6 +121,7 @@ void setup_plugins_directory(void)
 		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
 		pion::PionPlugin::addPluginDirectory("../databases/.libs");
 		pion::PionPlugin::addPluginDirectory("../services/.libs");
+		pion::PionPlugin::addPluginDirectory("../protocols/.libs");
 		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
 #endif
 	}
@@ -161,6 +162,8 @@ void cleanup_platform_config_files(void)
 	static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
 	static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
 	static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+	static const std::string PROTOCOLS_TEMPLATE_FILE(get_config_file_dir() + "protocols.tmpl");
+	static const std::string PROTOCOLS_CONFIG_FILE(get_config_file_dir() + "protocols.xml");
 	static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
 	static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
 	static const std::string PLATFORM_TEMPLATE_FILE(get_config_file_dir() + "platform.tmpl");
@@ -179,6 +182,10 @@ void cleanup_platform_config_files(void)
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
 	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 	
+	if (boost::filesystem::exists(PROTOCOLS_CONFIG_FILE))
+		boost::filesystem::remove(PROTOCOLS_CONFIG_FILE);
+	boost::filesystem::copy_file(PROTOCOLS_TEMPLATE_FILE, PROTOCOLS_CONFIG_FILE);
+
 	if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
 		boost::filesystem::remove(DATABASES_CONFIG_FILE);
 	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);

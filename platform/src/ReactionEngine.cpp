@@ -19,6 +19,7 @@
 
 #include <boost/asio.hpp>
 #include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 
@@ -50,9 +51,11 @@ const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
 	
 ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
 							   CodecFactory& codec_factory,
+							   ProtocolFactory& protocol_factory,
 							   DatabaseManager& database_mgr)
 	: PluginConfig<Reactor>(vocab_mgr, DEFAULT_CONFIG_FILE, REACTOR_ELEMENT_NAME),
 	m_codec_factory(codec_factory),
+	m_protocol_factory(protocol_factory),
 	m_database_mgr(database_mgr),
 	m_is_running(false)
 {

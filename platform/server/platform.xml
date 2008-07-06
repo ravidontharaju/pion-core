@@ -2,6 +2,7 @@
 <PionConfig xmlns="http://purl.org/pion/config">
 	<VocabularyConfig>../../platform/config/vocabularies.xml</VocabularyConfig>
 	<CodecConfig>../../platform/config/codecs.xml</CodecConfig>
+	<ProtocolConfig>../../platform/config/protocols.xml</ProtocolConfig>
 	<DatabaseConfig>../../platform/config/databases.xml</DatabaseConfig>
 	<ReactorConfig>../../platform/config/reactors.xml</ReactorConfig>
 	<ServiceConfig>services.xml</ServiceConfig>
@@ -10,6 +11,7 @@
 	<PluginPath>../../platform/codecs/.libs/</PluginPath>
 	<PluginPath>../../platform/databases/.libs/</PluginPath>
 	<PluginPath>../../platform/reactors/.libs/</PluginPath>
+	<PluginPath>../../platform/protocols/.libs/</PluginPath>
 	<PluginPath>../../platform/services/.libs/</PluginPath>
 	<PluginPath>../../net/services/.libs/</PluginPath>
 </PionConfig>
