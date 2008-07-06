@@ -53,12 +53,16 @@ typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
 // NOTE: Dirty hack, but g++ 4.2.3 does not like the QueueType that is passed
 // TODO: find out, what specifically is wrong with the QueueType...
 // TODO: find out if the issue persists with g++ 4.3.x
-#define _MSC_VER
+#define BYPASS_TEMPLATE_TEMPLATE_PROBLEM
+#endif
+
+#ifdef _MSC_VER
+/// NOTE: MSVC does not play well with template-template parameters!
+#define BYPASS_TEMPLATE_TEMPLATE_PROBLEM
 #endif
 
 /// define template parameters used for producer/consumer tests
-/// NOTE: MSVC does not play well with template-template parameters!
-#ifdef _MSC_VER
+#ifdef BYPASS_TEMPLATE_TEMPLATE_PROBLEM
 	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
 		unsigned int ConsumerThreads = 0
 	#define QueueType pion::PionLockedQueue
@@ -320,7 +324,7 @@ typedef boost::function0<void>	WorkItem;
 
 
 ///
-/// WorkTestIoService: tests the raw basline performance of using asio's
+/// WorkTestIoService: tests the raw baseline performance of using asio's
 ///                    io_service class to distribute work items
 ///
 template <unsigned int ProducerThreads = 1, unsigned int ConsumerThreads = 0>
@@ -388,7 +392,7 @@ protected:
 
 
 ///
-/// WorkTestSleepingQueue: tests the raw basline performance of using a queue 
+/// WorkTestSleepingQueue: tests the raw baseline performance of using a queue 
 ///                        with sleeping consumers to distribute work items
 ///
 template < TEST_TEMPLATE_PARAMS >
@@ -439,7 +443,7 @@ protected:
 
 
 ///
-/// WorkTestBlockingQueue: tests the raw basline performance of using a queue 
+/// WorkTestBlockingQueue: tests the raw baseline performance of using a queue 
 ///                        with blocking consumers to distribute work items
 ///
 template < TEST_TEMPLATE_PARAMS >
@@ -845,7 +849,7 @@ private:
 ///
 template < TEST_TEMPLATE_PARAMS >
 class CLFEventPtrAllocTest :
-#ifdef _MSC_VER
+#ifdef BYPASS_TEMPLATE_TEMPLATE_PROBLEM
 	public EventPtrAllocTest<ProducerThreads, ConsumerThreads>
 #else
 	public EventPtrAllocTest<ProducerThreads, ConsumerThreads, QueueType>
