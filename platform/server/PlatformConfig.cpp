@@ -48,8 +48,8 @@ const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 
 PlatformConfig::PlatformConfig(void)
 	: ConfigManager(DEFAULT_CONFIG_FILE),
-	m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
-	m_protocol_factory(m_vocab_mgr), 
+	m_vocab_mgr(), m_codec_factory(m_vocab_mgr), 
+	m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 	m_service_mgr(*this), m_user_mgr_ptr(new UserManager)
 {
