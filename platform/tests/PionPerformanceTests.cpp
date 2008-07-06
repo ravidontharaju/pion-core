@@ -43,34 +43,23 @@
 /// data type for a shared Event pool allocator using boost::fast_pool_allocator
 typedef boost::fast_pool_allocator<pion::platform::Event>	EventBoostPoolAlloc;
 
+/// MSVC and gcc> 4.2 are picky about template template parameters.  Even though
+/// PionLockedQueue has default settings for the second two params, they will
+/// not let us use it for the QueueType template parameter below.  To try to
+/// work around this, we'll define a new class PionLockedQueueOneParam that
+/// sets the default parameters through inheritance versus default settings
+template <typename T>
+class PionLockedQueueOneParam :
+	public pion::PionLockedQueue<T, 250000, 10>
+{};
+
 /// default queue type used when there is at least 1 consumer thread
-#define DEFAULT_QUEUE	pion::PionLockedQueue
+#define DEFAULT_QUEUE	PionLockedQueueOneParam
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-                               + __GNUC_MINOR__ * 100 \
-                               + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION >= 40200
-// NOTE: Dirty hack, but g++ 4.2.3 does not like the QueueType that is passed
-// TODO: find out, what specifically is wrong with the QueueType...
-// TODO: find out if the issue persists with g++ 4.3.x
-#define BYPASS_TEMPLATE_TEMPLATE_PROBLEM
-#endif
-
-#ifdef _MSC_VER
-/// NOTE: MSVC does not play well with template-template parameters!
-#define BYPASS_TEMPLATE_TEMPLATE_PROBLEM
-#endif
-
-/// define template parameters used for producer/consumer tests
-#ifdef BYPASS_TEMPLATE_TEMPLATE_PROBLEM
-	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
-		unsigned int ConsumerThreads = 0
-	#define QueueType pion::PionLockedQueue
-#else
-	#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
-		unsigned int ConsumerThreads = 0, \
-		template <typename T> class QueueType = DEFAULT_QUEUE
-#endif
+/// template parameters used for most of the unit test classes
+#define TEST_TEMPLATE_PARAMS	unsigned int ProducerThreads = 1, \
+	unsigned int ConsumerThreads = 0, \
+	template <typename T> class QueueType = DEFAULT_QUEUE
 
 
 using namespace std;
@@ -849,11 +838,7 @@ private:
 ///
 template < TEST_TEMPLATE_PARAMS >
 class CLFEventPtrAllocTest :
-#ifdef BYPASS_TEMPLATE_TEMPLATE_PROBLEM
-	public EventPtrAllocTest<ProducerThreads, ConsumerThreads>
-#else
 	public EventPtrAllocTest<ProducerThreads, ConsumerThreads, QueueType>
-#endif
 {
 public:
 
