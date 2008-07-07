@@ -186,8 +186,9 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 		<< "\t<" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << m_vocab_mgr.getConfigFile()
 		<< "</" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << CODEC_CONFIG_ELEMENT_NAME << '>' << m_codec_factory.getConfigFile()
-		<< "\t<" << PROTOCOL_CONFIG_ELEMENT_NAME << '>' << m_protocol_factory.getConfigFile()
 		<< "</" << CODEC_CONFIG_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << PROTOCOL_CONFIG_ELEMENT_NAME << '>' << m_protocol_factory.getConfigFile()
+		<< "</" << PROTOCOL_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << DATABASE_CONFIG_ELEMENT_NAME << '>' << m_database_mgr.getConfigFile()
 		<< "</" << DATABASE_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << REACTOR_CONFIG_ELEMENT_NAME << '>' << m_reaction_engine.getConfigFile()
