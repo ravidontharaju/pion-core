@@ -45,19 +45,23 @@ pion.system.init = function() {
 			console.debug('in load()');
 			if (dojo.isIE) {
 				dojo.byId('platform_conf_file').innerHTML = response.getElementsByTagName('PlatformConfig')[0].xml;
+				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].xml;
 				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].xml;
 				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].xml;
 				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].xml;
-				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].xml;
+				dojo.byId('user_conf_file').innerHTML     = response.getElementsByTagName('UserConfig')[0].xml;
+				dojo.byId('protocol_conf_file').innerHTML = response.getElementsByTagName('ProtocolConfig')[0].xml;
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].xml;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].xml;
 				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].xml;
 			} else {
 				dojo.byId('platform_conf_file').innerHTML = response.getElementsByTagName('PlatformConfig')[0].textContent;
+				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
 				dojo.byId('vocab_conf_file').innerHTML    = response.getElementsByTagName('VocabularyConfig')[0].textContent;
 				dojo.byId('codec_conf_file').innerHTML    = response.getElementsByTagName('CodecConfig')[0].textContent;
 				dojo.byId('database_conf_file').innerHTML = response.getElementsByTagName('DatabaseConfig')[0].textContent;
-				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
+				dojo.byId('user_conf_file').innerHTML     = response.getElementsByTagName('UserConfig')[0].textContent;
+				dojo.byId('protocol_conf_file').innerHTML = response.getElementsByTagName('ProtocolConfig')[0].textContent;
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].textContent;
 				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].textContent;
