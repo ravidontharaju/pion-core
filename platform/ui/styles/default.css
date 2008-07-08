@@ -465,29 +465,45 @@ This is a duplicate of #reactor_config_content for now.
 	color: #999999;
 }
 
-.LogInputReactor {
+.reactor {
 	background-color: #ffffff;
+	background: url(../images/bg-moveable-reactor.png) repeat-x;
+}
+
+/*
+The following are also available, if the need arises.
+
+.reactor.collection {
+}
+
+.reactor.processing {
+}
+
+.reactor.storage {
+}
+*/
+
+.reactor.LogInputReactor {
 	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
 }
 
-
-.FilterReactor {
-	background-color: #ffffff;
+.reactor.FilterReactor {
 	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
 }
 
-.TransformReactor {
-	background-color: #ffffff;
+.reactor.TransformReactor {
 	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
 }
 
-.DatabaseOutputReactor {
-	background-color: #ffffff;
+.reactor.SnifferReactor {
+	background: url(../images/bg-moveable-processing-sniffer.png) repeat-x;
+}
+
+.reactor.DatabaseOutputReactor {
 	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
 }
 
-.LogOutputReactor {
-	background-color: #ffffff;
+.reactor.LogOutputReactor {
 	background: url(../images/bg-moveable-storage-logs.png) repeat;
 }
 
