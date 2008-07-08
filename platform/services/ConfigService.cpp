@@ -699,6 +699,20 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		// END USERS CONFIG
 		//
+	} else if (branches.front() == "plugins") {
+		
+		// Send a list of all Plugins found in the Plugin directories.
+
+		ConfigManager::writeBeginPionConfigXML(ss);
+
+		std::vector<std::string> plugins;
+		PionPlugin::getAllPluginNames(plugins);
+		for (std::vector<std::string>::iterator i = plugins.begin(); i != plugins.end(); ++i) {
+			ss << "<Plugin>" << *i << "</Plugin>";
+		}
+
+		ConfigManager::writeEndPionConfigXML(ss);
+
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;

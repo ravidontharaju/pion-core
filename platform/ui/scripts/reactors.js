@@ -95,22 +95,39 @@ pion.reactors.init = function() {
 		}
 	});
 
-	// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
-	// accordion pane of the sidebar, add a reactor icon which can be dragged onto a workspace.
-	pion.reactors.plugin_data_store.fetch({
-		onItem: function(item) {
-			var plugin = pion.reactors.plugin_data_store.getValue(item, 'plugin');
-			reactor_package = "plugins.reactors." + plugin;
-			// TODO: check if the package is already loaded, and if not, call dojo.require.
-			//dojo.req   uire(reactor_package);
- 			var category = pion.reactors.plugin_data_store.getValue(item, 'category');
-			var label = pion.reactors.plugin_data_store.getValue(item, 'label');
-			var icon = pion.reactors.plugin_data_store.getValue(item, 'icon');
-			var icon_url = dojo.moduleUrl('plugins.reactors', icon);
-			console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
-			reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
+	dojo.xhrGet({
+		url: '/config/plugins',
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var plugin_elements = response.getElementsByTagName('Plugin');
+			var available_plugins = [];
+			dojo.forEach(plugin_elements, function(n) {
+				available_plugins.push(dojo.isIE? n.xml : n.textContent);
+			});
+
+			// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
+			// accordion pane of the sidebar, add a reactor icon which can be dragged onto a workspace.
+			pion.reactors.plugin_data_store.fetch({
+				onItem: function(item) {
+					var plugin = pion.reactors.plugin_data_store.getValue(item, 'plugin');
+					if (dojo.indexOf(available_plugins, plugin) != -1) {
+						reactor_package = "plugins.reactors." + plugin;
+						// TODO: check if the package is already loaded, and if not, call dojo.require.
+						//dojo.req   uire(reactor_package);
+ 						var category = pion.reactors.plugin_data_store.getValue(item, 'category');
+						var label = pion.reactors.plugin_data_store.getValue(item, 'label');
+						var icon = pion.reactors.plugin_data_store.getValue(item, 'icon');
+						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
+						console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
+						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
+					}
+				},
+				onError: pion.handleFetchError
+			});
+			return response;
 		},
-		onError: pion.handleFetchError
+		error: pion.handleXhrGetError
 	});
 
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
