@@ -255,9 +255,8 @@ void TransformReactor::operator()(const EventPtr& e)
 			}
 		}
 		if (do_transformations) {
-			EventFactory event_factory;
 			EventPtr new_e;
-			event_factory.create(new_e, e->getType());	// TODO: Instead of maintaining same type, allow change
+			m_event_factory.create(new_e, e->getType());	// TODO: Instead of maintaining same type, allow change
 
 			*new_e += *e;					// Populate all terms from original event
 			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {

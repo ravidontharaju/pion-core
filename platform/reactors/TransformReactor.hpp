@@ -166,6 +166,9 @@ private:
 
 	/// deliver original event
 	bool							m_deliver_original;
+
+	/// One event_factory to manufacture the outgoing/duplicated events
+	pion::platform::EventFactory	m_event_factory;
 };
 
 }	// end namespace plugins
