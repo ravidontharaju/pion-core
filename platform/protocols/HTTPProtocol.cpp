@@ -25,6 +25,11 @@ using namespace pion::platform;
 namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST="urn:vocab:clickstream#request";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFERER="urn:vocab:clickstream#referer";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_USERAGENT="urn:vocab:clickstream#useragent";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_STATUS="urn:vocab:clickstream#status";
+
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  EventPtr& event_ptr_ref)
 {
@@ -70,7 +75,12 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	// get a new event from the EventFactory
 	event_factory.create(event_ptr_ref, event_type);
 
-	(*event_ptr_ref).setString(m_request_term_ref, m_request.getOriginalResource());
+	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
+	(*event_ptr_ref).setString(m_referer_term_ref, m_request.getHeader(HTTPTypes::HEADER_REFERER));
+	(*event_ptr_ref).setString(m_useragent_term_ref, m_request.getHeader(HTTPTypes::HEADER_USER_AGENT));
+	(*event_ptr_ref).setInt(m_status_term_ref, m_response.getStatusCode());
+
+
 	// TODO: set other message terms
 }
 
@@ -78,11 +88,22 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Protocol::setConfig(v, config_ptr);
 
-	std::string request_term_name = "urn:vocab:clickstream#request";
-	m_request_term_ref = v.findTerm(request_term_name);
-
+	// initialize references to known Terms:
+	m_request_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REQUEST);
 	if (m_request_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(request_term_name);
+		throw UnknownTermException(VOCAB_CLICKSTREAM_REQUEST);
+
+	m_referer_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REFERER);
+	if (m_referer_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_REFERER);
+
+	m_useragent_term_ref = v.findTerm(VOCAB_CLICKSTREAM_USERAGENT);
+	if (m_useragent_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_USERAGENT);
+
+	m_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_STATUS);
+	if (m_status_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_STATUS);
 
 	// TODO: initialize other terms here
 }

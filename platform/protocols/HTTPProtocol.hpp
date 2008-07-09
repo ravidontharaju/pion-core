@@ -81,8 +81,22 @@ private:
 	pion::net::HTTPParser	m_response_parser;
 	pion::net::HTTPRequest  m_request;
 	pion::net::HTTPResponse m_response;
+	
+	/// urn:vocab:clickstream#request
+	static const std::string	VOCAB_CLICKSTREAM_REQUEST;
+	pion::platform::Vocabulary::TermRef	m_request_term_ref; 
 
-	pion::platform::Vocabulary::TermRef	m_request_term_ref; //urn:vocab:clickstream#request
+	/// urn:vocab:clickstream#referer
+	static const std::string	VOCAB_CLICKSTREAM_REFERER;
+	pion::platform::Vocabulary::TermRef	m_referer_term_ref;
+
+	/// urn:vocab:clickstream#useragent
+	static const std::string	VOCAB_CLICKSTREAM_USERAGENT;
+	pion::platform::Vocabulary::TermRef	m_useragent_term_ref;
+
+	/// urn:vocab:clickstream#status
+	static const std::string	VOCAB_CLICKSTREAM_STATUS;
+	pion::platform::Vocabulary::TermRef	m_status_term_ref;
 };
 
 

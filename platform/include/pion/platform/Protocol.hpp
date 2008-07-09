@@ -54,8 +54,8 @@ public:
 	/// exception thrown if the Protocol configuration references an unknown event type
 	class UnknownTermException : public PionException {
 	public:
-		UnknownTermException(const std::string& event_type)
-			: PionException("Protocol configuration references an unknown event type: ", event_type) {}
+		UnknownTermException(const std::string& term)
+			: PionException("Protocol configuration references an unknown term: ", term) {}
 	};
 
 	/// exception thrown if the Protocol configuration uses an event type for a Term that is not an object
