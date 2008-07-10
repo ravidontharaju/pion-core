@@ -121,6 +121,7 @@ protected:
 		m_event_type = c.m_event_type;
 	}
 
+	EventFactory					m_event_factory;
 	
 private:
 	

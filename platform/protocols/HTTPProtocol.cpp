@@ -70,10 +70,9 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 {
 	const Event::EventType event_type(getEventType());
-	EventFactory event_factory;
 
-	// get a new event from the EventFactory
-	event_factory.create(event_ptr_ref, event_type);
+	// create a new event via EventFactory
+	m_event_factory.create(event_ptr_ref, event_type);
 
 	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
 	(*event_ptr_ref).setString(m_referer_term_ref, m_request.getHeader(HTTPTypes::HEADER_REFERER));
