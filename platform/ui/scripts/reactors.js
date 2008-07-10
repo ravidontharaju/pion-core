@@ -117,7 +117,7 @@ pion.reactors.init = function() {
 						//dojo.req   uire(reactor_package);
  						var category = pion.reactors.plugin_data_store.getValue(item, 'category');
 						var label = pion.reactors.plugin_data_store.getValue(item, 'label');
-						var icon = pion.reactors.plugin_data_store.getValue(item, 'icon');
+						var icon = plugin + '/icon-' + plugin + '.png';
 						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
 						console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
 						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
