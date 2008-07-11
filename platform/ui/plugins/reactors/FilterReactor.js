@@ -33,8 +33,12 @@ dojo.declare("plugins.reactors.FilterReactor",
 		_insertCustomData: function() {
 			for (var i = 0; i < this.comparison_table.length; ++i) {
 				var row = this.comparison_table[i];
-				console.debug('frag: <Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value>');
-				this.put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
+				this.put_data += '<Comparison>';
+				this.put_data += '<Term>' + row[0] + '</Term>';
+				this.put_data += '<Type>' + row[1] + '</Type>';
+				if (row[2])
+					this.put_data += '<Value>' + row[2] + '</Value>';
+				this.put_data += '</Comparison>';
 			}
 		}
 	}
@@ -86,7 +90,6 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 					pion.reactors.filter_reactor_grid_model.setData(_this.reactor.comparison_table);
 					var grid = _this.filter_reactor_grid;
 					dojo.connect(grid, 'onCellClick', grid, _this._handleCellClick);
-					dojo.connect(_this.add_new_comparison_button.domNode, 'click', grid, _this._handleAddNewComparison);
 					setTimeout(function(){
 						grid.update();
 						grid.resize();
@@ -107,15 +110,19 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			}
 		},
 		_handleAddNewComparison: function() {
-			this.addRow([0, 'true']);
+			this.filter_reactor_grid.addRow([0, 'true']);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
 		_insertCustomData: function() {
 			var num_comparisons = pion.reactors.filter_reactor_grid_model.getRowCount();
 			for (var i = 0; i < num_comparisons; ++i) {
 				var row = pion.reactors.filter_reactor_grid_model.getRow(i);
-				console.debug('frag: <Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value>');
-				this.put_data += '<Comparison><Term>' + row[0] + '</Term><Type>' + row[1] + '</Type><Value>' + row[2] + '</Value></Comparison>';
+				this.put_data += '<Comparison>';
+				this.put_data += '<Term>' + row[0] + '</Term>';
+				this.put_data += '<Type>' + row[1] + '</Type>';
+				if (row[2])
+					this.put_data += '<Value>' + row[2] + '</Value>';
+				this.put_data += '</Comparison>';
 			}
 		}
 	}
