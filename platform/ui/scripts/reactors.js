@@ -119,7 +119,7 @@ pion.reactors.init = function() {
 				}
 
 				pion.reactors.categories[plugin] = category;
-				var icon = category + '/' + plugin + '/icon-' + plugin + '.png';
+				var icon = category + '/' + plugin + '/icon.png';
 				var icon_url = dojo.moduleUrl('plugins.reactors', icon);
 				console.debug('icon_url = ', icon_url);
 				reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
