@@ -27,7 +27,7 @@
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
-	
+
 ///
 /// ConfigService: Platform WebService used to manage configuration
 ///
@@ -36,12 +36,30 @@ class ConfigService
 {
 public:
 	
+	/// exception thrown if the ConfigService configuration does not define a UI directory
+	class MissingUIDirectoryException : public PionException {
+	public:
+		MissingUIDirectoryException()
+			: PionException("The ConfigService configuration is missing a UIDirectory parameter") {}
+	};
+
+
 	/// constructs a new ConfigService object
 	ConfigService(void) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ConfigService() {}
-	
+
+	/**
+	 * sets configuration parameters for this ConfigService
+	 *
+	 * @param platform_cfg reference to the platform configuration manager
+	 * @param config_ptr pointer to a list of XML nodes containing ConfigService
+	 *                   configuration parameters
+	 */
+	virtual void setConfig(pion::server::PlatformConfig& platform_cfg,
+						   const xmlNodePtr config_ptr);
+
 	/**
 	 * attempts to handle a new HTTP request
 	 *
@@ -50,6 +68,14 @@ public:
 	 */
 	virtual void operator()(pion::net::HTTPRequestPtr& request,
 							pion::net::TCPConnectionPtr& tcp_conn);
+
+private:
+
+	/// name of the UI directory element for Pion XML config files
+	static const std::string		UI_DIRECTORY_ELEMENT_NAME;
+
+	/// directory containing the UI files
+	std::string						m_ui_directory;
 };
 
 	

@@ -96,14 +96,19 @@ pion.reactors.init = function() {
 	});
 
 	dojo.xhrGet({
-		url: '/config/plugins',
+		url: '/config/reactors/plugins',
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
-			var plugin_elements = response.getElementsByTagName('Plugin');
+			var reactor_elements = response.getElementsByTagName('Reactor');
 			var available_plugins = [];
-			dojo.forEach(plugin_elements, function(n) {
-				available_plugins.push(dojo.isIE? n.xml : n.textContent);
+			var categories = {};
+			dojo.forEach(reactor_elements, function(n) {
+				var plugin_element = n.getElementsByTagName('Plugin')[0];
+				var plugin_element_string = dojo.isIE? plugin_element.xml : plugin_element.textContent;
+				available_plugins.push(plugin_element_string);
+				var reactor_type_element = n.getElementsByTagName('ReactorType')[0];
+				categories[plugin_element_string] = dojo.isIE? reactor_type_element.xml : reactor_type_element.textContent;
 			});
 
 			// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
@@ -117,7 +122,7 @@ pion.reactors.init = function() {
 						//dojo.req   uire(reactor_package);
  						var category = pion.reactors.plugin_data_store.getValue(item, 'category');
 						var label = pion.reactors.plugin_data_store.getValue(item, 'label');
-						var icon = plugin + '/icon-' + plugin + '.png';
+						var icon = categories[plugin] + '/' + plugin + '/icon-' + plugin + '.png';
 						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
 						console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
 						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);

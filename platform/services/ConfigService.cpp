@@ -18,6 +18,8 @@
 //
 
 #include <sstream>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
 #include "PlatformConfig.hpp"
 #include "ConfigService.hpp"
@@ -30,8 +32,22 @@ using namespace pion::platform;
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
-		
+
+// static members of ConfigService
+const std::string		ConfigService::UI_DIRECTORY_ELEMENT_NAME = "UIDirectory";
+
+
 // ConfigService member functions
+
+void ConfigService::setConfig(pion::server::PlatformConfig& platform_cfg,
+							  const xmlNodePtr config_ptr)
+{
+	pion::server::PlatformService::setConfig(platform_cfg, config_ptr);
+	
+	// get the UI directory
+	if (! ConfigManager::getConfigOption(UI_DIRECTORY_ELEMENT_NAME, m_ui_directory, config_ptr))
+		throw MissingUIDirectoryException();
+}
 
 void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
@@ -460,6 +476,38 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			// send statistics for all Reactors
 			getConfig().getReactionEngine().writeStatsXML(ss);
 			
+		} else if (branches[1] == "plugins") {
+
+			// Send a list of all Reactors found in the UI directory
+
+			ConfigManager::writeBeginPionConfigXML(ss);
+
+			// Iterate through all the subdirectories of the Reactor directory (e.g. collection, processing, storage).
+			std::string reactor_directory = m_ui_directory + "/plugins/reactors";
+			boost::filesystem::directory_iterator end;
+			for (boost::filesystem::directory_iterator it(reactor_directory); it != end; ++it) {
+				if (boost::filesystem::is_directory(*it)) {
+					// Skip directories starting with a '.'.
+					if (it->path().leaf().substr(0, 1) == ".") continue;
+
+					// Iterate through all the subdirectories of the subdirectory (e.g. LogReactor).
+					boost::filesystem::directory_iterator end_2;
+					for (boost::filesystem::directory_iterator it2(*it); it2 != end_2; ++it2) {
+						if (boost::filesystem::is_directory(*it2)) {
+							// Skip directories starting with a '.'.
+							if (it2->path().leaf().substr(0, 1) == ".") continue;
+
+							ss << "<Reactor>"
+							   << "<ReactorType>" << it->path().leaf() << "</ReactorType>"
+							   << "<Plugin>" << it2->path().leaf() << "</Plugin>"
+							   << "</Reactor>";
+						}
+					}
+				}
+			}
+
+			ConfigManager::writeEndPionConfigXML(ss);
+
 		} else if (branches.size() == 2) {
 			// branches[1] == reactor_id
 			
