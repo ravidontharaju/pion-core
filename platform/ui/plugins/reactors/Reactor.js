@@ -47,14 +47,14 @@ dojo.declare("plugins.reactors.Reactor",
 				identity: this.config.Plugin,
 				onItem: function(item) {
 					_this.label = store.getValue(item, 'label');
-					_this.category = store.getValue(item, 'category');
-					dojo.addClass(_this.domNode, _this.category);
-
-					if (_this.category != 'collection') {
-						_this.run_button.setAttribute('checked', true); // all reactors except collectors start out running
-					}
 				}
 			});
+
+			var category = pion.reactors.categories[this.config.Plugin];
+			dojo.addClass(this.domNode, category);
+			if (category != 'collection') {
+				this.run_button.setAttribute('checked', true); // all reactors except collectors start out running
+			}
 
 			dojo.addClass(this.domNode, 'moveable');
 			dojo.addClass(this.domNode, 'reactor');

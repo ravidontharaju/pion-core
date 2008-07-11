@@ -17,6 +17,7 @@ dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.gfx");
 dojo.require("dojox.grid.Grid");
 
+// Reactors don't have to be listed here to be usable, but they do to be included in pion-dojo.js.
 dojo.require("plugins.reactors.LogInputReactor");
 dojo.require("plugins.reactors.LogOutputReactor");
 dojo.require("plugins.reactors.FilterReactor");
@@ -45,6 +46,7 @@ pion.reactors.reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.config_store = null;
 pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: '/resources/comparisonTypes.json'});
 pion.reactors.generic_comparison_types = [];
+pion.reactors.categories = {};
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
@@ -100,36 +102,37 @@ pion.reactors.init = function() {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
+			// For each Reactor node, load the JavaScript code for the class (if not already loaded), and in the appropriate 
+			// accordion pane of the sidebar, add a Reactor icon which can be dragged onto a workspace.
 			var reactor_elements = response.getElementsByTagName('Reactor');
-			var available_plugins = [];
-			var categories = {};
 			dojo.forEach(reactor_elements, function(n) {
 				var plugin_element = n.getElementsByTagName('Plugin')[0];
-				var plugin_element_string = dojo.isIE? plugin_element.xml : plugin_element.textContent;
-				available_plugins.push(plugin_element_string);
+				var plugin = dojo.isIE? plugin_element.xml : plugin_element.textContent;
 				var reactor_type_element = n.getElementsByTagName('ReactorType')[0];
-				categories[plugin_element_string] = dojo.isIE? reactor_type_element.xml : reactor_type_element.textContent;
-			});
+				var category = dojo.isIE? reactor_type_element.xml : reactor_type_element.textContent;
 
-			// For each reactor class in reactors.json, load the Javascript code for the class, and in the appropriate 
-			// accordion pane of the sidebar, add a reactor icon which can be dragged onto a workspace.
-			pion.reactors.plugin_data_store.fetch({
-				onItem: function(item) {
-					var plugin = pion.reactors.plugin_data_store.getValue(item, 'plugin');
-					if (dojo.indexOf(available_plugins, plugin) != -1) {
-						reactor_package = "plugins.reactors." + plugin;
-						// TODO: check if the package is already loaded, and if not, call dojo.require.
-						//dojo.req   uire(reactor_package);
- 						var category = pion.reactors.plugin_data_store.getValue(item, 'category');
+				// Check if the module for this Reactor is already loaded, and if not, load it.
+				reactor_class = "plugins.reactors." + plugin;
+				var prototype = dojo.getObject(reactor_class);
+				if (!prototype) {
+					dojo.require(reactor_class);
+				}
+
+				pion.reactors.categories[plugin] = category;
+				var icon = category + '/' + plugin + '/icon-' + plugin + '.png';
+				var icon_url = dojo.moduleUrl('plugins.reactors', icon);
+				console.debug('icon_url = ', icon_url);
+
+				pion.reactors.plugin_data_store.fetchItemByIdentity({
+					identity: plugin,
+					onItem: function(item) {
 						var label = pion.reactors.plugin_data_store.getValue(item, 'label');
-						var icon = categories[plugin] + '/' + plugin + '/icon-' + plugin + '.png';
-						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
-						console.debug('input = ', {reactor_type: plugin, src: icon_url, alt: label});
+						console.debug('reactor bucket node = ', {reactor_type: plugin, src: icon_url, alt: label});
 						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
 					}
-				},
-				onError: pion.handleFetchError
+				});
 			});
+			pion.reactors.initConfiguredReactors();
 			return response;
 		},
 		error: pion.handleXhrGetError
@@ -138,6 +141,82 @@ pion.reactors.init = function() {
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
 
+	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
+	dojo.connect(document, 'onkeypress', handleKeyPress);
+
+	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
+	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
+	// triggers another tab to actually be selected.
+
+	// This is a workaround for a bug in dojo, namely that the tab that's clicked will always look as if it's selected, 
+	// even if clicking it triggered another tab to actually be selected, as is the case with the 'add new workspace' tab.
+	dojo.connect(dijit.byId("mainTabContainer").tablist, 'onButtonClick', 
+					function() {
+						if (new_workspace_tab_clicked) {
+							var current_content_pane = pion.reactors.workspace_box.my_content_pane;
+
+							// Although current_content_pane is already selected, we need to reselect it to get the
+							// tab itself to look selected.  But we can't just call selectChild, because it won't do
+							// anything since it's already selected.  So, we need to select a different pane first.
+							// workspace_boxes[0] is NOT the current content pane, since it can't be a new workspace.
+							dijit.byId("mainTabContainer").selectChild(workspace_boxes[0].my_content_pane);
+							
+							// Now we can reselect, and finally the tab will show that it's selected.
+							dijit.byId("mainTabContainer").selectChild(current_content_pane);
+
+							// Reset this since the workaround is only needed when the 'add new workspace' tab is clicked. 
+							new_workspace_tab_clicked = false;
+						}
+					});
+
+	if (!file_protocol) {
+		var prev_global_ops = 0;
+		var prev_events_in_for_workspace = 0;
+		setInterval(function() {
+			if (!ops_toggle_button.checked) {
+				dojo.xhrGet({
+					url: '/config/reactors/stats',
+					preventCache: true,
+					handleAs: 'xml',
+					timeout: 1000,
+					load: function(response, ioArgs) {
+						var node = response.getElementsByTagName('TotalOps')[0];
+						var global_ops = parseInt(dojo.isIE? node.xml.match(/.*>(\d*)<.*/)[1] : node.textContent);
+						var delta = global_ops - prev_global_ops;
+						dojo.byId('global_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
+						prev_global_ops = global_ops;
+						var events_in_for_workspace = 0;
+						var reactors = response.getElementsByTagName('Reactor');
+						dojo.forEach(reactors, function(n) {
+							var id = n.getAttribute('id');
+							var reactor = pion.reactors.reactors_by_id[id];
+							if (reactor.workspace == pion.reactors.workspace_box) {
+								var events_in_node = n.getElementsByTagName('EventsIn')[0];
+								var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
+								var events_in = parseInt(events_in_str);
+								reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
+								reactor.prev_events_in = events_in;
+								events_in_for_workspace += events_in;
+							}
+							var is_running_node = n.getElementsByTagName('Running')[0];
+							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
+							var is_running = (is_running_string == 'true');
+							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
+							reactor.run_button.setAttribute('checked', is_running);
+						});
+						delta = events_in_for_workspace - prev_events_in_for_workspace;
+						dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
+						prev_events_in_for_workspace = events_in_for_workspace;
+						return response;
+					},
+					error: pion.handleXhrGetError
+				});
+			}
+		}, 1000);
+	}
+}
+
+pion.reactors.initConfiguredReactors = function() {
 	if (file_protocol) {
 		addWorkspace();
 		pion.reactors.workspace_box = workspace_boxes[0];
@@ -212,80 +291,6 @@ pion.reactors.init = function() {
 			},
 			onError: pion.handleFetchError
 		});
-	}
-
-	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
-	dojo.connect(document, 'onkeypress', handleKeyPress);
-
-	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
-	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
-	// triggers another tab to actually be selected.
-
-	// This is a workaround for a bug in dojo, namely that the tab that's clicked will always look as if it's selected, 
-	// even if clicking it triggered another tab to actually be selected, as is the case with the 'add new workspace' tab.
-	dojo.connect(dijit.byId("mainTabContainer").tablist, 'onButtonClick', 
-					function() {
-						if (new_workspace_tab_clicked) {
-							var current_content_pane = pion.reactors.workspace_box.my_content_pane;
-
-							// Although current_content_pane is already selected, we need to reselect it to get the
-							// tab itself to look selected.  But we can't just call selectChild, because it won't do
-							// anything since it's already selected.  So, we need to select a different pane first.
-							// workspace_boxes[0] is NOT the current content pane, since it can't be a new workspace.
-							dijit.byId("mainTabContainer").selectChild(workspace_boxes[0].my_content_pane);
-							
-							// Now we can reselect, and finally the tab will show that it's selected.
-							dijit.byId("mainTabContainer").selectChild(current_content_pane);
-
-							// Reset this since the workaround is only needed when the 'add new workspace' tab is clicked. 
-							new_workspace_tab_clicked = false;
-						}
-					});
-
-	if (!file_protocol) {
-		var prev_global_ops = 0;
-		var prev_events_in_for_workspace = 0;
-		setInterval(function() {
-			if (!ops_toggle_button.checked) {
-				dojo.xhrGet({
-					url: '/config/reactors/stats',
-					preventCache: true,
-					handleAs: 'xml',
-					timeout: 1000,
-					load: function(response, ioArgs) {
-						var node = response.getElementsByTagName('TotalOps')[0];
-						var global_ops = parseInt(dojo.isIE? node.xml.match(/.*>(\d*)<.*/)[1] : node.textContent);
-						var delta = global_ops - prev_global_ops;
-						dojo.byId('global_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
-						prev_global_ops = global_ops;
-						var events_in_for_workspace = 0;
-						var reactors = response.getElementsByTagName('Reactor');
-						dojo.forEach(reactors, function(n) {
-							var id = n.getAttribute('id');
-							var reactor = pion.reactors.reactors_by_id[id];
-							if (reactor.workspace == pion.reactors.workspace_box) {
-								var events_in_node = n.getElementsByTagName('EventsIn')[0];
-								var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
-								var events_in = parseInt(events_in_str);
-								reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
-								reactor.prev_events_in = events_in;
-								events_in_for_workspace += events_in;
-							}
-							var is_running_node = n.getElementsByTagName('Running')[0];
-							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
-							var is_running = (is_running_string == 'true');
-							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-							reactor.run_button.setAttribute('checked', is_running);
-						});
-						delta = events_in_for_workspace - prev_events_in_for_workspace;
-						dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
-						prev_events_in_for_workspace = events_in_for_workspace;
-						return response;
-					},
-					error: pion.handleXhrGetError
-				});
-			}
-		}, 1000);
 	}
 }
 

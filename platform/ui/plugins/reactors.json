@@ -1,11 +1,11 @@
 {
 	identifier: 'plugin',
 	items: [
-		{plugin: 'FilterReactor',         category: 'processing', label: 'Filter Reactor'          },
-		{plugin: 'TransformReactor',      category: 'processing', label: 'Transformation Reactor'  },
-		{plugin: 'SnifferReactor',        category: 'processing', label: 'Sniffer Reactor'         },
-		{plugin: 'LogInputReactor',       category: 'collection', label: 'Log File Input Reactor'  },
-		{plugin: 'LogOutputReactor',      category: 'storage',    label: 'Log File Output Reactor' },
-		{plugin: 'DatabaseOutputReactor', category: 'storage',    label: 'Embedded Storage Reactor'}
+		{plugin: 'FilterReactor',         label: 'Filter Reactor'          },
+		{plugin: 'TransformReactor',      label: 'Transformation Reactor'  },
+		{plugin: 'SnifferReactor',        label: 'Sniffer Reactor'         },
+		{plugin: 'LogInputReactor',       label: 'Log File Input Reactor'  },
+		{plugin: 'LogOutputReactor',      label: 'Log File Output Reactor' },
+		{plugin: 'DatabaseOutputReactor', label: 'Embedded Storage Reactor'}
 	]
 }
