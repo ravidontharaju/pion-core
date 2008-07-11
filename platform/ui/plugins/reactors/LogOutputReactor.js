@@ -13,6 +13,8 @@ dojo.declare("plugins.reactors.LogOutputReactor",
 	}
 );
 
+plugins.reactors.LogOutputReactor.label = 'Log File Output Reactor';
+
 dojo.declare("plugins.reactors.LogOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{

@@ -66,7 +66,6 @@ pion.reactors.init = function() {
 	});
 
 	var url = dojo.moduleUrl('plugins', 'reactors.json');
-	pion.reactors.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
 	var dndSourceReactorCreator = function(item, hint) {
 		var node = dojo.doc.createElement("div");
@@ -78,7 +77,7 @@ pion.reactors.init = function() {
 		img_node.setAttribute('src', item.src);
 		img_node.setAttribute('width', 148);
 		img_node.setAttribute('height', 25);
-		img_node.setAttribute('alt', item.label);
+		img_node.setAttribute('alt', item.alt);
 		return {node: node, data: item, type: ["reactor"]};
 	}
 
@@ -116,21 +115,14 @@ pion.reactors.init = function() {
 				var prototype = dojo.getObject(reactor_class);
 				if (!prototype) {
 					dojo.require(reactor_class);
+					prototype = dojo.getObject(reactor_class);
 				}
 
 				pion.reactors.categories[plugin] = category;
 				var icon = category + '/' + plugin + '/icon-' + plugin + '.png';
 				var icon_url = dojo.moduleUrl('plugins.reactors', icon);
 				console.debug('icon_url = ', icon_url);
-
-				pion.reactors.plugin_data_store.fetchItemByIdentity({
-					identity: plugin,
-					onItem: function(item) {
-						var label = pion.reactors.plugin_data_store.getValue(item, 'label');
-						console.debug('reactor bucket node = ', {reactor_type: plugin, src: icon_url, alt: label});
-						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: label}]);
-					}
-				});
+				reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
 			});
 			pion.reactors.initConfiguredReactors();
 			return response;

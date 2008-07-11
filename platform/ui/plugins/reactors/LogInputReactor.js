@@ -12,6 +12,8 @@ dojo.declare("plugins.reactors.LogInputReactor",
 	}
 );
 
+plugins.reactors.LogInputReactor.label = 'Log File Input Reactor';
+
 dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{

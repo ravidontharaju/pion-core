@@ -42,14 +42,6 @@ dojo.declare("plugins.reactors.Reactor",
 			this.domNode.appendChild(this.ops_per_sec);
 			this.domNode.setAttribute("reactor_type", this.config.Plugin);
 
-			var store = pion.reactors.plugin_data_store;
-			store.fetchItemByIdentity({
-				identity: this.config.Plugin,
-				onItem: function(item) {
-					_this.label = store.getValue(item, 'label');
-				}
-			});
-
 			var category = pion.reactors.categories[this.config.Plugin];
 			dojo.addClass(this.domNode, category);
 			if (category != 'collection') {

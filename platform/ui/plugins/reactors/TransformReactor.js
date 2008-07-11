@@ -91,6 +91,8 @@ dojo.declare("plugins.reactors.TransformReactor",
 	}
 );
 
+plugins.reactors.TransformReactor.label = 'Transformation Reactor';
+
 dojo.declare("plugins.reactors.TransformReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{

@@ -40,6 +40,8 @@ dojo.declare("plugins.reactors.FilterReactor",
 	}
 );
 
+plugins.reactors.FilterReactor.label = 'Filter Reactor';
+
 plugins.reactors.initFilterReactorGridLayout = function() {
 	plugins.reactors.filter_reactor_grid_layout = [{
 		rows: [[

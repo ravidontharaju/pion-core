@@ -38,6 +38,8 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 	}
 );
 
+plugins.reactors.DatabaseOutputReactor.label = 'Embedded Storage Reactor';
+
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{

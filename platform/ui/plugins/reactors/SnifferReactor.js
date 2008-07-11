@@ -12,6 +12,8 @@ dojo.declare("plugins.reactors.SnifferReactor",
 	}
 );
 
+plugins.reactors.SnifferReactor.label = 'Sniffer Reactor';
+
 dojo.declare("plugins.reactors.SnifferReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
