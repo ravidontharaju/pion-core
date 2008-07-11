@@ -483,30 +483,6 @@ The following are also available, if the need arises.
 }
 */
 
-.reactor.LogInputReactor {
-	background: url(../images/bg-moveable-collection-logs.png) repeat-x;
-}
-
-.reactor.FilterReactor {
-	background: url(../images/bg-moveable-processing-filter.png) repeat-x;
-}
-
-.reactor.TransformReactor {
-	background: url(../images/bg-moveable-processing-transform.png) repeat-x;
-}
-
-.reactor.SnifferReactor {
-	background: url(../images/bg-moveable-processing-sniffer.png) repeat-x;
-}
-
-.reactor.DatabaseOutputReactor {
-	background: url(../images/bg-moveable-storage-datastore.png) repeat-x;
-}
-
-.reactor.LogOutputReactor {
-	background: url(../images/bg-moveable-storage-logs.png) repeat;
-}
-
 /* Tabs */
 
 .tundra .dijitTabPaneWrapper {

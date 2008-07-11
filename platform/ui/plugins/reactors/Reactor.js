@@ -65,6 +65,7 @@ dojo.declare("plugins.reactors.Reactor",
 			this.domNode.style.top  = newLeftTop.t + "px";
 			this.domNode.style.left = newLeftTop.l + "px";
 			this.domNode.style.position = "absolute";
+			this.domNode.style.background = 'url(../plugins/reactors/' + category + '/' + this.config.Plugin + '/bg-moveable.png) repeat-x';
 
 			// Add a context menu for the new reactor.
 			if (!firefox_on_mac) {
