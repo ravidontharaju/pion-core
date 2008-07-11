@@ -1,0 +1,35 @@
+<div class="dijitDialog reactor_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Sniffer Reactor Configuration</span>
+	<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: hide">
+		<span dojoAttachPoint="closeText" class="closeText">x</span>
+	</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>Name:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+			></tr
+			><tr
+				><td><label>ID:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+			></tr
+			><tr
+				><td><label>Comments:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+			></tr
+		></table
+	</div>
+	<h3>Input Connections</h3>
+	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="pion.reactors.reactor_inputs_grid_model"
+		 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<h3>Output Connections</h3>
+	<div dojoAttachPoint="reactor_outputs_grid" dojoType="dojox.Grid" model="pion.reactors.reactor_outputs_grid_model"
+		 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+		<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+	</div>
+</div>

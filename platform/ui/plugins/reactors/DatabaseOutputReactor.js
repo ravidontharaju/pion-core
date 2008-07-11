@@ -41,7 +41,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/DatabaseOutputReactor/DatabaseOutputReactorInitDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "storage/DatabaseOutputReactor/DatabaseOutputReactorInitDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'DatabaseOutputReactor';
@@ -88,7 +88,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/DatabaseOutputReactor/DatabaseOutputReactorDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "storage/DatabaseOutputReactor/DatabaseOutputReactorDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

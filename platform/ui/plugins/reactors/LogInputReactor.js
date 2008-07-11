@@ -15,7 +15,7 @@ dojo.declare("plugins.reactors.LogInputReactor",
 dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/LogInputReactor/LogInputReactorInitDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "collection/LogInputReactor/LogInputReactorInitDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'LogInputReactor';
@@ -28,7 +28,7 @@ dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 dojo.declare("plugins.reactors.LogInputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/LogInputReactor/LogInputReactorDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "collection/LogInputReactor/LogInputReactorDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

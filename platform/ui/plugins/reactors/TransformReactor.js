@@ -94,7 +94,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 dojo.declare("plugins.reactors.TransformReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/TransformReactor/TransformReactorDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "processing/TransformReactor/TransformReactorDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

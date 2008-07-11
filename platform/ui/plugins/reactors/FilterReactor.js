@@ -60,7 +60,7 @@ plugins.reactors.initFilterReactorGridLayout = function() {
 dojo.declare("plugins.reactors.FilterReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
-		templatePath: dojo.moduleUrl("plugins", "reactors/FilterReactor/FilterReactorDialog.html"),
+		templatePath: dojo.moduleUrl("plugins.reactors", "processing/FilterReactor/FilterReactorDialog.html"),
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
