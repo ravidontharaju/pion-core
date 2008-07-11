@@ -33,6 +33,7 @@
 			<Comment>Pion platform configuration service</Comment>
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
+			<UIDirectory>../../platform/ui</UIDirectory>
 		</PlatformService>
 		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>
