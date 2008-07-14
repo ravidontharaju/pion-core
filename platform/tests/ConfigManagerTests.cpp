@@ -20,6 +20,7 @@
 #include <pion/PionConfig.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/test/unit_test.hpp>
+#include <cstring>
 
 using namespace pion;
 using namespace pion::platform;
