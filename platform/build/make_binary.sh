@@ -8,12 +8,14 @@ if test "$2" == "osx"; then
 	UUID_LIB=libuuid.16.$SHARED_LIB_SUFFIX
 	LOG4CXX_LIB=liblog4cxx.$SHARED_LIB_SUFFIX
 	SQLITE_LIB=libsqlite3.$SHARED_LIB_SUFFIX
+	YAJL_LIB=libyajl.0.4.0.$SHARED_LIB_SUFFIX
 else
 	SHARED_LIB_SUFFIX=so
 	BOOST_SUFFIX=*-mt-1_35.$SHARED_LIB_SUFFIX.1.35.0
 	UUID_LIB=libuuid.$SHARED_LIB_SUFFIX.16
 	LOG4CXX_LIB=liblog4cxx.$SHARED_LIB_SUFFIX.10
 	SQLITE_LIB=libsqlite3.$SHARED_LIB_SUFFIX
+	YAJL_LIB=libyajl.$SHARED_LIB_SUFFIX.0
 fi
 
 # Determine package name and binary output directory based on args
@@ -43,6 +45,7 @@ echo "Copying binary files.."
 cp $LIB_DIRECTORY/$UUID_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$LOG4CXX_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/$YAJL_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_thread$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_system$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_filesystem$BOOST_SUFFIX $BIN_DIRECTORY/libs
@@ -59,6 +62,7 @@ cp platform/server/.libs/libpion-server-*.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
 # copy the Pion plugin files into "plugins"
 cp net/services/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
 cp platform/codecs/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
+cp platform/protocols/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
 cp platform/databases/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
 cp platform/reactors/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
 cp platform/services/.libs/*.$PLUGIN_LIB_SUFFIX $BIN_DIRECTORY/plugins
