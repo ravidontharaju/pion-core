@@ -428,6 +428,44 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		// END DATABASES CONFIG
 		//
+	} else if (branches.front() == "protocols") {
+		//
+		// BEGIN PROTOCOLS CONFIG
+		//
+		if (branches.size() == 1) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				
+				// retrieve configuration for all Protocols
+				getConfig().getProtocolFactory().writeConfigXML(ss);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else if (branches.size() == 2) {
+			// branches[1] == protocol_id
+			
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Protocol's configuration
+				
+				if (! getConfig().getProtocolFactory().writeConfigXML(ss, branches[1]))
+					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+				
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
+		}
+		//
+		// END PROTOCOLS CONFIG
+		//
 	} else if (branches.front() == "reactors") {
 		//
 		// BEGIN REACTORS CONFIG
