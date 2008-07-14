@@ -126,10 +126,10 @@ pion.reactors.init = function() {
 							var category = dojo.isIE? reactor_type_element.xml : reactor_type_element.textContent;
 
 							// Check if the module for this Reactor is already loaded, and if not, load it.
-							reactor_class = "plugins.reactors." + plugin;
+							var reactor_class = "plugins.reactors." + plugin;
 							var prototype = dojo.getObject(reactor_class);
 							if (!prototype) {
-								dojo.require(reactor_class);
+								dojo.requireIf(true, reactor_class);
 								prototype = dojo.getObject(reactor_class);
 							}
 
