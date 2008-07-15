@@ -54,6 +54,8 @@ pion.reactors.getHeight = function() {
 }
 
 pion.reactors.init = function() {
+	pion.reactors.initProtocols();
+
 	dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
 
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
@@ -64,8 +66,6 @@ pion.reactors.init = function() {
 			dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
 		}
 	});
-
-	var url = dojo.moduleUrl('plugins', 'reactors.json');
 
 	var dndSourceReactorCreator = function(item, hint) {
 		var node = dojo.doc.createElement("div");
@@ -226,6 +226,28 @@ pion.reactors.init = function() {
 			}
 		}, 1000);
 	}
+}
+
+pion.reactors.initProtocols = function() {
+	// This should probably be pion.protocols.config_store and go in a new file protocols.js,
+	// but wait until there's something else to put there.
+	pion.protocols_config_store = new dojox.data.XmlStore({url: '/config/protocols'});
+	
+	// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+	pion.protocols_config_store.fetchItemByIdentity = function(keywordArgs) {
+		pion.protocols_config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
+	}
+	pion.protocols_config_store.getIdentity = function(item) {
+		return pion.protocols_config_store.getValue(item, '@id');
+	}
+
+	pion.protocol_ids_by_name = {};
+	pion.protocols_config_store.fetch({
+		onItem: function(item) {
+			pion.protocol_ids_by_name[pion.protocols_config_store.getValue(item, 'Name')] = pion.protocols_config_store.getIdentity(item);
+		},
+		onError: pion.handleFetchError
+	});
 }
 
 pion.reactors.initConfiguredReactors = function() {

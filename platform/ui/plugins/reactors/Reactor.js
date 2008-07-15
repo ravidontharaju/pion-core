@@ -166,7 +166,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 				this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 			}
 			if (this._insertCustomData) {
-				this._insertCustomData();
+				this._insertCustomData(dialogFields);
 			}
 			this.post_data += '</Reactor></PionConfig>';
 			console.debug('post_data: ', this.post_data);
@@ -276,7 +276,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			}
 			if (this._insertCustomData) {
 				// dialogFields.options can and should be undefined for Reactors without dialog options.
-				this._insertCustomData(dialogFields.options);
+				this._insertCustomData(dialogFields);
 			}
 			this.put_data += '</Reactor></PionConfig>';
 			console.debug('put_data: ', this.put_data);
