@@ -24,15 +24,17 @@
 #include <boost/logic/tribool.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
 
-
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+/// Typedef to return back both success/failure as well as last compared node
+typedef boost::tuple<bool, Event::ConstIterator> CompMatch;
 
 ///
 /// Comparison: used to perform a comparison on the value of a Term
@@ -149,9 +151,17 @@ public:
 	 *
 	 * @param e the Event to evaluate
 	 *
-	 * @return true if the Comparison succeeded; false if it did not
+	 * @return tuple with bool & Event:iterator
+	 *			true if the Comparison succeeded; false if it did not
+	 *			Iterator points to last compared node
 	 */
-	inline bool evaluate(const Event& e) const;
+	inline CompMatch evaluate(const Event& e) const;
+
+	/// Same as evaluate, except returns just the bool for success
+	inline bool evaluateBool(const Event& e) const
+	{
+		return evaluate(e).get<0>();
+	}
 
 	/**
 	 * configures the Comparison information
@@ -600,13 +610,14 @@ private:
 	 * @param comparison_func a function used to compare values
 	 * @param values_range the range of values to compare
 	 *
-	 * @return true if the comparisons are successful; false if they are not
+	 * @return tuple, with bool for success, and Event:Iterator
+	 *			true if the comparisons are successful; false if they are not
+	 *			Iterator points to the last compared value/node
 	 */
 	template <typename ComparisonFunction>
-	inline bool checkComparison(const ComparisonFunction& comparison_func,
-								const Event::ValuesRange& values_range) const;
-		
-	
+	inline CompMatch checkComparison(const ComparisonFunction& comparison_func,
+									const Event::ValuesRange& values_range) const;
+
 	/// identifies the Vocabulary Term to examine
 	Vocabulary::Term			m_term;
 	
@@ -626,14 +637,84 @@ private:
 	bool						m_match_all_values;
 };
 
+
+
+template <typename T>
+inline void Comparison::configure(const ComparisonType type,
+								  const T& value,
+								  const bool match_all_values)
+{
+	if (! checkForValidType(type))
+		throw InvalidTypeForTermException();
 	
+	m_type = type;
+	m_value = value;
+	m_match_all_values = match_all_values;
+	
+	// make sure the value matches the comparison type
+	switch (m_term.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+			throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			if (boost::get<boost::int32_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			if (boost::get<boost::uint32_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_INT64:
+			if (boost::get<boost::int64_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_UINT64:
+			if (boost::get<boost::uint64_t>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			if (boost::get<float>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			if (boost::get<double>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			if (boost::get<long double>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_REGEX:
+			throw InvalidValueForTypeException();
+			break;
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			if (boost::get<PionDateTime>(&m_value) == NULL)
+				throw InvalidValueForTypeException();
+			break;
+	}
+}
+
+//************************************************************************************************************************************************
+
 // inline member functions for Comparison
-	
+
 template <typename ComparisonFunction>
-inline bool Comparison::checkComparison(const ComparisonFunction& comparison_func,
+inline CompMatch Comparison::checkComparison(const ComparisonFunction& comparison_func,
 										const Event::ValuesRange& values_range) const
 {
 	boost::tribool result = boost::indeterminate;
+	Event::ConstIterator value = values_range.second;
 
 	for (Event::ConstIterator i = values_range.first;
 		 i != values_range.second; ++i)
@@ -641,6 +722,7 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 		if (comparison_func(i->value)) {
 			if (! m_match_all_values) {
 				result = true;
+				value = i;
 				break;
 			}
 		} else {
@@ -654,27 +736,35 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 	if (boost::indeterminate(result))
 		result = m_match_all_values;
 	
-	return result;
+	return CompMatch(result, value);
 }
 
-inline bool Comparison::evaluate(const Event& e) const
+
+/// Macro to negate the bool success value alone
+#define PION_NEGATE0(x)		x.get<0>() = ! x.get<0>()
+/// Macro to access the bool success value alone
+#define PION_RESULT0(x)		x.get<0>()
+
+inline CompMatch Comparison::evaluate(const Event& e) const
 {
 	/// get a range of iterators representing all the values for the Term
 	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
-	bool result = false;
+	Event::ConstIterator value = e.end();
+	CompMatch result = CompMatch(false, value);
+
 	
 	switch (m_type) {
 		case TYPE_FALSE:
-			result = false;
+			PION_RESULT0(result) = false;
 			break;
 		case TYPE_TRUE:
-			result = true;
+			PION_RESULT0(result) = true;
 			break;
 		case TYPE_IS_DEFINED:
-			result = (values_range.first != e.end());
+			PION_RESULT0(result) = (values_range.first != e.end());
 			break;
 		case TYPE_IS_NOT_DEFINED:
-			result = (values_range.first == e.end());
+			PION_RESULT0(result) = (values_range.first == e.end());
 			break;
 
 		case TYPE_EQUALS:
@@ -730,7 +820,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_EQUALS)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 			
 		case TYPE_GREATER_THAN:
@@ -961,7 +1051,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_EXACT_MATCH)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 			
 		case TYPE_CONTAINS:
@@ -980,7 +1070,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_CONTAINS)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 
 		case TYPE_STARTS_WITH:
@@ -999,7 +1089,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_STARTS_WITH)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 
 		case TYPE_ENDS_WITH:
@@ -1018,7 +1108,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ENDS_WITH)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 
 		case TYPE_ORDERED_BEFORE:
@@ -1037,7 +1127,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ORDERED_BEFORE)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 
 		case TYPE_ORDERED_AFTER:
@@ -1056,7 +1146,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ORDERED_AFTER)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 
 		case TYPE_REGEX:
@@ -1075,7 +1165,7 @@ inline bool Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_REGEX)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 			
 		case TYPE_SAME_DATE_TIME:
@@ -1085,7 +1175,7 @@ inline bool Comparison::evaluate(const Event& e) const
 			CompareSameDateTime comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_DATE_TIME)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 		}
 			
@@ -1128,7 +1218,7 @@ inline bool Comparison::evaluate(const Event& e) const
 			CompareSameDate comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_DATE)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 		}
 
@@ -1171,7 +1261,7 @@ inline bool Comparison::evaluate(const Event& e) const
 			CompareSameTime comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_TIME)
-				result = ! result;
+				PION_NEGATE0(result);
 			break;
 		}
 
@@ -1209,72 +1299,6 @@ inline bool Comparison::evaluate(const Event& e) const
 	}
 	
 	return result;
-}
-
-template <typename T>
-inline void Comparison::configure(const ComparisonType type,
-								  const T& value,
-								  const bool match_all_values)
-{
-	if (! checkForValidType(type))
-		throw InvalidTypeForTermException();
-	
-	m_type = type;
-	m_value = value;
-	m_match_all_values = match_all_values;
-	
-	// make sure the value matches the comparison type
-	switch (m_term.term_type) {
-		case Vocabulary::TYPE_NULL:
-		case Vocabulary::TYPE_OBJECT:
-			throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
-			if (boost::get<boost::int32_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
-			if (boost::get<boost::uint32_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_INT64:
-			if (boost::get<boost::int64_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_UINT64:
-			if (boost::get<boost::uint64_t>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_FLOAT:
-			if (boost::get<float>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_DOUBLE:
-			if (boost::get<double>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
-			if (boost::get<long double>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
-		case Vocabulary::TYPE_REGEX:
-			throw InvalidValueForTypeException();
-			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
-			if (boost::get<PionDateTime>(&m_value) == NULL)
-				throw InvalidValueForTypeException();
-			break;
-	}
 }
 
 

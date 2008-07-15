@@ -108,11 +108,11 @@ public:
 	 */
 	inline bool transform(EventPtr& e) const
 	{
-		if (evaluate(*e)) {
+		CompMatch result = evaluate(*e);
+		if (result.get<0>()) {
 			if (m_tr_set_inplace) {
 				// TODO: Rip out the original, matching term
 			}
-			e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
 			switch (m_tr_set_term.term_type) {
 				case Vocabulary::TYPE_NULL:
 				case Vocabulary::TYPE_OBJECT:
@@ -155,8 +155,17 @@ public:
 					e->setDateTime(m_tr_set_term.term_type, boost::get<const PionDateTime&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_REGEX:
-					// TODO: Do the real Regex transformation
-//					e->setString(m_tr_set_term.term_type, m_tr_set_regex);
+					{
+						boost::match_results<std::string::const_iterator> match;
+						Event::ConstIterator ec = result.get<1>();
+						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+						if (boost::regex_search(s, match, m_tr_set_regex)) {
+							s = "";
+							for (unsigned int i = 0; i < match.size(); i++)
+								s += match[i].str();
+							e->setString(m_tr_set_term.term_type, s);
+						}
+					}
 					break;
 			}
 			return true;

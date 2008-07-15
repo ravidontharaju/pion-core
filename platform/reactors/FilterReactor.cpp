@@ -121,7 +121,7 @@ void FilterReactor::operator()(const EventPtr& e)
 
 		// all comparisons in the rule chain must pass for the Event to be delivered
 		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-			if (! i->evaluate(*e))
+			if (! i->evaluateBool(*e) )
 				return;
 		}
 

@@ -244,7 +244,7 @@ void TransformReactor::operator()(const EventPtr& e)
 
 		bool do_transformations = true;
 		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-			if (! i->evaluate(*e)) {
+			if (! i->evaluateBool(*e) ) {
 				if (m_all_conditions) {
 					do_transformations = false;
 					break;
@@ -259,12 +259,8 @@ void TransformReactor::operator()(const EventPtr& e)
 			m_event_factory.create(new_e, e->getType());	// TODO: Instead of maintaining same type, allow change
 
 			*new_e += *e;					// Populate all terms from original event
-			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++) {
+			for (TransformChain::const_iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
 				i->transform(new_e);
-//				if (i->evaluate(*e)) {		// Evaluations are based on original event
-//					i->transform(*new_e);	// TODO: Take into consideration the change of destination
-//				}
-			}
 			deliverEvent(new_e);			// Deliver the modified event
 		}
 
