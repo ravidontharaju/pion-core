@@ -64,6 +64,11 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	HTTPProtocol* retval = new HTTPProtocol;
 	retval->copyProtocol(*this);
 
+	retval->m_request_term_ref = m_request_term_ref;
+	retval->m_referer_term_ref = m_referer_term_ref;
+	retval->m_useragent_term_ref = m_useragent_term_ref;
+	retval->m_status_term_ref = m_status_term_ref;
+
 	return ProtocolPtr(retval);
 }
 
@@ -77,7 +82,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
 	(*event_ptr_ref).setString(m_referer_term_ref, m_request.getHeader(HTTPTypes::HEADER_REFERER));
 	(*event_ptr_ref).setString(m_useragent_term_ref, m_request.getHeader(HTTPTypes::HEADER_USER_AGENT));
-	(*event_ptr_ref).setInt(m_status_term_ref, m_response.getStatusCode());
+	(*event_ptr_ref).setUInt(m_status_term_ref, m_response.getStatusCode());
 
 
 	// TODO: set other message terms
