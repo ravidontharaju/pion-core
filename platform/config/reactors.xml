@@ -45,7 +45,7 @@
     <Workspace>Web Log Processing</Workspace>
     <X>450</X>
     <Y>50</Y>
-    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Codec>3467da4c-52b6-11dd-9f66-001cc02bd66b</Codec>
     <Filename>not_found.log</Filename>
     <Format>date request status</Format>
     <Flush>true</Flush>
@@ -70,7 +70,7 @@
     <Workspace>Web Log Processing</Workspace>
     <X>450</X>
     <Y>350</Y>
-    <Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>
+    <Codec>3467da4c-52b6-11dd-9f66-001cc02bd66b</Codec>
     <Filename>home_page.log</Filename>
     <Format>date remotehost request</Format>
     <Flush>true</Flush>
