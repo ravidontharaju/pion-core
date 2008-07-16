@@ -72,7 +72,7 @@ public:
 		g_vocab_mgr.openConfigFile();
 
 		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
+		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-event"));
 		xmlAddNextSibling(m_config_ptr, event_type_node);
 	}
 

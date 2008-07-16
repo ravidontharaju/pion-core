@@ -17,7 +17,7 @@
     <Y>300</Y>
     <Database>e75d88f0-e7df-11dc-a76c-0016cb926e68</Database>
     <Table>clickstream</Table>
-    <Field term="urn:vocab:clickstream#remotehost">remotehost</Field>
+    <Field term="urn:vocab:clickstream#c-ip">remotehost</Field>
     <Field term="urn:vocab:clickstream#rfc931">rfc931</Field>
     <Field term="urn:vocab:clickstream#authuser">authuser</Field>
     <Field term="urn:vocab:clickstream#date">date</Field>

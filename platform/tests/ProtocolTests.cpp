@@ -141,7 +141,7 @@ public:
 	inline xmlNodePtr createProtocolConfig(const std::string& plugin_type) {
 		xmlNodePtr config_ptr(ConfigManager::createPluginConfig(plugin_type));
 		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
+		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-event"));
 		xmlAddNextSibling(config_ptr, event_type_node);
 		return config_ptr;
 	}

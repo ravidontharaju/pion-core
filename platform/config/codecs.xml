@@ -4,11 +4,11 @@
     <Name>Common Log Format</Name>
     <Comment>Codec for the Common Log Format (CLF)</Comment>
     <Plugin>LogCodec</Plugin>
-    <EventType>urn:vocab:clickstream#http-request</EventType>
-    <Field term="urn:vocab:clickstream#remotehost">remotehost</Field>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Field term="urn:vocab:clickstream#c-ip">remotehost</Field>
     <Field term="urn:vocab:clickstream#rfc931">rfc931</Field>
     <Field term="urn:vocab:clickstream#authuser">authuser</Field>
-    <Field term="urn:vocab:clickstream#date" start="[" end="]">date</Field>
+    <Field term="urn:vocab:clickstream#clf-date" start="[" end="]">date</Field>
     <Field term="urn:vocab:clickstream#request" start="&quot;" end="&quot;">request</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#bytes">bytes</Field>
@@ -17,28 +17,36 @@
     <Name>Combined Log Format</Name>
     <Comment>Codec for the Combined Log Format (DLF)</Comment>
     <Plugin>LogCodec</Plugin>
-    <EventType>urn:vocab:clickstream#http-request</EventType>
-    <Field term="urn:vocab:clickstream#remotehost">remotehost</Field>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Field term="urn:vocab:clickstream#c-ip">remotehost</Field>
     <Field term="urn:vocab:clickstream#rfc931">rfc931</Field>
     <Field term="urn:vocab:clickstream#authuser">authuser</Field>
-    <Field term="urn:vocab:clickstream#date" start="[" end="]">date</Field>
+    <Field term="urn:vocab:clickstream#clf-date" start="[" end="]">date</Field>
     <Field term="urn:vocab:clickstream#request" start="&quot;" end="&quot;">request</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#bytes">bytes</Field>
     <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
   </Codec>
-  <Codec id="23f68d5a-bfec-11dc-81a7-0016cb926e68">
+  <Codec id="3467da4c-52b6-11dd-9f66-001cc02bd66b">
     <Name>Extended Log Format</Name>
     <Comment>Codec for the Extended Log Format (ELF)</Comment>
     <Plugin>LogCodec</Plugin>
-    <EventType>urn:vocab:clickstream#http-request</EventType>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
     <Headers>true</Headers>
-    <Field term="urn:vocab:clickstream#date" start="&quot;" end="&quot;">date</Field>
-    <Field term="urn:vocab:clickstream#remotehost">remotehost</Field>
-    <Field term="urn:vocab:clickstream#request" start="&quot;" end="&quot;">request</Field>
-    <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#s-ip">s-ip</Field> 
+    <Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
+    <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
+    <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
+    <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
   </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
     <Plugin>LogCodec</Plugin>
@@ -51,19 +59,19 @@
   <Codec id="db719c4d-7ad0-449d-94b7-b51b4789c81b">
     <Plugin>JSONCodec</Plugin>
     <Name>JSON Log Format</Name>
-    <EventType>urn:vocab:clickstream#http-request</EventType>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
     <Comment/>
     <Field term="urn:vocab:clickstream#bytes">bytes</Field>
     <Field term="urn:vocab:clickstream#request">request</Field>
-    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#date">clf-date</Field>
   </Codec>
   <Codec id="cb2d3067-ea60-4a94-8602-2da28c7a3d40">
     <Plugin>XMLCodec</Plugin>
     <Name>XML Log Format</Name>
-    <EventType>urn:vocab:clickstream#http-request</EventType>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
     <Comment/>
     <Field term="urn:vocab:clickstream#request">request</Field>
     <Field term="urn:vocab:clickstream#bytes">bytes</Field>
-    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#date">clf-date</Field>
   </Codec>
 </PionConfig>

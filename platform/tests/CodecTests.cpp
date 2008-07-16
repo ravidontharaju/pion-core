@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 	// Prepare some valid input for Codec::setConfig().
-	std::string event_type_1 = "urn:vocab:clickstream#http-request";
+	std::string event_type_1 = "urn:vocab:clickstream#http-event";
 	parseConfig("<PionConfig><Codec>"
 					"<EventType>" + event_type_1 + "</EventType>"
 				"</Codec></PionConfig>",
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTheSameName) {
 	parseConfig("<PionConfig><Codec>"
-					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<EventType>urn:vocab:clickstream#http-event</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 				"</Codec></PionConfig>",
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTh
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDifferentNames) {
 	parseConfig("<PionConfig><Codec>"
-					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<EventType>urn:vocab:clickstream#http-event</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">B</Field>"
 				"</Codec></PionConfig>",
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDi
 // It's not ambiguous for a LogCodec, but it's still probably not a good idea to have two columns with the same name.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
 	parseConfig("<PionConfig><Codec>"
-					"<EventType>urn:vocab:clickstream#http-request</EventType>"
+					"<EventType>urn:vocab:clickstream#http-event</EventType>"
 					"<Field term=\"urn:vocab:test#plain-old-int\">A</Field>"
 					"<Field term=\"urn:vocab:test#big-int\">A</Field>"
 				"</Codec></PionConfig>",
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 static const std::string NAME_1       = "Test Codec";
-static const std::string EVENT_TYPE_1 = "urn:vocab:clickstream#http-request";
+static const std::string EVENT_TYPE_1 = "urn:vocab:clickstream#http-event";
 static const std::string FIELD_TERM_1 = "urn:vocab:clickstream#bytes";
 static const std::string FIELD_NAME_1 = "bytes";
 
@@ -1638,7 +1638,7 @@ public:
 	inline xmlNodePtr createCodecConfig(const std::string& plugin_type) {
 		xmlNodePtr config_ptr(ConfigManager::createPluginConfig(plugin_type));
 		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
+		xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-event"));
 		xmlAddNextSibling(config_ptr, event_type_node);
 		return config_ptr;
 	}
@@ -1745,7 +1745,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigUnknownEventType) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetCodecConfigEventTypeNotAnObject) {
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#remotehost"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#c-ip"));
 
 	BOOST_CHECK_THROW(F::setCodecConfig(F::m_codec_id, event_type_node), Codec::NotAnObjectException);
 }
@@ -1754,7 +1754,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetNewCodecConfiguration) {
 	xmlNodePtr comment_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Comment"));
 	xmlNodeSetContent(comment_node,  reinterpret_cast<const xmlChar*>("A new comment"));
 	xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
-	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-request"));
+	xmlNodeSetContent(event_type_node,  reinterpret_cast<const xmlChar*>("urn:vocab:clickstream#http-event"));
 	xmlAddNextSibling(comment_node, event_type_node);
 
 	BOOST_CHECK_NO_THROW(F::setCodecConfig(F::m_codec_id, comment_node));
@@ -1923,22 +1923,42 @@ public:
 
 		m_common_codec = getCodec(m_common_id);
 		BOOST_CHECK(m_common_codec);
+
 		m_combined_codec = getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);
+
 		m_extended_codec = getCodec(m_extended_id);
 		BOOST_CHECK(m_extended_codec);
+
 		m_date_codec = getCodec(m_justdate_id);
 		BOOST_CHECK(m_date_codec);
 
-		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#remotehost");
+		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#c-ip");
+		BOOST_REQUIRE(m_remotehost_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_rfc931_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#rfc931");
+		BOOST_REQUIRE(m_rfc931_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_authuser_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#authuser");
-		m_date_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#date");
+		BOOST_REQUIRE(m_authuser_ref != Vocabulary::UNDEFINED_TERM_REF);
+
+		m_date_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#clf-date");
+		BOOST_REQUIRE(m_date_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_request_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#request");
+		BOOST_REQUIRE(m_request_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_status_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#status");
+		BOOST_REQUIRE(m_status_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_bytes_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#bytes");
+		BOOST_REQUIRE(m_bytes_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_referer_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#referer");
+		BOOST_REQUIRE(m_referer_ref != Vocabulary::UNDEFINED_TERM_REF);
+
 		m_useragent_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+		BOOST_REQUIRE(m_useragent_ref != Vocabulary::UNDEFINED_TERM_REF);
 	}
 	~CodecFactoryLogFormatTests_F() {}
 
@@ -1978,7 +1998,7 @@ BOOST_AUTO_TEST_CASE(checkGetCodec) {
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecEventTypes) {
-	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#http-request");
+	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#http-event");
 	BOOST_CHECK_EQUAL(m_common_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_combined_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_extended_codec->getEventType(), event_type_ref);
@@ -2202,7 +2222,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
 	std::stringstream ss;
 	m_extended_codec->write(ss, *event_ptr);
 	m_extended_codec->write(ss, *event_ptr);
-	BOOST_CHECK_EQUAL(ss.str(), "#Version: 1.0\x0A#Fields: date remotehost request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
+	BOOST_CHECK_EQUAL(ss.str(), "#Version: 1.0\x0A#Fields: clf-date c-ip request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

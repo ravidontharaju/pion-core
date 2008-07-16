@@ -29,13 +29,15 @@ namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-class HTTPProtocol : public pion::platform::Protocol
+class HTTPProtocol
+	: public pion::platform::Protocol
 {
 public:
 
 	/// constructs HTTPProtocol object
 	HTTPProtocol() : m_request_parser(true), m_response_parser(false) {}
 
+	/// virtual destructor
 	virtual ~HTTPProtocol() {}
 
 	/**
@@ -67,6 +69,7 @@ public:
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 
+
 private:
 
 	/**
@@ -77,14 +80,63 @@ private:
 	 */
 	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
 
+
+    /// parser used for HTTP request
 	pion::net::HTTPParser	m_request_parser;
-	pion::net::HTTPParser	m_response_parser;
-	pion::net::HTTPRequest  m_request;
-	pion::net::HTTPResponse m_response;
+
+    /// parser used for HTTP response
+    pion::net::HTTPParser	m_response_parser;
+
+    /// HTTP request being parsed
+    pion::net::HTTPRequest  m_request;
+
+    /// HTTP response being parsed
+    pion::net::HTTPResponse m_response;
 	
-	/// urn:vocab:clickstream#request
+
+    /// urn:vocab:clickstream#cs-bytes
+    static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
+    pion::platform::Vocabulary::TermRef	m_cs_bytes_term_ref; 
+
+    /// urn:vocab:clickstream#sc-bytes
+    static const std::string	VOCAB_CLICKSTREAM_SC_BYTES;
+    pion::platform::Vocabulary::TermRef	m_sc_bytes_term_ref; 
+
+    /// urn:vocab:clickstream#bytes
+    static const std::string	VOCAB_CLICKSTREAM_BYTES;
+    pion::platform::Vocabulary::TermRef	m_bytes_term_ref; 
+
+    /// urn:vocab:clickstream#status
+    static const std::string	VOCAB_CLICKSTREAM_STATUS;
+    pion::platform::Vocabulary::TermRef	m_status_term_ref; 
+
+    /// urn:vocab:clickstream#comment
+    static const std::string	VOCAB_CLICKSTREAM_COMMENT;
+    pion::platform::Vocabulary::TermRef	m_comment_term_ref; 
+
+    /// urn:vocab:clickstream#method
+    static const std::string	VOCAB_CLICKSTREAM_METHOD;
+    pion::platform::Vocabulary::TermRef	m_method_term_ref; 
+
+    /// urn:vocab:clickstream#uri
+    static const std::string	VOCAB_CLICKSTREAM_URI;
+    pion::platform::Vocabulary::TermRef	m_uri_term_ref; 
+
+    /// urn:vocab:clickstream#uri-stem
+    static const std::string	VOCAB_CLICKSTREAM_URI_STEM;
+    pion::platform::Vocabulary::TermRef	m_uri_stem_term_ref; 
+
+    /// urn:vocab:clickstream#uri-query
+    static const std::string	VOCAB_CLICKSTREAM_URI_QUERY;
+    pion::platform::Vocabulary::TermRef	m_uri_query_term_ref; 
+
+    /// urn:vocab:clickstream#request
 	static const std::string	VOCAB_CLICKSTREAM_REQUEST;
 	pion::platform::Vocabulary::TermRef	m_request_term_ref; 
+
+    /// urn:vocab:clickstream#host
+    static const std::string	VOCAB_CLICKSTREAM_HOST;
+    pion::platform::Vocabulary::TermRef	m_host_term_ref; 
 
 	/// urn:vocab:clickstream#referer
 	static const std::string	VOCAB_CLICKSTREAM_REFERER;
@@ -94,9 +146,19 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_USERAGENT;
 	pion::platform::Vocabulary::TermRef	m_useragent_term_ref;
 
-	/// urn:vocab:clickstream#status
-	static const std::string	VOCAB_CLICKSTREAM_STATUS;
-	pion::platform::Vocabulary::TermRef	m_status_term_ref;
+	/// urn:vocab:clickstream#cached
+	static const std::string	VOCAB_CLICKSTREAM_CACHED;
+	pion::platform::Vocabulary::TermRef	m_cached_term_ref;
+
+	/// NOTE: in addition to the above Terms, the SnifferReactor
+	/// automatically sets the following:
+	/// 
+	/// * urn:vocab:clickstream#date
+	/// * urn:vocab:clickstream#time
+	/// * urn:vocab:clickstream#date-time
+	/// * urn:vocab:clickstream#clf-date
+	/// * urn:vocab:clickstream#c-ip
+	/// * urn:vocab:clickstream#s-ip
 };
 
 

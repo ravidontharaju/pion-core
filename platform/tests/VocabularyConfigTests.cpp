@@ -768,9 +768,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
 	BOOST_CHECK_NO_THROW(F::getVocabulary());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsEighteen) {
-	// there should be eighteen terms defined in the (three) config files
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(18));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeIsCorrect) {
+	// there should be 31 terms defined in the (three) config files
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(31));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOptionValues) {
