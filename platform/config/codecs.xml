@@ -42,8 +42,8 @@
     <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#method">method</Field>
-    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
-    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#uri-stem" start="&quot;" end="&quot;">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query" start="&quot;" end="&quot;">uri-query</Field>
     <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
     <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>

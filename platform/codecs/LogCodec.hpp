@@ -418,7 +418,8 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 	
 	switch(log_term.term_type) {
 		case pion::platform::Vocabulary::TYPE_NULL:
-			writeEmptyValue(out);
+			if (log_delim_start == 0)
+				writeEmptyValue(out);
 			break;
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
@@ -450,13 +451,26 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-			out << boost::get<const pion::platform::Event::SimpleString&>(value).get();
+		{
+			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
+			if (ss.size() == 0) {
+				if (log_delim_start == 0)
+					writeEmptyValue(out);
+			} else {
+				out << ss.get();
+			}
 			break;
+		}
 		case pion::platform::Vocabulary::TYPE_CHAR:
 		case pion::platform::Vocabulary::TYPE_REGEX:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
-			out.write(ss.get(), ss.size() < log_term.term_size? ss.size() : log_term.term_size);
+			if (ss.size() == 0) {
+				if (log_delim_start == 0)
+					writeEmptyValue(out);
+			} else {
+				out.write(ss.get(), ss.size() < log_term.term_size? ss.size() : log_term.term_size);
+			}
 			break;
 		}
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
