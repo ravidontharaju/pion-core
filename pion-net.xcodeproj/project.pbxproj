@@ -381,6 +381,14 @@
 		E306A56C0C2309AD004DE0C0 /* LogService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = LogService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E306A5760C2309E3004DE0C0 /* FileService.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = FileService.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
+		E31846A30E2FD53F00193123 /* PionDateTimeTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PionDateTimeTests.cpp; path = common/tests/PionDateTimeTests.cpp; sourceTree = SOURCE_ROOT; };
+		E31846A40E2FD53F00193123 /* PluginManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PluginManagerTests.cpp; path = common/tests/PluginManagerTests.cpp; sourceTree = SOURCE_ROOT; };
+		E31846A50E2FD56000193123 /* hasCreateAndDestroy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasCreateAndDestroy.cpp; path = common/tests/PluginsUsedByUnitTests/hasCreateAndDestroy.cpp; sourceTree = SOURCE_ROOT; };
+		E31846A60E2FD56000193123 /* hasCreateAndDestroy.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasCreateAndDestroy.hpp; path = common/tests/PluginsUsedByUnitTests/hasCreateAndDestroy.hpp; sourceTree = SOURCE_ROOT; };
+		E31846A70E2FD56000193123 /* hasCreateButNoDestroy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasCreateButNoDestroy.cpp; path = common/tests/PluginsUsedByUnitTests/hasCreateButNoDestroy.cpp; sourceTree = SOURCE_ROOT; };
+		E31846A80E2FD56000193123 /* hasCreateButNoDestroy.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasCreateButNoDestroy.hpp; path = common/tests/PluginsUsedByUnitTests/hasCreateButNoDestroy.hpp; sourceTree = SOURCE_ROOT; };
+		E31846A90E2FD56000193123 /* hasNoCreate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasNoCreate.cpp; path = common/tests/PluginsUsedByUnitTests/hasNoCreate.cpp; sourceTree = SOURCE_ROOT; };
+		E31846AA0E2FD56000193123 /* hasNoCreate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasNoCreate.hpp; path = common/tests/PluginsUsedByUnitTests/hasNoCreate.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-net.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-net.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-net.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-net.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E34588910CDA693700332599 /* HTTPReader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = HTTPReader.hpp; path = net/include/pion/net/HTTPReader.hpp; sourceTree = SOURCE_ROOT; };
@@ -617,6 +625,14 @@
 				E36D8A120D29C70C00B4C134 /* PionCommonUnitTests.cpp */,
 				E36D8A130D29C70C00B4C134 /* PionCounterTests.cpp */,
 				E36D8A140D29C70C00B4C134 /* PionPluginPtrTests.cpp */,
+				E31846A30E2FD53F00193123 /* PionDateTimeTests.cpp */,
+				E31846A40E2FD53F00193123 /* PluginManagerTests.cpp */,
+				E31846A50E2FD56000193123 /* hasCreateAndDestroy.cpp */,
+				E31846A60E2FD56000193123 /* hasCreateAndDestroy.hpp */,
+				E31846A70E2FD56000193123 /* hasCreateButNoDestroy.cpp */,
+				E31846A80E2FD56000193123 /* hasCreateButNoDestroy.hpp */,
+				E31846A90E2FD56000193123 /* hasNoCreate.cpp */,
+				E31846AA0E2FD56000193123 /* hasNoCreate.hpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";

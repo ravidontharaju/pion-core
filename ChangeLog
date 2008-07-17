@@ -1,3 +1,15 @@
+Version 0.5.8 (2008-07-18)
+==========================
+
+* Simplified HTTPParser class and eliminated some redundant code (240)
+* HTTPTypes::url_encoded() was not properly encoding space characters (239)
+* HTTPParser was not extracting POST query when charset is specified (243)
+* Unable to compile HTTPAuth code with log4cplus support (249)
+* TCPStream unit tests were occasionally failing (206)
+* Added --with-boost-extension option to Unix configure script (217)
+* Misc updates to get things building on gcc 4.2 and gcc 4.3 (241)
+
+
 Version 0.5.6 (2008-05-02)
 ==========================
 
