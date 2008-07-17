@@ -106,13 +106,14 @@ public:
 	 *
 	 * @return true if the Transformation occured; false if it did not
 	 */
-	inline bool transform(EventPtr& e) const
+	inline bool transform(EventPtr& e)
 	{
 		CompMatch result = evaluate(*e);
 		if (result.get<0>()) {
-			if (m_tr_set_inplace) {
-				// TODO: Rip out the original, matching term
-			}
+
+			if (m_tr_set_inplace)
+				e->clear(m_tr_set_term.term_ref);
+
 			switch (m_tr_set_term.term_type) {
 				case Vocabulary::TYPE_NULL:
 				case Vocabulary::TYPE_OBJECT:
