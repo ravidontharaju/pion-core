@@ -11,7 +11,7 @@ dojo.declare("plugins.reactors.Reactor",
 	{
 		postCreate: function(){
 			this.inherited("postCreate", arguments); 
-			console.debug('Reactor.postCreate: ', this.domNode);
+			//console.debug('Reactor.postCreate: ', this.domNode);
 			this.special_config_elements = ['@id', 'options'];
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];

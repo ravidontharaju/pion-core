@@ -40,7 +40,7 @@ pion.terms.buildMapOfCategoriesByTerm = function() {
 		onItem: function(item) {
 			var type = pion.terms.store.getValue(item, 'Type').toString();
 			var id   = pion.terms.store.getIdentity(item);
-			console.debug('type = ', type, ', id = ', id);
+			//console.debug('type = ', type, ', id = ', id);
 			pion.terms.categories_by_id[id] = pion.terms.categories_by_type[type];
 		},
 		onError: pion.handleFetchError

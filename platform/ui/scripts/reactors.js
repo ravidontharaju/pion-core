@@ -96,6 +96,9 @@ pion.reactors.init = function() {
 		}
 	});
 
+	// All Reactors available in the UI directory.
+	var config_reactors_plugins_store = new dojox.data.XmlStore({url: '/config/reactors/plugins'});
+
 	dojo.xhrGet({
 		url: '/config/plugins',
 		handleAs: 'xml',
@@ -105,45 +108,35 @@ pion.reactors.init = function() {
 			var available_plugins = [];
 			var plugin_elements = response.getElementsByTagName('Plugin');
 			dojo.forEach(plugin_elements, function(n) {
-				available_plugins.push(dojo.isIE? n.xml : n.textContent);
+				available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
 			});
 
-			dojo.xhrGet({
-				url: '/config/reactors/plugins',
-				handleAs: 'xml',
-				timeout: 5000,
-				load: function(response, ioArgs) {
-					// For each Reactor node, load the JavaScript code for the class (if not already loaded), and in the appropriate 
-					// accordion pane of the sidebar, add a Reactor icon which can be dragged onto a workspace.
-					var reactor_elements = response.getElementsByTagName('Reactor');
-					dojo.forEach(reactor_elements, function(n) {
-						var plugin_element = n.getElementsByTagName('Plugin')[0];
-						var plugin = dojo.isIE? plugin_element.xml : plugin_element.textContent;
+			config_reactors_plugins_store.fetch({
+				onItem: function(item) {
+					var plugin = config_reactors_plugins_store.getValue(item, 'Plugin').toString();
 
-						// Skip plugins that can't be found on any of the configured plugin paths.
-						if (dojo.indexOf(available_plugins, plugin) != -1) {
-							var reactor_type_element = n.getElementsByTagName('ReactorType')[0];
-							var category = dojo.isIE? reactor_type_element.xml : reactor_type_element.textContent;
+					// Skip plugins that can't be found on any of the configured plugin paths.
+					if (dojo.indexOf(available_plugins, plugin) != -1) {
+						var category = config_reactors_plugins_store.getValue(item, 'ReactorType').toString();
 
-							// Check if the module for this Reactor is already loaded, and if not, load it.
-							var reactor_class = "plugins.reactors." + plugin;
-							var prototype = dojo.getObject(reactor_class);
-							if (!prototype) {
-								dojo.requireIf(true, reactor_class);
-								prototype = dojo.getObject(reactor_class);
-							}
-
-							pion.reactors.categories[plugin] = category;
-							var icon = category + '/' + plugin + '/icon.png';
-							var icon_url = dojo.moduleUrl('plugins.reactors', icon);
-							console.debug('icon_url = ', icon_url);
-							reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
+						// Check if the module for this Reactor is already loaded, and if not, load it.
+						var reactor_class = "plugins.reactors." + plugin;
+						var prototype = dojo.getObject(reactor_class);
+						if (!prototype) {
+							dojo.requireIf(true, reactor_class);
+							prototype = dojo.getObject(reactor_class);
 						}
-					});
-					pion.reactors.initConfiguredReactors();
-					return response;
+
+						pion.reactors.categories[plugin] = category;
+						var icon = category + '/' + plugin + '/icon.png';
+						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
+						console.debug('icon_url = ', icon_url);
+						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
+					}
 				},
-				error: pion.handleXhrGetError
+				onComplete:function(item) {
+					pion.reactors.initConfiguredReactors();
+				}
 			});
 			return response;
 		},
@@ -271,7 +264,7 @@ pion.reactors.initConfiguredReactors = function() {
 						config[attributes[i]] = reactor_config_store.getValue(item, attributes[i]).toString();
 					}
 				}
-				console.dir(config);
+				//console.dir(config);
 
 				pion.reactors.workspace_box = workspaces_by_name[config.Workspace];
 				if (!pion.reactors.workspace_box) {

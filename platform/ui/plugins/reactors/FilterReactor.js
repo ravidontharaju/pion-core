@@ -8,7 +8,7 @@ dojo.declare("plugins.reactors.FilterReactor",
 	{
 		postCreate: function(){
 			this.config.Plugin = 'FilterReactor';
-			console.debug('FilterReactor.postCreate: ', this.domNode);
+			//console.debug('FilterReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments);
 			this.special_config_elements.push('Comparison');
 			var store = pion.reactors.config_store;
