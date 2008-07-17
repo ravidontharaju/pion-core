@@ -41,6 +41,7 @@ extern void cleanup_vocab_config_files(void);
 static const std::string PROTOCOLS_CONFIG_FILE(get_config_file_dir() + "protocols.xml");
 static const std::string PROTOCOLS_TEMPLATE_FILE(get_config_file_dir() + "protocols.tmpl");
 
+
 /// cleans up config files relevant to Codecs in the working directory
 void cleanup_protocol_config_files(bool copy_protocol_config_file)
 {
@@ -52,11 +53,24 @@ void cleanup_protocol_config_files(bool copy_protocol_config_file)
 		boost::filesystem::copy_file(PROTOCOLS_TEMPLATE_FILE, PROTOCOLS_CONFIG_FILE);
 }
 
-BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
+
+/// fixture class used for basic Protocol tests
+class BasicProtocolTests_F
+{
+public:
+	BasicProtocolTests_F(void) {
+		setup_logging_for_unit_tests();
+		cleanup_protocol_config_files(false);
+	}
+	~BasicProtocolTests_F(void) {}
+};
+
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(BasicProtocolTests_S, BasicProtocolTests_F)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
 	
-	setup_logging_for_unit_tests();
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
 	setup_plugins_directory();
@@ -64,11 +78,10 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 	p = ProtocolPtr(ppp.create());
 }
 
-BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHTTPProtocolClone) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
 
-	setup_logging_for_unit_tests();
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
 	setup_plugins_directory();
@@ -79,23 +92,18 @@ BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
 	BOOST_CHECK_EQUAL( p->getEventType(), pc->getEventType() );
 }
 
-BOOST_AUTO_TEST_SUITE(protocolFactoryCreationAndDestruction_S)
-
-BOOST_AUTO_TEST_CASE(checkProtocolFactoryConstructor) {
-	setup_logging_for_unit_tests();
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkProtocolFactoryConstructor) {
 	VocabularyManager vocab_mgr;
 	BOOST_CHECK_NO_THROW(ProtocolFactory protocolFactory(vocab_mgr));
 }
 
-BOOST_AUTO_TEST_CASE(checkProtocolFactoryDestructor) {
-	setup_logging_for_unit_tests();
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkProtocolFactoryDestructor) {
 	VocabularyManager vocab_mgr;
 	ProtocolFactory* protocolFactory = new ProtocolFactory(vocab_mgr);
 	BOOST_CHECK_NO_THROW(delete protocolFactory);
 }
 
-BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
-	setup_logging_for_unit_tests();
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
@@ -109,6 +117,7 @@ BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+/// fixture class used for testing Protocol Factories
 class NewProtocolFactory_F : public ProtocolFactory {
 public:
 	NewProtocolFactory_F() : ProtocolFactory(m_vocab_mgr) {
@@ -154,7 +163,7 @@ public:
 bool NewProtocolFactory_F::m_config_loaded = false;
 VocabularyManager NewProtocolFactory_F::m_vocab_mgr;
 
-BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewProtocolFactory_S, boost::mpl::list<NewProtocolFactory_F>)
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewProtocolFactory_S, NewProtocolFactory_F)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogProtocol) {
 	xmlNodePtr config_ptr(F::createProtocolConfig("HTTPProtocol"));

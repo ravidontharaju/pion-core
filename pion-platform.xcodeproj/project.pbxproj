@@ -1052,6 +1052,12 @@
 		E306A9100D665D750069A023 /* ConfigManagerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigManagerTests.cpp; path = platform/tests/ConfigManagerTests.cpp; sourceTree = SOURCE_ROOT; };
 		E30B43720CFBB4CF00337BA4 /* PluginManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PluginManager.hpp; path = common/include/pion/PluginManager.hpp; sourceTree = SOURCE_ROOT; };
 		E30D893C0CCE8BDA005C483D /* PionCounter.hpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.h; name = PionCounter.hpp; path = common/include/pion/PionCounter.hpp; sourceTree = SOURCE_ROOT; };
+		E31846E70E2FE04F00193123 /* hasCreateAndDestroy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasCreateAndDestroy.cpp; path = common/tests/PluginsUsedByUnitTests/hasCreateAndDestroy.cpp; sourceTree = SOURCE_ROOT; };
+		E31846E80E2FE04F00193123 /* hasCreateAndDestroy.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasCreateAndDestroy.hpp; path = common/tests/PluginsUsedByUnitTests/hasCreateAndDestroy.hpp; sourceTree = SOURCE_ROOT; };
+		E31846E90E2FE04F00193123 /* hasCreateButNoDestroy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasCreateButNoDestroy.cpp; path = common/tests/PluginsUsedByUnitTests/hasCreateButNoDestroy.cpp; sourceTree = SOURCE_ROOT; };
+		E31846EA0E2FE04F00193123 /* hasCreateButNoDestroy.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasCreateButNoDestroy.hpp; path = common/tests/PluginsUsedByUnitTests/hasCreateButNoDestroy.hpp; sourceTree = SOURCE_ROOT; };
+		E31846EB0E2FE04F00193123 /* hasNoCreate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hasNoCreate.cpp; path = common/tests/PluginsUsedByUnitTests/hasNoCreate.cpp; sourceTree = SOURCE_ROOT; };
+		E31846EC0E2FE04F00193123 /* hasNoCreate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = hasNoCreate.hpp; path = common/tests/PluginsUsedByUnitTests/hasNoCreate.hpp; sourceTree = SOURCE_ROOT; };
 		E319399D0D49601A00DDF224 /* Comparison.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Comparison.cpp; path = platform/src/Comparison.cpp; sourceTree = SOURCE_ROOT; };
 		E326EF890D2D733700BBCE56 /* CodecTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CodecTests.cpp; path = platform/tests/CodecTests.cpp; sourceTree = SOURCE_ROOT; };
 		E329D2180D7DF39C00229FD5 /* Query.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Query.hpp; path = platform/include/pion/platform/Query.hpp; sourceTree = SOURCE_ROOT; };
@@ -1657,6 +1663,12 @@
 				E36D8A590D29C9B800B4C134 /* TCPServerTests.cpp */,
 				E36D8A5A0D29C9B800B4C134 /* WebServerTests.cpp */,
 				E36D8A540D29C9B800B4C134 /* FileServiceTests.cpp */,
+				E31846E70E2FE04F00193123 /* hasCreateAndDestroy.cpp */,
+				E31846E80E2FE04F00193123 /* hasCreateAndDestroy.hpp */,
+				E31846E90E2FE04F00193123 /* hasCreateButNoDestroy.cpp */,
+				E31846EA0E2FE04F00193123 /* hasCreateButNoDestroy.hpp */,
+				E31846EB0E2FE04F00193123 /* hasNoCreate.cpp */,
+				E31846EC0E2FE04F00193123 /* hasNoCreate.hpp */,
 			);
 			name = tests;
 			sourceTree = "<group>";
