@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <pion/platform/ConfigManager.hpp>
 #include "HTTPProtocol.hpp"
 
 using namespace pion::net;
@@ -26,6 +27,13 @@ namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
+// static members of HTTPProtocol
+	
+const std::string HTTPProtocol::REQUEST_CONTENT_ELEMENT_NAME = "RequestContent";
+const std::string HTTPProtocol::RESPONSE_CONTENT_ELEMENT_NAME = "ResponseContent";
+const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
+const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
+	
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_BYTES="urn:vocab:clickstream#cs-bytes";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_BYTES="urn:vocab:clickstream#sc-bytes";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_BYTES="urn:vocab:clickstream#bytes";
@@ -39,7 +47,12 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST="urn:vocab:clickstream
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_HOST="urn:vocab:clickstream#host";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFERER="urn:vocab:clickstream#referer";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_USERAGENT="urn:vocab:clickstream#useragent";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_CONTENT="urn:vocab:clickstream#cs-content";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_CONTENT="urn:vocab:clickstream#sc-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CACHED="urn:vocab:clickstream#cached";
+
+	
+// HTTPProtocol member functions
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  EventPtr& event_ptr_ref)
@@ -88,8 +101,13 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_host_term_ref = m_host_term_ref;
 	retval->m_referer_term_ref = m_referer_term_ref;
 	retval->m_useragent_term_ref = m_useragent_term_ref;
+	retval->m_cs_content_term_ref = m_cs_content_term_ref;
+	retval->m_sc_content_term_ref = m_sc_content_term_ref;
 	retval->m_cached_term_ref = m_cached_term_ref;
 
+	retval->m_request_content_rule = m_request_content_rule;
+	retval->m_response_content_rule = m_response_content_rule;
+	
 	return ProtocolPtr(retval);
 }
 
@@ -100,6 +118,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	// create a new event via EventFactory
 	m_event_factory.create(event_ptr_ref, event_type);
 
+	// populate some basic fields
 	(*event_ptr_ref).setUInt(m_cs_bytes_term_ref, m_request_parser.getTotalBytesRead());
 	(*event_ptr_ref).setUInt(m_sc_bytes_term_ref, m_response_parser.getTotalBytesRead());
 	(*event_ptr_ref).setUInt(m_bytes_term_ref, m_request_parser.getTotalBytesRead()
@@ -116,6 +135,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	}
 	(*event_ptr_ref).setString(m_uri_term_ref, uri_str);
 
+	// populate some more fields...
 	(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
 	(*event_ptr_ref).setString(m_uri_query_term_ref, m_request.getQueryString());
 	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
@@ -125,13 +145,49 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_cached_term_ref,
 							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
 							 ? 1 : 0);
-
-	// TODO: set other message terms
+	
+	// check if request content should be saved
+	checkContentExtraction(event_ptr_ref, m_request_content_rule, m_request, m_cs_content_term_ref);
+	
+	// check if response content should be saved
+	checkContentExtraction(event_ptr_ref, m_response_content_rule, m_response, m_sc_content_term_ref);
 }
+
+void HTTPProtocol::parseExtractionRule(ExtractionRule& rule,
+									   const std::string& element_name,
+									   const xmlNodePtr config_ptr)
+{
+	// parse extraction configuration parameters
+	xmlNodePtr content_node = ConfigManager::findConfigNodeByName(element_name, config_ptr);
+	if (content_node != NULL) {
+		// get ContentType regex
+		std::string type_regex_str;
+		if (! ConfigManager::getConfigOption(CONTENT_TYPE_ELEMENT_NAME, type_regex_str,
+											 content_node->children))
+			type_regex_str = ".*";
+		rule.m_type_regex = type_regex_str;
+		
+		// get MaxSize parameter
+		std::string max_size_str;
+		if (ConfigManager::getConfigOption(MAX_SIZE_ELEMENT_NAME, max_size_str,
+										   content_node->children))
+			rule.m_max_size = boost::lexical_cast<boost::uint32_t>(max_size_str);
+		else
+			rule.m_max_size = boost::uint32_t(-1);
+	} else {
+		// do not extract content
+		rule.m_max_size = 0;
+	}
+}	
 
 void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Protocol::setConfig(v, config_ptr);
+	
+	// get RequestContent and ResponseContent
+
+	parseExtractionRule(m_request_content_rule, REQUEST_CONTENT_ELEMENT_NAME, config_ptr);
+	parseExtractionRule(m_response_content_rule, RESPONSE_CONTENT_ELEMENT_NAME, config_ptr);
 
 	// initialize references to known Terms:
 
@@ -187,6 +243,14 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (m_useragent_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_USERAGENT);
 
+	m_cs_content_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_CONTENT);
+	if (m_cs_content_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_CONTENT);
+	
+	m_sc_content_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_CONTENT);
+	if (m_sc_content_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_CONTENT);
+	
 	m_cached_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CACHED);
 	if (m_cached_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CACHED);

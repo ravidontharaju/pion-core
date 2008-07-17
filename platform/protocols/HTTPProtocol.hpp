@@ -24,6 +24,7 @@
 #include <pion/net/HTTPParser.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/HTTPResponse.hpp>
+#include <boost/regex.hpp>
 
 namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
@@ -72,6 +73,15 @@ public:
 
 private:
 
+	/// data type used to determine whether or not payload content should be saved
+	struct ExtractionRule {
+		/// regex that must match the content-type
+		boost::regex		m_type_regex;
+		/// maximum size (in bytes) of content to save (0 = do not save)
+		boost::uint32_t		m_max_size;
+	};
+	
+	
 	/**
 	 * generates a new Event using the existing HTTP request and 
 	 * response objects 
@@ -79,8 +89,32 @@ private:
 	 * @param event_ptr_ref pointer assigned to the new Event
 	 */
 	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
-
-
+	
+	/**
+	 * parses rule for extracting request or response HTTP payload content
+	 *
+	 * @param rule the resulting configuration parameters after parsing
+	 * @param element_name name of the XML configuration element for the rule
+	 * @param config_ptr pointer to a list of XML nodes containing Protocol
+	 *                   configuration parameters
+	 */
+	void parseExtractionRule(ExtractionRule& rule, const std::string& element_name,
+							 const xmlNodePtr config_ptr);
+	
+	/**
+	 * checks is HTTP payload content should be saved, and extracts it if necessary
+	 *
+	 * @param event_ptr_ref pointer to the Event being generated
+	 * @param rule payload content extraction rule to use
+	 * @param http_msg HTTP message object to extract content from
+	 * @param term_ref Event term reference to which content will be assigned
+	 */
+	inline void checkContentExtraction(pion::platform::EventPtr& event_ptr_ref,
+									   const ExtractionRule& rule,
+									   const pion::net::HTTPMessage& http_msg,
+									   const pion::platform::Vocabulary::TermRef term_ref);
+	
+	
     /// parser used for HTTP request
 	pion::net::HTTPParser	m_request_parser;
 
@@ -93,8 +127,26 @@ private:
     /// HTTP response being parsed
     pion::net::HTTPResponse m_response;
 	
+	/// rule used to determine if request content should be saved
+	ExtractionRule			m_request_content_rule;
+	
+	/// rule used to determine if response content should be saved
+	ExtractionRule			m_response_content_rule;
 
-    /// urn:vocab:clickstream#cs-bytes
+	
+	/// name of the RequestContent element for Pion XML config files
+	static const std::string	REQUEST_CONTENT_ELEMENT_NAME;
+
+	/// name of the ResponseContent element for Pion XML config files
+	static const std::string	RESPONSE_CONTENT_ELEMENT_NAME;
+
+	/// name of the ContentType element for Pion XML config files
+	static const std::string	CONTENT_TYPE_ELEMENT_NAME;
+
+	/// name of the MaxSize element for Pion XML config files
+	static const std::string	MAX_SIZE_ELEMENT_NAME;
+    
+	/// urn:vocab:clickstream#cs-bytes
     static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
     pion::platform::Vocabulary::TermRef	m_cs_bytes_term_ref; 
 
@@ -146,6 +198,14 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_USERAGENT;
 	pion::platform::Vocabulary::TermRef	m_useragent_term_ref;
 
+	/// urn:vocab:clickstream#cs-content
+	static const std::string	VOCAB_CLICKSTREAM_CS_CONTENT;
+	pion::platform::Vocabulary::TermRef	m_cs_content_term_ref;
+
+	/// urn:vocab:clickstream#sc-content
+	static const std::string	VOCAB_CLICKSTREAM_SC_CONTENT;
+	pion::platform::Vocabulary::TermRef	m_sc_content_term_ref;
+
 	/// urn:vocab:clickstream#cached
 	static const std::string	VOCAB_CLICKSTREAM_CACHED;
 	pion::platform::Vocabulary::TermRef	m_cached_term_ref;
@@ -161,7 +221,26 @@ private:
 	/// * urn:vocab:clickstream#s-ip
 };
 
+	
+// inline member functions
 
+inline void HTTPProtocol::checkContentExtraction(pion::platform::EventPtr& event_ptr_ref,
+												 const ExtractionRule& rule,
+												 const pion::net::HTTPMessage& http_msg,
+												 const pion::platform::Vocabulary::TermRef term_ref)
+{
+	if (rule.m_max_size > 0
+		&& http_msg.getContentLength() > 0
+		&& boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE),
+							   rule.m_type_regex))
+	{
+		(*event_ptr_ref).setString(term_ref, http_msg.getContent(),
+								   (http_msg.getContentLength() > rule.m_max_size
+									? rule.m_max_size : http_msg.getContentLength()));
+	}
+}
+
+	
 }	// end namespace plugins
 }	// end namespace pion
 

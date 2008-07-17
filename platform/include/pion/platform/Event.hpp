@@ -548,6 +548,19 @@ public:
 	}
 	
 	/**
+	 * sets the value for a particular term to a string using a character array
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 * @param len length of the string object, in bytes
+	 */
+	inline void setString(const Vocabulary::TermRef& term_ref,
+						  const CharType *value, std::size_t len)
+	{
+		insert(term_ref, createSimpleString(value, len));
+	}
+	
+	/**
 	 * sets the value for a particular term to a string using a std::string
 	 *
 	 * @param term_ref numeric identifier for the term

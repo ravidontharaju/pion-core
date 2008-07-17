@@ -45,6 +45,7 @@
 		E329D23B0D7E24AF00229FD5 /* DatabaseOutputReactor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E329D2390D7E24AF00229FD5 /* DatabaseOutputReactor.hpp */; };
 		E32F26D10DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
 		E32F26D20DAAE68D00124B71 /* ReactionScheduler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */; };
+		E33513140E2EC8E600B508BC /* ProtocolTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E33513130E2EC8E600B508BC /* ProtocolTests.cpp */; };
 		E335AC370E192CC600DADC40 /* Protocol.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E335AC350E192CC600DADC40 /* Protocol.hpp */; };
 		E335AC380E192CC600DADC40 /* ProtocolFactory.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E335AC360E192CC600DADC40 /* ProtocolFactory.hpp */; };
 		E335AC390E192CC600DADC40 /* Protocol.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E335AC350E192CC600DADC40 /* Protocol.hpp */; };
@@ -1059,6 +1060,7 @@
 		E32F26D00DAAE68D00124B71 /* ReactionScheduler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ReactionScheduler.hpp; path = platform/include/pion/platform/ReactionScheduler.hpp; sourceTree = SOURCE_ROOT; };
 		E33288A20BEE5044006D0556 /* libpion-platform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libpion-platform.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E33288B80BEE50B4006D0556 /* libpion-platform.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "libpion-platform.dylib"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E33513130E2EC8E600B508BC /* ProtocolTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProtocolTests.cpp; path = platform/tests/ProtocolTests.cpp; sourceTree = SOURCE_ROOT; };
 		E335AC350E192CC600DADC40 /* Protocol.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Protocol.hpp; path = platform/include/pion/platform/Protocol.hpp; sourceTree = SOURCE_ROOT; };
 		E335AC360E192CC600DADC40 /* ProtocolFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProtocolFactory.hpp; path = platform/include/pion/platform/ProtocolFactory.hpp; sourceTree = SOURCE_ROOT; };
 		E349BEB00D3E578A008AB9E6 /* Comparison.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Comparison.hpp; path = platform/include/pion/platform/Comparison.hpp; sourceTree = SOURCE_ROOT; };
@@ -1838,6 +1840,7 @@
 				E36D88E60D29BBC800B4C134 /* EventTests.cpp */,
 				E3C408450D3E9242008A4BFC /* ComparisonTests.cpp */,
 				E326EF890D2D733700BBCE56 /* CodecTests.cpp */,
+				E33513130E2EC8E600B508BC /* ProtocolTests.cpp */,
 				E378EE710D4A6B06002658FA /* ReactorTests.cpp */,
 				E3EF11D70D74D84300A17A90 /* ConfigServiceTests.cpp */,
 				E306A90E0D665D660069A023 /* FeedServiceTests.cpp */,
@@ -3141,6 +3144,7 @@
 				E34067550DF9F8B8007EE07B /* UserManagerTests.cpp in Sources */,
 				E34067560DF9F8B8007EE07B /* VocabularyConfigTests.cpp in Sources */,
 				E34067570DF9F8B8007EE07B /* VocabularyTests.cpp in Sources */,
+				E33513140E2EC8E600B508BC /* ProtocolTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
