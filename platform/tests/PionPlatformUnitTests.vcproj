@@ -76,7 +76,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="auto run tests"
-				CommandLine="$(TargetPath)  --log_level=test_suite"
+				CommandLine="&quot;$(TargetPath)&quot; --log_level=test_suite"
 			/>
 		</Configuration>
 		<Configuration
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="auto run tests"
-				CommandLine="$(TargetPath)  --log_level=test_suite"
+				CommandLine="&quot;$(TargetPath)&quot; --log_level=test_suite"
 			/>
 		</Configuration>
 		<Configuration
@@ -207,7 +207,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="auto run tests"
-				CommandLine="$(TargetPath)  --log_level=test_suite"
+				CommandLine="&quot;$(TargetPath)&quot; --log_level=test_suite"
 			/>
 		</Configuration>
 		<Configuration
@@ -273,7 +273,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="auto run tests"
-				CommandLine="$(TargetPath)  --log_level=test_suite"
+				CommandLine="&quot;$(TargetPath)&quot; --log_level=test_suite"
 			/>
 		</Configuration>
 	</Configurations>
