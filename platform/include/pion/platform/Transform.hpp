@@ -122,38 +122,38 @@ public:
 				case Vocabulary::TYPE_INT8:
 				case Vocabulary::TYPE_INT16:
 				case Vocabulary::TYPE_INT32:
-					e->setInt(m_tr_set_term.term_type, boost::get<const boost::uint32_t&>(m_tr_set_value));
+					e->setInt(m_tr_set_term.term_ref, boost::get<const boost::uint32_t&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_INT64:
-					e->setBigInt(m_tr_set_term.term_type, boost::get<const boost::uint64_t&>(m_tr_set_value));
+					e->setBigInt(m_tr_set_term.term_ref, boost::get<const boost::uint64_t&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_UINT8:
 				case Vocabulary::TYPE_UINT16:
 				case Vocabulary::TYPE_UINT32:
-					e->setUInt(m_tr_set_term.term_type, boost::get<const boost::uint32_t&>(m_tr_set_value));
+					e->setUInt(m_tr_set_term.term_ref, boost::get<const boost::uint32_t&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_UINT64:
-					e->setUInt(m_tr_set_term.term_type, boost::get<const boost::uint64_t&>(m_tr_set_value));
+					e->setUInt(m_tr_set_term.term_ref, boost::get<const boost::uint64_t&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_FLOAT:
-					e->setFloat(m_tr_set_term.term_type, boost::get<const float&>(m_tr_set_value));
+					e->setFloat(m_tr_set_term.term_ref, boost::get<const float&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_DOUBLE:
-					e->setDouble(m_tr_set_term.term_type, boost::get<const double&>(m_tr_set_value));
+					e->setDouble(m_tr_set_term.term_ref, boost::get<const double&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_LONG_DOUBLE:
-					e->setLongDouble(m_tr_set_term.term_type, boost::get<const long double&>(m_tr_set_value));
+					e->setLongDouble(m_tr_set_term.term_ref, boost::get<const long double&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_SHORT_STRING:
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-					e->setString(m_tr_set_term.term_type, m_tr_set_str_value);
+					e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:
 				case Vocabulary::TYPE_TIME:
-					e->setDateTime(m_tr_set_term.term_type, boost::get<const PionDateTime&>(m_tr_set_value));
+					e->setDateTime(m_tr_set_term.term_ref, boost::get<const PionDateTime&>(m_tr_set_value));
 					break;
 				case Vocabulary::TYPE_REGEX:
 					{
@@ -161,10 +161,10 @@ public:
 						Event::ConstIterator ec = result.get<1>();
 						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
 						if (boost::regex_search(s, match, m_tr_set_regex)) {
-							s = "";
+							s.clear();
 							for (unsigned int i = 0; i < match.size(); i++)
 								s += match[i].str();
-							e->setString(m_tr_set_term.term_type, s);
+							e->setString(m_tr_set_term.term_ref, s);
 						}
 					}
 					break;
