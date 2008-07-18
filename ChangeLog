@@ -12,6 +12,9 @@ Version 0.5.8 (2008-07-18)
 * Updated UI so that it better auto-detects which plugins are available (244)
 * Pion now listens to port 8888, and SSL is disabled (126, 218)
 * Added support to the UI for the Safari web browser (165)
+* Added --with-boost-extension option to Unix configure script (217)
+* Misc updates to get things building on gcc 4.2 and gcc 4.3 (241)
+* See also the Pion Network Library ChangeLog for 0.5.8
 
 
 Version 0.5.6 (2008-05-02)
