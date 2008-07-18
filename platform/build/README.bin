@@ -32,9 +32,9 @@ To start Pion, just run the "./start_pion.sh" script from a command shell.
 This will setup your environment paths and start the Pion server executable.
 To run Pion as a background daemon, run "./start_pion.sh -D" 
 
-Once the server is running, open your (Firefox or IE7) web browser and point
-it to the following URL:
-https://localhost:8080
+Once the server is running, open your favorite web browser (Firefox, Safari
+or IE7) and point it to the following URL:
+http://localhost:8888
 
 This will open the Pion user interface to the "Reactors configuration" page.
 For an intro to Pion's user interface, please see the online tour at:
@@ -62,15 +62,10 @@ b) You must hit <enter> after making any changes within the user interface
 c) You must stop, and then start some Reactors for them to recognize certain
    configuration changes.
 
-d) The following plugins are not functional: JSONCodec, XMLCodec and the
-   TransformReactor
+d) The LogInput and LogOutput Reactors are missing a bunch of functionality
+   that we plan to add in future releases.
 
-e) The LogInputReactor is missing a significant amount of functionality that
-   we plan to add in future releases.
-
-f) The LogOutputReactor does not support log file rotation or compression.
-
-g) The running states of Reactors (started/stopped) are not saved in the
+e) The running states of Reactors (started/stopped) are not saved in the
    configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned

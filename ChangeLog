@@ -1,3 +1,19 @@
+Version 0.5.8 (2008-07-18)
+==========================
+
+* Added new XML and JSON Codecs for event serialization (74, 104)
+* Added a new Transform Reactor for data cleansing, normalizing, etc. (105)
+* Added a new "Protocol" plugin type, for sniffing network traffic (182)
+* Fixed bug in regex comparisons that caused Pion to crash (212)
+* Regex comparisons no longer require the entire value to match (214)
+* Updated LogInputReactor's JustOne feature so that it handles restarts (216)
+* UI dialog boxes now provide scrollbars if they cannot fit on Desktop (219)
+* Fixed crash caused when Reactor connections were removed at runtime (238)
+* Updated UI so that it better auto-detects which plugins are available (244)
+* Pion now listens to port 8888, and SSL is disabled (126, 218)
+* Added support to the UI for the Safari web browser (165)
+
+
 Version 0.5.6 (2008-05-02)
 ==========================
 

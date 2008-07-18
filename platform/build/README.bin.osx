@@ -25,8 +25,8 @@ Pion.app           Mac OS X (10.5 Universal) binary application
 
 To start Pion, just double-click on the Pion.app (or "Pion") application.
 This will start the Pion server and open a log window on your desktop.
-Once the server is running, open your (Firefox or IE7) web browser and point
-it to the following URL:  https://localhost:8080
+Once the server is running, open your (Firefox or Safari) web browser and
+point it to the following URL:  http://localhost:8888
 
 This will open the Pion user interface to the "Reactors configuration" page.
 For an intro to Pion's user interface, please see the online tour at:
@@ -41,27 +41,20 @@ it may cause you to lose data.
 
 This release has the following limitations:
 
-a) Currently, the Safari web browser seems to have serious problems with SSL.
-
-b) If you drag a reactor over top an existing reactor within the workspace,
+a) If you drag a reactor over top an existing reactor within the workspace,
    it sometimes becomes un-droppable.  Drag around existing reactors instead.
 
-c) You must hit <enter> after making any changes within the user interface
+b) You must hit <enter> after making any changes within the user interface
    configuration grids.  If you hit the "save" button before hitting <enter>,
    your change will not be saved.
 
-d) You must stop, and then start some Reactors for them to recognize certain
+c) You must stop, and then start some Reactors for them to recognize certain
    configuration changes.
 
-e) The following plugins are not functional: JSONCodec, XMLCodec and the
-   TransformReactor
+d) The LogInput and LogOutput Reactors are missing a bunch of functionality
+   that we plan to add in future releases.
 
-f) The LogInputReactor is missing a significant amount of functionality that
-   we plan to add in future releases.
-
-g) The LogOutputReactor does not support log file rotation or compression.
-
-h) The running states of Reactors (started/stopped) are not saved in the
+e) The running states of Reactors (started/stopped) are not saved in the
    configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned
