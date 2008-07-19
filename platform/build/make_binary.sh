@@ -1,8 +1,9 @@
 #!/bin/sh
 
 LIB_DIRECTORY=/usr/local/lib
+LIB_DIRECTORY_ALT=/usr/lib
 PLUGIN_LIB_SUFFIX=so
-if test "$2" == "osx"; then
+if test "$2" = "osx"; then
 	SHARED_LIB_SUFFIX=dylib
 	BOOST_SUFFIX=*-mt-1_35.$SHARED_LIB_SUFFIX
 	UUID_LIB=libuuid.16.$SHARED_LIB_SUFFIX
@@ -44,7 +45,11 @@ mkdir $BIN_DIRECTORY/ui
 echo "Copying binary files.."
 cp $LIB_DIRECTORY/$UUID_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$LOG4CXX_LIB $BIN_DIRECTORY/libs
-cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
+if [ -e $LIB_DIRECTORY/$SQLITE_LIB ]; then
+	cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
+else
+	cp $LIB_DIRECTORY_ALT/$SQLITE_LIB $BIN_DIRECTORY/libs
+fi
 cp $LIB_DIRECTORY/$YAJL_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_thread$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_system$BOOST_SUFFIX $BIN_DIRECTORY/libs
@@ -93,7 +98,7 @@ fi
 (cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME)
 (cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME)
 
-if test "$2" == "osx"; then
+if test "$2" = "osx"; then
 	# Build application bundle for Mac OS X
 	OSX_BIN_DIRECTORY=./bin/osx/$PACKAGE_NAME
 	echo "Building Mac OS X application bundle.."
