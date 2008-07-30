@@ -187,6 +187,15 @@ private:
 	/// name of the plug-in path element for Pion XML config files
 	static const std::string		PLUGIN_PATH_ELEMENT_NAME;
 
+	/// name of the reaction engine element for Pion XML config files
+	static const std::string		REACTION_ENGINE_ELEMENT_NAME;
+	
+	/// name of the max threads element for Pion XML config files
+	static const std::string		MAX_THREADS_ELEMENT_NAME;
+
+	/// name of the multithread branches element for Pion XML config files
+	static const std::string		MULTITHREAD_BRANCHES_ELEMENT_NAME;
+
 	
 	/// global manager of Vocabularies
 	pion::platform::VocabularyManager		m_vocab_mgr;

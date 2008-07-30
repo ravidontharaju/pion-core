@@ -9,4 +9,10 @@
 	<LogConfig>logconfig.txt</LogConfig>
 	<PluginPath>../plugins</PluginPath>
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
+	<!--
+	<ReactionEngine>
+		<MaxThreads>32</MaxThreads>
+		<MultithreadBranches>false</MultithreadBranches>
+	</ReactionEngine>
+	-->
 </PionConfig>

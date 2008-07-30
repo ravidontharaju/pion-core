@@ -57,7 +57,8 @@ ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
 	m_codec_factory(codec_factory),
 	m_protocol_factory(protocol_factory),
 	m_database_mgr(database_mgr),
-	m_is_running(false)
+	m_is_running(false),
+	m_multithread_branches(false)
 {
 	setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));
 	m_scheduler.setLogger(PION_GET_LOGGER("pion.platform.ReactionEngine"));

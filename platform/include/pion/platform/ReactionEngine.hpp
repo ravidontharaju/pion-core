@@ -370,6 +370,12 @@ public:
 	/// sets the number of threads used to route and process Events
 	inline void setNumThreads(const boost::uint32_t n) { m_scheduler.setNumThreads(n); }
 	
+	/// returns the value of the "multithreaded branches" setting
+	inline bool getMultithreadBranches(void) const { return m_multithread_branches; }
+	
+	/// sets the value of the "multithreaded branches" setting
+	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
+	
 	
 private:
 	
@@ -454,6 +460,7 @@ private:
 			Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
 			reactor_ptr->setId(plugin_id);
 			reactor_ptr->setScheduler(m_scheduler);
+			reactor_ptr->setMultithreadBranches(m_multithread_branches);
 			reactor_ptr->setCodecFactory(m_codec_factory);
 			reactor_ptr->setProtocolFactory(m_protocol_factory);
 			reactor_ptr->setDatabaseManager(m_database_mgr);
@@ -570,7 +577,7 @@ private:
 	CodecFactory &					m_codec_factory;
 
 	/// references the global factory that manages Protocols
-	ProtocolFactory &					m_protocol_factory;
+	ProtocolFactory &				m_protocol_factory;
 
 	/// references the global manager of Databases
 	DatabaseManager &				m_database_mgr;
@@ -589,6 +596,10 @@ private:
 		
 	/// true if the reaction engine is running
 	bool							m_is_running;
+
+	/// if true, use multiple threads for Event delivery when a Reactor has
+	/// more than one output connection (branches)
+	bool							m_multithread_branches;
 };
 
 

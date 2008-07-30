@@ -42,6 +42,9 @@ const std::string			PlatformConfig::USER_CONFIG_ELEMENT_NAME = "UserConfig";
 const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
 const std::string			PlatformConfig::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
+const std::string			PlatformConfig::REACTION_ENGINE_ELEMENT_NAME = "ReactionEngine";
+const std::string			PlatformConfig::MAX_THREADS_ELEMENT_NAME = "MaxThreads";
+const std::string			PlatformConfig::MULTITHREAD_BRANCHES_ELEMENT_NAME = "MultithreadBranches";
 	
 		
 // PlatformConfig member functions
@@ -151,6 +154,42 @@ void PlatformConfig::openConfigFile(void)
 	if (! ConfigManager::getConfigOption(REACTOR_CONFIG_ELEMENT_NAME, config_file,
 										 m_config_node_ptr->children))
 		throw MissingReactorConfigException(getConfigFile());
+	
+	// get the ReactionEngine (advanced/hidden) configuration parameters
+	xmlNodePtr reaction_engine_node =
+		ConfigManager::findConfigNodeByName(REACTION_ENGINE_ELEMENT_NAME, m_config_node_ptr->children);
+	if (reaction_engine_node != NULL) {
+		// get MaxThreads setting (if it is defined)
+		std::string max_threads_str;
+		if (ConfigManager::getConfigOption(MAX_THREADS_ELEMENT_NAME, max_threads_str,
+										   reaction_engine_node->children))
+		{
+			const boost::uint32_t max_threads = boost::lexical_cast<boost::uint32_t>(max_threads_str);
+			if (max_threads == 0) {
+				PION_LOG_ERROR(m_logger, "Platform config has invalid MaxThreads setting for ReactionEngine (using default)");
+			} else {
+				PION_LOG_INFO(m_logger, "Setting ReactionEngine MaxThreads to " << max_threads);
+				m_reaction_engine.setNumThreads(max_threads);
+			}
+		}
+
+		// get MultithreadBranches setting (if it is defined)
+		std::string mt_branches_str;
+		if (ConfigManager::getConfigOption(MULTITHREAD_BRANCHES_ELEMENT_NAME,
+										   mt_branches_str,
+										   reaction_engine_node->children))
+		{
+			if (mt_branches_str == "true") {
+				PION_LOG_INFO(m_logger, "Enabling multithreaded branches in ReactionEngine");
+				m_reaction_engine.setMultithreadBranches(true);
+			} else if (mt_branches_str == "false") {
+				PION_LOG_INFO(m_logger, "Disabling multithreaded branches in ReactionEngine");
+				m_reaction_engine.setMultithreadBranches(false);
+			} else {
+				PION_LOG_ERROR(m_logger, "Platform config has invalid MultithreadBranches setting for ReactionEngine (using default)");
+			}
+		}
+	}
 	
 	// open the ReactionEngine configuration
 	m_reaction_engine.setConfigFile(ConfigManager::resolveRelativePath(config_file));

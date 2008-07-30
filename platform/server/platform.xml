@@ -14,4 +14,10 @@
 	<PluginPath>../../platform/protocols/.libs/</PluginPath>
 	<PluginPath>../../platform/services/.libs/</PluginPath>
 	<PluginPath>../../net/services/.libs/</PluginPath>
+	<!--
+	<ReactionEngine>
+		<MaxThreads>32</MaxThreads>
+		<MultithreadBranches>false</MultithreadBranches>
+	</ReactionEngine>
+	-->
 </PionConfig>

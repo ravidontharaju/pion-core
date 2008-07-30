@@ -157,6 +157,9 @@ public:
 	/// sets the scheduler that will be used to deliver Events to other Reactors
 	inline void setScheduler(ReactionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
 
+	/// sets the value of the "multithreaded branches" setting
+	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
+
 	/// returns the total number of Events received by this Reactor
 	inline boost::uint64_t getEventsIn(void) const { return m_events_in; }
 		
@@ -200,33 +203,50 @@ protected:
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
 		++m_events_out;
 		if (! m_connections.empty()) {
-#if 0
-			// simple scheduling just iterates through connections and use the
-			// same thread to carry the event through all the reaction chains
-			for (ConnectionMap::iterator i = m_connections.begin();
-				 i != m_connections.end(); ++i)
-			{
-				if (return_immediately)
-					i->second.post(getScheduler(), e);
-				else
-					i->second(e);
-			}
-#endif
-			// iterate through each Reactor after the first one and send the Event
-			// using the scheduler.  This way, the entire thread pool will be used
-			// for processing pipelines
-			ConnectionMap::iterator i = m_connections.begin();
-			while (++i != m_connections.end())
-				i->second.post(getScheduler(), e);
-			
-			// send to the first Reactor using the same thread
-			// this helps to reduce context switching by ensuring
-			// that the longer processing chains remain unbroken
-			if (m_connections.begin()->second.isRunning()) {
-				if (return_immediately)
-					m_connections.begin()->second.post(getScheduler(), e);
-				else
-					m_connections.begin()->second(e);
+			if (m_multithread_branches) {
+				// iterate through each Reactor after the first one and send the Event
+				// using the scheduler.  This way, the entire thread pool will be used
+				// for processing pipelines
+				ConnectionMap::iterator i = m_connections.begin();
+				
+				// skip Reactors that are not running to avoid queueing work
+				// to another thread when it is unnecessary.  Otherwise, if the
+				// first Reactor is not running, all work will get queued rather
+				// than the "longest path" being executed by the current thread
+				while (i != m_connections.end() && ! i->second.isRunning())
+					++i;
+
+				if (i != m_connections.end()) {
+					// the first running reactor will be handled by the current thread
+					ConnectionMap::iterator cur_thread_reactor = i;
+					
+					// queue all other branches to be handled by other threads
+					while (++i != m_connections.end()) {
+						if (i->second.isRunning())
+							i->second.post(getScheduler(), e);
+					}
+				
+					// send to the first Reactor using the same thread
+					// this helps to reduce context switching by ensuring
+					// that the longer processing chains remain unbroken
+					if (return_immediately)
+						cur_thread_reactor->second.post(getScheduler(), e);
+					else
+						cur_thread_reactor->second(e);
+				}
+			} else {
+				// simple scheduling just iterates through connections and use the
+				// same thread to carry the event through all the reaction chains
+				for (ConnectionMap::iterator i = m_connections.begin();
+					 i != m_connections.end(); ++i)
+				{
+					if (i->second.isRunning()) {
+						if (return_immediately)
+							i->second.post(getScheduler(), e);
+						else
+							i->second(e);
+					}
+				}
 			}
 		}
 	}
@@ -280,14 +300,12 @@ private:
 		
 		/// sends an Event over the OutputConnection
 		inline void operator()(const EventPtr& event_ptr) {
-			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
-				m_event_handler(event_ptr);
+			m_event_handler(event_ptr);
 		}
 		
 		/// schedules an Event to be sent over the OutputConnection
 		inline void post(ReactionScheduler& scheduler, const EventPtr& event_ptr) {
-			if (m_reactor_ptr == NULL || m_reactor_ptr->isRunning())
-				scheduler.post(boost::bind<void>(m_event_handler, event_ptr));
+			scheduler.post(boost::bind<void>(m_event_handler, event_ptr));
 		}
 
 	private:
@@ -336,6 +354,10 @@ private:
 
 	/// the total number of Events delivered by this Reactor
 	boost::uint64_t					m_events_out;
+	
+	/// if true, use multiple threads for Event delivery when a Reactor has
+	/// more than one output connection (CACHED VALUE FROM REACTIONENGINE)
+	bool							m_multithread_branches;
 };
 
 
