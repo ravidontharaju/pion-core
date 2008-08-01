@@ -46,14 +46,15 @@ dojo.declare("plugins.reactors.TransformReactor",
 					}
 
 					var transformation_items = store.getValues(item, 'Transformation');
+					var getBool = plugins.reactors.TransformReactor.getBool;
 					for (var i = 0; i < transformation_items.length; ++i) {
 						var transformation = {};
 						transformation.term      = store.getValue(transformation_items[i], 'Term');
 						transformation.type      = store.getValue(transformation_items[i], 'Type');
 						transformation.value     = store.getValue(transformation_items[i], 'Value');
-						transformation.match_all = store.getValue(transformation_items[i], 'MatchAllValues');
+						transformation.match_all = getBool(store, transformation_items[i], 'MatchAllValues');
 						transformation.set_value = store.getValue(transformation_items[i], 'SetValue');
-						transformation.in_place  = store.getValue(transformation_items[i], 'InPlace');
+						transformation.in_place  = getBool(store, transformation_items[i], 'InPlace');
 						transformation.set_term  = store.getValue(transformation_items[i], 'SetTerm');
 						_this.transformations.push(transformation);
 					}
@@ -156,20 +157,15 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 
 					var transformations = store.getValues(item, 'Transformation');
 					var tg = _this.transformation_grid;
+					var getBool = plugins.reactors.TransformReactor.getBool;
 					for (var i = 0; i < transformations.length; ++i) {
 						var table_row = [];
 						table_row[tg.term_column_index]      = store.getValue(transformations[i], 'Term');
 						table_row[tg.type_column_index]      = store.getValue(transformations[i], 'Type');
 						table_row[tg.value_column_index]     = store.getValue(transformations[i], 'Value');
-						if (store.hasAttribute(transformations[i], 'MatchAllValues'))
-							table_row[tg.match_all_column_index] = store.getValue(transformations[i], 'MatchAllValues');
-						else
-							table_row[tg.match_all_column_index] = false;
+						table_row[tg.match_all_column_index] = getBool(store, transformations[i], 'MatchAllValues');
 						table_row[tg.set_value_column_index] = store.getValue(transformations[i], 'SetValue');
-						if (store.hasAttribute(transformations[i], 'InPlace'))
-							table_row[tg.in_place_column_index] = store.getValue(transformations[i], 'InPlace');
-						else
-							table_row[tg.in_place_column_index] = false;
+						table_row[tg.in_place_column_index]  = getBool(store, transformations[i], 'InPlace');
 						table_row[tg.set_term_column_index]  = store.getValue(transformations[i], 'SetTerm');
 						_this.transformation_table.push(table_row);
 					}
@@ -228,11 +224,11 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
 						editor: dojox.grid.editors.Input},
 					{ name: 'Match All', width: 3, 
-						editor: dojox.grid.editors.CheckBox},
+						editor: dojox.grid.editors.Bool},
 					{ name: 'Set Value', width: 'auto', styles: 'text-align: center;', 
 						editor: dojox.grid.editors.Input},
 					{ name: 'In Place', width: 3, 
-						editor: dojox.grid.editors.CheckBox},       // try dojox.grid.editors.Bool 
+						editor: dojox.grid.editors.Bool},
 					{ name: 'Set Term', styles: '', 
 						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
 						editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 14 },
@@ -394,4 +390,18 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 plugins.reactors.TransformReactor.option_defaults = {
 	AllConditions: false,
 	DeliverOriginal: false
+}
+
+plugins.reactors.TransformReactor.grid_option_defaults = {
+	InPlace: false,
+	MatchAllValues: false
 };
+
+plugins.reactors.TransformReactor.getBool = function(store, item, attribute) {
+	if (store.hasAttribute(item, attribute))
+		// convert XmlItem to string and then to boolean
+		return store.getValue(item, attribute).toString() == 'true';
+	else
+		return plugins.reactors.TransformReactor.grid_option_defaults[attribute];
+}
+
