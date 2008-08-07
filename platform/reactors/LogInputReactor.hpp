@@ -180,6 +180,9 @@ private:
 	/// checks for new log files
 	void checkForLogFiles(void);
 
+	/// Adds the current log file to the list of consumed files and to the history cache.
+	void recordLogFileAsDone(void);
+
 	/**
 	 * schedules another thread to read an event from the log file
 	 *

@@ -167,13 +167,6 @@ void LogInputReactor::start(void)
 			m_log_stream_pos = file_offset;
 			current_log_file_cache.close();
 			bfs::remove(m_current_log_file_cache_filename);
-
-			if (! m_just_one) {
-				// only track the log as being consumed if "JustOne" is disabled
-				bfs::path log_file_path(m_log_file);
-				m_logs_consumed.insert(log_file_path.leaf());
-			}
-
 			PION_LOG_DEBUG(m_logger, "Resuming consumption of log file: " << m_log_file);
 			scheduleReadFromLog(true);
 		} else {
@@ -194,7 +187,7 @@ void LogInputReactor::stop(void)
 		m_is_running = false;
 		m_timer_ptr.reset();
 
-		// Write cache files.
+		// Write current log file cache file.
 		if (m_log_stream.is_open()) {
 			std::ofstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
@@ -202,19 +195,6 @@ void LogInputReactor::stop(void)
 			current_log_file_cache << m_log_file << " " << m_log_stream.tellg();
 		} else {
 			boost::filesystem::remove(m_current_log_file_cache_filename);
-		}
-		std::ofstream history_cache(m_history_cache_filename.c_str(), std::ios::out | std::ios::app);
-		if (! history_cache)
-			throw PionException("Unable to open history cache file for writing.");
-
-		bfs::path log_file_path(m_log_file);
-		std::string log_file_leaf = log_file_path.leaf();
-		for (LogFileCollection::iterator it = m_logs_consumed.begin(); it != m_logs_consumed.end(); ++it) {
-			// If the current log file is still open, it will be in m_logs_consumed, but shouldn't be added to history_cache.
-			// TODO: should files be added to m_logs_consumed when they're finished instead of when they're scheduled?
-			if (m_log_stream.is_open() && *it == log_file_leaf) continue;
-
-			history_cache << *it << std::endl;
 		}
 	}
 }
@@ -269,10 +249,6 @@ void LogInputReactor::checkForLogFiles(void)
 		
 	} else {
 		// found a new log to consume
-		if (! m_just_one) {
-			// only track the log as being consumed if "JustOne" is disabled
-			m_logs_consumed.insert(*log_itr);
-		}
 		
 		// re-calculate the full path to the file
 		bfs::path full_path(m_log_directory);
@@ -296,8 +272,12 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			m_log_stream.open(m_log_file.c_str(), std::ios::in | std::ios::binary);
 			if (! m_log_stream.is_open())
 				throw OpenLogException(m_log_file);
-			else if (m_log_stream.eof())
+			else if (m_log_stream.peek() == EOF) {
+				recordLogFileAsDone();
+
+				// TODO: Should this really throw an exception, or would a warning be good enough?
 				throw EmptyLogException(m_log_file);
+			}
 			if (m_log_stream_pos > 0)
 				m_log_stream.seekg(m_log_stream_pos);
 		}
@@ -342,6 +322,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				PION_LOG_DEBUG(m_logger, "Finished consuming log file: " << m_log_file);
 				m_log_stream.close();
 				m_log_stream.clear();
+				recordLogFileAsDone();
 
 				// check for more logs
 				scheduleLogFileCheck(0);
@@ -388,6 +369,18 @@ void LogInputReactor::getLogFilesInLogDirectory(LogFileCollection& files)
 	}
 }
 
+void LogInputReactor::recordLogFileAsDone() {
+	// No need to record anything if "JustOne" is enabled.
+	if (m_just_one) return;
+
+	// Add the current log file to the list of consumed files and the history cache.
+	bfs::path log_file_path(m_log_file);
+	m_logs_consumed.insert(log_file_path.leaf());
+	std::ofstream history_cache(m_history_cache_filename.c_str(), std::ios::out | std::ios::app);
+	if (! history_cache)
+		throw PionException("Unable to open history cache file for writing.");
+	history_cache << log_file_path.leaf() << std::endl;
+}
 	
 }	// end namespace plugins
 }	// end namespace pion
