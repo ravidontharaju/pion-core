@@ -55,9 +55,11 @@ static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tm
 static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
 
 
-const int NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
-const int TOTAL_LINES_IN_ALL_CLF_LOG_FILES = 7;
-const int NUM_LINES_IN_LARGE_LOG_FILE = 20000;
+const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
+
+const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
+const boost::uint64_t TOTAL_LINES_IN_ALL_CLF_LOG_FILES = 7;
+const boost::uint64_t NUM_LINES_IN_LARGE_LOG_FILE = 20000;
 
 static const std::string expected_urls[] = {
 	// from combined.log
@@ -179,6 +181,21 @@ public:
 		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "large.*");
 		m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 	}
+	void waitForMinimumNumberOfEventsIn(
+		const std::string& reactor_id,
+		boost::uint64_t time_limit,
+		boost::uint64_t min_num_events_in)
+	{
+		boost::uint64_t total_nsec = 0;
+		boost::uint32_t num_nsec = 100000000; // 0.1 seconds
+		while (total_nsec < time_limit) {
+			PionScheduler::sleep(0, num_nsec);
+			if (m_reaction_engine->getEventsIn(m_log_reader_id) >= min_num_events_in)
+				return;
+			total_nsec += num_nsec;
+		}
+		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
+	}
 
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
@@ -207,15 +224,12 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessed) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all of the events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
-	// Confirm that the Reactor has the expected number of input events and output events.
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
+	// Confirm that the LogInputReactor has the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
 }
 
 // Check that the LogInputReactor correctly handled at least one value (specifically, the referrer URL) for every input line.
@@ -223,11 +237,8 @@ BOOST_AUTO_TEST_CASE(spotCheckEvents) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all of the events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the new log file has some expected values in it.
 	m_reaction_engine->stopReactor(m_log_writer_id);
@@ -270,15 +281,12 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleLogFiles) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all of the events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(TOTAL_LINES_IN_ALL_CLF_LOG_FILES)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming all the log files.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(TOTAL_LINES_IN_ALL_CLF_LOG_FILES));
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(TOTAL_LINES_IN_ALL_CLF_LOG_FILES));
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 }
 
 // Check that the LogInputReactor correctly handled at least one value (specifically, the referrer URL) for every input line.
@@ -290,11 +298,8 @@ BOOST_AUTO_TEST_CASE(spotCheckEventsForMultipleLogFiles) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all of the events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(TOTAL_LINES_IN_ALL_CLF_LOG_FILES)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming all the log files.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 
 	// Stop the LogOutputReactor and extract all the URLs from the output log.
 	m_reaction_engine->stopReactor(m_log_writer_id);
@@ -323,15 +328,12 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestart) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all available events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Stop the ReactionEngine and create a new log file for the LogInputReactor to consume.
 	m_reaction_engine->stop();
@@ -349,11 +351,8 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestart) {
 	boost::uint64_t expected_events_in  = events_in_at_start  + num_lines_in_new_input_log_file;
 	boost::uint64_t expected_events_out = events_out_at_start + num_lines_in_new_input_log_file;
 
-	// Make sure that the LogInputReactor has consumed all available events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == expected_events_in) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, expected_events_in);
 
 	// Confirm the expected totals of input events and output events.
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
@@ -364,15 +363,12 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
-	// Make sure that the LogInputReactor has consumed all available events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
-	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_DEFAULT_LOG_FILE));
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Delete the ReactionEngine.  (This is needed to enable creating a new LogInputReactor with the same ID, 
 	// because IDs can only be specified in a configuration file, configuration files can only be read if 
@@ -395,11 +391,8 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	boost::uint64_t expected_events_in  = num_lines_in_new_input_log_file;
 	boost::uint64_t expected_events_out = num_lines_in_new_input_log_file;
 
-	// Make sure that the LogInputReactor has consumed all available events.
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) == expected_events_in) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
+	// Wait up to one second for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, expected_events_in);
 
 	// Confirm the expected totals of input events and output events.
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
@@ -434,17 +427,8 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
 		m_reaction_engine->startReactor(m_log_reader_id);
 	}
 
-	// Let the LogInputReactor consume the rest of the log file.
-	const boost::uint64_t MAX_NSEC = 20000000000; // 20 seconds
-	boost::uint64_t total_nsec = 0;
-	while (total_nsec < MAX_NSEC) {
-		PionScheduler::sleep(0, num_nsec);
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) >= static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE)) break;
-		total_nsec += num_nsec;
-	}
-	if (total_nsec >= MAX_NSEC) {
-		BOOST_FAIL("LogInputReactor was taking too long to read a log file.");
-	}
+	// Wait up to 20 seconds for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
 
 	// Confirm that the LogInputReactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
@@ -485,17 +469,8 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
 		m_reaction_engine->startReactor(m_log_reader_id);
 	}
 
-	// Let the LogInputReactor consume the rest of the log file.
-	const boost::uint64_t MAX_NSEC = 20000000000; // 20 seconds
-	boost::uint64_t total_nsec = 0;
-	while (total_nsec < MAX_NSEC) {
-		PionScheduler::sleep(0, num_nsec);
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) >= static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE)) break;
-		total_nsec += num_nsec;
-	}
-	if (total_nsec >= MAX_NSEC) {
-		BOOST_FAIL("LogInputReactor was taking too long to read a log file.");
-	}
+	// Wait up to 20 seconds for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
@@ -519,7 +494,7 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
 		PionScheduler::sleep(0, num_nsec);
 	}
 
-	// Save the number of events read.
+	// Stop the LogInputReactor and save the numbers of input events and output events.
 	m_reaction_engine->stopReactor(m_log_reader_id);
 	boost::uint64_t events_in_before_delete = m_reaction_engine->getEventsIn(m_log_reader_id);
 	boost::uint64_t events_out_before_delete = m_reaction_engine->getEventsOut(m_log_reader_id);
@@ -542,21 +517,297 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
 	boost::uint64_t expected_events_in  = NUM_LINES_IN_LARGE_LOG_FILE - events_in_before_delete;
 	boost::uint64_t expected_events_out = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete;
 
-	// Let the LogInputReactor consume the rest of the log file.
-	const boost::uint64_t MAX_NSEC = 20000000000; // 20 seconds
-	boost::uint64_t total_nsec = 0;
-	while (total_nsec < MAX_NSEC) {
-		PionScheduler::sleep(0, num_nsec);
-		if (m_reaction_engine->getEventsIn(m_log_reader_id) >= static_cast<boost::uint64_t>(expected_events_in)) break;
-		total_nsec += num_nsec;
-	}
-	if (total_nsec >= MAX_NSEC) {
-		BOOST_FAIL("LogInputReactor was taking too long to read a log file.");
-	}
+	// Wait up to 20 seconds for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, expected_events_in);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
+}
+
+BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReaders) {
+	// Make another LogInputReactor.
+	xmlNodePtr config_ptr = makeLogInputReactorConfig();
+	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+	m_reaction_engine->addReactorConnection(log_reader_id_2, m_log_writer_id);
+
+	// Start the LogInputReactors.
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// Wait up to one second for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), NUM_LINES_IN_DEFAULT_LOG_FILE);
+}
+
+BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReadersAndMultipleLogFiles) {
+	// Reconfigure the LogInputReactor to search for multiple log files.
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "comb.*");
+	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
+
+	// Make another LogInputReactor to search for multiple log files.
+	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+	m_reaction_engine->addReactorConnection(log_reader_id_2, m_log_writer_id);
+
+	// Start the LogInputReactors.
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// Wait up to one second for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+}
+
+BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
+	// Make another LogInputReactor.
+	xmlNodePtr config_ptr = makeLogInputReactorConfig();
+	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+
+	// Start the LogInputReactors.
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// Wait up to one second for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Stop the ReactionEngine and create a new log file for the LogInputReactors to consume.
+	m_reaction_engine->stop();
+	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	const int num_lines_in_new_input_log_file = 2;
+
+	// Restart the ReactionEngine, check and save the number of input and output events, and restart the LogInputReactors.
+	m_reaction_engine->start();
+	boost::uint64_t events_in_at_start = m_reaction_engine->getEventsIn(m_log_reader_id);
+	boost::uint64_t events_out_at_start = m_reaction_engine->getEventsOut(m_log_reader_id);
+	BOOST_CHECK_EQUAL(events_in_at_start, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(events_out_at_start, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2), events_in_at_start);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), events_out_at_start);
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// Compute the expected totals of input events and output events.  After being restarted, the LogInputReactors 
+	// should consume only the events from the new file, thus the totals should only increase by 2.
+	boost::uint64_t expected_events_in  = events_in_at_start  + num_lines_in_new_input_log_file;
+	boost::uint64_t expected_events_out = events_out_at_start + num_lines_in_new_input_log_file;
+
+	// Wait up to one second for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, expected_events_in);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, expected_events_in);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  expected_events_in);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
+}
+
+BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloadedForMultipleReaders) {
+	// Make another LogInputReactor.
+	xmlNodePtr config_ptr = makeLogInputReactorConfig();
+	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+
+	// Start the LogInputReactors.
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// Wait up to one second for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Delete the ReactionEngine.  (This is needed to enable creating a new LogInputReactor with the same ID, 
+	// because IDs can only be specified in a configuration file, configuration files can only be read if 
+	// they're not already open, and they can only be closed by ConfigManager::~ConfigManager().)
+	delete m_reaction_engine;
+
+	// Create a new log file for the LogInputReactor to consume.
+	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	const int num_lines_in_new_input_log_file = 2;
+
+	// Create a new ReactionEngine, using the config file created in the constructor.
+	m_reaction_engine = new ReactionEngine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr);
+	m_reaction_engine->setConfigFile(m_reactor_config_file);
+	m_reaction_engine->openConfigFile();
+
+	// Start the LogInputReactors.  (The ReactionEngine and LogOutputReactor were started by openConfigFile().)
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(log_reader_id_2);
+
+	// The LogInputReactors should consume only the events from the new file.
+	boost::uint64_t expected_events_in  = num_lines_in_new_input_log_file;
+	boost::uint64_t expected_events_out = num_lines_in_new_input_log_file;
+
+	// Wait up to one second for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, expected_events_in);
+	waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, expected_events_in);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  expected_events_in);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture for testing file position caching with multiple LogInputReactors
+class TwoRunningLogInputReactorsReadingLargeFile_F : public RunningReactionEngineWithLogInputReactor_F {
+public:
+	TwoRunningLogInputReactorsReadingLargeFile_F() {
+		setupForLargeLogFile();
+
+		// Make another LogInputReactor to search for the large log file.
+		// (Note that this Reactor will have no output connection, since it's not actually needed for the test,
+		// but one could be added for debugging purposes if desired.)
+		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "large.*");
+		m_log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+
+		// Start the LogInputReactors.
+		m_reaction_engine->startReactor(m_log_reader_id);
+		m_reaction_engine->startReactor(m_log_reader_id_2);
+
+		// Calibrate.
+		m_num_nsec = 10000000; // 0.01 seconds (Start small, since we need to run as many as 15 intervals before either Reactor finishes the file.)
+		PionScheduler::sleep(0, m_num_nsec);
+		while (m_reaction_engine->getEventsIn(m_log_reader_id) < NUM_LINES_IN_LARGE_LOG_FILE / 100) { // i.e. less than 1% read
+			m_num_nsec *= 2;
+			if (m_num_nsec >= 1000000000) { // 1 second
+				BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
+			}
+			PionScheduler::sleep(0, m_num_nsec);
+		}
+		m_num_nsec /= 2;
+
+		// The second LogInputReactor should have read something by now.
+		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id_2) != 0);
+	}
+	virtual ~TwoRunningLogInputReactorsReadingLargeFile_F() {
+	}
+
+	boost::uint32_t m_num_nsec;
+	std::string m_log_reader_id_2;
+};
+
+BOOST_FIXTURE_TEST_SUITE(TwoRunningLogInputReactorsReadingLargeFile_S, TwoRunningLogInputReactorsReadingLargeFile_F)
+
+BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactors) {
+	// Stop and restart both LogInputReactors 5 times.
+	for (int i = 0; i < 5; ++i) {
+		PionScheduler::sleep(0, m_num_nsec); // both Reactors running
+		m_reaction_engine->stopReactor(m_log_reader_id);
+		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id) != NUM_LINES_IN_LARGE_LOG_FILE);
+		PionScheduler::sleep(0, m_num_nsec); // second Reactor only running
+		m_reaction_engine->stopReactor(m_log_reader_id_2);
+		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id_2) != NUM_LINES_IN_LARGE_LOG_FILE);
+		m_reaction_engine->startReactor(m_log_reader_id);
+		PionScheduler::sleep(0, m_num_nsec); // first Reactor only running
+		m_reaction_engine->startReactor(m_log_reader_id_2);
+	}
+
+	// Wait up to 20 seconds for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	waitForMinimumNumberOfEventsIn(m_log_reader_id_2, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id_2),  NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id_2), NUM_LINES_IN_LARGE_LOG_FILE);
+}
+
+BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
+	// Stop and restart the ReactorEngine 10 times.
+	for (int i = 0; i < 10; ++i) {
+		PionScheduler::sleep(0, m_num_nsec);
+
+		// If the LogInputReactor is not stopped first, bad assertion exceptions are often thrown in LogOutputReactor::operator().
+		m_reaction_engine->stopReactor(m_log_reader_id);
+
+		m_reaction_engine->stop();
+		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id) != NUM_LINES_IN_LARGE_LOG_FILE);
+		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id_2) != NUM_LINES_IN_LARGE_LOG_FILE);
+		m_reaction_engine->start();
+		m_reaction_engine->startReactor(m_log_writer_id);
+		m_reaction_engine->startReactor(m_log_reader_id);
+		m_reaction_engine->startReactor(m_log_reader_id_2);
+	}
+
+	// Wait up to 20 seconds for the LogInputReactors to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	waitForMinimumNumberOfEventsIn(m_log_reader_id_2, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id_2),  NUM_LINES_IN_LARGE_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id_2), NUM_LINES_IN_LARGE_LOG_FILE);
+}
+
+BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
+	// Stop the LogInputReactors and save the numbers of input events and output events.
+	m_reaction_engine->stopReactor(m_log_reader_id);
+	m_reaction_engine->stopReactor(m_log_reader_id_2);
+	boost::uint64_t events_in_before_delete_1  = m_reaction_engine->getEventsIn(m_log_reader_id);
+	boost::uint64_t events_out_before_delete_1 = m_reaction_engine->getEventsOut(m_log_reader_id);
+	boost::uint64_t events_in_before_delete_2  = m_reaction_engine->getEventsIn(m_log_reader_id_2);
+	boost::uint64_t events_out_before_delete_2 = m_reaction_engine->getEventsOut(m_log_reader_id_2);
+
+	// Delete the ReactionEngine.  (This is needed to enable creating new LogInputReactors with the same IDs, 
+	// because IDs can only be specified in a configuration file, configuration files can only be read if 
+	// they're not already open, and they can only be closed by ConfigManager::~ConfigManager().)
+	delete m_reaction_engine;
+
+	// Create a new ReactionEngine, using the config file created in the constructor.
+	m_reaction_engine = new ReactionEngine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr);
+	m_reaction_engine->setConfigFile(m_reactor_config_file);
+	m_reaction_engine->openConfigFile();
+
+	// Start the LogInputReactors.  (The ReactionEngine and LogOutputReactor were started by openConfigFile().)
+	m_reaction_engine->startReactor(m_log_reader_id);
+	m_reaction_engine->startReactor(m_log_reader_id_2);
+
+	// Compute the expected numbers of input events and output events (which should be
+	// the number of lines in the log file that haven't yet been read).
+	boost::uint64_t expected_events_in_1  = NUM_LINES_IN_LARGE_LOG_FILE - events_in_before_delete_1;
+	boost::uint64_t expected_events_out_1 = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete_1;
+	boost::uint64_t expected_events_in_2  = NUM_LINES_IN_LARGE_LOG_FILE - events_in_before_delete_2;
+	boost::uint64_t expected_events_out_2 = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete_2;
+
+	// Wait up to 20 seconds for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id,   20 * ONE_SECOND, expected_events_in_1);
+	waitForMinimumNumberOfEventsIn(m_log_reader_id_2, 20 * ONE_SECOND, expected_events_in_2);
+
+	// Confirm that both LogInputReactors have the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in_1);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out_1);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id_2),  expected_events_in_2);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id_2), expected_events_out_2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
