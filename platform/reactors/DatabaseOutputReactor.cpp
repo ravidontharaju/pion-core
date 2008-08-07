@@ -61,8 +61,8 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	// get the database to use
 	if (! ConfigManager::getConfigOption(DATABASE_ELEMENT_NAME, m_database_id, config_ptr))
 		throw EmptyDatabaseException(getId());
-	m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
-	PION_ASSERT(m_database_ptr);
+	if (! getDatabaseManager().hasPlugin(m_database_id))
+		throw DatabaseManager::DatabaseNotFoundException(m_database_id);
 	
 	// get the name of the table to store events in
 	if (! ConfigManager::getConfigOption(TABLE_ELEMENT_NAME, m_table_name, config_ptr))
@@ -165,6 +165,10 @@ void DatabaseOutputReactor::start(void)
 	if (! m_is_running) {
 		m_is_running = true;
 
+		// open a new database connection
+		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+		PION_ASSERT(m_database_ptr);
+
 		// spawn a new thread that will be used to save events to the database
 		PION_LOG_DEBUG(m_logger, "Starting database output thread: " << getId());
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseOutputReactor::insertEvents, this)));
@@ -186,6 +190,10 @@ void DatabaseOutputReactor::stop(void)
 
 		// wait for reader thread to shutdown
 		m_thread->join();
+
+		// close the database connection
+		boost::mutex::scoped_lock reactor_lock_two(m_mutex);
+		m_database_ptr.reset();
 	}
 }
 
