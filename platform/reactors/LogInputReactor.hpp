@@ -256,6 +256,15 @@ private:
 
 	/// pointer to a timer used to schedule the check for new log files
 	boost::scoped_ptr<boost::asio::deadline_timer>	m_timer_ptr;
+
+	/// name of the history cache, used for keeping track of which log files have been consumed
+	std::string							m_history_cache_filename;
+
+	/// name of the current log file cache, used for keeping track of the read position in the current log file
+	std::string							m_current_log_file_cache_filename;
+
+	/// read position in the current log file
+	std::ifstream::pos_type				m_log_stream_pos;
 };
 
 

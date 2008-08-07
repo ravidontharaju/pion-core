@@ -1,0 +1,2 @@
+10.0.19.111 - - [05/Apr/2007:05:37:11 -0600] "GET /robots.txt HTTP/1.0" 404 208 "http://www.example.com/index.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
+10.0.31.104 - - [08/Jun/2007:07:20:02 -0600] "GET /search/ HTTP/1.1" 200 3546 "http://www.amazon.com/" "Mozilla/4.08 [en] (Win98; I ;Nav)"

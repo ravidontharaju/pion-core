@@ -45,6 +45,7 @@ extern const std::string& get_vocabularies_file(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
+extern void cleanup_cache_files(void);
 
 
 /// static strings used by these unit tests
@@ -203,6 +204,7 @@ class ReactionEngineAlreadyRunningTests_F
 {
 public:
 	ReactionEngineAlreadyRunningTests_F() {
+		cleanup_cache_files();
 		boost::filesystem::remove(NEW_LOG_FILE);
 		boost::filesystem::remove(NEW_DATABASE_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);

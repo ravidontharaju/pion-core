@@ -97,6 +97,14 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 	} else {
 		m_frequency = DEFAULT_FREQUENCY;
 	}
+
+	// assign names for the cache files
+	bfs::path history_cache_path(m_log_directory);
+	history_cache_path /= (getId() + ".cache");
+	m_history_cache_filename = history_cache_path.file_string();
+	bfs::path current_log_file_cache_path(m_log_directory);
+	current_log_file_cache_path /= (getId() + "-cur.cache");
+	m_current_log_file_cache_filename = current_log_file_cache_path.file_string();
 }
 	
 void LogInputReactor::updateVocabulary(const Vocabulary& v)
@@ -135,8 +143,44 @@ void LogInputReactor::start(void)
 {
 	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	if (! m_is_running) {
-		// schedule a check for new log files
-		scheduleLogFileCheck(0);
+		// Process history cache (list of log files that have already been consumed) if present.
+		if (bfs::exists(m_history_cache_filename)) {
+			std::ifstream history_cache(m_history_cache_filename.c_str());
+			if (! history_cache)
+				throw PionException("Unable to open history cache file for reading.");
+			m_logs_consumed.clear();
+			std::string already_consumed_file;
+			while (history_cache >> already_consumed_file) {
+				m_logs_consumed.insert(already_consumed_file);
+			}
+		}
+
+		// If the Reactor was in the middle of reading a log file the last time it was stopped,
+		// resume reading that log file, else schedule a check for new log files.
+		if (bfs::exists(m_current_log_file_cache_filename)) {
+			std::ifstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
+			if (! current_log_file_cache)
+				throw PionException("Unable to open current log file cache file for reading.");
+			boost::uint64_t file_offset;
+			current_log_file_cache >> m_log_file >> file_offset;
+			//current_log_file_cache >> m_log_file >> m_log_stream_pos; // TODO: define operator>> for pos_type?
+			m_log_stream_pos = file_offset;
+			current_log_file_cache.close();
+			bfs::remove(m_current_log_file_cache_filename);
+
+			if (! m_just_one) {
+				// only track the log as being consumed if "JustOne" is disabled
+				bfs::path log_file_path(m_log_file);
+				m_logs_consumed.insert(log_file_path.leaf());
+			}
+
+			PION_LOG_DEBUG(m_logger, "Resuming consumption of log file: " << m_log_file);
+			scheduleReadFromLog(true);
+		} else {
+			m_log_stream_pos = 0;
+			scheduleLogFileCheck(0);
+		}
+
 		m_is_running = true;
 	}
 }
@@ -149,6 +193,29 @@ void LogInputReactor::stop(void)
 		PION_LOG_DEBUG(m_logger, "Stopping input log thread: " << getId());
 		m_is_running = false;
 		m_timer_ptr.reset();
+
+		// Write cache files.
+		if (m_log_stream.is_open()) {
+			std::ofstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
+			if (! current_log_file_cache)
+				throw PionException("Unable to open current log file cache file for writing.");
+			current_log_file_cache << m_log_file << " " << m_log_stream.tellg();
+		} else {
+			boost::filesystem::remove(m_current_log_file_cache_filename);
+		}
+		std::ofstream history_cache(m_history_cache_filename.c_str(), std::ios::out | std::ios::app);
+		if (! history_cache)
+			throw PionException("Unable to open history cache file for writing.");
+
+		bfs::path log_file_path(m_log_file);
+		std::string log_file_leaf = log_file_path.leaf();
+		for (LogFileCollection::iterator it = m_logs_consumed.begin(); it != m_logs_consumed.end(); ++it) {
+			// If the current log file is still open, it will be in m_logs_consumed, but shouldn't be added to history_cache.
+			// TODO: should files be added to m_logs_consumed when they're finished instead of when they're scheduled?
+			if (m_log_stream.is_open() && *it == log_file_leaf) continue;
+
+			history_cache << *it << std::endl;
+		}
 	}
 }
 
@@ -231,6 +298,8 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				throw OpenLogException(m_log_file);
 			else if (m_log_stream.eof())
 				throw EmptyLogException(m_log_file);
+			if (m_log_stream_pos > 0)
+				m_log_stream.seekg(m_log_stream_pos);
 		}
 		
 		const Event::EventType event_type(m_codec_ptr->getEventType());
@@ -242,6 +311,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 
 			// read an Event from the log file (convert into an Event using the Codec)
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+			if (! isRunning()) break;
 			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
 				throw ReadEventException(m_log_file);
 

@@ -310,6 +310,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LogInputReactorTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PionPlatformUnitTests.cpp"
 				>
 			</File>

@@ -18,6 +18,7 @@
 //
 
 #include <string>
+#include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
@@ -201,4 +202,14 @@ void cleanup_platform_config_files(void)
 	if (boost::filesystem::exists(USERS_CONFIG_FILE))
 		boost::filesystem::remove(USERS_CONFIG_FILE);
 	boost::filesystem::copy_file(USERS_TEMPLATE_FILE, USERS_CONFIG_FILE);
+}
+
+void cleanup_cache_files(void)
+{
+	boost::filesystem::path dir_path(get_log_file_dir());
+	for (boost::filesystem::directory_iterator itr(dir_path); itr!=boost::filesystem::directory_iterator(); ++itr) {
+		if (boost::filesystem::extension(itr->path()) == ".cache") {
+			boost::filesystem::remove(itr->path());
+		}
+	}
 }
