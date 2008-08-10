@@ -23,6 +23,7 @@
 #include <string>
 #include <libxml/tree.h>
 #include <boost/noncopyable.hpp>
+#include <boost/lexical_cast.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
@@ -324,6 +325,54 @@ public:
 	static bool getConfigOption(const std::string& option_name,
 								std::string& option_value,
 								const xmlNodePtr starting_node);
+
+	/**
+	 * retrieves the value for a simple configuration option that is contained
+	 * within an XML element node.
+	 *
+	 * @param option_name the name of the option's element node
+	 * @param option_value will be assigned to the value of the option's element node
+	 * @param starting_node pointer to the node to start searching with; both it
+	 *                      and any following sibling nodes will be checked
+	 *
+	 * @return true if the option has a value; false if it is undefined or empty
+	 */
+	template <typename ValueType>
+	static bool getConfigOption(const std::string& option_name,
+								ValueType& option_value,
+								const xmlNodePtr starting_node)
+	{
+		std::string value_str;
+		if (getConfigOption(option_name, value_str, starting_node)) {
+			option_value = boost::lexical_cast<ValueType>(value_str);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * retrieves the value for a simple configuration option that is contained
+	 * within an XML element node; assigns to default_value if option not found.
+	 *
+	 * @param option_name the name of the option's element node
+	 * @param option_value will be assigned to the value of the option's element node
+	 * @param default_value the value assigned if the element node is not found
+	 * @param starting_node pointer to the node to start searching with; both it
+	 *                      and any following sibling nodes will be checked
+	 *
+	 * @return true if the option has a value; false if it is undefined or empty
+	 */
+	template <typename ValueType>
+	static bool getConfigOption(const std::string& option_name,
+								ValueType& option_value,
+								const ValueType& default_value,
+								const xmlNodePtr starting_node)
+	{
+		if (getConfigOption(option_name, option_value, starting_node))
+			return true;
+		option_value = default_value;
+		return false;
+	}
 	
 	/**
 	 * updates a simple configuration option that is contained within an XML

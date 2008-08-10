@@ -262,6 +262,35 @@ protected:
 		deliverEvent(e, return_immediately);
 	}
 
+	/**
+	 * delivers a container of Events to the output connections.  This is not 
+	 * thread-safe and should be called only when the Reactor's mutex is locked.
+	 *
+	 * @param events a container of Events to deliver
+	 * @param return_immediately if true, all delivery will use other threads
+	 */
+	inline void deliverEvents(const EventContainer& events, bool return_immediately = false)
+	{
+		for (EventContainer::const_iterator event_it = events.begin();
+				event_it != events.end(); ++event_it)
+		{
+			deliverEvent(*event_it, return_immediately);
+		}
+	}
+
+	/**
+	 * safely delivers a container of Events to the output connections
+	 * (locks the Reactor's mutex)
+	 *
+	 * @param events a container of Events to deliver
+	 * @param return_immediately if true, all delivery will use other threads
+	 */
+	inline void safeDeliverEvents(const EventContainer& events, bool return_immediately = false)
+	{
+		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		deliverEvents(events, return_immediately);
+	}
+
 	
 	/// used to provide thread safety for the Reactor's data structures
 	boost::mutex					m_mutex;

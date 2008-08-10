@@ -20,6 +20,7 @@
 #ifndef __PION_EVENT_HEADER__
 #define __PION_EVENT_HEADER__
 
+#include <vector>
 #include <boost/bind.hpp>
 #ifdef _MSC_VER
 	#pragma warning(push)
@@ -579,6 +580,9 @@ protected:
 	/// allow the EventPtr class to update references, etc.
 	friend class EventPtr;
 	
+	/// allow the EventFactory class to access the Event's allocator
+	friend class EventFactory;
+
 	/// increments the reference count for this Event
 	inline void addReference(void) { ++m_references; }
 	
@@ -878,6 +882,11 @@ public:
 		: m_event_alloc(EventAllocatorFactory::getAllocator())
 	{}
 	
+	/// construct an EventFactory using an existing Event's allocator
+	EventFactory(Event& e)
+		: m_event_alloc(*e.getAllocator())
+	{}
+	
 	/**
 	 * creates and returns a new EventPtr
 	 *
@@ -1006,6 +1015,16 @@ private:
 	/// references a thread-specific allocator used to manage Event memory
 	EventAllocator &		m_event_alloc;
 };
+
+
+///
+/// EventContainer: naive (not very efficient) container for a collection of
+///                 EventPtr objects
+///
+/// TODO: improve efficiency by eliminating unnecessary atomic counter
+///       operations triggered whenever the vector is resized
+///
+typedef std::vector<EventPtr>	EventContainer;
 
 
 }	// end namespace platform
