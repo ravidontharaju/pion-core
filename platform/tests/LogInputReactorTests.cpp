@@ -48,7 +48,7 @@ extern void cleanup_cache_files(void);
 
 /// static strings used by these unit tests
 static const std::string NEW_OUTPUT_LOG_FILE(get_log_file_dir() + "new.log");
-static const std::string NEW_INPUT_LOG_FILE(get_log_file_dir() + "combined.new");
+static const std::string NEW_INPUT_LOG_FNAME("combined-new");
 static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
 static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
 static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
@@ -80,6 +80,7 @@ static const unsigned int BUF_SIZE = 1023;
 
 
 /// fixture for testing LogInputReactor
+template<const char* codec_id, const char* file_ext>
 class RunningReactionEngineWithLogInputReactor_F {
 public:
 	RunningReactionEngineWithLogInputReactor_F() :
@@ -97,7 +98,7 @@ public:
 		m_codec_factory.openConfigFile();
 
 		boost::filesystem::remove(NEW_OUTPUT_LOG_FILE);
-		boost::filesystem::remove(NEW_INPUT_LOG_FILE);
+		boost::filesystem::remove(get_log_file_dir() + NEW_INPUT_LOG_FNAME + file_ext);
 
 		// Create a new (empty) reactor configuration file.
 		m_reactor_config_file = get_config_file_dir() + "reactors1.xml";
@@ -112,6 +113,7 @@ public:
 		// Add a LogInputReactor, since that's what we're testing here.
 		xmlNodePtr config_ptr = makeLogInputReactorConfig();
 		m_log_reader_id = m_reaction_engine->addReactor(config_ptr);
+		m_input_codec_id = codec_id;
 
 		// Add a LogOutputReactor and connect it to the LogInputReactor so it has something to send output to.
 		config_ptr = makeReactorConfigFromString(
@@ -158,16 +160,19 @@ public:
 										 const std::string& filename = "")
 	{
 		std::string inner_config_str = "<Plugin>LogInputReactor</Plugin><Name>";
-		inner_config_str += !name.empty()?      name :      "DLF Log Reader";
+		inner_config_str += !name.empty()?      name :      "Log Reader";
 		inner_config_str += "</Name><Codec>";
-		inner_config_str += !codec.empty()?     codec :     "3f49f2da-bfe3-11dc-8875-0016cb926e68";
+		inner_config_str += !codec.empty()?     codec :     codec_id;
 		inner_config_str += "</Codec><Directory>";
 		inner_config_str += !directory.empty()? directory : "../logs";
 		inner_config_str += "</Directory><Filename>";
-		inner_config_str += !filename.empty()?  filename :  "combined\\..*";
+		inner_config_str += !filename.empty()?  filename :  std::string("combined.*\\") + file_ext; // e.g. combined.*\.xml
 		inner_config_str += "</Filename>";
 
 		return makeReactorConfigFromString(inner_config_str);
+	}
+	std::string multiFileRegex(void) {
+		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
 	}
 	void setupForLargeLogFile(void) {
 		if (! boost::filesystem::exists("logs/large.log")) {
@@ -196,6 +201,10 @@ public:
 		}
 		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
 	}
+	void makeNewLogFileByCopying(const std::string& fname_of_file_to_copy) {
+		boost::filesystem::copy_file(get_log_file_dir() + fname_of_file_to_copy + file_ext,
+									 get_log_file_dir() + NEW_INPUT_LOG_FNAME + file_ext);
+	}
 
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
@@ -206,13 +215,38 @@ public:
 	std::string			m_log_reader_id;
 	std::string			m_log_writer_id;
 	char				m_buf[BUF_SIZE + 1];
+	std::string			m_input_codec_id;
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(RunningReactionEngineWithLogInputReactor_S, RunningReactionEngineWithLogInputReactor_F)
+// These have external linkage so they can be used as template parameters.
+extern const char LogCodec_id[]  = "3f49f2da-bfe3-11dc-8875-0016cb926e68";
+extern const char JSONCodec_id[] = "9446b74a-71e4-426c-b965-ae55260375af";
+extern const char XMLCodec_id[]  = "f7bb0fd8-3fe0-4227-accb-aaba2440a638";
+extern const char LogCodec_file_ext[]  = ".log";
+extern const char JSONCodec_file_ext[] = ".json";
+extern const char XMLCodec_file_ext[]  = ".xml";
+
+#define SKIP_WITH_WARNING_FOR_JSON_CODECS \
+	if (F::m_input_codec_id == JSONCodec_id) { \
+		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because it doesn't pass yet."); \
+		return; \
+	}
+
+#define SKIP_WITH_WARNING_FOR_XML_CODECS \
+	if (F::m_input_codec_id == XMLCodec_id) { \
+		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because it doesn't pass yet."); \
+		return; \
+	}
+
+typedef boost::mpl::list<RunningReactionEngineWithLogInputReactor_F<LogCodec_id, LogCodec_file_ext>,
+						 RunningReactionEngineWithLogInputReactor_F<JSONCodec_id, JSONCodec_file_ext>,
+						 RunningReactionEngineWithLogInputReactor_F<XMLCodec_id, XMLCodec_file_ext> > codec_fixture_list;
+
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(RunningReactionEngineWithLogInputReactor_S, codec_fixture_list)
 
 /*
-BOOST_AUTO_TEST_CASE(demonstrateLeak) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(demonstrateLeak) {
 	// start the log reader reactor
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -220,7 +254,7 @@ BOOST_AUTO_TEST_CASE(demonstrateLeak) {
 }
 */
 
-BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessed) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessed) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -233,7 +267,7 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessed) {
 }
 
 // Check that the LogInputReactor correctly handled at least one value (specifically, the referrer URL) for every input line.
-BOOST_AUTO_TEST_CASE(spotCheckEvents) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEvents) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -251,7 +285,7 @@ BOOST_AUTO_TEST_CASE(spotCheckEvents) {
 	BOOST_CHECK(! log_stream.getline(m_buf, BUF_SIZE));
 }
 
-BOOST_AUTO_TEST_CASE(testEmptyLogFile) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testEmptyLogFile) {
 	// Reconfigure the LogInputReactor to search for the empty log file.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "comb-log-empty.*");
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
@@ -273,9 +307,12 @@ BOOST_AUTO_TEST_CASE(testEmptyLogFile) {
 	BOOST_CHECK(!boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
 }
 
-BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleLogFiles) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleLogFiles) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	// Reconfigure the LogInputReactor to search for multiple log files.
-	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "comb.*");
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 
 	// Start the LogInputReactor.
@@ -290,9 +327,12 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleLogFiles) {
 }
 
 // Check that the LogInputReactor correctly handled at least one value (specifically, the referrer URL) for every input line.
-BOOST_AUTO_TEST_CASE(spotCheckEventsForMultipleLogFiles) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEventsForMultipleLogFiles) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	// Reconfigure the LogInputReactor to search for multiple log files.
-	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "comb.*");
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 
 	// Start the LogInputReactor.
@@ -324,7 +364,10 @@ BOOST_AUTO_TEST_CASE(spotCheckEventsForMultipleLogFiles) {
 	BOOST_CHECK(expected_urls_list == read_urls_list);
 }
 
-BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestart) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -337,7 +380,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestart) {
 
 	// Stop the ReactionEngine and create a new log file for the LogInputReactor to consume.
 	m_reaction_engine->stop();
-	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	makeNewLogFileByCopying("comb-log-2");
 	const int num_lines_in_new_input_log_file = 2;
 
 	// Restart the ReactionEngine and the LogInputReactor.
@@ -359,7 +402,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestart) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 }
 
-BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloaded) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -376,7 +419,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	delete m_reaction_engine;
 
 	// Create a new log file for the LogInputReactor to consume.
-	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	makeNewLogFileByCopying("comb-log-2");
 	const int num_lines_in_new_input_log_file = 2;
 
 	// Create a new ReactionEngine, using the config file created in the constructor.
@@ -399,7 +442,10 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 }
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -435,7 +481,10 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
 }
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -477,7 +526,10 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
 }
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -525,7 +577,7 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 }
 
-BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReaders) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleReaders) {
 	// Make another LogInputReactor.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig();
 	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
@@ -546,9 +598,12 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReaders) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), NUM_LINES_IN_DEFAULT_LOG_FILE);
 }
 
-BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReadersAndMultipleLogFiles) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleReadersAndMultipleLogFiles) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	// Reconfigure the LogInputReactor to search for multiple log files.
-	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "comb.*");
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 
 	// Make another LogInputReactor to search for multiple log files.
@@ -570,7 +625,10 @@ BOOST_AUTO_TEST_CASE(checkNumberOfEventsProcessedForMultipleReadersAndMultipleLo
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 }
 
-BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
+	SKIP_WITH_WARNING_FOR_JSON_CODECS
+	SKIP_WITH_WARNING_FOR_XML_CODECS
+
 	// Make another LogInputReactor.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig();
 	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
@@ -591,7 +649,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
 
 	// Stop the ReactionEngine and create a new log file for the LogInputReactors to consume.
 	m_reaction_engine->stop();
-	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	makeNewLogFileByCopying("comb-log-2");
 	const int num_lines_in_new_input_log_file = 2;
 
 	// Restart the ReactionEngine, check and save the number of input and output events, and restart the LogInputReactors.
@@ -621,7 +679,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
 }
 
-BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloadedForMultipleReaders) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReloadedForMultipleReaders) {
 	// Make another LogInputReactor.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig();
 	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
@@ -646,7 +704,7 @@ BOOST_AUTO_TEST_CASE(checkConsumedFilesSkippedAfterEngineReloadedForMultipleRead
 	delete m_reaction_engine;
 
 	// Create a new log file for the LogInputReactor to consume.
-	boost::filesystem::copy_file("logs/comb-log-2.log", NEW_INPUT_LOG_FILE);
+	makeNewLogFileByCopying("comb-log-2");
 	const int num_lines_in_new_input_log_file = 2;
 
 	// Create a new ReactionEngine, using the config file created in the constructor.
@@ -677,7 +735,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 /// fixture for testing file position caching with multiple LogInputReactors
-class TwoRunningLogInputReactorsReadingLargeFile_F : public RunningReactionEngineWithLogInputReactor_F {
+class TwoRunningLogInputReactorsReadingLargeFile_F : public RunningReactionEngineWithLogInputReactor_F<LogCodec_id, LogCodec_file_ext> {
 public:
 	TwoRunningLogInputReactorsReadingLargeFile_F() {
 		setupForLargeLogFile();

@@ -51,4 +51,24 @@
     <Flush>true</Flush>
     <Field term="urn:vocab:clickstream#clf-date" start="&quot;" end="&quot;">clf-date</Field>
   </Codec>
+  <Codec id="9446b74a-71e4-426c-b965-ae55260375af">
+    <Plugin>JSONCodec</Plugin>
+    <Name>JSON Log Format</Name>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Comment/>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#date">clf-date</Field>
+    <Field term="urn:vocab:clickstream#referer">cs(Referer)</Field>
+  </Codec>
+  <Codec id="f7bb0fd8-3fe0-4227-accb-aaba2440a638">
+    <Plugin>XMLCodec</Plugin>
+    <Name>XML Log Format</Name>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Comment/>
+    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#date">clf-date</Field>
+    <Field term="urn:vocab:clickstream#referer">cs-Referer</Field>
+  </Codec>
 </PionConfig>

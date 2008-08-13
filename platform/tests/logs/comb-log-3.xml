@@ -1,0 +1,6 @@
+<Events><Event>
+	<clf-date>05/Apr/2007:05:37:11 -0600</clf-date>
+	<request>GET /robots.txt HTTP/1.0</request>
+	<bytes>208</bytes>
+	<cs-Referer>http://xkcd.com/327</cs-Referer>
+</Event></Events>

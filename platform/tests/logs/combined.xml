@@ -1,0 +1,21 @@
+<Events><Event>
+	<clf-date>05/Apr/2007:05:37:11 -0600</clf-date>
+	<request>GET /robots.txt HTTP/1.0</request>
+	<bytes>208</bytes>
+	<cs-Referer>http://www.example.com/start.html</cs-Referer>
+</Event><Event>
+	<clf-date>08/Jun/2007:07:20:02 -0600</clf-date>
+	<request>GET /community/ HTTP/1.1</request>
+	<bytes>3546</bytes>
+	<cs-Referer>http://www.atomiclabs.com/</cs-Referer>
+</Event><Event>
+	<clf-date>24/Sep/2007:12:13:03 -0600</clf-date>
+	<request>GET /default.css HTTP/1.1</request>
+	<bytes>6698</bytes>
+	<cs-Referer>http://www.google.com/</cs-Referer>
+</Event><Event>
+	<clf-date>30/Jan/2008:15:26:07 -0600</clf-date>
+	<request>GET /pion/ HTTP/1.1</request>
+	<bytes>7058</bytes>
+	<cs-Referer>http://www.wikipedia.com/</cs-Referer>
+</Event></Events>

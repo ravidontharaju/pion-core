@@ -292,7 +292,8 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			// read an Event from the log file (convert into an Event using the Codec)
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 			if (! isRunning()) break;
-			if (! m_codec_ptr->read(m_log_stream, *event_ptr))
+			bool event_read = m_codec_ptr->read(m_log_stream, *event_ptr);
+			if (! event_read && ! m_log_stream.eof())
 				throw ReadEventException(m_log_file);
 
 			// check if only the first Event should be read
@@ -327,9 +328,11 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				// check for more logs
 				scheduleLogFileCheck(0);
 
-				// deliver the Event to connected Reactors
-				incrementEventsIn();
-				deliverEvent(event_ptr);
+				if (event_read) {
+					// deliver the Event to connected Reactors
+					incrementEventsIn();
+					deliverEvent(event_ptr);
+				}
 				break;
 			} else {
 				// more available: schedule another read operation?

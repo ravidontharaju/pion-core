@@ -1,0 +1,11 @@
+<Events><Event>
+	<clf-date>05/Apr/2007:05:37:11 -0600</clf-date>
+	<request>GET /robots.txt HTTP/1.0</request>
+	<bytes>208</bytes>
+	<cs-Referer>http://www.example.com/index.html</cs-Referer>
+</Event><Event>
+	<clf-date>08/Jun/2007:07:20:02 -0600</clf-date>
+	<request>GET /search/ HTTP/1.1</request>
+	<bytes>3546</bytes>
+	<cs-Referer>http://www.amazon.com/</cs-Referer>
+</Event></Events>

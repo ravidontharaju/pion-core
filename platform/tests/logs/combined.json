@@ -1,0 +1,26 @@
+[
+{
+"clf-date": "05/Apr/2007:05:37:11 -0600",
+"request": "GET /robots.txt HTTP/1.0",
+"bytes": 208,
+"cs(Referer)": "http://www.example.com/start.html"
+},
+{
+"clf-date": "08/Jun/2007:07:20:02 -0600",
+"request": "GET /community/ HTTP/1.1",
+"bytes": 3546,
+"cs(Referer)": "http://www.atomiclabs.com/"
+},
+{
+"clf-date": "24/Sep/2007:12:13:03 -0600",
+"request": "GET /default.css HTTP/1.1",
+"bytes": 6698,
+"cs(Referer)": "http://www.google.com/"
+},
+{
+"clf-date": "30/Jan/2008:15:26:07 -0600",
+"request": "GET /pion/ HTTP/1.1",
+"bytes": 7058,
+"cs(Referer)": "http://www.wikipedia.com/"
+}
+]
