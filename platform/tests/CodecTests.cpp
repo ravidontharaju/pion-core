@@ -575,6 +575,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 
 	BOOST_CHECK(!F::p->read(in, *event_ptr_2));
 	BOOST_CHECK(event_ptr_2->empty());
+	BOOST_CHECK(in.eof());
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {

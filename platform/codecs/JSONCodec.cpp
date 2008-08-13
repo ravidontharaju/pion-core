@@ -280,11 +280,14 @@ bool JSONCodec::read(std::istream& in, Event& e)
 	}
 
 	while (m_json_object_queue.empty()) {
-		if (m_context->m_array_ended)
-			// TODO: Do we need a way for the caller to distinguish between the case where there is
+		if (m_context->m_array_ended) {
+			// Setting eofbit gives the caller a way to distinguish between the case where there is
 			// currently not enough data in the stream to parse an Event and the case where the
-			// end marker of the Event sequence has been reached?
+			// end marker of the Event sequence has been reached (and no more Events are in the queue).
+			in.setstate(std::ios::eofbit);
+
 			return false;
+		}
 
 		// read up to READ_BUFFER_SIZE bytes into a buffer from the input stream
 		char data[READ_BUFFER_SIZE];

@@ -37,6 +37,7 @@ const std::string			XMLCodec::CONTENT_TYPE = "text/xml";
 const std::string			XMLCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			XMLCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			XMLCodec::EVENT_ELEMENT_NAME = "Event";
+const std::string			XMLCodec::EVENTS_ELEMENT_NAME = "Events";
 
 
 // XMLCodec member functions
@@ -230,6 +231,15 @@ bool XMLCodec::read(std::istream& in, Event& e)
 	    m_xml_reader = xmlReaderForIO(xmlInputReadCallback, xmlInputCloseCallback, (void*)(&in), NULL, NULL, XML_PARSE_NOBLANKS);
 		if (!m_xml_reader)
 			throw PionException("failed to create XML parser");
+
+		// parse the 'Events' start-tag
+		int ret = xmlTextReaderRead(m_xml_reader);
+		if (ret <= 0)
+			throw PionException("XML parser error");
+		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
+		if (strcmp((char*)name, EVENTS_ELEMENT_NAME.c_str()) != 0)
+			throw PionException("XML parser error");
+
 		m_first_read_attempt = false;
 	}
 
@@ -243,6 +253,14 @@ bool XMLCodec::read(std::istream& in, Event& e)
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
 		if (strcmp((char*)name, EVENT_ELEMENT_NAME.c_str()) == 0)
 			break;
+		if (strcmp((char*)name, EVENTS_ELEMENT_NAME.c_str()) == 0) {
+			// Setting eofbit gives the caller a way to distinguish between the case where there is
+			// currently not enough data in the stream to parse an Event and the case where the
+			// Events end-tag has been reached.
+			in.setstate(std::ios::eofbit);
+
+			return false;
+		}
 	}
 
 	// parse the input until the 'Event' end-tag is found

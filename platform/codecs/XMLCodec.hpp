@@ -196,6 +196,9 @@ private:
 	/// name of an XML element representing an Event
 	static const std::string		EVENT_ELEMENT_NAME;
 
+	/// name of an XML element containing Event elements
+	static const std::string		EVENTS_ELEMENT_NAME;
+
 
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
