@@ -159,16 +159,13 @@ void LogInputReactor::start(void)
 			std::ifstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for reading.");
-			boost::uint64_t file_offset;
-			current_log_file_cache >> m_log_file >> file_offset;
-			//current_log_file_cache >> m_log_file >> m_log_stream_pos; // TODO: define operator>> for pos_type?
-			m_log_stream_pos = file_offset;
+			current_log_file_cache >> m_log_file >> m_num_events_read_previously;
 			current_log_file_cache.close();
 			bfs::remove(m_current_log_file_cache_filename);
 			PION_LOG_DEBUG(m_logger, "Resuming consumption of log file: " << m_log_file);
 			scheduleReadFromLog(true);
 		} else {
-			m_log_stream_pos = 0;
+			m_num_events_read_previously = 0;
 			scheduleLogFileCheck(0);
 		}
 
@@ -190,7 +187,7 @@ void LogInputReactor::stop(void)
 			std::ofstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for writing.");
-			current_log_file_cache << m_log_file << " " << m_log_stream.tellg();
+			current_log_file_cache << m_log_file << " " << getEventsIn();
 		} else {
 			boost::filesystem::remove(m_current_log_file_cache_filename);
 		}
@@ -266,6 +263,7 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 
 	try {
 		// open up the log file for reading (if not open already)
+		boost::uint64_t num_events_to_skip = 0;
 		if (! m_log_stream.is_open()) {
 			m_log_stream.open(m_log_file.c_str(), std::ios::in | std::ios::binary);
 			if (! m_log_stream.is_open())
@@ -276,8 +274,9 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 				// TODO: Should this really throw an exception, or would a warning be good enough?
 				throw EmptyLogException(m_log_file);
 			}
-			if (m_log_stream_pos > 0)
-				m_log_stream.seekg(m_log_stream_pos);
+
+			// The log file was reopened, so we need to skip over the previously read Events.
+			num_events_to_skip = m_num_events_read_previously;
 
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
@@ -297,6 +296,12 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			bool event_read = m_codec_ptr->read(m_log_stream, *event_ptr);
 			if (! event_read && ! m_log_stream.eof())
 				throw ReadEventException(m_log_file);
+
+			// Ignore Events that were previously read.
+			if (num_events_to_skip) {
+				num_events_to_skip--;
+				continue;
+			}
 
 			// check if only the first Event should be read
 			if (m_just_one) {

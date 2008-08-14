@@ -266,8 +266,8 @@ private:
 	/// name of the current log file cache, used for keeping track of the read position in the current log file
 	std::string							m_current_log_file_cache_filename;
 
-	/// read position in the current log file
-	std::ifstream::pos_type				m_log_stream_pos;
+	/// number of Events that had previously been read from the current log file
+	boost::uint64_t						m_num_events_read_previously;
 };
 
 

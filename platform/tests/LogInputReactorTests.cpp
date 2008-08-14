@@ -246,17 +246,6 @@ public:
 	std::string			m_input_codec_id;
 };
 
-#define SKIP_WITH_WARNING_FOR_JSON_CODECS \
-	if (F::m_input_codec_id == JSONCodec_id) { \
-		BOOST_WARN_MESSAGE(false, "Skipping this test for JSONCodec fixture because it doesn't pass yet."); \
-		return; \
-	}
-
-#define SKIP_WITH_WARNING_FOR_XML_CODECS \
-	if (F::m_input_codec_id == XMLCodec_id) { \
-		BOOST_WARN_MESSAGE(false, "Skipping this test for XMLCodec fixture because it doesn't pass yet."); \
-		return; \
-	}
 
 typedef boost::mpl::list<RunningReactionEngineWithLogInputReactor_F<LogCodec_id, LogCodec_file_ext>,
 						 RunningReactionEngineWithLogInputReactor_F<JSONCodec_id, JSONCodec_file_ext>,
@@ -475,7 +464,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 		PionScheduler::sleep(0, num_nsec);
 		m_reaction_engine->stopReactor(m_log_reader_id);
 		boost::uint64_t num_events_in = m_reaction_engine->getEventsIn(m_log_reader_id);
-		BOOST_CHECK(num_events_in > prev_num_events_in); // i.e. at least one event was read
+		BOOST_CHECK_GT(num_events_in, prev_num_events_in); // i.e. at least one event was read
 		prev_num_events_in = num_events_in;
 		m_reaction_engine->startReactor(m_log_reader_id);
 	}
@@ -531,9 +520,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -733,7 +719,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 /// fixture for testing file position caching with multiple LogInputReactors
-class TwoRunningLogInputReactorsReadingLargeFile_F : public RunningReactionEngineWithLogInputReactor_F<LogCodec_id, LogCodec_file_ext> {
+template<const char* codec_id, const char* file_ext>
+class TwoRunningLogInputReactorsReadingLargeFile_F : public RunningReactionEngineWithLogInputReactor_F<codec_id, file_ext> {
 public:
 	TwoRunningLogInputReactorsReadingLargeFile_F() {
 		setupForLargeLogFile();
@@ -770,11 +757,15 @@ public:
 	std::string m_log_reader_id_2;
 };
 
-BOOST_FIXTURE_TEST_SUITE(TwoRunningLogInputReactorsReadingLargeFile_S, TwoRunningLogInputReactorsReadingLargeFile_F)
+typedef boost::mpl::list<TwoRunningLogInputReactorsReadingLargeFile_F<LogCodec_id, LogCodec_file_ext>,
+						 TwoRunningLogInputReactorsReadingLargeFile_F<JSONCodec_id, JSONCodec_file_ext>,
+						 TwoRunningLogInputReactorsReadingLargeFile_F<XMLCodec_id, XMLCodec_file_ext> > codec_fixture_list_2;
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactors) {
-	// Stop and restart both LogInputReactors 5 times.
-	for (int i = 0; i < 5; ++i) {
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(TwoRunningLogInputReactorsReadingLargeFile_S, codec_fixture_list_2)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactors) {
+	// Stop and restart both LogInputReactors 3 times.
+	for (int i = 0; i < 3; ++i) {
 		PionScheduler::sleep(0, m_num_nsec); // both Reactors running
 		m_reaction_engine->stopReactor(m_log_reader_id);
 		BOOST_CHECK(m_reaction_engine->getEventsIn(m_log_reader_id) != NUM_LINES_IN_LARGE_LOG_FILE);
@@ -797,7 +788,7 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingReactors) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id_2), NUM_LINES_IN_LARGE_LOG_FILE);
 }
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
 	// Stop and restart the ReactorEngine 10 times.
 	for (int i = 0; i < 10; ++i) {
 		PionScheduler::sleep(0, m_num_nsec);
@@ -825,7 +816,7 @@ BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id_2), NUM_LINES_IN_LARGE_LOG_FILE);
 }
 
-BOOST_AUTO_TEST_CASE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
 	// Stop the LogInputReactors and save the numbers of input events and output events.
 	m_reaction_engine->stopReactor(m_log_reader_id);
 	m_reaction_engine->stopReactor(m_log_reader_id_2);
