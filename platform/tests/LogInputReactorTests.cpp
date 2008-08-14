@@ -308,9 +308,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testEmptyLogFile) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleLogFiles) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	// Reconfigure the LogInputReactor to search for multiple log files.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
@@ -328,9 +325,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleLog
 
 // Check that the LogInputReactor correctly handled at least one value (specifically, the referrer URL) for every input line.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEventsForMultipleLogFiles) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	// Reconfigure the LogInputReactor to search for multiple log files.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
@@ -365,9 +359,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEventsForMultipleLogFiles) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	// Start the LogInputReactor.
 	m_reaction_engine->startReactor(m_log_reader_id);
 
@@ -599,9 +590,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleRea
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleReadersAndMultipleLogFiles) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	// Reconfigure the LogInputReactor to search for multiple log files.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", multiFileRegex());
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
@@ -626,9 +614,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleRea
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	// Make another LogInputReactor.
 	xmlNodePtr config_ptr = makeLogInputReactorConfig();
 	std::string log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);

@@ -55,8 +55,6 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 	// get the Codec that the Reactor should use
 	if (! ConfigManager::getConfigOption(CODEC_ELEMENT_NAME, m_codec_id, config_ptr))
 		throw EmptyCodecException(getId());
-	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
-	PION_ASSERT(m_codec_ptr);
 	
 	// get the directory where the Reactor will look for new log files
 	if (! ConfigManager::getConfigOption(DIRECTORY_ELEMENT_NAME, m_log_directory, config_ptr))
@@ -280,6 +278,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			}
 			if (m_log_stream_pos > 0)
 				m_log_stream.seekg(m_log_stream_pos);
+
+			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+			PION_ASSERT(m_codec_ptr);
 		}
 		
 		const Event::EventType event_type(m_codec_ptr->getEventType());
