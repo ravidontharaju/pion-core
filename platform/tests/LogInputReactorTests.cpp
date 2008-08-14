@@ -78,6 +78,14 @@ static const std::string expected_urls[] = {
 
 static const unsigned int BUF_SIZE = 1023;
 
+// These have external linkage so they can be used as template parameters.
+extern const char LogCodec_id[]  = "3f49f2da-bfe3-11dc-8875-0016cb926e68";
+extern const char JSONCodec_id[] = "9446b74a-71e4-426c-b965-ae55260375af";
+extern const char XMLCodec_id[]  = "f7bb0fd8-3fe0-4227-accb-aaba2440a638";
+extern const char LogCodec_file_ext[]  = ".log";
+extern const char JSONCodec_file_ext[] = ".json";
+extern const char XMLCodec_file_ext[]  = ".xml";
+
 
 /// fixture for testing LogInputReactor
 template<const char* codec_id, const char* file_ext>
@@ -175,15 +183,35 @@ public:
 		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
 	}
 	void setupForLargeLogFile(void) {
-		if (! boost::filesystem::exists("logs/large.log")) {
-			std::ofstream large_log_file("logs/large.log");
+		std::string large_log_file = get_log_file_dir() + "large" + file_ext;
+		if (! boost::filesystem::exists(large_log_file)) {
+			std::ofstream out(large_log_file.c_str());
+			std::string before, after;
+			if (file_ext == JSONCodec_file_ext) {
+				out << "[";
+				before = "\n{\"bytes\": ";
+				after = "}, ";
+			} else if (file_ext == XMLCodec_file_ext) {
+				out << "<Events>\n";
+				before = "<Event><bytes>";
+				after = "</bytes></Event>\n";
+			} else {
+				before = "- - - [] \"\" - ";
+				after = " \"\" \"\"\n";
+			}
 			for (int i = 0; i < NUM_LINES_IN_LARGE_LOG_FILE; ++i) {
-				large_log_file << "- - - [] \"\" - " << i << " \"\" \"\"" << std::endl;
+				out << before << i << after;
+			}
+			if (file_ext == JSONCodec_file_ext) {
+				out.seekp(-2, std::ios::cur);  // Back up over final comma.
+				out << "\n]\n";
+			} else if (file_ext == XMLCodec_file_ext) {
+				out << "</Events>\n";
 			}
 		}
 
 		// Reconfigure the LogInputReactor to search for the large log file.
-		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "large.*");
+		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", std::string("large") + file_ext);
 		m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 	}
 	void waitForMinimumNumberOfEventsIn(
@@ -217,15 +245,6 @@ public:
 	char				m_buf[BUF_SIZE + 1];
 	std::string			m_input_codec_id;
 };
-
-
-// These have external linkage so they can be used as template parameters.
-extern const char LogCodec_id[]  = "3f49f2da-bfe3-11dc-8875-0016cb926e68";
-extern const char JSONCodec_id[] = "9446b74a-71e4-426c-b965-ae55260375af";
-extern const char XMLCodec_id[]  = "f7bb0fd8-3fe0-4227-accb-aaba2440a638";
-extern const char LogCodec_file_ext[]  = ".log";
-extern const char JSONCodec_file_ext[] = ".json";
-extern const char XMLCodec_file_ext[]  = ".xml";
 
 #define SKIP_WITH_WARNING_FOR_JSON_CODECS \
 	if (F::m_input_codec_id == JSONCodec_id) { \
@@ -434,9 +453,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -473,9 +489,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingEngine) {
-	SKIP_WITH_WARNING_FOR_JSON_CODECS
-	SKIP_WITH_WARNING_FOR_XML_CODECS
-
 	setupForLargeLogFile();
 
 	// Start the LogInputReactor.
@@ -725,11 +738,11 @@ public:
 	TwoRunningLogInputReactorsReadingLargeFile_F() {
 		setupForLargeLogFile();
 
-		// Make another LogInputReactor to search for the large log file.
+		// Make another LogInputReactor with the same configuration as the first, so it will also read the large log file.
 		// (Note that this Reactor will have no output connection, since it's not actually needed for the test,
 		// but one could be added for debugging purposes if desired.)
-		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", "large.*");
-		m_log_reader_id_2 = m_reaction_engine->addReactor(config_ptr);
+		xmlNodePtr config_ptr_2 = m_reaction_engine->getPluginConfig(m_log_reader_id)->children;
+		m_log_reader_id_2 = m_reaction_engine->addReactor(config_ptr_2);
 
 		// Start the LogInputReactors.
 		m_reaction_engine->startReactor(m_log_reader_id);
