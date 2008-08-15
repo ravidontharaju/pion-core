@@ -106,6 +106,7 @@ public:
 		m_codec_factory.openConfigFile();
 
 		boost::filesystem::remove(NEW_OUTPUT_LOG_FILE);
+		BOOST_REQUIRE(! boost::filesystem::exists(NEW_OUTPUT_LOG_FILE)); // Confirm, to avoid accidentally passing tests due to previous output.
 		boost::filesystem::remove(get_log_file_dir() + NEW_INPUT_LOG_FNAME + file_ext);
 
 		// Create a new (empty) reactor configuration file.
@@ -181,6 +182,9 @@ public:
 	}
 	std::string multiFileRegex(void) {
 		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
+	}
+	std::string compressedFileRegex(const std::string& fname, const std::string& suffix) {
+		return fname + "\\" + file_ext + "\\" + suffix; // e.g. .*\.xml\.gz
 	}
 	void setupForLargeLogFile(void) {
 		std::string large_log_file = get_log_file_dir() + "large" + file_ext;
@@ -713,6 +717,82 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  expected_events_in);
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingGzippedLogs) {
+	// Reconfigure the LogInputReactor to search for gzipped default log file, e.g. combined.json.GZ, if file_ext == ".json".
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("combined", ".GZ"));
+	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
+
+	// Start the LogInputReactor.
+	m_reaction_engine->startReactor(m_log_reader_id);
+
+	// Wait up to one second for the LogInputReactor to finish consuming the log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that the LogInputReactor has the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that the new log file has some expected values in it.
+	m_reaction_engine->stopReactor(m_log_writer_id);
+	std::ifstream log_stream(NEW_OUTPUT_LOG_FILE.c_str());
+	BOOST_REQUIRE(log_stream.is_open());
+	for (int i = 0; i < NUM_LINES_IN_DEFAULT_LOG_FILE; ++i) {
+		log_stream.getline(m_buf, BUF_SIZE);
+		BOOST_CHECK(boost::regex_search(m_buf, boost::regex(expected_urls[i].c_str())));
+	}
+	BOOST_CHECK(! log_stream.getline(m_buf, BUF_SIZE));
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedGzippedFileResumedAfterEngineReloaded) {
+	// Reconfigure the LogInputReactor to search for gzipped large log file, e.g. large.json.gz, if file_ext == ".json".
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("large", ".gz"));
+	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
+
+	// Start the LogInputReactor.
+	m_reaction_engine->startReactor(m_log_reader_id);
+
+	// Run until at least a few events have been read.
+	boost::uint32_t num_nsec = 10000000; // 0.01 seconds
+	PionScheduler::sleep(0, num_nsec);
+	while (m_reaction_engine->getEventsIn(m_log_reader_id) < 10) {
+		num_nsec *= 2;
+		if (num_nsec >= 1000000000) { // 1 second
+			BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
+		}
+		PionScheduler::sleep(0, num_nsec);
+	}
+
+	// Stop the LogInputReactor and save the numbers of input events and output events.
+	m_reaction_engine->stopReactor(m_log_reader_id);
+	boost::uint64_t events_in_before_delete = m_reaction_engine->getEventsIn(m_log_reader_id);
+	boost::uint64_t events_out_before_delete = m_reaction_engine->getEventsOut(m_log_reader_id);
+
+	// Delete the ReactionEngine.  (This is needed to enable creating a new LogInputReactor with the same ID, 
+	// because IDs can only be specified in a configuration file, configuration files can only be read if 
+	// they're not already open, and they can only be closed by ConfigManager::~ConfigManager().)
+	delete m_reaction_engine;
+
+	// Create a new ReactionEngine, using the config file created in the constructor.
+	m_reaction_engine = new ReactionEngine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr);
+	m_reaction_engine->setConfigFile(m_reactor_config_file);
+	m_reaction_engine->openConfigFile();
+
+	// Start the LogInputReactor.  (The ReactionEngine and LogOutputReactor were started by openConfigFile().)
+	m_reaction_engine->startReactor(m_log_reader_id);
+
+	// Compute the expected numbers of input events and output events (which should be
+	// the number of lines in the log file that haven't yet been read).
+	boost::uint64_t expected_events_in  = NUM_LINES_IN_LARGE_LOG_FILE - events_in_before_delete;
+	boost::uint64_t expected_events_out = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete;
+
+	// Wait up to 20 seconds for the expected number of input events.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 20 * ONE_SECOND, expected_events_in);
+
+	// Confirm that the Reactor has the expected number of input events and output events.
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(m_log_reader_id),  expected_events_in);
+	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

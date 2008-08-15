@@ -25,6 +25,7 @@
 #include <boost/asio.hpp>
 #include <boost/regex.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
@@ -255,7 +256,7 @@ private:
 	std::string							m_log_file;
 	
 	/// input file stream used to read the contents of log files
-	std::ifstream						m_log_stream;
+	boost::iostreams::filtering_istream m_log_stream;
 
 	/// pointer to a timer used to schedule the check for new log files
 	boost::scoped_ptr<boost::asio::deadline_timer>	m_timer_ptr;

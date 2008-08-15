@@ -17,13 +17,26 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifdef _MSC_VER
+// This could be any valid .lib file; its only purpose is to prevent the compiler  
+// from trying to link to boost_zlib-*.lib (e.g. boost_zip-vc80-mt-1_35.dll).  
+// LogInputReactor only uses zlib indirectly, through boost_iostreams-*.dll.
+#define BOOST_ZLIB_BINARY "zdll.lib"
+#endif
+
+
 #include <fstream>
+#include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <boost/iostreams/device/file.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/ReactionEngine.hpp>
+#include <pion/net/HTTPTypes.hpp>
 #include "LogInputReactor.hpp"
 
 using namespace pion::platform;
@@ -43,7 +56,7 @@ const std::string			LogInputReactor::FILENAME_ELEMENT_NAME = "Filename";
 const std::string			LogInputReactor::JUST_ONE_ELEMENT_NAME = "JustOne";
 const std::string			LogInputReactor::FREQUENCY_ELEMENT_NAME = "Frequency";
 
-	
+
 // LogInputReactor member functions
 
 void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -183,7 +196,7 @@ void LogInputReactor::stop(void)
 		m_timer_ptr.reset();
 
 		// Write current log file cache file.
-		if (m_log_stream.is_open()) {
+		if (m_log_stream.is_complete()) { // is_complete() returns true if a Device, in this case a file, is attached to the stream.
 			std::ofstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for writing.");
@@ -264,25 +277,33 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 	try {
 		// open up the log file for reading (if not open already)
 		boost::uint64_t num_events_to_skip = 0;
-		if (! m_log_stream.is_open()) {
-			m_log_stream.open(m_log_file.c_str(), std::ios::in | std::ios::binary);
-			if (! m_log_stream.is_open())
+		if (! m_log_stream.is_complete()) { // is_complete() returns true if a Device, in this case a file, is attached to the stream.
+
+			// Insert a decompression filter if the file suffix indicates one is needed.
+			if (pion::net::HTTPTypes::CaseInsensitiveEqual()(bfs::extension(bfs::path(m_log_file)), ".gz"))
+				m_log_stream.push(boost::iostreams::gzip_decompressor());
+
+			// Open and attach a file.
+			m_log_stream.push(boost::iostreams::file_source(m_log_file.c_str(), std::ios::in | std::ios::binary));
+			if (! m_log_stream.is_complete())
 				throw OpenLogException(m_log_file);
-			else if (m_log_stream.peek() == EOF) {
+
+			if (m_log_stream.peek() == EOF) {
 				recordLogFileAsDone();
 
 				// TODO: Should this really throw an exception, or would a warning be good enough?
 				throw EmptyLogException(m_log_file);
 			}
 
-			// The log file was reopened, so we need to skip over the previously read Events.
+			// If there were any previously read Events, we need to skip over them, because the log file has been reopened since they were read.
 			num_events_to_skip = m_num_events_read_previously;
 
+			// Get a new Codec for reading the current log file.
 			boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
 			PION_ASSERT(m_codec_ptr);
 		}
-		
+
 		const Event::EventType event_type(m_codec_ptr->getEventType());
 		EventFactory event_factory;
 		EventPtr event_ptr;
@@ -306,10 +327,12 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			// check if only the first Event should be read
 			if (m_just_one) {
 				PION_LOG_DEBUG(m_logger, "JustOne: generating lots of event copies for testing");
-				m_log_stream.close();
-				m_log_stream.clear();
+
+				// Remove and close all Filters and Devices.
+				while (! m_log_stream.empty()) m_log_stream.pop();
+
 				reactor_lock.unlock();
-				
+
 				// just duplicate the event repeatedly until the Reactor is stopped
 				EventPtr original_event_ptr(event_ptr);
 				while (isRunning()) {
@@ -328,8 +351,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 			if (m_log_stream.eof()) {
 				// all done with this log file
 				PION_LOG_DEBUG(m_logger, "Finished consuming log file: " << m_log_file);
-				m_log_stream.close();
-				m_log_stream.clear();
+
+				// Remove and close all Filters and Devices.
+				while (! m_log_stream.empty()) m_log_stream.pop();
+
 				recordLogFileAsDone();
 
 				// check for more logs
@@ -361,8 +386,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 
 	} catch (std::exception& e) {
 		PION_LOG_ERROR(m_logger, e.what());
-		m_log_stream.close();
-		m_log_stream.clear();
+
+		// Remove and close all Filters and Devices.
+		while (! m_log_stream.empty()) m_log_stream.pop();
+
 		scheduleLogFileCheck(0);
 	}
 }

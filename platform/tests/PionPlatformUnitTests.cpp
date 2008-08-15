@@ -31,27 +31,33 @@
 /// returns the path to the unit test log file directory
 const std::string& get_log_file_dir(void)
 {
-#if defined(_MSC_VER)
-	static const std::string TESTS_LOG_FILE_DIR("logs\\");
-#elif defined(PION_XCODE)
+#if defined(PION_XCODE)
 	static const std::string TESTS_LOG_FILE_DIR("../../platform/tests/logs/");
 #else
-	// same for Unix and Cygwin
 	static const std::string TESTS_LOG_FILE_DIR("logs/");
 #endif
 
 	return TESTS_LOG_FILE_DIR;
 }
 
+/// returns the path to the directory of compressed log files for unit tests
+const std::string& get_compressed_log_file_dir(void)
+{
+#if defined(PION_XCODE)
+	static const std::string TESTS_COMPR_LOG_FILE_DIR("../../platform/tests/compressed-logs/");
+#else
+	static const std::string TESTS_COMPR_LOG_FILE_DIR("compressed-logs/");
+#endif
+
+	return TESTS_COMPR_LOG_FILE_DIR;
+}
+
 /// returns the path to the unit test config file directory
 const std::string& get_config_file_dir(void)
 {
-#if defined(_MSC_VER)
-	static const std::string TESTS_CONFIG_FILE_DIR("config\\");
-#elif defined(PION_XCODE)
+#if defined(PION_XCODE)
 	static const std::string TESTS_CONFIG_FILE_DIR("../../platform/tests/config/");
 #else
-	// same for Unix and Cygwin
 	static const std::string TESTS_CONFIG_FILE_DIR("config/");
 #endif
 	
@@ -61,12 +67,9 @@ const std::string& get_config_file_dir(void)
 /// returns the path to the unit test vocabulary config path
 const std::string& get_vocabulary_path(void)
 {
-#if defined(_MSC_VER)
-	static const std::string TESTS_VOCABULARY_PATH("config\\vocabularies\\");
-#elif defined(PION_XCODE)
+#if defined(PION_XCODE)
 	static const std::string TESTS_VOCABULARY_PATH("../../platform/tests/config/vocabularies/");
 #else
-	// same for Unix and Cygwin
 	static const std::string TESTS_VOCABULARY_PATH("config/vocabularies/");
 #endif
 	
@@ -207,7 +210,13 @@ void cleanup_platform_config_files(void)
 void cleanup_cache_files(void)
 {
 	boost::filesystem::path dir_path(get_log_file_dir());
-	for (boost::filesystem::directory_iterator itr(dir_path); itr!=boost::filesystem::directory_iterator(); ++itr) {
+	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+		if (boost::filesystem::extension(itr->path()) == ".cache") {
+			boost::filesystem::remove(itr->path());
+		}
+	}
+	boost::filesystem::path dir_path_2(get_compressed_log_file_dir());
+	for (boost::filesystem::directory_iterator itr(dir_path_2); itr != boost::filesystem::directory_iterator(); ++itr) {
 		if (boost::filesystem::extension(itr->path()) == ".cache") {
 			boost::filesystem::remove(itr->path());
 		}
