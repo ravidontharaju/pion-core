@@ -10,6 +10,6 @@ datadir=@datarootdir@
 Name: pion-platform
 Description: an open source platform for real-time event stream processing
 Version: @VERSION@
-#Requires: boost-1.34.1 boost-asio-0.3.9 libxml2
-Libs: @LDFLAGS@ @PION_EXTERNAL_LIBS@ @PION_XML_LIB@ -L${libdir} -lpion-common -lpion-net -lpion-platform
+#Requires: boost-1.35.0 libxml2
+Libs: @LDFLAGS@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@ -L${libdir}
 Cflags: @CPPFLAGS@ -I${includedir}
