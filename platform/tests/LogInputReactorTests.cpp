@@ -183,9 +183,6 @@ public:
 	std::string multiFileRegex(void) {
 		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
 	}
-	std::string compressedFileRegex(const std::string& fname, const std::string& suffix) {
-		return fname + "\\" + file_ext + "\\" + suffix; // e.g. .*\.xml\.gz
-	}
 	void setupForLargeLogFile(void) {
 		std::string large_log_file = get_log_file_dir() + "large" + file_ext;
 		if (! boost::filesystem::exists(large_log_file)) {
@@ -719,9 +716,40 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingGzippedLogs) {
-	// Reconfigure the LogInputReactor to search for gzipped default log file, e.g. combined.json.GZ, if file_ext == ".json".
-	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("combined", ".GZ"));
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture for testing LogInputReactor with compressed log files
+template<const char* codec_id, const char* file_ext, const char* compression_ext>
+class LogInputReactorInterfaceForCompressedLogFiles_F : public RunningReactionEngineWithLogInputReactor_F<codec_id, file_ext> {
+public:
+	LogInputReactorInterfaceForCompressedLogFiles_F() {}
+	virtual ~LogInputReactorInterfaceForCompressedLogFiles_F() {}
+
+	std::string compressedFileRegex(const std::string& fname, bool make_uppercase) {
+		std::string file_ext_2 = compression_ext;
+		if (make_uppercase)
+			std::transform(file_ext_2.begin(), file_ext_2.end(), file_ext_2.begin(), std::toupper);
+		return fname + "\\" + file_ext + "\\" + file_ext_2; // e.g. .*\.xml\.gz
+	}
+};
+
+extern const char gzip_file_ext[]  = ".gz";
+extern const char bzip2_file_ext[] = ".bz2";
+
+typedef boost::mpl::list<LogInputReactorInterfaceForCompressedLogFiles_F<LogCodec_id,  LogCodec_file_ext,  gzip_file_ext>,
+						 LogInputReactorInterfaceForCompressedLogFiles_F<LogCodec_id,  LogCodec_file_ext,  bzip2_file_ext>,
+						 LogInputReactorInterfaceForCompressedLogFiles_F<JSONCodec_id, JSONCodec_file_ext, gzip_file_ext>,
+						 LogInputReactorInterfaceForCompressedLogFiles_F<JSONCodec_id, JSONCodec_file_ext, bzip2_file_ext>,
+						 LogInputReactorInterfaceForCompressedLogFiles_F<XMLCodec_id,  XMLCodec_file_ext,  gzip_file_ext>,
+						 LogInputReactorInterfaceForCompressedLogFiles_F<XMLCodec_id,  XMLCodec_file_ext,  bzip2_file_ext>
+> compressed_log_fixture_list;
+
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(LogInputReactorInterfaceForCompressedLogFiles_S, compressed_log_fixture_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingCompressedLogs) {
+	// Reconfigure the LogInputReactor to search for compressed default log file, e.g. combined.json.GZ, if file_ext == ".json".
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("combined", true));
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 
 	// Start the LogInputReactor.
@@ -745,9 +773,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingGzippedLogs) {
 	BOOST_CHECK(! log_stream.getline(m_buf, BUF_SIZE));
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedGzippedFileResumedAfterEngineReloaded) {
-	// Reconfigure the LogInputReactor to search for gzipped large log file, e.g. large.json.gz, if file_ext == ".json".
-	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("large", ".gz"));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedCompressedFileResumedAfterEngineReloaded) {
+	// Reconfigure the LogInputReactor to search for compressed large log file, e.g. large.json.gz, if file_ext == ".json".
+	xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "../compressed-logs", compressedFileRegex("large", false));
 	m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 
 	// Start the LogInputReactor.

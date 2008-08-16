@@ -22,18 +22,21 @@
 // from trying to link to boost_zlib-*.lib (e.g. boost_zip-vc80-mt-1_35.dll).  
 // LogInputReactor only uses zlib indirectly, through boost_iostreams-*.dll.
 #define BOOST_ZLIB_BINARY "zdll.lib"
+
+// See above comment.
+#define BOOST_BZIP2_BINARY "bzip2.lib"
 #endif
 
 
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <boost/iostreams/device/file.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/CodecFactory.hpp>
@@ -281,9 +284,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		if (! m_log_stream.is_complete()) { // is_complete() returns true if a Device, in this case a file, is attached to the stream.
 
 			// Insert a decompression filter if the file suffix indicates one is needed.
-			boost::algorithm::is_iequal algo_predicate;
-			if (boost::algorithm::lexicographical_compare(bfs::extension(bfs::path(m_log_file)), ".gz"))
+			if (boost::algorithm::iequals(bfs::extension(bfs::path(m_log_file)), ".gz"))
 				m_log_stream.push(boost::iostreams::gzip_decompressor());
+			if (boost::algorithm::iequals(bfs::extension(bfs::path(m_log_file)), ".bz2"))
+				m_log_stream.push(boost::iostreams::bzip2_decompressor());
 
 			// Open and attach a file.
 			m_log_stream.push(boost::iostreams::file_source(m_log_file.c_str(), std::ios::in | std::ios::binary));
