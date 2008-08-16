@@ -28,6 +28,8 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/algorithm/string/compare.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <boost/iostreams/device/file.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
@@ -36,7 +38,6 @@
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/ReactionEngine.hpp>
-#include <pion/net/HTTPTypes.hpp>
 #include "LogInputReactor.hpp"
 
 using namespace pion::platform;
@@ -280,7 +281,8 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		if (! m_log_stream.is_complete()) { // is_complete() returns true if a Device, in this case a file, is attached to the stream.
 
 			// Insert a decompression filter if the file suffix indicates one is needed.
-			if (pion::net::HTTPTypes::CaseInsensitiveEqual()(bfs::extension(bfs::path(m_log_file)), ".gz"))
+			boost::algorithm::is_iequal algo_predicate;
+			if (boost::algorithm::lexicographical_compare(bfs::extension(bfs::path(m_log_file)), ".gz"))
 				m_log_stream.push(boost::iostreams::gzip_decompressor());
 
 			// Open and attach a file.
