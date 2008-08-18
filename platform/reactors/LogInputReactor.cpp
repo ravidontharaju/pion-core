@@ -244,7 +244,19 @@ void LogInputReactor::checkForLogFiles(void)
 		if (current_logs.find(*temp_itr) == current_logs.end())
 			m_logs_consumed.erase(temp_itr);
 	}
-	
+
+	// Update the history cache, which should always contain the same list as m_logs_consumed.
+	if (m_logs_consumed.empty()) {
+		bfs::remove(m_history_cache_filename);
+	} else {
+		std::ofstream history_cache(m_history_cache_filename.c_str());
+		if (! history_cache)
+			throw PionException("Unable to open history cache file for writing.");
+		for (log_itr = m_logs_consumed.begin(); log_itr != m_logs_consumed.end(); ++log_itr) {
+			history_cache << *log_itr << std::endl;
+		}
+	}
+
 	// check for an existing log that has not yet been consumed
 	for (log_itr = current_logs.begin(); log_itr != current_logs.end(); ++log_itr) {
 		if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())

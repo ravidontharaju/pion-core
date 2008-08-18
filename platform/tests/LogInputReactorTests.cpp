@@ -93,7 +93,7 @@ class RunningReactionEngineWithLogInputReactor_F {
 public:
 	RunningReactionEngineWithLogInputReactor_F() :
 		m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
-		m_reaction_engine(NULL)
+		m_reaction_engine(NULL), m_file_ext(file_ext)
 	 {
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();		
@@ -245,6 +245,7 @@ public:
 	std::string			m_log_writer_id;
 	char				m_buf[BUF_SIZE + 1];
 	std::string			m_input_codec_id;
+	std::string			m_file_ext;
 };
 
 
@@ -714,6 +715,59 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(m_log_reader_id), expected_events_out);
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsIn(log_reader_id_2),  expected_events_in);
 	BOOST_CHECK_EQUAL(m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
+	// Start the LogInputReactor.
+	m_reaction_engine->startReactor(m_log_reader_id);
+
+	// Wait up to one second for the LogInputReactor to finish consuming the default log file.
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Confirm that the history cache exists and has the default log file and no others.
+	std::string history_cache_filename = get_log_file_dir() + m_log_reader_id + ".cache";
+	std::ifstream history_cache(history_cache_filename.c_str());
+	BOOST_REQUIRE(history_cache);
+	std::string default_log_file = std::string("combined") + m_file_ext;
+	BOOST_CHECK(history_cache.getline(m_buf, BUF_SIZE));
+	BOOST_CHECK(strcmp(m_buf, default_log_file.c_str()) == 0);
+	BOOST_CHECK(! history_cache.getline(m_buf, BUF_SIZE));
+	history_cache.close();
+
+	// Create a new log file for the LogInputReactor to consume.
+	makeNewLogFileByCopying("comb-log-2");
+	const int num_lines_in_new_input_log_file = 2;
+	std::string new_log_file = NEW_INPUT_LOG_FNAME + m_file_ext;
+
+	// Wait up to 2 seconds for the LogInputReactor to finish consuming the new log file.
+	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
+	waitForMinimumNumberOfEventsIn(m_log_reader_id, 2 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE + num_lines_in_new_input_log_file);
+
+	// Confirm that the history cache exists and has the expected two log files and no others.
+	history_cache.clear();
+	history_cache.open(history_cache_filename.c_str());
+	BOOST_REQUIRE(history_cache);
+	std::string s1, s2, s3;
+	history_cache >> s1 >> s2 >> s3;
+	BOOST_CHECK(((s1 == default_log_file) && (s2 == new_log_file)) || ((s1 == new_log_file) && (s2 == default_log_file)));
+	BOOST_CHECK(s3.empty());
+	history_cache.close();
+
+	// Delete the new log file.
+	boost::filesystem::remove(get_log_file_dir() + NEW_INPUT_LOG_FNAME + m_file_ext);
+
+	// Wait 1.5 seconds, to give the LogInputReactor a chance to update the history cache.
+	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
+	PionScheduler::sleep(0, 1500000000);
+
+	// Confirm that the history cache exists and has the default log file and no others.
+	history_cache.clear();
+	history_cache.open(history_cache_filename.c_str());
+	BOOST_REQUIRE(history_cache);
+	BOOST_CHECK(history_cache.getline(m_buf, BUF_SIZE));
+	BOOST_CHECK(strcmp(m_buf, default_log_file.c_str()) == 0);
+	BOOST_CHECK(! history_cache.getline(m_buf, BUF_SIZE));
+	history_cache.close();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

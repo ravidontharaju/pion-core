@@ -17,14 +17,14 @@
 			Name="Debug_DLL|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -35,14 +35,14 @@
 			Name="Release_DLL|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
 			<Tool
 				Name="VCCLCompilerTool"
