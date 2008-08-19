@@ -154,6 +154,9 @@ private:
 	/// default name of the vocabulary config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
+	/// name of the version element for Pion XML config files
+	static const std::string		VERSION_ELEMENT_NAME;
+
 	/// name of the platform config element for Pion XML config files
 	static const std::string		PLATFORM_CONFIG_ELEMENT_NAME;
 

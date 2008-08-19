@@ -31,6 +31,7 @@ namespace server {		// begin namespace server (Pion Server)
 // static members of PlatformConfig
 	
 const std::string			PlatformConfig::DEFAULT_CONFIG_FILE = "platform.xml";
+const std::string			PlatformConfig::VERSION_ELEMENT_NAME = "Version";
 const std::string			PlatformConfig::PLATFORM_CONFIG_ELEMENT_NAME = "PlatformConfig";
 const std::string			PlatformConfig::VOCABULARY_CONFIG_ELEMENT_NAME = "VocabularyConfig";
 const std::string			PlatformConfig::CODEC_CONFIG_ELEMENT_NAME = "CodecConfig";
@@ -220,7 +221,9 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 {
 	ConfigManager::writeBeginPionConfigXML(out);
 	
-	out << "\t<" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << getConfigFile()
+	out << "\t<" << VERSION_ELEMENT_NAME << '>' << PION_VERSION
+		<< "</" << VERSION_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << getConfigFile()
 		<< "</" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << m_vocab_mgr.getConfigFile()
 		<< "</" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << std::endl
