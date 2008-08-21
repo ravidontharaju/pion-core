@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+  <Protocol id="37A7DC3E-EE7E-4420-B0DD-CADE20DEF840">
+    <Name>HTTP Protocol</Name>
+    <Comment>HTTP Protocol parser</Comment>
+    <Plugin>HTTPProtocol</Plugin>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <RequestContent>
+      <ContentType>^application/x-www-form-urlencoded</ContentType>
+      <MaxSize>102400</MaxSize>
+    </RequestContent>
+    <ResponseContent>
+      <ContentType>^text/</ContentType>
+      <MaxSize>102400</MaxSize>
+    </ResponseContent>
+  </Protocol>
+</PionConfig>
