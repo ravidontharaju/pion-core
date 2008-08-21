@@ -85,7 +85,7 @@ cp platform/server/.libs/pion $BIN_DIRECTORY
 (cd platform/ui; tar --exclude .svn -cf - *) | (cd $BIN_DIRECTORY/ui; tar xf -)
 
 # copy the configuration files
-(cd platform/config; tar --exclude .svn -cf - *) | (cd $BIN_DIRECTORY/config; tar xf -)
+(cd platform/build/config; tar --exclude .svn -cf - *) | (cd $BIN_DIRECTORY/config; tar xf -)
 
 # copy other misc files
 cp COPYING $BIN_DIRECTORY/LICENSE.txt
