@@ -8,6 +8,9 @@ use File::Path;
 use File::Copy;
 use File::Glob ':glob';
 
+# include perl source with common subroutines
+require File::Spec->catfile( ("common", "build"), "common.pl");
+
 
 # -----------------------------------
 # process argv & set global variables
@@ -75,39 +78,6 @@ $NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $P
 $PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 
 
-# ----------------------
-# some helpful functions
-# ----------------------
-
-# recursively copies an entire directory tree, excluding anything that starts with a dot
-sub copyDirNotDotFiles(@) {
-	my $src_dir = shift();
-	my $dst_dir = shift();
-	
-	# clear out old copy (if one exists)
-	rmtree($dst_dir);
-	mkpath($dst_dir);
-
-	# get list of files in source directory
-	opendir(DIR, $src_dir);
-	my @files = readdir(DIR);
-	closedir(DIR);
-
-	# iterate through source files
-	foreach (@files) {
-		if ( ! /^\./ ) {
-			my $src_file = File::Spec->catfile($src_dir, $_);
-			my $dst_file = File::Spec->catfile($dst_dir, $_);
-			if (-d $src_file) {
-				copyDirNotDotFiles($src_file, $dst_file);
-			} else {
-				copy($src_file, $dst_file);
-			}
-		}
-	}
-}
-
-
 # ------------
 # main process
 # ------------
@@ -167,11 +137,11 @@ foreach (bsd_glob($PLATFORM_PLUGINS_GLOB)) {
 print "Copying misc other Pion files..\n";
 
 # copy the user interface files into "ui"
-copyDirNotDotFiles(File::Spec->catdir( ("platform", "ui") ),
+copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ),
 	File::Spec->catdir( ($PACKAGE_DIR, "ui") ));
 
 # copy the configuration files
-copyDirNotDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
+copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
 	File::Spec->catdir( ($PACKAGE_DIR, "config") ));
 
 # copy other misc files
