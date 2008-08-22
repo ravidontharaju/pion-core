@@ -1,14 +1,14 @@
-Pion Platform: a development platform for Complex Event Processing (CEP)
+PION COMMUNITY EDITION
 
 Copyright (C) 2007-2008 Atomic Labs, Inc.
 
 Home page:  http://www.pion.org
 
-The Pion Platform is published under the GNU Affero General Public License.
+Pion Community Edition is published under the GNU Affero General Public License.
 See LICENSE.txt for licensing information.  Alternative commercial licenses
 are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
 
-Pion's source code can be downloaded from our website at:
+Pion Community Edition's source code can be downloaded from our website at:
 http://www.pion.org/projects/pion-platform/download
 
 This binary distribution may include several third party libraries which are
@@ -32,12 +32,10 @@ This will open the Pion user interface to the "Reactors configuration" page.
 For an intro to Pion's user interface, please see the online tour at:
 http://www.pion.org/projects/pion-platform/tour
 
-Please note that this is an ALPHA release.  It is intended for preview
-purposes only, and is missing important functionality that we plan to include
-in the final 1.0 release.  Certain aspects of Pion may change substantially
-in future releases.  Do not use this release for any production purposes,
-since it may not be compatible with future releases, and it is likely that
-it may cause you to lose data.
+Please note that this is a BETA release intended for preview purposes only.
+Certain aspects of Pion may change substantially in future releases.  Do not
+use this release for any production purposes, since it may not be compatible
+with future releases, and it is likely that it may cause you to lose data.
 
 This release has the following limitations:
 
@@ -50,12 +48,6 @@ b) You must hit <enter> after making any changes within the user interface
 
 c) You must stop, and then start some Reactors for them to recognize certain
    configuration changes.
-
-d) The LogInput and LogOutput Reactors are missing a bunch of functionality
-   that we plan to add in future releases.
-
-e) The running states of Reactors (started/stopped) are not saved in the
-   configuration files, and therefore are lost if the server is restarted.
 
 Please see our ticket-tracking system for more information on planned
 functionality, known problems, or to report bugs:
@@ -70,6 +62,3 @@ http://www.pion.org/mailing-lists
 For commercial support & maintenance, alternative licensing options and
 professional services, please contact Atomic Labs, Inc. at:
 http://www.atomiclabs.com/contact/
-
-
-

@@ -1,7 +1,6 @@
 #!/bin/sh
 
 LIB_DIRECTORY=/usr/local/lib
-LIB_DIRECTORY_ALT=/usr/lib
 PLUGIN_LIB_SUFFIX=so
 if test "$2" = "osx"; then
 	SHARED_LIB_SUFFIX=dylib
@@ -25,9 +24,9 @@ fi
 
 # Determine package name and binary output directory based on args
 if test "x$1" != "x"; then
-	PACKAGE_NAME=pion-platform-$1
+	PACKAGE_NAME=pion-community-$1
 else
-	PACKAGE_NAME=pion-platform
+	PACKAGE_NAME=pion-community
 fi
 BIN_DIRECTORY=bin/$PACKAGE_NAME
 
@@ -49,11 +48,7 @@ mkdir $BIN_DIRECTORY/ui
 echo "Copying binary files.."
 cp $LIB_DIRECTORY/$UUID_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$LOG4CXX_LIB $BIN_DIRECTORY/libs
-if [ -e $LIB_DIRECTORY/$SQLITE_LIB ]; then
-	cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
-else
-	cp $LIB_DIRECTORY_ALT/$SQLITE_LIB $BIN_DIRECTORY/libs
-fi
+cp $LIB_DIRECTORY/$SQLITE_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$YAJL_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$APR_LIB $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/$APR_UTIL_LIB $BIN_DIRECTORY/libs
@@ -63,6 +58,7 @@ cp $LIB_DIRECTORY/libboost_filesystem$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_regex$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_date_time$BOOST_SUFFIX $BIN_DIRECTORY/libs
 cp $LIB_DIRECTORY/libboost_signals$BOOST_SUFFIX $BIN_DIRECTORY/libs
+cp $LIB_DIRECTORY/libboost_iostreams$BOOST_SUFFIX $BIN_DIRECTORY/libs
 
 # copy the Pion shared library files into "libs"
 cp common/src/.libs/libpion-common-*.$SHARED_LIB_SUFFIX $BIN_DIRECTORY/libs
@@ -110,7 +106,7 @@ if test "$2" = "osx"; then
 	echo "Building Mac OS X application bundle.."
 	rm -rf ./bin/osx
 	mkdir -p ./bin/osx/$PACKAGE_NAME
-	platypus -V $1 -a "Pion CEP Platform" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $BIN_DIRECTORY/config -f $BIN_DIRECTORY/libs -f $BIN_DIRECTORY/pion -f $BIN_DIRECTORY/plugins -f $BIN_DIRECTORY/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_BIN_DIRECTORY/Pion
+	platypus -V $1 -a "Pion Community Edition" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $BIN_DIRECTORY/config -f $BIN_DIRECTORY/libs -f $BIN_DIRECTORY/pion -f $BIN_DIRECTORY/plugins -f $BIN_DIRECTORY/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_BIN_DIRECTORY/Pion
 	# Platypus' icon support is broken; copy file into .app package
 	cp platform/build/appIcon.icns $OSX_BIN_DIRECTORY/Pion.app/Contents/Resources
 	# Copy other misc files
