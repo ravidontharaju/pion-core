@@ -1,0 +1,231 @@
+#!/usr/bin/perl
+# ----------------------------------------------
+# pion-platform binary distribution build script
+# ----------------------------------------------
+
+use File::Spec;
+use File::Path;
+use File::Copy;
+use File::Glob ':glob';
+
+
+# -----------------------------------
+# process argv & set global variables
+# -----------------------------------
+
+# check command line parameters
+die("usage: make_binary.pl <VERSION> <PLATFORM>") if ($#ARGV != 1);
+
+# set some global variables
+$VERSION = $ARGV[0];
+$PLATFORM = $ARGV[1];
+$BIN_DIR = "bin";
+$PACKAGE_NAME = "pion-community-" . $VERSION;
+$PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
+$TARBALL_NAME = $PACKAGE_NAME . "-" . $PLATFORM;
+$CONFIG_DIR = File::Spec->catdir( ($PACKAGE_DIR, "config") );
+$PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
+$LIBS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "libs") );
+$UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
+$BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
+
+# platform-specific variables
+if ($PLATFORM eq "win32") {
+	$SHARED_LIB_SUFFIX = "dll";
+	$PLUGIN_LIB_SUFFIX = "dll";
+	$SYSTEM_LIB_DIR = File::Spec->rootdir();
+	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
+	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX);
+	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
+	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
+	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
+	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
+	$SERVER_EXE = File::Spec->catfile( ($BIN_DIR), "pion.exe");
+	@BOOST_LIBS = bsd_glob("C:\boost\lib\libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35.dll");
+} elsif ($PLATFORM eq "osx") {
+	$SHARED_LIB_SUFFIX = "dylib";
+	$PLUGIN_LIB_SUFFIX = "so";
+	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
+	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
+	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX);
+	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
+	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
+	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
+	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
+	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
+	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35." . $SHARED_LIB_SUFFIX);
+} else {
+	$SHARED_LIB_SUFFIX = "so";
+	$PLUGIN_LIB_SUFFIX = "so";
+	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
+	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid." . $SHARED_LIB_SUFFIX . ".16");
+	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX . ".10");
+	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
+	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl." . $SHARED_LIB_SUFFIX . ".0");
+	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX . ".0");
+	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX . ".0");
+	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
+	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35." . $SHARED_LIB_SUFFIX . ".1.35.0");
+}
+$PION_COMMON_GLOB = File::Spec->catfile( ("common", "src", ".libs"), "libpion-common-*." . $SHARED_LIB_SUFFIX);
+$PION_NET_GLOB = File::Spec->catfile( ("net", "src", ".libs"), "libpion-net-*." . $SHARED_LIB_SUFFIX);
+$PION_PLATFORM_GLOB = File::Spec->catfile( ("platform", "src", ".libs"), "libpion-platform-*." . $SHARED_LIB_SUFFIX);
+$PION_SERVER_GLOB = File::Spec->catfile( ("platform", "server", ".libs"), "libpion-server-*." . $SHARED_LIB_SUFFIX);
+$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+$PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+
+
+# ----------------------
+# some helpful functions
+# ----------------------
+
+# recursively copies an entire directory tree, excluding anything that starts with a dot
+sub copyDirNotDotFiles(@) {
+	my $src_dir = shift();
+	my $dst_dir = shift();
+	
+	# clear out old copy (if one exists)
+	rmtree($dst_dir);
+	mkpath($dst_dir);
+
+	# get list of files in source directory
+	opendir(DIR, $src_dir);
+	my @files = readdir(DIR);
+	closedir(DIR);
+
+	# iterate through source files
+	foreach (@files) {
+		if ( ! /^\./ ) {
+			my $src_file = File::Spec->catfile($src_dir, $_);
+			my $dst_file = File::Spec->catfile($dst_dir, $_);
+			if (-d $src_file) {
+				copyDirNotDotFiles($src_file, $dst_file);
+			} else {
+				copy($src_file, $dst_file);
+			}
+		}
+	}
+}
+
+
+# ------------
+# main process
+# ------------
+
+print "* Building binary packages for " . $TARBALL_NAME . "\n";
+
+# clear out old files and directories (with same version)
+@oldfiles = bsd_glob($PACKAGE_DIR . "*");
+foreach (@oldfiles) {
+	rmtree($_);
+}
+
+# prepare new directory structure
+mkpath($PACKAGE_DIR);
+mkdir($CONFIG_DIR);
+mkdir($PLUGINS_DIR);
+mkdir($LIBS_DIR);
+mkdir($UI_DIR);
+
+# copy our third party library files into "libs"
+print "Copying system library files..\n";
+copy($UUID_LIB, $LIBS_DIR);
+copy($LOG4CXX_LIB, $LIBS_DIR);
+copy($SQLITE_LIB, $LIBS_DIR);
+copy($YAJL_LIB, $LIBS_DIR);
+copy($APR_LIB, $LIBS_DIR);
+copy($APR_UTIL_LIB, $LIBS_DIR);
+foreach (@BOOST_LIBS) {
+	copy($_, $LIBS_DIR);
+}
+
+# copy the Pion shared library files into "libs"
+# note: we assume that each of the file globs = a single file
+print "Copying Pion library files..\n";
+foreach (bsd_glob($PION_COMMON_GLOB)) {
+	copy($_, $LIBS_DIR);
+}
+foreach (bsd_glob($PION_NET_GLOB)) {
+	copy($_, $LIBS_DIR);
+}
+foreach (bsd_glob($PION_PLATFORM_GLOB)) {
+	copy($_, $LIBS_DIR);
+}
+foreach (bsd_glob($PION_SERVER_GLOB)) {
+	copy($_, $LIBS_DIR);
+}
+
+# copy the Pion plugin files into "plugins"
+print "Copying Pion plugin files..\n";
+foreach (bsd_glob($NET_PLUGINS_GLOB)) {
+	copy($_, $PLUGINS_DIR);
+}
+foreach (bsd_glob($PLATFORM_PLUGINS_GLOB)) {
+	copy($_, $PLUGINS_DIR);
+}
+
+print "Copying misc other Pion files..\n";
+
+# copy the user interface files into "ui"
+copyDirNotDotFiles(File::Spec->catdir( ("platform", "ui") ),
+	File::Spec->catdir( ($PACKAGE_DIR, "ui") ));
+
+# copy the configuration files
+copyDirNotDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
+	File::Spec->catdir( ($PACKAGE_DIR, "config") ));
+
+# copy other misc files
+copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
+copy("ChangeLog", File::Spec->catfile($PACKAGE_DIR, "HISTORY.txt"));
+copy(File::Spec->catfile( ("platform", "build"), "README.bin"),
+	File::Spec->catfile($PACKAGE_DIR, "README.txt"));
+
+# copy the server exe
+copy($SERVER_EXE, $PACKAGE_DIR);
+
+# platform-specific finishing touches
+print "Creating binary tarballs..\n";
+if ($PLATFORM eq "win32") {
+
+	# copy startup script
+	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
+		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
+		
+	# create zip package
+	`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+
+} else {
+
+	# copy startup script
+	copy(File::Spec->catfile( ("platform", "build"), "start_pion.sh"),
+		File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
+
+	# set executable permissions for unix platforms
+	`chmod a+x $PACKAGE_DIR/pion $PACKAGE_DIR/start_pion.sh`;
+
+	# create tarballs & zip file
+	`cd bin; tar cfz $TARBALL_NAME.tar.gz $PACKAGE_NAME`;
+	`cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME`;
+	`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+
+	if ($PLATFORM eq "osx") {
+		# Build application bundle for Mac OS X
+		print "Creating Mac OS X application bundle..\n";
+		$OSX_BIN_DIRECTORY = "./bin/osx/" . $PACKAGE_NAME;
+		`rm -rf ./bin/osx`;
+		`mkdir -p ./bin/osx/$PACKAGE_NAME`;
+		`platypus -V $VERSION -a "Pion Community Edition" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_BIN_DIRECTORY/Pion`;
+	
+		# Platypus' icon support is broken; copy file into .app package
+		`cp platform/build/appIcon.icns $OSX_BIN_DIRECTORY/Pion.app/Contents/Resources`;
+	
+		# Copy other misc files
+		`cp COPYING $OSX_BIN_DIRECTORY/LICENSE.txt`;
+		`cp ChangeLog $OSX_BIN_DIRECTORY/HISTORY.txt`;
+		`cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt`;
+		`(cd bin/osx; zip -qr9 $TARBALL_NAME-app.zip $PACKAGE_NAME)`;
+		`mv ./bin/osx/$TARBALL_NAME-app.zip ./bin/`;
+	}
+}
+
+print "* Done creating binary packages.\n";
