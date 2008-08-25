@@ -376,6 +376,28 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
 			
+		} else if (branches[1] == "plugins") {
+
+			// Send a list of all Databases found in the UI directory
+
+			ConfigManager::writeBeginPionConfigXML(ss);
+
+			// Iterate through all the subdirectories of the Database directory (e.g. SQLiteDatabase).
+			std::string reactor_directory = m_ui_directory + "/plugins/databases";
+			boost::filesystem::directory_iterator end;
+			for (boost::filesystem::directory_iterator it(reactor_directory); it != end; ++it) {
+				if (boost::filesystem::is_directory(*it)) {
+					// Skip directories starting with a '.'.
+					if (it->path().leaf().substr(0, 1) == ".") continue;
+
+					ss << "<Database>"
+					   << "<Plugin>" << it->path().leaf() << "</Plugin>"
+					   << "</Database>";
+				}
+			}
+
+			ConfigManager::writeEndPionConfigXML(ss);
+
 		} else if (branches.size() == 2) {
 			// branches[1] == database_id
 			
