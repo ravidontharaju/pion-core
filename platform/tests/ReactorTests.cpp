@@ -18,6 +18,7 @@
 //
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/VocabularyManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
@@ -30,11 +31,18 @@
 #include <boost/thread/thread.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/mpl/lambda.hpp>
 #include <fstream>
 #include <string>
 
 using namespace pion;
 using namespace pion::platform;
+//using namespace boost::mpl;	// Can't use either of these, because they make ...
+//using boost::mpl::_1;			// ... event.hpp confused about which _1 to use.
+using boost::mpl::transform1;
+using boost::mpl::lambda;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
@@ -77,6 +85,83 @@ void cleanup_reactor_config_files(void)
 		boost::filesystem::remove(DATABASES_CONFIG_FILE);
 	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
 }
+
+
+class FilterReactor         { public: static std::string name() { return "FilterReactor"; } };
+class TransformReactor      { public: static std::string name() { return "TransformReactor"; } };
+class LogInputReactor       { public: static std::string name() { return "LogInputReactor"; } };
+class LogOutputReactor      { public: static std::string name() { return "LogOutputReactor"; } };
+class DatabaseOutputReactor { public: static std::string name() { return "DatabaseOutputReactor"; } };
+
+typedef boost::mpl::list<FilterReactor, TransformReactor, LogInputReactor, LogOutputReactor, DatabaseOutputReactor> reactor_list;
+
+template<typename plugin_class>
+class PluginPtrReadyToOpenReactor_F : public PionPluginPtr<Reactor> {
+public:
+	PluginPtrReadyToOpenReactor_F() {
+		setup_logging_for_unit_tests();
+		setup_plugins_directory();
+		m_plugin_name = plugin_class::name();
+	}
+	~PluginPtrReadyToOpenReactor_F() {
+	}
+
+	std::string m_plugin_name;
+};
+
+// result is boost::mpl::list<PluginPtrReadyToOpenReactor_F<FilterReactor>, PluginPtrReadyToOpenReactor_F<TransformReactor>, ...>
+typedef transform1< reactor_list, lambda<PluginPtrReadyToOpenReactor_F<boost::mpl::_1> >::type >::type
+		PluginPtrReadyToOpenReactor_F_list;
+
+// PluginPtrReadyToOpenReactor_S contains tests that should pass for any type of Reactor
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(PluginPtrReadyToOpenReactor_S, PluginPtrReadyToOpenReactor_F_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenReactor) {
+	BOOST_CHECK_NO_THROW(F::open(m_plugin_name));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+template<typename plugin_class>
+class PluginPtrWithReactorLoaded_F : public PluginPtrReadyToOpenReactor_F<plugin_class> {
+public:
+	PluginPtrWithReactorLoaded_F() {
+		open(m_plugin_name);
+		m_reactor = NULL;
+	}
+	~PluginPtrWithReactorLoaded_F() {
+		if (m_reactor) destroy(m_reactor);
+	}
+
+	Reactor* m_reactor;
+};
+
+typedef transform1< reactor_list, lambda<PluginPtrWithReactorLoaded_F<boost::mpl::_1> >::type >::type
+		PluginPtrWithReactorLoaded_F_list;
+
+// PluginPtrWithReactorLoaded_S contains tests that should pass for any type of Reactor
+BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(PluginPtrWithReactorLoaded_S, PluginPtrWithReactorLoaded_F_list)
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIsOpenReturnsTrue) {
+	BOOST_CHECK(F::is_open());
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetPluginNameReturnsPluginName) {
+	BOOST_CHECK_EQUAL(F::getPluginName(), F::m_plugin_name);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateReturnsSomething) {
+	BOOST_CHECK((F::m_reactor = F::create()) != NULL);
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkDestroyDoesntThrowExceptionAfterCreate) {
+	F::m_reactor = F::create();
+	BOOST_CHECK_NO_THROW(F::destroy(F::m_reactor));
+	F::m_reactor = NULL;
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 /// interface class for ReactionEngine tests
