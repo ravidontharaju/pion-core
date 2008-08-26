@@ -117,7 +117,7 @@ typedef transform1< reactor_list, lambda<PluginPtrReadyToOpenReactor_F<boost::mp
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(PluginPtrReadyToOpenReactor_S, PluginPtrReadyToOpenReactor_F_list)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenReactor) {
-	BOOST_CHECK_NO_THROW(F::open(m_plugin_name));
+	BOOST_CHECK_NO_THROW(F::open(F::m_plugin_name));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -127,11 +127,11 @@ template<typename plugin_class>
 class PluginPtrWithReactorLoaded_F : public PluginPtrReadyToOpenReactor_F<plugin_class> {
 public:
 	PluginPtrWithReactorLoaded_F() {
-		open(m_plugin_name);
+		open(this->m_plugin_name);
 		m_reactor = NULL;
 	}
 	~PluginPtrWithReactorLoaded_F() {
-		if (m_reactor) destroy(m_reactor);
+		if (m_reactor) this->destroy(m_reactor);
 	}
 
 	Reactor* m_reactor;
