@@ -147,6 +147,7 @@ pion-dojo.js:
 ./../../release/dojo-release/plugins/reactors/FilterReactor.js
 ./../../release/dojo-release/plugins/reactors/TransformReactor.js
 ./../../release/dojo-release/plugins/databases/Database.js
+./../../release/dojo-release/plugins/databases/SQLiteDatabase.js
 ./../../release/dojo-release/pion/databases.js
 ./../../release/dojo-release/plugins/reactors/DatabaseOutputReactor.js
 ./../../release/dojo-release/pion/reactors.js

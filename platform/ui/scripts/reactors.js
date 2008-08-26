@@ -105,10 +105,10 @@ pion.reactors.init = function() {
 		timeout: 5000,
 		load: function(response, ioArgs) {
 			// Get list of all plugins found on any of the configured plugin paths.
-			var available_plugins = [];
+			pion.available_plugins = [];
 			var plugin_elements = response.getElementsByTagName('Plugin');
 			dojo.forEach(plugin_elements, function(n) {
-				available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
+				pion.available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
 			});
 
 			config_reactors_plugins_store.fetch({
@@ -116,7 +116,7 @@ pion.reactors.init = function() {
 					var plugin = config_reactors_plugins_store.getValue(item, 'Plugin').toString();
 
 					// Skip plugins that can't be found on any of the configured plugin paths.
-					if (dojo.indexOf(available_plugins, plugin) != -1) {
+					if (dojo.indexOf(pion.available_plugins, plugin) != -1) {
 						var category = config_reactors_plugins_store.getValue(item, 'ReactorType').toString();
 
 						// Check if the module for this Reactor is already loaded, and if not, load it.
@@ -134,7 +134,7 @@ pion.reactors.init = function() {
 						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
 					}
 				},
-				onComplete:function(item) {
+				onComplete: function() {
 					pion.reactors.initConfiguredReactors();
 				}
 			});

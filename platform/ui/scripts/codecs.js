@@ -9,7 +9,6 @@ dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
-dojo.require("dojox.grid.Grid");
 
 dojo.require("plugins.codecs.LogCodec");
 
@@ -134,7 +133,7 @@ pion.codecs._adjustAccordionSize = function() {
 	console.debug("num_codecs = " + num_codecs);
 
 	// TODO: replace 475 with some computed value, which takes into account the height of the grid 
-	// (in .codec_grid in defaults.css) and the variable comment box height.
+	// (in .codec_grid in default.css) and the variable comment box height.
 	var codec_pane_body_height = 475;
 
 	var title_height = 0;

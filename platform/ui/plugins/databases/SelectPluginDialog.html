@@ -1,0 +1,19 @@
+<div class="dijitDialog database_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">${title}</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>Plugin&nbsp;Type:</label></td
+				><td><input dojoType="dijit.form.FilteringSelect" name="Plugin" 
+						store="pion.databases.plugin_data_store" searchAttr="label" 
+						autocomplete="true" style="width: 100%;"/></td
+			></tr
+		></table
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Continue</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: hide">Cancel</button>
+	</div>
+</div>

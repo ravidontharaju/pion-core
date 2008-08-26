@@ -10,19 +10,19 @@ dojo.declare("plugins.databases.Database",
 			this.uuid = uuid;
 			dojo.mixin(this, args);
 			plugins.databases.databases_by_id[uuid] = this;
-			var store = pion.databases.plugin_data_store;
-			var _this = this;
-			store.fetchItemByIdentity({
-				identity: this.Plugin,
-				onItem: function(item) {
-					_this.label = store.getValue(item, 'label');
-				}
-			});
 		}
 	}
 );
 
 plugins.databases.databases_by_id = {};
+
+dojo.declare("plugins.databases.SelectPluginDialog",
+	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
+	{
+		templatePath: dojo.moduleUrl("plugins", "databases/SelectPluginDialog.html"),
+		widgetsInTemplate: true
+	}
+);
 
 dojo.declare("plugins.databases.DatabaseInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
@@ -37,6 +37,13 @@ dojo.declare("plugins.databases.DatabasePane",
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabasePane.html"),
 		widgetsInTemplate: true,
+		postCreate: function(){
+			this.inherited("postCreate", arguments);
+		},
+		getHeight: function() {
+			// TODO: What makes sense here as a default?  Should this just throw an exception?
+			return 100;
+		},
 		populateFromConfigItem: function(item) {
 			var store = pion.databases.config_store;
 			var config = {};
@@ -80,21 +87,24 @@ dojo.declare("plugins.databases.DatabasePane",
 			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
 			config.Comment = comment_node.value;
 
-			var put_data = '<PionConfig><Database>';
+			this.put_data = '<PionConfig><Database>';
 			for (var tag in config) {
 				if (tag != '@id') {
 					console.debug('config[', tag, '] = ', config[tag]);
-					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+					this.put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
 				}
 			}
-			put_data += '</Database></PionConfig>';
-			console.debug('put_data: ', put_data);
+			if (this._insertCustomData) {
+				this._insertCustomData();
+			}
+			this.put_data += '</Database></PionConfig>';
+			console.debug('put_data: ', this.put_data);
 			_this = this;
 			dojo.rawXhrPut({
 				url: '/config/databases/' + this.uuid,
 				contentType: "text/xml",
 				handleAs: "xml",
-				putData: put_data,
+				putData: this.put_data,
 				load: function(response){
 					console.debug('response: ', response);
 
@@ -108,7 +118,7 @@ dojo.declare("plugins.databases.DatabasePane",
 						onError: pion.handleFetchError
 					});
 				},
-				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
 		},
 		cancel: function () {
