@@ -17,13 +17,19 @@
     <Y>300</Y>
     <Database>e75d88f0-e7df-11dc-a76c-0016cb926e68</Database>
     <Table>clickstream</Table>
-    <Field term="urn:vocab:clickstream#c-ip">remotehost</Field>
-    <Field term="urn:vocab:clickstream#rfc931">rfc931</Field>
-    <Field term="urn:vocab:clickstream#authuser">authuser</Field>
     <Field term="urn:vocab:clickstream#date">date</Field>
-    <Field term="urn:vocab:clickstream#request">request</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
+    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field> 
+    <Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
+    <Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
-    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri_stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri_query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:clickstream#referer">referrer</Field>
+    <Field term="urn:vocab:clickstream#useragent">user_agent</Field>
   </Reactor>
   <Reactor id="153f6c40-cb78-11dc-8fa0-0019e3f89cd2">
     <Plugin>FilterReactor</Plugin>

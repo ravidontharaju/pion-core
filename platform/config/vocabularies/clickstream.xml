@@ -8,6 +8,34 @@
 			<Type>object</Type>
 			<Comment>Event for an HTTP request and response</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#page-event">
+			<Type>object</Type>
+			<Comment>Event that represents a single clickstream page view</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-event">
+			<Type>object</Type>
+			<Comment>Event that represents a single clickstream visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-group">
+			<Type>shortstring</Type>
+			<Comment>Clickstream session group this event was assigned to</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-id">
+			<Type>shortstring</Type>
+			<Comment>Unique identifier assigned to the clickstream visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cookie-id">
+			<Type>string</Type>
+			<Comment>Cookie identifier used for sessionizing clickstream ("name:value")</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#page-number">
+			<Type>uint32</Type>
+			<Comment>Page sequence number, or total number of pages for session events</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#request-number">
+			<Type>uint32</Type>
+			<Comment>Request sequence number, or total number of requests for session and page view events</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#date">
 			<Type format="%Y-%m-%d">date</Type>
 			<Comment>Date of the request (2008-07-20)</Comment>
@@ -83,6 +111,14 @@
 		<Term id="urn:vocab:clickstream#useragent">
 			<Type>string</Type>
 			<Comment>The User-Agent HTTP request header</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cookie">
+			<Type>string</Type>
+			<Comment>The Cookie HTTP request header</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#set-cookie">
+			<Type>string</Type>
+			<Comment>The Set-Cookie HTTP response header</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#cs-content">
 			<Type>longstring</Type>
