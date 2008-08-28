@@ -761,10 +761,12 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			PION_RESULT0(result) = true;
 			break;
 		case TYPE_IS_DEFINED:
-			PION_RESULT0(result) = (values_range.first != e.end());
+			PION_RESULT0(result) = (values_range.first != e.end()
+				|| (e.getType() == m_term.term_ref) );
 			break;
 		case TYPE_IS_NOT_DEFINED:
-			PION_RESULT0(result) = (values_range.first == e.end());
+			PION_RESULT0(result) = (values_range.first == e.end()
+				&& (e.getType() != m_term.term_ref) );
 			break;
 
 		case TYPE_EQUALS:

@@ -96,6 +96,13 @@ BOOST_AUTO_TEST_CASE(checkThrowIfInvalidValue) {
 	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_GREATER_THAN, 28.3), Comparison::InvalidValueForTypeException);
 }
 
+BOOST_AUTO_TEST_CASE(checkEventTypeComparisons) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	Comparison c(m_object_term);
+	c.configure(Comparison::TYPE_IS_DEFINED);
+	BOOST_CHECK(c.evaluateBool(*event_ptr));
+}
+
 BOOST_AUTO_TEST_CASE(checkGenericComparisons) {
 	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	event_ptr->setInt(m_plain_int_term.term_ref, 100);
