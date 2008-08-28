@@ -198,6 +198,14 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_USERAGENT;
 	pion::platform::Vocabulary::TermRef	m_useragent_term_ref;
 
+	/// urn:vocab:clickstream#cookie
+	static const std::string	VOCAB_CLICKSTREAM_COOKIE;
+	pion::platform::Vocabulary::TermRef	m_cookie_term_ref;
+
+	/// urn:vocab:clickstream#set-cookie
+	static const std::string	VOCAB_CLICKSTREAM_SET_COOKIE;
+	pion::platform::Vocabulary::TermRef	m_set_cookie_term_ref;
+
 	/// urn:vocab:clickstream#cs-content
 	static const std::string	VOCAB_CLICKSTREAM_CS_CONTENT;
 	pion::platform::Vocabulary::TermRef	m_cs_content_term_ref;

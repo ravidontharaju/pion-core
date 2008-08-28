@@ -47,6 +47,8 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST="urn:vocab:clickstream
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_HOST="urn:vocab:clickstream#host";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFERER="urn:vocab:clickstream#referer";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_USERAGENT="urn:vocab:clickstream#useragent";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_COOKIE="urn:vocab:clickstream#cookie";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SET_COOKIE="urn:vocab:clickstream#set-cookie";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_CONTENT="urn:vocab:clickstream#cs-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_CONTENT="urn:vocab:clickstream#sc-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CACHED="urn:vocab:clickstream#cached";
@@ -101,6 +103,8 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_host_term_ref = m_host_term_ref;
 	retval->m_referer_term_ref = m_referer_term_ref;
 	retval->m_useragent_term_ref = m_useragent_term_ref;
+	retval->m_cookie_term_ref = m_cookie_term_ref;
+	retval->m_set_cookie_term_ref = m_set_cookie_term_ref;
 	retval->m_cs_content_term_ref = m_cs_content_term_ref;
 	retval->m_sc_content_term_ref = m_sc_content_term_ref;
 	retval->m_cached_term_ref = m_cached_term_ref;
@@ -142,6 +146,8 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setString(m_host_term_ref, m_request.getHeader(HTTPTypes::HEADER_HOST));
 	(*event_ptr_ref).setString(m_referer_term_ref, m_request.getHeader(HTTPTypes::HEADER_REFERER));
 	(*event_ptr_ref).setString(m_useragent_term_ref, m_request.getHeader(HTTPTypes::HEADER_USER_AGENT));
+	(*event_ptr_ref).setString(m_cookie_term_ref, m_request.getHeader(HTTPTypes::HEADER_COOKIE));
+	(*event_ptr_ref).setString(m_set_cookie_term_ref, m_response.getHeader(HTTPTypes::HEADER_SET_COOKIE));
 	(*event_ptr_ref).setUInt(m_cached_term_ref,
 							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
 							 ? 1 : 0);
@@ -242,6 +248,14 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_useragent_term_ref = v.findTerm(VOCAB_CLICKSTREAM_USERAGENT);
 	if (m_useragent_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_USERAGENT);
+
+	m_cookie_term_ref = v.findTerm(VOCAB_CLICKSTREAM_COOKIE);
+	if (m_cookie_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_COOKIE);
+
+	m_set_cookie_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SET_COOKIE);
+	if (m_set_cookie_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SET_COOKIE);
 
 	m_cs_content_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_CONTENT);
 	if (m_cs_content_term_ref == Vocabulary::UNDEFINED_TERM_REF)

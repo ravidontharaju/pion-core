@@ -47,6 +47,13 @@
     <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
     <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
+    <Field term="urn:vocab:clickstream#cookie" start="&quot;" end="&quot;">cs(Cookie)</Field>
+    <Field term="urn:vocab:clickstream#set-cookie" start="&quot;" end="&quot;">sc(Set-Cookie)</Field>
+    <Field term="urn:vocab:clickstream#session-group" start="&quot;" end="&quot;">x-session-group</Field>
+    <Field term="urn:vocab:clickstream#session-id" start="&quot;" end="&quot;">x-session-id</Field>
+    <Field term="urn:vocab:clickstream#cookie-id" start="&quot;" end="&quot;">x-cookie-id</Field>
+    <Field term="urn:vocab:clickstream#page-number" start="&quot;" end="&quot;">x-page-num</Field>
+    <Field term="urn:vocab:clickstream#request-number" start="&quot;" end="&quot;">x-request-num</Field>
   </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
     <Plugin>LogCodec</Plugin>
