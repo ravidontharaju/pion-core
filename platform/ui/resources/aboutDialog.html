@@ -1,0 +1,84 @@
+<div class="dijitDialog about_dialog" style="height: 500px">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">About Pion</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: hide">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<p>
+			<big><strong><span id="full_version" dojoAttachPoint="full_version"></span></strong></big><br/>
+			Copyright &copy; 2008 Atomic Labs, Inc.  All Rights Reserved.
+		</p>
+		<p>
+			Pion includes a collection of <a href="third_party_libraries.html">third party
+			libraries</a>, all of which may be downloaded from 
+			<a href="http://pion.org/projects/pion-platform/documentation/libraries" target="_blank">our
+			community website.</a>
+		</p>
+
+		<h2>License Information</h2>
+		<hr>
+
+		<div id="license_block">
+
+			<div id="community_license" dojoAttachPoint="community_license"
+				style="position: absolute; top: 210px; left: 10px; visibility: hidden">
+
+				<p>
+					Pion Community Edition is licensed under the
+					<a href="/licenses/gpl_affero.html" target="_blank">
+						GNU Affero
+						General Public License
+					</a>.
+				</p>
+
+			</div>
+
+			<div id="enterprise_not_licensed" dojoAttachPoint="enterprise_not_licensed"
+				style="visibility: hidden">
+			
+				<p><span id="reason_needs_license" dojoAttachPoint="reason_needs_license"></span></p>
+
+				<form>
+				<p>
+				Please cut and paste your license key into the box below and click "Submit Key."<br/>
+				If you don't have a license key, you can obtain one from
+				<a href="http://beta.atomiclabs.com/pion/download-enterprise.php" style="color:#0033CC; text-decoration:underline">atomiclabs.com</a>.
+				</p>
+				<textarea id="license_key" dojoAttachPoint="license_key" cols="65" rows="8"></textarea><br/>
+				<button dojoType="dijit.form.Button" dojoAttachEvent="onClick: submitKey">Submit (Dojo)</button>
+				</form>
+				<p><big><strong><span id="result_of_submitting_key" dojoAttachPoint="result_of_submitting_key"></span></strong></big></p>
+			
+			</div>
+			
+			<div id="enterprise_licensed" dojoAttachPoint="enterprise_licensed"
+				style="position: absolute; top: 210px; left: 10px; visibility: hidden">
+			
+				<p>Pion Enterprise Edition is licensed under the
+				<a href="/licenses/atomic_enterprise.html" target="_blank">Atomic Labs
+				Enterprise Software License Agreement</a>.</p>
+				
+				<table>
+				<tr>
+					<td><big><strong>Name:</strong></big></td>
+					<td><span id="license_name" dojoAttachPoint="license_name"></span></td>
+				</tr>
+				<tr>
+					<td><big><strong>Email:</strong></big></td>
+					<td><span id="license_email" dojoAttachPoint="license_email"></span></td>
+				</tr>
+				<tr>
+					<td><big><strong>Version:</strong></big></td>
+					<td><span id="license_version" dojoAttachPoint="license_version"></span></td>
+				</tr>
+				<tr>
+					<td><big><strong>Expiration:</strong></big></td>
+					<td><span id="license_expiration" dojoAttachPoint="license_expiration"></span></td>
+				</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

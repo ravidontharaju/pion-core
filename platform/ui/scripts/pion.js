@@ -13,6 +13,7 @@ dojo.require("pion.users");
 dojo.require("pion.system");
 dojo.require("pion.login");
 dojo.require("pion.terms");
+dojo.require("pion.about");
 
 var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
