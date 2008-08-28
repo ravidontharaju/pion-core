@@ -61,7 +61,8 @@ dojo.declare("pion.about.LicenseKeyDialog",
 				putData: key,
 				load: function(response){
 					console.debug('response: ', response);
-					_this.result_of_submitting_key.innerHTML = 'Success!';
+					_this.hide();
+					pion.about.doDialog();
 					return response;
 				},
 				error: function(response, ioArgs) {
