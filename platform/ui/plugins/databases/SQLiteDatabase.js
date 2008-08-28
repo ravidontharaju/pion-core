@@ -23,6 +23,6 @@ dojo.declare("plugins.databases.SQLiteDatabasePane",
 		getHeight: function() {
 			// TODO: replace 190 with some computed value
 			return 190;
-		},
+		}
 	}
 );

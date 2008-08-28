@@ -19405,7 +19405,7 @@ dojo.declare("plugins.databases.SQLiteDatabasePane",[plugins.databases.DatabaseP
 this.inherited("postCreate",arguments);
 },getHeight:function(){
 return 190;
-},});
+}});
 }
 if(!dojo._hasResource["pion.databases"]){
 dojo._hasResource["pion.databases"]=true;
