@@ -11,22 +11,24 @@ dojo.declare("pion.about.LicenseKeyDialog",
 			var _this = this;
 			dojo.xhrGet({
 				url: '/config',
+				preventCache: true,
 				handleAs: 'xml',
 				timeout: 5000,
 				load: function(response, ioArgs) {
 					if (dojo.isIE) {
-						var pion_version = response.getElementsByTagName('Version')[0].xml;
+						var pion_version = response.getElementsByTagName('Version')[0].childNodes[0].nodeValue;
 					} else {
 						var pion_version = response.getElementsByTagName('Version')[0].textContent;
 					}
 					var pion_edition = "Unknown";
 					dojo.xhrGet({
 						url: '/key/status',
+						preventCache: true,
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
 							if (dojo.isIE) {
-								var key_status = response.getElementsByTagName('Status')[0].xml;
+								var key_status = response.getElementsByTagName('Status')[0].childNodes[0].nodeValue;
 							} else {
 								var key_status = response.getElementsByTagName('Status')[0].textContent;
 							}
@@ -86,12 +88,13 @@ dojo.declare("pion.about.LicenseKeyDialog",
 			
 			// set license section content based upon edition
 			if (pion_edition == "Community") {
-				this.community_license.style.visibility = "visible";
+				this.community_license.style.display = "block";
 			} else {
 				if (key_status == "valid") {
 					var _this = this;
 					dojo.xhrGet({
 						url: '/key',
+						preventCache: true,
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
@@ -126,7 +129,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 							}
 
 							// show enterprise license block
-							_this.enterprise_licensed.style.visibility = 'visible';
+							_this.enterprise_licensed.style.display = 'block';
 
 							return response;
 						},
@@ -144,7 +147,7 @@ console.debug('error from xhrGet');
 					}
 
 					// show enterprise license block
-					this.enterprise_not_licensed.style.visibility = 'visible';
+					this.enterprise_not_licensed.style.display = 'block';
 				}		
 			}
 		}

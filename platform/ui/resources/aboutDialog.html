@@ -1,4 +1,4 @@
-<div class="dijitDialog about_dialog" style="height: 500px">
+<div class="dijitDialog about_dialog" style="height: 550px; width: 600px">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">About Pion</span>
 		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: hide">
@@ -23,7 +23,7 @@
 		<div id="license_block">
 
 			<div id="community_license" dojoAttachPoint="community_license"
-				style="position: absolute; top: 210px; left: 10px; visibility: hidden">
+				style="display: none">
 
 				<p>
 					Pion Community Edition is licensed under the
@@ -36,7 +36,7 @@
 			</div>
 
 			<div id="enterprise_not_licensed" dojoAttachPoint="enterprise_not_licensed"
-				style="visibility: hidden">
+				style="display: none">
 			
 				<p><span id="reason_needs_license" dojoAttachPoint="reason_needs_license"></span></p>
 
@@ -54,7 +54,7 @@
 			</div>
 			
 			<div id="enterprise_licensed" dojoAttachPoint="enterprise_licensed"
-				style="position: absolute; top: 210px; left: 10px; visibility: hidden">
+				style="display: none">
 			
 				<p>Pion Enterprise Edition is licensed under the
 				<a href="/licenses/atomic_enterprise.html" target="_blank">Atomic Labs
