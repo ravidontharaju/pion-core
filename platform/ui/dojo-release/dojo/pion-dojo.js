@@ -19088,7 +19088,7 @@ this.put_data+="</Transformation>";
 }
 }});
 plugins.reactors.TransformReactor.label="Transformation Reactor";
-dojo.declare("plugins.reactors.TransformReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog transform_reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Transform Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: hide\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>All Conditions</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"AllConditions\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Deliver Original</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"DeliverOriginal\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Comparisons</h3>\r\n\t<div dojoAttachPoint=\"comparison_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.transform_reactor_comparison_grid_model\"\r\n\t\t singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=\"dijit.form.Button\" dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Transformations</h3>\r\n\t<div dojoAttachPoint=\"transformation_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.transform_reactor_transformation_grid_model\"\r\n\t\t singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_transformation_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewTransformation\" class=\"add_new_row\">ADD NEW TRANSFORMATION</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",widgetsInTemplate:true,postCreate:function(){
+dojo.declare("plugins.reactors.TransformReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog transform_reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Transform Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: hide\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>All Conditions</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"AllConditions\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Deliver Original</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"DeliverOriginal\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<h3>Comparisons</h3>\r\n\t<div dojoAttachPoint=\"comparison_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.transform_reactor_comparison_grid_model\"\r\n\t\t singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=\"dijit.form.Button\" dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Transformations</h3>\r\n\t<div dojoAttachPoint=\"transformation_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.transform_reactor_transformation_grid_model\"\r\n\t\t singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_transformation_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewTransformation\" class=\"add_new_row\">ADD NEW TRANSFORMATION</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",widgetsInTemplate:true,postCreate:function(){
 this.inherited("postCreate",arguments);
 this.initGridLayouts();
 var _this=this;
@@ -21169,6 +21169,108 @@ return label;
 }},dojo.byId("server_tree"));
 };
 }
+if(!dojo._hasResource["pion.about"]){
+dojo._hasResource["pion.about"]=true;
+dojo.provide("pion.about");
+dojo.declare("pion.about.LicenseKeyDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog about_dialog\" style=\"height: 500px\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">About Pion</span>\r\n\t\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: hide\">\r\n\t\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\">\r\n\t\t<p>\r\n\t\t\t<big><strong><span id=\"full_version\" dojoAttachPoint=\"full_version\"></span></strong></big><br/>\r\n\t\t\tCopyright &copy; 2008 Atomic Labs, Inc.  All Rights Reserved.\r\n\t\t</p>\r\n\t\t<p>\r\n\t\t\tPion includes a collection of <a href=\"third_party_libraries.html\">third party\r\n\t\t\tlibraries</a>, all of which may be downloaded from \r\n\t\t\t<a href=\"http://pion.org/projects/pion-platform/documentation/libraries\" target=\"_blank\">our\r\n\t\t\tcommunity website.</a>\r\n\t\t</p>\r\n\r\n\t\t<h2>License Information</h2>\r\n\t\t<hr>\r\n\r\n\t\t<div id=\"license_block\">\r\n\r\n\t\t\t<div id=\"community_license\" dojoAttachPoint=\"community_license\"\r\n\t\t\t\tstyle=\"position: absolute; top: 210px; left: 10px; visibility: hidden\">\r\n\r\n\t\t\t\t<p>\r\n\t\t\t\t\tPion Community Edition is licensed under the\r\n\t\t\t\t\t<a href=\"/licenses/gpl_affero.html\" target=\"_blank\">\r\n\t\t\t\t\t\tGNU Affero\r\n\t\t\t\t\t\tGeneral Public License\r\n\t\t\t\t\t</a>.\r\n\t\t\t\t</p>\r\n\r\n\t\t\t</div>\r\n\r\n\t\t\t<div id=\"enterprise_not_licensed\" dojoAttachPoint=\"enterprise_not_licensed\"\r\n\t\t\t\tstyle=\"visibility: hidden\">\r\n\t\t\t\r\n\t\t\t\t<p><span id=\"reason_needs_license\" dojoAttachPoint=\"reason_needs_license\"></span></p>\r\n\r\n\t\t\t\t<form>\r\n\t\t\t\t<p>\r\n\t\t\t\tPlease cut and paste your license key into the box below and click \"Submit Key.\"<br/>\r\n\t\t\t\tIf you don't have a license key, you can obtain one from\r\n\t\t\t\t<a href=\"http://beta.atomiclabs.com/pion/download-enterprise.php\" style=\"color:#0033CC; text-decoration:underline\">atomiclabs.com</a>.\r\n\t\t\t\t</p>\r\n\t\t\t\t<textarea id=\"license_key\" dojoAttachPoint=\"license_key\" cols=\"65\" rows=\"8\"></textarea><br/>\r\n\t\t\t\t<button dojoType=\"dijit.form.Button\" dojoAttachEvent=\"onClick: submitKey\">Submit Key</button>\r\n\t\t\t\t</form>\r\n\t\t\t\t<p><big><strong><span id=\"result_of_submitting_key\" dojoAttachPoint=\"result_of_submitting_key\"></span></strong></big></p>\r\n\t\t\t\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t\t<div id=\"enterprise_licensed\" dojoAttachPoint=\"enterprise_licensed\"\r\n\t\t\t\tstyle=\"position: absolute; top: 210px; left: 10px; visibility: hidden\">\r\n\t\t\t\r\n\t\t\t\t<p>Pion Enterprise Edition is licensed under the\r\n\t\t\t\t<a href=\"/licenses/atomic_enterprise.html\" target=\"_blank\">Atomic Labs\r\n\t\t\t\tEnterprise Software License Agreement</a>.</p>\r\n\t\t\t\t\r\n\t\t\t\t<table>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><big><strong>Name:</strong></big></td>\r\n\t\t\t\t\t<td><span id=\"license_name\" dojoAttachPoint=\"license_name\"></span></td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><big><strong>Email:</strong></big></td>\r\n\t\t\t\t\t<td><span id=\"license_email\" dojoAttachPoint=\"license_email\"></span></td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><big><strong>Version:</strong></big></td>\r\n\t\t\t\t\t<td><span id=\"license_version\" dojoAttachPoint=\"license_version\"></span></td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><big><strong>Expiration:</strong></big></td>\r\n\t\t\t\t\t<td><span id=\"license_expiration\" dojoAttachPoint=\"license_expiration\"></span></td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t</table>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t</div>\r\n</div>\r\n",widgetsInTemplate:true,postCreate:function(){
+this.inherited("postCreate",arguments);
+var _this=this;
+dojo.xhrGet({url:"/config",handleAs:"xml",timeout:5000,load:function(_14ba,_14bb){
+if(dojo.isIE){
+var _14bc=_14ba.getElementsByTagName("Version")[0].xml;
+}else{
+var _14bc=_14ba.getElementsByTagName("Version")[0].textContent;
+}
+var _14bd="Unknown";
+dojo.xhrGet({url:"/key/status",handleAs:"xml",timeout:5000,load:function(_14be,_14bf){
+if(dojo.isIE){
+var _14c0=_14be.getElementsByTagName("Status")[0].xml;
+}else{
+var _14c0=_14be.getElementsByTagName("Status")[0].textContent;
+}
+_14bd="Enterprise";
+_this.doLicenseStuff(_14bc,_14bd,_14c0);
+return _14be;
+},error:function(_14c1,_14c2){
+if(_14c2.xhr.status==404){
+_14bd="Community";
+_this.doLicenseStuff(_14bc,_14bd,"404");
+}
+return _14c1;
+}});
+return _14ba;
+}});
+},submitKey:function(e){
+var key=this.license_key.value;
+console.debug("key = ",key);
+var _this=this;
+dojo.rawXhrPut({url:"/key",contentType:"text/plain",handleAs:"text",putData:key,load:function(_14c6){
+console.debug("response: ",_14c6);
+_this.result_of_submitting_key.innerHTML="Success!";
+return _14c6;
+},error:function(_14c7,_14c8){
+console.debug(_14c8);
+_this.result_of_submitting_key.innerHTML="Error: Key not accepted.";
+return _14c7;
+}});
+},doLicenseStuff:function(_14c9,_14ca,_14cb){
+console.debug("pion_version = ",_14c9,", pion_edition = ",_14ca,", key_status = ",_14cb);
+full_edition_str="Pion "+_14ca+" Edition";
+full_version_str=full_edition_str+" v"+_14c9;
+this.full_version.innerHTML=full_version_str;
+if(_14ca=="Community"){
+this.community_license.style.visibility="visible";
+}else{
+if(_14cb=="valid"){
+var _this=this;
+dojo.xhrGet({url:"/key",handleAs:"xml",timeout:5000,load:function(_14cd,_14ce){
+if(dojo.isIE){
+var _14cf=_14cd.getElementsByTagName("Name")[0].xml;
+var _14d0=_14cd.getElementsByTagName("Email")[0].xml;
+var _14d1=_14cd.getElementsByTagName("Version");
+var _14d2=_14d1.length>0?_14d1[0].xml:"";
+var _14d3=_14cd.getElementsByTagName("Expiration");
+var _14d4=_14d3.length>0?_14d3[0].xml:"";
+}else{
+var _14cf=_14cd.getElementsByTagName("Name")[0].textContent;
+var _14d0=_14cd.getElementsByTagName("Email")[0].textContent;
+var _14d1=_14cd.getElementsByTagName("Version");
+var _14d2=_14d1.length>0?_14d1[0].textContent:"";
+var _14d3=_14cd.getElementsByTagName("Expiration");
+var _14d4=_14d3.length>0?_14d3[0].textContent:"";
+}
+_this.license_name.innerHTML=_14cf;
+_this.license_email.innerHTML=_14d0;
+if(_14d2==""){
+_this.license_version.innerHTML="All versions";
+}else{
+_this.license_version.innerHTML=_14d2;
+}
+if(_14d4==""){
+_this.license_expiration.innerHTML="None";
+}else{
+_this.license_expiration.innerHTML=_14d4;
+}
+_this.enterprise_licensed.style.visibility="visible";
+return _14cd;
+},error:function(){
+console.debug("error from xhrGet");
+}});
+}else{
+if(_14cb=="invalid"){
+this.reason_needs_license.innerHTML="Invalid license key (may have expired).";
+}else{
+this.reason_needs_license.innerHTML="No license key found.";
+}
+this.enterprise_not_licensed.style.visibility="visible";
+}
+}
+}});
+pion.about.doDialog=function(){
+var _14d5=new pion.about.LicenseKeyDialog();
+_14d5.show();
+};
+}
 dojo.registerModulePath("pion","/scripts");
 dojo.registerModulePath("plugins","/plugins");
 var vocab_config_page_initialized=false;
@@ -21178,54 +21280,54 @@ var user_config_page_initialized=false;
 var system_config_page_initialized=false;
 var file_protocol=false;
 var firefox_on_mac;
-pion.handleXhrError=function(_14b9,_14ba,_14bb,_14bc){
-console.debug("In pion.handleXhrError: ioArgs.args = ",_14ba.args);
-if(_14ba.xhr.status==401){
+pion.handleXhrError=function(_14d6,_14d7,_14d8,_14d9){
+console.debug("In pion.handleXhrError: ioArgs.args = ",_14d7.args);
+if(_14d7.xhr.status==401){
 if(pion.login.login_pending){
 var h=dojo.connect(pion.login,"onLoginSuccess",function(){
 dojo.disconnect(h);
-_14bb(_14ba.args);
+_14d8(_14d7.args);
 });
 }else{
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
 pion.login.doLoginDialog(function(){
-_14bb(_14ba.args);
+_14d8(_14d7.args);
 });
 }
 return;
 }else{
-if(_14bc){
-_14bc();
+if(_14d9){
+_14d9();
 }
 }
-return _14b9;
+return _14d6;
 };
-pion.handleXhrGetError=function(_14be,_14bf){
-console.debug("In pion.handleXhrGetError: ioArgs.args = ",_14bf.args);
-return pion.handleXhrError(_14be,_14bf,dojo.xhrGet);
+pion.handleXhrGetError=function(_14db,_14dc){
+console.debug("In pion.handleXhrGetError: ioArgs.args = ",_14dc.args);
+return pion.handleXhrError(_14db,_14dc,dojo.xhrGet);
 };
-pion.getXhrErrorHandler=function(_14c0,_14c1,_14c2){
-return function(_14c3,_14c4){
-dojo.mixin(_14c4.args,_14c1);
-return pion.handleXhrError(_14c3,_14c4,_14c0,_14c2);
+pion.getXhrErrorHandler=function(_14dd,_14de,_14df){
+return function(_14e0,_14e1){
+dojo.mixin(_14e1.args,_14de);
+return pion.handleXhrError(_14e0,_14e1,_14dd,_14df);
 };
 };
-pion.handleFetchError=function(_14c5,_14c6){
-console.debug("In pion.handleFetchError: request = ",_14c6,", errorData = "+_14c5);
-if(_14c5.status==401){
+pion.handleFetchError=function(_14e2,_14e3){
+console.debug("In pion.handleFetchError: request = ",_14e3,", errorData = "+_14e2);
+if(_14e2.status==401){
 if(pion.login.login_pending){
 var h=dojo.connect(pion.login,"onLoginSuccess",function(){
 dojo.disconnect(h);
-_14c6.store.fetch(_14c6);
+_14e3.store.fetch(_14e3);
 });
 }else{
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
 pion.login.doLoginDialog(function(){
-_14c6.store.fetch(_14c6);
+_14e3.store.fetch(_14e3);
 });
 }
 return;
@@ -21236,12 +21338,12 @@ dojo.byId("outer").style.visibility="visible";
 dojo.subscribe("main_stack_container-selectChild",configPageSelected);
 file_protocol=(window.location.protocol=="file:");
 firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexOf("Firefox")>=0;
-dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_14c8,_14c9){
+dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_14e5,_14e6){
 dojo.cookie("logged_in","true",{expires:1});
 pion.terms.init();
 pion.reactors.init();
-},error:function(_14ca,_14cb){
-if(_14cb.xhr.status==401){
+},error:function(_14e7,_14e8){
+if(_14e8.xhr.status==401){
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
@@ -21250,9 +21352,9 @@ pion.terms.init();
 pion.reactors.init();
 });
 }else{
-console.error("HTTP status code: ",_14cb.xhr.status);
+console.error("HTTP status code: ",_14e8.xhr.status);
 }
-return _14ca;
+return _14e7;
 }});
 };
 dojo.addOnLoad(init);

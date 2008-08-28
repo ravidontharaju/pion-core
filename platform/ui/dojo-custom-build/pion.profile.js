@@ -43,6 +43,7 @@ dependencies = {
 			"pion.databases",
 			"pion.users",
 			"pion.system",
+			"pion.about",
 			"pion.widgets.User",
 			"plugins.reactors.Reactor",
 			"plugins.codecs.Codec",
