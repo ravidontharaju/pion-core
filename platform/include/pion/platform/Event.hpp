@@ -307,6 +307,7 @@ public:
 	
 	/**
 	 * returns a range of Event parameters defined for a Term
+	 * NOTE: if none found, first does not necessarily equal end() -> check first == second!
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @return std::pair<Iterator,Iterator> range of parameter iterators for the term

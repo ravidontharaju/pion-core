@@ -98,9 +98,18 @@ BOOST_AUTO_TEST_CASE(checkThrowIfInvalidValue) {
 
 BOOST_AUTO_TEST_CASE(checkEventTypeComparisons) {
 	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+
 	Comparison c(m_object_term);
 	c.configure(Comparison::TYPE_IS_DEFINED);
 	BOOST_CHECK(c.evaluateBool(*event_ptr));
+	c.configure(Comparison::TYPE_IS_NOT_DEFINED);
+	BOOST_CHECK(! c.evaluateBool(*event_ptr));
+
+	Comparison c2(m_plain_int_term);
+	c2.configure(Comparison::TYPE_IS_DEFINED);
+	BOOST_CHECK(! c2.evaluateBool(*event_ptr));
+	c2.configure(Comparison::TYPE_IS_NOT_DEFINED);
+	BOOST_CHECK(c2.evaluateBool(*event_ptr));
 }
 
 BOOST_AUTO_TEST_CASE(checkGenericComparisons) {
