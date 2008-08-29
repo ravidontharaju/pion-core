@@ -1,7 +1,18 @@
 Version 0.6.0 (2008-08-29)
 ==========================
 
-* ...
+* LogInputReactor keeps track of which logs it has consumed & how much (89)
+* LogInputReactor supports reading gzip and bzip2 log files natively (93)
+* Added "About" user interface page with license & third party libs (264)
+* Added MaxThreads and MultiThreadBranches ReactionEngine parameters (251)
+* Misc Vocabulary and Codec updates for managing clickstream traffic (202)
+* Fixed user interface for browser languages other than English (255)
+* Fixed bug with is-defined and is-not-defined Comparison types (275)
+* Fixed failures within the checkDatabaseOutputReactor unit test (215)
+* Fixed bug with the --disable-logging configure option breaking build (254)
+* Updated HTTPParser::parseCookieHeader() to be usable for char[] as well
+* Only HTML documentation is now build with Doxygen when using "make docs"
+* The boost.iostreams, gzip (zlib) and bzip2 libraries are now required
 
 
 Version 0.5.8 (2008-07-18)
