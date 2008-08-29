@@ -1,0 +1,74 @@
+PION COMMUNITY EDITION
+
+Copyright (C) 2007-2008 Atomic Labs, Inc.
+
+Home page:  http://www.pion.org
+
+Pion Community Edition is published under the GNU Affero General Public License.
+See LICENSE.txt for licensing information.  Alternative commercial licenses
+are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
+
+Pion Community Edition's source code can be downloaded from our website at:
+http://www.pion.org/projects/pion-platform/download
+
+This binary distribution may include several third party libraries which are
+used by Pion.  A list of these libraries along with license information and
+links to download source code is available at the following URL:
+http://www.pion.org/projects/pion-platform/documentation/libraries
+
+This distribution includes the following files:
+
+config/            Directory containing Pion configuration files
+libs/              Directory containing Pion & third party library files
+plugins/           Directory containing Pion plugin files
+ui/                Directory containing Pion user interface files
+pion.exe           The Pion Platform server executable
+start_pion.bat     Windows batch file used to start Pion
+HISTORY.txt        Pion Platform version history (or "change log")
+LICENSE.txt        The GNU Affero General Public License
+README.txt         This README file
+
+To start Pion, just run the ".\start_pion.bat" script from a command prompt.
+This will setup your environment paths and start the Pion server executable.
+
+Once the server is running, open your favorite web browser (Firefox, Safari
+or IE7) and point it to the following URL:
+http://localhost:8888
+
+This will open the Pion user interface to the "Reactors configuration" page.
+For an intro to Pion's user interface, please see the online tour at:
+http://www.pion.org/projects/pion-platform/tour
+
+To stop Pion, type Ctrl-C if it is running in the foreground, or
+"killall pion" if it is running in the background.
+
+Please note that this is a BETA release intended for preview purposes only.
+Certain aspects of Pion may change substantially in future releases.  Do not
+use this release for any production purposes, since it may not be compatible
+with future releases, and it is likely that it may cause you to lose data.
+
+This release has the following limitations:
+
+a) If you drag a reactor over top an existing reactor within the workspace,
+   it sometimes becomes un-droppable.  Drag around existing reactors instead.
+
+b) You must hit <enter> after making any changes within the user interface
+   configuration grids.  If you hit the "save" button before hitting <enter>,
+   your change will not be saved.
+
+c) You must stop, and then start some Reactors for them to recognize certain
+   configuration changes.
+
+Please see our ticket-tracking system for more information on planned
+functionality, known problems, or to report bugs:
+http://www.pion.org/ticket-tracking
+
+For online assistance, please see our user forums at:
+http://www.pion.org/forum
+
+Also, our mailing lists are available at:
+http://www.pion.org/mailing-lists
+
+For commercial support & maintenance, alternative licensing options and
+professional services, please contact Atomic Labs, Inc. at:
+http://www.atomiclabs.com/contact/

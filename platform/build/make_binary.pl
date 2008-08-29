@@ -37,14 +37,16 @@ if ($PLATFORM eq "win32") {
 	$SHARED_LIB_SUFFIX = "dll";
 	$PLUGIN_LIB_SUFFIX = "dll";
 	$SYSTEM_LIB_DIR = File::Spec->rootdir();
-	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
-	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX);
-	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
-	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
-	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
-	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
-	$SERVER_EXE = File::Spec->catfile( ($BIN_DIR), "pion.exe");
-	@BOOST_LIBS = bsd_glob("C:\boost\lib\libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35.dll");
+	$LOG4CXX_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "log4cxx." . $SHARED_LIB_SUFFIX);
+	$SQLITE_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "SQLite-3.5.8", "lib"), "sqlite3." . $SHARED_LIB_SUFFIX);
+	$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-0.4.0", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
+	$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
+	$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin"), "libxml2." . $SHARED_LIB_SUFFIX);
+	$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
+	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
+	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion.exe");
+	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost", "lib") );
+	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc80-mt-1_35.dll");
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
 	$PLUGIN_LIB_SUFFIX = "so";
@@ -70,12 +72,22 @@ if ($PLATFORM eq "win32") {
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35." . $SHARED_LIB_SUFFIX . ".1.35.0");
 }
-$PION_COMMON_GLOB = File::Spec->catfile( ("common", "src", ".libs"), "libpion-common-*." . $SHARED_LIB_SUFFIX);
-$PION_NET_GLOB = File::Spec->catfile( ("net", "src", ".libs"), "libpion-net-*." . $SHARED_LIB_SUFFIX);
-$PION_PLATFORM_GLOB = File::Spec->catfile( ("platform", "src", ".libs"), "libpion-platform-*." . $SHARED_LIB_SUFFIX);
-$PION_SERVER_GLOB = File::Spec->catfile( ("platform", "server", ".libs"), "libpion-server-*." . $SHARED_LIB_SUFFIX);
-$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
-$PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+if ($PLATFORM eq "win32") {
+	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-common." . $SHARED_LIB_SUFFIX);
+	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-net." . $SHARED_LIB_SUFFIX);
+	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-platform." . $SHARED_LIB_SUFFIX);
+	$PION_SERVER_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-server." . $SHARED_LIB_SUFFIX);
+	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+#	$PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+	@PLATFORM_PLUGINS = bsd_glob("platform/" . "{codecs,protocols,databases,reactors,services}" . "/.libs/*." . $PLUGIN_LIB_SUFFIX);
+} else {
+	$PION_COMMON_GLOB = File::Spec->catfile( ("common", "src", ".libs"), "libpion-common-*." . $SHARED_LIB_SUFFIX);
+	$PION_NET_GLOB = File::Spec->catfile( ("net", "src", ".libs"), "libpion-net-*." . $SHARED_LIB_SUFFIX);
+	$PION_PLATFORM_GLOB = File::Spec->catfile( ("platform", "src", ".libs"), "libpion-platform-*." . $SHARED_LIB_SUFFIX);
+	$PION_SERVER_GLOB = File::Spec->catfile( ("platform", "server", ".libs"), "libpion-server-*." . $SHARED_LIB_SUFFIX);
+	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+	$PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
+}
 
 
 # ------------
@@ -99,12 +111,19 @@ mkdir($UI_DIR);
 
 # copy our third party library files into "libs"
 print "Copying system library files..\n";
-copy($UUID_LIB, $LIBS_DIR);
+if ($PLATFORM eq "win32") {
+	copy($ICONV_LIB, $LIBS_DIR);
+	copy($LIBXML_LIB, $LIBS_DIR);
+	copy($ZLIB_LIB, $LIBS_DIR);
+	copy($BZIP_LIB, $LIBS_DIR);
+} else {
+	copy($UUID_LIB, $LIBS_DIR);
+	copy($APR_LIB, $LIBS_DIR);
+	copy($APR_UTIL_LIB, $LIBS_DIR);
+}
 copy($LOG4CXX_LIB, $LIBS_DIR);
 copy($SQLITE_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
-copy($APR_LIB, $LIBS_DIR);
-copy($APR_UTIL_LIB, $LIBS_DIR);
 foreach (@BOOST_LIBS) {
 	copy($_, $LIBS_DIR);
 }
@@ -130,8 +149,15 @@ print "Copying Pion plugin files..\n";
 foreach (bsd_glob($NET_PLUGINS_GLOB)) {
 	copy($_, $PLUGINS_DIR);
 }
-foreach (bsd_glob($PLATFORM_PLUGINS_GLOB)) {
-	copy($_, $PLUGINS_DIR);
+
+if ($PLATFORM eq "win32") {
+	foreach (@PLATFORM_PLUGINS) {
+		copy($_, $PLUGINS_DIR);
+	}
+} else {
+	foreach (bsd_glob($PLATFORM_PLUGINS_GLOB)) {
+		copy($_, $PLUGINS_DIR);
+	}
 }
 
 print "Copying misc other Pion files..\n";
@@ -147,8 +173,13 @@ copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
 # copy other misc files
 copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
 copy("ChangeLog", File::Spec->catfile($PACKAGE_DIR, "HISTORY.txt"));
-copy(File::Spec->catfile( ("platform", "build"), "README.bin"),
-	File::Spec->catfile($PACKAGE_DIR, "README.txt"));
+if ($PLATFORM eq "win32") {
+	copy(File::Spec->catfile( ("platform", "build"), "README.bin.msvc"),
+		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
+} else {
+	copy(File::Spec->catfile( ("platform", "build"), "README.bin"),
+		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
+}
 
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);
@@ -162,7 +193,8 @@ if ($PLATFORM eq "win32") {
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
 		
 	# create zip package
-	`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+	chdir $BIN_DIR;
+	`zip -r9 $TARBALL_NAME.zip $PACKAGE_NAME`;
 
 } else {
 
