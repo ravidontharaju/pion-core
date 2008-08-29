@@ -3,4 +3,5 @@
   <VocabularyPath>vocabularies</VocabularyPath>
   <VocabularyConfig id="urn:vocab:clickstream">vocabularies/clickstream.xml</VocabularyConfig>
   <VocabularyConfig id="urn:vocab:stocks">vocabularies/stocks.xml</VocabularyConfig>
+  <VocabularyConfig id="urn:vocab:aggregate">vocabularies/aggregate.xml</VocabularyConfig>
 </PionConfig>
