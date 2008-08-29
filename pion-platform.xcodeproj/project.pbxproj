@@ -63,6 +63,7 @@
 		E34067570DF9F8B8007EE07B /* VocabularyTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E36D88E90D29BBC800B4C134 /* VocabularyTests.cpp */; };
 		E349BEB10D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
 		E349BEB20D3E578A008AB9E6 /* Comparison.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E349BEB00D3E578A008AB9E6 /* Comparison.hpp */; };
+		E35C1C970E689D80003EEAD7 /* LogInputReactorTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E35C1C960E689D80003EEAD7 /* LogInputReactorTests.cpp */; };
 		E35FD5B60DC2A2470090C187 /* PionLockFreeQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */; };
 		E35FD5B70DC2A2470090C187 /* PionPoolAllocator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */; };
 		E35FD5B80DC2A2470090C187 /* PionLockFreeQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */; };
@@ -1070,6 +1071,7 @@
 		E335AC350E192CC600DADC40 /* Protocol.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Protocol.hpp; path = platform/include/pion/platform/Protocol.hpp; sourceTree = SOURCE_ROOT; };
 		E335AC360E192CC600DADC40 /* ProtocolFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProtocolFactory.hpp; path = platform/include/pion/platform/ProtocolFactory.hpp; sourceTree = SOURCE_ROOT; };
 		E349BEB00D3E578A008AB9E6 /* Comparison.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Comparison.hpp; path = platform/include/pion/platform/Comparison.hpp; sourceTree = SOURCE_ROOT; };
+		E35C1C960E689D80003EEAD7 /* LogInputReactorTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LogInputReactorTests.cpp; path = platform/tests/LogInputReactorTests.cpp; sourceTree = SOURCE_ROOT; };
 		E35FD5B40DC2A2470090C187 /* PionLockFreeQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionLockFreeQueue.hpp; path = common/include/pion/PionLockFreeQueue.hpp; sourceTree = SOURCE_ROOT; };
 		E35FD5B50DC2A2470090C187 /* PionPoolAllocator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PionPoolAllocator.hpp; path = common/include/pion/PionPoolAllocator.hpp; sourceTree = SOURCE_ROOT; };
 		E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PluginConfigTests.cpp; path = platform/tests/PluginConfigTests.cpp; sourceTree = SOURCE_ROOT; };
@@ -1844,6 +1846,7 @@
 		E3EFC67F0D188DC80019CCD4 /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				E35C1C960E689D80003EEAD7 /* LogInputReactorTests.cpp */,
 				E3FBA7370D8F119900D66A53 /* PionPerformanceTests.cpp */,
 				E36D88E70D29BBC800B4C134 /* PionPlatformUnitTests.cpp */,
 				E3642B1A0DF5E7F700C79941 /* PluginConfigTests.cpp */,
@@ -3157,6 +3160,7 @@
 				E34067560DF9F8B8007EE07B /* VocabularyConfigTests.cpp in Sources */,
 				E34067570DF9F8B8007EE07B /* VocabularyTests.cpp in Sources */,
 				E33513140E2EC8E600B508BC /* ProtocolTests.cpp in Sources */,
+				E35C1C970E689D80003EEAD7 /* LogInputReactorTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
