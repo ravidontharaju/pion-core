@@ -1,3 +1,11 @@
+Version 0.6.0 (2008-08-29)
+==========================
+
+* Fixed bug with the --disable-logging configure option breaking build (254)
+* Updated HTTPParser::parseCookieHeader() to be usable for char[] as well
+* Only HTML documentation is now build with Doxygen when using "make docs"
+
+
 Version 0.5.8 (2008-07-18)
 ==========================
 
