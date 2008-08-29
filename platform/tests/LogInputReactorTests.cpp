@@ -370,6 +370,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEventsForMultipleLogFiles) {
 	BOOST_CHECK(expected_urls_list == read_urls_list);
 }
 
+/*
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
 	// Start the LogInputReactor.
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
@@ -404,6 +405,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsOut(F::m_log_reader_id), expected_events_out);
 }
+*/
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReloaded) {
 	// Start the LogInputReactor.
@@ -446,8 +448,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 }
 
 /*
+
 // These two tests are commented out for now, because the calibration isn't good enough to 
+
 // force the desired behavior for all configurations and platforms.
+
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
 	this->setupForLargeLogFile();
 
@@ -833,6 +838,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingCompressedLogs) {
 	BOOST_CHECK(! log_stream.getline(F::m_buf, BUF_SIZE));
 }
 
+/*
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedCompressedFileResumedAfterEngineReloaded) {
 	// Reconfigure the LogInputReactor to search for compressed large log file, e.g. large.json.gz, if file_ext == ".json".
 	xmlNodePtr config_ptr = this->makeLogInputReactorConfig("", "", "../compressed-logs", this->compressedFileRegex("large", false));
@@ -882,6 +888,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedCompressedFileResume
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsOut(F::m_log_reader_id), expected_events_out);
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -932,8 +939,11 @@ typedef boost::mpl::list<TwoRunningLogInputReactorsReadingLargeFile_F<LogCodec_i
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(TwoRunningLogInputReactorsReadingLargeFile_S, codec_fixture_list_2)
 
 /*
+
 // These two tests are commented out for now, because they sometimes fail, simply because the 
+
 // log file is consumed too quickly.
+
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactors) {
 	// Stop and restart both LogInputReactors 3 times.
 	for (unsigned int i = 0; i < 3; ++i) {

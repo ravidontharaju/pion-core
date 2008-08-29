@@ -55,6 +55,45 @@
     <Field term="urn:vocab:clickstream#page-number" start="&quot;" end="&quot;">x-page-num</Field>
     <Field term="urn:vocab:clickstream#request-number" start="&quot;" end="&quot;">x-request-num</Field>
   </Codec>
+  <Codec id="56464a44-74b8-11dd-bb08-001cc02bd66b">
+    <Name>Page View Log Format</Name>
+    <Comment>Codec for clickstream page views</Comment>
+    <Plugin>LogCodec</Plugin>
+    <EventType>urn:vocab:clickstream#page-event</EventType>
+    <Headers>true</Headers>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#s-ip">s-ip</Field> 
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#uri-stem" start="&quot;" end="&quot;">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query" start="&quot;" end="&quot;">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
+    <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
+    <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
+    <Field term="urn:vocab:clickstream#session-group" start="&quot;" end="&quot;">x-session-group</Field>
+    <Field term="urn:vocab:clickstream#session-id" start="&quot;" end="&quot;">x-session-id</Field>
+    <Field term="urn:vocab:clickstream#cookie-id" start="&quot;" end="&quot;">x-cookie-id</Field>
+    <Field term="urn:vocab:clickstream#page-number" start="&quot;" end="&quot;">x-page-num</Field>
+    <Field term="urn:vocab:clickstream#request-number" start="&quot;" end="&quot;">x-request-num</Field>
+  </Codec>
+  <Codec id="abddec14-74b8-11dd-883e-001cc02bd66b">
+    <Name>Visitor session Log Format</Name>
+    <Comment>Codec for clickstream visitor sessions</Comment>
+    <Plugin>LogCodec</Plugin>
+    <EventType>urn:vocab:clickstream#session-event</EventType>
+    <Headers>true</Headers>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
+    <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
+    <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
+    <Field term="urn:vocab:clickstream#session-group" start="&quot;" end="&quot;">x-session-group</Field>
+    <Field term="urn:vocab:clickstream#session-id" start="&quot;" end="&quot;">x-session-id</Field>
+    <Field term="urn:vocab:clickstream#cookie-id" start="&quot;" end="&quot;">x-cookie-id</Field>
+    <Field term="urn:vocab:clickstream#page-number" start="&quot;" end="&quot;">x-page-num</Field>
+    <Field term="urn:vocab:clickstream#request-number" start="&quot;" end="&quot;">x-request-num</Field>
+  </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
     <Plugin>LogCodec</Plugin>
     <Name>Stock Price Log</Name>
