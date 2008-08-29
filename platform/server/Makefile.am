@@ -21,4 +21,4 @@ pion_SOURCES = main.cpp
 pion_LDADD = libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 pion_DEPENDENCIES = libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
-EXTRA_DIST = *.vcproj README.msvc platform.xml services.xml
+EXTRA_DIST = *.vcproj README.msvc
