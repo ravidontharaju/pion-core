@@ -127,7 +127,7 @@ template<typename plugin_class>
 class PluginPtrWithReactorLoaded_F : public PluginPtrReadyToOpenReactor_F<plugin_class> {
 public:
 	PluginPtrWithReactorLoaded_F() {
-		open(this->m_plugin_name);
+		this->open(this->m_plugin_name);
 		m_reactor = NULL;
 	}
 	~PluginPtrWithReactorLoaded_F() {
