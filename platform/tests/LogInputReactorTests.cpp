@@ -625,6 +625,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleRea
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsOut(log_reader_id_2), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 }
 
+/*
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMultipleReaders) {
 	// Make another LogInputReactor.
 	xmlNodePtr config_ptr = this->makeLogInputReactorConfig();
@@ -675,6 +676,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMu
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(log_reader_id_2),  expected_events_in);
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsOut(log_reader_id_2), expected_events_out);
 }
+*/
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReloadedForMultipleReaders) {
 	// Make another LogInputReactor.
