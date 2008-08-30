@@ -226,7 +226,7 @@ if ($PLATFORM eq "win32") {
 		`cp ChangeLog $OSX_BIN_DIRECTORY/HISTORY.txt`;
 		`cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt`;
 		`(cd bin/osx; zip -qr9 $TARBALL_NAME-app.zip $PACKAGE_NAME)`;
-		`mv ./bin/osx/$TARBALL_NAME-app.zip ./bin/`;
+		`mv ./bin/osx/$TARBALL_NAME_app.zip ./bin/`;
 	}
 }
 

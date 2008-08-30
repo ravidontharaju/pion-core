@@ -601,6 +601,7 @@ protected:
 	 */
 	template <typename T>	
 	inline void insert(const Vocabulary::TermRef& term_ref, const T& value) {
+		PION_ASSERT(term_ref != Vocabulary::UNDEFINED_TERM_REF);
 		ParameterNode *new_param_ptr = createParameter();
 		new_param_ptr->term_ref = term_ref;
 		new_param_ptr->value = value;
