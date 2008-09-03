@@ -166,6 +166,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\build\README.bin.msvc"
+			>
+		</File>
+		<File
 			RelativePath=".\README.msvc"
 			>
 		</File>
