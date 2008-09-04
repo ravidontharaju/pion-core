@@ -60,7 +60,7 @@ pion.login.doLoginDialog = function(login_success_callback) {
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	if (!ops_toggle_button.checked) {
-		ops_toggle_button.attr('checked', true);
+		ops_toggle_button.setAttribute('checked', true);
 		//dojo.addClass(dojo.byId('counterBackground'), 'hidden');
 		pion.login.ops_temporarily_suppressed = true;
 	}
@@ -89,7 +89,7 @@ pion.login.doLoginDialog = function(login_success_callback) {
 				console.debug('login response: ioArgs.xhr = ', ioArgs.xhr);
 				if (pion.login.ops_temporarily_suppressed) {
 					// turn ops back on
-					ops_toggle_button.attr('checked', false);
+					ops_toggle_button.setAttribute('checked', false);
 					//dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
 					pion.login.ops_temporarily_suppressed = false;
 				}
