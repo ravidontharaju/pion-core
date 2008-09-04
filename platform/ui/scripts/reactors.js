@@ -207,7 +207,7 @@ pion.reactors.init = function() {
 							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
 							var is_running = (is_running_string == 'true');
 							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-							reactor.run_button.setAttribute('checked', is_running);
+							reactor.run_button.attr('checked', is_running);
 						});
 						delta = events_in_for_workspace - prev_events_in_for_workspace;
 						dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
