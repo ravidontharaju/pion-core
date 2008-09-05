@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+	<Server id="main-server">
+		<Port>8888</Port>
+		<!-- <SSLKey>sslkey.pem</SSLKey> -->
+		<Redirect>
+			<Source>/</Source>
+			<Target>/index.html</Target>
+		</Redirect>
+		<Restrict>/</Restrict>
+		<Permit>/index.html</Permit>
+		<Permit>/login.html</Permit>
+		<Permit>/dojo-release</Permit>
+		<Permit>/images</Permit>
+		<Permit>/plugins</Permit>
+		<Permit>/resources</Permit>
+		<Permit>/scripts</Permit>
+		<Permit>/styles</Permit>
+		<Login>/login</Login>
+		<Logout>/logout</Logout>
+		<WebService id="ui-service">
+			<Name>User Interface Service</Name>
+			<Comment>Delivers user interface files</Comment>
+			<Plugin>FileService</Plugin>
+			<Resource>/</Resource>
+			<Option name="directory">/usr/share/pion/ui/</Option>
+			<Option name="cache">1</Option>
+			<Option name="scan">2</Option>
+			<Option name="writable">false</Option>
+		</WebService>
+		<PlatformService id="config-service">
+			<Name>Configuration Service</Name>
+			<Comment>Pion platform configuration service</Comment>
+			<Plugin>ConfigService</Plugin>
+			<Resource>/config</Resource>
+			<UIDirectory>/usr/share/pion/ui/</UIDirectory>
+		</PlatformService>
+		<PlatformService id="feed-service">
+			<Name>Data Feed Service</Name>
+			<Comment>Pion platform data feed service</Comment>
+			<Plugin>FeedService</Plugin>
+			<Resource>/feed</Resource>
+		</PlatformService>
+		<WebService id="log-service">
+			<Name>Log Service</Name>
+			<Comment>Sends recent log entries</Comment>
+			<Plugin>LogService</Plugin>
+			<Resource>/log</Resource>
+		</WebService>
+	</Server>
+	<Server id="hello-server">
+		<Port>8081</Port>
+		<WebService id="hello-service">
+			<Name>Hello Service</Name>
+			<Comment>Says hello to the world</Comment>
+			<Plugin>HelloService</Plugin>
+			<Resource>/hello</Resource>
+		</WebService>
+		<WebService id="echo-service">
+			<Name>Echo Service</Name>
+			<Comment>Echoes the HTTP request</Comment>
+			<Plugin>EchoService</Plugin>
+			<Resource>/echo</Resource>
+		</WebService>
+	</Server>
+</PionConfig>

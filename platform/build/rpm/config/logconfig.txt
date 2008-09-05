@@ -6,12 +6,12 @@
 ## root logger configuration; syntax is LOG_LEVEL, <APPENDER>+
 ##
 ## Use this to log only to the console
-log4j.rootLogger=WARN, stdout
+#log4j.rootLogger=WARN, stdout
 ##
 ## Use this to log only to log files
 #log4j.rootLogger=WARN, logfile
 ## Use this to log both to log files and the console
-#log4j.rootLogger=WARN, stdout, logfile
+log4j.rootLogger=WARN, stdout, logfile
 
 ##
 ## stdout console appender configuration
@@ -32,7 +32,7 @@ log4j.appender.logfile=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.logfile.layout=org.apache.log4j.PatternLayout
 ##
 ## The name and location for the log file
-log4j.appender.logfile.File=/var/log/pion/pion-platform.log
+log4j.appender.logfile.File=/var/log/pion/pion.log
 ##
 ## The frequency at which log files will be rotated
 log4j.appender.logfile.DatePattern='.'yyyy-MM-dd

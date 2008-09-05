@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+	<VocabularyConfig>vocabularies.xml</VocabularyConfig>
+	<CodecConfig>codecs.xml</CodecConfig>
+	<DatabaseConfig>databases.xml</DatabaseConfig>
+	<ReactorConfig>reactors.xml</ReactorConfig>
+	<ServiceConfig>services.xml</ServiceConfig>
+	<UserConfig>users.xml</UserConfig>
+	<LogConfig>logconfig.txt</LogConfig>
+	<PluginPath>/usr/share/pion/plugins</PluginPath>
+	<ProtocolConfig>protocols.xml</ProtocolConfig>
+	<!--
+	<ReactionEngine>
+		<MaxThreads>32</MaxThreads>
+		<MultithreadBranches>false</MultithreadBranches>
+	</ReactionEngine>
+	-->
+</PionConfig>
