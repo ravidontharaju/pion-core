@@ -43,7 +43,8 @@ public:
 		m_plain_int_term.term_ref = static_cast<Vocabulary::TermRef>(2);
 		m_big_int_term.term_ref = static_cast<Vocabulary::TermRef>(3);
 		m_fixed_term.term_ref = static_cast<Vocabulary::TermRef>(4);
-		m_object_term.term_ref = static_cast<Vocabulary::TermRef>(5);
+		m_date_term.term_ref = static_cast<Vocabulary::TermRef>(5);
+		m_object_term.term_ref = static_cast<Vocabulary::TermRef>(6);
 		m_null_term.term_type = Vocabulary::TYPE_NULL;
 		m_plain_int_term.term_type = Vocabulary::TYPE_INT16;
 		m_big_int_term.term_type = Vocabulary::TYPE_UINT64;
