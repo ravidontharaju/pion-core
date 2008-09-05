@@ -1,0 +1,69 @@
+#!/bin/sh
+#
+# description: Pion is software for real-time data capture, processing and integration
+# processname: pion
+# config: /etc/pion/platform.xml
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+prog=pion
+lockfile=/var/lock/subsys/$prog
+
+RETVAL=0
+
+start() {
+	echo -n $"Starting $prog: "
+	daemon $prog -D
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch $lockfile
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc $prog
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f $lockfile
+	echo
+	return $RETVAL
+}
+
+dostatus() {
+	status $prog
+}
+
+restart() {
+	stop
+	start
+}
+
+condrestart() {
+	[ -e $lockfile ] && restart || :
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	restart
+	;;
+  condrestart)
+	condrestart
+	;;
+  status)
+	dostatus
+	;;
+  *)
+	echo "Usage: $prog {start|stop|restart|reload|condrestart|status}"
+	exit 1
+esac
+
+exit $RETVAL
