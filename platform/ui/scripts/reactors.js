@@ -789,66 +789,54 @@ pion.reactors.deleteReactorIfConfirmed = function(reactor) {
 function deleteReactor(reactor) {
 	console.debug('deleting ', reactor.config.Name);
 
-	// First, stop the reactor. 
-	reactor.run_button.setAttribute('checked', false);
-	dojo.xhrPut({
-		url: '/config/reactors/' + reactor.config['@id'] + '/stop',
-		load: function(response) {
+	dojo.xhrDelete({
+		url: '/config/reactors/' + reactor.config['@id'],
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			console.debug('xhrDelete for url = /config/reactors/', reactor.config['@id'], '; HTTP status code: ', ioArgs.xhr.status);
 
-			// Now that the reactor has been stopped, it's safe to delete it.
-			dojo.xhrDelete({
-				url: '/config/reactors/' + reactor.config['@id'],
-				handleAs: 'xml',
-				timeout: 5000,
-				load: function(response, ioArgs) {
-					console.debug('xhrDelete for url = /config/reactors/', reactor.config['@id'], '; HTTP status code: ', ioArgs.xhr.status);
-
-					// Remove the reactor from the outputs of incoming reactors and the inputs of
-					// incoming reactors, and remove the lines connecting them.
-					for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-						var incoming_reactor = reactor.reactor_inputs[i].source;
-						reactor.reactor_inputs[i].line.removeShape();
-						
-						// remove reactor from the outputs of incoming_reactor
-						for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-							if (incoming_reactor.reactor_outputs[j].sink == reactor) {
-								incoming_reactor.reactor_outputs.splice(j, 1);
-							}
-						}
+			// Remove the reactor from the outputs of incoming reactors and the inputs of
+			// incoming reactors, and remove the lines connecting them.
+			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+				var incoming_reactor = reactor.reactor_inputs[i].source;
+				reactor.reactor_inputs[i].line.removeShape();
+				
+				// remove reactor from the outputs of incoming_reactor
+				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+					if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+						incoming_reactor.reactor_outputs.splice(j, 1);
 					}
-					for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-						var outgoing_reactor = reactor.reactor_outputs[i].sink;
-						reactor.reactor_outputs[i].line.removeShape();
+				}
+			}
+			for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+				var outgoing_reactor = reactor.reactor_outputs[i].sink;
+				reactor.reactor_outputs[i].line.removeShape();
 
-						// remove reactor from the inputs of outgoing_reactor
-						for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-							if (outgoing_reactor.reactor_inputs[j].source == reactor) {
-								outgoing_reactor.reactor_inputs.splice(j, 1);
-							}
-						}
+				// remove reactor from the inputs of outgoing_reactor
+				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+					if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+						outgoing_reactor.reactor_inputs.splice(j, 1);
 					}
+				}
+			}
 
-					// Remove the reactor's node from the DOM tree, and finally, remove the reactor
-					// itself from the list of reactors.
-					var workspace_box = pion.reactors.workspace_box;
-					workspace_box.node.removeChild(reactor.domNode);
-					for (var j = 0; j < workspace_box.reactors.length; ++j) {
-						if (workspace_box.reactors[j] == reactor) {
-							workspace_box.reactors.splice(j, 1);
-						}
-					}
-					if (workspace_box.reactors.length == 0) {
-						workspace_box.onEmpty(workspace_box.my_content_pane);
-					}
-
-					return response;
-				},
-				error: pion.getXhrErrorHandler(dojo.xhrDelete)
-			});
+			// Remove the reactor's node from the DOM tree, and finally, remove the reactor
+			// itself from the list of reactors.
+			var workspace_box = pion.reactors.workspace_box;
+			workspace_box.node.removeChild(reactor.domNode);
+			for (var j = 0; j < workspace_box.reactors.length; ++j) {
+				if (workspace_box.reactors[j] == reactor) {
+					workspace_box.reactors.splice(j, 1);
+				}
+			}
+			if (workspace_box.reactors.length == 0) {
+				workspace_box.onEmpty(workspace_box.my_content_pane);
+			}
 
 			return response;
 		},
-		error: pion.getXhrErrorHandler(dojo.xhrPut)
+		error: pion.getXhrErrorHandler(dojo.xhrDelete)
 	});
 }
 

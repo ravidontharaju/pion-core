@@ -186,6 +186,11 @@ std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
 
 void ReactionEngine::removeReactor(const std::string& reactor_id)
 {
+	// If the Reactor is still running, stop it.
+	if (m_plugins.get(reactor_id)->isRunning()) {
+		stopReactor(reactor_id);
+	}
+
 	// disconnect any Reactor connections involving the Reactor being removed
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 	ReactorConnectionList::iterator reactor_i = m_reactor_connections.begin();
