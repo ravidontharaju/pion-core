@@ -25,6 +25,7 @@
 #include <boost/asio.hpp>
 #include <boost/regex.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/thread/condition.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
@@ -114,7 +115,7 @@ public:
 	LogInputReactor(void)
 		: Reactor(TYPE_COLLECTION),
 		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
-		m_just_one(false), m_frequency(DEFAULT_FREQUENCY)
+		m_just_one(false), m_frequency(DEFAULT_FREQUENCY), m_worker_is_active(false)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -269,6 +270,12 @@ private:
 
 	/// number of Events that had previously been read from the current log file
 	boost::uint64_t						m_num_events_read_previously;
+
+	/// condition triggered after the worker thread has stopped running
+	boost::condition					m_worker_stopped;
+	
+	/// true while the worker thread is active
+	volatile bool						m_worker_is_active;
 };
 
 

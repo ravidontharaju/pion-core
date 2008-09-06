@@ -187,6 +187,7 @@ void LogInputReactor::start(void)
 		}
 
 		m_is_running = true;
+		m_worker_is_active = true;
 	}
 }
 	
@@ -208,13 +209,18 @@ void LogInputReactor::stop(void)
 		} else {
 			boost::filesystem::remove(m_current_log_file_cache_filename);
 		}
+		
+		// don't return until the worker thread has finished
+		while (m_worker_is_active) {
+			m_worker_stopped.wait(reactor_lock);
+		}
 	}
 }
 
 void LogInputReactor::scheduleLogFileCheck(boost::uint32_t seconds)
 {
 	if (seconds == 0) {
-		getScheduler().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
+		getScheduler().getIOService().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
 	} else {
 		if (! m_timer_ptr)
 			m_timer_ptr.reset(new boost::asio::deadline_timer(getScheduler().getIOService()));
@@ -227,8 +233,12 @@ void LogInputReactor::checkForLogFiles(void)
 {
 	// make sure that the reactor is still running
 	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
-	if (! isRunning())
+	if (! m_is_running) {
+		PION_LOG_DEBUG(m_logger, "Input log thread has finished: " << getId());
+		m_worker_is_active = false;
+		m_worker_stopped.notify_all();
 		return;
+	}
 
 	PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
 
