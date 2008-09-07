@@ -167,7 +167,7 @@ public:
 	
 		
 private:
-	
+
 	/// data structure used to represent a collection of log files
 	typedef std::set<std::string>		LogFileCollection;
 	
@@ -209,6 +209,13 @@ private:
 	 */
 	void getLogFilesInLogDirectory(LogFileCollection& files);
 	
+	/// sends notification that the worker thread has finished
+	inline void finishWorkerThread(void) {
+		PION_LOG_DEBUG(m_logger, "Log thread has finished: " << getId());
+		m_worker_is_active = false;
+		m_worker_stopped.notify_all();
+	}
+
 	
 	/// default frequency that the Reactor will check for new logs (in seconds)
 	static const boost::uint32_t		DEFAULT_FREQUENCY;

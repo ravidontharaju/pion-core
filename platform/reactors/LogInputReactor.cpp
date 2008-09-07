@@ -202,6 +202,7 @@ void LogInputReactor::stop(void)
 
 		// Write current log file cache file.
 		if (m_log_stream.is_complete()) { // is_complete() returns true if a Device, in this case a file, is attached to the stream.
+			PION_LOG_DEBUG(m_logger, "Updating log cache file: " << getId());
 			std::ofstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for writing.");
@@ -214,6 +215,7 @@ void LogInputReactor::stop(void)
 		while (m_worker_is_active) {
 			m_worker_stopped.wait(reactor_lock);
 		}
+		PION_LOG_DEBUG(m_logger, "Worker thread has finished: " << getId());
 	}
 }
 
@@ -234,9 +236,7 @@ void LogInputReactor::checkForLogFiles(void)
 	// make sure that the reactor is still running
 	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	if (! m_is_running) {
-		PION_LOG_DEBUG(m_logger, "Input log thread has finished: " << getId());
-		m_worker_is_active = false;
-		m_worker_stopped.notify_all();
+		finishWorkerThread();
 		return;
 	}
 
@@ -297,8 +297,11 @@ void LogInputReactor::checkForLogFiles(void)
 void LogInputReactor::readFromLog(bool use_one_thread)
 {
 	// make sure that the reactor is still running
-	if (! isRunning())
+	if (! m_is_running) {
+		boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+		finishWorkerThread();
 		return;
+	}
 
 	try {
 		// open up the log file for reading (if not open already)
@@ -412,6 +415,10 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 
 		} while (isRunning()); 
 
+		// log worker thread is no longer running
+		boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
+		finishWorkerThread();
+
 	} catch (std::exception& e) {
 		PION_LOG_ERROR(m_logger, e.what());
 
@@ -460,3 +467,4 @@ extern "C" PION_PLUGIN_API pion::platform::Reactor *pion_create_LogInputReactor(
 extern "C" PION_PLUGIN_API void pion_destroy_LogInputReactor(pion::plugins::LogInputReactor *reactor_ptr) {
 	delete reactor_ptr;
 }
+
