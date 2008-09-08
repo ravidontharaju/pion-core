@@ -226,7 +226,7 @@ public:
 		boost::uint32_t num_nsec = 100000000; // 0.1 seconds
 		while (total_nsec < time_limit) {
 			PionScheduler::sleep(0, num_nsec);
-			if (m_reaction_engine->getEventsIn(m_log_reader_id) >= min_num_events_in)
+			if (m_reaction_engine->getEventsIn(reactor_id) >= min_num_events_in)
 				return;
 			total_nsec += num_nsec;
 		}
