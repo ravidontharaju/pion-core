@@ -123,6 +123,8 @@ pion.reactors.init = function() {
 						var reactor_class = "plugins.reactors." + plugin;
 						var prototype = dojo.getObject(reactor_class);
 						if (!prototype) {
+							var path = '/plugins/reactors/' + category + '/' + plugin + '/' + plugin;
+							dojo.registerModulePath(reactor_class, path);
 							dojo.requireIf(true, reactor_class);
 							prototype = dojo.getObject(reactor_class);
 						}

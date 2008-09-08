@@ -55,8 +55,8 @@ dependencies = {
 	prefixes: [
 		[ "dijit", "../dijit" ],
 		[ "dojox", "../dojox" ],
-		[ "pion", "C:/pion-platform/platform/ui/scripts" ],
-		[ "plugins", "C:/pion-platform/platform/ui/plugins" ],
-		[ "resources", "C:/pion-platform/platform/ui/resources" ]
+		[ "pion", "C:/pion/pion-platform/platform/ui/scripts" ],
+		[ "plugins", "C:/pion/pion-platform/platform/ui/plugins" ],
+		[ "resources", "C:/pion/pion-platform/platform/ui/resources" ]
 	]
 };
