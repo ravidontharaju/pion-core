@@ -78,6 +78,8 @@ pion.databases.init = function() {
 						var database_class = "plugins.databases." + plugin;
 						var prototype = dojo.getObject(database_class);
 						if (!prototype) {
+							var path = '/plugins/databases/' + plugin + '/' + plugin;
+							dojo.registerModulePath(database_class, path);
 							dojo.requireIf(true, database_class);
 							prototype = dojo.getObject(database_class);
 						}
