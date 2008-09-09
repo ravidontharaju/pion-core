@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
+	<User>pion</User>
+	<Group>pion</Group>
 	<VocabularyConfig>vocabularies.xml</VocabularyConfig>
 	<CodecConfig>codecs.xml</CodecConfig>
 	<DatabaseConfig>databases.xml</DatabaseConfig>
