@@ -156,8 +156,8 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			console.debug('this.plugin = ', this.plugin);
 			var workspace_box = pion.reactors.workspace_box;
 			var dc = dojo.coords(workspace_box.node);
-			var X = pion.reactors.last_x - dc.x;
-			var Y = pion.reactors.last_y - dc.y;
+			var X = Math.floor(pion.reactors.last_x - dc.x);
+			var Y = Math.floor(pion.reactors.last_y - dc.y);
 			this.post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
 						   + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
 						   + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';

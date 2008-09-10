@@ -445,7 +445,7 @@ function updateLatestMouseUpEvent(e) {
 	pion.reactors.last_y = e.clientY;
 }
 
-pion.reactors.getNearbyGridPointInBox =  function(constraintBox, currentLeftTop) {
+pion.reactors.getNearbyGridPointInBox = function(constraintBox, currentLeftTop) {
 	//console.debug("In getNearbyGridPointInBox, constraintBox: ", constraintBox);
 	var c = constraintBox;
 	//console.debug("constraintBox: ", constraintBox);
