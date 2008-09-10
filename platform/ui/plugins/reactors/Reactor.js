@@ -151,7 +151,8 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorInitDialog.html"),
 		widgetsInTemplate: true,
-		execute: function(dialogFields) {
+		tryConfig: function() {
+			var dialogFields = this.getValues();
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
 			var workspace_box = pion.reactors.workspace_box;
@@ -171,6 +172,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			this.post_data += '</Reactor></PionConfig>';
 			console.debug('post_data: ', this.post_data);
 			
+			var _this = this;
 			dojo.rawXhrPost({
 				url: '/config/reactors',
 				contentType: "text/xml",
@@ -198,14 +200,12 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					pion.reactors.reactors_by_id[config['@id']] = reactor;
 					reactor.workspace = workspace_box;
 					workspace_box.reactors.push(reactor);
+
+					_this.hide();
 				},
 				error: pion.getXhrErrorHandler(
 					dojo.rawXhrPost,
-					{postData: this.post_data},
-					function() {
-						// Remove the dnd reactor.
-						workspace_box.node.removeChild(workspace_box.node.lastChild);
-					}
+					{postData: this.post_data}
 				)
 			});
 		}
