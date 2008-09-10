@@ -40,6 +40,10 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 		}
 		return;
 	} else {
+		var title = 'Response status code ' + ioArgs.xhr.status + ': ' + ioArgs.xhr.statusText;
+		var dialog = new dijit.Dialog({title: title});
+		dialog.setContent(response.responseText);
+		dialog.show();
 		if (finalErrorHandler) {
 			finalErrorHandler();
 		}
