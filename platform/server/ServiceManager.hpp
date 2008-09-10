@@ -153,7 +153,7 @@ public:
 	 * @param server_id unique identifier associated with the HTTP server
 	 */
 	bool writeConfigXML(std::ostream& out, const std::string& server_id) const;
-	
+
 	/**
 	 * schedules work to be performed by one of the pooled threads
 	 *
@@ -198,6 +198,17 @@ private:
 	void getServiceConfig(xmlNodePtr service_node, const std::string& server_id,
 						  std::string& service_id, std::string& plugin_type,
 						  std::string& http_resource);
+	
+	/**
+	 * used to send responses when a server error occurs (when an exception is caught)
+	 *
+	 * @param http_request the new HTTP request to handle
+	 * @param tcp_conn the TCP connection that has the new request
+	 * @param error_msg message that explains what went wrong
+	 */
+	static void handleServerError(pion::net::HTTPRequestPtr& http_request,
+								  pion::net::TCPConnectionPtr& tcp_conn,
+								  const std::string& error_msg);
 
 	
 	/// data type for a list of HTTPServer pointers

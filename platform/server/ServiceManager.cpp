@@ -19,6 +19,7 @@
 
 #include <pion/net/HTTPBasicAuth.hpp>
 #include <pion/net/HTTPCookieAuth.hpp>
+#include <pion/net/HTTPResponseWriter.hpp>
 #include "PlatformConfig.hpp"
 #include "ServiceManager.hpp"
 
@@ -162,6 +163,9 @@ void ServiceManager::openConfigFile(void)
 		}
 		// set up authentication for given server
 		server_ptr->setAuthentication(auth_ptr);
+
+		// use ServiceManager for handling error responses
+		server_ptr->setServerErrorHandler(boost::bind(&ServiceManager::handleServerError, _1, _2, _3));
 
 		// get the ssl key for the server (if defined)
 		if (ConfigManager::getConfigOption(SSL_KEY_ELEMENT_NAME, ssl_key,
@@ -355,6 +359,18 @@ void ServiceManager::updateReactors(void)
 										boost::ref(m_platform_config)));
 }
 	
+void ServiceManager::handleServerError(HTTPRequestPtr& http_request,
+	TCPConnectionPtr& tcp_conn, const std::string& error_msg)
+{
+	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *http_request,
+															boost::bind(&TCPConnection::finish, tcp_conn)));
+	writer->getResponse().setStatusCode(HTTPTypes::RESPONSE_CODE_SERVER_ERROR);
+	writer->getResponse().setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_SERVER_ERROR);
+	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
+	writer << error_msg;
+	writer->send();
+}
+
 	
 }	// end namespace server
 }	// end namespace pion
