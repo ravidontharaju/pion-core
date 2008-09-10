@@ -92,7 +92,7 @@ public:
 	DatabaseOutputReactor(void)
 		: pion::platform::Reactor(TYPE_STORAGE),
 		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
-		m_queue_max(DEFAULT_QUEUE_SIZE), m_num_queued(0)
+		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(0), m_num_queued(0)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -156,6 +156,9 @@ private:
 	/// default maximum number of events that may be queued for insertion
 	static const boost::uint32_t			DEFAULT_QUEUE_SIZE;
 	
+	/// default number of seconds before the queue is automatically flushed due to timeout
+	static const boost::uint32_t			DEFAULT_QUEUE_TIMEOUT;
+	
 	/// name of the database element for Pion XML config files
 	static const std::string				DATABASE_ELEMENT_NAME;
 
@@ -167,6 +170,9 @@ private:
 	
 	/// name of the queue size element for Pion XML config files
 	static const std::string				QUEUE_SIZE_ELEMENT_NAME;
+	
+	/// name of the queue timeout element for Pion XML config files
+	static const std::string				QUEUE_TIMEOUT_ELEMENT_NAME;
 	
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string				TERM_ATTRIBUTE_NAME;	
@@ -193,6 +199,9 @@ private:
 	/// maximum number of events that may be queued for insertion
 	boost::uint32_t							m_queue_max;
 	
+	/// number of seconds before the queue is automatically flushed due to timeout
+	boost::uint32_t							m_queue_timeout;
+
 	/// number of events that are currently queued for storage to the database
 	boost::uint32_t							m_num_queued;
 	

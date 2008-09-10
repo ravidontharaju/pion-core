@@ -32,10 +32,12 @@ namespace plugins {		// begin namespace plugins
 // static members of DatabaseOutputReactor
 
 const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 1000;
+const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_TIMEOUT = 10;
 const std::string			DatabaseOutputReactor::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseOutputReactor::QUEUE_SIZE_ELEMENT_NAME = "QueueSize";
+const std::string			DatabaseOutputReactor::QUEUE_TIMEOUT_ELEMENT_NAME = "QueueTimeout";
 const std::string			DatabaseOutputReactor::TERM_ATTRIBUTE_NAME = "term";
 
 	
@@ -48,11 +50,10 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	Reactor::setConfig(v, config_ptr);
 	
 	// get the maximum number of events that may be queued for insertion
-	std::string queue_size_str;
-	if (ConfigManager::getConfigOption(QUEUE_SIZE_ELEMENT_NAME, queue_size_str, config_ptr)) {
-		m_queue_max = boost::lexical_cast<boost::uint32_t>(queue_size_str);
-		if (m_queue_max < 1) m_queue_max = 1;
-	} else m_queue_max = DEFAULT_QUEUE_SIZE;
+	ConfigManager::getConfigOption(QUEUE_SIZE_ELEMENT_NAME, m_queue_max, DEFAULT_QUEUE_SIZE, config_ptr);
+
+	// get the queue timeout parameter
+	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
 
 	// prepare the event queue
 	while (m_event_queue.size() < m_queue_max)
@@ -199,6 +200,8 @@ void DatabaseOutputReactor::stop(void)
 
 void DatabaseOutputReactor::insertEvents(void)
 {
+	PION_LOG_DEBUG(m_logger, "Database output thread is running: " << getId());
+
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	
 	try {
@@ -227,7 +230,8 @@ void DatabaseOutputReactor::insertEvents(void)
 
 		while (m_is_running) {
 			// wait until it is time to go!
-			m_wakeup_writer.wait(reactor_lock);
+			m_wakeup_writer.timed_wait(reactor_lock,
+				boost::get_system_time() + boost::posix_time::time_duration(0, 0, m_queue_timeout, 0) );
 			
 			// check for spurious wake-ups
 			if (m_num_queued != 0) {
@@ -255,8 +259,11 @@ void DatabaseOutputReactor::insertEvents(void)
 				commit_transaction_ptr->reset();
 
 				// done flushing the queue! notify all pending inserters
+				PION_LOG_DEBUG(m_logger, "Database output thread wrote " << m_num_queued << " events: " << getId());
 				m_num_queued = 0;
 				m_flushed_queue.notify_all();
+			} else {
+				PION_LOG_DEBUG(m_logger, "Database output thread woke with no new events: " << getId());
 			}
 		}
 	} catch (std::exception& e) {
@@ -264,6 +271,8 @@ void DatabaseOutputReactor::insertEvents(void)
 		m_is_running = false;
 		m_flushed_queue.notify_all();
 	}
+	
+	PION_LOG_DEBUG(m_logger, "Database output thread is exiting: " << getId());
 }
 
 	
