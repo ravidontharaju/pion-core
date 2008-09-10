@@ -77,7 +77,11 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			 // wait until the response is parsed before generating an event
 			rc = boost::indeterminate;
 		} else {
-			generateEvent(event_ptr_ref); 
+			generateEvent(event_ptr_ref);
+			m_request_parser.reset();
+			m_response_parser.reset();
+			m_request.clear();
+			m_response.clear();
 		}
 	}
 

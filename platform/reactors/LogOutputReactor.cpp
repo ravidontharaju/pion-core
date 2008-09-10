@@ -122,7 +122,7 @@ void LogOutputReactor::stop(void)
 			m_codec_ptr->finish(m_log_stream);
 			m_log_stream.close();
 			// remove the log file if no events were written to it
-			if (getEventsOut() == 0) {
+			if (getEventsOut() == 0 && boost::filesystem::file_size(m_log_filename) == 0) {
 				boost::filesystem::remove(m_log_filename);
 				PION_LOG_DEBUG(m_logger, "Closing empty output log (removing file): " << m_log_filename);
 			} else {
