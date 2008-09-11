@@ -49,7 +49,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			this.plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
 			_this = this;
-			//this.submit_button.onClick = function() { return _this.isValid(); };
 			plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData([]);
 			var grid = this.grid;
 			dojo.connect(grid, 'onCellClick', grid, this._handleCellClick);
@@ -58,12 +57,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 				grid.update();
 				grid.resize();
 			}, 200);
-		},
-		isValid: function() {
-			if (plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount() == 0) {
-				return false;
-			}
-			return true;
 		},
 		_handleCellClick: function(e) {
 			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
