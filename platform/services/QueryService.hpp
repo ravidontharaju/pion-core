@@ -1,16 +1,28 @@
-// ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
-// ------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// Pion is a development platform for building Reactors that process Events
+// ------------------------------------------------------------------------
 // Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
-// Distributed under the Boost Software License, Version 1.0.
-// See http://www.boost.org/LICENSE_1_0.txt
+// Pion is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Pion is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+// more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #ifndef __PION_QUERYSERVICE_HEADER__
 #define __PION_QUERYSERVICE_HEADER__
 
-#include <pion/net/WebService.hpp>
+#include <pion/PionConfig.hpp>
+#include "PlatformService.hpp"
+#include "ConfigService.hpp"
 
 
 namespace pion {		// begin namespace pion
@@ -19,14 +31,35 @@ namespace plugins {		// begin namespace plugins
 ///
 /// QueryService: web service that passes query string with UUID to a reactor
 /// 
-class QueryService :
-	public pion::net::WebService
+class QueryService
+	: public pion::server::PlatformService
 {
 public:
 	QueryService(void) {}
+
+	/// virtual destructor: this class is meant to be extended
 	virtual ~QueryService() {}
+
+	/**
+	 * attempts to handle a new HTTP request
+	 *
+	 * @param request the new HTTP request to handle
+	 * @param tcp_conn the TCP connection that has the new request
+	 */
 	virtual void operator()(pion::net::HTTPRequestPtr& request,
 							pion::net::TCPConnectionPtr& tcp_conn);
+
+	/**
+	 * sets configuration parameters for this ConfigService
+	 *
+	 * @param platform_cfg reference to the platform configuration manager
+	 * @param config_ptr pointer to a list of XML nodes containing ConfigService
+	 *                   configuration parameters
+	 */
+/*
+	virtual void setConfig(pion::server::PlatformConfig& platform_cfg,
+						   const xmlNodePtr config_ptr);
+*/
 };
 
 }	// end namespace plugins

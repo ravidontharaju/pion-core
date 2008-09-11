@@ -1,16 +1,27 @@
-// ------------------------------------------------------------------
-// pion-net: a C++ framework for building lightweight HTTP interfaces
-// ------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// Pion is a development platform for building Reactors that process Events
+// ------------------------------------------------------------------------
 // Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
-// Distributed under the Boost Software License, Version 1.0.
-// See http://www.boost.org/LICENSE_1_0.txt
+// Pion is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Pion is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+// more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #include "QueryService.hpp"
 #include <boost/bind.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
 #include <pion/net/PionUser.hpp>
+#include "PlatformConfig.hpp"
 
 using namespace pion;
 using namespace pion::net;
@@ -19,106 +30,44 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 	
-/// used by handleRequest to write dictionary terms
-void writeDictionaryTerm(HTTPResponseWriterPtr& writer,
-						 const HTTPTypes::StringDictionary::value_type& val,
-						 const bool decode)
-{
-	// text is copied into writer text cache
-	writer << val.first << HTTPTypes::HEADER_NAME_VALUE_DELIMITER
-	<< (decode ? HTTPTypes::url_decode(val.second) : val.second)
-	<< HTTPTypes::STRING_CRLF;
-}
-
-
 // QueryService member functions
 
 /// handles requests for QueryService
 void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	// this web service uses static text to test the mixture of "copied" with
-	// "static" (no-copy) text
-	static const std::string REQUEST_QUERY_TEXT("[Request Query]");
-	static const std::string REQUEST_HEADERS_TEXT("[Request Headers]");
-	static const std::string QUERY_PARAMS_TEXT("[Query Parameters]");
-	static const std::string COOKIE_PARAMS_TEXT("[Cookie Parameters]");
-	static const std::string POST_CONTENT_TEXT("[POST Content]");
-	static const std::string USER_INFO_TEXT("[USER Info]");
-	
+	// split out the path branches from the HTTP request
+	PathBranches branches;
+	splitPathBranches(branches, request->getResource());
+
+	std::string xml;
+
+/*
+	for (int i = 0; i < branches.size() ; i++ )
+		xml += branches[i] + "::";
+
+	xml += "\r\n";
+*/
+	if (branches.empty()) {
+		xml += "No branch (/reactors) defined";
+	} else if (branches.front() == "reactors") {
+		xml += getConfig().getReactionEngine().query(
+			branches.at(1),
+			branches,
+			request->getQueryParams());
+	} else {
+		xml += "Only /reactors supported";
+	}
+
+
 	// Set Content-type to "text/plain" (plain ascii text)
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
-	
-	// write request information
-	writer->writeNoCopy(REQUEST_QUERY_TEXT);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer
-		<< "Request method: "
-		<< request->getMethod()
-		<< HTTPTypes::STRING_CRLF
-		<< "Resource originally requested: "
-		<< request->getOriginalResource()
-		<< HTTPTypes::STRING_CRLF
-		<< "Resource delivered: "
-		<< request->getResource()
-		<< HTTPTypes::STRING_CRLF
-		<< "Query string: "
-		<< request->getQueryString()
-		<< HTTPTypes::STRING_CRLF
-		<< "HTTP version: "
-		<< request->getVersionMajor() << '.' << request->getVersionMinor()
-		<< HTTPTypes::STRING_CRLF
-		<< "Content length: "
-		<< (unsigned long)request->getContentLength()
-		<< HTTPTypes::STRING_CRLF
-		<< HTTPTypes::STRING_CRLF;
-			 
-	// write request headers
-	writer->writeNoCopy(REQUEST_HEADERS_TEXT);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	std::for_each(request->getHeaders().begin(), request->getHeaders().end(),
-				  boost::bind(&writeDictionaryTerm, writer, _1, false));
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
 
-	// write query parameters
-	writer->writeNoCopy(QUERY_PARAMS_TEXT);
+	writer->writeNoCopy(xml.c_str());
 	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	std::for_each(request->getQueryParams().begin(), request->getQueryParams().end(),
-				  boost::bind(&writeDictionaryTerm, writer, _1, true));
 	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
 	
-	// write cookie parameters
-	writer->writeNoCopy(COOKIE_PARAMS_TEXT);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	std::for_each(request->getCookieParams().begin(), request->getCookieParams().end(),
-				  boost::bind(&writeDictionaryTerm, writer, _1, false));
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	
-	// write POST content
-	writer->writeNoCopy(POST_CONTENT_TEXT);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	if (request->getContentLength() != 0) {
-		writer->write(request->getContent(), request->getContentLength());
-		writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-		writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	}
-	
-	// if authenticated, write user info
-	PionUserPtr user = request->getUser();
-	if (user) {
-		writer->writeNoCopy(USER_INFO_TEXT);
-		writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-		writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-		writer << "User authenticated, username: " << user->getUsername();
-		writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	}
-    
 	// send the writer
 	writer->send();
 }
@@ -129,7 +78,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 
 /// creates new QueryService objects
-extern "C" PION_SERVICE_API pion::plugins::QueryService *pion_create_QueryService(void)
+extern "C" PION_SERVICE_API pion::server::PlatformService *pion_create_QueryService(void)
 {
 	return new pion::plugins::QueryService();
 }

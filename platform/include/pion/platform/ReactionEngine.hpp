@@ -30,7 +30,6 @@
 #include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/ReactionScheduler.hpp>
 
-
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
@@ -326,7 +325,26 @@ public:
 			throw ReactorNotFoundException(reactor_id);
 		m_scheduler.post(boost::bind<void>(boost::ref(*reactor_ptr), e));
 	}
-	
+
+	/**
+	 * pass a query through to a reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param q query string to process
+	 *
+	 * @return std::string of XML response
+	 */
+	inline std::string query(const std::string& reactor_id, const PathBranches& branches, const pion::net::HTTPTypes::QueryParams& q) {
+		Reactor *reactor_ptr = m_plugins.get(reactor_id);
+/*		if (reactor_ptr == NULL)
+			throw ReactorNotFoundException(reactor_id);
+*/
+		if (reactor_ptr == NULL)
+			return "Invalid Reactor UUID";
+		return reactor_ptr->query(branches, q);
+	}
+
+
 	/**
 	 * returns the total number operations performed by all managed Reactors
 	 *

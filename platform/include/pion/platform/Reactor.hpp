@@ -31,7 +31,9 @@
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
 #include <pion/platform/ReactionScheduler.hpp>
+#include <pion/net/HTTPTypes.hpp>
 
+typedef std::vector<std::string>        PathBranches;
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
@@ -130,6 +132,19 @@ public:
 	 * @param e pointer to the Event to process
 	 */
 	virtual void operator()(const EventPtr& e) = 0;
+
+	/**
+	 *
+	 * handle a query (from QueryService)
+	 *
+	 * @param q query string
+	 *
+	 * @return std::string of XML response
+	 */
+	virtual std::string query(const PathBranches& branches, const pion::net::HTTPTypes::QueryParams& q)
+	{
+		return "";
+	}
 	
 	/**
 	 * connects another Reactor to the output of this Reactor

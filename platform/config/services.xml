@@ -60,6 +60,12 @@
 			<Plugin>LogService</Plugin>
 			<Resource>/log</Resource>
 		</WebService>
+		<PlatformService id="query-service">
+			<Name>Query Service</Name>
+			<Comment>Accesses Reactors for queries</Comment>
+			<Plugin>QueryService</Plugin>
+			<Resource>/query</Resource>
+		</PlatformService>
 	</Server>
 	<Server id="hello-server">
 		<Port>8081</Port>
