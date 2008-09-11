@@ -19626,9 +19626,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",[plugins.reactor
 this.plugin="DatabaseOutputReactor";
 this.inherited("postCreate",arguments);
 _this=this;
-this.submit_button.onClick=function(){
-return _this.isValid();
-};
 plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData([]);
 var grid=this.grid;
 dojo.connect(grid,"onCellClick",grid,this._handleCellClick);
