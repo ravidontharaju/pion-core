@@ -50,7 +50,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 	if (branches.empty()) {
 		xml += "No branch (/reactors) defined";
 	} else if (branches.front() == "reactors") {
-		xml += getConfig().getReactionEngine().query(
+		xml = getConfig().getReactionEngine().query(
 			branches.at(1),
 			branches,
 			request->getQueryParams());
@@ -58,13 +58,15 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 		xml += "Only /reactors supported";
 	}
 
-	// prepare the writer object for XML output
+
+	// Set Content-type to "text/plain" (plain ascii text)
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
-	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
+	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
 
-	// send the response
-	writer->write(xml);
+	writer->write(xml.c_str());
+	
+	// send the writer
 	writer->send();
 }
 
