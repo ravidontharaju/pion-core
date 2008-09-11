@@ -58,17 +58,13 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 		xml += "Only /reactors supported";
 	}
 
-
-	// Set Content-type to "text/plain" (plain ascii text)
+	// prepare the writer object for XML output
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
-	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
+	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 
-	writer->writeNoCopy(xml.c_str());
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	writer->writeNoCopy(HTTPTypes::STRING_CRLF);
-	
-	// send the writer
+	// send the response
+	writer->write(xml);
 	writer->send();
 }
 
