@@ -62,7 +62,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 	// Set Content-type to "text/plain" (plain ascii text)
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
-	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_TEXT);
+	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 
 	writer->write(xml.c_str());
 	
