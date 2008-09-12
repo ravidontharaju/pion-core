@@ -334,7 +334,7 @@ public:
 	 *
 	 * @return std::string of XML response
 	 */
-	inline std::string query(const std::string& reactor_id, const PathBranches& branches, const pion::net::HTTPTypes::QueryParams& q) {
+	inline std::string query(const std::string& reactor_id, const PathBranches& branches, const Reactor::QueryParams& q) {
 		Reactor *reactor_ptr = m_plugins.get(reactor_id);
 /*		if (reactor_ptr == NULL)
 			throw ReactorNotFoundException(reactor_id);

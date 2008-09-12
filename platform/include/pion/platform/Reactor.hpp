@@ -31,7 +31,6 @@
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
 #include <pion/platform/ReactionScheduler.hpp>
-#include <pion/net/HTTPTypes.hpp>
 
 typedef std::vector<std::string>        PathBranches;
 
@@ -45,6 +44,12 @@ class PION_PLATFORM_API Reactor
 	: public PlatformPlugin
 {
 public:
+
+    /// data type for a collection of query path branches
+    typedef std::vector<std::string>    QueryBranches;
+
+    /// data type for a dictionary of strings (used for HTTP headers)
+    typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING > QueryParams;
 
 	/// data type for a function that receives Events
 	typedef boost::function1<void, EventPtr>	EventHandler;
@@ -141,7 +146,7 @@ public:
 	 *
 	 * @return std::string of XML response
 	 */
-	virtual std::string query(const PathBranches& branches, const pion::net::HTTPTypes::QueryParams& q)
+	virtual std::string query(const PathBranches& branches, const QueryParams& q)
 	{
 		return "";
 	}
