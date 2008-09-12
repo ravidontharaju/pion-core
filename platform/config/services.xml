@@ -16,6 +16,7 @@
 		<Permit>/resources</Permit>
 		<Permit>/scripts</Permit>
 		<Permit>/styles</Permit>
+		<Permit>/ejschart</Permit>
 		<Login>/login</Login>
 		<Logout>/logout</Logout>
 		<WebService id="ui-service">
