@@ -47,6 +47,12 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 	xml += "\r\n";
 */
+	/*
+	 *	branches[0]	== reactors
+	 *	branches[1] == UUID
+	 *	branches[2] == aggregate/example/info
+	 */
+
 	if (branches.empty()) {
 		xml += "No branch (/reactors) defined";
 	} else if (branches.front() == "reactors") {
