@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Reactor.hpp>
@@ -28,9 +29,14 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 // static members of Reactor
 
+const std::string			Reactor::REACTOR_ELEMENT_NAME = "Reactor";
+const std::string			Reactor::RUNNING_ELEMENT_NAME = "Running";
+const std::string			Reactor::EVENTS_IN_ELEMENT_NAME = "EventsIn";
+const std::string			Reactor::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
 const std::string			Reactor::WORKSPACE_ELEMENT_NAME = "Workspace";
 const std::string			Reactor::X_COORDINATE_ELEMENT_NAME = "X";
 const std::string			Reactor::Y_COORDINATE_ELEMENT_NAME = "Y";
+const std::string			Reactor::ID_ATTRIBUTE_NAME = "id";
 	
 	
 // Reactor member functions
@@ -58,7 +64,7 @@ void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 void Reactor::updateVocabulary(const Vocabulary& v)
 {
 	PlatformPlugin::updateVocabulary(v);
-}	
+}
 	
 void Reactor::addConnection(Reactor& output_reactor)
 {
@@ -98,6 +104,40 @@ void Reactor::removeConnection(const std::string& connection_id)
 	// remove the connection
 	m_connections.erase(i);
 }
+
+std::string Reactor::query(const QueryBranches& branches, const QueryParams& qp)
+{
+	std::ostringstream out;
+	ConfigManager::writeBeginPionStatsXML(out);
+	writeBeginReactorXML(out);
+	writeStatsOnlyXML(out);
+	writeEndReactorXML(out);
+	ConfigManager::writeEndPionStatsXML(out);
+	return out.str();
+}
+
+void Reactor::writeStatsOnlyXML(std::ostream& out) const
+{
+	out << '<' << RUNNING_ELEMENT_NAME << '>'
+		<< (isRunning() ? "true" : "false")
+		<< "</" << RUNNING_ELEMENT_NAME << '>' << std::endl
+		<< '<' << EVENTS_IN_ELEMENT_NAME << '>' << getEventsIn()
+		<< "</" << EVENTS_IN_ELEMENT_NAME << '>' << std::endl
+		<< '<' << EVENTS_OUT_ELEMENT_NAME << '>' << getEventsOut()
+		<< "</" << EVENTS_OUT_ELEMENT_NAME << '>' << std::endl;
+}
+
+void Reactor::writeBeginReactorXML(std::ostream& out) const
+{
+	out << '<' << REACTOR_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+		<< "=\"" << getId() << "\">" << std::endl;
+}
+
+void Reactor::writeEndReactorXML(std::ostream& out) const
+{
+	out << "</" << REACTOR_ELEMENT_NAME << '>' << std::endl;
+}
+	
 	
 }	// end namespace platform
 }	// end namespace pion

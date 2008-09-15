@@ -32,15 +32,10 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 	
 const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 32;
 const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
-const std::string		ReactionEngine::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
 const std::string		ReactionEngine::TYPE_ELEMENT_NAME = "Type";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
-const std::string		ReactionEngine::STATS_ELEMENT_NAME = "PionStats";
-const std::string		ReactionEngine::RUNNING_ELEMENT_NAME = "Running";
-const std::string		ReactionEngine::EVENTS_IN_ELEMENT_NAME = "EventsIn";
-const std::string		ReactionEngine::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
 const std::string		ReactionEngine::TOTAL_OPS_ELEMENT_NAME = "TotalOps";
 const std::string		ReactionEngine::CONNECTION_TYPE_REACTOR = "reactor";
 const std::string		ReactionEngine::CONNECTION_TYPE_INPUT = "input";
@@ -53,7 +48,7 @@ ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
 							   CodecFactory& codec_factory,
 							   ProtocolFactory& protocol_factory,
 							   DatabaseManager& database_mgr)
-	: PluginConfig<Reactor>(vocab_mgr, DEFAULT_CONFIG_FILE, REACTOR_ELEMENT_NAME),
+	: PluginConfig<Reactor>(vocab_mgr, DEFAULT_CONFIG_FILE, Reactor::REACTOR_ELEMENT_NAME),
 	m_codec_factory(codec_factory),
 	m_protocol_factory(protocol_factory),
 	m_database_mgr(database_mgr),
@@ -557,32 +552,22 @@ void ReactionEngine::stopNoLock(void)
 
 void ReactionEngine::writeStatsXML(std::ostream& out) const
 {
-	out << '<' << STATS_ELEMENT_NAME << " xmlns=\""
-		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
-	
+	writeBeginPionStatsXML(out);
+
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
 	// step through each reactor configured
 	std::string reactor_id;
 	const Reactor *reactor_ptr;
 	xmlNodePtr reactor_node = m_config_node_ptr->children;
-	while ( (reactor_node = ConfigManager::findConfigNodeByName(REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
+	while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
 	{
 		// get a pointer to the reactor
 		if (getNodeId(reactor_node, reactor_id)
 			&& (reactor_ptr = m_plugins.get(reactor_id)) != NULL)
 		{
 			// write reactor statistics
-			out << "\t<" << REACTOR_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
-				<< "=\"" << reactor_id << "\">" << std::endl
-				<< "\t\t<" << RUNNING_ELEMENT_NAME << '>'
-				<< (reactor_ptr->isRunning() ? "true" : "false")
-				<< "</" << RUNNING_ELEMENT_NAME << '>' << std::endl
-				<< "\t\t<" << EVENTS_IN_ELEMENT_NAME << '>' << reactor_ptr->getEventsIn()
-				<< "</" << EVENTS_IN_ELEMENT_NAME << '>' << std::endl
-				<< "\t\t<" << EVENTS_OUT_ELEMENT_NAME << '>' << reactor_ptr->getEventsOut()
-				<< "</" << EVENTS_OUT_ELEMENT_NAME << '>' << std::endl
-				<< "\t</" << REACTOR_ELEMENT_NAME << '>' << std::endl;
+			reactor_ptr->writeStatsXML(out);
 		}
 		// step to the next Reactor
 		reactor_node = reactor_node->next;
@@ -592,7 +577,7 @@ void ReactionEngine::writeStatsXML(std::ostream& out) const
 	out << "\t<" << TOTAL_OPS_ELEMENT_NAME << '>' << getTotalOperations()
 		<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
 	
-	out << "</" << STATS_ELEMENT_NAME << '>' << std::endl;
+	writeEndPionStatsXML(out);
 }
 	
 void ReactionEngine::writeConnectionsXML(std::ostream& out,

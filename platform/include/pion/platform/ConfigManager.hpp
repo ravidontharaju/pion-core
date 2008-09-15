@@ -218,6 +218,20 @@ public:
 	 */
 	static void writeEndPionConfigXML(std::ostream& out);
 	
+	/**
+	 * write out the beginning <PionStats> block for XML statistic information
+	 *
+	 * @param out the ostream to write the statistic info into
+	 */
+	static void writeBeginPionStatsXML(std::ostream& out);
+	
+	/**
+	 * write out the end </PionStats> block for XML statistic information
+	 *
+	 * @param out the ostream to write the statistic info into
+	 */
+	static void writeEndPionStatsXML(std::ostream& out);
+	
 	/// encodes strings so that they are safe for XML (this &amp; that)
 	static std::string xml_encode(const std::string& str);
 	
@@ -515,6 +529,9 @@ protected:
 
 	/// name of the root element for Pion XML config files
 	static const std::string		ROOT_ELEMENT_NAME;
+	
+	/// name of the statistics element for Pion XML config files
+	static const std::string		STATS_ELEMENT_NAME;
 	
 	/// name of the plug-in type element for Pion XML config files
 	static const std::string		PLUGIN_ELEMENT_NAME;

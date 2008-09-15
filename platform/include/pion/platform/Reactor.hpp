@@ -20,6 +20,7 @@
 #ifndef __PION_REACTOR_HEADER__
 #define __PION_REACTOR_HEADER__
 
+#include <iosfwd>
 #include <string>
 #include <list>
 #include <libxml/tree.h>
@@ -32,8 +33,6 @@
 #include <pion/platform/PlatformPlugin.hpp>
 #include <pion/platform/ReactionScheduler.hpp>
 
-typedef std::vector<std::string>        PathBranches;
-
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
@@ -45,14 +44,19 @@ class PION_PLATFORM_API Reactor
 {
 public:
 
-    /// data type for a collection of query path branches
-    typedef std::vector<std::string>    QueryBranches;
-
-    /// data type for a dictionary of strings (used for HTTP headers)
-    typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING > QueryParams;
+	/// name of the reactor element for Pion XML config files
+	static const std::string		REACTOR_ELEMENT_NAME;
+	
 
 	/// data type for a function that receives Events
 	typedef boost::function1<void, EventPtr>	EventHandler;
+
+	/// data type for a collection of uri path branches used for HTTP queries
+	typedef std::vector<std::string>			QueryBranches;
+	
+	/// data type for a dictionary of strings (used for HTTP headers)
+	typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING > QueryParams;
+	
 	
 	/// exception thrown if you try to add a duplicate connection
 	class AlreadyConnectedException : public PionException {
@@ -140,16 +144,14 @@ public:
 
 	/**
 	 *
-	 * handle a query (from QueryService)
+	 * handle an HTTP query (from QueryService)
 	 *
-	 * @param q query string
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
 	 *
 	 * @return std::string of XML response
 	 */
-	virtual std::string query(const PathBranches& branches, const QueryParams& q)
-	{
-		return "";
-	}
+	virtual std::string query(const QueryBranches& branches, const QueryParams& qp);
 	
 	/**
 	 * connects another Reactor to the output of this Reactor
@@ -173,6 +175,13 @@ public:
 	 * @param connection_id unique identifier associated with the output connection
 	 */
 	void removeConnection(const std::string& connection_id);
+
+	/// write all XML statistics (including Reactor elements) for this Reactor to the output stream
+	inline void writeStatsXML(std::ostream& out) const {
+		writeBeginReactorXML(out);
+		writeStatsOnlyXML(out);
+		writeEndReactorXML(out);
+	}
 
 	/// sets the scheduler that will be used to deliver Events to other Reactors
 	inline void setScheduler(ReactionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
@@ -310,6 +319,15 @@ protected:
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		deliverEvents(events, return_immediately);
 	}
+	
+	/// write only XML statistics (excluding Reactor elements) for this Reactor to the output stream
+	void writeStatsOnlyXML(std::ostream& out) const;
+	
+	/// write beginning XML element for this Reactor
+	void writeBeginReactorXML(std::ostream& out) const;
+	
+	/// write ending XML element for this Reactor
+	void writeEndReactorXML(std::ostream& out) const;		
 
 	
 	/// used to provide thread safety for the Reactor's data structures
@@ -370,6 +388,15 @@ private:
 	typedef std::map<std::string, OutputConnection>	ConnectionMap;
 	
 	
+	/// name of the running element for Pion XML config files
+	static const std::string		RUNNING_ELEMENT_NAME;
+	
+	/// name of the events in element for Pion XML config files
+	static const std::string		EVENTS_IN_ELEMENT_NAME;
+	
+	/// name of the events out element for Pion XML config files
+	static const std::string		EVENTS_OUT_ELEMENT_NAME;
+
 	/// name of the workspace element for Pion XML config files
 	static const std::string		WORKSPACE_ELEMENT_NAME;
 	
@@ -378,6 +405,9 @@ private:
 	
 	/// name of the "y coordinate" element for Pion XML config files
 	static const std::string		Y_COORDINATE_ELEMENT_NAME;
+
+	/// name of the unique identifier attribute for Pion XML config files
+	static const std::string		ID_ATTRIBUTE_NAME;
 
 	
 	/// the type of Reactor (collection, processing or storage)

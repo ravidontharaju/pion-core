@@ -310,7 +310,7 @@ public:
 	 * @return xmlNodePtr XML configuration list for the Reactor
 	 */
 	static xmlNodePtr createReactorConfig(const char *buf, std::size_t len) {
-		return ConfigManager::createResourceConfig(REACTOR_ELEMENT_NAME, buf, len);
+		return ConfigManager::createResourceConfig(Reactor::REACTOR_ELEMENT_NAME, buf, len);
 	}
 	
 	/**
@@ -334,7 +334,7 @@ public:
 	 *
 	 * @return std::string of XML response
 	 */
-	inline std::string query(const std::string& reactor_id, const PathBranches& branches, const Reactor::QueryParams& q) {
+	inline std::string query(const std::string& reactor_id, const Reactor::QueryBranches& branches, const Reactor::QueryParams& q) {
 		Reactor *reactor_ptr = m_plugins.get(reactor_id);
 /*		if (reactor_ptr == NULL)
 			throw ReactorNotFoundException(reactor_id);
@@ -548,9 +548,6 @@ private:
 	/// default name of the reactor config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
-	/// name of the reactor element for Pion XML config files
-	static const std::string		REACTOR_ELEMENT_NAME;
-	
 	/// name of the connection element for Pion XML config files
 	static const std::string		CONNECTION_ELEMENT_NAME;
 	
@@ -562,18 +559,6 @@ private:
 	
 	/// name of the to connection element for Pion XML config files
 	static const std::string		TO_ELEMENT_NAME;
-
-	/// name of the statistics element for Pion XML config files
-	static const std::string		STATS_ELEMENT_NAME;
-	
-	/// name of the running element for Pion XML config files
-	static const std::string		RUNNING_ELEMENT_NAME;
-	
-	/// name of the events in element for Pion XML config files
-	static const std::string		EVENTS_IN_ELEMENT_NAME;
-	
-	/// name of the events out element for Pion XML config files
-	static const std::string		EVENTS_OUT_ELEMENT_NAME;
 	
 	/// name of the total operations element for Pion XML config files
 	static const std::string		TOTAL_OPS_ELEMENT_NAME;

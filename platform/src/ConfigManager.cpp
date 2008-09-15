@@ -36,6 +36,7 @@ const std::string		ConfigManager::XML_FILE_EXTENSION = ".xml";
 const std::string		ConfigManager::BACKUP_FILE_EXTENSION = ".bak";
 const std::string		ConfigManager::CONFIG_NAMESPACE_URL = "http://purl.org/pion/config";
 const std::string		ConfigManager::ROOT_ELEMENT_NAME = "PionConfig";
+const std::string		ConfigManager::STATS_ELEMENT_NAME = "PionStats";
 const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
 const std::string		ConfigManager::NAME_ELEMENT_NAME = "Name";
 const std::string		ConfigManager::COMMENT_ELEMENT_NAME = "Comment";
@@ -203,6 +204,18 @@ void ConfigManager::writeBeginPionConfigXML(std::ostream& out)
 void ConfigManager::writeEndPionConfigXML(std::ostream& out)
 {
 	out << "</" << ROOT_ELEMENT_NAME << '>' << std::endl;
+}
+	
+void ConfigManager::writeBeginPionStatsXML(std::ostream& out)
+{
+	writeConfigXMLHeader(out);
+	out << '<' << STATS_ELEMENT_NAME << " xmlns=\""
+		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
+}
+
+void ConfigManager::writeEndPionStatsXML(std::ostream& out)
+{
+	out << "</" << STATS_ELEMENT_NAME << '>' << std::endl;
 }
 	
 std::string ConfigManager::xml_encode(const std::string& str)
