@@ -20,7 +20,7 @@
     <Field term="urn:vocab:clickstream#date">date</Field>
     <Field term="urn:vocab:clickstream#time">time</Field>
     <Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
-    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
+    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field> 
     <Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
     <Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
@@ -105,23 +105,5 @@
     <Type>reactor</Type>
     <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
     <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
-  </Connection>
-  <Reactor id="464eea86-837e-11dd-88b9-0019e3f89cd2">
-    <Plugin>LogInputReactor</Plugin>
-    <Workspace>Web Log Processing</Workspace>
-    <X>80</X>
-    <Y>80</Y>
-    <Name>/var/spool/pion</Name>
-    <Comment/>
-    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
-    <Directory>/var/spool/pion</Directory>
-    <Filename>dlf</Filename>
-    <Frequency/>
-    <JustOne>false</JustOne>
-  </Reactor>
-  <Connection id="482d7494-837e-11dd-a6b8-0019e3f89cd2">
-    <Type>reactor</Type>
-    <From>464eea86-837e-11dd-88b9-0019e3f89cd2</From>
-    <To>0cc21558-cf84-11dc-a9e0-0019e3f89cd2</To>
   </Connection>
 </PionConfig>
