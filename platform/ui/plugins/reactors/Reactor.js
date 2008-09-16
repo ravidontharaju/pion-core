@@ -73,10 +73,14 @@ dojo.declare("plugins.reactors.Reactor",
 				menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
 				menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 			}
-			
+
 			dojo.connect(this.domNode, 'dblclick', function(event) {
 				event.stopPropagation(); // so the workspace configuration dialog won't also pop up
-				pion.reactors.showReactorConfigDialog(_this);
+				if (event.shiftKey) {
+					_this.showQueryResult();
+				} else {
+					pion.reactors.showReactorConfigDialog(_this);
+				}
 			});
 
 			// Since this overrides the constrained onMove, we have to enforce the boundary constraints (in addition to the grid constraints).
@@ -105,6 +109,29 @@ dojo.declare("plugins.reactors.Reactor",
 			});
 			*/
 			dojo.connect(m5, "onMoveStop", this, this.handleMoveStop);
+		},
+		showQueryResult: function() {
+			dojo.xhrGet({
+				url: 'http://localhost:8888/query/reactors/' + this.config['@id'],
+				preventCache: true,
+				handleAs: 'text',
+				timeout: 5000,
+				load: function(response, ioArgs) {
+					var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+					console.debug('html = ', html);
+					var dialog = new dijit.Dialog({title: 'Reactor Diagnostics'});
+					dialog.setContent(html);
+					dialog.show();
+					return response;
+				},
+				error: pion.handleXhrGetError
+			});
+/*
+			// Doesn't work: treats response as HTML, and only shows the contents of the elements inside the (unknown) tags.
+			var dialog = new dijit.Dialog({title: 'Reactor Diagnostics'});
+			dialog.setHref('http://localhost:8888/query/reactors/' + this.config['@id']);
+			dialog.show();
+*/
 		},
 		handleMoveStop: function(mover) {
 			if (this.config.X == mover.host.node.offsetLeft && this.config.Y == mover.host.node.offsetTop) {
