@@ -17,7 +17,6 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/Reactor.hpp>
@@ -105,15 +104,14 @@ void Reactor::removeConnection(const std::string& connection_id)
 	m_connections.erase(i);
 }
 
-std::string Reactor::query(const QueryBranches& branches, const QueryParams& qp)
+void Reactor::query(std::ostream& out, const QueryBranches& branches,
+	const QueryParams& qp)
 {
-	std::ostringstream out;
 	ConfigManager::writeBeginPionStatsXML(out);
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 	writeEndReactorXML(out);
 	ConfigManager::writeEndPionStatsXML(out);
-	return out.str();
 }
 
 void Reactor::writeStatsOnlyXML(std::ostream& out) const

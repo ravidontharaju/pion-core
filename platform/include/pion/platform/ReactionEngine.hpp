@@ -327,23 +327,21 @@ public:
 	}
 
 	/**
-	 * pass a query through to a reactor
+	 * use a Reactor to handle an HTTP query (from QueryService)
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor
-	 * @param q query string to process
-	 *
-	 * @return std::string of XML response
+	 * @param out the ostream to write the statistics info into
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
 	 */
-	inline std::string query(const std::string& reactor_id, const Reactor::QueryBranches& branches, const Reactor::QueryParams& q) {
+	inline void query(const std::string& reactor_id, std::ostream& out,
+		const Reactor::QueryBranches& branches, const Reactor::QueryParams& qp)
+	{
 		Reactor *reactor_ptr = m_plugins.get(reactor_id);
-/*		if (reactor_ptr == NULL)
-			throw ReactorNotFoundException(reactor_id);
-*/
 		if (reactor_ptr == NULL)
-			return "Invalid Reactor UUID";
-		return reactor_ptr->query(branches, q);
+			throw ReactorNotFoundException(reactor_id);
+		return reactor_ptr->query(out, branches, qp);
 	}
-
 
 	/**
 	 * returns the total number operations performed by all managed Reactors

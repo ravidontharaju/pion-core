@@ -21,6 +21,7 @@
 #define __PION_QUERYSERVICE_HEADER__
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionException.hpp>
 #include "PlatformService.hpp"
 #include "ConfigService.hpp"
 
@@ -35,6 +36,15 @@ class QueryService
 	: public pion::server::PlatformService
 {
 public:
+
+	/// exception thrown if the ConfigService configuration does not define a UI directory
+	class UnknownPluginTypeException : public PionException {
+	public:
+		UnknownPluginTypeException()
+			: PionException("QueryService - unknown plugin type specified") {}
+	};
+
+
 	QueryService(void) {}
 
 	/// virtual destructor: this class is meant to be extended

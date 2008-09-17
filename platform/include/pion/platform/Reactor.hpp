@@ -143,15 +143,16 @@ public:
 	virtual void operator()(const EventPtr& e) = 0;
 
 	/**
-	 *
 	 * handle an HTTP query (from QueryService)
 	 *
+	 * @param out the ostream to write the statistics info into
 	 * @param branches URI stem path branches for the HTTP request
 	 * @param qp query parameters or pairs passed in the HTTP request
 	 *
 	 * @return std::string of XML response
 	 */
-	virtual std::string query(const QueryBranches& branches, const QueryParams& qp);
+	virtual void query(std::ostream& out, const QueryBranches& branches,
+		const QueryParams& qp);
 	
 	/**
 	 * connects another Reactor to the output of this Reactor

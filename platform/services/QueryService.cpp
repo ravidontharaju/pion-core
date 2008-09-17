@@ -39,7 +39,13 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 	PathBranches branches;
 	splitPathBranches(branches, request->getResource());
 
-	std::string xml;
+	// use a response in case we want to change any of the headers/etc.
+	// while processing the request
+	HTTPResponsePtr response_ptr(new HTTPResponse(*request));
+
+	// use a stringstream for the response content
+	// since HTTPResponseWriter does not yet have a stream wrapper available
+	std::ostringstream ss;
 
 /*
 	for (int i = 0; i < branches.size() ; i++ )
@@ -53,23 +59,31 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 	 *	branches[2] == aggregate/example/info
 	 */
 
-	if (branches.empty()) {
-		xml += "No branch (/reactors) defined";
-	} else if (branches.front() == "reactors") {
-		xml = getConfig().getReactionEngine().query(
-			branches.at(1),
-			branches,
-			request->getQueryParams());
+	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+		if (branches.size() >= 2 && branches.front() == "reactors") {
+			if (getConfig().getReactionEngine().hasPlugin(branches.at(1))) {
+				getConfig().getReactionEngine().query(
+					branches.at(1), ss, branches,
+					request->getQueryParams());
+			} else {
+				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				return;
+			}
+		} else {
+			throw UnknownPluginTypeException();
+		}
 	} else {
-		xml += "Only /reactors supported";
+		// send a 405 (method not allowed) response
+		response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+		response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 	}
 
 	// Set Content-type to "text/plain" (plain ascii text)
-	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
+	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, response_ptr,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 
-	writer->write(xml);
+	writer->write(ss.str());
 	
 	// send the writer
 	writer->send();
