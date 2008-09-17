@@ -153,6 +153,18 @@ public:
      */
     virtual void operator()(const pion::platform::EventPtr& e);
 
+	/**
+	 * handle an HTTP query (from QueryService)
+	 *
+	 * @param out the ostream to write the statistics info into
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
+	 *
+	 * @return std::string of XML response
+	 */
+	virtual void query(std::ostream& out, const QueryBranches& branches,
+		const QueryParams& qp);
+	
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
 	
@@ -234,6 +246,12 @@ private:
 
 	/// name of the Frequency element for Pion XML config files
 	static const std::string			FREQUENCY_ELEMENT_NAME;
+
+	/// name of the CurrentLog element for Pion XML config files
+	static const std::string			CURRENT_LOG_ELEMENT_NAME;
+
+	/// name of the ConsumedLog element for Pion XML config files
+	static const std::string			CONSUMED_LOG_ELEMENT_NAME;
 
 	
 	/// primary logging interface used by this class

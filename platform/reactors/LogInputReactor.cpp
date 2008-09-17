@@ -59,6 +59,8 @@ const std::string			LogInputReactor::DIRECTORY_ELEMENT_NAME = "Directory";
 const std::string			LogInputReactor::FILENAME_ELEMENT_NAME = "Filename";
 const std::string			LogInputReactor::JUST_ONE_ELEMENT_NAME = "JustOne";
 const std::string			LogInputReactor::FREQUENCY_ELEMENT_NAME = "Frequency";
+const std::string			LogInputReactor::CURRENT_LOG_ELEMENT_NAME = "CurrentLog";
+const std::string			LogInputReactor::CONSUMED_LOG_ELEMENT_NAME = "ConsumedLog";
 
 
 // LogInputReactor member functions
@@ -154,6 +156,27 @@ void LogInputReactor::operator()(const EventPtr& e)
 	}
 }
 
+void LogInputReactor::query(std::ostream& out, const QueryBranches& branches,
+	const QueryParams& qp)
+{
+	ConfigManager::writeBeginPionStatsXML(out);
+	writeBeginReactorXML(out);
+	writeStatsOnlyXML(out);
+	
+	out << '<' << CURRENT_LOG_ELEMENT_NAME << '>' << m_log_file
+	    << "</" << CURRENT_LOG_ELEMENT_NAME << '>' << std::endl;
+	    
+	for (LogFileCollection::const_iterator i = m_logs_consumed.begin();
+		i != m_logs_consumed.end(); ++i)
+	{
+		out << '<' << CONSUMED_LOG_ELEMENT_NAME << '>' << *i
+			<< "</" << CONSUMED_LOG_ELEMENT_NAME << '>' << std::endl;
+	}
+	
+	writeEndReactorXML(out);
+	ConfigManager::writeEndPionStatsXML(out);
+}
+
 void LogInputReactor::start(void)
 {
 	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
@@ -242,55 +265,61 @@ void LogInputReactor::checkForLogFiles(void)
 
 	PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
 
-	// get the current logs located in the log directory
-	LogFileCollection current_logs;
-	getLogFilesInLogDirectory(current_logs);
-
-	// remove logs from the consumed collection that are no longer there
-	LogFileCollection::iterator temp_itr;
-	LogFileCollection::iterator log_itr = m_logs_consumed.begin();
-	while (log_itr != m_logs_consumed.end()) {
-		temp_itr = log_itr++;
-		if (current_logs.find(*temp_itr) == current_logs.end())
-			m_logs_consumed.erase(temp_itr);
-	}
-
-	// Update the history cache, which should always contain the same list as m_logs_consumed.
-	if (m_logs_consumed.empty()) {
-		bfs::remove(m_history_cache_filename);
-	} else {
-		std::ofstream history_cache(m_history_cache_filename.c_str());
-		if (! history_cache)
-			throw PionException("Unable to open history cache file for writing.");
-		for (log_itr = m_logs_consumed.begin(); log_itr != m_logs_consumed.end(); ++log_itr) {
-			history_cache << *log_itr << std::endl;
+	try {
+		// get the current logs located in the log directory
+		LogFileCollection current_logs;
+		getLogFilesInLogDirectory(current_logs);
+	
+		// remove logs from the consumed collection that are no longer there
+		LogFileCollection::iterator temp_itr;
+		LogFileCollection::iterator log_itr = m_logs_consumed.begin();
+		while (log_itr != m_logs_consumed.end()) {
+			temp_itr = log_itr++;
+			if (current_logs.find(*temp_itr) == current_logs.end())
+				m_logs_consumed.erase(temp_itr);
 		}
-	}
-
-	// check for an existing log that has not yet been consumed
-	for (log_itr = current_logs.begin(); log_itr != current_logs.end(); ++log_itr) {
-		if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())
-			break;
-	}
-		
-	if (log_itr == current_logs.end()) {
-		// no new logs to consume
-
-		// sleep until it is time to check again
-		PION_LOG_DEBUG(m_logger, "No new logs (sleeping for " << m_frequency
-					   << " seconds): " << m_log_directory);
-		scheduleLogFileCheck(m_frequency);
-		
-	} else {
-		// found a new log to consume
-		
-		// re-calculate the full path to the file
-		bfs::path full_path(m_log_directory);
-		full_path /= *log_itr;
-		m_log_file = full_path.file_string();
-
-		PION_LOG_DEBUG(m_logger, "Found a new log file to consume: " << m_log_file);
-		scheduleReadFromLog(true);
+	
+		// Update the history cache, which should always contain the same list as m_logs_consumed.
+		if (m_logs_consumed.empty()) {
+			bfs::remove(m_history_cache_filename);
+		} else {
+			std::ofstream history_cache(m_history_cache_filename.c_str());
+			if (! history_cache)
+				throw PionException("Unable to open history cache file for writing.");
+			for (log_itr = m_logs_consumed.begin(); log_itr != m_logs_consumed.end(); ++log_itr) {
+				history_cache << *log_itr << std::endl;
+			}
+		}
+	
+		// check for an existing log that has not yet been consumed
+		for (log_itr = current_logs.begin(); log_itr != current_logs.end(); ++log_itr) {
+			if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())
+				break;
+		}
+			
+		if (log_itr == current_logs.end()) {
+			// no new logs to consume
+	
+			// sleep until it is time to check again
+			PION_LOG_DEBUG(m_logger, "No new logs (sleeping for " << m_frequency
+						   << " seconds): " << m_log_directory);
+			scheduleLogFileCheck(m_frequency);
+			
+		} else {
+			// found a new log to consume
+			
+			// re-calculate the full path to the file
+			bfs::path full_path(m_log_directory);
+			full_path /= *log_itr;
+			m_log_file = full_path.file_string();
+	
+			PION_LOG_DEBUG(m_logger, "Found a new log file to consume: " << m_log_file);
+			scheduleReadFromLog(true);
+		}
+	} catch (std::exception& e) {
+		PION_LOG_ERROR(m_logger, e.what());
+		finishWorkerThread();
+		m_is_running = false;
 	}
 }
 
@@ -427,6 +456,9 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 
 		scheduleLogFileCheck(0);
 	}
+	
+	// no longer processing log
+	m_log_file.clear();
 }
 
 void LogInputReactor::getLogFilesInLogDirectory(LogFileCollection& files)

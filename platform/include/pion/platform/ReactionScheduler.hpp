@@ -66,8 +66,7 @@ public:
 			keepRunning(m_service, m_timer);
 
 			// start a thread that will be used to handle io_service requests
-			m_service_thread.reset(new boost::thread( boost::bind(&boost::asio::io_service::run,
-																  boost::ref(m_service)) ));
+			m_service_thread.reset(new boost::thread( boost::bind(&ReactionScheduler::processServiceWork, this) ));
 			
 			// start multiple threads to handle async tasks
 			for (boost::uint32_t n = 0; n < m_num_threads; ++n) {
@@ -116,6 +115,17 @@ protected:
 		}
 	}		
 
+	/// processes work passed to the asio service
+	void processServiceWork(void) {
+		while (m_is_running) {
+			try {
+				m_service.run();
+			} catch (std::exception& e) {
+				PION_LOG_ERROR(m_logger, e.what());
+			}
+		}	
+	}
+	
 	
 	/// data type for a Reaction (when an Event is delivered to a Reactor)
 	typedef boost::function0<void>		Reaction;
