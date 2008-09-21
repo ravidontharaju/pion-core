@@ -39,7 +39,6 @@
 
 	<script type="text/javascript">
 		dojo.require("dijit.layout.ContentPane");
-		dojo.require("dijit.layout.LayoutContainer");
 		dojo.require("dijit.layout.BorderContainer");
 		dojo.require("dijit.layout.AccordionContainer");
 		dojo.require("dijit.form.Button");
@@ -103,18 +102,18 @@
 			</div>
 			<!-- end main menu -->
 		</div>
-		<div id="main_stack_container" dojoType="dijit.layout.StackContainer">
-			<div id="reactor_config" dojoType="dijit.layout.LayoutContainer" title="Reactors" style="width: 95%;">
+		<div id="main_stack_container" dojoType="dijit.layout.StackContainer" style="width: 100%">
+			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" design="sidebar" title="Reactors" style="width: 95%;">
 				<!-- start left sidebar -->
-				<div id="side" dojoType="dijit.layout.ContentPane" layoutAlign="left">
-					<div id="sidebarContainer" dojoType="dijit.layout.LayoutContainer">
-						<div id="sidebarTop" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+				<div id="side" dojoType="dijit.layout.ContentPane" region="left" style="overflow:hidden">
+					<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer">
+						<div id="sidebarTop" dojoType="dijit.layout.ContentPane" region="top">
 							<div class="sidebarHeader">Reactor Types</div>
 							<div class="sidebarInstructions">
 								Drag reactors onto Workspace
 							</div>
 						</div>
-						<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" layoutAlign="bottom">
+						<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" region="bottom">
 							<div class="sidebarHeader">Connect Reactors</div>
 							<div class="sidebarInstructions">
 								Drag to connect Reactors
@@ -125,7 +124,7 @@
 								</div>
 							</div>
 						</div>
-						<div id="sidebarMain" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+						<div id="sidebarMain" dojoType="dijit.layout.ContentPane" region="center">
 							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
 								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
 									<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
@@ -141,7 +140,7 @@
 					</div>
 				</div>
 				<!-- end left sidebar -->
-				<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" layoutAlign="top">
+				<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" region="top">
 					<h1>Reactors Configuration</h1>
 
 					<h3>1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
@@ -161,7 +160,7 @@
 				</div>
 
 				<!-- start tabbed workspaces -->
-				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" layoutAlign="client">
+				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" region="center">
 					<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
 						<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
 						</div>
@@ -169,7 +168,7 @@
 				</div>
 				<!-- end tabbed workspaces -->
 			</div>
-			<div id="vocab_config" dojoType="dijit.layout.LayoutContainer" title="Vocabularies" style="width: 95%;">
+			<div id="vocab_config" dojoType="dijit.layout.BorderContainer" title="Vocabularies" style="width: 95%;">
 				<div id="vocab_config_header" class="config_header">
 					<h1>Vocabulary Configuration</h1>
 				</div>
@@ -181,7 +180,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="codec_config" dojoType="dijit.layout.LayoutContainer" title="Codecs" style="width: 95%;">
+			<div id="codec_config" dojoType="dijit.layout.BorderContainer" title="Codecs" style="width: 95%;">
 				<div id="codec_config_header" class="config_header">
 					<h1>Codec Configuration</h1>
 				</div>
@@ -193,7 +192,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="database_config" dojoType="dijit.layout.LayoutContainer" title="Databases" style="width: 95%;">
+			<div id="database_config" dojoType="dijit.layout.BorderContainer" title="Databases" style="width: 95%;">
 				<div id="database_config_header" class="config_header">
 					<h1>Database Configuration</h1>
 				</div>
@@ -207,7 +206,7 @@
 			</div>
 
 			<!--Start Users-->
-			<div id="user_config" dojoType="dijit.layout.LayoutContainer" title="Users" style="width: 95%;">
+			<div id="user_config" dojoType="dijit.layout.BorderContainer" title="Users" style="width: 95%;">
 				<div id="user_config_header" class="config_header">
 					<h1>Users Configuration</h1>
 				</div>
