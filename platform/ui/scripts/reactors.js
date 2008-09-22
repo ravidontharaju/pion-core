@@ -779,6 +779,24 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	dialog.show();
 }
 
+pion.reactors.showXMLDialog = function(reactor) {
+	dojo.xhrGet({
+		url: '/config/reactors/' + reactor.config['@id'],
+		preventCache: true,
+		handleAs: 'text',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre><br/>';
+			console.debug('html = ', html);
+			var dialog = new dijit.Dialog({title: reactor.config.Name + ' Configuration', style: 'width: 600px'});
+			dialog.setContent(html);
+			dialog.show();
+			return response;
+		},
+		error: pion.handleXhrGetError
+	});
+}
+
 pion.reactors.deleteReactorIfConfirmed = function(reactor) {
 	var dialog = dijit.byId('delete_confirmation_dialog');
 	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete this reactor?";

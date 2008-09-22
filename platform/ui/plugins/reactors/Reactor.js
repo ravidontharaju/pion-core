@@ -71,6 +71,7 @@ dojo.declare("plugins.reactors.Reactor",
 			if (!firefox_on_mac) {
 				var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
 				menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
+				menu.addChild(new dijit.MenuItem({ label: "Show XML", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
 				menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 			}
 
@@ -112,7 +113,7 @@ dojo.declare("plugins.reactors.Reactor",
 		},
 		showQueryResult: function() {
 			dojo.xhrGet({
-				url: 'http://localhost:8888/query/reactors/' + this.config['@id'],
+				url: '/query/reactors/' + this.config['@id'],
 				preventCache: true,
 				handleAs: 'text',
 				timeout: 5000,
