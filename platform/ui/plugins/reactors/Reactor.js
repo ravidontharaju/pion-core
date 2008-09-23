@@ -111,6 +111,30 @@ dojo.declare("plugins.reactors.Reactor",
 			*/
 			dojo.connect(m5, "onMoveStop", this, this.handleMoveStop);
 		},
+		_initOptions: function(config, option_defaults) {
+			var store = pion.reactors.config_store;
+			var _this = this;
+			store.fetch({
+				query: {'@id': config['@id']},
+				onItem: function(item) {
+					config.options = []; // used by pion.reactors.showReactorConfigDialog for checkboxes
+
+					for (var option in option_defaults) {
+						// Set option to default value.
+						config[option] = option_defaults[option];
+
+						// Override default if option present in the configuration.
+						if (store.hasAttribute(item, option))
+							config[option] = (store.getValue(item, option).toString() == 'true');
+
+						// Add true options to list of checkboxes to check.
+						if (config[option])
+							config.options.push(option);
+					}
+				},
+				onError: pion.handleFetchError
+			});
+		},
 		showQueryResult: function() {
 			dojo.xhrGet({
 				url: '/query/reactors/' + this.config['@id'],
@@ -191,8 +215,10 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 						   + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
 						   + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
 			for (var tag in dialogFields) {
-				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-				this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				if (tag != 'options') {
+					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+					this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				}
 			}
 			if (this._insertCustomData) {
 				this._insertCustomData(dialogFields);

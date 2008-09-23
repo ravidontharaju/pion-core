@@ -14,6 +14,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 			this._updateCustomData();
 		},
 		_updateCustomData: function() {
+			this._initOptions(this.config, plugins.reactors.TransformReactor.option_defaults);
 			var store = pion.reactors.config_store;
 			var _this = this;
 			this.comparisons = [];
@@ -21,21 +22,6 @@ dojo.declare("plugins.reactors.TransformReactor",
 			store.fetch({
 				query: {'@id': this.config['@id']},
 				onItem: function(item) {
-					_this.config.options = []; // used by pion.reactors.showReactorConfigDialog for checkboxes
-
-					for (var option in plugins.reactors.TransformReactor.option_defaults) {
-						// Set option to default values.
-						_this.config[option] = plugins.reactors.TransformReactor.option_defaults[option];
-
-						// Override default if option present in the configuration.
-						if (store.hasAttribute(item, option))
-							_this.config[option] = (store.getValue(item, option).toString() == 'true');
-
-						// Add true options to list of checkboxes to check.
-						if (_this.config[option])
-							_this.config.options.push(option);
-					}
-
 					var comparison_items = store.getValues(item, 'Comparison');
 					for (var i = 0; i < comparison_items.length; ++i) {
 						var comparison = {};
