@@ -296,6 +296,9 @@ private:
 	/// number of Events that had previously been read from the current log file
 	boost::uint64_t						m_num_events_read_previously;
 
+	/// protects the current log file
+	boost::mutex						m_log_file_mutex;
+
 	/// condition triggered after the worker thread has stopped running
 	boost::condition					m_worker_stopped;
 	

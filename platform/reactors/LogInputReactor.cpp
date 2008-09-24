@@ -256,6 +256,8 @@ void LogInputReactor::scheduleLogFileCheck(boost::uint32_t seconds)
 
 void LogInputReactor::checkForLogFiles(void)
 {
+	boost::mutex::scoped_lock log_file_lock(m_log_file_mutex);
+
 	// make sure that the reactor is still running
 	boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
 	if (! m_is_running) {
@@ -325,6 +327,8 @@ void LogInputReactor::checkForLogFiles(void)
 
 void LogInputReactor::readFromLog(bool use_one_thread)
 {
+	boost::mutex::scoped_lock log_file_lock(m_log_file_mutex);
+
 	// make sure that the reactor is still running
 	if (! m_is_running) {
 		boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
