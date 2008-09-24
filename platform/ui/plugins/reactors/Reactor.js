@@ -136,6 +136,9 @@ dojo.declare("plugins.reactors.Reactor",
 			});
 		},
 		showQueryResult: function() {
+			window.open('/query/reactors/' + this.config['@id']);
+			/*
+			 TODO: restore this once I figure out how to pretty print the XML.  Also, it should at least have a refresh button, if not auto-refreshing.
 			dojo.xhrGet({
 				url: '/query/reactors/' + this.config['@id'],
 				preventCache: true,
@@ -151,6 +154,7 @@ dojo.declare("plugins.reactors.Reactor",
 				},
 				error: pion.handleXhrGetError
 			});
+			*/
 /*
 			// Doesn't work: treats response as HTML, and only shows the contents of the elements inside the (unknown) tags.
 			var dialog = new dijit.Dialog({title: 'Reactor Diagnostics'});

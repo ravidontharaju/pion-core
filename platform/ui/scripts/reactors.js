@@ -780,6 +780,9 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 }
 
 pion.reactors.showXMLDialog = function(reactor) {
+	window.open('/config/reactors/' + reactor.config['@id']);
+	/*
+	 TODO: restore this once I figure out how to pretty print the XML.  Also, it should at least have a refresh button, if not auto-refreshing.
 	dojo.xhrGet({
 		url: '/config/reactors/' + reactor.config['@id'],
 		preventCache: true,
@@ -795,6 +798,7 @@ pion.reactors.showXMLDialog = function(reactor) {
 		},
 		error: pion.handleXhrGetError
 	});
+	*/
 }
 
 pion.reactors.deleteReactorIfConfirmed = function(reactor) {
