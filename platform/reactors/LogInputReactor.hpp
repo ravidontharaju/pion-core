@@ -115,7 +115,7 @@ public:
 	LogInputReactor(void)
 		: Reactor(TYPE_COLLECTION),
 		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
-		m_just_one(false), m_frequency(DEFAULT_FREQUENCY), m_worker_is_active(false)
+		m_just_one(false), m_tail_f(false), m_frequency(DEFAULT_FREQUENCY), m_worker_is_active(false)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -182,7 +182,13 @@ private:
 
 	/// data structure used to represent a collection of log files
 	typedef std::set<std::string>		LogFileCollection;
-	
+
+	/// holds an open input stream and the number of Events read for a log file
+	typedef std::pair<boost::shared_ptr<boost::iostreams::filtering_istream>, 
+					  boost::shared_ptr<boost::uint64_t> >			StreamData;
+
+	/// maps the names of open log files to information about the corresponding streams
+	typedef std::map<std::string, StreamData>						StreamMap;
 
 	/**
 	 * schedules a timer to check for new log files
@@ -244,6 +250,9 @@ private:
 	/// name of the JustOne element for Pion XML config files
 	static const std::string			JUST_ONE_ELEMENT_NAME;
 
+	/// name of the TailF element for Pion XML config files
+	static const std::string			TAIL_F_ELEMENT_NAME;
+
 	/// name of the Frequency element for Pion XML config files
 	static const std::string			FREQUENCY_ELEMENT_NAME;
 
@@ -265,7 +274,10 @@ private:
 
 	/// only reads one Event entry and duplicates it continuously (for testing)
 	bool								m_just_one;
-	
+
+	/// true means keep files open after reading all available Events and periodically check for additional Events
+	bool								m_tail_f;
+
 	/// frequency that the Reactor will check for new logs (in seconds)
 	boost::uint32_t						m_frequency;
 
@@ -280,9 +292,12 @@ private:
 	
 	/// the filename of the log file currently being consumed (includes full path)
 	std::string							m_log_file;
-	
-	/// input file stream used to read the contents of log files
-	boost::iostreams::filtering_istream m_log_stream;
+
+	/// the current open input stream and the number of Events read from it
+	StreamData							m_current_stream_data;
+
+	/// maps the names of open log files to information about the corresponding streams
+	StreamMap							m_open_streams;
 
 	/// pointer to a timer used to schedule the check for new log files
 	boost::scoped_ptr<boost::asio::deadline_timer>	m_timer_ptr;
@@ -293,8 +308,8 @@ private:
 	/// name of the current log file cache, used for keeping track of the read position in the current log file
 	std::string							m_current_log_file_cache_filename;
 
-	/// number of Events that had previously been read from the current log file
-	boost::uint64_t						m_num_events_read_previously;
+	/// maps filenames to the number of Events that had previously been read from that file, 
+	std::map<std::string, boost::uint64_t>	m_num_events_read_previously;
 
 	/// protects the current log file
 	boost::mutex						m_log_file_mutex;
