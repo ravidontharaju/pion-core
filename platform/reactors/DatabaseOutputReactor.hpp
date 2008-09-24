@@ -130,6 +130,18 @@ public:
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
 		
+	/**
+	 * handle an HTTP query (from QueryService)
+	 *
+	 * @param out the ostream to write the statistics info into
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
+	 *
+	 * @return std::string of XML response
+	 */
+	virtual void query(std::ostream& out, const QueryBranches& branches,
+		const QueryParams& qp);
+
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
 	
@@ -173,6 +185,9 @@ private:
 	
 	/// name of the queue timeout element for Pion XML config files
 	static const std::string				QUEUE_TIMEOUT_ELEMENT_NAME;
+	
+	/// name of the events queued element for Pion XML config files
+	static const std::string				EVENTS_QUEUED_ELEMENT_NAME;
 	
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string				TERM_ATTRIBUTE_NAME;	

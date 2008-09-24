@@ -38,6 +38,7 @@ const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseOutputReactor::QUEUE_SIZE_ELEMENT_NAME = "QueueSize";
 const std::string			DatabaseOutputReactor::QUEUE_TIMEOUT_ELEMENT_NAME = "QueueTimeout";
+const std::string			DatabaseOutputReactor::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
 const std::string			DatabaseOutputReactor::TERM_ATTRIBUTE_NAME = "term";
 
 	
@@ -158,6 +159,20 @@ void DatabaseOutputReactor::operator()(const EventPtr& e)
 		// deliver the event to other Reactors (if any are connected)
 		deliverEvent(e);
 	}
+}
+
+void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
+	const QueryParams& qp)
+{
+	ConfigManager::writeBeginPionStatsXML(out);
+	writeBeginReactorXML(out);
+	writeStatsOnlyXML(out);
+	
+	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_num_queued
+	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
+	
+	writeEndReactorXML(out);
+	ConfigManager::writeEndPionStatsXML(out);
 }
 
 void DatabaseOutputReactor::start(void)
