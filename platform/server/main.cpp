@@ -46,6 +46,9 @@ int main (int argc, char *argv[])
 				run_as_daemon = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = boost::filesystem::system_complete(argv[++argnum]).normalize().file_string();
+			} else if (strncmp(argv[argnum], "--version", 9) == 0) {
+				std::cout << "pion version " << PION_VERSION << std::endl;
+				return 0;
 			} else {
 				argument_error();
 				return 1;
