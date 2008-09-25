@@ -36,6 +36,14 @@
 			<Type>uint32</Type>
 			<Comment>Request sequence number, or total number of requests for session and page view events</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#page-load">
+			<Type>uint32</Type>
+			<Comment>Number of seconds that it took for the page to load</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-length">
+			<Type>uint32</Type>
+			<Comment>Number of seconds between the first and last session requests</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#date">
 			<Type format="%Y-%m-%d">date</Type>
 			<Comment>Date of the request (2008-07-20)</Comment>
