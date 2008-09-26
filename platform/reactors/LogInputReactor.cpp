@@ -537,6 +537,8 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		// Remove and close all Filters and Devices.
 		while (! log_stream->empty()) log_stream->pop();
 
+		recordLogFileAsDone();
+
 		scheduleLogFileCheck(0);
 	}
 	
