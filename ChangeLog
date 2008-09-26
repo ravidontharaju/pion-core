@@ -1,3 +1,10 @@
+Version 1.0.0 (2008-09-12)
+==========================
+
+* QueryService added, then removed, and placed into pion::platform
+* Update clear() function to clear all members()
+* Added test to see if base64 routines handle binary data in strings properly
+
 Version 0.6.0 (2008-08-29)
 ==========================
 
