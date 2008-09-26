@@ -43,11 +43,6 @@ http://www.pion.org/projects/pion-platform/tour
 To stop Pion, type Ctrl-C if it is running in the foreground, or
 "killall pion" if it is running in the background.
 
-Please note that this is a BETA release intended for preview purposes only.
-Certain aspects of Pion may change substantially in future releases.  Do not
-use this release for any production purposes, since it may not be compatible
-with future releases, and it is likely that it may cause you to lose data.
-
 This release has the following limitations:
 
 a) If you drag a reactor over top an existing reactor within the workspace,

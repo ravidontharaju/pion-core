@@ -32,11 +32,6 @@ This will open the Pion user interface to the "Reactors configuration" page.
 For an intro to Pion's user interface, please see the online tour at:
 http://www.pion.org/projects/pion-platform/tour
 
-Please note that this is a BETA release intended for preview purposes only.
-Certain aspects of Pion may change substantially in future releases.  Do not
-use this release for any production purposes, since it may not be compatible
-with future releases, and it is likely that it may cause you to lose data.
-
 This release has the following limitations:
 
 a) If you drag a reactor over top an existing reactor within the workspace,
