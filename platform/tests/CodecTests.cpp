@@ -2117,6 +2117,25 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatAllFields) {
 	BOOST_CHECK_EQUAL(ss.str(), "192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET / HTTP/1.1\" 302 116\x0A");
 }
 
+BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFormatAllFieldsWithQuotes) {
+	std::string log_entry("192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET /\\\" HTTP/1.1\" 302 116\x0A");
+	std::stringstream ss(log_entry);
+
+	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
+	BOOST_REQUIRE(m_common_codec->read(ss, *event_ptr));
+
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_remotehost_ref), "192.168.10.10");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_rfc931_ref), "greg");
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_authuser_ref), "bob");
+	// NOTE: timezone offsets are currently not working in DateTimeFacet
+	BOOST_CHECK_EQUAL(event_ptr->getDateTime(m_date_ref),
+					  PionDateTime(boost::gregorian::date(2008, 1, 10),
+								   boost::posix_time::time_duration(12, 31, 0)));
+	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /\" HTTP/1.1");
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 302UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 116UL);
+}
+
 BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {
 	// open the CLF log file
 	std::ifstream in;

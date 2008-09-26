@@ -140,13 +140,11 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 		// parse the field contents
 		read_ptr = read_start;
 		while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
-			if (c == '\\' && delim_end == '\"') {
-				if ((c = buf_ptr->snextc()) == '\"')
-					goto escaped_quote;
-				buf_ptr->sungetc();	// Unget the next character (that wasn't a quote)
-				c = '\\';	// Set c back to backslash
-			}
-			if (c == '\x0A' || c == '\x0D' || c == delim_end
+			if (c == delim_end && read_ptr>read_start && *(read_ptr-1)=='\\')
+			{
+				// escaped delimiter
+				--read_ptr;
+			} else if (c == '\x0A' || c == '\x0D' || c == delim_end
 				|| (delim_end=='\0' && c == ' ') )
 			{
 				// we've reached the end of the field contents
@@ -156,7 +154,6 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 					c = buf_ptr->snextc();	// skip over delimiter
 				break;
 			}
-escaped_quote:
 			if (read_ptr < m_read_end)
 				*(read_ptr++) = c;
 			else if (read_ptr == m_read_end)
