@@ -209,14 +209,8 @@ void cleanup_platform_config_files(void)
 
 void cleanup_cache_files(void)
 {
-	boost::filesystem::path dir_path(get_log_file_dir());
+	boost::filesystem::path dir_path(get_config_file_dir());
 	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
-		if (boost::filesystem::extension(itr->path()) == ".cache") {
-			boost::filesystem::remove(itr->path());
-		}
-	}
-	boost::filesystem::path dir_path_2(get_compressed_log_file_dir());
-	for (boost::filesystem::directory_iterator itr(dir_path_2); itr != boost::filesystem::directory_iterator(); ++itr) {
 		if (boost::filesystem::extension(itr->path()) == ".cache") {
 			boost::filesystem::remove(itr->path());
 		}

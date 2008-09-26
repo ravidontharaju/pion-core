@@ -450,7 +450,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 /*
 
 // These two tests are commented out for now, because the calibration isn't good enough to 
-
 // force the desired behavior for all configurations and platforms.
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRestartingReactor) {
@@ -738,7 +737,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the history cache exists and has the default log file and no others.
-	std::string history_cache_filename = get_log_file_dir() + F::m_log_reader_id + ".cache";
+	std::string history_cache_filename = get_config_file_dir() + F::m_log_reader_id + ".cache";
 	std::ifstream history_cache(history_cache_filename.c_str());
 	BOOST_REQUIRE(history_cache);
 	std::string default_log_file = std::string("combined") + F::m_file_ext;

@@ -127,12 +127,10 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 	}
 
 	// assign names for the cache files
-	bfs::path history_cache_path(m_log_directory);
-	history_cache_path /= (getId() + ".cache");
-	m_history_cache_filename = history_cache_path.file_string();
-	bfs::path current_log_file_cache_path(m_log_directory);
-	current_log_file_cache_path /= (getId() + "-cur.cache");
-	m_current_log_file_cache_filename = current_log_file_cache_path.file_string();
+	m_history_cache_filename = getId() + ".cache";
+	m_history_cache_filename = getReactionEngine().resolveRelativePath(m_history_cache_filename);
+	m_current_log_file_cache_filename = getId() + "-cur.cache";
+	m_current_log_file_cache_filename = getReactionEngine().resolveRelativePath(m_current_log_file_cache_filename);
 }
 	
 void LogInputReactor::updateVocabulary(const Vocabulary& v)
