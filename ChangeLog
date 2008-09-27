@@ -1,3 +1,38 @@
+Version 1.0.2 (2008-09-26)
+==========================
+
+* If LogInputReactor::readFromLog() catches an exception, it now adds the log
+  file to the list of consumed files, so it doesn't keep trying to read it.
+* Replaced r667 with new patch that works for any field delimiter
+* Cache files for LogInputReactor are now written to the config directory
+  instead of the log file directory.
+* Reverting changes made in revision 656 (in preparation for Dojo 1.2),
+  because they don't work in IE.
+* Added support in LogInputReactor for optional 'tail -f' behavior when
+  reading log files.
+* Added --version command line parameter to pion server executable
+* Added "EventsQueued" statistic to DatabaseOutputReactor::query()
+* Added 'tail -f' option in the LogInputReactor UI and did some refactoring.
+* Added Reactor context menu item to show the Reactor's configuration as raw
+  XML.  (The XML can be copied, but not changed.)
+* Fixed ReactionScheduler so that if io_service users throw it should no
+  longer crash Pion
+* Updated query stats returned by LogInputReactor to include ConsumedLog
+  and CurrentLog elements
+* Updated LogInputReactor to stop itself if it unable to write cache files
+  to the input directory
+* Shift-double-clicking on a Reactor now gives you a dialog with the results
+  of /query/reactors/<uuid>.
+* Updated Reactor::query() so that default returns reactor statistics info
+  Misc refactoring of reactor stats code
+* Added a Komodo project file for Pion UI code.
+* QueryService (Reactor/ReactionEngine)
+* Added QueueTimeout field in DatabaseOutputReactorDialog.
+* Added QueueTimeout parameter to DatabaseOutputReactor (default is 10 seconds)
+* Updated ServiceManager to send ascii text 500 server error responses
+* Added patch for LogInputReactor crashing when removed
+
+
 Version 0.6.0 (2008-08-29)
 ==========================
 
