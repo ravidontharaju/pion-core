@@ -467,7 +467,7 @@ protected:
 	/// thread function used to consume objects
 	virtual void consume(boost::uint64_t& thread_counter) {
 		WorkItem work;
-		typename QueueType<WorkItem>::IdleThreadInfo thread_info;
+		typename QueueType<WorkItem>::ConsumerThread thread_info;
 		while (PerformanceTest::isRunning()) {
 			WorkTestSleepingQueue<ProducerThreads, ConsumerThreads>::m_queue.pop(work, thread_info);
 			if (! PerformanceTest::isRunning()) break;

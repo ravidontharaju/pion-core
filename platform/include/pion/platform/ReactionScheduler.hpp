@@ -20,6 +20,9 @@
 #ifndef __PION_REACTIONSCHEDULER_HEADER__
 #define __PION_REACTIONSCHEDULER_HEADER__
 
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/PionException.hpp>
@@ -79,9 +82,12 @@ public:
 	
 	/// stops all threads used to perform work
 	virtual void stopThreads(void) {
+		stopThreadInfo();
 		PionSingleServiceScheduler::stopThreads();
 		if (m_service_thread)
 			m_service_thread->join();
+		boost::mutex::scoped_lock thread_info_lock(m_thread_info_mutex);
+		m_thread_info.clear();
 	}
 
 	/// finishes all threads used to perform work
@@ -103,15 +109,50 @@ public:
 	
 protected:
 	
+	/// data type for a Reaction (when an Event is delivered to a Reactor)
+	typedef boost::function0<void>		Reaction;
+
+	/// data type for a thread-safe queue of Reactions
+	typedef PionLockedQueue<Reaction>	ReactionQueue;
+
+	/// typedef for a collection of consumer thread info objects
+	typedef boost::shared_ptr<ReactionQueue::ConsumerThread>	ThreadInfoPtr;
+
+	/// typedef for a collection of consumer thread info objects
+	typedef std::vector<ThreadInfoPtr>	ThreadInfoVector;
+	
+	
+	/// creates and returns a new queue info object for Reaction consumer threads
+	ThreadInfoPtr getThreadInfo(void) {
+		ThreadInfoPtr info_ptr(new ReactionQueue::ConsumerThread);
+		boost::mutex::scoped_lock thread_info_lock(m_thread_info_mutex);
+		m_thread_info.push_back(info_ptr);
+		return info_ptr;
+	}
+
+	/// sets all thread info objects to stop (forces return for pop())
+	void stopThreadInfo(void) {
+		boost::mutex::scoped_lock thread_info_lock(m_thread_info_mutex);
+		for (ThreadInfoVector::iterator i = m_thread_info.begin();
+			i != m_thread_info.end(); ++i)
+		{
+			(*i)->stop();
+		}
+	}
+
 	/// processes work in the reaction queue while running
 	void processReactionQueue(void) {
 		Reaction r;
+		ThreadInfoPtr info_ptr(getThreadInfo());
 		while (m_is_running) {
-			while (m_is_running && !m_reaction_queue.pop(r))
-				PionScheduler::sleep(0, NSEC_IN_SECOND / 4);
-			if (! m_is_running)
-				break;
-			r();
+			try {
+				while (m_is_running) {
+					if (m_reaction_queue.pop(r, *info_ptr) && m_is_running)
+						r();
+				}
+			} catch (std::exception& e) {
+				PION_LOG_ERROR(m_logger, e.what());
+			}
 		}
 	}		
 
@@ -127,14 +168,17 @@ protected:
 	}
 	
 	
-	/// data type for a Reaction (when an Event is delivered to a Reactor)
-	typedef boost::function0<void>		Reaction;
-
 	/// a queue of Events that are scheduled to be delivered to Reactors
-	PionLockedQueue<Reaction>			m_reaction_queue;
+	ReactionQueue						m_reaction_queue;
 
 	/// thread that is used to handle io_service requests
 	boost::shared_ptr<boost::thread>	m_service_thread;
+
+	/// info objects for consumer threads used to manage signaling
+	ThreadInfoVector					m_thread_info;
+
+	/// used to provide thread safety for the thread info vector
+	boost::mutex						m_thread_info_mutex;
 };
 	
 	
