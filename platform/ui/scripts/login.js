@@ -42,6 +42,15 @@ dojo.declare("pion.login.LoginDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("pion", "../resources/LoginDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+
+			// This is needed to work correctly in all of the following cases:
+			// 1) when dijit.Dialog and pion.login.LoginDialog are both built (e.g. when using pion-dojo.js),
+			// 2) when dijit.Dialog is built but pion.login.LoginDialog is not (e.g. when using dojo-for-pion.js), and
+			// 3) when neither is built (e.g. when using dojo-src/dojo/dojo.js and pion.js).
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );

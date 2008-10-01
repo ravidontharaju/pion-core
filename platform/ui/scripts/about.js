@@ -5,6 +5,10 @@ dojo.declare("pion.about.LicenseKeyDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("pion", "../resources/aboutDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);

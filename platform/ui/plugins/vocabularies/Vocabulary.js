@@ -36,6 +36,10 @@ dojo.declare("plugins.vocabularies.VocabularyInitDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/VocabularyInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
@@ -66,6 +70,10 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 	[ dijit.Dialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/TermInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		_handleTypeChange: function(type) {
 			console.debug('_handleTypeChange: type = ', type);
@@ -110,6 +118,10 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 	[ dijit.layout.AccordionPane ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/VocabularyPane.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

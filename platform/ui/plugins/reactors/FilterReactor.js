@@ -67,6 +67,10 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins.reactors", "processing/FilterReactor/FilterReactorDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

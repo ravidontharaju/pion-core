@@ -22,6 +22,10 @@ dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins.reactors", "collection/LogInputReactor/LogInputReactorInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'LogInputReactor';
@@ -42,6 +46,10 @@ dojo.declare("plugins.reactors.LogInputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins.reactors", "collection/LogInputReactor/LogInputReactorDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

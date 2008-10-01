@@ -15,6 +15,10 @@ dojo.declare("plugins.codecs.LogCodecPane",
 	[ plugins.codecs.CodecPane ],
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/LogCodec/LogCodecPane.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

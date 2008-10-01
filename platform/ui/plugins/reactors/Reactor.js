@@ -206,6 +206,10 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		tryConfig: function() {
 			var dialogFields = this.getValues();
@@ -274,6 +278,10 @@ dojo.declare("plugins.reactors.ReactorDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

@@ -7,6 +7,10 @@ dojo.declare("pion.widgets.UserInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("pion", "widgets/UserInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );
@@ -15,6 +19,10 @@ dojo.declare("pion.widgets.UserPane",
 	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("pion", "widgets/UserPane.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		populateFromConfigItem: function(item) {
 			var store = pion.users.config_store;

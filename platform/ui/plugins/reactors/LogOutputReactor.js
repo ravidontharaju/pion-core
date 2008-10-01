@@ -19,6 +19,10 @@ dojo.declare("plugins.reactors.LogOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins.reactors", "storage/LogOutputReactor/LogOutputReactorInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.plugin = 'LogOutputReactor';
@@ -31,6 +35,10 @@ dojo.declare("plugins.reactors.LogOutputReactorDialog",
 	[ plugins.reactors.ReactorDialog ],
 	{
 		templatePath: dojo.moduleUrl("plugins.reactors", "storage/LogOutputReactor/LogOutputReactorDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );

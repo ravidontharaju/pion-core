@@ -20,6 +20,10 @@ dojo.declare("plugins.databases.SelectPluginDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/SelectPluginDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );
@@ -28,6 +32,10 @@ dojo.declare("plugins.databases.DatabaseInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabaseInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );
@@ -36,6 +44,10 @@ dojo.declare("plugins.databases.DatabasePane",
 	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabasePane.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);

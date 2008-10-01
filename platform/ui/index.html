@@ -35,18 +35,32 @@
 		djConfig="isDebug: true, debugAtAllCosts: false, parseOnLoad: true, popup: true, cacheBust: (new Date()).getTime()"></script>
 	<script type="text/javascript" src="dojo-src/dojox/gfx.js"></script>
 	<script type="text/javascript" src="scripts/pion.js"></script>
-	-->
-
 	<script type="text/javascript">
+		dojo.require("dijit.Dialog");
 		dojo.require("dijit.layout.ContentPane");
+		dojo.require("dijit.layout.StackContainer");
 		dojo.require("dijit.layout.BorderContainer");
 		dojo.require("dijit.layout.AccordionContainer");
+		dojo.require("dijit.layout.TabContainer");
 		dojo.require("dijit.form.Button");
-		dojo.require("dijit.form.Form");
 		dojo.require("dijit.form.TextBox");
 		dojo.require("dijit.form.ValidationTextBox");
 		dojo.require("dojo.parser");
 	</script>
+	-->
+
+	<!-- Use this block to use the source version of the UI and a custom built version of Dojo.  -->
+	<!--
+	<style type="text/css">
+		@import "dojo-release/dijit/themes/tundra/tundra.css";
+		@import "dojo-release/dojox/grid/_grid/tundraGrid.css";
+		@import "styles/default.css";
+	</style>
+	<script type="text/javascript" src="dojo-release/dojo/dojo.js"
+		djConfig="isDebug: true, debugAtAllCosts: false, parseOnLoad: true"></script>
+	<script type="text/javascript" src="dojo-release/dojo/dojo-for-pion.js"></script>
+	<script type="text/javascript" src="scripts/pion.js"></script>
+	-->
 
 	<script type="text/javascript">
 		var reactor_inputs_grid_layout = [{

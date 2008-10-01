@@ -31,6 +31,10 @@ dojo.declare("plugins.codecs.CodecInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/CodecInitDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true
 	}
 );
@@ -39,6 +43,15 @@ dojo.declare("plugins.codecs.CodecPane",
 	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/CodecPane.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+
+			// This is needed to work correctly in all of the following cases:
+			// 1) when dijit.layout.AccordionPane and plugins.codecs.CodecPane are both built (e.g. when using pion-dojo.js),
+			// 2) when dijit.layout.AccordionPane is built but plugins.codecs.CodecPane is not (e.g. when using dojo-for-pion.js), and
+			// 3) when neither is built (e.g. when using dojo-src/dojo/dojo.js and pion.js).
+			if (this.templatePath) this.templateString = "";
+		},
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
