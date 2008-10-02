@@ -81,7 +81,8 @@ pion.vocabularies.init = function() {
 			return;
 		}
 		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
-			var dialog = dijit.byId('unsaved_changes_dialog');
+			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
+			dialog.setContent('Please save or cancel unsaved changes before selecting another Vocabulary.');
 			dialog.show();
 			
 			// Return to the previously selected pane.

@@ -18968,7 +18968,8 @@ if(pane==selected_codec_pane){
 return;
 }
 if(selected_codec_pane&&dojo.hasClass(selected_codec_pane.domNode,"unsaved_changes")){
-var _1291=dijit.byId("unsaved_changes_dialog");
+var _1291=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1291.setContent("Please save or cancel unsaved changes before selecting another Codec.");
 _1291.show();
 setTimeout("dijit.byId('codec_config_accordion').selectChild(selected_codec_pane)",500);
 return;
@@ -19595,7 +19596,8 @@ if(pane==_1318){
 return;
 }
 if(_1318&&dojo.hasClass(_1318.domNode,"unsaved_changes")){
-var _1319=dijit.byId("unsaved_changes_dialog");
+var _1319=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1319.setContent("Please save or cancel unsaved changes before selecting another Database.");
 _1319.show();
 setTimeout(function(){
 dijit.byId("database_config_accordion").selectChild(_1318);
@@ -19922,6 +19924,7 @@ var _1371=_136b.getElementsByTagName("Reactor");
 dojo.forEach(_1371,function(n){
 var id=n.getAttribute("id");
 var _1374=pion.reactors.reactors_by_id[id];
+if(_1374){
 if(_1374.workspace==pion.reactors.workspace_box){
 var _1375=n.getElementsByTagName("EventsIn")[0];
 var _1376=dojo.isIE?_1375.xml.match(/.*>(\d*)<.*/)[1]:_1375.textContent;
@@ -19934,6 +19937,7 @@ var _1378=n.getElementsByTagName("Running")[0];
 var _1379=dojo.isIE?_1378.xml.match(/.*>(\w*)<.*/)[1]:_1378.textContent;
 var _137a=(_1379=="true");
 _1374.run_button.setAttribute("checked",_137a);
+}
 });
 delta=_1370-_136a;
 dojo.byId("workspace_ops").innerHTML=delta>0?delta:0;
@@ -20955,7 +20959,8 @@ if(pane==_146c){
 return;
 }
 if(_146c&&dojo.hasClass(_146c.domNode,"unsaved_changes")){
-var _1470=dijit.byId("unsaved_changes_dialog");
+var _1470=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1470.setContent("Please save or cancel unsaved changes before selecting another Vocabulary.");
 _1470.show();
 setTimeout(function(){
 dijit.byId("vocab_config_accordion").selectChild(_146c);
@@ -21181,7 +21186,8 @@ if(pane==selected_user_pane){
 return;
 }
 if(selected_user_pane&&dojo.hasClass(selected_user_pane.domNode,"unsaved_changes")){
-var _14b0=dijit.byId("unsaved_changes_dialog");
+var _14b0=new dijit.Dialog({title:"Warning: unsaved changes"});
+_14b0.setContent("Please save or cancel unsaved changes before selecting another User.");
 _14b0.show();
 setTimeout("dijit.byId('user_config_accordion').selectChild(selected_user_pane)",500);
 return;

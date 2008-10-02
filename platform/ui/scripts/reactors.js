@@ -197,19 +197,21 @@ pion.reactors.init = function() {
 						dojo.forEach(reactors, function(n) {
 							var id = n.getAttribute('id');
 							var reactor = pion.reactors.reactors_by_id[id];
-							if (reactor.workspace == pion.reactors.workspace_box) {
-								var events_in_node = n.getElementsByTagName('EventsIn')[0];
-								var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
-								var events_in = parseInt(events_in_str);
-								reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
-								reactor.prev_events_in = events_in;
-								events_in_for_workspace += events_in;
+							if (reactor) {
+								if (reactor.workspace == pion.reactors.workspace_box) {
+									var events_in_node = n.getElementsByTagName('EventsIn')[0];
+									var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
+									var events_in = parseInt(events_in_str);
+									reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
+									reactor.prev_events_in = events_in;
+									events_in_for_workspace += events_in;
+								}
+								var is_running_node = n.getElementsByTagName('Running')[0];
+								var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
+								var is_running = (is_running_string == 'true');
+								//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
+								reactor.run_button.setAttribute('checked', is_running);
 							}
-							var is_running_node = n.getElementsByTagName('Running')[0];
-							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
-							var is_running = (is_running_string == 'true');
-							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-							reactor.run_button.setAttribute('checked', is_running);
 						});
 						delta = events_in_for_workspace - prev_events_in_for_workspace;
 						dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
