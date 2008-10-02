@@ -225,8 +225,8 @@ if ($PLATFORM eq "win32") {
 		`cp COPYING $OSX_BIN_DIRECTORY/LICENSE.txt`;
 		`cp ChangeLog $OSX_BIN_DIRECTORY/HISTORY.txt`;
 		`cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt`;
-		`(cd bin/osx; zip -qr9 $TARBALL_NAME_app.zip $PACKAGE_NAME)`;
-		`mv ./bin/osx/$TARBALL_NAME_app.zip ./bin/`;
+		`(cd bin/osx; zip -qr9 ${TARBALL_NAME}_app.zip $PACKAGE_NAME)`;
+		`mv ./bin/osx/${TARBALL_NAME}_app.zip ./bin/`;
 	}
 }
 
