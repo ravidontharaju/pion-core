@@ -1503,11 +1503,6 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingComplexStrings) {
 
 	// Check that the reconstituted Event is the same as the original Event.
 	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
-	if (F::m_codec_type == "LogCodec") { \
-		// LogCodec can't handle quotes yet (assuming quotes are being used as delimiters).
-		BOOST_WARN_MESSAGE(false, "Skipping this rest of this test for LogCodec fixture because LogCodec can't handle it yet."); \
-		return; \
-	}
 	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
 	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
 	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
@@ -1556,7 +1551,7 @@ BOOST_FIXTURE_TEST_SUITE(LogCodecPtrWithFieldsOfAllTypes_S, LogCodecPtrWithField
 
 BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 	// make an input string with empty values for all terms except the char (fixed-length) Term
-	std::string str = "- - - - - - - - - - - - - \"\" \"\" \"\" [] - - \"more than 10 chars\"";
+	std::string str = "- - - - - - - - - - - - \"\" \"\" \"\" [] - - \"more than 10 chars\"";
 
 	// read in an Event from the string
 	std::istringstream in(str);
@@ -2242,7 +2237,13 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
 	std::stringstream ss;
 	m_extended_codec->write(ss, *event_ptr);
 	m_extended_codec->write(ss, *event_ptr);
-	BOOST_CHECK_EQUAL(ss.str(), "#Version: 1.0\x0A#Fields: clf-date c-ip request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
+	std::string str = ss.str();
+	size_t start = str.find("#Date: ");
+	BOOST_REQUIRE(start != std::string::npos);
+	size_t end = str.find("#Software: ");
+	BOOST_REQUIRE(end != std::string::npos);
+	str.replace(start + 7, end - start - 8, "...");
+	BOOST_CHECK_EQUAL(str, "#Version: 1.0\x0A#Date: ...\x0A#Software: Pion v" PION_VERSION "\x0A#Fields: clf-date c-ip request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
