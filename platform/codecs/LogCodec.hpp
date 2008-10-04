@@ -32,6 +32,11 @@
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
+#ifdef PION_WIN32
+#define OSEOL "\r\n"
+#else
+#define OSEOL "\n"
+#endif
 
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
@@ -58,7 +63,7 @@ public:
 		EmptyTermException(const std::string& codec_id)
 			: PionException("LogCodec configuration is missing a term identifier: ", codec_id) {}
 	};
-	
+
 	/// exception thrown if the Codec configuration uses an unknown term in a field mapping
 	class UnknownTermException : public PionException {
 	public:
@@ -73,27 +78,29 @@ public:
 			: PionException("LogCodec format contains an unknown term: ", term_id) {}
 	};
 
-	
+
 	/// constructs a new LogCodec object
 	LogCodec(void)
 		: pion::platform::Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
 		m_read_end(m_read_buf.get() + READ_BUFFER_SIZE),
-		m_flush_after_write(false), m_needs_to_write_headers(false)
+		m_flush_after_write(false), m_handle_elf_headers(false), m_wrote_elf_headers(false),
+		m_event_split(EVENT_SPLIT_SET), m_event_join(EVENT_JOIN_STRING), m_comment_chars(COMMENT_CHAR_SET),
+		m_field_split(FIELD_SPLIT_SET), m_field_join(FIELD_JOIN_STRING), m_consume_delims(true)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~LogCodec() {}
-	
+
 	/// returns an HTTP content type that is used by this Codec
 	virtual const std::string& getContentType(void) const { return CONTENT_TYPE; }
-	
+
 	/**
 	 * clones the codec, returning a pointer to the cloned copy
 	 *
 	 * @return CodecPtr pointer to the cloned copy of the codec
 	 */
 	virtual pion::platform::CodecPtr clone(void) const;
-	
+
 	/**
 	 * writes an Event to an output stream
 	 *
@@ -126,7 +133,7 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
 	/**
 	 * this updates the Vocabulary information used by this Codec; it should be
 	 * called whenever the global Vocabulary is updated
@@ -139,22 +146,25 @@ public:
 	inline void reset(void) {
 		m_field_map.clear();
 		m_format.clear();
+		m_wrote_elf_headers = false;
 	}
-	
-	
+
+
 private:
 
 	/// data type used to configure how the log format describes Vocabulary Terms
 	struct LogField {
 		/// constructs a new LogField structure
-		LogField(const std::string& f, const pion::platform::Vocabulary::Term& t, char d_start, char d_end)
-			: log_field(f), log_term(t), log_delim_start(d_start), log_delim_end(d_end)
+		LogField(const std::string& field, const pion::platform::Vocabulary::Term& term,
+				 char delim_start, char delim_end, char escape_char, const std::string& empty_val)
+			: log_field(field), log_term(term), log_delim_start(delim_start),
+			  log_delim_end(delim_end), log_escape_char(escape_char), log_empty_val(empty_val)
 		{}
 
 		/// copy constructor
 		LogField(const LogField& f)
-			: log_field(f.log_field), log_term(f.log_term),
-			log_delim_start(f.log_delim_start), log_delim_end(f.log_delim_end)
+			: log_field(f.log_field), log_term(f.log_term), log_delim_start(f.log_delim_start),
+			  log_delim_end(f.log_delim_end), log_escape_char(f.log_escape_char), log_empty_val(f.log_empty_val)
 		{}
 
 		/// assignment operator
@@ -163,20 +173,20 @@ private:
 			log_term = f.log_term;
 			log_delim_start = f.log_delim_start;
 			log_delim_end = f.log_delim_end;
+			log_escape_char = f.log_escape_char;
+			log_empty_val = f.log_empty_val;
 			return *this;
 		}
 
 		/// writes an empty value to an output stream
 		void writeEmptyValue(std::ostream& out) const {
-			if (log_delim_start == '\0') {
-				// use a single minus symbol if no delimiters
-				out << '-';
-			} else {
-				// otherwise just write the delimiters one after the other
-				out << log_delim_start << log_delim_end;
-			}
+			if (log_delim_start != '\0')
+				out << log_delim_start;
+			out << log_empty_val;
+			if (log_delim_end != '\0')
+				out << log_delim_end;
 		}
-		
+
 		/**
 		 * writes the value for a single field
 		 *
@@ -184,7 +194,7 @@ private:
 		 * @param value the value to write
 		 */
 		inline void write(std::ostream& out, const pion::platform::Event::ParameterValue& value);
-		
+
 		/**
 		 * reads the value for a single field
 		 *
@@ -203,19 +213,23 @@ private:
 		char								log_delim_start;
 		/// a character that delimits the end of the field value, or '\0' if none
 		char								log_delim_end;
+		/// a character that escapes a delimiter within a field value (default "\")
+		char								log_escape_char;
+		/// a string that represents an empty field value (default "-" if no delimiters)
+		std::string							log_empty_val;
 	};
 
 	/// data type for a pointer to a LogField object
 	typedef boost::shared_ptr<LogField>		LogFieldPtr;
-	
+
 	/// data type that maps field names to LogFields
 	typedef PION_HASH_MAP<std::string,
-		LogFieldPtr, PION_HASH_STRING >		FieldMap;
+		LogFieldPtr, PION_HASH_STRING>		FieldMap;
 
 	/// data type that keeps track of the log file's current field format
 	typedef std::vector<LogFieldPtr>		CurrentFormat;
 
-	/// traits_type used for the standard char-istream 
+	/// traits_type used for the standard char-istream
 	typedef std::istream::traits_type		traits_type;
 
 	/// data type used to represent a standard char-istream streambuf
@@ -233,89 +247,146 @@ private:
 	 * @param term the Vocabulary Term to map the data field to
 	 * @param delim_start character used to delimit the start of the data field value
 	 * @param delim_end character used to delimit the end of the data field value
+	 * @param escape_char character used to escape a delimiter within a field value
+	 * @param empty_val string used to represent an empty data field value
 	 */
-	inline void mapFieldToTerm(const std::string& field,
-							   const pion::platform::Vocabulary::Term& term,
-							   char delim_start, char delim_end);
-	
+	inline void mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
+							   char delim_start, char delim_end, char escape_char, const std::string& empty_val);
+
 	/**
-	 * changes the current format used by the Codec
+	 * changes the current format used by the Codec (for ELF only)
 	 *
 	 * @param fmt the new format to use (a sequence of field names separated by spaces)
 	 */
-	inline void changeFormat(char *fmt);
+	inline void changeELFFormat(char *fmt);
 
 	/**
-	 * writes the ELF version number and field format headers
+	 * writes the version number and field format headers (for ELF only)
 	 *
 	 * @param out the output stream to which the headers will be written
 	 */
-	inline void writeHeaders(std::ostream& out) const;
+	inline void writeELFHeaders(std::ostream& out) const;
 
 	/**
-	 * skips sequences of whitespace characters and comments, and detects and
-	 * handles any field format changes (for ELF only)
+	 * skips occurances of "empty" events (i.e. records with no data) and comments,
+	 * and detects and handles any field format changes (for ELF only)
 	 *
 	 * @param buf_ptr pointer to an istream streambuf used for reading
-	 * 
+	 *
 	 * @param return int_type value of the next byte available to be consumed
 	 */
-	inline int_type consumeWhiteSpaceAndComments(streambuf_type *buf_ptr);
-		
-	
+	inline int_type consumeVoidsAndComments(streambuf_type *buf_ptr);
+
+
 	/// content type used by this Codec
 	static const std::string		CONTENT_TYPE;
-	
-	/// String defines a field format for the log file (ELF)
-	static const std::string		FIELDS_FORMAT_STRING;
-	
-	/// name of the field mapping element for Pion XML config files
-	static const std::string		FIELD_ELEMENT_NAME;
-	
-	/// name of the headers element for Pion XML config files
-	static const std::string		HEADERS_ELEMENT_NAME;
-	
+
 	/// name of the flush element for Pion XML config files
 	static const std::string		FLUSH_ELEMENT_NAME;
-	
+
+	/// name of the headers element for Pion XML config files
+	static const std::string		HEADERS_ELEMENT_NAME;
+
+	/// name of the field mapping element for Pion XML config files
+	static const std::string		FIELD_ELEMENT_NAME;
+
 	/// name of the Term ID attribute for Pion XML config files
-	static const std::string		TERM_ATTRIBUTE_NAME;	
+	static const std::string		TERM_ATTRIBUTE_NAME;
 
 	/// name of the start delimiter attribute for Pion XML config files
 	static const std::string		START_ATTRIBUTE_NAME;
 
 	/// name of the end delimiter attribute for Pion XML config files
 	static const std::string		END_ATTRIBUTE_NAME;
-	
+
+	/// name of the escape character attribute for Pion XML config files
+	static const std::string		ESCAPE_ATTRIBUTE_NAME;
+
+	/// name of the empty value attribute for Pion XML config files
+	static const std::string		EMPTY_ATTRIBUTE_NAME;
+
+	/// name of the event specifications element for Pion XML config files
+	static const std::string		EVENTS_ELEMENT_NAME;
+
+	/// name of the field specifications element for Pion XML config files
+	static const std::string		FIELDS_ELEMENT_NAME;
+
+	/// name of the split-string attribute for Pion XML config files
+	static const std::string		SPLIT_ATTRIBUTE_NAME;
+
+	/// name of the join-string attribute for Pion XML config files
+	static const std::string		JOIN_ATTRIBUTE_NAME;
+
+	/// name of the comment-chars attribute for Pion XML config files
+	static const std::string		COMMENT_ATTRIBUTE_NAME;
+
+	/// name of the consume-consecutive-delimiters attribute for Pion XML config files
+	static const std::string		CONSUME_ATTRIBUTE_NAME;
+
 	/// maximum size of the read buffer
 	static const unsigned int		READ_BUFFER_SIZE;
-	
+
+
+	/// default values for various settings
+	static const std::string		EVENT_SPLIT_SET;
+	static const std::string		EVENT_JOIN_STRING;
+	static const std::string		COMMENT_CHAR_SET;
+	static const std::string		FIELD_SPLIT_SET;
+	static const std::string		FIELD_JOIN_STRING;
+
+
+	/// special support for ELF
+	static const std::string		VERSION_ELF_HEADER;
+	static const std::string		DATE_ELF_HEADER;
+	static const std::string		SOFTWARE_ELF_HEADER;
+	static const std::string		FIELDS_ELF_HEADER;
+
 
 	/// memory buffer used to read events
 	boost::scoped_array<char>		m_read_buf;
 
 	/// pointer to the end of the read buffer
 	const char * const				m_read_end;
-	
+
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
-	
+
 	/// represents the current sequence of data fields in the log format
 	CurrentFormat					m_format;
 
 	/// true if the codec should flush the output stream after each write
 	bool							m_flush_after_write;
-	
-	/// true if the codec should write out ELF headers
-	bool							m_needs_to_write_headers;
+
+	/// true if the codec should handle ELF headers (and other ELF behaviors)
+	bool							m_handle_elf_headers;
+
+	/// did we write the ELF headers already?
+	bool							m_wrote_elf_headers;
+
+	/// the event split set for the log file
+	std::string						m_event_split;
+
+	/// the event join string for the log file
+	std::string						m_event_join;
+
+	/// the comment character set for the log file
+	std::string						m_comment_chars;
+
+	/// the field split set for the log file
+	std::string						m_field_split;
+
+	/// the field join string for the log file
+	std::string						m_field_join;
+
+	/// true if the codec should consume consecutive field delimiters
+	bool							m_consume_delims;
 };
 
 
 // inline member functions for LogCodec
 
-inline void LogCodec::mapFieldToTerm(const std::string& field,
-									 const pion::platform::Vocabulary::Term& term,
-									 char delim_start, char delim_end)
+inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
+									 char delim_start, char delim_end, char escape_char, const std::string& empty_val)
 {
 	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
 		if (i->second->log_term.term_ref == term.term_ref)
@@ -326,7 +397,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field,
 		throw PionException("Duplicate Field Name");
 
 	// prepare a new Logfield object
-	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end));
+	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, escape_char, empty_val));
 	switch (term.term_type) {
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -341,8 +412,8 @@ inline void LogCodec::mapFieldToTerm(const std::string& field,
 	// append the new field to the current (default) format
 	m_format.push_back(field_ptr);
 }
-	
-inline void LogCodec::changeFormat(char *fmt)
+
+inline void LogCodec::changeELFFormat(char *fmt)
 {
 	m_format.clear();
 	char *ptr;
@@ -363,126 +434,129 @@ inline void LogCodec::changeFormat(char *fmt)
 		fmt = ptr + 1;
 	}
 }
-	
-inline void LogCodec::writeHeaders(std::ostream& out) const
+
+inline void LogCodec::writeELFHeaders(std::ostream& out) const
 {
-	out << "#Version: 1.0\x0A";
-	out << FIELDS_FORMAT_STRING << ' ';
+	PionDateTime time_now(boost::posix_time::second_clock::universal_time());
+	out << VERSION_ELF_HEADER << " 1.0" << m_event_join;
+	out << DATE_ELF_HEADER << ' ' << time_now << m_event_join;
+	out << SOFTWARE_ELF_HEADER << " Pion v" << PION_VERSION << m_event_join;
+	out << FIELDS_ELF_HEADER;
 	CurrentFormat::const_iterator i = m_format.begin();
-	while (i != m_format.end()) {
-		out << (*i)->log_field;
-		if (++i != m_format.end()) out << ' ';
-	}
-	out << '\x0A';
+	while (i != m_format.end())
+		out << ' ' << (*i++)->log_field;
+	out << m_event_join;
 }
 
-inline LogCodec::int_type LogCodec::consumeWhiteSpaceAndComments(streambuf_type *buf_ptr)
+inline LogCodec::int_type LogCodec::consumeVoidsAndComments(streambuf_type *buf_ptr)
 {
 	int_type c = buf_ptr->sgetc();
-	while (! traits_type::eq_int_type(c, traits_type::eof())) {
-		if (c == ' ' || c == '\x0A' || c == '\x0D') {
+	while (!traits_type::eq_int_type(c, traits_type::eof())) {
+		if (m_field_split.find(c) != std::string::npos || m_event_split.find(c) != std::string::npos) {
 			c = buf_ptr->snextc();
-		} else if (c == '#') {
-			// ignore comment line
-			char * const read_start = m_read_buf.get();
-			char * read_ptr = read_start;
+		} else if (m_comment_chars.find(c) != std::string::npos) {
+			// ignore comment line (sorta...)
+			char * const read_buf = m_read_buf.get();
+			char * read_ptr = read_buf;
 			do {
 				// check for end of line
-				if (c == '\x0A' || c == '\x0D')
+				if (m_event_split.find(c) != std::string::npos)
 					break;
-				// read in the comment in case it is a format change
+				// read in the comment in case it matters...
 				if (read_ptr < m_read_end)
 					*(read_ptr++) = c;
 				// get the next character
 				c = buf_ptr->snextc();
-			} while (! traits_type::eq_int_type(c, traits_type::eof()));
-			// check if it is a format change
+			} while (!traits_type::eq_int_type(c, traits_type::eof()));
 			*read_ptr = '\0';
-			read_start[FIELDS_FORMAT_STRING.size()] = '\0';
-			if (FIELDS_FORMAT_STRING == read_start)
-				changeFormat(read_start + FIELDS_FORMAT_STRING.size() + 1);
+			if (m_handle_elf_headers) {
+				// check if it is an ELF format change
+				read_buf[FIELDS_ELF_HEADER.size()] = '\0';
+				if (FIELDS_ELF_HEADER == read_buf)
+					changeELFFormat(read_buf + FIELDS_ELF_HEADER.size() + 1);
+			}
 		} else {
 			break;
 		}
 	}
 	return c;
 }
-	
+
 
 // inline member functions for LogCodec::LogField
 
 inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::Event::ParameterValue& value)
 {
-	if (log_delim_start != '\0')
-		out << log_delim_start;
-	
+	std::ostringstream oss;
+
 	switch(log_term.term_type) {
-		case pion::platform::Vocabulary::TYPE_NULL:
-			if (log_delim_start == 0)
-				writeEmptyValue(out);
-			break;
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
-			out << boost::get<boost::int32_t>(value);
+			oss << boost::get<boost::int32_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_INT64:
-			out << boost::get<boost::int64_t>(value);
+			oss << boost::get<boost::int64_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT8:
 		case pion::platform::Vocabulary::TYPE_UINT16:
 		case pion::platform::Vocabulary::TYPE_UINT32:
-			out << boost::get<boost::uint32_t>(value);
+			oss << boost::get<boost::uint32_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_UINT64:
-			out << boost::get<boost::uint64_t>(value);
+			oss << boost::get<boost::uint64_t>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_FLOAT:
-			out << boost::get<float>(value);
+			oss << boost::get<float>(value);
 			break;
 		case pion::platform::Vocabulary::TYPE_DOUBLE:
 			// using boost::lexical_cast<std::string> ensures precision appropriate to type double
-			out << boost::lexical_cast<std::string>(boost::get<double>(value));
+			oss << boost::lexical_cast<std::string>(boost::get<double>(value));
 			break;
 		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
 			// using boost::lexical_cast<std::string> ensures precision appropriate to type long double
-			out << boost::lexical_cast<std::string>(boost::get<long double>(value));
+			oss << boost::lexical_cast<std::string>(boost::get<long double>(value));
 			break;
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
-			if (ss.size() == 0) {
-				if (log_delim_start == 0)
-					writeEmptyValue(out);
-			} else {
-				out << ss.get();
-			}
+			if (ss.size() > 0)
+				oss << ss.get();
 			break;
 		}
 		case pion::platform::Vocabulary::TYPE_CHAR:
-		case pion::platform::Vocabulary::TYPE_REGEX:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
-			if (ss.size() == 0) {
-				if (log_delim_start == 0)
-					writeEmptyValue(out);
-			} else {
-				out.write(ss.get(), ss.size() < log_term.term_size? ss.size() : log_term.term_size);
-			}
+			if (ss.size() > 0)
+				oss.write(ss.get(), ss.size() < log_term.term_size ? ss.size() : log_term.term_size);
 			break;
 		}
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
-			log_time_facet.write(out, boost::get<const PionDateTime&>(value));
+			log_time_facet.write(oss, boost::get<const PionDateTime&>(value));
 			break;
-		case pion::platform::Vocabulary::TYPE_OBJECT:
-			// do nothing; this is not supported for Log data streams
+		default:
+			// ignore unsupported field...
 			break;
 	}
 
+	if (log_delim_start != '\0')
+		out << log_delim_start;
+	if (oss.str().empty())
+		out << log_empty_val;
+	else {
+		std::string src = oss.str();
+		std::string dst;
+		for (std::string::iterator i = src.begin(); i != src.end(); i++) {
+			if (*i == log_delim_end)
+				dst.push_back(log_escape_char);
+			dst.push_back(*i);
+		}
+		out << dst;
+	}
 	if (log_delim_end != '\0')
 		out << log_delim_end;
 }
@@ -490,12 +564,6 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 {
 	switch(log_term.term_type) {
-		case pion::platform::Vocabulary::TYPE_NULL:
-			// do nothing -> just ignore the empty field
-			break;
-		case pion::platform::Vocabulary::TYPE_OBJECT:
-			// do nothing; this is not supported for Log data streams
-			break;
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
@@ -527,12 +595,10 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 			e.setString(log_term.term_ref, buf);
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
-		case pion::platform::Vocabulary::TYPE_REGEX:
-			if (strlen(buf) > log_term.term_size) {
+			if (strlen(buf) > log_term.term_size)
 				e.setString(log_term.term_ref, std::string(buf, log_term.term_size));
-			} else {
+			else
 				e.setString(log_term.term_ref, buf);
-			}
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -543,10 +609,13 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 			e.setDateTime(log_term.term_ref, dt);
 			break;
 		}
+		default:
+			// ignore unsupported field...
+			break;
 	}
 }
-	
-	
+
+
 }	// end namespace plugins
 }	// end namespace pion
 

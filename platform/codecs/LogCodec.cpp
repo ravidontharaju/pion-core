@@ -29,16 +29,37 @@ namespace plugins {		// begin namespace plugins
 
 // static members of LogCodec
 const std::string			LogCodec::CONTENT_TYPE = "text/ascii";
-const std::string			LogCodec::FIELDS_FORMAT_STRING = "#Fields:";
-const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
-const std::string			LogCodec::HEADERS_ELEMENT_NAME = "Headers";
 const std::string			LogCodec::FLUSH_ELEMENT_NAME = "Flush";
+const std::string			LogCodec::HEADERS_ELEMENT_NAME = "Headers";	// this means ELF
+const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
 const std::string			LogCodec::END_ATTRIBUTE_NAME = "end";
-const unsigned int			LogCodec::READ_BUFFER_SIZE = 1024 * 126;	// 128KB
+const std::string			LogCodec::ESCAPE_ATTRIBUTE_NAME = "escape";
+const std::string			LogCodec::EMPTY_ATTRIBUTE_NAME = "empty";
+const std::string			LogCodec::EVENTS_ELEMENT_NAME = "Events";
+const std::string			LogCodec::FIELDS_ELEMENT_NAME = "Fields";
+const std::string			LogCodec::SPLIT_ATTRIBUTE_NAME = "split";
+const std::string			LogCodec::JOIN_ATTRIBUTE_NAME = "join";
+const std::string			LogCodec::COMMENT_ATTRIBUTE_NAME = "comment";
+const std::string			LogCodec::CONSUME_ATTRIBUTE_NAME = "consume";
+const unsigned int			LogCodec::READ_BUFFER_SIZE = 1024 * 128;	// 128KB
 
-	
+// defaults for various settings (tuned for ELF-like formats)
+// NOTE: If Headers is true, these defaults CANNOT be overridden
+const std::string			LogCodec::EVENT_SPLIT_SET = "\r\n";
+const std::string			LogCodec::EVENT_JOIN_STRING = OSEOL;
+const std::string			LogCodec::COMMENT_CHAR_SET = "#";
+const std::string			LogCodec::FIELD_SPLIT_SET = " \t";
+const std::string			LogCodec::FIELD_JOIN_STRING = " ";
+
+// special support for ELF (when Headers is true)
+const std::string			LogCodec::VERSION_ELF_HEADER = "#Version:";
+const std::string			LogCodec::DATE_ELF_HEADER = "#Date:";
+const std::string			LogCodec::SOFTWARE_ELF_HEADER = "#Software:";
+const std::string			LogCodec::FIELDS_ELF_HEADER = "#Fields:";
+
+
 // LogCodec member functions
 
 CodecPtr LogCodec::clone(void) const
@@ -46,26 +67,32 @@ CodecPtr LogCodec::clone(void) const
 	LogCodec *new_codec(new LogCodec());
 	new_codec->copyCodec(*this);
 	new_codec->m_flush_after_write = m_flush_after_write;
-	new_codec->m_needs_to_write_headers = m_needs_to_write_headers;
+	new_codec->m_handle_elf_headers = m_handle_elf_headers;
+	new_codec->m_wrote_elf_headers = false;	// Important!
+	new_codec->m_event_split = m_event_split;
+	new_codec->m_event_join = m_event_join;
+	new_codec->m_comment_chars = m_comment_chars;
+	new_codec->m_field_split = m_field_split;
+	new_codec->m_field_join = m_field_join;
+	new_codec->m_consume_delims = m_consume_delims;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
-		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term,
-								  (*i)->log_delim_start, (*i)->log_delim_end);
+		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term, (*i)->log_delim_start,
+								  (*i)->log_delim_end, (*i)->log_escape_char, (*i)->log_empty_val);
 	}
 	return CodecPtr(new_codec);
 }
-	
+
 void LogCodec::write(std::ostream& out, const Event& e)
 {
 	const Event::ParameterValue *value_ptr;
-	
-	// iterate through each field in the current format
-	
+
 	// write the ELF headers if necessary
-	if (m_needs_to_write_headers) {
-		writeHeaders(out);
-		m_needs_to_write_headers = false;
+	if (m_handle_elf_headers && !m_wrote_elf_headers) {
+		writeELFHeaders(out);
+		m_wrote_elf_headers = true;
 	}
 
+	// iterate through each field in the current format
 	CurrentFormat::const_iterator i = m_format.begin();
 	while (i != m_format.end()) {
 		// get the value for the field
@@ -79,14 +106,14 @@ void LogCodec::write(std::ostream& out, const Event& e)
 
 		// iterate to the next field
 		++i;
-		// add space character between all fields
+		// add field-join between all fields
 		if (i != m_format.end())
-			out << ' ';
+			out << m_field_join;
 	}
 
-	// write newline for each event record
-	out << '\x0A';
-	
+	// write event-join for each event record
+	out << m_event_join;
+
 	// flush the output stream
 	if (m_flush_after_write)
 		out.flush();
@@ -96,62 +123,52 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 {
 	if (e.getType() != getEventType())
 		throw WrongEventTypeException();
+	e.clear();
 
 	streambuf_type *buf_ptr = input_stream.rdbuf();
-	int_type c;
-
-	// skip empty lines and space characters at beginning of line
-	c = consumeWhiteSpaceAndComments(buf_ptr);
+	// skip "empty events" (i.e. records with no data) and comments
+	int_type c = consumeVoidsAndComments(buf_ptr);
+	// if nothing left...punt with no event generated
 	if (traits_type::eq_int_type(c, traits_type::eof())) {
 		input_stream.setstate(std::ios::eofbit);
-		e.clear();
 		return false;
 	}
 
 	// iterate through each field in the format
-	CurrentFormat::const_iterator i = m_format.begin();
+	CurrentFormat::const_iterator i;
 	char delim_start;
 	char delim_end;
+	char escape_char;
 	char * read_ptr;
-	char * const read_start = m_read_buf.get();
+	char * const read_buf = m_read_buf.get();
 
-	while (i != m_format.end()) {
+	for (i = m_format.begin(); !traits_type::eq_int_type(c, traits_type::eof()) &&
+		   m_event_split.find(c) == std::string::npos && i != m_format.end(); ++i)
+	{
 		delim_start = (*i)->log_delim_start;
 		delim_end = (*i)->log_delim_end;
+		escape_char = (*i)->log_escape_char;
 
-		// ignore input until we reach the start char (if defined)
 		if (delim_start != '\0') {
-			while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
-				if (c == delim_start) {
-					// skip over delimiter
-					c = buf_ptr->snextc();
-					break;
-				}
-				c = buf_ptr->snextc();
-			}
+			if (c == delim_start)
+				c = buf_ptr->snextc(); // skip over start-delimiter
+			else
+				break;	// field didn't start as expected, gotta punt
 		}
-		
-		// eof before we started reading a field
-		if (traits_type::eq_int_type(c, traits_type::eof())) {
-			input_stream.setstate(std::ios::eofbit);
-			return false;
-		}
-		
+
 		// parse the field contents
-		read_ptr = read_start;
-		while (! traits_type::eq_int_type(c, traits_type::eof()) ) {
-			if (c == delim_end && read_ptr>read_start && *(read_ptr-1)=='\\')
-			{
-				// escaped delimiter
-				--read_ptr;
-			} else if (c == '\x0A' || c == '\x0D' || c == delim_end
-				|| (delim_end=='\0' && c == ' ') )
+		read_ptr = read_buf;
+		while (!traits_type::eq_int_type(c, traits_type::eof())) {
+			if ((delim_end != '\0' && c == delim_end) && read_ptr > read_buf && read_ptr[-1] == escape_char)
+				--read_ptr;	// escaped end-delimiter...overwrite the escape-character
+			else if ((delim_end != '\0' && c == delim_end) ||
+					 (delim_end == '\0' && (m_field_split.find(c) != std::string::npos ||
+											m_event_split.find(c) != std::string::npos)))
 			{
 				// we've reached the end of the field contents
-				// increment the pointer so we know it's finished
 				*(read_ptr++) = '\0';
-				if (c == delim_end)
-					c = buf_ptr->snextc();	// skip over delimiter
+				if (delim_end != '\0' && c == delim_end)
+					c = buf_ptr->snextc();	// skip over end-delimiter
 				break;
 			}
 			if (read_ptr < m_read_end)
@@ -160,52 +177,35 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 				*(read_ptr++) = '\0';
 			c = buf_ptr->snextc();
 		}
-		
-		// eof before we were able to parse a field
-		if (read_ptr == read_start) {
-			if (traits_type::eq_int_type(c, traits_type::eof()))
-				input_stream.setstate(std::ios::eofbit);
-			return false;
-		}
-		
-		// only set values that are not null
-		if (*read_start != '\0' && !(delim_start == '\0'
-									 && read_start[0] == '-'
-									 && read_start[1] == '\0') )
-		{
-			// parse the value we have extracted
-			(*i)->read(read_start, e);
-		}
-		
-		++i;
-		if (i == m_format.end()) {
-			// end of format
-			// skip empty lines and space characters at end of line
-			c = consumeWhiteSpaceAndComments(buf_ptr);
+
+		// only parse-and-set values that are not null/empty
+		if (read_ptr != read_buf && *read_buf != '\0' && read_buf != (*i)->log_empty_val)
+			(*i)->read(read_buf, e);
+
+		// if EOF or end-of-record or not-a-field-delim, gotta punt
+		if (traits_type::eq_int_type(c, traits_type::eof()) ||
+			m_event_split.find(c) != std::string::npos || m_field_split.find(c) == std::string::npos)
 			break;
-		} else {
-			// not the end of format
-			while (true) {
-				if (c == ' ') {
-					// skip space characters in between fields
-					c = buf_ptr->snextc();
-				} else if (c == '\x0A' || c == '\x0D') {
-					// end of line reached prematurely
-					return false;
-				} else if (traits_type::eq_int_type(c, traits_type::eof())) {
-					// end of file reached prematurely
-					input_stream.setstate(std::ios::eofbit);
-					return false;
-				} else {
-					break;
-				}
-			}
-		}
+
+		do {
+			// skip delimiter(s) between fields
+			c = buf_ptr->snextc();
+			if (!m_consume_delims)
+				break;
+		} while (!traits_type::eq_int_type(c, traits_type::eof()) && m_field_split.find(c) != std::string::npos);
 	}
-			
+
+	// skip the rest of the record...if there's something left
+	while (!traits_type::eq_int_type(c, traits_type::eof())) {
+		if (m_event_split.find(c) != std::string::npos) {
+			c = buf_ptr->snextc();
+			break;
+		}
+		c = buf_ptr->snextc();
+	}
+
 	if (traits_type::eq_int_type(c, traits_type::eof()))
 		input_stream.setstate(std::ios::eofbit);
-		
 	return true;
 }
 
@@ -214,75 +214,163 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// first set config options for the Codec base class
 	reset();
 	Codec::setConfig(v, config_ptr);
-	
+
 	// check if the Codec should flush the output stream after each write
 	m_flush_after_write = false;
 	std::string flush_option;
-	if (ConfigManager::getConfigOption(FLUSH_ELEMENT_NAME, flush_option,
-									   config_ptr))
-	{
+	if (ConfigManager::getConfigOption(FLUSH_ELEMENT_NAME, flush_option, config_ptr)) {
 		if (flush_option == "true")
 			m_flush_after_write = true;
 	}
-	
+
 	// check if the Codec should include headers when writing output
-	m_needs_to_write_headers = false;
+	m_handle_elf_headers = false;
 	std::string headers_option;
-	if (ConfigManager::getConfigOption(HEADERS_ELEMENT_NAME, headers_option,
-									   config_ptr))
-	{
+	if (ConfigManager::getConfigOption(HEADERS_ELEMENT_NAME, headers_option, config_ptr)) {
 		if (headers_option == "true")
-			m_needs_to_write_headers = true;
+			m_handle_elf_headers = true;
 	}
-	
+
 	// next, map the fields to Terms
 	xmlNodePtr codec_field_node = config_ptr;
-	while ( (codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL)
-	{
-		// parse new field mapping
-		
+	while ((codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL) {
 		// start with the name of the field (element content)
 		xmlChar *xml_char_ptr = xmlNodeGetContent(codec_field_node);
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
 			if (xml_char_ptr != NULL)
 				xmlFree(xml_char_ptr);
 			throw EmptyFieldException(getId());
 		}
 		const std::string field_name(reinterpret_cast<char*>(xml_char_ptr));
 		xmlFree(xml_char_ptr);
-		
+
 		// next get the Term we want to map to
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
 			if (xml_char_ptr != NULL)
 				xmlFree(xml_char_ptr);
 			throw EmptyTermException(getId());
 		}
 		const std::string term_id(reinterpret_cast<char*>(xml_char_ptr));
 		xmlFree(xml_char_ptr);
-		
+
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw UnknownTermException(term_id);
-		
+
 		// get the starting delimiter (if any)
 		char delim_start = '\0';
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(START_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr != NULL && xml_char_ptr[0] != '\0')
+		if (xml_char_ptr != NULL) {
 			delim_start = xml_char_ptr[0];
+			xmlFree(xml_char_ptr);
+		}
 
 		// get the ending delimiter (if any)
 		char delim_end = '\0';
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(END_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr != NULL && xml_char_ptr[0] != '\0')
+		if (xml_char_ptr != NULL) {
 			delim_end = xml_char_ptr[0];
-		
+			xmlFree(xml_char_ptr);
+		}
+
+		// if only one delimiter exists, use it for both
+		if (delim_start == '\0' && delim_end != '\0')
+			delim_start = delim_end;
+		if (delim_start != '\0' && delim_end == '\0')
+			delim_end = delim_start;
+
+		// get the escape character (if any)
+		// default is "\"
+		char escape_char = '\\';
+		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(ESCAPE_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			escape_char = xml_char_ptr[0];
+			xmlFree(xml_char_ptr);
+		}
+
+		// get the empty value (if any)
+		// default is "-" if there are no delimiters
+		std::string empty_val = (delim_start == '\0') ? "-" : "";
+		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(EMPTY_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			empty_val = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+
 		// add the field mapping
-		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end);
-		
+		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end, escape_char, empty_val);
+
 		// step to the next field mapping
 		codec_field_node = codec_field_node->next;
+	}
+
+	// initialize field/event specifications
+	m_event_split = EVENT_SPLIT_SET;
+	m_event_join = EVENT_JOIN_STRING;
+	m_comment_chars = COMMENT_CHAR_SET;
+	m_field_split = FIELD_SPLIT_SET;
+	m_field_join = FIELD_JOIN_STRING;
+	m_consume_delims = true;
+
+	// if this is ELF data, use defaults only!
+	if (m_handle_elf_headers)
+		return;
+
+	// handle event specifications
+	xmlNodePtr events_node = ConfigManager::findConfigNodeByName(EVENTS_ELEMENT_NAME, config_ptr);
+	if (events_node != NULL) {
+		xmlChar *xml_char_ptr;
+		// get the split set (if any)
+		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(SPLIT_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			if (xml_char_ptr[0] != '\0')
+				m_event_split = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+		// get the join string (if any)
+		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(JOIN_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			if (xml_char_ptr[0] != '\0')
+				m_event_join = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+		// get the comment chars (if any)
+		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(COMMENT_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			if (xml_char_ptr[0] != '\0')
+				m_comment_chars = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+	}
+
+	// handle field specifications
+	xmlNodePtr fields_node = ConfigManager::findConfigNodeByName(FIELDS_ELEMENT_NAME, config_ptr);
+	if (fields_node != NULL) {
+		xmlChar *xml_char_ptr;
+		// get the split set (if any)
+		xml_char_ptr = xmlGetProp(fields_node, reinterpret_cast<const xmlChar*>(SPLIT_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			if (xml_char_ptr[0] != '\0')
+				m_field_split = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+		// get the join string (if any)
+		xml_char_ptr = xmlGetProp(fields_node, reinterpret_cast<const xmlChar*>(JOIN_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			if (xml_char_ptr[0] != '\0')
+				m_field_join = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+		}
+		// check if the Codec should consume consecutive field delimiters
+		xml_char_ptr = xmlGetProp(fields_node, reinterpret_cast<const xmlChar*>(CONSUME_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			const std::string consume_option(reinterpret_cast<char*>(xml_char_ptr));
+			if (consume_option == "false")
+				m_consume_delims = false;
+			xmlFree(xml_char_ptr);
+		}
 	}
 }
 
