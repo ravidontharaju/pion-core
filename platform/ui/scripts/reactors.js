@@ -153,23 +153,11 @@ pion.reactors.init = function() {
 
 	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
 	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
-	// triggers another tab to actually be selected.
-
-	// This is a workaround for a bug in dojo, namely that the tab that's clicked will always look as if it's selected, 
-	// even if clicking it triggered another tab to actually be selected, as is the case with the 'add new workspace' tab.
+	// triggers another tab to actually be selected, as is the case with the 'add new workspace' tab.
 	dojo.connect(dijit.byId("mainTabContainer").tablist, 'onButtonClick', 
 					function() {
 						if (new_workspace_tab_clicked) {
-							var current_content_pane = pion.reactors.workspace_box.my_content_pane;
-
-							// Although current_content_pane is already selected, we need to reselect it to get the
-							// tab itself to look selected.  But we can't just call selectChild, because it won't do
-							// anything since it's already selected.  So, we need to select a different pane first.
-							// workspace_boxes[0] is NOT the current content pane, since it can't be a new workspace.
-							dijit.byId("mainTabContainer").selectChild(workspace_boxes[0].my_content_pane);
-							
-							// Now we can reselect, and finally the tab will show that it's selected.
-							dijit.byId("mainTabContainer").selectChild(current_content_pane);
+							pion.reactors.reselectCurrentWorkspace();
 
 							// Reset this since the workaround is only needed when the 'add new workspace' tab is clicked. 
 							new_workspace_tab_clicked = false;
@@ -270,21 +258,7 @@ pion.reactors.initConfiguredReactors = function() {
 				}
 				//console.dir(config);
 
-				pion.reactors.workspace_box = workspaces_by_name[config.Workspace];
-				if (!pion.reactors.workspace_box) {
-					addWorkspace(config.Workspace);
-				}
-				var workspace_box = pion.reactors.workspace_box;
-				dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
-
-				var reactor_node = document.createElement("div");
-				workspace_box.node.appendChild(reactor_node);
-				var reactor = pion.reactors.createReactor(config, reactor_node);
-				pion.reactors.reactors_by_id[config['@id']] = reactor;
-				reactor.item = item;
-				reactor.workspace = workspace_box;
-				workspace_box.reactors.push(reactor);
-				console.debug('X, Y = ', config.X, ', ', config.Y);
+				pion.reactors.createReactorInConfiguredWorkspace(config);
 			},
 			onComplete: function(items, request) {
 				console.debug('done fetching Reactors');
@@ -316,6 +290,9 @@ pion.reactors.initConfiguredReactors = function() {
 						pion.reactors.workspace_box = workspace_boxes[0];
 						surface = pion.reactors.workspace_box.my_surface;
 						dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+
+						// Now that all workspaces have been added, call layout() in case there are enough to require more than one row of tabs.
+						dijit.byId('main_stack_container').layout();
 					},
 					onError: pion.handleFetchError
 				});
@@ -323,6 +300,30 @@ pion.reactors.initConfiguredReactors = function() {
 			onError: pion.handleFetchError
 		});
 	}
+}
+
+pion.reactors.createReactorInConfiguredWorkspace = function(config) {
+	pion.reactors.workspace_box = workspaces_by_name[config.Workspace];
+	if (!pion.reactors.workspace_box) {
+		addWorkspace(config.Workspace);
+	}
+	var workspace_box = pion.reactors.workspace_box;
+	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
+
+	var reactor_node = document.createElement("div");
+	workspace_box.node.appendChild(reactor_node);
+	var reactor = pion.reactors.createReactor(config, reactor_node);
+	pion.reactors.reactors_by_id[config['@id']] = reactor;
+	reactor.workspace = workspace_box;
+	workspace_box.reactors.push(reactor);
+	console.debug('X, Y = ', config.X, ', ', config.Y);
+}
+
+pion.reactors.reselectCurrentWorkspace = function() {
+	// Without this, the following call to selectChild() won't do anything, since the current workspace is already selected.
+	dijit.byId("mainTabContainer").selectedChildWidget = undefined;
+
+	dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
 }
 
 function addWorkspace(name) {
@@ -374,10 +375,6 @@ function addWorkspace(name) {
 	*/
 	console.debug('surface_box = ', surface_box);
 	new_workspace.my_surface = dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h);
-
-	// Need to select the pane again, to incorporate the surface.
-	tab_container.selectChild(workspace_pane);
-
 	new_workspace.reactors = [];
 	new_workspace.isTracking = false;
 
@@ -1025,6 +1022,7 @@ function deleteWorkspace(workspace_pane) {
 
 function _deleteEmptyWorkspace(workspace_pane) {
 	console.debug('deleting ', workspace_pane.title);
+	delete workspaces_by_name[workspace_pane.title];
 	for (var j = 0; j < workspace_boxes.length; ++j) {
 		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
 			workspace_boxes.splice(j, 1);
