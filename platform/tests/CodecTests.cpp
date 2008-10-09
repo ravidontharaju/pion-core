@@ -30,6 +30,12 @@
 #include <boost/regex.hpp>
 #include <fstream>
 
+#ifdef PION_WIN32
+#define OSEOL "\r\n"
+#else
+#define OSEOL "\n"
+#endif
+
 using namespace pion;
 using namespace pion::platform;
 
@@ -2093,7 +2099,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatJustOneField) {
 	event_ptr->setString(m_remotehost_ref, "192.168.0.1");
 	std::stringstream ss;
 	m_common_codec->write(ss, *event_ptr);
-	BOOST_CHECK_EQUAL(ss.str(), "192.168.0.1 - - [] \"\" - -\x0A");
+	BOOST_CHECK_EQUAL(ss.str(), "192.168.0.1 - - [] \"\" - -" OSEOL);
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatAllFields) {
@@ -2109,11 +2115,11 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatAllFields) {
 	std::stringstream ss;
 	m_common_codec->write(ss, *event_ptr);
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
-	BOOST_CHECK_EQUAL(ss.str(), "192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET / HTTP/1.1\" 302 116\x0A");
+	BOOST_CHECK_EQUAL(ss.str(), "192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET / HTTP/1.1\" 302 116" OSEOL);
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFormatAllFieldsWithQuotes) {
-	std::string log_entry("192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET /\\\" HTTP/1.1\" 302 116\x0A");
+	std::string log_entry("192.168.10.10 greg bob [10/Jan/2008:12:31:00 ] \"GET /\\\" HTTP/1.1\" 302 116" OSEOL);
 	std::stringstream ss(log_entry);
 
 	EventPtr event_ptr(m_event_factory.create(m_common_codec->getEventType()));
@@ -2168,7 +2174,7 @@ BOOST_AUTO_TEST_CASE(checkCombinedCodecWriteJustExtraFields) {
 	event_ptr->setString(m_useragent_ref, "Mozilla/4.08 [en] (Win98; I ;Nav)");
 	std::stringstream ss;
 	m_combined_codec->write(ss, *event_ptr);
-	BOOST_CHECK_EQUAL(ss.str(), "- - - [] \"\" - - \"http://www.atomiclabs.com/\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"\x0A");
+	BOOST_CHECK_EQUAL(ss.str(), "- - - [] \"\" - - \"http://www.atomiclabs.com/\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"" OSEOL);
 }
 
 BOOST_AUTO_TEST_CASE(checkExtendedCodecReadLogFile) {
@@ -2243,7 +2249,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
 	size_t end = str.find("#Software: ");
 	BOOST_REQUIRE(end != std::string::npos);
 	str.replace(start + 7, end - start - 8, "...");
-	BOOST_CHECK_EQUAL(str, "#Version: 1.0\x0A#Date: ...\x0A#Software: Pion v" PION_VERSION "\x0A#Fields: clf-date c-ip request cs(Referer) status\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302\x0A");
+	BOOST_CHECK_EQUAL(str, "#Version: 1.0" OSEOL "#Date: ..." OSEOL "#Software: Pion v" PION_VERSION OSEOL "#Fields: clf-date c-ip request cs(Referer) status" OSEOL "\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302" OSEOL "\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302" OSEOL);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
