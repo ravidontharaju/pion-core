@@ -3,29 +3,11 @@ dojo.require("pion.codecs");
 dojo.require("pion.terms");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
+dojo.require("dijit.form.Form");
+dojo.require("dijit.form.TextBox");
+dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.dtl.filter.htmlstrings");
-
-dojo.declare("plugins.codecs.Codec",
-	[],
-	{
-		constructor: function(uuid, args) {
-			this.uuid = uuid;
-			dojo.mixin(this, args);
-			plugins.codecs.codecs_by_id[uuid] = this;
-			var store = pion.codecs.plugin_data_store;
-			var _this = this;
-			store.fetchItemByIdentity({
-				identity: this.Plugin,
-				onItem: function(item) {
-					_this.label = store.getValue(item, 'label');
-				}
-			});
-		}
-	}
-);
-
-plugins.codecs.codecs_by_id = {};
 
 dojo.declare("plugins.codecs.CodecInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout

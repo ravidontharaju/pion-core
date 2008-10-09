@@ -2,9 +2,6 @@ dojo.provide("pion.databases");
 dojo.require("plugins.databases.Database");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.data.ItemFileWriteStore");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.LayoutContainer");
-dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
 
 // Databases don't have to be listed here to be usable, but they do to be included in pion-dojo.js.
@@ -98,12 +95,7 @@ pion.databases.init = function() {
 							onComplete: function (items, request) {
 								var config_accordion = dijit.byId('database_config_accordion');
 								for (var i = 0; i < items.length; ++i) {
-									var title = pion.databases.config_store.getValue(items[i], 'Name');
-									var plugin = pion.databases.config_store.getValue(items[i], 'Plugin');
-									var database_pane = _createNewPane(title, plugin);
-									database_pane.config_item = items[i];
-									database_pane.uuid = pion.databases.config_store.getValue(items[i], '@id');
-									config_accordion.addChild(database_pane);
+									pion.databases.createNewPaneFromItem(items[i]);
 								}
 								var first_pane = config_accordion.getChildren()[0];
 								config_accordion.selectChild(first_pane);
@@ -178,8 +170,10 @@ pion.databases.init = function() {
 	}
 
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);
-
-	function _createNewPane(title, plugin) {
+	
+	pion.databases.createNewPaneFromItem = function(item) {
+		var title = pion.databases.config_store.getValue(item, 'Name');
+		var plugin = pion.databases.config_store.getValue(item, 'Plugin');
 		var database_pane_node = document.createElement('span');
 		var pane_class_name = 'plugins.databases.' + plugin + 'Pane';
 		var pane_class = dojo.getObject(pane_class_name);
@@ -190,7 +184,24 @@ pion.databases.init = function() {
 			console.debug('class ', pane_class_name, ' not found; using plugins.databases.DatabasePane instead.');
 			var database_pane = new plugins.databases.DatabasePane({ 'class': 'database_pane', title: title }, database_pane_node);
 		}
+		database_pane.config_item = item;
+		database_pane.uuid = pion.databases.config_store.getValue(item, '@id');
+		dijit.byId('database_config_accordion').addChild(database_pane);
 		return database_pane;
+	}
+	
+	pion.databases.createNewPaneFromStore = function(id, database_config_page_is_selected) {
+		pion.databases.config_store.fetch({
+			query: {'@id': id},
+			onItem: function(item) {
+				var database_pane = pion.databases.createNewPaneFromItem(item);
+				if (database_config_page_is_selected) {
+					pion.databases._adjustAccordionSize();
+					dijit.byId('database_config_accordion').selectChild(database_pane);
+				}
+			},
+			onError: pion.handleFetchError
+		});
 	}
 
 	function _isDuplicateDatabaseId(id) {
@@ -261,13 +272,7 @@ pion.databases.init = function() {
 					var node = response.getElementsByTagName('Database')[0];
 					var id = node.getAttribute('id');
 					console.debug('id (from server): ', id);
-					var database = new plugins.databases.Database(id, dialogFields);
-					var database_config_accordion = dijit.byId('database_config_accordion');
-					var database_pane = _createNewPane(dialogFields.Name, dialogFields.Plugin);
-					database_pane.uuid = id;
-					database_config_accordion.addChild(database_pane);
-					pion.databases._adjustAccordionSize();
-					database_config_accordion.selectChild(database_pane);
+					pion.databases.createNewPaneFromStore(id, true);
 				},
 				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 			});

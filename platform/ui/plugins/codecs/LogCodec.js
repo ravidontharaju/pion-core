@@ -1,16 +1,6 @@
 dojo.provide("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.Codec");
 
-dojo.declare("plugins.codecs.LogCodec",
-	[ plugins.codecs.Codec ],
-	{
-		postCreate: function(){
-			this.config.Plugin = 'LogCodec';
-			this.inherited("postCreate", arguments);
-		}
-	}
-);
-
 dojo.declare("plugins.codecs.LogCodecPane",
 	[ plugins.codecs.CodecPane ],
 	{

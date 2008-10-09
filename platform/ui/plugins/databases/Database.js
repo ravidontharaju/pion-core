@@ -2,19 +2,10 @@ dojo.provide("plugins.databases.Database");
 dojo.require("pion.databases");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
-
-dojo.declare("plugins.databases.Database",
-	[],
-	{
-		constructor: function(uuid, args) {
-			this.uuid = uuid;
-			dojo.mixin(this, args);
-			plugins.databases.databases_by_id[uuid] = this;
-		}
-	}
-);
-
-plugins.databases.databases_by_id = {};
+dojo.require("dijit.form.Form");
+dojo.require("dijit.form.TextBox");
+dojo.require("dijit.form.Button");
+dojo.require("dijit.form.FilteringSelect");
 
 dojo.declare("plugins.databases.SelectPluginDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
