@@ -34,12 +34,7 @@ pion.vocabularies._adjustAccordionSize = function() {
 		var title_height = first_pane.getTitleHeight();
 	}
 	var accordion_height = vocab_pane_body_height + num_vocabs * title_height;
-	
-	// Make the accordion just narrow enough to avoid a horizontal scroll bar when
-	// there's a vertical one.
-	var accordion_width = dijit.byId('vocab_config_accordion').domNode.clientWidth - 15;
-
-	config_accordion.resize({h: accordion_height, w: accordion_width});
+	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
 	pion.vocabularies.height = accordion_height + 160;
