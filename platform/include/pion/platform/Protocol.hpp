@@ -85,12 +85,13 @@ public:
 	 * @param request direction flag
 	 * @ptr pointer to data
 	 * @len data length
+	 * @data_timestamp data frame timestamp
 	 * @event_ptr refererence to an event object returned if the call resulted in event generation
 	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not 
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len, 
-			pion::platform::EventPtr& event_ptr )=0;
+			boost::posix_time::ptime data_timestamp, pion::platform::EventPtr& event_ptr )=0;
 
 	/**
 	 * sets configuration parameters for this Protocol

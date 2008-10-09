@@ -52,15 +52,25 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SET_COOKIE="urn:vocab:clickstr
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_CONTENT="urn:vocab:clickstream#cs-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_CONTENT="urn:vocab:clickstream#sc-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CACHED="urn:vocab:clickstream#cached";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE="urn:vocab:clickstream#date";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME="urn:vocab:clickstream#time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE_TIME="urn:vocab:clickstream#date-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CLF_DATE="urn:vocab:clickstream#clf-date";
 
 	
 // HTTPProtocol member functions
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
+									  boost::posix_time::ptime data_timestamp, 
 									  EventPtr& event_ptr_ref)
 {
 	// parse the data
 	boost::tribool rc;
+
+	// save the request time for event timestamping
+	if(m_request_timestamp.is_not_a_date_time()) {
+		m_request_timestamp = data_timestamp;
+	}
 	if (request) {
 		m_request_parser.setReadBuffer(ptr, len);
 		rc = m_request_parser.parse(m_request);
@@ -82,6 +92,7 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			m_response_parser.reset();
 			m_request.clear();
 			m_response.clear();
+			m_request_timestamp = boost::date_time::not_a_date_time;
 		}
 	}
 
@@ -112,10 +123,15 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_cs_content_term_ref = m_cs_content_term_ref;
 	retval->m_sc_content_term_ref = m_sc_content_term_ref;
 	retval->m_cached_term_ref = m_cached_term_ref;
+	retval->m_date_term_ref = m_date_term_ref;
+	retval->m_time_term_ref = m_time_term_ref;
+	retval->m_date_time_term_ref = m_date_time_term_ref;
+	retval->m_clf_date_term_ref = m_clf_date_term_ref;
 
 	retval->m_request_content_rule = m_request_content_rule;
 	retval->m_response_content_rule = m_response_content_rule;
-	
+	retval->m_request_timestamp = m_request_timestamp;
+
 	return ProtocolPtr(retval);
 }
 
@@ -155,7 +171,14 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_cached_term_ref,
 							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
 							 ? 1 : 0);
-	
+
+	// set timestamp fields
+	(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_timestamp); 
+	(*event_ptr_ref).setDateTime(m_time_term_ref, m_request_timestamp); 
+	(*event_ptr_ref).setDateTime(m_date_time_term_ref, m_request_timestamp); 
+	(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_timestamp); 
+
+
 	// check if request content should be saved
 	checkContentExtraction(event_ptr_ref, m_request_content_rule, m_request, m_cs_content_term_ref);
 	
@@ -272,6 +295,22 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_cached_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CACHED);
 	if (m_cached_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CACHED);
+
+	m_date_term_ref = v.findTerm(VOCAB_CLICKSTREAM_DATE);
+	if (m_date_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_DATE);
+
+	m_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_TIME);
+	if (m_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_TIME);
+
+	m_date_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_DATE_TIME);
+	if (m_date_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_DATE_TIME);
+
+	m_clf_date_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CLF_DATE);
+	if (m_clf_date_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CLF_DATE);
 
 	// TODO: initialize other terms here
 }

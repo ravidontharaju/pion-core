@@ -36,7 +36,8 @@ class HTTPProtocol
 public:
 
 	/// constructs HTTPProtocol object
-	HTTPProtocol() : m_request_parser(true), m_response_parser(false) {}
+	HTTPProtocol() : m_request_parser(true), m_response_parser(false), 
+		m_request_timestamp(boost::date_time::not_a_date_time) {}
 
 	/// virtual destructor
 	virtual ~HTTPProtocol() {}
@@ -52,7 +53,7 @@ public:
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
 	virtual boost::tribool readNext(bool request, const char *ptr, size_t len,
-		pion::platform::EventPtr& event_ptr_ref);
+		boost::posix_time::ptime data_timestamp, pion::platform::EventPtr& event_ptr_ref);
 
 	/**
 	 * clones the Protocol, returning a pointer to the cloned copy
@@ -127,6 +128,7 @@ private:
     /// HTTP response being parsed
     pion::net::HTTPResponse m_response;
 	
+	boost::posix_time::ptime m_request_timestamp;
 	/// rule used to determine if request content should be saved
 	ExtractionRule			m_request_content_rule;
 	
@@ -218,13 +220,25 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_CACHED;
 	pion::platform::Vocabulary::TermRef	m_cached_term_ref;
 
+	/// urn:vocab:clickstream#date
+	static const std::string	VOCAB_CLICKSTREAM_DATE;
+	pion::platform::Vocabulary::TermRef	m_date_term_ref;
+	
+    /// urn:vocab:clickstream#time
+    static const std::string	VOCAB_CLICKSTREAM_TIME;
+    pion::platform::Vocabulary::TermRef	m_time_term_ref;
+
+    /// urn:vocab:clickstream#date-time
+    static const std::string	VOCAB_CLICKSTREAM_DATE_TIME;
+    pion::platform::Vocabulary::TermRef	m_date_time_term_ref;
+
+    /// urn:vocab:clickstream#clf-date
+    static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
+    pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 
-	/// * urn:vocab:clickstream#date
-	/// * urn:vocab:clickstream#time
-	/// * urn:vocab:clickstream#date-time
-	/// * urn:vocab:clickstream#clf-date
 	/// * urn:vocab:clickstream#c-ip
 	/// * urn:vocab:clickstream#s-ip
 };
