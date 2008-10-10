@@ -1,6 +1,6 @@
 dojo.provide("pion.system");
+dojo.require("pion.widgets.XMLImport");
 dojo.require("dojo.data.ItemFileWriteStore");
-dojo.require("dojox.xml.DomParser");
 dojo.require("dijit.Tree");
 
 var server_store;
@@ -176,3 +176,9 @@ function buildTree() {
 	var server_tree = new dijit.Tree({store: server_store, labelAttr:"name", childrenAttr:["services"]}, dojo.byId('server_tree'));
 }
 */
+
+pion.system.importXMLConfiguration = function() {
+	var dialog = new pion.widgets.XMLImportDialog();
+	dialog.show();
+}
+

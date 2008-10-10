@@ -138,6 +138,7 @@ dojo.addOnLoad(init);
 function configPageSelected(page) {
 	console.debug('Selected ' + page.title + ' configuration page');
 	if (page.title == "Reactors") {
+		pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
 		dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
 	} else if (page.title == "Vocabularies") {
 		if (vocab_config_page_initialized) {
@@ -148,6 +149,7 @@ function configPageSelected(page) {
 		}
 	} else if (page.title == "Codecs") {
 		if (codec_config_page_initialized) {
+			pion.codecs._adjustAccordionSize(); // In case Codecs were added via another page.
 			dijit.byId('main_stack_container').resize({h: pion.codecs.getHeight()});
 		} else {
 			pion.codecs.init();
@@ -155,6 +157,7 @@ function configPageSelected(page) {
 		}
 	} else if (page.title == "Databases") {
 		if (database_config_page_initialized) {
+			pion.databases._adjustAccordionSize(); // In case Databases were added via another page.
 			dijit.byId('main_stack_container').resize({h: pion.databases.getHeight()});
 		} else {
 			pion.databases.init();

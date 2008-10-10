@@ -155,6 +155,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/vocabularies.js
 ./../../release/dojo-release/pion/widgets/User.js
 ./../../release/dojo-release/pion/users.js
+./../../release/dojo-release/pion/widgets/XMLImport.js
 ./../../release/dojo-release/pion/system.js
 ./../../release/dojo-release/pion/about.js
 ./../../release/dojo-release/pion/pion.js

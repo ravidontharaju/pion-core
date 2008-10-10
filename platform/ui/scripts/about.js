@@ -51,6 +51,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 					return response;
 				}
 			});
+			dojo.connect(this, "hide", this, "destroyRecursive");
 		},
 		submitKey: function(e) {
 			//var key = dojo.byId('license_key').value;
