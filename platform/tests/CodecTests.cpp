@@ -2248,7 +2248,7 @@ BOOST_AUTO_TEST_CASE(checkExtendedCodecWrite) {
 	BOOST_REQUIRE(start != std::string::npos);
 	size_t end = str.find("#Software: ");
 	BOOST_REQUIRE(end != std::string::npos);
-	str.replace(start + 7, end - start - 8, "...");
+	str.replace(start + 7, end - (start + 7), "..." OSEOL);
 	BOOST_CHECK_EQUAL(str, "#Version: 1.0" OSEOL "#Date: ..." OSEOL "#Software: Pion v" PION_VERSION OSEOL "#Fields: clf-date c-ip request cs(Referer) status" OSEOL "\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302" OSEOL "\"10/Jan/2008:12:31:00 \" 192.168.10.10 \"GET / HTTP/1.1\" \"http://www.atomiclabs.com/\" 302" OSEOL);
 }
 
