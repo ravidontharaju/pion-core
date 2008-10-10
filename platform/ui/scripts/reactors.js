@@ -265,22 +265,9 @@ pion.reactors.initConfiguredReactors = function() {
 				reactor_config_store.fetch({
 					query: {tagName: 'Connection'},
 					onItem: function(item, request) {
-						var startNode_id  = reactor_config_store.getValue(item, 'From').toString();
-						var endNode_id    = reactor_config_store.getValue(item, 'To').toString();
-						var connection_id = reactor_config_store.getValue(item, '@id').toString();
-						console.debug('fetched Connection from ', startNode_id, ' to ', endNode_id, ', with ID = ', connection_id);
-
-						var start_reactor = pion.reactors.reactors_by_id[startNode_id];
-						var end_reactor   = pion.reactors.reactors_by_id[endNode_id];
-						pion.reactors.workspace_box = start_reactor.workspace;
-						var workspace_box = pion.reactors.workspace_box;
-						surface = workspace_box.my_surface;
-						dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
-						var line = surface.createPolyline().setStroke("black");
-						pion.reactors.updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
-
-						start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
-						end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
+						pion.reactors.createConnection(reactor_config_store.getValue(item, 'From').toString(),
+													   reactor_config_store.getValue(item, 'To').toString(),
+													   reactor_config_store.getValue(item, '@id').toString());
 					},
 					onComplete: function(items, request) {
 						console.debug('done fetching Connections');
@@ -317,6 +304,20 @@ pion.reactors.createReactorInConfiguredWorkspace = function(config) {
 	reactor.workspace = workspace_box;
 	workspace_box.reactors.push(reactor);
 	console.debug('X, Y = ', config.X, ', ', config.Y);
+}
+
+pion.reactors.createConnection = function(startNode_id, endNode_id, connection_id) {
+	var start_reactor = pion.reactors.reactors_by_id[startNode_id];
+	var end_reactor   = pion.reactors.reactors_by_id[endNode_id];
+	pion.reactors.workspace_box = start_reactor.workspace;
+	var workspace_box = pion.reactors.workspace_box;
+	surface = workspace_box.my_surface;
+	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
+	var line = surface.createPolyline().setStroke("black");
+	pion.reactors.updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
+
+	start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
+	end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
 }
 
 pion.reactors.reselectCurrentWorkspace = function() {
@@ -923,7 +924,7 @@ function expandWorkspaceIfNeeded() {
 		surface_dims.height = new_height;
 	}
 	if (new_width > old_width || new_height > old_height) {
-		surface.setDimensions(surface_dims.width + "px", surface_dims.height + "px");
+		surface.setDimensions(parseInt(surface_dims.width) + "px", parseInt(surface_dims.height) + "px");
 	}
 }
 
