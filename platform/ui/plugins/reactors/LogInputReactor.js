@@ -31,13 +31,6 @@ dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 			this.plugin = 'LogInputReactor';
 			console.debug('plugins.reactors.LogInputReactorInitDialog.postCreate');
 			this.inherited("postCreate", arguments);
-		},
-		_insertCustomData: function(dialogFields) {
-			for (var option in plugins.reactors.LogInputReactor.option_defaults) {
-				this.post_data += '<' + option + '>';
-				this.post_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
-				this.post_data += '</' + option + '>';
-			}
 		}
 	}
 );
@@ -53,13 +46,6 @@ dojo.declare("plugins.reactors.LogInputReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
-		},
-		_insertCustomData: function(dialogFields) {
-			for (var option in plugins.reactors.LogInputReactor.option_defaults) {
-				this.put_data += '<' + option + '>';
-				this.put_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
-				this.put_data += '</' + option + '>';
-			}
 		}
 	}
 );

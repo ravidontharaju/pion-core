@@ -228,12 +228,19 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 				}
 			}
+			if (dialogFields.options && plugins.reactors[this.plugin].option_defaults) {
+				for (var option in plugins.reactors[this.plugin].option_defaults) {
+					this.post_data += '<' + option + '>';
+					this.post_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
+					this.post_data += '</' + option + '>';
+				}
+			}
 			if (this._insertCustomData) {
 				this._insertCustomData(dialogFields);
 			}
 			this.post_data += '</Reactor></PionConfig>';
 			console.debug('post_data: ', this.post_data);
-			
+	
 			var _this = this;
 			dojo.rawXhrPost({
 				url: '/config/reactors',
@@ -338,6 +345,13 @@ dojo.declare("plugins.reactors.ReactorDialog",
 				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 					this.put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				}
+			}
+			if (dialogFields.options && plugins.reactors[this.reactor.config.Plugin].option_defaults) {
+				for (var option in plugins.reactors[this.reactor.config.Plugin].option_defaults) {
+					this.put_data += '<' + option + '>';
+					this.put_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
+					this.put_data += '</' + option + '>';
 				}
 			}
 			if (this._insertCustomData) {
