@@ -1,17 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config">
-  <Protocol id="37A7DC3E-EE7E-4420-B0DD-CADE20DEF840">
-    <Name>HTTP Protocol</Name>
-    <Comment>HTTP Protocol parser</Comment>
-    <Plugin>HTTPProtocol</Plugin>
-    <EventType>urn:vocab:clickstream#http-event</EventType>
-    <RequestContent>
-      <ContentType>^application/x-www-form-urlencoded</ContentType>
-      <MaxSize>102400</MaxSize>
-    </RequestContent>
-    <ResponseContent>
-      <ContentType>^text/</ContentType>
-      <MaxSize>102400</MaxSize>
-    </ResponseContent>
-  </Protocol>
+	<Protocol id="37A7DC3E-EE7E-4420-B0DD-CADE20DEF840">
+		<Name>HTTP Protocol</Name>
+		<Comment>HTTP Protocol parser</Comment>
+		<Plugin>HTTPProtocol</Plugin>
+		<EventType>urn:vocab:clickstream#http-event</EventType>
+		<Extract term="urn:vocab:clickstream#host">
+			<Source>cs-header</Source>
+			<Name>Host</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#referer">
+			<Source>cs-header</Source>
+			<Name>Referer</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#useragent">
+			<Source>cs-header</Source>
+			<Name>User-Agent</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#cookie">
+			<Source>cs-header</Source>
+			<Name>Cookie</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#set-cookie">
+			<Source>sc-header</Source>
+			<Name>Set-Cookie</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#page-title">
+			<Source>sc-content</Source>
+			<Match>&lt;TITLE&gt;(.*)&lt;/TITLE&gt;</Match>
+			<Format>$1</Format>
+			<ContentType>^text/html</ContentType>
+			<MaxSize>102400</MaxSize>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#cs-content">
+			<Source>cs-content</Source>
+			<ContentType>^application/x-www-form-urlencoded</ContentType>
+			<MaxSize>102400</MaxSize>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#sc-content">
+			<Source>sc-content</Source>
+			<ContentType>^text/</ContentType>
+			<MaxSize>102400</MaxSize>
+		</Extract>
+	</Protocol>
 </PionConfig>

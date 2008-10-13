@@ -29,10 +29,21 @@ namespace plugins {		// begin namespace plugins
 
 // static members of HTTPProtocol
 	
-const std::string HTTPProtocol::REQUEST_CONTENT_ELEMENT_NAME = "RequestContent";
-const std::string HTTPProtocol::RESPONSE_CONTENT_ELEMENT_NAME = "ResponseContent";
 const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
 const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
+const std::string HTTPProtocol::EXTRACT_ELEMENT_NAME = "Extract";
+const std::string HTTPProtocol::SOURCE_ELEMENT_NAME = "Source";
+const std::string HTTPProtocol::MATCH_ELEMENT_NAME = "Match";
+const std::string HTTPProtocol::FORMAT_ELEMENT_NAME = "Format";
+const std::string HTTPProtocol::NAME_ELEMENT_NAME = "Name";
+const std::string HTTPProtocol::TERM_ATTRIBUTE_NAME = "term";
+
+const std::string HTTPProtocol::EXTRACT_QUERY_STRING = "query";
+const std::string HTTPProtocol::EXTRACT_COOKIE_STRING = "cookie";
+const std::string HTTPProtocol::EXTRACT_CS_HEADER_STRING = "cs-header";
+const std::string HTTPProtocol::EXTRACT_SC_HEADER_STRING = "sc-header";
+const std::string HTTPProtocol::EXTRACT_CS_CONTENT_STRING = "cs-content";
+const std::string HTTPProtocol::EXTRACT_SC_CONTENT_STRING = "sc-content";
 	
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_BYTES="urn:vocab:clickstream#cs-bytes";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_BYTES="urn:vocab:clickstream#sc-bytes";
@@ -44,13 +55,6 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_URI="urn:vocab:clickstream#uri
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_URI_STEM="urn:vocab:clickstream#uri-stem";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_URI_QUERY="urn:vocab:clickstream#uri-query";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST="urn:vocab:clickstream#request";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_HOST="urn:vocab:clickstream#host";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFERER="urn:vocab:clickstream#referer";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_USERAGENT="urn:vocab:clickstream#useragent";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_COOKIE="urn:vocab:clickstream#cookie";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SET_COOKIE="urn:vocab:clickstream#set-cookie";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_CONTENT="urn:vocab:clickstream#cs-content";
-const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_CONTENT="urn:vocab:clickstream#sc-content";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CACHED="urn:vocab:clickstream#cached";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE="urn:vocab:clickstream#date";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME="urn:vocab:clickstream#time";
@@ -115,22 +119,13 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_uri_stem_term_ref = m_uri_stem_term_ref;
 	retval->m_uri_query_term_ref = m_uri_query_term_ref;
 	retval->m_request_term_ref = m_request_term_ref;
-	retval->m_host_term_ref = m_host_term_ref;
-	retval->m_referer_term_ref = m_referer_term_ref;
-	retval->m_useragent_term_ref = m_useragent_term_ref;
-	retval->m_cookie_term_ref = m_cookie_term_ref;
-	retval->m_set_cookie_term_ref = m_set_cookie_term_ref;
-	retval->m_cs_content_term_ref = m_cs_content_term_ref;
-	retval->m_sc_content_term_ref = m_sc_content_term_ref;
 	retval->m_cached_term_ref = m_cached_term_ref;
 	retval->m_date_term_ref = m_date_term_ref;
 	retval->m_time_term_ref = m_time_term_ref;
 	retval->m_date_time_term_ref = m_date_time_term_ref;
 	retval->m_clf_date_term_ref = m_clf_date_term_ref;
-
-	retval->m_request_content_rule = m_request_content_rule;
-	retval->m_response_content_rule = m_response_content_rule;
 	retval->m_request_timestamp = m_request_timestamp;
+	retval->m_extraction_rules = m_extraction_rules;
 
 	return ProtocolPtr(retval);
 }
@@ -163,11 +158,6 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
 	(*event_ptr_ref).setString(m_uri_query_term_ref, m_request.getQueryString());
 	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
-	(*event_ptr_ref).setString(m_host_term_ref, m_request.getHeader(HTTPTypes::HEADER_HOST));
-	(*event_ptr_ref).setString(m_referer_term_ref, m_request.getHeader(HTTPTypes::HEADER_REFERER));
-	(*event_ptr_ref).setString(m_useragent_term_ref, m_request.getHeader(HTTPTypes::HEADER_USER_AGENT));
-	(*event_ptr_ref).setString(m_cookie_term_ref, m_request.getHeader(HTTPTypes::HEADER_COOKIE));
-	(*event_ptr_ref).setString(m_set_cookie_term_ref, m_response.getHeader(HTTPTypes::HEADER_SET_COOKIE));
 	(*event_ptr_ref).setUInt(m_cached_term_ref,
 							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
 							 ? 1 : 0);
@@ -179,48 +169,186 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_timestamp); 
 
 
-	// check if request content should be saved
-	checkContentExtraction(event_ptr_ref, m_request_content_rule, m_request, m_cs_content_term_ref);
-	
-	// check if response content should be saved
-	checkContentExtraction(event_ptr_ref, m_response_content_rule, m_response, m_sc_content_term_ref);
-}
-
-void HTTPProtocol::parseExtractionRule(ExtractionRule& rule,
-									   const std::string& element_name,
-									   const xmlNodePtr config_ptr)
-{
-	// parse extraction configuration parameters
-	xmlNodePtr content_node = ConfigManager::findConfigNodeByName(element_name, config_ptr);
-	if (content_node != NULL) {
-		// get ContentType regex
-		std::string type_regex_str;
-		if (! ConfigManager::getConfigOption(CONTENT_TYPE_ELEMENT_NAME, type_regex_str,
-											 content_node->children))
-			type_regex_str = ".*";
-		rule.m_type_regex = type_regex_str;
-		
-		// get MaxSize parameter
-		std::string max_size_str;
-		if (ConfigManager::getConfigOption(MAX_SIZE_ELEMENT_NAME, max_size_str,
-										   content_node->children))
-			rule.m_max_size = boost::lexical_cast<boost::uint32_t>(max_size_str);
-		else
-			rule.m_max_size = boost::uint32_t(-1);
-	} else {
-		// do not extract content
-		rule.m_max_size = 0;
+	// process content extraction rules
+	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
+		i != m_extraction_rules.end(); ++i)
+	{
+		const ExtractionRule& rule = **i;
+		switch (rule.m_source) {
+			case EXTRACT_QUERY:
+				// extract query parameter from request
+				rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name));
+				break;
+			case EXTRACT_COOKIE:
+				// extract cookie parameter from request
+				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name));
+				break;
+			case EXTRACT_CS_HEADER:
+				// extract HTTP header from request
+				rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name));
+				break;
+			case EXTRACT_SC_HEADER:
+				// extract HTTP header from response
+				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name));
+				break;
+			case EXTRACT_CS_CONTENT:
+				// extract HTTP payload content from request
+				rule.processContent(event_ptr_ref, m_request);
+				break;
+			case EXTRACT_SC_CONTENT:
+				// extract HTTP payload content from response
+				rule.processContent(event_ptr_ref, m_response);
+				break;
+		}
 	}
-}	
+}
 
 void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Protocol::setConfig(v, config_ptr);
 	
-	// get RequestContent and ResponseContent
+	// parse content extraction rules
+	
+	xmlNodePtr extract_node = config_ptr;
+	while ((extract_node = ConfigManager::findConfigNodeByName(EXTRACT_ELEMENT_NAME, extract_node)) != NULL) {
+		// get the Term we want to use
+		xmlChar *xml_char_ptr = xmlGetProp(extract_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
+			if (xml_char_ptr != NULL)
+				xmlFree(xml_char_ptr);
+			throw EmptyTermException(getId());
+		}
+		const std::string term_id(reinterpret_cast<char*>(xml_char_ptr));
+		xmlFree(xml_char_ptr);
 
-	parseExtractionRule(m_request_content_rule, REQUEST_CONTENT_ELEMENT_NAME, config_ptr);
-	parseExtractionRule(m_response_content_rule, RESPONSE_CONTENT_ELEMENT_NAME, config_ptr);
+		// create a new rule configuration object
+		ExtractionRulePtr rule_ptr(new ExtractionRule(term_id));
+
+		// make sure that the Term is valid, copy info to rule
+		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw UnknownTermException(term_id);
+		rule_ptr->m_term = v[term_ref];
+		
+		// only string types are currently supported
+		switch (rule_ptr->m_term.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+		case Vocabulary::TYPE_INT64:
+		case Vocabulary::TYPE_UINT64:
+		case Vocabulary::TYPE_FLOAT:
+		case Vocabulary::TYPE_DOUBLE:
+		case Vocabulary::TYPE_LONG_DOUBLE:
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+		case Vocabulary::TYPE_REGEX:
+			throw TermNotStringException(term_id);
+			break;
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			break;	// these are all OK
+		}
+
+		// determine the source to use for content extraction
+		xmlNodePtr source_node = ConfigManager::findConfigNodeByName(SOURCE_ELEMENT_NAME, extract_node->children);
+		if (source_node == NULL)
+			throw EmptySourceException(getId());
+		xml_char_ptr = xmlNodeGetContent(source_node);
+		if (xml_char_ptr == NULL || xml_char_ptr[0] == '\0') {
+			if (xml_char_ptr != NULL)
+				xmlFree(xml_char_ptr);
+			throw EmptySourceException(getId());
+		}
+		const std::string source_str(reinterpret_cast<char*>(xml_char_ptr));
+		xmlFree(xml_char_ptr);
+		if (source_str == EXTRACT_QUERY_STRING) {
+			rule_ptr->m_source = EXTRACT_QUERY;
+		} else if (source_str == EXTRACT_COOKIE_STRING) {
+			rule_ptr->m_source = EXTRACT_COOKIE;
+		} else if (source_str == EXTRACT_CS_HEADER_STRING) {
+			rule_ptr->m_source = EXTRACT_CS_HEADER;
+		} else if (source_str == EXTRACT_SC_HEADER_STRING) {
+			rule_ptr->m_source = EXTRACT_SC_HEADER;
+		} else if (source_str == EXTRACT_CS_CONTENT_STRING) {
+			rule_ptr->m_source = EXTRACT_CS_CONTENT;
+		} else if (source_str == EXTRACT_SC_CONTENT_STRING) {
+			rule_ptr->m_source = EXTRACT_SC_CONTENT;
+		} else {
+			throw UnknownSourceException(source_str);
+		}
+		
+		// parse parameter name attribute
+		switch (rule_ptr->m_source) {
+		case EXTRACT_QUERY:
+		case EXTRACT_COOKIE:
+		case EXTRACT_CS_HEADER:
+		case EXTRACT_SC_HEADER:
+		{
+			if (! ConfigManager::getConfigOption(NAME_ELEMENT_NAME, rule_ptr->m_name,
+				extract_node->children))
+			{
+				throw EmptyNameException(getId());
+			}
+			break;
+		}
+		case EXTRACT_CS_CONTENT:
+		case EXTRACT_SC_CONTENT:
+			break;	// ignore parameter name attribute
+		}
+		
+		// get Format parameter
+		ConfigManager::getConfigOption(FORMAT_ELEMENT_NAME, rule_ptr->m_format,
+			extract_node->children);
+		
+		// get Match regex
+		std::string regex_str;
+		if (ConfigManager::getConfigOption(MATCH_ELEMENT_NAME, regex_str,
+			extract_node->children))
+		{
+			try {
+				rule_ptr->m_match.assign(regex_str, boost::regex_constants::icase);
+			} catch (...) {
+				throw BadMatchRegexException(regex_str);
+			}
+		}
+		
+		// get ContentType regex
+		if (ConfigManager::getConfigOption(CONTENT_TYPE_ELEMENT_NAME, regex_str,
+			extract_node->children))
+		{
+			try {
+				rule_ptr->m_type_regex.assign(regex_str, boost::regex_constants::icase);
+			} catch (...) {
+				throw BadContentRegexException(regex_str);
+			}
+		}
+		
+		// get MaxSize parameter
+		std::string max_size_str;
+		rule_ptr->m_max_size = boost::uint32_t(-1);	// default is undefined/none
+		if (ConfigManager::getConfigOption(MAX_SIZE_ELEMENT_NAME, max_size_str,
+										   extract_node->children))
+		{
+			try {
+				rule_ptr->m_max_size = boost::lexical_cast<boost::uint32_t>(max_size_str);
+			} catch (...) {}	// ignore failed casts (keep default)
+		}
+
+		// add the content extraction rule
+		m_extraction_rules.push_back(rule_ptr);
+
+		// step to the next rule
+		extract_node = extract_node->next;
+	}
 
 	// initialize references to known Terms:
 
@@ -264,34 +392,6 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (m_request_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_REQUEST);
 
-	m_host_term_ref = v.findTerm(VOCAB_CLICKSTREAM_HOST);
-	if (m_host_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_HOST);
-
-	m_referer_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REFERER);
-	if (m_referer_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_REFERER);
-
-	m_useragent_term_ref = v.findTerm(VOCAB_CLICKSTREAM_USERAGENT);
-	if (m_useragent_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_USERAGENT);
-
-	m_cookie_term_ref = v.findTerm(VOCAB_CLICKSTREAM_COOKIE);
-	if (m_cookie_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_COOKIE);
-
-	m_set_cookie_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SET_COOKIE);
-	if (m_set_cookie_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_SET_COOKIE);
-
-	m_cs_content_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_CONTENT);
-	if (m_cs_content_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_CONTENT);
-	
-	m_sc_content_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_CONTENT);
-	if (m_sc_content_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_CONTENT);
-	
 	m_cached_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CACHED);
 	if (m_cached_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CACHED);
@@ -311,8 +411,6 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_clf_date_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CLF_DATE);
 	if (m_clf_date_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CLF_DATE);
-
-	// TODO: initialize other terms here
 }
 
 }	// end namespace plugins

@@ -36,6 +36,10 @@
 			<Type>uint32</Type>
 			<Comment>Request sequence number, or total number of requests for session and page view events</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#page-title">
+			<Type>shortstring</Type>
+			<Comment>Page title, extracted from HTML content</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#page-load">
 			<Type>uint32</Type>
 			<Comment>Number of seconds that it took for the page to load</Comment>

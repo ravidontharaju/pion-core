@@ -20,6 +20,10 @@
 #ifndef __HTTP_PROTOCOL_HEADER__
 #define __HTTP_PROTOCOL_HEADER__
 
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <pion/PionException.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/net/HTTPParser.hpp>
 #include <pion/net/HTTPRequest.hpp>
@@ -34,6 +38,63 @@ class HTTPProtocol
 	: public pion::platform::Protocol
 {
 public:
+
+	/// exception thrown if there is no source defined for a content extraction rule
+	class EmptySourceException : public PionException {
+	public:
+		EmptySourceException(const std::string& plugin_id)
+			: PionException("HTTPProtocol is missing source for content extraction rule: ", plugin_id) {}
+	};
+
+	/// exception thrown if the content extraction configuration uses an unknown source
+	class UnknownSourceException : public PionException {
+	public:
+		UnknownSourceException(const std::string& source_str)
+			: PionException("HTTPProtocol content extraction specifies an unknown source: ", source_str) {}
+	};
+
+	/// exception thrown if the content extraction configuration does not define a term
+	class EmptyTermException : public PionException {
+	public:
+		EmptyTermException(const std::string& plugin_id)
+			: PionException("HTTPProtocol content extraction rule is missing a term identifier: ", plugin_id) {}
+	};
+
+	/// exception thrown if the content extraction configuration uses an unknown term
+	class UnknownTermException : public PionException {
+	public:
+		UnknownTermException(const std::string& term_id)
+			: PionException("HTTPProtocol content extraction maps field to an unknown term: ", term_id) {}
+	};
+
+	/// exception thrown if the content extraction configuration does not define a name
+	class EmptyNameException : public PionException {
+	public:
+		EmptyNameException(const std::string& plugin_id)
+			: PionException("HTTPProtocol content extraction rule is missing a parameter name: ", plugin_id) {}
+	};
+
+	/// exception thrown if the content extraction configuration has a bad Match parameter
+	class BadMatchRegexException : public PionException {
+	public:
+		BadMatchRegexException(const std::string& regex_str)
+			: PionException("HTTPProtocol content extraction rule contains bad Match parameter: ", regex_str) {}
+	};
+
+	/// exception thrown if the content extraction configuration has a bad ContentType parameter
+	class BadContentRegexException : public PionException {
+	public:
+		BadContentRegexException(const std::string& regex_str)
+			: PionException("HTTPProtocol content extraction rule contains bad ContentType parameter: ", regex_str) {}
+	};
+
+	/// exception thrown if the term specified for content extraction is not string type
+	class TermNotStringException : public PionException {
+	public:
+		TermNotStringException(const std::string& term_id)
+			: PionException("HTTPProtocol content extraction non-string term specified: ", term_id) {}
+	};
+
 
 	/// constructs HTTPProtocol object
 	HTTPProtocol() : m_request_parser(true), m_response_parser(false), 
@@ -74,13 +135,74 @@ public:
 
 private:
 
+	/// data source supported for field content extraction
+	enum ExtractionSource {
+		EXTRACT_QUERY,			//< use map of query pairs from request URI & content (requires name=)
+		EXTRACT_COOKIE,			//< use map of cookies from request+response (requires name=)
+		EXTRACT_CS_HEADER,		//< use HTTP request header (requires name=)
+		EXTRACT_SC_HEADER,		//< use HTTP response header (requires name=)
+		EXTRACT_CS_CONTENT,		//< use HTTP request payload content
+		EXTRACT_SC_CONTENT		//< use HTTP response payload content
+	};
+
 	/// data type used to determine whether or not payload content should be saved
 	struct ExtractionRule {
-		/// regex that must match the content-type
-		boost::regex		m_type_regex;
+	
+		/**
+		 * constructs a new content extraction rule
+		 *
+		 * @param term_id unique identifier for the event term
+		 */
+		ExtractionRule(const std::string& term_id) :
+			m_term(term_id)
+		{}
+	
+		/**
+		 * processes content extraction for given content
+		 *
+		 * @param event_ptr_ref pointer to the Event being generated
+		 * @param range pair of map iterators representing content to extract
+		 */
+		template <typename RangePair>
+		inline void process(pion::platform::EventPtr& event_ptr_ref,
+			RangePair range) const;
+	
+		/**
+		 * processes content extraction for HTTPMessage payload content
+		 *
+		 * @param event_ptr_ref pointer to the Event being generated
+		 * @param http_msg the message object to extract payload content from
+		 */
+		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
+			const pion::net::HTTPMessage& http_msg) const;
+
+		/// vocabulary term for the event field where the content is stored
+		pion::platform::Vocabulary::Term	m_term;
+
+		/// data source used for the content extraction
+		ExtractionSource					m_source;
+
+		/// name parameter used for extraction from dictionary/maps
+		std::string							m_name;
+
+		/// format used for regex extraction (if empty, entire value is used)
+		std::string							m_format;
+
+		/// regex that must match the source value; may contain ()'s for m_format
+		boost::regex						m_match;
+
+		/// regex that must match the content-type (for cs-content and sc-content)
+		boost::regex						m_type_regex;
+
 		/// maximum size (in bytes) of content to save (0 = do not save)
-		boost::uint32_t		m_max_size;
+		boost::uint32_t						m_max_size;
 	};
+	
+	/// data type for a smart pointer to an extractio rule
+	typedef boost::shared_ptr<ExtractionRule>	ExtractionRulePtr;
+	
+	/// data type for a collection of extraction rules
+	typedef std::vector<ExtractionRulePtr>		ExtractionRuleVector;
 	
 	
 	/**
@@ -91,63 +213,70 @@ private:
 	 */
 	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
 	
-	/**
-	 * parses rule for extracting request or response HTTP payload content
-	 *
-	 * @param rule the resulting configuration parameters after parsing
-	 * @param element_name name of the XML configuration element for the rule
-	 * @param config_ptr pointer to a list of XML nodes containing Protocol
-	 *                   configuration parameters
-	 */
-	void parseExtractionRule(ExtractionRule& rule, const std::string& element_name,
-							 const xmlNodePtr config_ptr);
-	
-	/**
-	 * checks is HTTP payload content should be saved, and extracts it if necessary
-	 *
-	 * @param event_ptr_ref pointer to the Event being generated
-	 * @param rule payload content extraction rule to use
-	 * @param http_msg HTTP message object to extract content from
-	 * @param term_ref Event term reference to which content will be assigned
-	 */
-	inline void checkContentExtraction(pion::platform::EventPtr& event_ptr_ref,
-									   const ExtractionRule& rule,
-									   const pion::net::HTTPMessage& http_msg,
-									   const pion::platform::Vocabulary::TermRef term_ref);
-	
 	
     /// parser used for HTTP request
-	pion::net::HTTPParser	m_request_parser;
+	pion::net::HTTPParser		m_request_parser;
 
     /// parser used for HTTP response
-    pion::net::HTTPParser	m_response_parser;
+    pion::net::HTTPParser		m_response_parser;
 
     /// HTTP request being parsed
-    pion::net::HTTPRequest  m_request;
+    pion::net::HTTPRequest		m_request;
 
     /// HTTP response being parsed
-    pion::net::HTTPResponse m_response;
+    pion::net::HTTPResponse		m_response;
 	
-	boost::posix_time::ptime m_request_timestamp;
-	/// rule used to determine if request content should be saved
-	ExtractionRule			m_request_content_rule;
+	/// timestamp for the beginning of the HTTP request (first packet)
+	boost::posix_time::ptime	m_request_timestamp;
+
+	/// collection of rules used to extract content
+	ExtractionRuleVector		m_extraction_rules;
 	
-	/// rule used to determine if response content should be saved
-	ExtractionRule			m_response_content_rule;
-
 	
-	/// name of the RequestContent element for Pion XML config files
-	static const std::string	REQUEST_CONTENT_ELEMENT_NAME;
-
-	/// name of the ResponseContent element for Pion XML config files
-	static const std::string	RESPONSE_CONTENT_ELEMENT_NAME;
-
 	/// name of the ContentType element for Pion XML config files
 	static const std::string	CONTENT_TYPE_ELEMENT_NAME;
 
 	/// name of the MaxSize element for Pion XML config files
 	static const std::string	MAX_SIZE_ELEMENT_NAME;
-    
+
+	/// name of the extract element for Pion XML config files
+	static const std::string	EXTRACT_ELEMENT_NAME;
+
+	/// name of the source element for Pion XML config files
+	static const std::string	SOURCE_ELEMENT_NAME;
+
+	/// name of the match element for Pion XML config files
+	static const std::string	MATCH_ELEMENT_NAME;
+
+	/// name of the format element for Pion XML config files
+	static const std::string	FORMAT_ELEMENT_NAME;
+
+	/// name of the descriptive name element for Pion XML config files
+	static const std::string	NAME_ELEMENT_NAME;
+
+	/// name of the Term ID attribute for Pion XML config files
+	static const std::string	TERM_ATTRIBUTE_NAME;
+
+
+	/// string used for query string extraction source type
+	static const std::string	EXTRACT_QUERY_STRING;
+
+	/// string used for cookie extraction source type
+	static const std::string	EXTRACT_COOKIE_STRING;
+
+	/// string used for request header extraction source type
+	static const std::string	EXTRACT_CS_HEADER_STRING;
+
+	/// string used for response header extraction source type
+	static const std::string	EXTRACT_SC_HEADER_STRING;
+
+	/// string used for request content extraction source type
+	static const std::string	EXTRACT_CS_CONTENT_STRING;
+
+	/// string used for response content extraction source type
+	static const std::string	EXTRACT_SC_CONTENT_STRING;
+
+
 	/// urn:vocab:clickstream#cs-bytes
     static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
     pion::platform::Vocabulary::TermRef	m_cs_bytes_term_ref; 
@@ -188,34 +317,6 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_REQUEST;
 	pion::platform::Vocabulary::TermRef	m_request_term_ref; 
 
-    /// urn:vocab:clickstream#host
-    static const std::string	VOCAB_CLICKSTREAM_HOST;
-    pion::platform::Vocabulary::TermRef	m_host_term_ref; 
-
-	/// urn:vocab:clickstream#referer
-	static const std::string	VOCAB_CLICKSTREAM_REFERER;
-	pion::platform::Vocabulary::TermRef	m_referer_term_ref;
-
-	/// urn:vocab:clickstream#useragent
-	static const std::string	VOCAB_CLICKSTREAM_USERAGENT;
-	pion::platform::Vocabulary::TermRef	m_useragent_term_ref;
-
-	/// urn:vocab:clickstream#cookie
-	static const std::string	VOCAB_CLICKSTREAM_COOKIE;
-	pion::platform::Vocabulary::TermRef	m_cookie_term_ref;
-
-	/// urn:vocab:clickstream#set-cookie
-	static const std::string	VOCAB_CLICKSTREAM_SET_COOKIE;
-	pion::platform::Vocabulary::TermRef	m_set_cookie_term_ref;
-
-	/// urn:vocab:clickstream#cs-content
-	static const std::string	VOCAB_CLICKSTREAM_CS_CONTENT;
-	pion::platform::Vocabulary::TermRef	m_cs_content_term_ref;
-
-	/// urn:vocab:clickstream#sc-content
-	static const std::string	VOCAB_CLICKSTREAM_SC_CONTENT;
-	pion::platform::Vocabulary::TermRef	m_sc_content_term_ref;
-
 	/// urn:vocab:clickstream#cached
 	static const std::string	VOCAB_CLICKSTREAM_CACHED;
 	pion::platform::Vocabulary::TermRef	m_cached_term_ref;
@@ -243,25 +344,66 @@ private:
 	/// * urn:vocab:clickstream#s-ip
 };
 
-	
-// inline member functions
 
-inline void HTTPProtocol::checkContentExtraction(pion::platform::EventPtr& event_ptr_ref,
-												 const ExtractionRule& rule,
-												 const pion::net::HTTPMessage& http_msg,
-												 const pion::platform::Vocabulary::TermRef term_ref)
+// inline member functions for HTTPProtocol::ExtractionRule
+
+template <typename RangePair>
+inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& event_ptr_ref,
+	RangePair range) const
 {
-	if (rule.m_max_size > 0
-		&& http_msg.getContentLength() > 0
-		&& boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE),
-							   rule.m_type_regex))
-	{
-		(*event_ptr_ref).setString(term_ref, http_msg.getContent(),
-								   (http_msg.getContentLength() > rule.m_max_size
-									? rule.m_max_size : http_msg.getContentLength()));
+	boost::match_results<std::string::const_iterator> mr;
+	while (range.first != range.second) {
+		const std::string content_ref = range.first->second;
+		if ( m_max_size > 0 && ! content_ref.empty() ) {
+			if ( m_match.empty() ) {
+				(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
+										   (content_ref.size() > m_max_size
+											? m_max_size : content_ref.size()));
+			} else if ( boost::regex_search(content_ref, mr, m_match) ) {
+				if (m_format.empty() || mr.empty()) {
+					(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
+											   (content_ref.size() > m_max_size
+												? m_max_size : content_ref.size()));
+				} else {
+					std::string content_str(mr.format(m_format));
+					(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
+											   (content_str.size() > m_max_size
+												? m_max_size : content_str.size()));
+				}
+			}
+		}
+		++range.first;
 	}
 }
-
+	
+inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
+	const pion::net::HTTPMessage& http_msg) const
+{
+	boost::match_results<const char*> mr;
+	if (m_max_size > 0
+		&& http_msg.getContentLength() > 0
+		&& ( m_type_regex.empty()
+			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
+	{
+		if ( m_match.empty() ) {
+			(*event_ptr_ref).setString(m_term.term_ref, http_msg.getContent(),
+									   (http_msg.getContentLength() > m_max_size
+										? m_max_size : http_msg.getContentLength()));
+		} else if ( boost::regex_search(http_msg.getContent(), mr, m_match) ) {
+			if (m_format.empty() || mr.empty()) {
+				(*event_ptr_ref).setString(m_term.term_ref, http_msg.getContent(),
+										   (http_msg.getContentLength() > m_max_size
+											? m_max_size : http_msg.getContentLength()));
+			} else {
+				std::string content_str(mr.format(m_format));
+				(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
+										   (content_str.size() > m_max_size
+											? m_max_size : content_str.size()));
+			}
+		}
+	}
+}
+	
 	
 }	// end namespace plugins
 }	// end namespace pion
