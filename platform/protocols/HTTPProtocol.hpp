@@ -162,10 +162,11 @@ private:
 		 *
 		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param range pair of map iterators representing content to extract
+		 * @param url_decode if true, the value will first be url_decoded
 		 */
 		template <typename RangePair>
 		inline void process(pion::platform::EventPtr& event_ptr_ref,
-			RangePair range) const;
+			RangePair range, bool url_decode) const;
 	
 		/**
 		 * processes content extraction for HTTPMessage payload content
@@ -349,11 +350,13 @@ private:
 
 template <typename RangePair>
 inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& event_ptr_ref,
-	RangePair range) const
+	RangePair range, bool url_decode) const
 {
 	boost::match_results<std::string::const_iterator> mr;
 	while (range.first != range.second) {
-		const std::string content_ref = range.first->second;
+		const std::string content_ref = (url_decode
+			? pion::net::HTTPTypes::url_decode(range.first->second)
+			: range.first->second);
 		if ( m_max_size > 0 && ! content_ref.empty() ) {
 			if ( m_match.empty() ) {
 				(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),

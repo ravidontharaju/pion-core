@@ -177,19 +177,19 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 		switch (rule.m_source) {
 			case EXTRACT_QUERY:
 				// extract query parameter from request
-				rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name));
+				rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name), true);
 				break;
 			case EXTRACT_COOKIE:
 				// extract cookie parameter from request
-				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name));
+				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_CS_HEADER:
 				// extract HTTP header from request
-				rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name));
+				rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_SC_HEADER:
 				// extract HTTP header from response
-				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name));
+				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_CS_CONTENT:
 				// extract HTTP payload content from request
