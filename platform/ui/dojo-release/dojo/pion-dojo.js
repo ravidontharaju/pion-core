@@ -18775,7 +18775,7 @@ this.attributes_by_column=["text()","@term","@start","@end","@strict","@escape",
 this.order_col_index=7;
 this.delete_col_index=8;
 },getHeight:function(){
-return 590;
+return 610;
 },_addCustomConfigValues:function(_124f,item){
 var store=pion.codecs.config_store;
 _124f.options=[];

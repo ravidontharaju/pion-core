@@ -25,8 +25,8 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.delete_col_index = 8;
 		},
 		getHeight: function() {
-			// TODO: replace 590 with some computed value
-			return 590;
+			// TODO: replace 610 with some computed value
+			return 610;
 		},
 		_addCustomConfigValues: function(config, item) {
 			var store = pion.codecs.config_store;
