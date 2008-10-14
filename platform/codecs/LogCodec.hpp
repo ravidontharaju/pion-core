@@ -155,16 +155,17 @@ private:
 	/// data type used to configure how the log format describes Vocabulary Terms
 	struct LogField {
 		/// constructs a new LogField structure
-		LogField(const std::string& field, const pion::platform::Vocabulary::Term& term,
-				 char delim_start, char delim_end, char escape_char, const std::string& empty_val)
-			: log_field(field), log_term(term), log_delim_start(delim_start),
-			  log_delim_end(delim_end), log_escape_char(escape_char), log_empty_val(empty_val)
+		LogField(const std::string& field, const pion::platform::Vocabulary::Term& term, char delim_start,
+				 char delim_end, bool opt_delims, char escape_char, const std::string& empty_val)
+			: log_field(field), log_term(term), log_delim_start(delim_start), log_delim_end(delim_end),
+			  log_opt_delims(opt_delims), log_escape_char(escape_char), log_empty_val(empty_val)
 		{}
 
 		/// copy constructor
 		LogField(const LogField& f)
 			: log_field(f.log_field), log_term(f.log_term), log_delim_start(f.log_delim_start),
-			  log_delim_end(f.log_delim_end), log_escape_char(f.log_escape_char), log_empty_val(f.log_empty_val)
+			  log_delim_end(f.log_delim_end), log_opt_delims(f.log_opt_delims),
+			  log_escape_char(f.log_escape_char), log_empty_val(f.log_empty_val)
 		{}
 
 		/// assignment operator
@@ -173,6 +174,7 @@ private:
 			log_term = f.log_term;
 			log_delim_start = f.log_delim_start;
 			log_delim_end = f.log_delim_end;
+			log_opt_delims = f.log_opt_delims;
 			log_escape_char = f.log_escape_char;
 			log_empty_val = f.log_empty_val;
 			return *this;
@@ -213,9 +215,11 @@ private:
 		char								log_delim_start;
 		/// a character that delimits the end of the field value, or '\0' if none
 		char								log_delim_end;
-		/// a character that escapes a delimiter within a field value (default "\")
+		/// whether start/end delimiters are optional (default: false)
+		bool								log_opt_delims;
+		/// a character that escapes a delimiter within a field value (default: "\")
 		char								log_escape_char;
-		/// a string that represents an empty field value (default "-" if no delimiters)
+		/// a string that represents an empty field value (default: "-" if no delimiters)
 		std::string							log_empty_val;
 	};
 
@@ -247,11 +251,13 @@ private:
 	 * @param term the Vocabulary Term to map the data field to
 	 * @param delim_start character used to delimit the start of the data field value
 	 * @param delim_end character used to delimit the end of the data field value
+	 * @param opt_delims flag to specify if start/end delimiters are optional
 	 * @param escape_char character used to escape a delimiter within a field value
 	 * @param empty_val string used to represent an empty data field value
 	 */
 	inline void mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
-							   char delim_start, char delim_end, char escape_char, const std::string& empty_val);
+							   char delim_start, char delim_end, bool opt_delims, char escape_char,
+							   const std::string& empty_val);
 
 	/**
 	 * changes the current format used by the Codec (for ELF only)
@@ -298,6 +304,9 @@ private:
 
 	/// name of the end delimiter attribute for Pion XML config files
 	static const std::string		END_ATTRIBUTE_NAME;
+
+	/// name of the delimiters-optional attribute for Pion XML config files
+	static const std::string		OPTIONAL_ATTRIBUTE_NAME;
 
 	/// name of the escape character attribute for Pion XML config files
 	static const std::string		ESCAPE_ATTRIBUTE_NAME;
@@ -386,7 +395,8 @@ private:
 // inline member functions for LogCodec
 
 inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
-									 char delim_start, char delim_end, char escape_char, const std::string& empty_val)
+									 char delim_start, char delim_end, bool opt_delims, char escape_char,
+									 const std::string& empty_val)
 {
 	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
 		if (i->second->log_term.term_ref == term.term_ref)
@@ -397,7 +407,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platf
 		throw PionException("Duplicate Field Name");
 
 	// prepare a new Logfield object
-	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, escape_char, empty_val));
+	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, opt_delims, escape_char, empty_val));
 	switch (term.term_type) {
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:

@@ -35,6 +35,7 @@ const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
 const std::string			LogCodec::END_ATTRIBUTE_NAME = "end";
+const std::string			LogCodec::OPTIONAL_ATTRIBUTE_NAME = "optional";
 const std::string			LogCodec::ESCAPE_ATTRIBUTE_NAME = "escape";
 const std::string			LogCodec::EMPTY_ATTRIBUTE_NAME = "empty";
 const std::string			LogCodec::EVENTS_ELEMENT_NAME = "Events";
@@ -76,8 +77,8 @@ CodecPtr LogCodec::clone(void) const
 	new_codec->m_field_join = m_field_join;
 	new_codec->m_consume_delims = m_consume_delims;
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
-		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term, (*i)->log_delim_start,
-								  (*i)->log_delim_end, (*i)->log_escape_char, (*i)->log_empty_val);
+		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term, (*i)->log_delim_start, (*i)->log_delim_end,
+								  (*i)->log_opt_delims, (*i)->log_escape_char, (*i)->log_empty_val);
 	}
 	return CodecPtr(new_codec);
 }
@@ -151,9 +152,11 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 
 		if (delim_start != '\0') {
 			if (c == delim_start)
-				c = buf_ptr->snextc(); // skip over start-delimiter
+				c = buf_ptr->snextc();			// skip over start-delimiter
+			else if (!(*i)->log_opt_delims)
+				break;							// missing start-delimiter is an error, gotta punt
 			else
-				break;	// field didn't start as expected, gotta punt
+				delim_start = delim_end = '\0';	// didn't find start-delimiter, treat as optional
 		}
 
 		// parse the field contents
@@ -278,8 +281,19 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// if only one delimiter exists, use it for both
 		if (delim_start == '\0' && delim_end != '\0')
 			delim_start = delim_end;
-		if (delim_start != '\0' && delim_end == '\0')
+		else if (delim_start != '\0' && delim_end == '\0')
 			delim_end = delim_start;
+
+		// check if start/end delimiters are optional
+		// default is false
+		bool opt_delims = false;
+		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(OPTIONAL_ATTRIBUTE_NAME.c_str()));
+		if (xml_char_ptr != NULL) {
+			const std::string opt_option(reinterpret_cast<char*>(xml_char_ptr));
+			if (opt_option == "true")
+				opt_delims = true;
+			xmlFree(xml_char_ptr);
+		}
 
 		// get the escape character (if any)
 		// default is "\"
@@ -300,7 +314,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		}
 
 		// add the field mapping
-		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end, escape_char, empty_val);
+		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end, opt_delims, escape_char, empty_val);
 
 		// step to the next field mapping
 		codec_field_node = codec_field_node->next;
