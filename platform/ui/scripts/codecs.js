@@ -68,8 +68,6 @@ pion.codecs.init = function() {
 		for (var i = 0; i < items.length; ++i) {
 			pion.codecs.createNewPaneFromItem(items[i]);
 		}
-		pion.codecs._adjustAccordionSize();
-
 		var first_pane = config_accordion.getChildren()[0];
 		config_accordion.selectChild(first_pane);
 	}
@@ -100,6 +98,9 @@ function addNewCodec() {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
 		}
+		if (plugins.codecs[dialogFields.Plugin] && plugins.codecs[dialogFields.Plugin].custom_post_data) {
+			post_data += plugins.codecs[dialogFields.Plugin].custom_post_data;
+		}
 		post_data += '</Codec></PionConfig>';
 		console.debug('post_data: ', post_data);
 		
@@ -124,10 +125,7 @@ pion.codecs._adjustAccordionSize = function() {
 	var num_codecs = config_accordion.getChildren().length;
 	console.debug("num_codecs = " + num_codecs);
 
-	// TODO: replace 475 with some computed value, which takes into account the height of the grid 
-	// (in .codec_grid in default.css) and the variable comment box height.
-	var codec_pane_body_height = 475;
-
+	var codec_pane_body_height = selected_codec_pane.getHeight();
 	var title_height = 0;
 	if (num_codecs > 0) {
 		var first_pane = config_accordion.getChildren()[0];
@@ -171,5 +169,9 @@ function codecPaneSelected(pane) {
 
 	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
 	var slide_duration = dijit.byId('codec_config_accordion').duration;
-	setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
+	setTimeout(function() {
+					dojo.style(pane.containerNode, "overflow", "hidden");
+					pion.codecs._adjustAccordionSize();
+			   },
+			   slide_duration + 50);
 }

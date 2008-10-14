@@ -37,6 +37,7 @@ dojo.declare("plugins.codecs.CodecPane",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
+			this.special_config_elements = ['Field', 'tagName', 'childNodes'];
 			this.attributes_by_column = ['text()', '@term'];
 			this.delete_col_index = 2;
 			var _this = this;
@@ -46,14 +47,21 @@ dojo.declare("plugins.codecs.CodecPane",
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });			
 		},
+		getHeight: function() {
+			// TODO: replace 475 with some computed value
+			return 475;
+		},
 		populateFromConfigItem: function(item) {
 			var store = pion.codecs.config_store;
 			var config = {};
 			var attributes = store.getAttributes(item);
 			for (var i = 0; i < attributes.length; ++i) {
-				if (attributes[i] != 'Field' && attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
+				if (dojo.indexOf(this.special_config_elements, attributes[i]) == -1) {
 					config[attributes[i]] = store.getValue(item, attributes[i]).toString();
 				}
+			}
+			if (this._addCustomConfigValues) {
+				this._addCustomConfigValues(config, item);
 			}
 			console.dir(config);
 			this.form.setValues(config);
@@ -142,10 +150,13 @@ dojo.declare("plugins.codecs.CodecPane",
 
 			var put_data = '<PionConfig><Codec>';
 			for (var tag in config) {
-				if (tag != '@id') {
+				if (tag.charAt(0) != '@' && tag != 'options') {
 					console.debug('config[', tag, '] = ', config[tag]);
 					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
 				}
+			}
+			if (this._makeCustomElements) {
+				put_data += this._makeCustomElements(config);
 			}
 			put_data += this._makeFieldElements();
 			put_data += '</Codec></PionConfig>';
@@ -228,12 +239,18 @@ plugins.codecs.initGridLayouts = function() {
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
 				editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
 			{ name: 'Start Char', width: 3, styles: 'text-align: center;', 
-				editor: dojox.grid.editors.Input },
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
 			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
+			{ name: 'Strict', width: 3, styles: 'text-align: center;',
+				editor: dojox.grid.editors.Bool},
+			{ name: 'Escape Char', width: 3, styles: 'text-align: center;', 
+				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
+			{ name: 'Empty String', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Input },
-			{ name: 'order', 
+			{ name: 'Order', 
 				editor: dojox.grid.editors.Dijit,
-				editorClass: "dijit.form.NumberSpinner", width: 5 },
+				editorClass: "dijit.form.NumberSpinner", width: 4 },
 			{ name: 'Delete', styles: 'align: center;', width: 3, 
 			  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>' },
 		]]

@@ -17,23 +17,54 @@
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
 						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>ID</label></td
 						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
 						><td rowspan="3">&nbsp;</td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>Plugin&nbsp;Type</label></td
 						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>Event&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
+						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent="onChange: markAsChanged"
 								store="pion.terms.store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
 					></tr
 				></table
+				><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Flush"/
+				><label>Flush output stream after each write</label
 				><br/
+				><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Headers" dojoAttachEvent="onClick: updateDisabling"/
+				><label>Extended Log Format</label
+				><table cellpadding="5" cellspacing="0" border="0" width="100%" dojoAttachPoint="separators"
+					><tr
+						><th width="120px"></th
+						><th>Record Separators</th
+						><th rowspan="4" valign="top" width="20">&nbsp;</th
+						><th width="120px"></th
+						><th>Field Separators</th
+					></tr><tr
+						><td><label>Split&nbsp;Set</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@event_split_set" style="width: 100%;"/></td
+						><td><label>Split&nbsp;Set</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@field_split_set" style="width: 100%;"/></td
+					></tr><tr
+						><td><label>Join&nbsp;String</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@event_join_string" style="width: 100%;"/></td
+						><td><label>Join&nbsp;String</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@field_join_string" style="width: 100%;"/></td
+					></tr><tr
+						><td><label>Comment&nbsp;Prefix</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@comment_prefix" style="width: 100%;"/></td
+						><td><label>Consecutive&nbsp;Delimiters</label></td
+						><td
+							 ><select dojoType="dijit.form.FilteringSelect" style="width: 100%;"
+									  dojoAttachEvent="onChange: markAsChanged" name="@consec_field_delims"
+								><option value="true">equivalent to single delimiter</option
+								><option value="false">indicate empty fields</option
+							></select
+						></td
+					></tr
+				></table
 				><table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #999999;" width="99%"
 					><tr
 						><td class="matrixMainHeader">Map Field Names to Terms</td

@@ -1,6 +1,12 @@
 dojo.provide("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.Codec");
 
+plugins.codecs.LogCodec = {
+	custom_post_data: '<Flush>false</Flush><Headers>false</Headers>'
+					+ '<Events split="\\r\\n" join="\\n" comment="#"/>'
+					+ '<Fields split=" \\t" join="\\_" consume="true"/>'
+}
+
 dojo.declare("plugins.codecs.LogCodecPane",
 	[ plugins.codecs.CodecPane ],
 	{
@@ -12,9 +18,73 @@ dojo.declare("plugins.codecs.LogCodecPane",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
-			this.attributes_by_column = ['text()', '@term', '@start', '@end'];
-			this.order_col_index = 4;
-			this.delete_col_index = 5;
+			this.special_config_elements.push('Events');
+			this.special_config_elements.push('Fields');
+			this.attributes_by_column = ['text()', '@term', '@start', '@end', '@strict', '@escape', '@empty'];
+			this.order_col_index = 7;
+			this.delete_col_index = 8;
+		},
+		getHeight: function() {
+			// TODO: replace 590 with some computed value
+			return 590;
+		},
+		_addCustomConfigValues: function(config, item) {
+			var store = pion.codecs.config_store;
+			config.options = []; // By default, Flush and Headers are both false.
+
+			// Override defaults if options present in the configuration.
+			if (store.hasAttribute(item, 'Flush')) {
+				if (store.getValue(item, 'Flush').toString() == 'true') {
+					config.options.push('Flush');
+				}
+			}
+			if (store.hasAttribute(item, 'Headers')) {
+				if (store.getValue(item, 'Headers').toString() == 'true') {
+					config.options.push('Headers');
+					dojo.query('input', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
+				}
+			}
+
+			var events_item = store.getValue(item, 'Events');
+			if (events_item) {
+				config['@event_split_set'] = store.getValue(events_item, '@split');
+				config['@event_join_string'] = store.getValue(events_item, '@join');
+				config['@comment_prefix'] = store.getValue(events_item, '@comment');
+			}
+			var fields_item = store.getValue(item, 'Fields');
+			if (fields_item) {
+				config['@field_split_set'] = store.getValue(fields_item, '@split');
+				config['@field_join_string'] = store.getValue(fields_item, '@join');
+				config['@consec_field_delims'] = store.getValue(fields_item, '@consume');
+			}
+		},
+		_makeCustomElements: function(config) {
+			var put_data = '<Flush>';
+			put_data += (dojo.indexOf(config.options, 'Flush') != -1); // 'true' iff corresponding checkbox was checked
+			put_data += '</Flush><Headers>';
+			put_data += (dojo.indexOf(config.options, 'Headers') != -1); // 'true' iff corresponding checkbox was checked
+			put_data += '</Headers><Events';
+			if (config['@event_split_set']) {
+				put_data += ' split="' + config['@event_split_set'] + '"';
+			}
+			if (config['@event_join_string']) {
+				put_data += ' join="' + config['@event_join_string'] + '"';
+			}
+			if (config['@comment_prefix']) {
+				put_data += ' comment="' + config['@comment_prefix'] + '"';
+			}
+			put_data += '/><Fields';
+			if (config['@field_split_set']) {
+				put_data += ' split="' + config['@field_split_set'] + '"';
+			}
+			if (config['@field_join_string']) {
+				put_data += ' join="' + config['@field_join_string'] + '"';
+			}
+			if (config['@consec_field_delims']) {
+				put_data += ' consume="' + config['@consec_field_delims'] + '"';
+			}
+			put_data += '/>';
+			return put_data;
 		},
 		_makeFieldTable: function(item) {
 			var store = pion.codecs.config_store;
@@ -26,12 +96,6 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				for (var j = 0; j < this.attributes_by_column.length; ++j) {
 					field_table_row[j] = store.getValue(field_attrs[i], this.attributes_by_column[j]);
 				}
-				/*
-				field_table_row[0] = store.getValue(field_attrs[i], 'text()');
-				field_table_row[1] = store.getValue(field_attrs[i], '@term');
-				field_table_row[2] = store.getValue(field_attrs[i], '@start');
-				field_table_row[3] = store.getValue(field_attrs[i], '@end');
-				*/
 				field_table_row[this.order_col_index] = i + 1;
 				field_table.push(field_table_row);
 
@@ -104,9 +168,33 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				if (row[3]) {
 					put_data += ' end="' + dojox.dtl.filter.htmlstrings.escape(row[3]) + '"';
 				}
+				if (row[4]) {
+					put_data += ' strict=true"';
+				}
+				if (row[5]) {
+					put_data += ' escape="' + dojox.dtl.filter.htmlstrings.escape(row[5]) + '"';
+				}
+				if (row[6]) {
+					put_data += ' empty="' + dojox.dtl.filter.htmlstrings.escape(row[6]) + '"';
+				}
 				put_data += '>' + row[0] + '</Field>';
 			}
 			return put_data;
+		},
+		updateDisabling: function(e) {
+			if (e.target.checked) {
+				dojo.query('input', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
+				var form_values = this.form.getValues();
+				form_values['@event_split_set'] = '\\r\\n';
+				form_values['@event_join_string'] = '\\n';
+				form_values['@comment_prefix'] = '#';
+				form_values['@field_split_set'] = ' \\t';
+				form_values['@field_join_string'] = ' ';
+				form_values['@consec_field_delims'] = 'true';
+				this.form.setValues(form_values);
+			} else {
+				dojo.query('input', this.separators).forEach(function(n) { n.removeAttribute('disabled'); });
+			}
 		}
 	}
 );
