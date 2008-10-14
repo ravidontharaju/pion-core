@@ -242,7 +242,7 @@ plugins.codecs.initGridLayouts = function() {
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
 			{ name: 'End Char', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
-			{ name: 'Strict', width: 3, styles: 'text-align: center;',
+			{ name: 'Start/End Optional', width: 4, styles: 'text-align: center;',
 				editor: dojox.grid.editors.Bool},
 			{ name: 'Escape Char', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },

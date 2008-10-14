@@ -135,6 +135,11 @@ label {
 	font-weight: bold;
 }
 
+label.disabled {
+	font-weight: 100;
+	font-style: italic;
+}
+
 
 .matrixMainHeader {
 	background: url(../images/bg-matrix-main-header.png) repeat-x;
