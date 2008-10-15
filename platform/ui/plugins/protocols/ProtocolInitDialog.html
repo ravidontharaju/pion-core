@@ -1,0 +1,32 @@
+<div class="dijitDialog protocol_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Protocol Initialization</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>Plugin&nbsp;Type</label></td
+				><td><select dojoType="dijit.form.FilteringSelect" name="Plugin" style="width: 100%;"
+					   ><option value="HTTPProtocol">HTTP Protocol</option
+				   ></select></td
+			></tr
+			><tr
+				><td><label>Name:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+			></tr
+			><tr
+				><td><label>Comments:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+			></tr
+			><tr
+				><td><label>Event&nbsp;Type</label></td
+				><td><input dojoType="dijit.form.FilteringSelect" name="EventType" query="{Type:'object'}" 
+						store="pion.terms.store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
+			></tr
+		></table
+	></div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onclick: hide">Cancel</button>
+	</div>
+</div>

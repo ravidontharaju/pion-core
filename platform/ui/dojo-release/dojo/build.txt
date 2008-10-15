@@ -153,6 +153,8 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/reactors.js
 ./../../release/dojo-release/plugins/vocabularies/Vocabulary.js
 ./../../release/dojo-release/pion/vocabularies.js
+./../../release/dojo-release/plugins/protocols/Protocol.js
+./../../release/dojo-release/pion/protocols.js
 ./../../release/dojo-release/pion/widgets/User.js
 ./../../release/dojo-release/pion/users.js
 ./../../release/dojo-release/pion/widgets/XMLImport.js

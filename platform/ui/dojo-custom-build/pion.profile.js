@@ -41,6 +41,7 @@ dependencies = {
 			"pion.vocabularies",
 			"pion.codecs",
 			"pion.databases",
+			"pion.protocols",
 			"pion.users",
 			"pion.system",
 			"pion.about",
@@ -48,6 +49,7 @@ dependencies = {
 			"plugins.reactors.Reactor",
 			"plugins.codecs.Codec",
 			"plugins.databases.Database",
+			"plugins.protocols.Protocol",
 			"plugins.vocabularies.Vocabulary",
 		]
 		}

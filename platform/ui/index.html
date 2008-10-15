@@ -219,6 +219,18 @@
 					</div>
 				</div>
 			</div>
+			<div id="protocol_config" dojoType="dijit.layout.BorderContainer" title="Protocols" style="width: 95%;">
+				<div id="protocol_config_header" class="config_header">
+					<h1>Protocol Configuration</h1>
+				</div>
+				<div id="protocol_config_content" class="config_content">
+					<div id="protocol_config_accordion" dojoType="dijit.layout.AccordionContainer">
+					</div>
+					<div>
+						<button id="add_new_protocol_button" dojoType=dijit.form.Button class="add_new">ADD A NEW PROTOCOL</button>
+					</div>
+				</div>
+			</div>
 
 			<!--Start Users-->
 			<div id="user_config" dojoType="dijit.layout.BorderContainer" title="Users" style="width: 95%;">
@@ -261,11 +273,11 @@
 							<td align="right"><label>Databases</label></td>
 							<td id="database_conf_file">your/path/here/DatabasesConfigFile.xml</td>
 						</tr><tr>
-							<td align="right"><label>Users</label></td>
-							<td id="user_conf_file">your/path/here/UsersConfigFile.xml</td>
-						</tr><tr>
 							<td align="right"><label>Protocols</label></td>
 							<td id="protocol_conf_file">your/path/here/ProtocolsConfigFile.xml</td>
+						</tr><tr>
+							<td align="right"><label>Users</label></td>
+							<td id="user_conf_file">your/path/here/UsersConfigFile.xml</td>
 						</tr><tr>
 							<td align="right"><label>Services</label></td>
 							<td id="service_conf_file">your/path/here/ServicesConfigFile.xml</td>

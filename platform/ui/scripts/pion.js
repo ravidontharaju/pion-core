@@ -9,6 +9,7 @@ dojo.require("pion.reactors");
 dojo.require("pion.vocabularies");
 dojo.require("pion.codecs");
 dojo.require("pion.databases");
+dojo.require("pion.protocols");
 dojo.require("pion.users");
 dojo.require("pion.system");
 dojo.require("pion.login");
@@ -18,6 +19,7 @@ dojo.require("pion.about");
 var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
 var database_config_page_initialized = false;
+var protocol_config_page_initialized = false;
 var user_config_page_initialized = false;
 var system_config_page_initialized = false;
 var file_protocol = false;
@@ -162,6 +164,14 @@ function configPageSelected(page) {
 		} else {
 			pion.databases.init();
 			database_config_page_initialized = true;
+		}
+	} else if (page.title == "Protocols") {
+		if (protocol_config_page_initialized) {
+			pion.protocols._adjustAccordionSize(); // In case Protocols were added via another page.
+			dijit.byId('main_stack_container').resize({h: pion.protocols.getHeight()});
+		} else {
+			pion.protocols.init();
+			protocol_config_page_initialized = true;
 		}
 	} else if (page.title == "Users") {
 		if (user_config_page_initialized) {

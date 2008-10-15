@@ -638,7 +638,7 @@ The following are also available, if the need arises.
 
 
 .tundra .add_new_row .dijitButtonNode {
-	background: url("../images/button-add-new-row-off.png");
+	background: url("../images/button-add-new-row-off.png") no-repeat;
 	border: none;
 	color: #366dba;
 	font-size: 11px;
@@ -650,7 +650,7 @@ The following are also available, if the need arises.
 }
 
 .tundra .add_new_row.dijitButtonHover .dijitButtonNode {
-	background: url("../images/button-add-new-row-on.png");
+	background: url("../images/button-add-new-row-on.png") no-repeat;
 }
 
 .save_cancel_delete {
@@ -693,6 +693,17 @@ The following are also available, if the need arises.
 }
 
 
+/* Codecs Config Styles */
+
+
+.tundra .codec_pane .dijitAccordionBody{
+	padding-left: 10px;
+	padding-right: 10px;
+	height: auto;
+	background: url("../images/bg-accordion-pane.png");
+}
+
+
 /* Database Config Styles */
 
 
@@ -703,24 +714,22 @@ The following are also available, if the need arises.
 }
 
 
+/* Protocols Config Styles */
+
+
+.tundra .protocol_pane .dijitAccordionBody{
+	padding-left: 10px;
+	padding-right: 10px;
+	height: auto;
+	background: url("../images/bg-accordion-pane.png");
+}
+
 
 /* Users Config Styles */
 
 
 .tundra .user_pane .dijitAccordionBody{
 	padding-left: 10px;
-	height: auto;
-	background: url("../images/bg-accordion-pane.png");
-}
-
-
-
-/* Codecs Config Styles */
-
-
-.tundra .codec_pane .dijitAccordionBody{
-	padding-left: 10px;
-	padding-right: 10px;	
 	height: auto;
 	background: url("../images/bg-accordion-pane.png");
 }
@@ -763,6 +772,11 @@ The following are also available, if the need arises.
 }
 
 .vocab_grid {
+	overflow: hidden;
+	height: 180px;
+}
+
+.protocol_grid {
 	overflow: hidden;
 	height: 180px;
 }
