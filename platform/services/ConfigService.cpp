@@ -460,6 +460,33 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				// retrieve configuration for all Protocols
 				getConfig().getProtocolFactory().writeConfigXML(ss);
 				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+				
+				// add (create) a new Protocol
+				
+				// convert request content into XML configuration info
+				xmlNodePtr protocol_config_ptr =
+					ProtocolFactory::createProtocolConfig(request->getContent(),
+														  request->getContentLength());
+				
+				std::string protocol_id;
+				// add the new Protocol to the ProtocolFactory
+				try {
+					protocol_id = getConfig().getProtocolFactory().addProtocol(protocol_config_ptr);
+				} catch (std::exception&) {
+					xmlFreeNodeList(protocol_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(protocol_config_ptr);
+				
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+				
+				// respond with the new Protocol's configuration
+				if (! getConfig().getProtocolFactory().writeConfigXML(ss, protocol_id))
+					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+				
 			} else {
 				// send a 405 (method not allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
@@ -474,6 +501,36 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				if (! getConfig().getProtocolFactory().writeConfigXML(ss, branches[1]))
 					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Protocol's configuration
+				
+				// convert request content into XML configuration info
+				xmlNodePtr protocol_config_ptr =
+					ProtocolFactory::createProtocolConfig(request->getContent(),
+														  request->getContentLength());
+				
+				try {
+					// push the new config into the ProtocolFactory
+					getConfig().getProtocolFactory().setProtocolConfig(branches[1], protocol_config_ptr);
+				} catch (std::exception&) {
+					xmlFreeNodeList(protocol_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(protocol_config_ptr);
+				
+				// respond with the Protocol's updated configuration
+				if (! getConfig().getProtocolFactory().writeConfigXML(ss, branches[1]))
+					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+				
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing Protocol
+				
+				getConfig().getProtocolFactory().removeProtocol(branches[1]);
+				
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				
 			} else {
 				// send a 405 (method not allowed) response
