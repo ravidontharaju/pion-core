@@ -247,7 +247,7 @@ plugins.codecs.initGridLayouts = function() {
 			{ name: 'Escape Char', width: 3, styles: 'text-align: center;', 
 				editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {regExp: ".?"} },
 			{ name: 'Empty String', width: 3, styles: 'text-align: center;', 
-				editor: dojox.grid.editors.Input },
+				editor: dojox.grid.editors.AlwaysOn },
 			{ name: 'Order', 
 				editor: dojox.grid.editors.Dijit,
 				editorClass: "dijit.form.NumberSpinner", width: 4 },

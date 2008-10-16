@@ -18754,7 +18754,7 @@ dojo.addClass(this.domNode,"unsaved_changes");
 },codec:""});
 plugins.codecs.CodecPane.grid_model=new dojox.grid.data.Table(null,[]);
 plugins.codecs.initGridLayouts=function(){
-plugins.codecs.CodecPane.log_codec_grid_layout=[{rows:[[{name:"Field Name",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"Term",styles:"",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.FilteringSelect",editorProps:{store:pion.terms.store,searchAttr:"id",keyAttr:"id"},width:"auto"},{name:"Start Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"End Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"Start/End Optional",width:4,styles:"text-align: center;",editor:dojox.grid.editors.Bool},{name:"Escape Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"Empty String",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Input},{name:"Order",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.NumberSpinner",width:4},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]]}];
+plugins.codecs.CodecPane.log_codec_grid_layout=[{rows:[[{name:"Field Name",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"Term",styles:"",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.FilteringSelect",editorProps:{store:pion.terms.store,searchAttr:"id",keyAttr:"id"},width:"auto"},{name:"Start Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"End Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"Start/End Optional",width:4,styles:"text-align: center;",editor:dojox.grid.editors.Bool},{name:"Escape Char",width:3,styles:"text-align: center;",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.ValidationTextBox",editorProps:{regExp:".?"}},{name:"Empty String",width:3,styles:"text-align: center;",editor:dojox.grid.editors.AlwaysOn},{name:"Order",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.NumberSpinner",width:4},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]]}];
 plugins.codecs.CodecPane.default_grid_layout=[{rows:[[{name:"Field Name",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"Term",styles:"",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.FilteringSelect",editorProps:{store:pion.terms.store,searchAttr:"id",keyAttr:"id"},width:"auto"},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]]}];
 };
 }
@@ -19592,7 +19592,7 @@ plugins.databases.SQLiteDatabase.label="SQLite Database";
 dojo.declare("plugins.databases.SQLiteDatabasePane",[plugins.databases.DatabasePane],{widgetsInTemplate:true,postCreate:function(){
 this.inherited("postCreate",arguments);
 },getHeight:function(){
-return 190;
+return 200;
 }});
 }
 if(!dojo._hasResource["pion.databases"]){
