@@ -1,3 +1,10 @@
+Version 1.0.4 (2008-10-16)
+==========================
+* Cookie collection now case sensitive (500)
+* Added unit test and fixed bug when parsing query strings with "&&" (333)
+* Added HEADER_X_FORWARDED_FOR to HTTPTypes (318)
+* Added TCPConnection::connect() function that performs dns lookups (318)
+
 Version 1.0.0 (2008-09-12)
 ==========================
 
