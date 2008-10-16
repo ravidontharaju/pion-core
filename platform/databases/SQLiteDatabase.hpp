@@ -37,7 +37,7 @@ class SQLiteDatabase :
 	public pion::platform::Database
 {
 public:
-	
+
 	/// exception thrown if the SQLiteDatabase configuration does not define a Filename
 	class EmptyFilenameException : public PionException {
 	public:
@@ -51,18 +51,18 @@ public:
 		SQLiteAPIException(const std::string& sqlite_error_msg)
 			: PionException("SQLiteDatabase API error: ", sqlite_error_msg) {}
 	};
-	
-	
+
+
 	/**
 	 * constructs a new SQLiteDatabase object
 	 */
 	SQLiteDatabase(void)
 		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL)
 	{}
-	
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteDatabase() { m_query_map.clear(); close(); }
-	
+
 	/**
 	 * clones the Database, returning a pointer to the cloned copy
 	 *
@@ -76,10 +76,10 @@ public:
 	 * @param create_backup if true, create a backup of the old database before opening
 	 */
 	virtual void open(bool create_backup = false);
-	
+
 	/// closes the database connection
 	virtual void close(void);
-	
+
 	/// returns true if the database connection is open
 	virtual bool is_open(void) const { return m_sqlite_db != NULL; }
 
@@ -89,7 +89,7 @@ public:
 	 * @param sql_query SQL query to execute
 	 */
 	virtual void runQuery(const std::string& sql_query);
-	
+
 	/**
 	 * adds a compiled SQL query to the database
 	 *
@@ -98,7 +98,7 @@ public:
 	 */
 	virtual pion::platform::QueryPtr addQuery(pion::platform::QueryID query_id,
 											  const std::string& sql_query);
-	
+
 	/**
 	 * creates a database table for output, if it does not already exist
 	 *
@@ -107,7 +107,7 @@ public:
 	 */
 	virtual void createTable(const pion::platform::Query::FieldMap& field_map,
 							 const std::string& table_name);
-	
+
 	/**
 	 * prepares the query that is used to insert events
 	 *
@@ -125,14 +125,14 @@ public:
 	 * @return QueryPtr smart pointer to the "begin transaction" query
 	 */
 	virtual pion::platform::QueryPtr getBeginTransactionQuery(void);
-	
+
 	/**
 	 * returns the query that is used to end and commit transactions
 	 *
 	 * @return QueryPtr smart pointer to the "commit transaction" query
 	 */
 	virtual pion::platform::QueryPtr getCommitTransactionQuery(void);
-	
+
 	/**
 	 * sets configuration parameters for this Database
 	 *
@@ -152,10 +152,10 @@ public:
 		std::string error_msg(sqlite3_errmsg(db_ptr));
 		throw SQLiteAPIException(error_msg);
 	}
-	
-		
+
+
 protected:
-	
+
 	/**
 	 * returns the SQLite data type for a given Pion Vocabulary data type
 	 *
@@ -164,7 +164,7 @@ protected:
 	 * @return int SQLITE_NULL, SQLITE_INTEGER, SQLITE_FLOAT, SQLITE_TEXT or SQLITE_BLOB
 	 */
 	static inline int getSQLiteType(const pion::platform::Vocabulary::DataType term_type);
-	
+
 	/**
 	 * returns the SQLite affinity for a given Pion Vocabulary data type
 	 *
@@ -177,7 +177,7 @@ protected:
 	/// returns a string containing the SQLite API error message
 	inline std::string getSQLiteError(void);
 
-	
+
 	///
 	/// SQLiteQuery: a compiled query used by SQLite databases
 	///
@@ -185,10 +185,10 @@ protected:
 		: public pion::platform::Query
 	{
 	public:
-		
+
 		/// virtual destructor releases the prepared statement
 		virtual ~SQLiteQuery() { sqlite3_finalize(m_sqlite_stmt); }
-		
+
 		/**
 		 * constructs a new SQLiteQuery object
 		 *
@@ -199,7 +199,7 @@ protected:
 
 		/**
 		 * binds a NULL value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 */
 		virtual void bindNull(unsigned int param) {
@@ -209,7 +209,7 @@ protected:
 
 		/**
 		 * binds a std::string value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 * @param copy_value if true, the string will be copied into a temporary buffer
@@ -219,10 +219,10 @@ protected:
 								  value.size(), (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a string (const char *) value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 * @param copy_value if true, the string will be copied into a temporary buffer
@@ -232,10 +232,10 @@ protected:
 								  -1, (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds an integer value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -243,10 +243,10 @@ protected:
 			if (sqlite3_bind_int(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds an unsigned integer value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -254,10 +254,10 @@ protected:
 			if (sqlite3_bind_int(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a big integer value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -265,10 +265,10 @@ protected:
 			if (sqlite3_bind_int64(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds an unsigned big integer value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -276,10 +276,10 @@ protected:
 			if (sqlite3_bind_int64(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a floating point number value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -287,10 +287,10 @@ protected:
 			if (sqlite3_bind_double(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a double floating point number value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -298,10 +298,10 @@ protected:
 			if (sqlite3_bind_double(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a long double floating point number value to a query parameter
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -309,10 +309,10 @@ protected:
 			if (sqlite3_bind_double(m_sqlite_stmt, param+1, value) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
 		/**
 		 * binds a date_time value to a query parameter (use bindString() instead)
-		 * 
+		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
 		 * @param value the value to bind to the query parameter
 		 */
@@ -323,7 +323,19 @@ protected:
 								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
-		
+
+		// fetch methods are missing -- these will be implemented SOON
+		// Currently only EnterpriseDatabase can fetch result fields to queries
+		virtual void fetchString(unsigned int param, std::string& value) { }
+		virtual boost::int32_t fetchInt(unsigned int param) { return 0; }
+		virtual boost::uint32_t fetchUInt(unsigned int param) { return 0; }
+		virtual boost::int64_t fetchBigInt(unsigned int param) { return 0; }
+		virtual boost::uint64_t fetchUBigInt(unsigned int param) { return 0; }
+		virtual float fetchFloat(unsigned int param) { return 0; }
+		virtual double fetchDouble(unsigned int param) { return 0; }
+		virtual long double fetchLongDouble(unsigned int param) { return 0; }
+		virtual void fetchDateTime(unsigned int param, PionDateTime& val) { }
+
 		/**
 		 * runs the compiled query
 		 *
@@ -333,10 +345,10 @@ protected:
 
 		/// resets the compiled query so that it can be run again
 		virtual void reset(void) { sqlite3_reset(m_sqlite_stmt); }
-		
-		
+
+
 	private:
-		
+
 		/// points to the SQLite database that this query belongs to
 		sqlite3 *			m_sqlite_db;
 
@@ -344,29 +356,29 @@ protected:
 		sqlite3_stmt *		m_sqlite_stmt;
 	};
 
-	
+
 private:
-	
+
 	/// extension added to the name of backup files
 	static const std::string		BACKUP_FILE_EXTENSION;
-	
+
 	/// name of the Filename element for Pion XML config files
 	static const std::string		FILENAME_ELEMENT_NAME;
 
-	
+
 	/// filename of the SQLite database
 	std::string						m_database_name;
-	
+
 	/// SQLite v3 database handle
 	sqlite3	*						m_sqlite_db;
-	
+
 	/// points the an error message returned from a SQLite API call
 	char *							m_error_ptr;
 };
 
-	
+
 // inline member functions for SQLiteDatabase
-	
+
 inline int SQLiteDatabase::getSQLiteType(const pion::platform::Vocabulary::DataType term_type)
 {
 	switch(term_type) {
@@ -449,8 +461,8 @@ inline std::string SQLiteDatabase::getSQLiteError(void)
 	}
 	return error_str;
 }
-	
-	
+
+
 }	// end namespace plugins
 }	// end namespace pion
 
