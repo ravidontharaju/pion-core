@@ -77,7 +77,7 @@
     <Field term="urn:vocab:clickstream#page-number">x-page-num</Field>
     <Field term="urn:vocab:clickstream#request-number">x-request-num</Field>
     <Field term="urn:vocab:clickstream#page-load">x-page-load</Field>
-	<Field term="urn:vocab:clickstream#page-title">x-page-title</Field>
+	<Field term="urn:vocab:clickstream#page-title" start="&quot;" end="&quot;">x-page-title</Field>
   </Codec>
   <Codec id="abddec14-74b8-11dd-883e-001cc02bd66b">
     <Name>Visitor session Log Format</Name>

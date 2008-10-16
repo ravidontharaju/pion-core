@@ -37,7 +37,6 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/intrusive/rbtree_algorithms.hpp>
 #include <pion/PionConfig.hpp>
-#include <pion/PionException.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -68,6 +67,15 @@ public:
 
 	/// forward declaration for use by IteratorBase
 	struct ParameterNode;
+	
+	/// exception thrown if you try to serialize a term that cannot be serialized
+	class TermTypeNotSerializableException : public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "Term type is not serializable";
+		}
+	};
+	
 
 protected:
 
@@ -319,7 +327,12 @@ public:
 		return std::make_pair(Iterator(range.first), Iterator(range.second));
 	}
 
-	/// adds all the terms from another Event into this one
+	/**
+	 * adds all the terms from another Event into this one
+	 *
+	 * @param e the event to copy terms from
+	 * @return BasicEvent& reference to this event
+	 */
 	inline BasicEvent& operator+=(const BasicEvent& e) {
 		ParameterNode *new_param_ptr;
 		for (ParameterNode *node_ptr = tree_algo::begin_node(&e.m_param_tree);
@@ -332,6 +345,25 @@ public:
 				new_param_ptr, m_item_compare);
 		}
 		return *this;
+	}
+	
+	/**
+	 * copies all values for a particular term from one event into this one
+	 *
+	 * @param e the event to copy terms from
+	 * @param term_ref numeric identifier for the term to copy
+	 */
+	inline void copyValues(const BasicEvent& e, const Vocabulary::TermRef& term_ref)
+	{
+		std::pair<ParameterNode*, ParameterNode*> range =
+			tree_algo::equal_range(&e.m_param_tree, term_ref, e.m_key_compare);
+		while (range.first != range.second) {
+			ParameterNode *new_param_ptr = createParameter();
+			copyParameter(range.first, new_param_ptr);
+			tree_algo::insert_equal_upper_bound(&m_param_tree,
+				new_param_ptr, m_item_compare);
+			range.first = tree_algo::next_node(range.first);
+		}
 	}
 	
 	/**
@@ -467,6 +499,16 @@ public:
 	}
 
 	/**
+	 * sets the value for a particular term to an integer
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setInt(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<boost::int32_t>(value));
+	}
+
+	/**
 	 * sets the value for a particular term to an unsigned integer
 	 *
 	 * @param term_ref numeric identifier for the term
@@ -475,6 +517,16 @@ public:
 	template <typename T>
 	inline void setUInt(const Vocabulary::TermRef& term_ref, T value) {
 		insert(term_ref, boost::uint32_t(value));
+	}
+	
+	/**
+	 * sets the value for a particular term to an unsigned integer
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setUInt(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<boost::uint32_t>(value));
 	}
 	
 	/**
@@ -489,6 +541,16 @@ public:
 	}
 	
 	/**
+	 * sets the value for a particular term to a big integer
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setBigInt(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<boost::int64_t>(value));
+	}
+	
+	/**
 	 * sets the value for a particular term to an unsigned big integer
 	 *
 	 * @param term_ref numeric identifier for the term
@@ -497,6 +559,16 @@ public:
 	template <typename T>
 	inline void setUBigInt(const Vocabulary::TermRef& term_ref, T value) {
 		insert(term_ref, boost::uint64_t(value));
+	}
+	
+	/**
+	 * sets the value for a particular term to an unsigned big integer
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setUBigInt(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<boost::uint64_t>(value));
 	}
 	
 	/**
@@ -510,6 +582,16 @@ public:
 	}
 	
 	/**
+	 * sets the value for a particular term to a floating point number
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setFloat(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<float>(value));
+	}
+	
+	/**
 	 * sets the value for a particular term to a double floating point number
 	 *
 	 * @param term_ref numeric identifier for the term
@@ -520,6 +602,16 @@ public:
 	}
 
 	/**
+	 * sets the value for a particular term to a double floating point number
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setDouble(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<double>(value));
+	}
+
+	/**
 	 * sets the value for a particular term to a long double floating point number
 	 *
 	 * @param term_ref numeric identifier for the term
@@ -527,6 +619,16 @@ public:
 	 */
 	inline void setLongDouble(const Vocabulary::TermRef& term_ref, const long double value) {
 		insert(term_ref, value);
+	}
+	
+	/**
+	 * sets the value for a particular term to a long double floating point number
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setLongDouble(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, boost::lexical_cast<long double>(value));
 	}
 	
 	/**
@@ -570,6 +672,183 @@ public:
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
 		insert(term_ref, createSimpleString(value.c_str(), value.size()));
+	}
+	
+	/**
+	 * sets the value for a particular term (casts if necessary, may throw)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param term_type data type for the term
+	 * @param value new value assigned to the term
+	 */
+	inline bool set(const Vocabulary::Term& t, const std::string& value)
+	{
+		switch (t.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_REGEX:
+			// not serializable
+			throw TermTypeNotSerializableException();
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			setInt(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			setUInt(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_INT64:
+			setBigInt(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_UINT64:
+			setUBigInt(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			setFloat(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			setDouble(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			setLongDouble(t.term_ref, value);
+			break;
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			{
+			const pion::PionTimeFacet f(t.term_format);
+			const pion::PionDateTime pdt(f.fromString(value));
+			setDateTime(t.term_ref, pdt);
+			break;
+			}
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			setString(value);
+			break;
+		}
+	}
+	
+	/**
+	 * writes a parameter value to a stream
+	 *
+	 * @param str the output stream to write to
+	 * @param value the ParameterValue to write
+	 * @param t the Vocabulary Term associated with the ParameterValue
+	 */
+	static inline bool write(std::ostream& str, const ParameterValue& value,
+		const Vocabulary::Term& t)
+	{
+		switch (t.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_REGEX:
+			// not serializable
+			throw TermTypeNotSerializableException();
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			str << boost::get<const boost::int32_t&>(value);
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			str << boost::get<const boost::uint32_t&>(value);
+			break;
+		case Vocabulary::TYPE_INT64:
+			str << boost::get<const boost::int64_t&>(value);
+			break;
+		case Vocabulary::TYPE_UINT64:
+			str << boost::get<const boost::uint64_t&>(value);
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			str << boost::get<const float&>(value);
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			str << boost::get<const double&>(value);
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			str << boost::get<const long double&>(value);
+			break;
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			str << boost::get<const SimpleString&>(value).get();
+			break;
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			{
+			pion::PionTimeFacet f(t.term_format);
+			f.write(str, boost::get<const PionDateTime&>(value));
+			break;
+			}
+		}
+	}
+	
+	/**
+	 * writes a parameter value to a string
+	 *
+	 * @param str the output string to write to
+	 * @param value the ParameterValue to write
+	 * @param t the Vocabulary Term associated with the ParameterValue
+	 */
+	static inline bool write(std::string& str, const ParameterValue& value,
+		const Vocabulary::Term& t)
+	{
+		switch (t.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_REGEX:
+			// not serializable
+			throw TermTypeNotSerializableException();
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			str = boost::lexical_cast<std::string>( boost::get<const boost::int32_t&>(value) );
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			str = boost::lexical_cast<std::string>( boost::get<const boost::uint32_t&>(value) );
+			break;
+		case Vocabulary::TYPE_INT64:
+			str = boost::lexical_cast<std::string>( boost::get<const boost::int64_t&>(value) );
+			break;
+		case Vocabulary::TYPE_UINT64:
+			str = boost::lexical_cast<std::string>( boost::get<const boost::uint64_t&>(value) );
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			str = boost::lexical_cast<std::string>( boost::get<const float&>(value) );
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			str = boost::lexical_cast<std::string>( boost::get<const double&>(value) );
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			str = boost::lexical_cast<std::string>( boost::get<const long double&>(value) );
+			break;
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			str = boost::get<const SimpleString&>(value).get();
+			break;
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			{
+			pion::PionTimeFacet f(t.term_format);
+			str = f.toString( boost::get<const PionDateTime&>(value) );
+			break;
+			}
+		}
 	}
 	
 	/// returns the number of references to this Event

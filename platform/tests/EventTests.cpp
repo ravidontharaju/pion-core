@@ -188,6 +188,40 @@ BOOST_AUTO_TEST_CASE(checkEventOperatorPlusEquals) {
 	BOOST_CHECK_EQUAL(b_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
 }
 
+BOOST_AUTO_TEST_CASE(checkEventCopyValues) {
+	EventPtr a_ptr(m_event_factory.create(m_object_term.term_ref));
+	EventPtr b_ptr(m_event_factory.create(m_object_term.term_ref));
+	b_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224UL);
+	b_ptr->setUBigInt(m_big_int_term.term_ref, 25UL);
+	b_ptr->setInt(m_plain_int_term.term_ref, 10);
+	b_ptr->setInt(m_plain_int_term.term_ref, 100);
+	b_ptr->setInt(m_plain_int_term.term_ref, 1000);
+	b_ptr->setInt(m_plain_int_term.term_ref, 10000);
+
+	BOOST_CHECK(!a_ptr->isDefined(m_plain_int_term.term_ref));
+	BOOST_CHECK(!a_ptr->isDefined(m_big_int_term.term_ref));
+
+	a_ptr->copyValues(*b_ptr, m_big_int_term.term_ref);
+
+	BOOST_CHECK(!a_ptr->isDefined(m_plain_int_term.term_ref));
+	BOOST_CHECK(a_ptr->isDefined(m_big_int_term.term_ref));
+
+	Event::ValuesRange range = a_ptr->equal_range(m_big_int_term.term_ref);
+	BOOST_CHECK(range.first == a_ptr->begin());
+	BOOST_CHECK(range.first != range.second);
+	BOOST_CHECK(range.first != a_ptr->end());
+
+	Event::ConstIterator i = range.first;
+	BOOST_REQUIRE(i != a_ptr->end());
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(i->value), 2025221224UL);
+	++i;
+	BOOST_REQUIRE(i != range.second);
+	BOOST_CHECK_EQUAL(boost::get<boost::uint64_t>(i->value), 25UL);
+	++i;
+	BOOST_CHECK(i == range.second);
+	BOOST_CHECK(i == a_ptr->end());
+}
+
 BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	Event::ParameterValue pv1 = boost::int32_t(4);
 	Event::ParameterValue pv2 = boost::int32_t(4);
