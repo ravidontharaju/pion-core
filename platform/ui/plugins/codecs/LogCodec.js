@@ -69,23 +69,23 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			put_data += (dojo.indexOf(config.options, 'Headers') != -1); // 'true' iff corresponding checkbox was checked
 			put_data += '</Headers><Events';
 			if (config['@event_split_set']) {
-				put_data += ' split="' + config['@event_split_set'] + '"';
+				put_data += ' split="' + dojox.dtl.filter.htmlstrings.escape(config['@event_split_set']) + '"';
 			}
 			if (config['@event_join_string']) {
-				put_data += ' join="' + config['@event_join_string'] + '"';
+				put_data += ' join="' + dojox.dtl.filter.htmlstrings.escape(config['@event_join_string']) + '"';
 			}
 			if (config['@comment_prefix']) {
-				put_data += ' comment="' + config['@comment_prefix'] + '"';
+				put_data += ' comment="' + dojox.dtl.filter.htmlstrings.escape(config['@comment_prefix']) + '"';
 			}
 			put_data += '/><Fields';
 			if (config['@field_split_set']) {
-				put_data += ' split="' + config['@field_split_set'] + '"';
+				put_data += ' split="' + dojox.dtl.filter.htmlstrings.escape(config['@field_split_set']) + '"';
 			}
 			if (config['@field_join_string']) {
-				put_data += ' join="' + config['@field_join_string'] + '"';
+				put_data += ' join="' + dojox.dtl.filter.htmlstrings.escape(config['@field_join_string']) + '"';
 			}
 			if (config['@consec_field_delims']) {
-				put_data += ' consume="' + config['@consec_field_delims'] + '"';
+				put_data += ' consume="' + dojox.dtl.filter.htmlstrings.escape(config['@consec_field_delims']) + '"';
 			}
 			put_data += '/>';
 			return put_data;

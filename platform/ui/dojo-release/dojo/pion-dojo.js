@@ -18813,23 +18813,23 @@ _1256+="</Flush><Headers>";
 _1256+=(dojo.indexOf(_1255.options,"Headers")!=-1);
 _1256+="</Headers><Events";
 if(_1255["@event_split_set"]){
-_1256+=" split=\""+_1255["@event_split_set"]+"\"";
+_1256+=" split=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@event_split_set"])+"\"";
 }
 if(_1255["@event_join_string"]){
-_1256+=" join=\""+_1255["@event_join_string"]+"\"";
+_1256+=" join=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@event_join_string"])+"\"";
 }
 if(_1255["@comment_prefix"]){
-_1256+=" comment=\""+_1255["@comment_prefix"]+"\"";
+_1256+=" comment=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@comment_prefix"])+"\"";
 }
 _1256+="/><Fields";
 if(_1255["@field_split_set"]){
-_1256+=" split=\""+_1255["@field_split_set"]+"\"";
+_1256+=" split=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@field_split_set"])+"\"";
 }
 if(_1255["@field_join_string"]){
-_1256+=" join=\""+_1255["@field_join_string"]+"\"";
+_1256+=" join=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@field_join_string"])+"\"";
 }
 if(_1255["@consec_field_delims"]){
-_1256+=" consume=\""+_1255["@consec_field_delims"]+"\"";
+_1256+=" consume=\""+dojox.dtl.filter.htmlstrings.escape(_1255["@consec_field_delims"])+"\"";
 }
 _1256+="/>";
 return _1256;
