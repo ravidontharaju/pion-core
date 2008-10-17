@@ -181,7 +181,7 @@ private:
 		}
 
 		/// writes an empty value to an output stream
-		void writeEmptyValue(std::ostream& out) const {
+		inline void writeEmptyValue(std::ostream& out) const {
 			if (log_delim_start != '\0')
 				out << log_delim_start;
 			out << log_empty_val;
@@ -258,6 +258,13 @@ private:
 	inline void mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
 							   char delim_start, char delim_end, bool opt_delims, char escape_char,
 							   const std::string& empty_val);
+
+	/**
+	 * translate C-style escape sequences in-place
+	 *
+	 * @param cstring the C-string containing C-style escape sequences to translate
+	 */
+	inline char * cstyle(char *cstring);
 
 	/**
 	 * changes the current format used by the Codec (for ELF only)
@@ -421,6 +428,41 @@ inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platf
 	m_field_map[field] = field_ptr;
 	// append the new field to the current (default) format
 	m_format.push_back(field_ptr);
+}
+
+inline char * LogCodec::cstyle(char *cstring)
+{
+	char *ptr = cstring;
+	size_t len = strlen(cstring);
+	int num, nlen;
+
+	while (ptr = strchr(ptr, '\\')) {
+		nlen = 1;
+		switch (ptr[1]) {
+		case 'a': *ptr = '\a'; break;
+		case 'b': *ptr = '\b'; break;
+		case 'f': *ptr = '\f'; break;
+		case 'n': *ptr = '\n'; break;
+		case 'r': *ptr = '\r'; break;
+		case 't': *ptr = '\t'; break;
+		case 'v': *ptr = '\v'; break;
+		case '_': *ptr = ' '; break;
+		case '0': case '1': case '2': case '3':
+		case '4': case '5': case '6': case '7':
+			nlen = sscanf(ptr + 1, "%o", &num);
+			*ptr = (char)num;
+			break;
+		case 'x':
+			nlen = sscanf(ptr + 1, "%x", &num);
+			*ptr = (char)num;
+			break;
+		}
+		num = ptr - cstring + nlen;
+		ptr++;
+		memmove(ptr, ptr + nlen, len - num);
+	}
+
+	return cstring;
 }
 
 inline void LogCodec::changeELFFormat(char *fmt)

@@ -266,7 +266,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		char delim_start = '\0';
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(START_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			delim_start = xml_char_ptr[0];
+			delim_start = cstyle(reinterpret_cast<char*>(xml_char_ptr))[0];
 			xmlFree(xml_char_ptr);
 		}
 
@@ -274,7 +274,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		char delim_end = '\0';
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(END_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			delim_end = xml_char_ptr[0];
+			delim_end = cstyle(reinterpret_cast<char*>(xml_char_ptr))[0];
 			xmlFree(xml_char_ptr);
 		}
 
@@ -300,7 +300,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		char escape_char = '\\';
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(ESCAPE_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			escape_char = xml_char_ptr[0];
+			escape_char = cstyle(reinterpret_cast<char*>(xml_char_ptr))[0];
 			xmlFree(xml_char_ptr);
 		}
 
@@ -309,7 +309,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		std::string empty_val = (delim_start == '\0') ? "-" : "";
 		xml_char_ptr = xmlGetProp(codec_field_node, reinterpret_cast<const xmlChar*>(EMPTY_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			empty_val = reinterpret_cast<char*>(xml_char_ptr);
+			empty_val = cstyle(reinterpret_cast<char*>(xml_char_ptr));
 			xmlFree(xml_char_ptr);
 		}
 
@@ -339,21 +339,21 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// get the split set (if any)
 		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(SPLIT_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			if (xml_char_ptr[0] != '\0')
+			if (cstyle(reinterpret_cast<char*>(xml_char_ptr))[0] != '\0')
 				m_event_split = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
 		}
 		// get the join string (if any)
 		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(JOIN_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			if (xml_char_ptr[0] != '\0')
+			if (cstyle(reinterpret_cast<char*>(xml_char_ptr))[0] != '\0')
 				m_event_join = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
 		}
 		// get the comment chars (if any)
 		xml_char_ptr = xmlGetProp(events_node, reinterpret_cast<const xmlChar*>(COMMENT_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			if (xml_char_ptr[0] != '\0')
+			if (cstyle(reinterpret_cast<char*>(xml_char_ptr))[0] != '\0')
 				m_comment_chars = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
 		}
@@ -366,14 +366,14 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// get the split set (if any)
 		xml_char_ptr = xmlGetProp(fields_node, reinterpret_cast<const xmlChar*>(SPLIT_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			if (xml_char_ptr[0] != '\0')
+			if (cstyle(reinterpret_cast<char*>(xml_char_ptr))[0] != '\0')
 				m_field_split = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
 		}
 		// get the join string (if any)
 		xml_char_ptr = xmlGetProp(fields_node, reinterpret_cast<const xmlChar*>(JOIN_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr != NULL) {
-			if (xml_char_ptr[0] != '\0')
+			if (cstyle(reinterpret_cast<char*>(xml_char_ptr))[0] != '\0')
 				m_field_join = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
 		}
