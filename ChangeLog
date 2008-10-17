@@ -1,3 +1,21 @@
+Version 1.0.4 (2008-10-17)
+==========================
+
+* LogCodec supports configurable separators, terminators, c-style escapes
+* Database class has the stubs for supporting read values for a SELECT
+statement
+* Event class has copyValues(), set(), and write() members
+* A new Protocol configuration page
+* Optional fields for LogCodec
+* Tweaks to make IE work better
+* LogCodec UI changes to accomodate new functionality
+* HTTPProtocol has new content extraction
+* XML for codecs/dbs/reactors/connections can now be pasted in
+* HTTP protocol now stores request packets timestamp (#300)
+* Fixed make_binary.pl for Mac (#325)
+* PionLockedQueue::pop() fixed (#304)
+
+
 Version 1.0.2 (2008-09-26)
 ==========================
 
