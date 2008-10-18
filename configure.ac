@@ -46,7 +46,9 @@ AC_SUBST(PION_NET_LIB)
 AC_SUBST(PION_NET_MAKEDIRS)
 AC_MSG_NOTICE([Using the embedded pion-net library])
 
-# Include pion-config.m4
+# Include pion-config.inc
+m4_include([common/build/pion-setup.inc])
+m4_include([common/build/pion-boost.inc])
 m4_include([common/build/pion-config.inc])
 m4_include([platform/build/pion-config.inc])
 
