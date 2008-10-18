@@ -2,6 +2,8 @@
 # pion-common automake configuration file 
 # ---------------------------------------
 
+ACLOCAL_AMFLAGS = -I common/build
+
 SUBDIRS = common
 
 pkgconfigdir = $(libdir)/pkgconfig
