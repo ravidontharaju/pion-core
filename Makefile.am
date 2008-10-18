@@ -2,6 +2,8 @@
 # pion-net automake configuration file 
 # ------------------------------------
 
+ACLOCAL_AMFLAGS = -I common/build
+
 SUBDIRS = @PION_COMMON_MAKEDIRS@ net
 
 pkgconfigdir = $(libdir)/pkgconfig

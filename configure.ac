@@ -37,7 +37,9 @@ AC_SUBST(PION_COMMON_LIB)
 AC_SUBST(PION_COMMON_MAKEDIRS)
 AC_MSG_NOTICE([Using the embedded pion-common library])
 
-# Include pion-config.m4
+# Include pion-config.inc
+m4_include([common/build/pion-setup.inc])
+m4_include([common/build/pion-boost.inc])
 m4_include([common/build/pion-config.inc])
 
 # Output Makefiles
