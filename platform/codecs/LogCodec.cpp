@@ -47,12 +47,13 @@ const std::string			LogCodec::CONSUME_ATTRIBUTE_NAME = "consume";
 const unsigned int			LogCodec::READ_BUFFER_SIZE = 1024 * 128;	// 128KB
 
 // defaults for various settings (tuned for ELF-like formats)
-// NOTE: If Headers is true, these defaults CANNOT be overridden
 const std::string			LogCodec::EVENT_SPLIT_SET = "\r\n";
 const std::string			LogCodec::EVENT_JOIN_STRING = OSEOL;
 const std::string			LogCodec::COMMENT_CHAR_SET = "#";
+// NOTE: If Headers is true, these defaults CANNOT be overridden
 const std::string			LogCodec::FIELD_SPLIT_SET = " \t";
 const std::string			LogCodec::FIELD_JOIN_STRING = " ";
+const bool					LogCodec::CONSUME_DELIMS_FLAG = true;
 
 // special support for ELF (when Headers is true)
 const std::string			LogCodec::VERSION_ELF_HEADER = "#Version:";
@@ -320,17 +321,10 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		codec_field_node = codec_field_node->next;
 	}
 
-	// initialize field/event specifications
+	// initialize event specifications
 	m_event_split = EVENT_SPLIT_SET;
 	m_event_join = EVENT_JOIN_STRING;
 	m_comment_chars = COMMENT_CHAR_SET;
-	m_field_split = FIELD_SPLIT_SET;
-	m_field_join = FIELD_JOIN_STRING;
-	m_consume_delims = true;
-
-	// if this is ELF data, use defaults only!
-	if (m_handle_elf_headers)
-		return;
 
 	// handle event specifications
 	xmlNodePtr events_node = ConfigManager::findConfigNodeByName(EVENTS_ELEMENT_NAME, config_ptr);
@@ -359,6 +353,15 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		}
 	}
 
+	// initialize field specifications
+	m_field_split = FIELD_SPLIT_SET;
+	m_field_join = FIELD_JOIN_STRING;
+	m_consume_delims = CONSUME_DELIMS_FLAG;
+
+	// if this is ELF data, use defaults only!
+	if (m_handle_elf_headers)
+		return;
+
 	// handle field specifications
 	xmlNodePtr fields_node = ConfigManager::findConfigNodeByName(FIELDS_ELEMENT_NAME, config_ptr);
 	if (fields_node != NULL) {
@@ -383,6 +386,8 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			const std::string consume_option(reinterpret_cast<char*>(xml_char_ptr));
 			if (consume_option == "false")
 				m_consume_delims = false;
+			else if (consume_option == "true")
+				m_consume_delims = true;
 			xmlFree(xml_char_ptr);
 		}
 	}

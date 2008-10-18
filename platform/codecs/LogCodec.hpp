@@ -349,6 +349,7 @@ private:
 	static const std::string		COMMENT_CHAR_SET;
 	static const std::string		FIELD_SPLIT_SET;
 	static const std::string		FIELD_JOIN_STRING;
+	static const bool				CONSUME_DELIMS_FLAG;
 
 
 	/// special support for ELF
@@ -470,14 +471,14 @@ inline void LogCodec::changeELFFormat(char *fmt)
 	m_format.clear();
 	char *ptr;
 	bool last_field = false;
-	while (!last_field && *fmt != '\0' && *fmt != '\n' && *fmt != '\r') {
+	while (!last_field && *fmt != '\0' && m_event_split.find(*fmt) == std::string::npos) {
 		// skip leading spaces
 		while (*fmt == ' ') ++fmt;
 		// find the end of the field name
 		ptr = fmt;
-		while (*ptr != '\0' && *ptr != '\n' && *ptr != '\r' && *ptr != ' ') ++ptr;
+		while (*ptr != '\0' && m_event_split.find(*ptr) == std::string::npos && *ptr != ' ') ++ptr;
 		// set last_field if we're at the end
-		if (*ptr == '\0' || *ptr == '\n' || *ptr == '\r') last_field = true;
+		if (*ptr == '\0' || m_event_split.find(*ptr) != std::string::npos) last_field = true;
 		*ptr = '\0';
 		FieldMap::const_iterator i = m_field_map.find(fmt);
 		if (i == m_field_map.end())
