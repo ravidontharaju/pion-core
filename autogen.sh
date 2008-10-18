@@ -4,7 +4,7 @@
 #
 
 # DO NOT USE autoheader -> config.h.in file is NOT automanaged!!!
-AUTOHEADER="/bin/true"
+AUTOHEADER=`which true`
 export AUTOHEADER
 
 # Generate configure script
