@@ -185,28 +185,25 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			}
 			return put_data;
 		},
-		disableAndClearSeparatorFields: function() {
-			dojo.query('input', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
+		disableAndClearFieldSeparatorFields: function() {
+			dojo.query('input.disable_for_ELF', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
 			dojo.query('.dijitComboBox', this.separators).forEach(function(n) {
 				dijit.byNode(n).setDisabled(true);
 				dijit.byNode(n).setDisplayedValue('');
 			});
-			dojo.query('label', this.separators).forEach(function(n) { dojo.addClass(n, 'disabled'); });
+			dojo.query('label.disable_for_ELF', this.separators).forEach(function(n) { dojo.addClass(n, 'disabled'); });
 			var form_values = this.form.getValues();
-			form_values['@event_split_set'] = '';
-			form_values['@event_join_string'] = '';
-			form_values['@comment_prefix'] = '';
 			form_values['@field_split_set'] = '';
 			form_values['@field_join_string'] = '';
 			this.form.setValues(form_values);
 		},
 		updateDisabling: function(e) {
 			if (e.target.checked) {
-				this.disableAndClearSeparatorFields();
+				this.disableAndClearFieldSeparatorFields();
 			} else {
-				dojo.query('input', this.separators).forEach(function(n) { n.removeAttribute('disabled'); });
+				dojo.query('input.disable_for_ELF', this.separators).forEach(function(n) { n.removeAttribute('disabled'); });
 				dojo.query('.dijitComboBox', this.separators).forEach(function(n) { dijit.byNode(n).setDisabled(false); });
-				dojo.query('label', this.separators).forEach(function(n) { dojo.removeClass(n, 'disabled'); });
+				dojo.query('label.disable_for_ELF', this.separators).forEach(function(n) { dojo.removeClass(n, 'disabled'); });
 			}
 		}
 	}
