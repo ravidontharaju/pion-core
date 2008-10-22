@@ -183,7 +183,7 @@ dojo.declare("plugins.reactors.Reactor",
 			console.debug('put_data: ', this.put_data);
 
 			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config['@id'],
+				url: '/config/reactors/' + this.config['@id'] + '/move',
 				contentType: "text/xml",
 				handleAs: "xml",
 				putData: this.put_data,

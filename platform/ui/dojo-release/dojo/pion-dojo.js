@@ -18422,7 +18422,7 @@ this._insertCustomData();
 }
 this.put_data+="</Reactor></PionConfig>";
 console.debug("put_data: ",this.put_data);
-dojo.rawXhrPut({url:"/config/reactors/"+this.config["@id"],contentType:"text/xml",handleAs:"xml",putData:this.put_data,load:function(_1207){
+dojo.rawXhrPut({url:"/config/reactors/"+this.config["@id"]+"/move",contentType:"text/xml",handleAs:"xml",putData:this.put_data,load:function(_1207){
 console.debug("response: ",_1207);
 },error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:this.put_data})});
 }});
