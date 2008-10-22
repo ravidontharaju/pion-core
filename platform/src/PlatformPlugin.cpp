@@ -35,11 +35,11 @@ const std::string			PlatformPlugin::COMMENT_ELEMENT_NAME = "Comment";
 
 void PlatformPlugin::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
-	// get the descriptive name for the codec (if any)
+	// get the descriptive name for the plugin (if any)
 	ConfigManager::getConfigOption(NAME_ELEMENT_NAME, m_plugin_name,
 								   config_ptr);
 
-	// get the descriptive comments for the codec (if any)
+	// get the descriptive comments for the plugin (if any)
 	ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, m_plugin_comment,
 								   config_ptr);
 }

@@ -61,7 +61,16 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
+	/**
+	 * Sets the configuration parameters that specify location in the UI for this plug-in.
+	 * Currently a no-op except for Reactors, because only Reactors have location parameters.
+	 *
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	virtual void setLocation(const xmlNodePtr config_ptr) {};
+
 	/**
 	 * this updates the Vocabulary information used by this plug-in;
 	 * it should be called whenever the global Vocabulary is updated

@@ -672,6 +672,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			}
 			
 		} else if (branches.size() == 3) {
+			// branches[1] == reactor_id
+
 			if (branches[2] == "start") {
 				
 				// start a Reactor
@@ -687,7 +689,33 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 				// respond by sending all the Reactor stats
 				getConfig().getReactionEngine().writeStatsXML(ss);
-				
+
+			} else if (branches[2] == "move") {
+				if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+					// update the specified Reactor's configuration (only UI location settings)
+
+					// convert request content into XML configuration info
+					xmlNodePtr reactor_config_ptr =
+						ReactionEngine::createReactorConfig(request->getContent(),
+															request->getContentLength());
+
+					try {
+						// push the new config settings into the ReactionEngine
+						getConfig().getReactionEngine().setReactorLocation(branches[1], reactor_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(reactor_config_ptr);
+						throw;
+					}
+					xmlFreeNodeList(reactor_config_ptr);
+
+					// respond with the Reactor's updated configuration
+					if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
+						throw ReactionEngine::ReactorNotFoundException(branches[1]);
+				} else {
+					// send a 405 (method not allowed) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				}
 			} else {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
 				return;

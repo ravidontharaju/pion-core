@@ -182,6 +182,16 @@ public:
 						  const xmlNodePtr config_ptr);
 	
 	/**
+	 * sets configuration parameters specifying location in the UI for a managed Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 */
+	void setReactorLocation(const std::string& reactor_id,
+							const xmlNodePtr config_ptr);
+	
+	/**
 	 * adds a new managed Reactor
 	 *
 	 * @param config_ptr pointer to a list of XML nodes containing Reactor

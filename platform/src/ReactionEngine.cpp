@@ -174,6 +174,17 @@ void ReactionEngine::setReactorConfig(const std::string& reactor_id,
 	}
 }
 
+void ReactionEngine::setReactorLocation(const std::string& reactor_id,
+										const xmlNodePtr config_ptr)
+{
+	// convert PluginNotFound exceptions into ReactorNotFound exceptions
+	try {
+		PluginConfig<Reactor>::setLocationConfig(reactor_id, config_ptr);
+	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
+		throw ReactorNotFoundException(reactor_id);
+	}
+}
+
 std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
 {
 	return PluginConfig<Reactor>::addPlugin(config_ptr);

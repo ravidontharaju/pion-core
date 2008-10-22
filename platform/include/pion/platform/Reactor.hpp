@@ -111,7 +111,15 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
+	/**
+	 * sets the configuration parameters specifying location in the UI for this Reactor
+	 *
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 */
+	void setLocation(const xmlNodePtr config_ptr);
+
 	/**
 	 * this updates the Vocabulary information used by this Reactor;
 	 * it should be called whenever the global Vocabulary is updated
