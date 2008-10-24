@@ -42,7 +42,7 @@ extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
-extern void cleanup_vocab_config_files(void);
+extern void cleanup_platform_config_files(void);
 
 VocabularyManager g_vocab_mgr;
 CodecFactory g_codec_factory(g_vocab_mgr);
@@ -54,12 +54,16 @@ public:
 	PluginConfigFixture(const std::string& concrete_plugin_class) {
 		setup_logging_for_unit_tests();
 		setup_plugins_directory();
+		cleanup_platform_config_files();
 		m_concrete_plugin_class = concrete_plugin_class;
 		BOOST_REQUIRE_NO_THROW(m_config_ptr = ConfigManager::createPluginConfig(m_concrete_plugin_class));
 	}
 	~PluginConfigFixture(void) {
 		xmlFreeNodeList(m_config_ptr);
 	}
+
+	// Should contain the configuration for one plugin of the appropriate type, with no dependencies on any plugins of other types.
+	virtual void setupSimpleConfigFile(const std::string& config_file_path) = 0;
 
 	xmlNodePtr m_config_ptr;
 	std::string m_concrete_plugin_class;
@@ -76,6 +80,21 @@ public:
 		xmlAddNextSibling(m_config_ptr, event_type_node);
 	}
 
+	void setupSimpleConfigFile(const std::string& config_file_path) {
+		std::ofstream out(config_file_path.c_str());
+		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "\t<Codec id=\"dba9eac2-d8bb-11dc-bebe-001cc02bd66b\">\n"
+			<< "\t\t<Name>Just the clf-date</Name>\n"
+			<< "\t\t<Comment>Codec for just reading clf-dates</Comment>\n"
+			<< "\t\t<Plugin>LogCodec</Plugin>\n"
+			<< "\t\t<EventType>urn:vocab:clickstream#http-event</EventType>\n"
+			<< "\t\t<Flush>true</Flush>\n"
+			<< "\t\t<Field term=\"urn:vocab:clickstream#clf-date\" start=\"&quot;\" end=\"&quot;\">clf-date</Field>\n"
+			<< "\t</Codec>\n"
+			<< "</PionConfig>\n";
+	};
+
 	typedef Codec plugin_type;
 };
 
@@ -87,6 +106,19 @@ public:
 		xmlAddNextSibling(m_config_ptr, node);
 	}
 
+	void setupSimpleConfigFile(const std::string& config_file_path) {
+		std::ofstream out(config_file_path.c_str());
+		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "\t<Database id=\"e75d88f0-e7df-11dc-a76c-0016cb926e68\">\n"
+			<< "\t\t<Name>Embedded Storage Database</Name>\n"
+			<< "\t\t<Comment>Embedded SQLite database for storing events</Comment>\n"
+			<< "\t\t<Plugin>SQLiteDatabase</Plugin>\n"
+			<< "\t\t<Filename>../logs/clickstream.db</Filename>\n"
+			<< "\t</Database>\n"
+			<< "</PionConfig>\n";
+	};
+
 	typedef Database plugin_type;
 };
 
@@ -96,6 +128,18 @@ public:
 							 PluginConfigFixture("FilterReactor")
 	{
 	}
+
+	void setupSimpleConfigFile(const std::string& config_file_path) {
+		std::ofstream out(config_file_path.c_str());
+		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "\t<Reactor id=\"0cc21558-cf84-11dc-a9e0-0019e3f89cd2\">\n"
+			<< "\t\t<Name>Do Nothing</Name>\n"
+			<< "\t\t<Comment>Filter that does nothing</Comment>\n"
+			<< "\t\t<Plugin>FilterReactor</Plugin>\n"
+			<< "\t</Reactor>\n"
+			<< "</PionConfig>\n";
+	};
 
 	typedef Reactor plugin_type;
 };
@@ -140,6 +184,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCreateConfigFile) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenConfigFile) {
+	setupSimpleConfigFile(F::m_config_file_path);
 	BOOST_CHECK_NO_THROW(F::setConfigFile(F::m_config_file_path));
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
@@ -172,6 +217,7 @@ class OpenPluginConfig_F : public PluginConfig_F<DefaultConstructablePluginConfi
 public:
 	OpenPluginConfig_F() {
 		this->m_plugin = NULL;
+		this->setupSimpleConfigFile(this->m_config_file_path);
 		BOOST_CHECK_NO_THROW(setConfigFile(this->m_config_file_path));
 		BOOST_CHECK_NO_THROW(PluginConfig_F<DefaultConstructablePluginConfig>::openConfigFile());
 	}
