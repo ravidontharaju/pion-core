@@ -44,9 +44,12 @@ class PION_PLATFORM_API Reactor
 {
 public:
 
-	/// name of the reactor element for Pion XML config files
+	/// name of the Reactor element for Pion XML config files
 	static const std::string		REACTOR_ELEMENT_NAME;
 	
+	/// name of the run status element for Pion XML config files
+	static const std::string		RUNNING_ELEMENT_NAME;
+
 
 	/// data type for a function that receives Events
 	typedef boost::function1<void, EventPtr>	EventHandler;
@@ -396,9 +399,6 @@ private:
 	/// data type for a collection of connections to which Events may be sent
 	typedef std::map<std::string, OutputConnection>	ConnectionMap;
 	
-	
-	/// name of the running element for Pion XML config files
-	static const std::string		RUNNING_ELEMENT_NAME;
 	
 	/// name of the events in element for Pion XML config files
 	static const std::string		EVENTS_IN_ELEMENT_NAME;

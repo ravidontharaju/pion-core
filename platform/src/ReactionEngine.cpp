@@ -327,7 +327,61 @@ void ReactionEngine::removeTempConnection(const std::string& connection_id)
 		}
 	}
 }
-	
+
+void ReactionEngine::startReactor(const std::string& reactor_id)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find the Reactor node of the configuration with the specified ID.
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string node_id;
+		getNodeId(reactor_node, node_id);
+		if (node_id == reactor_id)
+			break;
+		reactor_node = reactor_node->next;
+	}
+	if (reactor_node == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
+	// Start the reactor.
+	m_plugins.run(reactor_id, boost::bind(&Reactor::start, _1));
+
+	// Update the Reactor's run status and save the configuration file.
+	if (! ConfigManager::updateConfigOption(Reactor::RUNNING_ELEMENT_NAME, "true", reactor_node))
+		throw UpdateConfigOptionException(reactor_id);
+	saveConfigFile();
+}
+
+void ReactionEngine::stopReactor(const std::string& reactor_id)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find the Reactor node of the configuration with the specified ID.
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string node_id;
+		getNodeId(reactor_node, node_id);
+		if (node_id == reactor_id)
+			break;
+		reactor_node = reactor_node->next;
+	}
+	if (reactor_node == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
+	// Stop the reactor.
+	m_plugins.run(reactor_id, boost::bind(&Reactor::stop, _1));
+
+	// Update the Reactor's run status and save the configuration file.
+	if (! ConfigManager::updateConfigOption(Reactor::RUNNING_ELEMENT_NAME, "false", reactor_node))
+		throw UpdateConfigOptionException(reactor_id);
+	saveConfigFile();
+}
+
 std::string ReactionEngine::addReactorConnection(const std::string& from_id,
 												 const std::string& to_id)
 {
@@ -561,32 +615,40 @@ void ReactionEngine::stopNoLock(void)
 	}
 }
 
-void ReactionEngine::writeStatsXML(std::ostream& out) const
+void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id) const
 {
 	writeBeginPionStatsXML(out);
 
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
-	// step through each reactor configured
-	std::string reactor_id;
-	const Reactor *reactor_ptr;
-	xmlNodePtr reactor_node = m_config_node_ptr->children;
-	while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
-	{
-		// get a pointer to the reactor
-		if (getNodeId(reactor_node, reactor_id)
-			&& (reactor_ptr = m_plugins.get(reactor_id)) != NULL)
+	if (only_id.empty()) {
+		// step through each reactor configured
+		std::string reactor_id;
+		const Reactor *reactor_ptr;
+		xmlNodePtr reactor_node = m_config_node_ptr->children;
+		while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
 		{
-			// write reactor statistics
-			reactor_ptr->writeStatsXML(out);
+			// get a pointer to the reactor
+			if (getNodeId(reactor_node, reactor_id)
+				&& (reactor_ptr = m_plugins.get(reactor_id)) != NULL)
+			{
+				// write reactor statistics
+				reactor_ptr->writeStatsXML(out);
+			}
+			// step to the next Reactor
+			reactor_node = reactor_node->next;
 		}
-		// step to the next Reactor
-		reactor_node = reactor_node->next;
+
+		// write total operations
+		out << "\t<" << TOTAL_OPS_ELEMENT_NAME << '>' << getTotalOperations()
+			<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
+	} else {
+		// get a pointer to the reactor
+		const Reactor *reactor_ptr = m_plugins.get(only_id);
+
+		// write reactor statistics
+		reactor_ptr->writeStatsXML(out);
 	}
-	
-	// write total operations
-	out << "\t<" << TOTAL_OPS_ELEMENT_NAME << '>' << getTotalOperations()
-		<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
 	
 	writeEndPionStatsXML(out);
 }

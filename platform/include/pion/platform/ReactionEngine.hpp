@@ -112,7 +112,14 @@ public:
 		}
 	};
 	
-	
+	/// exception thrown if there is an error updating a configuration option
+	class UpdateConfigOptionException : public PionException {
+	public:
+		UpdateConfigOptionException(const std::string& reactor_id)
+			: PionException("updateConfigOption failed for Reactor with identifier ", reactor_id) {}
+	};
+
+
 	/**
 	 * constructs a new ReactionEngine object
 	 *
@@ -158,19 +165,15 @@ public:
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor
 	 */
-	inline void startReactor(const std::string& reactor_id) {
-		return m_plugins.run(reactor_id, boost::bind(&Reactor::start, _1));
-	}
+	void startReactor(const std::string& reactor_id);
 
 	/**
 	 * stops Event processing for a collection Reactor
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor
 	 */
-	inline void stopReactor(const std::string& reactor_id) {
-		return m_plugins.run(reactor_id, boost::bind(&Reactor::stop, _1));
-	}
-	
+	void stopReactor(const std::string& reactor_id);
+
 	/**
 	 * sets configuration parameters for a managed Reactor
 	 *
@@ -289,8 +292,10 @@ public:
 	 * writes Reactor statistics to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the statistics into
+	 * @param reactor_id include only the Reactor that matches this unique
+	 *                   identifier, or include all Reactors if empty
 	 */
-	void writeStatsXML(std::ostream& out) const;
+	void writeStatsXML(std::ostream& out, const std::string& reactor_id = "") const;
 
 	/**
 	 * writes info for particular connections to an output stream (as XML)
@@ -493,7 +498,19 @@ private:
 			reactor_ptr->setReactionEngine(*this);
 			if (config_ptr != NULL)
 				reactor_ptr->setConfig(m_vocabulary, config_ptr);
-			if (reactor_ptr->getType() != Reactor::TYPE_COLLECTION)
+
+			// Get the default behavior regarding whether the Reactor should start out running.
+			bool start_out_running = (reactor_ptr->getType() == Reactor::TYPE_COLLECTION? false : true);
+
+			// Override the default behavior, if the Reactor's run status is specified in the configuration.
+			if (config_ptr) {
+				std::string run_status_str;
+				if (ConfigManager::getConfigOption(Reactor::RUNNING_ELEMENT_NAME, run_status_str, config_ptr)) {
+					start_out_running = (run_status_str == "true");
+				}
+			}
+
+			if (start_out_running)
 				reactor_ptr->start();
 		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;

@@ -192,7 +192,31 @@ public:
 		BOOST_CHECK(m_combined_codec);
 	}
 	virtual ~ReactionEngineTestInterface_F() {}
-	
+
+	std::string getReactorConfigOptionFromConfigFile(const std::string& reactor_id, const std::string& option_name) {
+		// Parse the entire config file.
+		std::ifstream in(REACTORS_CONFIG_FILE.c_str());
+		std::string file_contents;
+		char c;
+		while (in.get(c)) file_contents += c;
+		xmlDocPtr doc_ptr = xmlParseMemory(file_contents.c_str(), file_contents.size());
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+
+		// Get the node for the specified Reactor.	
+		xmlNodePtr reactor_node = ConfigManager::findConfigNodeByAttr("Reactor",
+																	  "id", reactor_id,
+																	  node_ptr->children);
+		BOOST_REQUIRE(reactor_node);
+
+		// Return the value of the specified option for the specified Reactor.
+		std::string option_value;
+		ConfigManager::getConfigOption(option_name, option_value, reactor_node->children);
+		return option_value;
+	}
+
 	
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
@@ -234,8 +258,17 @@ BOOST_AUTO_TEST_CASE(checkRemoveConnectionForMissingReactor) {
 					  ReactionEngine::ReactorNotFoundException);
 }
 
-BOOST_AUTO_TEST_CASE(checkAddFilterReactorNoConfig) {
-	xmlNodePtr config_ptr(ConfigManager::createPluginConfig("FilterReactor"));
+BOOST_AUTO_TEST_CASE(checkAddReactorMinimalConfig) {
+	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin></Reactor></PionConfig>";
+	xmlNodePtr config_ptr = ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
+	std::string reactor_id = m_reaction_engine.addReactor(config_ptr);
+	xmlFreeNodeList(config_ptr);
+	BOOST_CHECK(! reactor_id.empty());
+}
+
+BOOST_AUTO_TEST_CASE(checkAddReactorSimpleConfig) {
+	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin><Name>Filter Reactor 1</Name></Reactor></PionConfig>";
+	xmlNodePtr config_ptr = ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
 	std::string reactor_id = m_reaction_engine.addReactor(config_ptr);
 	xmlFreeNodeList(config_ptr);
 	BOOST_CHECK(! reactor_id.empty());
@@ -394,6 +427,70 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocation) {
 	// TODO: check config file
 }
 
+BOOST_AUTO_TEST_CASE(checkReactorOfTypeCollectionIsNotRunning) {
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_reader_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>false</Running>")));
+}
+
+BOOST_AUTO_TEST_CASE(checkReactorNotOfTypeCollectionIsRunning) {
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_writer_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>true</Running>")));
+}
+
+BOOST_AUTO_TEST_CASE(checkStartReactorOfTypeCollection) {
+	// The Reactor should not be running yet (tested in checkReactorOfTypeCollectionIsNotRunning).
+	m_reaction_engine.startReactor(m_log_reader_id);
+
+	// Check that writeStatsXML() reports that it's running.
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_reader_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>true</Running>")));
+
+	// Check that the correct run status was saved in the config file.
+	BOOST_CHECK_EQUAL(getReactorConfigOptionFromConfigFile(m_log_reader_id, "Running"), "true");
+}
+
+BOOST_AUTO_TEST_CASE(checkStopReactorOfTypeCollection) {
+	// The Reactor should not be running yet (tested in checkReactorOfTypeCollectionIsNotRunning).
+	m_reaction_engine.stopReactor(m_log_reader_id);
+
+	// Check that writeStatsXML() reports that it's not running.
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_reader_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>false</Running>")));
+
+	// Check that the correct run status was saved in the config file.
+	BOOST_CHECK_EQUAL(getReactorConfigOptionFromConfigFile(m_log_reader_id, "Running"), "false");
+}
+
+BOOST_AUTO_TEST_CASE(checkStartReactorNotOfTypeCollection) {
+	// The Reactor should already be running (tested in checkReactorNotOfTypeCollectionIsRunning).
+	m_reaction_engine.startReactor(m_log_writer_id);
+
+	// Check that writeStatsXML() still reports that it's running.
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_writer_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>true</Running>")));
+
+	// Check that the correct run status was saved in the config file.
+	BOOST_CHECK_EQUAL(getReactorConfigOptionFromConfigFile(m_log_writer_id, "Running"), "true");
+}
+
+BOOST_AUTO_TEST_CASE(checkStopReactorNotOfTypeCollection) {
+	// The Reactor should already be running (tested in checkReactorNotOfTypeCollectionIsRunning).
+	m_reaction_engine.stopReactor(m_log_writer_id);
+
+	// Check that writeStatsXML() reports that it's not running.
+	std::ostringstream out;
+	m_reaction_engine.writeStatsXML(out, m_log_writer_id);
+	BOOST_CHECK(boost::regex_search(out.str(), boost::regex("<Running>false</Running>")));
+
+	// Check that the correct run status was saved in the config file.
+	BOOST_CHECK_EQUAL(getReactorConfigOptionFromConfigFile(m_log_writer_id, "Running"), "false");
+}
+
 BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	// start the log reader reactor
 	m_reaction_engine.startReactor(m_log_reader_id);
@@ -523,6 +620,81 @@ BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
 	while (query_ptr->run())
 		++db_records;
 	BOOST_CHECK_EQUAL(db_records, events_read);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+class ReactionEngineReadyForReactorConfigFile_F {
+public:
+	ReactionEngineReadyForReactorConfigFile_F()
+		: m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
+		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
+		m_filter_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
+		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
+		m_config_filename(get_config_file_dir() + "reactorsWithStatus.xml")
+	{
+		setup_logging_for_unit_tests();
+		setup_plugins_directory();
+		cleanup_reactor_config_files();
+		
+		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.openConfigFile();
+		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
+		m_codec_factory.openConfigFile();
+
+		m_reaction_engine.setConfigFile(m_config_filename);
+	}
+	virtual ~ReactionEngineReadyForReactorConfigFile_F() {}
+
+	VocabularyManager	m_vocab_mgr;
+	CodecFactory		m_codec_factory;
+	ProtocolFactory		m_protocol_factory;
+	DatabaseManager		m_database_mgr;
+	ReactionEngine		m_reaction_engine;
+	const std::string	m_filter_id;
+	const std::string	m_log_reader_id;
+	const std::string	m_config_filename;
+};
+
+
+BOOST_FIXTURE_TEST_SUITE(ReactionEngineReadyForReactorConfigFile_S, ReactionEngineReadyForReactorConfigFile_F)
+
+BOOST_AUTO_TEST_CASE(checkReactorStatusInConfigFileIsUsed) {
+	// Create a config file with two Reactors, one a collector (i.e. of type TYPE_COLLECTION), the other not.
+	// The Running option is set to true for the collector and false for the non-collector, the opposite
+	// of their default behavior.
+	std::ofstream out(m_config_filename.c_str());
+	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "  <Reactor id=\"" << m_filter_id << "\">\n"
+		<< "    <Name>Do Nothing</Name>\n"
+		<< "    <Plugin>FilterReactor</Plugin>\n"
+		<< "    <Running>false</Running>\n"
+		<< "  </Reactor>\n"
+		<< "  <Reactor id=\"" << m_log_reader_id << "\">\n"
+		<< "    <Name>CLF Log Reader</Name>\n"
+		<< "    <Plugin>LogInputReactor</Plugin>\n"
+		<< "    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>\n"
+		<< "    <Directory>../logs</Directory>\n"
+		<< "    <Filename>combined.*\\.log</Filename>\n"
+		<< "    <Running>true</Running>\n"
+		<< "  </Reactor>\n"
+		<< "</PionConfig>\n";
+	out.close();
+
+	// Start the ReactionEngine with the new config file.
+	m_reaction_engine.openConfigFile();
+
+	// Check that writeStatsXML() reports that the collector is running and the non-collector isn't.
+	std::ostringstream out_1;
+	m_reaction_engine.writeStatsXML(out_1, m_log_reader_id);
+	BOOST_CHECK(boost::regex_search(out_1.str(), boost::regex("<Running>true</Running>")));
+	BOOST_CHECK(! boost::regex_search(out_1.str(), boost::regex("<Running>false</Running>")));
+	std::ostringstream out_2;
+	m_reaction_engine.writeStatsXML(out_2, m_filter_id);
+	BOOST_CHECK(boost::regex_search(out_2.str(), boost::regex("<Running>false</Running>")));
+	BOOST_CHECK(! boost::regex_search(out_2.str(), boost::regex("<Running>true</Running>")));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
