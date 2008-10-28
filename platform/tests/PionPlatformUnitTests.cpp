@@ -216,3 +216,13 @@ void cleanup_cache_files(void)
 		}
 	}
 }
+
+void cleanup_backup_files(void)
+{
+	boost::filesystem::path dir_path(get_config_file_dir());
+	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+		if (boost::filesystem::extension(itr->path()) == ".bak") {
+			boost::filesystem::remove(itr->path());
+		}
+	}
+}

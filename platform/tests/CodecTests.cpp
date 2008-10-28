@@ -48,7 +48,7 @@ extern const std::string& get_vocabularies_file(void);
 extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
-
+extern void cleanup_backup_files(void);
 
 /// static strings used by these unit tests
 static const std::string COMMON_LOG_FILE(get_log_file_dir() + "common.log");
@@ -1357,6 +1357,8 @@ public:
 		m_vocab = &this->m_vocab_mgr.getVocabulary();
 	}
 	virtual ~CodecPtrWithFieldsOfAllTypes_F() {
+		this->m_vocab_mgr.removeVocabulary("urn:vocab:v1");
+		cleanup_backup_files();
 	}
 
 	const Vocabulary* m_vocab;
