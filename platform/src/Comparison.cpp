@@ -128,7 +128,9 @@ void Comparison::configure(const ComparisonType type,
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:
 				case Vocabulary::TYPE_TIME:
-					m_value = boost::lexical_cast<PionDateTime>(value);
+					//m_value = boost::lexical_cast<PionDateTime>(value);
+					PionTimeFacet f(m_term.term_format);
+					m_value = f.fromString(value);
 					break;
 			}
 		} catch (...) {

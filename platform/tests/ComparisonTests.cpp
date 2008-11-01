@@ -431,4 +431,36 @@ BOOST_AUTO_TEST_CASE(checkTimeComparisons) {
 	BOOST_CHECK(c.evaluateBool(*event_ptr));
 }
 
+BOOST_AUTO_TEST_CASE(checkConfigureDateTimeComparisonsUsingStrings) {
+	// Set up an Event to compare against.
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	PionTimeFacet fdt(m_date_time_term.term_format);	
+	event_ptr->setDateTime(m_date_time_term.term_ref, fdt.fromString("2007-12-22 12:22:22"));
+	PionTimeFacet fd(m_date_term.term_format);	
+	event_ptr->setDateTime(m_date_term.term_ref, fd.fromString("2007-12-22"));
+	PionTimeFacet ft(m_time_term.term_format);	
+	event_ptr->setDateTime(m_time_term.term_ref, ft.fromString("12:22:22"));
+
+	// Try some date-time strings.
+	Comparison cdt(m_date_time_term);
+	cdt.configure(Comparison::TYPE_SAME_DATE_TIME, "2007-12-22 12:22:22");
+	BOOST_CHECK(cdt.evaluateBool(*event_ptr));
+	cdt.configure(Comparison::TYPE_SAME_DATE_TIME, "2007-12-22 12:22:34");
+	BOOST_CHECK(! cdt.evaluateBool(*event_ptr));
+
+	// Try some date strings.
+	Comparison cd(m_date_term);
+	cd.configure(Comparison::TYPE_SAME_DATE, "2007-12-22");
+	BOOST_CHECK(cd.evaluateBool(*event_ptr));
+	cd.configure(Comparison::TYPE_SAME_DATE, "2008-12-22");
+	BOOST_CHECK(! cd.evaluateBool(*event_ptr));
+
+	// Try some time strings.
+	Comparison ct(m_time_term);
+	ct.configure(Comparison::TYPE_SAME_TIME, "12:22:22");
+	BOOST_CHECK(ct.evaluateBool(*event_ptr));
+	ct.configure(Comparison::TYPE_SAME_TIME, "12:22:01");
+	BOOST_CHECK(! ct.evaluateBool(*event_ptr));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
