@@ -16,7 +16,6 @@ pion.terms.type_store = new dojo.data.ItemFileReadStore({url: '/resources/termTy
 
 pion.terms.init = function() {
 	pion.terms.initTermTypeLookups();
-	pion.terms.buildMapOfCategoriesByTerm();
 }
 
 pion.terms.initTermTypeLookups = function() {
@@ -30,6 +29,7 @@ pion.terms.initTermTypeLookups = function() {
 			pion.terms.type_descriptions_by_name[store.getValue(item, 'name')] = store.getValue(item, 'description');
 			pion.terms.categories_by_type[store.getValue(item, 'name')] = store.getValue(item, 'category');
 		},
+		onComplete: pion.terms.buildMapOfCategoriesByTerm,
 		onError: pion.handleFetchError
 	});
 }
