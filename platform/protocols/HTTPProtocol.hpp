@@ -107,9 +107,10 @@ public:
 	 * parses the next portion of the network data
 	 * 
 	 * @param request direction flag
-	 * @ptr pointer to data
-	 * @len data length
-	 * @event_ptr refererence to an event object returned if the call resulted in event generation
+	 * @param ptr pointer to data
+	 * @param len data length
+	 * @param data_timestamp data timestamp
+	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
 	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not 
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
@@ -199,7 +200,7 @@ private:
 		boost::uint32_t						m_max_size;
 	};
 	
-	/// data type for a smart pointer to an extractio rule
+	/// data type for a smart pointer to an extraction rule
 	typedef boost::shared_ptr<ExtractionRule>	ExtractionRulePtr;
 	
 	/// data type for a collection of extraction rules
