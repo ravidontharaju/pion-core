@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
 		platform_cfg.setConfigFile(platform_config_file);
 		platform_cfg.openConfigFile();
 		
-		PION_LOG_INFO(pion_log, "Pion has started successfully");
+		PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
 
 		// wait for shutdown
 		main_shutdown_manager.wait();
