@@ -108,7 +108,11 @@ void Transform::setSetValue(const std::string& value_str)
 			case Vocabulary::TYPE_DATE_TIME:
 			case Vocabulary::TYPE_DATE:
 			case Vocabulary::TYPE_TIME:
-				m_tr_set_value = boost::lexical_cast<PionDateTime>(value_str);
+				// m_tr_set_value = boost::lexical_cast<PionDateTime>(value_str);
+				{
+					PionTimeFacet f(m_tr_set_term.term_format);
+					m_tr_set_value = f.fromString(value_str);
+				}
 				break;
 			case Vocabulary::TYPE_REGEX:
 				m_tr_set_regex = value_str;
