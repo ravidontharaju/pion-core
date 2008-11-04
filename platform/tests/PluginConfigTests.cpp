@@ -31,6 +31,8 @@
 #include <boost/bind.hpp>
 #include <boost/cast.hpp>
 #include <libxml/tree.h>
+#include <fstream>
+#include <string>
 
 using namespace pion;
 using namespace pion::platform;
@@ -58,7 +60,7 @@ public:
 		m_concrete_plugin_class = concrete_plugin_class;
 		BOOST_REQUIRE_NO_THROW(m_config_ptr = ConfigManager::createPluginConfig(m_concrete_plugin_class));
 	}
-	~PluginConfigFixture(void) {
+	virtual ~PluginConfigFixture(void) {
 		xmlFreeNodeList(m_config_ptr);
 	}
 
