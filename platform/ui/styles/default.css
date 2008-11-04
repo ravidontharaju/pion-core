@@ -22,7 +22,7 @@ body {
 	position:absolute;
 	top: 121px;
 	left: 221px;
-	z-index: 2;
+	z-index: 3;
 	background: #4a4a4a;
 	width: 350px;
 	height: 50px;
@@ -37,7 +37,7 @@ body {
 }
 
 .counterTitle {
-	z-index: 3;
+	z-index: 4;
 	color: #ffffff;
 	font-size: 14px;
 	font-weight: bold;
@@ -51,7 +51,7 @@ body {
 }
 
 .counterNumbersRight {
-	z-index: 3;
+	z-index: 4;
 	color: #ffffff;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 10px;
@@ -67,7 +67,7 @@ body {
 }
 
 .counterNumbersLeft {
-	z-index: 3;
+	z-index: 4;
 	color: #ffffff;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
@@ -84,7 +84,7 @@ body {
 }
 
 .counterToggle {
-	z-index: 3;
+	z-index: 4;
 	color: #ffffff;
 	width: 15px;
 	padding: 0;
@@ -204,8 +204,8 @@ label.disabled {
 }
 
 #menu span {
-	display: block;
-	float: right;
+/*	display: block; */	/* With Dojo 1.2, aligns tabs vertically. */
+/*	float: right;   */	/* With Dojo 1.2, reverses tabs in FF3 and puts them down the right hand side in IE7. */
 }
 
 #menu .dijitButtonText {
@@ -275,6 +275,21 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 </div>
 */
 
+/* BorderContainer Overrides  (BorderContainers are used in every configuration "page".) */
+
+/* Overrides ContentPane.css. */
+/* Applies to ContentPanes in BorderContainers. */
+.tundra .dijitBorderContainerNoGutter-dijitContentPane {
+	border: 0;
+	padding: 0;
+}
+
+/* Overrides BorderContainer.css. */
+.tundra .dijitBorderContainerNoGutter {
+	padding: 0;
+}
+
+
 .config_header {
 	height: 70px;
 	margin: 0 0 0 30px;
@@ -311,6 +326,12 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 /* a div with this class goes inside each workspace pane, to serve as a target for reactors */
 .workspaceTarget {
 	height: 100%;
+}
+
+/* Overrides ContentPane.css. */
+/* Applies to Reactor workspaces, which are ContentPanes in a TabContainer. */
+.tundra .dijitTabContainerBottom-dijitContentPane {
+	padding: 0; /* otherwise arrowheads are off by 5px wrt Reactors */
 }
 
 
@@ -821,10 +842,17 @@ The following are also available, if the need arises.
 
 .tundra .processingHeader .dijitAccordionTitle {
 	background-image: none;
-	color:#333333;	
+	color:#333333;
 }
 
 .tundra .storageHeader .dijitAccordionTitle {
 	background-image: none;
-	color:#333333;	
+	color:#333333;
+}
+
+/*
+ This fixes a "white-on-white" bug when using some grid editors.
+*/ 
+.tundra .dojoxGrid-row-over .dojoxGrid-cell .dijit { 
+	color: #000;
 }

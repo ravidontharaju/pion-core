@@ -1,5 +1,6 @@
 dojo.provide("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.Codec");
+dojo.require("dojox.dtl");
 
 plugins.codecs.LogCodec = {
 	custom_post_data: '<Flush>false</Flush><Headers>false</Headers>'
@@ -69,23 +70,23 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			put_data += (dojo.indexOf(config.options, 'Headers') != -1); // 'true' iff corresponding checkbox was checked
 			put_data += '</Headers><Events';
 			if (config['@event_split_set']) {
-				put_data += ' split="' + dojox.dtl.filter.htmlstrings.escape(config['@event_split_set']) + '"';
+				put_data += ' split="' + dojox.dtl._base.escape(config['@event_split_set']) + '"';
 			}
 			if (config['@event_join_string']) {
-				put_data += ' join="' + dojox.dtl.filter.htmlstrings.escape(config['@event_join_string']) + '"';
+				put_data += ' join="' + dojox.dtl._base.escape(config['@event_join_string']) + '"';
 			}
 			if (config['@comment_prefix']) {
-				put_data += ' comment="' + dojox.dtl.filter.htmlstrings.escape(config['@comment_prefix']) + '"';
+				put_data += ' comment="' + dojox.dtl._base.escape(config['@comment_prefix']) + '"';
 			}
 			put_data += '/><Fields';
 			if (config['@field_split_set']) {
-				put_data += ' split="' + dojox.dtl.filter.htmlstrings.escape(config['@field_split_set']) + '"';
+				put_data += ' split="' + dojox.dtl._base.escape(config['@field_split_set']) + '"';
 			}
 			if (config['@field_join_string']) {
-				put_data += ' join="' + dojox.dtl.filter.htmlstrings.escape(config['@field_join_string']) + '"';
+				put_data += ' join="' + dojox.dtl._base.escape(config['@field_join_string']) + '"';
 			}
 			if (config['@consec_field_delims']) {
-				put_data += ' consume="' + dojox.dtl.filter.htmlstrings.escape(config['@consec_field_delims']) + '"';
+				put_data += ' consume="' + dojox.dtl._base.escape(config['@consec_field_delims']) + '"';
 			}
 			put_data += '/>';
 			return put_data;
@@ -167,19 +168,19 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				var row = plugins.codecs.CodecPane.grid_model.getRow(inverse_order_map[i]);
 				put_data += '<Field term="' + row[1] + '"';
 				if (row[2]) {
-					put_data += ' start="' + dojox.dtl.filter.htmlstrings.escape(row[2]) + '"';
+					put_data += ' start="' + dojox.dtl._base.escape(row[2]) + '"';
 				}
 				if (row[3]) {
-					put_data += ' end="' + dojox.dtl.filter.htmlstrings.escape(row[3]) + '"';
+					put_data += ' end="' + dojox.dtl._base.escape(row[3]) + '"';
 				}
 				if (row[4]) {
 					put_data += ' optional="true"';
 				}
 				if (row[5]) {
-					put_data += ' escape="' + dojox.dtl.filter.htmlstrings.escape(row[5]) + '"';
+					put_data += ' escape="' + dojox.dtl._base.escape(row[5]) + '"';
 				}
 				if (row[6]) {
-					put_data += ' empty="' + dojox.dtl.filter.htmlstrings.escape(row[6]) + '"';
+					put_data += ' empty="' + dojox.dtl._base.escape(row[6]) + '"';
 				}
 				put_data += '>' + row[0] + '</Field>';
 			}

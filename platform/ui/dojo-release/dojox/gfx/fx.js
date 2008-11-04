@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 if(!dojo._hasResource["dojox.gfx.fx"]){ //_hasResource checks added by build. Do not use _hasResource directly in your code.
 dojo._hasResource["dojox.gfx.fx"] = true;
 dojo.provide("dojox.gfx.fx");
@@ -6,9 +13,9 @@ dojo.require("dojox.gfx.matrix");
 
 (function(){
 	var d = dojo, g = dojox.gfx, m = g.matrix;
-	
+
 	// Generic interpolators. Should they be moved to dojox.fx?
-	
+
 	var InterpolNumber = function(start, end){
 		this.start = start, this.end = end;
 	};
@@ -17,7 +24,7 @@ dojo.require("dojox.gfx.matrix");
 			return (this.end - this.start) * r + this.start;
 		}
 	});
-	
+
 	var InterpolUnit = function(start, end, unit){
 		this.start = start, this.end = end;
 		this.unit = unit;
@@ -27,7 +34,7 @@ dojo.require("dojox.gfx.matrix");
 			return (this.end - this.start) * r + this.start + this.unit;
 		}
 	});
-	
+
 	var InterpolColor = function(start, end){
 		this.start = start, this.end = end;
 		this.temp = new dojo.Color();
@@ -37,7 +44,7 @@ dojo.require("dojox.gfx.matrix");
 			return d.blendColors(this.start, this.end, r, this.temp);
 		}
 	});
-	
+
 	var InterpolValues = function(values){
 		this.values = values;
 		this.length = values.length;
@@ -61,7 +68,7 @@ dojo.require("dojox.gfx.matrix");
 			return ret;
 		}
 	});
-	
+
 	var InterpolTransform = function(stack, original){
 		this.stack = stack;
 		this.original = original;
@@ -96,9 +103,9 @@ dojo.require("dojox.gfx.matrix");
 			return ret;
 		}
 	});
-	
+
 	var transparent = new d.Color(0, 0, 0, 0);
-	
+
 	var getColorInterpol = function(prop, obj, name, def){
 		if(prop.values){
 			return new InterpolValues(prop.values);
@@ -119,7 +126,7 @@ dojo.require("dojox.gfx.matrix");
 		}
 		return new InterpolColor(start, end);
 	};
-	
+
 	var getNumberInterpol = function(prop, obj, name, def){
 		if(prop.values){
 			return new InterpolValues(prop.values);
@@ -140,10 +147,10 @@ dojo.require("dojox.gfx.matrix");
 		}
 		return new InterpolNumber(start, end);
 	};
-	
+
 	g.fx.animateStroke = function(/*Object*/ args){
 		// summary:
-		//	returns the animation, which will change stroke properties over time
+		//	Returns an animation which will change stroke properties over time
 		// example:
 		//	|	dojox.gfx.fx.animateStroke{{
 		//	|		shape: shape,
@@ -187,13 +194,13 @@ dojo.require("dojox.gfx.matrix");
 			this.curve = new InterpolObject(values, stroke);
 		});
 		d.connect(anim, "onAnimate", shape, "setStroke");
-		return anim;
+		return anim; // dojo._Animation
 	};
 
 	g.fx.animateFill = function(/*Object*/ args){
 		// summary:
-		//	returns the animation, which will change fill color over time,
-		//	only solid fill color is supported at the moment
+		//	Returns an animation which will change fill color over time.
+		//	Only solid fill color is supported at the moment
 		// example:
 		//	|	dojox.gfx.fx.animateFill{{
 		//	|		shape: shape,
@@ -210,12 +217,12 @@ dojo.require("dojox.gfx.matrix");
 			}
 		});
 		d.connect(anim, "onAnimate", shape, "setFill");
-		return anim;
+		return anim; // dojo._Animation
 	};
 
 	g.fx.animateFont = function(/*Object*/ args){
 		// summary:
-		//	returns the animation, which will change font properties over time
+		//	Returns an animation which will change font properties over time
 		// example:
 		//	|	dojox.gfx.fx.animateFont{{
 		//	|		shape: shape,
@@ -252,12 +259,12 @@ dojo.require("dojox.gfx.matrix");
 			this.curve = new InterpolObject(values, font);
 		});
 		d.connect(anim, "onAnimate", shape, "setFont");
-		return anim;
+		return anim; // dojo._Animation
 	};
 
 	g.fx.animateTransform = function(/*Object*/ args){
 		// summary:
-		//	returns the animation, which will change transformation over time
+		//	Returns an animation which will change transformation over time
 		// example:
 		//	|	dojox.gfx.fx.animateTransform{{
 		//	|		shape: shape,
@@ -274,7 +281,7 @@ dojo.require("dojox.gfx.matrix");
 			this.curve = new InterpolTransform(args.transform, original);
 		});
 		d.connect(anim, "onAnimate", shape, "setTransform");
-		return anim;
+		return anim; // dojo._Animation
 	};
 })();
 

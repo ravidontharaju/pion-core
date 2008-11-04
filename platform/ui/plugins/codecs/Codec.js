@@ -7,7 +7,6 @@ dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
-dojo.require("dojox.dtl.filter.htmlstrings");
 
 dojo.declare("plugins.codecs.CodecInitDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout

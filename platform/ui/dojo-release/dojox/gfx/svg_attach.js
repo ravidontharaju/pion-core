@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 dojo.require("dojox.gfx.svg");
 
 dojo.experimental("dojox.gfx.svg_attach");
@@ -60,7 +67,7 @@ dojo.experimental("dojox.gfx.svg_attach");
 		attachTransform(s);
 		return s;	// dojox.gfx.Shape
 	};
-	
+
 	dojox.gfx.attachSurface = function(node){
 		// summary: creates a surface from a Node
 		// node: Node: an SVG node
@@ -82,8 +89,8 @@ dojo.experimental("dojox.gfx.svg_attach");
 			object.fillStyle = null;
 			return;
 		}
-		var fillStyle = null, gradient  = dojox.gfx.svg.getRef(fill);
-		if(ref){
+		var fillStyle = null, gradient = dojox.gfx.svg.getRef(fill);
+		if(gradient){
 			switch(gradient.tagName.toLowerCase()){
 				case "lineargradient":
 					fillStyle = _getGradient(dojox.gfx.defaultLinearGradient, gradient);
@@ -110,12 +117,12 @@ dojo.experimental("dojox.gfx.svg_attach");
 			}
 		}else{
 			fillStyle = new dojo.Color(fill);
-			var opacity = rawNode.getAttribute("fill-opacity");
+			var opacity = object.rawNode.getAttribute("fill-opacity");
 			if(opacity != null){ fillStyle.a = opacity; }
 		}
 		object.fillStyle = fillStyle;
 	};
-	
+
 	var _getGradient = function(defaultGradient, gradient){
 		var fillStyle = dojo.clone(defaultGradient);
 		fillStyle.colors = [];
@@ -158,19 +165,19 @@ dojo.experimental("dojox.gfx.svg_attach");
 		if(matrix.match(/^matrix\(.+\)$/)){
 			var t = matrix.slice(7, -1).split(",");
 			object.matrix = dojox.gfx.matrix.normalize({
-				xx: parseFloat(t[0]), xy: parseFloat(t[2]), 
-				yx: parseFloat(t[1]), yy: parseFloat(t[3]), 
+				xx: parseFloat(t[0]), xy: parseFloat(t[2]),
+				yx: parseFloat(t[1]), yy: parseFloat(t[3]),
 				dx: parseFloat(t[4]), dy: parseFloat(t[5])
 			});
 		}else{
 			object.matrix = null;
 		}
 	};
-	
+
 	var attachFont = function(object){
 		// summary: deduces a font style from a Node.
 		// object: dojox.gfx.Shape: an SVG shape
-		var fontStyle = object.fontStyle = dojo.clone(dojox.gfx.defaultFont), 
+		var fontStyle = object.fontStyle = dojo.clone(dojox.gfx.defaultFont),
 			r = object.rawNode;
 		fontStyle.style = r.getAttribute("font-style");
 		fontStyle.variant = r.getAttribute("font-variant");
@@ -188,7 +195,7 @@ dojo.experimental("dojox.gfx.svg_attach");
 			shape[i] = r.getAttribute(i);
 		}
 	};
-	
+
 	var attachRect = function(object){
 		// summary: builds a rectangle shape from a node.
 		// object: dojox.gfx.Shape: an SVG shape

@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 if(!dojo._hasResource["dojox.gfx.silverlight"]){ //_hasResource checks added by build. Do not use _hasResource directly in your code.
 dojo._hasResource["dojox.gfx.silverlight"] = true;
 dojo.provide("dojox.gfx.silverlight");
@@ -49,13 +56,13 @@ dojox.gfx.silverlight.hexColor = function(/*String|Array|dojo.Color*/ color){
 
 dojo.extend(dojox.gfx.Shape, {
 	// summary: Silverlight-specific implementation of dojox.gfx.Shape methods
-	
+
 	setFill: function(fill){
 		// summary: sets a fill object (Silverlight)
 		// fill: Object: a fill object
-		//	(see dojox.gfx.defaultLinearGradient, 
-		//	dojox.gfx.defaultRadialGradient, 
-		//	dojox.gfx.defaultPattern, 
+		//	(see dojox.gfx.defaultLinearGradient,
+		//	dojox.gfx.defaultRadialGradient,
+		//	dojox.gfx.defaultPattern,
 		//	or dojo.Color)
 
 		var p = this.rawNode.getHost().content, r = this.rawNode, f;
@@ -84,11 +91,14 @@ dojo.extend(dojox.gfx.Shape, {
 					break;
 				case "radial":
 					this.fillStyle = f = dojox.gfx.makeParameters(dojox.gfx.defaultRadialGradient, fill);
-					var rgb = p.createFromXaml("<RadialGradientBrush/>"), w = r.width, h = r.height,
-						l = this.rawNode["Canvas.Left"], t = this.rawNode["Canvas.Top"];
-					rgb.center = (f.cx - l) / w + "," + (f.cy - t) / h;
-					rgb.radiusX = f.r / w;
-					rgb.radiusY = f.r / h;
+					var rgb = p.createFromXaml("<RadialGradientBrush/>"),
+						c = dojox.gfx.matrix.multiplyPoint(
+								dojox.gfx.matrix.invert(this._getAdjustedMatrix()), f.cx, f.cy),
+						pt = c.x + "," + c.y;
+					rgb.mappingMode = "Absolute";
+					rgb.gradientOrigin = pt;
+					rgb.center = pt;
+					rgb.radiusX = rgb.radiusY = f.r;
 					dojo.forEach(f.colors, function(c){
 						var t = p.createFromXaml("<GradientStop/>");
 						t.offset = c.offset;
@@ -120,8 +130,8 @@ dojo.extend(dojox.gfx.Shape, {
 	setStroke: function(stroke){
 		// summary: sets a stroke object (Silverlight)
 		// stroke: Object: a stroke object
-		//	(see dojox.gfx.defaultStroke) 
-	
+		//	(see dojox.gfx.defaultStroke)
+
 		var p = this.rawNode.getHost().content, r = this.rawNode;
 		if(!stroke){
 			// don't stroke
@@ -130,7 +140,7 @@ dojo.extend(dojox.gfx.Shape, {
 			return this;
 		}
 		// normalize the stroke
-		if(typeof stroke == "string"){
+		if(typeof stroke == "string" || dojo.isArray(stroke) || stroke instanceof dojo.Color){
 			stroke = {color: stroke};
 		}
 		var s = this.strokeStyle = dojox.gfx.makeParameters(dojox.gfx.defaultStroke, stroke);
@@ -142,7 +152,7 @@ dojo.extend(dojox.gfx.Shape, {
 			scb.opacity = s.color.a;
 			r.stroke = scb;
 			r.strokeThickness = s.width;
-			r.strokeStartLineCap = r.strokeEndLineCap = r.strokeDashCap = 
+			r.strokeStartLineCap = r.strokeEndLineCap = r.strokeDashCap =
 				dojox.gfx.silverlight.caps[s.cap];
 			if(typeof s.join == "number"){
 				r.strokeLineJoin = "Miter";
@@ -177,15 +187,15 @@ dojo.extend(dojox.gfx.Shape, {
 		}
 		return this;	// self
 	},
-	
+
 	_getParentSurface: function(){
 		var surface = this.parent;
 		for(; surface && !(surface instanceof dojox.gfx.Surface); surface = surface.parent);
 		return surface;
 	},
-	
+
 	_applyTransform: function() {
-		var tm = this.matrix, r = this.rawNode;
+		var tm = this._getAdjustedMatrix(), r = this.rawNode;
 		if(tm){
 			var p = this.rawNode.getHost().content,
 				m = p.createFromXaml("<MatrixTransform/>"),
@@ -213,7 +223,7 @@ dojo.extend(dojox.gfx.Shape, {
 		rawNode.stroke = null;
 		this.rawNode = rawNode;
 	},
-	
+
 	// move family
 
 	_moveToFront: function(){
@@ -229,11 +239,16 @@ dojo.extend(dojox.gfx.Shape, {
 		c.remove(r);
 		c.insert(0, r);
 		return this;	// self
+	},
+
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		return this.matrix;	// dojox.gfx.Matrix2D
 	}
 });
 
 dojo.declare("dojox.gfx.Group", dojox.gfx.Shape, {
-	// summary: a group shape (Silverlight), which can be used 
+	// summary: a group shape (Silverlight), which can be used
 	//	to logically group shapes (e.g, to propagate matricies)
 	constructor: function(){
 		dojox.gfx.silverlight.Container._init.call(this);
@@ -254,12 +269,15 @@ dojo.declare("dojox.gfx.Rect", dojox.gfx.shape.Rect, {
 		this.shape = dojox.gfx.makeParameters(this.shape, newShape);
 		this.bbox = null;
 		var r = this.rawNode, n = this.shape;
-		r["Canvas.Left"] = n.x;
-		r["Canvas.Top"]  = n.y;
 		r.width   = n.width;
 		r.height  = n.height;
 		r.radiusX = r.radiusY = n.r;
-		return this;	// self
+		return this._applyTransform();	// self
+	},
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		var m = this.matrix, s = this.shape, d = {dx: s.x, dy: s.y};
+		return new dojox.gfx.Matrix2D(m ? [m, d] : d);	// dojox.gfx.Matrix2D
 	}
 });
 dojox.gfx.Rect.nodeType = "Rectangle";
@@ -272,11 +290,14 @@ dojo.declare("dojox.gfx.Ellipse", dojox.gfx.shape.Ellipse, {
 		this.shape = dojox.gfx.makeParameters(this.shape, newShape);
 		this.bbox = null;
 		var r = this.rawNode, n = this.shape;
-		r["Canvas.Left"] = n.cx - n.rx;
-		r["Canvas.Top"]  = n.cy - n.ry;
 		r.width  = 2 * n.rx;
 		r.height = 2 * n.ry;
-		return this;	// self
+		return this._applyTransform();	// self
+	},
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		var m = this.matrix, s = this.shape, d = {dx: s.cx - s.rx, dy: s.cy - s.ry};
+		return new dojox.gfx.Matrix2D(m ? [m, d] : d);	// dojox.gfx.Matrix2D
 	}
 });
 dojox.gfx.Ellipse.nodeType = "Ellipse";
@@ -289,10 +310,13 @@ dojo.declare("dojox.gfx.Circle", dojox.gfx.shape.Circle, {
 		this.shape = dojox.gfx.makeParameters(this.shape, newShape);
 		this.bbox = null;
 		var r = this.rawNode, n = this.shape;
-		r["Canvas.Left"] = n.cx - n.r;
-		r["Canvas.Top"]  = n.cy - n.r;
 		r.width = r.height = 2 * n.r;
-		return this;	// self
+		return this._applyTransform();	// self
+	},
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		var m = this.matrix, s = this.shape, d = {dx: s.cx - s.r, dy: s.cy - s.r};
+		return new dojox.gfx.Matrix2D(m ? [m, d] : d);	// dojox.gfx.Matrix2D
 	}
 });
 dojox.gfx.Circle.nodeType = "Ellipse";
@@ -320,7 +344,7 @@ dojo.declare("dojox.gfx.Polyline", dojox.gfx.shape.Polyline, {
 			// branch
 			// points: Array: an array of points
 			this.shape = dojox.gfx.makeParameters(this.shape, {points: points});
-			if(closed && this.shape.points.length){ 
+			if(closed && this.shape.points.length){
 				this.shape.points.push(this.shape.points[0]);
 			}
 		}else{
@@ -349,12 +373,15 @@ dojo.declare("dojox.gfx.Image", dojox.gfx.shape.Image, {
 		this.shape = dojox.gfx.makeParameters(this.shape, newShape);
 		this.bbox = null;
 		var r = this.rawNode, n = this.shape;
-		r["Canvas.Left"] = n.x;
-		r["Canvas.Top"]  = n.y;
 		r.width  = n.width;
 		r.height = n.height;
 		r.source = n.src;
-		return this;	// self
+		return this._applyTransform();	// self
+	},
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		var m = this.matrix, s = this.shape, d = {dx: s.x, dy: s.y};
+		return new dojox.gfx.Matrix2D(m ? [m, d] : d);	// dojox.gfx.Matrix2D
 	},
 	setRawNode: function(rawNode){
 		// summary:
@@ -375,10 +402,12 @@ dojo.declare("dojox.gfx.Text", dojox.gfx.shape.Text, {
 		this.bbox = null;
 		var r = this.rawNode, s = this.shape;
 		r.text = s.text;
-		r.textDecorations = s.decoration == "underline" ? "Underline" : "None";
+		r.textDecorations = s.decoration === "underline" ? "Underline" : "None";
 		r["Canvas.Left"] = -10000;
 		r["Canvas.Top"]  = -10000;
-		window.setTimeout(dojo.hitch(this, "_delayAlignment"), 0);
+		if(!this._delay){
+			this._delay = window.setTimeout(dojo.hitch(this, "_delayAlignment"), 10);
+		}
 		return this;	// self
 	},
 	_delayAlignment: function(){
@@ -393,9 +422,21 @@ dojo.declare("dojox.gfx.Text", dojox.gfx.shape.Text, {
 				x -= w;
 				break;
 		}
-		var a = this.matrix ? dojox.gfx.matrix.multiplyPoint(this.matrix, x, y) : {x: x, y: y};
-		r["Canvas.Left"] = a.x;
-		r["Canvas.Top"]  = a.y;
+		this._delta = {dx: x, dy: y};
+		r["Canvas.Left"] = 0;
+		r["Canvas.Top"]  = 0;
+		this._applyTransform();
+		delete this._delay;
+	},
+	_getAdjustedMatrix: function(){
+		// summary: returns the adjusted ("real") transformation matrix
+		var m = this.matrix, d = this._delta, x;
+		if(m){
+			x = d ? [m, d] : m;
+		}else{
+			x = d ? d : {};
+		}
+		return new dojox.gfx.Matrix2D(x);
 	},
 	setStroke: function(){
 		// summary: ignore setting a stroke style
@@ -411,31 +452,10 @@ dojo.declare("dojox.gfx.Text", dojox.gfx.shape.Text, {
 		//	(no fill & stroke by default)
 		this.rawNode = rawNode;
 	},
-	_applyTransform: function() {
-		var tm = this.matrix, r = this.rawNode;
-		if(tm){
-			// the next line is pure magic :-(
-			tm = dojox.gfx.matrix.normalize([1/100, tm, 100]);
-			var p = this.rawNode.getHost().content,
-				m = p.createFromXaml("<MatrixTransform/>"),
-				mm = p.createFromXaml("<Matrix/>");
-			mm.m11 = tm.xx;
-			mm.m21 = tm.xy;
-			mm.m12 = tm.yx;
-			mm.m22 = tm.yy;
-			mm.offsetX = tm.dx;
-			mm.offsetY = tm.dy;
-			m.matrix = mm;
-			r.renderTransform = m;
-		}else{
-			r.renderTransform = null;
-		}
-		return this;
-	},
-	getTextWidth: function(){ 
-		// summary: get the text width in pixels 
-		return this.rawNode.actualWidth; 
-	} 
+	getTextWidth: function(){
+		// summary: get the text width in pixels
+		return this.rawNode.actualWidth;
+	}
 });
 dojox.gfx.Text.nodeType = "TextBlock";
 
@@ -514,39 +534,90 @@ dojox.gfx.createSurface = function(parentNode, width, height){
 
 	var s = new dojox.gfx.Surface();
 	parentNode = dojo.byId(parentNode);
+
 	// create an empty canvas
 	var t = parentNode.ownerDocument.createElement("script");
 	t.type = "text/xaml";
 	t.id = dojox.gfx._base._getUniqueId();
-	t.text = "<Canvas xmlns='http://schemas.microsoft.com/client/2007' Name='" + dojox.gfx._base._getUniqueId() + "'/>";
-	document.body.appendChild(t);
-	// create a plugin
-	var pluginName = dojox.gfx._base._getUniqueId();
-	Silverlight.createObject(
-		"#" + t.id,	// none
-		parentNode,
-		pluginName,
-		{										// Plugin properties.
-			width:	String(width),				// Width of rectangular region of plugin in pixels.
-			height:	String(height),				// Height of rectangular region of plugin in pixels.
-			inplaceInstallPrompt:	"false",	// Determines whether to display in-place install prompt if invalid version detected.
-			//background:		"white",		// Background color of plugin.
-			//isWindowless:	"false",			// Determines whether to display plugin in Windowless mode.
-			background:		"transparent",		// Background color of plugin.
-			isWindowless:	"true",				// Determines whether to display plugin in Windowless mode.
-			framerate:		"24",				// MaxFrameRate property value.
-			version:		"1.0"				// Silverlight version.
-		},
-		{},
-		null,
-		null
-	);
-	s.rawNode = dojo.byId(pluginName).content.root;
-	// register the plugin with its parent node
-	dojox.gfx.silverlight.surfaces[s.rawNode.name] = parentNode;
+	t.text = "<?xml version='1.0'?><Canvas xmlns='http://schemas.microsoft.com/client/2007' Name='" +
+		dojox.gfx._base._getUniqueId() + "'/>";
+	parentNode.parentNode.insertBefore(t, parentNode);
+
+	// build the object
+	var obj, pluginName = dojox.gfx._base._getUniqueId(),
+		onLoadName = "__" + dojox.gfx._base._getUniqueId() + "_onLoad";
+	window[onLoadName] = function(sender){
+		console.log("loaded");
+		if(!s.rawNode){
+			s.rawNode = dojo.byId(pluginName).content.root;
+			// register the plugin with its parent node
+			dojox.gfx.silverlight.surfaces[s.rawNode.name] = parentNode;
+			s.onLoad(s);
+			console.log("assigned");
+		}
+	};
+	if(dojo.isSafari){
+		obj = "<embed type='application/x-silverlight' id='" +
+		pluginName + "' width='" + width + "' height='" + height +
+		" background='transparent'" +
+		" source='#" + t.id + "'" +
+		" windowless='true'" +
+		" maxFramerate='60'" +
+		" onLoad='" + onLoadName + "'" +
+		" onError='__dojoSilverligthError'" +
+		" /><iframe style='visibility:hidden;height:0;width:0'/>";
+	}else{
+		obj = "<object type='application/x-silverlight' data='data:application/x-silverlight,' id='" +
+		pluginName + "' width='" + width + "' height='" + height + "'>" +
+		"<param name='background' value='transparent' />" +
+		"<param name='source' value='#" + t.id + "' />" +
+		"<param name='windowless' value='true' />" +
+		"<param name='maxFramerate' value='60' />" +
+		"<param name='onLoad' value='" + onLoadName + "' />" +
+		"<param name='onError' value='__dojoSilverligthError' />" +
+		"</object>";
+	}
+	parentNode.innerHTML = obj;
+
+	var pluginNode = dojo.byId(pluginName);
+	if(pluginNode.content && pluginNode.content.root){
+		// the plugin was created synchronously
+		s.rawNode = pluginNode.content.root;
+		// register the plugin with its parent node
+		dojox.gfx.silverlight.surfaces[s.rawNode.name] = parentNode;
+	}else{
+		// the plugin is being created asynchronously
+		s.rawNode = null;
+		s.isLoaded = false;
+	}
+
 	s.width  = dojox.gfx.normalizedLength(width);	// in pixels
 	s.height = dojox.gfx.normalizedLength(height);	// in pixels
+
 	return s;	// dojox.gfx.Surface
+};
+
+__dojoSilverligthError = function(sender, err){
+	var t = "Silverlight Error:\n" +
+		"Code: " + err.ErrorCode + "\n" +
+		"Type: " + err.ErrorType + "\n" +
+		"Message: " + err.ErrorMessage + "\n";
+	switch(err.ErrorType){
+		case "ParserError":
+			t += "XamlFile: " + err.xamlFile + "\n" +
+				"Line: " + err.lineNumber + "\n" +
+				"Position: " + err.charPosition + "\n";
+			break;
+		case "RuntimeError":
+			t += "MethodName: " + err.methodName + "\n";
+			if(err.lineNumber != 0){
+				t +=
+					"Line: " + err.lineNumber + "\n" +
+					"Position: " + err.charPosition + "\n";
+			}
+			break;
+	}
+	console.error(t);
 };
 
 // Extenders
@@ -561,6 +632,11 @@ dojox.gfx.silverlight.Font = {
 		r.fontWeight = f.weight in fw ? fw[f.weight] : f.weight;
 		r.fontSize = dojox.gfx.normalizedLength(f.size);
 		r.fontFamily = t in fo ? fo[t] : f.family;
+
+		// update the transform
+		if(!this._delay){
+			this._delay = window.setTimeout(dojo.hitch(this, "_delayAlignment"), 10);
+		}
 	}
 };
 
@@ -570,7 +646,7 @@ dojox.gfx.silverlight.Container = {
 	},
 	add: function(shape){
 		// summary: adds a shape to a group/surface
-		// shape: dojox.gfx.Shape: an VML shape object
+		// shape: dojox.gfx.Shape: a Silverlight shape object
 		if(this != shape.getParent()){
 			//dojox.gfx.Group.superclass.add.apply(this, arguments);
 			//this.inherited(arguments);
@@ -581,7 +657,7 @@ dojox.gfx.silverlight.Container = {
 	},
 	remove: function(shape, silently){
 		// summary: remove a shape from a group/surface
-		// shape: dojox.gfx.Shape: an VML shape object
+		// shape: dojox.gfx.Shape: a Silverlight shape object
 		// silently: Boolean?: if true, regenerate a picture
 		if(this == shape.getParent()){
 			var parent = shape.rawNode.getParent();
@@ -631,19 +707,23 @@ dojo.extend(dojox.gfx.Surface, dojox.gfx.shape.Creator);
 (function(){
 	var surfaces = dojox.gfx.silverlight.surfaces;
 	var mouseFix = function(s, a){
-		var ev = {target: s, currentTarget: s, 
+		var ev = {target: s, currentTarget: s,
 			preventDefault: function(){}, stopPropagation: function(){}};
 		if(a){
-			ev.ctrlKey = a.ctrl;
-			ev.shiftKey = a.shift;
-			var p = a.getPosition(null);
-			ev.x = ev.offsetX = ev.layerX = p.x;
-			ev.y = ev.offsetY = ev.layerY = p.y;
-			// calculate clientX and clientY
-			var parent = surfaces[s.getHost().content.root.name];
-			var t = dojo._abs(parent);
-			ev.clientX = t.x + p.x;
-			ev.clientY = t.y + p.y;
+			try{
+				ev.ctrlKey = a.ctrl;
+				ev.shiftKey = a.shift;
+				var p = a.getPosition(null);
+				ev.x = ev.offsetX = ev.layerX = p.x;
+				ev.y = ev.offsetY = ev.layerY = p.y;
+				// calculate clientX and clientY
+				var parent = surfaces[s.getHost().content.root.name];
+				var t = dojo._abs(parent);
+				ev.clientX = t.x + p.x;
+				ev.clientY = t.y + p.y;
+			}catch(e){
+				// squelch bugs in MouseLeave's implementation
+			}
 		}
 		return ev;
 	};
@@ -659,6 +739,8 @@ dojo.extend(dojox.gfx.Surface, dojox.gfx.shape.Creator);
 		onclick:		{name: "MouseLeftButtonUp", fix: mouseFix},
 		onmouseenter:	{name: "MouseEnter", fix: mouseFix},
 		onmouseleave:	{name: "MouseLeave", fix: mouseFix},
+		onmouseover:	{name: "MouseEnter", fix: mouseFix},
+		onmouseout:		{name: "MouseLeave", fix: mouseFix},
 		onmousedown:	{name: "MouseLeftButtonDown", fix: mouseFix},
 		onmouseup:		{name: "MouseLeftButtonUp", fix: mouseFix},
 		onmousemove:	{name: "MouseMove", fix: mouseFix},
@@ -667,13 +749,13 @@ dojo.extend(dojox.gfx.Surface, dojox.gfx.shape.Creator);
 	};
 	var eventsProcessing = {
 		connect: function(name, object, method){
-			var token, n = name in eventNames ? eventNames[name] : 
+			var token, n = name in eventNames ? eventNames[name] :
 				{name: name, fix: function(){ return {}; }};
 			if(arguments.length > 2){
-				token = this.getEventSource().addEventListener(n.name, 
+				token = this.getEventSource().addEventListener(n.name,
 					function(s, a){ dojo.hitch(object, method)(n.fix(s, a)); });
 			}else{
-				token = this.getEventSource().addEventListener(n.name, 
+				token = this.getEventSource().addEventListener(n.name,
 					function(s, a){ object(n.fix(s, a)); });
 			}
 			return {name: n.name, token: token};

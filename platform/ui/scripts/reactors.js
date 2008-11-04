@@ -9,7 +9,6 @@ dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
 dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
@@ -198,7 +197,7 @@ pion.reactors.init = function() {
 								var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
 								var is_running = (is_running_string == 'true');
 								//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-								reactor.run_button.setAttribute('checked', is_running);
+								reactor.run_button.attr('checked', is_running);
 							}
 						});
 						delta = events_in_for_workspace - prev_events_in_for_workspace;

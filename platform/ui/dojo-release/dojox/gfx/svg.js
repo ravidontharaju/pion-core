@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 if(!dojo._hasResource["dojox.gfx.svg"]){ //_hasResource checks added by build. Do not use _hasResource directly in your code.
 dojo._hasResource["dojox.gfx.svg"] = true;
 dojo.provide("dojox.gfx.svg");
@@ -13,7 +20,7 @@ dojox.gfx.svg.xmlns = {
 
 dojox.gfx.svg.getRef = function(name){
 	// summary: returns a DOM Node specified by the name argument or null
-	// name: String: an SVG external reference 
+	// name: String: an SVG external reference
 	if(!name || name == "none") return null;
 	if(name.match(/^url\(#.+\)$/)){
 		return dojo.byId(name.slice(5, -1));	// Node
@@ -42,13 +49,13 @@ dojox.gfx.svg.dasharray = {
 
 dojo.extend(dojox.gfx.Shape, {
 	// summary: SVG-specific implementation of dojox.gfx.Shape methods
-	
+
 	setFill: function(fill){
 		// summary: sets a fill object (SVG)
 		// fill: Object: a fill object
-		//	(see dojox.gfx.defaultLinearGradient, 
-		//	dojox.gfx.defaultRadialGradient, 
-		//	dojox.gfx.defaultPattern, 
+		//	(see dojox.gfx.defaultLinearGradient,
+		//	dojox.gfx.defaultRadialGradient,
+		//	dojox.gfx.defaultPattern,
 		//	or dojo.Color)
 
 		if(!fill){
@@ -98,8 +105,8 @@ dojo.extend(dojox.gfx.Shape, {
 	setStroke: function(stroke){
 		// summary: sets a stroke object (SVG)
 		// stroke: Object: a stroke object
-		//	(see dojox.gfx.defaultStroke) 
-	
+		//	(see dojox.gfx.defaultStroke)
+
 		if(!stroke){
 			// don't stroke
 			this.strokeStyle = null;
@@ -108,7 +115,7 @@ dojo.extend(dojox.gfx.Shape, {
 			return this;
 		}
 		// normalize the stroke
-		if(typeof stroke == "string"){
+		if(typeof stroke == "string" || dojo.isArray(stroke) || stroke instanceof dojo.Color){
 			stroke = {color: stroke};
 		}
 		var s = this.strokeStyle = dojox.gfx.makeParameters(dojox.gfx.defaultStroke, stroke);
@@ -149,7 +156,7 @@ dojo.extend(dojox.gfx.Shape, {
 		}
 		return this;	// self
 	},
-	
+
 	_getParentSurface: function(){
 		var surface = this.parent;
 		for(; surface && !(surface instanceof dojox.gfx.Surface); surface = surface.parent);
@@ -214,7 +221,7 @@ dojo.extend(dojox.gfx.Shape, {
 		this.rawNode.setAttribute("fill-rule", "evenodd");
 		return fill;
 	},
-	
+
 	_applyTransform: function() {
 		var matrix = this.matrix;
 		if(matrix){
@@ -244,7 +251,7 @@ dojo.extend(dojox.gfx.Shape, {
 		r.setAttribute("stroke-linejoin", "miter");
 		r.setAttribute("stroke-miterlimit", 4);
 	},
-	
+
 	setShape: function(newShape){
 		// summary: sets a shape object (SVG)
 		// newShape: Object: a shape object
@@ -277,7 +284,7 @@ dojo.extend(dojox.gfx.Shape, {
 });
 
 dojo.declare("dojox.gfx.Group", dojox.gfx.Shape, {
-	// summary: a group shape (SVG), which can be used 
+	// summary: a group shape (SVG), which can be used
 	//	to logically group shapes (e.g, to propagate matricies)
 	constructor: function(){
 		dojox.gfx.svg.Container._init.call(this);
@@ -327,7 +334,7 @@ dojo.declare("dojox.gfx.Polyline", dojox.gfx.shape.Polyline, {
 			// branch
 			// points: Array: an array of points
 			this.shape = dojox.gfx.makeParameters(this.shape, { points: points });
-			if(closed && this.shape.points.length){ 
+			if(closed && this.shape.points.length){
 				this.shape.points.push(this.shape.points[0]);
 			}
 		}else{
@@ -384,27 +391,27 @@ dojo.declare("dojox.gfx.Text", dojox.gfx.shape.Text, {
 		r.textContent = s.text;
 		return this;	// self
 	},
-	getTextWidth: function(){ 
-		// summary: get the text width in pixels 
+	getTextWidth: function(){
+		// summary: get the text width in pixels
 		var rawNode = this.rawNode,
 			oldParent = rawNode.parentNode,
-			_measurementNode = rawNode.cloneNode(true); 
-		_measurementNode.style.visibility = "hidden"; 
+			_measurementNode = rawNode.cloneNode(true);
+		_measurementNode.style.visibility = "hidden";
 
-		// solution to the "orphan issue" in FF 
-		var _width = 0, _text = _measurementNode.firstChild.nodeValue; 
-		oldParent.appendChild(_measurementNode); 
+		// solution to the "orphan issue" in FF
+		var _width = 0, _text = _measurementNode.firstChild.nodeValue;
+		oldParent.appendChild(_measurementNode);
 
-		// solution to the "orphan issue" in Opera 
-		// (nodeValue == "" hangs firefox) 
-		if(_text!=""){ 
-			while(!_width){ 
-				_width = parseInt(_measurementNode.getBBox().width); 
-			} 
-		} 
-		oldParent.removeChild(_measurementNode); 
-		return _width; 
-	} 
+		// solution to the "orphan issue" in Opera
+		// (nodeValue == "" hangs firefox)
+		if(_text!=""){
+			while(!_width){
+				_width = parseInt(_measurementNode.getBBox().width);
+			}
+		}
+		oldParent.removeChild(_measurementNode);
+		return _width;
+	}
 });
 dojox.gfx.Text.nodeType = "text";
 
@@ -536,10 +543,10 @@ dojox.gfx.createSurface = function(parentNode, width, height){
 	s.rawNode.setAttribute("width",  width);
 	s.rawNode.setAttribute("height", height);
 
-	var node = document.createElementNS(dojox.gfx.svg.xmlns.svg, "defs"); 
+	var node = document.createElementNS(dojox.gfx.svg.xmlns.svg, "defs");
 	s.rawNode.appendChild(node);
 	s.defNode = node;
-	
+
 	dojo.byId(parentNode).appendChild(s.rawNode);
 	return s;	// dojox.gfx.Surface
 };
@@ -617,7 +624,7 @@ dojo.mixin(dojox.gfx.shape.Creator, {
 		// rawShape: Object: properties to be passed in to the classes "setShape" method
 		if(!this.rawNode){ return null; }
 		var shape = new shapeType(),
-			node = document.createElementNS(dojox.gfx.svg.xmlns.svg, shapeType.nodeType); 
+			node = document.createElementNS(dojox.gfx.svg.xmlns.svg, shapeType.nodeType);
 		shape.setRawNode(node);
 		this.rawNode.appendChild(node);
 		shape.setShape(rawShape);

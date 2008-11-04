@@ -2,7 +2,6 @@ dojo.registerModulePath("pion", "/scripts");
 dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.layout.StackContainer");
-dojo.require("dijit.layout.SplitContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 dojo.require("pion.reactors");

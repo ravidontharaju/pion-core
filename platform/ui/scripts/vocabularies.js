@@ -8,7 +8,6 @@ dojo.require("dijit.form.Textarea");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.LayoutContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.grid.Grid");

@@ -45,7 +45,7 @@ dojo.declare("plugins.reactors.Reactor",
 			var category = pion.reactors.categories[this.config.Plugin];
 			dojo.addClass(this.domNode, category);
 			if (category != 'collection') {
-				this.run_button.setAttribute('checked', true); // all reactors except collectors start out running
+				this.run_button.attr('checked', true); // all reactors except collectors start out running
 			}
 
 			dojo.addClass(this.domNode, 'moveable');

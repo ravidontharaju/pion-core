@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 dojo.require("dojox.gfx.silverlight");
 
 dojo.experimental("dojox.gfx.silverlight_attach");
@@ -60,7 +67,7 @@ dojo.experimental("dojox.gfx.silverlight_attach");
 		// rawNode: Node: an Silverlight node
 		return null;	// Object
 	};
-	
+
 	var attachStroke = function(rawNode){
 		// summary: deduces a stroke style from a Node.
 		// rawNode: Node: an SVG node
@@ -72,13 +79,13 @@ dojo.experimental("dojox.gfx.silverlight_attach");
 		// rawNode: Node: an Silverlight node
 		return null;	// dojox.gfx.matrix.Matrix
 	};
-	
+
 	var attachFont = function(rawNode){
 		// summary: deduces a font style from a Node.
 		// rawNode: Node: an Silverlight node
 		return null;	// Object
 	};
-	
+
 	var attachShape = function(rawNode){
 		// summary: builds a shape from a Node.
 		// rawNode: Node: an Silverlight node

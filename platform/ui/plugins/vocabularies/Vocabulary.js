@@ -5,11 +5,10 @@ dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.dtl.filter.strings");
-dojo.require("dojox.dtl.filter.htmlstrings");
 dojo.require("dojox.grid.Grid");
-dojo.require("dojox.grid.editors");
-dojo.require("dojox.grid._data.model");
-dojo.require("dojox.grid._data.dijitEditors");
+dojo.require("dojox.grid.compat._data.editors");
+dojo.require("dojox.grid.compat._data.model");
+dojo.require("dojox.grid.compat._data.dijitEditors");
 
 dojo.declare("plugins.vocabularies.Vocabulary",
 	[],
@@ -78,20 +77,20 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 		_handleTypeChange: function(type) {
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
-				this.format_widget.setAttribute('disabled', false);
+				this.format_widget.attr('disabled', false);
 				this.format_widget.setValue('%Y');
 				this.format_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.format_widget.setAttribute('disabled', true);
+				this.format_widget.attr('disabled', true);
 				this.format_widget.setValue('');
 				this.format_widget.domNode.style.visibility = 'hidden';
 			}
 			if (type == 'fixed-length string') {
-				this.size_widget.setAttribute('disabled', false);
+				this.size_widget.attr('disabled', false);
 				this.size_widget.setValue('1');
 				this.size_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.size_widget.setAttribute('disabled', true);
+				this.size_widget.attr('disabled', true);
 				this.size_widget.setValue('');
 				this.size_widget.domNode.style.visibility = 'hidden';
 			}
@@ -225,9 +224,9 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.config.Locked = (typeof xml_item !== "undefined") && xml_item.toString() == 'true';
 			console.dir(this.config);
 			
-			this.name.setAttribute('disabled', this.config.Locked);
+			this.name.attr('readOnly', this.config.Locked);
 			this.comment.disabled = this.config.Locked;
-			this.add_new_term_button.setAttribute('disabled', this.config.Locked);
+			this.add_new_term_button.attr('disabled', this.config.Locked);
 			if (this.config.Locked) {
 				if (!plugins.vocabularies.VocabularyPane.read_only_grid_layout) {
 					plugins.vocabularies.initGridLayouts();
@@ -242,7 +241,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.vocab_grid.update();
 			var form_data = dojo.clone(this.config); 
 			form_data.checkboxes = this.config.Locked? ["locked"] : [];
-			this.form.setValues(form_data);
+			this.form.attr('value', form_data);
 
 			// See comments in plugins.databases.DatabasePane.populateFromConfigItem.
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
@@ -312,7 +311,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		},
 		saveVocabConfig: function() {
 			var _this = this;
-			var form_data = this.form.getValues();
+			var form_data = this.form.attr('value');
 			this.config.Name = form_data.Name;
 			this.config.Locked = dojo.indexOf(form_data.checkboxes, 'locked') >= 0;
 

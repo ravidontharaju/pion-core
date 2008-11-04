@@ -1,10 +1,17 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 if(!dojo._hasResource["dojox.gfx.Mover"]){ //_hasResource checks added by build. Do not use _hasResource directly in your code.
 dojo._hasResource["dojox.gfx.Mover"] = true;
 dojo.provide("dojox.gfx.Mover");
 
 dojo.declare("dojox.gfx.Mover", null, {
 	constructor: function(shape, e, host){
-		// summary: an object, which makes a shape follow the mouse, 
+		// summary: an object, which makes a shape follow the mouse,
 		//	used as a default mover, and as a base class for custom movers
 		// shape: dojox.gfx.Shape: a shape object to be moved
 		// e: Event: a mouse event, which started the move;

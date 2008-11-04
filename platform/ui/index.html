@@ -15,7 +15,7 @@
 	-->
 	<style type="text/css">
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
-		@import "dojo-release/dojox/grid/_grid/tundraGrid.css";
+		@import "dojo-release/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "styles/default.css";
 	</style>
 	<script type="text/javascript" src="dojo-release/dojo/dojo.js"
@@ -28,7 +28,7 @@
 	<!--
 	<style type="text/css">
 		@import "dojo-src/dijit/themes/tundra/tundra.css";
-		@import "dojo-src/dojox/grid/_grid/tundraGrid.css";
+		@import "dojo-src/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "styles/default.css";
 	</style>
 	<script type="text/javascript" src="dojo-src/dojo/dojo.js"
@@ -53,7 +53,7 @@
 	<!--
 	<style type="text/css">
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
-		@import "dojo-release/dojox/grid/_grid/tundraGrid.css";
+		@import "dojo-release/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "styles/default.css";
 	</style>
 	<script type="text/javascript" src="dojo-release/dojo/dojo.js"
@@ -117,10 +117,10 @@
 			<!-- end main menu -->
 		</div>
 		<div id="main_stack_container" dojoType="dijit.layout.StackContainer" style="width: 100%; height: 100%">
-			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" design="sidebar" title="Reactors" style="width: 95%;">
+			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" gutters="false" design="sidebar" title="Reactors" style="width: 95%;">
 				<!-- start left sidebar -->
 				<div id="side" dojoType="dijit.layout.ContentPane" region="left" style="overflow:hidden">
-					<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer">
+					<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer" gutters="false">
 						<div id="sidebarTop" dojoType="dijit.layout.ContentPane" region="top">
 							<div class="sidebarHeader">Reactor Types</div>
 							<div class="sidebarInstructions">
@@ -183,7 +183,7 @@
 				</div>
 				<!-- end tabbed workspaces -->
 			</div>
-			<div id="vocab_config" dojoType="dijit.layout.BorderContainer" title="Vocabularies" style="width: 95%;">
+			<div id="vocab_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Vocabularies" style="width: 95%;">
 				<div id="vocab_config_header" class="config_header">
 					<h1>Vocabulary Configuration</h1>
 				</div>
@@ -195,7 +195,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="codec_config" dojoType="dijit.layout.BorderContainer" title="Codecs" style="width: 95%;">
+			<div id="codec_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Codecs" style="width: 95%;">
 				<div id="codec_config_header" class="config_header">
 					<h1>Codec Configuration</h1>
 				</div>
@@ -207,7 +207,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="database_config" dojoType="dijit.layout.BorderContainer" title="Databases" style="width: 95%;">
+			<div id="database_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Databases" style="width: 95%;">
 				<div id="database_config_header" class="config_header">
 					<h1>Database Configuration</h1>
 				</div>
@@ -219,7 +219,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="protocol_config" dojoType="dijit.layout.BorderContainer" title="Protocols" style="width: 95%;">
+			<div id="protocol_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Protocols" style="width: 95%;">
 				<div id="protocol_config_header" class="config_header">
 					<h1>Protocol Configuration</h1>
 				</div>
@@ -233,7 +233,7 @@
 			</div>
 
 			<!--Start Users-->
-			<div id="user_config" dojoType="dijit.layout.BorderContainer" title="Users" style="width: 95%;">
+			<div id="user_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Users" style="width: 95%;">
 				<div id="user_config_header" class="config_header">
 					<h1>Users Configuration</h1>
 				</div>
@@ -248,7 +248,7 @@
 			<!--End Users-->
 
 			<!--Start System-->
-			<div id="system_config" dojoType="dijit.layout.BorderContainer" title="System"
+			<div id="system_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="System"
 				style="border: 2px solid black; width: 95%; height: 300px; padding: 10px;">
 				<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" region="top">
 					<h1>System Configuration</h1>

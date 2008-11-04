@@ -1,3 +1,10 @@
+/*
+	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Available via Academic Free License >= 2.1 OR the modified BSD license.
+	see: http://dojotoolkit.org/license for details
+*/
+
+
 if(!dojo._hasResource["dojox.gfx.arc"]){ //_hasResource checks added by build. Do not use _hasResource directly in your code.
 dojo._hasResource["dojox.gfx.arc"] = true;
 dojo.provide("dojox.gfx.arc");
@@ -19,7 +26,7 @@ dojo.require("dojox.gfx.matrix");
 				e:  {x: cosa, y: sina}
 			};
 		},
-		twoPI = 2 * Math.PI, pi4 = Math.PI / 4, pi8 = Math.PI / 8, 
+		twoPI = 2 * Math.PI, pi4 = Math.PI / 4, pi8 = Math.PI / 8,
 		pi48 = pi4 + pi8, curvePI4 = unitArcAsBezier(pi8);
 
 	dojo.mixin(dojox.gfx.arc, {
@@ -38,14 +45,14 @@ dojo.require("dojox.gfx.matrix");
 			// sweep: Boolean: direction of the arc (CW if true)
 			// x: Number: the x coordinate of the end point of the arc
 			// y: Number: the y coordinate of the end point of the arc
-			
+
 			// calculate parameters
 			large = Boolean(large);
 			sweep = Boolean(sweep);
 			var xRot = m._degToRad(xRotg),
 				rx2 = rx * rx, ry2 = ry * ry,
 				pa = m.multiplyPoint(
-					m.rotate(-xRot), 
+					m.rotate(-xRot),
 					{x: (last.x - x) / 2, y: (last.y - y) / 2}
 				),
 				pax2 = pa.x * pa.x, pay2 = pa.y * pa.y,
@@ -66,7 +73,7 @@ dojo.require("dojox.gfx.matrix");
 						(last.y + y) / 2
 					),
 					m.rotate(xRot)
-				], 
+				],
 				ca
 			);
 			// calculate the elliptic transformation
@@ -88,7 +95,7 @@ dojo.require("dojox.gfx.matrix");
 			}else if(theta > twoPI){
 				theta -= twoPI;
 			}
-							
+
 			// draw curve chunks
 			var alpha = pi8, curve = curvePI4, step  = sweep ? alpha : -alpha,
 				result = [];

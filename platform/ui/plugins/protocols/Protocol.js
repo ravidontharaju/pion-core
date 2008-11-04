@@ -8,6 +8,7 @@ dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
+dojo.require("dojox.dtl");
 
 dojo.declare("plugins.protocols.ProtocolInitDialog",
 	[ dijit.Dialog ],
@@ -183,7 +184,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				if (row[this.protocol_grid.name_column_index])
 					put_data += '<Name>' + row[this.protocol_grid.name_column_index] + '</Name>'
 				if (row[this.protocol_grid.match_column_index])
-					put_data += '<Match>' + dojox.dtl.filter.htmlstrings.escape(row[this.protocol_grid.match_column_index]) + '</Match>'
+					put_data += '<Match>' + dojox.dtl._base.escape(row[this.protocol_grid.match_column_index]) + '</Match>'
 				if (row[this.protocol_grid.format_column_index])
 					put_data += '<Format>' + row[this.protocol_grid.format_column_index] + '</Format>'
 				if (row[this.protocol_grid.content_type_column_index])
