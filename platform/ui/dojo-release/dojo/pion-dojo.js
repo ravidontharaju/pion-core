@@ -24141,4 +24141,21 @@ system_config_page_initialized=true;
 }
 }
 };
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1775,_1776){
+var _1777;
+if(value!==undefined){
+_1777=this.filter(value);
+if(_1777!==null&&((typeof _1777!="number")||!isNaN(_1777))){
+if(_1776===undefined||!_1776.toString){
+_1776=this.format(_1777,this.constraints);
+}
+}else{
+_1776="";
+}
+}
+if(_1776!=null&&_1776!=undefined){
+this.textbox.value=_1776;
+}
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1777,_1775);
+};
 dojo.i18n._preloadLocalizations("dojo.nls.pion-dojo",["he","nl","tr","no","ko","el","en","en-gb","ROOT","zh-cn","hu","es","fi-fi","pt-br","ca","fi","he-il","xx","ru","it","fr","cs","de-de","fr-fr","it-it","es-es","ja","sk","da","sl","pl","de","sv","pt","pt-pt","nl-nl","zh-tw","ko-kr","ar","en-us","zh","th","ja-jp"]);

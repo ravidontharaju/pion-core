@@ -3,6 +3,7 @@ dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.layout.StackContainer");
 dojo.require("dijit.form.CheckBox");
+dojo.require("dijit.form.TextBox");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 dojo.require("pion.reactors");
 dojo.require("pion.vocabularies");
@@ -187,4 +188,23 @@ function configPageSelected(page) {
 			system_config_page_initialized = true;
 		}
 	}
+}
+
+// Override dijit.form.TextBox.prototype._setValueAttr(), because with the current version (1.2.1),
+// dijit.form.FilteringSelect doesn't work right with dojox.data.XmlStore.
+dijit.form.TextBox.prototype._setValueAttr = function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){
+	var filteredValue;
+	if(value !== undefined){
+		filteredValue = this.filter(value);
+		if(filteredValue !== null && ((typeof filteredValue != "number") || !isNaN(filteredValue))){
+			//if(typeof formattedValue != "string"){
+			if(formattedValue === undefined || !formattedValue.toString){
+				formattedValue = this.format(filteredValue, this.constraints);
+			}
+		}else{ formattedValue = ''; }
+	}
+	if(formattedValue != null && formattedValue != undefined){
+		this.textbox.value = formattedValue;
+	}
+	dijit.form.TextBox.superclass._setValueAttr.call(this, filteredValue, priorityChange);
 }
