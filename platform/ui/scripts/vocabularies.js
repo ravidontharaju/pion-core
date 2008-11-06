@@ -119,9 +119,6 @@ pion.vocabularies.init = function() {
 
 	function _addNewVocabulary() {
 		var dialog = new plugins.vocabularies.VocabularyInitDialog();
-		dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-			dojo.connect(n, 'click', dialog, 'onCancel')
-		});
 		dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
 			dijit.byNode(n).onClick = function() { return dialog.isValid(); };
 		});

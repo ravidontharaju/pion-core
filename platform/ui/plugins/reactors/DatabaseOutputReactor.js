@@ -56,7 +56,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData([]);
 			var grid = this.grid;
 			dojo.connect(grid, 'onCellClick', grid, this._handleCellClick);
-			dojo.connect(this.add_new_term_button.domNode, 'click', grid, this._handleAddNewTerm);
 			setTimeout(function(){
 				grid.update();
 				grid.resize();
@@ -70,7 +69,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			}
 		},
 		_handleAddNewTerm: function() {
-			this.addRow([]);
+			this.grid.addRow([]);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
 		_insertCustomData: function() {
@@ -112,7 +111,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 					plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData(_this.reactor.field_mapping_table);
 					var grid = _this.grid;
 					dojo.connect(grid, 'onCellClick', grid, _this._handleCellClick);
-					dojo.connect(_this.add_new_term_button.domNode, 'click', grid, _this._handleAddNewTerm);
 					setTimeout(function(){
 						grid.update();
 						grid.resize();
@@ -129,7 +127,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			}
 		},
 		_handleAddNewTerm: function() {
-			this.addRow([]);
+			this.grid.addRow([]);
 			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
 		},
 		_insertCustomData: function() {

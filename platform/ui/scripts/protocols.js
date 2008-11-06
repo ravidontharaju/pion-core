@@ -78,9 +78,6 @@ function addNewProtocol() {
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel');
-	});
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		console.debug(dialogFields);
