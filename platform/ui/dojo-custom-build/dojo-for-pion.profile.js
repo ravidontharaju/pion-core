@@ -25,6 +25,8 @@ dependencies = {
 			"dijit.Tree",
 			"dojox.data.XmlStore",
 			"dojox.gfx",
+			"dojox.grid.DataGrid",
+			"dojox.grid.cells.dijit",
 			"dojox.grid.Grid",
 			"dojox.grid.compat.editors",
 			"dojox.grid.compat._data.model",
