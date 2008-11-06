@@ -51,7 +51,33 @@ dojo.declare("pion.about.LicenseKeyDialog",
 					return response;
 				}
 			});
-			dojo.connect(this, "hide", this, "destroyRecursive");
+
+			//dojo.connect(this, "hide", this, "destroyRecursive");
+			// The previous line causes the dialog to remain on the screen after the close button is clicked.
+			// It doesn't matter whether I connect to hide() or onCancel(), or whether I call destroy() or destroyRecursive().
+			// This is a bug in Dojo, which can be demonstrated with the following self-contained file:
+/*
+<head>
+	<style type="text/css">@import "dojo-src/dijit/themes/tundra/tundra.css";</style>
+	<script type="text/javascript" src="dojo-src/dojo/dojo.js" djConfig="isDebug: true, parseOnLoad: true"></script>
+	<script type="text/javascript">
+		dojo.require("dijit.Dialog");
+		doDialog = function() {
+			var dialog = new dijit.Dialog({title: "test"});
+			
+			// The following line causes the Dialog to NOT disappear from the screen when the close button is clicked, although it is removed from the registry.
+			// If commented out, the Dialog does disappear as expected, but remains in memory (thus resulting in a memory leak).
+			dojo.connect(dialog, "hide", dialog, "destroy");
+			
+			dialog.show();
+		};
+	</script>
+</head>
+<body class="tundra">
+	<button onclick="doDialog()">make dialog</button>
+</body>
+</html>
+*/
 		},
 		submitKey: function(e) {
 			//var key = dojo.byId('license_key').value;

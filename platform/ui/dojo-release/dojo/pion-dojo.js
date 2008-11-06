@@ -23912,7 +23912,6 @@ return _174a;
 }});
 return _1743;
 }});
-dojo.connect(this,"hide",this,"destroyRecursive");
 },submitKey:function(e){
 var key=this.license_key.value;
 console.debug("key = ",key);
