@@ -69,7 +69,8 @@ public:
 			keepRunning(m_service, m_timer);
 
 			// start a thread that will be used to handle io_service requests
-			m_service_thread.reset(new boost::thread( boost::bind(&ReactionScheduler::processServiceWork, this) ));
+			m_service_thread.reset(new boost::thread( boost::bind(&PionScheduler::processServiceWork,
+																  this, boost::ref(m_service)) ));
 			
 			// start multiple threads to handle async tasks
 			for (boost::uint32_t n = 0; n < m_num_threads; ++n) {
@@ -152,20 +153,11 @@ protected:
 				}
 			} catch (std::exception& e) {
 				PION_LOG_ERROR(m_logger, e.what());
+			} catch (...) {
+				PION_LOG_ERROR(m_logger, "caught unrecognized exception");
 			}
 		}
 	}		
-
-	/// processes work passed to the asio service
-	void processServiceWork(void) {
-		while (m_is_running) {
-			try {
-				m_service.run();
-			} catch (std::exception& e) {
-				PION_LOG_ERROR(m_logger, e.what());
-			}
-		}	
-	}
 	
 	
 	/// a queue of Events that are scheduled to be delivered to Reactors
