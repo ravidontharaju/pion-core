@@ -1,79 +1,191 @@
 dojo.provide("plugins.reactors.TransformReactor");
 dojo.require("plugins.reactors.Reactor");
-dojo.require("dojox.grid.Grid");
+dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dojox.grid.DataGrid");
+dojo.require("dojox.grid.cells.dijit");
 dojo.require("pion.terms");
 
 dojo.declare("plugins.reactors.TransformReactor",
 	[ plugins.reactors.Reactor ],
 	{
-		postCreate: function(){
+		postCreate: function() {
 			this.config.Plugin = 'TransformReactor';
 			this.inherited("postCreate", arguments);
+			this._initOptions(this.config, plugins.reactors.TransformReactor.option_defaults);
 			this.special_config_elements.push('Comparison');
 			this.special_config_elements.push('Transformation');
-			this._updateCustomData();
+
+			// Create and populate two datastores, one for the Comparison grid and one for the Tranformation grid.
+			this.comparison_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
+			});
+			this.comparison_store.next_id = 0;
+			this.transformation_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
+			});
+			this.transformation_store.next_id = 0;
+			this.prepareToHandleLoadNotification();
+			this._populateComparisonStore();
+			this._populateTransformationStore();
 		},
-		_updateCustomData: function() {
-			this._initOptions(this.config, plugins.reactors.TransformReactor.option_defaults);
-			var store = pion.reactors.config_store;
+		prepareToHandleLoadNotification: function() {
+			this.comparison_store_is_ready = false;
+			this.transformation_store_is_ready = false;
+			var h1 = this.connect(this, 'onDonePopulatingComparisonStore', function() {
+				this.disconnect(h1);
+				this._updatePutDataIfGridStoresReady();
+			});
+			var h2 = this.connect(this, 'onDonePopulatingTransformationStore', function() {
+				this.disconnect(h2);
+				this._updatePutDataIfGridStoresReady();
+			});
+		},
+		_updatePutDataIfGridStoresReady: function() {
+			if (this.comparison_store_is_ready && this.transformation_store_is_ready) {
+				this.updateNamedCustomPutData('custom_put_data_from_config');
+				this.comparison_store_is_ready = false;
+				this.transformation_store_is_ready = false;
+				this.onDonePopulatingGridStores();
+			}
+		},
+		onDonePopulatingGridStores: function() {
+		},
+		reloadGridStores: function() {
+			// Delete all items from this.comparison_store, then repopulate
+			// it from the Reactor's configuration.
 			var _this = this;
-			this.comparisons = [];
-			this.transformations = [];
+			this.comparison_store.fetch({
+				onItem: function(item) {
+					_this.comparison_store.deleteItem(item);
+				},
+				onComplete: function() {
+					_this._populateComparisonStore();
+				},
+				onError: pion.handleFetchError
+			});
+
+			// Delete all items from this.transformation_store, then repopulate
+			// it from the Reactor's configuration.
+			var _this = this;
+			this.transformation_store.fetch({
+				onItem: function(item) {
+					_this.transformation_store.deleteItem(item);
+				},
+				onComplete: function() {
+					_this._populateTransformationStore();
+				},
+				onError: pion.handleFetchError
+			});
+
+			this.prepareToHandleLoadNotification();
+		},
+		_populateComparisonStore: function() {
+			var _this = this;
+			var store = pion.reactors.config_store;
 			store.fetch({
 				query: {'@id': this.config['@id']},
 				onItem: function(item) {
-					var comparison_items = store.getValues(item, 'Comparison');
-					for (var i = 0; i < comparison_items.length; ++i) {
-						var comparison = {};
-						comparison.term  = store.getValue(comparison_items[i], 'Term');
-						comparison.type  = store.getValue(comparison_items[i], 'Type');
-						comparison.value = store.getValue(comparison_items[i], 'Value');
-						_this.comparisons.push(comparison);
-					}
-
-					var transformation_items = store.getValues(item, 'Transformation');
-					var getBool = plugins.reactors.TransformReactor.getBool;
-					for (var i = 0; i < transformation_items.length; ++i) {
-						var transformation = {};
-						transformation.term      = store.getValue(transformation_items[i], 'Term');
-						transformation.type      = store.getValue(transformation_items[i], 'Type');
-						transformation.value     = store.getValue(transformation_items[i], 'Value');
-						transformation.match_all = getBool(store, transformation_items[i], 'MatchAllValues');
-						transformation.set_value = store.getValue(transformation_items[i], 'SetValue');
-						transformation.in_place  = getBool(store, transformation_items[i], 'InPlace');
-						transformation.set_term  = store.getValue(transformation_items[i], 'SetTerm');
-						_this.transformations.push(transformation);
-					}
+					dojo.forEach(store.getValues(item, 'Comparison'), function(comparison) {
+						var comparison_item = {
+							ID: _this.comparison_store.next_id++,
+							Term: store.getValue(comparison, 'Term'),
+							Type: store.getValue(comparison, 'Type')
+						}
+						if (store.hasAttribute(comparison, 'Value'))
+							comparison_item.Value = store.getValue(comparison, 'Value');
+						_this.comparison_store.newItem(comparison_item);
+					});
+				},
+				onComplete: function() {
+					_this.comparison_store_is_ready = true;
+					_this.onDonePopulatingComparisonStore();
 				},
 				onError: pion.handleFetchError
 			});
 		},
+		onDonePopulatingComparisonStore: function() {
+		},
+		_populateTransformationStore: function() {
+			var _this = this;
+			var store = pion.reactors.config_store;
+			store.fetch({
+				query: {'@id': this.config['@id']},
+				onItem: function(item) {
+					var getBool = plugins.reactors.TransformReactor.getBool;
+					dojo.forEach(store.getValues(item, 'Transformation'), function(transformation) {
+						var transformation_item = {
+							ID: _this.transformation_store.next_id++,
+							Term: store.getValue(transformation, 'Term'),
+							Type: store.getValue(transformation, 'Type'),
+							MatchAllValues: getBool(store, transformation, 'MatchAllValues'),
+							SetValue: store.getValue(transformation, 'SetValue'),
+							InPlace: getBool(store, transformation, 'InPlace')
+						}
+						if (store.hasAttribute(transformation, 'Value'))
+							transformation_item.Value = store.getValue(transformation, 'Value');
+						if (store.hasAttribute(transformation, 'SetTerm'))
+							transformation_item.SetTerm = store.getValue(transformation, 'SetTerm');
+						_this.transformation_store.newItem(transformation_item);
+					});
+				},
+				onComplete: function() {
+					_this.transformation_store_is_ready = true;
+					_this.onDonePopulatingTransformationStore();
+				},
+				onError: pion.handleFetchError
+			});
+		},
+		onDonePopulatingTransformationStore: function() {
+		},
+		// _updateCustomData() is called after a successful PUT request.
+		_updateCustomData: function() {
+			this.custom_put_data_from_config = this.custom_put_data_from_grid_stores;
+		},
+		// _insertCustomData() is called when moving the Reactor.
 		_insertCustomData: function() {
-			for (var i = 0; i < this.comparisons.length; ++i) {
-				var c = this.comparisons[i];
-				this.put_data += '<Comparison>';
-				this.put_data += '<Term>' + c.term + '</Term>';
-				this.put_data += '<Type>' + c.type + '</Type>';
-				if (c.value)
-					this.put_data += '<Value>' + c.value + '</Value>';
-				this.put_data += '</Comparison>';
-			}
-			for (var i = 0; i < this.transformations.length; ++i) {
-				var t = this.transformations[i];
-				this.put_data += '<Transformation>';
-				this.put_data += '<Term>' + t.term + '</Term>';
-				this.put_data += '<Type>' + t.type + '</Type>';
-				if (t.value)
-					this.put_data += '<Value>' + t.value + '</Value>';
-				if (t.match_all)
-					this.put_data += '<MatchAllValues>' + t.match_all + '</MatchAllValues>';
-				this.put_data += '<SetValue>' + t.set_value + '</SetValue>';
-				if (t.in_place)
-					this.put_data += '<InPlace>' + t.in_place + '</InPlace>';
-				if (t.set_term)
-					this.put_data += '<SetTerm>' + t.set_term + '</SetTerm>';
-				this.put_data += '</Transformation>';
-			}
+			this.put_data += this.custom_put_data_from_config;
+		},
+		updateNamedCustomPutData: function(property_to_update) {
+			var put_data = '';
+			var _this = this;
+			var c_store = this.comparison_store;
+			var t_store = this.transformation_store;
+			c_store.fetch({
+				onItem: function(item) {
+					put_data += '<Comparison>';
+					put_data += '<Term>' + c_store.getValue(item, 'Term') + '</Term>';
+					put_data += '<Type>' + c_store.getValue(item, 'Type') + '</Type>';
+					var value = c_store.getValue(item, 'Value');
+					if (value && value.toString())
+						put_data += '<Value>' + value + '</Value>';
+					put_data += '</Comparison>';
+				},
+				onComplete: function() {
+					t_store.fetch({
+						onItem: function(item) {
+							put_data += '<Transformation>';
+							put_data += '<Term>' + t_store.getValue(item, 'Term') + '</Term>';
+							put_data += '<Type>' + t_store.getValue(item, 'Type') + '</Type>';
+							var value = t_store.getValue(item, 'Value');
+							if (value && value.toString())
+								put_data += '<Value>' + value + '</Value>';
+							put_data += '<MatchAllValues>' + t_store.getValue(item, 'MatchAllValues') + '</MatchAllValues>';
+							if (t_store.hasAttribute(item, 'SetValue'))
+								put_data += '<SetValue>' + t_store.getValue(item, 'SetValue') + '</SetValue>';
+							put_data += '<InPlace>' + t_store.getValue(item, 'InPlace') + '</InPlace>';
+							var set_term = t_store.getValue(item, 'SetTerm');
+							if (set_term && set_term.toString())
+								put_data += '<SetTerm>' + set_term + '</SetTerm>';
+							put_data += '</Transformation>';
+						},
+						onComplete: function() {
+							_this[property_to_update] = put_data;
+						},
+						onError: pion.handleFetchError
+					});
+				},
+				onError: pion.handleFetchError
+			});
 		}
 	}
 );
@@ -89,284 +201,202 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
+ 		postCreate: function(){
 			this.inherited("postCreate", arguments);
-			this.initGridLayouts();
+			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
-			this.comparison_grid.setStructure(this.comparison_grid_layout);
-			var comparison_grid_model = pion.reactors.transform_reactor_comparison_grid_model;
-			this.comparison_grid.canEdit = function(cell, row_index) {
-				switch (cell.index) {
-					// Disable editing of 'Value' cell if 'Type' cell is set to a 'generic' comparison.
-					case this.value_column_index:
-						var type = comparison_grid_model.getDatum(row_index, this.type_column_index);
-						return dojo.indexOf(pion.reactors.generic_comparison_types, type) == -1;
-
-					default:
-						return true;
-				}
-			}
-			this.transformation_grid.setStructure(this.transformation_grid_layout);
-			var transformation_grid_model = pion.reactors.transform_reactor_transformation_grid_model;
-			this.transformation_grid.canEdit = function(cell, row_index) {
-				switch (cell.index) {
-					// Disable editing of 'Value' cell if 'Type' cell is set to a 'generic' comparison.
-					case this.value_column_index:
-						var type = transformation_grid_model.getDatum(row_index, this.type_column_index);
-						return dojo.indexOf(pion.reactors.generic_comparison_types, type) == -1;
-						
-					// Disable editing of 'Set Term' cell if 'In Place' cell is set to true.
-					case this.set_term_column_index:
-						var in_place = transformation_grid_model.getDatum(row_index, this.in_place_column_index);
-						console.debug('in_place = ', in_place);
-						if (in_place) // i.e. both defined and having the boolean value 'true'
-							return false;
-						else
-							return true;
-							
-					default:
-						return true;
-				}
-			}
-			this.comparison_table = [];
-			this.transformation_table = [];
-			var store = pion.reactors.config_store;
-			store.fetch({
-				query: {'@id': this.reactor.config['@id']},
-				onItem: function(item) {
-					var comparisons = store.getValues(item, 'Comparison');
-					var cg = _this.comparison_grid;
-					for (var i = 0; i < comparisons.length; ++i) {
-						var table_row = [];
-						table_row[cg.term_column_index]  = store.getValue(comparisons[i], 'Term');
-						table_row[cg.type_column_index]  = store.getValue(comparisons[i], 'Type');
-						table_row[cg.value_column_index] = store.getValue(comparisons[i], 'Value');
-						_this.comparison_table.push(table_row);
-					}
-					comparison_grid_model.setData(_this.comparison_table);
-
-					var transformations = store.getValues(item, 'Transformation');
-					var tg = _this.transformation_grid;
-					var getBool = plugins.reactors.TransformReactor.getBool;
-					for (var i = 0; i < transformations.length; ++i) {
-						var table_row = [];
-						table_row[tg.term_column_index]      = store.getValue(transformations[i], 'Term');
-						table_row[tg.type_column_index]      = store.getValue(transformations[i], 'Type');
-						table_row[tg.value_column_index]     = store.getValue(transformations[i], 'Value');
-						table_row[tg.match_all_column_index] = getBool(store, transformations[i], 'MatchAllValues');
-						table_row[tg.set_value_column_index] = store.getValue(transformations[i], 'SetValue');
-						table_row[tg.in_place_column_index]  = getBool(store, transformations[i], 'InPlace');
-						table_row[tg.set_term_column_index]  = store.getValue(transformations[i], 'SetTerm');
-						_this.transformation_table.push(table_row);
-					}
-					transformation_grid_model.setData(_this.transformation_table);
-
-					dojo.connect(_this.comparison_grid, 'onCellClick', _this, _this._handleComparisonGridCellClick);
-					dojo.connect(_this.comparison_grid, 'onApplyCellEdit', _this, _this._handleComparisonGridCellEdit);
-					dojo.connect(_this.transformation_grid, 'onCellClick', _this, _this._handleTransformationGridCellClick);
-					dojo.connect(_this.transformation_grid, 'onApplyCellEdit', _this, _this._handleTransformationGridCellEdit);
-					setTimeout(function(){
-						_this.comparison_grid.update();
-						_this.comparison_grid.resize();
-						_this.transformation_grid.update();
-						_this.transformation_grid.resize();
-					}, 200);
-				},
-				onError: pion.handleFetchError
+			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
+				_this._updateCustomPutDataFromGridStores();
+				_this.connect(_this.reactor.comparison_store, 'onNew', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.comparison_store, 'onSet', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.comparison_store, 'onDelete', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.transformation_store, 'onNew', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.transformation_store, 'onSet', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.transformation_store, 'onDelete', '_updateCustomPutDataFromGridStores');
+				dojo.disconnect(h);
 			});
-		},
-		initGridLayouts: function() {
-			this.comparison_grid.term_column_index   = 0;
-			this.comparison_grid.type_column_index   = 1;
-			this.comparison_grid.value_column_index  = 2;
-			this.comparison_grid.delete_column_index = 3;
+			this.reactor.reloadGridStores();
+
 			this.comparison_grid_layout = [{
-				rows: [[
-					{ name: 'Term', styles: '', 
-						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-						editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto' },
-					{ name: 'Comparison', styles: '', width: 'auto', 
-						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-						editorProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
-						editor: dojox.grid.editors.Input},
-					{ name: 'Delete', styles: 'align: center;', width: 3, 
+				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
+				rows: [
+					{ field: 'Term', name: 'Term', width: 20, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+					{ field: 'Type', name: 'Comparison', width: 15, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
+					{ field: 'Value', name: 'Value', width: 'auto'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-				]]
+				]
 			}];
+			this.comparison_grid = new dojox.grid.DataGrid({
+				store: this.reactor.comparison_store,
+				structure: this.comparison_grid_layout,
+				singleClickEdit: true,
+				autoHeight: true
+			}, document.createElement('div'));
+			this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
+			this.comparison_grid.startup();
+			this.comparison_grid.connect(this.comparison_grid, 'onCellClick', function(e) {
+				if (e.cell.name == 'Delete') {
+					this.store.deleteItem(this.getItem(e.rowIndex));
+				} else if (e.cell.field == 'Type') {
+					var item = this.getItem(e.rowIndex);
+					var term = this.store.getValue(item, 'Term').toString();
+					console.debug('term = ', term, ', pion.terms.categories_by_id[term] = ', pion.terms.categories_by_id[term]);
+					this.structure[0].rows[e.cell.index].widgetProps.query.category = pion.terms.categories_by_id[term];
+				}
+			});
+			this.comparison_grid.connect(this.comparison_grid, 'onApplyCellEdit', function(value, row_index, attr_name) {
+				switch (attr_name) {
+					// If 'Comparison' cell has just been set to a 'generic' comparison, no 'Value' value is 
+					// allowed, so remove any value in that cell.
+					case 'Type':
+						var store = pion.reactors.comparison_type_store;
+						var _this = this;
+						store.fetchItemByIdentity({
+							identity: value,
+							onItem: function(item) {
+								if (store.containsValue(item, 'category', 'generic')) {
+									var item = _this.getItem(row_index);
+									_this.store.unsetAttribute(item, 'Value');
+								}
+							}
+						});
+						break;
+	
+					default:
+						// do nothing
+				}
+			});
 
-			this.transformation_grid.term_column_index      = 0;
-			this.transformation_grid.type_column_index      = 1;
-			this.transformation_grid.value_column_index     = 2;
-			this.transformation_grid.match_all_column_index = 3;
-			this.transformation_grid.set_value_column_index = 4;
-			this.transformation_grid.in_place_column_index  = 5;
-			this.transformation_grid.set_term_column_index  = 6;
-			this.transformation_grid.delete_column_index    = 7;
 			this.transformation_grid_layout = [{
-				rows: [[
-					{ name: 'Term', styles: '', 
-						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-						editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 14 },
-					{ name: 'Comparison', styles: '', width: 'auto', 
-						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-						editorProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ name: 'Value', width: 'auto', styles: 'text-align: center;', 
-						editor: dojox.grid.editors.Input},
-					{ name: 'Match All', width: 3, 
-						editor: dojox.grid.editors.Bool},
-					{ name: 'Set Value', width: 'auto', styles: 'text-align: center;', 
-						editor: dojox.grid.editors.Input},
-					{ name: 'In Place', width: 3, 
-						editor: dojox.grid.editors.Bool},
-					{ name: 'Set Term', styles: '', 
-						editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-						editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 14 },
-					{ name: 'Delete', styles: 'align: center;', width: 3, 
+				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
+				rows: [
+					{ field: 'Term', name: 'Term', width: 14, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+					{ field: 'Type', name: 'Comparison', width: 10, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
+					{ field: 'Value', name: 'Value', width: 'auto'},
+					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
+						type: dojox.grid.cells.Bool},
+					{ field: 'SetValue', name: 'Set Value', width: 'auto'},
+					{ field: 'InPlace', name: 'In Place', width: 3, 
+						type: dojox.grid.cells.Bool},
+					{ field: 'SetTerm', name: 'Set Term', width: 14, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-				]]
+				]
 			}];
-		},
-		_handleComparisonGridCellClick: function(e) {
-			console.debug('In _handleComparisonGridCellClick: this.id = ', this.id);
-			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-			var grid = this.comparison_grid;
-			var model = pion.reactors.transform_reactor_comparison_grid_model;
-			switch (e.cellIndex) {
-				// User clicked in 'Comparison' cell, so set up query for dropdown list of comparisons suitable for term.
-				case grid.type_column_index:
-					var term = model.getDatum(e.rowIndex, grid.term_column_index).toString();
+			this.transformation_grid = new dojox.grid.DataGrid({
+				store: this.reactor.transformation_store,
+				structure: this.transformation_grid_layout,
+				singleClickEdit: true,
+				autoHeight: true
+			}, document.createElement('div'));
+			this.transformation_grid_node.appendChild(this.transformation_grid.domNode);
+			this.transformation_grid.startup();
+			this.transformation_grid.connect(this.transformation_grid, 'onCellClick', function(e) {
+				if (e.cell.name == 'Delete') {
+					this.store.deleteItem(this.getItem(e.rowIndex));
+				} else if (e.cell.field == 'Type') {
+					var item = this.getItem(e.rowIndex);
+					var term = this.store.getValue(item, 'Term').toString();
 					console.debug('term = ', term, ', pion.terms.categories_by_id[term] = ', pion.terms.categories_by_id[term]);
-					this.comparison_grid_layout[0].rows[0][e.cellIndex].editorProps.query.category = pion.terms.categories_by_id[term];
-					break;
-
-				case grid.delete_column_index:
-					console.debug('Removing row ', e.rowIndex); 
-					grid.removeSelectedRows();
-					break;
-
-				default:
-					// do nothing
-			}
-		},
-		_handleTransformationGridCellClick: function(e) {
-			console.debug('In _handleTransformationGridCellClick: this.transformation_grid.id = ', this.transformation_grid.id);
-			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-			var grid = this.transformation_grid;
-			var model = pion.reactors.transform_reactor_transformation_grid_model;
-			switch (e.cellIndex) {
-				// User clicked in 'Comparison' cell, so set up query for dropdown list of comparisons suitable for term.
-				case grid.type_column_index:
-					var term = model.getDatum(e.rowIndex, grid.term_column_index).toString();
-					console.debug('term = ', term, ', pion.terms.categories_by_id[term] = ', pion.terms.categories_by_id[term]);
-					this.transformation_grid_layout[0].rows[0][e.cellIndex].editorProps.query.category = pion.terms.categories_by_id[term];
-					break;
-
-				case grid.delete_column_index:
-					console.debug('Removing row ', e.rowIndex); 
-					grid.removeSelectedRows();
-					break;
-
-				default:
-					// do nothing
-			}
-		},
-		_handleComparisonGridCellEdit: function(value, row_index, col_index) {
-			console.debug('value = ', value);
-			var grid = this.comparison_grid;
-			var model = pion.reactors.transform_reactor_comparison_grid_model;
-			switch (col_index) {
-				// If 'Comparison' cell has just been set to a 'generic' comparison, no 'Value' value is 
-				// allowed, so remove any value in that cell.
-				case grid.type_column_index:
-					var store = pion.reactors.comparison_type_store;
-					store.fetchItemByIdentity({
-						identity: value,
-						onItem: function(item) {
-							if (store.containsValue(item, 'category', 'generic'))
-								model.setDatum('', row_index, grid.value_column_index);
+					this.structure[0].rows[e.cell.index].widgetProps.query.category = pion.terms.categories_by_id[term];
+				}
+			});
+			this.transformation_grid.connect(this.transformation_grid, 'onApplyCellEdit', function(value, row_index, attr_name) {
+				switch (attr_name) {
+					// If 'Comparison' cell has just been set to a 'generic' comparison, no 'Value' value is 
+					// allowed, so remove any value in that cell.
+					case 'Type':
+						var store = pion.reactors.comparison_type_store;
+						var _this = this;
+						store.fetchItemByIdentity({
+							identity: value,
+							onItem: function(item) {
+								if (store.containsValue(item, 'category', 'generic')) {
+									var item = _this.getItem(row_index);
+									_this.store.unsetAttribute(item, 'Value');
+								}
+							}
+						});
+						break;
+	
+					// If 'In Place' cell has just been set to true, no 'Set Term' value is allowed, so remove any value in that cell.
+					// Otherwise, the 'Set Term' cell needs a value, so if it doesn't have one, initialize it with the Term in the first column.
+					case 'InPlace':
+						var item = this.getItem(row_index);
+						if (value) { // i.e. both defined and having the boolean value 'true'
+							this.store.unsetAttribute(item, 'SetTerm');
+						} else {
+							var primary_term = this.store.getValue(item, 'Term');
+							this.store.setValue(item, 'SetTerm', primary_term);
 						}
-					});
-					break;
+						break;
+	
+					default:
+						// do nothing
+				}
+			});
 
-				default:
-					// do nothing
+			this.comparison_grid.canEdit = function(cell, row_index) {
+				switch (cell.field) {
+					// Disable editing of 'Value' cell if 'Type' cell is set to a 'generic' comparison.
+					case 'Value':
+						var item = this.getItem(row_index);
+						var type = this.store.getValue(item, 'Type').toString();
+						return dojo.indexOf(pion.reactors.generic_comparison_types, type) == -1;
+
+					default:
+						return true;
+				}
 			}
-		},
-		_handleTransformationGridCellEdit: function(value, row_index, col_index) {
-			console.debug('value = ', value);
-			var grid = this.transformation_grid;
-			var model = pion.reactors.transform_reactor_transformation_grid_model;
-			switch (col_index) {
-				// If 'Comparison' cell has just been set to a 'generic' comparison, no 'Value' value is 
-				// allowed, so remove any value in that cell.
-				case grid.type_column_index:
-					var store = pion.reactors.comparison_type_store;
-					store.fetchItemByIdentity({
-						identity: value,
-						onItem: function(item) {
-							if (store.containsValue(item, 'category', 'generic'))
-								model.setDatum('', row_index, grid.value_column_index);
-						}
-					});
-					break;
 
-				// If 'In Place' cell has just been set to true, no 'Set Term' value is allowed, so remove any value in that cell.
-				// Otherwise, the 'Set Term' cell needs a value, so if it doesn't have one, initialize it with the Term in the first column.
-				case grid.in_place_column_index:
-					if (value) { // i.e. both defined and having the boolean value 'true'
-						model.setDatum('', row_index, grid.set_term_column_index);
-					} else {
-						if (model.getDatum(row_index, grid.set_term_column_index) === undefined) {
-							var primary_term = model.getDatum(row_index, grid.term_column_index);
-							model.setDatum(primary_term, row_index, grid.set_term_column_index);
-						}
-					}
-					break;
+			this.transformation_grid.canEdit = function(cell, row_index) {
+				switch (cell.field) {
+					// Disable editing of 'Value' cell if 'Type' cell is set to a 'generic' comparison.
+					case 'Value':
+						var item = this.getItem(row_index);
+						var type = this.store.getValue(item, 'Type').toString();
+						return dojo.indexOf(pion.reactors.generic_comparison_types, type) == -1;
 
-				default:
-					// do nothing
+					// Disable editing of 'Set Term' cell if 'In Place' cell is set to true.
+					case 'SetTerm':
+						var item = this.getItem(row_index);
+						var in_place = this.store.getValue(item, 'InPlace');
+						return ! in_place;
+
+					default:
+						return true;
+				}
 			}
 		},
 		_handleAddNewComparison: function() {
-			console.debug('this.comparison_grid.id = ', this.comparison_grid.id);
-			this.comparison_grid.addRow([0, 'true']);
+			this.reactor.comparison_store.newItem({ID: this.reactor.comparison_store.next_id++});
 		},
 		_handleAddNewTransformation: function() {
-			console.debug('this.transformation_grid.id = ', this.transformation_grid.id);
-			this.transformation_grid.addRow([0, 'true', , false, 0, true]);
+			this.reactor.transformation_store.newItem({
+				ID: this.reactor.transformation_store.next_id++,
+				MatchAllValues: false,
+				SetValue: 0,
+				InPlace: true
+			});
 		},
+		// _updateCustomPutDataFromGridStores() will be passed arguments related to the item which triggered the call, which we ignore.
+		_updateCustomPutDataFromGridStores: function() {
+			this.reactor.updateNamedCustomPutData('custom_put_data_from_grid_stores');
+		},
+		// _insertCustomData() is called (indirectly) when the user clicks 'Save Reactor'.
 		_insertCustomData: function() {
-			var num_comparisons = pion.reactors.transform_reactor_comparison_grid_model.getRowCount();
-			var cg = this.comparison_grid;
-			for (var i = 0; i < num_comparisons; ++i) {
-				var row = pion.reactors.transform_reactor_comparison_grid_model.getRow(i);
-				this.put_data += '<Comparison>';
-				this.put_data += '<Term>' + row[cg.term_column_index] + '</Term>';
-				this.put_data += '<Type>' + row[cg.type_column_index] + '</Type>';
-				if (row[cg.value_column_index])
-					this.put_data += '<Value>' + row[cg.value_column_index] + '</Value>'
-				this.put_data += '</Comparison>';
-			}
-
-			var num_transformations = pion.reactors.transform_reactor_transformation_grid_model.getRowCount();
-			var tg = this.transformation_grid;
-			for (var i = 0; i < num_transformations; ++i) {
-				var row = pion.reactors.transform_reactor_transformation_grid_model.getRow(i);
-				this.put_data += '<Transformation>';
-				this.put_data += '<Term>' + row[tg.term_column_index] + '</Term>';
-				this.put_data += '<Type>' + row[tg.type_column_index] + '</Type>';
-				if (row[tg.value_column_index])
-					this.put_data += '<Value>' + row[tg.value_column_index] + '</Value>'
-				if (row[tg.match_all_column_index])
-					this.put_data += '<MatchAllValues>' + row[tg.match_all_column_index] + '</MatchAllValues>'
-				this.put_data += '<SetValue>' + row[tg.set_value_column_index] + '</SetValue>'
-				if (row[tg.in_place_column_index])
-					this.put_data += '<InPlace>' + row[tg.in_place_column_index] + '</InPlace>'
-				if (row[tg.set_term_column_index])
-					this.put_data += '<SetTerm>' + row[tg.set_term_column_index] + '</SetTerm>'
-				this.put_data += '</Transformation>';
-			}
+			this.put_data += this.reactor.custom_put_data_from_grid_stores;
 		}
 	}
 );
@@ -388,4 +418,3 @@ plugins.reactors.TransformReactor.getBool = function(store, item, attribute) {
 	else
 		return plugins.reactors.TransformReactor.grid_option_defaults[attribute];
 }
-

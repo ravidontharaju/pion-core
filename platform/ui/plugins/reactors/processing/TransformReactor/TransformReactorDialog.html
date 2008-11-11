@@ -30,12 +30,10 @@
 		></table
 	></div>
 	<h3>Comparisons</h3>
-	<div dojoAttachPoint="comparison_grid" dojoType="dojox.Grid" model="pion.reactors.transform_reactor_comparison_grid_model"
-		 singleClickEdit="true" autoHeight="true"></div>
-	<button dojoAttachPoint="add_new_comparison_button" dojoType="dijit.form.Button" dojoAttachEvent="onClick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
+	<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node"></div>
+	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
 	<h3>Transformations</h3>
-	<div dojoAttachPoint="transformation_grid" dojoType="dojox.Grid" model="pion.reactors.transform_reactor_transformation_grid_model"
-		 singleClickEdit="true" autoHeight="true"></div>
+	<div class="reactor_dialog_grid" dojoAttachPoint="transformation_grid_node"></div>
 	<button dojoAttachPoint="add_new_transformation_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewTransformation" class="add_new_row">ADD NEW TRANSFORMATION</button>
 	<h3>Input Connections</h3>
 	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="pion.reactors.reactor_inputs_grid_model"
