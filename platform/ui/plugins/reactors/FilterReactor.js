@@ -141,14 +141,21 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 
 			// Arrange for destroyRecursive() to get called when the dialog is closed.
 			// This will, among other things, disconnect all the connections made via _Widget.connect().
-			// TODO: Move to Reactor.postCreate()?
-			this.connect(this, "onCancel", "destroyRecursive");
-			// TODO: Move to Reactor.postCreate()?
-			// 		 Call destroyRecursive() at end of Reactor.execute() instead?
+			// TODO: Make this work for IE.
+			// TODO: Move to ReactorDialog.postCreate()?
+			if (! dojo.isIE) {
+				this.connect(this, "onCancel", "destroyRecursive");
+			}
+
+			// TODO: Make this work for IE.
+			// TODO: Move to ReactorDialog.postCreate()?
+			// 		 Call destroyRecursive() at end of ReactorDialog.execute() instead?
 			// It would be nicer to connect to onExecute() instead, or better yet, to hide() in place of
 			// both onCancel() and execute(), but either would cause destroy() to be called before
 			// execute(), and then execute() wouldn't have access to the dialog fields.
-			this.connect(this, "execute", "destroyRecursive");
+			if (! dojo.isIE) {
+				this.connect(this, "execute", "destroyRecursive");
+			}
 		},
 		uninitialize: function(){
 			this.comparison_grid.destroy();

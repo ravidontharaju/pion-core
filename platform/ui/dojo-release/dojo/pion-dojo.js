@@ -25307,8 +25307,12 @@ this.comparison_grid=new dojox.grid.DataGrid({store:this.reactor.comparison_stor
 this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
 this.comparison_grid.startup();
 this.comparison_grid.connect(this.comparison_grid,"onCellClick",_this._handleCellClick);
+if(!dojo.isIE){
 this.connect(this,"onCancel","destroyRecursive");
+}
+if(!dojo.isIE){
 this.connect(this,"execute","destroyRecursive");
+}
 },uninitialize:function(){
 this.comparison_grid.destroy();
 },_updateCustomPutDataFromComparisonStore:function(){
