@@ -14,7 +14,7 @@ dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.gfx");
-dojo.require("dojox.grid.Grid");
+dojo.require("dojox.grid.DataGrid");
 
 // Reactors don't have to be listed here to be usable, but they do to be included in pion-dojo.js.
 dojo.require("plugins.reactors.LogInputReactor");
@@ -37,11 +37,6 @@ var reactor_config_store;
 
 pion.reactors.workspace_box = null;
 pion.reactors.reactors_by_id = {};
-pion.reactors.filter_reactor_grid_model = new dojox.grid.data.Table(null, []);
-pion.reactors.transform_reactor_comparison_grid_model = new dojox.grid.data.Table(null, []);
-pion.reactors.transform_reactor_transformation_grid_model = new dojox.grid.data.Table(null, []);
-pion.reactors.reactor_inputs_grid_model = new dojox.grid.data.Table(null, []);
-pion.reactors.reactor_outputs_grid_model = new dojox.grid.data.Table(null, []);
 pion.reactors.config_store = null;
 pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: '/resources/comparisonTypes.json'});
 pion.reactors.generic_comparison_types = [];
@@ -670,32 +665,40 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	}
 	dialog.setValues(reactor.config);
 
-	var reactor_inputs_table = [];
-	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-		var reactor_inputs_table_row = [];
-		reactor_inputs_table_row[0] = reactor.reactor_inputs[i].source.config.Name;
-		reactor_inputs_table_row[1] = reactor.reactor_inputs[i].id;
-		reactor_inputs_table.push(reactor_inputs_table_row);
-	}
-	pion.reactors.reactor_inputs_grid_model.setData(reactor_inputs_table);
-	var reactor_inputs_grid = dialog.reactor_inputs_grid;
-	setTimeout(function(){
-		reactor_inputs_grid.update();
-		reactor_inputs_grid.resize();
-	}, 200);
-	dojo.connect(reactor_inputs_grid, 'onCellClick', function(e) {
-		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-		if (e.cellIndex == 2) {
-			console.debug('Removing connection in row ', e.rowIndex); 
+	var reactor_inputs_store = new dojo.data.ItemFileWriteStore({
+		data: { identifier: 'ID', items: [] }
+	});
+	dojo.forEach(reactor.reactor_inputs, function(reactor_input) {
+		reactor_inputs_store.newItem({
+			ID: reactor_input.id,
+			name: reactor_input.source.config.Name
+		});
+	});
+	var reactor_inputs_grid_layout = [{
+		rows: [
+			{ field: 'name', name: 'From', styles: '', width: 'auto' },
+			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
+			{ name: 'Delete', styles: 'align: center;', width: 3, 
+				value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'}
+		]
+	}];
+	var reactor_inputs_grid = new dojox.grid.DataGrid({
+		store: reactor_inputs_store,
+		structure: reactor_inputs_grid_layout,
+		singleClickEdit: true,
+		autoHeight: true
+	}, document.createElement('div'));
+	dialog.reactor_inputs_grid_node.appendChild(reactor_inputs_grid.domNode);
+	reactor_inputs_grid.startup();
+	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
+		if (e.cell.name == 'Delete') {
+			this.store.deleteItem(this.getItem(e.rowIndex));
 			var reactor_input = reactor.reactor_inputs[e.rowIndex];
 			dojo.xhrDelete({
 				url: '/config/connections/' + reactor_input.id,
 				handleAs: 'xml',
 				timeout: 5000,
 				load: function(response, ioArgs) {
-					console.debug('xhrDelete for url = /config/connections/', reactor_input.id, '; HTTP status code: ', ioArgs.xhr.status);
-					reactor_inputs_grid.removeSelectedRows();
-
 					var incoming_reactor = reactor_input.source;
 					reactor_input.line.removeShape();
 					reactor.reactor_inputs.splice(e.rowIndex, 1);
@@ -714,32 +717,40 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 		}
 	});
 
-	var reactor_outputs_table = [];
-	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-		var reactor_outputs_table_row = [];
-		reactor_outputs_table_row[0] = reactor.reactor_outputs[i].sink.config.Name;
-		reactor_outputs_table_row[1] = reactor.reactor_outputs[i].id;
-		reactor_outputs_table.push(reactor_outputs_table_row);
-	}
-	pion.reactors.reactor_outputs_grid_model.setData(reactor_outputs_table);
-	var reactor_outputs_grid = dialog.reactor_outputs_grid;
-	setTimeout(function(){
-		reactor_outputs_grid.update();
-		reactor_outputs_grid.resize();
-	}, 200);
-	dojo.connect(reactor_outputs_grid, 'onCellClick', function(e) {
-		console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-		if (e.cellIndex == 2) {
-			console.debug('Removing connection in row ', e.rowIndex); 
+	var reactor_outputs_store = new dojo.data.ItemFileWriteStore({
+		data: { identifier: 'ID', items: [] }
+	});
+	dojo.forEach(reactor.reactor_outputs, function(reactor_output) {
+		reactor_outputs_store.newItem({
+			ID: reactor_output.id,
+			name: reactor_output.sink.config.Name
+		});
+	});
+	var reactor_outputs_grid_layout = [{
+		rows: [
+			{ field: 'name', name: 'To', styles: '', width: 'auto' },
+			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
+			{ name: 'Delete', styles: 'align: center;', width: 3, 
+				value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'}
+		]
+	}];
+	var reactor_outputs_grid = new dojox.grid.DataGrid({
+		store: reactor_outputs_store,
+		structure: reactor_outputs_grid_layout,
+		singleClickEdit: true,
+		autoHeight: true
+	}, document.createElement('div'));
+	dialog.reactor_outputs_grid_node.appendChild(reactor_outputs_grid.domNode);
+	reactor_outputs_grid.startup();
+	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
+		if (e.cell.name == 'Delete') {
+			this.store.deleteItem(this.getItem(e.rowIndex));
 			var reactor_output = reactor.reactor_outputs[e.rowIndex];
 			dojo.xhrDelete({
 				url: '/config/connections/' + reactor_output.id,
 				handleAs: 'xml',
 				timeout: 5000,
 				load: function(response, ioArgs) {
-					console.debug('xhrDelete for url = /config/connections/', reactor_output.id, '; HTTP status code: ', ioArgs.xhr.status);
-					reactor_outputs_grid.removeSelectedRows();
-
 					var outgoing_reactor = reactor_output.sink;
 					reactor_output.line.removeShape();
 					reactor.reactor_outputs.splice(e.rowIndex, 1);

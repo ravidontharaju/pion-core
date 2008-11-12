@@ -22,11 +22,9 @@
 		></table
 	</div>
 	<h3>Input Connections</h3>
-	<div dojoAttachPoint="reactor_inputs_grid" dojoType="dojox.Grid" model="pion.reactors.reactor_inputs_grid_model"
-		 structure="reactor_inputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
 	<h3>Output Connections</h3>
-	<div dojoAttachPoint="reactor_outputs_grid" dojoType="dojox.Grid" model="pion.reactors.reactor_outputs_grid_model"
-		 structure="reactor_outputs_grid_layout" singleClickEdit="true" autoHeight="true"></div>
+	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
 	<div class="save_cancel_delete">
 		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 		<button dojoType=dijit.form.Button class="cancel">Cancel</button>

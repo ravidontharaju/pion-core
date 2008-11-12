@@ -24608,7 +24608,7 @@ _18e9.reactors.push(_18f6);
 _this.hide();
 },error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:this.post_data})});
 }});
-dojo.declare("plugins.reactors.ReactorDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">${title}</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.ReactorDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">${title}</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -24691,7 +24691,7 @@ this.plugin="LogInputReactor";
 console.debug("plugins.reactors.LogInputReactorInitDialog.postCreate");
 this.inherited("postCreate",arguments);
 }});
-dojo.declare("plugins.reactors.LogInputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\" tabindex=\"-1\" waiRole=\"dialog\" waiState=\"labelledby-${id}_title\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Log Input Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Directory:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Directory\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Filename Regex:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Filename\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Frequency (in seconds):</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.ValidationTextBox\" type=\"text\" name=\"Frequency\" regExp=\"[1-9][0-9]*\"></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Just One</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"JustOne\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Tail</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"TailF\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.LogInputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\" tabindex=\"-1\" waiRole=\"dialog\" waiState=\"labelledby-${id}_title\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Log Input Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Directory:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Directory\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Filename Regex:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Filename\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Frequency (in seconds):</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.ValidationTextBox\" type=\"text\" name=\"Frequency\" regExp=\"[1-9][0-9]*\"></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Just One</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"JustOne\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Tail</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"TailF\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -25223,7 +25223,7 @@ this.templateString="";
 this.plugin="LogOutputReactor";
 this.inherited("postCreate",arguments);
 }});
-dojo.declare("plugins.reactors.LogOutputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Log Output Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Filename:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Filename\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.LogOutputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Log Output Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Filename:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Filename\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -25286,7 +25286,7 @@ _this[_1981]=_1982;
 },onError:pion.handleFetchError});
 }});
 plugins.reactors.FilterReactor.label="Filter Reactor";
-dojo.declare("plugins.reactors.FilterReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Filter Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Comparisons</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"comparison_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.FilterReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Filter Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t</div>\r\n\t<h3>Comparisons</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"comparison_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -25464,7 +25464,7 @@ _this[_199c]=_199d;
 },onError:pion.handleFetchError});
 }});
 plugins.reactors.TransformReactor.label="Transformation Reactor";
-dojo.declare("plugins.reactors.TransformReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog transform_reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Transform Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>All Conditions</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"AllConditions\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Deliver Original</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"DeliverOriginal\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<h3>Comparisons</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"comparison_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Transformations</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"transformation_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_transformation_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewTransformation\" class=\"add_new_row\">ADD NEW TRANSFORMATION</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.TransformReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog transform_reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Transform Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>All Conditions</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"AllConditions\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Deliver Original</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"options\" value=\"DeliverOriginal\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<h3>Comparisons</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"comparison_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_comparison_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewComparison\" class=\"add_new_row\">ADD NEW COMPARISON</button>\r\n\t<h3>Transformations</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"transformation_grid_node\"></div>\r\n\t<button dojoAttachPoint=\"add_new_transformation_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick:_handleAddNewTransformation\" class=\"add_new_row\">ADD NEW TRANSFORMATION</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -25951,7 +25951,7 @@ console.debug("frag: <Field term=\""+row[1]+"\">"+row[0]+"</Field>");
 this.post_data+="<Field term=\""+row[1]+"\">"+row[0]+"</Field>";
 }
 }});
-dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Database Output Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Database:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Database\" store=\"pion.databases.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Table:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Table\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Queue Size:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"QueueSize\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Queue Timeout:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"QueueTimeout\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<div dojoAttachPoint=\"grid\" dojoType=\"dojox.Grid\" model=\"plugins.reactors.DatabaseOutputReactorDialog.grid_model\"\r\n\t\t structure=\"plugins.reactors.DatabaseOutputReactorDialog.grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_term_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick: _handleAddNewTerm\" class=\"add_new_row\">ADD NEW TERM</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_inputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_inputs_grid_model\"\r\n\t\t structure=\"reactor_inputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<h3>Output Connections</h3>\r\n\t<div dojoAttachPoint=\"reactor_outputs_grid\" dojoType=\"dojox.Grid\" model=\"pion.reactors.reactor_outputs_grid_model\"\r\n\t\t structure=\"reactor_outputs_grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Database Output Reactor Configuration</span>\r\n\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Database:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"Database\" store=\"pion.databases.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Table:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Table\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Queue Size:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"QueueSize\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Queue Timeout:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"QueueTimeout\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<div dojoAttachPoint=\"grid\" dojoType=\"dojox.Grid\" model=\"plugins.reactors.DatabaseOutputReactorDialog.grid_model\"\r\n\t\t structure=\"plugins.reactors.DatabaseOutputReactorDialog.grid_layout\" singleClickEdit=\"true\" autoHeight=\"true\"></div>\r\n\t<button dojoAttachPoint=\"add_new_term_button\" dojoType=dijit.form.Button dojoAttachEvent=\"onClick: _handleAddNewTerm\" class=\"add_new_row\">ADD NEW TERM</button>\r\n\t<h3>Input Connections</h3>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -26011,11 +26011,6 @@ var workspaces_by_name={};
 var reactor_config_store;
 pion.reactors.workspace_box=null;
 pion.reactors.reactors_by_id={};
-pion.reactors.filter_reactor_grid_model=new dojox.grid.data.Table(null,[]);
-pion.reactors.transform_reactor_comparison_grid_model=new dojox.grid.data.Table(null,[]);
-pion.reactors.transform_reactor_transformation_grid_model=new dojox.grid.data.Table(null,[]);
-pion.reactors.reactor_inputs_grid_model=new dojox.grid.data.Table(null,[]);
-pion.reactors.reactor_outputs_grid_model=new dojox.grid.data.Table(null,[]);
 pion.reactors.config_store=null;
 pion.reactors.comparison_type_store=new dojo.data.ItemFileReadStore({url:"/resources/comparisonTypes.json"});
 pion.reactors.generic_comparison_types=[];
@@ -26472,27 +26467,19 @@ var _1ab8=new _1ab7({reactor:_1ab5});
 var _1ab8=new plugins.reactors.ReactorDialog({title:_1ab5.config.Plugin+" Configuration",reactor:_1ab5});
 }
 _1ab8.setValues(_1ab5.config);
-var _1ab9=[];
-for(var i=0;i<_1ab5.reactor_inputs.length;++i){
-var _1abb=[];
-_1abb[0]=_1ab5.reactor_inputs[i].source.config.Name;
-_1abb[1]=_1ab5.reactor_inputs[i].id;
-_1ab9.push(_1abb);
-}
-pion.reactors.reactor_inputs_grid_model.setData(_1ab9);
-var _1abc=_1ab8.reactor_inputs_grid;
-setTimeout(function(){
-_1abc.update();
-_1abc.resize();
-},200);
-dojo.connect(_1abc,"onCellClick",function(e){
-console.debug("e.rowIndex = ",e.rowIndex,", e.cellIndex = ",e.cellIndex);
-if(e.cellIndex==2){
-console.debug("Removing connection in row ",e.rowIndex);
+var _1ab9=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
+dojo.forEach(_1ab5.reactor_inputs,function(_1aba){
+_1ab9.newItem({ID:_1aba.id,name:_1aba.source.config.Name});
+});
+var _1abb=[{rows:[{field:"name",name:"From",styles:"",width:"auto"},{field:"ID",name:"Connection ID",styles:"",width:"auto"},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"}]}];
+var _1abc=new dojox.grid.DataGrid({store:_1ab9,structure:_1abb,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+_1ab8.reactor_inputs_grid_node.appendChild(_1abc.domNode);
+_1abc.startup();
+_1abc.connect(_1abc,"onCellClick",function(e){
+if(e.cell.name=="Delete"){
+this.store.deleteItem(this.getItem(e.rowIndex));
 var _1abe=_1ab5.reactor_inputs[e.rowIndex];
 dojo.xhrDelete({url:"/config/connections/"+_1abe.id,handleAs:"xml",timeout:5000,load:function(_1abf,_1ac0){
-console.debug("xhrDelete for url = /config/connections/",_1abe.id,"; HTTP status code: ",_1ac0.xhr.status);
-_1abc.removeSelectedRows();
 var _1ac1=_1abe.source;
 _1abe.line.removeShape();
 _1ab5.reactor_inputs.splice(e.rowIndex,1);
@@ -26506,37 +26493,29 @@ return _1abf;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 }
 });
-var _1ac3=[];
-for(var i=0;i<_1ab5.reactor_outputs.length;++i){
-var _1ac4=[];
-_1ac4[0]=_1ab5.reactor_outputs[i].sink.config.Name;
-_1ac4[1]=_1ab5.reactor_outputs[i].id;
-_1ac3.push(_1ac4);
-}
-pion.reactors.reactor_outputs_grid_model.setData(_1ac3);
-var _1ac5=_1ab8.reactor_outputs_grid;
-setTimeout(function(){
-_1ac5.update();
-_1ac5.resize();
-},200);
-dojo.connect(_1ac5,"onCellClick",function(e){
-console.debug("e.rowIndex = ",e.rowIndex,", e.cellIndex = ",e.cellIndex);
-if(e.cellIndex==2){
-console.debug("Removing connection in row ",e.rowIndex);
-var _1ac7=_1ab5.reactor_outputs[e.rowIndex];
-dojo.xhrDelete({url:"/config/connections/"+_1ac7.id,handleAs:"xml",timeout:5000,load:function(_1ac8,_1ac9){
-console.debug("xhrDelete for url = /config/connections/",_1ac7.id,"; HTTP status code: ",_1ac9.xhr.status);
-_1ac5.removeSelectedRows();
-var _1aca=_1ac7.sink;
-_1ac7.line.removeShape();
+var _1ac3=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
+dojo.forEach(_1ab5.reactor_outputs,function(_1ac4){
+_1ac3.newItem({ID:_1ac4.id,name:_1ac4.sink.config.Name});
+});
+var _1ac5=[{rows:[{field:"name",name:"To",styles:"",width:"auto"},{field:"ID",name:"Connection ID",styles:"",width:"auto"},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"}]}];
+var _1ac6=new dojox.grid.DataGrid({store:_1ac3,structure:_1ac5,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+_1ab8.reactor_outputs_grid_node.appendChild(_1ac6.domNode);
+_1ac6.startup();
+_1ac6.connect(_1ac6,"onCellClick",function(e){
+if(e.cell.name=="Delete"){
+this.store.deleteItem(this.getItem(e.rowIndex));
+var _1ac8=_1ab5.reactor_outputs[e.rowIndex];
+dojo.xhrDelete({url:"/config/connections/"+_1ac8.id,handleAs:"xml",timeout:5000,load:function(_1ac9,_1aca){
+var _1acb=_1ac8.sink;
+_1ac8.line.removeShape();
 _1ab5.reactor_outputs.splice(e.rowIndex,1);
-for(var j=0;j<_1aca.reactor_inputs.length;++j){
-if(_1aca.reactor_inputs[j].source==_1ab5){
-_1aca.reactor_inputs.splice(j,1);
+for(var j=0;j<_1acb.reactor_inputs.length;++j){
+if(_1acb.reactor_inputs[j].source==_1ab5){
+_1acb.reactor_inputs.splice(j,1);
 break;
 }
 }
-return _1ac8;
+return _1ac9;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 }
 });
@@ -26562,55 +26541,55 @@ dojo.query("input",_1ab8.domNode)[0].select();
 },500);
 _1ab8.show();
 };
-pion.reactors.showXMLDialog=function(_1ad0){
-window.open("/config/reactors/"+_1ad0.config["@id"]);
+pion.reactors.showXMLDialog=function(_1ad1){
+window.open("/config/reactors/"+_1ad1.config["@id"]);
 };
-pion.reactors.deleteReactorIfConfirmed=function(_1ad1){
-var _1ad2=dijit.byId("delete_confirmation_dialog");
+pion.reactors.deleteReactorIfConfirmed=function(_1ad2){
+var _1ad3=dijit.byId("delete_confirmation_dialog");
 dojo.byId("are_you_sure").innerHTML="Are you sure you want to delete this reactor?";
 dojo.byId("confirm_delete").onclick=function(){
-_1ad2.onCancel();
-deleteReactor(_1ad1);
+_1ad3.onCancel();
+deleteReactor(_1ad2);
 };
 dojo.byId("cancel_delete").onclick=function(){
-_1ad2.onCancel();
+_1ad3.onCancel();
 };
-_1ad2.show();
+_1ad3.show();
 setTimeout("dijit.byId('cancel_delete').focus()",500);
 };
-function deleteReactor(_1ad3){
-console.debug("deleting ",_1ad3.config.Name);
-dojo.xhrDelete({url:"/config/reactors/"+_1ad3.config["@id"],handleAs:"xml",timeout:5000,load:function(_1ad4,_1ad5){
-console.debug("xhrDelete for url = /config/reactors/",_1ad3.config["@id"],"; HTTP status code: ",_1ad5.xhr.status);
-for(var i=0;i<_1ad3.reactor_inputs.length;++i){
-var _1ad7=_1ad3.reactor_inputs[i].source;
-_1ad3.reactor_inputs[i].line.removeShape();
-for(var j=0;j<_1ad7.reactor_outputs.length;++j){
-if(_1ad7.reactor_outputs[j].sink==_1ad3){
-_1ad7.reactor_outputs.splice(j,1);
+function deleteReactor(_1ad4){
+console.debug("deleting ",_1ad4.config.Name);
+dojo.xhrDelete({url:"/config/reactors/"+_1ad4.config["@id"],handleAs:"xml",timeout:5000,load:function(_1ad5,_1ad6){
+console.debug("xhrDelete for url = /config/reactors/",_1ad4.config["@id"],"; HTTP status code: ",_1ad6.xhr.status);
+for(var i=0;i<_1ad4.reactor_inputs.length;++i){
+var _1ad8=_1ad4.reactor_inputs[i].source;
+_1ad4.reactor_inputs[i].line.removeShape();
+for(var j=0;j<_1ad8.reactor_outputs.length;++j){
+if(_1ad8.reactor_outputs[j].sink==_1ad4){
+_1ad8.reactor_outputs.splice(j,1);
 }
 }
 }
-for(var i=0;i<_1ad3.reactor_outputs.length;++i){
-var _1ad9=_1ad3.reactor_outputs[i].sink;
-_1ad3.reactor_outputs[i].line.removeShape();
-for(var j=0;j<_1ad9.reactor_inputs.length;++j){
-if(_1ad9.reactor_inputs[j].source==_1ad3){
-_1ad9.reactor_inputs.splice(j,1);
+for(var i=0;i<_1ad4.reactor_outputs.length;++i){
+var _1ada=_1ad4.reactor_outputs[i].sink;
+_1ad4.reactor_outputs[i].line.removeShape();
+for(var j=0;j<_1ada.reactor_inputs.length;++j){
+if(_1ada.reactor_inputs[j].source==_1ad4){
+_1ada.reactor_inputs.splice(j,1);
 }
 }
 }
-var _1ada=pion.reactors.workspace_box;
-_1ada.node.removeChild(_1ad3.domNode);
-for(var j=0;j<_1ada.reactors.length;++j){
-if(_1ada.reactors[j]==_1ad3){
-_1ada.reactors.splice(j,1);
+var _1adb=pion.reactors.workspace_box;
+_1adb.node.removeChild(_1ad4.domNode);
+for(var j=0;j<_1adb.reactors.length;++j){
+if(_1adb.reactors[j]==_1ad4){
+_1adb.reactors.splice(j,1);
 }
 }
-if(_1ada.reactors.length==0){
-_1ada.onEmpty(_1ada.my_content_pane);
+if(_1adb.reactors.length==0){
+_1adb.onEmpty(_1adb.my_content_pane);
 }
-return _1ad4;
+return _1ad5;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 };
 function selected(page){
@@ -26634,50 +26613,50 @@ function expandWorkspaceIfNeeded(){
 if(!surface){
 return;
 }
-var _1adc=pion.reactors.workspace_box;
-var _1add=_1adc.my_content_pane.domNode.offsetWidth;
-var _1ade=_1adc.my_content_pane.domNode.offsetHeight;
-_1add-=2;
-_1ade-=6;
-var _1adf=surface.getDimensions();
-var _1ae0=parseInt(_1adf.width);
-var _1ae1=parseInt(_1adf.height);
-console.debug("old_width = ",_1ae0,", new_width = ",_1add,", old_height = ",_1ae1,", new_height = ",_1ade);
-if(_1add>_1ae0){
-console.debug("expanding workspace width to ",_1add,"px");
-_1adc.node.style.width=_1add+"px";
-_1adf.width=_1add;
-}
+var _1add=pion.reactors.workspace_box;
+var _1ade=_1add.my_content_pane.domNode.offsetWidth;
+var _1adf=_1add.my_content_pane.domNode.offsetHeight;
+_1ade-=2;
+_1adf-=6;
+var _1ae0=surface.getDimensions();
+var _1ae1=parseInt(_1ae0.width);
+var _1ae2=parseInt(_1ae0.height);
+console.debug("old_width = ",_1ae1,", new_width = ",_1ade,", old_height = ",_1ae2,", new_height = ",_1adf);
 if(_1ade>_1ae1){
-console.debug("expanding workspace height to ",_1ade,"px");
-_1adc.node.style.height=_1ade+"px";
-_1adf.height=_1ade;
+console.debug("expanding workspace width to ",_1ade,"px");
+_1add.node.style.width=_1ade+"px";
+_1ae0.width=_1ade;
 }
-if(_1add>_1ae0||_1ade>_1ae1){
-surface.setDimensions(parseInt(_1adf.width)+"px",parseInt(_1adf.height)+"px");
+if(_1adf>_1ae2){
+console.debug("expanding workspace height to ",_1adf,"px");
+_1add.node.style.height=_1adf+"px";
+_1ae0.height=_1adf;
+}
+if(_1ade>_1ae1||_1adf>_1ae2){
+surface.setDimensions(parseInt(_1ae0.width)+"px",parseInt(_1ae0.height)+"px");
 }
 };
 function handleKeyPress(e){
-var _1ae3=pion.reactors.workspace_box;
+var _1ae4=pion.reactors.workspace_box;
 if(e.keyCode==dojo.keys.ESCAPE){
-if(_1ae3.isTracking){
+if(_1ae4.isTracking){
 dojo.disconnect(mouseConnection);
-_1ae3.trackLine.removeShape();
-_1ae3.isTracking=false;
+_1ae4.trackLine.removeShape();
+_1ae4.isTracking=false;
 }
 }
 };
-function showWorkspaceConfigDialog(_1ae4){
-console.debug("showWorkspaceConfigDialog: workspace_pane = ",_1ae4);
-console.debug("workspace_pane.title = ",_1ae4.title);
-var _1ae5=dijit.byId("workspace_name");
-_1ae5.isValid=function(_1ae6){
+function showWorkspaceConfigDialog(_1ae5){
+console.debug("showWorkspaceConfigDialog: workspace_pane = ",_1ae5);
+console.debug("workspace_pane.title = ",_1ae5.title);
+var _1ae6=dijit.byId("workspace_name");
+_1ae6.isValid=function(_1ae7){
 if(!this.validator(this.textbox.value,this.constraints)){
 this.invalidMessage="Invalid Workspace name";
 console.debug("validationTextBox.isValid returned false");
 return false;
 }
-if(isDuplicateWorkspaceName(_1ae4,this.textbox.value)){
+if(isDuplicateWorkspaceName(_1ae5,this.textbox.value)){
 this.invalidMessage="A Workspace with this name already exists";
 console.debug("In validationTextBox.isValid, isDuplicateWorkspaceName returned true");
 return false;
@@ -26685,78 +26664,78 @@ return false;
 console.debug("validationTextBox.isValid returned true");
 return true;
 };
-_1ae5.setDisplayedValue(_1ae4.title);
-var _1ae7=dijit.byId("workspace_dialog");
-dojo.query(".dijitButton.delete",_1ae7.domNode).forEach(function(n){
+_1ae6.setDisplayedValue(_1ae5.title);
+var _1ae8=dijit.byId("workspace_dialog");
+dojo.query(".dijitButton.delete",_1ae8.domNode).forEach(function(n){
 dojo.connect(n,"click",function(){
-_1ae7.onCancel();
-deleteWorkspaceIfConfirmed(_1ae4);
+_1ae8.onCancel();
+deleteWorkspaceIfConfirmed(_1ae5);
 });
 });
-dojo.query(".dijitButton.cancel",_1ae7.domNode).forEach(function(n){
-dojo.connect(n,"click",_1ae7,"onCancel");
+dojo.query(".dijitButton.cancel",_1ae8.domNode).forEach(function(n){
+dojo.connect(n,"click",_1ae8,"onCancel");
 });
-dojo.query(".dijitButton.save",_1ae7.domNode).forEach(function(n){
+dojo.query(".dijitButton.save",_1ae8.domNode).forEach(function(n){
 dijit.byNode(n).onClick=function(){
-return _1ae7.isValid();
+return _1ae8.isValid();
 };
 });
 setTimeout(function(){
-dojo.query("input",_1ae7.domNode)[0].select();
+dojo.query("input",_1ae8.domNode)[0].select();
 },500);
-_1ae7.show();
-_1ae7.execute=function(_1aeb){
-updateWorkspaceConfig(_1aeb,_1ae4);
+_1ae8.show();
+_1ae8.execute=function(_1aec){
+updateWorkspaceConfig(_1aec,_1ae5);
 };
 };
-function updateWorkspaceConfig(_1aec,node){
-node.title=_1aec.name;
-dojo.byId(node.controlButton.id).innerHTML=_1aec.name;
+function updateWorkspaceConfig(_1aed,node){
+node.title=_1aed.name;
+dojo.byId(node.controlButton.id).innerHTML=_1aed.name;
 };
-function isDuplicateWorkspaceName(_1aee,name){
+function isDuplicateWorkspaceName(_1aef,name){
 for(var i=0;i<workspace_boxes.length;++i){
-if(workspace_boxes[i].my_content_pane!=_1aee&&workspace_boxes[i].my_content_pane.title==name){
+if(workspace_boxes[i].my_content_pane!=_1aef&&workspace_boxes[i].my_content_pane.title==name){
 return true;
 }
 }
 return false;
 };
-function deleteWorkspaceIfConfirmed(_1af1){
-if(_1af1.my_workspace_box.reactors.length==0){
-_deleteEmptyWorkspace(_1af1);
+function deleteWorkspaceIfConfirmed(_1af2){
+if(_1af2.my_workspace_box.reactors.length==0){
+_deleteEmptyWorkspace(_1af2);
 return;
 }
-var _1af2=dijit.byId("delete_confirmation_dialog");
-dojo.byId("are_you_sure").innerHTML="Are you sure you want to delete workspace '"+_1af1.title+"' and all the reactors it contains?";
+var _1af3=dijit.byId("delete_confirmation_dialog");
+dojo.byId("are_you_sure").innerHTML="Are you sure you want to delete workspace '"+_1af2.title+"' and all the reactors it contains?";
 dojo.byId("confirm_delete").onclick=function(){
-_1af2.onCancel();
-deleteWorkspace(_1af1);
+_1af3.onCancel();
+deleteWorkspace(_1af2);
 };
 dojo.byId("cancel_delete").onclick=function(){
-_1af2.onCancel();
+_1af3.onCancel();
 };
-_1af2.show();
+_1af3.show();
 setTimeout("dijit.byId('cancel_delete').focus()",500);
 };
-function deleteWorkspace(_1af3){
-var _1af4=[];
-for(var i=0;i<_1af3.my_workspace_box.reactors.length;++i){
-_1af4[i]=_1af3.my_workspace_box.reactors[i];
+function deleteWorkspace(_1af4){
+var _1af5=[];
+for(var i=0;i<_1af4.my_workspace_box.reactors.length;++i){
+_1af5[i]=_1af4.my_workspace_box.reactors[i];
 }
-for(i=0;i<_1af4.length;++i){
-deleteReactor(_1af4[i]);
+for(i=0;i<_1af5.length;++i){
+deleteReactor(_1af5[i]);
 }
-dojo.connect(_1af3.my_workspace_box,"onEmpty",_deleteEmptyWorkspace);
+dojo.connect(_1af4.my_workspace_box,"onEmpty",_deleteEmptyWorkspace);
 };
-function _deleteEmptyWorkspace(_1af6){
-console.debug("deleting ",_1af6.title);
-delete workspaces_by_name[_1af6.title];
+function _deleteEmptyWorkspace(_1af7){
+console.debug("deleting ",_1af7.title);
+delete workspaces_by_name[_1af7.title];
 for(var j=0;j<workspace_boxes.length;++j){
-if(workspace_boxes[j]==_1af6.my_workspace_box){
+if(workspace_boxes[j]==_1af7.my_workspace_box){
 workspace_boxes.splice(j,1);
 }
 }
-dijit.byId("mainTabContainer").removeChild(_1af6);
+dijit.byId("mainTabContainer").removeChild(_1af7);
 };
 }
 if(!dojo._hasResource["plugins.vocabularies.Vocabulary"]){
@@ -26825,12 +26804,12 @@ this.size_widget.attr("disabled",true);
 this.size_widget.setValue("");
 this.size_widget.domNode.style.visibility="hidden";
 }
-},execute:function(_1aff){
+},execute:function(_1b00){
 var pane=pion.vocabularies.selected_pane;
-var _1b01={ID:_1aff["@id"],Type:_1aff.Type,Comment:_1aff.Comment};
-_1b01.Format=_1aff.Format?_1aff.Format:"-";
-_1b01.Size=_1aff.Size?_1aff.Size:"-";
-pane.working_store.newItem(_1b01);
+var _1b02={ID:_1b00["@id"],Type:_1b00.Type,Comment:_1b00.Comment};
+_1b02.Format=_1b00.Format?_1b00.Format:"-";
+_1b02.Size=_1b00.Size?_1b00.Size:"-";
+pane.working_store.newItem(_1b02);
 pane.vocab_grid.model.requestRows();
 pane.vocab_grid.update();
 pane.vocab_grid.scrollToRow(pane.vocab_grid.model.getRowCount());
@@ -26853,8 +26832,8 @@ console.debug("***** onRowClick: e = ",e);
 dojo.connect(this.vocab_grid,"onCellFocus",function(e){
 console.debug("***** onCellFocus: e.index = ",e.index,", e.fieldIndex = ",e.fieldIndex,", e = ",e);
 });
-dojo.connect(this.vocab_grid,"onStartEdit",function(_1b05,_1b06){
-console.debug("***** onStartEdit: inCell = ",_1b05,", inRowIndex = ",_1b06);
+dojo.connect(this.vocab_grid,"onStartEdit",function(_1b06,_1b07){
+console.debug("***** onStartEdit: inCell = ",_1b06,", inRowIndex = ",_1b07);
 });
 this.url="/config/vocabularies/"+this.config["@id"];
 console.debug("url = ",this.url);
@@ -26866,17 +26845,17 @@ return _this.vocab_term_store.getValue(item,"@id");
 };
 this.items=[];
 this.vocab_term_store.fetch({onItem:function(item){
-var _1b09={};
-_1b09.ID=_this.vocab_term_store.getValue(item,"@id").split("#")[1];
+var _1b0a={};
+_1b0a.ID=_this.vocab_term_store.getValue(item,"@id").split("#")[1];
 var type=_this.vocab_term_store.getValue(item,"Type");
-_1b09.Type=pion.terms.type_descriptions_by_name[type.toString()];
-_1b09.Format=_this.vocab_term_store.getValue(type,"@format");
-_1b09.Size=_this.vocab_term_store.getValue(type,"@size");
-var _1b0b=_this.vocab_term_store.getValue(item,"Comment");
-if(_1b0b){
-_1b09.Comment=_1b0b.toString();
+_1b0a.Type=pion.terms.type_descriptions_by_name[type.toString()];
+_1b0a.Format=_this.vocab_term_store.getValue(type,"@format");
+_1b0a.Size=_this.vocab_term_store.getValue(type,"@size");
+var _1b0c=_this.vocab_term_store.getValue(item,"Comment");
+if(_1b0c){
+_1b0a.Comment=_1b0c.toString();
 }
-_this.items.push(_1b09);
+_this.items.push(_1b0a);
 },onComplete:function(){
 console.debug(_this.url,": items = ",_this.items,", items[0] = ",_this.items[0]);
 _this.working_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:_this.items}});
@@ -26896,19 +26875,19 @@ dojo.connect(n,"change",_this,_this.markAsChanged);
 });
 },populateFromVocabStore:function(){
 var _this=this;
-this.vocab_store.fetch({query:{"tagName":"Vocabulary"},onComplete:function(items,_1b10){
+this.vocab_store.fetch({query:{"tagName":"Vocabulary"},onComplete:function(items,_1b11){
 console.debug("vocab_store.fetch.onComplete: items.length = ",items.length);
 _this.vocab_item=items[0];
 _this.populateFromVocabItem();
 },onError:pion.handleFetchError});
 },populateFromVocabItem:function(){
 this.config.Name=this.vocab_store.getValue(this.vocab_item,"Name").toString();
-var _1b11=this.vocab_store.getValue(this.vocab_item,"Comment");
-if(_1b11){
-this.config.Comment=_1b11.toString();
+var _1b12=this.vocab_store.getValue(this.vocab_item,"Comment");
+if(_1b12){
+this.config.Comment=_1b12.toString();
 }
-var _1b12=this.vocab_store.getValue(this.vocab_item,"Locked");
-this.config.Locked=(typeof _1b12!=="undefined")&&_1b12.toString()=="true";
+var _1b13=this.vocab_store.getValue(this.vocab_item,"Locked");
+this.config.Locked=(typeof _1b13!=="undefined")&&_1b13.toString()=="true";
 console.dir(this.config);
 this.name.attr("readOnly",this.config.Locked);
 this.comment.disabled=this.config.Locked;
@@ -26925,14 +26904,14 @@ plugins.vocabularies.initGridLayouts();
 this.vocab_grid.setStructure(plugins.vocabularies.VocabularyPane.grid_layout);
 }
 this.vocab_grid.update();
-var _1b13=dojo.clone(this.config);
-_1b13.checkboxes=this.config.Locked?["locked"]:[];
-this.form.attr("value",_1b13);
-var _1b14=dojo.query("textarea.comment",this.form.domNode)[0];
-_1b14.value=this.config.Comment?this.config.Comment:"";
+var _1b14=dojo.clone(this.config);
+_1b14.checkboxes=this.config.Locked?["locked"]:[];
+this.form.attr("value",_1b14);
+var _1b15=dojo.query("textarea.comment",this.form.domNode)[0];
+_1b15.value=this.config.Comment?this.config.Comment:"";
 this.title=this.config.Name;
-var _1b15=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
-_1b15.firstChild.nodeValue=this.title;
+var _1b16=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
+_1b16.firstChild.nodeValue=this.title;
 var node=this.domNode;
 setTimeout(function(){
 dojo.removeClass(node,"unsaved_changes");
@@ -26956,32 +26935,32 @@ if(e.cell.editor.editor){
 console.debug("e.cell.editor.editor.regExp = ",e.cell.editor.editor.regExp);
 }
 var type=this.vocab_grid.model.getDatum(e.rowIndex,1);
-var _1b1a="-";
+var _1b1b="-";
 if(e.cellIndex==2){
 if(type=="specific date"||type=="specific time"||type=="specific time & date"){
-_1b1a=".*%.*";
+_1b1b=".*%.*";
 }
 }
 if(e.cellIndex==3){
 if(type=="fixed-length string"){
-_1b1a="[1-9][0-9]*";
+_1b1b="[1-9][0-9]*";
 }
 }
 if(e.cell.editor.editor){
-console.debug("e.cell.editor.editor.regExp set to ",_1b1a);
-e.cell.editor.editor.regExp=_1b1a;
+console.debug("e.cell.editor.editor.regExp set to ",_1b1b);
+e.cell.editor.editor.regExp=_1b1b;
 }else{
-console.debug("e.cell.editorProps.regExp set to ",_1b1a);
-e.cell.editorProps.regExp=_1b1a;
+console.debug("e.cell.editorProps.regExp set to ",_1b1b);
+e.cell.editorProps.regExp=_1b1b;
 }
 }
 },_handleAddNewTerm:function(){
 console.debug("_handleAddNewTerm");
-var _1b1b=new plugins.vocabularies.TermInitDialog();
+var _1b1c=new plugins.vocabularies.TermInitDialog();
 setTimeout(function(){
-dojo.query("input",_1b1b.domNode)[0].select();
+dojo.query("input",_1b1c.domNode)[0].select();
 },500);
-_1b1b.show();
+_1b1c.show();
 },_handleLockingChange:function(){
 console.debug("_handleLockingChange");
 },save:function(){
@@ -26990,87 +26969,87 @@ this.saveVocabConfig();
 this.saveChangedTerms();
 },saveVocabConfig:function(){
 var _this=this;
-var _1b1d=this.form.attr("value");
-this.config.Name=_1b1d.Name;
-this.config.Locked=dojo.indexOf(_1b1d.checkboxes,"locked")>=0;
-var _1b1e=dojo.query("textarea.comment",this.form.domNode)[0];
-this.config.Comment=_1b1e.value;
-var _1b1f="<PionConfig><Vocabulary>";
+var _1b1e=this.form.attr("value");
+this.config.Name=_1b1e.Name;
+this.config.Locked=dojo.indexOf(_1b1e.checkboxes,"locked")>=0;
+var _1b1f=dojo.query("textarea.comment",this.form.domNode)[0];
+this.config.Comment=_1b1f.value;
+var _1b20="<PionConfig><Vocabulary>";
 for(var tag in this.config){
 if(tag!="@id"){
-_1b1f+="<"+tag+">"+this.config[tag]+"</"+tag+">";
+_1b20+="<"+tag+">"+this.config[tag]+"</"+tag+">";
 }
 }
-_1b1f+="</Vocabulary></PionConfig>";
-console.debug("put_data: ",_1b1f);
+_1b20+="</Vocabulary></PionConfig>";
+console.debug("put_data: ",_1b20);
 _this=this;
-dojo.rawXhrPut({url:"/config/vocabularies/"+this.config["@id"],contentType:"text/xml",handleAs:"xml",putData:_1b1f,load:function(_1b21){
-console.debug("response: ",_1b21);
+dojo.rawXhrPut({url:"/config/vocabularies/"+this.config["@id"],contentType:"text/xml",handleAs:"xml",putData:_1b20,load:function(_1b22){
+console.debug("response: ",_1b22);
 _this.populateFromVocabStore();
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b1f})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b20})});
 },saveChangedTerms:function(){
 var store=this.working_store;
 var _this=this;
 var ID,url;
-store._saveCustom=function(_1b26,_1b27){
+store._saveCustom=function(_1b27,_1b28){
 for(ID in this._pending._modifiedItems){
 url=dojox.dtl.filter.strings.urlencode("/config/terms/"+_this.config["@id"]+"#"+ID);
 console.debug("_saveCustom: url = ",url);
 this.fetchItemByIdentity({identity:ID,onItem:function(item){
-var _1b29="<PionConfig><Term><Type";
-var _1b2a=store.getValue(item,"Format");
-if(_1b2a&&_1b2a!="-"){
-_1b29+=" format=\""+_1b2a+"\"";
+var _1b2a="<PionConfig><Term><Type";
+var _1b2b=store.getValue(item,"Format");
+if(_1b2b&&_1b2b!="-"){
+_1b2a+=" format=\""+_1b2b+"\"";
 }
 var size=store.getValue(item,"Size");
 if(size&&size!="-"){
-_1b29+=" size=\""+size+"\"";
+_1b2a+=" size=\""+size+"\"";
 }
-_1b29+=">"+pion.terms.types_by_description[store.getValue(item,"Type")]+"</Type>";
+_1b2a+=">"+pion.terms.types_by_description[store.getValue(item,"Type")]+"</Type>";
 if(store.getValue(item,"Comment")){
-_1b29+="<Comment>"+store.getValue(item,"Comment")+"</Comment>";
+_1b2a+="<Comment>"+store.getValue(item,"Comment")+"</Comment>";
 }
-_1b29+="</Term></PionConfig>";
-console.debug("put_data = ",_1b29);
-dojo.rawXhrPut({url:url,handleAs:"xml",timeout:1000,contentType:"text/xml",putData:_1b29,load:function(_1b2c,_1b2d){
-console.debug("rawXhrPut for url = "+this.url,"; HTTP status code: ",_1b2d.xhr.status);
-return _1b2c;
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b29})});
+_1b2a+="</Term></PionConfig>";
+console.debug("put_data = ",_1b2a);
+dojo.rawXhrPut({url:url,handleAs:"xml",timeout:1000,contentType:"text/xml",putData:_1b2a,load:function(_1b2d,_1b2e){
+console.debug("rawXhrPut for url = "+this.url,"; HTTP status code: ",_1b2e.xhr.status);
+return _1b2d;
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b2a})});
 },onError:pion.handleFetchError});
 }
 for(ID in this._pending._newItems){
 url=dojox.dtl.filter.strings.urlencode("/config/terms/"+_this.config["@id"]+"#"+ID);
 console.debug("_saveCustom: url = ",url);
 var item=this._pending._newItems[ID];
-var _1b2f="<PionConfig><Term><Type";
-var _1b30=store.getValue(item,"Format");
-if(_1b30&&_1b30!="-"){
-_1b2f+=" format=\""+_1b30+"\"";
+var _1b30="<PionConfig><Term><Type";
+var _1b31=store.getValue(item,"Format");
+if(_1b31&&_1b31!="-"){
+_1b30+=" format=\""+_1b31+"\"";
 }
 var size=store.getValue(item,"Size");
 if(size&&size!="-"){
-_1b2f+=" size=\""+size+"\"";
+_1b30+=" size=\""+size+"\"";
 }
-_1b2f+=">"+pion.terms.types_by_description[store.getValue(item,"Type")]+"</Type>";
+_1b30+=">"+pion.terms.types_by_description[store.getValue(item,"Type")]+"</Type>";
 if(store.getValue(item,"Comment")){
-_1b2f+="<Comment>"+store.getValue(item,"Comment")+"</Comment>";
+_1b30+="<Comment>"+store.getValue(item,"Comment")+"</Comment>";
 }
-_1b2f+="</Term></PionConfig>";
-console.debug("post_data = ",_1b2f);
-dojo.rawXhrPost({url:url,handleAs:"xml",timeout:1000,contentType:"text/xml",postData:_1b2f,load:function(_1b32,_1b33){
-console.debug("rawXhrPost for url = "+this.url,"; HTTP status code: ",_1b33.xhr.status);
-return _1b32;
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b2f})});
+_1b30+="</Term></PionConfig>";
+console.debug("post_data = ",_1b30);
+dojo.rawXhrPost({url:url,handleAs:"xml",timeout:1000,contentType:"text/xml",postData:_1b30,load:function(_1b33,_1b34){
+console.debug("rawXhrPost for url = "+this.url,"; HTTP status code: ",_1b34.xhr.status);
+return _1b33;
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b30})});
 }
 for(ID in this._pending._deletedItems){
 url=dojox.dtl.filter.strings.urlencode("/config/terms/"+_this.config["@id"]+"#"+ID);
 console.debug("_saveCustom: url = ",url);
-dojo.xhrDelete({url:url,handleAs:"xml",timeout:1000,load:function(_1b34,_1b35){
-console.debug("xhrDelete for url = "+this.url,"; HTTP status code: ",_1b35.xhr.status);
-return _1b34;
+dojo.xhrDelete({url:url,handleAs:"xml",timeout:1000,load:function(_1b35,_1b36){
+console.debug("xhrDelete for url = "+this.url,"; HTTP status code: ",_1b36.xhr.status);
+return _1b35;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 }
-_1b26();
+_1b27();
 };
 store.save({});
 pion.terms.buildMapOfCategoriesByTerm();
@@ -27083,12 +27062,12 @@ this.populateFromVocabStore();
 dojo.removeClass(this.domNode,"unsaved_changes");
 console.debug("delete2: selected vocabulary is ",this.title);
 _this=this;
-dojo.xhrDelete({url:"/config/vocabularies/"+this.config["@id"],handleAs:"xml",timeout:5000,load:function(_1b36,_1b37){
-console.debug("xhrDelete for url = "+this.url,"; HTTP status code: ",_1b37.xhr.status);
+dojo.xhrDelete({url:"/config/vocabularies/"+this.config["@id"],handleAs:"xml",timeout:5000,load:function(_1b37,_1b38){
+console.debug("xhrDelete for url = "+this.url,"; HTTP status code: ",_1b38.xhr.status);
 dijit.byId("vocab_config_accordion").forward();
 dijit.byId("vocab_config_accordion").removeChild(_this);
 pion.vocabularies._adjustAccordionSize();
-return _1b36;
+return _1b37;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 },markAsChanged:function(){
 console.debug("markAsChanged");
@@ -27106,34 +27085,34 @@ pion.vocabularies.getHeight=function(){
 return pion.vocabularies.height;
 };
 pion.vocabularies._adjustAccordionSize=function(){
-var _1b38=dijit.byId("vocab_config_accordion");
-var _1b39=_1b38.getChildren().length;
-console.debug("num_vocabs = "+_1b39);
-var _1b3a=450;
-var _1b3b=0;
-if(_1b39>0){
-var _1b3c=_1b38.getChildren()[0];
-var _1b3b=_1b3c.getTitleHeight();
+var _1b39=dijit.byId("vocab_config_accordion");
+var _1b3a=_1b39.getChildren().length;
+console.debug("num_vocabs = "+_1b3a);
+var _1b3b=450;
+var _1b3c=0;
+if(_1b3a>0){
+var _1b3d=_1b39.getChildren()[0];
+var _1b3c=_1b3d.getTitleHeight();
 }
-var _1b3d=_1b3a+_1b39*_1b3b;
-_1b38.resize({h:_1b3d});
-pion.vocabularies.height=_1b3d+160;
+var _1b3e=_1b3b+_1b3a*_1b3c;
+_1b39.resize({h:_1b3e});
+pion.vocabularies.height=_1b3e+160;
 dijit.byId("main_stack_container").resize({h:pion.vocabularies.height});
 };
 pion.vocabularies.isDuplicateVocabularyId=function(id){
-var _1b3f=dijit.byId("vocab_config_accordion").getChildren();
-var _1b40="urn:vocab:"+id;
-for(var i=0;i<_1b3f.length;++i){
-if(_1b3f[i].config["@id"]==_1b40){
+var _1b40=dijit.byId("vocab_config_accordion").getChildren();
+var _1b41="urn:vocab:"+id;
+for(var i=0;i<_1b40.length;++i){
+if(_1b40[i].config["@id"]==_1b41){
 return true;
 }
 }
 return false;
 };
 pion.vocabularies.isDuplicateVocabularyName=function(name){
-var _1b43=dijit.byId("vocab_config_accordion").getChildren();
-for(var i=0;i<_1b43.length;++i){
-if(_1b43[i].title==name){
+var _1b44=dijit.byId("vocab_config_accordion").getChildren();
+for(var i=0;i<_1b44.length;++i){
+if(_1b44[i].title==name){
 return true;
 }
 }
@@ -27141,74 +27120,74 @@ return false;
 };
 pion.vocabularies.config_store=new dojox.data.XmlStore({url:"/config/vocabularies",rootItem:"VocabularyConfig",attributeMap:{"VocabularyConfig.id":"@id"}});
 pion.vocabularies.init=function(){
-var _1b45=null;
-var _1b46=["@id","Type","@format","Size","Comment"];
-var _1b47=_1b46.length;
+var _1b46=null;
+var _1b47=["@id","Type","@format","Size","Comment"];
+var _1b48=_1b47.length;
 function _paneSelected(pane){
 console.debug("Selected "+pane.title);
-if(pane==_1b45){
+if(pane==_1b46){
 return;
 }
-if(_1b45&&dojo.hasClass(_1b45.domNode,"unsaved_changes")){
-var _1b49=new dijit.Dialog({title:"Warning: unsaved changes"});
-_1b49.setContent("Please save or cancel unsaved changes before selecting another Vocabulary.");
-_1b49.show();
+if(_1b46&&dojo.hasClass(_1b46.domNode,"unsaved_changes")){
+var _1b4a=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1b4a.setContent("Please save or cancel unsaved changes before selecting another Vocabulary.");
+_1b4a.show();
 setTimeout(function(){
-dijit.byId("vocab_config_accordion").selectChild(_1b45);
+dijit.byId("vocab_config_accordion").selectChild(_1b46);
 },500);
 return;
 }
-_1b45=pane;
-pion.vocabularies.selected_pane=_1b45;
+_1b46=pane;
+pion.vocabularies.selected_pane=_1b46;
 pane.populateFromVocabStore();
-var _1b4a=dijit.byId("vocab_config_accordion").duration;
+var _1b4b=dijit.byId("vocab_config_accordion").duration;
 setTimeout(function(){
 dojo.style(pane.containerNode,"overflow","hidden");
-},_1b4a+50);
+},_1b4b+50);
 };
 dojo.subscribe("vocab_config_accordion-selectChild",_paneSelected);
-function _createNewPane(_1b4b){
-var _1b4c=document.createElement("span");
-var _1b4d=new plugins.vocabularies.VocabularyPane(_1b4b,_1b4c);
-return _1b4d;
+function _createNewPane(_1b4c){
+var _1b4d=document.createElement("span");
+var _1b4e=new plugins.vocabularies.VocabularyPane(_1b4c,_1b4d);
+return _1b4e;
 };
-pion.vocabularies.config_store.fetch({onComplete:function(items,_1b4f){
-var _1b50=dijit.byId("vocab_config_accordion");
+pion.vocabularies.config_store.fetch({onComplete:function(items,_1b50){
+var _1b51=dijit.byId("vocab_config_accordion");
 for(var i=0;i<items.length;++i){
 var id=pion.vocabularies.config_store.getValue(items[i],"@id");
-var _1b53=_createNewPane({config:{"@id":id},title:id});
-_1b50.addChild(_1b53);
+var _1b54=_createNewPane({config:{"@id":id},title:id});
+_1b51.addChild(_1b54);
 }
 pion.vocabularies._adjustAccordionSize();
-var _1b54=_1b50.getChildren()[0];
-_1b50.selectChild(_1b54);
+var _1b55=_1b51.getChildren()[0];
+_1b51.selectChild(_1b55);
 },onError:pion.handleFetchError});
 function _addNewVocabulary(){
-var _1b55=new plugins.vocabularies.VocabularyInitDialog();
-dojo.query(".dijitButton.save",_1b55.domNode).forEach(function(n){
+var _1b56=new plugins.vocabularies.VocabularyInitDialog();
+dojo.query(".dijitButton.save",_1b56.domNode).forEach(function(n){
 dijit.byNode(n).onClick=function(){
-return _1b55.isValid();
+return _1b56.isValid();
 };
 });
 setTimeout(function(){
-dojo.query("input",_1b55.domNode)[0].select();
+dojo.query("input",_1b56.domNode)[0].select();
 },500);
-_1b55.show();
-_1b55.execute=function(_1b57){
-var _1b58="<PionConfig><Vocabulary>";
-_1b58+="<Name>"+_1b57.Name+"</Name>";
-_1b58+="<Comment>"+_1b57.Comment+"</Comment>";
-_1b58+="</Vocabulary></PionConfig>";
-console.debug("post_data: ",_1b58);
-var _1b59="urn:vocab:"+_1b57["@id"];
-dojo.rawXhrPost({url:"/config/vocabularies/"+_1b59,contentType:"text/xml",handleAs:"xml",postData:_1b58,load:function(_1b5a){
-var node=_1b5a.getElementsByTagName("Vocabulary")[0];
-var _1b5c=dijit.byId("vocab_config_accordion");
-var _1b5d=_createNewPane({config:{"@id":_1b59,Name:_1b57.Name},title:_1b57.Name});
-_1b5c.addChild(_1b5d);
+_1b56.show();
+_1b56.execute=function(_1b58){
+var _1b59="<PionConfig><Vocabulary>";
+_1b59+="<Name>"+_1b58.Name+"</Name>";
+_1b59+="<Comment>"+_1b58.Comment+"</Comment>";
+_1b59+="</Vocabulary></PionConfig>";
+console.debug("post_data: ",_1b59);
+var _1b5a="urn:vocab:"+_1b58["@id"];
+dojo.rawXhrPost({url:"/config/vocabularies/"+_1b5a,contentType:"text/xml",handleAs:"xml",postData:_1b59,load:function(_1b5b){
+var node=_1b5b.getElementsByTagName("Vocabulary")[0];
+var _1b5d=dijit.byId("vocab_config_accordion");
+var _1b5e=_createNewPane({config:{"@id":_1b5a,Name:_1b58.Name},title:_1b58.Name});
+_1b5d.addChild(_1b5e);
 pion.vocabularies._adjustAccordionSize();
-_1b5c.selectChild(_1b5d);
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b58})});
+_1b5d.selectChild(_1b5e);
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b59})});
 };
 };
 dojo.connect(dojo.byId("add_new_vocab_button"),"click",_addNewVocabulary);
@@ -27245,26 +27224,26 @@ dojo.connect(n,"change",_this,_this.markAsChanged);
 return 470;
 },populateFromConfigItem:function(item){
 var store=pion.protocols.config_store;
-var _1b63={};
-var _1b64=store.getAttributes(item);
-for(var i=0;i<_1b64.length;++i){
-if(dojo.indexOf(this.special_config_elements,_1b64[i])==-1){
-_1b63[_1b64[i]]=store.getValue(item,_1b64[i]).toString();
+var _1b64={};
+var _1b65=store.getAttributes(item);
+for(var i=0;i<_1b65.length;++i){
+if(dojo.indexOf(this.special_config_elements,_1b65[i])==-1){
+_1b64[_1b65[i]]=store.getValue(item,_1b65[i]).toString();
 }
 }
 if(this._addCustomConfigValues){
-this._addCustomConfigValues(_1b63,item);
+this._addCustomConfigValues(_1b64,item);
 }
-console.dir(_1b63);
-this.form.setValues(_1b63);
-var _1b66=dojo.query("textarea.comment",this.form.domNode)[0];
-_1b66.value=_1b63.Comment;
-console.debug("config = ",_1b63);
-this.title=_1b63.Name;
-var _1b67=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
-_1b67.firstChild.nodeValue=this.title;
-var _1b68=this._makeExtractionRuleTable(item);
-plugins.protocols.ProtocolPane.grid_model.setData(_1b68);
+console.dir(_1b64);
+this.form.setValues(_1b64);
+var _1b67=dojo.query("textarea.comment",this.form.domNode)[0];
+_1b67.value=_1b64.Comment;
+console.debug("config = ",_1b64);
+this.title=_1b64.Name;
+var _1b68=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
+_1b68.firstChild.nodeValue=this.title;
+var _1b69=this._makeExtractionRuleTable(item);
+plugins.protocols.ProtocolPane.grid_model.setData(_1b69);
 var grid=this.protocol_grid;
 this._setGridStructure(grid);
 setTimeout(function(){
@@ -27304,63 +27283,63 @@ dojo.addClass(this.domNode,"unsaved_changes");
 console.debug("Removing row ",e.rowIndex);
 this.protocol_grid.removeSelectedRows();
 }
-},_handleCellEdit:function(_1b71,_1b72,_1b73){
-console.debug("ProtocolPane._handleCellEdit inValue = ",_1b71,", inRowIndex = ",_1b72,", inFieldIndex = ",_1b73);
+},_handleCellEdit:function(_1b72,_1b73,_1b74){
+console.debug("ProtocolPane._handleCellEdit inValue = ",_1b72,", inRowIndex = ",_1b73,", inFieldIndex = ",_1b74);
 dojo.addClass(this.domNode,"unsaved_changes");
 },_handleAddNewRow:function(){
 this.markAsChanged();
 this.protocol_grid.addRow([]);
 },save:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
-var _1b74=this.form.getValues();
-var _1b75=dojo.query("textarea.comment",this.form.domNode)[0];
-_1b74.Comment=_1b75.value;
-var _1b76="<PionConfig><Protocol>";
-for(var tag in _1b74){
+var _1b75=this.form.getValues();
+var _1b76=dojo.query("textarea.comment",this.form.domNode)[0];
+_1b75.Comment=_1b76.value;
+var _1b77="<PionConfig><Protocol>";
+for(var tag in _1b75){
 if(tag.charAt(0)!="@"&&tag!="options"){
-console.debug("config[",tag,"] = ",_1b74[tag]);
-_1b76+="<"+tag+">"+_1b74[tag]+"</"+tag+">";
+console.debug("config[",tag,"] = ",_1b75[tag]);
+_1b77+="<"+tag+">"+_1b75[tag]+"</"+tag+">";
 }
 }
 if(this._makeCustomElements){
-_1b76+=this._makeCustomElements(_1b74);
+_1b77+=this._makeCustomElements(_1b75);
 }
-_1b76+=this._makeExtractionRuleElements();
-_1b76+="</Protocol></PionConfig>";
-console.debug("put_data: ",_1b76);
+_1b77+=this._makeExtractionRuleElements();
+_1b77+="</Protocol></PionConfig>";
+console.debug("put_data: ",_1b77);
 _this=this;
-dojo.rawXhrPut({url:"/config/protocols/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b76,load:function(_1b78){
-console.debug("response: ",_1b78);
+dojo.rawXhrPut({url:"/config/protocols/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b77,load:function(_1b79){
+console.debug("response: ",_1b79);
 pion.protocols.config_store.fetch({query:{"@id":_this.uuid},onItem:function(item){
 _this.config_item=item;
 _this.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b76})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b77})});
 },_makeExtractionRuleElements:function(){
-var _1b7a=plugins.protocols.ProtocolPane.grid_model.getRowCount();
-var _1b7b="";
-for(var i=0;i<_1b7a;++i){
+var _1b7b=plugins.protocols.ProtocolPane.grid_model.getRowCount();
+var _1b7c="";
+for(var i=0;i<_1b7b;++i){
 var row=plugins.protocols.ProtocolPane.grid_model.getRow(i);
-_1b7b+="<Extract term=\""+row[this.protocol_grid.term_column_index]+"\">";
-_1b7b+="<Source>"+row[this.protocol_grid.source_column_index]+"</Source>";
+_1b7c+="<Extract term=\""+row[this.protocol_grid.term_column_index]+"\">";
+_1b7c+="<Source>"+row[this.protocol_grid.source_column_index]+"</Source>";
 if(row[this.protocol_grid.name_column_index]){
-_1b7b+="<Name>"+row[this.protocol_grid.name_column_index]+"</Name>";
+_1b7c+="<Name>"+row[this.protocol_grid.name_column_index]+"</Name>";
 }
 if(row[this.protocol_grid.match_column_index]){
-_1b7b+="<Match>"+dojox.dtl._base.escape(row[this.protocol_grid.match_column_index])+"</Match>";
+_1b7c+="<Match>"+dojox.dtl._base.escape(row[this.protocol_grid.match_column_index])+"</Match>";
 }
 if(row[this.protocol_grid.format_column_index]){
-_1b7b+="<Format>"+row[this.protocol_grid.format_column_index]+"</Format>";
+_1b7c+="<Format>"+row[this.protocol_grid.format_column_index]+"</Format>";
 }
 if(row[this.protocol_grid.content_type_column_index]){
-_1b7b+="<ContentType>"+row[this.protocol_grid.content_type_column_index]+"</ContentType>";
+_1b7c+="<ContentType>"+row[this.protocol_grid.content_type_column_index]+"</ContentType>";
 }
 if(row[this.protocol_grid.max_size_column_index]){
-_1b7b+="<MaxSize>"+row[this.protocol_grid.max_size_column_index]+"</MaxSize>";
+_1b7c+="<MaxSize>"+row[this.protocol_grid.max_size_column_index]+"</MaxSize>";
 }
-_1b7b+="</Extract>";
+_1b7c+="</Extract>";
 }
-return _1b7b;
+return _1b7c;
 },cancel:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
 this.populateFromConfigItem(this.config_item);
@@ -27368,12 +27347,12 @@ this.populateFromConfigItem(this.config_item);
 dojo.removeClass(this.domNode,"unsaved_changes");
 console.debug("delete2: selected protocol is ",this.title);
 _this=this;
-dojo.xhrDelete({url:"/config/protocols/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1b7e,_1b7f){
-console.debug("xhrDelete for url = /config/protocols/"+this.uuid,"; HTTP status code: ",_1b7f.xhr.status);
+dojo.xhrDelete({url:"/config/protocols/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1b7f,_1b80){
+console.debug("xhrDelete for url = /config/protocols/"+this.uuid,"; HTTP status code: ",_1b80.xhr.status);
 dijit.byId("protocol_config_accordion").forward();
 dijit.byId("protocol_config_accordion").removeChild(_this);
 pion.protocols._adjustAccordionSize();
-return _1b7e;
+return _1b7f;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 },markAsChanged:function(){
 console.debug("markAsChanged");
@@ -27401,8 +27380,8 @@ pion.protocols.getHeight=function(){
 return pion.protocols.height;
 };
 pion.protocols.config_store=new dojox.data.XmlStore({url:"/config/protocols"});
-pion.protocols.config_store.fetchItemByIdentity=function(_1b80){
-pion.protocols.config_store.fetch({query:{"@id":_1b80.identity},onItem:_1b80.onItem,onError:pion.handleFetchError});
+pion.protocols.config_store.fetchItemByIdentity=function(_1b81){
+pion.protocols.config_store.fetch({query:{"@id":_1b81.identity},onItem:_1b81.onItem,onError:pion.handleFetchError});
 };
 pion.protocols.config_store.getIdentity=function(item){
 return pion.protocols.config_store.getValue(item,"@id");
@@ -27412,81 +27391,81 @@ protocol_config_store=pion.protocols.config_store;
 dojo.subscribe("protocol_config_accordion-selectChild",protocolPaneSelected);
 pion.protocols.createNewPaneFromItem=function(item){
 var title=pion.protocols.config_store.getValue(item,"Name");
-var _1b84=pion.protocols.config_store.getValue(item,"Plugin");
-var _1b85=document.createElement("span");
-var _1b86="plugins.protocols."+_1b84+"Pane";
-var _1b87=dojo.getObject(_1b86);
-if(_1b87){
-console.debug("found class ",_1b86);
-var _1b88=new _1b87({"class":"protocol_pane",title:title},_1b85);
+var _1b85=pion.protocols.config_store.getValue(item,"Plugin");
+var _1b86=document.createElement("span");
+var _1b87="plugins.protocols."+_1b85+"Pane";
+var _1b88=dojo.getObject(_1b87);
+if(_1b88){
+console.debug("found class ",_1b87);
+var _1b89=new _1b88({"class":"protocol_pane",title:title},_1b86);
 }else{
-console.debug("class ",_1b86," not found; using plugins.protocols.ProtocolPane instead.");
-var _1b88=new plugins.protocols.ProtocolPane({"class":"protocol_pane",title:title},_1b85);
+console.debug("class ",_1b87," not found; using plugins.protocols.ProtocolPane instead.");
+var _1b89=new plugins.protocols.ProtocolPane({"class":"protocol_pane",title:title},_1b86);
 }
-_1b88.config_item=item;
-_1b88.uuid=pion.protocols.config_store.getValue(item,"@id");
-dijit.byId("protocol_config_accordion").addChild(_1b88);
-return _1b88;
+_1b89.config_item=item;
+_1b89.uuid=pion.protocols.config_store.getValue(item,"@id");
+dijit.byId("protocol_config_accordion").addChild(_1b89);
+return _1b89;
 };
-pion.protocols.createNewPaneFromStore=function(id,_1b8a){
+pion.protocols.createNewPaneFromStore=function(id,_1b8b){
 pion.protocols.config_store.fetch({query:{"@id":id},onItem:function(item){
-var _1b8c=pion.protocols.createNewPaneFromItem(item);
-if(_1b8a){
+var _1b8d=pion.protocols.createNewPaneFromItem(item);
+if(_1b8b){
 pion.protocols._adjustAccordionSize();
-dijit.byId("protocol_config_accordion").selectChild(_1b8c);
+dijit.byId("protocol_config_accordion").selectChild(_1b8d);
 }
 },onError:pion.handleFetchError});
 };
-function onComplete(items,_1b8e){
-var _1b8f=dijit.byId("protocol_config_accordion");
+function onComplete(items,_1b8f){
+var _1b90=dijit.byId("protocol_config_accordion");
 for(var i=0;i<items.length;++i){
 pion.protocols.createNewPaneFromItem(items[i]);
 }
-var _1b91=_1b8f.getChildren()[0];
-_1b8f.selectChild(_1b91);
+var _1b92=_1b90.getChildren()[0];
+_1b90.selectChild(_1b92);
 };
 protocol_config_store.fetch({onComplete:onComplete,onError:pion.handleFetchError});
 dojo.connect(dojo.byId("add_new_protocol_button"),"click",addNewProtocol);
 };
 function addNewProtocol(){
-var _1b92=new plugins.protocols.ProtocolInitDialog({title:"Add New Protocol"});
+var _1b93=new plugins.protocols.ProtocolInitDialog({title:"Add New Protocol"});
 setTimeout(function(){
-dojo.query("input",_1b92.domNode)[0].select();
+dojo.query("input",_1b93.domNode)[0].select();
 },500);
-_1b92.show();
-_1b92.execute=function(_1b93){
-console.debug(_1b93);
-var _1b94="<PionConfig><Protocol>";
-for(var tag in _1b93){
-console.debug("dialogFields[",tag,"] = ",_1b93[tag]);
-_1b94+="<"+tag+">"+_1b93[tag]+"</"+tag+">";
+_1b93.show();
+_1b93.execute=function(_1b94){
+console.debug(_1b94);
+var _1b95="<PionConfig><Protocol>";
+for(var tag in _1b94){
+console.debug("dialogFields[",tag,"] = ",_1b94[tag]);
+_1b95+="<"+tag+">"+_1b94[tag]+"</"+tag+">";
 }
-if(plugins.protocols[_1b93.Plugin]&&plugins.protocols[_1b93.Plugin].custom_post_data){
-_1b94+=plugins.protocols[_1b93.Plugin].custom_post_data;
+if(plugins.protocols[_1b94.Plugin]&&plugins.protocols[_1b94.Plugin].custom_post_data){
+_1b95+=plugins.protocols[_1b94.Plugin].custom_post_data;
 }
-_1b94+="</Protocol></PionConfig>";
-console.debug("post_data: ",_1b94);
-dojo.rawXhrPost({url:"/config/protocols",contentType:"text/xml",handleAs:"xml",postData:_1b94,load:function(_1b96){
-var node=_1b96.getElementsByTagName("Protocol")[0];
+_1b95+="</Protocol></PionConfig>";
+console.debug("post_data: ",_1b95);
+dojo.rawXhrPost({url:"/config/protocols",contentType:"text/xml",handleAs:"xml",postData:_1b95,load:function(_1b97){
+var node=_1b97.getElementsByTagName("Protocol")[0];
 var id=node.getAttribute("id");
 console.debug("id (from server): ",id);
 pion.protocols.createNewPaneFromStore(id,true);
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b94})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1b95})});
 };
 };
 pion.protocols._adjustAccordionSize=function(){
-var _1b99=dijit.byId("protocol_config_accordion");
-var _1b9a=_1b99.getChildren().length;
-console.debug("num_protocols = "+_1b9a);
-var _1b9b=selected_protocol_pane.getHeight();
-var _1b9c=0;
-if(_1b9a>0){
-var _1b9d=_1b99.getChildren()[0];
-_1b9c=_1b9d.getTitleHeight();
+var _1b9a=dijit.byId("protocol_config_accordion");
+var _1b9b=_1b9a.getChildren().length;
+console.debug("num_protocols = "+_1b9b);
+var _1b9c=selected_protocol_pane.getHeight();
+var _1b9d=0;
+if(_1b9b>0){
+var _1b9e=_1b9a.getChildren()[0];
+_1b9d=_1b9e.getTitleHeight();
 }
-var _1b9e=_1b9b+_1b9a*_1b9c;
-_1b99.resize({h:_1b9e});
-pion.protocols.height=_1b9e+160;
+var _1b9f=_1b9c+_1b9b*_1b9d;
+_1b9a.resize({h:_1b9f});
+pion.protocols.height=_1b9f+160;
 dijit.byId("main_stack_container").resize({h:pion.protocols.height});
 };
 function protocolPaneSelected(pane){
@@ -27495,9 +27474,9 @@ if(pane==selected_protocol_pane){
 return;
 }
 if(selected_protocol_pane&&dojo.hasClass(selected_protocol_pane.domNode,"unsaved_changes")){
-var _1ba0=new dijit.Dialog({title:"Warning: unsaved changes"});
-_1ba0.setContent("Please save or cancel unsaved changes before selecting another Protocol.");
-_1ba0.show();
+var _1ba1=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1ba1.setContent("Please save or cancel unsaved changes before selecting another Protocol.");
+_1ba1.show();
 setTimeout("dijit.byId('protocol_config_accordion').selectChild(selected_protocol_pane)",500);
 return;
 }
@@ -27508,11 +27487,11 @@ store.fetch({query:{"@id":pane.uuid},onItem:function(item){
 console.debug("item: ",item);
 pane.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-var _1ba3=dijit.byId("protocol_config_accordion").duration;
+var _1ba4=dijit.byId("protocol_config_accordion").duration;
 setTimeout(function(){
 dojo.style(pane.containerNode,"overflow","hidden");
 pion.protocols._adjustAccordionSize();
-},_1ba3+50);
+},_1ba4+50);
 };
 }
 if(!dojo._hasResource["pion.widgets.User"]){
@@ -27531,42 +27510,42 @@ this.templateString="";
 }
 },widgetsInTemplate:true,populateFromConfigItem:function(item){
 var store=pion.users.config_store;
-var _1ba6={};
-var _1ba7=store.getAttributes(item);
-for(var i=0;i<_1ba7.length;++i){
-if(_1ba7[i]!="Field"&&_1ba7[i]!="tagName"&&_1ba7[i]!="childNodes"){
-_1ba6[_1ba7[i]]=store.getValue(item,_1ba7[i]).toString();
+var _1ba7={};
+var _1ba8=store.getAttributes(item);
+for(var i=0;i<_1ba8.length;++i){
+if(_1ba8[i]!="Field"&&_1ba8[i]!="tagName"&&_1ba8[i]!="childNodes"){
+_1ba7[_1ba8[i]]=store.getValue(item,_1ba8[i]).toString();
 }
 }
-console.dir(_1ba6);
-this.form.setValues(_1ba6);
-console.debug("config = ",_1ba6);
-var _1ba9=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
-_1ba9.firstChild.nodeValue=this.title;
+console.dir(_1ba7);
+this.form.setValues(_1ba7);
+console.debug("config = ",_1ba7);
+var _1baa=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
+_1baa.firstChild.nodeValue=this.title;
 var node=this.domNode;
 setTimeout(function(){
 dojo.removeClass(node,"unsaved_changes");
 },500);
 },save:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
-var _1bab=this.form.getValues();
-var _1bac="<PionConfig><User>";
-for(var tag in _1bab){
+var _1bac=this.form.getValues();
+var _1bad="<PionConfig><User>";
+for(var tag in _1bac){
 if(tag!="@id"){
-console.debug("config[",tag,"] = ",_1bab[tag]);
-_1bac+="<"+tag+">"+_1bab[tag]+"</"+tag+">";
+console.debug("config[",tag,"] = ",_1bac[tag]);
+_1bad+="<"+tag+">"+_1bac[tag]+"</"+tag+">";
 }
 }
-_1bac+="</User></PionConfig>";
-console.debug("put_data: ",_1bac);
+_1bad+="</User></PionConfig>";
+console.debug("put_data: ",_1bad);
 _this=this;
-dojo.rawXhrPut({url:"/config/users/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1bac,load:function(_1bae){
-console.debug("response: ",_1bae);
+dojo.rawXhrPut({url:"/config/users/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1bad,load:function(_1baf){
+console.debug("response: ",_1baf);
 pion.users.config_store.fetch({query:{"@id":_this.uuid},onItem:function(item){
 _this.config_item=item;
 _this.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1bac})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1bad})});
 },cancel:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
 this.populateFromConfigItem(this.config_item);
@@ -27574,12 +27553,12 @@ this.populateFromConfigItem(this.config_item);
 dojo.removeClass(this.domNode,"unsaved_changes");
 console.debug("delete2: selected user is ",this.title);
 _this=this;
-dojo.xhrDelete({url:"/config/users/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1bb0,_1bb1){
-console.debug("xhrDelete for url = /config/users/"+this.uuid,"; HTTP status code: ",_1bb1.xhr.status);
+dojo.xhrDelete({url:"/config/users/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1bb1,_1bb2){
+console.debug("xhrDelete for url = /config/users/"+this.uuid,"; HTTP status code: ",_1bb2.xhr.status);
 dijit.byId("user_config_accordion").forward();
 dijit.byId("user_config_accordion").removeChild(_this);
 pion.users._adjustAccordionSize();
-return _1bb0;
+return _1bb1;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 },markAsChanged:function(){
 console.debug("markAsChanged");
@@ -27598,18 +27577,18 @@ pion.users.init=function(){
 var url=dojo.moduleUrl("plugins","users.json");
 pion.users.plugin_data_store=new dojo.data.ItemFileReadStore({url:url});
 dojo.subscribe("user_config_accordion-selectChild",userPaneSelected);
-function onComplete(items,_1bb4){
-var _1bb5=dijit.byId("user_config_accordion");
+function onComplete(items,_1bb5){
+var _1bb6=dijit.byId("user_config_accordion");
 for(var i=0;i<items.length;++i){
 var title=pion.users.config_store.getValue(items[i],"@id");
-var _1bb8=createNewUserPane(title);
-_1bb8.config_item=items[i];
-_1bb8.uuid=pion.users.config_store.getValue(items[i],"@id");
-_1bb5.addChild(_1bb8);
+var _1bb9=createNewUserPane(title);
+_1bb9.config_item=items[i];
+_1bb9.uuid=pion.users.config_store.getValue(items[i],"@id");
+_1bb6.addChild(_1bb9);
 }
 pion.users._adjustAccordionSize();
-var _1bb9=_1bb5.getChildren()[0];
-_1bb5.selectChild(_1bb9);
+var _1bba=_1bb6.getChildren()[0];
+_1bb6.selectChild(_1bba);
 };
 if(file_protocol){
 dijit.byId("user_config_accordion").removeChild(selected_user_pane);
@@ -27619,50 +27598,50 @@ pion.users.config_store.fetch({onComplete:onComplete,onError:pion.handleFetchErr
 dojo.connect(dojo.byId("add_new_user_button"),"click",addNewUser);
 };
 function createNewUserPane(title){
-var _1bbb=document.createElement("span");
-var _1bbc=new pion.widgets.UserPane({"class":"user_pane",title:title},_1bbb);
-return _1bbc;
+var _1bbc=document.createElement("span");
+var _1bbd=new pion.widgets.UserPane({"class":"user_pane",title:title},_1bbc);
+return _1bbd;
 };
 function addNewUser(){
-var _1bbd=new pion.widgets.UserInitDialog();
+var _1bbe=new pion.widgets.UserInitDialog();
 setTimeout(function(){
-dojo.query("input",_1bbd.domNode)[0].select();
+dojo.query("input",_1bbe.domNode)[0].select();
 },500);
-_1bbd.show();
-_1bbd.execute=function(_1bbe){
-console.debug(_1bbe);
-var id=_1bbe["@id"];
-delete _1bbe["@id"];
-var _1bc0="<PionConfig><User id=\""+id+"\">";
-for(var tag in _1bbe){
-console.debug("dialogFields[",tag,"] = ",_1bbe[tag]);
-_1bc0+="<"+tag+">"+_1bbe[tag]+"</"+tag+">";
+_1bbe.show();
+_1bbe.execute=function(_1bbf){
+console.debug(_1bbf);
+var id=_1bbf["@id"];
+delete _1bbf["@id"];
+var _1bc1="<PionConfig><User id=\""+id+"\">";
+for(var tag in _1bbf){
+console.debug("dialogFields[",tag,"] = ",_1bbf[tag]);
+_1bc1+="<"+tag+">"+_1bbf[tag]+"</"+tag+">";
 }
-_1bc0+="</User></PionConfig>";
-console.debug("post_data: ",_1bc0);
-dojo.rawXhrPost({url:"/config/users",contentType:"text/xml",handleAs:"xml",postData:_1bc0,load:function(_1bc2){
-var _1bc3=dijit.byId("user_config_accordion");
-var _1bc4=createNewUserPane(id);
-_1bc4.uuid=id;
-_1bc3.addChild(_1bc4);
+_1bc1+="</User></PionConfig>";
+console.debug("post_data: ",_1bc1);
+dojo.rawXhrPost({url:"/config/users",contentType:"text/xml",handleAs:"xml",postData:_1bc1,load:function(_1bc3){
+var _1bc4=dijit.byId("user_config_accordion");
+var _1bc5=createNewUserPane(id);
+_1bc5.uuid=id;
+_1bc4.addChild(_1bc5);
 pion.users._adjustAccordionSize();
-_1bc3.selectChild(_1bc4);
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bc0})});
+_1bc4.selectChild(_1bc5);
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bc1})});
 };
 };
 pion.users._adjustAccordionSize=function(){
-var _1bc5=dijit.byId("user_config_accordion");
-var _1bc6=_1bc5.getChildren().length;
-console.debug("num_users = "+_1bc6);
-var _1bc7=210;
-var _1bc8=0;
-if(_1bc6>0){
-var _1bc9=_1bc5.getChildren()[0];
-_1bc8=_1bc9.getTitleHeight();
+var _1bc6=dijit.byId("user_config_accordion");
+var _1bc7=_1bc6.getChildren().length;
+console.debug("num_users = "+_1bc7);
+var _1bc8=210;
+var _1bc9=0;
+if(_1bc7>0){
+var _1bca=_1bc6.getChildren()[0];
+_1bc9=_1bca.getTitleHeight();
 }
-var _1bca=_1bc7+_1bc6*_1bc8;
-_1bc5.resize({h:_1bca});
-pion.users.height=_1bca+160;
+var _1bcb=_1bc8+_1bc7*_1bc9;
+_1bc6.resize({h:_1bcb});
+pion.users.height=_1bcb+160;
 dijit.byId("main_stack_container").resize({h:pion.users.height});
 };
 function userPaneSelected(pane){
@@ -27671,9 +27650,9 @@ if(pane==selected_user_pane){
 return;
 }
 if(selected_user_pane&&dojo.hasClass(selected_user_pane.domNode,"unsaved_changes")){
-var _1bcc=new dijit.Dialog({title:"Warning: unsaved changes"});
-_1bcc.setContent("Please save or cancel unsaved changes before selecting another User.");
-_1bcc.show();
+var _1bcd=new dijit.Dialog({title:"Warning: unsaved changes"});
+_1bcd.setContent("Please save or cancel unsaved changes before selecting another User.");
+_1bcd.show();
 setTimeout("dijit.byId('user_config_accordion').selectChild(selected_user_pane)",500);
 return;
 }
@@ -27684,10 +27663,10 @@ store.fetch({query:{"@id":pane.uuid},onItem:function(item){
 console.debug("item: ",item);
 pane.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-var _1bcf=dijit.byId("user_config_accordion").duration;
+var _1bd0=dijit.byId("user_config_accordion").duration;
 setTimeout(function(){
 dojo.style(pane.containerNode,"overflow","hidden");
-},_1bcf+50);
+},_1bd0+50);
 };
 dojo.subscribe("user_config_accordion-selectChild",userPaneSelected);
 }
@@ -27709,25 +27688,25 @@ this.apply_button.setAttribute("disabled",false);
 },applyXML:function(){
 console.debug("applyXML called");
 this.apply_button.setAttribute("disabled",true);
-var _1bd0="<PionConfig>"+this.XML_text_area.value+"</PionConfig>";
-var _1bd1=_1bd0.replace(/>\s*/g,">");
+var _1bd1="<PionConfig>"+this.XML_text_area.value+"</PionConfig>";
+var _1bd2=_1bd1.replace(/>\s*/g,">");
 if(dojo.isIE){
-var _1bd2=dojox.data.dom.createDocument();
-_1bd2.loadXML(_1bd1);
+var _1bd3=dojox.data.dom.createDocument();
+_1bd3.loadXML(_1bd2);
 }else{
-var _1bd3=new DOMParser();
-var _1bd2=_1bd3.parseFromString(_1bd1,"text/xml");
+var _1bd4=new DOMParser();
+var _1bd3=_1bd4.parseFromString(_1bd2,"text/xml");
 }
-var _1bd4=_1bd2.childNodes[0].childNodes;
-this.result_text_area.value+=_1bd4.length+" configurations found.\n";
+var _1bd5=_1bd3.childNodes[0].childNodes;
+this.result_text_area.value+=_1bd5.length+" configurations found.\n";
 this.configs_by_type={Codec:[],Database:[],Reactor:[],Connection:[]};
-for(var i=0;i<_1bd4.length;++i){
-var type=_1bd4[i].nodeName;
+for(var i=0;i<_1bd5.length;++i){
+var type=_1bd5[i].nodeName;
 if(!this.configs_by_type[type]){
 this.result_text_area.value+="Error: unknown configuration type \""+type+"\".\n";
 return;
 }
-this.configs_by_type[type].push(_1bd4[i]);
+this.configs_by_type[type].push(_1bd5[i]);
 }
 this.processCodecs();
 },processCodecs:function(){
@@ -27736,26 +27715,26 @@ this.result_text_area.value+="No Codec configurations found.\n";
 this.processDatabases();
 }else{
 this.result_text_area.value+=this.configs_by_type.Codec.length+" Codec configurations found.\n";
-var _1bd7=0;
+var _1bd8=0;
 var _this=this;
-dojo.forEach(this.configs_by_type.Codec,function(_1bd9){
-var _1bda=_1bd9.getAttribute("id");
-var _1bdb="<PionConfig>"+dojox.data.dom.innerXML(_1bd9)+"</PionConfig>";
-dojo.rawXhrPost({url:"/config/codecs",contentType:"text/xml",handleAs:"xml",postData:_1bdb,load:function(_1bdc){
-var node=_1bdc.getElementsByTagName("Codec")[0];
-var _1bde=node.getAttribute("id");
-if(_1bda){
-_this.uuid_replacements[_1bda]=_1bde;
+dojo.forEach(this.configs_by_type.Codec,function(_1bda){
+var _1bdb=_1bda.getAttribute("id");
+var _1bdc="<PionConfig>"+dojox.data.dom.innerXML(_1bda)+"</PionConfig>";
+dojo.rawXhrPost({url:"/config/codecs",contentType:"text/xml",handleAs:"xml",postData:_1bdc,load:function(_1bdd){
+var node=_1bdd.getElementsByTagName("Codec")[0];
+var _1bdf=node.getAttribute("id");
+if(_1bdb){
+_this.uuid_replacements[_1bdb]=_1bdf;
 }
 if(codec_config_page_initialized){
-pion.codecs.createNewPaneFromStore(_1bde,false);
+pion.codecs.createNewPaneFromStore(_1bdf,false);
 }
 var name=node.getElementsByTagName("Name")[0].childNodes[0].nodeValue;
-_this.result_text_area.value+="Codec named \""+name+"\" added with new UUID "+_1bde+"\n";
-if(++_1bd7==_this.configs_by_type.Codec.length){
+_this.result_text_area.value+="Codec named \""+name+"\" added with new UUID "+_1bdf+"\n";
+if(++_1bd8==_this.configs_by_type.Codec.length){
 _this.processDatabases();
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bdb})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bdc})});
 });
 }
 },processDatabases:function(){
@@ -27764,26 +27743,26 @@ this.result_text_area.value+="No Database configurations found.\n";
 this.processReactors();
 }else{
 this.result_text_area.value+=this.configs_by_type.Database.length+" Database configurations found.\n";
-var _1be0=0;
+var _1be1=0;
 var _this=this;
-dojo.forEach(this.configs_by_type.Database,function(_1be2){
-var _1be3=_1be2.getAttribute("id");
-var _1be4="<PionConfig>"+dojox.data.dom.innerXML(_1be2)+"</PionConfig>";
-dojo.rawXhrPost({url:"/config/databases",contentType:"text/xml",handleAs:"xml",postData:_1be4,load:function(_1be5){
-var node=_1be5.getElementsByTagName("Database")[0];
-var _1be7=node.getAttribute("id");
-if(_1be3){
-_this.uuid_replacements[_1be3]=_1be7;
+dojo.forEach(this.configs_by_type.Database,function(_1be3){
+var _1be4=_1be3.getAttribute("id");
+var _1be5="<PionConfig>"+dojox.data.dom.innerXML(_1be3)+"</PionConfig>";
+dojo.rawXhrPost({url:"/config/databases",contentType:"text/xml",handleAs:"xml",postData:_1be5,load:function(_1be6){
+var node=_1be6.getElementsByTagName("Database")[0];
+var _1be8=node.getAttribute("id");
+if(_1be4){
+_this.uuid_replacements[_1be4]=_1be8;
 }
 if(database_config_page_initialized){
-pion.databases.createNewPaneFromStore(_1be7,false);
+pion.databases.createNewPaneFromStore(_1be8,false);
 }
 var name=node.getElementsByTagName("Name")[0].childNodes[0].nodeValue;
-_this.result_text_area.value+="Database named \""+name+"\" added with new UUID "+_1be7+"\n";
-if(++_1be0==_this.configs_by_type.Database.length){
+_this.result_text_area.value+="Database named \""+name+"\" added with new UUID "+_1be8+"\n";
+if(++_1be1==_this.configs_by_type.Database.length){
 _this.processReactors();
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1be4})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1be5})});
 });
 }
 },processReactors:function(){
@@ -27794,36 +27773,36 @@ this.processConnections();
 }else{
 dijit.byId("main_stack_container").selectChild(dijit.byId("reactor_config"));
 this.result_text_area.value+=this.configs_by_type.Reactor.length+" Reactor configurations found.\n";
-var _1be9=0;
+var _1bea=0;
 var _this=this;
-dojo.forEach(this.configs_by_type.Reactor,function(_1beb){
-var _1bec=_1beb.getAttribute("id");
-var _1bed="<PionConfig>"+dojox.data.dom.innerXML(_1beb)+"</PionConfig>";
-for(var _1bee in _this.uuid_replacements){
-_1bed=_1bed.replace(RegExp(_1bee,"g"),_this.uuid_replacements[_1bee]);
+dojo.forEach(this.configs_by_type.Reactor,function(_1bec){
+var _1bed=_1bec.getAttribute("id");
+var _1bee="<PionConfig>"+dojox.data.dom.innerXML(_1bec)+"</PionConfig>";
+for(var _1bef in _this.uuid_replacements){
+_1bee=_1bee.replace(RegExp(_1bef,"g"),_this.uuid_replacements[_1bef]);
 }
-console.debug("post_data = ",_1bed);
-dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1bed,load:function(_1bef){
-var node=_1bef.getElementsByTagName("Reactor")[0];
-var _1bf1=node.getAttribute("id");
-if(_1bec){
-_this.uuid_replacements[_1bec]=_1bf1;
+console.debug("post_data = ",_1bee);
+dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1bee,load:function(_1bf0){
+var node=_1bf0.getElementsByTagName("Reactor")[0];
+var _1bf2=node.getAttribute("id");
+if(_1bed){
+_this.uuid_replacements[_1bed]=_1bf2;
 }
-var _1bf2={"@id":_1bf1};
-var _1bf3=node.childNodes;
-for(var i=0;i<_1bf3.length;++i){
-if(_1bf3[i].firstChild){
-_1bf2[_1bf3[i].tagName]=_1bf3[i].firstChild.nodeValue;
+var _1bf3={"@id":_1bf2};
+var _1bf4=node.childNodes;
+for(var i=0;i<_1bf4.length;++i){
+if(_1bf4[i].firstChild){
+_1bf3[_1bf4[i].tagName]=_1bf4[i].firstChild.nodeValue;
 }
 }
-pion.reactors.createReactorInConfiguredWorkspace(_1bf2);
-_this.result_text_area.value+="Reactor named \""+_1bf2.Name+"\" added with new UUID "+_1bf1+"\n";
-if(++_1be9==_this.configs_by_type.Reactor.length){
+pion.reactors.createReactorInConfiguredWorkspace(_1bf3);
+_this.result_text_area.value+="Reactor named \""+_1bf3.Name+"\" added with new UUID "+_1bf2+"\n";
+if(++_1bea==_this.configs_by_type.Reactor.length){
 dijit.byId("main_stack_container").selectChild(dijit.byId("system_config"));
 console.debug("this.uuid_replacements = ",this.uuid_replacements);
 _this.processConnections();
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bed})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bee})});
 });
 }
 },processConnections:function(){
@@ -27832,26 +27811,26 @@ this.result_text_area.value+="No Connection configurations found.\n";
 }else{
 dijit.byId("main_stack_container").selectChild(dijit.byId("reactor_config"));
 this.result_text_area.value+=this.configs_by_type.Connection.length+" Connections found.\n";
-var _1bf5=0;
+var _1bf6=0;
 var _this=this;
-dojo.forEach(this.configs_by_type.Connection,function(_1bf7){
-var _1bf8=_1bf7.getAttribute("id");
-var _1bf9="<PionConfig>"+dojox.data.dom.innerXML(_1bf7)+"</PionConfig>";
-for(var _1bfa in _this.uuid_replacements){
-_1bf9=_1bf9.replace(RegExp(_1bfa,"g"),_this.uuid_replacements[_1bfa]);
+dojo.forEach(this.configs_by_type.Connection,function(_1bf8){
+var _1bf9=_1bf8.getAttribute("id");
+var _1bfa="<PionConfig>"+dojox.data.dom.innerXML(_1bf8)+"</PionConfig>";
+for(var _1bfb in _this.uuid_replacements){
+_1bfa=_1bfa.replace(RegExp(_1bfb,"g"),_this.uuid_replacements[_1bfb]);
 }
-console.debug("post_data = ",_1bf9);
-dojo.rawXhrPost({url:"/config/connections",contentType:"text/xml",handleAs:"xml",postData:_1bf9,load:function(_1bfb){
-var node=_1bfb.getElementsByTagName("Connection")[0];
-var _1bfd=node.getAttribute("id");
-var _1bfe=_1bfb.getElementsByTagName("From")[0].firstChild.nodeValue;
-var to_id=_1bfb.getElementsByTagName("To")[0].firstChild.nodeValue;
-pion.reactors.createConnection(_1bfe,to_id,_1bfd);
-_this.result_text_area.value+="Connection from "+_1bfe+" to "+to_id+" added with new UUID "+_1bfd+"\n";
-if(++_1bf5==_this.configs_by_type.Connection.length){
+console.debug("post_data = ",_1bfa);
+dojo.rawXhrPost({url:"/config/connections",contentType:"text/xml",handleAs:"xml",postData:_1bfa,load:function(_1bfc){
+var node=_1bfc.getElementsByTagName("Connection")[0];
+var _1bfe=node.getAttribute("id");
+var _1bff=_1bfc.getElementsByTagName("From")[0].firstChild.nodeValue;
+var to_id=_1bfc.getElementsByTagName("To")[0].firstChild.nodeValue;
+pion.reactors.createConnection(_1bff,to_id,_1bfe);
+_this.result_text_area.value+="Connection from "+_1bff+" to "+to_id+" added with new UUID "+_1bfe+"\n";
+if(++_1bf6==_this.configs_by_type.Connection.length){
 dijit.byId("main_stack_container").selectChild(dijit.byId("system_config"));
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bf9})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1bfa})});
 });
 }
 }});
@@ -27860,19 +27839,19 @@ if(!dojo._hasResource["pion.system"]){
 dojo._hasResource["pion.system"]=true;
 dojo.provide("pion.system");
 var server_store;
-dojo.declare("childlessChildrenFirstStore",dojo.data.ItemFileWriteStore,{getValues:function(item,_1c01){
-var _1c02=this.inherited("getValues",arguments);
-if(_1c01!="services"){
-return _1c02;
+dojo.declare("childlessChildrenFirstStore",dojo.data.ItemFileWriteStore,{getValues:function(item,_1c02){
+var _1c03=this.inherited("getValues",arguments);
+if(_1c02!="services"){
+return _1c03;
 }
-var len=_1c02.length;
+var len=_1c03.length;
 for(var i=0;i<len;++i){
-if(_1c02[0].services){
-_1c02.push(_1c02[0]);
-_1c02.splice(0,1);
+if(_1c03[0].services){
+_1c03.push(_1c03[0]);
+_1c03.splice(0,1);
 }
 }
-return _1c02;
+return _1c03;
 }});
 pion.system.getHeight=function(){
 return 800;
@@ -27882,53 +27861,53 @@ dijit.byId("main_stack_container").resize({h:pion.system.getHeight()});
 if(file_protocol){
 return;
 }
-dojo.xhrGet({url:"/config",handleAs:"xml",timeout:5000,load:function(_1c05,_1c06){
+dojo.xhrGet({url:"/config",handleAs:"xml",timeout:5000,load:function(_1c06,_1c07){
 console.debug("in load()");
 if(dojo.isIE){
-dojo.byId("platform_conf_file").innerHTML=_1c05.getElementsByTagName("PlatformConfig")[0].xml;
-dojo.byId("reactor_conf_file").innerHTML=_1c05.getElementsByTagName("ReactorConfig")[0].xml;
-dojo.byId("vocab_conf_file").innerHTML=_1c05.getElementsByTagName("VocabularyConfig")[0].xml;
-dojo.byId("codec_conf_file").innerHTML=_1c05.getElementsByTagName("CodecConfig")[0].xml;
-dojo.byId("database_conf_file").innerHTML=_1c05.getElementsByTagName("DatabaseConfig")[0].xml;
-dojo.byId("user_conf_file").innerHTML=_1c05.getElementsByTagName("UserConfig")[0].xml;
-dojo.byId("protocol_conf_file").innerHTML=_1c05.getElementsByTagName("ProtocolConfig")[0].xml;
-dojo.byId("service_conf_file").innerHTML=_1c05.getElementsByTagName("ServiceConfig")[0].xml;
-dojo.byId("log_conf_file").innerHTML=_1c05.getElementsByTagName("LogConfig")[0].xml;
-dojo.byId("vocab_path").innerHTML=_1c05.getElementsByTagName("VocabularyPath")[0].xml;
+dojo.byId("platform_conf_file").innerHTML=_1c06.getElementsByTagName("PlatformConfig")[0].xml;
+dojo.byId("reactor_conf_file").innerHTML=_1c06.getElementsByTagName("ReactorConfig")[0].xml;
+dojo.byId("vocab_conf_file").innerHTML=_1c06.getElementsByTagName("VocabularyConfig")[0].xml;
+dojo.byId("codec_conf_file").innerHTML=_1c06.getElementsByTagName("CodecConfig")[0].xml;
+dojo.byId("database_conf_file").innerHTML=_1c06.getElementsByTagName("DatabaseConfig")[0].xml;
+dojo.byId("user_conf_file").innerHTML=_1c06.getElementsByTagName("UserConfig")[0].xml;
+dojo.byId("protocol_conf_file").innerHTML=_1c06.getElementsByTagName("ProtocolConfig")[0].xml;
+dojo.byId("service_conf_file").innerHTML=_1c06.getElementsByTagName("ServiceConfig")[0].xml;
+dojo.byId("log_conf_file").innerHTML=_1c06.getElementsByTagName("LogConfig")[0].xml;
+dojo.byId("vocab_path").innerHTML=_1c06.getElementsByTagName("VocabularyPath")[0].xml;
 }else{
-dojo.byId("platform_conf_file").innerHTML=_1c05.getElementsByTagName("PlatformConfig")[0].textContent;
-dojo.byId("reactor_conf_file").innerHTML=_1c05.getElementsByTagName("ReactorConfig")[0].textContent;
-dojo.byId("vocab_conf_file").innerHTML=_1c05.getElementsByTagName("VocabularyConfig")[0].textContent;
-dojo.byId("codec_conf_file").innerHTML=_1c05.getElementsByTagName("CodecConfig")[0].textContent;
-dojo.byId("database_conf_file").innerHTML=_1c05.getElementsByTagName("DatabaseConfig")[0].textContent;
-dojo.byId("user_conf_file").innerHTML=_1c05.getElementsByTagName("UserConfig")[0].textContent;
-dojo.byId("protocol_conf_file").innerHTML=_1c05.getElementsByTagName("ProtocolConfig")[0].textContent;
-dojo.byId("service_conf_file").innerHTML=_1c05.getElementsByTagName("ServiceConfig")[0].textContent;
-dojo.byId("log_conf_file").innerHTML=_1c05.getElementsByTagName("LogConfig")[0].textContent;
-dojo.byId("vocab_path").innerHTML=_1c05.getElementsByTagName("VocabularyPath")[0].textContent;
+dojo.byId("platform_conf_file").innerHTML=_1c06.getElementsByTagName("PlatformConfig")[0].textContent;
+dojo.byId("reactor_conf_file").innerHTML=_1c06.getElementsByTagName("ReactorConfig")[0].textContent;
+dojo.byId("vocab_conf_file").innerHTML=_1c06.getElementsByTagName("VocabularyConfig")[0].textContent;
+dojo.byId("codec_conf_file").innerHTML=_1c06.getElementsByTagName("CodecConfig")[0].textContent;
+dojo.byId("database_conf_file").innerHTML=_1c06.getElementsByTagName("DatabaseConfig")[0].textContent;
+dojo.byId("user_conf_file").innerHTML=_1c06.getElementsByTagName("UserConfig")[0].textContent;
+dojo.byId("protocol_conf_file").innerHTML=_1c06.getElementsByTagName("ProtocolConfig")[0].textContent;
+dojo.byId("service_conf_file").innerHTML=_1c06.getElementsByTagName("ServiceConfig")[0].textContent;
+dojo.byId("log_conf_file").innerHTML=_1c06.getElementsByTagName("LogConfig")[0].textContent;
+dojo.byId("vocab_path").innerHTML=_1c06.getElementsByTagName("VocabularyPath")[0].textContent;
 }
-var _1c07=dojo.byId("plugin_paths");
-var _1c08=_1c07.getElementsByTagName("tr")[0];
-while(_1c07.firstChild){
-_1c07.removeChild(_1c07.firstChild);
+var _1c08=dojo.byId("plugin_paths");
+var _1c09=_1c08.getElementsByTagName("tr")[0];
+while(_1c08.firstChild){
+_1c08.removeChild(_1c08.firstChild);
 }
-var _1c09=_1c05.getElementsByTagName("PluginPath");
-var _1c0a=[];
-for(var i=0;i<_1c09.length;++i){
+var _1c0a=_1c06.getElementsByTagName("PluginPath");
+var _1c0b=[];
+for(var i=0;i<_1c0a.length;++i){
 if(dojo.isIE){
-_1c0a[i]=_1c07.insertRow();
-dojo.forEach(_1c08.childNodes,function(n){
-_1c0a[i].appendChild(dojo.clone(n));
+_1c0b[i]=_1c08.insertRow();
+dojo.forEach(_1c09.childNodes,function(n){
+_1c0b[i].appendChild(dojo.clone(n));
 });
 }else{
-_1c0a[i]=dojo.clone(_1c08);
-_1c07.appendChild(_1c0a[i]);
+_1c0b[i]=dojo.clone(_1c09);
+_1c08.appendChild(_1c0b[i]);
 }
-_1c0a[i].getElementsByTagName("label")[0].innerHTML="Plugin Path "+(i+1);
-var _1c0d=dojo.isIE?_1c09[i].xml:_1c09[i].textContent;
-_1c0a[i].getElementsByTagName("td")[1].innerHTML=_1c0d;
+_1c0b[i].getElementsByTagName("label")[0].innerHTML="Plugin Path "+(i+1);
+var _1c0e=dojo.isIE?_1c0a[i].xml:_1c0a[i].textContent;
+_1c0b[i].getElementsByTagName("td")[1].innerHTML=_1c0e;
 }
-return _1c05;
+return _1c06;
 },error:pion.handleXhrGetError});
 dojo.byId("platform_conf_file").firstChild.nodeValue="actual/path/here/PlatformConfigFile.xml";
 server_store=new dojox.data.XmlStore({url:"/config/services"});
@@ -27965,8 +27944,8 @@ return label;
 }},dojo.byId("server_tree"));
 };
 pion.system.importXMLConfiguration=function(){
-var _1c12=new pion.widgets.XMLImportDialog();
-_1c12.show();
+var _1c13=new pion.widgets.XMLImportDialog();
+_1c13.show();
 };
 }
 if(!dojo._hasResource["pion.about"]){
@@ -27980,90 +27959,90 @@ this.templateString="";
 },widgetsInTemplate:true,postCreate:function(){
 this.inherited("postCreate",arguments);
 var _this=this;
-dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c14,_1c15){
+dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c15,_1c16){
 if(dojo.isIE){
-var _1c16=_1c14.getElementsByTagName("Version")[0].childNodes[0].nodeValue;
+var _1c17=_1c15.getElementsByTagName("Version")[0].childNodes[0].nodeValue;
 }else{
-var _1c16=_1c14.getElementsByTagName("Version")[0].textContent;
+var _1c17=_1c15.getElementsByTagName("Version")[0].textContent;
 }
-var _1c17="Unknown";
-dojo.xhrGet({url:"/key/status",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c18,_1c19){
+var _1c18="Unknown";
+dojo.xhrGet({url:"/key/status",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c19,_1c1a){
 if(dojo.isIE){
-var _1c1a=_1c18.getElementsByTagName("Status")[0].childNodes[0].nodeValue;
+var _1c1b=_1c19.getElementsByTagName("Status")[0].childNodes[0].nodeValue;
 }else{
-var _1c1a=_1c18.getElementsByTagName("Status")[0].textContent;
+var _1c1b=_1c19.getElementsByTagName("Status")[0].textContent;
 }
-_1c17="Enterprise";
-_this.doLicenseStuff(_1c16,_1c17,_1c1a);
-return _1c18;
-},error:function(_1c1b,_1c1c){
-if(_1c1c.xhr.status==404){
-_1c17="Community";
-_this.doLicenseStuff(_1c16,_1c17,"404");
+_1c18="Enterprise";
+_this.doLicenseStuff(_1c17,_1c18,_1c1b);
+return _1c19;
+},error:function(_1c1c,_1c1d){
+if(_1c1d.xhr.status==404){
+_1c18="Community";
+_this.doLicenseStuff(_1c17,_1c18,"404");
 }
-return _1c1b;
+return _1c1c;
 }});
-return _1c14;
+return _1c15;
 }});
 },submitKey:function(e){
 var key=this.license_key.value;
 console.debug("key = ",key);
 var _this=this;
-dojo.rawXhrPut({url:"/key",contentType:"text/plain",handleAs:"text",putData:key,load:function(_1c20){
-console.debug("response: ",_1c20);
+dojo.rawXhrPut({url:"/key",contentType:"text/plain",handleAs:"text",putData:key,load:function(_1c21){
+console.debug("response: ",_1c21);
 _this.hide();
 pion.about.doDialog();
-return _1c20;
-},error:function(_1c21,_1c22){
-console.debug(_1c22);
-_this.result_of_submitting_key.innerHTML="Error: Key not accepted.";
 return _1c21;
+},error:function(_1c22,_1c23){
+console.debug(_1c23);
+_this.result_of_submitting_key.innerHTML="Error: Key not accepted.";
+return _1c22;
 }});
-},doLicenseStuff:function(_1c23,_1c24,_1c25){
-console.debug("pion_version = ",_1c23,", pion_edition = ",_1c24,", key_status = ",_1c25);
-full_edition_str="Pion "+_1c24+" Edition";
-full_version_str=full_edition_str+" v"+_1c23;
+},doLicenseStuff:function(_1c24,_1c25,_1c26){
+console.debug("pion_version = ",_1c24,", pion_edition = ",_1c25,", key_status = ",_1c26);
+full_edition_str="Pion "+_1c25+" Edition";
+full_version_str=full_edition_str+" v"+_1c24;
 this.full_version.innerHTML=full_version_str;
-if(_1c24=="Community"){
+if(_1c25=="Community"){
 this.community_license.style.display="block";
 }else{
-if(_1c25=="valid"){
+if(_1c26=="valid"){
 var _this=this;
-dojo.xhrGet({url:"/key",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c27,_1c28){
+dojo.xhrGet({url:"/key",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c28,_1c29){
 if(dojo.isIE){
-var _1c29=_1c27.getElementsByTagName("Name")[0].xml;
-var _1c2a=_1c27.getElementsByTagName("Email")[0].xml;
-var _1c2b=_1c27.getElementsByTagName("Version");
-var _1c2c=_1c2b.length>0?_1c2b[0].xml:"";
-var _1c2d=_1c27.getElementsByTagName("Expiration");
-var _1c2e=_1c2d.length>0?_1c2d[0].xml:"";
+var _1c2a=_1c28.getElementsByTagName("Name")[0].xml;
+var _1c2b=_1c28.getElementsByTagName("Email")[0].xml;
+var _1c2c=_1c28.getElementsByTagName("Version");
+var _1c2d=_1c2c.length>0?_1c2c[0].xml:"";
+var _1c2e=_1c28.getElementsByTagName("Expiration");
+var _1c2f=_1c2e.length>0?_1c2e[0].xml:"";
 }else{
-var _1c29=_1c27.getElementsByTagName("Name")[0].textContent;
-var _1c2a=_1c27.getElementsByTagName("Email")[0].textContent;
-var _1c2b=_1c27.getElementsByTagName("Version");
-var _1c2c=_1c2b.length>0?_1c2b[0].textContent:"";
-var _1c2d=_1c27.getElementsByTagName("Expiration");
-var _1c2e=_1c2d.length>0?_1c2d[0].textContent:"";
+var _1c2a=_1c28.getElementsByTagName("Name")[0].textContent;
+var _1c2b=_1c28.getElementsByTagName("Email")[0].textContent;
+var _1c2c=_1c28.getElementsByTagName("Version");
+var _1c2d=_1c2c.length>0?_1c2c[0].textContent:"";
+var _1c2e=_1c28.getElementsByTagName("Expiration");
+var _1c2f=_1c2e.length>0?_1c2e[0].textContent:"";
 }
-_this.license_name.innerHTML=_1c29;
-_this.license_email.innerHTML=_1c2a;
-if(_1c2c==""){
+_this.license_name.innerHTML=_1c2a;
+_this.license_email.innerHTML=_1c2b;
+if(_1c2d==""){
 _this.license_version.innerHTML="All versions";
 }else{
-_this.license_version.innerHTML=_1c2c;
+_this.license_version.innerHTML=_1c2d;
 }
-if(_1c2e==""){
+if(_1c2f==""){
 _this.license_expiration.innerHTML="None";
 }else{
-_this.license_expiration.innerHTML=_1c2e;
+_this.license_expiration.innerHTML=_1c2f;
 }
 _this.enterprise_licensed.style.display="block";
-return _1c27;
+return _1c28;
 },error:function(){
 console.debug("error from xhrGet");
 }});
 }else{
-if(_1c25=="invalid"){
+if(_1c26=="invalid"){
 this.reason_needs_license.innerHTML="Invalid license key (may have expired).";
 }else{
 this.reason_needs_license.innerHTML="No license key found.";
@@ -28073,8 +28052,8 @@ this.enterprise_not_licensed.style.display="block";
 }
 }});
 pion.about.doDialog=function(){
-var _1c2f=new pion.about.LicenseKeyDialog();
-_1c2f.show();
+var _1c30=new pion.about.LicenseKeyDialog();
+_1c30.show();
 };
 }
 dojo.registerModulePath("pion","/scripts");
@@ -28087,59 +28066,59 @@ var user_config_page_initialized=false;
 var system_config_page_initialized=false;
 var file_protocol=false;
 var firefox_on_mac;
-pion.handleXhrError=function(_1c30,_1c31,_1c32,_1c33){
-console.debug("In pion.handleXhrError: ioArgs.args = ",_1c31.args);
-if(_1c31.xhr.status==401){
+pion.handleXhrError=function(_1c31,_1c32,_1c33,_1c34){
+console.debug("In pion.handleXhrError: ioArgs.args = ",_1c32.args);
+if(_1c32.xhr.status==401){
 if(pion.login.login_pending){
 var h=dojo.connect(pion.login,"onLoginSuccess",function(){
 dojo.disconnect(h);
-_1c32(_1c31.args);
+_1c33(_1c32.args);
 });
 }else{
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
 pion.login.doLoginDialog(function(){
-_1c32(_1c31.args);
+_1c33(_1c32.args);
 });
 }
 return;
 }else{
-if(_1c31.xhr.status==500){
-var _1c35=new dijit.Dialog({title:"Pion Server Error"});
-_1c35.setContent(_1c30.responseText);
-_1c35.show();
+if(_1c32.xhr.status==500){
+var _1c36=new dijit.Dialog({title:"Pion Server Error"});
+_1c36.setContent(_1c31.responseText);
+_1c36.show();
 }
-if(_1c33){
-_1c33();
+if(_1c34){
+_1c34();
 }
 }
-return _1c30;
+return _1c31;
 };
-pion.handleXhrGetError=function(_1c36,_1c37){
-console.debug("In pion.handleXhrGetError: ioArgs.args = ",_1c37.args);
-return pion.handleXhrError(_1c36,_1c37,dojo.xhrGet);
+pion.handleXhrGetError=function(_1c37,_1c38){
+console.debug("In pion.handleXhrGetError: ioArgs.args = ",_1c38.args);
+return pion.handleXhrError(_1c37,_1c38,dojo.xhrGet);
 };
-pion.getXhrErrorHandler=function(_1c38,_1c39,_1c3a){
-return function(_1c3b,_1c3c){
-dojo.mixin(_1c3c.args,_1c39);
-return pion.handleXhrError(_1c3b,_1c3c,_1c38,_1c3a);
+pion.getXhrErrorHandler=function(_1c39,_1c3a,_1c3b){
+return function(_1c3c,_1c3d){
+dojo.mixin(_1c3d.args,_1c3a);
+return pion.handleXhrError(_1c3c,_1c3d,_1c39,_1c3b);
 };
 };
-pion.handleFetchError=function(_1c3d,_1c3e){
-console.debug("In pion.handleFetchError: request = ",_1c3e,", errorData = "+_1c3d);
-if(_1c3d.status==401){
+pion.handleFetchError=function(_1c3e,_1c3f){
+console.debug("In pion.handleFetchError: request = ",_1c3f,", errorData = "+_1c3e);
+if(_1c3e.status==401){
 if(pion.login.login_pending){
 var h=dojo.connect(pion.login,"onLoginSuccess",function(){
 dojo.disconnect(h);
-_1c3e.store.fetch(_1c3e);
+_1c3f.store.fetch(_1c3f);
 });
 }else{
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
 pion.login.doLoginDialog(function(){
-_1c3e.store.fetch(_1c3e);
+_1c3f.store.fetch(_1c3f);
 });
 }
 return;
@@ -28150,12 +28129,12 @@ dojo.byId("outer").style.visibility="visible";
 dojo.subscribe("main_stack_container-selectChild",configPageSelected);
 file_protocol=(window.location.protocol=="file:");
 firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexOf("Firefox")>=0;
-dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c40,_1c41){
+dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c41,_1c42){
 dojo.cookie("logged_in","true",{expires:1});
 pion.terms.init();
 pion.reactors.init();
-},error:function(_1c42,_1c43){
-if(_1c43.xhr.status==401){
+},error:function(_1c43,_1c44){
+if(_1c44.xhr.status==401){
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
@@ -28164,9 +28143,9 @@ pion.terms.init();
 pion.reactors.init();
 });
 }else{
-console.error("HTTP status code: ",_1c43.xhr.status);
+console.error("HTTP status code: ",_1c44.xhr.status);
 }
-return _1c42;
+return _1c43;
 }});
 };
 dojo.addOnLoad(init);
@@ -28234,21 +28213,21 @@ system_config_page_initialized=true;
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_1c46,_1c47){
-var _1c48;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1c47,_1c48){
+var _1c49;
 if(value!==undefined){
-_1c48=this.filter(value);
-if(_1c48!==null&&((typeof _1c48!="number")||!isNaN(_1c48))){
-if(_1c47===undefined||!_1c47.toString){
-_1c47=this.format(_1c48,this.constraints);
+_1c49=this.filter(value);
+if(_1c49!==null&&((typeof _1c49!="number")||!isNaN(_1c49))){
+if(_1c48===undefined||!_1c48.toString){
+_1c48=this.format(_1c49,this.constraints);
 }
 }else{
-_1c47="";
+_1c48="";
 }
 }
-if(_1c47!=null&&_1c47!=undefined){
-this.textbox.value=_1c47;
+if(_1c48!=null&&_1c48!=undefined){
+this.textbox.value=_1c48;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_1c48,_1c46);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1c49,_1c47);
 };
 dojo.i18n._preloadLocalizations("dojo.nls.pion-dojo",["he","nl","tr","no","ko","el","en","en-gb","ROOT","zh-cn","hu","es","fi-fi","pt-br","ca","fi","he-il","xx","ru","it","fr","cs","de-de","fr-fr","it-it","es-es","ja","sk","da","sl","pl","de","sv","pt","pt-pt","nl-nl","zh-tw","ko-kr","ar","en-us","zh","th","ja-jp"]);
