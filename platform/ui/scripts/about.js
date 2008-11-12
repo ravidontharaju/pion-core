@@ -57,6 +57,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 			// It doesn't matter whether I connect to hide() or onCancel(), or whether I call destroy() or destroyRecursive().
 			// This is a bug in Dojo, which can be demonstrated with the following self-contained file:
 /*
+<html>
 <head>
 	<style type="text/css">@import "dojo-src/dijit/themes/tundra/tundra.css";</style>
 	<script type="text/javascript" src="dojo-src/dojo/dojo.js" djConfig="isDebug: true, parseOnLoad: true"></script>
@@ -165,9 +166,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 
 							return response;
 						},
-						error: function() {
-console.debug('error from xhrGet');
-						}
+						error: pion.handleXhrGetError
 					});
 				} else {
 
