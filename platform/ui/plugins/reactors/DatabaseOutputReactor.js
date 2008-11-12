@@ -1,7 +1,11 @@
 dojo.provide("plugins.reactors.DatabaseOutputReactor");
 dojo.require("pion.databases");
 dojo.require("plugins.reactors.Reactor");
-dojo.require("dojox.grid.Grid");
+dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dijit.form.Button");
+dojo.require("dijit.form.FilteringSelect");
+dojo.require("dojox.grid.DataGrid");
+dojo.require("dojox.grid.cells.dijit");
 dojo.require("pion.terms");
 
 dojo.declare("plugins.reactors.DatabaseOutputReactor",
@@ -11,29 +15,75 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			this.config.Plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
 			this.special_config_elements.push('Field');
-			var store = pion.reactors.config_store;
+			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
+			});
+			this.field_mapping_store.next_id = 0;
+			this._populateFieldMappingStore();
+		},
+		reloadFieldMappingStore: function() {
+			// First empty this.field_mapping_store.
 			var _this = this;
-			this.field_mapping_table = [];
-			store.fetch({
-				query: {'@id': this.config['@id']},
+			this.field_mapping_store.fetch({
 				onItem: function(item) {
-					var field_mappings = store.getValues(item, 'Field');
-					for (var i = 0; i < field_mappings.length; ++i) {
-						var row = [];
-						row[0] = store.getValue(field_mappings[i], 'text()');
-						row[1] = store.getValue(field_mappings[i], '@term');
-						_this.field_mapping_table.push(row);
-					}
+					_this.field_mapping_store.deleteItem(item);
+				},
+				onComplete: function() {
+					// Then repopulate this.field_mapping_store from the Reactor's configuration.
+					_this._populateFieldMappingStore();
 				},
 				onError: pion.handleFetchError
 			});
 		},
+		onDonePopulatingFieldMappingStore: function() {
+		},
+		_populateFieldMappingStore: function() {
+			var _this = this;
+			var store = pion.reactors.config_store;
+			store.fetch({
+				query: {'@id': this.config['@id']},
+				onItem: function(item) {
+					dojo.forEach(store.getValues(item, 'Field'), function(field_mapping) {
+						_this.field_mapping_store.newItem({
+							ID: _this.field_mapping_store.next_id++,
+							Field: store.getValue(field_mapping, 'text()'),
+							Term: store.getValue(field_mapping, '@term')
+						});
+					});
+				},
+				onComplete: function() {
+					// At this point, _this.field_mapping_store reflects the Reactor's current configuration,
+					// so update _this.custom_put_data_from_config.
+					_this.updateNamedCustomPutData('custom_put_data_from_config');
+
+					_this.onDonePopulatingFieldMappingStore();
+				},
+				onError: pion.handleFetchError
+			});
+		},
+		// _updateCustomData() is called after a successful PUT request.
+		_updateCustomData: function() {
+			this.custom_put_data_from_config = this.custom_put_data_from_field_mapping_store;
+		},
+		// _insertCustomData() is called when moving the Reactor.
 		_insertCustomData: function() {
-			for (var i = 0; i < this.field_mapping_table.length; ++i) {
-				var row = this.field_mapping_table[i];
-				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				this.put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
-			}
+			this.put_data += this.custom_put_data_from_config;
+		},
+		updateNamedCustomPutData: function(property_to_update) {
+			var put_data = '';
+			var _this = this;
+			var store = this.field_mapping_store;
+			store.fetch({
+				onItem: function(item) {
+					put_data += '<Field term="' + store.getValue(item, 'Term') + '">';
+					put_data += store.getValue(item, 'Field');
+					put_data += '</Field>';
+				},
+				onComplete: function() {
+					_this[property_to_update] = put_data;
+				},
+				onError: pion.handleFetchError
+			});
 		}
 	}
 );
@@ -52,33 +102,51 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 		postCreate: function(){
 			this.plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
-			_this = this;
-			plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData([]);
-			var grid = this.grid;
-			dojo.connect(grid, 'onCellClick', grid, this._handleCellClick);
-			setTimeout(function(){
-				grid.update();
-				grid.resize();
-			}, 200);
+			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
+			});
+			this.field_mapping_store.next_id = 0;
+			this.custom_post_data_from_field_mapping_store = '';
+			this.connect(this.field_mapping_store, 'onNew', '_updateCustomPostDataFromFieldMappingStore');
+			this.connect(this.field_mapping_store, 'onSet', '_updateCustomPostDataFromFieldMappingStore');
+			this.connect(this.field_mapping_store, 'onDelete', '_updateCustomPostDataFromFieldMappingStore');
+			var field_mapping_grid = new dojox.grid.DataGrid({
+				store: this.field_mapping_store,
+				structure: plugins.reactors.DatabaseOutputReactorDialog.grid_layout,
+				singleClickEdit: true,
+				autoHeight: true
+			}, document.createElement('div'));
+			this.field_mapping_grid_node.appendChild(field_mapping_grid.domNode);
+			field_mapping_grid.startup();
+			field_mapping_grid.connect(field_mapping_grid, 'onCellClick', function(e) {
+				if (e.cell.name == 'Delete') {
+					this.store.deleteItem(this.getItem(e.rowIndex));
+				}
+			});
 		},
-		_handleCellClick: function(e) {
-			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-			if (e.cellIndex == 2) {
-				console.debug('Removing row ', e.rowIndex); 
-				this.removeSelectedRows();
-			}
+		// _updateCustomPostDataFromFieldMappingStore() will be passed arguments related to the item which triggered the call, which we ignore.
+		_updateCustomPostDataFromFieldMappingStore: function() {
+			var post_data = '';
+			var _this = this;
+			var store = this.field_mapping_store;
+			store.fetch({
+				onItem: function(item) {
+					post_data += '<Field term="' + store.getValue(item, 'Term') + '">';
+					post_data += store.getValue(item, 'Field');
+					post_data += '</Field>';
+				},
+				onComplete: function() {
+					_this.custom_post_data_from_field_mapping_store = post_data;
+				},
+				onError: pion.handleFetchError
+			});
 		},
-		_handleAddNewTerm: function() {
-			this.grid.addRow([]);
-			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
-		},
+		// _insertCustomData() is called (indirectly) when the user clicks 'Save'.
 		_insertCustomData: function() {
-			var num_field_mappings = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount();
-			for (var i = 0; i < num_field_mappings; ++i) {
-				var row = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRow(i);
-				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				this.post_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
-			}
+			this.post_data += this.custom_post_data_from_field_mapping_store;
+		},
+		_handleAddNewMapping: function() {
+			this.field_mapping_store.newItem({ID: this.field_mapping_store.next_id++});
 		}
 	}
 );
@@ -95,63 +163,50 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
-			this.reactor.field_mapping_table = [];
-			var store = pion.reactors.config_store;
-			store.fetch({
-				query: {'@id': this.reactor.config['@id']},
-				onItem: function(item) {
-					var field_mappings = store.getValues(item, 'Field');
-					for (var i = 0; i < field_mappings.length; ++i) {
-						var row = [];
-						row[0] = store.getValue(field_mappings[i], 'text()');
-						row[1] = store.getValue(field_mappings[i], '@term');
-						console.debug('row = ', row);
-						_this.reactor.field_mapping_table.push(row);
-					}
-					plugins.reactors.DatabaseOutputReactorDialog.grid_model.setData(_this.reactor.field_mapping_table);
-					var grid = _this.grid;
-					dojo.connect(grid, 'onCellClick', grid, _this._handleCellClick);
-					setTimeout(function(){
-						grid.update();
-						grid.resize();
-					}, 200);
-				},
-				onError: pion.handleFetchError
+			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
+				_this._updateCustomPutDataFromFieldMappingStore();
+				_this.connect(_this.reactor.field_mapping_store, 'onNew', '_updateCustomPutDataFromFieldMappingStore');
+				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromFieldMappingStore');
+				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromFieldMappingStore');
+				dojo.disconnect(h);
+			});
+			this.reactor.reloadFieldMappingStore();
+			var field_mapping_grid = new dojox.grid.DataGrid({
+				store: this.reactor.field_mapping_store,
+				structure: plugins.reactors.DatabaseOutputReactorDialog.grid_layout,
+				singleClickEdit: true,
+				autoHeight: true
+			}, document.createElement('div'));
+			this.field_mapping_grid_node.appendChild(field_mapping_grid.domNode);
+			field_mapping_grid.startup();
+			field_mapping_grid.connect(field_mapping_grid, 'onCellClick', function(e) {
+				if (e.cell.name == 'Delete') {
+					this.store.deleteItem(this.getItem(e.rowIndex));
+				}
 			});
 		},
-		_handleCellClick: function(e) {
-			console.debug('e.rowIndex = ', e.rowIndex, ', e.cellIndex = ', e.cellIndex);
-			if (e.cellIndex == 2) {
-				console.debug('Removing row ', e.rowIndex); 
-				this.removeSelectedRows();
-			}
+		// _updateCustomPutDataFromFieldMappingStore() will be passed arguments related to the item which triggered the call, which we ignore.
+		_updateCustomPutDataFromFieldMappingStore: function() {
+			this.reactor.updateNamedCustomPutData('custom_put_data_from_field_mapping_store');
 		},
-		_handleAddNewTerm: function() {
-			this.grid.addRow([]);
-			//dojo.addClass(selected_pane.domNode, 'unsaved_changes');
-		},
+		// _insertCustomData() is called (indirectly) when the user clicks 'Save Reactor'.
 		_insertCustomData: function() {
-			var num_field_mappings = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRowCount();
-			for (var i = 0; i < num_field_mappings; ++i) {
-				var row = plugins.reactors.DatabaseOutputReactorDialog.grid_model.getRow(i);
-				console.debug('frag: <Field term="' + row[1] + '">' + row[0] + '</Field>');
-				this.put_data += '<Field term="' + row[1] + '">' + row[0] + '</Field>';
-			}
+			this.put_data += this.reactor.custom_put_data_from_field_mapping_store;
+		},
+		_handleAddNewMapping: function() {
+			this.reactor.field_mapping_store.newItem({ID: this.reactor.field_mapping_store.next_id++});
 		}
 	}
 );
 
-plugins.reactors.DatabaseOutputReactorDialog.grid_model = new dojox.grid.data.Table(null, []);
-
 plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
-	rows: [[
-		{ name: 'Field Name', styles: '', width: 'auto', 
-			editor: dojox.grid.editors.Input},
-		{ name: 'Term', styles: '', 
-			editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.FilteringSelect", 
-			editorProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" }, width: 'auto'},
-		{ name: 'Delete', styles: 'align: center;', width: 3, 
-		  value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
-	]]
+	defaultCell: { editable: true, type: dojox.grid.cells._Widget },
+	rows: [
+		{ field: 'Field', name: 'Field Name', width: 20 },
+		{ field: 'Term', name: 'Term', width: 'auto', 
+			widgetClass: "dijit.form.FilteringSelect", 
+			widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
+			value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+	]
 }];
-

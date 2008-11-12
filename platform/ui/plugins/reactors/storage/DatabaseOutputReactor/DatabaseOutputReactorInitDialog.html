@@ -22,9 +22,9 @@
 			></tr
 		></table
 	></div>
-	<div dojoAttachPoint="grid" dojoType="dojox.Grid" model="plugins.reactors.DatabaseOutputReactorDialog.grid_model"
-		 structure="plugins.reactors.DatabaseOutputReactorDialog.grid_layout" singleClickEdit="true" autoHeight="true"></div>
-	<button dojoAttachPoint="add_new_term_button" dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewTerm" class="add_new_row">ADD NEW TERM</button>
+	<h3>Field Mappings</h3>
+	<div class="reactor_dialog_grid" dojoAttachPoint="field_mapping_grid_node"></div>
+	<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewMapping" class="add_new_row">ADD NEW MAPPING</button>
 	<div class="save_cancel_delete">
 		<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: tryConfig">Save</button>
 		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
