@@ -141,24 +141,24 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 
 			// Arrange for destroyRecursive() to get called when the dialog is closed.
 			// This will, among other things, disconnect all the connections made via _Widget.connect().
-			// TODO: Make this work for IE.
 			// TODO: Move to ReactorDialog.postCreate()?
-			if (! dojo.isIE) {
-				this.connect(this, "onCancel", "destroyRecursive");
-			}
+			this.connect(this, "onCancel", function() {this.destroyRecursive(false)});
 
-			// TODO: Make this work for IE.
 			// TODO: Move to ReactorDialog.postCreate()?
 			// 		 Call destroyRecursive() at end of ReactorDialog.execute() instead?
 			// It would be nicer to connect to onExecute() instead, or better yet, to hide() in place of
 			// both onCancel() and execute(), but either would cause destroy() to be called before
 			// execute(), and then execute() wouldn't have access to the dialog fields.
-			if (! dojo.isIE) {
-				this.connect(this, "execute", "destroyRecursive");
-			}
+			this.connect(this, "execute", function() {this.destroyRecursive(false)});
 		},
-		uninitialize: function(){
-			this.comparison_grid.destroy();
+		uninitialize: function() {
+			this.inherited("uninitialize", arguments);
+
+			// In IE7, the grid has already been destroyed at this point, so this check
+			// avoids crashing due to trying to destroy it again.
+			if (this.comparison_grid.domNode) {
+				this.comparison_grid.destroy();
+			}
 		},
 		// _updateCustomPutDataFromComparisonStore() will be passed arguments related to the item which triggered the call, which we ignore.
 		_updateCustomPutDataFromComparisonStore: function() {

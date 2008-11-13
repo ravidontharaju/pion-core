@@ -25307,14 +25307,17 @@ this.comparison_grid=new dojox.grid.DataGrid({store:this.reactor.comparison_stor
 this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
 this.comparison_grid.startup();
 this.comparison_grid.connect(this.comparison_grid,"onCellClick",_this._handleCellClick);
-if(!dojo.isIE){
-this.connect(this,"onCancel","destroyRecursive");
-}
-if(!dojo.isIE){
-this.connect(this,"execute","destroyRecursive");
-}
+this.connect(this,"onCancel",function(){
+this.destroyRecursive(false);
+});
+this.connect(this,"execute",function(){
+this.destroyRecursive(false);
+});
 },uninitialize:function(){
+this.inherited("uninitialize",arguments);
+if(this.comparison_grid.domNode){
 this.comparison_grid.destroy();
+}
 },_updateCustomPutDataFromComparisonStore:function(){
 this.reactor.updateNamedCustomPutData("custom_put_data_from_comparison_store");
 },_insertCustomData:function(){
@@ -27996,6 +27999,9 @@ return _1c19;
 }});
 return _1c12;
 }});
+this.connect(this,"hide",function(){
+this.destroyRecursive(false);
+});
 },submitKey:function(e){
 var key=this.license_key.value;
 console.debug("key = ",key);
