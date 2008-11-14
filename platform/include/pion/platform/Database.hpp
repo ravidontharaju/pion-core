@@ -32,7 +32,7 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-	
+
 ///
 /// Database: abstract class for storing and retrieving Events
 ///
@@ -40,7 +40,7 @@ class PION_PLATFORM_API Database
 	: public PlatformPlugin
 {
 public:
-	
+
 	/// exception thrown if the database is busy & the query should be tried again later
 	class DatabaseBusyException : public std::exception {
 	public:
@@ -62,17 +62,70 @@ public:
 		OpenDatabaseException(const std::string& db_name)
 			: PionException("Unable to open database: ", db_name) {}
 	};
-	
-	
+
+	/// exception for missing configuration element
+	class DatabaseConfigMissing: public PionException {
+	public:
+		DatabaseConfigMissing(const std::string& database_id)
+			: PionException("Database template element missing: ", database_id) {}
+	};
+
+	class DatabaseClientException : public PionException {
+	public:
+		DatabaseClientException(const std::string& database_id)
+			: PionException("Database client not defined: ", database_id) {}
+	};
+
+	/// Isolation level must be: ReadUncommitted (default), ReadCommitted, RepeatableRead, Serializable
+	class InvalidIsolationLevel : public PionException {
+	public:
+		InvalidIsolationLevel(const std::string& database_id)
+			: PionException("Invalid Isolation level defined: ", database_id) {}
+	};
+
+	/// Bad type pair in Vocabulary-to-SQL map
+	class BadTypePair : public PionException {
+	public:
+		BadTypePair(const std::string& bad_pair)
+			: PionException("Bad SQL Type pair: ", bad_pair) {}
+	};
+
+	/// Every database engine must have Vocabulary-to-SQL map
+	class MissingTypeMap : public PionException {
+	public:
+		MissingTypeMap(const std::string& database_id)
+			: PionException("SQL Type map missing: ", database_id) {}
+	};
+
+	class MissingTemplateException : public PionException {
+	public:
+		MissingTemplateException(const std::string& database_id)
+			: PionException("Database template file not found: ", database_id) {}
+	};
+
+	class MissingRootElementException : public PionException {
+	public:
+		MissingRootElementException(const std::string& database_id)
+			: PionException("Database template file missing root element: ", database_id) {}
+	};
+
+	class ReadConfigException: public PionException {
+	public:
+		ReadConfigException(const std::string& database_id)
+			: PionException("Database template file not readable: ", database_id) {}
+	};
+
 	/// constructs a new Database object
-	Database(void) {}
-	
+	Database(void)
+		: m_isolation_level(IL_LevelUnknown)
+	{}
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Database() {}
-	
+
 	/**
 	 * retrieves a pre-compiled query for the database
-	 * 
+	 *
 	 * @param query_id string used to uniquely identify the type of query
 	 * @return QueryPtr pointer to the compiled query
 	 */
@@ -82,21 +135,21 @@ public:
 			throw QueryNotFoundException(query_id);
 		return i->second;
 	}
-	
+
 	/**
 	 * clones the Database, returning a pointer to the cloned copy
 	 *
 	 * @return DatabasePtr pointer to the cloned copy of the Database
 	 */
 	virtual boost::shared_ptr<Database> clone(void) const = 0;
-	
+
 	/**
 	 * opens the database connection
 	 *
 	 * @param create_backup if true, create a backup of the old database before opening
 	 */
 	virtual void open(bool create_backup = false) = 0;
-	
+
 	/// closes the database connection
 	virtual void close(void) = 0;
 
@@ -109,7 +162,7 @@ public:
 	 * @param sql_query SQL query to execute
 	 */
 	virtual void runQuery(const std::string& sql_query) = 0;
-	
+
 	/**
 	 * adds a compiled SQL query to the database
 	 *
@@ -117,7 +170,7 @@ public:
 	 * @param sql_query SQL query to compile and cache for later use
 	 */
 	virtual QueryPtr addQuery(QueryID query_id, const std::string& sql_query) = 0;
-	
+
 	/**
 	 * creates a database table for output, if it does not already exist
 	 *
@@ -126,7 +179,7 @@ public:
 	 */
 	virtual void createTable(const Query::FieldMap& field_map,
 							 const std::string& table_name) = 0;
-	
+
 	/**
 	 * prepares the query that is used to insert events
 	 *
@@ -144,14 +197,14 @@ public:
 	 * @return QueryPtr smart pointer to the "begin transaction" query
 	 */
 	virtual QueryPtr getBeginTransactionQuery(void) = 0;
-	
+
 	/**
 	 * returns the query that is used to end and commit transactions
 	 *
 	 * @return QueryPtr smart pointer to the "commit transaction" query
 	 */
 	virtual QueryPtr getCommitTransactionQuery(void) = 0;
-	
+
 	/**
 	 * sets configuration parameters for this Database
 	 *
@@ -160,40 +213,110 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
-	
-	
+
+	void stringReplace(std::string& src, const char* search, const std::string& substitute);
+
+	std::string& stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map, const std::string& table_name);
+
+	/// Database Isolation Levels
+	enum IsolationLevel_t {
+		IL_LevelUnknown = -1,
+		IL_ReadUncommitted,
+		IL_ReadCommitted,
+		IL_RepeatableRead,
+		IL_Serializable
+	};
+
 protected:
 
 	/// protected copy function (use clone() instead)
 	inline void copyDatabase(const Database& d) {
 		PlatformPlugin::copyPlugin(d);
+		// clone all the top level defined member variables
+		m_database_engine = d.m_database_engine;
+		m_database_client = d.m_database_client;
+		m_begin_insert = d.m_begin_insert;
+		m_commit_insert = d.m_commit_insert;
+		m_create_log = d.m_create_log;
+		m_insert_log = d.m_insert_log;
+		m_create_stat = d.m_create_stat;
+		m_update_stat = d.m_update_stat;
+		m_select_stat = d.m_select_stat;
+		m_isolation_level = d.m_isolation_level;
+		// Query_map will be overridden
+//		m_query_map = d.m_query_map;
+		m_sql_affinity = d.m_sql_affinity;
 	}
-	
-	
+
+
 	/// data type that maps query identifiers to pointers of compiled queries
 	typedef std::map<QueryID, QueryPtr>		QueryMap;
-	
-	
+
+
 	/// unique identifier used to represent the "insert event" query
-	static const std::string				INSERT_QUERY_ID;	
-	
-	
+	static const std::string				INSERT_QUERY_ID;
+
+
 	/// unique identifier used to represent the "begin transaction" query
-	static const std::string				BEGIN_QUERY_ID;	
+	static const std::string				BEGIN_QUERY_ID;
 
 	/// unique identifier used to represent the "commit transaction" query
-	static const std::string				COMMIT_QUERY_ID;	
+	static const std::string				COMMIT_QUERY_ID;
 
+	static const std::string				TEMPLATE_FILE;
+	static const std::string				ROOT_ELEMENT_NAME;
+	static const std::string				TEMPLATE_ELEMENT_NAME;
+	static const std::string				MAP_ELEMENT_NAME;
+	static const std::string				PAIR_ELEMENT_NAME;
+
+	static const std::string				ENGINE_ELEMENT_NAME;
+
+	static const std::string				CLIENT_ELEMENT_NAME;
+	static const std::string				BEGIN_ELEMENT_NAME;
+	static const std::string				COMMIT_ELEMENT_NAME;
+	static const std::string				CREATE_LOG_ELEMENT_NAME;
+	static const std::string				INSERT_LOG_ELEMENT_NAME;
+	static const std::string				ISOLATION_ELEMENT_NAME;
+
+	static const std::string				CREATE_STAT_ELEMENT_NAME;
+	static const std::string				UPDATE_STAT_ELEMENT_NAME;
+	static const std::string				SELECT_STAT_ELEMENT_NAME;
+
+	void readConfig(const xmlNodePtr config_ptr, std::string engine_str);
+	void readConfigDetails(const xmlNodePtr config_ptr);
+
+	/// Database engine name, e.g. MySQL-MyISAM
+	/// This is used to find a matching set of SQL from configuation file
+	std::string								m_database_engine;
+
+	/// name of database client, e.g. MySQL
+	std::string								m_database_client;
+
+	/// begin & commit insert strings
+	std::string								m_begin_insert;
+	std::string								m_commit_insert;
+	std::string								m_create_log;
+	std::string								m_insert_log;
+
+	std::string								m_create_stat;
+	std::string								m_update_stat;
+	std::string								m_select_stat;
+
+	/// Isolation level, default is SA_ReadUncommitted (for speed/ease)
+	IsolationLevel_t						m_isolation_level;
 
 	/// used to keep track of all the database's pre-compiled queries
 	QueryMap								m_query_map;
-};	
 
-	
+	/// Affinity map; index is term_type, value should be compatible SQL type
+	std::vector<std::string>				m_sql_affinity;
+};
+
+
 /// data type used for Database smart pointers
 typedef boost::shared_ptr<Database>			DatabasePtr;
 
-	
+
 //
 // The following symbols must be defined for any Databases that you would
 // like to be able to load dynamically using the DatabaseManager::load()
@@ -217,7 +340,7 @@ typedef boost::shared_ptr<Database>			DatabasePtr;
 //		delete database_ptr;
 // }
 //
-	
+
 
 }	// end namespace platform
 }	// end namespace pion

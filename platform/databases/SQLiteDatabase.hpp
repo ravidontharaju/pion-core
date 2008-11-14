@@ -156,24 +156,6 @@ public:
 
 protected:
 
-	/**
-	 * returns the SQLite data type for a given Pion Vocabulary data type
-	 *
-	 * @param term_type the Pion Vocabulary data type
-	 *
-	 * @return int SQLITE_NULL, SQLITE_INTEGER, SQLITE_FLOAT, SQLITE_TEXT or SQLITE_BLOB
-	 */
-	static inline int getSQLiteType(const pion::platform::Vocabulary::DataType term_type);
-
-	/**
-	 * returns the SQLite affinity for a given Pion Vocabulary data type
-	 *
-	 * @param term_type the Pion Vocabulary data type
-	 *
-	 * @return std::string "NONE", "INTEGER", "REAL", "TEXT" or "NONE"
-	 */
-	static inline std::string getSQLiteAffinity(const pion::platform::Vocabulary::DataType term_type);
-
 	/// returns a string containing the SQLite API error message
 	inline std::string getSQLiteError(void);
 
@@ -324,17 +306,50 @@ protected:
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
-		// fetch methods are missing -- these will be implemented SOON
-		// Currently only EnterpriseDatabase can fetch result fields to queries
-		virtual void fetchString(unsigned int param, std::string& value) { }
-		virtual boost::int32_t fetchInt(unsigned int param) { return 0; }
-		virtual boost::uint32_t fetchUInt(unsigned int param) { return 0; }
-		virtual boost::int64_t fetchBigInt(unsigned int param) { return 0; }
-		virtual boost::uint64_t fetchUBigInt(unsigned int param) { return 0; }
-		virtual float fetchFloat(unsigned int param) { return 0; }
-		virtual double fetchDouble(unsigned int param) { return 0; }
-		virtual long double fetchLongDouble(unsigned int param) { return 0; }
-		virtual void fetchDateTime(unsigned int param, PionDateTime& val) { }
+		/// Fetch a string from a column
+		virtual void fetchString(unsigned int param, std::string& value) {
+			value = (const char *)sqlite3_column_text(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch an int from a column
+		virtual boost::int32_t fetchInt(unsigned int param) {
+			return sqlite3_column_int(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch an unsigned int from a column
+		virtual boost::uint32_t fetchUInt(unsigned int param) {
+			return sqlite3_column_int(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch a long int from a column
+		virtual boost::int64_t fetchBigInt(unsigned int param) {
+			return sqlite3_column_int64(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch an unsigned long int from a column
+		virtual boost::uint64_t fetchUBigInt(unsigned int param) {
+			return sqlite3_column_int64(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch a float from a column
+		virtual float fetchFloat(unsigned int param) {
+			return sqlite3_column_double(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch a double from a column
+		virtual double fetchDouble(unsigned int param) {
+			return sqlite3_column_double(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch a long double from a column
+		virtual long double fetchLongDouble(unsigned int param) {
+			return sqlite3_column_double(m_sqlite_stmt, param+1);
+		}
+
+		/// Fetch a date from a column
+		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
+            val = boost::posix_time::time_from_string((const char *)sqlite3_column_text(m_sqlite_stmt, param+1));
+		}
 
 		/**
 		 * runs the compiled query
@@ -345,6 +360,9 @@ protected:
 
 		/// resets the compiled query so that it can be run again
 		virtual void reset(void) { sqlite3_reset(m_sqlite_stmt); }
+
+		/// After a query, fetch a row into an event
+		bool fetchRow(const FieldMap& field_map, pion::platform::EventPtr e);
 
 
 	private:
@@ -378,78 +396,6 @@ private:
 
 
 // inline member functions for SQLiteDatabase
-
-inline int SQLiteDatabase::getSQLiteType(const pion::platform::Vocabulary::DataType term_type)
-{
-	switch(term_type) {
-		case pion::platform::Vocabulary::TYPE_NULL:
-		case pion::platform::Vocabulary::TYPE_OBJECT:
-			return SQLITE_NULL;
-			break;
-		case pion::platform::Vocabulary::TYPE_INT8:
-		case pion::platform::Vocabulary::TYPE_INT16:
-		case pion::platform::Vocabulary::TYPE_INT32:
-		case pion::platform::Vocabulary::TYPE_INT64:
-		case pion::platform::Vocabulary::TYPE_UINT8:
-		case pion::platform::Vocabulary::TYPE_UINT16:
-		case pion::platform::Vocabulary::TYPE_UINT32:
-		case pion::platform::Vocabulary::TYPE_UINT64:
-			return SQLITE_INTEGER;
-			break;
-		case pion::platform::Vocabulary::TYPE_FLOAT:
-		case pion::platform::Vocabulary::TYPE_DOUBLE:
-		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-			return SQLITE_FLOAT;
-			break;
-		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
-		case pion::platform::Vocabulary::TYPE_STRING:
-		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-		case pion::platform::Vocabulary::TYPE_CHAR:
-		case pion::platform::Vocabulary::TYPE_REGEX:
-		case pion::platform::Vocabulary::TYPE_DATE_TIME:
-		case pion::platform::Vocabulary::TYPE_DATE:
-		case pion::platform::Vocabulary::TYPE_TIME:
-			return SQLITE_TEXT;
-			break;
-	}
-}
-
-inline std::string SQLiteDatabase::getSQLiteAffinity(const pion::platform::Vocabulary::DataType term_type)
-{
-	std::string affinity;
-	switch(term_type) {
-		case pion::platform::Vocabulary::TYPE_NULL:
-		case pion::platform::Vocabulary::TYPE_OBJECT:
-			affinity = "NONE";
-			break;
-		case pion::platform::Vocabulary::TYPE_INT8:
-		case pion::platform::Vocabulary::TYPE_INT16:
-		case pion::platform::Vocabulary::TYPE_INT32:
-		case pion::platform::Vocabulary::TYPE_INT64:
-		case pion::platform::Vocabulary::TYPE_UINT8:
-		case pion::platform::Vocabulary::TYPE_UINT16:
-		case pion::platform::Vocabulary::TYPE_UINT32:
-		case pion::platform::Vocabulary::TYPE_UINT64:
-			affinity = "INTEGER";
-			break;
-		case pion::platform::Vocabulary::TYPE_FLOAT:
-		case pion::platform::Vocabulary::TYPE_DOUBLE:
-		case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-			affinity = "REAL";
-			break;
-		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
-		case pion::platform::Vocabulary::TYPE_STRING:
-		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-		case pion::platform::Vocabulary::TYPE_CHAR:
-		case pion::platform::Vocabulary::TYPE_REGEX:
-		case pion::platform::Vocabulary::TYPE_DATE_TIME:
-		case pion::platform::Vocabulary::TYPE_DATE:
-		case pion::platform::Vocabulary::TYPE_TIME:
-			affinity = "TEXT";
-			break;
-	}
-	return affinity;
-}
 
 inline std::string SQLiteDatabase::getSQLiteError(void)
 {

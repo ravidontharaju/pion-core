@@ -34,17 +34,19 @@ namespace plugins {		// begin namespace plugins
 const std::string			SQLiteDatabase::BACKUP_FILE_EXTENSION = ".bak";
 const std::string			SQLiteDatabase::FILENAME_ELEMENT_NAME = "Filename";
 
-	
+
 // SQLiteDatabase member functions
 
 void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Database::setConfig(v, config_ptr);
-	
+
+	readConfig(config_ptr, "SQLite");
+
 	// get the Filename of the database
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_database_name, config_ptr))
 		throw EmptyFilenameException(getId());
-	
+
 	// resolve paths relative to the DatabaseManager's config file location
 	m_database_name = getDatabaseManager().resolveRelativePath(m_database_name);
 }
@@ -56,7 +58,7 @@ DatabasePtr SQLiteDatabase::clone(void) const
 	db_ptr->m_database_name = m_database_name;
 	return DatabasePtr(db_ptr);
 }
-	
+
 void SQLiteDatabase::open(bool create_backup)
 {
 	// create a backup copy of the database before opening it
@@ -67,7 +69,7 @@ void SQLiteDatabase::open(bool create_backup)
 			boost::filesystem::remove(backup_filename);
 		boost::filesystem::copy_file(m_database_name, backup_filename);
 	}
-	
+
 	// open up the database
 	if (sqlite3_open(m_database_name.c_str(), &m_sqlite_db) != SQLITE_OK) {
 		// prevent memory leak (sqlite3 assigns handle even if error)
@@ -91,7 +93,7 @@ void SQLiteDatabase::runQuery(const std::string& sql_query)
 	// sanity checks
 	PION_ASSERT(is_open());
 	PION_ASSERT(! sql_query.empty());
-	
+
 	// execute the query
 	if (sqlite3_exec(m_sqlite_db, sql_query.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
 		throw SQLiteAPIException(getSQLiteError());
@@ -107,7 +109,7 @@ QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 
 	// generate a new database query object
 	QueryPtr query_ptr(new SQLiteQuery(sql_query, m_sqlite_db));
-	
+
 	// add the query to our query map
 	m_query_map.insert(std::make_pair(query_id, query_ptr));
 
@@ -121,25 +123,9 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 	PION_ASSERT(is_open());
 
 	// build a SQL query to create the output table if it doesn't yet exist
-	std::string create_table_sql = "CREATE TABLE IF NOT EXISTS ";
-	create_table_sql += table_name;
-	create_table_sql += " ( ";
-	
-	// add an auto-incrementing primary key (transactional table)
-	create_table_sql += table_name;
-	create_table_sql += "_key INTEGER PRIMARY KEY AUTOINCREMENT, ";
-	
-	// add database fields for each mapping configured
-	Query::FieldMap::const_iterator field_it = field_map.begin();
-	while (field_it != field_map.end()) {
-		create_table_sql += field_it->second.first;
-		create_table_sql += ' ';
-		create_table_sql += SQLiteDatabase::getSQLiteAffinity(field_it->second.second.term_type);
-		if (++field_it != field_map.end())
-			create_table_sql += ", ";
-	}	
-	create_table_sql += " );";
-	
+	std::string create_table_sql = m_create_log;
+	stringSubstitutes(create_table_sql, field_map, table_name);
+
 	// run the SQL query to create the table
 	runQuery(create_table_sql);
 }
@@ -153,30 +139,11 @@ QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
 	QueryMap::const_iterator query_it = m_query_map.find(INSERT_QUERY_ID);
 	if (query_it != m_query_map.end())
 		return query_it->second;
-	
+
 	// build a SQL query that can be used to insert a new record
-	std::string insert_sql = "INSERT INTO ";
-	insert_sql += table_name;
-	insert_sql += " ( ";
-	
-	// add database fields for each mapping configured
-	Query::FieldMap::const_iterator field_it = field_map.begin();
-	while (field_it != field_map.end()) {
-		insert_sql += field_it->second.first;
-		if (++field_it != field_map.end())
-			insert_sql += ", ";
-	}	
-	insert_sql += " ) VALUES ( ";
-	
-	// use ? character for values, since this will be a prepared statement
-	field_it = field_map.begin();
-	while (field_it != field_map.end()) {
-		insert_sql += '?';
-		if (++field_it != field_map.end())
-			insert_sql += ", ";
-	}	
-	insert_sql += " );";
-	
+	std::string insert_sql = m_insert_log;
+	stringSubstitutes(insert_sql, field_map, table_name);
+
 	// compile the SQL query into a prepared statement
 	return addQuery(Database::INSERT_QUERY_ID, insert_sql);
 }
@@ -186,23 +153,23 @@ QueryPtr SQLiteDatabase::getBeginTransactionQuery(void)
 	PION_ASSERT(is_open());
 	QueryMap::const_iterator i = m_query_map.find(BEGIN_QUERY_ID);
 	if (i == m_query_map.end())
-		return addQuery(BEGIN_QUERY_ID, "BEGIN DEFERRED TRANSACTION;");
+		return addQuery(BEGIN_QUERY_ID, m_begin_insert);
 	return i->second;
-}	
+}
 
 QueryPtr SQLiteDatabase::getCommitTransactionQuery(void)
 {
 	PION_ASSERT(is_open());
 	QueryMap::const_iterator i = m_query_map.find(COMMIT_QUERY_ID);
 	if (i == m_query_map.end())
-		return addQuery(COMMIT_QUERY_ID, "COMMIT TRANSACTION;");
+		return addQuery(COMMIT_QUERY_ID, m_commit_insert);
 	return i->second;
-}	
+}
 
-	
+
 // SQLiteDatabase::SQLiteQuery member functions
-	
-	
+
+
 SQLiteDatabase::SQLiteQuery::SQLiteQuery(const std::string& sql_query, sqlite3 *db_ptr)
 	: Query(sql_query), m_sqlite_db(db_ptr), m_sqlite_stmt(NULL)
 {
@@ -212,7 +179,7 @@ SQLiteDatabase::SQLiteQuery::SQLiteQuery(const std::string& sql_query, sqlite3 *
 		SQLiteDatabase::throwAPIException(m_sqlite_db);
 	PION_ASSERT(m_sqlite_stmt != NULL);
 }
-	
+
 bool SQLiteDatabase::SQLiteQuery::run(void)
 {
 	// step forward to the next row in the query (if there are any)
@@ -236,7 +203,31 @@ bool SQLiteDatabase::SQLiteQuery::run(void)
 	return row_available;
 }
 
-	
+
+bool SQLiteDatabase::SQLiteQuery::fetchRow(const FieldMap& field_map, EventPtr e)
+{
+	bool row_available = false;
+	switch (sqlite3_step(m_sqlite_stmt)) {
+		case SQLITE_BUSY:
+			throw SQLiteDatabase::DatabaseBusyException();
+			break;
+		case SQLITE_ROW:
+			// a new result row is available
+			fetchEvent(field_map, e);
+			row_available = true;
+			break;
+		case SQLITE_DONE:
+			// query is finished; no more rows to return
+//			row_available = false;
+			break;
+		default:
+			SQLiteDatabase::throwAPIException(m_sqlite_db);
+			break;
+	}
+	return row_available;
+}
+
+
 }	// end namespace plugins
 }	// end namespace pion
 
