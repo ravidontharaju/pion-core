@@ -27217,7 +27217,7 @@ if(this.templatePath){
 this.templateString="";
 }
 },widgetsInTemplate:true});
-dojo.declare("plugins.protocols.ProtocolPane",[dijit.layout.AccordionPane],{templateString:"<div class='dijitAccordionPane protocol_pane'\r\n\t><div dojoAttachPoint='titleNode,focusNode' dojoAttachEvent='ondijitclick:_onTitleClick,onkeypress:_onTitleKeyPress,onfocus:_handleFocus,onblur:_handleFocus'\r\n\t\tclass='dijitAccordionTitle' wairole=\"tab\"\r\n\t\t><div class='dijitAccordionArrow'></div\r\n\t\t><div class='arrowTextUp' waiRole=\"presentation\">&#9650;</div\r\n\t\t><div class='arrowTextDown' waiRole=\"presentation\">&#9660;</div\r\n\t\t><div dojoAttachPoint='titleTextNode' class='dijitAccordionText'>${title}</div></div\r\n\t><div\r\n\t\t><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'\r\n\t\t\tclass='dijitAccordionBody' wairole=\"tabpanel\"\r\n\t\t\t><form dojoAttachPoint=\"form\" dojoType=\"dijit.form.Form\"\r\n\t\t\t\t><br/\r\n\t\t\t\t><table cellpadding=\"5\" cellspacing=\"0\" border=\"0\" width=\"100%\"\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Name</label></td\r\n\t\t\t\t\t\t><td><input dojoAttachPoint=\"name\" dojoType=\"dijit.form.TextBox\" name=\"Name\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t\t><td rowspan=\"4\" valign=\"top\" width=\"20\">&nbsp;</td\r\n\t\t\t\t\t\t><td rowspan=\"1\"><label>Comments</label></td\r\n\t\t\t\t\t\t><td rowspan=\"4\" valign=\"top\"><textarea rows=\"4\" style=\"width: 95%\" name=\"Comment\" class=\"comment\"></textarea></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>ID</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" disabled=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t\t><td rowspan=\"3\">&nbsp;</td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Plugin&nbsp;Type</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Plugin\" disabled=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Event&nbsp;Type</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"EventType\" dojoAttachEvent='onChange:markAsChanged'\r\n\t\t\t\t\t\t\t\tstore=\"pion.terms.store\" searchAttr=\"id\" query=\"{Type:'object'}\" autocomplete=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t></table\r\n\t\t\t\t><br/\r\n\t\t\t\t><table cellpadding=\"5\" cellspacing=\"0\" border=\"0\" style=\"border: 1px solid #999999;\" width=\"99%\"\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td class=\"matrixMainHeader\">Extraction Rules</td\r\n\t\t\t\t\t></tr><tr\r\n\t\t\t\t\t\t><td style=\"background-color: #f1f1f1;\"\r\n\t\t\t\t\t\t\t><div class=\"protocol_grid\"\r\n\t\t\t\t\t\t\t\t><div dojoAttachPoint=\"protocol_grid\" dojoType=\"dojox.Grid\" model=\"plugins.protocols.ProtocolPane.grid_model\"\r\n\t\t\t\t\t\t\t\t\t singleClickEdit=\"true\"></div\r\n\t\t\t\t\t\t\t></div\r\n\t\t\t\t\t\t\t><button dojoType=dijit.form.Button class=\"add_new_row\" dojoAttachEvent=\"onClick: _handleAddNewRow\">ADD NEW RULE</button\r\n\t\t\t\t\t\t></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t></table\r\n\t\t\t\t><hr noshade=\"noshade\" size=\"1\" color=\"#999999\"\r\n\t\t\t\t><div class=\"save_cancel_delete\"\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick:save\">Save Changes</button\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick:cancel\">Cancel Changes</button\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"delete\" dojoAttachEvent=\"onClick:delete2\">Delete Protocol</button\r\n\t\t\t\t></div\r\n\t\t\t></form\r\n\t\t></div\r\n\t></div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.protocols.ProtocolPane",[dijit.layout.AccordionPane],{templateString:"<div class='dijitAccordionPane protocol_pane'\r\n\t><div dojoAttachPoint='titleNode,focusNode' dojoAttachEvent='ondijitclick:_onTitleClick,onkeypress:_onTitleKeyPress,onfocus:_handleFocus,onblur:_handleFocus'\r\n\t\tclass='dijitAccordionTitle' wairole=\"tab\"\r\n\t\t><div class='dijitAccordionArrow'></div\r\n\t\t><div class='arrowTextUp' waiRole=\"presentation\">&#9650;</div\r\n\t\t><div class='arrowTextDown' waiRole=\"presentation\">&#9660;</div\r\n\t\t><div dojoAttachPoint='titleTextNode' class='dijitAccordionText'>${title}</div></div\r\n\t><div\r\n\t\t><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'\r\n\t\t\tclass='dijitAccordionBody' wairole=\"tabpanel\"\r\n\t\t\t><form dojoAttachPoint=\"form\" dojoType=\"dijit.form.Form\"\r\n\t\t\t\t><br/\r\n\t\t\t\t><table cellpadding=\"5\" cellspacing=\"0\" border=\"0\" width=\"100%\"\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Name</label></td\r\n\t\t\t\t\t\t><td><input dojoAttachPoint=\"name\" dojoType=\"dijit.form.TextBox\" name=\"Name\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t\t><td rowspan=\"4\" valign=\"top\" width=\"20\">&nbsp;</td\r\n\t\t\t\t\t\t><td rowspan=\"1\"><label>Comments</label></td\r\n\t\t\t\t\t\t><td rowspan=\"4\" valign=\"top\"><textarea rows=\"4\" style=\"width: 95%\" name=\"Comment\" class=\"comment\"></textarea></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>ID</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" disabled=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t\t><td rowspan=\"3\">&nbsp;</td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Plugin&nbsp;Type</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Plugin\" disabled=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td><label>Event&nbsp;Type</label></td\r\n\t\t\t\t\t\t><td><input dojoType=\"dijit.form.FilteringSelect\" name=\"EventType\" dojoAttachEvent='onChange:markAsChanged'\r\n\t\t\t\t\t\t\t\tstore=\"pion.terms.store\" searchAttr=\"id\" query=\"{Type:'object'}\" autocomplete=\"true\" style=\"width: 100%;\"/></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t></table\r\n\t\t\t\t><br/\r\n\t\t\t\t><table cellpadding=\"5\" cellspacing=\"0\" border=\"0\" style=\"border: 1px solid #999999;\" width=\"99%\"\r\n\t\t\t\t\t><tr\r\n\t\t\t\t\t\t><td class=\"matrixMainHeader\">Extraction Rules</td\r\n\t\t\t\t\t></tr><tr\r\n\t\t\t\t\t\t><td style=\"background-color: #f1f1f1;\"\r\n\t\t\t\t\t\t\t><div class=\"protocol_grid\" dojoAttachPoint=\"extraction_rule_grid_node\"></div\r\n\t\t\t\t\t\t\t><button dojoType=dijit.form.Button class=\"add_new_row\" dojoAttachEvent=\"onClick: _handleAddNewRule\">ADD NEW RULE</button\r\n\t\t\t\t\t\t></td\r\n\t\t\t\t\t></tr\r\n\t\t\t\t></table\r\n\t\t\t\t><hr noshade=\"noshade\" size=\"1\" color=\"#999999\"\r\n\t\t\t\t><div class=\"save_cancel_delete\"\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick:save\">Save Changes</button\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick:cancel\">Cancel Changes</button\r\n\t\t\t\t\t><button dojoType=dijit.form.Button class=\"delete\" dojoAttachEvent=\"onClick:delete2\">Delete Protocol</button\r\n\t\t\t\t></div\r\n\t\t\t></form\r\n\t\t></div\r\n\t></div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -27227,8 +27227,25 @@ this.inherited("postCreate",arguments);
 this.special_config_elements=["Extract","tagName","childNodes"];
 this.attributes_by_column=["@term"];
 var _this=this;
-dojo.connect(this.protocol_grid,"onCellClick",this,_this._handleCellClick);
-dojo.connect(this.protocol_grid,"onApplyCellEdit",this,_this._handleCellEdit);
+this.extraction_rule_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
+this.extraction_rule_store.next_id=0;
+this.extraction_rule_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"Term",name:"Term",width:16,widgetClass:"dijit.form.FilteringSelect",widgetProps:{store:pion.terms.store,searchAttr:"id",keyAttr:"id"}},{field:"Source",name:"Source",styles:"",width:7,widgetClass:"dijit.form.FilteringSelect",widgetProps:{store:plugins.protocols.source_store,searchAttr:"description"}},{field:"Name",name:"Name",width:7},{field:"Match",name:"Match",width:8,formatter:function(d){
+if(d&&d.toString()){
+return dojox.dtl._base.escape(d.toString());
+}else{
+return this.defaultValue;
+}
+}},{field:"Format",name:"Format",width:8},{field:"ContentType",name:"ContentType",width:8},{field:"MaxSize",name:"MaxSize",width:"auto"},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
+this.extraction_rule_grid=new dojox.grid.DataGrid({store:this.extraction_rule_store,structure:this.extraction_rule_grid_layout,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
+this.extraction_rule_grid.startup();
+this.extraction_rule_grid.connect(this.extraction_rule_grid,"onCellClick",function(e){
+if(e.cell.name=="Delete"){
+this.store.deleteItem(this.getItem(e.rowIndex));
+_this.markAsChanged();
+}
+});
+dojo.connect(this.extraction_rule_grid,"onApplyCellEdit",this,_this._handleCellEdit);
 dojo.query("input",this.domNode).forEach(function(n){
 dojo.connect(n,"change",_this,_this.markAsChanged);
 });
@@ -27239,122 +27256,100 @@ dojo.connect(n,"change",_this,_this.markAsChanged);
 return 470;
 },populateFromConfigItem:function(item){
 var store=pion.protocols.config_store;
-var _1b61={};
-var _1b62=store.getAttributes(item);
-for(var i=0;i<_1b62.length;++i){
-if(dojo.indexOf(this.special_config_elements,_1b62[i])==-1){
-_1b61[_1b62[i]]=store.getValue(item,_1b62[i]).toString();
+var _1b63={};
+var _1b64=store.getAttributes(item);
+for(var i=0;i<_1b64.length;++i){
+if(dojo.indexOf(this.special_config_elements,_1b64[i])==-1){
+_1b63[_1b64[i]]=store.getValue(item,_1b64[i]).toString();
 }
 }
 if(this._addCustomConfigValues){
-this._addCustomConfigValues(_1b61,item);
+this._addCustomConfigValues(_1b63,item);
 }
-console.dir(_1b61);
-this.form.setValues(_1b61);
-var _1b64=dojo.query("textarea.comment",this.form.domNode)[0];
-_1b64.value=_1b61.Comment;
-console.debug("config = ",_1b61);
-this.title=_1b61.Name;
-var _1b65=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
-_1b65.firstChild.nodeValue=this.title;
-var _1b66=this._makeExtractionRuleTable(item);
-plugins.protocols.ProtocolPane.grid_model.setData(_1b66);
-var grid=this.protocol_grid;
-this._setGridStructure(grid);
-setTimeout(function(){
-grid.update();
-grid.resize();
-},200);
+this.form.setValues(_1b63);
+var _1b66=dojo.query("textarea.comment",this.form.domNode)[0];
+_1b66.value=_1b63.Comment;
+this.title=_1b63.Name;
+var _1b67=dojo.query(".dijitAccordionTitle .dijitAccordionText",this.domNode)[0];
+_1b67.firstChild.nodeValue=this.title;
+this._reloadExtractionRuleStore(item);
 var node=this.domNode;
 setTimeout(function(){
 dojo.removeClass(node,"unsaved_changes");
 },500);
-},_makeExtractionRuleTable:function(item){
+},_reloadExtractionRuleStore:function(item){
+var _this=this;
+this.extraction_rule_store.fetch({onItem:function(item){
+_this.extraction_rule_store.deleteItem(item);
+},onComplete:function(){
 var store=pion.protocols.config_store;
-return dojo.map(store.getValues(item,"Extract"),function(item){
-var row=[];
-row.push(store.getValue(item,"@term"));
-row.push(store.getValue(item,"Source"));
-row.push(store.getValue(item,"Name"));
-if(store.hasAttribute(item,"Match")){
-row.push(store.getValue(item,"Match").toString());
-}else{
-row.push("");
-}
-row.push(store.getValue(item,"Format"));
-row.push(store.getValue(item,"ContentType"));
-row.push(store.getValue(item,"MaxSize"));
-return row;
+dojo.forEach(store.getValues(item,"Extract"),function(_1b6d){
+var _1b6e={ID:_this.extraction_rule_store.next_id++,Term:store.getValue(_1b6d,"@term"),Source:store.getValue(_1b6d,"Source"),Name:store.getValue(_1b6d,"Name"),Match:store.getValue(_1b6d,"Match"),Format:store.getValue(_1b6d,"Format"),ContentType:store.getValue(_1b6d,"ContentType"),MaxSize:store.getValue(_1b6d,"MaxSize")};
+_this.extraction_rule_store.newItem(_1b6e);
 });
-},_setGridStructure:function(grid){
-if(!this.default_grid_layout){
-this.initGridLayouts();
-}
-grid.setStructure(this.default_grid_layout);
-},_handleCellClick:function(e){
-console.debug("e.rowIndex = ",e.rowIndex,", e.cellIndex = ",e.cellIndex);
-if(e.cellIndex==this.protocol_grid.delete_column_index){
-dojo.addClass(this.domNode,"unsaved_changes");
-console.debug("Removing row ",e.rowIndex);
-this.protocol_grid.removeSelectedRows();
-}
+},onError:pion.handleFetchError});
+this.extraction_rule_grid.resize();
 },_handleCellEdit:function(_1b6f,_1b70,_1b71){
 console.debug("ProtocolPane._handleCellEdit inValue = ",_1b6f,", inRowIndex = ",_1b70,", inFieldIndex = ",_1b71);
 dojo.addClass(this.domNode,"unsaved_changes");
-},_handleAddNewRow:function(){
+},_handleAddNewRule:function(){
 this.markAsChanged();
-this.protocol_grid.addRow([]);
+this.extraction_rule_store.newItem({ID:this.extraction_rule_store.next_id++});
+},onExtractionRulePutDataReady:function(){
 },save:function(){
+this.connect(this,"onExtractionRulePutDataReady","doPutRequest");
+var _this=this;
+var _1b73="";
+var store=this.extraction_rule_store;
+store.fetch({onItem:function(item){
+_1b73+="<Extract term=\""+store.getValue(item,"Term")+"\">";
+_1b73+="<Source>"+store.getValue(item,"Source")+"</Source>";
+if(store.getValue(item,"Name")){
+_1b73+="<Name>"+store.getValue(item,"Name")+"</Name>";
+}
+if(store.getValue(item,"Match")){
+_1b73+="<Match>"+dojox.dtl._base.escape(store.getValue(item,"Match").toString())+"</Match>";
+}
+if(store.getValue(item,"Format")){
+_1b73+="<Format>"+store.getValue(item,"Format")+"</Format>";
+}
+if(store.getValue(item,"ContentType")){
+_1b73+="<ContentType>"+store.getValue(item,"ContentType")+"</ContentType>";
+}
+if(store.getValue(item,"MaxSize")){
+_1b73+="<MaxSize>"+store.getValue(item,"MaxSize")+"</MaxSize>";
+}
+_1b73+="</Extract>";
+},onComplete:function(){
+_this.extraction_rule_put_data=_1b73;
+_this.onExtractionRulePutDataReady();
 dojo.removeClass(this.domNode,"unsaved_changes");
-var _1b72=this.form.getValues();
-var _1b73=dojo.query("textarea.comment",this.form.domNode)[0];
-_1b72.Comment=_1b73.value;
-var _1b74="<PionConfig><Protocol>";
-for(var tag in _1b72){
+},onError:pion.handleFetchError});
+},doPutRequest:function(){
+var _1b76=this.form.getValues();
+var _1b77=dojo.query("textarea.comment",this.form.domNode)[0];
+_1b76.Comment=_1b77.value;
+var _1b78="<PionConfig><Protocol>";
+for(var tag in _1b76){
 if(tag.charAt(0)!="@"&&tag!="options"){
-console.debug("config[",tag,"] = ",_1b72[tag]);
-_1b74+="<"+tag+">"+_1b72[tag]+"</"+tag+">";
+console.debug("config[",tag,"] = ",_1b76[tag]);
+_1b78+="<"+tag+">"+_1b76[tag]+"</"+tag+">";
 }
 }
 if(this._makeCustomElements){
-_1b74+=this._makeCustomElements(_1b72);
+_1b78+=this._makeCustomElements(_1b76);
 }
-_1b74+=this._makeExtractionRuleElements();
-_1b74+="</Protocol></PionConfig>";
-console.debug("put_data: ",_1b74);
+_1b78+=this.extraction_rule_put_data;
+_1b78+="</Protocol></PionConfig>";
+console.debug("put_data: ",_1b78);
 _this=this;
-dojo.rawXhrPut({url:"/config/protocols/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b74,load:function(_1b76){
-console.debug("response: ",_1b76);
+dojo.rawXhrPut({url:"/config/protocols/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b78,load:function(_1b7a){
+console.debug("response: ",_1b7a);
 pion.protocols.config_store.fetch({query:{"@id":_this.uuid},onItem:function(item){
 _this.config_item=item;
 _this.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b74})});
-},_makeExtractionRuleElements:function(){
-var _1b78=plugins.protocols.ProtocolPane.grid_model.getRowCount();
-var _1b79="";
-for(var i=0;i<_1b78;++i){
-var row=plugins.protocols.ProtocolPane.grid_model.getRow(i);
-_1b79+="<Extract term=\""+row[this.protocol_grid.term_column_index]+"\">";
-_1b79+="<Source>"+row[this.protocol_grid.source_column_index]+"</Source>";
-if(row[this.protocol_grid.name_column_index]){
-_1b79+="<Name>"+row[this.protocol_grid.name_column_index]+"</Name>";
-}
-if(row[this.protocol_grid.match_column_index]){
-_1b79+="<Match>"+dojox.dtl._base.escape(row[this.protocol_grid.match_column_index])+"</Match>";
-}
-if(row[this.protocol_grid.format_column_index]){
-_1b79+="<Format>"+row[this.protocol_grid.format_column_index]+"</Format>";
-}
-if(row[this.protocol_grid.content_type_column_index]){
-_1b79+="<ContentType>"+row[this.protocol_grid.content_type_column_index]+"</ContentType>";
-}
-if(row[this.protocol_grid.max_size_column_index]){
-_1b79+="<MaxSize>"+row[this.protocol_grid.max_size_column_index]+"</MaxSize>";
-}
-_1b79+="</Extract>";
-}
-return _1b79;
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b78})});
 },cancel:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
 this.populateFromConfigItem(this.config_item);
@@ -27372,18 +27367,7 @@ return _1b7c;
 },markAsChanged:function(){
 console.debug("markAsChanged");
 dojo.addClass(this.domNode,"unsaved_changes");
-},initGridLayouts:function(){
-this.protocol_grid.term_column_index=0;
-this.protocol_grid.source_column_index=1;
-this.protocol_grid.name_column_index=2;
-this.protocol_grid.match_column_index=3;
-this.protocol_grid.format_column_index=4;
-this.protocol_grid.content_type_column_index=5;
-this.protocol_grid.max_size_column_index=6;
-this.protocol_grid.delete_column_index=7;
-this.default_grid_layout=[{rows:[[{name:"Term",styles:"",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.FilteringSelect",editorProps:{store:pion.terms.store,searchAttr:"id",keyAttr:"id"},width:12},{name:"Source",styles:"",width:"auto",editor:dojox.grid.editors.Dijit,editorClass:"dijit.form.FilteringSelect",editorProps:{store:plugins.protocols.source_store,searchAttr:"description"}},{name:"Name",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"Match",styles:"",width:"auto",editor:dojox.grid.editors.AlwaysOn},{name:"Format",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"ContentType",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"MaxSize",styles:"",width:"auto",editor:dojox.grid.editors.Input},{name:"Delete",styles:"align: center;",width:3,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]]}];
 },protocol:""});
-plugins.protocols.ProtocolPane.grid_model=new dojox.grid.data.Table(null,[]);
 plugins.protocols.source_store=new dojo.data.ItemFileReadStore({data:{identifier:"name",items:[{name:"query",description:"query"},{name:"cookie",description:"cookie"},{name:"cs-header",description:"cs-header"},{name:"sc-header",description:"sc-header"},{name:"cs-content",description:"cs-content"},{name:"sc-content",description:"sc-content"}]}});
 }
 if(!dojo._hasResource["pion.protocols"]){
