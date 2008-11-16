@@ -21,11 +21,39 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.inherited("postCreate", arguments);
 			this.special_config_elements.push('Events');
 			this.special_config_elements.push('Fields');
-			this.attributes_by_column = ['text()', '@term', '@start', '@end', '@optional', '@escape', '@empty'];
-			this.order_col_index = 7;
-			this.delete_col_index = 8;
 		},
-		getHeight: function() {
+		_initFieldMappingGridLayout: function() {
+			this.field_mapping_grid_layout = [{
+				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
+				rows: [
+					{ field: 'FieldName', name: 'Field Name', width: 15 },
+					{ field: 'Term', name: 'Term', width: 15, 
+						widgetClass: "dijit.form.FilteringSelect", 
+						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+					// TODO: restore validation.
+					{ field: 'StartChar', name: 'Start Char', styles: 'text-align: center', width: 3 },
+					// TODO: restore validation.
+					{ field: 'EndChar', name: 'End Char', styles: 'text-align: center', width: 3 },
+					{ field: 'StartEndOptional', name: 'Start/End Optional', width: 4, 
+						type: dojox.grid.cells.Bool },
+					// TODO: restore validation.
+					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center', width: 3 },
+					{ field: 'EmptyString', name: 'Empty String', width: 3,
+						formatter: function(d) {
+							if (d && d.toString()) {
+								return dojox.dtl._base.escape(d.toString());
+							} else {
+								return this.defaultValue
+							}
+						} },
+					{ field: 'Order', name: 'Order', width: 'auto',
+						widgetClass: "dijit.form.NumberSpinner" },
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
+						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+				]
+			}];
+		},
+ 		getHeight: function() {
 			// TODO: replace 610 with some computed value
 			return 610;
 		},
@@ -43,7 +71,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			if (store.hasAttribute(item, 'Headers')) {
 				if (store.getValue(item, 'Headers').toString() == 'true') {
 					config.options.push('Headers');
-					this.disableAndClearSeparatorFields();
+					this.disableAndClearFieldSeparatorFields();
 					headers = true;
 				}
 			}
@@ -91,33 +119,34 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			put_data += '/>';
 			return put_data;
 		},
-		_makeFieldTable: function(item) {
-			var store = pion.codecs.config_store;
-			var field_attrs = store.getValues(item, 'Field');
-			var field_table = [];
-			this.order_map = [];
-			for (var i = 0; i < field_attrs.length; ++i) {
-				var field_table_row = [];
-				for (var j = 0; j < this.attributes_by_column.length; ++j) {
-					field_table_row[j] = store.getValue(field_attrs[i], this.attributes_by_column[j]);
-				}
-				field_table_row[this.order_col_index] = i + 1;
-				field_table.push(field_table_row);
 
-				this.order_map[i] = i + 1;
-			}
-			return field_table;
+		// Overrides CodecPane._repopulateFieldMappingStore().
+		_repopulateFieldMappingStore: function(codec_config_item) {
+			var _this = this;
+			var store = pion.codecs.config_store;
+			_this.order_map = [];
+			var order = 1;
+			dojo.forEach(store.getValues(codec_config_item, 'Field'), function(field_mapping) {
+				var field_mapping_item = {
+					ID: _this.field_mapping_store.next_id++,
+					FieldName: store.getValue(field_mapping, 'text()'),
+					Term: store.getValue(field_mapping, '@term'),
+					StartChar: store.getValue(field_mapping, '@start'),
+					EndChar: store.getValue(field_mapping, '@end'),
+					StartEndOptional: store.getValue(field_mapping, '@optional'),
+					EscapeChar: store.getValue(field_mapping, '@escape'),
+					EmptyString: store.getValue(field_mapping, '@empty'),
+					Order: order
+				};
+				_this.field_mapping_store.newItem(field_mapping_item);
+
+				_this.order_map.push(order++);
+			});
 		},
-		_setGridStructure: function(grid) {
-			if (!plugins.codecs.CodecPane.log_codec_grid_layout) {
-				plugins.codecs.initGridLayouts();
-			}
-			grid.setStructure(plugins.codecs.CodecPane.log_codec_grid_layout);
-		},
-		_handleCellEdit: function(inValue, inRowIndex, inFieldIndex) {
-			console.debug('LogCodecPane._handleCellEdit inValue = ', inValue, ', inRowIndex = ', inRowIndex, ', inFieldIndex = ', inFieldIndex);
+		_handleCellEdit: function(inValue, inRowIndex, attr_name) {
+			console.debug('LogCodecPane._handleCellEdit inValue = ', inValue, ', inRowIndex = ', inRowIndex, ', attr_name = ', attr_name);
 			dojo.addClass(this.domNode, 'unsaved_changes');
-			if (inFieldIndex == this.order_col_index) {
+			if (attr_name == 'Order') {
 				var old_order = this.order_map[inRowIndex];
 				var order_map = this.order_map;
 				console.debug('1: order_map = ', order_map);
@@ -136,21 +165,15 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					}
 				}
 				console.debug('2: order_map = ', order_map);
-				var field_table = [];
 				for (var i = 0; i < order_map.length; ++i) {
-					var row = plugins.codecs.CodecPane.grid_model.getRow(i);
-					row[this.order_col_index] = order_map[i];
-					field_table.push(row);
-
-					// The problem with using setDatum here is that if the table is currently 
-					// sorted by order, it will sort after each update, messing up the ordering.
-					//model.setDatum(order_map[i], i, this.order_col_index);
+					var item = this.field_mapping_grid.getItem(i);
+					this.field_mapping_store.setValue(item, 'Order', order_map[i]);
 				}
-				plugins.codecs.CodecPane.grid_model.setData(field_table);
 			}
 		},
-		_makeFieldElements: function() {
-			var num_field_mappings = plugins.codecs.CodecPane.grid_model.getRowCount();
+		// Overrides CodecPane._makeFieldElements().
+		_makeFieldElements: function(items) {
+			var num_field_mappings = items.length;
 			var inverse_order_map = [];
 			for (var i = 0; i < num_field_mappings; ++i) {
 				if (this.order_map.length == num_field_mappings) {
@@ -164,25 +187,26 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			console.debug('this.order_map = ', this.order_map);
 			console.debug('inverse_order_map = ', inverse_order_map);
 			var put_data = '';
+			var store = this.field_mapping_store;
 			for (var i = 0; i < num_field_mappings; ++i) {
-				var row = plugins.codecs.CodecPane.grid_model.getRow(inverse_order_map[i]);
-				put_data += '<Field term="' + row[1] + '"';
-				if (row[2]) {
-					put_data += ' start="' + dojox.dtl._base.escape(row[2]) + '"';
+				var item = items[inverse_order_map[i]];
+				put_data += '<Field term="' + store.getValue(item, 'Term') + '"';
+				if (store.getValue(item, 'StartChar')) {
+					put_data += ' start="' + dojox.dtl._base.escape(store.getValue(item, 'StartChar')) + '"';
 				}
-				if (row[3]) {
-					put_data += ' end="' + dojox.dtl._base.escape(row[3]) + '"';
+				if (store.getValue(item, 'EndChar')) {
+					put_data += ' end="' + dojox.dtl._base.escape(store.getValue(item, 'EndChar')) + '"';
 				}
-				if (row[4]) {
+				if (store.getValue(item, 'StartEndOptional')) {
 					put_data += ' optional="true"';
 				}
-				if (row[5]) {
-					put_data += ' escape="' + dojox.dtl._base.escape(row[5]) + '"';
+				if (store.getValue(item, 'EscapeChar')) {
+					put_data += ' escape="' + dojox.dtl._base.escape(store.getValue(item, 'EscapeChar')) + '"';
 				}
-				if (row[6]) {
-					put_data += ' empty="' + dojox.dtl._base.escape(row[6]) + '"';
+				if (store.getValue(item, 'EmptyString')) {
+					put_data += ' empty="' + dojox.dtl._base.escape(store.getValue(item, 'EmptyString')) + '"';
 				}
-				put_data += '>' + row[0] + '</Field>';
+				put_data += '>' + store.getValue(item, 'FieldName') + '</Field>';
 			}
 			return put_data;
 		},

@@ -42,7 +42,6 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			this.special_config_elements = ['Extract', 'tagName', 'childNodes'];
-			this.attributes_by_column = ['@term'];
 			var _this = this;
 			this.extraction_rule_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -190,7 +189,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				onComplete: function() {
 					_this.extraction_rule_put_data = put_data;
 					_this.onExtractionRulePutDataReady();
-					dojo.removeClass(this.domNode, 'unsaved_changes');
+					dojo.removeClass(_this.domNode, 'unsaved_changes');
 				},
 				onError: pion.handleFetchError
 			});

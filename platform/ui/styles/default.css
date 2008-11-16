@@ -799,8 +799,11 @@ The following are also available, if the need arises.
 }
 
 
+.plugin_pane_grid {
+	overflow: auto;
+}
+
 .codec_grid {
-	overflow: hidden;
 	height: 180px;
 }
 
@@ -810,7 +813,6 @@ The following are also available, if the need arises.
 }
 
 .protocol_grid {
-	overflow: hidden;
 	height: 180px;
 }
 

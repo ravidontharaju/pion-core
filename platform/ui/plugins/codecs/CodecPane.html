@@ -29,7 +29,7 @@
 					></tr
 					><tr
 						><td><label>Event&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
+						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange: markAsChanged'
 								store="pion.terms.store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
 					></tr
 				></table
@@ -39,10 +39,7 @@
 						><td class="matrixMainHeader">Map Field Names to Terms</td
 					></tr><tr
 						><td style="background-color: #f1f1f1;"
-							><div class="codec_grid"
-								><div dojoAttachPoint="codec_grid" dojoType="dojox.Grid" model="plugins.codecs.CodecPane.grid_model"
-									 singleClickEdit="true"></div
-							></div
+							><div class="codec_grid plugin_pane_grid" dojoAttachPoint="field_mapping_grid_node"></div
 							><button dojoType=dijit.form.Button class="add_new_row" dojoAttachEvent="onClick:_handleAddNewField">ADD NEW ROW</button
 						></td
 					></tr
