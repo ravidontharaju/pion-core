@@ -2,7 +2,6 @@ dojo.provide("plugins.reactors.Reactor");
 dojo.require("dijit.Dialog");
 dojo.require("dojo.dnd.Source");
 dojo.require("dijit.form.Button");
-dojo.require("dojox.grid.Grid");
 dojo.require("pion.reactors");
 
 dojo.declare("plugins.reactors.Reactor",

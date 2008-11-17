@@ -1,4 +1,3 @@
-//alert('vocabularies.js 1');
 dojo.provide("pion.vocabularies");
 dojo.require("plugins.vocabularies.Vocabulary");
 dojo.require("dojo.data.ItemFileReadStore");
@@ -10,7 +9,6 @@ dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
-dojo.require("dojox.grid.Grid");
 dojo.require("dojox.xml.DomParser");
 
 pion.vocabularies.getHeight = function() {
@@ -85,11 +83,11 @@ pion.vocabularies.init = function() {
 		}
 		selected_pane = pane;
 		pion.vocabularies.selected_pane = selected_pane;
-		pane.populateFromVocabStore();
+		pane.populateFromServerVocabStore();
 
-		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-		var slide_duration = dijit.byId('vocab_config_accordion').duration;
-		setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
+		//// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+		//var slide_duration = dijit.byId('vocab_config_accordion').duration;
+		//setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 	}
 
 	dojo.subscribe("vocab_config_accordion-selectChild", _paneSelected);
