@@ -1,47 +1,98 @@
 <div class="dijitDialog reactor_dialog transform_reactor_dialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
-	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Transform Reactor Configuration</span>
-	<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
-		<span dojoAttachPoint="closeText" class="closeText">x</span>
-	</span>
-	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
-		><table
-			><tr
-				><td><label>Name:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
-			></tr
-			><tr
-				><td><label>ID:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
-			></tr
-			><tr
-				><td><label>Comments:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
-			></tr
-			><tr
-				><td><label>All Conditions</label></td
-				><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="AllConditions"/></td
-			></tr
-			><tr
-				><td><label>Deliver Original</label></td
-				><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="DeliverOriginal"/></td
-			></tr
-		></table
-	></div>
-	<h3>Comparisons</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node"></div>
-	<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
-	<h3>Transformations</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="transformation_grid_node"></div>
-	<button dojoAttachPoint="add_new_transformation_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewTransformation" class="add_new_row">ADD NEW TRANSFORMATION</button>
-	<h3>Input Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
-	<h3>Output Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
-	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-		<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Transform Reactor Configuration</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
+		</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<!--start div to set padding for top half of dialog-->
+		 <div class="reactor_dialog_top">
+
+			<!--start reactor header info-->
+			<div class="reactor_name">
+				<img src="/plugins/reactors/processing/TransformReactor/dialog-icon.png" width="17" height="17" border="0" />
+				&nbsp; Transform Reactor
+			</div>
+			<div class="reactor_cat">
+				<strong>Name:</strong> TransformReactor
+				&nbsp;&nbsp;&nbsp;
+				<strong>Category:</strong> Processing
+			</div>
+
+			<div style="clear:both;"></div>
+
+			<p>One-line description</p>
+			<!--end reactor header info-->
+
+			<!--start reactor settings-->
+
+			<table
+				 ><tr
+					 ><td><label>Name:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+				></tr><tr
+					 ><td><label>ID:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+				></tr><tr
+					 ><td><label>Comments:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+				></tr><tr
+					 ><td><label>All Conditions</label></td
+					 ><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="AllConditions"/></td
+				></tr><tr
+					 ><td><label>Deliver Original</label></td
+					 ><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="DeliverOriginal"/></td
+				 ></tr
+			></table>
+			<!--end reactor settings-->
+
+		</div>
+		<!--end div to set padding for top half of dialog-->
+
+		<!--start div to set padding for bottom half of dialog-->
+		<div class="reactor_dialog_bottom">
+
+			<!--start comparisons-->
+			<div class="p_reactor_grid_blocks">
+				<h2>Comparisons</h2>
+				<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node"></div>
+				<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
+			</div>
+			<!--end comparisons-->
+
+			<br />
+
+			<!--start transformations-->
+			<div class="p_reactor_grid_blocks">
+				<h2>Transformations</h2>
+				<div class="reactor_dialog_grid" dojoAttachPoint="transformation_grid_node"></div>
+				<button dojoAttachPoint="add_new_transformation_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewTransformation" class="add_new_row">ADD NEW TRANSFORMATION</button>
+			</div>
+			<!--end transformations-->
+
+			<br />
+
+			<!--start connections--> 
+			<div class="p_reactor_grid_blocks">
+				<h2>Connections</h2>
+				<h3>Input Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
+				<h3>Output Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
+			</div>
+			<!--end connections-->
+
+			<!--start buttons-->
+			<div class="save_cancel_delete">
+				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+			</div>
+			<!--end buttons--> 
+
+		</div>
+		<!--end div to set padding for bottom half of dialog-->
+
 	</div>
 </div>

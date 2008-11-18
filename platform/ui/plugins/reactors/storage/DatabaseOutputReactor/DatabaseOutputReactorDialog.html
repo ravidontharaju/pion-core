@@ -1,52 +1,93 @@
 <div class="dijitDialog reactor_dialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
-	<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Database Output Reactor Configuration</span>
-	<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
-		<span dojoAttachPoint="closeText" class="closeText">x</span>
-	</span>
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Database Output Reactor Configuration</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
-		><table
-			><tr
-				><td><label>Name:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
-			></tr
-			><tr
-				><td><label>ID:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
-			></tr
-			><tr
-				><td><label>Comments:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
-			></tr
-			><tr
-				><td><label>Database:</label></td
-				><td><input dojoType="dijit.form.FilteringSelect" name="Database" store="pion.databases.config_store" searchAttr="Name"/></td
-			></tr
-			><tr
-				><td><label>Table:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Table"/></td
-			></tr
-			><tr
-				><td><label>Queue Size:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="QueueSize"/></td
-			></tr
-			><tr
-				><td><label>Queue Timeout:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="QueueTimeout"/></td
-			></tr
-		></table
-	></div>
-	<h3>Field Mappings</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="field_mapping_grid_node"></div>
-	<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewMapping" class="add_new_row">ADD NEW MAPPING</button>
-	<h3>Input Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
-	<h3>Output Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
-	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-		<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<!--start div to set padding for top half of dialog-->
+		 <div class="reactor_dialog_top">
+
+			<!--start reactor header info-->
+			<div class="reactor_name">
+				<img src="/plugins/reactors/storage/DatabaseOutputReactor/dialog-icon.png" width="17" height="17" border="0" />
+				&nbsp; Database Output Reactor
+			</div>
+			<div class="reactor_cat">
+				<strong>Name:</strong> DatabaseOutputReactor
+				&nbsp;&nbsp;&nbsp;
+				<strong>Category:</strong> Storage
+			</div>
+
+			<div style="clear:both;"></div>
+
+			<p>One-line description</p>
+			<!--end reactor header info-->
+
+			<!--start reactor settings-->
+			 <table
+				 ><tr
+					 ><td><label>Name:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+				></tr><tr
+					 ><td><label>ID:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+				></tr><tr
+					 ><td><label>Comments:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+				></tr><tr
+					 ><td><label>Database:</label></td
+					 ><td><input dojoType="dijit.form.FilteringSelect" name="Database" store="pion.databases.config_store" searchAttr="Name"/></td
+				></tr><tr
+					 ><td><label>Table:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="Table"/></td
+				></tr><tr
+					 ><td><label>Queue Size:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="QueueSize"/></td
+				></tr><tr
+					 ><td><label>Queue Timeout:</label></td
+					 ><td><input dojoType="dijit.form.TextBox" name="QueueTimeout"/></td
+				 ></tr
+			 ></table>
+			<!--end reactor settings-->
+
+		</div>
+		<!--end div to set padding for top half of dialog-->
+
+		<!--start div to set padding for bottom half of dialog-->
+		<div class="reactor_dialog_bottom">
+
+			<!--start field mappings-->
+			<div class="s_reactor_grid_blocks">
+				<h2>Field Mappings</h2>
+				<div class="reactor_dialog_grid" dojoAttachPoint="field_mapping_grid_node"></div>
+				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewMapping" class="add_new_row">ADD NEW MAPPING</button>
+			</div>
+			<!--end field mappings-->
+
+			<br />
+
+			<!--start connections-->
+			<div class="s_reactor_grid_blocks">
+				<h2>Connections</h2>
+				<h3>Input Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
+				<h3>Output Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
+			</div>
+			<!--end connections-->
+
+			<!--start buttons-->
+			<div class="save_cancel_delete">
+				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+			</div>
+			<!--end buttons--> 
+
+		</div>
+		<!--end div to set padding for bottom half of dialog-->
+
 	</div>
 </div>
