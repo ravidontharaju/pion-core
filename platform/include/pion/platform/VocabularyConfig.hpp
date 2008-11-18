@@ -47,7 +47,7 @@ public:
 	class VocabularyIsLockedException : public PionException {
 	public:
 		VocabularyIsLockedException(const std::string& vocab_id)
-			: PionException("Unabled to modify a locked Vocabulary: ", vocab_id) {}
+			: PionException("Unable to modify a locked Vocabulary: ", vocab_id) {}
 	};
 
 	/// exception thrown if the config file does not contain a vocabulary element
