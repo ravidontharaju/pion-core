@@ -209,6 +209,27 @@ dijit.form.TextBox.prototype._setValueAttr = function(value, /*Boolean?*/ priori
 	dijit.form.TextBox.superclass._setValueAttr.call(this, filteredValue, priorityChange);
 }
 
+// Override dijit.Dialog.prototype._size().
+dijit.Dialog.prototype._size = function() {
+	// summary:
+	// 		Make sure the dialog is small enough to fit in viewport.
+
+	var mb = dojo.marginBox(this.domNode);
+	var viewport = dijit.getViewport();
+	if(mb.w >= viewport.w || mb.h >= viewport.h){
+		dojo.style(this.containerNode, {
+			// DON'T change the width!
+			//width: Math.min(mb.w, Math.floor(viewport.w * 0.75))+"px",
+
+			// Changed .75 to .90 to get more real estate.
+			//height: Math.min(mb.h, Math.floor(viewport.h * 0.75))+"px",
+			height: Math.min(mb.h, Math.floor(viewport.h * 0.90))+"px",
+
+			overflow: "auto",
+			position: "relative"	// workaround IE bug moving scrollbar or dragging dialog
+		});
+	}
+}
 
 // See http://trac.dojotoolkit.org/ticket/6759 (in particular, multipledialog.patch)
 // for an explanation of the following overrides of dijit.Dialog and dijit.DialogUnderlay methods.

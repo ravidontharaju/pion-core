@@ -786,7 +786,9 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-	dialog.show();
+	// Need a delay here for the dialog to have time to figure out how big it should be,
+	// based on how many items end up being loaded into any grids it contains.
+	setTimeout(function() { dialog.show(); }, 1000);
 }
 
 pion.reactors.showXMLDialog = function(reactor) {
