@@ -21047,7 +21047,6 @@ this.domNode.style.top=_1453.t+"px";
 this.domNode.style.left=_1453.l+"px";
 this.domNode.style.position="absolute";
 this.domNode.style.background="url(../plugins/reactors/"+_144f+"/"+this.config.Plugin+"/bg-moveable.png) repeat-x";
-if(!firefox_on_mac){
 var menu=new dijit.Menu({targetNodeIds:[this.domNode]});
 menu.addChild(new dijit.MenuItem({label:"Edit reactor configuration",onClick:function(){
 pion.reactors.showReactorConfigDialog(_this);
@@ -21058,7 +21057,6 @@ pion.reactors.showXMLDialog(_this);
 menu.addChild(new dijit.MenuItem({label:"Delete reactor",onClick:function(){
 pion.reactors.deleteReactorIfConfirmed(_this);
 }}));
-}
 dojo.connect(this.domNode,"dblclick",function(event){
 event.stopPropagation();
 if(event.shiftKey){
@@ -22792,7 +22790,6 @@ console.debug("surface_box = ",_15ef);
 _15e9.my_surface=dojox.gfx.createSurface(_15e9.node,_15ef.w,_15ef.h);
 _15e9.reactors=[];
 _15e9.isTracking=false;
-if(!firefox_on_mac){
 var menu=new dijit.Menu({targetNodeIds:[_15e5.controlButton.domNode,_15e9.node]});
 menu.addChild(new dijit.MenuItem({label:"Edit workspace configuration",onClick:function(){
 showWorkspaceConfigDialog(_15e5);
@@ -22800,7 +22797,6 @@ showWorkspaceConfigDialog(_15e5);
 menu.addChild(new dijit.MenuItem({label:"Delete workspace",onClick:function(){
 deleteWorkspaceIfConfirmed(_15e5);
 }}));
-}
 _15e9.node.ondblclick=function(){
 showWorkspaceConfigDialog(_15e5);
 };

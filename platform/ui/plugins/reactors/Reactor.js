@@ -67,12 +67,10 @@ dojo.declare("plugins.reactors.Reactor",
 			this.domNode.style.background = 'url(../plugins/reactors/' + category + '/' + this.config.Plugin + '/bg-moveable.png) repeat-x';
 
 			// Add a context menu for the new reactor.
-			if (!firefox_on_mac) {
-				var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
-				menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
-				menu.addChild(new dijit.MenuItem({ label: "Show XML", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
-				menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
-			}
+			var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
+			menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Show XML", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 
 			dojo.connect(this.domNode, 'dblclick', function(event) {
 				event.stopPropagation(); // so the workspace configuration dialog won't also pop up
