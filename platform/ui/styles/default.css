@@ -12,9 +12,15 @@ body {
 	color: #333333;
 }
 
-
 .tundra .dijitTextBox {
 	padding: 2px;
+}
+
+.tundra .dijitButtonNode:hover {
+	padding: 0px;
+	margin:0px;
+	background:none;
+	border: 0px;
 }
 
 
@@ -108,7 +114,7 @@ body {
 h1 {
 	font-size: 3em;
 	font-weight: bold;
-	margin-bottom: 0px;
+	margin-top: 20px;
 }
 
 h2 {
@@ -118,6 +124,7 @@ h2 {
 
 h3 {
 	font-size: 1.2em;
+	margin-bottom:0px;
 }
 
 a {
@@ -175,6 +182,11 @@ label.disabled {
 
 /* Header */
 
+#topBar {
+	vertical-align: bottom;
+	text-align: bottom;
+}
+
 #logo {
 	background: url(../images/bg01.png) repeat-x;
 	background-color: #0c0c0c;
@@ -197,16 +209,30 @@ label.disabled {
 	padding: 0;
 }
 
+#fixed {
+	float:right;
+	width:1px;
+	height:91px;
+	display:block;
+}
 
 /* Menu */
 
 #menu {
-	background: #0b0b0b;
-	height: 30px;
-	margin: 0 0 -5px 0;
-	padding: 0 10px 0 0;
+	margin: 0;
+	padding: 0;
+	width: 700px;
 	float:right;
 	clear:both;
+	position:relative;
+	text-align:right;
+	right: 10px;
+	bottom:0;
+}
+
+#menu div {
+	position:absolute;
+	bottom:0;
 }
 
 #menu span {
@@ -217,11 +243,12 @@ label.disabled {
 #menu .dijitButtonText {
 	height: 17px;
 	width: 75px;
-	padding: 2px 0 0 0;
+	padding: 3px;
 	text-decoration: none;
 	font-size: 12px;
 	font-weight: bold;
 	color: #333333;
+	border: none;
 }
 
 /*
@@ -232,9 +259,11 @@ label.disabled {
 	background: none;
 	background-color: #9e9e9e;
 	margin-right: 5px;
-	margin-top: 10px;
 	padding: 0px;
-	border:0px;
+	border-right: 1px solid #CCCCCC;
+	border-left: 1px solid #CCCCCC;
+	border-top: 1px solid #CCCCCC;
+	
 }
 
 #menu button:hover {
@@ -252,7 +281,7 @@ label.disabled {
 	border-right: 1px solid #CCCCCC;
 	border-left: 1px solid #CCCCCC;
 	border-top: 1px solid #CCCCCC;
-	border-bottom: 1px solid #ffffff;
+	border-bottom: 2px solid #ffffff;
 }
 
 
@@ -643,8 +672,9 @@ The following are also available, if the need arises.
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
-	height: 24px;
+	height: 22px;
 	text-align: left;
+	padding-top: 1px;
 	padding-left: 25px;
 	padding-right: 2px;
 }
@@ -660,8 +690,9 @@ The following are also available, if the need arises.
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
-	height: 24px;
+	height: 22px;
 	text-align: left;
+	padding-top: 1px;
 	padding-left: 25px;
 	padding-right: 2px;
 }
@@ -676,8 +707,9 @@ The following are also available, if the need arises.
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
-	height: 24px;
+	height: 22px;
 	text-align: left;
+	padding-top: 1px;
 	padding-left: 25px;
 	padding-right: 2px;
 }
@@ -934,3 +966,11 @@ The following are also available, if the need arises.
 	background:none;
 	border: 0px;
 }
+
+.content_button .dijitButtonText {
+	border: 1px solid #666666;
+	padding: 5px;
+	background-color: #e6e6e6;
+	font-weight:bold;
+}
+

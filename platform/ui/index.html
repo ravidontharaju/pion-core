@@ -103,11 +103,12 @@
 				</p>
 				</div>
 				<!-- end secondary menu -->
-			<!-- start main menu -->
-			<div id="menu">
-				<span dojoType="dijit.layout.StackController" containerId="main_stack_container"></span>
-			</div>
-			<!-- end main menu -->
+				<img src="0.gif" alt="" id="fixed" />
+				<!-- start main menu -->
+				<div id="menu">
+					<span dojoType="dijit.layout.StackController" containerId="main_stack_container"></span>
+				</div>
+				<!-- end main menu -->
 
 			</div>
 			<!-- end header -->
@@ -246,7 +247,7 @@
 
 			<!--Start System-->
 			<div id="system_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="System"
-				style="border: 2px solid black; width: 95%; height: 300px; padding: 10px;">
+				style="width: 95%; height: 300px; padding: 10px;">
 				<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" region="top">
 					<h1>System Configuration</h1>
 				</div>
@@ -284,7 +285,7 @@
 						</tr>
 					</table>
 					<br />
-					<button dojoType=dijit.form.Button onClick="pion.system.importXMLConfiguration">Import XML Configuration</button>
+					<button dojoType=dijit.form.Button class="content_button" onClick="pion.system.importXMLConfiguration">Import XML Configuration</button>
 					<br />
 					<h2>Configuration Paths</h2>
 					<hr />
@@ -328,8 +329,8 @@
 	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
 		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
 		<div id="are_you_sure">Are you sure you want to delete?</div>
-		<button dojoType=dijit.form.Button id="cancel_delete">Cancel</button>
-		<button dojoType=dijit.form.Button id="confirm_delete">Delete</button>
+		<button id="cancel_delete" dojoType=dijit.form.Button class="cancel">Cancel</button>
+		<button id="confirm_delete" dojoType=dijit.form.Button class="delete">Delete</button>
 	</div>
 	<div dojoType="dijit.Dialog" id="workspace_dialog" title="Workspace Configuration">
 		<table>
