@@ -115,102 +115,106 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			});
 			var store = this.vocab_term_store;
 			this.initGrid();
-			store._saveCustom = function(saveCompleteCallback, saveFailedCallback) {
-				if (_this.send_requests_for_term_updates) {
-					var ID, url;
-					for (ID in this._pending._modifiedItems) {
-						if (this._pending._newItems[ID] || this._pending._deletedItems[ID])
-							continue;
-						url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
-						console.debug('_saveCustom: url = ', url);
-						this.fetchItemByIdentity({
-							identity: ID,
-							onItem: function(item) {
-								var put_data = '<PionConfig><Term><Type';
-								var format = store.getValue(item, 'Format');
-								if (format && format != '-') {
-									put_data += ' format="' + format + '"';
-								}
-								var size = store.getValue(item, 'Size');
-								if (size && size != '-') {
-									put_data += ' size="' + size + '"';
-								}
-								put_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
-								if (store.getValue(item, 'Comment')) {
-									put_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
-								}
-								put_data += '</Term></PionConfig>';
-								console.debug('put_data = ', put_data);
-								dojo.rawXhrPut({
-									url: url,
-									handleAs: 'xml',
-									timeout: 5000,
-									contentType: "text/xml",
-									putData: put_data,
-									load: function(response, ioArgs) {
-										console.debug('rawXhrPut for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
-										return response;
-									},
-									error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
-								});
-							},
-							onError: pion.handleFetchError
-						});
-					}
-					for (ID in this._pending._newItems) {
-						url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
-						console.debug('_saveCustom: url = ', url);
-						var item = this._pending._newItems[ID];
-						var post_data = '<PionConfig><Term><Type';
-						var format = store.getValue(item, 'Format');
-						if (format && format != '-') {
-							post_data += ' format="' + format + '"';
-						}
-						var size = store.getValue(item, 'Size');
-						if (size && size != '-') {
-							post_data += ' size="' + size + '"';
-						}
-						post_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
-						if (store.getValue(item, 'Comment')) {
-							post_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
-						}
-						post_data += '</Term></PionConfig>';
-						console.debug('post_data = ', post_data);
-						dojo.rawXhrPost({
-							url: url,
-							handleAs: 'xml',
-							timeout: 5000,
-							contentType: "text/xml",
-							postData: post_data,
-							load: function(response, ioArgs) {
-								console.debug('rawXhrPost for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
-								return response;
-							},
-							error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
-						});
-					}
-					for (ID in this._pending._deletedItems) {
-						url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
-						console.debug('_saveCustom: url = ', url);
-						dojo.xhrDelete({
-							url: url,
-							handleAs: 'xml',
-							timeout: 5000,
-							load: function(response, ioArgs) {
-								console.debug('xhrDelete for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
-								return response;
-							},
-							error: pion.getXhrErrorHandler(dojo.xhrDelete)
-						});
-					}
-				}
-				//TODO: need to keep track of all the responses, and call saveCompleteCallback or saveFailedCallback, as appropriate.
-				saveCompleteCallback();
-				_this.onSaveComplete();
-			}
+			store._saveCustom = this._getSaveCustomFunction();
 
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
+		},
+		_getSaveCustomFunction: function() {
+			var _this = this;
+			return function(saveCompleteCallback, saveFailedCallback) {
+				var store = this;
+				var ID, url;
+				for (ID in this._pending._modifiedItems) {
+					if (this._pending._newItems[ID] || this._pending._deletedItems[ID])
+						continue;
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+					console.debug('_saveCustom: url = ', url);
+					this.fetchItemByIdentity({
+						identity: ID,
+						onItem: function(item) {
+							var put_data = '<PionConfig><Term><Type';
+							var format = store.getValue(item, 'Format');
+							if (format && format != '-') {
+								put_data += ' format="' + format + '"';
+							}
+							var size = store.getValue(item, 'Size');
+							if (size && size != '-') {
+								put_data += ' size="' + size + '"';
+							}
+							put_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
+							if (store.getValue(item, 'Comment')) {
+								put_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
+							}
+							put_data += '</Term></PionConfig>';
+							console.debug('put_data = ', put_data);
+							dojo.rawXhrPut({
+								url: url,
+								handleAs: 'xml',
+								timeout: 5000,
+								contentType: "text/xml",
+								putData: put_data,
+								load: function(response, ioArgs) {
+									console.debug('rawXhrPut for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
+									return response;
+								},
+								error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
+							});
+						},
+						onError: pion.handleFetchError
+					});
+				}
+				for (ID in this._pending._newItems) {
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+					console.debug('_saveCustom: url = ', url);
+					var item = this._pending._newItems[ID];
+					var post_data = '<PionConfig><Term><Type';
+					var format = store.getValue(item, 'Format');
+					if (format && format != '-') {
+						post_data += ' format="' + format + '"';
+					}
+					var size = store.getValue(item, 'Size');
+					if (size && size != '-') {
+						post_data += ' size="' + size + '"';
+					}
+					post_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
+					if (store.getValue(item, 'Comment')) {
+						post_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
+					}
+					post_data += '</Term></PionConfig>';
+					console.debug('post_data = ', post_data);
+					dojo.rawXhrPost({
+						url: url,
+						handleAs: 'xml',
+						timeout: 5000,
+						contentType: "text/xml",
+						postData: post_data,
+						load: function(response, ioArgs) {
+							console.debug('rawXhrPost for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
+							return response;
+						},
+						error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+					});
+				}
+				for (ID in this._pending._deletedItems) {
+					url = dojox.dtl.filter.strings.urlencode('/config/terms/' + _this.config['@id'] + '#' + ID);
+					console.debug('_saveCustom: url = ', url);
+					dojo.xhrDelete({
+						url: url,
+						handleAs: 'xml',
+						timeout: 5000,
+						load: function(response, ioArgs) {
+							console.debug('xhrDelete for url = ' + this.url, '; HTTP status code: ', ioArgs.xhr.status);
+							return response;
+						},
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					});
+				}
+
+				//TODO: need to keep track of all the responses, and call saveCompleteCallback or saveFailedCallback, as appropriate.
+				saveCompleteCallback();
+				_this.onSaveComplete();
+			};
 		},
 		onSaveComplete: function() {
 		},
@@ -304,54 +308,6 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				}
 			}
 		},
-		_repopulateVocabStore: function() {
-			var _this = this;
-			var store = this.server_vocab_term_store;
-			this.items = [];
-			store.fetch({
-				onItem: function(item) {
-					var vocab_term_item = {
-						ID: store.getValue(item, '@id').split('#')[1]
-					};
-					var type = store.getValue(item, 'Type');
-					vocab_term_item.Type = pion.terms.type_descriptions_by_name[type.toString()];
-					vocab_term_item.Format = store.getValue(type, '@format');
-					vocab_term_item.Size = store.getValue(type, '@size');
-					var comment = store.getValue(item, 'Comment');
-					if (comment) {
-						vocab_term_item.Comment = comment.toString();
-					}
-					_this.vocab_term_store.newItem(vocab_term_item);
-				},
-				onComplete: function() {
-					_this.send_requests_for_term_updates = false;
-					var h = dojo.connect(_this, 'onSaveComplete', function() {
-						_this.send_requests_for_term_updates = true;
-						dojo.disconnect(h);
-					});
-					_this.vocab_term_store.save();
-				},
-				onError: pion.handleFetchError
-			});
-		},
-		_reloadVocabTermStore: function() {
-			// First empty this.vocab_term_store.
-			var _this = this;
-			this.vocab_term_store.fetch({
-				onItem: function(item) {
-					_this.vocab_term_store.deleteItem(item);
-				},
-				onComplete: function() {
-					// Save the store, so that the ID's of the just deleted items can be reused.
-					_this.send_requests_for_term_updates = false;
-					_this.vocab_term_store.save();
-
-					// Then repopulate this.vocab_term_store from the server.
-					_this._repopulateVocabStore();
-				},
-				onError: pion.handleFetchError
-			});
-		},
 		populateFromServerVocabStore: function() {
 			var _this = this;
 			this.server_vocab_store.fetch({
@@ -392,7 +348,33 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
 			title_node.firstChild.nodeValue = this.title;
 
-			this._reloadVocabTermStore();
+			var store = this.server_vocab_term_store;
+			items = [];
+			var _this = this;
+			store.fetch({
+				onItem: function(item) {
+					var vocab_term_item = {
+						ID: store.getValue(item, '@id').split('#')[1]
+					};
+					var type = store.getValue(item, 'Type');
+					vocab_term_item.Type = pion.terms.type_descriptions_by_name[type.toString()];
+					vocab_term_item.Format = store.getValue(type, '@format');
+					vocab_term_item.Size = store.getValue(type, '@size');
+					var comment = store.getValue(item, 'Comment');
+					if (comment) {
+						vocab_term_item.Comment = comment.toString();
+					}
+					items.push(vocab_term_item);
+				},
+				onComplete: function() {
+					_this.vocab_term_store = new dojo.data.ItemFileWriteStore({
+						data: { identifier: 'ID', items: items }
+					});
+					_this.vocab_term_grid.setStore(_this.vocab_term_store);
+					_this.vocab_term_store._saveCustom = _this._getSaveCustomFunction();
+				},
+				onError: pion.handleFetchError
+			});
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;
@@ -447,8 +429,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			});
 		},
 		saveChangedTerms: function() {
-			var store = this.vocab_term_store;
-			store.save({});
+			this.vocab_term_store.save({});
 			pion.terms.buildMapOfCategoriesByTerm();
 		},
 		cancel: function() {
