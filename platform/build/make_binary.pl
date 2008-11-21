@@ -40,7 +40,9 @@ if ($PLATFORM eq "win32") {
 	$LOG4CXX_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "log4cxx." . $SHARED_LIB_SUFFIX);
 	$SQLITE_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "SQLite-3.5.8", "lib"), "sqlite3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-0.4.0", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
-	$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
+	$APR_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libapr-1." . $SHARED_LIB_SUFFIX);
+	$APR_UTIL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libaprutil-1." . $SHARED_LIB_SUFFIX);
+	$APR_ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libapriconv-1." . $SHARED_LIB_SUFFIX);
 	$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin"), "libxml2." . $SHARED_LIB_SUFFIX);
 	$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
 	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
@@ -112,15 +114,15 @@ mkdir($UI_DIR);
 # copy our third party library files into "libs"
 print "Copying system library files..\n";
 if ($PLATFORM eq "win32") {
-	copy($ICONV_LIB, $LIBS_DIR);
+	copy($APR_ICONV_LIB, $LIBS_DIR);
 	copy($LIBXML_LIB, $LIBS_DIR);
 	copy($ZLIB_LIB, $LIBS_DIR);
 	copy($BZIP_LIB, $LIBS_DIR);
 } else {
 	copy($UUID_LIB, $LIBS_DIR);
-	copy($APR_LIB, $LIBS_DIR);
-	copy($APR_UTIL_LIB, $LIBS_DIR);
 }
+copy($APR_LIB, $LIBS_DIR);
+copy($APR_UTIL_LIB, $LIBS_DIR);
 copy($LOG4CXX_LIB, $LIBS_DIR);
 copy($SQLITE_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
