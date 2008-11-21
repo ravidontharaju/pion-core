@@ -169,7 +169,7 @@ dojo.declare("plugins.reactors.Reactor",
 			this.put_data = '<PionConfig><Reactor>';
 			for (var tag in this.config) {
 				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
-					console.debug('dialogFields[', tag, '] = ', this.config[tag]);
+					console.debug('this.config[', tag, '] = ', this.config[tag]);
 					this.put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
 				}
 			}
@@ -307,9 +307,9 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			}
 			if (dialogFields.options && plugins.reactors[this.reactor.config.Plugin].option_defaults) {
 				for (var option in plugins.reactors[this.reactor.config.Plugin].option_defaults) {
-					this.put_data += '<' + option + '>';
-					this.put_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
-					this.put_data += '</' + option + '>';
+					var option_val = (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
+					this.put_data += '<' + option + '>' + option_val + '</' + option + '>';
+					this.reactor.config[option] = option_val;
 				}
 			}
 			if (this._insertCustomData) {
