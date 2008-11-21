@@ -1,3 +1,21 @@
+Version 1.0.6 (2008-11-21)
+==========================
+
+* Faster vocabulary pane loading
+* Update to Dojo 1.2.1 for UI (280)
+* Context menus now available on Firefox/MacOSX
+* Robot field in clickstream vocabulary (345)
+* SQLite engine refactored; configurability, read/write (271)
+* Database class reads SQL configuration from dbengines.xml (271)
+* Works with Safari 3.1 and earlier with debugging mode disabled (352)
+* Debugging mode is now off by default (352)
+* Now correctly destroying dialogs
+* DateTime now handled correctly in TransformReactor and FilterReactor
+* Reactor start/stop status persisted across shutdown (110)
+* Moving (visually) reactors no longer restarts reactors (342)
+* autoconf/autogen fixed for RHEL/CentOS < 5.0 (347)
+
+
 Version 1.0.4 (2008-10-17)
 ==========================
 
