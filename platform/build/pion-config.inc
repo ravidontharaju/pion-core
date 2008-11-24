@@ -174,40 +174,7 @@ AC_SUBST(PION_HAVE_SQLITE)
 AC_SUBST(PION_SQLITE_LIB)
 
 
-# Check for MySQL library
-AC_MSG_CHECKING([for MySQL database support (mysql)])
-AC_ARG_WITH([mysql],
-    AC_HELP_STRING([--with-mysql@<:@=DIR@:>@],[location of MySQL (v5) library]),
-    [ mysql_location=$withval ], [ without_mysql=true ])
-if test "$without_mysql" != "true"; then
-	AC_MSG_RESULT(yes)
-	# Check for MySQL headers
-	if test "x$mysql_location" != "xyes"; then
-		CPPFLAGS="$CPPFLAGS -I$mysql_location/include"
-		LDFLAGS="$LDFLAGS -L$mysql_location/lib/mysql"
-	fi
-	AC_CHECK_HEADERS([mysql/mysql.h],,AC_MSG_ERROR([Unable to find the MySQL headers]))
-	# Check for MySQL library
-	LIBS_SAVED="$LIBS"
-	LIBS="$LIBS_SAVED -lmysqld"
-	AC_MSG_CHECKING(linking with MySQL)
-	AC_TRY_LINK([#include <mysql/mysql.h>],[ mysql_get_client_version(); return(0); ],
-		[ AC_MSG_RESULT(ok) ],
-		[ AC_MSG_RESULT(failed)
-		  AC_MSG_ERROR(Unable to link with the MySQL library)
-		])
-	LIBS="$LIBS_SAVED"
-	PION_MYSQL_LIB="-lmysqld"
-	# Found the MySQL library
-	PION_HAVE_MYSQL="-DPION_HAVE_MYSQL"
-else
-	# Display notice if MYSQL is disabled
-	AC_MSG_RESULT(no)
-fi
-AC_SUBST(PION_HAVE_MYSQL)
-AC_SUBST(PION_MYSQL_LIB)
-
-PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB $PION_JSON_LIB $PION_SQLITE_LIB $PION_MYSQL_LIB"
+PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB $PION_JSON_LIB $PION_SQLITE_LIB"
 AC_SUBST(PION_PLATFORM_LIBS)
 AC_SUBST(PION_DATABASES)
 AC_SUBST(PION_CODECS)
