@@ -348,7 +348,7 @@ protected:
 
 		/// Fetch a date from a column
 		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
-            val = boost::posix_time::time_from_string((const char *)sqlite3_column_text(m_sqlite_stmt, param+1));
+            val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param+1)));
 		}
 
 		/**
