@@ -11,7 +11,7 @@ AC_CONFIG_AUX_DIR(common/build)
 AC_CONFIG_SRCDIR(common/src/PionPlugin.cpp)
 
 # package and version args are now taken from AC_INIT()
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([no-dist])
 
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
@@ -21,7 +21,7 @@ AC_PROG_LIBTOOL
 # Setup doxygen support
 DX_DOXYGEN_FEATURE(ON)
 DX_HTML_FEATURE(ON)
-DX_INIT_DOXYGEN(pion-common, common/doc/Doxyfile, common/doc/html)
+DX_INIT_DOXYGEN(pion-common, common/doc/Doxyfile, common/doc)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
