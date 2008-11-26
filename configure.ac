@@ -11,7 +11,7 @@ AC_CONFIG_AUX_DIR(net/build)
 AC_CONFIG_SRCDIR(net/src/TCPServer.cpp)
 
 # package and version args are now taken from AC_INIT()
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([no-dist])
 
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
@@ -21,7 +21,7 @@ AC_PROG_LIBTOOL
 # Setup doxygen support
 DX_DOXYGEN_FEATURE(ON)
 DX_HTML_FEATURE(ON)
-DX_INIT_DOXYGEN(pion-net, net/doc/Doxyfile, net/doc/html)
+DX_INIT_DOXYGEN(pion-net, net/doc/Doxyfile, net/doc)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
