@@ -185,3 +185,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 		}
 	}
 );
+
+plugins.reactors.FilterReactor.option_defaults = {
+	MatchAllValues: false
+}
