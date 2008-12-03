@@ -1,7 +1,9 @@
 dojo.registerModulePath("pion", "/scripts");
 dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.data.ItemFileReadStore");
+dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.StackContainer");
+dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
@@ -64,6 +66,27 @@ pion.getXhrErrorHandler = function(xhrFunc, args_mixin, finalErrorHandler) {
 		dojo.mixin(ioArgs.args, args_mixin);
 		return pion.handleXhrError(response, ioArgs, xhrFunc, finalErrorHandler);
 	}
+}
+
+pion.doDeleteConfirmationDialog = function(message, delete_function, delete_function_arg) {
+	var dialog = pion.delete_confirmation_dialog;
+	if (!dialog) {
+		dialog = new dijit.Dialog({
+			title: 'Delete Confirmation',
+			content: '<div id="are_you_sure"></div>'
+					 + '<button id="cancel_delete" dojoType="dijit.form.Button" class="cancel">Cancel</button>'
+					 + '<button id="confirm_delete" dojoType=dijit.form.Button class="delete">Delete</button>'
+		});
+
+		dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
+
+		// Save for future use.
+		pion.delete_confirmation_dialog = dialog;
+	}
+	dojo.byId('are_you_sure').innerHTML = message;
+	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); delete_function(delete_function_arg); };
+	dialog.show();
+	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
 
 pion.handleFetchError = function(errorData, request) {

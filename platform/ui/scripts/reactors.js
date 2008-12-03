@@ -9,7 +9,6 @@ dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
 dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
 dojo.require("dojox.data.XmlStore");
@@ -812,12 +811,7 @@ pion.reactors.showXMLDialog = function(reactor) {
 }
 
 pion.reactors.deleteReactorIfConfirmed = function(reactor) {
-	var dialog = dijit.byId('delete_confirmation_dialog');
-	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete this reactor?";
-	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteReactor(reactor); };
-	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
-	dialog.show();
-	setTimeout("dijit.byId('cancel_delete').focus()", 500);
+	pion.doDeleteConfirmationDialog("Are you sure you want to delete this reactor?", deleteReactor, reactor);
 }
 
 function deleteReactor(reactor) {
@@ -950,36 +944,30 @@ function handleKeyPress(e) {
 }
 
 function showWorkspaceConfigDialog(workspace_pane) {
-	console.debug('showWorkspaceConfigDialog: workspace_pane = ', workspace_pane);
-	console.debug('workspace_pane.title = ', workspace_pane.title);
+	var dialog = pion.reactors.workspace_dialog;
+	if (!dialog) {
+		dialog = new pion.reactors.WorkspaceDialog({title: "Workspace Configuration"});
+		dialog.workspace_name.isValid = function(isFocused) {
+			if (!this.validator(this.textbox.value, this.constraints)) {
+				this.invalidMessage = "Invalid Workspace name";
+				console.debug('validationTextBox.isValid returned false');
+				return false;
+			}
+			if (isDuplicateWorkspaceName(workspace_pane, this.textbox.value)) {
+				this.invalidMessage = "A Workspace with this name already exists";
+				console.debug('In validationTextBox.isValid, isDuplicateWorkspaceName returned true');
+				return false;
+			}
+			console.debug('validationTextBox.isValid returned true');
+			return true;
+		};
+		dialog.save_button.onClick = function() { return dialog.isValid(); };
 
-	var validationTextBox = dijit.byId("workspace_name");
-	validationTextBox.isValid = function(isFocused) {
-		if (!this.validator(this.textbox.value, this.constraints)) {
-			this.invalidMessage = "Invalid Workspace name";
-			console.debug('validationTextBox.isValid returned false');
-			return false;
-		}
-		if (isDuplicateWorkspaceName(workspace_pane, this.textbox.value)) {
-			this.invalidMessage = "A Workspace with this name already exists";
-			console.debug('In validationTextBox.isValid, isDuplicateWorkspaceName returned true');
-			return false;
-		}
-		console.debug('validationTextBox.isValid returned true');
-		return true;
-	};
-	validationTextBox.setDisplayedValue(workspace_pane.title);
-	
-	var dialog = dijit.byId("workspace_dialog");
-	dojo.query(".dijitButton.delete", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() { dialog.onCancel(); deleteWorkspaceIfConfirmed(workspace_pane); })
-	});
-	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel')
-	});
-	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
-		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
-	});
+		// Save for future use.
+		pion.reactors.workspace_dialog = dialog;
+	}
+	dialog.attr('value', {name: workspace_pane.title, comment: workspace_pane.comment});
+	dialog.workspace_pane = workspace_pane;
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
@@ -988,16 +976,23 @@ function showWorkspaceConfigDialog(workspace_pane) {
 	dialog.execute = function(dialogFields) { updateWorkspaceConfig(dialogFields, workspace_pane); }
 }
 
-function updateWorkspaceConfig(dialogFields, node) {
-	node.title = dialogFields.name;
-	dojo.byId(node.controlButton.id).innerHTML = dialogFields.name;
+function updateWorkspaceConfig(dialogFields, workspace_pane) {
+	var new_workspace_name = dialogFields.name;
+	if (new_workspace_name != workspace_pane.title) {
+		workspace_pane.title = new_workspace_name;
+		dojo.byId(workspace_pane.controlButton.id).innerHTML = new_workspace_name;
+		dojo.forEach(workspace_pane.my_workspace_box.reactors, function(reactor) {
+			reactor.changeWorkspace(new_workspace_name);
+		});
+	}
+	workspace_pane.comment = dialogFields.comment;
 }
 
 // Returns true if there is another workspace with the given name.
 function isDuplicateWorkspaceName(workspace_pane, name) {
 	for (var i = 0; i < workspace_boxes.length; ++i) {
 		if (workspace_boxes[i].my_content_pane != workspace_pane && workspace_boxes[i].my_content_pane.title == name) {
-			return true;
+			 return true;
 		}
 	}
 	return false;
@@ -1010,12 +1005,8 @@ function deleteWorkspaceIfConfirmed(workspace_pane) {
 		return;
 	}
 
-	var dialog = dijit.byId('delete_confirmation_dialog');
-	dojo.byId("are_you_sure").innerHTML = "Are you sure you want to delete workspace '" + workspace_pane.title + "' and all the reactors it contains?";
-	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); deleteWorkspace(workspace_pane); };
-	dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
-	dialog.show();
-	setTimeout("dijit.byId('cancel_delete').focus()", 500);
+	pion.doDeleteConfirmationDialog("Are you sure you want to delete workspace '" + workspace_pane.title + "' and all the reactors it contains?",
+									deleteWorkspace, workspace_pane);
 }
 
 function deleteWorkspace(workspace_pane) {
@@ -1041,3 +1032,20 @@ function _deleteEmptyWorkspace(workspace_pane) {
 	}
 	dijit.byId("mainTabContainer").removeChild(workspace_pane);
 }
+
+dojo.declare("pion.reactors.WorkspaceDialog",
+	[ dijit.Dialog ],
+	{
+		templatePath: dojo.moduleUrl("pion", "../resources/WorkspaceDialog.html"),
+		postMixInProperties: function() {
+			// See pion.login.LoginDialog for explanation of why this is needed..
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
+		widgetsInTemplate: true,
+		_handleDelete: function() {
+			this.onCancel();
+			deleteWorkspaceIfConfirmed(this.workspace_pane);
+		}
+	}
+);

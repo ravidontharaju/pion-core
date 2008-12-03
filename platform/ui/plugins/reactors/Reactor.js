@@ -189,6 +189,36 @@ dojo.declare("plugins.reactors.Reactor",
 				},
 				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
+		},
+		changeWorkspace: function(new_workspace_name) {
+			if (this.config.Workspace == new_workspace_name) {
+				return;
+			}
+			this.config.Workspace = new_workspace_name;
+
+			this.put_data = '<PionConfig><Reactor>';
+			for (var tag in this.config) {
+				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
+					console.debug('this.config[', tag, '] = ', this.config[tag]);
+					this.put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
+				}
+			}
+			if (this._insertCustomData) {
+				this._insertCustomData();
+			}
+			this.put_data += '</Reactor></PionConfig>';
+			console.debug('put_data: ', this.put_data);
+
+			dojo.rawXhrPut({
+				url: '/config/reactors/' + this.config['@id'] + '/move',
+				contentType: "text/xml",
+				handleAs: "xml",
+				putData: this.put_data,
+				load: function(response){
+					console.debug('response: ', response);
+				},
+				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
+			});
 		}
 	}
 );
