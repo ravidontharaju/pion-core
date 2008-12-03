@@ -203,6 +203,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 		widgetsInTemplate: true,
  		postCreate: function(){
 			this.inherited("postCreate", arguments);
+			this.attr('value', {DeliverOriginal: 'never'});
 			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
@@ -402,8 +403,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 );
 
 plugins.reactors.TransformReactor.option_defaults = {
-	AllConditions: false,
-	DeliverOriginal: false
+	AllConditions: false
 }
 
 plugins.reactors.TransformReactor.grid_option_defaults = {

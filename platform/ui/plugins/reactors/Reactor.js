@@ -239,7 +239,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 		},
 		widgetsInTemplate: true,
 		tryConfig: function() {
-			var dialogFields = this.getValues();
+			var dialogFields = this.attr('value');
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
 			var workspace_box = pion.reactors.workspace_box;

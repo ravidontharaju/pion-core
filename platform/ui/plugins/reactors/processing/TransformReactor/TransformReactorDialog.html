@@ -26,7 +26,6 @@
 			<!--end reactor header info-->
 
 			<!--start reactor settings-->
-
 			<table
 				 ><tr
 					 ><td><label>Name:</label></td
@@ -42,7 +41,11 @@
 					 ><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="AllConditions"/></td
 				></tr><tr
 					 ><td><label>Deliver Original</label></td
-					 ><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="DeliverOriginal"/></td
+					 ><td
+						><input type="radio" name="DeliverOriginal" value="always" dojoType="dijit.form.RadioButton" /><label>always </label
+						><input type="radio" name="DeliverOriginal" value="if-not-changed" dojoType="dijit.form.RadioButton" /><label>if not changed </label
+						><input type="radio" name="DeliverOriginal" value="never" dojoType="dijit.form.RadioButton" /><label>never</label
+					 ></td
 				 ></tr
 			></table>
 			<!--end reactor settings-->
