@@ -51,12 +51,12 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// first set config options for the Reactor base class
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::setConfig(v, config_ptr);
-	
+
 	// clear the current configuration
 	m_rules.clear();
 	m_transforms.clear();
 	m_all_conditions = false;
-	m_deliver_original = false;
+	m_deliver_original = DO_NEVER;
 
 	// check if all the Comparisons should match before starting Transformations
 	std::string all_conditions_str;
@@ -69,8 +69,10 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	std::string deliver_original_str;
 	if (ConfigManager::getConfigOption(DELIVER_ORIGINAL_NAME, deliver_original_str, config_ptr))
 	{
-		if (deliver_original_str == "true")
-			m_deliver_original = true;
+		if (deliver_original_str == "true" || deliver_original_str == "always")
+			m_deliver_original = DO_ALWAYS;
+		else if (deliver_original_str == "if-not-changed")
+			m_deliver_original = DO_SOMETIMES;
 	}
 
 	// next, parse each comparison rule
@@ -78,13 +80,13 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
 	{
 		// parse new Comparison rule
-		
+
 		// get the Term used for the Comparison rule
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
 											 comparison_node->children))
 			throw EmptyTermException(getId());
-		
+
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
@@ -105,7 +107,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 												 comparison_node->children))
 				throw EmptyValueException(getId());
 		}
-		
+
 		// check if the Comparison should match all values for the given Term
 		bool match_all_values = false;
 		std::string match_all_values_str;
@@ -115,12 +117,12 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			if (match_all_values_str == "true")
 				match_all_values = true;
 		}
-		
+
 		// add the Comparison
 		Comparison new_comparison(v[term_ref]);
 		new_comparison.configure(comparison_type, value_str, match_all_values);
 		m_rules.push_back(new_comparison);
-		
+
 		// step to the next Comparison rule
 		comparison_node = comparison_node->next;
 	}
@@ -130,13 +132,13 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	while ( (transformation_node = ConfigManager::findConfigNodeByName(TRANSFORMATION_ELEMENT_NAME, transformation_node)) != NULL)
 	{
 		// parse new Transformation rule
-		
+
 		// get the Term used for the Transformation rule
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
 											 transformation_node->children))
 			throw EmptyTermException(getId());
-		
+
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
@@ -157,7 +159,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 												 transformation_node->children))
 				throw EmptyValueException(getId());
 		}
-		
+
 		// check if the Comparison should match all values for the given Term
 		bool match_all_values = false;
 		std::string match_all_values_str;
@@ -206,7 +208,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		transformation_node = transformation_node->next;
 	}
 }
-	
+
 void TransformReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
@@ -221,7 +223,7 @@ void TransformReactor::updateVocabulary(const Vocabulary& v)
 		i->updateVocabulary(v);
 	}
 }
-	
+
 void TransformReactor::operator()(const EventPtr& e)
 {
 	if (isRunning()) {
@@ -266,12 +268,13 @@ void TransformReactor::operator()(const EventPtr& e)
 
 		// Transformation is done, deliver original event
 		// Should this only be done, if filter rules applied (m_all_conditions)
-		if (m_deliver_original)
+		if (m_deliver_original == DO_ALWAYS ||
+			(m_deliver_original == DO_SOMETIMES && do_transformations))
 			deliverEvent(e);
 	}
 }
-	
-	
+
+
 }	// end namespace plugins
 }	// end namespace pion
 
