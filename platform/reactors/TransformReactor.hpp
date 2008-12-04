@@ -82,7 +82,10 @@ public:
 	};
 
 	/// constructs a new TransformReactor object
-	TransformReactor(void) : Reactor(TYPE_PROCESSING) {}
+	TransformReactor(void) :
+		Reactor(TYPE_PROCESSING),
+		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF)
+	{}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~TransformReactor() { stop(); }
@@ -143,6 +146,9 @@ private:
 	/// Do all the conditions have to be met before transformation activates
 	static const std::string		ALL_CONDITIONS_ELEMENT_NAME;
 
+	/// outgoing event type, or unknown for same as incoming
+	static const std::string		EVENT_TYPE_NAME;
+
 	/// Deliver original (in additions to modified)
 	static const std::string		DELIVER_ORIGINAL_NAME;
 
@@ -163,6 +169,9 @@ private:
 
 	/// should all the conditions match before transformations take place
 	bool							m_all_conditions;
+
+	/// outgoing event type
+	pion::platform::Vocabulary::TermRef	m_event_type;
 
 	/// deliver original event
 	enum { DO_NEVER, DO_SOMETIMES, DO_ALWAYS }

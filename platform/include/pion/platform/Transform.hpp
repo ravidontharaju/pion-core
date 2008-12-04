@@ -34,7 +34,7 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-class PION_PLATFORM_API Transform : 
+class PION_PLATFORM_API Transform :
 	public Comparison
 //	public pion::platform::Comparison
 {
@@ -48,15 +48,16 @@ public:
 
 	/// identifies what type of Comparison this is
 	ComparisonType				m_tr_set_type;
-	
+
 	/// the value that the Vocabulary Term is compared to (if not string or regex type)
 	Event::ParameterValue		m_tr_set_value;
-	
+
 	/// the string that the Vocabulary Term is compared to (if string comparison type)
 	std::string					m_tr_set_str_value;
 
 	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
 	boost::regex				m_tr_set_regex;
+	std::string					m_tr_set_regex_out;
 
 	/// let's use a variant to contain any of the three types of set value
 //	boost::variant<std::string,Event::ParameterValue,boost::regex> m_tr_set;
@@ -157,15 +158,19 @@ public:
 					break;
 				case Vocabulary::TYPE_REGEX:
 					{
-						boost::match_results<std::string::const_iterator> match;
 						Event::ConstIterator ec = result.get<1>();
 						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-						if (boost::regex_search(s, match, m_tr_set_regex)) {
-							s.clear();
-							for (unsigned int i = 0; i < match.size(); i++)
-								s += match[i].str();
-							e->setString(m_tr_set_term.term_ref, s);
-						}
+						if (m_tr_set_regex_out.empty()) {
+							boost::match_results<std::string::const_iterator> match;
+							if (boost::regex_search(s, match, m_tr_set_regex)) {
+								s.clear();
+								for (unsigned int i = 0; i < match.size(); i++)
+									s += match[i].str();
+								e->setString(m_tr_set_term.term_ref, s);
+							}
+						} else
+							e->setString(m_tr_set_term.term_ref,
+								boost::regex_replace(s, m_tr_set_regex, m_tr_set_regex_out));
 					}
 					break;
 			}

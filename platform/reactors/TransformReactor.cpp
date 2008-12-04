@@ -38,6 +38,7 @@ const std::string			TransformReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllV
 
 const std::string			TransformReactor::ALL_CONDITIONS_ELEMENT_NAME = "AllConditions";
 const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
+const std::string			TransformReactor::EVENT_TYPE_NAME = "EventType";
 
 const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
 const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
@@ -64,6 +65,14 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	{
 		if (all_conditions_str == "true")
 			m_all_conditions = true;
+	}
+
+	m_event_type = Vocabulary::UNDEFINED_TERM_REF;
+	std::string event_type_str;
+	if (ConfigManager::getConfigOption(EVENT_TYPE_NAME, event_type_str, config_ptr))
+	{
+		if (!event_type_str.empty())
+			m_event_type = v.findTerm(event_type_str);
 	}
 
 	std::string deliver_original_str;
@@ -258,7 +267,7 @@ void TransformReactor::operator()(const EventPtr& e)
 		}
 		if (do_transformations) {
 			EventPtr new_e;
-			m_event_factory.create(new_e, e->getType());	// TODO: Instead of maintaining same type, allow change
+			m_event_factory.create(new_e, m_event_type == Vocabulary::UNDEFINED_TERM_REF ? e->getType() : m_event_type);
 
 			*new_e += *e;					// Populate all terms from original event
 			for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
