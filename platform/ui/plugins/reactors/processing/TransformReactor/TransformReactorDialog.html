@@ -27,25 +27,29 @@
 
 			<!--start reactor settings-->
 			<table
-				 ><tr
-					 ><td><label>Name:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+				><tr
+					><td><label>Name:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
 				></tr><tr
-					 ><td><label>ID:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+					><td><label>ID:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
 				></tr><tr
-					 ><td><label>Comments:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+					><td><label>Comments:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
 				></tr><tr
-					 ><td><label>All Conditions</label></td
-					 ><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="AllConditions"/></td
+					><td><label>Outgoing&nbsp;Event&nbsp;Type:</label></td
+					><td><input dojoType="dijit.form.FilteringSelect" name="EventType" 
+							store="plugins.reactors.TransformReactor.outgoing_event_type_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
 				></tr><tr
-					 ><td><label>Deliver Original</label></td
-					 ><td
+					><td><label>All Conditions</label></td
+					><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="AllConditions"/></td
+				></tr><tr
+					><td><label>Deliver Original</label></td
+					><td
 						><input type="radio" name="DeliverOriginal" value="always" dojoType="dijit.form.RadioButton" /><label>always </label
 						><input type="radio" name="DeliverOriginal" value="if-not-changed" dojoType="dijit.form.RadioButton" /><label>if not changed </label
 						><input type="radio" name="DeliverOriginal" value="never" dojoType="dijit.form.RadioButton" /><label>never</label
-					 ></td
+					></td
 				 ></tr
 			></table>
 			<!--end reactor settings-->

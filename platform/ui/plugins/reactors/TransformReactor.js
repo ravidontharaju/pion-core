@@ -199,11 +199,23 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
+			plugins.reactors.TransformReactor.outgoing_event_type_store = new dojo.data.ItemFileWriteStore({
+				data: {
+					identifier: 'id',
+					items: [{id: 'Same as input event'}]
+				}
+			});
+			pion.terms.store.fetch({
+				query: {Type: 'object'},
+				onItem: function(item) {
+					plugins.reactors.TransformReactor.outgoing_event_type_store.newItem({id: pion.terms.store.getIdentity(item)});
+				}
+			});
 		},
 		widgetsInTemplate: true,
  		postCreate: function(){
 			this.inherited("postCreate", arguments);
-			this.attr('value', {DeliverOriginal: 'if-not-changed'});
+			this.attr('value', {DeliverOriginal: 'if-not-changed', EventType: 'Same as input event'});
 			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
