@@ -5,13 +5,13 @@ supporting files.  The advantage of this is that startup is much faster because
 only a handful of files need to be loaded.  However, if you want to edit or debug
 the Pion UI source code (in ui/scripts, ui/plugins and ui/resources), you will need 
 your own copy of Dojo: download 
-http://download.dojotoolkit.org/release-1.2.1/dojo-release-1.2.1-src.zip
+http://download.dojotoolkit.org/release-1.2.3/dojo-release-1.2.3-src.zip
 and extract it into C:, or get it from Subversion:
-svn co http://svn.dojotoolkit.org/src/tags/release-1.2.1/ C:\dojo-release-1.2.1-src
+svn co http://svn.dojotoolkit.org/src/tags/release-1.2.3/ C:\dojo-release-1.2.3-src
 (For non-Windows systems, install it anywhere, and see notes below.)
 
 Uncomment the block in services.xml defining dojo-src-service, and if Dojo was 
-installed elsewhere than C:\dojo-release-1.2.1-src, change the "directory" Option 
+installed elsewhere than C:\dojo-release-1.2.3-src, change the "directory" Option 
 to the actual directory.  Follow the directions in index.html about how to use
 the source code instead of the built code.
 
