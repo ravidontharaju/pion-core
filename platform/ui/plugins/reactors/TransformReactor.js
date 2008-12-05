@@ -205,12 +205,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					items: [{id: 'Same as input event'}]
 				}
 			});
-			pion.terms.store.fetch({
-				query: {Type: 'object'},
-				onItem: function(item) {
-					plugins.reactors.TransformReactor.outgoing_event_type_store.newItem({id: pion.terms.store.getIdentity(item)});
-				}
-			});
 		},
 		widgetsInTemplate: true,
  		postCreate: function(){
@@ -218,6 +212,17 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.attr('value', {DeliverOriginal: 'if-not-changed', EventType: 'Same as input event'});
 			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
+			pion.terms.store.fetch({
+				query: {Type: 'object'},
+				onItem: function(item) {
+					plugins.reactors.TransformReactor.outgoing_event_type_store.newItem({id: pion.terms.store.getIdentity(item)});
+				},
+				onComplete: function() {
+					if (_this.reactor.config.EventType) {
+						_this.attr('value', {EventType: _this.reactor.config.EventType});
+					}
+				}
+			});
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();
 				_this.connect(_this.reactor.comparison_store, 'onNew', '_updateCustomPutDataFromGridStores');

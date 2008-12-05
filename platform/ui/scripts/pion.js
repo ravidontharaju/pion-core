@@ -28,7 +28,7 @@ var file_protocol = false;
 var firefox_on_mac;
 
 pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
-	console.debug('In pion.handleXhrError: ioArgs.args = ', ioArgs.args);
+	console.error('In pion.handleXhrError: response = ', response, ', ioArgs.args = ', ioArgs.args);
 	if (ioArgs.xhr.status == 401) {
 		if (pion.login.login_pending) {
 			// redo the request when the login succeeds
@@ -57,7 +57,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 }
 
 pion.handleXhrGetError = function(response, ioArgs) {
-	console.debug('In pion.handleXhrGetError: ioArgs.args = ', ioArgs.args);
+	console.error('In pion.handleXhrGetError: response = ', response, ', ioArgs.args = ', ioArgs.args);
 	return pion.handleXhrError(response, ioArgs, dojo.xhrGet);
 }
 

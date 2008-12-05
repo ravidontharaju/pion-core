@@ -54,7 +54,7 @@ dojo.declare("dojox.layout.ContentPane", dijit.layout.ContentPane, {
 	//	summary:
 	//		cleans content to make it less likly to generate DOM/JS errors.
 	//	description:
-	//		usefull if you send contentpane a complete page, instead of a html fragment
+	//		useful if you send contentpane a complete page, instead of a html fragment
 	//		scans for 
 	//
 	//			* style nodes, inserts in Document head
@@ -100,7 +100,7 @@ dojo.declare("dojox.layout.ContentPane", dijit.layout.ContentPane, {
 	},
 
 	refresh: function(){
-		summary: force a re-download of content
+		// summary: force a re-download of content
 		return ;// dojox.layout.ContentPane.DeferredHandle 
 	},
 
@@ -129,10 +129,7 @@ dojo.declare("dojox.layout.ContentPane", dijit.layout.ContentPane, {
 	},
 
 	_setContentAttr: function(data){
-		if(!this._isDownloaded){
-			var defObj = this._setUpDeferreds();
-		}
-
+		var defObj = this._setUpDeferreds();
 		this.inherited(arguments);
 		return defObj; // dojox.layout.ContentPane.DeferredHandle
 	},
@@ -220,8 +217,8 @@ dojo.declare("dojox.layout.ContentPane", dijit.layout.ContentPane, {
 
 		// stash the params for the contentSetter to allow inheritance to work for _setContent
 		this._contentSetterParams = {
-			adjustPaths: Boolean(this.adjustPaths && this.href),
-			referencePath: this.href,
+			adjustPaths: Boolean(this.adjustPaths && (this.href||this.referencePath)),
+			referencePath: this.href || this.referencePath,
 			renderStyles: this.renderStyles,
 			executeScripts: this.executeScripts,
 			scriptHasHooks: this.scriptHasHooks,
