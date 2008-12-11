@@ -209,8 +209,10 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 		// add the Transformation
 		Transform new_transform(v[term_ref], v[set_term_ref]);
+		// Configure the CompMatch evaluate() i.e. the Filter
 		new_transform.configure(comparison_type, value_str, match_all_values);
-		new_transform.configure_transform(transformation_inplace, set_value_str);
+		// Configure the Transformation (pass value_str for Regexp, which needs both)
+		new_transform.configure_transform(comparison_type, transformation_inplace, value_str, set_value_str);
 		m_transforms.push_back(new_transform);
 
 		// step to the next Comparison rule

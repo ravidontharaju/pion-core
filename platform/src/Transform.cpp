@@ -62,7 +62,7 @@ bool Transform::checkForValidSetType(const Vocabulary::DataType type) const
 	return result;
 }
 
-void Transform::setSetValue(const std::string& value_str)
+void Transform::setSetValue(const std::string& test_value_str, const std::string& value_str)
 {
 	if (! checkForValidSetType(m_tr_set_term.term_type))
 		throw InvalidTypeForTermException();
@@ -103,7 +103,10 @@ void Transform::setSetValue(const std::string& value_str)
 			case Vocabulary::TYPE_STRING:
 			case Vocabulary::TYPE_LONG_STRING:
 			case Vocabulary::TYPE_CHAR:
+				m_tr_regex_pattern = test_value_str;
 				m_tr_set_str_value = value_str;
+PION_LOG_DEBUG(m_logger, "m_tr_regex_pattern#1 = " << test_value_str);
+PION_LOG_DEBUG(m_logger, "m_tr_set_str_value#1 = " << value_str);
 				break;
 			case Vocabulary::TYPE_DATE_TIME:
 			case Vocabulary::TYPE_DATE:
@@ -116,6 +119,11 @@ void Transform::setSetValue(const std::string& value_str)
 				break;
 			case Vocabulary::TYPE_REGEX:
 				{
+					m_tr_regex_pattern = test_value_str;
+					m_tr_set_str_value = value_str;
+PION_LOG_DEBUG(m_logger, "m_tr_regex_pattern#2 = " << test_value_str);
+PION_LOG_DEBUG(m_logger, "m_tr_set_str_value#2 = " << value_str);
+/*
 					std::string::size_type i;
 					// Is there an un-escaped / (slash) separating the match and output parameters?
 	   				if ((i = value_str.find('/')) != std::string::npos &&
@@ -128,6 +136,7 @@ void Transform::setSetValue(const std::string& value_str)
 						m_tr_set_regex_out.clear();
 						m_tr_set_regex = boost::replace_all_copy(value_str, "\\/", "/");
 					}
+*/
 				}
 				break;
 		}
