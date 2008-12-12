@@ -157,7 +157,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 					put_data += '<Type>' + c_store.getValue(item, 'Type') + '</Type>';
 					var value = c_store.getValue(item, 'Value');
 					if (value && value.toString())
-						put_data += '<Value>' + value + '</Value>';
+						put_data += '<Value>' + dojox.dtl._base.escape(value.toString()) + '</Value>';
 					put_data += '</Comparison>';
 				},
 				onComplete: function() {
@@ -168,10 +168,10 @@ dojo.declare("plugins.reactors.TransformReactor",
 							put_data += '<Type>' + t_store.getValue(item, 'Type') + '</Type>';
 							var value = t_store.getValue(item, 'Value');
 							if (value && value.toString())
-								put_data += '<Value>' + value + '</Value>';
+								put_data += '<Value>' + dojox.dtl._base.escape(value.toString()) + '</Value>';
 							put_data += '<MatchAllValues>' + t_store.getValue(item, 'MatchAllValues') + '</MatchAllValues>';
 							if (t_store.hasAttribute(item, 'SetValue'))
-								put_data += '<SetValue>' + t_store.getValue(item, 'SetValue') + '</SetValue>';
+								put_data += '<SetValue>' + dojox.dtl._base.escape(t_store.getValue(item, 'SetValue').toString()) + '</SetValue>';
 							put_data += '<InPlace>' + t_store.getValue(item, 'InPlace') + '</InPlace>';
 							var set_term = t_store.getValue(item, 'SetTerm');
 							if (set_term && set_term.toString())
@@ -244,7 +244,14 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					{ field: 'Type', name: 'Comparison', width: 15, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ field: 'Value', name: 'Value', width: 'auto'},
+					{ field: 'Value', name: 'Value', width: 'auto',
+						formatter: function(d) {
+							if (d && d.toString()) {
+								return dojox.dtl._base.escape(d.toString());
+							} else {
+								return this.defaultValue
+							}
+						} },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
@@ -299,10 +306,24 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					{ field: 'Type', name: 'Comparison', width: 10, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ field: 'Value', name: 'Value', width: 'auto'},
+					{ field: 'Value', name: 'Value', width: 'auto',
+						formatter: function(d) {
+							if (d && d.toString()) {
+								return dojox.dtl._base.escape(d.toString());
+							} else {
+								return this.defaultValue
+							}
+						} },
 					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
 						type: dojox.grid.cells.Bool},
-					{ field: 'SetValue', name: 'Set Value', width: 'auto'},
+					{ field: 'SetValue', name: 'Set Value', width: 'auto',
+						formatter: function(d) {
+							if (d && d.toString()) {
+								return dojox.dtl._base.escape(d.toString());
+							} else {
+								return this.defaultValue
+							}
+						} },
 					{ field: 'InPlace', name: 'In Place', width: 3, 
 						type: dojox.grid.cells.Bool},
 					{ field: 'SetTerm', name: 'Set Term', width: 14, 
