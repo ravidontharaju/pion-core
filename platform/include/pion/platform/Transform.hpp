@@ -172,7 +172,9 @@ public:
 //						PION_LOG_DEBUG(m_logger, "s = " << s);
 //						PION_LOG_DEBUG(m_logger, "m_tr_set_str_value = " << m_tr_set_str_value);
 //						std::string res = boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value);
-						e->setString(m_tr_set_term.term_ref, boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value));
+						e->setString(m_tr_set_term.term_ref,
+									boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value,
+														boost::format_all | boost::format_no_copy));
 					} else
 						e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
 					break;
