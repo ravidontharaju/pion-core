@@ -1,0 +1,39 @@
+<table cellspacing="0" cellpadding="0" class="termSelectorContainer">
+	<thead>
+		<tr class="dijitReset termSelectorHead" valign="top">
+			<th>
+				Vocabulary
+			</th>
+			<th>
+				Term
+			</th>
+		</tr>
+	</thead>
+	<tbody class="dijitReset termSelectorBody">
+		<tr>
+			<td>
+				<select dojoAttachPoint="vocab_select" size=9  style="width: 230px">
+				</select>
+			</td><td>
+				<select dojoAttachPoint="term_select" size=9 style="width: 230px">
+				</select>
+			</td>
+		</tr>
+	</tbody>
+	<tfoot class="dijitReset">
+		<tr>
+			<td colspan="2">
+				<input dojoAttachPoint="term_comment" disabled="true" style="width: 450px" />
+			</td>
+		</tr>
+		<tr>
+			<td class='dijitReset' valign="top" colspan="2">
+				<button class="add_new" dojoAttachEvent="onclick: _handleAddNewVocabulary" style="width: 180px">Add new vocabulary</button>
+				<button class="add_new disabled" dojoAttachEvent="onclick: _handleAddNewTerm"
+						dojoAttachPoint="add_new_term_button" disabled=true style="width: 140px">Add new term</button>
+				<button class="save disabled" dojoAttachEvent="onclick: _handleSelectTerm"
+						dojoAttachPoint="select_term_button" disabled=true style="width: 125px">Select term</button>
+			</td>
+		</tr>
+	</tfoot>
+</table>

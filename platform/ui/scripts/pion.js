@@ -162,6 +162,7 @@ dojo.addOnLoad(init);
 
 function configPageSelected(page) {
 	console.debug('Selected ' + page.title + ' configuration page');
+	pion.current_page = page.title;
 	if (page.title == "Reactors") {
 		pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
 		dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
