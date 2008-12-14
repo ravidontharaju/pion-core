@@ -60,6 +60,10 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE="urn:vocab:clickstream#da
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME="urn:vocab:clickstream#time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE_TIME="urn:vocab:clickstream#date-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CLF_DATE="urn:vocab:clickstream#clf-date";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME_TAKEN="urn:vocab:clickstream#time-taken";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_SEND_TIME="urn:vocab:clickstream#cs-send-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_REPLY_TIME="urn:vocab:clickstream#sc-reply-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_SEND_TIME="urn:vocab:clickstream#sc-send-time";
 
 	
 // HTTPProtocol member functions
@@ -72,13 +76,21 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 	boost::tribool rc;
 
 	// save the request time for event timestamping
-	if(m_request_timestamp.is_not_a_date_time()) {
-		m_request_timestamp = data_timestamp;
-	}
 	if (request) {
+		if (m_request_start_time.is_not_a_date_time()) {
+			m_request_start_time = m_request_end_time = data_timestamp;
+		} else if (data_timestamp > m_request_end_time) {
+			m_request_end_time = data_timestamp;
+		}
 		m_request_parser.setReadBuffer(ptr, len);
 		rc = m_request_parser.parse(m_request);
 	} else {
+		if (m_response_start_time.is_not_a_date_time()) {
+			m_response_start_time = m_response_end_time = data_timestamp;
+		} else if (data_timestamp > m_response_end_time) {
+			m_response_end_time = data_timestamp;
+		}
+		m_response_end_time = data_timestamp;
 		m_response_parser.setReadBuffer(ptr, len);
 		rc = m_response_parser.parse(m_response);
 	}
@@ -96,7 +108,8 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			m_response_parser.reset();
 			m_request.clear();
 			m_response.clear();
-			m_request_timestamp = boost::date_time::not_a_date_time;
+			m_request_start_time = m_request_end_time = boost::date_time::not_a_date_time;
+			m_response_start_time = m_response_end_time = boost::date_time::not_a_date_time;
 		}
 	}
 
@@ -124,7 +137,14 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_time_term_ref = m_time_term_ref;
 	retval->m_date_time_term_ref = m_date_time_term_ref;
 	retval->m_clf_date_term_ref = m_clf_date_term_ref;
-	retval->m_request_timestamp = m_request_timestamp;
+	retval->m_time_taken_term_ref = m_time_taken_term_ref;
+	retval->m_cs_send_time_term_ref = m_cs_send_time_term_ref;
+	retval->m_sc_reply_time_term_ref = m_sc_reply_time_term_ref;
+	retval->m_sc_send_time_term_ref = m_sc_send_time_term_ref;
+	retval->m_request_start_time = m_request_start_time;
+	retval->m_request_end_time = m_request_end_time;
+	retval->m_response_start_time = m_response_start_time;
+	retval->m_response_end_time = m_response_end_time;
 	retval->m_extraction_rules = m_extraction_rules;
 
 	return ProtocolPtr(retval);
@@ -162,12 +182,36 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
 							 ? 1 : 0);
 
-	// set timestamp fields
-	(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_timestamp); 
-	(*event_ptr_ref).setDateTime(m_time_term_ref, m_request_timestamp); 
-	(*event_ptr_ref).setDateTime(m_date_time_term_ref, m_request_timestamp); 
-	(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_timestamp); 
+	// sanity checks for timestamps
+	// (may have only request packets or only response packets)
+	if (m_request_start_time.is_not_a_date_time())
+		m_request_start_time = m_request_end_time = m_response_start_time;
+	else if (m_response_start_time.is_not_a_date_time())
+		m_response_start_time = m_response_end_time = m_request_end_time;
 
+	// set timestamp fields
+	(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_start_time); 
+	(*event_ptr_ref).setDateTime(m_time_term_ref, m_request_start_time); 
+	(*event_ptr_ref).setDateTime(m_date_time_term_ref, m_request_start_time); 
+	(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_start_time); 
+
+	// set time duration fields
+	(*event_ptr_ref).setUInt(m_time_taken_term_ref,
+		( m_response_end_time > m_request_start_time ?
+		  (m_response_end_time - m_request_start_time).total_microseconds()
+		  : 0 ) );
+	(*event_ptr_ref).setUInt(m_cs_send_time_term_ref,
+		( m_request_end_time > m_request_start_time ?
+		  (m_request_end_time - m_request_start_time).total_microseconds()
+		  : 0 ) );
+	(*event_ptr_ref).setUInt(m_sc_reply_time_term_ref,
+		( m_response_start_time > m_request_end_time ?
+		  (m_response_start_time - m_request_end_time).total_microseconds()
+		  : 0 ) );
+	(*event_ptr_ref).setUInt(m_sc_send_time_term_ref,
+		( m_response_end_time > m_response_start_time ?
+		  (m_response_end_time - m_response_start_time).total_microseconds()
+		  : 0 ) );
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -411,6 +455,22 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_clf_date_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CLF_DATE);
 	if (m_clf_date_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CLF_DATE);
+
+	m_time_taken_term_ref = v.findTerm(VOCAB_CLICKSTREAM_TIME_TAKEN);
+	if (m_time_taken_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_TIME_TAKEN);
+
+	m_cs_send_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_SEND_TIME);
+	if (m_cs_send_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_SEND_TIME);
+
+	m_sc_reply_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_REPLY_TIME);
+	if (m_sc_reply_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_REPLY_TIME);
+
+	m_sc_send_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_SEND_TIME);
+	if (m_sc_send_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_SEND_TIME);
 }
 
 }	// end namespace plugins

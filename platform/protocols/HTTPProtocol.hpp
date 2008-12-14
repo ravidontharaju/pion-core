@@ -98,7 +98,11 @@ public:
 
 	/// constructs HTTPProtocol object
 	HTTPProtocol() : m_request_parser(true), m_response_parser(false), 
-		m_request_timestamp(boost::date_time::not_a_date_time) {}
+		m_request_start_time(boost::date_time::not_a_date_time),
+		m_request_end_time(boost::date_time::not_a_date_time),
+		m_response_start_time(boost::date_time::not_a_date_time),
+		m_response_end_time(boost::date_time::not_a_date_time)
+	{}
 
 	/// virtual destructor
 	virtual ~HTTPProtocol() {}
@@ -229,7 +233,16 @@ private:
     pion::net::HTTPResponse		m_response;
 	
 	/// timestamp for the beginning of the HTTP request (first packet)
-	boost::posix_time::ptime	m_request_timestamp;
+	pion::PionDateTime			m_request_start_time;
+
+	/// timestamp for the end of the HTTP request (last packet)
+	pion::PionDateTime			m_request_end_time;
+
+	/// timestamp for the beginning of the HTTP response (first packet)
+	pion::PionDateTime			m_response_start_time;
+
+	/// timestamp for the end of the HTTP response (last packet)
+	pion::PionDateTime			m_response_end_time;
 
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
@@ -339,11 +352,29 @@ private:
     static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
     pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
 
+	/// urn:vocab:clickstream#time-taken
+	static const std::string	VOCAB_CLICKSTREAM_TIME_TAKEN;
+	pion::platform::Vocabulary::TermRef	m_time_taken_term_ref;
+
+	/// urn:vocab:clickstream#cs-send-time
+	static const std::string	VOCAB_CLICKSTREAM_CS_SEND_TIME;
+	pion::platform::Vocabulary::TermRef	m_cs_send_time_term_ref;
+
+	/// urn:vocab:clickstream#sc-reply-time
+	static const std::string	VOCAB_CLICKSTREAM_SC_REPLY_TIME;
+	pion::platform::Vocabulary::TermRef	m_sc_reply_time_term_ref;
+
+	/// urn:vocab:clickstream#sc-send-time
+	static const std::string	VOCAB_CLICKSTREAM_SC_SEND_TIME;
+	pion::platform::Vocabulary::TermRef	m_sc_send_time_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 
 	/// * urn:vocab:clickstream#c-ip
 	/// * urn:vocab:clickstream#s-ip
+	/// * urn:vocab:clickstream#c-port
+	/// * urn:vocab:clickstream#s-port
 };
 
 
