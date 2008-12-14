@@ -40,6 +40,9 @@
     <Field term="urn:vocab:clickstream#s-ip">s-ip</Field> 
     <Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
     <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
+    <Field term="urn:vocab:clickstream#cs-send-time">cs-send-time</Field>
+    <Field term="urn:vocab:clickstream#sc-reply-time">sc-reply-time</Field>
+    <Field term="urn:vocab:clickstream#sc-send-time">sc-send-time</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#method">method</Field>
     <Field term="urn:vocab:clickstream#uri-stem" start="&quot;" end="&quot;">uri-stem</Field>
@@ -65,6 +68,8 @@
     <Field term="urn:vocab:clickstream#time">time</Field>
     <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
     <Field term="urn:vocab:clickstream#s-ip">s-ip</Field> 
+	<Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
+	<Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#uri-stem" start="&quot;" end="&quot;">uri-stem</Field>
     <Field term="urn:vocab:clickstream#uri-query" start="&quot;" end="&quot;">uri-query</Field>
@@ -77,6 +82,7 @@
     <Field term="urn:vocab:clickstream#page-number">x-page-num</Field>
     <Field term="urn:vocab:clickstream#request-number">x-request-num</Field>
     <Field term="urn:vocab:clickstream#page-load">x-page-load</Field>
+	<Field term="urn:vocab:clickstream#page-dwell">x-page-dwell</Field>
 	<Field term="urn:vocab:clickstream#page-title" start="&quot;" end="&quot;">x-page-title</Field>
   </Codec>
   <Codec id="abddec14-74b8-11dd-883e-001cc02bd66b">
@@ -88,6 +94,8 @@
     <Field term="urn:vocab:clickstream#date">date</Field>
     <Field term="urn:vocab:clickstream#time">time</Field>
     <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+	<Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
+	<Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
     <Field term="urn:vocab:clickstream#host" start="&quot;" end="&quot;">cs(Host)</Field>
     <Field term="urn:vocab:clickstream#referer" start="&quot;" end="&quot;">cs(Referer)</Field>
     <Field term="urn:vocab:clickstream#useragent" start="&quot;" end="&quot;">cs(User-Agent)</Field>
@@ -96,6 +104,7 @@
     <Field term="urn:vocab:clickstream#cookie-id">x-cookie-id</Field>
     <Field term="urn:vocab:clickstream#page-number">x-page-num</Field>
     <Field term="urn:vocab:clickstream#request-number">x-request-num</Field>
+	<Field term="urn:vocab:clickstream#session-dwell">x-session-dwell</Field>
     <Field term="urn:vocab:clickstream#session-length">x-session-length</Field>
   </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
