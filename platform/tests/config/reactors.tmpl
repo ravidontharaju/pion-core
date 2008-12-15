@@ -10,6 +10,38 @@
     	<Value>MSIE</Value>
     </Comparison>
   </Reactor>
+  <Reactor id="105ee482-caf8-11dd-8a85-0019d185f6fc">
+    <Name>Non-IE Requests from Google</Name>
+    <Comment>Get events from non-IE browsers referred from Google</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <MatchAllComparisons>true</MatchAllComparisons>
+    <Comparison>
+    	<Term>urn:vocab:clickstream#useragent</Term>
+    	<Type>not-contains</Type>
+    	<Value>MSIE</Value>
+    </Comparison>
+    <Comparison>
+    	<Term>urn:vocab:clickstream#referer</Term>
+    	<Type>contains</Type>
+    	<Value>google.com</Value>
+    </Comparison>
+  </Reactor>
+  <Reactor id="183a2b12-caf8-11dd-ba3c-0019d185f6fc">
+    <Name>IE or Firefox Requests</Name>
+    <Comment>Get events from IE or Firefox browsers</Comment>
+    <Plugin>FilterReactor</Plugin>
+    <MatchAllComparisons>false</MatchAllComparisons>
+    <Comparison>
+    	<Term>urn:vocab:clickstream#useragent</Term>
+    	<Type>contains</Type>
+    	<Value>MSIE</Value>
+    </Comparison>
+    <Comparison>
+    	<Term>urn:vocab:clickstream#useragent</Term>
+    	<Type>contains</Type>
+    	<Value>Firefox</Value>
+    </Comparison>
+  </Reactor>
   <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
     <Name>Do Nothing</Name>
     <Comment>Filter that does nothing</Comment>
@@ -54,5 +86,15 @@
   	<Type>reactor</Type>
     <From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>
     <To>a92b7278-e306-11dc-85f0-0016cb926e68</To>
+  </Connection>
+  <Connection id="876b0c5e-caf8-11dd-ab01-0019d185f6fc">
+  	<Type>reactor</Type>
+    <From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>
+    <To>105ee482-caf8-11dd-8a85-0019d185f6fc</To>
+  </Connection>
+  <Connection id="8cbd626a-caf8-11dd-877c-0019d185f6fc">
+  	<Type>reactor</Type>
+    <From>c7a9f95a-e305-11dc-98ce-0016cb926e68</From>
+    <To>183a2b12-caf8-11dd-ba3c-0019d185f6fc</To>
   </Connection>
 </PionConfig>
