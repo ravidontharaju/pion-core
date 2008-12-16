@@ -80,9 +80,8 @@ dojo.declare("plugins.reactors.FilterReactor",
 					put_data += '<Comparison>';
 					put_data += '<Term>' + store.getValue(item, 'Term') + '</Term>';
 					put_data += '<Type>' + store.getValue(item, 'Type') + '</Type>';
-					var value = store.getValue(item, 'Value');
-					if (value && value.toString())
-						put_data += '<Value>' + dojox.dtl._base.escape(value.toString()) + '</Value>';
+					if (store.hasAttribute(item, 'Value'))
+						put_data += pion.makeXmlLeafElement('Value', store.getValue(item, 'Value'));
 					put_data += '</Comparison>';
 				},
 				onComplete: function() {
@@ -129,13 +128,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
+						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]

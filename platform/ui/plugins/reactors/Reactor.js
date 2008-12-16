@@ -170,7 +170,7 @@ dojo.declare("plugins.reactors.Reactor",
 			for (var tag in this.config) {
 				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
 					console.debug('this.config[', tag, '] = ', this.config[tag]);
-					this.put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
+					this.put_data += pion.makeXmlLeafElement(tag, this.config[tag]);
 				}
 			}
 			if (this._insertCustomData) {
@@ -200,7 +200,7 @@ dojo.declare("plugins.reactors.Reactor",
 			for (var tag in this.config) {
 				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
 					console.debug('this.config[', tag, '] = ', this.config[tag]);
-					this.put_data += '<' + tag + '>' + this.config[tag] + '</' + tag + '>';
+					this.put_data += pion.makeXmlLeafElement(tag, this.config[tag]);
 				}
 			}
 			if (this._insertCustomData) {
@@ -246,13 +246,14 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			var dc = dojo.coords(workspace_box.node);
 			var X = Math.floor(pion.reactors.last_x - dc.x);
 			var Y = Math.floor(pion.reactors.last_y - dc.y);
-			this.post_data = '<PionConfig><Reactor><Plugin>' + this.plugin 
-						   + '</Plugin><Workspace>' + workspace_box.my_content_pane.title 
-						   + '</Workspace><X>' + X + '</X><Y>' + Y + '</Y>';
+			this.post_data = '<PionConfig><Reactor>'
+							+ pion.makeXmlLeafElement('Plugin', this.plugin)
+							+ pion.makeXmlLeafElement('Workspace', workspace_box.my_content_pane.title)
+							+ '<X>' + X + '</X><Y>' + Y + '</Y>';
 			for (var tag in dialogFields) {
 				if (tag != 'options') {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					this.post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+					this.post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 				}
 			}
 			if (dialogFields.options && plugins.reactors[this.plugin].option_defaults) {
@@ -326,13 +327,14 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = dialogFields.Name;
 
-			this.put_data = '<PionConfig><Reactor><Plugin>' + this.reactor.config.Plugin
-						  + '</Plugin><Workspace>' + this.reactor.config.Workspace 
-						  + '</Workspace><X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
+			this.put_data = '<PionConfig><Reactor>'
+							+ pion.makeXmlLeafElement('Plugin', this.reactor.config.Plugin)
+							+ pion.makeXmlLeafElement('Workspace', this.reactor.config.Workspace)
+							+ '<X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
 			for (var tag in dialogFields) {
 				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					this.put_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+					this.put_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 				}
 			}
 			if (dialogFields.options && plugins.reactors[this.reactor.config.Plugin].option_defaults) {

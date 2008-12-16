@@ -58,10 +58,10 @@ function addNewUser() {
 		console.debug(dialogFields);
 		var id = dialogFields['@id'];
 		delete dialogFields['@id'];
-		var post_data = '<PionConfig><User id="' + id + '">';
+		var post_data = '<PionConfig><User id="' + pion.escapeXml(id) + '">';
 		for (var tag in dialogFields) {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 		}
 		post_data += '</User></PionConfig>';
 		console.debug('post_data: ', post_data);

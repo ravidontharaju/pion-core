@@ -93,7 +93,7 @@ function addNewCodec() {
 		var post_data = '<PionConfig><Codec>';
 		for (var tag in dialogFields) {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 		}
 		if (plugins.codecs[dialogFields.Plugin] && plugins.codecs[dialogFields.Plugin].custom_post_data) {
 			post_data += plugins.codecs[dialogFields.Plugin].custom_post_data;

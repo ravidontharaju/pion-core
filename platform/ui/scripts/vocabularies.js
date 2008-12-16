@@ -73,10 +73,12 @@ pion.vocabularies.addNewVocabulary = function() {
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		var post_data = '<PionConfig><Vocabulary>';
-		post_data += '<Name>' + dialogFields.Name + '</Name>';
-		post_data += '<Comment>' + dialogFields.Comment + '</Comment>';
+		post_data += pion.makeXmlLeafElement('Name', dialogFields.Name);
+		post_data += pion.makeXmlLeafElement('Comment', dialogFields.Comment);
 		post_data += '</Vocabulary></PionConfig>';
 		console.debug('post_data: ', post_data);
+
+		// This dialog field only accepts input matching regExp="\w+", so the url below is safe.
 		var full_id = 'urn:vocab:' + dialogFields['@id'];
 
 		dojo.rawXhrPost({

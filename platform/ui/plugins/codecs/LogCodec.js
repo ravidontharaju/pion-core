@@ -1,6 +1,5 @@
 dojo.provide("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.Codec");
-dojo.require("dojox.dtl");
 
 plugins.codecs.LogCodec = {
 	custom_post_data: '<Flush>false</Flush><Headers>false</Headers>'
@@ -26,7 +25,8 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.field_mapping_grid_layout = [{
 				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
 				rows: [
-					{ field: 'FieldName', name: 'Field Name', width: 15 },
+					{ field: 'FieldName', name: 'Field Name', width: 15,
+						formatter: pion.xmlCellFormatter },
 					{ field: 'Term', name: 'Term', width: 15, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
@@ -39,13 +39,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					// TODO: restore validation.
 					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center', width: 3 },
 					{ field: 'EmptyString', name: 'Empty String', width: 3,
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
+						formatter: pion.xmlCellFormatter },
 					{ field: 'Order', name: 'Order', width: 'auto',
 						widgetClass: "dijit.form.NumberSpinner" },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
@@ -98,23 +92,23 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			put_data += (dojo.indexOf(config.options, 'Headers') != -1); // 'true' iff corresponding checkbox was checked
 			put_data += '</Headers><Events';
 			if (config['@event_split_set']) {
-				put_data += ' split="' + dojox.dtl._base.escape(config['@event_split_set']) + '"';
+				put_data += ' split="' + pion.escapeXml(config['@event_split_set']) + '"';
 			}
 			if (config['@event_join_string']) {
-				put_data += ' join="' + dojox.dtl._base.escape(config['@event_join_string']) + '"';
+				put_data += ' join="' + pion.escapeXml(config['@event_join_string']) + '"';
 			}
 			if (config['@comment_prefix']) {
-				put_data += ' comment="' + dojox.dtl._base.escape(config['@comment_prefix']) + '"';
+				put_data += ' comment="' + pion.escapeXml(config['@comment_prefix']) + '"';
 			}
 			put_data += '/><Fields';
 			if (config['@field_split_set']) {
-				put_data += ' split="' + dojox.dtl._base.escape(config['@field_split_set']) + '"';
+				put_data += ' split="' + pion.escapeXml(config['@field_split_set']) + '"';
 			}
 			if (config['@field_join_string']) {
-				put_data += ' join="' + dojox.dtl._base.escape(config['@field_join_string']) + '"';
+				put_data += ' join="' + pion.escapeXml(config['@field_join_string']) + '"';
 			}
 			if (config['@consec_field_delims']) {
-				put_data += ' consume="' + dojox.dtl._base.escape(config['@consec_field_delims']) + '"';
+				put_data += ' consume="' + pion.escapeXml(config['@consec_field_delims']) + '"';
 			}
 			put_data += '/>';
 			return put_data;
@@ -192,21 +186,21 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				var item = items[inverse_order_map[i]];
 				put_data += '<Field term="' + store.getValue(item, 'Term') + '"';
 				if (store.getValue(item, 'StartChar')) {
-					put_data += ' start="' + dojox.dtl._base.escape(store.getValue(item, 'StartChar')) + '"';
+					put_data += ' start="' + pion.escapeXml(store.getValue(item, 'StartChar')) + '"';
 				}
 				if (store.getValue(item, 'EndChar')) {
-					put_data += ' end="' + dojox.dtl._base.escape(store.getValue(item, 'EndChar')) + '"';
+					put_data += ' end="' + pion.escapeXml(store.getValue(item, 'EndChar')) + '"';
 				}
 				if (store.getValue(item, 'StartEndOptional')) {
 					put_data += ' optional="true"';
 				}
 				if (store.getValue(item, 'EscapeChar')) {
-					put_data += ' escape="' + dojox.dtl._base.escape(store.getValue(item, 'EscapeChar')) + '"';
+					put_data += ' escape="' + pion.escapeXml(store.getValue(item, 'EscapeChar')) + '"';
 				}
 				if (store.getValue(item, 'EmptyString')) {
-					put_data += ' empty="' + dojox.dtl._base.escape(store.getValue(item, 'EmptyString')) + '"';
+					put_data += ' empty="' + pion.escapeXml(store.getValue(item, 'EmptyString')) + '"';
 				}
-				put_data += '>' + store.getValue(item, 'FieldName') + '</Field>';
+				put_data += '>' + pion.escapeXml(store.getValue(item, 'FieldName')) + '</Field>';
 			}
 			return put_data;
 		},

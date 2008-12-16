@@ -52,7 +52,7 @@ dojo.declare("pion.widgets.UserPane",
 			for (var tag in config) {
 				if (tag != '@id') {
 					console.debug('config[', tag, '] = ', config[tag]);
-					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+					put_data += pion.makeXmlLeafElement(tag, config[tag]);
 				}
 			}
 			put_data += '</User></PionConfig>';

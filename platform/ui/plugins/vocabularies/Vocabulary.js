@@ -104,15 +104,15 @@ dojo.declare("plugins.vocabularies.Vocabulary",
 							var put_data = '<PionConfig><Term><Type';
 							var format = store.getValue(item, 'Format');
 							if (format && format != '-') {
-								put_data += ' format="' + format + '"';
+								put_data += ' format="' + pion.escapeXml(format) + '"';
 							}
 							var size = store.getValue(item, 'Size');
 							if (size && size != '-') {
-								put_data += ' size="' + size + '"';
+								put_data += ' size="' + pion.escapeXml(size) + '"';
 							}
 							put_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
 							if (store.getValue(item, 'Comment')) {
-								put_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
+								put_data += pion.makeXmlLeafElement('Comment', store.getValue(item, 'Comment'));
 							}
 							put_data += '</Term></PionConfig>';
 							console.debug('put_data = ', put_data);
@@ -142,15 +142,15 @@ dojo.declare("plugins.vocabularies.Vocabulary",
 					var post_data = '<PionConfig><Term><Type';
 					var format = store.getValue(item, 'Format');
 					if (format && format != '-') {
-						post_data += ' format="' + format + '"';
+						post_data += ' format="' + pion.escapeXml(format) + '"';
 					}
 					var size = store.getValue(item, 'Size');
 					if (size && size != '-') {
-						post_data += ' size="' + size + '"';
+						post_data += ' size="' + pion.escapeXml(size) + '"';
 					}
 					post_data += '>' + pion.terms.types_by_description[store.getValue(item, 'Type')] + '</Type>';
 					if (store.getValue(item, 'Comment')) {
-						post_data += '<Comment>' + store.getValue(item, 'Comment') + '</Comment>';
+						post_data += pion.makeXmlLeafElement('Comment', store.getValue(item, 'Comment'));
 					}
 					post_data += '</Term></PionConfig>';
 					console.debug('post_data = ', post_data);
@@ -240,6 +240,38 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
+		postCreate: function(){
+			this.inherited("postCreate", arguments);
+			this.id_widget.isValid = function() {
+				if (! this.validator(this.textbox.value, this.constraints)) {
+					this.invalidMessage = "Invalid Term ID";
+					return false;
+				}
+
+				// TODO: implement isDuplicateTermId().
+				/*
+				if (pion.vocabularies.isDuplicateTermId(this.textbox.value)) {
+					this.invalidMessage = "A Term with this ID already exists";
+					return false;
+				}
+				*/
+				return true;
+			}
+			this.format_widget.isValid = function() {
+				if (! this.validator(this.textbox.value, this.constraints)) {
+					this.invalidMessage = "Invalid format.";
+					return false;
+				}
+				return true;
+			}
+			this.size_widget.isValid = function() {
+				if (! this.validator(this.textbox.value, this.constraints)) {
+					this.invalidMessage = "Must be a positive integer.";
+					return false;
+				}
+				return true;
+			}
+		},
 		_handleTypeChange: function(type) {
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
@@ -423,6 +455,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		_handleAddNewTerm: function() {
 			console.debug('_handleAddNewTerm');
 			var dialog = new plugins.vocabularies.TermInitDialog({vocabulary: this.vocabulary, pane: pion.vocabularies.selected_pane});
+			dialog.save_button.onClick = function() { return dialog.isValid(); };
 
 			// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 			setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
@@ -448,7 +481,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			for (var tag in this.vocabulary.config) {
 				if (tag != '@id') {
 					//console.debug('this.vocabulary.config[', tag, '] = ', this.vocabulary.config[tag]);
-					put_data += '<' + tag + '>' + this.vocabulary.config[tag] + '</' + tag + '>';
+					put_data += pion.makeXmlLeafElement(tag, this.vocabulary.config[tag]);
 				}
 			}
 			put_data += '</Vocabulary></PionConfig>';

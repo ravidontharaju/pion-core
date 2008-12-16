@@ -69,7 +69,8 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.field_mapping_grid_layout = [{
 				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
 				rows: [
-					{ field: 'FieldName', name: 'Field Name', width: 15 },
+					{ field: 'FieldName', name: 'Field Name', width: 15,
+						formatter: pion.xmlCellFormatter },
 					{ field: 'Term', name: 'Term', width: 'auto', 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
@@ -167,7 +168,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			var store = this.field_mapping_store;
 			dojo.forEach(items, function(item) {
 				put_data += '<Field term="' + store.getValue(item, 'Term') + '">';
-				put_data += store.getValue(item, 'FieldName') + '</Field>';
+				put_data += pion.escapeXml(store.getValue(item, 'FieldName')) + '</Field>';
 			})
 			return put_data;
 		},
@@ -182,7 +183,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			for (var tag in config) {
 				if (tag.charAt(0) != '@' && tag != 'options') {
 					console.debug('config[', tag, '] = ', config[tag]);
-					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+					put_data += pion.makeXmlLeafElement(tag, config[tag]);
 				}
 			}
 			if (this._makeCustomElements) {

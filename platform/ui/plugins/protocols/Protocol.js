@@ -9,7 +9,6 @@ dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
-dojo.require("dojox.dtl");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 
@@ -57,18 +56,16 @@ dojo.declare("plugins.protocols.ProtocolPane",
 					{ field: 'Source', name: 'Source', styles: '', width: 7, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: plugins.protocols.source_store, searchAttr: "description" } },
-					{ field: 'Name', name: 'Name', width: 7 },
+					{ field: 'Name', name: 'Name', width: 7,
+						formatter: pion.xmlCellFormatter },
 					{ field: 'Match', name: 'Match', width: 8,
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
-					{ field: 'Format', name: 'Format', width: 8 },
-					{ field: 'ContentType', name: 'ContentType', width: 8 },
-					{ field: 'MaxSize', name: 'MaxSize', width: 'auto' },
+						formatter: pion.xmlCellFormatter },
+					{ field: 'Format', name: 'Format', width: 8,
+						formatter: pion.xmlCellFormatter },
+					{ field: 'ContentType', name: 'ContentType', width: 8,
+						formatter: pion.xmlCellFormatter },
+					{ field: 'MaxSize', name: 'MaxSize', width: 'auto',
+						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
@@ -173,17 +170,17 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			store.fetch({
 				onItem: function(item) {
 					put_data += '<Extract term="' + store.getValue(item, 'Term') + '">';
-					put_data += '<Source>' + store.getValue(item, 'Source') + '</Source>';
+					put_data += pion.makeXmlLeafElement('Source', store.getValue(item, 'Source'));
 					if (store.getValue(item, 'Name'))
-						put_data += '<Name>' + store.getValue(item, 'Name') + '</Name>'
+						put_data += pion.makeXmlLeafElement('Name', store.getValue(item, 'Name'));
 					if (store.getValue(item, 'Match'))
-						put_data += '<Match>' + dojox.dtl._base.escape(store.getValue(item, 'Match').toString()) + '</Match>'
+						put_data += pion.makeXmlLeafElement('Match', store.getValue(item, 'Match'));
 					if (store.getValue(item, 'Format'))
-						put_data += '<Format>' + store.getValue(item, 'Format') + '</Format>'
+						put_data += pion.makeXmlLeafElement('Format', store.getValue(item, 'Format'));
 					if (store.getValue(item, 'ContentType'))
-						put_data += '<ContentType>' + store.getValue(item, 'ContentType') + '</ContentType>'
+						put_data += pion.makeXmlLeafElement('ContentType', store.getValue(item, 'ContentType'));
 					if (store.getValue(item, 'MaxSize'))
-						put_data += '<MaxSize>' + store.getValue(item, 'MaxSize') + '</MaxSize>'
+						put_data += pion.makeXmlLeafElement('MaxSize', store.getValue(item, 'MaxSize'));
 					put_data += '</Extract>';
 				},
 				onComplete: function() {
@@ -205,7 +202,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			for (var tag in config) {
 				if (tag.charAt(0) != '@' && tag != 'options') {
 					console.debug('config[', tag, '] = ', config[tag]);
-					put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+					put_data += pion.makeXmlLeafElement(tag, config[tag]);
 				}
 			}
 			if (this._makeCustomElements) {

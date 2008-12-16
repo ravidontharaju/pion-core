@@ -84,7 +84,7 @@ function addNewProtocol() {
 		var post_data = '<PionConfig><Protocol>';
 		for (var tag in dialogFields) {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-			post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+			post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 		}
 		if (plugins.protocols[dialogFields.Plugin] && plugins.protocols[dialogFields.Plugin].custom_post_data) {
 			post_data += plugins.protocols[dialogFields.Plugin].custom_post_data;

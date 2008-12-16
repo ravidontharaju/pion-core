@@ -108,6 +108,23 @@ pion.handleFetchError = function(errorData, request) {
 	}
 }
 
+// Substitutes entity references for characters that have special meaning in XML.
+pion.escapeXml = function(value) {
+	return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+pion.makeXmlLeafElement = function(tag_name, value) {
+	return '<' + tag_name + '>' + pion.escapeXml(value) + '</' + tag_name + '>';
+}
+
+pion.xmlCellFormatter = function(d) {
+	if (d && d.toString()) {
+		return pion.escapeXml(d);
+	} else {
+		return this.defaultValue;
+	}
+}
+
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
 
