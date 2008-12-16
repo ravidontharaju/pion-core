@@ -103,7 +103,8 @@ void Transform::setSetValue(const std::string& test_value_str, const std::string
 			case Vocabulary::TYPE_STRING:
 			case Vocabulary::TYPE_LONG_STRING:
 			case Vocabulary::TYPE_CHAR:
-				m_tr_regex_pattern = test_value_str;
+				if (m_tr_set_type == TYPE_REGEX || m_tr_set_type == TYPE_NOT_REGEX)
+					m_tr_regex_pattern = test_value_str;
 				m_tr_set_str_value = value_str;
 PION_LOG_DEBUG(m_logger, "m_tr_regex_pattern#1 = " << test_value_str);
 PION_LOG_DEBUG(m_logger, "m_tr_set_str_value#1 = " << value_str);
