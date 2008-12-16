@@ -129,7 +129,7 @@ public:
 				s = boost::get<const Event::SimpleString&>(ec->value).get();
 			}
 
-			if (m_tr_set_inplace)
+//			if (m_tr_set_inplace)
 				e->clear(m_tr_set_term.term_ref);
 
 			switch (m_tr_set_term.term_type) {
