@@ -462,7 +462,7 @@ void VocabularyConfig::writeTermConfigXML(std::ostream& out,
 	
 	// Comment element
 	if (! t.term_comment.empty()) {
-		out << "\t\t<" << COMMENT_ELEMENT_NAME << '>' << t.term_comment
+		out << "\t\t<" << COMMENT_ELEMENT_NAME << '>' << xml_encode(t.term_comment)
 			<< "</" << COMMENT_ELEMENT_NAME << '>' << std::endl;
 	}
 	
