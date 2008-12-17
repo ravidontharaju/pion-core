@@ -11,7 +11,7 @@ AC_CONFIG_AUX_DIR(platform/build)
 AC_CONFIG_SRCDIR(platform/src/Vocabulary.cpp)
 
 # package and version args are now taken from AC_INIT()
-AM_INIT_AUTOMAKE([no-dist])
+AM_INIT_AUTOMAKE
 
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
