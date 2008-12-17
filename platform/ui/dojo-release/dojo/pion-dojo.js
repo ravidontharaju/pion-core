@@ -21977,8 +21977,8 @@ _151a.fetch({onItem:function(item){
 _1518+="<Comparison>";
 _1518+="<Term>"+_151a.getValue(item,"Term")+"</Term>";
 _1518+="<Type>"+_151a.getValue(item,"Type")+"</Type>";
-if(_151b.hasAttribute(item,"Value")){
-_1518+=pion.makeXmlLeafElement("Value",_151b.getValue(item,"Value"));
+if(_151a.hasAttribute(item,"Value")){
+_1518+=pion.makeXmlLeafElement("Value",_151a.getValue(item,"Value"));
 }
 _1518+="</Comparison>";
 },onComplete:function(){

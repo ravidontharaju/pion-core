@@ -155,8 +155,8 @@ dojo.declare("plugins.reactors.TransformReactor",
 					put_data += '<Comparison>';
 					put_data += '<Term>' + c_store.getValue(item, 'Term') + '</Term>';
 					put_data += '<Type>' + c_store.getValue(item, 'Type') + '</Type>';
-					if (t_store.hasAttribute(item, 'Value'))
-						put_data += pion.makeXmlLeafElement('Value', t_store.getValue(item, 'Value'));
+					if (c_store.hasAttribute(item, 'Value'))
+						put_data += pion.makeXmlLeafElement('Value', c_store.getValue(item, 'Value'));
 					put_data += '</Comparison>';
 				},
 				onComplete: function() {
