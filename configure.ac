@@ -11,7 +11,7 @@ AC_CONFIG_AUX_DIR(common/build)
 AC_CONFIG_SRCDIR(common/src/PionPlugin.cpp)
 
 # package and version args are now taken from AC_INIT()
-AM_INIT_AUTOMAKE([no-dist])
+AM_INIT_AUTOMAKE
 
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
