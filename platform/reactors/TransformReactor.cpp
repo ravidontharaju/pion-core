@@ -280,7 +280,7 @@ void TransformReactor::operator()(const EventPtr& e)
 		// Transformation is done, deliver original event
 		// Should this only be done, if filter rules applied (m_all_conditions)
 		if (m_deliver_original == DO_ALWAYS ||
-			(m_deliver_original == DO_SOMETIMES && do_transformations))
+			(m_deliver_original == DO_SOMETIMES && !do_transformations))
 			deliverEvent(e);
 	}
 }
