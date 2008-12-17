@@ -1,3 +1,19 @@
+Version 1.0.8 (2008-12-17)
+==========================
+
+* FilterReactor now has "Match All Comparisons" (382)
+* TransformReactor supports full regex output formatting (380)
+* TransformReactor uses Replace Term instead of Add Term (380)
+* UI now XML escapes all fields, allowing for &<>'" characters (389,391)
+* DatabaseOutputReactor validates column names (388)
+* Renaming a workspace updates the configuration of its reactors (350)
+* MySQL test in ./configure is removed (348)
+* "make check" now has dependency on "make docs" (379)
+* TransformReactor has option to suppress delivering original if new
+  event is created (380)
+* Build/make enhancements for docs
+
+
 Version 1.0.6 (2008-11-21)
 ==========================
 
