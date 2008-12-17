@@ -349,7 +349,8 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					//{ field: 'Format', name: 'Format', width: 10, styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
 					//{ field: 'Size', name: 'Size', width: 3, styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
 
-					{ field: 'Comment', name: 'Comment', width: 'auto' },
+					{ field: 'Comment', name: 'Comment', width: 'auto',
+						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
