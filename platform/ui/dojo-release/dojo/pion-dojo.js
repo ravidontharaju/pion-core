@@ -24684,7 +24684,11 @@ return;
 }
 };
 pion.escapeXml=function(value){
+if(value){
 return value.toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}else{
+return "";
+}
 };
 pion.makeXmlLeafElement=function(_17ba,value){
 return "<"+_17ba+">"+pion.escapeXml(value)+"</"+_17ba+">";

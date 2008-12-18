@@ -110,7 +110,11 @@ pion.handleFetchError = function(errorData, request) {
 
 // Substitutes entity references for characters that have special meaning in XML.
 pion.escapeXml = function(value) {
-	return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	if (value) {
+		return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	} else {
+		return '';
+	}
 }
 
 pion.makeXmlLeafElement = function(tag_name, value) {
