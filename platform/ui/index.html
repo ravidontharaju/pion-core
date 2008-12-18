@@ -15,7 +15,6 @@
 	-->
 	<style type="text/css">
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
-		@import "dojo-release/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "dojo-release/dojox/grid/resources/Grid.css";
 		@import "dojo-release/dojox/grid/resources/tundraGrid.css";
 		@import "styles/default.css";
@@ -40,7 +39,6 @@
 	<!--
 	<style type="text/css">
 		@import "dojo-src/dijit/themes/tundra/tundra.css";
-		@import "dojo-src/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "dojo-src/dojox/grid/resources/Grid.css";
 		@import "dojo-src/dojox/grid/resources/tundraGrid.css";
 		@import "styles/default.css";
@@ -50,15 +48,12 @@
 	<script type="text/javascript" src="dojo-src/dojox/gfx.js"></script>
 	<script type="text/javascript" src="scripts/pion.js"></script>
 	<script type="text/javascript">
-		dojo.require("dijit.Dialog");
 		dojo.require("dijit.layout.ContentPane");
 		dojo.require("dijit.layout.StackContainer");
 		dojo.require("dijit.layout.BorderContainer");
 		dojo.require("dijit.layout.AccordionContainer");
 		dojo.require("dijit.layout.TabContainer");
 		dojo.require("dijit.form.Button");
-		dojo.require("dijit.form.TextBox");
-		dojo.require("dijit.form.ValidationTextBox");
 		dojo.require("dojo.parser");
 	</script>
 	-->
@@ -67,7 +62,6 @@
 	<!--
 	<style type="text/css">
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
-		@import "dojo-release/dojox/grid/compat/_grid/tundraGrid.css";
 		@import "dojo-release/dojox/grid/resources/Grid.css";
 		@import "dojo-release/dojox/grid/resources/tundraGrid.css";
 		@import "styles/default.css";
@@ -189,7 +183,7 @@
 					<div id="vocab_config_accordion" dojoType="dijit.layout.AccordionContainer">
 					</div>
 					<div>
-						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new">ADD A NEW VOCABULARY</button>
+						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW VOCABULARY</button>
 					</div>
 				</div>
 			</div>
@@ -201,7 +195,7 @@
 					<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
 					</div>
 					<div>
-						<button id="add_new_codec_button" dojoType=dijit.form.Button class="add_new">ADD A NEW CODEC</button>
+						<button id="add_new_codec_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW CODEC</button>
 					</div>
 				</div>
 			</div>
@@ -213,7 +207,7 @@
 					<div id="database_config_accordion" dojoType="dijit.layout.AccordionContainer">
 					</div>
 					<div>
-						<button id="add_new_database_button" dojoType=dijit.form.Button class="add_new">ADD A NEW DATABASE</button>
+						<button id="add_new_database_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW DATABASE</button>
 					</div>
 				</div>
 			</div>
@@ -225,7 +219,7 @@
 					<div id="protocol_config_accordion" dojoType="dijit.layout.AccordionContainer">
 					</div>
 					<div>
-						<button id="add_new_protocol_button" dojoType=dijit.form.Button class="add_new">ADD A NEW PROTOCOL</button>
+						<button id="add_new_protocol_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW PROTOCOL</button>
 					</div>
 				</div>
 			</div>
@@ -239,7 +233,7 @@
 					<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
 					</div>
 					<div id="user_config_controls">
-						<button dojoType=dijit.form.Button class="add_new" onClick="addNewUser">ADD A NEW USER</button>
+						<button dojoType=dijit.form.Button class="add_new_pane" onClick="addNewUser">ADD A NEW USER</button>
 					</div>
 				</div>
 			</div>
@@ -322,35 +316,5 @@
 			</div>
 		</div>
 	</div>
-
-
-<!-- start configuration dialogs -->
-<!-- These are only visible after double-clicking a reactor in the workspace, right-clicking a workspace tab, etc. -->
-	<div dojoType="dijit.Dialog" id="delete_confirmation_dialog" title="Delete Confirmation">
-		<!-- The following text might be replaced in the code depending on exactly what is being deleted. -->
-		<div id="are_you_sure">Are you sure you want to delete?</div>
-		<button id="cancel_delete" dojoType=dijit.form.Button class="cancel">Cancel</button>
-		<button id="confirm_delete" dojoType=dijit.form.Button class="delete">Delete</button>
-	</div>
-	<div dojoType="dijit.Dialog" id="workspace_dialog" title="Workspace Configuration">
-		<table>
-			<tr>
-				<td><label>Name:</label></td>
-				<td><input dojoType="dijit.form.ValidationTextBox" id="workspace_name" type="text" name="name"
-					 regExp=".+" required="true"></td>
-			</tr>
-			<tr>
-				<td><label>Comments:</label></td>
-				<td><input dojoType="dijit.form.TextBox" name="comment" class="comment_text_box"/></td>
-			</tr>
-		</table>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-			<button dojoType=dijit.form.Button class="delete">Delete</button>
-		</div>
-	</div>
-<!-- end configuration dialogs -->
-
 </body>
 </html>

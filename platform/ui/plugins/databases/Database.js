@@ -94,7 +94,7 @@ dojo.declare("plugins.databases.DatabasePane",
 			for (var tag in config) {
 				if (tag != '@id') {
 					console.debug('config[', tag, '] = ', config[tag]);
-					this.put_data += '<' + tag + '>' + config[tag] + '</' + tag + '>';
+					this.put_data += pion.makeXmlLeafElement(tag, config[tag]);
 				}
 			}
 			if (this._insertCustomData) {

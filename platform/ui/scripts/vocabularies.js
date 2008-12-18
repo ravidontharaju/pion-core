@@ -11,6 +11,8 @@ dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dojox.data.XmlStore");
 dojo.require("dojox.xml.DomParser");
 
+pion.vocabularies.vocabularies_by_id = {};
+
 pion.vocabularies.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.vocabularies.height;
@@ -39,24 +41,59 @@ pion.vocabularies._adjustAccordionSize = function() {
 }
 
 pion.vocabularies.isDuplicateVocabularyId = function(id) {
-	var vocabularies = dijit.byId('vocab_config_accordion').getChildren();
 	var full_id = 'urn:vocab:' + id;
-	for (var i = 0; i < vocabularies.length; ++i) {
-		if (vocabularies[i].config['@id'] == full_id) {
-			return true;
+	return (full_id in pion.vocabularies.vocabularies_by_id);
+}
+
+// TODO: for this to work correctly, it would be necessary to query every Vocabulary
+// for its name sometime previous to calling this.
+// Currently, we only do this on demand, which is why VocabularyPanes show an ID
+// instead of a name if they haven't been opened yet.
+pion.vocabularies.isDuplicateVocabularyName = function(name) {
+	if (dijit.byId('vocab_config_accordion')) {
+		var vocabularies = dijit.byId('vocab_config_accordion').getChildren();
+		for (var i = 0; i < vocabularies.length; ++i) {
+			if (vocabularies[i].title == name) {
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
-pion.vocabularies.isDuplicateVocabularyName = function(name) {
-	var vocabularies = dijit.byId('vocab_config_accordion').getChildren();
-	for (var i = 0; i < vocabularies.length; ++i) {
-		if (vocabularies[i].title == name) {
-			return true;
-		}
+pion.vocabularies.addNewVocabulary = function() {
+	var dialog = new plugins.vocabularies.VocabularyInitDialog();
+	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
+		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
+	});
+
+	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+	dialog.show();
+	dialog.execute = function(dialogFields) {
+		var post_data = '<PionConfig><Vocabulary>';
+		post_data += pion.makeXmlLeafElement('Name', dialogFields.Name);
+		post_data += pion.makeXmlLeafElement('Comment', dialogFields.Comment);
+		post_data += '</Vocabulary></PionConfig>';
+		console.debug('post_data: ', post_data);
+
+		// This dialog field only accepts input matching regExp="\w+", so the url below is safe.
+		var full_id = 'urn:vocab:' + dialogFields['@id'];
+
+		dojo.rawXhrPost({
+			url: '/config/vocabularies/' + full_id,
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				if (vocab_config_page_initialized) {
+					pion.vocabularies.createNewPaneFromStore(full_id, pion.current_page == "Vocabularies");
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
 	}
-	return false;
 }
 
 pion.vocabularies.config_store = new dojox.data.XmlStore({url: '/config/vocabularies', rootItem: 'VocabularyConfig', attributeMap: {'VocabularyConfig.id': '@id'}});
@@ -92,21 +129,37 @@ pion.vocabularies.init = function() {
 
 	dojo.subscribe("vocab_config_accordion-selectChild", _paneSelected);
 
-	function _createNewPane(keywordArgs) {
+	pion.vocabularies.createNewPaneFromItem = function(item) {
+		var id = pion.vocabularies.config_store.getValue(item, '@id');
+		var title = id; // Replaced by Name in populateFromServerVocabItem().
 		var vocab_pane_node = document.createElement('span');
-		var vocab_pane = new plugins.vocabularies.VocabularyPane(keywordArgs, vocab_pane_node);
+		var vocab_pane = new plugins.vocabularies.VocabularyPane({ 'class': 'vocab_pane', title: title, config: {'@id': id} }, vocab_pane_node);
+		dijit.byId('vocab_config_accordion').addChild(vocab_pane);
 		return vocab_pane;
+	}
+
+	pion.vocabularies.createNewPaneFromStore = function(id, vocabulary_config_page_is_selected) {
+		pion.vocabularies.config_store.fetch({
+			query: {'@id': id},
+			onItem: function(item) {
+				var vocab_pane = pion.vocabularies.createNewPaneFromItem(item);
+				if (vocabulary_config_page_is_selected) {
+					pion.vocabularies._adjustAccordionSize();
+					dijit.byId('vocab_config_accordion').selectChild(vocab_pane);
+				}
+			},
+			onError: pion.handleFetchError
+		});
 	}
 
 	pion.vocabularies.config_store.fetch({
 		onComplete: function(items, request) {
 			var config_accordion = dijit.byId('vocab_config_accordion');
+			pion.vocabularies.vocabularies_by_id = {};
 			for (var i = 0; i < items.length; ++i) {
-				// It would be nice to have the name for the title instead of the ID, but we will have to make a request for 
-				// each vocabulary (e.g. with url = '/config/vocabularies/' + id) if we want this.
-				var id = pion.vocabularies.config_store.getValue(items[i], '@id');
-				var vocab_pane = _createNewPane({config: {'@id': id}, title: id});
-				config_accordion.addChild(vocab_pane);
+				var vocab_pane = pion.vocabularies.createNewPaneFromItem(items[i]);
+				var id = vocab_pane.vocabulary.config['@id'];
+				pion.vocabularies.vocabularies_by_id[id] = vocab_pane.vocabulary;
 			}
 			pion.vocabularies._adjustAccordionSize();
 			var first_pane = config_accordion.getChildren()[0];
@@ -115,40 +168,5 @@ pion.vocabularies.init = function() {
 		onError: pion.handleFetchError
 	});
 
-	function _addNewVocabulary() {
-		var dialog = new plugins.vocabularies.VocabularyInitDialog();
-		dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
-			dijit.byNode(n).onClick = function() { return dialog.isValid(); };
-		});
-
-		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
-
-		dialog.show();
-		dialog.execute = function(dialogFields) {
-			var post_data = '<PionConfig><Vocabulary>';
-			post_data += '<Name>' + dialogFields.Name + '</Name>';
-			post_data += '<Comment>' + dialogFields.Comment + '</Comment>';
-			post_data += '</Vocabulary></PionConfig>';
-			console.debug('post_data: ', post_data);
-			var full_id = 'urn:vocab:' + dialogFields['@id'];
-			
-			dojo.rawXhrPost({
-				url: '/config/vocabularies/' + full_id,
-				contentType: "text/xml",
-				handleAs: "xml",
-				postData: post_data,
-				load: function(response){
-					var node = response.getElementsByTagName('Vocabulary')[0];
-					var vocab_config_accordion = dijit.byId('vocab_config_accordion');
-					var vocab_pane = _createNewPane({config: {'@id': full_id, Name: dialogFields.Name}, title: dialogFields.Name});
-					vocab_config_accordion.addChild(vocab_pane);
-					pion.vocabularies._adjustAccordionSize();
-					vocab_config_accordion.selectChild(vocab_pane);
-				},
-				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
-			});
-		}
-	}
-	dojo.connect(dojo.byId('add_new_vocab_button'), 'click', _addNewVocabulary);
+	dojo.connect(dojo.byId('add_new_vocab_button'), 'click', pion.vocabularies.addNewVocabulary);
 }

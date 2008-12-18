@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	
 	// initially, there should be only two connections of type "reactor"
 	getConnectionInfo(num_reactors, num_input, num_output);
-	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(2));
+	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(4));
 	BOOST_CHECK_EQUAL(num_input, static_cast<unsigned int>(0));
 	BOOST_CHECK_EQUAL(num_output, static_cast<unsigned int>(0));
 	
@@ -144,20 +144,20 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(2, 0, 1);
+	checkConnectionInfo(4, 0, 1);
 	
 	// connect a stream to localhost
 	TCPStream input_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
 	ec = input_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
 	BOOST_REQUIRE(! ec);
 	
-	// request an output feed from the "do nothing" reactor
+	// establish an input feed to the "do nothing" reactor
 	feed_request.setMethod(HTTPTypes::REQUEST_METHOD_POST);
 	feed_request.send(input_tcp_stream.rdbuf()->getConnection(), ec);
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(2, 1, 1);
+	checkConnectionInfo(4, 1, 1);
 
 	// send data from the common log file to the input connection
 	std::ifstream common_log;
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	input_tcp_stream.close();
 	
 	// re-check the connections recognized
-	checkConnectionInfo(2, 0, 1);
+	checkConnectionInfo(4, 0, 1);
 	
 	// read data in from the output stream
 	bool found_it = false;

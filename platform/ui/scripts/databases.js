@@ -255,7 +255,7 @@ pion.databases.init = function() {
 			var post_data = '<PionConfig><Database>';
 			for (var tag in dialogFields) {
 				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-				post_data += '<' + tag + '>' + dialogFields[tag] + '</' + tag + '>';
+				post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 			}
 			if (this._insertCustomData) {
 				this._insertCustomData();

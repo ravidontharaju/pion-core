@@ -6,7 +6,7 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(PION_PLATFORM_HOME)\include"
+		AdditionalIncludeDirectories="&quot;$(PION_PLATFORM_HOME)\include&quot;"
 	/>
 	<Tool
 		Name="VCLinkerTool"

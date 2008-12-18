@@ -31,7 +31,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(LOG4CXX_HOME)\bin"
+				AdditionalLibraryDirectories="&quot;$(LOG4CXX_HOME)\bin&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 			/>
@@ -73,7 +73,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(LOG4CXX_HOME)\bin\static"
+				AdditionalLibraryDirectories="&quot;$(LOG4CXX_HOME)\bin\static&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 			/>
@@ -93,7 +93,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(LOG4CXX_HOME)\bin"
+				AdditionalLibraryDirectories="&quot;$(LOG4CXX_HOME)\bin&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 			/>
@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(LOG4CXX_HOME)\bin\static"
+				AdditionalLibraryDirectories="&quot;$(LOG4CXX_HOME)\bin\static&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 			/>

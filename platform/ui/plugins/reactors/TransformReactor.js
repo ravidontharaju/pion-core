@@ -155,9 +155,8 @@ dojo.declare("plugins.reactors.TransformReactor",
 					put_data += '<Comparison>';
 					put_data += '<Term>' + c_store.getValue(item, 'Term') + '</Term>';
 					put_data += '<Type>' + c_store.getValue(item, 'Type') + '</Type>';
-					var value = c_store.getValue(item, 'Value');
-					if (value && value.toString())
-						put_data += '<Value>' + dojox.dtl._base.escape(value.toString()) + '</Value>';
+					if (c_store.hasAttribute(item, 'Value'))
+						put_data += pion.makeXmlLeafElement('Value', c_store.getValue(item, 'Value'));
 					put_data += '</Comparison>';
 				},
 				onComplete: function() {
@@ -166,12 +165,11 @@ dojo.declare("plugins.reactors.TransformReactor",
 							put_data += '<Transformation>';
 							put_data += '<Term>' + t_store.getValue(item, 'Term') + '</Term>';
 							put_data += '<Type>' + t_store.getValue(item, 'Type') + '</Type>';
-							var value = t_store.getValue(item, 'Value');
-							if (value && value.toString())
-								put_data += '<Value>' + dojox.dtl._base.escape(value.toString()) + '</Value>';
+							if (t_store.hasAttribute(item, 'Value'))
+								put_data += pion.makeXmlLeafElement('Value', t_store.getValue(item, 'Value'));
 							put_data += '<MatchAllValues>' + t_store.getValue(item, 'MatchAllValues') + '</MatchAllValues>';
 							if (t_store.hasAttribute(item, 'SetValue'))
-								put_data += '<SetValue>' + dojox.dtl._base.escape(t_store.getValue(item, 'SetValue').toString()) + '</SetValue>';
+								put_data += pion.makeXmlLeafElement('SetValue', t_store.getValue(item, 'SetValue'));
 							put_data += '<InPlace>' + t_store.getValue(item, 'InPlace') + '</InPlace>';
 							var set_term = t_store.getValue(item, 'SetTerm');
 							if (set_term && set_term.toString())
@@ -199,12 +197,30 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
+			plugins.reactors.TransformReactor.outgoing_event_type_store = new dojo.data.ItemFileWriteStore({
+				data: {
+					identifier: 'id',
+					items: [{id: 'Same as input event'}]
+				}
+			});
 		},
 		widgetsInTemplate: true,
  		postCreate: function(){
 			this.inherited("postCreate", arguments);
+			this.attr('value', {DeliverOriginal: 'if-not-changed', EventType: 'Same as input event'});
 			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
+			pion.terms.store.fetch({
+				query: {Type: 'object'},
+				onItem: function(item) {
+					plugins.reactors.TransformReactor.outgoing_event_type_store.newItem({id: pion.terms.store.getIdentity(item)});
+				},
+				onComplete: function() {
+					if (_this.reactor.config.EventType) {
+						_this.attr('value', {EventType: _this.reactor.config.EventType});
+					}
+				}
+			});
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();
 				_this.connect(_this.reactor.comparison_store, 'onNew', '_updateCustomPutDataFromGridStores');
@@ -227,13 +243,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
+						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
@@ -289,23 +299,11 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
+						formatter: pion.xmlCellFormatter },
 					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
 						type: dojox.grid.cells.Bool},
 					{ field: 'SetValue', name: 'Set Value', width: 'auto',
-						formatter: function(d) {
-							if (d && d.toString()) {
-								return dojox.dtl._base.escape(d.toString());
-							} else {
-								return this.defaultValue
-							}
-						} },
+						formatter: pion.xmlCellFormatter },
 					{ field: 'InPlace', name: 'In Place', width: 3, 
 						type: dojox.grid.cells.Bool},
 					{ field: 'SetTerm', name: 'Set Term', width: 14, 
@@ -407,7 +405,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.reactor.transformation_store.newItem({
 				ID: this.reactor.transformation_store.next_id++,
 				MatchAllValues: false,
-				SetValue: 0,
 				InPlace: true
 			});
 		},
@@ -423,8 +420,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 );
 
 plugins.reactors.TransformReactor.option_defaults = {
-	AllConditions: false,
-	DeliverOriginal: false
+	AllConditions: false
 }
 
 plugins.reactors.TransformReactor.grid_option_defaults = {

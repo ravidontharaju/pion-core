@@ -172,6 +172,8 @@ public:
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
 		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
+		m_ie_or_firefox_filter_id("183a2b12-caf8-11dd-ba3c-0019d185f6fc"),
+		m_not_ie_from_google_filter_id("105ee482-caf8-11dd-8a85-0019d185f6fc"),
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
 		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
 		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
@@ -225,6 +227,8 @@ public:
 	ReactionEngine		m_reaction_engine;
 	const std::string	m_combined_id;
 	const std::string	m_ie_filter_id;
+	const std::string	m_ie_or_firefox_filter_id;
+	const std::string	m_not_ie_from_google_filter_id;
 	const std::string	m_log_reader_id;
 	const std::string	m_log_writer_id;
 	const std::string	m_clickstream_id;
@@ -514,6 +518,46 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	// make sure that four events were read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(4));
 	
+	//
+	// check the IE or Firefox Filter Reactor (match_all_comparisons = false)
+	//
+
+	// make sure that the reactor received all of the events read
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsIn(m_ie_or_firefox_filter_id) == events_read) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_or_firefox_filter_id), events_read);
+	
+	// make sure that only two events passed the filter
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsOut(m_ie_or_firefox_filter_id) == static_cast<boost::uint64_t>(2)) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_ie_or_firefox_filter_id), static_cast<boost::uint64_t>(2));
+
+	//
+	// check the Not IE From Google Filter Reactor (match_all_comparisons = true)
+	//
+
+	// make sure that the reactor received all of the events read
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsIn(m_not_ie_from_google_filter_id) == events_read) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_not_ie_from_google_filter_id), events_read);
+	
+	// make sure that only one event passed the filter
+	for (int i = 0; i < 10; ++i) {
+		if (m_reaction_engine.getEventsOut(m_not_ie_from_google_filter_id) == static_cast<boost::uint64_t>(1)) break;
+		PionScheduler::sleep(0, 100000000); // 0.1 seconds
+	}
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_not_ie_from_google_filter_id), static_cast<boost::uint64_t>(1));
+
+	//
+	// check the IE Filter Reactor
+	//
+
 	// make sure that the reactor received all of the events read
 	for (int i = 0; i < 10; ++i) {
 		if (m_reaction_engine.getEventsIn(m_ie_filter_id) == events_read) break;
@@ -545,7 +589,7 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_log_writer_id), static_cast<boost::uint64_t>(4));
 
 	// make sure that the number of operations equals 13
-	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), static_cast<boost::uint64_t>(13));
+	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), static_cast<boost::uint64_t>(21));
 	
 	//
 	// check the contents of the new log file

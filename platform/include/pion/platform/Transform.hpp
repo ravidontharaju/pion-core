@@ -29,12 +29,13 @@
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Comparison.hpp>
+#include <pion/PionLogger.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-class PION_PLATFORM_API Transform : 
+class PION_PLATFORM_API Transform :
 	public Comparison
 //	public pion::platform::Comparison
 {
@@ -46,17 +47,22 @@ public:
 	/// identifies the Vocabulary Term to set
 	Vocabulary::Term			m_tr_set_term;
 
+	/// identifies the Vocabulary Term that is being tested (for regex)
+	Vocabulary::Term			m_tr_term;
+
 	/// identifies what type of Comparison this is
 	ComparisonType				m_tr_set_type;
-	
+
 	/// the value that the Vocabulary Term is compared to (if not string or regex type)
 	Event::ParameterValue		m_tr_set_value;
-	
+
 	/// the string that the Vocabulary Term is compared to (if string comparison type)
 	std::string					m_tr_set_str_value;
 
 	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
-	boost::regex				m_tr_set_regex;
+	boost::regex				m_tr_regex_pattern;
+
+	mutable PionLogger			m_logger;
 
 	/// let's use a variant to contain any of the three types of set value
 //	boost::variant<std::string,Event::ParameterValue,boost::regex> m_tr_set;
@@ -71,7 +77,8 @@ public:
 	 * @param set_term the term that will be set (if not InPlace)
 	 */
 	explicit Transform(const Vocabulary::Term& term, const Vocabulary::Term& set_term)
-		: Comparison(term), m_tr_set_term(set_term)
+		: 	Comparison(term), m_tr_set_term(set_term), m_tr_term(term),
+			m_logger(PION_GET_LOGGER("pion.Transform"))
 	{
 	}
 
@@ -84,7 +91,7 @@ public:
 	{}
 */
 	bool checkForValidSetType(const Vocabulary::DataType type) const;
-	void setSetValue(const std::string& transformation_set_value);
+	void setSetValue(const std::string& test_value_str, const std::string& transformation_set_value);
 
 	/**
 	 * configure the transformation rule
@@ -92,11 +99,13 @@ public:
 	 * @param transformation_inplace does the transformation occur on the same parameter that matches
 	 * @param transformation_set_term what value does the transformation set the parameter to
 	 */
-	void configure_transform(bool transformation_inplace, const std::string& transformation_set_value)
+	void configure_transform(ComparisonType comparison_type, bool transformation_inplace,
+							const std::string& value_str, const std::string& transformation_set_value)
 	{
+		m_tr_set_type = comparison_type;
 		m_tr_set_inplace = transformation_inplace;
 		// Set the appropriate m_tr_set value, depending on the data type
-		setSetValue(transformation_set_value);
+		setSetValue(value_str, transformation_set_value);
 	}
 
 	/**
@@ -111,7 +120,16 @@ public:
 		CompMatch result = evaluate(*e);
 		if (result.get<0>()) {
 
-			if (m_tr_set_inplace)
+			std::string s;
+			if (m_tr_set_type == TYPE_REGEX || m_tr_set_type == TYPE_NOT_REGEX) {
+				Event::ValuesRange values_range = e->equal_range(m_tr_term.term_ref);
+				Event::ConstIterator ec = values_range.first;
+				if (ec == values_range.second)
+					PION_LOG_DEBUG(m_logger, "values range does not exist, i.e. term not found");
+				s = boost::get<const Event::SimpleString&>(ec->value).get();
+			}
+
+//			if (m_tr_set_inplace)
 				e->clear(m_tr_set_term.term_ref);
 
 			switch (m_tr_set_term.term_type) {
@@ -148,7 +166,17 @@ public:
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-					e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
+					if (m_tr_set_type == TYPE_REGEX || m_tr_set_type == TYPE_NOT_REGEX) {
+//						Event::ConstIterator ec = result.get<1>();
+//						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+//						PION_LOG_DEBUG(m_logger, "s = " << s);
+//						PION_LOG_DEBUG(m_logger, "m_tr_set_str_value = " << m_tr_set_str_value);
+//						std::string res = boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value);
+						e->setString(m_tr_set_term.term_ref,
+									boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value,
+														boost::format_all | boost::format_no_copy));
+					} else
+						e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
 				case Vocabulary::TYPE_DATE:
@@ -157,15 +185,21 @@ public:
 					break;
 				case Vocabulary::TYPE_REGEX:
 					{
-						boost::match_results<std::string::const_iterator> match;
-						Event::ConstIterator ec = result.get<1>();
-						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-						if (boost::regex_search(s, match, m_tr_set_regex)) {
-							s.clear();
-							for (unsigned int i = 0; i < match.size(); i++)
-								s += match[i].str();
-							e->setString(m_tr_set_term.term_ref, s);
-						}
+//						Event::ConstIterator ec = result.get<1>();
+//						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+/*
+						if (m_tr_set_regex_out.empty()) {
+							boost::match_results<std::string::const_iterator> match;
+							if (boost::regex_search(s, match, m_tr_set_regex)) {
+								s.clear();
+								for (unsigned int i = 0; i < match.size(); i++)
+									s += match[i].str();
+								e->setString(m_tr_set_term.term_ref, s);
+							}
+						} else
+							e->setString(m_tr_set_term.term_ref,
+								boost::regex_replace(s, m_tr_set_regex, m_tr_set_regex_out));
+*/
 					}
 					break;
 			}

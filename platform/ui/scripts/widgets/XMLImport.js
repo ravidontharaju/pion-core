@@ -1,5 +1,7 @@
 dojo.provide("pion.widgets.XMLImport");
 dojo.require("pion.codecs");
+dojo.require("pion.databases");
+dojo.require("pion.reactors");
 dojo.require("dijit.Dialog");
 dojo.require("dojox.data.dom");
 dojo.require("dojox.xml.DomParser");

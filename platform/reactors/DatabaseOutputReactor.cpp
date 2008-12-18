@@ -40,8 +40,9 @@ const std::string			DatabaseOutputReactor::QUEUE_SIZE_ELEMENT_NAME = "QueueSize"
 const std::string			DatabaseOutputReactor::QUEUE_TIMEOUT_ELEMENT_NAME = "QueueTimeout";
 const std::string			DatabaseOutputReactor::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
 const std::string			DatabaseOutputReactor::TERM_ATTRIBUTE_NAME = "term";
+const char *				DatabaseOutputReactor::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
-	
+
 // DatabaseOutputReactor member functions
 
 void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -49,7 +50,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	// first set config options for the Reactor base class
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::setConfig(v, config_ptr);
-	
+
 	// get the maximum number of events that may be queued for insertion
 	ConfigManager::getConfigOption(QUEUE_SIZE_ELEMENT_NAME, m_queue_max, DEFAULT_QUEUE_SIZE, config_ptr);
 
@@ -65,18 +66,18 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		throw EmptyDatabaseException(getId());
 	if (! getDatabaseManager().hasPlugin(m_database_id))
 		throw DatabaseManager::DatabaseNotFoundException(m_database_id);
-	
+
 	// get the name of the table to store events in
 	if (! ConfigManager::getConfigOption(TABLE_ELEMENT_NAME, m_table_name, config_ptr))
 		throw EmptyTableException(getId());
-	
+
 	// next, map the database fields to Terms
 	m_field_map.clear();
 	xmlNodePtr field_node = config_ptr;
 	while ( (field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, field_node)) != NULL)
 	{
 		// parse new field mapping
-		
+
 		// start with the name of the field (element content)
 		xmlChar *xml_char_ptr = xmlNodeGetContent(field_node);
 		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
@@ -86,7 +87,10 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		}
 		const std::string field_name(reinterpret_cast<char*>(xml_char_ptr));
 		xmlFree(xml_char_ptr);
-		
+
+		if (strspn(field_name.c_str(), CHARSET_FOR_TABLES) != field_name.length())
+			throw IllegalCharactersException(getId());
+
 		// next get the Term we want to map to
 		xml_char_ptr = xmlGetProp(field_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
 		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
@@ -96,22 +100,22 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		}
 		const std::string term_id(reinterpret_cast<char*>(xml_char_ptr));
 		xmlFree(xml_char_ptr);
-		
+
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw UnknownTermException(term_id);
-		
+
 		// add the field mapping
 		m_field_map.insert(std::make_pair(term_ref, std::make_pair(field_name, v[term_ref])));
-		
+
 		// step to the next field mapping
 		field_node = field_node->next;
 	}
 	if (m_field_map.empty())
 		throw NoFieldsException(getId());
 }
-	
+
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
@@ -119,12 +123,12 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	Reactor::updateVocabulary(v);
 	if (m_database_ptr)
 		m_database_ptr->updateVocabulary(v);
-	
+
 	// update Term mappings (note: references never change for a given id)
 	for (Query::FieldMap::iterator i = m_field_map.begin(); i != m_field_map.end(); ++i)
 		i->second.second = v[i->first];
 }
-	
+
 void DatabaseOutputReactor::updateDatabases(void)
 {
 	// just check to see if the database was deleted (if so, stop now!)
@@ -133,8 +137,8 @@ void DatabaseOutputReactor::updateDatabases(void)
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		m_database_ptr.reset();
 	}
-}	
-	
+}
+
 void DatabaseOutputReactor::operator()(const EventPtr& e)
 {
 	if (isRunning()) {
@@ -148,10 +152,10 @@ void DatabaseOutputReactor::operator()(const EventPtr& e)
 			if (! isRunning())
 				return;
 		}
-			
+
 		// add the event to the insert queue
 		m_event_queue[m_num_queued] = e;
-		
+
 		// signal the writer thread if the queue is full
 		if (++m_num_queued == m_queue_max)
 			m_wakeup_writer.notify_one();
@@ -167,10 +171,10 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	ConfigManager::writeBeginPionStatsXML(out);
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
-	
+
 	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_num_queued
 	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
-	
+
 	writeEndReactorXML(out);
 	ConfigManager::writeEndPionStatsXML(out);
 }
@@ -188,7 +192,7 @@ void DatabaseOutputReactor::start(void)
 		// spawn a new thread that will be used to save events to the database
 		PION_LOG_DEBUG(m_logger, "Starting database output thread: " << getId());
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseOutputReactor::insertEvents, this)));
-		
+
 		// wait for the writer thread to startup
 		m_flushed_queue.wait(reactor_lock);
 	}
@@ -218,7 +222,7 @@ void DatabaseOutputReactor::insertEvents(void)
 	PION_LOG_DEBUG(m_logger, "Database output thread is running: " << getId());
 
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	
+
 	try {
 		// open up the database if it isn't already open
 		PION_ASSERT(m_database_ptr);
@@ -227,15 +231,15 @@ void DatabaseOutputReactor::insertEvents(void)
 
 		// create the database table if it does not yet exist
 		m_database_ptr->createTable(m_field_map, m_table_name);
-				
+
 		// prepare the query used to insert new events into the table
 		QueryPtr insert_query_ptr(m_database_ptr->prepareInsertQuery(m_field_map, m_table_name));
 		PION_ASSERT(insert_query_ptr);
-		
+
 		// prepare the query used to begin new transactions
 		QueryPtr begin_transaction_ptr(m_database_ptr->getBeginTransactionQuery());
 		PION_ASSERT(begin_transaction_ptr);
-		
+
 		// prepare the query used to commit transactions
 		QueryPtr commit_transaction_ptr(m_database_ptr->getCommitTransactionQuery());
 		PION_ASSERT(commit_transaction_ptr);
@@ -247,7 +251,7 @@ void DatabaseOutputReactor::insertEvents(void)
 			// wait until it is time to go!
 			m_wakeup_writer.timed_wait(reactor_lock,
 				boost::get_system_time() + boost::posix_time::time_duration(0, 0, m_queue_timeout, 0) );
-			
+
 			// check for spurious wake-ups
 			if (m_num_queued != 0) {
 				PION_ASSERT(m_database_ptr);
@@ -255,7 +259,7 @@ void DatabaseOutputReactor::insertEvents(void)
 				PION_ASSERT(insert_query_ptr);
 				PION_ASSERT(begin_transaction_ptr);
 				PION_ASSERT(commit_transaction_ptr);
-				
+
 				// begin a new transaction
 				begin_transaction_ptr->run();
 				begin_transaction_ptr->reset();
@@ -268,7 +272,7 @@ void DatabaseOutputReactor::insertEvents(void)
 					insert_query_ptr->run();
 					insert_query_ptr->reset();
 				}
-				
+
 				// end & commit the transaction
 				commit_transaction_ptr->run();
 				commit_transaction_ptr->reset();
@@ -286,11 +290,11 @@ void DatabaseOutputReactor::insertEvents(void)
 		m_is_running = false;
 		m_flushed_queue.notify_all();
 	}
-	
+
 	PION_LOG_DEBUG(m_logger, "Database output thread is exiting: " << getId());
 }
 
-	
+
 }	// end namespace plugins
 }	// end namespace pion
 

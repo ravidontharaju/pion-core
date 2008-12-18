@@ -122,9 +122,16 @@ private:
 	/// name of the 'match all values' element for Pion XML config files
 	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
 	
+	/// name of the 'match all values' element for Pion XML config files
+	static const std::string		MATCH_ALL_COMPARISONS_ELEMENT_NAME;
+
 	
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;
+	
+	/// if true, all comparison rules must match for the filter test to pass
+	/// if false, only one comparison rule must match
+	bool							m_match_all_comparisons;
 };
 
 

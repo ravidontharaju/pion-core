@@ -35,6 +35,7 @@ const std::string			FilterReactor::TERM_ELEMENT_NAME = "Term";
 const std::string			FilterReactor::TYPE_ELEMENT_NAME = "Type";
 const std::string			FilterReactor::VALUE_ELEMENT_NAME = "Value";
 const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
+const std::string			FilterReactor::MATCH_ALL_COMPARISONS_ELEMENT_NAME = "MatchAllComparisons";
 
 	
 // FilterReactor member functions
@@ -48,6 +49,16 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// clear the current configuration
 	m_rules.clear();
 	
+	// check if all Comparison rules must match
+	m_match_all_comparisons = false;
+	std::string match_all_comparisons_str;
+	if (ConfigManager::getConfigOption(MATCH_ALL_COMPARISONS_ELEMENT_NAME, match_all_comparisons_str,
+									   config_ptr))
+	{
+		if (match_all_comparisons_str == "true")
+			m_match_all_comparisons = true;
+	}
+
 	// next, parse each comparison rule
 	xmlNodePtr comparison_node = config_ptr;
 	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
@@ -118,10 +129,22 @@ void FilterReactor::operator()(const EventPtr& e)
 	if (isRunning()) {
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
-
-		// all comparisons in the rule chain must pass for the Event to be delivered
-		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-			if (! i->evaluateBool(*e) )
+		
+		RuleChain::const_iterator i = m_rules.begin();
+		if (m_match_all_comparisons) {
+			// all comparisons in the rule chain must pass for the Event to be delivered
+			for (; i != m_rules.end(); ++i) {
+				if (! i->evaluateBool(*e) )
+					return;
+			}
+		} else {
+			// any one comparison in the rule chain must pass for the Event to be delivered
+			for (; i != m_rules.end(); ++i) {
+				if ( i->evaluateBool(*e) )
+					break;
+			}
+			// return if none matched & at least one rule is defined
+			if ( i == m_rules.end() && ! m_rules.empty() )
 				return;
 		}
 

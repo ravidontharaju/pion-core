@@ -6,8 +6,8 @@
 		><table
 			><tr
 				><td><label>ID:</label></td
-				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="@id"
-					 regExp="\w+" required="true"></td
+				><td><input dojoAttachPoint="id_widget" dojoType="dijit.form.ValidationTextBox" type="text" name="@id"
+					 regExp="[\w-]+" required="true"></td
 			></tr
 			><tr
 				><td><label>Type:</label></td
@@ -32,7 +32,7 @@
 		></table
 	></div>
 	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+		<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
 		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
 	</div>
 </div>

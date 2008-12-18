@@ -76,7 +76,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			store.fetch({
 				onItem: function(item) {
 					put_data += '<Field term="' + store.getValue(item, 'Term') + '">';
-					put_data += store.getValue(item, 'Field');
+					put_data += pion.escapeXml(store.getValue(item, 'Field'));
 					put_data += '</Field>';
 				},
 				onComplete: function() {
@@ -132,7 +132,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			store.fetch({
 				onItem: function(item) {
 					post_data += '<Field term="' + store.getValue(item, 'Term') + '">';
-					post_data += store.getValue(item, 'Field');
+					post_data += pion.escapeXml(store.getValue(item, 'Field'));
 					post_data += '</Field>';
 				},
 				onComplete: function() {
@@ -202,7 +202,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 	defaultCell: { editable: true, type: dojox.grid.cells._Widget },
 	rows: [
-		{ field: 'Field', name: 'Field Name', width: 20 },
+		{ field: 'Field', name: 'Database Column Name', width: 20,
+			widgetClass: "dijit.form.ValidationTextBox", 
+			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
 		{ field: 'Term', name: 'Term', width: 'auto', 
 			widgetClass: "dijit.form.FilteringSelect", 
 			widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },

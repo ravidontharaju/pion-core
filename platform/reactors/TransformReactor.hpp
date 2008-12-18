@@ -47,7 +47,7 @@ public:
 		EmptyTermException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration is missing a term identifier: ", reactor_id) {}
 	};
-	
+
 	/// exception thrown if the TransformReactor configuration uses an unknown Term for a Comparison
 	class UnknownTermException : public PionException {
 	public:
@@ -61,7 +61,7 @@ public:
 		EmptyTypeException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration does not include a comparison type: ", reactor_id) {}
 	};
-	
+
 	/// exception thrown if the TransformReactor configuration does not define a Term for a Comparison
 	class EmptyValueException : public PionException {
 	public:
@@ -80,13 +80,16 @@ public:
 		EmptySetTermException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration is missing the set term identifier: ", reactor_id) {}
 	};
-	
+
 	/// constructs a new TransformReactor object
-	TransformReactor(void) : Reactor(TYPE_PROCESSING) {}
-	
+	TransformReactor(void) :
+		Reactor(TYPE_PROCESSING),
+		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF)
+	{}
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~TransformReactor() { stop(); }
-	
+
 	/**
 	 * sets configuration parameters for this Reactor
 	 *
@@ -95,7 +98,7 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
 	/**
 	 * this updates the Vocabulary information used by this Reactor; it should
 	 * be called whenever the global Vocabulary is updated
@@ -103,7 +106,7 @@ public:
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
-	
+
 	/**
 	 * processes an Event by comparing its data to the configured RuleChain.
 	 * Only Events which pass all Comparisons in the RuleChain will be
@@ -112,25 +115,25 @@ public:
 	 * @param e pointer to the Event to process
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
-	
-	
+
+
 private:
-	
+
 	/// data type for a chain of Comparison rules
 	typedef std::vector<pion::platform::Comparison>		RuleChain;
 
 	/// data type for a chain of Transform rules
 	typedef std::vector<pion::platform::Transform>		TransformChain;
-	
+
 	/// name of the term element for Pion XML config files
 	static const std::string		COMPARISON_ELEMENT_NAME;
-	
+
 	/// name of the term element for Pion XML config files
 	static const std::string		TERM_ELEMENT_NAME;
 
 	/// name of the type element for Pion XML config files
 	static const std::string		TYPE_ELEMENT_NAME;
-	
+
 	/// name of the value element for Pion XML config files
 	static const std::string		VALUE_ELEMENT_NAME;
 
@@ -138,10 +141,13 @@ private:
 	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
 
 	/// name of the XML part containing transformation rules
-	static const std::string		TRANSFORMATION_ELEMENT_NAME;	
+	static const std::string		TRANSFORMATION_ELEMENT_NAME;
 
 	/// Do all the conditions have to be met before transformation activates
 	static const std::string		ALL_CONDITIONS_ELEMENT_NAME;
+
+	/// outgoing event type, or unknown for same as incoming
+	static const std::string		EVENT_TYPE_NAME;
 
 	/// Deliver original (in additions to modified)
 	static const std::string		DELIVER_ORIGINAL_NAME;
@@ -154,7 +160,7 @@ private:
 
 	/// Set Term (if not InPlace)
 	static const std::string		TRANSFORMATION_SET_TERM_NAME;
-	
+
 	/// a chain of Comparison rules used to filter out unwanted Events
 	RuleChain						m_rules;
 
@@ -164,8 +170,12 @@ private:
 	/// should all the conditions match before transformations take place
 	bool							m_all_conditions;
 
+	/// outgoing event type
+	pion::platform::Vocabulary::TermRef	m_event_type;
+
 	/// deliver original event
-	bool							m_deliver_original;
+	enum { DO_NEVER, DO_SOMETIMES, DO_ALWAYS }
+									m_deliver_original;
 
 	/// One event_factory to manufacture the outgoing/duplicated events
 	pion::platform::EventFactory	m_event_factory;

@@ -479,7 +479,7 @@ bool ConfigManager::updateConfigOption(const std::string& option_name,
 			xmlFreeNodeList(option_node);
 		} else {
 			// change the value of an existing element
-			xmlNodeSetContent(option_node, reinterpret_cast<const xmlChar*>(option_value.c_str()));
+			xmlNodeSetContent(option_node, reinterpret_cast<const xmlChar*>(xml_encode(option_value).c_str()));
 		}
 	} else {
 		// no value is currently set for the option

@@ -666,7 +666,8 @@ The following are also available, if the need arises.
 
 /* Global Config Styles */
 
-.tundra .save .dijitButtonNode {
+.tundra .save .dijitButtonNode, 
+.tundra button.save {
 	background: #ffffff url("../images/button-save-off.png") repeat-x;
 	border: solid #999999 1px;
 	color: #366dba;
@@ -679,10 +680,37 @@ The following are also available, if the need arises.
 	padding-right: 2px;
 }
 
-.tundra .save.dijitButtonHover .dijitButtonNode {
+.tundra .save.dijitButtonHover .dijitButtonNode, 
+.tundra button.save:hover {
 	background: #ffffff url("../images/button-save-on.png") repeat-x;
 }
 
+.tundra button.disabled.save {
+	background: #ffffff url("../images/button-save-off.png") repeat-x;
+	font-weight: 100;
+}
+
+.tundra button.add_new {
+	background: #ffffff url("../images/button-add-off.png") no-repeat;
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 22px;
+	text-align: left;
+	padding-top: 1px;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra button.add_new:hover {
+	background: #ffffff url("../images/button-add-on.png") no-repeat;
+}
+
+.tundra button.disabled.add_new {
+	background: #ffffff url("../images/button-add-off.png") no-repeat;
+	font-weight: 100;
+}
 
 .tundra .cancel .dijitButtonNode {
 	background: #ffffff url("../images/button-cancel-off.png") repeat-x;
@@ -730,8 +758,8 @@ The following are also available, if the need arises.
 	background-color: none;
 }
 
-.tundra .add_new .dijitButtonNode {
-	background: #ffffff url("../images/button-add-off.png") no-repeat;
+.tundra .add_new_pane .dijitButtonNode {
+	background: #ffffff url("../images/button-add-new-pane-off.png") no-repeat;
 	border: none;
 	color: #366dba;
 	font-size: 16px;
@@ -744,8 +772,8 @@ The following are also available, if the need arises.
 }
 
 
-.tundra .add_new.dijitButtonHover .dijitButtonNode {
-	background: #ffffff url("../images/button-add-on.png") no-repeat;
+.tundra .add_new_pane.dijitButtonHover .dijitButtonNode {
+	background: #ffffff url("../images/button-add-new-pane-on.png") no-repeat;
 }
 
 
@@ -974,3 +1002,21 @@ The following are also available, if the need arises.
 	font-weight:bold;
 }
 
+.termSelectorContainer thead tr th, .termSelectorContainer thead tr td, .termSelectorContainer tbody tr td, .termSelectorContainer tfoot tr td {
+	padding: 0;
+}
+
+.tundra table.termSelectorContainer {
+	font-size: 100%;
+	border-spacing: 0;
+	border-collapse: separate;
+	border: 1px solid #ccc;
+	margin: 0;
+}
+
+.tundra .termSelectorHead th {
+	background:#d3d3d3 url("../dojo-release/dijit/themes/tundra/images/titleBar.png") repeat-x top;
+	padding-top:.3em;
+	padding-bottom:.2em;
+	text-align:center;
+}

@@ -406,7 +406,7 @@ void VocabularyConfig::updateTerm(const Vocabulary::Term& t)
 		}
 	} else {
 		// change the value for the existing comment node
-		xmlNodeSetContent(comment_node, reinterpret_cast<const xmlChar*>(t.term_comment.c_str()));
+		xmlNodeSetContent(comment_node, reinterpret_cast<const xmlChar*>(xml_encode(t.term_comment).c_str()));
 	}
 	
 	// save the new XML config file
@@ -462,7 +462,7 @@ void VocabularyConfig::writeTermConfigXML(std::ostream& out,
 	
 	// Comment element
 	if (! t.term_comment.empty()) {
-		out << "\t\t<" << COMMENT_ELEMENT_NAME << '>' << t.term_comment
+		out << "\t\t<" << COMMENT_ELEMENT_NAME << '>' << xml_encode(t.term_comment)
 			<< "</" << COMMENT_ELEMENT_NAME << '>' << std::endl;
 	}
 	

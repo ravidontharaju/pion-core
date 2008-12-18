@@ -639,6 +639,7 @@ dojo.experimental("dojox.gfx.canvas");
 		c.height = height;
 		p.appendChild(c);
 		s.rawNode = c;
+		s._parent = p;
 		s.surface = s;
 		return s;	// dojox.gfx.Surface
 	};

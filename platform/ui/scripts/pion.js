@@ -1,7 +1,9 @@
 dojo.registerModulePath("pion", "/scripts");
 dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.data.ItemFileReadStore");
+dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.StackContainer");
+dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
@@ -26,7 +28,7 @@ var file_protocol = false;
 var firefox_on_mac;
 
 pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
-	console.debug('In pion.handleXhrError: ioArgs.args = ', ioArgs.args);
+	console.error('In pion.handleXhrError: response = ', response, ', ioArgs.args = ', ioArgs.args);
 	if (ioArgs.xhr.status == 401) {
 		if (pion.login.login_pending) {
 			// redo the request when the login succeeds
@@ -55,7 +57,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 }
 
 pion.handleXhrGetError = function(response, ioArgs) {
-	console.debug('In pion.handleXhrGetError: ioArgs.args = ', ioArgs.args);
+	console.error('In pion.handleXhrGetError: response = ', response, ', ioArgs.args = ', ioArgs.args);
 	return pion.handleXhrError(response, ioArgs, dojo.xhrGet);
 }
 
@@ -64,6 +66,27 @@ pion.getXhrErrorHandler = function(xhrFunc, args_mixin, finalErrorHandler) {
 		dojo.mixin(ioArgs.args, args_mixin);
 		return pion.handleXhrError(response, ioArgs, xhrFunc, finalErrorHandler);
 	}
+}
+
+pion.doDeleteConfirmationDialog = function(message, delete_function, delete_function_arg) {
+	var dialog = pion.delete_confirmation_dialog;
+	if (!dialog) {
+		dialog = new dijit.Dialog({
+			title: 'Delete Confirmation',
+			content: '<div id="are_you_sure"></div>'
+					 + '<button id="cancel_delete" dojoType="dijit.form.Button" class="cancel">Cancel</button>'
+					 + '<button id="confirm_delete" dojoType=dijit.form.Button class="delete">Delete</button>'
+		});
+
+		dojo.byId('cancel_delete').onclick = function() { dialog.onCancel(); };
+
+		// Save for future use.
+		pion.delete_confirmation_dialog = dialog;
+	}
+	dojo.byId('are_you_sure').innerHTML = message;
+	dojo.byId('confirm_delete').onclick = function() { dialog.onCancel(); delete_function(delete_function_arg); };
+	dialog.show();
+	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
 
 pion.handleFetchError = function(errorData, request) {
@@ -82,6 +105,23 @@ pion.handleFetchError = function(errorData, request) {
 			pion.login.doLoginDialog(function(){request.store.fetch(request)});
 		}
 		return;
+	}
+}
+
+// Substitutes entity references for characters that have special meaning in XML.
+pion.escapeXml = function(value) {
+	return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+pion.makeXmlLeafElement = function(tag_name, value) {
+	return '<' + tag_name + '>' + pion.escapeXml(value) + '</' + tag_name + '>';
+}
+
+pion.xmlCellFormatter = function(d) {
+	if (d && d.toString()) {
+		return pion.escapeXml(d);
+	} else {
+		return this.defaultValue;
 	}
 }
 
@@ -139,6 +179,7 @@ dojo.addOnLoad(init);
 
 function configPageSelected(page) {
 	console.debug('Selected ' + page.title + ' configuration page');
+	pion.current_page = page.title;
 	if (page.title == "Reactors") {
 		pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
 		dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
