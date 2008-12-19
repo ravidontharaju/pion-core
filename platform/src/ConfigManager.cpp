@@ -123,12 +123,17 @@ void ConfigManager::removeConfigFile(void)
 
 void ConfigManager::backupConfigFile(void)
 {
-	// make sure that the config file exists
-	if (boost::filesystem::exists(m_config_file)) {
-		const std::string backup_filename(m_config_file + BACKUP_FILE_EXTENSION);
-		if (boost::filesystem::exists(backup_filename))
-			boost::filesystem::remove(backup_filename);
-		boost::filesystem::copy_file(m_config_file, backup_filename);
+	try {
+
+		// make sure that the config file exists
+		if (boost::filesystem::exists(m_config_file)) {
+			const std::string backup_filename(m_config_file + BACKUP_FILE_EXTENSION);
+			if (boost::filesystem::exists(backup_filename))
+				boost::filesystem::remove(backup_filename);
+			boost::filesystem::copy_file(m_config_file, backup_filename);
+		}
+	} catch (...) {
+		PION_LOG_WARN(m_logger, "Failed to backup configuration file: " << m_config_file);
 	}
 }
 
