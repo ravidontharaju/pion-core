@@ -46,7 +46,8 @@ dojo.declare("plugins.reactors.FilterReactor",
 						var comparison_item = {
 							ID: _this.comparison_store.next_id++,
 							Term: store.getValue(comparisons[i], 'Term'),
-							Type: store.getValue(comparisons[i], 'Type')
+							Type: store.getValue(comparisons[i], 'Type'),
+							MatchAllValues: plugins.reactors.FilterReactor.getBool(store, comparisons[i], 'MatchAllValues')
 						}
 						if (store.hasAttribute(comparisons[i], 'Value'))
 							comparison_item.Value = store.getValue(comparisons[i], 'Value');
@@ -82,6 +83,7 @@ dojo.declare("plugins.reactors.FilterReactor",
 					put_data += '<Type>' + store.getValue(item, 'Type') + '</Type>';
 					if (store.hasAttribute(item, 'Value'))
 						put_data += pion.makeXmlLeafElement('Value', store.getValue(item, 'Value'));
+					put_data += '<MatchAllValues>' + store.getValue(item, 'MatchAllValues') + '</MatchAllValues>';
 					put_data += '</Comparison>';
 				},
 				onComplete: function() {
@@ -125,6 +127,8 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
+					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
+						type: dojox.grid.cells.Bool},
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
@@ -175,17 +179,32 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 				var term = this.store.getValue(item, 'Term').toString();
 				console.debug('term = ', term, ', pion.terms.categories_by_id[term] = ', pion.terms.categories_by_id[term]);
 				this.structure[0].rows[1].widgetProps.query.category = pion.terms.categories_by_id[term];
-			} else if (e.cellIndex == 3) { // clicked in delete column
+			} else if (e.cellIndex == 4) { // clicked in delete column
 				console.debug('Removing row ', e.rowIndex); 
 				this.store.deleteItem(this.getItem(e.rowIndex));
 			}
 		},
 		_handleAddNewComparison: function() {
-			this.reactor.comparison_store.newItem({ID: this.reactor.comparison_store.next_id++});
+			this.reactor.comparison_store.newItem({
+				ID: this.reactor.comparison_store.next_id++,
+				MatchAllValues: false
+			});
 		}
 	}
 );
 
 plugins.reactors.FilterReactor.option_defaults = {
 	MatchAllComparisons: false
+}
+
+plugins.reactors.FilterReactor.grid_option_defaults = {
+	MatchAllValues: false
+};
+
+plugins.reactors.FilterReactor.getBool = function(store, item, attribute) {
+	if (store.hasAttribute(item, attribute))
+		// convert XmlItem to string and then to boolean
+		return store.getValue(item, attribute).toString() == 'true';
+	else
+		return plugins.reactors.FilterReactor.grid_option_defaults[attribute];
 }
