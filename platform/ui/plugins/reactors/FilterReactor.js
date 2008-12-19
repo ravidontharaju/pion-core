@@ -1,7 +1,7 @@
 dojo.provide("plugins.reactors.FilterReactor");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("pion.terms");
-//dojo.require("pion.widgets.TermTextBox");
+dojo.require("pion.widgets.TermTextBox");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
@@ -119,11 +119,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
 					{ field: 'Term', name: 'Term', width: 20, 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
-					//{ field: 'Term', name: 'Term', width: 20, 
-					//	type: pion.widgets.TermTextCell, 
-					//	formatter: function(inDatum) { return inDatum; } },
+						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Comparison', width: 15, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },

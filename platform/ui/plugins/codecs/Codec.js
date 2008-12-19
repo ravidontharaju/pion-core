@@ -1,6 +1,6 @@
 dojo.provide("plugins.codecs.Codec");
 dojo.require("pion.codecs");
-dojo.require("pion.terms");
+dojo.require("pion.widgets.TermTextBox");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
@@ -72,8 +72,7 @@ dojo.declare("plugins.codecs.CodecPane",
 					{ field: 'FieldName', name: 'Field Name', width: 15,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Term', name: 'Term', width: 'auto', 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+						type: pion.widgets.TermTextCell },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]

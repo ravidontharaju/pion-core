@@ -1,12 +1,12 @@
 dojo.provide("plugins.reactors.DatabaseOutputReactor");
 dojo.require("pion.databases");
+dojo.require("pion.widgets.TermTextBox");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
-dojo.require("pion.terms");
 
 dojo.declare("plugins.reactors.DatabaseOutputReactor",
 	[ plugins.reactors.Reactor ],
@@ -206,8 +206,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			widgetClass: "dijit.form.ValidationTextBox", 
 			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
 		{ field: 'Term', name: 'Term', width: 'auto', 
-			widgetClass: "dijit.form.FilteringSelect", 
-			widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+			type: pion.widgets.TermTextCell },
 		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 			value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 	]

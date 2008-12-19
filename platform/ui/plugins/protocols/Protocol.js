@@ -1,6 +1,6 @@
 dojo.provide("plugins.protocols.Protocol");
 dojo.require("pion.protocols");
-dojo.require("pion.terms");
+dojo.require("pion.widgets.TermTextBox");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
@@ -51,8 +51,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
 				rows: [
 					{ field: 'Term', name: 'Term', width: 16, 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+						type: pion.widgets.TermTextCell },
 					{ field: 'Source', name: 'Source', styles: '', width: 7, 
 						widgetClass: "dijit.form.FilteringSelect", 
 						widgetProps: {store: plugins.protocols.source_store, searchAttr: "description" } },

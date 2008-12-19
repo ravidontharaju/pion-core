@@ -1,5 +1,6 @@
 dojo.provide("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.Codec");
+dojo.require("pion.widgets.TermTextBox");
 
 plugins.codecs.LogCodec = {
 	custom_post_data: '<Flush>false</Flush><Headers>false</Headers>'
@@ -28,8 +29,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					{ field: 'FieldName', name: 'Field Name', width: 15,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Term', name: 'Term', width: 15, 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: pion.terms.store, searchAttr: "id", keyAttr: "id" } },
+						type: pion.widgets.TermTextCell },
 					// TODO: restore validation.
 					{ field: 'StartChar', name: 'Start Char', styles: 'text-align: center', width: 3 },
 					// TODO: restore validation.
