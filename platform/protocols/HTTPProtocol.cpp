@@ -29,6 +29,8 @@ namespace plugins {		// begin namespace plugins
 
 // static members of HTTPProtocol
 	
+const std::string HTTPProtocol::MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME = "MaxRequestContentLength";
+const std::string HTTPProtocol::MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME = "MaxResponseContentLength";
 const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
 const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
 const std::string HTTPProtocol::EXTRACT_ELEMENT_NAME = "Extract";
@@ -141,10 +143,10 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_cs_send_time_term_ref = m_cs_send_time_term_ref;
 	retval->m_sc_reply_time_term_ref = m_sc_reply_time_term_ref;
 	retval->m_sc_send_time_term_ref = m_sc_send_time_term_ref;
-	retval->m_request_start_time = m_request_start_time;
-	retval->m_request_end_time = m_request_end_time;
-	retval->m_response_start_time = m_response_start_time;
-	retval->m_response_end_time = m_response_end_time;
+
+	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
+	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
+
 	retval->m_extraction_rules = m_extraction_rules;
 
 	return ProtocolPtr(retval);
@@ -158,9 +160,9 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	m_event_factory.create(event_ptr_ref, event_type);
 
 	// populate some basic fields
-	(*event_ptr_ref).setUInt(m_cs_bytes_term_ref, m_request_parser.getTotalBytesRead());
-	(*event_ptr_ref).setUInt(m_sc_bytes_term_ref, m_response_parser.getTotalBytesRead());
-	(*event_ptr_ref).setUInt(m_bytes_term_ref, m_request_parser.getTotalBytesRead()
+	(*event_ptr_ref).setUBigInt(m_cs_bytes_term_ref, m_request_parser.getTotalBytesRead());
+	(*event_ptr_ref).setUBigInt(m_sc_bytes_term_ref, m_response_parser.getTotalBytesRead());
+	(*event_ptr_ref).setUBigInt(m_bytes_term_ref, m_request_parser.getTotalBytesRead()
 							 + m_response_parser.getTotalBytesRead());
 	(*event_ptr_ref).setUInt(m_status_term_ref, m_response.getStatusCode());
 	(*event_ptr_ref).setString(m_comment_term_ref, m_response.getStatusMessage());
@@ -251,6 +253,25 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	Protocol::setConfig(v, config_ptr);
 	
+	// parse maximum request content length
+	boost::uint64_t max_content_length;
+	if (ConfigManager::getConfigOption(MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME,
+		max_content_length, config_ptr))
+	{
+		m_request_parser.setMaxContentLength(max_content_length);
+	} else {
+		m_request_parser.resetMaxContentLength();
+	}
+
+	// parse maximum response content length
+	if (ConfigManager::getConfigOption(MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME,
+		max_content_length, config_ptr))
+	{
+		m_response_parser.setMaxContentLength(max_content_length);
+	} else {
+		m_response_parser.resetMaxContentLength();
+	}
+
 	// parse content extraction rules
 	
 	xmlNodePtr extract_node = config_ptr;

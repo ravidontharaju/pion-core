@@ -246,8 +246,14 @@ private:
 
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
+
 	
-	
+	/// name of the MaxRequestContentLength element for Pion XML config files
+	static const std::string	MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME;
+
+	/// name of the MaxResponseContentLength element for Pion XML config files
+	static const std::string	MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME;
+
 	/// name of the ContentType element for Pion XML config files
 	static const std::string	CONTENT_TYPE_ELEMENT_NAME;
 

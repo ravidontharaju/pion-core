@@ -553,14 +553,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	event_ptr->setUInt(bytes_ref, 42);
+	event_ptr->setUBigInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
 	std::string output_str = out.str();
 	std::istringstream in(output_str);
 	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
 	BOOST_CHECK(F::p->read(in, *event_ptr_2));
-	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), static_cast<boost::uint32_t>(42));
+	BOOST_CHECK_EQUAL(event_ptr_2->getUBigInt(bytes_ref), static_cast<boost::uint64_t>(42));
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 }
 
@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	event_ptr->setUInt(bytes_ref, 42);
+	event_ptr->setUBigInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
 	BOOST_CHECK_NO_THROW(F::p->finish(out));
@@ -576,7 +576,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	std::istringstream in(output_str);
 	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));
 	BOOST_CHECK(F::p->read(in, *event_ptr_2));
-	BOOST_CHECK_EQUAL(event_ptr_2->getUInt(bytes_ref), static_cast<boost::uint32_t>(42));
+	BOOST_CHECK_EQUAL(event_ptr_2->getUBigInt(bytes_ref), static_cast<boost::uint64_t>(42));
 	BOOST_CHECK(*event_ptr == *event_ptr_2);
 
 	BOOST_CHECK(!F::p->read(in, *event_ptr_2));
@@ -601,8 +601,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteWithMultipleValuesFo
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
-	event_ptr->setUInt(bytes_ref, 42);
-	event_ptr->setUInt(bytes_ref, 82);
+	event_ptr->setUBigInt(bytes_ref, 42);
+	event_ptr->setUBigInt(bytes_ref, 82);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
 	std::string output_str = out.str();
@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteWithMultipleValuesFo
 	// The only guarantee we can make for a generic Codec is that we can read the event
 	// and one of the values that was set for the term is in the reconstituted event.
 	BOOST_CHECK(F::p->read(in, *event_ptr_2));
-	BOOST_CHECK(event_ptr_2->getUInt(bytes_ref) % 40 == 2);
+	BOOST_CHECK(event_ptr_2->getUBigInt(bytes_ref) % 40 == 2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -2048,7 +2048,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 								   boost::posix_time::time_duration(5, 37, 11)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /robots.txt HTTP/1.0");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 404UL);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 208UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_bytes_ref), 208UL);
 
 	// read the second record
 	event_ptr->clear();
@@ -2063,7 +2063,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 								   boost::posix_time::time_duration(7, 20, 2)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /community/ HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 3546UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_bytes_ref), 3546UL);
 
 	// read the third record
 	event_ptr->clear();
@@ -2078,7 +2078,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 								   boost::posix_time::time_duration(12, 13, 3)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /default.css HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 6698UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_bytes_ref), 6698UL);
 
 	// read the forth record
 	event_ptr->clear();
@@ -2093,7 +2093,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFile) {
 								   boost::posix_time::time_duration(15, 26, 7)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /pion/ HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 200UL);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 7058UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_bytes_ref), 7058UL);
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatJustOneField) {
@@ -2113,7 +2113,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecWriteLogFormatAllFields) {
 													boost::posix_time::time_duration(12, 31, 0)));
 	event_ptr->setString(m_request_ref, "GET / HTTP/1.1");
 	event_ptr->setUInt(m_status_ref, 302);
-	event_ptr->setUInt(m_bytes_ref, 116);
+	event_ptr->setUBigInt(m_bytes_ref, 116);
 	std::stringstream ss;
 	m_common_codec->write(ss, *event_ptr);
 	// NOTE: timezone offsets are currently not working in DateTimeFacet
@@ -2136,7 +2136,7 @@ BOOST_AUTO_TEST_CASE(checkCommonCodecReadLogFormatAllFieldsWithQuotes) {
 								   boost::posix_time::time_duration(12, 31, 0)));
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_request_ref), "GET /\" HTTP/1.1");
 	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_status_ref), 302UL);
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(m_bytes_ref), 116UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_bytes_ref), 116UL);
 }
 
 BOOST_AUTO_TEST_CASE(checkCombinedCodecReadLogFile) {

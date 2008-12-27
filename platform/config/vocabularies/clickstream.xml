@@ -73,15 +73,15 @@
 			<Comment>Server port number for the HTTP request</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#cs-bytes">
-			<Type>uint32</Type>
+			<Type>uint64</Type>
 			<Comment>The number of bytes sent from client to server</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#sc-bytes">
-			<Type>uint32</Type>
+			<Type>uint64</Type>
 			<Comment>The number of bytes sent from server to client</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#bytes">
-			<Type>uint32</Type>
+			<Type>uint64</Type>
 			<Comment>The total number of bytes transferred</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#status">
