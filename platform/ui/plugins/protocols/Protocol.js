@@ -41,6 +41,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			this.special_config_elements = ['Extract', 'tagName', 'childNodes'];
+			this.form.attr('value', {MaxRequestContentLength: 1048576, MaxResponseContentLength: 1048576});
 			var _this = this;
 			this.extraction_rule_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -90,8 +91,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });			
 		},
 		getHeight: function() {
-			// TODO: replace 470 with some computed value
-			return 470;
+			// TODO: replace 530 with some computed value
+			return 530;
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.protocols.config_store;

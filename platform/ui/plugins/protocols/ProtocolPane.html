@@ -17,20 +17,23 @@
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
 						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>ID</label></td
 						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
 						><td rowspan="3">&nbsp;</td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>Plugin&nbsp;Type</label></td
 						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
-					></tr
-					><tr
+					></tr><tr
 						><td><label>Event&nbsp;Type</label></td
 						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
 								store="pion.terms.store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
+					></tr><tr
+						><td><label>Max&nbsp;Request&nbsp;Content&nbsp;Length</label></td
+						><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxRequestContentLength" regExp="[1-9][0-9]*" required="true"></td
+					></tr><tr
+						><td><label>Max&nbsp;Response&nbsp;Content&nbsp;Length</label></td
+						><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxResponseContentLength" regExp="[1-9][0-9]*" required="true"></td
 					></tr
 				></table
 				><br/
