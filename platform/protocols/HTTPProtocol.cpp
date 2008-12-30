@@ -70,6 +70,16 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_SEND_TIME="urn:vocab:clicks
 	
 // HTTPProtocol member functions
 
+bool HTTPProtocol::close(EventPtr& event_ptr_ref)
+{
+	if (m_request_parser.getTotalBytesRead() > 0) {
+		generateEvent(event_ptr_ref);
+		return true;
+	}
+
+	return false;
+}
+
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  boost::posix_time::ptime data_timestamp, 
 									  EventPtr& event_ptr_ref)

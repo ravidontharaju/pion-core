@@ -108,6 +108,15 @@ public:
 	virtual ~HTTPProtocol() {}
 
 	/**
+	 * called to close the protocol parsing.  An event may be returned
+	 * if there is data remaining (i.e. if closed prematurely)
+	 *
+	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
+	 * @return true if a new event was generated that contains the remaining data
+	 */
+	virtual bool close(pion::platform::EventPtr& event_ptr_ref);
+
+	/**
 	 * parses the next portion of the network data
 	 * 
 	 * @param request direction flag
