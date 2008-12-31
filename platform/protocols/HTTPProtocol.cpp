@@ -72,12 +72,23 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_SEND_TIME="urn:vocab:clicks
 
 bool HTTPProtocol::close(EventPtr& event_ptr_ref)
 {
-	if (m_request_parser.getTotalBytesRead() > 0) {
-		generateEvent(event_ptr_ref);
-		return true;
+	bool generate_event = false;
+
+	if (!m_request.isValid() && m_request_parser.getTotalBytesRead() > 0) {
+		m_request_parser.finish(m_request);
+		generate_event = true;
 	}
 
-	return false;
+	if (!m_response.isValid() && m_response_parser.getTotalBytesRead() > 0) {
+		m_response_parser.finish(m_response);
+		generate_event = true;
+	}
+
+	if (generate_event) {
+		generateEvent(event_ptr_ref);
+	}
+
+	return (m_request.isValid() && m_response.isValid());
 }
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 

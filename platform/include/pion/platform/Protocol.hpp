@@ -84,7 +84,7 @@ public:
 	 * if there is data remaining (i.e. if closed prematurely)
 	 *
 	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
-	 * @return true if a new event was generated that contains the remaining data
+	 * @return true if the request or response parsing was finished prematurely
 	 */
 	virtual bool close(pion::platform::EventPtr& event_ptr_ref) = 0;
 
