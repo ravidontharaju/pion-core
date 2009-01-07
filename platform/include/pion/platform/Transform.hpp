@@ -28,7 +28,7 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
-//#include <pion/platform/Comparison.hpp>
+#include <pion/platform/Comparison.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/platform/ConfigManager.hpp>
 
@@ -189,10 +189,10 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_INT16:
 		case Vocabulary::TYPE_INT32:
-			e->setInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value));
+			e->setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value));
 			break;
 		case Vocabulary::TYPE_INT64:
-			e->setBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
+			e->setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value));
 			break;
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_UINT16:
@@ -285,16 +285,15 @@ public:
 	{
 		Event::ValuesRange values_range = e->equal_range(m_src_term_ref);
 		Event::ConstIterator ec = values_range.first;
-		if (ec == values_range.second) {
-//			PION_LOG_DEBUG(m_logger, "values range does not exist, i.e. term not found");
-			return false;
-		} else {
+		// if ec == values_range.second ... source term was not found...
+		bool AnyCopied = false;
+		while (ec != values_range.second) {
 			// TODO: Optimize the intermediary variable s out by folding the function
-			// Get the value, cast as a string
 			std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-			// Assign the string, with appropriate lexical re-casting
-			return AssignValue(e, m_term, s);
+			AnyCopied |= AssignValue(e, m_term, s);
+			ec++;			// repeat for all matching source terms
 		}
+		return AnyCopied;	// true, if any were copied...
 	}
 };
 
@@ -302,17 +301,117 @@ public:
 class PION_PLATFORM_API TransformLookup
 	: public Transform
 {
+	/// Define HashMapped, key-value pair array KVP
+	typedef PION_HASH_MAP<std::string, std::string, PION_HASH_STRING>	KVP;
+
+	/// Term to pull out of the source event
+	Vocabulary::TermRef			m_lookup_term_ref;
+	/// [optional] regular expression to apply to Lookup Term
+	boost::regex				m_match;
+	/// [optional] format to apply to regular expression, default: $&
+	std::string					m_format;
+	/// Treatment for default value, if lookup fails
+	enum { DEF_UNDEF, DEF_SRCTERM, DEF_OUTPUT, DEF_FIXED }
+								m_default;
+	/// [optional] fixed string to use as default value with DEF_FIXED
+	std::string					m_fixed;
+	/// Keys & Values, hashmap for keys
+	KVP							m_lookup;
+
 public:
 	TransformLookup(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
-		// FIXME: Get the whole lookup chain
+		//	<LookupTerm>src-term</LookupTerm>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption("LookupTerm", term_id, config_ptr))
+			throw MissingTransformField("Missing LookupTerm in TransformationAssingLookup");
+		m_lookup_term_ref = v.findTerm(term_id);
+		if (m_lookup_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid LookupTerm in TransformationAssignLookup");
+		//[opt]		<Match>escape(regexp)</Match>
+		std::string val;
+		if (ConfigManager::getConfigOption("Match", val, config_ptr)) {
+			try {
+				m_match = val;
+			} catch (...) {
+				throw MissingTransformField("Invalid regular expression in TransformationAssignLookup");
+			}
+		}
+		//	[opt]		<Format>escape(format)</Format>
+		m_format.clear();
+		if (ConfigManager::getConfigOption("Format", val, config_ptr))
+			m_format = val;
+
+		// If regex has been found & is valid, but format is empty... set to default $&
+		if (!m_match.empty() && m_format.empty())
+			m_format = "$&";
+
+		//	[opt]		<DefaultAction>undefined|src-term|output|fixedvalue</DefaultAction>
+		m_default = DEF_UNDEF;
+		if (ConfigManager::getConfigOption("DefaultAction", val, config_ptr)) {
+			if (val == "src-term")
+				m_default = DEF_SRCTERM;
+			else if (val == "output")
+				m_default = DEF_OUTPUT;
+			else if (val == "fixedvalue")
+				m_default = DEF_FIXED;
+		}
+		//	[opt]		<DefaultValue>escape(text)</DefaultValue>
+		m_fixed.clear();
+		if (m_default == DEF_FIXED && ConfigManager::getConfigOption("DefaultValue", val, config_ptr))
+			m_fixed = val;
+		//	[rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
+		xmlNodePtr LookupNode = config_ptr;
+		std::string key_str;
+		while ( (LookupNode = ConfigManager::findConfigNodeByAttr("Lookup", "key", key_str, LookupNode)) != NULL) {
+			if (ConfigManager::getConfigOption("Lookup", val, LookupNode))
+				m_lookup[key_str] = val;
+			LookupNode = LookupNode->next;
+		}
 	}
 
+	virtual ~TransformLookup(void)
+	{
+		m_lookup.clear();
+	}
+
+	// Note, that the transformation will iterate based on lookup_term
+	// - No terms (not found); no iterations, not even default actions
+	// - 1..n: iterate full functionality for each found term
 	virtual bool transform(EventPtr& e)
 	{
-		// FIXME: Assign the lookup value
-		return true;	// FIXME: Return true if lookup value assigned
+		Event::ValuesRange values_range = e->equal_range(m_lookup_term_ref);
+		Event::ConstIterator ec = values_range.first;
+		// if ec == values_range.second ... source term was not found...
+		bool AnyCopied = false;
+		while (ec != values_range.second) {
+			// Get the source term
+			std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+			// If regex defined, do the regular expression, replacing the key value
+			if (! m_match.empty())
+				s = boost::regex_replace(s, m_match, m_format, boost::format_all | boost::format_no_copy);
+			// Find the value, using the key
+			KVP::const_iterator i = m_lookup.find(s);
+			if (i != m_lookup.end())	// Found: assign the lookup value
+				AnyCopied |= AssignValue(e, m_term, i->second);
+			else						// Not found: perform default action
+				switch (m_default) {
+					case DEF_UNDEF:		// Leave undefined, i.e. do nothing
+						break;
+					case DEF_SRCTERM:	// Re-get the original value, assign it
+						AnyCopied |= AssignValue(e, m_term, boost::get<const Event::SimpleString&>(ec->value).get());
+						break;
+					case DEF_OUTPUT:	// Assign the regex output value
+						AnyCopied |= AssignValue(e, m_term, s);
+						break;
+					case DEF_FIXED:		// Assign the fixed value
+						AnyCopied |= AssignValue(e, m_term, m_fixed);
+						break;
+				}
+			ec++;			// repeat for all matching source terms
+		}
+		return AnyCopied;	// true, if any were copied...
 	}
 };
 
@@ -320,11 +419,58 @@ public:
 class PION_PLATFORM_API TransformRules
 	: public Transform
 {
+	/// Should TransformRules stop at first successfull transformation for this dest-term
+	bool								m_short_circuit;
+
+	/// For Rules... vectors of...
+	std::vector<Vocabulary::TermRef>	m_src_term;
+	/// Comparison value
+	std::vector<std::string>			m_value;
+	std::vector<Comparison::ComparisonType>		m_test;
+	std::vector<std::string>			m_set_value;
 public:
 	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
-		// FIXME: Get the whole rule chain
+		// <StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
+		m_short_circuit = true;
+		std::string short_circuit_str;
+		if (! ConfigManager::getConfigOption("StopOnFirstMatch", short_circuit_str, config_ptr))
+			throw MissingTransformField("Missing StopOnFirstMatch in TransformationAssignRules");
+		if (short_circuit_str == "true")
+			m_short_circuit = true;
+
+		//	[rpt]		<Rule>
+		xmlNodePtr RuleNode = config_ptr;
+		while ( (RuleNode = ConfigManager::findConfigNodeByName("Rule", RuleNode)) != NULL)
+		{
+			//	<Term>src-term</Term>
+			std::string term_id;
+			if (! ConfigManager::getConfigOption("Term", term_id, RuleNode->children))
+				throw MissingTransformField("Missing Source-Term in TransformationAssignRules");
+			Vocabulary::TermRef term_ref = v.findTerm(term_id);
+			if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+				throw MissingTransformField("Invalid Term in TransformationAssignRules");
+			m_src_term.push_back(term_ref);
+
+			//	<Type>test-type</Type>
+			std::string val;
+			if (! ConfigManager::getConfigOption("Type", val, RuleNode->children))
+				throw MissingTransformField("Missing Value in TransformationAssignRules");
+			m_value.push_back(val);	// FIXME: m_test...
+
+			//	<Value>escape(test-value)</Value>
+			if (! ConfigManager::getConfigOption("Value", val, RuleNode->children))
+				throw MissingTransformField("Missing Value in TransformationAssignRules");
+			m_value.push_back(val);
+
+			//	<SetValue>escape(set-value)</SetValue>
+			if (! ConfigManager::getConfigOption("SetValue", val, RuleNode->children))
+				throw MissingTransformField("Missing Source-Term in TransformationAssignRules");
+			m_set_value.push_back(val);
+
+			RuleNode = RuleNode->next;
+		}
 	}
 
 	virtual bool transform(EventPtr& e)

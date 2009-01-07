@@ -95,7 +95,10 @@ public:
 	{}
 
 	/// virtual destructor: this class is meant to be extended
-	virtual ~TransformReactor() { stop(); }
+	virtual ~TransformReactor() {
+			stop();
+			m_transforms.clear();
+	}
 
 	/**
 	 * sets configuration parameters for this Reactor
