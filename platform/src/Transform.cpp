@@ -26,6 +26,7 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+#if 0
 bool Transform::checkForValidSetType(const Vocabulary::DataType type) const
 {
 	bool result = false;
@@ -145,6 +146,7 @@ PION_LOG_DEBUG(m_logger, "m_tr_set_str_value#2 = " << value_str);
 		throw InvalidValueForTypeException();
 	}
 }
+#endif
 
 }
 }

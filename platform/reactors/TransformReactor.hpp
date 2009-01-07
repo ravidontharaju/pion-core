@@ -42,6 +42,13 @@ class TransformReactor :
 public:
 
 	/// exception thrown if the TransformReactor configuration does not define a Term for a Comparison
+	class InvalidTransformation : public PionException {
+	public:
+		InvalidTransformation(const std::string& type_str)
+			: PionException("Invalid type of transformation: ", type_str) {}
+	};
+
+	/// exception thrown if the TransformReactor configuration does not define a Term for a Comparison
 	class EmptyTermException : public PionException {
 	public:
 		EmptyTermException(const std::string& reactor_id)
@@ -119,14 +126,8 @@ public:
 
 private:
 
-	/// data type for a chain of Comparison rules
-	typedef std::vector<pion::platform::Comparison>		RuleChain;
-
 	/// data type for a chain of Transform rules
-	typedef std::vector<pion::platform::Transform>		TransformChain;
-
-	/// name of the term element for Pion XML config files
-	static const std::string		COMPARISON_ELEMENT_NAME;
+	typedef std::vector<pion::platform::Transform *>		TransformChain;
 
 	/// name of the term element for Pion XML config files
 	static const std::string		TERM_ELEMENT_NAME;
@@ -137,17 +138,12 @@ private:
 	/// name of the value element for Pion XML config files
 	static const std::string		VALUE_ELEMENT_NAME;
 
-	/// name of the 'match all values' element for Pion XML config files
-	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
+	/// outgoing event type, or unknown for same as incoming
+	static const std::string		OUTGOING_EVENT_ELEMENT_NAME;
+	static const std::string		COPY_ORIGINAL_ELEMENT_NAME;
 
 	/// name of the XML part containing transformation rules
 	static const std::string		TRANSFORMATION_ELEMENT_NAME;
-
-	/// Do all the conditions have to be met before transformation activates
-	static const std::string		ALL_CONDITIONS_ELEMENT_NAME;
-
-	/// outgoing event type, or unknown for same as incoming
-	static const std::string		EVENT_TYPE_NAME;
 
 	/// Deliver original (in additions to modified)
 	static const std::string		DELIVER_ORIGINAL_NAME;
@@ -155,20 +151,15 @@ private:
 	/// Value to set transformation result
 	static const std::string		TRANSFORMATION_SET_VALUE_NAME;
 
-	/// Does transformation occur in-place (or add)
-	static const std::string		TRANSFORMATION_INPLACE_NAME;
-
-	/// Set Term (if not InPlace)
-	static const std::string		TRANSFORMATION_SET_TERM_NAME;
-
-	/// a chain of Comparison rules used to filter out unwanted Events
-	RuleChain						m_rules;
+	static const std::string		LOOKUP_TERM_NAME;
+	static const std::string		LOOKUP_MATCH_ELEMENT_NAME;
+	static const std::string		LOOKUP_FORMAT_ELEMENT_NAME;
+	static const std::string		LOOKUP_DEFAULT_ELEMENT_NAME;
+	static const std::string		RULE_ELEMENT_NAME;
+	static const std::string		RULES_STOP_ON_FIRST_ELEMENT_NAME;
 
 	/// chain of Transformations
 	TransformChain					m_transforms;
-
-	/// should all the conditions match before transformations take place
-	bool							m_all_conditions;
 
 	/// outgoing event type
 	pion::platform::Vocabulary::TermRef	m_event_type;
@@ -176,6 +167,9 @@ private:
 	/// deliver original event
 	enum { DO_NEVER, DO_SOMETIMES, DO_ALWAYS }
 									m_deliver_original;
+
+	enum { COPY_ALL, COPY_UNCHANGED, COPY_NONE }
+									m_copy_original;
 
 	/// One event_factory to manufacture the outgoing/duplicated events
 	pion::platform::EventFactory	m_event_factory;

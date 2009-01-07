@@ -30,20 +30,66 @@ namespace plugins {		// begin namespace plugins
 
 // static members of TransformReactor
 
-const std::string			TransformReactor::COMPARISON_ELEMENT_NAME = "Comparison";
+const std::string			TransformReactor::OUTGOING_EVENT_ELEMENT_NAME = "OutgoingEvent";
+const std::string			TransformReactor::COPY_ORIGINAL_ELEMENT_NAME = "CopyOriginal";
+const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
+
 const std::string			TransformReactor::TERM_ELEMENT_NAME = "Term";
 const std::string			TransformReactor::TYPE_ELEMENT_NAME = "Type";
 const std::string			TransformReactor::VALUE_ELEMENT_NAME = "Value";
-const std::string			TransformReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
 
-const std::string			TransformReactor::ALL_CONDITIONS_ELEMENT_NAME = "AllConditions";
-const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
-const std::string			TransformReactor::EVENT_TYPE_NAME = "EventType";
+//const std::string			TransformReactor::EVENT_TYPE_NAME = "EventType";
+const std::string			TransformReactor::LOOKUP_TERM_NAME = "LookupTerm";
+const std::string			TransformReactor::LOOKUP_MATCH_ELEMENT_NAME = "Match";
+const std::string			TransformReactor::LOOKUP_FORMAT_ELEMENT_NAME = "Format";
+const std::string			TransformReactor::LOOKUP_DEFAULT_ELEMENT_NAME = "DefaultValue";
+const std::string			TransformReactor::RULE_ELEMENT_NAME = "Rule";
+const std::string			TransformReactor::RULES_STOP_ON_FIRST_ELEMENT_NAME = "StopOnFirstMatch";
 
 const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
 const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
-const std::string			TransformReactor::TRANSFORMATION_INPLACE_NAME = "InPlace";
-const std::string			TransformReactor::TRANSFORMATION_SET_TERM_NAME = "SetTerm";
+
+/*
+ *  This is the spec, using annotated XML
+
+<TransformReactor>
+	<OutgoingEvent>obj-term</OutgoingEvent>
+	<CopyOriginal>all-terms|if-not-defined|none</CopyOriginal>			-> DEFAULT: if-not-defined
+	<DeliverOriginal>always|if-not-changed|never</DeliveryOriginal>		-> DEFAULT: never
+[rpt]	<Transformation>
+			<Term>dst-term</Term>
+			<Type>AssignToValue|AssignToTerm|Lookup|Rules</Type>
+			[see TransformReactor/Transformations/Type]
+[/rpt]	</Transformation>
+</TransformReactor>
+
+TransformReactor/Transformations/Type = AssignToValue
+			<Type>AssignToValue</Type>
+			<Value>escape(value)</Value>
+
+TransformReactor/Transformations/Type = AssignToTerm
+			<Type>AssignToTerm</Type>
+			<Value>src-term</Value>
+
+TransformReactor/Transformations/Type = Lookup
+			<Type>Lookup</Type>
+			<LookupTerm>src-term</LookupTerm>
+[opt]		<Match>escape(regexp)</Match>
+[opt]		<Format>escape(format)</Format>
+[opt]		<DefaultValue>escape(text)</DefaultValue>
+[rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
+
+TransformReactor/Transformations/Type = Rules
+			<Type>Rules</Type>
+			<StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
+[rpt]		<Rule>
+				<Term>src-term</Term>
+				<Type>test-type</Type>
+				<Value>escape(test-value)</Value>
+				<SetValue>escape(set-value)</SetValue>
+[/rpt]		</Rule>
+
+ */
 
 // TransformReactor member functions
 
@@ -54,27 +100,23 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	Reactor::setConfig(v, config_ptr);
 
 	// clear the current configuration
-	m_rules.clear();
 	m_transforms.clear();
-	m_all_conditions = false;
-	m_deliver_original = DO_NEVER;
 
-	// check if all the Comparisons should match before starting Transformations
-	std::string all_conditions_str;
-	if (ConfigManager::getConfigOption(ALL_CONDITIONS_ELEMENT_NAME, all_conditions_str, config_ptr))
-	{
-		if (all_conditions_str == "true")
-			m_all_conditions = true;
-	}
-
+	// Outgoing Event type -- i.e. what will the outgoing event be transformed into
+	// Default (UNDEFINED_TERM_REF) -- make it the same as incoming event type
+	// 	<OutgoingEvent>obj-term</OutgoingEvent>
 	m_event_type = Vocabulary::UNDEFINED_TERM_REF;
 	std::string event_type_str;
-	if (ConfigManager::getConfigOption(EVENT_TYPE_NAME, event_type_str, config_ptr))
+	if (ConfigManager::getConfigOption(OUTGOING_EVENT_ELEMENT_NAME, event_type_str, config_ptr))
 	{
 		if (!event_type_str.empty())
 			m_event_type = v.findTerm(event_type_str);
 	}
 
+	// This really doesn't make much sense anymore -- you can wire the delivery of the original right through
+	// it would make sense, if it was possible to deliver "if-not-changed" but TR2 always changes...
+	// 	<DeliverOriginal>always|if-not-changed|never</DeliveryOriginal>		-> DEFAULT: never
+	m_deliver_original = DO_NEVER;
 	std::string deliver_original_str;
 	if (ConfigManager::getConfigOption(DELIVER_ORIGINAL_NAME, deliver_original_str, config_ptr))
 	{
@@ -82,67 +124,31 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			m_deliver_original = DO_ALWAYS;
 		else if (deliver_original_str == "if-not-changed")
 			m_deliver_original = DO_SOMETIMES;
+		// Could add code to throw if d_o_s is not "never"
 	}
 
-	// next, parse each comparison rule
-	xmlNodePtr comparison_node = config_ptr;
-	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
+	// What fields/terms of the original event should be COPIED into the new event
+	// <CopyOriginal>all-terms|if-not-defined|none</CopyOriginal>			-> DEFAULT: if-not-defined
+	m_copy_original = COPY_UNCHANGED;
+	std::string copy_original_str;
+	if (ConfigManager::getConfigOption(COPY_ORIGINAL_ELEMENT_NAME, copy_original_str, config_ptr))
 	{
-		// parse new Comparison rule
-
-		// get the Term used for the Comparison rule
-		std::string term_id;
-		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
-											 comparison_node->children))
-			throw EmptyTermException(getId());
-
-		// make sure that the Term is valid
-		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
-		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
-			throw UnknownTermException(getId());
-
-		// get the Comparison type & make sure that it is valid
-		std::string type_str;
-		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, type_str,
-											 comparison_node->children))
-			throw EmptyTypeException(getId());
-		// note: parseComparisonType will throw if it is invalid
-		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(type_str);
-
-		// get the value parameter (only if type is not generic)
-		std::string value_str;
-		if (! Comparison::isGenericType(comparison_type)) {
-			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
-												 comparison_node->children))
-				throw EmptyValueException(getId());
-		}
-
-		// check if the Comparison should match all values for the given Term
-		bool match_all_values = false;
-		std::string match_all_values_str;
-		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
-										   comparison_node->children))
-		{
-			if (match_all_values_str == "true")
-				match_all_values = true;
-		}
-
-		// add the Comparison
-		Comparison new_comparison(v[term_ref]);
-		new_comparison.configure(comparison_type, value_str, match_all_values);
-		m_rules.push_back(new_comparison);
-
-		// step to the next Comparison rule
-		comparison_node = comparison_node->next;
+		if (copy_original_str == "all-terms")
+			m_copy_original = COPY_ALL;
+		else if (copy_original_str == "none")
+			m_copy_original = COPY_NONE;
+		// Could add code to throw if c_o_s is not "if-not-defined"
 	}
 
 	// now, parse transformation rules
+	// [rpt]	<Transformation>
 	xmlNodePtr transformation_node = config_ptr;
 	while ( (transformation_node = ConfigManager::findConfigNodeByName(TRANSFORMATION_ELEMENT_NAME, transformation_node)) != NULL)
 	{
 		// parse new Transformation rule
 
 		// get the Term used for the Transformation rule
+		//	<Term>src-term</Term>
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
 											 transformation_node->children))
@@ -153,66 +159,26 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw UnknownTermException(getId());
 
-		// get the Comparison type & make sure that it is valid
+		// get the Type of transformation
+		//	<Type>AssignToValue|AssignToTerm|Lookup|Rules</Type>
 		std::string type_str;
 		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, type_str,
 											 transformation_node->children))
-			throw EmptyTypeException(getId());
-		// note: parseComparisonType will throw if it is invalid
-		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(type_str);
+			throw EmptyTypeException(getId());	// TODO: Improve the error message
 
-		// get the value parameter (only if type is not generic)
-		std::string value_str;
-		if (! Comparison::isGenericType(comparison_type)) {
-			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
-												 transformation_node->children))
-				throw EmptyValueException(getId());
-		}
+		// Add the transformation
+		Transform *new_transform;
+		if (type_str == "AssignToValue")
+			new_transform = new TransformAssignValue(v, v[term_ref], transformation_node->children);
+		else if (type_str == "AssignToTerm")
+			new_transform = new TransformAssignTerm(v, v[term_ref], transformation_node->children);
+		else if (type_str == "Lookup")
+			new_transform = new TransformLookup(v, v[term_ref], transformation_node->children);
+		else if (type_str == "Rules")
+			new_transform = new TransformRules(v, v[term_ref], transformation_node->children);
+		else
+			throw InvalidTransformation(type_str);
 
-		// check if the Comparison should match all values for the given Term
-		bool match_all_values = false;
-		std::string match_all_values_str;
-		if (ConfigManager::getConfigOption(MATCH_ALL_VALUES_ELEMENT_NAME, match_all_values_str,
-										   transformation_node->children))
-		{
-			if (match_all_values_str == "true")
-				match_all_values = true;
-		}
-
-		std::string set_value_str;
-		if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_VALUE_NAME, set_value_str,
-											transformation_node->children))
-			throw EmptyTransformationException(getId());
-
-		bool transformation_inplace = false;
-		std::string transformation_inplace_str;
-		if (ConfigManager::getConfigOption(TRANSFORMATION_INPLACE_NAME, transformation_inplace_str,
-											transformation_node->children))
-		{
-			if (transformation_inplace_str == "true")
-				transformation_inplace = true;
-		}
-
-		std::string transformation_set_term;
-		if (! transformation_inplace) {
-			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_TERM_NAME, transformation_set_term,
-											transformation_node->children))
-				throw EmptySetTermException(getId());
-		}
-
-		Vocabulary::TermRef set_term_ref = term_ref;
-		if (! transformation_set_term.empty()) {
-			set_term_ref = v.findTerm(transformation_set_term);
-			if (set_term_ref == Vocabulary::UNDEFINED_TERM_REF)
-				throw UnknownTermException(getId());
-		}
-
-		// add the Transformation
-		Transform new_transform(v[term_ref], v[set_term_ref]);
-		// Configure the CompMatch evaluate() i.e. the Filter
-		new_transform.configure(comparison_type, value_str, match_all_values);
-		// Configure the Transformation (pass value_str for Regexp, which needs both)
-		new_transform.configure_transform(comparison_type, transformation_inplace, value_str, set_value_str);
 		m_transforms.push_back(new_transform);
 
 		// step to the next Comparison rule
@@ -227,11 +193,8 @@ void TransformReactor::updateVocabulary(const Vocabulary& v)
 	Reactor::updateVocabulary(v);
 
 	// update Vocabulary for each of the rules
-	for (RuleChain::iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-		i->updateVocabulary(v);
-	}
 	for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); ++i) {
-		i->updateVocabulary(v);
+		(*i)->updateVocabulary(v);
 	}
 }
 
@@ -241,47 +204,30 @@ void TransformReactor::operator()(const EventPtr& e)
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
 
-		// For EventFilter: all comparisons in the rule chain must pass for the Event to be delivered
+		EventPtr new_e;
+		// Create new event; either same type (if UNDEFINED) or defined type
+		m_event_factory.create(new_e, m_event_type == Vocabulary::UNDEFINED_TERM_REF ? e->getType() : m_event_type);
 
-		// For TransformReactor: if all comparisons pass, then transform, otherwise just deliver
-
-		// If m_all_conditions
-		//	all conditions must match before transformations take place
-		//	-> any condition failure = don't do transformation
-		// If !m_all_conditions
-		//	any condition is ok for transformations
-		//	-> first successful condition = do transformation
-		// If no conditions, then transformations immediately take place
-
-		// The efficacy of separately testing for m_rules.empty() is questionable, depends on default case...
-
-		bool do_transformations = true;
-		for (RuleChain::const_iterator i = m_rules.begin(); i != m_rules.end(); ++i) {
-			if (! i->evaluateBool(*e) ) {
-				if (m_all_conditions) {
-					do_transformations = false;
-					break;
-				}
-			} else {
-				if (!m_all_conditions)
-					break;
-			}
-		}
-		if (do_transformations) {
-			EventPtr new_e;
-			m_event_factory.create(new_e, m_event_type == Vocabulary::UNDEFINED_TERM_REF ? e->getType() : m_event_type);
-
-			*new_e += *e;					// Populate all terms from original event
-			for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
-				i->transform(new_e);
-			deliverEvent(new_e);			// Deliver the modified event
+		// Copy terms over from original
+		switch (m_copy_original) {
+			case COPY_ALL:				// Copy all terms over from original event
+				*new_e += *e;
+				break;
+			case COPY_UNCHANGED:		// Copy ONLY terms, that are not defined in transformations...
+				*new_e += *e;		// TODO: FIX THIS TO ONLY COPY NON-DEFINED
+				break;
+			case COPY_NONE:				// Do not copy terms from original event
+				break;
 		}
 
-		// Transformation is done, deliver original event
-		// Should this only be done, if filter rules applied (m_all_conditions)
-		if (m_deliver_original == DO_ALWAYS ||
-			(m_deliver_original == DO_SOMETIMES && !do_transformations))
-			deliverEvent(e);
+		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
+			(*i)->transform(new_e);
+
+		deliverEvent(new_e);			// Deliver the modified event
+
+		// Transformation is done, deliver original event?
+		if (m_deliver_original != DO_NEVER)
+		 	deliverEvent(e);
 	}
 }
 
