@@ -88,31 +88,48 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 									  boost::posix_time::ptime data_timestamp, 
 									  EventPtr& event_ptr_ref)
 {
-	// parse the data
 	boost::tribool rc;
 
-	// save the request time for event timestamping
-	if (request) {
-		if (m_request_start_time.is_not_a_date_time()) {
-			m_request_start_time = m_request_end_time = data_timestamp;
-		} else if (data_timestamp > m_request_end_time) {
-			m_request_end_time = data_timestamp;
-		}
-		m_request_parser.setReadBuffer(ptr, len);
-		rc = m_request_parser.parse(m_request);
+	if (ptr == NULL) {
+	
+		// missing data -> try to recover from lost packet
+		rc = (request ? m_request_parser.parseMissingData(m_request, len)
+			: m_response_parser.parseMissingData(m_response, len) );
+	
 	} else {
-		if (m_response_start_time.is_not_a_date_time()) {
-			m_response_start_time = m_response_end_time = data_timestamp;
-		} else if (data_timestamp > m_response_end_time) {
-			m_response_end_time = data_timestamp;
+
+		// has valid data available for parsing
+		
+		if (request) {
+	
+			// update timestamps if necessary
+			if (m_request_start_time.is_not_a_date_time()) {
+				m_request_start_time = m_request_end_time = data_timestamp;
+			} else if (data_timestamp > m_request_end_time) {
+				m_request_end_time = data_timestamp;
+			}
+	
+			// parse the data
+			m_request_parser.setReadBuffer(ptr, len);
+			rc = m_request_parser.parse(m_request);
+	
+		} else {
+	
+			// update timestamps if necessary
+			if (m_response_start_time.is_not_a_date_time()) {
+				m_response_start_time = m_response_end_time = data_timestamp;
+			} else if (data_timestamp > m_response_end_time) {
+				m_response_end_time = data_timestamp;
+			}
+	
+			// parse the data
+			m_response_parser.setReadBuffer(ptr, len);
+			rc = m_response_parser.parse(m_response);
 		}
-		m_response_end_time = data_timestamp;
-		m_response_parser.setReadBuffer(ptr, len);
-		rc = m_response_parser.parse(m_response);
 	}
 
-	// message has been fully parsed, generate an event
 	if (rc == true) {
+		// message has been fully parsed, generate an event
 		if (request) {
 			// update response to "know" about the request (this influences parsing)
 			m_response.updateRequestInfo(m_request);
@@ -129,7 +146,6 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 		}
 	}
 
-	PION_ASSERT((event_ptr_ref.get() != NULL) || (rc != true));
 	return rc;
 }
 
@@ -268,7 +284,7 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	Protocol::setConfig(v, config_ptr);
 	
 	// parse maximum request content length
-	boost::uint64_t max_content_length;
+	boost::uint64_t max_content_length = 0;
 	if (ConfigManager::getConfigOption(MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME,
 		max_content_length, config_ptr))
 	{
