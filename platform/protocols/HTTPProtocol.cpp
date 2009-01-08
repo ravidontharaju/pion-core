@@ -64,10 +64,12 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE_TIME="urn:vocab:clickstre
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CLF_DATE="urn:vocab:clickstream#clf-date";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME_TAKEN="urn:vocab:clickstream#time-taken";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_SEND_TIME="urn:vocab:clickstream#cs-send-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_ACK_TIME="urn:vocab:clickstream#cs-ack-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_REPLY_TIME="urn:vocab:clickstream#sc-reply-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_SEND_TIME="urn:vocab:clickstream#sc-send-time";
-
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickstream#sc-ack-time";
 	
+
 // HTTPProtocol member functions
 
 bool HTTPProtocol::close(EventPtr& event_ptr_ref)
@@ -85,7 +87,8 @@ bool HTTPProtocol::close(EventPtr& event_ptr_ref)
 }
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
-									  boost::posix_time::ptime data_timestamp, 
+									  boost::posix_time::ptime data_timestamp,
+									  boost::posix_time::ptime ack_timestamp,
 									  EventPtr& event_ptr_ref)
 {
 	boost::tribool rc;
@@ -105,8 +108,10 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			// update timestamps if necessary
 			if (m_request_start_time.is_not_a_date_time()) {
 				m_request_start_time = m_request_end_time = data_timestamp;
+				m_request_ack_time = ack_timestamp;
 			} else if (data_timestamp > m_request_end_time) {
 				m_request_end_time = data_timestamp;
+				m_request_ack_time = ack_timestamp;
 			}
 	
 			// parse the data
@@ -118,8 +123,10 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			// update timestamps if necessary
 			if (m_response_start_time.is_not_a_date_time()) {
 				m_response_start_time = m_response_end_time = data_timestamp;
+				m_response_ack_time = ack_timestamp;
 			} else if (data_timestamp > m_response_end_time) {
 				m_response_end_time = data_timestamp;
+				m_response_ack_time = ack_timestamp;
 			}
 	
 			// parse the data
@@ -141,8 +148,9 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			m_response_parser.reset();
 			m_request.clear();
 			m_response.clear();
-			m_request_start_time = m_request_end_time = boost::date_time::not_a_date_time;
-			m_response_start_time = m_response_end_time = boost::date_time::not_a_date_time;
+			m_request_start_time = m_request_end_time = m_request_ack_time
+				= m_response_start_time = m_response_end_time = m_response_ack_time
+				= boost::date_time::not_a_date_time;
 		}
 	}
 
@@ -171,8 +179,10 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_clf_date_term_ref = m_clf_date_term_ref;
 	retval->m_time_taken_term_ref = m_time_taken_term_ref;
 	retval->m_cs_send_time_term_ref = m_cs_send_time_term_ref;
+	retval->m_cs_ack_time_term_ref = m_cs_ack_time_term_ref;
 	retval->m_sc_reply_time_term_ref = m_sc_reply_time_term_ref;
 	retval->m_sc_send_time_term_ref = m_sc_send_time_term_ref;
+	retval->m_sc_ack_time_term_ref = m_sc_ack_time_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -217,9 +227,11 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	// sanity checks for timestamps
 	// (may have only request packets or only response packets)
 	if (m_request_start_time.is_not_a_date_time())
-		m_request_start_time = m_request_end_time = m_response_start_time;
+		m_request_start_time = m_request_end_time = m_request_ack_time = m_response_start_time;
 	else if (m_response_start_time.is_not_a_date_time())
-		m_response_start_time = m_response_end_time = m_request_end_time;
+		m_response_start_time = m_response_end_time = m_response_ack_time = m_request_end_time;
+	if (m_response_ack_time < m_response_end_time)
+		m_response_ack_time = m_response_end_time;
 
 	// set timestamp fields
 	(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_start_time); 
@@ -229,12 +241,16 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 
 	// set time duration fields
 	(*event_ptr_ref).setUInt(m_time_taken_term_ref,
-		( m_response_end_time > m_request_start_time ?
-		  (m_response_end_time - m_request_start_time).total_microseconds()
+		( m_response_ack_time > m_request_start_time ?
+		  (m_response_ack_time - m_request_start_time).total_microseconds()
 		  : 0 ) );
 	(*event_ptr_ref).setUInt(m_cs_send_time_term_ref,
 		( m_request_end_time > m_request_start_time ?
 		  (m_request_end_time - m_request_start_time).total_microseconds()
+		  : 0 ) );
+	(*event_ptr_ref).setUInt(m_cs_ack_time_term_ref,
+		( m_request_ack_time > m_request_end_time ?
+		  (m_request_ack_time - m_request_end_time).total_microseconds()
 		  : 0 ) );
 	(*event_ptr_ref).setUInt(m_sc_reply_time_term_ref,
 		( m_response_start_time > m_request_end_time ?
@@ -243,6 +259,10 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_sc_send_time_term_ref,
 		( m_response_end_time > m_response_start_time ?
 		  (m_response_end_time - m_response_start_time).total_microseconds()
+		  : 0 ) );
+	(*event_ptr_ref).setUInt(m_sc_ack_time_term_ref,
+		( m_response_ack_time > m_response_end_time ?
+		  (m_response_ack_time - m_response_end_time).total_microseconds()
 		  : 0 ) );
 
 	// process content extraction rules
@@ -515,6 +535,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (m_cs_send_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_SEND_TIME);
 
+	m_cs_ack_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_ACK_TIME);
+	if (m_cs_ack_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_ACK_TIME);
+
 	m_sc_reply_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_REPLY_TIME);
 	if (m_sc_reply_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_REPLY_TIME);
@@ -522,6 +546,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_sc_send_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_SEND_TIME);
 	if (m_sc_send_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_SEND_TIME);
+
+	m_sc_ack_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_ACK_TIME);
+	if (m_sc_ack_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_ACK_TIME);
 }
 
 }	// end namespace plugins

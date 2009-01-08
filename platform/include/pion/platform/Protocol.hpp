@@ -91,16 +91,19 @@ public:
 	/**
 	 * parses the next portion of the network data
 	 * 
-	 * @param request direction flag
-	 * @ptr pointer to data
-	 * @len data length
-	 * @data_timestamp data frame timestamp
-	 * @event_ptr refererence to an event object returned if the call resulted in event generation
+	 * @param request direction flag (true if request, false if response)
+	 * @param ptr pointer to data (may be NULL if data packet was missing)
+	 * @param len length in bytes of the network data
+	 * @param data_timestamp data frame timestamp
+	 * @param ack_timestamp timestamp for acknowlegement of receipt of data frame
+	 * @param event_ptr refererence to an event object returned if the call resulted in event generation
+	 *
 	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not 
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len, 
-			boost::posix_time::ptime data_timestamp, pion::platform::EventPtr& event_ptr )=0;
+			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
+			pion::platform::EventPtr& event_ptr )=0;
 
 	/**
 	 * sets configuration parameters for this Protocol
