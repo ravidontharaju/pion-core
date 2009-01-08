@@ -41,6 +41,7 @@ public:
 	/// identifies the Vocabulary Term that is being tested (for regex)
 	Vocabulary::Term			m_term;
 
+	/// a copy to Vocabulary pointer, for parsing TransformXXX entries
 	const Vocabulary&			m_v;
 
 	class MissingTransformField : public PionException {
@@ -71,6 +72,11 @@ public:
 		m_term = v[m_term.term_ref];
 	}
 
+	void removeTerm(EventPtr& e)
+	{
+		e->clear(m_term.term_ref);
+	}
+
 //	bool checkForValidSetType(const Vocabulary::DataType type) const;
 
 	/**
@@ -81,100 +87,6 @@ public:
 	 * @return true if the Transformation occured; false if it did not
 	 */
 	virtual bool transform(EventPtr& e) = 0;
-#if 0
-	inline bool transform(EventPtr& e)
-	{
-		CompMatch result = evaluate(*e);
-		if (result.get<0>()) {
-
-			std::string s;
-			if (m_tr_set_type == TYPE_REGEX || m_tr_set_type == TYPE_NOT_REGEX) {
-				Event::ValuesRange values_range = e->equal_range(m_tr_term.term_ref);
-				Event::ConstIterator ec = values_range.first;
-				if (ec == values_range.second)
-					PION_LOG_DEBUG(m_logger, "values range does not exist, i.e. term not found");
-				s = boost::get<const Event::SimpleString&>(ec->value).get();
-			}
-
-//			if (m_tr_set_inplace)
-				e->clear(m_tr_set_term.term_ref);
-
-			switch (m_tr_set_term.term_type) {
-				case Vocabulary::TYPE_NULL:
-				case Vocabulary::TYPE_OBJECT:
-					// do nothing
-					break;
-				case Vocabulary::TYPE_INT8:
-				case Vocabulary::TYPE_INT16:
-				case Vocabulary::TYPE_INT32:
-					e->setInt(m_tr_set_term.term_ref, boost::get<const boost::uint32_t&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_INT64:
-					e->setBigInt(m_tr_set_term.term_ref, boost::get<const boost::uint64_t&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_UINT8:
-				case Vocabulary::TYPE_UINT16:
-				case Vocabulary::TYPE_UINT32:
-					e->setUInt(m_tr_set_term.term_ref, boost::get<const boost::uint32_t&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_UINT64:
-					e->setUInt(m_tr_set_term.term_ref, boost::get<const boost::uint64_t&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_FLOAT:
-					e->setFloat(m_tr_set_term.term_ref, boost::get<const float&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_DOUBLE:
-					e->setDouble(m_tr_set_term.term_ref, boost::get<const double&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_LONG_DOUBLE:
-					e->setLongDouble(m_tr_set_term.term_ref, boost::get<const long double&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-					if (m_tr_set_type == TYPE_REGEX || m_tr_set_type == TYPE_NOT_REGEX) {
-//						Event::ConstIterator ec = result.get<1>();
-//						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-//						PION_LOG_DEBUG(m_logger, "s = " << s);
-//						PION_LOG_DEBUG(m_logger, "m_tr_set_str_value = " << m_tr_set_str_value);
-//						std::string res = boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value);
-						e->setString(m_tr_set_term.term_ref,
-									boost::regex_replace(s, m_tr_regex_pattern, m_tr_set_str_value,
-														boost::format_all | boost::format_no_copy));
-					} else
-						e->setString(m_tr_set_term.term_ref, m_tr_set_str_value);
-					break;
-				case Vocabulary::TYPE_DATE_TIME:
-				case Vocabulary::TYPE_DATE:
-				case Vocabulary::TYPE_TIME:
-					e->setDateTime(m_tr_set_term.term_ref, boost::get<const PionDateTime&>(m_tr_set_value));
-					break;
-				case Vocabulary::TYPE_REGEX:
-					{
-//						Event::ConstIterator ec = result.get<1>();
-//						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-/*
-						if (m_tr_set_regex_out.empty()) {
-							boost::match_results<std::string::const_iterator> match;
-							if (boost::regex_search(s, match, m_tr_set_regex)) {
-								s.clear();
-								for (unsigned int i = 0; i < match.size(); i++)
-									s += match[i].str();
-								e->setString(m_tr_set_term.term_ref, s);
-							}
-						} else
-							e->setString(m_tr_set_term.term_ref,
-								boost::regex_replace(s, m_tr_set_regex, m_tr_set_regex_out));
-*/
-					}
-					break;
-			}
-			return true;
-		}
-		return false;
-	}
-#endif
 
 };
 
@@ -220,7 +132,7 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
 		case Vocabulary::TYPE_TIME:
-			// TODO: This needs a time_facet...
+			// FIXME: This needs a time_facet...
 			e->setDateTime(term.term_ref, boost::lexical_cast<PionDateTime>(value));
 			break;
 	}
@@ -371,8 +283,7 @@ public:
 		}
 	}
 
-	virtual ~TransformLookup(void)
-	{
+	virtual ~TransformLookup() {
 		m_lookup.clear();
 	}
 
@@ -420,14 +331,15 @@ class PION_PLATFORM_API TransformRules
 	: public Transform
 {
 	/// Should TransformRules stop at first successfull transformation for this dest-term
-	bool								m_short_circuit;
+	bool										m_short_circuit;
 
 	/// For Rules... vectors of...
-	std::vector<Vocabulary::TermRef>	m_src_term;
+	std::vector<Vocabulary::TermRef>			m_src_term;
 	/// Comparison value
-	std::vector<std::string>			m_value;
+	std::vector<std::string>					m_value;
 	std::vector<Comparison::ComparisonType>		m_test;
-	std::vector<std::string>			m_set_value;
+	std::vector<std::string>					m_set_value;
+	std::vector<Comparison *>					m_comparison;
 public:
 	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
@@ -457,26 +369,55 @@ public:
 			std::string val;
 			if (! ConfigManager::getConfigOption("Type", val, RuleNode->children))
 				throw MissingTransformField("Missing Value in TransformationAssignRules");
-			m_value.push_back(val);	// FIXME: m_test...
+			Comparison::ComparisonType ctype = Comparison::parseComparisonType(val);
+			m_test.push_back(ctype);
 
 			//	<Value>escape(test-value)</Value>
-			if (! ConfigManager::getConfigOption("Value", val, RuleNode->children))
-				throw MissingTransformField("Missing Value in TransformationAssignRules");
+			val.clear();
+			if (!Comparison::isGenericType(ctype))
+				if (! ConfigManager::getConfigOption("Value", val, RuleNode->children))
+					throw MissingTransformField("Missing Value in TransformationAssignRules");
 			m_value.push_back(val);
 
+			Comparison *comp = new Comparison(v[term_ref]);
+			comp->configure(ctype, val);
+			m_comparison.push_back(comp);
+
 			//	<SetValue>escape(set-value)</SetValue>
+			val.clear();
 			if (! ConfigManager::getConfigOption("SetValue", val, RuleNode->children))
-				throw MissingTransformField("Missing Source-Term in TransformationAssignRules");
+				throw MissingTransformField("Missing SetValue in TransformationAssignRules");
 			m_set_value.push_back(val);
 
 			RuleNode = RuleNode->next;
 		}
 	}
 
+	virtual ~TransformRules() {
+		m_src_term.clear();
+		m_value.clear();
+		m_test.clear();
+		m_set_value.clear();
+		for (unsigned int i = 0; i < m_comparison.size(); i++)
+			delete m_comparison[i];
+	}
+
 	virtual bool transform(EventPtr& e)
 	{
-		// FIXME: Assign the rule value
-		return true;	// FIXME: Return true if Rule yielded value & assigned
+		bool AnyAssigned = false;
+		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
+		for (unsigned int i = 0; i < m_src_term.size(); i++) {
+			Event::ValuesRange values_range = e->equal_range(m_src_term[i]);
+			Event::ConstIterator ec = values_range.first;
+			while (ec != values_range.second) {
+				// Execute test [i] against ec
+				// True:
+				//		Execute assignment
+				//		If m_short_circuit break;	// Break out of tests, do other terms
+			}
+			ec++;			// repeat for all matching source terms
+		}
+		return AnyAssigned;
 	}
 };
 

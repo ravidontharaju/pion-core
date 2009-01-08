@@ -215,7 +215,11 @@ void TransformReactor::operator()(const EventPtr& e)
 				*new_e += *e;
 				break;
 			case COPY_UNCHANGED:		// Copy ONLY terms, that are not defined in transformations...
-				*new_e += *e;		// TODO: FIX THIS TO ONLY COPY NON-DEFINED
+				*new_e += *e;			// First copy all terms...
+				// Then remove all the ones with transformations...
+				for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
+					(*i)->removeTerm(new_e);
+				// TODO: Which is more efficient? Only copying the ones that are not transformed, or this?
 				break;
 			case COPY_NONE:				// Do not copy terms from original event
 				break;

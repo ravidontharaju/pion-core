@@ -97,7 +97,8 @@ public:
 	/// virtual destructor: this class is meant to be extended
 	virtual ~TransformReactor() {
 			stop();
-			m_transforms.clear();
+			for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); ++i)
+				delete (*i);
 	}
 
 	/**
