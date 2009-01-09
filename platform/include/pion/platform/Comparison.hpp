@@ -225,6 +225,8 @@ public:
 	/// returns true if all Vocabulary Term values must match
 	inline bool getMatchAllValues(void) const { return m_match_all_values; }
 
+	/// returns the compiled (or empty) regular expression
+	inline const boost::regex& getRegex(void) const { return m_regex; }
 
 	/**
 	 * parses Comparison type from a string

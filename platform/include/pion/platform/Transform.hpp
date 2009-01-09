@@ -333,12 +333,13 @@ class PION_PLATFORM_API TransformRules
 	/// Should TransformRules stop at first successfull transformation for this dest-term
 	bool										m_short_circuit;
 
-	/// For Rules... vectors of...
+	/// vector of term_ref's (so we can iterate through the values_range)
 	std::vector<Vocabulary::TermRef>			m_src_term;
-	/// Comparison value
-	std::vector<std::string>					m_value;
+	/// comparison, so we can pick out TYPE_REGEX's for special handling
 	std::vector<Comparison::ComparisonType>		m_test;
+	/// set value, for assignment, or for use as format for TYPE_REGEX
 	std::vector<std::string>					m_set_value;
+	/// pointer to instantiated & configured Comparison
 	std::vector<Comparison *>					m_comparison;
 public:
 	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
@@ -373,14 +374,13 @@ public:
 			m_test.push_back(ctype);
 
 			//	<Value>escape(test-value)</Value>
-			val.clear();
+			std::string value_str;
 			if (!Comparison::isGenericType(ctype))
-				if (! ConfigManager::getConfigOption("Value", val, RuleNode->children))
+				if (! ConfigManager::getConfigOption("Value", value_str, RuleNode->children))
 					throw MissingTransformField("Missing Value in TransformationAssignRules");
-			m_value.push_back(val);
 
 			Comparison *comp = new Comparison(v[term_ref]);
-			comp->configure(ctype, val);
+			comp->configure(ctype, value_str);
 			m_comparison.push_back(comp);
 
 			//	<SetValue>escape(set-value)</SetValue>
@@ -395,7 +395,6 @@ public:
 
 	virtual ~TransformRules() {
 		m_src_term.clear();
-		m_value.clear();
 		m_test.clear();
 		m_set_value.clear();
 		for (unsigned int i = 0; i < m_comparison.size(); i++)
@@ -410,9 +409,19 @@ public:
 			Event::ValuesRange values_range = e->equal_range(m_src_term[i]);
 			Event::ConstIterator ec = values_range.first;
 			while (ec != values_range.second) {
-				if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second)))
-					AnyAssigned |= AssignValue(e, m_term, m_set_value[i]);
-				// FIXME: Special case for regex
+				if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second))) {
+					if (m_test[i] == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
+						// Get the original value
+						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+						// For Regex... get the precompiled from Comparison
+						// For Format... use the set_value
+						s = boost::regex_replace(s, m_comparison[i]->getRegex(), m_set_value[i],
+													boost::format_all | boost::format_no_copy);
+						// Assign the result
+						AnyAssigned |= AssignValue(e, m_term, s);
+					} else
+						AnyAssigned |= AssignValue(e, m_term, m_set_value[i]);
+				}
 			}
 			ec++;			// repeat for all matching source terms
 			// If short_circuit AND any values were assigned -> don't go further in the chain
