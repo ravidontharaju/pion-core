@@ -70,7 +70,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 				return;
 			}
 		} else {
-			throw UnknownPluginTypeException();
+			throw UnknownQueryException();
 		}
 	} else {
 		// send a 405 (method not allowed) response

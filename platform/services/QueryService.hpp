@@ -23,7 +23,6 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include "PlatformService.hpp"
-#include "ConfigService.hpp"
 
 
 namespace pion {		// begin namespace pion
@@ -37,11 +36,11 @@ class QueryService
 {
 public:
 
-	/// exception thrown if the ConfigService configuration does not define a UI directory
-	class UnknownPluginTypeException : public PionException {
+	/// exception thrown if the HTTP query is not recognized
+	class UnknownQueryException : public PionException {
 	public:
-		UnknownPluginTypeException()
-			: PionException("QueryService - unknown plugin type specified") {}
+		UnknownQueryException()
+			: PionException("QueryService - invalid query format") {}
 	};
 
 
@@ -60,10 +59,10 @@ public:
 							pion::net::TCPConnectionPtr& tcp_conn);
 
 	/**
-	 * sets configuration parameters for this ConfigService
+	 * sets configuration parameters for this QueryService
 	 *
 	 * @param platform_cfg reference to the platform configuration manager
-	 * @param config_ptr pointer to a list of XML nodes containing ConfigService
+	 * @param config_ptr pointer to a list of XML nodes containing QueryService
 	 *                   configuration parameters
 	 */
 /*
