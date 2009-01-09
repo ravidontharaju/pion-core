@@ -31,6 +31,11 @@ const std::string			Protocol::EVENT_ELEMENT_NAME = "EventType";
 		
 // Protocol member functions
 
+bool Protocol::checkRecoveryPacket(bool request, const char* ptr, size_t len)
+{
+	return false;
+}
+
 void Protocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	PlatformPlugin::setConfig(v, config_ptr);

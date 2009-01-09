@@ -71,7 +71,9 @@ public:
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Protocol() {}
 		
-
+	/// resets the Protocol to its initial state
+	virtual void reset(void) = 0;
+	
 	/**
 	 * clones the Protocol, returning a pointer to the cloned copy
 	 *
@@ -103,7 +105,19 @@ public:
 	 */
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len, 
 			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
-			pion::platform::EventPtr& event_ptr )=0;
+			pion::platform::EventPtr& event_ptr ) = 0;
+
+	/**
+	 * called when parsing previously failed.  should return true if the current packet
+	 * allows parsing to recover by starting over at the current point in the data stream.
+	 * 
+	 * @param request direction flag (true if request, false if response)
+	 * @param ptr pointer to data (may be NULL if data packet was missing)
+	 * @param len length in bytes of the network data
+	 *
+	 * @return true if the current packet allows parsing to recover
+	 */
+	virtual bool checkRecoveryPacket(bool request, const char* ptr, size_t len);
 
 	/**
 	 * sets configuration parameters for this Protocol
@@ -134,8 +148,10 @@ protected:
 		m_event_type = c.m_event_type;
 	}
 
+	/// used to efficiently generate new Events
 	EventFactory					m_event_factory;
-	
+
+
 private:
 	
 	/// name of the event type element for Pion XML config files

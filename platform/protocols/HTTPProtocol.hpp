@@ -109,6 +109,9 @@ public:
 	/// virtual destructor
 	virtual ~HTTPProtocol() {}
 
+	/// resets the Protocol to its initial state
+	virtual void reset(void);
+	
 	/**
 	 * called to close the protocol parsing.  An event may be returned
 	 * if there is data remaining (i.e. if closed prematurely)
@@ -134,6 +137,18 @@ public:
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len,
 			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
 			pion::platform::EventPtr& event_ptr );
+
+	/**
+	 * called when parsing previously failed.  should return true if the current packet
+	 * allows parsing to recover by starting over at the current point in the data stream.
+	 * 
+	 * @param request direction flag (true if request, false if response)
+	 * @param ptr pointer to data (may be NULL if data packet was missing)
+	 * @param len length in bytes of the network data
+	 *
+	 * @return true if the current packet allows parsing to recover
+	 */
+	virtual bool checkRecoveryPacket(bool request, const char* ptr, size_t len);
 
 	/**
 	 * clones the Protocol, returning a pointer to the cloned copy

@@ -72,6 +72,17 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickst
 
 // HTTPProtocol member functions
 
+void HTTPProtocol::reset(void)
+{
+	m_request_parser.reset();
+	m_response_parser.reset();
+	m_request.clear();
+	m_response.clear();
+	m_request_start_time = m_request_end_time = m_request_ack_time
+		= m_response_start_time = m_response_end_time = m_response_ack_time
+		= boost::date_time::not_a_date_time;
+}
+
 bool HTTPProtocol::close(EventPtr& event_ptr_ref)
 {
 	if (! m_request.isValid())
@@ -144,17 +155,26 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			rc = boost::indeterminate;
 		} else {
 			generateEvent(event_ptr_ref);
-			m_request_parser.reset();
-			m_response_parser.reset();
-			m_request.clear();
-			m_response.clear();
-			m_request_start_time = m_request_end_time = m_request_ack_time
-				= m_response_start_time = m_response_end_time = m_response_ack_time
-				= boost::date_time::not_a_date_time;
 		}
 	}
 
 	return rc;
+}
+
+bool HTTPProtocol::checkRecoveryPacket(bool request, const char* ptr, size_t len)
+{
+	if (request && ptr != NULL && len > 7) {
+		// look for valid HTTP request method at the beginning of request packet
+		if (memcmp(ptr, "GET ", 4)==0 || memcmp(ptr, "PUT ", 4)==0 || memcmp(ptr, "POST ", 5)==0
+			|| memcmp(ptr, "HEAD ", 5)==0 || memcmp(ptr, "TRACE ", 6)==0
+			|| memcmp(ptr, "DELETE ", 7)==0 || memcmp(ptr, "CONNECT ", 8)==0
+			|| memcmp(ptr, "OPTIONS ", 8)==0   )
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
