@@ -88,6 +88,19 @@ public:
 	 */
 	virtual bool transform(EventPtr& e) = 0;
 
+	static const std::string			LOOKUP_TERM_NAME;
+	static const std::string			TERM_ELEMENT_NAME;
+	static const std::string			LOOKUP_MATCH_ELEMENT_NAME;
+	static const std::string			LOOKUP_FORMAT_ELEMENT_NAME;
+	static const std::string			LOOKUP_DEFAULT_ELEMENT_NAME;
+	static const std::string			VALUE_ELEMENT_NAME;
+	static const std::string			RULES_STOP_ON_FIRST_ELEMENT_NAME;
+	static const std::string			RULE_ELEMENT_NAME;
+	static const std::string			TYPE_ELEMENT_NAME;
+	static const std::string			TRANSFORMATION_SET_VALUE_NAME;
+	static const std::string			LOOKUP_DEFAULTACTION_ELEMENT_NAME;
+	static const std::string			LOOKUP_LOOKUP_ELEMENT_NAME;
+	static const std::string			LOOKUP_KEY_ATTRIBUTE_NAME;
 };
 
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
@@ -159,7 +172,7 @@ public:
 		// <Value>escape(value)</Value>
 		std::string val;
 		// TODO: Move "Value" into external define
-		if (! ConfigManager::getConfigOption("Value", val, config_ptr))
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, val, config_ptr))
 			throw MissingTransformField("Missing Value in TransformationAssignValue");
 		m_tr_set_value = val;
 	}
@@ -185,8 +198,7 @@ public:
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
-		// TODO: Move "Term" into external define
-		if (! ConfigManager::getConfigOption("Term", term_id, config_ptr))
+		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing Source-Term in TransformationAssignTerm");
 		m_src_term_ref = v.findTerm(term_id);
 		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)
@@ -236,14 +248,14 @@ public:
 	{
 		//	<LookupTerm>src-term</LookupTerm>
 		std::string term_id;
-		if (! ConfigManager::getConfigOption("LookupTerm", term_id, config_ptr))
+		if (! ConfigManager::getConfigOption(LOOKUP_TERM_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing LookupTerm in TransformationAssingLookup");
 		m_lookup_term_ref = v.findTerm(term_id);
 		if (m_lookup_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid LookupTerm in TransformationAssignLookup");
 		//[opt]		<Match>escape(regexp)</Match>
 		std::string val;
-		if (ConfigManager::getConfigOption("Match", val, config_ptr)) {
+		if (ConfigManager::getConfigOption(LOOKUP_MATCH_ELEMENT_NAME, val, config_ptr)) {
 			try {
 				m_match = val;
 			} catch (...) {
@@ -252,7 +264,7 @@ public:
 		}
 		//	[opt]		<Format>escape(format)</Format>
 		m_format.clear();
-		if (ConfigManager::getConfigOption("Format", val, config_ptr))
+		if (ConfigManager::getConfigOption(LOOKUP_FORMAT_ELEMENT_NAME, val, config_ptr))
 			m_format = val;
 
 		// If regex has been found & is valid, but format is empty... set to default $&
@@ -261,7 +273,7 @@ public:
 
 		//	[opt]		<DefaultAction>undefined|src-term|output|fixedvalue</DefaultAction>
 		m_default = DEF_UNDEF;
-		if (ConfigManager::getConfigOption("DefaultAction", val, config_ptr)) {
+		if (ConfigManager::getConfigOption(LOOKUP_DEFAULTACTION_ELEMENT_NAME, val, config_ptr)) {
 			if (val == "src-term")
 				m_default = DEF_SRCTERM;
 			else if (val == "output")
@@ -271,13 +283,14 @@ public:
 		}
 		//	[opt]		<DefaultValue>escape(text)</DefaultValue>
 		m_fixed.clear();
-		if (m_default == DEF_FIXED && ConfigManager::getConfigOption("DefaultValue", val, config_ptr))
+		if (m_default == DEF_FIXED && ConfigManager::getConfigOption(LOOKUP_DEFAULT_ELEMENT_NAME, val, config_ptr))
 			m_fixed = val;
 		//	[rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
 		xmlNodePtr LookupNode = config_ptr;
 		std::string key_str;
-		while ( (LookupNode = ConfigManager::findConfigNodeByAttr("Lookup", "key", key_str, LookupNode)) != NULL) {
-			if (ConfigManager::getConfigOption("Lookup", val, LookupNode))
+		while ( (LookupNode = ConfigManager::findConfigNodeByAttr(LOOKUP_LOOKUP_ELEMENT_NAME, LOOKUP_KEY_ATTRIBUTE_NAME,
+																	key_str, LookupNode)) != NULL) {
+			if (ConfigManager::getConfigOption(LOOKUP_LOOKUP_ELEMENT_NAME, val, LookupNode))
 				m_lookup[key_str] = val;
 			LookupNode = LookupNode->next;
 		}
@@ -348,18 +361,18 @@ public:
 		// <StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
 		m_short_circuit = true;
 		std::string short_circuit_str;
-		if (! ConfigManager::getConfigOption("StopOnFirstMatch", short_circuit_str, config_ptr))
+		if (! ConfigManager::getConfigOption(RULES_STOP_ON_FIRST_ELEMENT_NAME, short_circuit_str, config_ptr))
 			throw MissingTransformField("Missing StopOnFirstMatch in TransformationAssignRules");
 		if (short_circuit_str == "true")
 			m_short_circuit = true;
 
 		//	[rpt]		<Rule>
 		xmlNodePtr RuleNode = config_ptr;
-		while ( (RuleNode = ConfigManager::findConfigNodeByName("Rule", RuleNode)) != NULL)
+		while ( (RuleNode = ConfigManager::findConfigNodeByName(RULE_ELEMENT_NAME, RuleNode)) != NULL)
 		{
 			//	<Term>src-term</Term>
 			std::string term_id;
-			if (! ConfigManager::getConfigOption("Term", term_id, RuleNode->children))
+			if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id, RuleNode->children))
 				throw MissingTransformField("Missing Source-Term in TransformationAssignRules");
 			Vocabulary::TermRef term_ref = v.findTerm(term_id);
 			if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
@@ -368,7 +381,7 @@ public:
 
 			//	<Type>test-type</Type>
 			std::string val;
-			if (! ConfigManager::getConfigOption("Type", val, RuleNode->children))
+			if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, val, RuleNode->children))
 				throw MissingTransformField("Missing Value in TransformationAssignRules");
 			Comparison::ComparisonType ctype = Comparison::parseComparisonType(val);
 			m_test.push_back(ctype);
@@ -376,7 +389,7 @@ public:
 			//	<Value>escape(test-value)</Value>
 			std::string value_str;
 			if (!Comparison::isGenericType(ctype))
-				if (! ConfigManager::getConfigOption("Value", value_str, RuleNode->children))
+				if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str, RuleNode->children))
 					throw MissingTransformField("Missing Value in TransformationAssignRules");
 
 			Comparison *comp = new Comparison(v[term_ref]);
@@ -385,7 +398,7 @@ public:
 
 			//	<SetValue>escape(set-value)</SetValue>
 			val.clear();
-			if (! ConfigManager::getConfigOption("SetValue", val, RuleNode->children))
+			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_VALUE_NAME, val, RuleNode->children))
 				throw MissingTransformField("Missing SetValue in TransformationAssignRules");
 			m_set_value.push_back(val);
 

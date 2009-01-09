@@ -139,9 +139,6 @@ private:
 	/// name of the type element for Pion XML config files
 	static const std::string		TYPE_ELEMENT_NAME;
 
-	/// name of the value element for Pion XML config files
-	static const std::string		VALUE_ELEMENT_NAME;
-
 	/// outgoing event type, or unknown for same as incoming
 	static const std::string		OUTGOING_EVENT_ELEMENT_NAME;
 	static const std::string		COPY_ORIGINAL_ELEMENT_NAME;
@@ -151,16 +148,6 @@ private:
 
 	/// Deliver original (in additions to modified)
 	static const std::string		DELIVER_ORIGINAL_NAME;
-
-	/// Value to set transformation result
-	static const std::string		TRANSFORMATION_SET_VALUE_NAME;
-
-	static const std::string		LOOKUP_TERM_NAME;
-	static const std::string		LOOKUP_MATCH_ELEMENT_NAME;
-	static const std::string		LOOKUP_FORMAT_ELEMENT_NAME;
-	static const std::string		LOOKUP_DEFAULT_ELEMENT_NAME;
-	static const std::string		RULE_ELEMENT_NAME;
-	static const std::string		RULES_STOP_ON_FIRST_ELEMENT_NAME;
 
 	/// chain of Transformations
 	TransformChain					m_transforms;

@@ -31,23 +31,12 @@ namespace plugins {		// begin namespace plugins
 // static members of TransformReactor
 
 const std::string			TransformReactor::OUTGOING_EVENT_ELEMENT_NAME = "OutgoingEvent";
-const std::string			TransformReactor::COPY_ORIGINAL_ELEMENT_NAME = "CopyOriginal";
 const std::string			TransformReactor::DELIVER_ORIGINAL_NAME = "DeliverOriginal";
-
+const std::string			TransformReactor::COPY_ORIGINAL_ELEMENT_NAME = "CopyOriginal";
+const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
 const std::string			TransformReactor::TERM_ELEMENT_NAME = "Term";
 const std::string			TransformReactor::TYPE_ELEMENT_NAME = "Type";
-const std::string			TransformReactor::VALUE_ELEMENT_NAME = "Value";
 
-//const std::string			TransformReactor::EVENT_TYPE_NAME = "EventType";
-const std::string			TransformReactor::LOOKUP_TERM_NAME = "LookupTerm";
-const std::string			TransformReactor::LOOKUP_MATCH_ELEMENT_NAME = "Match";
-const std::string			TransformReactor::LOOKUP_FORMAT_ELEMENT_NAME = "Format";
-const std::string			TransformReactor::LOOKUP_DEFAULT_ELEMENT_NAME = "DefaultValue";
-const std::string			TransformReactor::RULE_ELEMENT_NAME = "Rule";
-const std::string			TransformReactor::RULES_STOP_ON_FIRST_ELEMENT_NAME = "StopOnFirstMatch";
-
-const std::string			TransformReactor::TRANSFORMATION_ELEMENT_NAME = "Transformation";
-const std::string			TransformReactor::TRANSFORMATION_SET_VALUE_NAME = "SetValue";
 
 /*
  *  This is the spec, using annotated XML
