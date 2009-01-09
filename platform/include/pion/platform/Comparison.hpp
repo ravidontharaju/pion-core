@@ -33,9 +33,6 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
-/// Typedef to return back both success/failure as well as last compared node
-typedef boost::tuple<bool, Event::ConstIterator> CompMatch;
-
 ///
 /// Comparison: used to perform a comparison on the value of a Term
 ///
@@ -93,7 +90,7 @@ public:
 		TYPE_SAME_OR_EARLIER_TIME,
 		TYPE_SAME_OR_LATER_TIME,
 	};
-	
+
 	/// exception thrown if the Comparison type is not recognized
 	class UnknownComparisonTypeException : public PionException {
 	public:
@@ -124,8 +121,8 @@ public:
 			return "Invalid value given for comparison type";
 		}
 	};
-	
-	
+
+
 	/// virtual destructor: you may extend this class
 	virtual ~Comparison() {}
 
@@ -137,7 +134,7 @@ public:
 	explicit Comparison(const Vocabulary::Term& term)
 		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false)
 	{}
-	
+
 	/// standard copy constructor
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
@@ -145,23 +142,24 @@ public:
 		m_match_all_values(c.m_match_all_values)
 	{}
 
-	
+
 	/**
 	 * evaluates the result of the Comparison
 	 *
 	 * @param e the Event to evaluate
 	 *
-	 * @return tuple with bool & Event:iterator
-	 *			true if the Comparison succeeded; false if it did not
-	 *			Iterator points to last compared node
+	 * @return 	true if the Comparison succeeded; false if it did not
 	 */
-	inline CompMatch evaluate(const Event& e) const;
+	inline bool evaluate(const Event& e) const;
 
-	/// Same as evaluate, except returns just the bool for success
-	inline bool evaluateBool(const Event& e) const
-	{
-		return evaluate(e).get<0>();
-	}
+	/**
+	 * evaluates the result of the Comparison
+	 *
+	 * @param values_range range of values (within an event) to evaluate
+	 *
+	 * @return 	true if the Comparison succeeded; false if it did not
+	 */
+	inline bool evaluateRange(const Event::ValuesRange& values_range) const;
 
 	/**
 	 * configures the Comparison information
@@ -188,7 +186,7 @@ public:
 		std::string value_str(value);
 		configure(type, value_str, match_all_values);
 	}
-	
+
 	/**
 	 * configures the Comparison information (alternate form for string comparisons)
 	 *
@@ -205,7 +203,7 @@ public:
 	 * @param the type of Comparison to perform
 	 */
 	void configure(const ComparisonType type);
-	
+
 	/**
 	 * this updates the Vocabulary information used by this Comparison;
 	 * it should be called whenever the global Vocabulary is updated
@@ -213,21 +211,21 @@ public:
 	 * @param v the Vocabulary that this Comparison will use to describe Terms
 	 */
 	void updateVocabulary(const Vocabulary& v);
-	
-	
+
+
 	/// returns the Vocabulary Term to examine
 	inline const Vocabulary::Term& getTerm(void) const { return m_term; }
-	
+
 	/// returns the type of Comparison that this is
 	inline ComparisonType getType(void) const { return m_type; }
-	
+
 	/// returns the value that the Vocabulary Term is compared to
 	inline const Event::ParameterValue& getValue(void) const { return m_value; }
 
 	/// returns true if all Vocabulary Term values must match
 	inline bool getMatchAllValues(void) const { return m_match_all_values; }
-	
-	
+
+
 	/**
 	 * parses Comparison type from a string
 	 *
@@ -235,14 +233,14 @@ public:
 	 * @return ComparisonType the type matching the parsed string
 	 */
 	static ComparisonType parseComparisonType(std::string str);
-	
+
 	/**
 	 * returns a string that represents a particular Comparison type
 	 *
 	 * @param comparison_type the Comparison type to get a string for
 	 * @return std::string a temporary string object that represents the Comparison type
 	 */
-	static std::string getComparisonTypeAsString(const ComparisonType comparison_type);	
+	static std::string getComparisonTypeAsString(const ComparisonType comparison_type);
 
 	/// returns true for generic comparison types
 	static inline bool isGenericType(ComparisonType t) {
@@ -274,10 +272,10 @@ public:
 	static inline bool isTimeType(ComparisonType t) {
 		return (t >= TYPE_SAME_TIME && t <= TYPE_SAME_OR_LATER_TIME);
 	}
-	
-	
+
+
 private:
-	
+
 	/// helper class used to determine if two numbers are equal
 	template <typename T>
 	class CompareEquals {
@@ -289,7 +287,7 @@ private:
 	private:
 		const T&	m_value;
 	};
-	
+
 	/// helper class used to determine if one number is greater than another
 	template <typename T>
 	class CompareGreaterThan {
@@ -325,7 +323,7 @@ private:
 	private:
 		const T&	m_value;
 	};
-	
+
 	/// helper class used to determine if one number is less than or equal to another
 	template <typename T>
 	class CompareLessOrEqual {
@@ -401,7 +399,7 @@ private:
 	private:
 		const std::string&	m_value;
 	};
-	
+
 	/// helper class used to determine if one string is ordered after another
 	class CompareStringOrderedAfter {
 	public:
@@ -439,7 +437,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date_time value is earlier than another
 	class CompareEarlierDateTime {
 	public:
@@ -450,7 +448,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date_time value is later than another
 	class CompareLaterDateTime {
 	public:
@@ -461,7 +459,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date_time value is the same as or earlier than another
 	class CompareSameOrEarlierDateTime {
 	public:
@@ -472,7 +470,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date_time value is the same as or later than another
 	class CompareSameOrLaterDateTime {
 	public:
@@ -483,7 +481,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if two dates are equivalent
 	class CompareSameDate {
 	public:
@@ -494,7 +492,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date is earlier than another
 	class CompareEarlierDate {
 	public:
@@ -505,7 +503,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date is later than another
 	class CompareLaterDate {
 	public:
@@ -516,7 +514,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date is the same as or earlier than another
 	class CompareSameOrEarlierDate {
 	public:
@@ -527,7 +525,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one date is the same as or later than another
 	class CompareSameOrLaterDate {
 	public:
@@ -549,7 +547,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one time of day is earlier than another
 	class CompareEarlierTime {
 	public:
@@ -560,7 +558,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one time of day is later than another
 	class CompareLaterTime {
 	public:
@@ -571,7 +569,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one time of day is the same as or earlier than another
 	class CompareSameOrEarlierTime {
 	public:
@@ -582,7 +580,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 	/// helper class used to determine if one time of day is the same as or later than another
 	class CompareSameOrLaterTime {
 	public:
@@ -593,7 +591,7 @@ private:
 	private:
 		const PionDateTime&	m_value;
 	};
-	
+
 
 	/**
 	 * checks if a given comparison type is valid for the Vocabulary Term
@@ -603,7 +601,7 @@ private:
 	 * @return true if the type is valid for the Vocabulary Term
 	 */
 	bool checkForValidType(const ComparisonType type) const;
-	
+
 	/**
 	 * helper function that compares a range of values using the provided function
 	 *
@@ -615,18 +613,18 @@ private:
 	 *			Iterator points to the last compared value/node
 	 */
 	template <typename ComparisonFunction>
-	inline CompMatch checkComparison(const ComparisonFunction& comparison_func,
+	inline bool checkComparison(const ComparisonFunction& comparison_func,
 									const Event::ValuesRange& values_range) const;
 
 	/// identifies the Vocabulary Term to examine
 	Vocabulary::Term			m_term;
-	
+
 	/// identifies what type of Comparison this is
 	ComparisonType				m_type;
-	
+
 	/// the value that the Vocabulary Term is compared to (if not string or regex type)
 	Event::ParameterValue		m_value;
-	
+
 	/// the string that the Vocabulary Term is compared to (if string comparison type)
 	std::string					m_str_value;
 
@@ -646,11 +644,11 @@ inline void Comparison::configure(const ComparisonType type,
 {
 	if (! checkForValidType(type))
 		throw InvalidTypeForTermException();
-	
+
 	m_type = type;
 	m_value = value;
 	m_match_all_values = match_all_values;
-	
+
 	// make sure the value matches the comparison type
 	switch (m_term.term_type) {
 		case Vocabulary::TYPE_NULL:
@@ -710,11 +708,11 @@ inline void Comparison::configure(const ComparisonType type,
 // inline member functions for Comparison
 
 template <typename ComparisonFunction>
-inline CompMatch Comparison::checkComparison(const ComparisonFunction& comparison_func,
+inline bool Comparison::checkComparison(const ComparisonFunction& comparison_func,
 										const Event::ValuesRange& values_range) const
 {
 	boost::tribool result = boost::indeterminate;
-	Event::ConstIterator value = values_range.second;
+//	Event::ConstIterator value = values_range.second;
 
 	for (Event::ConstIterator i = values_range.first;
 		 i != values_range.second; ++i)
@@ -722,7 +720,7 @@ inline CompMatch Comparison::checkComparison(const ComparisonFunction& compariso
 		if (comparison_func(i->value)) {
 			if (! m_match_all_values) {
 				result = true;
-				value = i;
+//				value = i;
 				break;
 			}
 		} else {
@@ -732,41 +730,32 @@ inline CompMatch Comparison::checkComparison(const ComparisonFunction& compariso
 			}
 		}
 	}
-	
+
 	if (boost::indeterminate(result))
 		result = m_match_all_values;
-	
-	return CompMatch(result, value);
+
+	return result;
 }
 
 
-/// Macro to negate the bool success value alone
-#define PION_NEGATE0(x)		x.get<0>() = ! x.get<0>()
-/// Macro to access the bool success value alone
-#define PION_RESULT0(x)		x.get<0>()
-
-inline CompMatch Comparison::evaluate(const Event& e) const
+// This method now evaluates only a values_range, in order to support TransformReactor2
+// See Comparison::evaluate() on how values_range is defined, and the special case of *_DEFINED
+inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) const
 {
-	/// get a range of iterators representing all the values for the Term
-	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
-	Event::ConstIterator value = e.end();
-	CompMatch result = CompMatch(false, value);
+	bool result = false;
 
-	
 	switch (m_type) {
 		case TYPE_FALSE:
-			PION_RESULT0(result) = false;
+			result = false;
 			break;
 		case TYPE_TRUE:
-			PION_RESULT0(result) = true;
+			result = true;
 			break;
 		case TYPE_IS_DEFINED:
-			PION_RESULT0(result) = (values_range.first != values_range.second
-				|| (e.getType() == m_term.term_ref) );
+			result = (values_range.first != values_range.second);
 			break;
 		case TYPE_IS_NOT_DEFINED:
-			PION_RESULT0(result) = (values_range.first == values_range.second
-				&& (e.getType() != m_term.term_ref) );
+			result = (values_range.first == values_range.second);
 			break;
 
 		case TYPE_EQUALS:
@@ -822,9 +811,9 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_EQUALS)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
-			
+
 		case TYPE_GREATER_THAN:
 			switch (m_term.term_type) {
 				case Vocabulary::TYPE_INT8:
@@ -877,7 +866,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			break;
-			
+
 		case TYPE_LESS_THAN:
 			switch (m_term.term_type) {
 				case Vocabulary::TYPE_INT8:
@@ -1053,9 +1042,9 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_EXACT_MATCH)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
-			
+
 		case TYPE_CONTAINS:
 		case TYPE_NOT_CONTAINS:
 			switch (m_term.term_type) {
@@ -1072,7 +1061,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_CONTAINS)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 
 		case TYPE_STARTS_WITH:
@@ -1091,7 +1080,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_STARTS_WITH)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 
 		case TYPE_ENDS_WITH:
@@ -1110,7 +1099,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ENDS_WITH)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 
 		case TYPE_ORDERED_BEFORE:
@@ -1129,7 +1118,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ORDERED_BEFORE)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 
 		case TYPE_ORDERED_AFTER:
@@ -1148,7 +1137,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_ORDERED_AFTER)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 
 		case TYPE_REGEX:
@@ -1167,9 +1156,9 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 					throw InvalidComparisonException();
 			}
 			if (m_type == TYPE_NOT_REGEX)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
-			
+
 		case TYPE_SAME_DATE_TIME:
 		case TYPE_NOT_SAME_DATE_TIME:
 		{
@@ -1177,10 +1166,10 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			CompareSameDateTime comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_DATE_TIME)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 		}
-			
+
 		case TYPE_EARLIER_DATE_TIME:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME)
@@ -1188,7 +1177,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_LATER_DATE_TIME:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME)
@@ -1196,7 +1185,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_OR_EARLIER_DATE_TIME:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME)
@@ -1204,7 +1193,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_OR_LATER_DATE_TIME:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME)
@@ -1212,7 +1201,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_DATE:
 		case TYPE_NOT_SAME_DATE:
 		{
@@ -1220,7 +1209,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			CompareSameDate comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_DATE)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 		}
 
@@ -1231,7 +1220,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_LATER_DATE:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME || m_term.term_type == Vocabulary::TYPE_DATE)
@@ -1239,7 +1228,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_OR_EARLIER_DATE:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME || m_term.term_type == Vocabulary::TYPE_DATE)
@@ -1247,7 +1236,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_OR_LATER_DATE:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME || m_term.term_type == Vocabulary::TYPE_DATE)
@@ -1255,7 +1244,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_SAME_TIME:
 		case TYPE_NOT_SAME_TIME:
 		{
@@ -1263,7 +1252,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			CompareSameTime comparison_func(m_value);
 			result = checkComparison(comparison_func, values_range);
 			if (m_type == TYPE_NOT_SAME_TIME)
-				PION_NEGATE0(result);
+				result = !result;
 			break;
 		}
 
@@ -1274,7 +1263,7 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			result = checkComparison(comparison_func, values_range);
 			break;
 		}
-			
+
 		case TYPE_LATER_TIME:
 		{
 			PION_ASSERT(m_term.term_type == Vocabulary::TYPE_DATE_TIME || m_term.term_type == Vocabulary::TYPE_TIME)
@@ -1299,8 +1288,29 @@ inline CompMatch Comparison::evaluate(const Event& e) const
 			break;
 		}
 	}
-	
+
 	return result;
+}
+
+// This is the refactored version of evaluate
+// Since IS_DEFINED and IS_NOT_DEFINED allow for looking at Event, in addition to range_value,
+// it was necessary to put some convoluted special-case logic here...
+inline bool Comparison::evaluate(const Event& e) const
+{
+	/// get a range of iterators representing all the values for the Term
+	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
+	if (m_type == TYPE_IS_DEFINED || m_type == TYPE_IS_NOT_DEFINED) {
+		// If object type matches looked for type, return true -- refactored out of evaluateRange
+		if (m_type == TYPE_IS_DEFINED && e.getType() == m_term.term_ref) return true;
+		// Evaluate the range
+		bool result = Comparison::evaluateRange(values_range);
+		// If object type does not matched looked for type, and object is not found in event, then not found
+		if (m_type == TYPE_IS_NOT_DEFINED)
+			return (result && e.getType() != m_term.term_ref);
+		// Return match by range
+		return result;
+	} else
+		return Comparison::evaluateRange(values_range);
 }
 
 

@@ -410,12 +410,14 @@ public:
 			Event::ValuesRange values_range = e->equal_range(m_src_term[i]);
 			Event::ConstIterator ec = values_range.first;
 			while (ec != values_range.second) {
-				// Execute test [i] against ec
-				// True:
-				//		Execute assignment
-				//		If m_short_circuit break;	// Break out of tests, do other terms
+				if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second)))
+					AnyAssigned |= AssignValue(e, m_term, m_set_value[i]);
+				// FIXME: Special case for regex
 			}
 			ec++;			// repeat for all matching source terms
+			// If short_circuit AND any values were assigned -> don't go further in the chain
+			if (m_short_circuit && AnyAssigned)
+				break;
 		}
 		return AnyAssigned;
 	}

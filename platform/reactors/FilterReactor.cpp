@@ -37,7 +37,7 @@ const std::string			FilterReactor::VALUE_ELEMENT_NAME = "Value";
 const std::string			FilterReactor::MATCH_ALL_VALUES_ELEMENT_NAME = "MatchAllValues";
 const std::string			FilterReactor::MATCH_ALL_COMPARISONS_ELEMENT_NAME = "MatchAllComparisons";
 
-	
+
 // FilterReactor member functions
 
 void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -45,10 +45,10 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// first set config options for the Reactor base class
 	boost::mutex::scoped_lock reactor_lock(m_mutex);
 	Reactor::setConfig(v, config_ptr);
-	
+
 	// clear the current configuration
 	m_rules.clear();
-	
+
 	// check if all Comparison rules must match
 	m_match_all_comparisons = false;
 	std::string match_all_comparisons_str;
@@ -64,13 +64,13 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	while ( (comparison_node = ConfigManager::findConfigNodeByName(COMPARISON_ELEMENT_NAME, comparison_node)) != NULL)
 	{
 		// parse new Comparison rule
-		
+
 		// get the Term used for the Comparison rule
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id,
 											 comparison_node->children))
 			throw EmptyTermException(getId());
-		
+
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
 		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
@@ -91,7 +91,7 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 												 comparison_node->children))
 				throw EmptyValueException(getId());
 		}
-		
+
 		// check if the Comparison should match all values for the given Term
 		bool match_all_values = false;
 		std::string match_all_values_str;
@@ -101,17 +101,17 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			if (match_all_values_str == "true")
 				match_all_values = true;
 		}
-		
+
 		// add the Comparison
 		Comparison new_comparison(v[term_ref]);
 		new_comparison.configure(comparison_type, value_str, match_all_values);
 		m_rules.push_back(new_comparison);
-		
+
 		// step to the next Comparison rule
 		comparison_node = comparison_node->next;
 	}
 }
-	
+
 void FilterReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
@@ -123,24 +123,24 @@ void FilterReactor::updateVocabulary(const Vocabulary& v)
 		i->updateVocabulary(v);
 	}
 }
-	
+
 void FilterReactor::operator()(const EventPtr& e)
 {
 	if (isRunning()) {
 		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
-		
+
 		RuleChain::const_iterator i = m_rules.begin();
 		if (m_match_all_comparisons) {
 			// all comparisons in the rule chain must pass for the Event to be delivered
 			for (; i != m_rules.end(); ++i) {
-				if (! i->evaluateBool(*e) )
+				if (! i->evaluate(*e) )
 					return;
 			}
 		} else {
 			// any one comparison in the rule chain must pass for the Event to be delivered
 			for (; i != m_rules.end(); ++i) {
-				if ( i->evaluateBool(*e) )
+				if ( i->evaluate(*e) )
 					break;
 			}
 			// return if none matched & at least one rule is defined
@@ -151,8 +151,8 @@ void FilterReactor::operator()(const EventPtr& e)
 		deliverEvent(e);
 	}
 }
-	
-	
+
+
 }	// end namespace plugins
 }	// end namespace pion
 
