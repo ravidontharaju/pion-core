@@ -68,8 +68,15 @@ public:
 		WriteToLogException(const std::string& log_filename)
 			: PionException("Unable to write Event to log file: ", log_filename) {}
 	};
-	
-	
+
+	/// exception thrown if the Reactor is unable to rotate the log file
+	class LogRotationException : public PionException {
+	public:
+		LogRotationException(const std::string& log_filename)
+			: PionException("Unable to rotate log file: ", log_filename) {}
+	};
+
+
 	/// constructs a new LogOutputReactor object
 	LogOutputReactor(void)
 		: Reactor(TYPE_STORAGE),
@@ -111,6 +118,16 @@ public:
 	 */
 	virtual void operator()(const pion::platform::EventPtr& e);
 	
+	/**
+	 * handle an HTTP query (from QueryService)
+	 *
+	 * @param out the ostream to write the statistics info into
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
+	 */
+	virtual void query(std::ostream& out, const QueryBranches& branches,
+		const QueryParams& qp);
+	
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
 	
@@ -125,7 +142,13 @@ public:
 	
 	
 private:
-	
+
+	/// Opens the log file for writing.  Caller is responsible for locking.
+	void openLogFileNoLock(void);
+
+	/// Finishes and closes the log file.  Caller is responsible for locking.
+	void closeLogFileNoLock(void);
+
 	/// name of the Codec element for Pion XML config files
 	static const std::string			CODEC_ELEMENT_NAME;
 	
