@@ -76,6 +76,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 		// send a 405 (method not allowed) response
 		response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 		response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+		response_ptr->addHeader("Allow", "GET");
 	}
 
 	// Set Content-type to "text/plain" (plain ascii text)

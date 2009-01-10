@@ -281,6 +281,46 @@ BOOST_AUTO_TEST_CASE(testMinimalQueryToReactorWithoutQueryOverride) {
 	BOOST_CHECK_EQUAL(response_content, expected_response);
 }
 
+BOOST_AUTO_TEST_CASE(testQueryUsingPostMethod) {
+	// Send POST query request to a LogInputReactor.
+	std::string reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id, "POST");
+
+	// Check the response.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+	BOOST_CHECK_EQUAL(response_ptr->getHeader("Allow"), "GET");
+}
+
+BOOST_AUTO_TEST_CASE(testQueryUsingPutMethod) {
+	// Send PUT query request to a LogInputReactor.
+	std::string reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id, "PUT");
+
+	// Check the response.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+	BOOST_CHECK_EQUAL(response_ptr->getHeader("Allow"), "GET");
+}
+
+BOOST_AUTO_TEST_CASE(testQueryUsingDeleteMethod) {
+	// Send DELETE query request to a LogInputReactor.
+	std::string reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id, "DELETE");
+
+	// Check the response.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+	BOOST_CHECK_EQUAL(response_ptr->getHeader("Allow"), "GET");
+}
+
+BOOST_AUTO_TEST_CASE(testQueryUsingHeadMethod) {
+	// Send HEAD query request to a LogInputReactor.
+	std::string reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id, "HEAD");
+
+	// Check the response.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+	BOOST_CHECK_EQUAL(response_ptr->getHeader("Allow"), "GET");
+}
+
 BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithNoInput) {
 	// Send request to the LogOutputReactor to rotate its output file.
 	std::string reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
