@@ -326,6 +326,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QueryServiceTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ReactorTests.cpp"
 				>
 			</File>

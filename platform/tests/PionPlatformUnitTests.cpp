@@ -226,3 +226,15 @@ void cleanup_backup_files(void)
 		}
 	}
 }
+
+// Deletes all files starting with "new" in the test logs directory.
+void cleanup_log_files(void)
+{
+	boost::filesystem::path dir_path(get_log_file_dir());
+	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+		std::string basename = boost::filesystem::basename(itr->path());
+		if (basename.substr(0, 3) == "new") {
+			boost::filesystem::remove(itr->path());
+		}
+	}
+}

@@ -1,0 +1,600 @@
+// ------------------------------------------------------------------
+// pion-net: a C++ framework for building lightweight HTTP interfaces
+// ------------------------------------------------------------------
+// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+//
+// Distributed under the Boost Software License, Version 1.0.
+// See http://www.boost.org/LICENSE_1_0.txt
+//
+
+#include <string>
+#include <boost/test/unit_test.hpp>
+#include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/find.hpp>
+#include <pion/PionConfig.hpp>
+#include <pion/PionPlugin.hpp>
+#include <pion/PionScheduler.hpp>
+#include <pion/net/HTTPRequest.hpp>
+#include <pion/net/HTTPResponse.hpp>
+#include <pion/net/WebService.hpp>
+#include <pion/net/TCPStream.hpp>
+#include "../server/PlatformConfig.hpp"
+
+using namespace pion;
+using namespace pion::net;
+
+#if defined(PION_XCODE)
+	static const std::string PATH_TO_PLUGINS(".");
+#else
+	// same for Unix and Windows
+	static const std::string PATH_TO_PLUGINS("../services/.libs");
+#endif
+
+extern void setup_logging_for_unit_tests(void);
+extern const std::string& get_platform_config_file(void);
+extern void cleanup_platform_config_files(void);
+extern void cleanup_cache_files(void);
+extern void cleanup_log_files(void);
+extern const std::string& get_log_file_dir(void);
+static const std::string NEW_OUTPUT_LOG_FILE(get_log_file_dir() + "new.log");
+static const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
+static const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
+static const boost::uint64_t NUM_LINES_IN_COMB_LOG_2 = 2;
+
+
+BOOST_AUTO_TEST_CASE(checkOpenQueryService) {
+	setup_logging_for_unit_tests();
+	PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
+	PionPluginPtr<WebService> ppp;
+	BOOST_CHECK_NO_THROW(ppp.open("QueryService"));
+}
+
+
+struct PluginPtrWithQueryServiceLoaded_F : public PionPluginPtr<pion::server::PlatformService> {
+	PluginPtrWithQueryServiceLoaded_F() { 
+		setup_logging_for_unit_tests();
+		PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
+		s = NULL;
+		open("QueryService");
+	}
+	~PluginPtrWithQueryServiceLoaded_F() {
+		if (s) destroy(s);
+	}
+
+	pion::server::PlatformService* s;
+};
+
+BOOST_FIXTURE_TEST_SUITE(PluginPtrWithQueryServiceLoaded_S, PluginPtrWithQueryServiceLoaded_F)
+
+BOOST_AUTO_TEST_CASE(checkIsOpenReturnsTrue) {
+	BOOST_CHECK(is_open());
+}
+
+BOOST_AUTO_TEST_CASE(checkGetPluginNameReturnsPluginName) {
+	BOOST_CHECK_EQUAL(getPluginName(), "QueryService");
+}
+
+BOOST_AUTO_TEST_CASE(checkCreateReturnsSomething) {
+	BOOST_CHECK((s = create()) != NULL);
+}
+
+BOOST_AUTO_TEST_CASE(checkDestroyDoesntThrowExceptionAfterCreate) {
+	s = create();
+	BOOST_CHECK_NO_THROW(destroy(s));
+	s = NULL;
+}
+
+BOOST_AUTO_TEST_CASE(checkSetOptionThrowsExpectedException) {
+	s = create();
+	BOOST_CHECK_THROW(s->setOption("notAnOption", "some value"), WebService::UnknownOptionException);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+class PlatformReadyForQueryServiceRequests_F {
+public:
+	PlatformReadyForQueryServiceRequests_F() {
+		cleanup_platform_config_files();
+		cleanup_cache_files();
+		cleanup_log_files();
+		BOOST_CHECK(timestampedLogFiles().size() == 0);
+		boost::filesystem::remove("logs/combined-2.log");
+
+		m_platform_cfg.setConfigFile(get_platform_config_file());
+		m_platform_cfg.openConfigFile();
+	}
+	~PlatformReadyForQueryServiceRequests_F() {
+	}
+	std::vector<std::string> timestampedLogFiles(void) {
+		std::vector<std::string> timestamped_log_files;
+		boost::filesystem::path dir_path(get_log_file_dir());
+		for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+			std::string basename = boost::filesystem::basename(itr->path());
+			if (basename.substr(0, 6) == "new-20") {
+				timestamped_log_files.push_back(itr->path().file_string());
+			}
+		}
+		return timestamped_log_files;
+	}
+	void confirmDefaultQueryBehavior(const std::string& resource, int expected_events_out) {
+		// Connect a stream to localhost.
+		TCPStream tcp_stream(m_platform_cfg.getServiceManager().getIOService());
+		boost::system::error_code ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+		BOOST_REQUIRE(! ec);
+
+		HTTPRequest http_request;
+		http_request.setResource(resource);
+		http_request.send(tcp_stream.rdbuf()->getConnection(), ec);
+		BOOST_REQUIRE(! ec);
+
+		// Receive the response from the server.
+		HTTPResponse http_response(http_request);
+		http_response.receive(tcp_stream.rdbuf()->getConnection(), ec);
+		BOOST_REQUIRE(! ec);
+
+		// Check that the query response had the expected value for EventsOut.
+		std::string response_content(http_response.getContent());
+		std::ostringstream expected_substring;
+		expected_substring << "<EventsOut>" << expected_events_out << "</EventsOut>";
+		BOOST_CHECK(response_content.find(expected_substring.str()) != std::string::npos);
+
+		// Check that the log file was not timestamped.
+		std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+		BOOST_CHECK(timestamped_log_files.size() == 0);
+	}
+	HTTPResponsePtr sendRequestAndGetResponse(const std::string& resource, const std::string& request_method = "") {
+		// Connect a stream to localhost.
+		TCPStream tcp_stream(m_platform_cfg.getServiceManager().getIOService());
+		m_ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+		BOOST_REQUIRE(! m_ec);
+		
+		// Send the request to the server.
+		HTTPRequest http_request;
+		http_request.setResource(resource);
+		if (! request_method.empty())
+			http_request.setMethod(request_method);
+		http_request.send(tcp_stream.rdbuf()->getConnection(), m_ec);
+		BOOST_REQUIRE(! m_ec);
+		
+		// Get the response from the server.
+		HTTPResponsePtr response_ptr(new HTTPResponse(http_request));
+		response_ptr->receive(tcp_stream.rdbuf()->getConnection(), m_ec);
+		BOOST_REQUIRE(! m_ec);
+		
+		return response_ptr;
+	}
+	// From a string representation of a Reactor configuration, obtain an xmlNodePtr that
+	// points to a list of all the child nodes needed by Reactor::setConfig().
+	xmlNodePtr makeReactorConfigFromString(const std::string& inner_config_str) {
+		std::string config_str = std::string("<PionConfig><Reactor>") + inner_config_str + "</Reactor></PionConfig>";
+		xmlNodePtr config_ptr = pion::platform::ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
+		BOOST_REQUIRE(config_ptr);
+		return config_ptr;
+	}
+	void waitForMinimumNumberOfEventsIn(
+		const std::string& reactor_id,
+		boost::uint64_t time_limit,
+		boost::uint64_t min_num_events_in)
+	{
+		boost::uint64_t total_nsec = 0;
+		boost::uint32_t num_nsec = 100000000; // 0.1 seconds
+		while (total_nsec < time_limit) {
+			PionScheduler::sleep(0, num_nsec);
+			if (m_platform_cfg.getReactionEngine().getEventsIn(reactor_id) >= min_num_events_in)
+				return;
+			total_nsec += num_nsec;
+		}
+		BOOST_FAIL("LogInputReactor was taking too long to read the required number of Events from a log file.");
+	}
+	boost::uint64_t extractNumEventsInFromResponse(const HTTPResponsePtr& response_ptr) {
+		std::string response_content(response_ptr->getContent());
+		boost::smatch rx_matches;
+		BOOST_REQUIRE(boost::regex_match(response_content, rx_matches, boost::regex(".*<EventsIn>(\\d+)</EventsIn>.*")));
+		return boost::lexical_cast<boost::uint64_t>(rx_matches[1]);
+	}
+
+	pion::server::PlatformConfig		m_platform_cfg;
+	boost::system::error_code			m_ec;
+};
+
+BOOST_FIXTURE_TEST_SUITE(PlatformReadyForQueryServiceRequests_S, PlatformReadyForQueryServiceRequests_F)
+
+BOOST_AUTO_TEST_CASE(testMinimalQueryToLogInputReactor) {
+	// Send minimal query request to a LogInputReactor.
+	std::string reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id);
+
+	// Check the response.
+	std::string response_content(response_ptr->getContent());
+	std::string expected_response = 
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
+		"<Reactor id=\"" + reactor_id + "\">\n"
+			"<Running>false</Running>\n"
+			"<EventsIn>0</EventsIn>\n"
+			"<EventsOut>0</EventsOut>\n"
+			"<CurrentLog></CurrentLog>\n"
+		"</Reactor>\n"
+	"</PionStats>\n";
+	BOOST_CHECK_EQUAL(response_content, expected_response);
+}
+
+BOOST_AUTO_TEST_CASE(testMinimalQueryToDatabaseOutputReactor) {
+	// Send minimal query request to a DatabaseOutputReactor.
+	std::string reactor_id = "a8928460-eb0c-11dc-9b68-0019e3f89cd2";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id);
+
+	// Check the response.
+	std::string response_content(response_ptr->getContent());
+	std::string expected_response = 
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
+		"<Reactor id=\"" + reactor_id + "\">\n"
+			"<Running>true</Running>\n"
+			"<EventsIn>0</EventsIn>\n"
+			"<EventsOut>0</EventsOut>\n"
+			"<EventsQueued>0</EventsQueued>\n"
+		"</Reactor>\n"
+	"</PionStats>\n";
+	BOOST_CHECK_EQUAL(response_content, expected_response);
+}
+
+BOOST_AUTO_TEST_CASE(testMinimalQueryToLogOutputReactor) {
+	// Send minimal query request to LogOutputReactor.
+	std::string reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id);
+
+	// Check the response.
+	std::string response_content(response_ptr->getContent());
+	std::string expected_response = 
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
+		"<Reactor id=\"" + reactor_id + "\">\n"
+			"<Running>true</Running>\n"
+			"<EventsIn>0</EventsIn>\n"
+			"<EventsOut>0</EventsOut>\n"
+		"</Reactor>\n"
+	"</PionStats>\n";
+	BOOST_CHECK_EQUAL(response_content, expected_response);
+}
+
+BOOST_AUTO_TEST_CASE(testMinimalQueryToReactorWithoutQueryOverride) {
+	// Send minimal query request to FilterReactor.  (FilterReactor::query() is not defined.)
+	std::string reactor_id = "0cc21558-cf84-11dc-a9e0-0019e3f89cd2";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id);
+
+	// Check the response.
+	std::string response_content(response_ptr->getContent());
+	std::string expected_response = 
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
+		"<Reactor id=\"" + reactor_id + "\">\n"
+			"<Running>true</Running>\n"
+			"<EventsIn>0</EventsIn>\n"
+			"<EventsOut>0</EventsOut>\n"
+		"</Reactor>\n"
+	"</PionStats>\n";
+	BOOST_CHECK_EQUAL(response_content, expected_response);
+}
+
+BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithNoInput) {
+	// Send request to the LogOutputReactor to rotate its output file.
+	std::string reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + reactor_id + "/rotate");
+
+	// Check the response.  We expect the response to be the same as for testMinimalQueryToDatabaseOutputReactor,
+	// even though this time the query has an additional branch requesting log file rotation.
+	std::string response_content(response_ptr->getContent());
+	std::string expected_response = 
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
+		"<Reactor id=\"" + reactor_id + "\">\n"
+			"<Running>true</Running>\n"
+			"<EventsIn>0</EventsIn>\n"
+			"<EventsOut>0</EventsOut>\n"
+		"</Reactor>\n"
+	"</PionStats>\n";
+	BOOST_CHECK_EQUAL(response_content, expected_response);
+
+	// Check that the log file is empty (since no data is flowing).
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+
+	// Check that the log file was not timestamped (since it is empty).
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 0);
+}
+
+BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
+	// Start a LogInputReactor, which will send its output to the already running LogOutputReactor.
+	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Send request to the LogOutputReactor to rotate its output file.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+
+	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	BOOST_CHECK_EQUAL(num_events_in_at_rotation, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	
+	// Check that the log file was timestamped.
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 1);
+
+	// Check that the timestamped log file has the expected size.
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505);
+
+	// Check that a new log file was created and is empty.
+	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+
+	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
+	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
+	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+
+	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
+	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 313);
+}
+
+BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
+	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
+	xmlNodePtr config_ptr = makeReactorConfigFromString(
+		"<Name>Perpetual CLF Log Reader</Name>"
+		"<Plugin>LogInputReactor</Plugin>"
+		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
+		"<Directory>../logs</Directory>"
+		"<Filename>combined\.log</Filename>"
+		"<JustOne>true</JustOne>");
+	std::string log_input_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
+
+	// Connect the new LogInputReactor to a LogOutputReactor and start it.  (The latter should already be running.)
+	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, log_output_reactor_id);
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	// Wait for a few Events to be processed.
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, 10);
+
+	// Send request to the LogOutputReactor to rotate its output file.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+
+	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	BOOST_CHECK_GE(num_events_in_at_rotation, 10);
+
+	// Check that the log file was timestamped.
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 1);
+
+	// Check that a new log file was created.
+	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
+
+	// Wait for a few more Events to be processed and stop the LogInputReactor.
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_in_at_rotation + 10);
+	m_platform_cfg.getReactionEngine().stopReactor(log_input_reactor_id);
+	boost::uint64_t num_events_from_log_input_reactor = m_platform_cfg.getReactionEngine().getEventsOut(log_input_reactor_id);
+
+	// Wait until the LogOutputReactor has processed all Events sent by the LogInputReactor and then stop it.
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_from_log_input_reactor);
+	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
+
+	// Count the number of lines in the timestamped file.
+	boost::uint64_t num_events_in_timestamped_log_file = -4; // don't count header lines
+	std::ifstream log_file_1(timestamped_log_files[0].c_str());
+	BOOST_REQUIRE(log_file_1.is_open());
+	const unsigned int BUF_SIZE = 1023;
+	char buf[BUF_SIZE + 1];
+	while (log_file_1.getline(buf, BUF_SIZE)) {
+		num_events_in_timestamped_log_file++;
+	}
+	log_file_1.close();
+
+	// Count the number of lines in the current log file.
+	boost::uint64_t num_events_in_most_current_log_file = -4; // don't count header lines
+	std::ifstream log_file_2(NEW_OUTPUT_LOG_FILE.c_str());
+	BOOST_REQUIRE(log_file_2.is_open());
+	while (log_file_2.getline(buf, BUF_SIZE)) {
+		num_events_in_most_current_log_file++;
+	}
+	log_file_2.close();
+
+	// Check that each log file has at least 10 Events, since at least 10 Events were received both before and after the query.
+	BOOST_CHECK_GE(num_events_in_timestamped_log_file, 10);
+	BOOST_CHECK_GE(num_events_in_most_current_log_file, 10);
+
+	// Check that the total number of lines in the two log files is the same as the total number of Events sent.
+	BOOST_CHECK_EQUAL(num_events_in_timestamped_log_file + num_events_in_most_current_log_file, num_events_from_log_input_reactor);
+}
+
+BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
+	// Add a LogOutputReactor with an JSONCodec.
+	xmlNodePtr config_ptr = makeReactorConfigFromString(
+		"<Name>JSON Log Writer</Name>"
+		"<Plugin>LogOutputReactor</Plugin>"
+		"<Codec>9446b74a-71e4-426c-b965-ae55260375af</Codec>"
+		"<Filename>../logs/new.json</Filename>");
+	std::string xml_log_output_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
+
+	// Connect a LogInputReactor to the new LogOutputReactor and start it.  (The latter should already be running.)
+	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, xml_log_output_reactor_id);
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Send request to the LogOutputReactor to rotate its output file.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + xml_log_output_reactor_id + "/rotate");
+
+	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	BOOST_CHECK_EQUAL(num_events_in_at_rotation, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	
+	// Check that the log file was timestamped.
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 1);
+
+	// Check that the timestamped log file has the expected size.
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 452);
+
+	// Check that a new log file was created and is empty.
+	std::string log_output_file = "logs/new.json";
+	BOOST_CHECK(boost::filesystem::exists(log_output_file));
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0);
+
+	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
+	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
+	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
+	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+
+	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
+	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 228);
+}
+
+BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
+	// Add a LogOutputReactor with an XMLCodec.
+	xmlNodePtr config_ptr = makeReactorConfigFromString(
+		"<Name>XML Log Writer</Name>"
+		"<Plugin>LogOutputReactor</Plugin>"
+		"<Codec>f7bb0fd8-3fe0-4227-accb-aaba2440a638</Codec>"
+		"<Filename>../logs/new.xml</Filename>");
+	std::string xml_log_output_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
+
+	// Connect a LogInputReactor to the new LogOutputReactor and start it.  (The latter should already be running.)
+	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, xml_log_output_reactor_id);
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Send request to the LogOutputReactor to rotate its output file.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + xml_log_output_reactor_id + "/rotate");
+
+	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	BOOST_CHECK_EQUAL(num_events_in_at_rotation, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	
+	// Check that the log file was timestamped.
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 1);
+
+	// Check that the timestamped log file has the expected size.
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 619);
+
+	// Check that a new log file was created and is empty.
+	std::string log_output_file = "logs/new.xml";
+	BOOST_CHECK(boost::filesystem::exists(log_output_file));
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0);
+
+	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
+	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
+	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
+	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+
+	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
+	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 339);
+}
+
+BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
+	// Start the LogInputReactor, which will send its output to the already running LogOutputReactor.
+	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	// Send request to the LogOutputReactor to rotate its output file.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+
+	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	BOOST_CHECK_EQUAL(num_events_in_at_rotation, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	
+	// Check that the log file was timestamped.
+	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files.size() == 1);
+
+	// Check that the timestamped log file has the expected size.
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505);
+
+	// Check that a new log file was created and is empty.
+	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+
+	// Wait briefly and send another request to the LogOutputReactor to rotate its output file.
+	PionScheduler::sleep(0, ONE_SECOND); // Enough to avoid a timestamp conflict.
+	HTTPResponsePtr response_ptr_2 = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+
+	// Check that the log file is empty (since no more Events were available since the previous query).
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+
+	// Check that no additional timestamped file exists (and the old one is still there).
+	std::vector<std::string> timestamped_log_files_2 = timestampedLogFiles();
+	BOOST_CHECK(timestamped_log_files == timestamped_log_files_2);
+
+	// Check that the response to the second query was the same as to the first query.
+	BOOST_CHECK_EQUAL(response_ptr->getContent(), response_ptr_2->getContent());
+}
+
+BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
+	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
+	xmlNodePtr config_ptr = makeReactorConfigFromString(
+		"<Name>Perpetual CLF Log Reader</Name>"
+		"<Plugin>LogInputReactor</Plugin>"
+		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
+		"<Directory>../logs</Directory>"
+		"<Filename>combined\.log</Filename>"
+		"<JustOne>true</JustOne>");
+	std::string log_input_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
+
+	// Connect the new LogInputReactor to a LogOutputReactor and start it.  (The latter should already be running.)
+	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, log_output_reactor_id);
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	// Send several consecutive rotate requests to try to force a timestamp conflict.
+	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	bool expected_error_logged = false;
+	for (int i = 0; i < 10; ++i) {
+		// Wait for at least one more Event, so that the LogOutputReactor will attempt to rotate the log file.
+		this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_in_at_rotation + 1);
+
+		response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
+		std::string response_content(response_ptr->getContent());
+		if (response_content.find("Unable to rotate log file:") != std::string::npos) {
+			expected_error_logged = true;
+			break;
+		}
+
+		// There was no conflict reported, so update the number of Events and try again.
+		num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
+	}
+
+	// This is just a warning, because the test can't guarantee that a conflict will occur.
+	BOOST_WARN(expected_error_logged);
+}
+
+BOOST_AUTO_TEST_CASE(testNonRotateQueryToLogOutputReactor) {
+	// Start the LogInputReactor, which will send its output to the already running LogOutputReactor.
+	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
+	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
+	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
+
+	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	confirmDefaultQueryBehavior("/query/reactors/" + log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
+
+	confirmDefaultQueryBehavior("/query/reactors/" + log_output_reactor_id + "/junk", NUM_LINES_IN_DEFAULT_LOG_FILE);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
