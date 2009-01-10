@@ -127,7 +127,6 @@ void FilterReactor::updateVocabulary(const Vocabulary& v)
 void FilterReactor::operator()(const EventPtr& e)
 {
 	if (isRunning()) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		incrementEventsIn();
 
 		RuleChain::const_iterator i = m_rules.begin();

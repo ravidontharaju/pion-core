@@ -107,7 +107,10 @@ public:
 	}
 	
 	/**
-	 * sets configuration parameters for this Reactor
+	 * sets configuration parameters for this Reactor.  Note that as of v1.1, it is safe
+	 * to assume that setConfig() will never be called while the Reactor is running, and will
+	 * never be called by two threads at once.  Therefore, any configuration data structures
+	 * which are modified only by calls to setConfig() may be left unprotected (no mutex).
 	 *
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 * @param config_ptr pointer to a list of XML nodes containing Reactor
@@ -168,7 +171,6 @@ public:
 	/**
 	 * connects another Reactor to the output of this Reactor
 	 *
-	 * @param connection_id unique identifier associated with the output connection
 	 * @param output_reactor the Reactor to which output Events will be sent
 	 */
 	void addConnection(Reactor& output_reactor);
@@ -180,6 +182,14 @@ public:
 	 * @param connection_handler function handler to which Events will be sent
 	 */
 	void addConnection(const std::string& connection_id, EventHandler connection_handler);
+	
+	/**
+	 * replaces a Reactor connected to the output of this Reactor
+	 *
+	 * @param reactor_id unique identifier for the Reactor associated with the output connection
+	 * @param output_reactor the new Reactor instance to which output Events will be sent
+	 */
+	void replaceConnection(const std::string& reactor_id, Reactor& output_reactor);
 	
 	/**
 	 * removes an existing output connection
