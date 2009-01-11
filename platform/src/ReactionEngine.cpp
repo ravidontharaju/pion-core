@@ -168,9 +168,7 @@ void ReactionEngine::setReactorConfig(const std::string& reactor_id,
 {
 	// convert PluginNotFound exceptions into ReactorNotFound exceptions
 	try {
-		// use swapPlugin() instead of setPluginConfig() to ensure that
-		// setPluginConfig() will never be called while the Reactor is running
-		PluginConfig<Reactor>::swapPlugin(reactor_id, config_ptr);
+		PluginConfig<Reactor>::setPluginConfig(reactor_id, config_ptr);
 	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
 		throw ReactorNotFoundException(reactor_id);
 	}
@@ -213,7 +211,20 @@ void ReactionEngine::removeReactor(const std::string& reactor_id)
 	}
 	
 	// disconnect any temporary output connections involving the Reactor being removed
-	removeTempConnectionsNoLock(reactor_id);
+	TempConnectionList::iterator connection_i = m_temp_connections.begin();
+	while (connection_i != m_temp_connections.end()) {
+		TempConnectionList::iterator current_i = connection_i++;
+		if (current_i->m_reactor_id == reactor_id) {
+			if (current_i->m_output_connection) {
+				// remove the output connection from the Reactor
+				removeConnectionNoLock(current_i->m_reactor_id, current_i->m_connection_id);
+			}
+			// send notification that the Reactor is being removed
+			current_i->m_removed_handler();
+			// remove the connection
+			m_temp_connections.erase(current_i);
+		}
+	}
 
 	// convert PluginNotFound exceptions into ReactorNotFound exceptions
 	try {
@@ -540,30 +551,6 @@ void ReactionEngine::removeConnectionNoLock(const std::string& reactor_id,
 	from_ptr->removeConnection(connection_id);
 }
 
-void ReactionEngine::removeTempConnectionsNoLock(const std::string& reactor_id)
-{
-	// find the source Reactor
-	Reactor *reactor_ptr = m_plugins.get(reactor_id);
-	if (reactor_ptr == NULL)
-		throw ReactorNotFoundException(reactor_id);
-
-	// remove Temporary connections
-	TempConnectionList::iterator connection_i = m_temp_connections.begin();
-	while (connection_i != m_temp_connections.end()) {
-		TempConnectionList::iterator current_i = connection_i++;
-		if (current_i->m_reactor_id == reactor_id) {
-			if (current_i->m_output_connection) {
-				// remove the output connection from the Reactor
-				reactor_ptr->removeConnection(current_i->m_connection_id);
-			}
-			// send notification that the Reactor is being removed
-			current_i->m_removed_handler();
-			// remove the connection
-			m_temp_connections.erase(current_i);
-		}
-	}
-}
-
 void ReactionEngine::removeConnectionConfigNoLock(const std::string& from_id,
 												  const std::string& to_id)
 {
@@ -625,95 +612,6 @@ void ReactionEngine::stopNoLock(void)
 		m_scheduler.removeActiveUser();
 
 		m_is_running = false;
-	}
-}
-
-void ReactionEngine::addPluginNoLock(const std::string& plugin_id,
-									 const std::string& plugin_name,
-									 const xmlNodePtr config_ptr)
-{
-	try {
-	
-		Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
-		prepareNewReactor(*reactor_ptr, plugin_id, config_ptr);
-
-		// Get the default behavior regarding whether the Reactor should start out running.
-		bool start_out_running = (reactor_ptr->getType() == Reactor::TYPE_COLLECTION? false : true);
-
-		// Override the default behavior, if the Reactor's run status is specified in the configuration.
-		checkRunningStatus(start_out_running, config_ptr);
-
-		// start the Reactor if it should be running
-		if (start_out_running)
-			reactor_ptr->start();
-			
-	} catch (PionPlugin::PluginNotFoundException&) {
-		throw;
-	} catch (std::exception& e) {
-		throw PluginException(e.what());
-	}
-}
-
-void ReactionEngine::swapPluginNoLock(const std::string& plugin_id,
-									  const xmlNodePtr config_ptr)
-{
-	try {
-	
-		// get pointer to the existing reactor
-		Reactor *old_reactor_ptr = m_plugins.get(plugin_id);
-		PION_ASSERT(old_reactor_ptr);
-
-		// create a new Reactor of the same type
-		Reactor *new_reactor_ptr = m_plugins.clone(plugin_id);
-		PION_ASSERT(new_reactor_ptr);
-
-		// prepare the new Reactor (use same identifier)
-		prepareNewReactor(*new_reactor_ptr, plugin_id, config_ptr);
-		
-		// copy output connections first
-		ReactorConnectionList::iterator conn_it = m_reactor_connections.begin();
-		while (conn_it != m_reactor_connections.end()) {
-			if (conn_it->m_from_id == plugin_id) {
-				// find the destination Reactor
-				Reactor *to_ptr = m_plugins.get(conn_it->m_to_id);
-				if (to_ptr == NULL)
-					throw ReactorNotFoundException(conn_it->m_to_id);
-				// copy the output connection
-				new_reactor_ptr->addConnection(*to_ptr);
-			}
-			++conn_it;
-		}
-		
-		// start the new reactor ?
-		bool start_out_running = old_reactor_ptr->isRunning();
-		checkRunningStatus(start_out_running, config_ptr);
-		if (start_out_running)
-			new_reactor_ptr->start();
-		
-		// move over all input connections next
-		conn_it = m_reactor_connections.begin();
-		while (conn_it != m_reactor_connections.end()) {
-			if (conn_it->m_to_id == plugin_id) {
-				// find the source Reactor
-				Reactor *from_ptr = m_plugins.get(conn_it->m_from_id);
-				if (from_ptr == NULL)
-					throw ReactorNotFoundException(conn_it->m_from_id);
-				// replace the input connection
-				from_ptr->replaceConnection(plugin_id, *new_reactor_ptr);
-			}
-			++conn_it;
-		}
-
-		// disconnect any temporary output connections involving the Reactor being replaced
-		removeTempConnectionsNoLock(plugin_id);
-		
-		// replace Reactor object in the PluginManager collection (invalidates old_reactor_ptr)
-		m_plugins.replace(plugin_id, new_reactor_ptr);
-
-	} catch (PionPlugin::PluginNotFoundException&) {
-		throw;
-	} catch (std::exception& e) {
-		throw PluginException(e.what());
 	}
 }
 

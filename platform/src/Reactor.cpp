@@ -94,20 +94,6 @@ void Reactor::addConnection(const std::string& connection_id,
 	m_connections.insert(std::make_pair(connection_id, connection_handler));
 }
 
-void Reactor::replaceConnection(const std::string& reactor_id,
-								Reactor& output_reactor)
-{
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	
-	// find the existing connection
-	ConnectionMap::iterator i = m_connections.find(reactor_id);
-	if (i == m_connections.end())
-		throw ConnectionNotFoundException(reactor_id);
-	
-	// replace the new connection
-	i->second = OutputConnection(&output_reactor);
-}
-
 void Reactor::removeConnection(const std::string& connection_id)
 {
 	boost::mutex::scoped_lock reactor_lock(m_mutex);

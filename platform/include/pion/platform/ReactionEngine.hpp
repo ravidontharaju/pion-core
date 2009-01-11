@@ -471,46 +471,6 @@ private:
 	/// data type for a collection of temporary connection objects
 	typedef std::list<ReactorConnection>	ReactorConnectionList;
 
-
-	/**
-	 * prepares a new Reactor for use
-	 *
-	 * @param reactor_ref reference to the new Reactor plug-in object
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 */
-	inline void prepareNewReactor(Reactor& reactor_ref,
-								  const std::string& plugin_id,
-								  const xmlNodePtr config_ptr)
-	{
-		reactor_ref.setId(plugin_id);
-		reactor_ref.setScheduler(m_scheduler);
-		reactor_ref.setMultithreadBranches(m_multithread_branches);
-		reactor_ref.setCodecFactory(m_codec_factory);
-		reactor_ref.setProtocolFactory(m_protocol_factory);
-		reactor_ref.setDatabaseManager(m_database_mgr);
-		reactor_ref.setReactionEngine(*this);
-		if (config_ptr != NULL)
-			reactor_ref.setConfig(m_vocabulary, config_ptr);
-	}
-	
-	/**
-	 * checks XML configuration for the running status of a Reactor
-	 *
-	 * @param running_status will be set if the configuration contains a status (else is left alone)
-	 * @return true if a running status was found in the configuration, false if not
-	 */
-	inline bool checkRunningStatus(bool& running_status, const xmlNodePtr config_ptr) {
-		if (config_ptr) {
-			std::string run_status_str;
-			if (ConfigManager::getConfigOption(Reactor::RUNNING_ELEMENT_NAME, run_status_str, config_ptr)) {
-				running_status = (run_status_str == "true");
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	/**
 	 * adds a new plug-in object (without locking or config file updates).  This
@@ -525,19 +485,39 @@ private:
 	 */
 	virtual void addPluginNoLock(const std::string& plugin_id,
 								 const std::string& plugin_name,
-								 const xmlNodePtr config_ptr);
+								 const xmlNodePtr config_ptr)
+	{
+		try {
+			Reactor *reactor_ptr = m_plugins.load(plugin_id, plugin_name);
+			reactor_ptr->setId(plugin_id);
+			reactor_ptr->setScheduler(m_scheduler);
+			reactor_ptr->setMultithreadBranches(m_multithread_branches);
+			reactor_ptr->setCodecFactory(m_codec_factory);
+			reactor_ptr->setProtocolFactory(m_protocol_factory);
+			reactor_ptr->setDatabaseManager(m_database_mgr);
+			reactor_ptr->setReactionEngine(*this);
+			if (config_ptr != NULL)
+				reactor_ptr->setConfig(m_vocabulary, config_ptr);
 
-	/**
-	 * swaps out a managed plug-in with a new one that has different configuration parameters
-	 * (without locking or config file updates).  This function must be defined properly
-	 * for any derived classes that wish to use swapPlugin()
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 */
-	virtual void swapPluginNoLock(const std::string& plugin_id,
-								  const xmlNodePtr config_ptr);
+			// Get the default behavior regarding whether the Reactor should start out running.
+			bool start_out_running = (reactor_ptr->getType() == Reactor::TYPE_COLLECTION? false : true);
+
+			// Override the default behavior, if the Reactor's run status is specified in the configuration.
+			if (config_ptr) {
+				std::string run_status_str;
+				if (ConfigManager::getConfigOption(Reactor::RUNNING_ELEMENT_NAME, run_status_str, config_ptr)) {
+					start_out_running = (run_status_str == "true");
+				}
+			}
+
+			if (start_out_running)
+				reactor_ptr->start();
+		} catch (PionPlugin::PluginNotFoundException&) {
+			throw;
+		} catch (std::exception& e) {
+			throw PluginException(e.what());
+		}
+	}
 
 	/**
 	 * simple helper function to display a connection in a friendly way
@@ -573,13 +553,6 @@ private:
 	 */
 	void removeConnectionNoLock(const std::string& reactor_id,
 								const std::string& connection_id);
-
-	/**
-	 * removes all Temporary connections involving a Reactor (without locking)
-	 *
-	 * @param reactor_id unique identifier associated with the Reactor events come from
-	 */
-	void removeTempConnectionsNoLock(const std::string& reactor_id);
 
 	/**
 	 * removes an existing connection between Reactors from the config file (without locking)

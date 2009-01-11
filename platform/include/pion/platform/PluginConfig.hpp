@@ -191,16 +191,6 @@ protected:
 	inline std::string addPlugin(const xmlNodePtr config_ptr);
 	
 	/**
-	 * swaps out a managed plug-in with a new one that has different configuration parameters
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 */
-	inline void swapPlugin(const std::string& plugin_id,
-						   const xmlNodePtr config_ptr);
-	
-	/**
 	 * removes a plug-in object
 	 *
 	 * @param plugin_id unique identifier associated with the plug-in
@@ -221,23 +211,7 @@ protected:
 	virtual void addPluginNoLock(const std::string& plugin_id,
 								 const std::string& plugin_name,
 								 const xmlNodePtr config_ptr) = 0;
-
-	/**
-	 * swaps out a managed plug-in with a new one that has different configuration parameters
-	 * (without locking or config file updates).  This function must be defined properly
-	 * for any derived classes that wish to use swapPlugin()
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing plug-in
-	 *                   configuration parameters
-	 */
-	virtual void swapPluginNoLock(const std::string& plugin_id,
-								  const xmlNodePtr config_ptr)
-	{
-		// default behavior is to just call setPluginConfig()
-		setPluginConfig(plugin_id, config_ptr);
-	}
-
+	
 	
 	/// references the Vocabulary used by plug-ins to describe Terms
 	const Vocabulary&				m_vocabulary;
@@ -376,30 +350,6 @@ inline std::string PluginConfig<PluginType>::addPlugin(const xmlNodePtr config_p
 	
 	// return the plug-in's (new) identifier
 	return plugin_id;
-}
-
-template <typename PluginType>
-inline void PluginConfig<PluginType>::swapPlugin(const std::string& plugin_id,
-												 const xmlNodePtr config_ptr)
-{
-	// make sure that the plug-in configuration file is open
-	if (! configIsOpen())
-		throw ConfigNotOpenException(getConfigFile());
-	
-	// update it within the configuration file
-	boost::mutex::scoped_lock plugins_lock(m_mutex);
-	ConfigManager::setPluginConfig(m_plugin_element, plugin_id, config_ptr);
-
-	// use swapPluginNoLock to actually swap the plugin object
-	swapPluginNoLock(plugin_id, config_ptr);
-
-	// unlock class mutex to prevent deadlock
-	plugins_lock.unlock();
-
-	// send notifications
-	PION_LOG_DEBUG(m_logger, "Updated " << m_plugin_element << " configuration (" << plugin_id << ')');
-	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
-	m_signal_plugins_updated();
 }
 
 template <typename PluginType>
