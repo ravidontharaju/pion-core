@@ -47,17 +47,17 @@ const std::string			TransformReactor::TYPE_ELEMENT_NAME = "Type";
 	<DeliverOriginal>always|if-not-changed|never</DeliveryOriginal>		-> DEFAULT: never
 [rpt]	<Transformation>
 			<Term>dst-term</Term>
-			<Type>AssignToValue|AssignToTerm|Lookup|Rules</Type>
+			<Type>AssignValue|AssignTerm|Lookup|Rules</Type>
 			[see TransformReactor/Transformations/Type]
 [/rpt]	</Transformation>
 </TransformReactor>
 
-TransformReactor/Transformations/Type = AssignToValue
-			<Type>AssignToValue</Type>
+TransformReactor/Transformations/Type = AssignValue
+			<Type>AssignValue</Type>
 			<Value>escape(value)</Value>
 
-TransformReactor/Transformations/Type = AssignToTerm
-			<Type>AssignToTerm</Type>
+TransformReactor/Transformations/Type = AssignTerm
+			<Type>AssignTerm</Type>
 			<Value>src-term</Value>
 
 TransformReactor/Transformations/Type = Lookup
@@ -150,7 +150,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			throw UnknownTermException(getId());
 
 		// get the Type of transformation
-		//	<Type>AssignToValue|AssignToTerm|Lookup|Rules</Type>
+		//	<Type>AssignValue|AssignTerm|Lookup|Rules</Type>
 		std::string type_str;
 		if (! ConfigManager::getConfigOption(TYPE_ELEMENT_NAME, type_str,
 											 transformation_node->children))
@@ -158,9 +158,9 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 		// Add the transformation
 		Transform *new_transform;
-		if (type_str == "AssignToValue")
+		if (type_str == "AssignValue")
 			new_transform = new TransformAssignValue(v, v[term_ref], transformation_node->children);
-		else if (type_str == "AssignToTerm")
+		else if (type_str == "AssignTerm")
 			new_transform = new TransformAssignTerm(v, v[term_ref], transformation_node->children);
 		else if (type_str == "Lookup")
 			new_transform = new TransformLookup(v, v[term_ref], transformation_node->children);
