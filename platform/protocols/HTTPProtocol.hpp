@@ -417,6 +417,10 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_SC_ACK_TIME;
 	pion::platform::Vocabulary::TermRef	m_sc_ack_time_term_ref;
 
+	/// urn:vocab:clickstream#authuser
+	static const std::string	VOCAB_CLICKSTREAM_AUTHUSER;
+	pion::platform::Vocabulary::TermRef	m_authuser_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 

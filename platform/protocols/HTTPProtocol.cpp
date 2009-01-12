@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/algorithm/string.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include "HTTPProtocol.hpp"
 
@@ -68,6 +69,7 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_ACK_TIME="urn:vocab:clickst
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_REPLY_TIME="urn:vocab:clickstream#sc-reply-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_SEND_TIME="urn:vocab:clickstream#sc-send-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickstream#sc-ack-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_AUTHUSER="urn:vocab:clickstream#authuser";
 	
 
 // HTTPProtocol member functions
@@ -203,6 +205,7 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_sc_reply_time_term_ref = m_sc_reply_time_term_ref;
 	retval->m_sc_send_time_term_ref = m_sc_send_time_term_ref;
 	retval->m_sc_ack_time_term_ref = m_sc_ack_time_term_ref;
+	retval->m_authuser_term_ref = m_authuser_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -235,6 +238,21 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 		uri_str += m_request.getQueryString();
 	}
 	(*event_ptr_ref).setString(m_uri_term_ref, uri_str);
+
+	// check for Authorization header
+	const std::string& authorization_header = m_request.getHeader(HTTPTypes::HEADER_AUTHORIZATION);
+	if (!authorization_header.empty() && boost::algorithm::starts_with(authorization_header, "Basic ")) {
+		// found -> extract authenticated username
+		std::string username;
+		const std::string base64_encoded = authorization_header.substr(6);
+		if (HTTPTypes::base64_decode(base64_encoded, username)) {
+			std::size_t pos = username.find(':');
+			if (pos != std::string::npos) {
+				username.resize(pos);
+				(*event_ptr_ref).setString(m_authuser_term_ref, username);
+			}
+		}
+	}
 
 	// populate some more fields...
 	(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
@@ -570,6 +588,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_sc_ack_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_ACK_TIME);
 	if (m_sc_ack_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_ACK_TIME);
+
+	m_authuser_term_ref = v.findTerm(VOCAB_CLICKSTREAM_AUTHUSER);
+	if (m_authuser_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_AUTHUSER);
 }
 
 }	// end namespace plugins
