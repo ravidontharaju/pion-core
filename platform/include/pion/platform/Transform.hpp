@@ -86,7 +86,7 @@ public:
 	 *
 	 * @return true if the Transformation occured; false if it did not
 	 */
-	virtual bool transform(EventPtr& e) = 0;
+	virtual bool transform(EventPtr& d, const EventPtr& s) = 0;
 
 	static const std::string			LOOKUP_TERM_NAME;
 	static const std::string			TERM_ELEMENT_NAME;
@@ -177,9 +177,9 @@ public:
 		m_tr_set_value = val;
 	}
 
-	virtual bool transform(EventPtr& e)
+	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
-		return AssignValue(e, m_term, m_tr_set_value);
+		return AssignValue(d, m_term, m_tr_set_value);
 	}
 };
 
@@ -198,24 +198,21 @@ public:
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
-		if (! ConfigManager::getConfigOption(TERM_ELEMENT_NAME, term_id, config_ptr))
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing Source-Term in TransformationAssignTerm");
 		m_src_term_ref = v.findTerm(term_id);
 		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid Source-Term in TransformationAssignTerm");
 	}
 
-	virtual bool transform(EventPtr& e)
+	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
-		Event::ValuesRange values_range = e->equal_range(m_src_term_ref);
-		Event::ConstIterator ec = values_range.first;
-		// if ec == values_range.second ... source term was not found...
 		bool AnyCopied = false;
-		while (ec != values_range.second) {
+		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			// TODO: Optimize the intermediary variable s out by folding the function
-			std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
-			AnyCopied |= AssignValue(e, m_term, s);
-			ec++;			// repeat for all matching source terms
+			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+			AnyCopied |= AssignValue(d, m_term, str);
 		}
 		return AnyCopied;	// true, if any were copied...
 	}
@@ -303,34 +300,34 @@ public:
 	// Note, that the transformation will iterate based on lookup_term
 	// - No terms (not found); no iterations, not even default actions
 	// - 1..n: iterate full functionality for each found term
-	virtual bool transform(EventPtr& e)
+	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
-		Event::ValuesRange values_range = e->equal_range(m_lookup_term_ref);
+		Event::ValuesRange values_range = s->equal_range(m_lookup_term_ref);
 		Event::ConstIterator ec = values_range.first;
 		// if ec == values_range.second ... source term was not found...
 		bool AnyCopied = false;
 		while (ec != values_range.second) {
 			// Get the source term
-			std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
 			// If regex defined, do the regular expression, replacing the key value
 			if (! m_match.empty())
-				s = boost::regex_replace(s, m_match, m_format, boost::format_all | boost::format_no_copy);
+				str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
 			// Find the value, using the key
-			KVP::const_iterator i = m_lookup.find(s);
+			KVP::const_iterator i = m_lookup.find(str);
 			if (i != m_lookup.end())	// Found: assign the lookup value
-				AnyCopied |= AssignValue(e, m_term, i->second);
+				AnyCopied |= AssignValue(d, m_term, i->second);
 			else						// Not found: perform default action
 				switch (m_default) {
 					case DEF_UNDEF:		// Leave undefined, i.e. do nothing
 						break;
 					case DEF_SRCTERM:	// Re-get the original value, assign it
-						AnyCopied |= AssignValue(e, m_term, boost::get<const Event::SimpleString&>(ec->value).get());
+						AnyCopied |= AssignValue(d, m_term, boost::get<const Event::SimpleString&>(ec->value).get());
 						break;
 					case DEF_OUTPUT:	// Assign the regex output value
-						AnyCopied |= AssignValue(e, m_term, s);
+						AnyCopied |= AssignValue(d, m_term, str);
 						break;
 					case DEF_FIXED:		// Assign the fixed value
-						AnyCopied |= AssignValue(e, m_term, m_fixed);
+						AnyCopied |= AssignValue(d, m_term, m_fixed);
 						break;
 				}
 			ec++;			// repeat for all matching source terms
@@ -405,25 +402,25 @@ public:
 			delete m_comparison[i];
 	}
 
-	virtual bool transform(EventPtr& e)
+	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyAssigned = false;
 		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
 		for (unsigned int i = 0; i < m_comparison.size(); i++) {
-			Event::ValuesRange values_range = e->equal_range(m_comparison[i]->getTerm().term_ref);
+			Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
 			for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 				if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second))) {
 					if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
 						// Get the original value
-						std::string s = boost::get<const Event::SimpleString&>(ec->value).get();
+						std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
 						// For Regex... get the precompiled from Comparison
 						// For Format... use the set_value
-						s = boost::regex_replace(s, m_comparison[i]->getRegex(), m_set_value[i],
+						str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
 													boost::format_all | boost::format_no_copy);
 						// Assign the result
-						AnyAssigned |= AssignValue(e, m_term, s);
+						AnyAssigned |= AssignValue(d, m_term, str);
 					} else
-						AnyAssigned |= AssignValue(e, m_term, m_set_value[i]);
+						AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
 				}
 			}
 			// If short_circuit AND any values were assigned -> don't go further in the chain

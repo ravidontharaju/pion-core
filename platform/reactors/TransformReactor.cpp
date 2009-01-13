@@ -215,7 +215,7 @@ void TransformReactor::operator()(const EventPtr& e)
 		}
 
 		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
-			(*i)->transform(new_e);
+			(*i)->transform(new_e, e);		// transform   d <- s
 
 		deliverEvent(new_e);			// Deliver the modified event
 
