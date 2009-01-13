@@ -256,7 +256,7 @@ public:
 			try {
 				m_match = val;
 			} catch (...) {
-				throw MissingTransformField("Invalid regular expression in TransformationAssignLookup");
+				throw MissingTransformField("Invalid regular expression in TransformationLookup");
 			}
 		}
 		//	[opt]		<Format>escape(format)</Format>
@@ -265,8 +265,8 @@ public:
 			m_format = val;
 
 		// If regex has been found & is valid, but format is empty... set to default $&
-		if (!m_match.empty() && m_format.empty())
-			m_format = "$&";
+//		if (!m_match.empty() && m_format.empty())
+//			m_format = "$&";
 
 		//	[opt]		<DefaultAction>undefined|src-term|output|fixedvalue</DefaultAction>
 		m_default = DEF_UNDEF;
@@ -284,13 +284,32 @@ public:
 			m_fixed = val;
 		//	[rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
 		xmlNodePtr LookupNode = config_ptr;
-		std::string key_str;
-		while ( (LookupNode = ConfigManager::findConfigNodeByAttr(LOOKUP_LOOKUP_ELEMENT_NAME, LOOKUP_KEY_ATTRIBUTE_NAME,
-																	key_str, LookupNode)) != NULL) {
-			if (ConfigManager::getConfigOption(LOOKUP_LOOKUP_ELEMENT_NAME, val, LookupNode))
-				m_lookup[key_str] = val;
+		while ( (LookupNode = ConfigManager::findConfigNodeByName(LOOKUP_LOOKUP_ELEMENT_NAME, LookupNode)) != NULL) {
+			// get the value (element content)
+			xmlChar *xml_char_ptr = xmlNodeGetContent(LookupNode);
+			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw MissingTransformField("Missing Value in TransformationLookup");
+			}
+			const std::string val_str(reinterpret_cast<char*>(xml_char_ptr));
+			xmlFree(xml_char_ptr);
+			// next get the Term we want to map to
+			xml_char_ptr = xmlGetProp(LookupNode, reinterpret_cast<const xmlChar*>(LOOKUP_KEY_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw MissingTransformField("Missing Key in TransformationLookup");
+			}
+			const std::string key_str(reinterpret_cast<char*>(xml_char_ptr));
+			xmlFree(xml_char_ptr);
+			if (m_lookup.find(key_str) != m_lookup.end())
+				throw MissingTransformField("Duplicate Key in TransformationLookup");
+			m_lookup[key_str] = val_str;
 			LookupNode = LookupNode->next;
 		}
+		if (m_lookup.empty())
+			throw MissingTransformField("No Key-Values in TransformationLookup");
 	}
 
 	virtual ~TransformLookup() {
