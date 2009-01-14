@@ -47,7 +47,7 @@ const std::string			TransformReactor::TYPE_ELEMENT_NAME = "Type";
 	<DeliverOriginal>always|if-not-changed|never</DeliveryOriginal>		-> DEFAULT: never
 [rpt]	<Transformation>
 			<Term>dst-term</Term>
-			<Type>AssignValue|AssignTerm|Lookup|Rules</Type>
+			<Type>AssignValue|AssignTerm|Lookup|Rules|Regex</Type>
 			[see TransformReactor/Transformations/Type]
 [/rpt]	</Transformation>
 </TransformReactor>
@@ -78,6 +78,11 @@ TransformReactor/Transformations/Type = Rules
 				<Value>escape(test-value)</Value>
 				<SetValue>escape(set-value)</SetValue>
 [/rpt]		</Rule>
+
+TransformReactor/Transformations/Type = Regex
+			<Type>Regex</Type>
+			<Value>src-term</ValueTerm>
+[rpt]		<Regex exp="escape(key)">escape(format)</Regex>
 
  */
 
@@ -166,6 +171,8 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			new_transform = new TransformLookup(v, v[term_ref], transformation_node->children);
 		else if (type_str == "Rules")
 			new_transform = new TransformRules(v, v[term_ref], transformation_node->children);
+		else if (type_str == "Regex")
+			new_transform = new TransformRegex(v, v[term_ref], transformation_node->children);
 		else
 			throw InvalidTransformation(type_str);
 

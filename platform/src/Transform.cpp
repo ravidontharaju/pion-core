@@ -40,6 +40,8 @@ const std::string			Transform::LOOKUP_DEFAULTACTION_ELEMENT_NAME = "DefaultActio
 const std::string			Transform::LOOKUP_LOOKUP_ELEMENT_NAME = "Lookup";
 const std::string			Transform::LOOKUP_KEY_ATTRIBUTE_NAME = "key";
 
+const std::string			Transform::REGEXP_ELEMENT_NAME = "Regex";
+const std::string			Transform::REGEXP_ATTRIBUTE_NAME = "exp";
 
 }
 }

@@ -72,7 +72,7 @@ public:
 		m_term = v[m_term.term_ref];
 	}
 
-	void removeTerm(EventPtr& e)
+	inline void removeTerm(EventPtr& e)
 	{
 		e->clear(m_term.term_ref);
 	}
@@ -101,6 +101,8 @@ public:
 	static const std::string			LOOKUP_DEFAULTACTION_ELEMENT_NAME;
 	static const std::string			LOOKUP_LOOKUP_ELEMENT_NAME;
 	static const std::string			LOOKUP_KEY_ATTRIBUTE_NAME;
+	static const std::string			REGEXP_ELEMENT_NAME;
+	static const std::string			REGEXP_ATTRIBUTE_NAME;
 };
 
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
@@ -171,7 +173,6 @@ public:
 	{
 		// <Value>escape(value)</Value>
 		std::string val;
-		// TODO: Move "Value" into external define
 		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, val, config_ptr))
 			throw MissingTransformField("Missing Value in TransformationAssignValue");
 		m_tr_set_value = val;
@@ -445,6 +446,84 @@ public:
 			// If short_circuit AND any values were assigned -> don't go further in the chain
 			if (m_short_circuit && AnyAssigned)
 				break;
+		}
+		return AnyAssigned;
+	}
+};
+
+/// TransformRegex -- Transformation based on a set of regexp's
+class PION_PLATFORM_API TransformRegex
+	: public Transform
+{
+	/// identifies the Vocabulary Term that is being copied from
+	Vocabulary::TermRef							m_src_term_ref;
+	/// set format for regex's
+	std::vector<std::string>					m_format;
+	/// regex's
+	std::vector<boost::regex>					m_regex;
+public:
+	TransformRegex(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
+		: Transform(v, term)
+	{
+		//	<Value>src-term</Value>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+			throw MissingTransformField("Missing SourceTerm in TransformationRegex");
+		m_src_term_ref = v.findTerm(term_id);
+		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid SourceTerm in TransformationRegex");
+		xmlNodePtr RegexNode = config_ptr;
+		while ( (RegexNode = ConfigManager::findConfigNodeByName(REGEXP_ELEMENT_NAME, RegexNode)) != NULL) {
+			// get the FORMAT (element content)
+			xmlChar *xml_char_ptr = xmlNodeGetContent(RegexNode);
+			std::string val;
+			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				val.clear();
+			} else
+				val = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+			m_format.push_back(val);
+			// next get the Term we want to map to
+			xml_char_ptr = xmlGetProp(RegexNode, reinterpret_cast<const xmlChar*>(REGEXP_ATTRIBUTE_NAME.c_str()));
+			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
+				if (xml_char_ptr != NULL)
+					xmlFree(xml_char_ptr);
+				throw MissingTransformField("Missing Regexp in TransformationRegex");
+			}
+			val = reinterpret_cast<char*>(xml_char_ptr);
+			xmlFree(xml_char_ptr);
+			boost::regex reg;
+			try {
+				reg = val;
+			} catch (...) {
+				throw MissingTransformField("Invalid regular expression in TransformationRegex");
+			}
+			m_regex.push_back(reg);
+			RegexNode = RegexNode->next;
+		}
+		if (m_regex.empty())
+			throw MissingTransformField("No Regexp's in TransformationRegex");
+	}
+
+	virtual ~TransformRegex() {	}
+
+	virtual bool transform(EventPtr& d, const EventPtr& s)
+	{
+		bool AnyAssigned = false;
+		// Iterate through all values from source term
+		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
+			// Take the original value from source term set
+			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+			// Run through all regexp's
+			for (unsigned int i = 0; i < m_regex.size(); i++) {
+				std::string res = boost::regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
+				if (!res.empty())
+					str = res;
+			}
+			AnyAssigned |= AssignValue(d, m_term, str);
 		}
 		return AnyAssigned;
 	}
