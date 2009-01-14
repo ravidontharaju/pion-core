@@ -637,10 +637,10 @@ BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
 	
 	// make sure that the reactor received all of the events read
 	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_clickstream_id) == events_read) break;
+		if (m_reaction_engine.getEventsOut(m_clickstream_id) == events_read) break;
 		PionScheduler::sleep(0, 100000000); // 0.1 seconds
 	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_clickstream_id), events_read);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_clickstream_id), events_read);
 	
 	//
 	// check the contents of the new database
