@@ -21,7 +21,6 @@
 #define __PION_TRANSFORM_HEADER__
 
 #include <boost/regex.hpp>
-//#include <boost/logic/tribool.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <pion/PionConfig.hpp>
@@ -211,7 +210,6 @@ public:
 		bool AnyCopied = false;
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
-			// TODO: Optimize the intermediary variable s out by folding the function
 			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
 			AnyCopied |= AssignValue(d, m_term, str);
 		}
@@ -264,10 +262,6 @@ public:
 		m_format.clear();
 		if (ConfigManager::getConfigOption(LOOKUP_FORMAT_ELEMENT_NAME, val, config_ptr))
 			m_format = val;
-
-		// If regex has been found & is valid, but format is empty... set to default $&
-//		if (!m_match.empty() && m_format.empty())
-//			m_format = "$&";
 
 		//	[opt]		<DefaultAction>undefined|src-term|output|fixedvalue</DefaultAction>
 		m_default = DEF_UNDEF;
@@ -477,13 +471,9 @@ public:
 			// get the FORMAT (element content)
 			xmlChar *xml_char_ptr = xmlNodeGetContent(RegexNode);
 			std::string val;
-			if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-				if (xml_char_ptr != NULL)
-					xmlFree(xml_char_ptr);
-				val.clear();
-			} else
+			if (xml_char_ptr != NULL && xml_char_ptr[0] != '\0')
 				val = reinterpret_cast<char*>(xml_char_ptr);
-			xmlFree(xml_char_ptr);
+			if (xml_char_ptr != NULL) xmlFree(xml_char_ptr);
 			m_format.push_back(val);
 			// next get the Term we want to map to
 			xml_char_ptr = xmlGetProp(RegexNode, reinterpret_cast<const xmlChar*>(REGEXP_ATTRIBUTE_NAME.c_str()));
@@ -509,6 +499,8 @@ public:
 
 	virtual ~TransformRegex() {	}
 
+	// Unlike other transformations, this one iterates event term values on the outside,
+	// since the whole set of regexp's are applied strictly in sequence to the values
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyAssigned = false;
