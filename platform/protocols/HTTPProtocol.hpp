@@ -100,26 +100,55 @@ public:
 	HTTPProtocol() : m_request_parser(true), m_response_parser(false), 
 		m_request_start_time(boost::date_time::not_a_date_time),
 		m_request_end_time(boost::date_time::not_a_date_time),
+		m_request_ack_time(boost::date_time::not_a_date_time),
 		m_response_start_time(boost::date_time::not_a_date_time),
-		m_response_end_time(boost::date_time::not_a_date_time)
+		m_response_end_time(boost::date_time::not_a_date_time),
+		m_response_ack_time(boost::date_time::not_a_date_time)
 	{}
 
 	/// virtual destructor
 	virtual ~HTTPProtocol() {}
 
+	/// resets the Protocol to its initial state
+	virtual void reset(void);
+	
+	/**
+	 * called to close the protocol parsing.  An event may be returned
+	 * if there is data remaining (i.e. if closed prematurely)
+	 *
+	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
+	 * @return true if the request or response parsing was finished prematurely
+	 */
+	virtual bool close(pion::platform::EventPtr& event_ptr_ref);
+
 	/**
 	 * parses the next portion of the network data
-	 * 
-	 * @param request direction flag
-	 * @param ptr pointer to data
-	 * @param len data length
-	 * @param data_timestamp data timestamp
-	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
-	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not 
+	 *
+	 * @param request direction flag (true if request, false if response)
+	 * @param ptr pointer to data (may be NULL if data packet was missing)
+	 * @param len length in bytes of the network data
+	 * @param data_timestamp data frame timestamp
+	 * @param ack_timestamp timestamp for acknowlegement of receipt of data frame
+	 * @param event_ptr refererence to an event object returned if the call resulted in event generation
+	 *
+	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
-	virtual boost::tribool readNext(bool request, const char *ptr, size_t len,
-		boost::posix_time::ptime data_timestamp, pion::platform::EventPtr& event_ptr_ref);
+	virtual boost::tribool readNext(bool request, const char* ptr, size_t len,
+			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
+			pion::platform::EventPtr& event_ptr );
+
+	/**
+	 * called when parsing previously failed.  should return true if the current packet
+	 * allows parsing to recover by starting over at the current point in the data stream.
+	 * 
+	 * @param request direction flag (true if request, false if response)
+	 * @param ptr pointer to data (may be NULL if data packet was missing)
+	 * @param len length in bytes of the network data
+	 *
+	 * @return true if the current packet allows parsing to recover
+	 */
+	virtual bool checkRecoveryPacket(bool request, const char* ptr, size_t len);
 
 	/**
 	 * clones the Protocol, returning a pointer to the cloned copy
@@ -238,11 +267,17 @@ private:
 	/// timestamp for the end of the HTTP request (last packet)
 	pion::PionDateTime			m_request_end_time;
 
+	/// timestamp acknowledging receipt of the last HTTP request packet
+	pion::PionDateTime			m_request_ack_time;
+
 	/// timestamp for the beginning of the HTTP response (first packet)
 	pion::PionDateTime			m_response_start_time;
 
 	/// timestamp for the end of the HTTP response (last packet)
 	pion::PionDateTime			m_response_end_time;
+
+	/// timestamp acknowledging receipt of the last HTTP response packet
+	pion::PionDateTime			m_response_ack_time;
 
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
@@ -366,6 +401,10 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_CS_SEND_TIME;
 	pion::platform::Vocabulary::TermRef	m_cs_send_time_term_ref;
 
+	/// urn:vocab:clickstream#cs-ack-time
+	static const std::string	VOCAB_CLICKSTREAM_CS_ACK_TIME;
+	pion::platform::Vocabulary::TermRef	m_cs_ack_time_term_ref;
+
 	/// urn:vocab:clickstream#sc-reply-time
 	static const std::string	VOCAB_CLICKSTREAM_SC_REPLY_TIME;
 	pion::platform::Vocabulary::TermRef	m_sc_reply_time_term_ref;
@@ -373,6 +412,14 @@ private:
 	/// urn:vocab:clickstream#sc-send-time
 	static const std::string	VOCAB_CLICKSTREAM_SC_SEND_TIME;
 	pion::platform::Vocabulary::TermRef	m_sc_send_time_term_ref;
+
+	/// urn:vocab:clickstream#sc-ack-time
+	static const std::string	VOCAB_CLICKSTREAM_SC_ACK_TIME;
+	pion::platform::Vocabulary::TermRef	m_sc_ack_time_term_ref;
+
+	/// urn:vocab:clickstream#authuser
+	static const std::string	VOCAB_CLICKSTREAM_AUTHUSER;
+	pion::platform::Vocabulary::TermRef	m_authuser_term_ref;
 
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:

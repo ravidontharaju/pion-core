@@ -164,6 +164,10 @@
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took the client to send an HTTP request</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#cs-ack-time">
+			<Type>uint32</Type>
+			<Comment>Number of microseconds that it took the server to acknowledge receipt of the HTTP request</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#sc-reply-time">
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took the server to start replying to an HTTP request</Comment>
@@ -171,6 +175,10 @@
 		<Term id="urn:vocab:clickstream#sc-send-time">
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took the server to send an HTTP response</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-ack-time">
+			<Type>uint32</Type>
+			<Comment>Number of microseconds that it took the client to acknowledge receipt of the HTTP response</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#page-load">
 			<Type>uint32</Type>
