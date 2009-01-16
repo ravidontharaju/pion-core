@@ -388,6 +388,19 @@ public:
 	}
 	
 	/**
+	 * returns the running status of a Reactor
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @return bool true if the Reactor is running
+	 */
+	inline bool isRunning(const std::string& reactor_id) const {
+		const Reactor *reactor_ptr = m_plugins.get(reactor_id);
+		if (reactor_ptr == NULL)
+			throw ReactorNotFoundException(reactor_id);
+		return reactor_ptr->isRunning();
+	}
+
+	/**
 	 * schedules work to be performed by one of the pooled threads
 	 *
 	 * @param work_func work function to be executed
@@ -406,7 +419,10 @@ public:
 	
 	/// sets the value of the "multithreaded branches" setting
 	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
-	
+
+	/// returns true if the ReactionEngine is running
+	inline bool isRunning(void) const { return m_is_running; }	
+
 	
 private:
 	
