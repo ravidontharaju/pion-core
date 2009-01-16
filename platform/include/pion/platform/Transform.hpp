@@ -100,6 +100,7 @@ public:
 	static const std::string			LOOKUP_DEFAULTACTION_ELEMENT_NAME;
 	static const std::string			LOOKUP_LOOKUP_ELEMENT_NAME;
 	static const std::string			LOOKUP_KEY_ATTRIBUTE_NAME;
+	static const std::string			SOURCE_TERM_ELEMENT_NAME;
 	static const std::string			REGEXP_ELEMENT_NAME;
 	static const std::string			REGEXP_ATTRIBUTE_NAME;
 };
@@ -459,9 +460,9 @@ public:
 	TransformRegex(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
-		//	<Value>src-term</Value>
+		//	<SourceTerm>src-term</SourceTerm>
 		std::string term_id;
-		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+		if (! ConfigManager::getConfigOption(SOURCE_TERM_ELEMENT_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing SourceTerm in TransformationRegex");
 		m_src_term_ref = v.findTerm(term_id);
 		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)

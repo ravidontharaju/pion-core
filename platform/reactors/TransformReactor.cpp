@@ -81,7 +81,7 @@ TransformReactor/Transformations/Type = Rules
 
 TransformReactor/Transformations/Type = Regex
 			<Type>Regex</Type>
-			<Value>src-term</ValueTerm>
+			<SourceTerm>src-term</SourceTerm>
 [rpt]		<Regex exp="escape(key)">escape(format)</Regex>
 
  */
