@@ -38,7 +38,7 @@ extern bool check_reactor_events_out(pion::platform::ReactionEngine& reaction_en
 extern bool check_files_match(const std::string& fileA, const std::string& fileB);
 
 /*********************
- * Refactor these out...
+ * Refactor these into a utility class
  */
 
 bool check_reactor_events_in(pion::platform::ReactionEngine& reaction_engine,
@@ -79,6 +79,8 @@ void skip_comment_lines(std::ifstream& fs) {
 	}
 }
 
+// Check for file match, use std::list for sorting the files, which will allow
+// random order matching...
 bool check_files_match(const std::string& fileA, const std::string& fileB)
 {
 	// open files
@@ -135,15 +137,6 @@ static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.
 static const std::string LOG_OUTPUT_FILE(get_log_file_dir() + "tr2.out");
 static const std::string LOG_EXPECTED_FILE(get_log_file_dir() + "tr2-expected.out");
 
-/*
-
-static const std::string VOCABS_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
-static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
-static const std::string PROTOCOLS_CONFIG_FILE(get_config_file_dir() + "protocols.xml");
-static const std::string SERVICES_CONFIG_FILE(get_config_file_dir() + "services.xml");
-*/
-
 
 /// interface class for TransformReactor tests
 class TransformReactorTests_F {
@@ -170,9 +163,6 @@ public:
 
 		// get codec for CLF format
 		m_codec_ptr = m_platform_cfg.getCodecFactory().getCodec(m_clf_codec_id);
-
-		// configure the SessionizeConfig object
-//		m_sessionize_cfg.updateVocabulary(m_platform_cfg.getVocabularyManager().getVocabulary());
 	}
 
 	virtual ~TransformReactorTests_F() {}
@@ -181,7 +171,7 @@ public:
 		std::ifstream in(log_file.c_str(), std::ios::in);
 		BOOST_REQUIRE(in.is_open());
 
-		// push events from the log file into the clickstream sessionizer reactor
+		// push events from the log file into the TransformReactor
 		boost::uint64_t events_read = 0;
 		EventPtr event_ptr;
 		m_event_factory.create(event_ptr, m_codec_ptr->getEventType());
@@ -219,7 +209,7 @@ BOOST_AUTO_TEST_CASE(checkTransformLogFile) {
 	// make sure that the reactor received all of the events read
 	BOOST_CHECK(check_reactor_events_in(m_platform_cfg.getReactionEngine(), m_transformer_id, events_read));
 
-	// flush all events in the clickstream reactor to bypass waiting for time-outs
+	// flush all events in the transformreactor to bypass waiting for time-outs (though there are none)
 	m_platform_cfg.getReactionEngine().stopReactor(m_transformer_id);
 
 	// check number of output events for each of the log reactors
