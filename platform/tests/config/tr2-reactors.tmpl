@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+  <Reactor id="6fcc82e8-e101-11dd-b047-001c25b8b54e">
+    <Plugin>LogInputReactor</Plugin>
+    <Workspace>Workspace 2</Workspace>
+    <X>90</X>
+    <Y>210</Y>
+    <Name>tr2 input</Name>
+    <Comment/>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Directory>/tmp/</Directory>
+    <Filename>tr2.log</Filename>
+    <Frequency/>
+    <JustOne>false</JustOne>
+    <TailF>false</TailF>
+    <Running>false</Running>
+  </Reactor>
+  <Reactor id="18883550-e105-11dd-8c4d-001c25b8b54e">
+    <Plugin>LogOutputReactor</Plugin>
+    <Workspace>Workspace 2</Workspace>
+    <X>790</X>
+    <Y>290</Y>
+    <Name>tr2 log out</Name>
+    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>
+    <Filename>../logs/tr2.out</Filename>
+  </Reactor>
+  <Reactor id="25bcc7f0-e109-11dd-aef9-001c25b8b54e">
+    <Plugin>TransformReactor</Plugin>
+    <Workspace>Workspace 2</Workspace>
+    <X>380</X>
+    <Y>190</Y>
+    <Name>tr2</Name>
+    <AllConditions/>
+    <CopyOriginal>if-not-defined</CopyOriginal>
+    <Transformation>
+      <Term>urn:vocab:clickstream#c-ip</Term>
+      <Type>Rules</Type>
+      <StopOnFirstMatch>true</StopOnFirstMatch>
+      <Rule>
+        <Term>urn:vocab:clickstream#c-ip</Term>
+        <Type>exact-match</Type>
+        <Value>66.249.71.146</Value>
+        <SetValue>BadPerson</SetValue>
+      </Rule>
+    </Transformation>
+    <Transformation>
+      <Term>urn:vocab:clickstream#rfc931</Term>
+      <Type>AssignValue</Type>
+      <Value>unknown</Value>
+    </Transformation>
+    <Transformation>
+      <Term>urn:vocab:clickstream#authuser</Term>
+      <Type>AssignTerm</Type>
+      <Value>urn:vocab:clickstream#c-ip</Value>
+    </Transformation>
+    <Transformation>
+      <Term>urn:vocab:clickstream#referer</Term>
+      <Type>Rules</Type>
+      <StopOnFirstMatch>true</StopOnFirstMatch>
+      <Rule>
+        <Term>urn:vocab:clickstream#request</Term>
+        <Type>regex</Type>
+        <Value>HTTP/(\d.\d)</Value>
+        <SetValue>HTTP Version=$1</SetValue>
+      </Rule>
+    </Transformation>
+    <Transformation>
+      <Term>urn:vocab:clickstream#useragent</Term>
+      <Type>Lookup</Type>
+      <LookupTerm>urn:vocab:clickstream#useragent</LookupTerm>
+      <Match>compatible; ([a-zA-Z]+)</Match>
+      <Format>$1</Format>
+      <DefaultAction>output</DefaultAction>
+      <DefaultValue>Not a bot</DefaultValue>
+      <Lookup key="Yahoo">BOT: Yahoo slurper</Lookup>
+      <Lookup key="Googlebot">BOT: Google</Lookup>
+    </Transformation>
+    <Transformation>
+      <Term>urn:vocab:clickstream#request</Term>
+      <SourceTerm>urn:vocab:clickstream#request</SourceTerm>
+      <Regex exp="GET /([\w\d\./\-]+)">Page = $1</Regex>
+      <Regex exp="(.+)">Found\($1\)</Regex>
+      <Type>Regex</Type>
+    </Transformation>
+  </Reactor>
+  <Connection id="2a5af494-e109-11dd-a52c-001c25b8b54e">
+    <Type>reactor</Type>
+    <From>6fcc82e8-e101-11dd-b047-001c25b8b54e</From>
+    <To>25bcc7f0-e109-11dd-aef9-001c25b8b54e</To>
+  </Connection>
+  <Connection id="31836d0a-e109-11dd-9f58-001c25b8b54e">
+    <Type>reactor</Type>
+    <From>25bcc7f0-e109-11dd-aef9-001c25b8b54e</From>
+    <To>18883550-e105-11dd-8c4d-001c25b8b54e</To>
+  </Connection>
+</PionConfig>
