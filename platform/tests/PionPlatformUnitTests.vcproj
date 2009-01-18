@@ -338,6 +338,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TransformReactorTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UserManagerTests.cpp"
 				>
 			</File>
