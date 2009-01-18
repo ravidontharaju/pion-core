@@ -79,6 +79,16 @@ void skip_comment_lines(std::ifstream& fs) {
 	}
 }
 
+char *trim(char *str)
+{
+	for (unsigned len = strlen(str) - 1; len > 0; len--)
+		if (str[len] == '\n' || str[len] == '\r')
+			str[len] = '\0';
+		else
+			break;
+	return str;
+}
+
 // Check for file match, use std::list for sorting the files, which will allow
 // random order matching...
 bool check_files_match(const std::string& fileA, const std::string& fileB)
@@ -95,18 +105,17 @@ bool check_files_match(const std::string& fileA, const std::string& fileB)
 	skip_comment_lines(b_file);
 
 	// read and compare data in files
-	static const unsigned int BUF_SIZE = 1024;
-	char a_buf[BUF_SIZE];
-	char b_buf[BUF_SIZE];
+	static const unsigned int BUF_SIZE = 4096;
+	char buf[BUF_SIZE];
     std::list<std::string> a_lines, b_lines;
 
-	while (a_file.getline(a_buf, BUF_SIZE)) {
-	    a_lines.push_back(a_buf);
-		if (! b_file.getline(b_buf, BUF_SIZE))
+	while (a_file.getline(buf, BUF_SIZE)) {
+	    a_lines.push_back(trim(buf));
+		if (! b_file.getline(buf, BUF_SIZE))
 			return false;
-	    b_lines.push_back(b_buf);
+	    b_lines.push_back(trim(buf));
 	}
-	if (b_file.getline(b_buf, BUF_SIZE))
+	if (b_file.getline(buf, BUF_SIZE))
 		return false;
 	if (a_file.gcount() != b_file.gcount())
 		return false;
