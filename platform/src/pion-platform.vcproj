@@ -317,6 +317,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RuleChain.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Transform.cpp"
 				>
 			</File>
@@ -388,6 +392,10 @@
 			</File>
 			<File
 				RelativePath="..\include\pion\platform\Reactor.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pion\platform\RuleChain.hpp"
 				>
 			</File>
 			<File
