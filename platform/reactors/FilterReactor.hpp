@@ -22,9 +22,8 @@
 
 #include <vector>
 #include <pion/PionConfig.hpp>
-#include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>
-#include <pion/platform/Comparison.hpp>
+#include <pion/platform/RuleChain.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -37,36 +36,7 @@ namespace plugins {		// begin namespace plugins
 class FilterReactor :
 	public pion::platform::Reactor
 {
-public:
-
-	/// exception thrown if the FilterReactor configuration does not define a Term for a Comparison
-	class EmptyTermException : public PionException {
-	public:
-		EmptyTermException(const std::string& reactor_id)
-			: PionException("FilterReactor configuration is missing a term identifier: ", reactor_id) {}
-	};
-	
-	/// exception thrown if the FilterReactor configuration uses an unknown Term for a Comparison
-	class UnknownTermException : public PionException {
-	public:
-		UnknownTermException(const std::string& reactor_id)
-			: PionException("FilterReactor configuration maps field to an unknown term: ", reactor_id) {}
-	};
-
-	/// exception thrown if the FilterReactor configuration does not define a Comparison type
-	class EmptyTypeException : public PionException {
-	public:
-		EmptyTypeException(const std::string& reactor_id)
-			: PionException("FilterReactor configuration does not include a comparison type: ", reactor_id) {}
-	};
-	
-	/// exception thrown if the FilterReactor configuration does not define a Term for a Comparison
-	class EmptyValueException : public PionException {
-	public:
-		EmptyValueException(const std::string& reactor_id)
-			: PionException("FilterReactor configuration is missing a required comparison value: ", reactor_id) {}
-	};
-	
+public:	
 	
 	/// constructs a new FilterReactor object
 	FilterReactor(void) : Reactor(TYPE_PROCESSING) {}
@@ -103,35 +73,8 @@ public:
 	
 private:
 	
-	/// data type for a chain of Comparison rules
-	typedef std::vector<pion::platform::Comparison>		RuleChain;
-
-	
-	/// name of the term element for Pion XML config files
-	static const std::string		COMPARISON_ELEMENT_NAME;
-	
-	/// name of the term element for Pion XML config files
-	static const std::string		TERM_ELEMENT_NAME;
-
-	/// name of the type element for Pion XML config files
-	static const std::string		TYPE_ELEMENT_NAME;
-	
-	/// name of the value element for Pion XML config files
-	static const std::string		VALUE_ELEMENT_NAME;
-
-	/// name of the 'match all values' element for Pion XML config files
-	static const std::string		MATCH_ALL_VALUES_ELEMENT_NAME;
-	
-	/// name of the 'match all values' element for Pion XML config files
-	static const std::string		MATCH_ALL_COMPARISONS_ELEMENT_NAME;
-
-	
 	/// a chain of Comparison rules used to filter out unwanted Events
-	RuleChain						m_rules;
-	
-	/// if true, all comparison rules must match for the filter test to pass
-	/// if false, only one comparison rule must match
-	bool							m_match_all_comparisons;
+	pion::platform::RuleChain		m_rules;
 };
 
 
