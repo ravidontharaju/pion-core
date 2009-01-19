@@ -542,7 +542,7 @@ pion.reactors.handleDropOnWorkspace = function(source, nodes, copy, target) {
 	if (dialog_class) {
 		var dialog = new dialog_class();
 	} else {
-		var dialog = new plugins.reactors.ReactorInitDialog({title: reactor_type + ' Initialization', plugin: reactor_type});
+		var dialog = new plugins.reactors.ReactorInitDialog({title: plugins.reactors[reactor_type].label + ' Initialization', plugin: reactor_type});
 	}
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
