@@ -22942,7 +22942,7 @@ var _1611=dojo.getObject(_1610);
 if(_1611){
 var _1612=new _1611();
 }else{
-var _1612=new plugins.reactors.ReactorInitDialog({title:_160f+" Initialization",plugin:_160f});
+var _1612=new plugins.reactors.ReactorInitDialog({title:plugins.reactors[_160f].label+" Initialization",plugin:_160f});
 }
 setTimeout(function(){
 dojo.query("input",_1612.domNode)[0].select();

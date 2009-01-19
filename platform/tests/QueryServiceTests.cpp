@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 		"<Plugin>LogInputReactor</Plugin>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Directory>../logs</Directory>"
-		"<Filename>combined\.log</Filename>"
+		"<Filename>combined\\.log</Filename>"
 		"<JustOne>true</JustOne>");
 	std::string log_input_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
 
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
 		"<Plugin>LogInputReactor</Plugin>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Directory>../logs</Directory>"
-		"<Filename>combined\.log</Filename>"
+		"<Filename>combined\\.log</Filename>"
 		"<JustOne>true</JustOne>");
 	std::string log_input_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
 
