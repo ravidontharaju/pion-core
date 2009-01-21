@@ -351,7 +351,7 @@ void LogInputReactor::checkForLogFiles(void)
 					m_log_file = it->first;
 					PION_LOG_DEBUG(m_logger, "Found an open log file with new records to consume: " << m_log_file);
 					m_current_stream_data = it->second;
-					scheduleReadFromLog(true);
+					scheduleReadFromLog();
 				}
 			} else {
 				// sleep until it is time to check again
@@ -372,7 +372,7 @@ void LogInputReactor::checkForLogFiles(void)
 				boost::shared_ptr<boost::iostreams::filtering_istream>(new boost::iostreams::filtering_istream), 
 				boost::shared_ptr<boost::uint64_t>(new boost::uint64_t(0)));
 			m_open_streams[m_log_file] = m_current_stream_data;
-			scheduleReadFromLog(true);
+			scheduleReadFromLog();
 		}
 	} catch (std::exception& e) {
 		PION_LOG_ERROR(m_logger, e.what());
@@ -381,7 +381,7 @@ void LogInputReactor::checkForLogFiles(void)
 	}
 }
 
-void LogInputReactor::readFromLog(bool use_one_thread)
+void LogInputReactor::readFromLog(void)
 {
 	boost::mutex::scoped_lock log_file_lock(m_log_file_mutex);
 
@@ -500,36 +500,21 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 					recordLogFileAsDone();
 				}
 
-				// check for more logs
-				scheduleLogFileCheck(0);
-
 				if (event_read) {
 					// deliver the Event to connected Reactors
 					incrementEventsIn();
 					deliverEvent(event_ptr);
 				}
 				break;
-			} else {
-				// more available: schedule another read operation?
-				if (! use_one_thread) {
-					scheduleReadFromLog(false);
+			}
 
-					// deliver the Event to connected Reactors
-					incrementEventsIn();
-					deliverEvent(event_ptr);
-					break;
-				}
-
-				// deliver the Event to connected Reactors
+			// deliver the Event to connected Reactors
+			if (event_read) {
 				incrementEventsIn();
 				deliverEvent(event_ptr);
 			}
 
 		} while (isRunning()); 
-
-		// log worker thread is no longer running
-		boost::unique_lock<boost::mutex> reactor_lock(m_mutex);
-		finishWorkerThread();
 
 	} catch (std::exception& e) {
 		PION_LOG_ERROR(m_logger, e.what());
@@ -538,12 +523,14 @@ void LogInputReactor::readFromLog(bool use_one_thread)
 		while (! log_stream->empty()) log_stream->pop();
 
 		recordLogFileAsDone();
-
-		scheduleLogFileCheck(0);
 	}
 	
 	// no longer processing log
 	m_log_file.clear();
+
+	// check for more logs
+	// note: if not running, the new thread should just return (almost) immediately
+	scheduleLogFileCheck(0);
 }
 
 void LogInputReactor::getLogFilesInLogDirectory(LogFileCollection& files)

@@ -203,22 +203,13 @@ private:
 	/// Adds the current log file to the list of consumed files and to the history cache.
 	void recordLogFileAsDone(void);
 
-	/**
-	 * schedules another thread to read an event from the log file
-	 *
-	 * @param use_one_thread if true, a single thread will be used to consume the entire file
-	 */
-	inline void scheduleReadFromLog(bool use_one_thread) {
-		getScheduler().post(boost::bind(&LogInputReactor::readFromLog,
-										this, use_one_thread));
+	/// schedules another thread to read an event from the log file
+	inline void scheduleReadFromLog(void) {
+		getScheduler().post(boost::bind(&LogInputReactor::readFromLog, this));
 	}
 	
-	/**
-	 * consumes one entry from the log file and converts it into an Event
-	 *
-	 * @param use_one_thread if true, a single thread will be used to consume the entire file
-	 */
-	void readFromLog(bool use_one_thread);
+	/// consumes one entry from the log file and converts it into an Event
+	void readFromLog(void);
 	
 	/**
 	 * retrieves a collection of all the log files in the log directory
