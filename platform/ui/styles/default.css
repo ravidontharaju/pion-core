@@ -1012,11 +1012,14 @@ The following are also available, if the need arises.
 	border-collapse: separate;
 	border: 1px solid #ccc;
 	margin: 0;
+	padding: 10px;
+	background-color: #6699ff;
 }
 
 .tundra .termSelectorHead th {
 	background:#d3d3d3 url("../dojo-release/dijit/themes/tundra/images/titleBar.png") repeat-x top;
 	padding-top:.3em;
 	padding-bottom:.2em;
+	border: 1px solid #ccc;
 	text-align:center;
 }
