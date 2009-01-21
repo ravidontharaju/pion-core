@@ -68,7 +68,7 @@ public:
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const pion::platform::EventPtr& e);
+	virtual void process(const pion::platform::EventPtr& e);
 	
 	
 private:

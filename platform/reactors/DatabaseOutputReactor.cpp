@@ -48,7 +48,7 @@ const char *				DatabaseOutputReactor::CHARSET_FOR_TABLES = "abcdefghijklmnopqrs
 void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 
 	// get the maximum number of events that may be queued for insertion
@@ -119,7 +119,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 	if (m_database_ptr)
 		m_database_ptr->updateVocabulary(v);
@@ -134,35 +134,34 @@ void DatabaseOutputReactor::updateDatabases(void)
 	// just check to see if the database was deleted (if so, stop now!)
 	if (! getDatabaseManager().hasPlugin(m_database_id)) {
 		stop();
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		ConfigWriteLock cfg_lock(*this);
 		m_database_ptr.reset();
 	}
 }
 
-void DatabaseOutputReactor::operator()(const EventPtr& e)
+void DatabaseOutputReactor::process(const EventPtr& e)
 {
-	if (isRunning()) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 
-		// if the event queue is full, we need to wait for the writer..
-		while (m_num_queued >= m_queue_max) {
-			m_wakeup_writer.notify_one();
-			m_flushed_queue.wait(reactor_lock);
-			if (! isRunning())
-				return;
-		}
-
-		// add the event to the insert queue
-		m_event_queue[m_num_queued] = e;
-
-		// signal the writer thread if the queue is full
-		if (++m_num_queued == m_queue_max)
-			m_wakeup_writer.notify_one();
-
-		// deliver the event to other Reactors (if any are connected)
-		deliverEvent(e);
+	// if the event queue is full, we need to wait for the writer..
+	while (m_num_queued >= m_queue_max) {
+		m_wakeup_writer.notify_one();
+		m_flushed_queue.wait(queue_lock);
+		if (! isRunning())
+			return;
 	}
+
+	// add the event to the insert queue
+	m_event_queue[m_num_queued] = e;
+
+	// signal the writer thread if the queue is full
+	if (++m_num_queued == m_queue_max)
+		m_wakeup_writer.notify_one();
+		
+	queue_lock.unlock();
+
+	// deliver the event to other Reactors (if any are connected)
+	deliverEvent(e);
 }
 
 void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
@@ -181,8 +180,9 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 
 void DatabaseOutputReactor::start(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
-	if (! m_is_running) {
+	ConfigWriteLock cfg_lock(*this);
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+	if (! m_is_running) {	
 		m_is_running = true;
 
 		// open a new database connection
@@ -194,25 +194,26 @@ void DatabaseOutputReactor::start(void)
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseOutputReactor::insertEvents, this)));
 
 		// wait for the writer thread to startup
-		m_flushed_queue.wait(reactor_lock);
+		m_flushed_queue.wait(queue_lock);
 	}
 }
 
 void DatabaseOutputReactor::stop(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 	if (m_is_running) {
 		// set flag to notify reader thread to shutdown
 		PION_LOG_DEBUG(m_logger, "Stopping database output thread: " << getId());
 		m_is_running = false;
 		m_wakeup_writer.notify_one();
-		reactor_lock.unlock();
+		queue_lock.unlock();
 
 		// wait for reader thread to shutdown
 		m_thread->join();
 
 		// close the database connection
-		boost::mutex::scoped_lock reactor_lock_two(m_mutex);
+		boost::mutex::scoped_lock queue_lock_two(m_queue_mutex);
 		m_database_ptr.reset();
 	}
 }
@@ -221,7 +222,7 @@ void DatabaseOutputReactor::insertEvents(void)
 {
 	PION_LOG_DEBUG(m_logger, "Database output thread is running: " << getId());
 
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 
 	try {
 		// open up the database if it isn't already open
@@ -249,7 +250,7 @@ void DatabaseOutputReactor::insertEvents(void)
 
 		while (m_is_running) {
 			// wait until it is time to go!
-			m_wakeup_writer.timed_wait(reactor_lock,
+			m_wakeup_writer.timed_wait(queue_lock,
 				boost::get_system_time() + boost::posix_time::time_duration(0, 0, m_queue_timeout, 0) );
 
 			// check for spurious wake-ups

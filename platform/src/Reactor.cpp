@@ -32,9 +32,6 @@ const std::string			Reactor::REACTOR_ELEMENT_NAME = "Reactor";
 const std::string			Reactor::RUNNING_ELEMENT_NAME = "Running";
 const std::string			Reactor::EVENTS_IN_ELEMENT_NAME = "EventsIn";
 const std::string			Reactor::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
-const std::string			Reactor::WORKSPACE_ELEMENT_NAME = "Workspace";
-const std::string			Reactor::X_COORDINATE_ELEMENT_NAME = "X";
-const std::string			Reactor::Y_COORDINATE_ELEMENT_NAME = "Y";
 const std::string			Reactor::ID_ATTRIBUTE_NAME = "id";
 	
 	
@@ -42,35 +39,19 @@ const std::string			Reactor::ID_ATTRIBUTE_NAME = "id";
 
 void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
+	ConfigWriteLock cfg_lock(*this);
 	PlatformPlugin::setConfig(v, config_ptr);
-
-	// Set the Reactor's location in the UI.
-	setLocation(config_ptr);
-}
-
-void Reactor::setLocation(const xmlNodePtr config_ptr)
-{
-	// get the Reactor's Workspace
-	ConfigManager::getConfigOption(WORKSPACE_ELEMENT_NAME, m_workspace, config_ptr);
-
-	// get the Reactor's X coordinate
-	std::string coordinate_str;
-	ConfigManager::getConfigOption(X_COORDINATE_ELEMENT_NAME, coordinate_str, config_ptr);
-	m_x_coordinate = (coordinate_str.empty() ? 0 : boost::lexical_cast<unsigned int>(coordinate_str));
-
-	// get the Reactor's Y coordinate
-	ConfigManager::getConfigOption(Y_COORDINATE_ELEMENT_NAME, coordinate_str, config_ptr);
-	m_y_coordinate = (coordinate_str.empty() ? 0 : boost::lexical_cast<unsigned int>(coordinate_str));
 }
 
 void Reactor::updateVocabulary(const Vocabulary& v)
 {
+	ConfigWriteLock cfg_lock(*this);
 	PlatformPlugin::updateVocabulary(v);
 }
 	
 void Reactor::addConnection(Reactor& output_reactor)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	
 	// check if it already connected
 	if (m_connections.find(output_reactor.getId()) != m_connections.end())
@@ -84,7 +65,7 @@ void Reactor::addConnection(Reactor& output_reactor)
 void Reactor::addConnection(const std::string& connection_id,
 							EventHandler connection_handler)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 
 	// check if it already connected
 	if (m_connections.find(connection_id) != m_connections.end())
@@ -96,7 +77,7 @@ void Reactor::addConnection(const std::string& connection_id,
 
 void Reactor::removeConnection(const std::string& connection_id)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	
 	// find the connection to remove
 	ConnectionMap::iterator i = m_connections.find(connection_id);

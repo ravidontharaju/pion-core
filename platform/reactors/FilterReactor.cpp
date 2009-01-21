@@ -31,7 +31,7 @@ namespace plugins {		// begin namespace plugins
 void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 	
 	// parse RuleChain configuration
@@ -41,20 +41,15 @@ void FilterReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 void FilterReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 	m_rules.updateVocabulary(v);
 }
 	
-void FilterReactor::operator()(const EventPtr& e)
+void FilterReactor::process(const EventPtr& e)
 {
-	if (isRunning()) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
-
-		if ( m_rules(e) )		
-			deliverEvent(e);
-	}
+	if ( m_rules(e) )		
+		deliverEvent(e);
 }
 	
 	

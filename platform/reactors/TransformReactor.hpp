@@ -119,13 +119,12 @@ public:
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 
 	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
+	 * modifies Events according to transformation rules and delivers the resulting
+	 * Events to the output connections.
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const pion::platform::EventPtr& e);
+	virtual void process(const pion::platform::EventPtr& e);
 
 
 private:

@@ -131,29 +131,6 @@ public:
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
-	 * this updates the Vocabulary information used by this Reactor; it should
-	 * be called whenever the global Vocabulary is updated
-	 *
-	 * @param v the Vocabulary that this Reactor will use to describe Terms
-	 */
-	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
-	
-	/**
-	 * this updates the Codecs that are used by this Reactor; it should
-	 * be called whenever any Codec's configuration is updated
-	 */
-	virtual void updateCodecs(void);
-	
-    /**
-     * processes an Event by comparing its data to the configured RuleChain.
-     * Only Events which pass all Comparisons in the RuleChain will be
-     * delivered to the output connections.
-     *
-     * @param e pointer to the Event to process
-     */
-    virtual void operator()(const pion::platform::EventPtr& e);
-
-	/**
 	 * handle an HTTP query (from QueryService)
 	 *
 	 * @param out the ostream to write the statistics info into
@@ -203,22 +180,13 @@ private:
 	/// Adds the current log file to the list of consumed files and to the history cache.
 	void recordLogFileAsDone(void);
 
-	/**
-	 * schedules another thread to read an event from the log file
-	 *
-	 * @param use_one_thread if true, a single thread will be used to consume the entire file
-	 */
-	inline void scheduleReadFromLog(bool use_one_thread) {
-		getScheduler().post(boost::bind(&LogInputReactor::readFromLog,
-										this, use_one_thread));
+	/// schedules another thread to read an event from the log file
+	inline void scheduleReadFromLog(void) {
+		getScheduler().post(boost::bind(&LogInputReactor::readFromLog, this));
 	}
 	
-	/**
-	 * consumes one entry from the log file and converts it into an Event
-	 *
-	 * @param use_one_thread if true, a single thread will be used to consume the entire file
-	 */
-	void readFromLog(bool use_one_thread);
+	/// consumes one log file converting it into Events
+	void readFromLog(void);
 	
 	/**
 	 * retrieves a collection of all the log files in the log directory
@@ -229,7 +197,8 @@ private:
 	
 	/// sends notification that the worker thread has finished
 	inline void finishWorkerThread(void) {
-		PION_LOG_DEBUG(m_logger, "Log thread has finished: " << getId());
+		boost::mutex::scoped_lock worker_lock(m_worker_mutex);
+		PION_LOG_DEBUG(m_logger, "Log reader thread has finished: " << getId());
 		m_worker_is_active = false;
 		m_worker_stopped.notify_all();
 	}
@@ -269,9 +238,6 @@ private:
 	/// unique identifier of the Codec that is used for reading Events
 	std::string							m_codec_id;
 	
-	/// pointer to the Codec that is used for reading Events
-	pion::platform::CodecPtr			m_codec_ptr;
-
 	/// only reads one Event entry and duplicates it continuously (for testing)
 	bool								m_just_one;
 
@@ -311,8 +277,11 @@ private:
 	/// maps filenames to the number of Events that had previously been read from that file, 
 	std::map<std::string, boost::uint64_t>	m_num_events_read_previously;
 
-	/// protects the current log file
-	boost::mutex						m_log_file_mutex;
+	/// protects the consumed logs collection
+	boost::mutex						m_logs_consumed_mutex;
+
+	/// used to coordinate startup/shutdown with the worker thread
+	boost::mutex						m_worker_mutex;
 
 	/// condition triggered after the worker thread has stopped running
 	boost::condition					m_worker_stopped;

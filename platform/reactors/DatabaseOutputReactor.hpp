@@ -127,13 +127,11 @@ public:
 	virtual void updateDatabases(void);
 
 	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
+	 * processes an Event by writing it to a database and delivering it to the output connections
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const pion::platform::EventPtr& e);
+	virtual void process(const pion::platform::EventPtr& e);
 
 	/**
 	 * handle an HTTP query (from QueryService)
@@ -226,6 +224,9 @@ private:
 
 	/// number of events that are currently queued for storage to the database
 	boost::uint32_t							m_num_queued;
+
+	/// used to protect the Event queue
+	boost::mutex							m_queue_mutex;
 
 	/// condition triggered to notify the writer thread to save events to the database
 	boost::condition						m_wakeup_writer;

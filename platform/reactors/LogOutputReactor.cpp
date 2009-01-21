@@ -42,7 +42,7 @@ const std::string			LogOutputReactor::FILENAME_ELEMENT_NAME = "Filename";
 void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 	
 	// get the Codec that the Reactor should use
@@ -62,7 +62,7 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 void LogOutputReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 	if (m_codec_ptr)
 		m_codec_ptr->updateVocabulary(v);
@@ -73,38 +73,40 @@ void LogOutputReactor::updateCodecs(void)
 	// check if the codec was deleted (if so, stop now!)
 	if (! getCodecFactory().hasPlugin(m_codec_id)) {
 		stop();
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		ConfigWriteLock cfg_lock(*this);
 		m_codec_ptr.reset();
 	} else {
 		// update the codec pointer
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		ConfigWriteLock cfg_lock(*this);
 		m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
 	}
 }
 	
-void LogOutputReactor::operator()(const EventPtr& e)
+void LogOutputReactor::process(const EventPtr& e)
 {
-	if (isRunning()) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
+	// write the Event to the log file
+	PION_ASSERT(m_codec_ptr);
+	PION_ASSERT(m_log_stream.is_open());
+
+	// lock mutex to ensure that only one Event may be written at a time
+	boost::mutex::scoped_lock log_writer_lock(m_log_writer_mutex);
 	
-		// write the Event to the log file
-		PION_ASSERT(m_codec_ptr);
-		PION_ASSERT(m_log_stream.is_open());
-		m_codec_ptr->write(m_log_stream, *e);
-		if (! m_log_stream)
-			throw WriteToLogException(m_log_filename);
-	
-		// deliver the Event to other Reactors
-		deliverEvent(e);
-	}
+	m_codec_ptr->write(m_log_stream, *e);
+	if (! m_log_stream)
+		throw WriteToLogException(m_log_filename);
+		
+	// unlock mutex after writing to log
+	log_writer_lock.unlock();
+
+	// deliver the Event to other Reactors
+	deliverEvent(e);
 }
 
 void LogOutputReactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {
 	if (branches.size() > 2 && branches[2] == "rotate") {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
+		ConfigWriteLock cfg_lock(*this);
 
 		// Send the default query response.  This is protected by the mutex so
 		// that the statistics correspond to the point at which the file was saved.
@@ -141,7 +143,7 @@ void LogOutputReactor::query(std::ostream& out, const QueryBranches& branches,
 
 void LogOutputReactor::start(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	if (! m_is_running) {
 		openLogFileNoLock();
 		m_is_running = true;
@@ -159,7 +161,7 @@ void LogOutputReactor::openLogFileNoLock(void)
 
 void LogOutputReactor::stop(void)
 {
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	if (m_is_running) {
 		closeLogFileNoLock();
 		m_is_running = false;

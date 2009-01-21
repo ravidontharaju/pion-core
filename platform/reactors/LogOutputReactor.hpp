@@ -110,13 +110,11 @@ public:
 	virtual void updateCodecs(void);
 	
 	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
+	 * processes an Event by writing it to a log file
 	 *
 	 * @param e pointer to the Event to process
 	 */
-	virtual void operator()(const pion::platform::EventPtr& e);
+	virtual void process(const pion::platform::EventPtr& e);
 	
 	/**
 	 * handle an HTTP query (from QueryService)
@@ -170,6 +168,9 @@ private:
 	
 	/// output stream for the log that the Reactor is currently writing
 	std::ofstream						m_log_stream;
+
+	/// used to ensure only log writer at a time
+	boost::mutex						m_log_writer_mutex;
 };
 
 

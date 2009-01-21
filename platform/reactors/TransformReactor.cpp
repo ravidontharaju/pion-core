@@ -17,7 +17,6 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <boost/thread/mutex.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include "TransformReactor.hpp"
 
@@ -91,7 +90,7 @@ TransformReactor/Transformations/Type = Regex
 void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	// first set config options for the Reactor base class
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 
 	// clear the current configuration
@@ -186,7 +185,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 void TransformReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
-	boost::mutex::scoped_lock reactor_lock(m_mutex);
+	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 
 	// update Vocabulary for each of the rules
@@ -195,41 +194,36 @@ void TransformReactor::updateVocabulary(const Vocabulary& v)
 	}
 }
 
-void TransformReactor::operator()(const EventPtr& e)
+void TransformReactor::process(const EventPtr& e)
 {
-	if (isRunning()) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
+	EventPtr new_e;
+	// Create new event; either same type (if UNDEFINED) or defined type
+	m_event_factory.create(new_e, m_event_type == Vocabulary::UNDEFINED_TERM_REF ? e->getType() : m_event_type);
 
-		EventPtr new_e;
-		// Create new event; either same type (if UNDEFINED) or defined type
-		m_event_factory.create(new_e, m_event_type == Vocabulary::UNDEFINED_TERM_REF ? e->getType() : m_event_type);
-
-		// Copy terms over from original
-		switch (m_copy_original) {
-			case COPY_ALL:				// Copy all terms over from original event
-				*new_e += *e;
-				break;
-			case COPY_UNCHANGED:		// Copy ONLY terms, that are not defined in transformations...
-				*new_e += *e;			// First copy all terms...
-				// Then remove all the ones with transformations...
-				for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
-					(*i)->removeTerm(new_e);
-				// TODO: Which is more efficient? Only copying the ones that are not transformed, or this?
-				break;
-			case COPY_NONE:				// Do not copy terms from original event
-				break;
-		}
-
-		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
-			(*i)->transform(new_e, e);		// transform   d <- s
-
-		deliverEvent(new_e);			// Deliver the modified event
-
-		// Transformation is done, deliver original event?
-		if (m_deliver_original != DO_NEVER)
-		 	deliverEvent(e);
+	// Copy terms over from original
+	switch (m_copy_original) {
+		case COPY_ALL:				// Copy all terms over from original event
+			*new_e += *e;
+			break;
+		case COPY_UNCHANGED:		// Copy ONLY terms, that are not defined in transformations...
+			*new_e += *e;			// First copy all terms...
+			// Then remove all the ones with transformations...
+			for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
+				(*i)->removeTerm(new_e);
+			// TODO: Which is more efficient? Only copying the ones that are not transformed, or this?
+			break;
+		case COPY_NONE:				// Do not copy terms from original event
+			break;
 	}
+
+	for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
+		(*i)->transform(new_e, e);		// transform   d <- s
+
+	deliverEvent(new_e);			// Deliver the modified event
+
+	// Transformation is done, deliver original event?
+	if (m_deliver_original != DO_NEVER)
+	 	deliverEvent(e);
 }
 
 

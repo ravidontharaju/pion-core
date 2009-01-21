@@ -230,7 +230,8 @@ public:
 				return;
 			total_nsec += num_nsec;
 		}
-		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
+		BOOST_REQUIRE_GE(m_reaction_engine->getEventsIn(reactor_id), min_num_events_in);
+//		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
 	}
 	void makeNewLogFileByCopying(const std::string& fname_of_file_to_copy) {
 		boost::filesystem::copy_file(get_log_file_dir() + fname_of_file_to_copy + file_ext,

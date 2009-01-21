@@ -25,6 +25,7 @@
 #include <list>
 #include <libxml/tree.h>
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 #include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
@@ -60,6 +61,11 @@ public:
 	/// data type for a dictionary of strings (used for HTTP headers)
 	typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING > QueryParams;
 	
+	/// data type used to describe the type of Reactor
+	enum ReactorType {
+		TYPE_COLLECTION, TYPE_PROCESSING, TYPE_STORAGE
+	};
+	
 	
 	/// exception thrown if you try to add a duplicate connection
 	class AlreadyConnectedException : public PionException {
@@ -75,34 +81,34 @@ public:
 			: PionException("Tried removing an unknown connection: ", reactor_id) {}
 	};
 	
-	/// data type used to describe the type of Reactor
-	enum ReactorType {
-		TYPE_COLLECTION, TYPE_PROCESSING, TYPE_STORAGE
+	/// exception thrown if there is a problem obtaining a configuration lock
+	class ConfigLockException : public PionException {
+	public:
+		ConfigLockException(const std::string& reactor_id)
+			: PionException("Error obtaining Reactor configuration lock: ", reactor_id) {}
 	};
 	
-	
-	/// constructs a new Reactor object
-	Reactor(const ReactorType type)
-		: m_is_running(false), m_type(type), m_scheduler_ptr(NULL), 
-		m_x_coordinate(0), m_y_coordinate(0), m_events_in(0), m_events_out(0)
-	{}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Reactor() {}
 	
-	
 	/// called by the ReactorEngine to start Event processing
-	virtual void start(void) { m_is_running = true; }
+	virtual void start(void) {
+		ConfigWriteLock cfg_lock(*this);
+		m_is_running = true;
+	}
 	
 	/// called by the ReactorEngine to stop Event processing
-	virtual void stop(void) { m_is_running = false; }
+	virtual void stop(void) {
+		ConfigWriteLock cfg_lock(*this);
+		m_is_running = false;
+	}
 	
 	/// resets the Reactor to its initial state
 	virtual void reset(void) { clearStats(); }
 	
 	/// clears statistic counters for the Reactor
 	virtual void clearStats(void) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
 		m_events_in = m_events_out = 0;
 	}
 	
@@ -114,14 +120,6 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
-
-	/**
-	 * sets the configuration parameters specifying location in the UI for this Reactor
-	 *
-	 * @param config_ptr pointer to a list of XML nodes containing Reactor
-	 *                   configuration parameters
-	 */
-	void setLocation(const xmlNodePtr config_ptr);
 
 	/**
 	 * this updates the Vocabulary information used by this Reactor;
@@ -144,16 +142,6 @@ public:
 	virtual void updateDatabases(void) {}
 	
 	/**
-	 * processes a new Event.  All derived Reactors should:
-	 *
-	 * a) call incrementEventsIn() or safeIncrementEventsIn() for every Event received
-	 * b) call deliverEvent() or safeDeliverEvent() to send Events to output connections
-	 *
-	 * @param e pointer to the Event to process
-	 */
-	virtual void operator()(const EventPtr& e) = 0;
-
-	/**
 	 * handle an HTTP query (from QueryService)
 	 *
 	 * @param out the ostream to write the statistics info into
@@ -165,6 +153,21 @@ public:
 	virtual void query(std::ostream& out, const QueryBranches& branches,
 		const QueryParams& qp);
 	
+	/**
+	 * public function to process a new Event.  checks to make sure the reactor
+	 * is running, increments "events in" counter, and ensures configuration
+	 * data is not being changed before calling the virtual process() function
+	 *
+	 * @param e pointer to the Event to process
+	 */
+	inline void operator()(const EventPtr& e) {
+		if ( isRunning() ) {
+			++m_events_in;		// not thread-safe: "best effort" counter
+			ConfigReadLock cfg_lock(*this);
+			process(e);
+		}
+	}
+
 	/**
 	 * connects another Reactor to the output of this Reactor
 	 *
@@ -216,6 +219,72 @@ public:
 		
 protected:
 
+	/// configuration reader lock -> multiple concurrent "readers" are allowed.
+	/// helps guarantee configuration will not change until the lock is released
+	class ConfigReadLock {
+	public:
+		ConfigReadLock(const Reactor& r)
+			: m_reactor_ref(r)
+		{
+			boost::uint16_t sleep_times = 0;
+			do {
+				while (m_reactor_ref.m_config_change_pending) {
+					if (++sleep_times > 50)
+						throw ConfigLockException(m_reactor_ref.getId());
+					boost::thread::sleep(boost::get_system_time()
+						+ boost::posix_time::millisec(100));
+				}
+				++m_reactor_ref.m_config_num_readers;
+				if (m_reactor_ref.m_config_change_pending) {
+					--m_reactor_ref.m_config_num_readers;
+				} else {
+					break;
+				}
+			} while (true);
+		}
+		~ConfigReadLock() {
+			--m_reactor_ref.m_config_num_readers;
+		}
+	private:
+		const Reactor& 	m_reactor_ref;
+	};
+	
+	/// configuration write lock -> ReactionEngine guarantees that only one
+	/// thread will attempt to modify Reactor configuration at a time.
+	/// this helps ensure that there are no active "readers" until the lock is released.
+	class ConfigWriteLock {
+	public:
+		ConfigWriteLock(Reactor& r)
+			: m_reactor_ref(r), m_already_locked(r.m_config_change_pending)
+		{
+			if (! m_already_locked) {
+				boost::uint16_t sleep_times = 0;
+				m_reactor_ref.m_config_change_pending = true;
+				while (m_reactor_ref.m_config_num_readers > 0) {
+					if (++sleep_times > 50)
+						throw ConfigLockException(m_reactor_ref.getId());
+					boost::thread::sleep(boost::get_system_time()
+						+ boost::posix_time::millisec(100));
+				}
+			}
+		}
+		~ConfigWriteLock() {
+			if (! m_already_locked)
+				m_reactor_ref.m_config_change_pending = false;
+		}
+	private:
+		Reactor& 	m_reactor_ref;
+		bool		m_already_locked;
+	};
+		
+		
+	/// constructs a new Reactor object
+	Reactor(const ReactorType type)
+		: m_is_running(false), m_type(type), m_scheduler_ptr(NULL), 
+		m_events_in(0), m_events_out(0),
+		m_config_change_pending(false), m_config_num_readers(0)
+	{}
+
 	/// returns the task scheduler used by the ReactionEngine
 	inline ReactionScheduler& getScheduler(void) {
 		PION_ASSERT(m_scheduler_ptr != NULL);
@@ -223,26 +292,34 @@ protected:
 	}
 		
 	/**
+	 * processes a new Event.  Derived Reactors should call deliverEvent()
+	 * to send Events to output connections
+	 *
+	 * @param e pointer to the Event to process
+	 */
+	virtual void process(const EventPtr& e) {
+		deliverEvent(e);
+	}
+
+	/**
 	 * increments the incoming Events counter.  This is not thread-safe and
 	 * should be called only when the Reactor's mutex is locked.
+	 * processes a new Event.  Derived Reactors should call deliverEvent()
+	 * to send Events to output connections
+	 *
+	 * @param e pointer to the Event to process
 	 */
 	inline void incrementEventsIn(void) { ++m_events_in; }
-	
-	/// safely increments the incoming Events counter (locks the Reactor's mutex)
-	inline void safeIncrementEventsIn(void) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		incrementEventsIn();
-	}
-	
+
 	/**
 	 * delivers an Event to the output connections.  This is not thread-safe
-	 * and should be called only when the Reactor's mutex is locked.
+	 * and should be called only while a ConfigReadLock is held by the thread
 	 *
 	 * @param e pointer to the Event to deliver
 	 * @param return_immediately if true, all delivery will use other threads
 	 */
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
-		++m_events_out;
+		++m_events_out;		// not thread-safe: "best effort" counter
 		if (! m_connections.empty()) {
 			if (m_multithread_branches) {
 				// iterate through each Reactor after the first one and send the Event
@@ -293,19 +370,8 @@ protected:
 	}
 	
 	/**
-	 * safely delivers an Event to the output connections (locks the Reactor's mutex)
-	 *
-	 * @param e pointer to the Event to deliver
-	 * @param return_immediately if true, all delivery will use other threads
-	 */
-	inline void safeDeliverEvent(const EventPtr& e, bool return_immediately = false) {
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		deliverEvent(e, return_immediately);
-	}
-
-	/**
 	 * delivers a container of Events to the output connections.  This is not 
-	 * thread-safe and should be called only when the Reactor's mutex is locked.
+	 * thread-safe and should be called only while a ConfigReadLock is held by the thread
 	 *
 	 * @param events a container of Events to deliver
 	 * @param return_immediately if true, all delivery will use other threads
@@ -319,19 +385,6 @@ protected:
 		}
 	}
 
-	/**
-	 * safely delivers a container of Events to the output connections
-	 * (locks the Reactor's mutex)
-	 *
-	 * @param events a container of Events to deliver
-	 * @param return_immediately if true, all delivery will use other threads
-	 */
-	inline void safeDeliverEvents(const EventContainer& events, bool return_immediately = false)
-	{
-		boost::mutex::scoped_lock reactor_lock(m_mutex);
-		deliverEvents(events, return_immediately);
-	}
-	
 	/// write only XML statistics (excluding Reactor elements) for this Reactor to the output stream
 	void writeStatsOnlyXML(std::ostream& out) const;
 	
@@ -342,11 +395,8 @@ protected:
 	void writeEndReactorXML(std::ostream& out) const;		
 
 	
-	/// used to provide thread safety for the Reactor's data structures
-	boost::mutex					m_mutex;
-	
 	/// will be true if the Reactor is "running"
-	bool							m_is_running;
+	volatile bool		m_is_running;
 
 	
 private:
@@ -406,15 +456,6 @@ private:
 	/// name of the events out element for Pion XML config files
 	static const std::string		EVENTS_OUT_ELEMENT_NAME;
 
-	/// name of the workspace element for Pion XML config files
-	static const std::string		WORKSPACE_ELEMENT_NAME;
-	
-	/// name of the "x coordinate" element for Pion XML config files
-	static const std::string		X_COORDINATE_ELEMENT_NAME;
-	
-	/// name of the "y coordinate" element for Pion XML config files
-	static const std::string		Y_COORDINATE_ELEMENT_NAME;
-
 	/// name of the unique identifier attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;
 
@@ -428,24 +469,29 @@ private:
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;
 	
-	/// workspace that this Reactor is displayed on (for UI only)
-	std::string						m_workspace;
-
-	/// X coordinate where the Reactor is positioned (for UI only)
-	unsigned int					m_x_coordinate;
-
-	/// Y coordinate where the Reactor is positioned (for UI only)
-	unsigned int					m_y_coordinate;
-
 	/// the total number of Events received by this Reactor
+	/// note that this counter is "imperfect" since it may be changed by
+	/// multiple threads at the same time
 	boost::uint64_t					m_events_in;
 
 	/// the total number of Events delivered by this Reactor
+	/// note that this counter is "imperfect" since it may be changed by
+	/// multiple threads at the same time
 	boost::uint64_t					m_events_out;
 	
 	/// if true, use multiple threads for Event delivery when a Reactor has
 	/// more than one output connection (CACHED VALUE FROM REACTIONENGINE)
 	bool							m_multithread_branches;
+	
+	/// boolean flag used to signal pending configuration changes
+	mutable volatile bool					m_config_change_pending;
+	
+	/// atomic counter used to track the number of configuration readers
+	mutable boost::detail::atomic_count		m_config_num_readers;
+
+	// allow configuration lock classes to modify private variables	
+	friend class ConfigReadLock;
+	friend class ConfigWriteLock;
 };
 
 
