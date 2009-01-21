@@ -1,0 +1,41 @@
+<div class="dijitDialog vocabulary_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Lookup Configuration</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
+		><table
+			><tr
+				><td><label>Lookup Term:</label></td
+				><td><input dojoType="pion.widgets.TermTextBox" name="LookupTerm" style="width: 100%;" /></td
+			></tr><tr
+				><td><label>Regular expression:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Match" style="width: 100%;" dojoAttachEvent="onChange: _regexChanged" /></td
+			></tr><tr
+				><td><label>Format:</label></td
+				><td><input dojoAttachPoint="format_text_box" dojoType="dijit.form.TextBox" name="Format" style="width: 100%;" disabled="true" /></td
+			></tr><tr
+				><td><label>Default</label></td
+				><td
+					><input type="radio" name="DefaultAction" value="undefined" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>undefined </label
+					><input type="radio" name="DefaultAction" value="src-term" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>lookup term </label
+					><input dojoAttachPoint="output_radio_button" disabled="true"
+							type="radio" name="DefaultAction" value="output" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>regex replaced value </label
+					><input type="radio" name="DefaultAction" value="fixedvalue" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>fixed value:</label
+					><input dojoAttachPoint="default_value" dojoType="dijit.form.TextBox" name="DefaultValue" style="width: 200px; visibility: hidden" disabled="true" /
+				></td
+			></tr
+		></table
+		><div class="p_reactor_grid_blocks">
+			<h2>Key Value Pairs</h2>
+			<div class="reactor_dialog_grid" dojoAttachPoint="lookup_grid_node" style="width: 718px"></div>
+			<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewLookup" class="add_new_row">ADD NEW LOOKUP</button>
+		</div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+		</div>
+	</div>
+</div>

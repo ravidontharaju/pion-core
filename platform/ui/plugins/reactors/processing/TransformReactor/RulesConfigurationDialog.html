@@ -1,0 +1,21 @@
+<div class="dijitDialog vocabulary_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Rules Configuration</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="StopOnFirstMatch"/>
+		<label>Stop after first matching rule</label>
+		<div class="p_reactor_grid_blocks">
+			<h2>Rules</h2>
+			<div class="reactor_dialog_grid" dojoAttachPoint="rule_grid_node" style="width: 718px"></div>
+			<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewRule" class="add_new_row">ADD NEW RULE</button>
+		</div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
+			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+		</div>
+	</div>
+</div>

@@ -656,10 +656,6 @@ The following are also available, if the need arises.
 	margin:20px;
 }
 
-.transform_reactor_dialog {
-	width: 800px;
-}
-
 
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */

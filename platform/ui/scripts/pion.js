@@ -121,11 +121,44 @@ pion.makeXmlLeafElement = function(tag_name, value) {
 	return '<' + tag_name + '>' + pion.escapeXml(value) + '</' + tag_name + '>';
 }
 
+pion.makeXmlLeafElementFromItem = function(store, item, tag_name, optional_default) {
+	if (store.hasAttribute(item, tag_name)) {
+		var value = store.getValue(item, tag_name); // From dojo.data.api.Read, this must be defined.
+		if (value.toString() == '') {
+			return '';
+		} else {
+			return pion.makeXmlLeafElement(tag_name, value);
+		}
+	} else if (optional_default !== undefined) {
+		return pion.makeXmlLeafElement(tag_name, optional_default);
+	} else {
+		return '';
+	}
+}
+
 pion.xmlCellFormatter = function(d) {
 	if (d && d.toString()) {
 		return pion.escapeXml(d);
 	} else {
 		return this.defaultValue;
+	}
+}
+
+pion.xmlCellFormatter2 = function(d) {
+	if (d && d.toString()) {
+		if (d.toString().substr(0, 8) == '<button ')
+			return d;
+		return pion.escapeXml(d);
+	} else {
+		return this.defaultValue;
+	}
+}
+
+pion.initOptionalValue = function(store, item, new_item_object, tag_name, optional_default) {
+	if (store.hasAttribute(item, tag_name)) {
+		new_item_object[tag_name] = store.getValue(item, tag_name);
+	} else if (optional_default !== undefined) {
+		new_item_object[tag_name] = optional_default;
 	}
 }
 
