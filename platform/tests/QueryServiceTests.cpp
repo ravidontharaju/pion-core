@@ -8,6 +8,7 @@
 //
 
 #include <string>
+#include <fstream>
 #include <boost/test/unit_test.hpp>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
@@ -301,7 +302,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithNoInput) {
 	BOOST_CHECK_EQUAL(response_content, expected_response);
 
 	// Check that the log file is empty (since no data is flowing).
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0UL);
 
 	// Check that the log file was not timestamped (since it is empty).
 	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
@@ -328,11 +329,11 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506UL);
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0UL);
 
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
@@ -368,7 +369,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 
 	// Extract from the query response the number of Events the LogOutputReactor had received at the time of rotation.
 	boost::uint64_t num_events_in_at_rotation = extractNumEventsInFromResponse(response_ptr);
-	BOOST_CHECK_GE(num_events_in_at_rotation, 10);
+	BOOST_CHECK_GE(num_events_in_at_rotation, 10UL);
 
 	// Check that the log file was timestamped.
 	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
@@ -407,8 +408,8 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	log_file_2.close();
 
 	// Check that each log file has at least 10 Events, since at least 10 Events were received both before and after the query.
-	BOOST_CHECK_GE(num_events_in_timestamped_log_file, 10);
-	BOOST_CHECK_GE(num_events_in_most_current_log_file, 10);
+	BOOST_CHECK_GE(num_events_in_timestamped_log_file, 10UL);
+	BOOST_CHECK_GE(num_events_in_most_current_log_file, 10UL);
 
 	// Check that the total number of lines in the two log files is the same as the total number of Events sent.
 	BOOST_CHECK_EQUAL(num_events_in_timestamped_log_file + num_events_in_most_current_log_file, num_events_from_log_input_reactor);
