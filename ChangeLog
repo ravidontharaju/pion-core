@@ -1,3 +1,22 @@
+Version 1.0.10 (2009-01-22)
+===========================
+
+* Added new cs-ack-time and sc-ack-time clickstream vocabulary terms (410)
+* HTTPProtocol now populates the urn:vocab:clickstream#authuser term (411)
+* Added support to LogOutputReactor for rotation triggered by QueryService (88)
+* Fixed broken DatabaseOutputReactor UI that prevented mapping of fields (402)
+* Failures to backup configuration files will no longer throw exceptions (395)
+* Updated HTTPProtocol to recover from missing packets and other errors (407)
+* LogInputReactor was spawning additional threads after reading each file (417)
+* Refactored RuleChain class out from FilterReactor into platform library (414)
+* Updated bytes, cs-bytes and sc-bytes clickstream terms to be 64-bits (418)
+* Fixed occasional checkDatabaseOutputReactor unit test failures (215)
+* Added support and unit tests for maximum HTTP payload content sizes (399)
+* Updated HTTPParser to recover from missing packets and other errors (407)
+* TCPServer can now bind to privileged ports when running as setuid (522)
+* Fixed occasional crashes in pion-net unit tests on multi-core systems (528)
+
+
 Version 1.0.8 (2008-12-17)
 ==========================
 
