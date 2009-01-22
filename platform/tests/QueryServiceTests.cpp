@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506);
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
 	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 313);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 314);
 }
 
 BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
@@ -524,7 +524,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506);
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
