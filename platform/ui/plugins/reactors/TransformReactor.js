@@ -410,9 +410,11 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
- 		postCreate: function() {
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 
+			if (! this.transformation_itemDefaultAction)
+				this.transformation_item.DefaultAction = 'undefined';
 			this.attr('value', this.transformation_item);
 
 			// Create and populate a datastore for the Lookup grid.
