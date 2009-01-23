@@ -246,7 +246,7 @@ public:
 		//	<LookupTerm>src-term</LookupTerm>
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(LOOKUP_TERM_NAME, term_id, config_ptr))
-			throw MissingTransformField("Missing LookupTerm in TransformationAssingLookup");
+			throw MissingTransformField("Missing LookupTerm in TransformationAssignLookup");
 		m_lookup_term_ref = v.findTerm(term_id);
 		if (m_lookup_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid LookupTerm in TransformationAssignLookup");
