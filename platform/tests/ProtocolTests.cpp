@@ -65,9 +65,9 @@ public:
 	~BasicProtocolTests_F(void) {}
 };
 
-BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(BasicProtocolTests_S, BasicProtocolTests_F)
+BOOST_FIXTURE_TEST_SUITE(BasicProtocolTests_S, BasicProtocolTests_F)
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
+BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
 	
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPionPluginPtrDeclaredBeforeProtocolPt
 	p = ProtocolPtr(ppp.create());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHTTPProtocolClone) {
+BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
 	// Note that PionPluginPtr MUST be in scope as long or longer than any
 	// Protocol that use it!!!
 
@@ -92,18 +92,18 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHTTPProtocolClone) {
 	BOOST_CHECK_EQUAL( p->getEventType(), pc->getEventType() );
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkProtocolFactoryConstructor) {
+BOOST_AUTO_TEST_CASE(checkProtocolFactoryConstructor) {
 	VocabularyManager vocab_mgr;
 	BOOST_CHECK_NO_THROW(ProtocolFactory protocolFactory(vocab_mgr));
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkProtocolFactoryDestructor) {
+BOOST_AUTO_TEST_CASE(checkProtocolFactoryDestructor) {
 	VocabularyManager vocab_mgr;
 	ProtocolFactory* protocolFactory = new ProtocolFactory(vocab_mgr);
 	BOOST_CHECK_NO_THROW(delete protocolFactory);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
+BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(get_vocabularies_file());
 	vocab_mgr.openConfigFile();
@@ -163,17 +163,17 @@ public:
 bool NewProtocolFactory_F::m_config_loaded = false;
 VocabularyManager NewProtocolFactory_F::m_vocab_mgr;
 
-BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewProtocolFactory_S, NewProtocolFactory_F)
+BOOST_FIXTURE_TEST_SUITE(NewProtocolFactory_S, NewProtocolFactory_F)
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogProtocol) {
-	xmlNodePtr config_ptr(F::createProtocolConfig("HTTPProtocol"));
-	BOOST_CHECK_NO_THROW(F::addProtocol(config_ptr));
+BOOST_AUTO_TEST_CASE(checkLoadLogProtocol) {
+	xmlNodePtr config_ptr(createProtocolConfig("HTTPProtocol"));
+	BOOST_CHECK_NO_THROW(addProtocol(config_ptr));
 	xmlFreeNodeList(config_ptr);
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadUnknownProtocol) {
-	xmlNodePtr config_ptr(F::createProtocolConfig("UnknownProtocol"));
-	BOOST_CHECK_THROW(F::addProtocol(config_ptr), PionPlugin::PluginNotFoundException);
+BOOST_AUTO_TEST_CASE(checkLoadUnknownProtocol) {
+	xmlNodePtr config_ptr(createProtocolConfig("UnknownProtocol"));
+	BOOST_CHECK_THROW(addProtocol(config_ptr), PionPlugin::PluginNotFoundException);
 	xmlFreeNodeList(config_ptr);
 }
 
