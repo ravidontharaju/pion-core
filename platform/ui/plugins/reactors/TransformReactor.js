@@ -430,8 +430,6 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 					{ field: 'Key', name: 'Key', width: 14 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>'},
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
@@ -447,33 +445,6 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			this.lookup_grid.connect(this.lookup_grid, 'onCellClick', function(e) {
 				if (e.cell.name == 'Delete') {
 					this.store.deleteItem(this.getItem(e.rowIndex));
-				} else if (e.cell.name == 'Insert Above') {
-					// Save items from selected row to bottom.
-					var items_to_restore = [];
-					var items_to_delete = [];
-					for (var i = e.rowIndex; i < this.rowCount; ++i) {
-						var item = this.getItem(i);
-						var item_object = {
-							Key: this.store.getValue(item, 'Key'),
-							Value: this.store.getValue(item, 'Value')
-						};
-						items_to_restore.push(item_object);
-						items_to_delete.push(item);
-					}
-
-					// Delete items from selected row to bottom.
-					var _this = this;
-					dojo.forEach(items_to_delete, function(item) { _this.store.deleteItem(item); });
-
-					// Insert new empty item.
-					this.store.newItem({
-						ID: this.store.next_id++
-					});
-
-					// Add back the deleted items.
-					dojo.forEach(items_to_restore, function(item) {
-						_this.store.newItem(dojo.mixin(item, {ID: _this.store.next_id++}));
-					});
 				}
 			});
 		},

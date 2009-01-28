@@ -48,10 +48,11 @@ dojo.declare("pion.widgets.TermSelector",
 			pion.vocabularies.config_store.fetch({
 				onItem: function(item) {
 					var id = pion.vocabularies.config_store.getValue(item, '@id');
+					var vocab_label = id.split(':')[2];
 					if (dojo.isIE) {
-						_this.vocab_select.add(new Option(id, id));
+						_this.vocab_select.add(new Option(vocab_label, id));
 					} else {
-						_this.vocab_select.add(new Option(id, id), null);
+						_this.vocab_select.add(new Option(vocab_label, id), null);
 					}
 					pion.vocabularies.vocabularies_by_id[id] = new plugins.vocabularies.Vocabulary({'@id': id});
 				},
@@ -68,8 +69,8 @@ dojo.declare("pion.widgets.TermSelector",
 						dojo.addClass(_this.add_new_term_button, 'disabled');
 					else
 						dojo.removeClass(_this.add_new_term_button, 'disabled');
-
-					var label = _this.vocabulary.config.Locked? id + ' (L)' : id;
+					var vocab_label = id.split(':')[2];
+					var label = _this.vocabulary.config.Locked? vocab_label + ' (L)' : vocab_label;
 					_this.vocab_select.options[_this.vocab_select.selectedIndex].text = label;
 
 					_this.term_select.options.length = 0;
