@@ -144,7 +144,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 						put_data += pion.makeXmlLeafElementFromItem(t_store, item, 'DefaultAction');
 						put_data += pion.makeXmlLeafElementFromItem(t_store, item, 'DefaultValue');
 						dojo.forEach(t_store.getValues(item, 'Lookup'), function(lookup) {
-							put_data += '<Lookup key="' + lookup.Key + '">' + lookup.Value + '</Lookup>';
+							put_data += '<Lookup key="' + pion.escapeXml(lookup.Key) + '">' + pion.escapeXml(lookup.Value) + '</Lookup>';
 						});
 					} else if (type == 'Rules') {
 						put_data += pion.makeXmlLeafElement('StopOnFirstMatch', plugins.reactors.TransformReactor.getBool(t_store, item, 'StopOnFirstMatch').toString());
@@ -160,7 +160,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 					} else if (type == 'Regex') {
 						put_data += pion.makeXmlLeafElement('SourceTerm', t_store.getValue(item, 'SourceTerm'));
 						dojo.forEach(t_store.getValues(item, 'Regex'), function(regex) {
-							put_data += '<Regex exp="' + regex.Exp + '">' + regex.Format + '</Regex>';
+							put_data += '<Regex exp="' + pion.escapeXml(regex.Exp) + '">' + pion.escapeXml(regex.Format) + '</Regex>';
 						});
 					} else {
 						put_data += pion.makeXmlLeafElement('Value', t_store.getValue(item, 'Value'));

@@ -22171,7 +22171,7 @@ _153c+=pion.makeXmlLeafElementFromItem(_153e,item,"Format");
 _153c+=pion.makeXmlLeafElementFromItem(_153e,item,"DefaultAction");
 _153c+=pion.makeXmlLeafElementFromItem(_153e,item,"DefaultValue");
 dojo.forEach(_153e.getValues(item,"Lookup"),function(_1541){
-_153c+="<Lookup key=\""+_1541.Key+"\">"+_1541.Value+"</Lookup>";
+_153c+="<Lookup key=\""+pion.escapeXml(_1541.Key)+"\">"+pion.escapeXml(_1541.Value)+"</Lookup>";
 });
 }else{
 if(type=="Rules"){
@@ -22190,7 +22190,7 @@ _153c+="</Rule>";
 if(type=="Regex"){
 _153c+=pion.makeXmlLeafElement("SourceTerm",_153e.getValue(item,"SourceTerm"));
 dojo.forEach(_153e.getValues(item,"Regex"),function(regex){
-_153c+="<Regex exp=\""+regex.Exp+"\">"+regex.Format+"</Regex>";
+_153c+="<Regex exp=\""+pion.escapeXml(regex.Exp)+"\">"+pion.escapeXml(regex.Format)+"</Regex>";
 });
 }else{
 _153c+=pion.makeXmlLeafElement("Value",_153e.getValue(item,"Value"));
