@@ -443,12 +443,12 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 452);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 452UL);
 
 	// Check that a new log file was created and is empty.
 	std::string log_output_file = "logs/new.json";
 	BOOST_CHECK(boost::filesystem::exists(log_output_file));
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0UL);
 
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
@@ -457,7 +457,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 228);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 228UL);
 }
 
 BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
@@ -488,12 +488,12 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 619);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 619UL);
 
 	// Check that a new log file was created and is empty.
 	std::string log_output_file = "logs/new.xml";
 	BOOST_CHECK(boost::filesystem::exists(log_output_file));
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 0UL);
 
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
@@ -502,7 +502,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 339);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 339UL);
 }
 /*
 BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
@@ -525,18 +525,18 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
 	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 506UL);
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0UL);
 
 	// Wait briefly and send another request to the LogOutputReactor to rotate its output file.
 	PionScheduler::sleep(0, ONE_SECOND); // Enough to avoid a timestamp conflict.
 	HTTPResponsePtr response_ptr_2 = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
 
 	// Check that the log file is empty (since no more Events were available since the previous query).
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0);
+	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 0UL);
 
 	// Check that no additional timestamped file exists (and the old one is still there).
 	std::vector<std::string> timestamped_log_files_2 = timestampedLogFiles();
