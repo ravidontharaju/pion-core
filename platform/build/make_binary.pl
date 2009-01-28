@@ -17,11 +17,12 @@ require File::Spec->catfile( ("common", "build"), "common.pl");
 # -----------------------------------
 
 # check command line parameters
-die("usage: make_binary.pl <VERSION> <PLATFORM>") if ($#ARGV != 1);
+die("usage: make_binary.pl <VERSION> <PLATFORM>") if ($#ARGV < 1);
 
 # set some global variables
 $VERSION = $ARGV[0];
 $PLATFORM = $ARGV[1];
+$NOZIP = $ARGV[2];
 $BIN_DIR = "bin";
 $PACKAGE_NAME = "pion-community-" . $VERSION;
 $PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
@@ -210,9 +211,11 @@ if ($PLATFORM eq "win32") {
 	`chmod a+x $PACKAGE_DIR/pion $PACKAGE_DIR/start_pion.sh`;
 
 	# create tarballs & zip file
-	`cd bin; tar cfz $TARBALL_NAME.tar.gz $PACKAGE_NAME`;
-	`cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME`;
-	`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+	if ($NOZIP ne "nozip") {
+		`cd bin; tar cfz $TARBALL_NAME.tar.gz $PACKAGE_NAME`;
+		`cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME`;
+		`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+	}
 
 	if ($PLATFORM eq "osx") {
 		# Build application bundle for Mac OS X
