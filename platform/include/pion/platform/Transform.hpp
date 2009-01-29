@@ -156,12 +156,12 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 
 inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term, const Event::ConstIterator ec)
 {
-	s.clear();
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
 		case Vocabulary::TYPE_REGEX:
 			// not serializable
+			s.clear();
 			break;
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_INT16:
@@ -373,7 +373,9 @@ public:
 		bool AnyCopied = false;
 		while (ec != values_range.second) {
 			// Get the source term
-			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+//			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+			std::string str;
+			getStringValue(str, m_v[m_lookup_term_ref], ec);
 			// If regex defined, do the regular expression, replacing the key value
 			if (! m_match.empty())
 				str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
