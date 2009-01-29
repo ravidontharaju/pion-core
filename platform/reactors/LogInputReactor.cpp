@@ -140,17 +140,18 @@ void LogInputReactor::query(std::ostream& out, const QueryBranches& branches,
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 	
+	boost::mutex::scoped_lock logs_consumed_lock(m_logs_consumed_mutex);
 
 	out << '<' << CURRENT_LOG_ELEMENT_NAME << '>' << m_log_file
 	    << "</" << CURRENT_LOG_ELEMENT_NAME << '>' << std::endl;
 	    
-	boost::mutex::scoped_lock logs_consumed_lock(m_logs_consumed_mutex);
 	for (LogFileCollection::const_iterator i = m_logs_consumed.begin();
 		i != m_logs_consumed.end(); ++i)
 	{
 		out << '<' << CONSUMED_LOG_ELEMENT_NAME << '>' << *i
 			<< "</" << CONSUMED_LOG_ELEMENT_NAME << '>' << std::endl;
 	}
+
 	logs_consumed_lock.unlock();
 	
 	writeEndReactorXML(out);
@@ -161,12 +162,13 @@ void LogInputReactor::start(void)
 {
 	boost::mutex::scoped_lock worker_lock(m_worker_mutex);
 	if (! m_is_running) {
+		boost::mutex::scoped_lock logs_consumed_lock(m_logs_consumed_mutex);
+
 		// Process history cache (list of log files that have already been consumed) if present.
 		if (bfs::exists(m_history_cache_filename)) {
 			std::ifstream history_cache(m_history_cache_filename.c_str());
 			if (! history_cache)
 				throw PionException("Unable to open history cache file for reading.");
-			boost::mutex::scoped_lock logs_consumed_lock(m_logs_consumed_mutex);
 			m_logs_consumed.clear();
 			std::string already_consumed_file;
 			while (history_cache >> already_consumed_file) {
@@ -191,8 +193,7 @@ void LogInputReactor::start(void)
 
 		m_is_running = true;
 		m_worker_is_active = true;
-
-		scheduleLogFileCheck(0);
+		getScheduler().getIOService().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
 	}
 }
 	
@@ -236,6 +237,7 @@ void LogInputReactor::stop(void)
 
 void LogInputReactor::scheduleLogFileCheck(boost::uint32_t seconds)
 {
+	boost::mutex::scoped_lock worker_lock(m_worker_mutex);
 	if (seconds == 0) {
 		getScheduler().getIOService().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
 	} else {
@@ -257,7 +259,6 @@ void LogInputReactor::checkForLogFiles(void)
 	PION_LOG_DEBUG(m_logger, "Checking for new log files in " << m_log_directory);
 
 	ConfigReadLock cfg_lock(*this);
-	m_log_file.clear();
 
 	try {
 		// get the current logs located in the log directory
@@ -305,8 +306,6 @@ void LogInputReactor::checkForLogFiles(void)
 			if (m_logs_consumed.find(*log_itr) == m_logs_consumed.end())
 				break;
 		}
-
-		logs_consumed_lock.unlock();
 
 		if (log_itr == current_logs.end()) {
 			// no new logs to consume
@@ -390,10 +389,11 @@ void LogInputReactor::readFromLog(void)
 				throw OpenLogException(m_log_file);
 
 			if (log_stream->peek() == EOF && ! m_tail_f) {
+				std::string log_file_tmp = m_log_file;
 				recordLogFileAsDone();
 
 				// TODO: Should this really throw an exception, or would a warning be good enough?
-				throw EmptyLogException(m_log_file);
+				throw EmptyLogException(log_file_tmp);
 			}
 
 			// If there were any previously read Events, we need to skip over them, because the log file has been reopened since they were read.
@@ -530,6 +530,7 @@ void LogInputReactor::recordLogFileAsDone() {
 	// Add the current log file to the list of consumed files and the history cache.
 	bfs::path log_file_path(m_log_file);
 	boost::mutex::scoped_lock logs_consumed_lock(m_logs_consumed_mutex);
+	m_log_file.clear();
 	m_logs_consumed.insert(log_file_path.leaf());
 	std::ofstream history_cache(m_history_cache_filename.c_str(), std::ios::out | std::ios::app);
 	if (! history_cache)
