@@ -154,7 +154,57 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	return true;
 }
 
-
+inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term, const Event::ConstIterator ec)
+{
+	s.clear();
+	switch (term.term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+		case Vocabulary::TYPE_REGEX:
+			// not serializable
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			s = boost::get<const boost::int32_t&>(ec->value);
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			s = boost::get<const boost::uint32_t&>(ec->value);
+			break;
+		case Vocabulary::TYPE_INT64:
+			s = boost::get<const boost::int64_t&>(ec->value);
+			break;
+		case Vocabulary::TYPE_UINT64:
+			s = boost::get<const boost::uint64_t&>(ec->value);
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			s = boost::get<const float&>(ec->value);
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			s = boost::get<const double&>(ec->value);
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			s = boost::get<const long double&>(ec->value);
+			break;
+		case Vocabulary::TYPE_DATE_TIME:
+		case Vocabulary::TYPE_DATE:
+		case Vocabulary::TYPE_TIME:
+			{
+				pion::PionTimeFacet f(term.term_format);
+				s = f.toString(boost::get<const PionDateTime&>(ec->value));
+				break;
+			}
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			s = boost::get<const Event::SimpleString&>(ec->value).get();
+			break;
+	}
+	return s;
+}
 
 /// TransformAssignValue -- Transformation based on assigning a value to a Term
 // Current implementation takes the std::string value of the "SetValue", and does
@@ -509,7 +559,9 @@ public:
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			// Take the original value from source term set
-			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+//			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+			std::string str;
+			getStringValue(str, m_v[m_src_term_ref], ec);
 			// Run through all regexp's
 			for (unsigned int i = 0; i < m_regex.size(); i++) {
 				std::string res = boost::regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
