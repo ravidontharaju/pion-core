@@ -18,6 +18,7 @@
 //
 
 #include <string>
+#include <libxml/xmlerror.h>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionConfig.hpp>
@@ -90,6 +91,11 @@ const std::string& get_platform_config_file(void)
 	return PLATFORM_CONFIG_FILE;
 }
 
+// This is passed to xmlSetGenericErrorFunc() to make libxml do nothing when an error
+// occurs, rather than its default behavior of writing a message to stderr.
+void doNothing(void* ctx, const char* msg, ...) {
+}
+
 /// sets up logging (run once only)
 void setup_logging_for_unit_tests(void)
 {
@@ -107,6 +113,8 @@ void setup_logging_for_unit_tests(void)
 		log_ptr = PION_GET_LOGGER("pion.server.PlatformConfig");
 		PION_LOG_SETLEVEL_ERROR(log_ptr);
 #endif
+
+		xmlSetGenericErrorFunc(NULL, doNothing);
 	}
 }
 
