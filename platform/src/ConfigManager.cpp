@@ -231,7 +231,7 @@ std::string ConfigManager::xml_encode(const std::string& str)
 	
 	// otherwise, build a result string
 	std::string result;
-	result.reserve(str.size());
+	result.reserve(str.size() + 20);	// Assume 5 tag converted (length increases)
 	for (std::string::size_type pos = 0; pos < str.size(); ++pos) {
 		switch(str[pos]) {
 			case '&':
