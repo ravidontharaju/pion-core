@@ -166,7 +166,6 @@ public:
 			// re-check after locking
 			if ( isRunning() ) {
 				++m_events_in;		// not thread-safe: "best effort" counter
-				ConfigReadLock cfg_lock(*this);
 				process(e);
 			}
 		}
