@@ -221,11 +221,10 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.transformation_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Term', name: 'Term', width: 14, 
+					{ field: 'Term', name: 'Term', width: 18, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Transformation Type', width: 12, 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: plugins.reactors.TransformReactor.transform_type_store, searchAttr: "description"} },
+						type: dojox.grid.cells.Select, options: [ 'AssignValue', 'AssignTerm', 'Lookup', 'Rules', 'Regex' ] },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter2 },
 					{ field: 'Value', name: 'Value', width: 'auto',
@@ -234,8 +233,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
 				]
 			}];
-			this.value_text_column_index = 2;
-			this.value_term_column_index = 3;
 			this.transformation_grid = new dojox.grid.DataGrid({
 				store: this.reactor.transformation_store,
 				structure: this.transformation_grid_layout,
@@ -287,6 +284,20 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					}
 				}
 			});
+
+			// This is a hack for overriding the behavior of dojox.grid.cells.Select so that when the user selects a Type,
+			// the editor behaves as if the user hit 'Enter'.
+			// We need to listen for 'change' events on the DOM node of the 'select' input, but the node isn't created until
+			// the cell gets focus, so we need to wait for an 'onCellFocus' event before we can set up the 'change' listener. 
+			this.transformation_grid.connect(this.transformation_grid, 'onCellFocus', function(cell, row_index) {
+				if (cell.field == 'Type') {
+					var _this = this;
+					this.connect(cell.getEditNode(row_index), 'change', function() {
+						_this.edit.apply();
+					});
+				}
+			});
+
 			this.transformation_grid.connect(this.transformation_grid, 'onStartEdit', function(cell, row_index) {
 				switch (cell.field) {
 					case 'Type':
@@ -302,8 +313,8 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					case 'Type':
 						if (value != this.pre_edit_type) { // i.e. Type has changed
 							var use_term_selector = (value == 'AssignTerm');
-							this.layout.setColumnVisibility(_this.value_text_column_index, ! use_term_selector);
-							this.layout.setColumnVisibility(_this.value_term_column_index, use_term_selector);
+							this.layout.setColumnVisibility(this.value_text_column_index, ! use_term_selector);
+							this.layout.setColumnVisibility(this.value_term_column_index, use_term_selector);
 
 							var need_edit_button = (value == 'Lookup' || value == 'Rules' || value == 'Regex');
 							if (need_edit_button) {
@@ -392,14 +403,6 @@ plugins.reactors.TransformReactor.getBool = function(store, item, attribute) {
 	else
 		return plugins.reactors.TransformReactor.grid_option_defaults[attribute];
 }
-
-plugins.reactors.TransformReactor.transform_type_store = new dojo.data.ItemFileReadStore(
-	{data: {identifier: 'name', items: [{name: 'AssignValue', description: 'Assign Value'},
-										{name: 'AssignTerm',  description: 'Assign Term'},
-										{name: 'Lookup',      description: 'Lookup'},
-										{name: 'Rules',       description: 'Rules'},
-										{name: 'Regex',       description: 'Regex'}]}}
-);
 
 dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 	[ dijit.Dialog ],
