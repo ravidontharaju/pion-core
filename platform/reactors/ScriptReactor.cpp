@@ -18,7 +18,9 @@
 //
 
 #include <iostream>
-#include <sys/select.h>
+#ifndef _MSC_VER
+	#include <sys/select.h>
+#endif
 #include <pion/platform/CodecFactory.hpp>
 #include "ScriptReactor.hpp"
 
@@ -209,7 +211,11 @@ void ScriptReactor::openPipe(void)
 	PION_LOG_DEBUG(m_logger, "Opening pipe to command: " << m_command);
 
 	// open pipe to script
+#ifdef _MSC_VER
+	m_pipe = _popen(m_command.c_str(), "r+");
+#else
 	m_pipe = ::popen(m_command.c_str(), "r+");
+#endif
 	if (m_pipe == NULL)
 		throw OpenPipeException(m_command);
 		
@@ -228,7 +234,11 @@ void ScriptReactor::closePipe(void)
 {
 	if (m_pipe) {
 		PION_LOG_DEBUG(m_logger, "Closing pipe to command: " << m_command);
+#ifdef _MSC_VER
+		_pclose(m_pipe);
+#else
 		::pclose(m_pipe);
+#endif
 		m_input_stream_ptr.reset();
 		m_input_streambuf_ptr.reset();
 		m_output_stream_ptr.reset();
