@@ -208,5 +208,21 @@
 			<Type>uint32</Type>
 			<Comment>Number of seconds between the first and last session requests</Comment>
 		</Term>
+        <Term id="urn:vocab:clickstream#sitename">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Web site name</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#computername">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Computer Name</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#win32status">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Win32 Status</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#cs-version">
+            <Type>shortstring</Type>
+            <Comment>WebTrends HTTP client version</Comment>
+        </Term>
 	</Vocabulary>
 </PionConfig>
