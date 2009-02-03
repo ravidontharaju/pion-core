@@ -26,13 +26,18 @@ dojo.declare("pion.widgets.TermSelector",
 			this.value = this.term_select.value;
 			this.onValueSelected(this.value);
 		},
-		_setValueAttr: function(value){
-			// Hook to make attr("value", ...) work.
-			if (! this.value || value != this.value) {
-				this.value = value;
-				this.onChange(this.value);
-			}
+		_handleDoubleClick: function(e) {
+			this.value = this.term_select.value;
+			this.onValueSelected(this.value);
 		},
+		//// See comments in onChange(), below, and pion.widgets._TermTextBox._open().
+		//_setValueAttr: function(value){
+		//	// Hook to make attr("value", ...) work.
+		//	if (! this.value || value != this.value) {
+		//		this.value = value;
+		//		this.onChange(this.value);
+		//	}
+		//},
 		_setText: function(node, text){
 			while(node.firstChild){
 				node.removeChild(node.firstChild);
@@ -41,13 +46,16 @@ dojo.declare("pion.widgets.TermSelector",
 		},
 		postCreate: function(){
 			this.inherited(arguments);
-			this.value = null;
-			this.attr('value', '');
 			var _this = this;
+			var initial_vocab_id = this.initial_term? this.initial_term.toString().split('#')[0] : '';
 			pion.vocabularies.vocabularies_by_id = {};
+			var index = 0;
+			var index_of_initial_vocab = 0;
 			pion.vocabularies.config_store.fetch({
 				onItem: function(item) {
 					var id = pion.vocabularies.config_store.getValue(item, '@id');
+					if (id == initial_vocab_id)
+						index_of_initial_vocab = index;
 					var vocab_label = id.split(':')[2];
 					if (dojo.isIE) {
 						_this.vocab_select.add(new Option(vocab_label, id));
@@ -55,11 +63,17 @@ dojo.declare("pion.widgets.TermSelector",
 						_this.vocab_select.add(new Option(vocab_label, id), null);
 					}
 					pion.vocabularies.vocabularies_by_id[id] = new plugins.vocabularies.Vocabulary({'@id': id});
+					++index;
+				},
+				onComplete: function() {
+					_this.vocab_select.focus();
+					_this.vocab_select.selectedIndex = index_of_initial_vocab;
+					_this.vocab_select.onchange();
 				},
 				onError: pion.handleFetchError
 			});
 
-			this.vocab_select.onchange = function(e) {
+			this.vocab_select.onchange = function() {
 				var id = _this.vocab_select.value;
 				_this.vocabulary = pion.vocabularies.vocabularies_by_id[id];
 				var h = dojo.connect(_this.vocabulary, 'onDoneLoadingTerms', function() {
@@ -75,16 +89,25 @@ dojo.declare("pion.widgets.TermSelector",
 
 					_this.term_select.options.length = 0;
 					_this.term_comments_by_id = {};
+					var index = 0;
+					var index_of_initial_term = 0;
 					_this.vocabulary.vocab_term_store.fetch({
 						onItem: function(item) {
 							var id = _this.vocabulary.vocab_term_store.getValue(item, 'ID');
 							var full_id = _this.vocabulary.vocab_term_store.getValue(item, 'full_id');
+							if (_this.initial_term && _this.initial_term.toString() == full_id)
+								index_of_initial_term = index;
 							_this.term_comments_by_id[full_id] = _this.vocabulary.vocab_term_store.getValue(item, 'Comment');
 							if (dojo.isIE) {
 								_this.term_select.add(new Option(id, full_id));
 							} else {
 								_this.term_select.add(new Option(id, full_id), null);
 							}
+							++index;
+						},
+						onComplete: function() {
+							_this.term_select.selectedIndex = index_of_initial_term;
+							_this.term_select.onchange();
 						},
 						onError: pion.handleFetchError
 					});
@@ -94,15 +117,28 @@ dojo.declare("pion.widgets.TermSelector",
 				_this.select_term_button.disabled = true;
 				dojo.addClass(_this.select_term_button, 'disabled');
 			};
-			this.term_select.onchange = function(e) {
+			this.term_select.onchange = function() {
 				_this.select_term_button.disabled = false;
 				dojo.removeClass(_this.select_term_button, 'disabled');
+				//_this.select_term_button.focus(); // Not good, because term_select loses focus and arrow keys don't work.
 				_this.term_comment.value = _this.term_comments_by_id[_this.term_select.value];
 			};
+			this.connect(this.vocab_select, 'keyup', function(e) {
+				//if (e.keyCode == dojo.keys.TAB) { // Not detected for some reason.
+				if (e.keyCode == dojo.keys.ENTER) {
+					this.term_select.focus();
+				}
+			});
+			this.connect(this.term_select, 'keyup', function(e) {
+				if (e.keyCode == dojo.keys.ENTER) {
+					this.value = this.term_select.value;
+					this.onValueSelected(this.value);
+				}
+			});
 		},
-		onValueSelected: function(value){
-		},
-		onChange: function(value){
+		onChange: function(value) {
+			// Could refactor some of the code from postCreate() to here, if there's a reason to use _setValueAttr().
+			// See comments in pion.widgets._TermTextBox._open().
 		}
 	}
 );

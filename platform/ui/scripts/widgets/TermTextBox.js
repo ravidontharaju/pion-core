@@ -40,10 +40,14 @@ dojo.declare("pion.widgets._TermTextBox",
 						// this will cause InlineEditBox and other handlers to do stuff so make sure it's last
 						pion.widgets._TermTextBox.superclass._setValueAttr.call(textBox, value, true);
 					},
+					initial_term: textBox.value,
 					lang: textBox.lang,
 					constraints: textBox.constraints
 				});
-				this._picker.attr('value', this.attr('value') || '');
+
+				//// It would take some hacking to do it this way, since there's a delay before the vocabularies are loaded.
+				//// Instead, I'm passing in 'initial_term' above.
+				//this._picker.attr('value', this.attr('value') || '');
 			}
 			if (!this._opened) {
 				dijit.popup.open({

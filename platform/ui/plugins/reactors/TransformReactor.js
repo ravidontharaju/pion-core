@@ -240,6 +240,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 				autoHeight: true
 			}, document.createElement('div'));
 
+			this.transformation_grid.term_column_index = 0;
 			this.transformation_grid.value_text_column_index = 2;
 			this.transformation_grid.value_term_column_index = 3;
 			this.transformation_grid.layout.setColumnVisibility(this.transformation_grid.value_term_column_index, false);
@@ -329,7 +330,19 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						// do nothing
 				}
 			});
-
+			var _grid = this.transformation_grid;
+			var h2 = _grid.connect(_grid.layout.cells[_grid.term_column_index], 'sizeWidget', function() {
+				this.connect(this.layout.cells[_grid.term_column_index].widget, '_close', function(value) {
+					_grid.edit.apply();
+				});
+				this.disconnect(h2);
+			});
+			var h3 = _grid.connect(_grid.layout.cells[_grid.value_term_column_index], 'sizeWidget', function() {
+				this.connect(this.layout.cells[_grid.value_term_column_index].widget, '_close', function(value) {
+					_grid.edit.apply();
+				});
+				this.disconnect(h3);
+			});
 			this.transformation_grid.canEdit = function(cell, row_index) {
 				switch (cell.field) {
 					// Disable editing of 'Value' cell if 'Type' is not 'AssignValue' or 'AssignTerm'.
@@ -553,6 +566,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 				singleClickEdit: true,
 				autoHeight: true
 			}, document.createElement('div'));
+			this.rule_grid.term_column_index = 0;
 			this.rule_grid_node.appendChild(this.rule_grid.domNode);
 			this.rule_grid.startup();
 			this.rule_grid.connect(this.rule_grid, 'onCellClick', function(e) {
@@ -593,6 +607,13 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 					var term = this.store.getValue(item, 'Term').toString();
 					this.structure[0].rows[e.cell.index].widgetProps.query.category = pion.terms.categories_by_id[term];
 				}
+			});
+			var _grid = this.rule_grid;
+			var h = _grid.connect(_grid.layout.cells[_grid.term_column_index], 'sizeWidget', function() {
+				this.connect(this.layout.cells[_grid.term_column_index].widget, '_close', function(value) {
+					_grid.edit.apply();
+				});
+				this.disconnect(h);
 			});
 		},
 		execute: function(dialogFields) {
