@@ -119,7 +119,7 @@ void ScriptReactor::updateCodecs(void)
 void ScriptReactor::process(const EventPtr& e)
 {
 	PION_ASSERT(m_input_stream_ptr);
-	PION_ASSERT(m_input_stream_ptr->is_open());
+	//PION_ASSERT(m_input_stream_ptr->is_open());
 	PION_ASSERT(m_input_codec_ptr);
 
 	// lock mutex to ensure that only one Event may be written at a time
@@ -154,8 +154,8 @@ void ScriptReactor::readEvents(void)
 		while ( isRunning() ) {
 		
 			PION_ASSERT(m_output_stream_ptr);
-			PION_ASSERT(m_output_stream_ptr->is_open());
-			PION_ASSERT(m_output_code_ptr);
+			//PION_ASSERT(m_output_stream_ptr->is_open());
+			PION_ASSERT(m_output_codec_ptr);
 
 			// these need to be reset before each select()
 			FD_ZERO(&read_fds);
