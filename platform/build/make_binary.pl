@@ -48,20 +48,20 @@ if ($PLATFORM eq "win32") {
 	$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
 	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion.exe");
-	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost", "lib") );
-	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc80-mt-1_35.dll");
+	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.37.0", "lib") );
+	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc80-mt-1_37.dll");
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
 	$PLUGIN_LIB_SUFFIX = "so";
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
 	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
-	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX);
+	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx.10." . $SHARED_LIB_SUFFIX);
 	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
 	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
 	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
-	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35." . $SHARED_LIB_SUFFIX);
+	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX);
 } else {
 	$SHARED_LIB_SUFFIX = "so";
 	$PLUGIN_LIB_SUFFIX = "so";
@@ -73,7 +73,7 @@ if ($PLATFORM eq "win32") {
 	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX . ".0");
 	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX . ".0");
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
-	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_35." . $SHARED_LIB_SUFFIX . ".1.35.0");
+	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX . ".1.{35,36,37}.*");
 }
 if ($PLATFORM eq "win32") {
 	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-common." . $SHARED_LIB_SUFFIX);
