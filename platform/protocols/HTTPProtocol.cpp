@@ -278,15 +278,28 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 
 	// check for Authorization header
 	const std::string& authorization_header = m_request.getHeader(HTTPTypes::HEADER_AUTHORIZATION);
-	if (!authorization_header.empty() && boost::algorithm::starts_with(authorization_header, "Basic ")) {
-		// found -> extract authenticated username
-		std::string username;
-		const std::string base64_encoded = authorization_header.substr(6);
-		if (HTTPTypes::base64_decode(base64_encoded, username)) {
-			std::size_t pos = username.find(':');
-			if (pos != std::string::npos) {
-				username.resize(pos);
-				(*event_ptr_ref).setString(m_authuser_term_ref, username);
+	if (!authorization_header.empty()) {
+		if (boost::algorithm::starts_with(authorization_header, "Basic ")) {
+			// found -> extract Basic authenticated username
+			std::string username;
+			const std::string base64_encoded = authorization_header.substr(6);
+			if (HTTPTypes::base64_decode(base64_encoded, username)) {
+				std::size_t pos = username.find(':');
+				if (pos != std::string::npos) {
+					username.resize(pos);
+					(*event_ptr_ref).setString(m_authuser_term_ref, username);
+				}
+			}
+		} else if (boost::algorithm::starts_with(authorization_header, "Digest ")) {
+			// found -> extract Digest authenticated username
+			std::size_t start_pos = authorization_header.find("username=\"");
+			if (start_pos != std::string::npos) {
+				start_pos += 10;	// step past first quote
+				std::size_t end_pos = authorization_header.find('\"', start_pos);
+				if (end_pos != std::string::npos) {
+					std::string username = authorization_header.substr(start_pos, end_pos-start_pos);
+					(*event_ptr_ref).setString(m_authuser_term_ref, username);
+				}
 			}
 		}
 	}
