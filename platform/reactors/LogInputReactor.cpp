@@ -182,10 +182,10 @@ void LogInputReactor::start(void)
 			std::ifstream current_log_file_cache(m_current_log_file_cache_filename.c_str());
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for reading.");
-			current_log_file_cache >> m_log_file;
+			getline(current_log_file_cache, m_log_file, '|');
 			while (! current_log_file_cache.eof()) {
 				current_log_file_cache >> m_num_events_read_previously[m_log_file];
-				current_log_file_cache >> m_log_file;
+				getline(current_log_file_cache, m_log_file, '|');
 			}
 			current_log_file_cache.close();
 			bfs::remove(m_current_log_file_cache_filename);
@@ -221,7 +221,7 @@ void LogInputReactor::stop(void)
 			if (! current_log_file_cache)
 				throw PionException("Unable to open current log file cache file for writing.");
 			for (StreamMap::iterator it = m_open_streams.begin(); it != m_open_streams.end(); ++it) {
-				current_log_file_cache << it->first << " " << *it->second.second << std::endl;
+				current_log_file_cache << it->first << "|" << *it->second.second << std::endl;
 			}
 		}
 
