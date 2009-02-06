@@ -29,7 +29,7 @@ $PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
 $TARBALL_NAME = $PACKAGE_NAME . "-" . $PLATFORM;
 $CONFIG_DIR = File::Spec->catdir( ($PACKAGE_DIR, "config") );
 $PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
-$LIBS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "libs") );
+$LIBS_DIR = ($PLATFORM eq "win32") ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
 
@@ -108,10 +108,10 @@ foreach (@oldfiles) {
 
 # prepare new directory structure
 mkpath($PACKAGE_DIR);
-mkdir($CONFIG_DIR);
-mkdir($PLUGINS_DIR);
-mkdir($LIBS_DIR);
-mkdir($UI_DIR);
+mkdir($CONFIG_DIR) unless -d $CONFIG_DIR;
+mkdir($PLUGINS_DIR) unless -d $PLUGINS_DIR;
+mkdir($LIBS_DIR) unless -d $LIBS_DIR;
+mkdir($UI_DIR) unless -d $UI_DIR;
 
 # copy our third party library files into "libs"
 print "Copying system library files..\n";
