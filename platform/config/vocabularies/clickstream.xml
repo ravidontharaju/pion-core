@@ -57,20 +57,20 @@
 			<Comment>Date and time of the request (CLF format)</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#request-start-time">
-			<Type format="%Y-%m-%d %H:%M:%S">datetime</Type>
-			<Comment>Date and time of the first request packet (2008-07-20 12:20:21)</Comment>
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the first request packet (20080720T122021.123213)</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#request-end-time">
-			<Type format="%Y-%m-%d %H:%M:%S">datetime</Type>
-			<Comment>Date and time of the last request packet (2008-07-20 12:20:21)</Comment>
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the last request packet (20080720T122021.123213)</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#response-start-time">
-			<Type format="%Y-%m-%d %H:%M:%S">datetime</Type>
-			<Comment>Date and time of the first response packet (2008-07-20 12:20:21)</Comment>
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the first response packet (20080720T122021.123213)</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#response-end-time">
-			<Type format="%Y-%m-%d %H:%M:%S">datetime</Type>
-			<Comment>Date and time of the last response packet (2008-07-20 12:20:21)</Comment>
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the last response packet (20080720T122021.123213)</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#c-ip">
 			<Type>shortstring</Type>
