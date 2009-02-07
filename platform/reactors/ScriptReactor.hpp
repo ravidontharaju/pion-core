@@ -20,8 +20,9 @@
 #ifndef __PION_SCRIPTREACTOR_HEADER__
 #define __PION_SCRIPTREACTOR_HEADER__
 
-#include <cstdio>
 #include <iosfwd>
+#include <string>
+#include <vector>
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
@@ -66,6 +67,13 @@ public:
 			: PionException("ScriptReactor configuration is missing a required Command parameter: ", reactor_id) {}
 	};
 
+	/// exception thrown if there is a problem parsing arguments out of the command string
+	class CommandParsingException : public PionException {
+	public:
+		CommandParsingException(const std::string& command)
+			: PionException("ScriptReactor was unable to parse arguments out of command string: ", command) {}
+	};
+
 	/// exception thrown if opening a pipe to the shell command fails
 	class OpenPipeException : public PionException {
 	public:
@@ -91,7 +99,8 @@ public:
 	/// constructs a new ScriptReactor object
 	ScriptReactor(void)
 		: Reactor(TYPE_PROCESSING),
-		m_logger(PION_GET_LOGGER("pion.ScriptReactor")), m_pipe(NULL)
+		m_logger(PION_GET_LOGGER("pion.ScriptReactor")),
+		m_input_pipe(-1), m_output_pipe(-1), m_child_pid(0)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -151,7 +160,14 @@ private:
 	/// closes the pipe to the script command	
 	void closePipe(void);
 	
+	/// parses out individual arguments from a command string
+	void parseArguments(void);
 	
+	
+	/// data type for an iostreams streambuf that uses a C-style file descriptor
+	typedef boost::iostreams::stream_buffer<boost::iostreams::file_descriptor>	StreamBuffer;
+	
+
 	/// name of the InputCodec element for Pion XML config files
 	static const std::string			INPUT_CODEC_ELEMENT_NAME;
 	
@@ -160,10 +176,6 @@ private:
 	
 	/// name of the Command element for Pion XML config files
 	static const std::string			COMMAND_ELEMENT_NAME;
-	
-
-	/// data type for an iostreams streambuf that uses a C-style file descriptor
-	typedef boost::iostreams::stream_buffer<boost::iostreams::file_descriptor>	StreamBuffer;
 	
 
 	/// primary logging interface used by this class
@@ -181,11 +193,20 @@ private:
 	/// unique identifier of the Codec that is used for reading Events
 	std::string							m_output_codec_id;
 	
-	/// name of the shell script or program to execute
+	/// name of the shell script or program to execute (includes all arguments)
 	std::string							m_command;
 	
-	/// pipe to the shell script or program
-	FILE *								m_pipe;
+	/// vector of command arguments parsed out (the first is the executable or script)
+	std::vector<std::string>			m_args;
+	
+	/// pipe used to write Events to the shell script or program
+	int									m_input_pipe;
+	
+	/// pipe used to read Events from the shell script or program
+	int									m_output_pipe;
+	
+	/// process id for the shell script or program
+	pid_t								m_child_pid;
 	
 	/// pointer to a C++ stream buffer used to write Events to the pipe
 	boost::scoped_ptr<StreamBuffer>		m_input_streambuf_ptr;

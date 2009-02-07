@@ -17,10 +17,13 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <unistd.h>
+#include <signal.h>
 #include <iostream>
 #ifndef _MSC_VER
 	#include <sys/select.h>
 #endif
+#include <boost/scoped_array.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include "ScriptReactor.hpp"
 
@@ -57,12 +60,15 @@ void ScriptReactor::start(void)
 	
 void ScriptReactor::stop(void)
 {
-	ConfigWriteLock cfg_lock(*this);
-	if (m_is_running) {
-		closePipe();
-		m_is_running = false;
-		m_thread_ptr->join();
+	{	
+		ConfigWriteLock cfg_lock(*this);
+		if (m_is_running) {
+			closePipe();
+			m_is_running = false;
+		}
 	}
+	// we have to release the write lock, otherwise things deadlock =(
+	m_thread_ptr.reset();
 }
 
 void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -86,6 +92,9 @@ void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// get the script or program command to execute
 	if (! ConfigManager::getConfigOption(COMMAND_ELEMENT_NAME, m_command, config_ptr))
 		throw EmptyCommandException(getId());
+		
+	// break command string into a vector of arguments
+	parseArguments();
 }
 	
 void ScriptReactor::updateVocabulary(const Vocabulary& v)
@@ -119,7 +128,6 @@ void ScriptReactor::updateCodecs(void)
 void ScriptReactor::process(const EventPtr& e)
 {
 	PION_ASSERT(m_input_stream_ptr);
-	//PION_ASSERT(m_input_stream_ptr->is_open());
 	PION_ASSERT(m_input_codec_ptr);
 
 	// lock mutex to ensure that only one Event may be written at a time
@@ -147,29 +155,23 @@ void ScriptReactor::readEvents(void)
 		EventPtr event_ptr;
 		bool event_read;
 
-		const int pipe_fd = ::fileno(m_pipe);
 		struct timeval timeout;
 		fd_set read_fds;
 		
 		while ( isRunning() ) {
 		
 			PION_ASSERT(m_output_stream_ptr);
-			//PION_ASSERT(m_output_stream_ptr->is_open());
 			PION_ASSERT(m_output_codec_ptr);
 
 			// these need to be reset before each select()
 			FD_ZERO(&read_fds);
-			FD_SET(pipe_fd, &read_fds);
+			FD_SET(m_output_pipe, &read_fds);
 			timeout.tv_sec = 0;
 			timeout.tv_usec = 100000;	// microseconds (1/10 second)
 
 			// wait for data to be available
-			if ( ::select(pipe_fd+1, &read_fds, NULL, NULL, &timeout) == 1 ) {
-				if ( ! isRunning() )	// re-check after sleep
-					break;
+			if ( ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout) == 1 ) {
 				ConfigReadLock cfg_lock(*this);
-				if ( ! isRunning() )	// re-check after locking
-					break;
 
 				// get a new event from the EventFactory
 				event_factory.create(event_ptr, event_type);
@@ -209,41 +211,152 @@ void ScriptReactor::openPipe(void)
 	closePipe();
 	
 	PION_LOG_DEBUG(m_logger, "Opening pipe to command: " << m_command);
-
-	// open pipe to script
-#ifdef _MSC_VER
-	m_pipe = _popen(m_command.c_str(), "r+");
-#else
-	m_pipe = ::popen(m_command.c_str(), "r+");
-#endif
-	if (m_pipe == NULL)
-		throw OpenPipeException(m_command);
-		
-	// disable buffering for the pipe
-	::setvbuf(m_pipe, NULL, _IONBF, BUFSIZ);
 	
-	// prepare c++ streams to use pipe for reading and writing events
-	// (yes, it's necessary to use separate ones for input and output..)
-	m_input_streambuf_ptr.reset(new StreamBuffer( ::fileno(m_pipe) ));
+	PION_ASSERT(! m_args.empty());
+	
+	// initialize pipes for reading and writing to script
+	int r_pipes[2];
+	int w_pipes[2];
+	if ( ::pipe(r_pipes) != 0 || ::pipe(w_pipes) != 0)
+		throw OpenPipeException(m_command);
+	
+	// fork child process
+	m_child_pid = ::fork();
+
+	if (m_child_pid == -1) {
+
+		// failed to fork child process
+		throw OpenPipeException(m_command);
+
+	} else if (m_child_pid == 0) {
+
+		// inside child process
+
+		// close ends of pipes used by parent
+		::close(w_pipes[1]);
+		::close(r_pipes[0]);
+
+		// bind other ends of pipes to STDIN/STDOUT
+		::dup2(w_pipes[0], 0);	// STDIN
+		::dup2(r_pipes[1], 1);	// STDOUT
+		::close(w_pipes[0]);
+		::close(r_pipes[1]);
+		
+		// convert argument string vector into an array of char pointers
+		boost::scoped_array<char*> arg_ptr(new char*[m_args.size() + 1]);
+		for (std::size_t n = 0; n < m_args.size(); ++n) {
+			arg_ptr[n] = const_cast<char*>(m_args[n].c_str());
+		}
+		arg_ptr[ m_args.size() ] = NULL;
+		
+		// execute command (ignore return since we're in a new process anyway)
+		// note: execvp is wrapper for execve() that also searches the paths
+		::execvp(m_args[0].c_str(), arg_ptr.get());
+
+	} else {
+
+		// inside parent process
+		
+		// close ends of pipes used by child
+		::close(w_pipes[0]);
+		::close(r_pipes[1]);
+
+		// set file descriptors for reading/writing
+		m_input_pipe = w_pipes[1];
+		m_output_pipe = r_pipes[0];
+	}
+
+	// prepare c++ streams to use pipes for reading and writing events
+	m_input_stream_ptr.reset();
+	m_input_streambuf_ptr.reset(new StreamBuffer( m_input_pipe ));
 	m_input_stream_ptr.reset(new std::ostream(m_input_streambuf_ptr.get()));
-	m_output_streambuf_ptr.reset(new StreamBuffer( ::fileno(m_pipe) ));
+	m_output_stream_ptr.reset();
+	m_output_streambuf_ptr.reset(new StreamBuffer( m_output_pipe ));
 	m_output_stream_ptr.reset(new std::istream(m_output_streambuf_ptr.get()));
 }
 
 void ScriptReactor::closePipe(void)
 {
-	if (m_pipe) {
+	if (m_input_pipe != -1 || m_output_pipe != -1) {
 		PION_LOG_DEBUG(m_logger, "Closing pipe to command: " << m_command);
-#ifdef _MSC_VER
-		_pclose(m_pipe);
-#else
-		::pclose(m_pipe);
-#endif
-		m_input_stream_ptr.reset();
-		m_input_streambuf_ptr.reset();
-		m_output_stream_ptr.reset();
-		m_output_streambuf_ptr.reset();
-		m_pipe = NULL;
+		::close(m_input_pipe);
+		::close(m_output_pipe);
+		::kill(m_child_pid, SIGINT);
+		m_child_pid = 0;
+		m_input_pipe = m_output_pipe = -1;
+	}
+}
+
+void ScriptReactor::parseArguments(void)
+{
+	std::string arg;			// current argument string
+	std::size_t next_pos = 0;	// next parsing position
+	char next_delimiter = ' ';	// next argument delimiter
+
+	PION_LOG_DEBUG(m_logger, "Parsing out command string: " << m_command);
+
+	// start by clearing the arguments vector
+	m_args.clear();
+
+	// step through each character in the command string
+	while (next_pos < m_command.size()) {
+		switch ( m_command[next_pos] ) {
+		case '\\':
+			// escape next character
+			if ( next_pos + 1 < m_command.size() ) {
+				arg.push_back( m_command[++next_pos] );
+			}
+			break;
+
+		case ' ':
+			if (next_delimiter == ' ') {
+				if (! arg.empty()) {	// skip leading whitespace
+					// finished with space-delimited argument
+					m_args.push_back(arg);
+					arg.clear();
+				}
+			} else {
+				// append space -- not space-delimited
+				arg.push_back(' ');
+			}
+			break;
+
+		case '\'':
+		case '\"':
+			if (next_delimiter == m_command[next_pos]) {
+				// finished with quote/tick-delimited argument
+				m_args.push_back(arg);
+				arg.clear();
+				next_delimiter = ' ';
+			} else if (arg.empty()) {
+				// first char in argument: set delimiter
+				next_delimiter = m_command[next_pos];
+			} else {
+				// append quote/tick -- not the delimiter or first character
+				arg.push_back( m_command[next_pos] );
+			}
+			break;
+			
+		default:
+			// append character
+			arg.push_back( m_command[next_pos] );
+			break;
+		}
+		
+		++next_pos;
+	}
+	
+	// push final argument if ending delimiter not found
+	if (!arg.empty())
+		m_args.push_back(arg);
+		
+	// sanity check: args should never be empty
+	if (m_args.empty())
+		throw CommandParsingException(m_command);
+		
+	// log each argument parsed for debugging
+	for (std::vector<std::string>::const_iterator it = m_args.begin(); it != m_args.end(); ++it) {
+		PION_LOG_DEBUG(m_logger, "Command string argument: " << *it);
 	}
 }
 
