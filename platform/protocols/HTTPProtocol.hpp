@@ -103,7 +103,9 @@ public:
 		m_request_ack_time(boost::date_time::not_a_date_time),
 		m_response_start_time(boost::date_time::not_a_date_time),
 		m_response_end_time(boost::date_time::not_a_date_time),
-		m_response_ack_time(boost::date_time::not_a_date_time)
+		m_response_ack_time(boost::date_time::not_a_date_time),
+		m_cs_data_packets(0), m_sc_data_packets(0),
+		m_cs_missing_packets(0), m_sc_missing_packets(0), m_sc_ack_sum(0)
 	{}
 
 	/// virtual destructor
@@ -279,6 +281,21 @@ private:
 	/// timestamp acknowledging receipt of the last HTTP response packet
 	pion::PionDateTime			m_response_ack_time;
 
+	/// total number of request data packets
+	boost::uint32_t				m_cs_data_packets;
+
+	/// total number of response data packets
+	boost::uint32_t				m_sc_data_packets;
+
+	/// total number of missing request data packets
+	boost::uint32_t				m_cs_missing_packets;
+
+	/// total number of missing response data packets
+	boost::uint32_t				m_sc_missing_packets;
+
+	/// sum of acknowledgement times for all response packets
+	boost::uint64_t				m_sc_ack_sum;
+
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
 
@@ -332,6 +349,21 @@ private:
 	/// string used for response content extraction source type
 	static const std::string	EXTRACT_SC_CONTENT_STRING;
 
+	/// urn:vocab:clickstream#cs-data-packets
+    static const std::string	VOCAB_CLICKSTREAM_CS_DATA_PACKETS;
+    pion::platform::Vocabulary::TermRef	m_cs_data_packets_term_ref; 
+
+	/// urn:vocab:clickstream#sc-data-packets
+    static const std::string	VOCAB_CLICKSTREAM_SC_DATA_PACKETS;
+    pion::platform::Vocabulary::TermRef	m_sc_data_packets_term_ref; 
+
+	/// urn:vocab:clickstream#cs-missing-packets
+    static const std::string	VOCAB_CLICKSTREAM_CS_MISSING_PACKETS;
+    pion::platform::Vocabulary::TermRef	m_cs_missing_packets_term_ref; 
+
+	/// urn:vocab:clickstream#sc-missing-packets
+    static const std::string	VOCAB_CLICKSTREAM_SC_MISSING_PACKETS;
+    pion::platform::Vocabulary::TermRef	m_sc_missing_packets_term_ref; 
 
 	/// urn:vocab:clickstream#cs-bytes
     static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
@@ -393,6 +425,22 @@ private:
     static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
     pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
 
+    /// urn:vocab:clickstream#request-start-time
+    static const std::string	VOCAB_CLICKSTREAM_REQUEST_START_TIME;
+    pion::platform::Vocabulary::TermRef	m_request_start_time_term_ref;
+
+    /// urn:vocab:clickstream#request-end-time
+    static const std::string	VOCAB_CLICKSTREAM_REQUEST_END_TIME;
+    pion::platform::Vocabulary::TermRef	m_request_end_time_term_ref;
+
+    /// urn:vocab:clickstream#response-start-time
+    static const std::string	VOCAB_CLICKSTREAM_RESPONSE_START_TIME;
+    pion::platform::Vocabulary::TermRef	m_response_start_time_term_ref;
+
+    /// urn:vocab:clickstream#response-end-time
+    static const std::string	VOCAB_CLICKSTREAM_RESPONSE_END_TIME;
+    pion::platform::Vocabulary::TermRef	m_response_end_time_term_ref;
+
 	/// urn:vocab:clickstream#time-taken
 	static const std::string	VOCAB_CLICKSTREAM_TIME_TAKEN;
 	pion::platform::Vocabulary::TermRef	m_time_taken_term_ref;
@@ -417,6 +465,14 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_SC_ACK_TIME;
 	pion::platform::Vocabulary::TermRef	m_sc_ack_time_term_ref;
 
+	/// urn:vocab:clickstream#end-user-time
+	static const std::string	VOCAB_CLICKSTREAM_END_USER_TIME;
+	pion::platform::Vocabulary::TermRef	m_end_user_time_term_ref;
+
+	/// urn:vocab:clickstream#data-center-time
+	static const std::string	VOCAB_CLICKSTREAM_DATA_CENTER_TIME;
+	pion::platform::Vocabulary::TermRef	m_data_center_time_term_ref;
+
 	/// urn:vocab:clickstream#authuser
 	static const std::string	VOCAB_CLICKSTREAM_AUTHUSER;
 	pion::platform::Vocabulary::TermRef	m_authuser_term_ref;
@@ -428,6 +484,15 @@ private:
 	/// * urn:vocab:clickstream#s-ip
 	/// * urn:vocab:clickstream#c-port
 	/// * urn:vocab:clickstream#s-port
+	/// * urn:vocab:clickstream#c-mac
+	/// * urn:vocab:clickstream#s-mac
+	/// * urn:vocab:clickstream#ssl-time
+	/// * urn:vocab:clickstream#cs-packets
+	/// * urn:vocab:clickstream#sc-packets
+	/// * urn:vocab:clickstream#cs-ack-packets
+	/// * urn:vocab:clickstream#sc-ack-packets
+	/// * urn:vocab:clickstream#cs-duplicate-packets
+	/// * urn:vocab:clickstream#sc-duplicate-packets
 };
 
 

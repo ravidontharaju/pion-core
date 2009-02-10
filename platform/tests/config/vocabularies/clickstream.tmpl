@@ -56,6 +56,22 @@
 			<Type format="%d/%b/%Y:%H:%M:%S %q">datetime</Type>
 			<Comment>Date and time of the request (CLF format)</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#request-start-time">
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the first request packet (20080720T122021.123213)</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#request-end-time">
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the last request packet (20080720T122021.123213)</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#response-start-time">
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the first response packet (20080720T122021.123213)</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#response-end-time">
+			<Type format="%Y%m%dT%H%M%S%F">datetime</Type>
+			<Comment>Date and time of the last response packet (20080720T122021.123213)</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#c-ip">
 			<Type>shortstring</Type>
 			<Comment>IP address of the client in dot-quad notation</Comment>
@@ -64,6 +80,14 @@
 			<Type>shortstring</Type>
 			<Comment>IP address of the server in dot-quad notation</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#c-mac">
+			<Type>shortstring</Type>
+			<Comment>Client packets MAC address in hexadecimal format</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#s-mac">
+			<Type>shortstring</Type>
+			<Comment>Server packets MAC address in hexadecimal format</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#c-port">
 			<Type>uint16</Type>
 			<Comment>Client port number for the HTTP request</Comment>
@@ -71,6 +95,46 @@
 		<Term id="urn:vocab:clickstream#s-port">
 			<Type>uint16</Type>
 			<Comment>Server port number for the HTTP request</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-packets">
+			<Type>uint32</Type>
+			<Comment>The total number of packets sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-packets">
+			<Type>uint32</Type>
+			<Comment>The total number of packets sent from server to client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-ack-packets">
+			<Type>uint32</Type>
+			<Comment>The number of acknowledgement packets sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-ack-packets">
+			<Type>uint32</Type>
+			<Comment>The number of acknowledgement packets sent from server to client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-missing-packets">
+			<Type>uint32</Type>
+			<Comment>The number of missing packet gaps detected within the request</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-missing-packets">
+			<Type>uint32</Type>
+			<Comment>The number of missing packet gaps detected within the response</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-duplicate-packets">
+			<Type>uint32</Type>
+			<Comment>The number of duplicate packets sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-duplicate-packets">
+			<Type>uint32</Type>
+			<Comment>The number of duplicate packets sent from server to client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-data-packets">
+			<Type>uint32</Type>
+			<Comment>The number of data packets sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-data-packets">
+			<Type>uint32</Type>
+			<Comment>The number of data packets sent from server to client</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#cs-bytes">
 			<Type>uint64</Type>
@@ -179,6 +243,18 @@
 		<Term id="urn:vocab:clickstream#sc-ack-time">
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took the client to acknowledge receipt of the HTTP response</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#ssl-time">
+			<Type>uint32</Type>
+			<Comment>Number of microseconds that it took to negotiate an SSL handshake</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#end-user-time">
+			<Type>uint32</Type>
+			<Comment>Estimated number of microseconds that it took to complete an HTTP event, from the end users' perspective</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#data-center-time">
+			<Type>uint32</Type>
+			<Comment>Number of microseconds from the last request packet to the last response packet</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#page-load">
 			<Type>uint32</Type>

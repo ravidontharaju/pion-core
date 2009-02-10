@@ -20,7 +20,7 @@
     <Field term="urn:vocab:clickstream#date">date</Field>
     <Field term="urn:vocab:clickstream#time">time</Field>
     <Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
-    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field> 
+    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
     <Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
     <Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
     <Field term="urn:vocab:clickstream#cs-send-time">cs_send_time</Field>
@@ -112,4 +112,19 @@
     <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
     <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
   </Connection>
+  <Reactor id="2137b458-f250-11dd-88e1-001cc02bd66b">
+    <Plugin>TransformReactor</Plugin>
+    <Workspace>Web Log Processing</Workspace>
+    <X>210</X>
+    <Y>120</Y>
+    <Name>trans</Name>
+    <Comment/>
+    <OutgoingEvent>Same as input event</OutgoingEvent>
+    <CopyOriginal>if-not-defined</CopyOriginal>
+    <Transformation>
+      <Term>urn:vocab:clickstream#cookie-id</Term>
+      <Type>AssignTerm</Type>
+      <Value>urn:vocab:stocks#symbol</Value>
+    </Transformation>
+  </Reactor>
 </PionConfig>
