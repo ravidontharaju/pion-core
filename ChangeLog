@@ -1,3 +1,12 @@
+Version 1.0.12 (2009-02-10)
+===========================
+
+* Added additional clickstream request and response time stamps (434)
+* Added support to HTTPProtocol for digest HTTP authentication (429)
+* Added support to HTTPProtocol for data center and end user times (433)
+* Added support to HTTPProtocol for various packet counters (430)
+
+
 Version 1.0.10 (2009-01-22)
 ===========================
 
