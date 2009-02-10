@@ -1,0 +1,29 @@
+<div class="dijitDialog reactor_dialog" tabindex="-1" waiRole="dialog" waiState="labelledby-${id}_title">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Script Reactor Initialization</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<table
+			><tr
+				><td><label>Name:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+			></tr><tr
+				><td><label>Comments:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+			></tr><tr
+				><td><label>Codec to use for writing events to the script:</label></td
+				><td><input dojoType="pion.widgets.SimpleSelect" name="InputCodec" store="pion.codecs.config_store" searchAttr="Name"/></td
+			></tr><tr
+				><td><label>Codec to use for reading events from the script:</label></td
+				><td><input dojoType="pion.widgets.SimpleSelect" name="OutputCodec" store="pion.codecs.config_store" searchAttr="Name"/></td
+			></tr><tr
+				><td><label>Script or command to execute:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Command"/></td
+			></tr
+		></table>
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: tryConfig">Save</button>
+		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+	</div>
+</div>

@@ -19,6 +19,7 @@ dojo.require("plugins.reactors.LogInputReactor");
 dojo.require("plugins.reactors.LogOutputReactor");
 dojo.require("plugins.reactors.FilterReactor");
 dojo.require("plugins.reactors.TransformReactor");
+dojo.require("plugins.reactors.ScriptReactor");
 dojo.require("plugins.reactors.DatabaseOutputReactor");
 
 // configuration parameters

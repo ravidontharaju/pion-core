@@ -1,0 +1,88 @@
+<div class="dijitDialog reactor_dialog" tabindex="-1" waiRole="dialog" waiState="labelledby-${id}_title">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Script Reactor Configuration</span>
+		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
+			<span dojoAttachPoint="closeText" class="closeText">x</span>
+		</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<!--start div to set padding for top half of dialog-->
+		<div class="reactor_dialog_top">
+
+			<!--start reactor header info-->
+			<div class="reactor_name">
+				<img src="/plugins/reactors/processing/ScriptReactor/dialog-icon.png" width="17" height="17" border="0" />
+				&nbsp; Script Reactor
+			</div>
+			<div class="reactor_cat">
+				<strong>Name:</strong> ScriptReactor
+				&nbsp;&nbsp;&nbsp;
+				<strong>Category:</strong> Processing
+			</div>
+
+			<div style="clear:both;"></div>
+
+			<p>Pipe events through a script.</p>
+			<!--end reactor header info-->
+
+			 <!--start reactor settings-->
+			<div style="float:left; margin-right: 25px;">
+				<table
+					><tr
+						><td><label>Name:</label></td
+						><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+					></tr><tr
+						><td><label>ID:</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+					></tr><tr
+						><td><label>Comments:</label></td
+						><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+					></tr
+				></table>
+			</div>
+			<div style="float:left;">
+				<table
+					><tr
+						><td><label>Codec to use for writing events to the script:</label></td
+						><td><input dojoType="pion.widgets.SimpleSelect" name="InputCodec" store="pion.codecs.config_store" searchAttr="Name"/></td
+					></tr><tr
+						><td><label>Codec to use for reading events from the script:</label></td
+						><td><input dojoType="pion.widgets.SimpleSelect" name="OutputCodec" store="pion.codecs.config_store" searchAttr="Name"/></td
+					></tr><tr
+						><td><label>Script or command to execute:</label></td
+						><td><input dojoType="dijit.form.TextBox" name="Command"/></td
+					></tr
+				></table>
+			</div>
+			<div style="clear:both;"></div>
+			<!--end reactor settings-->
+
+		</div>
+		<!--end div to set padding for top half of dialog-->
+
+		<!--start div to set padding for bottom half of dialog-->
+		<div class="reactor_dialog_bottom">
+
+			<!--start connections-->
+			<div class="p_reactor_grid_blocks">
+				<h2>Connections</h2>
+				<h3>Input Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node" style="width: 618px"></div>
+				<h3>Output Connections</h3>
+				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node" style="width: 618px"></div>
+			</div>
+			<!--end connections-->
+
+			<!--start buttons--> 
+			<div class="save_cancel_delete">
+				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
+				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
+			</div>
+			<!--end buttons--> 
+
+		</div>
+		<!--end div to set padding for bottom half of dialog-->
+
+	</div>
+</div>
