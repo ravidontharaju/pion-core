@@ -138,6 +138,7 @@ pion-dojo.js:
 ./../../release/dojo-release/dojox/dtl/filter/strings.js
 ./../../release/dojo-release/pion/login.js
 ./../../release/dojo-release/plugins/reactors/Reactor.js
+./../../release/dojo-release/pion/widgets/SimpleSelect.js
 ./../../release/dojo-release/plugins/reactors/LogInputReactor.js
 ./../../release/dojo-release/pion/widgets/TermSelector.js
 ./../../release/dojo-release/pion/widgets/TermTextBox.js

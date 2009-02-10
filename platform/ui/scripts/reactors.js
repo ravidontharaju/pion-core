@@ -7,7 +7,6 @@ dojo.require("dojo.dnd.Source");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
-dojo.require("dijit.form.FilteringSelect");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.Menu");
@@ -211,7 +210,7 @@ pion.reactors.initProtocols = function() {
 	// but wait until there's something else to put there.
 	pion.protocols_config_store = new dojox.data.XmlStore({url: '/config/protocols'});
 	
-	// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+	// fetchItemByIdentity and getIdentity are needed for dijit.form.FilteringSelect and pion.widgets.SimpleSelect.
 	pion.protocols_config_store.fetchItemByIdentity = function(keywordArgs) {
 		pion.protocols_config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 	}

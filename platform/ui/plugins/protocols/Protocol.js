@@ -54,8 +54,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 					{ field: 'Term', name: 'Term', width: 16, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Source', name: 'Source', styles: '', width: 7, 
-						widgetClass: "dijit.form.FilteringSelect", 
-						widgetProps: {store: plugins.protocols.source_store, searchAttr: "description" } },
+						type: dojox.grid.cells.Select, options: plugins.protocols.source_options },
 					{ field: 'Name', name: 'Name', width: 7,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Match', name: 'Match', width: 8,
@@ -268,11 +267,4 @@ dojo.declare("plugins.protocols.ProtocolPane",
 	}
 );
 
-plugins.protocols.source_store = new dojo.data.ItemFileReadStore(
-	{data: {identifier: 'name', items: [{name: 'query',      description: 'query'},
-										{name: 'cookie',     description: 'cookie'},
-										{name: 'cs-header',  description: 'cs-header'},
-										{name: 'sc-header',  description: 'sc-header'},
-										{name: 'cs-content', description: 'cs-content'},
-										{name: 'sc-content', description: 'sc-content'}]}}
-);
+plugins.protocols.source_options = ['query', 'cookie', 'cs-header', 'sc-header', 'cs-content', 'sc-content'];

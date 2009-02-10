@@ -1,13 +1,13 @@
 dojo.provide("plugins.vocabularies.Vocabulary");
 dojo.require("pion.terms");
 dojo.require("pion.vocabularies");
+dojo.require("pion.widgets.SimpleSelect");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
-dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 dojo.require("dojox.dtl.filter.strings");
@@ -340,7 +340,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				rows: [
 					{ field: 'ID', name: 'ID', width: 15, editable: false },
 					{ field: 'Type', name: 'Type', width: 15,
-						widgetClass: "dijit.form.FilteringSelect", 
+						widgetClass: "pion.widgets.SimpleSelect", 
 						widgetProps: {store: pion.terms.type_store, searchAttr: "description"} },
 					{ field: 'Format', name: 'Format', width: 10 },
 					{ field: 'Size', name: 'Size', width: 3 },

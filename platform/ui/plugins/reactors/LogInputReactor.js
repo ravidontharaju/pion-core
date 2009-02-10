@@ -1,5 +1,6 @@
 dojo.provide("plugins.reactors.LogInputReactor");
 dojo.require("plugins.reactors.Reactor");
+dojo.require("pion.widgets.SimpleSelect");
 
 dojo.declare("plugins.reactors.LogInputReactor",
 	[ plugins.reactors.Reactor ],

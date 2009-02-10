@@ -4,7 +4,7 @@ dojo.require("dojox.data.XmlStore");
 
 pion.terms.store = new dojox.data.XmlStore({url: '/config/terms', rootItem: 'Term', attributeMap: {'Term.id': '@id'}});
 
-// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+// fetchItemByIdentity and getIdentity are needed for dijit.form.FilteringSelect and pion.widgets.SimpleSelect.
 pion.terms.store.fetchItemByIdentity = function(keywordArgs) {
 	pion.terms.store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 }

@@ -1,0 +1,95 @@
+dojo.provide("pion.widgets.SimpleSelect");
+
+dojo.require("dijit.form._FormWidget");
+
+dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
+	// summary: Wrapper for a native select element to
+	//		interact with dijit.form.Form
+
+	templateString: "<select name='${name}' dojoAttachPoint='containerNode,focusNode' dojoAttachEvent='onchange: _onChange'></select>",
+
+	store: null,
+	
+	keyAttr: "",
+
+	searchAttr: "",
+	
+	doneAddingOptions: false,
+
+	attributeMap: dojo.mixin(dojo.clone(dijit.form._FormWidget.prototype.attributeMap),
+		{size: "focusNode"}),
+
+	reset: function(){
+		// TODO: once we inherit from FormValueWidget this won't be needed
+		this._hasBeenBlurred = false;
+		this._setValueAttr(this._resetValue, true);
+	},
+
+	_getValueAttr: function(){
+		// summary:
+		//		Hook so attr('value') works.
+		return this.containerNode.value;
+	},
+	
+	_setValueAttr: function(value){
+		// summary:
+		//		Hook so attr('value', value) works.
+		if (this.doneAddingOptions) {
+			this.containerNode.value = value;
+			this._handleOnChange(value, true);
+		} else {
+			var h = this.connect(this, '_onDoneAddingOptions', function() {
+				this.disconnect(h);
+				this.containerNode.value = value;
+				this._handleOnChange(value, true);
+			});
+		}
+	},
+
+	_onChange: function(/*Event*/ e){
+		this._handleOnChange(this.attr('value'), true);
+	},
+	
+	// for layout widgets:
+	resize: function(/* Object */size){
+		if(size){
+			dojo.marginBox(this.domNode, size);
+		}
+	},
+	
+	postCreate: function(){
+		if (this.store) {
+			this.containerNode.options.length = 0;
+			var _this = this;
+			this.store.fetch({
+				onItem: function(item) {
+					var key = _this.keyAttr? _this.store.getValue(item, _this.keyAttr) : _this.store.getIdentity(item);
+					var label = _this.searchAttr? _this.store.getValue(item, _this.searchAttr) : key;
+					if (dojo.isIE) {
+						_this.containerNode.add(new Option(label, key));
+					} else {
+						_this.containerNode.add(new Option(label, key), null);
+					}
+				},
+				onComplete: function() {
+					_this._onDoneAddingOptions();
+				},
+				onError: pion.handleFetchError
+			});			
+		} else {
+			// When there's no store, options must be in the markup.
+			// Example (from LogCodecPane.html):
+			//		<select dojoType="pion.widgets.SimpleSelect" style="width: 95%;" dojoAttachEvent="onChange: markAsChanged" name="@consec_field_delims">
+			//			<option value="true">equivalent to single delimiter</option>
+			//			<option value="false">indicate empty fields</option>
+			//		</select>
+
+			this.doneAddingOptions = true;
+			this._onChange();
+		}
+	},
+
+	_onDoneAddingOptions: function() {
+		this.doneAddingOptions = true;
+	}
+});

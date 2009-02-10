@@ -1,10 +1,10 @@
 dojo.provide("plugins.reactors.DatabaseOutputReactor");
 dojo.require("pion.databases");
 dojo.require("pion.widgets.TermTextBox");
+dojo.require("pion.widgets.SimpleSelect");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.form.Button");
-dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 

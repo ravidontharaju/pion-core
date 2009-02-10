@@ -14,7 +14,7 @@ pion.codecs.getHeight = function() {
 
 pion.codecs.config_store = new dojox.data.XmlStore({url: '/config/codecs'});
 
-// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+// fetchItemByIdentity and getIdentity are needed for dijit.form.FilteringSelect and pion.widgets.SimpleSelect.
 pion.codecs.config_store.fetchItemByIdentity = function(keywordArgs) {
 	pion.codecs.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 }

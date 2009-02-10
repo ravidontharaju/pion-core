@@ -1,11 +1,11 @@
 dojo.provide("plugins.databases.Database");
 dojo.require("pion.databases");
+dojo.require("pion.widgets.SimpleSelect");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
-dojo.require("dijit.form.FilteringSelect");
 
 dojo.declare("plugins.databases.SelectPluginDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout

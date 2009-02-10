@@ -12,7 +12,7 @@ pion.protocols.getHeight = function() {
 
 pion.protocols.config_store = new dojox.data.XmlStore({url: '/config/protocols'});
 
-// fetchItemByIdentity and getIdentity are needed for FilteringSelect.
+// fetchItemByIdentity and getIdentity are needed for dijit.form.FilteringSelect and pion.widgets.SimpleSelect.
 pion.protocols.config_store.fetchItemByIdentity = function(keywordArgs) {
 	pion.protocols.config_store.fetch({query: {'@id': keywordArgs.identity}, onItem: keywordArgs.onItem, onError: pion.handleFetchError});
 }
