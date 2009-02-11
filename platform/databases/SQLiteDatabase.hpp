@@ -308,47 +308,47 @@ protected:
 
 		/// Fetch a string from a column
 		virtual void fetchString(unsigned int param, std::string& value) {
-			value = (const char *)sqlite3_column_text(m_sqlite_stmt, param+1);
+			value = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
 		}
 
 		/// Fetch an int from a column
 		virtual boost::int32_t fetchInt(unsigned int param) {
-			return sqlite3_column_int(m_sqlite_stmt, param+1);
+			return sqlite3_column_int(m_sqlite_stmt, param);
 		}
 
 		/// Fetch an unsigned int from a column
 		virtual boost::uint32_t fetchUInt(unsigned int param) {
-			return sqlite3_column_int(m_sqlite_stmt, param+1);
+			return sqlite3_column_int(m_sqlite_stmt, param);
 		}
 
 		/// Fetch a long int from a column
 		virtual boost::int64_t fetchBigInt(unsigned int param) {
-			return sqlite3_column_int64(m_sqlite_stmt, param+1);
+			return sqlite3_column_int64(m_sqlite_stmt, param);
 		}
 
 		/// Fetch an unsigned long int from a column
 		virtual boost::uint64_t fetchUBigInt(unsigned int param) {
-			return sqlite3_column_int64(m_sqlite_stmt, param+1);
+			return sqlite3_column_int64(m_sqlite_stmt, param);
 		}
 
 		/// Fetch a float from a column
 		virtual float fetchFloat(unsigned int param) {
-			return sqlite3_column_double(m_sqlite_stmt, param+1);
+			return sqlite3_column_double(m_sqlite_stmt, param);
 		}
 
 		/// Fetch a double from a column
 		virtual double fetchDouble(unsigned int param) {
-			return sqlite3_column_double(m_sqlite_stmt, param+1);
+			return sqlite3_column_double(m_sqlite_stmt, param);
 		}
 
 		/// Fetch a long double from a column
 		virtual long double fetchLongDouble(unsigned int param) {
-			return sqlite3_column_double(m_sqlite_stmt, param+1);
+			return sqlite3_column_double(m_sqlite_stmt, param);
 		}
 
 		/// Fetch a date from a column
 		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
-            val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param+1)));
+            val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
 		}
 
 		/**
