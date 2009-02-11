@@ -67,6 +67,7 @@ int main (int argc, char *argv[])
 #ifdef PION_WIN32
 	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 #else
+	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCHLD, SIG_IGN);
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGTTOU, SIG_IGN);

@@ -58,43 +58,66 @@ void ScriptReactor::start(void)
 	}
 }
 	
-void ScriptReactor::stop(void)
+bool ScriptReactor::stopIfRunning(void)
 {
+	bool do_stop = false;
 	{	
 		ConfigWriteLock cfg_lock(*this);
 		if (m_is_running) {
-			closePipe();
+			PION_LOG_DEBUG(m_logger, "Waiting for reader thread to finish");
+			do_stop = true;
 			m_is_running = false;
+			
+			// this should break the reader thread out of any blocking operations
+			::close(m_output_pipe);
 		}
 	}
-	// we have to release the write lock, otherwise things deadlock =(
-	m_thread_ptr.reset();
+
+	if (do_stop) {
+		// we have to release the write lock before joining, otherwise things deadlock =(
+		m_thread_ptr->join();
+
+		ConfigWriteLock cfg_lock(*this);
+		m_thread_ptr.reset();
+		closePipe();
+	}
+	
+	return do_stop;
 }
 
 void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
-	// first set config options for the Reactor base class
-	ConfigWriteLock cfg_lock(*this);
-	Reactor::setConfig(v, config_ptr);
-	
-	// get the Input Codec that the Reactor should use
-	if (! ConfigManager::getConfigOption(INPUT_CODEC_ELEMENT_NAME, m_input_codec_id, config_ptr))
-		throw EmptyInputCodecException(getId());
-	m_input_codec_ptr = getCodecFactory().getCodec(m_input_codec_id);
-	PION_ASSERT(m_input_codec_ptr);
+	// make sure it's not running (it needs to be restarted in case Command changes)
+	const bool was_running = stopIfRunning();
 
-	// get the Output Codec that the Reactor should use
-	if (! ConfigManager::getConfigOption(OUTPUT_CODEC_ELEMENT_NAME, m_output_codec_id, config_ptr))
-		throw EmptyOutputCodecException(getId());
-	m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
-	PION_ASSERT(m_output_codec_ptr);
-	
-	// get the script or program command to execute
-	if (! ConfigManager::getConfigOption(COMMAND_ELEMENT_NAME, m_command, config_ptr))
-		throw EmptyCommandException(getId());
+	{
+		// first set config options for the Reactor base class
+		ConfigWriteLock cfg_lock(*this);
+		Reactor::setConfig(v, config_ptr);
 		
-	// break command string into a vector of arguments
-	parseArguments();
+		// get the Input Codec that the Reactor should use
+		if (! ConfigManager::getConfigOption(INPUT_CODEC_ELEMENT_NAME, m_input_codec_id, config_ptr))
+			throw EmptyInputCodecException(getId());
+		m_input_codec_ptr = getCodecFactory().getCodec(m_input_codec_id);
+		PION_ASSERT(m_input_codec_ptr);
+	
+		// get the Output Codec that the Reactor should use
+		if (! ConfigManager::getConfigOption(OUTPUT_CODEC_ELEMENT_NAME, m_output_codec_id, config_ptr))
+			throw EmptyOutputCodecException(getId());
+		m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
+		PION_ASSERT(m_output_codec_ptr);
+		
+		// get the script or program command to execute
+		if (! ConfigManager::getConfigOption(COMMAND_ELEMENT_NAME, m_command, config_ptr))
+			throw EmptyCommandException(getId());
+			
+		// break command string into a vector of arguments
+		parseArguments();
+	}
+	
+	// restart if the reactor was running
+	if (was_running)
+		start();
 }
 	
 void ScriptReactor::updateVocabulary(const Vocabulary& v)
@@ -157,6 +180,7 @@ void ScriptReactor::readEvents(void)
 
 		struct timeval timeout;
 		fd_set read_fds;
+		int select_result;
 		
 		while ( isRunning() ) {
 		
@@ -170,8 +194,15 @@ void ScriptReactor::readEvents(void)
 			timeout.tv_usec = 100000;	// microseconds (1/10 second)
 
 			// wait for data to be available
-			if ( ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout) == 1 ) {
+			select_result = ::select(m_output_pipe+1, &read_fds, NULL, NULL, NULL);
+			
+			if (select_result == 1) {
+			
 				ConfigReadLock cfg_lock(*this);
+				if ( ! isRunning() )	// re-check after acquiring lock
+					break;
+
+				// data is available for reading
 
 				// get a new event from the EventFactory
 				event_factory.create(event_ptr, event_type);
@@ -187,24 +218,33 @@ void ScriptReactor::readEvents(void)
 				} else {
 				
 					// check for read error
-					if ( isRunning() )
-						throw ReadFromPipeException(getId());
+					throw ReadFromPipeException(getId());
 				}
+				
+			} else if (select_result == 0) {
+
+				// no data currently available
+				PionScheduler::sleep(0, 100000000);
+			
+			} else {
+
+				// error checking for data availability
+				throw SelectPipeException(getId());
 			}
 		}
 
 	} catch (std::exception& e) {
-		PION_LOG_FATAL(m_logger, e.what());
 		ConfigWriteLock cfg_lock(*this);
 		if ( isRunning() ) {
+			PION_LOG_FATAL(m_logger, e.what());
 			closePipe();
 			m_is_running = false;
 		}
 	}
 
 	PION_LOG_DEBUG(m_logger, "Script reader thread is exiting: " << getId());
-}	
-	
+}
+
 void ScriptReactor::openPipe(void)
 {
 	// close first if already open
@@ -267,10 +307,8 @@ void ScriptReactor::openPipe(void)
 	}
 
 	// prepare c++ streams to use pipes for reading and writing events
-	m_input_stream_ptr.reset();
 	m_input_streambuf_ptr.reset(new StreamBuffer( m_input_pipe ));
 	m_input_stream_ptr.reset(new std::ostream(m_input_streambuf_ptr.get()));
-	m_output_stream_ptr.reset();
 	m_output_streambuf_ptr.reset(new StreamBuffer( m_output_pipe ));
 	m_output_stream_ptr.reset(new std::istream(m_output_streambuf_ptr.get()));
 }
@@ -281,7 +319,11 @@ void ScriptReactor::closePipe(void)
 		PION_LOG_DEBUG(m_logger, "Closing pipe to command: " << m_command);
 		::close(m_input_pipe);
 		::close(m_output_pipe);
-		::kill(m_child_pid, SIGINT);
+		::kill(m_child_pid, SIGKILL);
+		m_input_stream_ptr.reset();
+		m_output_stream_ptr.reset();
+		m_input_streambuf_ptr.reset();
+		m_output_streambuf_ptr.reset();
 		m_child_pid = 0;
 		m_input_pipe = m_output_pipe = -1;
 	}
@@ -302,9 +344,15 @@ void ScriptReactor::parseArguments(void)
 	while (next_pos < m_command.size()) {
 		switch ( m_command[next_pos] ) {
 		case '\\':
-			// escape next character
-			if ( next_pos + 1 < m_command.size() ) {
+			if ( next_pos + 1 < m_command.size() &&
+				(m_command[next_pos+1]==' ' || m_command[next_pos+1]=='\"'
+				|| m_command[next_pos+1]=='\'') )
+			{
+				// escape next character
 				arg.push_back( m_command[++next_pos] );
+			} else {
+				// append slash
+				arg.push_back( m_command[next_pos] );
 			}
 			break;
 
