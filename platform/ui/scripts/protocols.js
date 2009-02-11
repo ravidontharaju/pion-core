@@ -20,6 +20,9 @@ pion.protocols.config_store.getIdentity = function(item) {
 	return pion.protocols.config_store.getValue(item, '@id');
 }
 
+// This is 'HTTP (full content)'
+pion.protocols.default_id = "593f044a-ac60-11dd-aba3-001cc02bd66b";
+
 pion.protocols.init = function() {
 	protocol_config_store = pion.protocols.config_store;
 
