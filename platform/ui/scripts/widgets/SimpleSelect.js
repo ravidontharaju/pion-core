@@ -64,10 +64,10 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 
 	setQuery: function(query) {
 		this.query = query;
-		this._makeOptionList();
+		this.makeOptionList();
 	},
 
-	_makeOptionList: function() {
+	makeOptionList: function() {
 		this.doneAddingOptions = false;
 		this.containerNode.options.length = 0;
 		var _this = this;
@@ -91,7 +91,7 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 
 	postCreate: function(){
 		if (this.store) {
-			this._makeOptionList();
+			this.makeOptionList();
 		} else {
 			// When there's no store, options must be in the markup.
 			// Example (from LogCodecPane.html):

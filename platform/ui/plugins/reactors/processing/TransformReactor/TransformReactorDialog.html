@@ -38,8 +38,8 @@
 					><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
 				></tr><tr
 					><td><label>Outgoing&nbsp;Event&nbsp;Type:</label></td
-					><td><input dojoType="dijit.form.FilteringSelect" name="OutgoingEvent" 
-							store="plugins.reactors.TransformReactor.outgoing_event_type_store" searchAttr="id" autocomplete="true" style="width: 100%;"/></td
+					><td><input dojoType="pion.widgets.SimpleSelect" name="OutgoingEvent" dojoAttachPoint="outgoing_event_select"
+							store="plugins.reactors.TransformReactor.outgoing_event_type_store" searchAttr="id" /></td
 				></tr><tr
 					><td><label>Copy&nbsp;From&nbsp;Original</label></td
 					><td

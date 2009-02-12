@@ -4,7 +4,6 @@ dojo.require("pion.widgets.TermTextBox");
 dojo.require("pion.widgets.SimpleSelect");
 dojo.require("pion.terms");
 dojo.require("dojo.data.ItemFileWriteStore");
-dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 
@@ -206,6 +205,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					plugins.reactors.TransformReactor.outgoing_event_type_store.newItem({id: pion.terms.store.getIdentity(item)});
 				},
 				onComplete: function() {
+					_this.outgoing_event_select.makeOptionList();
 					if (_this.reactor.config.OutgoingEvent) {
 						_this.attr('value', {OutgoingEvent: _this.reactor.config.OutgoingEvent});
 					}
