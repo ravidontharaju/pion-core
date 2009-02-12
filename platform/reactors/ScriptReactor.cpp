@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <errno.h>
 #include <unistd.h>
 #include <signal.h>
 #include <iostream>
@@ -191,10 +192,10 @@ void ScriptReactor::readEvents(void)
 			FD_ZERO(&read_fds);
 			FD_SET(m_output_pipe, &read_fds);
 			timeout.tv_sec = 0;
-			timeout.tv_usec = 100000;	// microseconds (1/10 second)
+			timeout.tv_usec = 0;
 
 			// wait for data to be available
-			select_result = ::select(m_output_pipe+1, &read_fds, NULL, NULL, NULL);
+			select_result = ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout);
 			
 			if (select_result == 1) {
 			
@@ -229,7 +230,9 @@ void ScriptReactor::readEvents(void)
 			} else {
 
 				// error checking for data availability
-				throw SelectPipeException(getId());
+				// ignore EINTR errors (receives signals on Linux)
+				if (errno != 4)
+					throw SelectPipeException(getId());
 			}
 		}
 
@@ -317,8 +320,9 @@ void ScriptReactor::closePipe(void)
 {
 	if (m_input_pipe != -1 || m_output_pipe != -1) {
 		PION_LOG_DEBUG(m_logger, "Closing pipe to command: " << m_command);
-		::close(m_input_pipe);
-		::close(m_output_pipe);
+		// file descriptors are closed by the iostreams
+		//::close(m_input_pipe);
+		//::close(m_output_pipe);
 		::kill(m_child_pid, SIGKILL);
 		m_input_stream_ptr.reset();
 		m_output_stream_ptr.reset();
