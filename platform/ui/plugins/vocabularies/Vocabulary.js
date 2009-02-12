@@ -47,7 +47,10 @@ dojo.declare("plugins.vocabularies.Vocabulary",
 			});
 		},
 		populateFromServerVocabItem: function() {
-			this.config.Name = this.server_vocab_store.getValue(this.vocab_item, 'Name').toString();
+			var name = this.server_vocab_store.getValue(this.vocab_item, 'Name');
+			if (name) {
+				this.config.Name = name.toString();
+			}
 			var comment = this.server_vocab_store.getValue(this.vocab_item, 'Comment');
 			if (comment) {
 				this.config.Comment = comment.toString();
@@ -441,7 +444,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				var comment_node = dojo.query('textarea.comment', _this.form.domNode)[0];
 				comment_node.value = _this.vocabulary.config.Comment? _this.vocabulary.config.Comment : '';
 	
-				_this.title = _this.vocabulary.config.Name;
+				_this.title = _this.vocabulary.config.Name? _this.vocabulary.config.Name : _this.vocabulary.config['@id'];
 				var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', _this.domNode)[0];
 				title_node.firstChild.nodeValue = _this.title;
 
