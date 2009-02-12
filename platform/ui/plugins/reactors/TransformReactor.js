@@ -1,8 +1,10 @@
 dojo.provide("plugins.reactors.TransformReactor");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("pion.widgets.TermTextBox");
+dojo.require("pion.widgets.SimpleSelect");
 dojo.require("pion.terms");
 dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 
@@ -548,7 +550,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 					{ field: 'Term', name: 'Term', width: 14, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Comparison', width: 10, 
-						widgetClass: "dijit.form.FilteringSelect", 
+						widgetClass: "pion.widgets.SimpleSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
@@ -566,6 +568,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 				singleClickEdit: true,
 				autoHeight: true
 			}, document.createElement('div'));
+			this.rule_grid._prev_term_type_category = this.rule_grid.structure[0].rows[1].widgetProps.query.category;
 			this.rule_grid.term_column_index = 0;
 			this.rule_grid_node.appendChild(this.rule_grid.domNode);
 			this.rule_grid.startup();
@@ -605,7 +608,17 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 				} else if (e.cell.field == 'Type') {
 					var item = this.getItem(e.rowIndex);
 					var term = this.store.getValue(item, 'Term').toString();
-					this.structure[0].rows[e.cell.index].widgetProps.query.category = pion.terms.categories_by_id[term];
+					if (pion.terms.categories_by_id[term] != this._prev_term_type_category) {
+						this._prev_term_type_category = pion.terms.categories_by_id[term];
+						if (e.cell.widget) {
+							e.cell.widget.setQuery({category: pion.terms.categories_by_id[term]});
+						} else {
+							// Since the widget hasn't been created yet, we can just change widgetProps.query. 
+							// (Note that with FilteringSelect, setting widgetProps.query has the desired effect even
+							// when the widget already exists.)
+							this.structure[0].rows[e.cell.index].widgetProps.query.category = pion.terms.categories_by_id[term];
+						}
+					}
 				}
 			});
 			var _grid = this.rule_grid;

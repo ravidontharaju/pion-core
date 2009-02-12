@@ -1,13 +1,13 @@
 dojo.provide("plugins.codecs.Codec");
 dojo.require("pion.codecs");
 dojo.require("pion.widgets.TermTextBox");
+dojo.require("pion.widgets.SimpleSelect");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.AccordionContainer");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
-dojo.require("dijit.form.FilteringSelect");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 

@@ -26,8 +26,8 @@
 						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
 					></tr><tr
 						><td><label>Event&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.FilteringSelect" name="EventType" dojoAttachEvent='onChange:markAsChanged'
-								store="pion.terms.store" searchAttr="id" query="{Type:'object'}" autocomplete="true" style="width: 100%;"/></td
+						><td><input dojoType="pion.widgets.SimpleSelect" name="EventType" dojoAttachEvent='onChange: markAsChanged'
+								store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
 					></tr><tr
 						><td><label>Max&nbsp;Request&nbsp;Content&nbsp;Length</label></td
 						><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxRequestContentLength" regExp="[1-9][0-9]*" required="true"></td

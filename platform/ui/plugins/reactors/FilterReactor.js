@@ -123,7 +123,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 					{ field: 'Term', name: 'Term', width: 20, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Comparison', width: 15, 
-						widgetClass: "dijit.form.FilteringSelect", 
+						widgetClass: "pion.widgets.SimpleSelect", 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
@@ -139,6 +139,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 				singleClickEdit: true,
 				autoHeight: true
 			}, document.createElement('div'));
+			this.comparison_grid._prev_term_type_category = this.comparison_grid.structure[0].rows[1].widgetProps.query.category;
 			this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
 			this.comparison_grid.startup();
 			this.comparison_grid.connect(this.comparison_grid, 'onCellClick', _this._handleCellClick);
@@ -178,7 +179,17 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 				var item = this.getItem(e.rowIndex);
 				var term = this.store.getValue(item, 'Term').toString();
 				console.debug('term = ', term, ', pion.terms.categories_by_id[term] = ', pion.terms.categories_by_id[term]);
-				this.structure[0].rows[1].widgetProps.query.category = pion.terms.categories_by_id[term];
+				if (pion.terms.categories_by_id[term] != this._prev_term_type_category) {
+					this._prev_term_type_category = pion.terms.categories_by_id[term];
+					if (e.cell.widget) {
+						e.cell.widget.setQuery({category: pion.terms.categories_by_id[term]});
+					} else {
+						// Since the widget hasn't been created yet, we can just change widgetProps.query. 
+						// (Note that with FilteringSelect, setting widgetProps.query has the desired effect even
+						// when the widget already exists.)
+						this.structure[0].rows[1].widgetProps.query.category = pion.terms.categories_by_id[term];
+					}
+				}
 			} else if (e.cellIndex == 4) { // clicked in delete column
 				console.debug('Removing row ', e.rowIndex); 
 				this.store.deleteItem(this.getItem(e.rowIndex));
