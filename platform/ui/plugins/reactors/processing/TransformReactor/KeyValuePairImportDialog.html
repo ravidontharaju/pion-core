@@ -1,0 +1,20 @@
+<div class="dijitDialog XML_import_dialog" style="width: 600px">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Import XML Configuration</span>
+	</div>
+	<div style="padding: 10px">
+		Enter key value pairs in the following format, using standard escape sequences:
+		<pre>
+&lt;Lookup key="index-1"&gt;NASDAQ&lt;/Lookup&gt
+...
+&lt;Lookup key="index-n"&gt;S&amp;amp;P 500&lt;/Lookup&gt
+		</pre>
+	</div>
+	<div class="dijitDialogPaneContent">
+		<textarea dojoAttachPoint="XML_text_area" style="width: 100%" rows="8" dojoAttachEvent="oninput: enableApply, onkeydown: enableApply"></textarea>
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" dojoAttachPoint="apply_button" disabled="true" type="submit">Import</button>
+		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+	</div>
+</div>

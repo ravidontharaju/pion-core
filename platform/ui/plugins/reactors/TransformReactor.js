@@ -419,6 +419,21 @@ plugins.reactors.TransformReactor.getBool = function(store, item, attribute) {
 		return plugins.reactors.TransformReactor.grid_option_defaults[attribute];
 }
 
+dojo.declare("plugins.reactors.TransformReactor.KeyValuePairImportDialog",
+	[ dijit.Dialog ],
+	{
+		templatePath: dojo.moduleUrl("plugins.reactors", "processing/TransformReactor/KeyValuePairImportDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
+		enableApply: function() {
+			this.apply_button.setAttribute('disabled', false);
+		},
+		widgetsInTemplate: true
+	}
+);
+
 dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 	[ dijit.Dialog ],
 	{
@@ -513,6 +528,45 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				this.default_value.setValue('');
 				this.default_value.domNode.style.visibility = 'hidden';
 			}
+		},
+		_onImportKeyValuePairs: function(e) {
+			var _this = this;
+			var dialog = new plugins.reactors.TransformReactor.KeyValuePairImportDialog({title: 'Key Value Pairs in XML Format to Import'});
+			dialog.show();
+			dialog.execute = function(dialogFields) {
+				var wrapped_XML = '<PionConfig>' + this.XML_text_area.value + '</PionConfig>';
+				var trimmed_XML = wrapped_XML.replace(/>\s*/g, '>');
+				if (dojo.isIE) {
+					var XML_doc = dojox.data.dom.createDocument();
+					XML_doc.loadXML(trimmed_XML);
+				} else {
+					var parser = new DOMParser();
+					var XML_doc = parser.parseFromString(trimmed_XML, "text/xml");
+				}
+				dojo.forEach(XML_doc.getElementsByTagName('Lookup'), function(lookup) {
+					var lookup_key = lookup.getAttribute('key');
+					var lookup_value = dojo.isIE? lookup.childNodes[0].nodeValue : lookup.textContent;
+					_this.lookup_store.newItem({
+						ID: _this.lookup_store.next_id++,
+						Key: lookup_key,
+						Value: lookup_value
+					});
+				})
+			}
+		},
+		_onExportKeyValuePairs: function() {
+			var r_store = this.lookup_store;
+			var content = '';
+			for (var i = 0; i < this.lookup_grid.rowCount; ++i) {
+				var item = this.lookup_grid.getItem(i);
+				var key = r_store.getValue(item, 'Key');
+				var value = r_store.getValue(item, 'Value');
+				var element = '<Lookup key="' + pion.escapeXml(key) + '">' + pion.escapeXml(value) + '</Lookup>';
+				content += pion.escapeXml(element) + '<br />';
+			}
+			var dialog = new dijit.Dialog({title: 'Exported Key Value Pairs in XML Format', style: 'width: 600px'});
+			dialog.setContent(content);
+			dialog.show();
 		},
 		_handleAddNewLookup: function() {
 			this.lookup_store.newItem({

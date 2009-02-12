@@ -748,6 +748,54 @@ The following are also available, if the need arises.
 	background: #ffffff url("../images/button-delete-on.png") repeat-x;
 }
 
+.tundra .import .dijitButtonNode, 
+.tundra button.import {
+	background: #ffffff url("../images/button-import-off.png") repeat-x;
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 22px;
+	text-align: left;
+	padding-top: 1px;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .import.dijitButtonHover .dijitButtonNode, 
+.tundra button.import:hover {
+	background: #ffffff url("../images/button-import-on.png") repeat-x;
+}
+
+.tundra button.disabled.import {
+	background: #ffffff url("../images/button-import-off.png") repeat-x;
+	font-weight: 100;
+}
+
+.tundra .export .dijitButtonNode, 
+.tundra button.export {
+	background: #ffffff url("../images/button-export-off.png") repeat-x;
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 22px;
+	text-align: left;
+	padding-top: 1px;
+	padding-left: 25px;
+	padding-right: 2px;
+}
+
+.tundra .export.dijitButtonHover .dijitButtonNode, 
+.tundra button.export:hover {
+	background: #ffffff url("../images/button-export-on.png") repeat-x;
+}
+
+.tundra button.disabled.export {
+	background: #ffffff url("../images/button-export-off.png") repeat-x;
+	font-weight: 100;
+}
+
 .tundra .delete_row .dijitButtonNode {
 	background: url("../images/button-delete-row-off.png") no-repeat;
 	background-color: none;
