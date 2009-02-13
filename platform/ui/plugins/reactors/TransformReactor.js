@@ -73,7 +73,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 							new_t_item_object.LookupTerm = store.getValue(t_item, 'LookupTerm');
 							pion.initOptionalValue(store, t_item, new_t_item_object, 'Match');
 							pion.initOptionalValue(store, t_item, new_t_item_object, 'Format');
-							pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultAction', 'undefined');
+							pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultAction', 'leave-undefined');
 							pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultValue');
 							new_t_item_object.Lookup = dojo.map(store.getValues(t_item, 'Lookup'), function(lookup) {
 								var lookup_object = {
@@ -446,8 +446,12 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 
-			if (! this.transformation_itemDefaultAction)
-				this.transformation_item.DefaultAction = 'undefined';
+			if (! this.transformation_item.DefaultAction)
+				this.transformation_item.DefaultAction = 'leave-undefined';
+			if (this.transformation_item.DefaultAction == 'fixedvalue') {
+				this.default_value.attr('disabled', false);
+				this.default_value.domNode.style.visibility = 'visible';
+			}
 			this.attr('value', this.transformation_item);
 
 			// Create and populate a datastore for the Lookup grid.
@@ -516,7 +520,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				this.format_text_box.setValue('');
 				//this.format_text_box.domNode.style.visibility = 'hidden';
 				this.output_radio_button.attr('disabled', true);
-				this.attr('value', {DefaultAction: 'undefined'});
+				this.attr('value', {DefaultAction: 'leave-undefined'});
 			}
 		},
 		_onDefaultActionChanged: function(e) {

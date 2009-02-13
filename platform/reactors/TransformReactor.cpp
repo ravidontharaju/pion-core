@@ -64,7 +64,7 @@ TransformReactor/Transformations/Type = Lookup
 			<LookupTerm>src-term</LookupTerm>
 [opt]		<Match>escape(regexp)</Match>
 [opt]		<Format>escape(format)</Format>
-[opt]		<DefaultAction>undefined|src-term|output|fixedvalue</DefaultAction>
+[opt]		<DefaultAction>leave-undefined|src-term|output|fixedvalue</DefaultAction>
 [opt]		<DefaultValue>escape(text)</DefaultValue>
 [rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
 
