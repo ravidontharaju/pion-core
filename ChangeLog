@@ -1,3 +1,19 @@
+Version 1.1.4 (2009-02-16)
+==========================
+
+* New ScriptReactor (232)
+* TransformReactor -- refactored with all new features (385, 386, 424)
+* All new term selection tool for UI (359, 405, 95)
+* FilterReactor UI supports MatchAllValues (383)
+* TransformReactor supports MatchAllValues (384, 386)
+* Log parsing error no longer skips rest of the log file (311)
+* Build updated to Boost 1.36 & 1.37 (314, 270)
+* Overall speed improvement due to non-locking config changes (341, 145)
+* Fixed unit tests (419, 423)
+* Replace "filtering" selects with regular selects in UI (428)
+* Count and track errors in HTTPRequestSender (436)
+
+
 Version 1.0.12 (2009-02-10)
 ===========================
 
