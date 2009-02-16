@@ -1,0 +1,8 @@
+#Version: 1.0
+#Date: 2009-Feb-16 04:51:17
+#Software: Pion v1.1.3
+#Fields: clf-date c-ip request cs(Referer) status
+"05/Apr/2007:05:37:11 " 10.0.19.111 "GET /robots.txt HTTP/1.0" "http://www.example.com/start.html" 404
+"08/Jun/2007:07:20:02 " 10.0.31.104 "GET /community/ HTTP/1.1" "http://www.atomiclabs.com/" 200
+"24/Sep/2007:12:13:03 " 10.0.2.104 "GET /default.css HTTP/1.1" "http://www.google.com/" 200
+"30/Jan/2008:15:26:07 " 10.0.141.122 "GET /pion/ HTTP/1.1" "http://www.wikipedia.com/" 200

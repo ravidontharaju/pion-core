@@ -46,7 +46,6 @@ struct PionPlatformUnitTestsConfig {
 		}
 		if (!verbose) {
 			xmlSetGenericErrorFunc(NULL, PionUnitTest::doNothing);
-		} else {
 			std::cout << "Use '-v' to enable logging from libxml2.\n";
 		}
 	}

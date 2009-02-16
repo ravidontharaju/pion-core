@@ -15,6 +15,7 @@
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/find.hpp>
+#include <pion/PionUnitTestDefs.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionScheduler.hpp>
@@ -43,6 +44,8 @@ static const std::string NEW_OUTPUT_LOG_FILE(get_log_file_dir() + "new.log");
 static const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
 static const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
 static const boost::uint64_t NUM_LINES_IN_COMB_LOG_2 = 2;
+static const std::string TIMESTAMPED_EXPECTED_A_FILE(get_log_file_dir() + "timestamped_expected_a.log");
+static const std::string LOG_EXPECTED_A_FILE(get_log_file_dir() + "log_expected_a.log");
 
 
 BOOST_AUTO_TEST_CASE(checkOpenQueryService) {
@@ -345,7 +348,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithNoInput) {
 	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
 	BOOST_CHECK(timestamped_log_files.size() == 0);
 }
-/*
+
 BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	// Start a LogInputReactor, which will send its output to the already running LogOutputReactor.
 	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
@@ -365,8 +368,8 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
-	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505UL);
+	// Check that the timestamped log file has the expected contents.
+	BOOST_CHECK(PionUnitTest::check_files_match(timestamped_log_files[0], TIMESTAMPED_EXPECTED_A_FILE));
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
@@ -377,11 +380,11 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
 	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
 
-	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
+	// Stop the LogOutputReactor and check if the new log file that was just created has the expected contents.
 	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(NEW_OUTPUT_LOG_FILE), 313UL);
+	BOOST_CHECK(PionUnitTest::check_files_match(NEW_OUTPUT_LOG_FILE, LOG_EXPECTED_A_FILE));
 }
-*/
+
 BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
 	xmlNodePtr config_ptr = makeReactorConfigFromString(
@@ -541,7 +544,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
 	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 339UL);
 }
-/*
+
 BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	// Start the LogInputReactor, which will send its output to the already running LogOutputReactor.
 	std::string log_input_reactor_id = "c7a9f95a-e305-11dc-98ce-0016cb926e68";
@@ -561,8 +564,8 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	std::vector<std::string> timestamped_log_files = timestampedLogFiles();
 	BOOST_CHECK(timestamped_log_files.size() == 1);
 
-	// Check that the timestamped log file has the expected size.
-	BOOST_CHECK_EQUAL(boost::filesystem::file_size(timestamped_log_files[0]), 505UL);
+	// Check that the timestamped log file has the expected contents.
+	BOOST_CHECK(PionUnitTest::check_files_match(timestamped_log_files[0], TIMESTAMPED_EXPECTED_A_FILE));
 
 	// Check that a new log file was created and is empty.
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
@@ -582,7 +585,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	// Check that the response to the second query was the same as to the first query.
 	BOOST_CHECK_EQUAL(response_ptr->getContent(), response_ptr_2->getContent());
 }
-*/
+
 BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
 	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
 	xmlNodePtr config_ptr = makeReactorConfigFromString(
