@@ -38,7 +38,6 @@ extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
 extern const std::string& get_platform_config_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
@@ -55,8 +54,7 @@ public:
 		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int")
 	{
 		// get everything setup first
-		setup_logging_for_unit_tests();
-		setup_plugins_directory();		
+		setup_plugins_directory();
 		cleanup_platform_config_files();
 
 		// start the ServiceManager, ReactionEngine, etc.

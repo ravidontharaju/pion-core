@@ -26,10 +26,6 @@ using namespace pion;
 using namespace pion::platform;
 
 
-/// sets up logging (run once only)
-extern void setup_logging_for_unit_tests(void);
-
-
 class EventTests_F {
 public:
 	EventTests_F()
@@ -37,7 +33,6 @@ public:
 		m_big_int_term("urn:vocab:test#big-int"), m_fixed_term("urn:vocab:test#fixed-text"),
 		m_date_term("urn:vocab:test#date"), m_object_term("urn:vocab:test#simple-object")
 	{
-		setup_logging_for_unit_tests();
 		// initialize our initial term set
 		m_null_term.term_ref = static_cast<Vocabulary::TermRef>(1);
 		m_plain_int_term.term_ref = static_cast<Vocabulary::TermRef>(2);

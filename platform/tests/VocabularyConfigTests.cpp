@@ -36,7 +36,6 @@ using namespace pion::platform;
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void cleanup_vocab_config_files(void);
 
 
@@ -64,7 +63,6 @@ void cleanup_config_files(void)
 class NewVocabularyConfig_F : public VocabularyConfig {
 public:
 	NewVocabularyConfig_F() {
-		setup_logging_for_unit_tests();
 		cleanup_config_files();
 	}
 	~NewVocabularyConfig_F() {
@@ -704,7 +702,6 @@ BOOST_AUTO_TEST_SUITE_END()
 class NewVocabularyManager_F : public VocabularyManager {
 public:
 	NewVocabularyManager_F() {
-		setup_logging_for_unit_tests();
 		cleanup_config_files();
 	}
 	~NewVocabularyManager_F() {

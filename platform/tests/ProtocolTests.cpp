@@ -34,7 +34,6 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 
@@ -59,7 +58,6 @@ class BasicProtocolTests_F
 {
 public:
 	BasicProtocolTests_F(void) {
-		setup_logging_for_unit_tests();
 		cleanup_protocol_config_files(false);
 	}
 	~BasicProtocolTests_F(void) {}
@@ -121,7 +119,6 @@ BOOST_AUTO_TEST_SUITE_END()
 class NewProtocolFactory_F : public ProtocolFactory {
 public:
 	NewProtocolFactory_F() : ProtocolFactory(m_vocab_mgr) {
-		setup_logging_for_unit_tests();
 		cleanup_protocol_config_files(false);
 
 		if (! m_config_loaded) {

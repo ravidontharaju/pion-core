@@ -33,7 +33,6 @@ using namespace pion::server;
 
 /// external functions defined in PionPlatformUnitTests.cpp
 extern const std::string& get_config_file_dir(void);
-extern void setup_logging_for_unit_tests(void);
 extern void cleanup_platform_config_files(void);
 
 
@@ -41,7 +40,6 @@ class NewUserManager_F : public UserManager {
 public:
 	NewUserManager_F() : UserManager() {
 		// get everything set up first
-		setup_logging_for_unit_tests();
 		cleanup_platform_config_files();
 
 		// The default constructor for UserManager sets the config file to "users.xml".

@@ -26,7 +26,6 @@ using namespace pion::platform;
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_log_file_dir(void);
 extern const std::string& get_license_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void remove_license_file(void);
 extern void make_valid_license_file(void);
@@ -35,7 +34,6 @@ extern bool check_reactor_events_in(pion::platform::ReactionEngine& reaction_eng
 	const std::string& reactor_id, const boost::uint64_t expected);
 extern bool check_reactor_events_out(pion::platform::ReactionEngine& reaction_engine,
 	const std::string& reactor_id, const boost::uint64_t expected);
-extern bool check_files_match(const std::string& fileA, const std::string& fileB);
 
 /*********************
  * Refactor these into a utility class
@@ -61,77 +59,6 @@ bool check_reactor_events_out(pion::platform::ReactionEngine& reaction_engine,
 	return (reaction_engine.getEventsOut(reactor_id) == expected);
 }
 
-void skip_comment_lines(std::ifstream& fs) {
-	int c;
-	while (!fs.eof() && fs.peek() == '#') {
-		while (! fs.eof()) {
-			c = fs.get();
-			if (c == '\n') {
-				if (fs.peek() == '\r')
-					fs.get();
-				break;
-			} else if (c == '\r') {
-				if (fs.peek() == '\n')
-					fs.get();
-				break;
-			}
-		}
-	}
-}
-
-char *trim(char *str)
-{
-	for (unsigned len = strlen(str) - 1; len > 0; len--)
-		if (str[len] == '\n' || str[len] == '\r')
-			str[len] = '\0';
-		else
-			break;
-	return str;
-}
-
-// Check for file match, use std::list for sorting the files, which will allow
-// random order matching...
-bool check_files_match(const std::string& fileA, const std::string& fileB)
-{
-	// open files
-	std::ifstream a_file(fileA.c_str(), std::ios::in | std::ios::binary);
-	BOOST_REQUIRE(a_file.is_open());
-
-	std::ifstream b_file(fileB.c_str(), std::ios::in | std::ios::binary);
-	BOOST_REQUIRE(b_file.is_open());
-
-	// skip lines that start with #
-	skip_comment_lines(a_file);
-	skip_comment_lines(b_file);
-
-	// read and compare data in files
-	static const unsigned int BUF_SIZE = 4096;
-	char buf[BUF_SIZE];
-    std::list<std::string> a_lines, b_lines;
-
-	while (a_file.getline(buf, BUF_SIZE)) {
-	    a_lines.push_back(trim(buf));
-		if (! b_file.getline(buf, BUF_SIZE))
-			return false;
-	    b_lines.push_back(trim(buf));
-	}
-	if (b_file.getline(buf, BUF_SIZE))
-		return false;
-	if (a_file.gcount() != b_file.gcount())
-		return false;
-	a_lines.sort();
-	b_lines.sort();
-
-	if (a_lines != b_lines)
-		return false;
-
-	a_file.close();
-	b_file.close();
-
-	// files match
-	return true;
-}
-
 
 
 
@@ -155,7 +82,6 @@ public:
 		m_transformer_id("25bcc7f0-e109-11dd-aef9-001c25b8b54e"),
 		m_output_log_id("18883550-e105-11dd-8c4d-001c25b8b54e")
 	{
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 
 		if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
@@ -226,7 +152,7 @@ BOOST_AUTO_TEST_CASE(checkTransformLogFile) {
 	BOOST_CHECK(check_reactor_events_out(m_platform_cfg.getReactionEngine(), m_output_log_id, static_cast<boost::uint64_t>(16)));
 
 	// make sure that the output files match what is expected
-	BOOST_CHECK(check_files_match(LOG_OUTPUT_FILE, LOG_EXPECTED_FILE));
+	BOOST_CHECK(PionUnitTest::check_files_match(LOG_OUTPUT_FILE, LOG_EXPECTED_FILE));
 
 }
 

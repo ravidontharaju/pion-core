@@ -42,7 +42,6 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_cache_files(void);
@@ -96,9 +95,8 @@ public:
 	RunningReactionEngineWithLogInputReactor_F() :
 		m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(NULL), m_file_ext(file_ext)
-	 {
-		setup_logging_for_unit_tests();
-		setup_plugins_directory();		
+	{
+		setup_plugins_directory();
 		cleanup_config_files();
 		cleanup_cache_files();
 		

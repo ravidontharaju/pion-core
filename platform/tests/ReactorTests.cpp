@@ -50,7 +50,6 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_cache_files(void);
@@ -99,7 +98,6 @@ template<typename plugin_class>
 class PluginPtrReadyToOpenReactor_F : public PionPluginPtr<Reactor> {
 public:
 	PluginPtrReadyToOpenReactor_F() {
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 		m_plugin_name = plugin_class::name();
 	}
@@ -179,8 +177,7 @@ public:
 		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
 		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
 	{
-		setup_logging_for_unit_tests();
-		setup_plugins_directory();		
+		setup_plugins_directory();
 		cleanup_reactor_config_files();
 		
 		m_vocab_mgr.setConfigFile(get_vocabularies_file());
@@ -678,7 +675,6 @@ public:
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
 		m_config_filename(get_config_file_dir() + "reactorsWithStatus.xml")
 	{
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 		cleanup_reactor_config_files();
 		

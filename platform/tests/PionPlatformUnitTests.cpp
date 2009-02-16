@@ -17,16 +17,46 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <iostream>
 #include <string>
 #include <libxml/xmlerror.h>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
-#include <pion/PionLogger.hpp>
 
 #define BOOST_TEST_MODULE pion-platform-unit-tests
 #include <boost/test/unit_test.hpp>
+
+#include <pion/PionUnitTestDefs.hpp>
+
+struct PionPlatformUnitTestsConfig {
+	PionPlatformUnitTestsConfig() {
+		std::cout << "global setup specific to pion-platform\n";
+
+		// argc and argv do not include parameters handled by the boost unit test framework, such as --log_level.
+		int argc = boost::unit_test::framework::master_test_suite().argc;
+		char** argv = boost::unit_test::framework::master_test_suite().argv;
+
+		bool verbose = false;
+		if (argc > 1) {
+			if (argv[1][0] == '-' && argv[1][1] == 'v') {
+				verbose = true;
+			}
+		}
+		if (!verbose) {
+			xmlSetGenericErrorFunc(NULL, PionUnitTest::doNothing);
+		} else {
+			std::cout << "Use '-v' to enable logging from libxml2.\n";
+		}
+	}
+	~PionPlatformUnitTestsConfig() {
+		std::cout << "global teardown specific to pion-platform\n";
+	}
+};
+
+BOOST_GLOBAL_FIXTURE(PionUnitTestsConfig);
+BOOST_GLOBAL_FIXTURE(PionPlatformUnitTestsConfig);
 
 
 /// returns the path to the unit test log file directory
@@ -89,33 +119,6 @@ const std::string& get_platform_config_file(void)
 {
 	static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.xml");
 	return PLATFORM_CONFIG_FILE;
-}
-
-// This is passed to xmlSetGenericErrorFunc() to make libxml do nothing when an error
-// occurs, rather than its default behavior of writing a message to stderr.
-void doNothing(void* ctx, const char* msg, ...) {
-}
-
-/// sets up logging (run once only)
-void setup_logging_for_unit_tests(void)
-{
-	static bool first_run = true;
-	if (first_run) {
-		first_run = false;
-		// configure logging
-		PION_LOG_CONFIG_BASIC;
-		pion::PionLogger log_ptr;
-		log_ptr = PION_GET_LOGGER("pion");
-		PION_LOG_SETLEVEL_WARN(log_ptr);
-		
-#if defined(PION_XCODE)
-		// suppress missing plugin directory warnings in XCode
-		log_ptr = PION_GET_LOGGER("pion.server.PlatformConfig");
-		PION_LOG_SETLEVEL_ERROR(log_ptr);
-#endif
-
-		xmlSetGenericErrorFunc(NULL, doNothing);
-	}
 }
 
 /// initializes the Pion plug-in path

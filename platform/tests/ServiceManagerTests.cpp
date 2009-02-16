@@ -35,7 +35,6 @@ using namespace pion::server;
 
 /// external functions defined in PionPlatformUnitTests.cpp
 extern const std::string& get_config_file_dir(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
@@ -45,7 +44,6 @@ class ServicesConfigFile_F
 public:
 	ServicesConfigFile_F() {
 		// get everything set up first
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 		cleanup_platform_config_files();
 

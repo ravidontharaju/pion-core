@@ -34,7 +34,6 @@ using namespace pion::net;
 	static const std::string PATH_TO_PLUGINS("../services/.libs");
 #endif
 
-extern void setup_logging_for_unit_tests(void);
 extern const std::string& get_platform_config_file(void);
 extern void cleanup_platform_config_files(void);
 extern void cleanup_cache_files(void);
@@ -47,7 +46,6 @@ static const boost::uint64_t NUM_LINES_IN_COMB_LOG_2 = 2;
 
 
 BOOST_AUTO_TEST_CASE(checkOpenQueryService) {
-	setup_logging_for_unit_tests();
 	PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
 	PionPluginPtr<WebService> ppp;
 	BOOST_CHECK_NO_THROW(ppp.open("QueryService"));
@@ -56,7 +54,6 @@ BOOST_AUTO_TEST_CASE(checkOpenQueryService) {
 
 struct PluginPtrWithQueryServiceLoaded_F : public PionPluginPtr<pion::server::PlatformService> {
 	PluginPtrWithQueryServiceLoaded_F() { 
-		setup_logging_for_unit_tests();
 		PionPlugin::addPluginDirectory(PATH_TO_PLUGINS);
 		s = NULL;
 		open("QueryService");

@@ -42,7 +42,6 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
@@ -54,7 +53,6 @@ DatabaseManager g_database_mgr(g_vocab_mgr);
 class PluginConfigFixture {
 public:
 	PluginConfigFixture(const std::string& concrete_plugin_class) {
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 		cleanup_platform_config_files();
 		m_concrete_plugin_class = concrete_plugin_class;

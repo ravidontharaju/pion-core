@@ -27,10 +27,6 @@ using namespace pion;
 using namespace pion::platform;
 
 
-/// sets up logging (run once only)
-extern void setup_logging_for_unit_tests(void);
-
-
 class ComparisonTests_F {
 public:
 	ComparisonTests_F()
@@ -41,7 +37,6 @@ public:
 		m_time_term("urn:vocab:test#time"),
 		m_object_term("urn:vocab:test#simple-object")
 	{
-		setup_logging_for_unit_tests();
 		// initialize our initial term set
 		m_plain_int_term.term_type = Vocabulary::TYPE_INT16;
 		m_string_term.term_type = Vocabulary::TYPE_STRING;

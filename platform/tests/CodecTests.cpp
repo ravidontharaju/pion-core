@@ -45,7 +45,6 @@ extern const std::string& get_log_file_dir(void);
 extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
 extern const std::string& get_vocabularies_file(void);
-extern void setup_logging_for_unit_tests(void);
 extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_backup_files(void);
@@ -110,7 +109,6 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredAfterCodecPtr) {
 class PluginPtrReadyToAddCodec_F : public PionPluginPtr<Codec> {
 public:
 	PluginPtrReadyToAddCodec_F() {
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 	}
 };
@@ -188,7 +186,6 @@ template<const char* plugin_type, LINEAGE lineage>
 class CodecPtr_F {
 public:
 	CodecPtr_F() : m_config_ptr(NULL) {
-		setup_logging_for_unit_tests();
 		setup_plugins_directory();
 		cleanup_codec_config_files(true);
 		BOOST_REQUIRE(lineage == CREATED || lineage == CLONED || lineage == MANUFACTURED);
@@ -1609,7 +1606,6 @@ BOOST_AUTO_TEST_SUITE_END()
 class NewCodecFactory_F : public CodecFactory {
 public:
 	NewCodecFactory_F() : CodecFactory(m_vocab_mgr) {
-		setup_logging_for_unit_tests();
 		cleanup_codec_config_files(false);
 		
 		if (! m_config_loaded) {
@@ -1910,7 +1906,6 @@ public:
 		m_extended_id("23f68d5a-bfec-11dc-81a7-0016cb926e68"),
 		m_justdate_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b")
 	{
-		setup_logging_for_unit_tests();
 		cleanup_codec_config_files(false);
 		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 
