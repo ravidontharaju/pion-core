@@ -17,4 +17,8 @@
 		Name="PION_PLATFORM_HOME"
 		Value=".."
 	/>
+	<UserMacro
+		Name="PION_HOME"
+		Value="..\.."
+	/>
 </VisualStudioPropertySheet>

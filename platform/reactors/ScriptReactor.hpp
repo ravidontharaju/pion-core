@@ -20,6 +20,13 @@
 #ifndef __PION_SCRIPTREACTOR_HEADER__
 #define __PION_SCRIPTREACTOR_HEADER__
 
+#ifdef _MSC_VER
+	#include <windows.h>
+	#include <string.h>
+#else
+	#include <errno.h>
+	#include <unistd.h>
+#endif
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -30,8 +37,23 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Reactor.hpp>
+
+#ifdef _MSC_VER
+	#define FILE_DESCRIPTOR			HANDLE
+	#define INVALID_DESCRIPTOR		INVALID_HANDLE_VALUE
+	#define PROCESS_INFO_TYPE		PROCESS_INFORMATION
+	#define CLEAR_PROCESS_INFO(x)	ZeroMemory( &x, sizeof(PROCESS_INFORMATION) )
+	#define CLOSE_DESCRIPTOR(x)		CloseHandle(x)
+#else
+	#define FILE_DESCRIPTOR			int
+	#define INVALID_DESCRIPTOR		-1
+	#define PROCESS_INFO_TYPE		pid_t
+	#define CLEAR_PROCESS_INFO(x)	x = 0
+	#define CLOSE_DESCRIPTOR(x)		::close(x)
+#endif
 
 
 namespace pion {		// begin namespace pion
@@ -107,8 +129,10 @@ public:
 	ScriptReactor(void)
 		: Reactor(TYPE_PROCESSING),
 		m_logger(PION_GET_LOGGER("pion.ScriptReactor")),
-		m_input_pipe(-1), m_output_pipe(-1), m_child_pid(0)
-	{}
+		m_input_pipe(INVALID_DESCRIPTOR), m_output_pipe(INVALID_DESCRIPTOR)
+	{
+		CLEAR_PROCESS_INFO(m_child);
+	}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ScriptReactor() { stop(); }
@@ -161,6 +185,13 @@ private:
 	/// stops the reactor and returns true if it was running
 	bool stopIfRunning(void);
 	
+	/**
+	 * checks to see if new event data is available to be read from the script
+	 *
+	 * @return int 0 if none available, 1 if data available, -1 if error
+	 */
+	int checkForNewEvents(void);
+
 	/// thread function to read events from the script command
 	void readEvents(void);
 	
@@ -210,13 +241,13 @@ private:
 	std::vector<std::string>			m_args;
 	
 	/// pipe used to write Events to the shell script or program
-	int									m_input_pipe;
+	FILE_DESCRIPTOR						m_input_pipe;
 	
 	/// pipe used to read Events from the shell script or program
-	int									m_output_pipe;
+	FILE_DESCRIPTOR						m_output_pipe;
 	
 	/// process id for the shell script or program
-	pid_t								m_child_pid;
+	PROCESS_INFO_TYPE					m_child;
 	
 	/// pointer to a C++ stream buffer used to write Events to the pipe
 	boost::scoped_ptr<StreamBuffer>		m_input_streambuf_ptr;

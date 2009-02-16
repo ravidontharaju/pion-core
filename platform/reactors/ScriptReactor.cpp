@@ -17,13 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <errno.h>
-#include <unistd.h>
-#include <signal.h>
 #include <iostream>
-#ifndef _MSC_VER
-	#include <sys/select.h>
-#endif
 #include <boost/scoped_array.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include "ScriptReactor.hpp"
@@ -70,7 +64,7 @@ bool ScriptReactor::stopIfRunning(void)
 			m_is_running = false;
 			
 			// this should break the reader thread out of any blocking operations
-			::close(m_output_pipe);
+			CLOSE_DESCRIPTOR(m_output_pipe);
 		}
 	}
 
@@ -168,6 +162,49 @@ void ScriptReactor::process(const EventPtr& e)
 	// note: delivery to other reactors is handled by readEvents()
 }
 
+int ScriptReactor::checkForNewEvents(void)
+{
+	int return_code = -1;
+	
+#ifdef _MSC_VER
+
+	// WaitForSingleObject from WINAPI
+	// see http://msdn.microsoft.com/en-us/library/ms687032(VS.85).aspx
+	switch ( WaitForSingleObject(m_output_pipe, 0) ) {
+	case WAIT_ABANDONED:	// 0x00000080L
+		break;	// do nothing (error)
+	case WAIT_OBJECT_0:		// 0x00000000L
+		return_code = 1;
+		break;
+	case WAIT_TIMEOUT:		// 0x00000102L
+		return_code = 0;
+		break;
+	default:
+		break;	// do nothing
+	};
+	
+#else
+
+	// note: these need to be reset before each select()
+	fd_set read_fds;
+	struct timeval timeout;
+
+	// add script output descriptor to list to check
+	FD_ZERO(&read_fds);
+	FD_SET(m_output_pipe, &read_fds);
+	
+	// set to zero to avoid blocking
+	// DO NOT use NULL for timeout; it blocks forever
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+
+	return_code = ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout);
+	
+#endif
+
+	return return_code;
+}
+
 void ScriptReactor::readEvents(void)
 {
 	PION_LOG_DEBUG(m_logger, "Script reader thread is running: " << getId());
@@ -179,26 +216,16 @@ void ScriptReactor::readEvents(void)
 		EventPtr event_ptr;
 		bool event_read;
 
-		struct timeval timeout;
-		fd_set read_fds;
-		int select_result;
+		PION_ASSERT(m_output_stream_ptr);
+		PION_ASSERT(m_output_codec_ptr);
 		
 		while ( isRunning() ) {
-		
-			PION_ASSERT(m_output_stream_ptr);
-			PION_ASSERT(m_output_codec_ptr);
-
-			// these need to be reset before each select()
-			FD_ZERO(&read_fds);
-			FD_SET(m_output_pipe, &read_fds);
-			timeout.tv_sec = 0;
-			timeout.tv_usec = 0;
 
 			// wait for data to be available
-			select_result = ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout);
+			int data_status = checkForNewEvents();
 			
-			if (select_result == 1) {
-			
+			if (data_status == 1) {
+
 				ConfigReadLock cfg_lock(*this);
 				if ( ! isRunning() )	// re-check after acquiring lock
 					break;
@@ -222,7 +249,7 @@ void ScriptReactor::readEvents(void)
 					throw ReadFromPipeException(getId());
 				}
 				
-			} else if (select_result == 0) {
+			} else if (data_status == 0) {
 
 				// no data currently available
 				PionScheduler::sleep(0, 100000000);
@@ -256,7 +283,78 @@ void ScriptReactor::openPipe(void)
 	PION_LOG_DEBUG(m_logger, "Opening pipe to command: " << m_command);
 	
 	PION_ASSERT(! m_args.empty());
+
+#ifdef _MSC_VER
+
+	// create child process code adapted from:
+	// http://msdn.microsoft.com/en-us/library/ms682499(VS.85).aspx
+
+	// prepare security attributes to use for creating pipes
+	SECURITY_ATTRIBUTES sa_attr;
+	sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa_attr.bInheritHandle = TRUE;
+	sa_attr.lpSecurityDescriptor = NULL;
+
+	// from int_tmain():
+	HANDLE child_stdout_read = NULL;
+	HANDLE child_stdout_write = NULL;
+	HANDLE child_stdin_read = NULL;
+	HANDLE child_stdin_write = NULL;
 	
+	// create pipe for child stdout
+	if ( ! CreatePipe(&child_stdout_read, &child_stdout_write, &sa_attr, 0) )
+		throw OpenPipeException(m_command);
+
+	// ensure read handle for child stdout is not inherited
+	if ( ! SetHandleInformation(child_stdout_read, HANDLE_FLAG_INHERIT, 0) )
+		throw OpenPipeException(m_command);
+
+	// create pipe for child stdin
+	if ( ! CreatePipe(&child_stdin_read, &child_stdin_write, &sa_attr, 0) )
+		throw OpenPipeException(m_command);
+
+	// ensure write handle for child stdin is not inherited
+	if ( ! SetHandleInformation(child_stdin_write, HANDLE_FLAG_INHERIT, 0) )
+		throw OpenPipeException(m_command);
+
+	// from CreateChildProcess(), with some liberties...:
+	char *command = _strdup(m_command.c_str());
+	CLEAR_PROCESS_INFO(m_child);
+	
+	// prepare startup information for child process
+	STARTUPINFO start_info;
+	ZeroMemory( &start_info, sizeof(STARTUPINFO) );
+	start_info.cb = sizeof(STARTUPINFO);
+	start_info.hStdOutput = child_stdout_write;
+	start_info.hStdInput = child_stdin_read;
+	start_info.dwFlags |= STARTF_USESTDHANDLES;
+	
+	// create the child process
+	BOOL result = CreateProcess(NULL,
+		command,		// command line
+		NULL,			// process security attributes
+		NULL,			// primary thread security attributes
+		TRUE,			// handles are inherited
+		0,				// creation flags
+		NULL,			// use parent's environment
+		NULL,			// use parent's current directory
+		&start_info,	// STARTUPINFO pointer
+		&m_child);		// receives PROCESS_INFORMATION
+	
+	// check result of creating child process
+	free(command);
+	if (result) {
+		m_input_pipe = child_stdin_write;
+		m_output_pipe = child_stdout_read;
+	} else {
+		// close process and thread handles
+		CloseHandle(m_child.hProcess);
+		CloseHandle(m_child.hThread);
+		throw OpenPipeException(m_command);
+	}
+
+#else
+
 	// initialize pipes for reading and writing to script
 	int r_pipes[2];
 	int w_pipes[2];
@@ -264,26 +362,26 @@ void ScriptReactor::openPipe(void)
 		throw OpenPipeException(m_command);
 	
 	// fork child process
-	m_child_pid = ::fork();
+	m_child = ::fork();
 
-	if (m_child_pid == -1) {
+	if (m_child == -1) {
 
 		// failed to fork child process
 		throw OpenPipeException(m_command);
 
-	} else if (m_child_pid == 0) {
+	} else if (m_child == 0) {
 
 		// inside child process
 
 		// close ends of pipes used by parent
-		::close(w_pipes[1]);
-		::close(r_pipes[0]);
+		CLOSE_DESCRIPTOR(w_pipes[1]);
+		CLOSE_DESCRIPTOR(r_pipes[0]);
 
 		// bind other ends of pipes to STDIN/STDOUT
 		::dup2(w_pipes[0], 0);	// STDIN
 		::dup2(r_pipes[1], 1);	// STDOUT
-		::close(w_pipes[0]);
-		::close(r_pipes[1]);
+		CLOSE_DESCRIPTOR(w_pipes[0]);
+		CLOSE_DESCRIPTOR(r_pipes[1]);
 		
 		// convert argument string vector into an array of char pointers
 		boost::scoped_array<char*> arg_ptr(new char*[m_args.size() + 1]);
@@ -301,13 +399,15 @@ void ScriptReactor::openPipe(void)
 		// inside parent process
 		
 		// close ends of pipes used by child
-		::close(w_pipes[0]);
-		::close(r_pipes[1]);
+		CLOSE_DESCRIPTOR(w_pipes[0]);
+		CLOSE_DESCRIPTOR(r_pipes[1]);
 
 		// set file descriptors for reading/writing
 		m_input_pipe = w_pipes[1];
 		m_output_pipe = r_pipes[0];
 	}
+
+#endif
 
 	// prepare c++ streams to use pipes for reading and writing events
 	m_input_streambuf_ptr.reset(new StreamBuffer( m_input_pipe ));
@@ -318,18 +418,28 @@ void ScriptReactor::openPipe(void)
 
 void ScriptReactor::closePipe(void)
 {
-	if (m_input_pipe != -1 || m_output_pipe != -1) {
+	if (m_input_pipe != INVALID_DESCRIPTOR || m_output_pipe != INVALID_DESCRIPTOR) {
 		PION_LOG_DEBUG(m_logger, "Closing pipe to command: " << m_command);
-		// file descriptors are closed by the iostreams
-		//::close(m_input_pipe);
-		//::close(m_output_pipe);
-		::kill(m_child_pid, SIGKILL);
+
+		// note: file descriptors are closed by the iostreams
+
+		// close child process
+#ifdef _MSC_VER
+		CloseHandle(m_child.hProcess);
+		CloseHandle(m_child.hThread);
+#else
+		::kill(m_child, SIGKILL);
+#endif
+		CLEAR_PROCESS_INFO(m_child);
+
+		// close iostreams	
 		m_input_stream_ptr.reset();
 		m_output_stream_ptr.reset();
 		m_input_streambuf_ptr.reset();
 		m_output_streambuf_ptr.reset();
-		m_child_pid = 0;
-		m_input_pipe = m_output_pipe = -1;
+
+		// reset pipe handles
+		m_input_pipe = m_output_pipe = INVALID_DESCRIPTOR;
 	}
 }
 
