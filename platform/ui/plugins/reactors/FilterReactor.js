@@ -147,6 +147,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			// Arrange for destroyRecursive() to get called when the dialog is closed.
 			// This will, among other things, disconnect all the connections made via _Widget.connect().
 			// TODO: Move to ReactorDialog.postCreate()?
+			// IMPORTANT: before moving this code or copying it to a Reactor that requires a license key, make sure checkLicenseKey() works!
 			this.connect(this, "onCancel", function() {this.destroyRecursive(false)});
 
 			// TODO: Move to ReactorDialog.postCreate()?
