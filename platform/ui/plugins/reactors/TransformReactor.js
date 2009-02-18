@@ -372,12 +372,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							return false;
 						}
 
-					// Disable editing of 'Set Term' cell if 'In Place' cell is set to true.
-					case 'SetTerm':
-						var item = this.getItem(row_index);
-						var in_place = this.store.getValue(item, 'InPlace');
-						return ! in_place;
-
 					default:
 						return true;
 				}
