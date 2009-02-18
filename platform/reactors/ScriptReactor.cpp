@@ -44,7 +44,7 @@ void ScriptReactor::start(void)
 	if (! m_is_running) {
 		// open pipe to script
 		openPipe();
-		
+
 		m_is_running = true;
 
 		// spawn a new thread that will be used to read events from the script
@@ -52,7 +52,7 @@ void ScriptReactor::start(void)
 		m_thread_ptr.reset(new boost::thread(boost::bind(&ScriptReactor::readEvents, this)));
 	}
 }
-	
+
 bool ScriptReactor::stopIfRunning(void)
 {
 	bool do_stop = false;
@@ -62,9 +62,10 @@ bool ScriptReactor::stopIfRunning(void)
 			PION_LOG_DEBUG(m_logger, "Waiting for reader thread to finish");
 			do_stop = true;
 			m_is_running = false;
-			
+
 			// this should break the reader thread out of any blocking operations
-			CLOSE_DESCRIPTOR(m_output_pipe);
+			if (m_input_pipe != INVALID_DESCRIPTOR)
+				CLOSE_DESCRIPTOR(m_input_pipe);
 		}
 	}
 
@@ -76,7 +77,7 @@ bool ScriptReactor::stopIfRunning(void)
 		m_thread_ptr.reset();
 		closePipe();
 	}
-	
+
 	return do_stop;
 }
 
@@ -89,32 +90,32 @@ void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// first set config options for the Reactor base class
 		ConfigWriteLock cfg_lock(*this);
 		Reactor::setConfig(v, config_ptr);
-		
+
 		// get the Input Codec that the Reactor should use
 		if (! ConfigManager::getConfigOption(INPUT_CODEC_ELEMENT_NAME, m_input_codec_id, config_ptr))
 			throw EmptyInputCodecException(getId());
 		m_input_codec_ptr = getCodecFactory().getCodec(m_input_codec_id);
 		PION_ASSERT(m_input_codec_ptr);
-	
+
 		// get the Output Codec that the Reactor should use
 		if (! ConfigManager::getConfigOption(OUTPUT_CODEC_ELEMENT_NAME, m_output_codec_id, config_ptr))
 			throw EmptyOutputCodecException(getId());
 		m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
 		PION_ASSERT(m_output_codec_ptr);
-		
+
 		// get the script or program command to execute
 		if (! ConfigManager::getConfigOption(COMMAND_ELEMENT_NAME, m_command, config_ptr))
 			throw EmptyCommandException(getId());
-			
+
 		// break command string into a vector of arguments
 		parseArguments();
 	}
-	
+
 	// restart if the reactor was running
 	if (was_running)
 		start();
 }
-	
+
 void ScriptReactor::updateVocabulary(const Vocabulary& v)
 {
 	// first update anything in the Reactor base class that might be needed
@@ -127,7 +128,7 @@ void ScriptReactor::updateVocabulary(const Vocabulary& v)
 	if (m_output_codec_ptr)
 		m_output_codec_ptr->updateVocabulary(v);
 }
-	
+
 void ScriptReactor::updateCodecs(void)
 {
 	// check if a codec was deleted (if so, stop now!)
@@ -142,7 +143,7 @@ void ScriptReactor::updateCodecs(void)
 		m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
 	}
 }
-	
+
 void ScriptReactor::process(const EventPtr& e)
 {
 	PION_ASSERT(m_input_stream_ptr);
@@ -150,12 +151,12 @@ void ScriptReactor::process(const EventPtr& e)
 
 	// lock mutex to ensure that only one Event may be written at a time
 	boost::mutex::scoped_lock write_lock(m_write_mutex);
-	
+
 	// write the Event to the pipe
 	m_input_codec_ptr->write(*m_input_stream_ptr, *e);
 	if (! *m_input_stream_ptr)
 		throw WriteToPipeException(getId());
-		
+
 	// unlock mutex after writing to pipe
 	write_lock.unlock();
 
@@ -165,7 +166,7 @@ void ScriptReactor::process(const EventPtr& e)
 int ScriptReactor::checkForNewEvents(void)
 {
 	int return_code = -1;
-	
+
 #ifdef _MSC_VER
 
 	// WaitForSingleObject from WINAPI
@@ -182,7 +183,7 @@ int ScriptReactor::checkForNewEvents(void)
 	default:
 		break;	// do nothing
 	};
-	
+
 #else
 
 	// note: these need to be reset before each select()
@@ -192,14 +193,17 @@ int ScriptReactor::checkForNewEvents(void)
 	// add script output descriptor to list to check
 	FD_ZERO(&read_fds);
 	FD_SET(m_output_pipe, &read_fds);
-	
+
 	// set to zero to avoid blocking
 	// DO NOT use NULL for timeout; it blocks forever
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 
 	return_code = ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout);
-	
+	// ignore EINTR errors (receives signals on Linux)
+	if (return_code == -1 && errno == EINTR)
+		return_code = 0;
+
 #endif
 
 	return return_code;
@@ -210,7 +214,7 @@ void ScriptReactor::readEvents(void)
 	PION_LOG_DEBUG(m_logger, "Script reader thread is running: " << getId());
 
 	try {
-	
+
 		const Event::EventType event_type(m_output_codec_ptr->getEventType());
 		EventFactory event_factory;
 		EventPtr event_ptr;
@@ -218,48 +222,35 @@ void ScriptReactor::readEvents(void)
 
 		PION_ASSERT(m_output_stream_ptr);
 		PION_ASSERT(m_output_codec_ptr);
-		
+
 		while ( isRunning() ) {
 
 			// wait for data to be available
 			int data_status = checkForNewEvents();
-			
 			if (data_status == 1) {
-
 				ConfigReadLock cfg_lock(*this);
 				if ( ! isRunning() )	// re-check after acquiring lock
 					break;
 
 				// data is available for reading
-
 				// get a new event from the EventFactory
 				event_factory.create(event_ptr, event_type);
-				
 				// read an event using the output codec
 				event_read = m_output_codec_ptr->read(*m_output_stream_ptr, *event_ptr);
-	
+
 				if (event_read) {
-	
 					// deliver the Event to other Reactors
 					deliverEvent(event_ptr);
-	
 				} else {
-				
 					// check for read error
 					throw ReadFromPipeException(getId());
 				}
-				
 			} else if (data_status == 0) {
-
 				// no data currently available
 				PionScheduler::sleep(0, 100000000);
-			
 			} else {
-
 				// error checking for data availability
-				// ignore EINTR errors (receives signals on Linux)
-				if (errno != 4)
-					throw SelectPipeException(getId());
+				throw SelectPipeException(getId());
 			}
 		}
 
@@ -279,9 +270,9 @@ void ScriptReactor::openPipe(void)
 {
 	// close first if already open
 	closePipe();
-	
+
 	PION_LOG_DEBUG(m_logger, "Opening pipe to command: " << m_command);
-	
+
 	PION_ASSERT(! m_args.empty());
 
 #ifdef _MSC_VER
@@ -296,39 +287,44 @@ void ScriptReactor::openPipe(void)
 	sa_attr.lpSecurityDescriptor = NULL;
 
 	// from int_tmain():
-	HANDLE child_stdout_read = NULL;
-	HANDLE child_stdout_write = NULL;
-	HANDLE child_stdin_read = NULL;
-	HANDLE child_stdin_write = NULL;
-	
+	HANDLE child_stdout_read = INVALID_HANDLE_VALUE;
+	HANDLE child_stdout_write = INVALID_HANDLE_VALUE;
+	HANDLE child_stdin_read = INVALID_HANDLE_VALUE;
+	HANDLE child_stdin_write = INVALID_HANDLE_VALUE;
+
 	// create pipe for child stdout
 	if ( ! CreatePipe(&child_stdout_read, &child_stdout_write, &sa_attr, 0) )
 		throw OpenPipeException(m_command);
-
 	// ensure read handle for child stdout is not inherited
-	if ( ! SetHandleInformation(child_stdout_read, HANDLE_FLAG_INHERIT, 0) )
+	if ( ! SetHandleInformation(child_stdout_read, HANDLE_FLAG_INHERIT, 0) ) {
+		CloseHandle(child_stdout_read); CloseHandle(child_stdout_write);
 		throw OpenPipeException(m_command);
-
+	}
 	// create pipe for child stdin
-	if ( ! CreatePipe(&child_stdin_read, &child_stdin_write, &sa_attr, 0) )
+	if ( ! CreatePipe(&child_stdin_read, &child_stdin_write, &sa_attr, 0) ) {
+		CloseHandle(child_stdout_read); CloseHandle(child_stdout_write);
 		throw OpenPipeException(m_command);
-
+	}
 	// ensure write handle for child stdin is not inherited
-	if ( ! SetHandleInformation(child_stdin_write, HANDLE_FLAG_INHERIT, 0) )
+	if ( ! SetHandleInformation(child_stdin_write, HANDLE_FLAG_INHERIT, 0) ) {
+		CloseHandle(child_stdout_read); CloseHandle(child_stdout_write);
+		CloseHandle(child_stdin_read); CloseHandle(child_stdin_write);
 		throw OpenPipeException(m_command);
+	}
 
 	// from CreateChildProcess(), with some liberties...:
 	char *command = _strdup(m_command.c_str());
-	CLEAR_PROCESS_INFO(m_child);
-	
+	PROCESS_INFORMATION proc_info;
+	ZeroMemory( &proc_info, sizeof(PROCESS_INFORMATION) );
+
 	// prepare startup information for child process
 	STARTUPINFO start_info;
 	ZeroMemory( &start_info, sizeof(STARTUPINFO) );
 	start_info.cb = sizeof(STARTUPINFO);
-	start_info.hStdOutput = child_stdout_write;
 	start_info.hStdInput = child_stdin_read;
+	start_info.hStdOutput = child_stdout_write;
 	start_info.dwFlags |= STARTF_USESTDHANDLES;
-	
+
 	// create the child process
 	BOOL result = CreateProcess(NULL,
 		command,		// command line
@@ -339,17 +335,21 @@ void ScriptReactor::openPipe(void)
 		NULL,			// use parent's environment
 		NULL,			// use parent's current directory
 		&start_info,	// STARTUPINFO pointer
-		&m_child);		// receives PROCESS_INFORMATION
-	
+		&proc_info);	// receives PROCESS_INFORMATION
+
 	// check result of creating child process
 	free(command);
 	if (result) {
+		CloseHandle(child_stdin_read);
+		CloseHandle(child_stdout_write);
 		m_input_pipe = child_stdin_write;
 		m_output_pipe = child_stdout_read;
+		m_child = (LPPROCESS_INFORMATION)malloc(sizeof(PROCESS_INFORMATION));
+		CopyMemory(m_child, &proc_info, sizeof(PROCESS_INFORMATION));
 	} else {
-		// close process and thread handles
-		CloseHandle(m_child.hProcess);
-		CloseHandle(m_child.hThread);
+		// close all pipes
+		CloseHandle(child_stdout_read); CloseHandle(child_stdout_write);
+		CloseHandle(child_stdin_read); CloseHandle(child_stdin_write);
 		throw OpenPipeException(m_command);
 	}
 
@@ -357,50 +357,50 @@ void ScriptReactor::openPipe(void)
 
 	// initialize pipes for reading and writing to script
 	int r_pipes[2];
-	int w_pipes[2];
-	if ( ::pipe(r_pipes) != 0 || ::pipe(w_pipes) != 0)
+	if ( ::pipe(r_pipes) != 0 )
 		throw OpenPipeException(m_command);
-	
+	int w_pipes[2];
+	if ( ::pipe(w_pipes) != 0) {
+		::close(r_pipes[0]); ::close(r_pipes[1]);
+		throw OpenPipeException(m_command);
+	}
+
 	// fork child process
 	m_child = ::fork();
-
 	if (m_child == -1) {
-
+		// inside parent process
 		// failed to fork child process
+		::close(r_pipes[0]); ::close(r_pipes[1]);
+		::close(w_pipes[0]); ::close(w_pipes[1]);
 		throw OpenPipeException(m_command);
-
 	} else if (m_child == 0) {
-
 		// inside child process
-
-		// close ends of pipes used by parent
-		CLOSE_DESCRIPTOR(w_pipes[1]);
-		CLOSE_DESCRIPTOR(r_pipes[0]);
-
-		// bind other ends of pipes to STDIN/STDOUT
+		// bind ends of pipes used by child to STDIN/STDOUT
 		::dup2(w_pipes[0], 0);	// STDIN
+		::setbuf(::stdin, 0);
 		::dup2(r_pipes[1], 1);	// STDOUT
-		CLOSE_DESCRIPTOR(w_pipes[0]);
-		CLOSE_DESCRIPTOR(r_pipes[1]);
-		
+		::setbuf(::stdout, 0);
+
+		// "blackhole" STDERR, and close all others
+		::dup2(::open("/dev/null", O_WRONLY, 0), 2);
+		for (int fd = ::getdtablesize() - 1; fd > 2; fd--)
+			::close(fd);
+
 		// convert argument string vector into an array of char pointers
 		boost::scoped_array<char*> arg_ptr(new char*[m_args.size() + 1]);
 		for (std::size_t n = 0; n < m_args.size(); ++n) {
 			arg_ptr[n] = const_cast<char*>(m_args[n].c_str());
 		}
 		arg_ptr[ m_args.size() ] = NULL;
-		
+
 		// execute command (ignore return since we're in a new process anyway)
 		// note: execvp is wrapper for execve() that also searches the paths
 		::execvp(m_args[0].c_str(), arg_ptr.get());
-
 	} else {
-
 		// inside parent process
-		
 		// close ends of pipes used by child
-		CLOSE_DESCRIPTOR(w_pipes[0]);
-		CLOSE_DESCRIPTOR(r_pipes[1]);
+		::close(w_pipes[0]);
+		::close(r_pipes[1]);
 
 		// set file descriptors for reading/writing
 		m_input_pipe = w_pipes[1];
@@ -425,12 +425,23 @@ void ScriptReactor::closePipe(void)
 
 		// close child process
 #ifdef _MSC_VER
-		CloseHandle(m_child.hProcess);
-		CloseHandle(m_child.hThread);
+		if (m_child) {
+			WaitForSingleObject(m_child->hProcess, INFINITE);
+			// Perhaps, after a delay...terminate it?
+			//TerminateProcess(m_child->hProcess, 0);
+			CloseHandle(m_child->hProcess);
+			CloseHandle(m_child->hThread);
+			free(m_child);
+		}
 #else
-		::kill(m_child, SIGKILL);
+		if (m_child > 0) {
+			::waitpid(m_child, 0, 0);
+			// Perhaps, after a delay...terminate it?
+			//::kill(m_child, SIGTERM);
+			// Perhaps, after some more delay...kill it?
+			//::kill(m_child, SIGKILL);
+		}
 #endif
-		CLEAR_PROCESS_INFO(m_child);
 
 		// close iostreams	
 		m_input_stream_ptr.reset();
@@ -438,8 +449,9 @@ void ScriptReactor::closePipe(void)
 		m_input_streambuf_ptr.reset();
 		m_output_streambuf_ptr.reset();
 
-		// reset pipe handles
+		// reset pipe handles and child
 		m_input_pipe = m_output_pipe = INVALID_DESCRIPTOR;
+		m_child = INVALID_PROCESS;
 	}
 }
 
@@ -498,24 +510,24 @@ void ScriptReactor::parseArguments(void)
 				arg.push_back( m_command[next_pos] );
 			}
 			break;
-			
+
 		default:
 			// append character
 			arg.push_back( m_command[next_pos] );
 			break;
 		}
-		
+
 		++next_pos;
 	}
-	
+
 	// push final argument if ending delimiter not found
 	if (!arg.empty())
 		m_args.push_back(arg);
-		
+
 	// sanity check: args should never be empty
 	if (m_args.empty())
 		throw CommandParsingException(m_command);
-		
+
 	// log each argument parsed for debugging
 	for (std::vector<std::string>::const_iterator it = m_args.begin(); it != m_args.end(); ++it) {
 		PION_LOG_DEBUG(m_logger, "Command string argument: " << *it);

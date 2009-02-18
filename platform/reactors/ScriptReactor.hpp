@@ -26,6 +26,7 @@
 #else
 	#include <errno.h>
 	#include <unistd.h>
+	#include <sys/wait.h>
 #endif
 #include <iosfwd>
 #include <string>
@@ -42,17 +43,17 @@
 #include <pion/platform/Reactor.hpp>
 
 #ifdef _MSC_VER
-	#define FILE_DESCRIPTOR			HANDLE
+	#define FILE_DESC_TYPE			HANDLE
 	#define INVALID_DESCRIPTOR		INVALID_HANDLE_VALUE
-	#define PROCESS_INFO_TYPE		PROCESS_INFORMATION
-	#define CLEAR_PROCESS_INFO(x)	ZeroMemory( &x, sizeof(PROCESS_INFORMATION) )
 	#define CLOSE_DESCRIPTOR(x)		CloseHandle(x)
+	#define PROCESS_INFO_TYPE		LPPROCESS_INFORMATION
+	#define INVALID_PROCESS			NULL
 #else
-	#define FILE_DESCRIPTOR			int
+	#define FILE_DESC_TYPE			int
 	#define INVALID_DESCRIPTOR		-1
-	#define PROCESS_INFO_TYPE		pid_t
-	#define CLEAR_PROCESS_INFO(x)	x = 0
 	#define CLOSE_DESCRIPTOR(x)		::close(x)
+	#define PROCESS_INFO_TYPE		pid_t
+	#define INVALID_PROCESS			-1
 #endif
 
 
@@ -129,9 +130,8 @@ public:
 	ScriptReactor(void)
 		: Reactor(TYPE_PROCESSING),
 		m_logger(PION_GET_LOGGER("pion.ScriptReactor")),
-		m_input_pipe(INVALID_DESCRIPTOR), m_output_pipe(INVALID_DESCRIPTOR)
+		m_input_pipe(INVALID_DESCRIPTOR), m_output_pipe(INVALID_DESCRIPTOR), m_child(INVALID_PROCESS)
 	{
-		CLEAR_PROCESS_INFO(m_child);
 	}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -241,10 +241,10 @@ private:
 	std::vector<std::string>			m_args;
 	
 	/// pipe used to write Events to the shell script or program
-	FILE_DESCRIPTOR						m_input_pipe;
+	FILE_DESC_TYPE						m_input_pipe;
 	
 	/// pipe used to read Events from the shell script or program
-	FILE_DESCRIPTOR						m_output_pipe;
+	FILE_DESC_TYPE						m_output_pipe;
 	
 	/// process id for the shell script or program
 	PROCESS_INFO_TYPE					m_child;
