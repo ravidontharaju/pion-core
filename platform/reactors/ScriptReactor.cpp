@@ -44,7 +44,6 @@ void ScriptReactor::start(void)
 	if (! m_is_running) {
 		// open pipe to script
 		openPipe();
-
 		m_is_running = true;
 
 		// spawn a new thread that will be used to read events from the script
@@ -56,16 +55,18 @@ void ScriptReactor::start(void)
 bool ScriptReactor::stopIfRunning(void)
 {
 	bool do_stop = false;
-	{	
+	{
 		ConfigWriteLock cfg_lock(*this);
-		if (m_is_running) {
-			PION_LOG_DEBUG(m_logger, "Waiting for reader thread to finish");
-			do_stop = true;
-			m_is_running = false;
+		if (m_is_running && m_input_pipe != INVALID_DESCRIPTOR) {
+			PION_LOG_DEBUG(m_logger, "Waiting for reader thread: " << getId());
+			FILE_DESC_TYPE input_pipe = m_input_pipe;
 
+			// let the reader thread know we are intending to stop it...
+			m_input_pipe = INVALID_DESCRIPTOR;
 			// this should break the reader thread out of any blocking operations
-			if (m_input_pipe != INVALID_DESCRIPTOR)
-				CLOSE_DESCRIPTOR(m_input_pipe);
+			CLOSE_DESCRIPTOR(input_pipe);
+
+			do_stop = true;
 		}
 	}
 
@@ -74,8 +75,12 @@ bool ScriptReactor::stopIfRunning(void)
 		m_thread_ptr->join();
 
 		ConfigWriteLock cfg_lock(*this);
+		PION_LOG_DEBUG(m_logger, "Cleaned up reader thread: " << getId());
 		m_thread_ptr.reset();
+
+		// close pipe to script
 		closePipe();
+		m_is_running = false;
 	}
 
 	return do_stop;
@@ -206,12 +211,14 @@ int ScriptReactor::checkForNewEvents(void)
 
 #endif
 
+	if (return_code == 0 && m_output_streambuf_ptr->in_avail() > 0)
+		return_code = 1;
 	return return_code;
 }
 
 void ScriptReactor::readEvents(void)
 {
-	PION_LOG_DEBUG(m_logger, "Script reader thread is running: " << getId());
+	PION_LOG_DEBUG(m_logger, "Reader thread is running: " << getId());
 
 	try {
 
@@ -224,13 +231,13 @@ void ScriptReactor::readEvents(void)
 		PION_ASSERT(m_output_codec_ptr);
 
 		while ( isRunning() ) {
-
 			// wait for data to be available
 			int data_status = checkForNewEvents();
 			if (data_status == 1) {
-				ConfigReadLock cfg_lock(*this);
-				if ( ! isRunning() )	// re-check after acquiring lock
-					break;
+				// we don't need this lock, because only setConfig can change the config,
+				// and the first thing it does is stop the reactor...and, if we did grab
+				// this lock, we'd have a deadlock if the codec-read blocks...
+				//ConfigReadLock cfg_lock(*this);
 
 				// data is available for reading
 				// get a new event from the EventFactory
@@ -241,8 +248,11 @@ void ScriptReactor::readEvents(void)
 				if (event_read) {
 					// deliver the Event to other Reactors
 					deliverEvent(event_ptr);
+				} else if (m_output_stream_ptr->eof()) {
+					// reached EOF, we're done
+					break;
 				} else {
-					// check for read error
+					// error reading event
 					throw ReadFromPipeException(getId());
 				}
 			} else if (data_status == 0) {
@@ -255,15 +265,15 @@ void ScriptReactor::readEvents(void)
 		}
 
 	} catch (std::exception& e) {
-		ConfigWriteLock cfg_lock(*this);
-		if ( isRunning() ) {
-			PION_LOG_FATAL(m_logger, e.what());
-			closePipe();
-			m_is_running = false;
-		}
+		PION_LOG_FATAL(m_logger, e.what());
 	}
 
-	PION_LOG_DEBUG(m_logger, "Script reader thread is exiting: " << getId());
+	// wait for a stop to happen...
+	PION_LOG_DEBUG(m_logger, "Reader thread is terminal: " << getId());
+	while (m_input_pipe != INVALID_DESCRIPTOR)
+		PionScheduler::sleep(0, 250000000);
+
+	PION_LOG_DEBUG(m_logger, "Reader thread is exiting: " << getId());
 }
 
 void ScriptReactor::openPipe(void)
@@ -377,9 +387,7 @@ void ScriptReactor::openPipe(void)
 		// inside child process
 		// bind ends of pipes used by child to STDIN/STDOUT
 		::dup2(w_pipes[0], 0);	// STDIN
-		::setbuf(::stdin, 0);
 		::dup2(r_pipes[1], 1);	// STDOUT
-		::setbuf(::stdout, 0);
 
 		// "blackhole" STDERR, and close all others
 		::dup2(::open("/dev/null", O_WRONLY, 0), 2);
