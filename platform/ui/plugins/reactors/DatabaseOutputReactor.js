@@ -107,7 +107,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			});
 			this.field_mapping_store.next_id = 0;
 			this.custom_post_data_from_field_mapping_store = '';
-			this.connect(this.field_mapping_store, 'onNew', '_updateCustomPostDataFromFieldMappingStore');
 			this.connect(this.field_mapping_store, 'onSet', '_updateCustomPostDataFromFieldMappingStore');
 			this.connect(this.field_mapping_store, 'onDelete', '_updateCustomPostDataFromFieldMappingStore');
 			var field_mapping_grid = new dojox.grid.DataGrid({
@@ -165,7 +164,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
 				_this._updateCustomPutDataFromFieldMappingStore();
-				_this.connect(_this.reactor.field_mapping_store, 'onNew', '_updateCustomPutDataFromFieldMappingStore');
 				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromFieldMappingStore');
 				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromFieldMappingStore');
 				dojo.disconnect(h);

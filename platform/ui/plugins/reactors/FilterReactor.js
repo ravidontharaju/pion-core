@@ -111,7 +111,6 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingComparisonStore', function() {
 				_this._updateCustomPutDataFromComparisonStore();
-				_this.connect(_this.reactor.comparison_store, 'onNew', '_updateCustomPutDataFromComparisonStore');
 				_this.connect(_this.reactor.comparison_store, 'onSet', '_updateCustomPutDataFromComparisonStore');
 				_this.connect(_this.reactor.comparison_store, 'onDelete', '_updateCustomPutDataFromComparisonStore');
 				dojo.disconnect(h);

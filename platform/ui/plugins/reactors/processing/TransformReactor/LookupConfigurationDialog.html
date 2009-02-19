@@ -32,8 +32,14 @@
 			<h2>Key Value Pairs</h2>
 			<div class="reactor_dialog_grid" dojoAttachPoint="lookup_grid_node" style="width: 718px"></div>
 			<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewLookup" class="add_new_row">ADD NEW PAIR</button>
-			<button dojoType=dijit.form.Button class="import" dojoAttachPoint="import_button" dojoAttachEvent="onClick: _onImportKeyValuePairs">Import</button>
-			<button dojoType=dijit.form.Button class="export" dojoAttachPoint="export_button" dojoAttachEvent="onClick: _onExportKeyValuePairs">Export</button>
+			<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportXmlKeyValuePairs">
+				Import XML</button>
+			<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportXmlKeyValuePairs" dojoAttachPoint="export_xml_button" disabled="true">
+				Export XML</button>
+			<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportCsvKeyValuePairs">
+				Import CSV</button>
+			<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportCsvKeyValuePairs" dojoAttachPoint="export_csv_button" disabled="true">
+				Export CSV</button>
 		</div>
 		<div class="save_cancel_delete">
 			<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>

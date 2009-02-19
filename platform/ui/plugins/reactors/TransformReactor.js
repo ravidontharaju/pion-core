@@ -213,7 +213,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			});
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();
-				_this.connect(_this.reactor.transformation_store, 'onNew', '_updateCustomPutDataFromGridStores');
 				_this.connect(_this.reactor.transformation_store, 'onSet', '_updateCustomPutDataFromGridStores');
 				_this.connect(_this.reactor.transformation_store, 'onDelete', '_updateCustomPutDataFromGridStores');
 				dojo.disconnect(h);
@@ -437,7 +436,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function() {
+ 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 
 			if (! this.transformation_item.DefaultAction)
@@ -453,6 +452,10 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				data: { identifier: 'ID', items: [] }
 			});
 			this.lookup_store.next_id = 0;
+			this.connect(this.lookup_store, 'onNew', function() {
+				this.export_xml_button.setAttribute('disabled', false);
+				this.export_csv_button.setAttribute('disabled', false);
+			});
 			this._populateLookupStore();
 
 			this.lookup_grid_layout = [{
@@ -527,9 +530,13 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				this.default_value.domNode.style.visibility = 'hidden';
 			}
 		},
-		_onImportKeyValuePairs: function(e) {
+		_onImportXmlKeyValuePairs: function(e) {
 			var _this = this;
-			var dialog = new plugins.reactors.TransformReactor.KeyValuePairImportDialog({title: 'Key Value Pairs in XML Format to Import'});
+			var dialog = new plugins.reactors.TransformReactor.KeyValuePairImportDialog({
+				title: 'Key Value Pairs in XML Format to Import',
+				instructions: 'Enter key value pairs in the following format, using standard escape sequences:',
+				example: '&lt;Lookup key="index-1"&gt;NASDAQ&lt;/Lookup&gt\n...\n&lt;Lookup key="index-n"&gt;S&amp;amp;P 500&lt;/Lookup&gt'
+			});
 			dialog.show();
 			dialog.execute = function(dialogFields) {
 				var wrapped_XML = '<PionConfig>' + this.XML_text_area.value + '</PionConfig>';
@@ -552,7 +559,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				})
 			}
 		},
-		_onExportKeyValuePairs: function() {
+		_onExportXmlKeyValuePairs: function() {
 			var r_store = this.lookup_store;
 			var content = '';
 			for (var i = 0; i < this.lookup_grid.rowCount; ++i) {
@@ -563,6 +570,53 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				content += pion.escapeXml(element) + '<br />';
 			}
 			var dialog = new dijit.Dialog({title: 'Exported Key Value Pairs in XML Format', style: 'width: 600px'});
+			dialog.setContent(content);
+			dialog.show();
+		},
+		_onImportCsvKeyValuePairs: function(e) {
+			var _this = this;
+			var dialog = new plugins.reactors.TransformReactor.KeyValuePairImportDialog({
+				title: 'Key Value Pairs in CSV Format to Import',
+				instructions: 'Enter key value pairs in CSV format.  Example:',
+				example: 'A,yes & no\nB,"X, Y and Z"\nC,"the one with a ""D"" in it"\nD," quoting optional here "\n...'
+			});
+			dialog.show();
+			dialog.execute = function(dialogFields) {
+				var lines = this.XML_text_area.value.split('\n');
+				dojo.forEach(lines, function(line) {
+					if (results = line.match(/^"(.*)","(.*)"$/)) {
+						var lookup_key = results[1].replace(/""/g, "\"");
+						var lookup_value = results[2].replace(/""/g, "\"");
+					} else if (results = line.match(/^([^,"]*),"(.*)"$/)) {
+						var lookup_key = results[1];
+						var lookup_value = results[2].replace(/""/g, "\"");
+					} else if (results = line.match(/^"(.*)",([^,"]*)$/)) {
+						var lookup_key = results[1].replace(/""/g, "\"");
+						var lookup_value = results[2];
+					} else if (results = line.match(/^([^,"]*),([^,"]*)$/)) {
+						var lookup_key = results[1];
+						var lookup_value = results[2];
+					} else
+						return;  // ignore lines that don't fit any of the above four patterns (see RFC 4180)
+					_this.lookup_store.newItem({
+						ID: _this.lookup_store.next_id++,
+						Key: lookup_key,
+						Value: lookup_value
+					});
+				})
+			}
+		},
+		_onExportCsvKeyValuePairs: function() {
+			var r_store = this.lookup_store;
+			var content = '';
+			for (var i = 0; i < this.lookup_grid.rowCount; ++i) {
+				var item = this.lookup_grid.getItem(i);
+				var key = r_store.getValue(item, 'Key').toString();
+				var value = r_store.getValue(item, 'Value').toString();
+				var element = '"' + key.replace(/"/g, "\"\"") + '","' + value.replace(/"/g, "\"\"") + '"';
+				content += pion.escapeXml(element) + '<br />';
+			}
+			var dialog = new dijit.Dialog({title: 'Exported Key Value Pairs in CSV Format', style: 'width: 600px'});
 			dialog.setContent(content);
 			dialog.show();
 		},

@@ -1,13 +1,11 @@
 <div class="dijitDialog XML_import_dialog" style="width: 600px">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
-		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Import XML Configuration</span>
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">${title}</span>
 	</div>
 	<div style="padding: 10px">
-		Enter key value pairs in the following format, using standard escape sequences:
+		${instructions}
 		<pre>
-&lt;Lookup key="index-1"&gt;NASDAQ&lt;/Lookup&gt
-...
-&lt;Lookup key="index-n"&gt;S&amp;amp;P 500&lt;/Lookup&gt
+${example}
 		</pre>
 	</div>
 	<div class="dijitDialogPaneContent">
