@@ -118,13 +118,6 @@ public:
 			: PionException("ScriptReactor failed writing an event to pipe: ", reactor_id) {}
 	};
 
-	/// exception thrown if the Reactor has trouble checking for data available on a pipe
-	class SelectPipeException : public PionException {
-	public:
-		SelectPipeException(const std::string& reactor_id)
-			: PionException("ScriptReactor failed checking for new events on pipe: ", reactor_id) {}
-	};
-
 
 	/// constructs a new ScriptReactor object
 	ScriptReactor(void)
@@ -185,13 +178,6 @@ private:
 	/// stops the reactor and returns true if it was running
 	bool stopIfRunning(void);
 	
-	/**
-	 * checks to see if new event data is available to be read from the script
-	 *
-	 * @return int 0 if none available, 1 if data available, -1 if error
-	 */
-	int checkForNewEvents(void);
-
 	/// thread function to read events from the script command
 	void readEvents(void);
 	

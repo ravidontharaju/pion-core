@@ -54,6 +54,32 @@ void ScriptReactor::start(void)
 
 bool ScriptReactor::stopIfRunning(void)
 {
+	ConfigWriteLock cfg_lock(*this);
+	if (m_is_running) {
+		PION_LOG_DEBUG(m_logger, "Waiting for reader thread: " << getId());
+		FILE_DESC_TYPE input_pipe = m_input_pipe;
+
+		// let the reader thread know we are intending to stop it...
+		m_input_pipe = INVALID_DESCRIPTOR;
+		// this should break the reader thread out of any blocking operations
+		CLOSE_DESCRIPTOR(input_pipe);
+
+		m_thread_ptr->join();
+		PION_LOG_DEBUG(m_logger, "Cleaned up reader thread: " << getId());
+		m_thread_ptr.reset();
+
+		// close pipe to script
+		closePipe();
+		m_is_running = false;
+		return true;
+	}
+
+	return false;
+}
+
+/* ORIGINAL VERSION
+bool ScriptReactor::stopIfRunning(void)
+{
 	bool do_stop = false;
 	{
 		ConfigWriteLock cfg_lock(*this);
@@ -85,6 +111,7 @@ bool ScriptReactor::stopIfRunning(void)
 
 	return do_stop;
 }
+*/
 
 void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
@@ -168,102 +195,38 @@ void ScriptReactor::process(const EventPtr& e)
 	// note: delivery to other reactors is handled by readEvents()
 }
 
-int ScriptReactor::checkForNewEvents(void)
-{
-	int return_code = -1;
-
-#ifdef _MSC_VER
-
-	// WaitForSingleObject from WINAPI
-	// see http://msdn.microsoft.com/en-us/library/ms687032(VS.85).aspx
-	switch ( WaitForSingleObject(m_output_pipe, 0) ) {
-	case WAIT_ABANDONED:	// 0x00000080L
-		break;	// do nothing (error)
-	case WAIT_OBJECT_0:		// 0x00000000L
-		return_code = 1;
-		break;
-	case WAIT_TIMEOUT:		// 0x00000102L
-		return_code = 0;
-		break;
-	default:
-		break;	// do nothing
-	};
-
-#else
-
-	// note: these need to be reset before each select()
-	fd_set read_fds;
-	struct timeval timeout;
-
-	// add script output descriptor to list to check
-	FD_ZERO(&read_fds);
-	FD_SET(m_output_pipe, &read_fds);
-
-	// set to zero to avoid blocking
-	// DO NOT use NULL for timeout; it blocks forever
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-
-	return_code = ::select(m_output_pipe+1, &read_fds, NULL, NULL, &timeout);
-	// ignore EINTR errors (receives signals on Linux)
-	if (return_code == -1 && errno == EINTR)
-		return_code = 0;
-
-#endif
-
-	if (return_code == 0 && m_output_streambuf_ptr->in_avail() > 0)
-		return_code = 1;
-	return return_code;
-}
-
 void ScriptReactor::readEvents(void)
 {
 	PION_LOG_DEBUG(m_logger, "Reader thread is running: " << getId());
 
 	try {
-
 		const Event::EventType event_type(m_output_codec_ptr->getEventType());
 		EventFactory event_factory;
 		EventPtr event_ptr;
-		bool event_read;
 
 		PION_ASSERT(m_output_stream_ptr);
 		PION_ASSERT(m_output_codec_ptr);
 
 		while ( isRunning() ) {
-			// wait for data to be available
-			int data_status = checkForNewEvents();
-			if (data_status == 1) {
-				// we don't need this lock, because only setConfig can change the config,
-				// and the first thing it does is stop the reactor...and, if we did grab
-				// this lock, we'd have a deadlock if the codec-read blocks...
-				//ConfigReadLock cfg_lock(*this);
+			// we don't need this lock, because only setConfig can change the config,
+			// and the first thing it does is stop the reactor...and, if we did grab
+			// this lock, we'd have a deadlock if/when the codec-read blocks...
+			//ConfigReadLock cfg_lock(*this);
 
-				// data is available for reading
-				// get a new event from the EventFactory
-				event_factory.create(event_ptr, event_type);
-				// read an event using the output codec
-				event_read = m_output_codec_ptr->read(*m_output_stream_ptr, *event_ptr);
-
-				if (event_read) {
-					// deliver the Event to other Reactors
-					deliverEvent(event_ptr);
-				} else if (m_output_stream_ptr->eof()) {
-					// reached EOF, we're done
-					break;
-				} else {
-					// error reading event
-					throw ReadFromPipeException(getId());
-				}
-			} else if (data_status == 0) {
-				// no data currently available
-				PionScheduler::sleep(0, 100000000);
-			} else {
-				// error checking for data availability
-				throw SelectPipeException(getId());
+			// get a new event from the EventFactory
+			event_factory.create(event_ptr, event_type);
+			// read an event using the output codec
+			if (m_output_codec_ptr->read(*m_output_stream_ptr, *event_ptr)) {
+				// deliver the Event to other Reactors
+				deliverEvent(event_ptr);
+			} else if (!m_output_stream_ptr->eof()) {
+				// error (other than EOF) reading event
+				throw ReadFromPipeException(getId());
 			}
+			// if we've reached EOF, we're done
+			if (m_output_stream_ptr->eof())
+				break;
 		}
-
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(m_logger, e.what());
 	}
@@ -333,6 +296,7 @@ void ScriptReactor::openPipe(void)
 	start_info.cb = sizeof(STARTUPINFO);
 	start_info.hStdInput = child_stdin_read;
 	start_info.hStdOutput = child_stdout_write;
+	start_info.hStdError = INVALID_HANDLE_VALUE;
 	start_info.dwFlags |= STARTF_USESTDHANDLES;
 
 	// create the child process
