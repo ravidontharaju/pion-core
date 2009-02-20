@@ -15,10 +15,11 @@
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/find.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionScheduler.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <pion/net/WebService.hpp>
@@ -35,17 +36,15 @@ using namespace pion::net;
 	static const std::string PATH_TO_PLUGINS("../services/.libs");
 #endif
 
-extern const std::string& get_platform_config_file(void);
 extern void cleanup_platform_config_files(void);
 extern void cleanup_cache_files(void);
 extern void cleanup_log_files(void);
-extern const std::string& get_log_file_dir(void);
-static const std::string NEW_OUTPUT_LOG_FILE(get_log_file_dir() + "new.log");
+static const std::string NEW_OUTPUT_LOG_FILE(LOG_FILE_DIR + "new.log");
 static const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
 static const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
 static const boost::uint64_t NUM_LINES_IN_COMB_LOG_2 = 2;
-static const std::string TIMESTAMPED_EXPECTED_A_FILE(get_log_file_dir() + "timestamped_expected_a.log");
-static const std::string LOG_EXPECTED_A_FILE(get_log_file_dir() + "log_expected_a.log");
+static const std::string TIMESTAMPED_EXPECTED_A_FILE(LOG_FILE_DIR + "timestamped_expected_a.log");
+static const std::string LOG_EXPECTED_A_FILE(LOG_FILE_DIR + "log_expected_a.log");
 
 
 BOOST_AUTO_TEST_CASE(checkOpenQueryService) {
@@ -105,14 +104,14 @@ public:
 		BOOST_CHECK(timestampedLogFiles().size() == 0);
 		boost::filesystem::remove("logs/combined-2.log");
 
-		m_platform_cfg.setConfigFile(get_platform_config_file());
+		m_platform_cfg.setConfigFile(PLATFORM_CONFIG_FILE);
 		m_platform_cfg.openConfigFile();
 	}
 	~PlatformReadyForQueryServiceRequests_F() {
 	}
 	std::vector<std::string> timestampedLogFiles(void) {
 		std::vector<std::string> timestamped_log_files;
-		boost::filesystem::path dir_path(get_log_file_dir());
+		boost::filesystem::path dir_path(LOG_FILE_DIR);
 		for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
 			std::string basename = boost::filesystem::basename(itr->path());
 			if (basename.substr(0, 6) == "new-20") {

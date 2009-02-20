@@ -19,12 +19,13 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/PionScheduler.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/VocabularyManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <boost/regex.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -38,22 +39,13 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_cache_files(void);
 
 
 /// static strings used by these unit tests
-static const std::string NEW_OUTPUT_LOG_FILE(get_log_file_dir() + "new.log");
+static const std::string NEW_OUTPUT_LOG_FILE(LOG_FILE_DIR + "new.log");
 static const std::string NEW_INPUT_LOG_FNAME("combined-new");
-static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
-static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
-static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
-static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
 
 
 const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
@@ -96,21 +88,20 @@ public:
 		m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(NULL), m_file_ext(file_ext)
 	{
-		setup_plugins_directory();
 		cleanup_config_files();
 		cleanup_cache_files();
 		
-		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
 		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
 		m_codec_factory.openConfigFile();
 
 		boost::filesystem::remove(NEW_OUTPUT_LOG_FILE);
 		BOOST_REQUIRE(! boost::filesystem::exists(NEW_OUTPUT_LOG_FILE)); // Confirm, to avoid accidentally passing tests due to previous output.
-		boost::filesystem::remove(get_log_file_dir() + NEW_INPUT_LOG_FNAME + file_ext);
+		boost::filesystem::remove(LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + file_ext);
 
 		// Create a new (empty) reactor configuration file.
-		m_reactor_config_file = get_config_file_dir() + "reactors1.xml";
+		m_reactor_config_file = CONFIG_FILE_DIR + "reactors1.xml";
 		if (boost::filesystem::exists(m_reactor_config_file))
 			boost::filesystem::remove(m_reactor_config_file);
 
@@ -184,7 +175,7 @@ public:
 		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
 	}
 	void setupForLargeLogFile(void) {
-		std::string large_log_file = get_log_file_dir() + "large" + file_ext;
+		std::string large_log_file = LOG_FILE_DIR + "large" + file_ext;
 		if (! boost::filesystem::exists(large_log_file)) {
 			std::ofstream out(large_log_file.c_str());
 			std::string before, after;
@@ -232,8 +223,8 @@ public:
 //		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
 	}
 	void makeNewLogFileByCopying(const std::string& fname_of_file_to_copy) {
-		boost::filesystem::copy_file(get_log_file_dir() + fname_of_file_to_copy + file_ext,
-									 get_log_file_dir() + NEW_INPUT_LOG_FNAME + file_ext);
+		boost::filesystem::copy_file(LOG_FILE_DIR + fname_of_file_to_copy + file_ext,
+									 LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + file_ext);
 	}
 
 	VocabularyManager	m_vocab_mgr;
@@ -736,7 +727,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the history cache exists and has the default log file and no others.
-	std::string history_cache_filename = get_config_file_dir() + F::m_log_reader_id + ".cache";
+	std::string history_cache_filename = CONFIG_FILE_DIR + F::m_log_reader_id + ".cache";
 	std::ifstream history_cache(history_cache_filename.c_str());
 	BOOST_REQUIRE(history_cache);
 	std::string default_log_file = std::string("combined") + F::m_file_ext;
@@ -765,7 +756,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	history_cache.close();
 
 	// Delete the new log file.
-	boost::filesystem::remove(get_log_file_dir() + NEW_INPUT_LOG_FNAME + F::m_file_ext);
+	boost::filesystem::remove(LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + F::m_file_ext);
 
 	// Wait 1.5 seconds, to give the LogInputReactor a chance to update the history cache.
 	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)

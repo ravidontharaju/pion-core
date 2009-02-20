@@ -29,6 +29,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 
 struct PionPlatformUnitTestsConfig {
 	PionPlatformUnitTestsConfig() {
@@ -48,6 +49,19 @@ struct PionPlatformUnitTestsConfig {
 			xmlSetGenericErrorFunc(NULL, PionUnitTest::doNothing);
 			std::cout << "Use '-v' to enable logging from libxml2.\n";
 		}
+
+		pion::PionPlugin::resetPluginDirectories();
+#if defined(PION_XCODE)
+		pion::PionPlugin::addPluginDirectory(".");
+#else
+		// same for Unix and Windows (including Cygwin)
+		pion::PionPlugin::addPluginDirectory("../codecs/.libs");
+		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
+		pion::PionPlugin::addPluginDirectory("../databases/.libs");
+		pion::PionPlugin::addPluginDirectory("../services/.libs");
+		pion::PionPlugin::addPluginDirectory("../protocols/.libs");
+		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
+#endif
 	}
 	~PionPlatformUnitTestsConfig() {
 		std::cout << "global teardown specific to pion-platform\n";
@@ -90,7 +104,7 @@ const std::string& get_config_file_dir(void)
 #else
 	static const std::string TESTS_CONFIG_FILE_DIR("config/");
 #endif
-	
+
 	return TESTS_CONFIG_FILE_DIR;
 }
 
@@ -106,41 +120,6 @@ const std::string& get_vocabulary_path(void)
 	return TESTS_VOCABULARY_PATH;
 }
 
-/// returns the full path to the vocabularies.xml config file
-const std::string& get_vocabularies_file(void)
-{
-	static const std::string VOCABULARY_CONFIG_FILE(get_config_file_dir() + "vocabularies.xml");
-	return VOCABULARY_CONFIG_FILE;
-}
-
-/// returns the full path to the platform.xml config file
-const std::string& get_platform_config_file(void)
-{
-	static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.xml");
-	return PLATFORM_CONFIG_FILE;
-}
-
-/// initializes the Pion plug-in path
-void setup_plugins_directory(void)
-{
-	static bool init_done = false;
-	if (! init_done) {
-		pion::PionPlugin::resetPluginDirectories();
-
-#if defined(PION_XCODE)
-		pion::PionPlugin::addPluginDirectory(".");
-#else
-		// same for Unix and Windows (including Cygwin)
-		pion::PionPlugin::addPluginDirectory("../codecs/.libs");
-		pion::PionPlugin::addPluginDirectory("../reactors/.libs");
-		pion::PionPlugin::addPluginDirectory("../databases/.libs");
-		pion::PionPlugin::addPluginDirectory("../services/.libs");
-		pion::PionPlugin::addPluginDirectory("../protocols/.libs");
-		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
-#endif
-	}
-}
-
 /// cleans up vocabulary config files in the tests config directory
 void cleanup_vocab_config_files(void)
 {
@@ -150,7 +129,6 @@ void cleanup_vocab_config_files(void)
 	static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
 	static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clickstream.tmpl");
 	static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clickstream.xml");
-	static const std::string VOCABULARY_TEMPLATE_FILE(get_config_file_dir() + "vocabularies.tmpl");
 
 	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
@@ -164,28 +142,14 @@ void cleanup_vocab_config_files(void)
 		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
 	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
 	
-	if (boost::filesystem::exists(get_vocabularies_file()))
-		boost::filesystem::remove(get_vocabularies_file());
-	boost::filesystem::copy_file(VOCABULARY_TEMPLATE_FILE, get_vocabularies_file());
+	if (boost::filesystem::exists(VOCABS_CONFIG_FILE))
+		boost::filesystem::remove(VOCABS_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCABS_TEMPLATE_FILE, VOCABS_CONFIG_FILE);
 }
 
 /// cleans up platform config files in the working directory
 void cleanup_platform_config_files(void)
 {
-	static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
-	static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
-	static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
-	static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-	static const std::string PROTOCOLS_TEMPLATE_FILE(get_config_file_dir() + "protocols.tmpl");
-	static const std::string PROTOCOLS_CONFIG_FILE(get_config_file_dir() + "protocols.xml");
-	static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
-	static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
-	static const std::string PLATFORM_TEMPLATE_FILE(get_config_file_dir() + "platform.tmpl");
-	static const std::string SERVICES_TEMPLATE_FILE(get_config_file_dir() + "services.tmpl");
-	static const std::string SERVICES_CONFIG_FILE(get_config_file_dir() + "services.xml");
-	static const std::string USERS_TEMPLATE_FILE(get_config_file_dir() + "users.tmpl");
-	static const std::string USERS_CONFIG_FILE(get_config_file_dir() + "users.xml");
-	
 	cleanup_vocab_config_files();
 	
 	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
@@ -204,9 +168,9 @@ void cleanup_platform_config_files(void)
 		boost::filesystem::remove(DATABASES_CONFIG_FILE);
 	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
 	
-	if (boost::filesystem::exists(get_platform_config_file()))
-		boost::filesystem::remove(get_platform_config_file());
-	boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, get_platform_config_file());
+	if (boost::filesystem::exists(PLATFORM_CONFIG_FILE))
+		boost::filesystem::remove(PLATFORM_CONFIG_FILE);
+	boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, PLATFORM_CONFIG_FILE);
 	
 	if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
 		boost::filesystem::remove(SERVICES_CONFIG_FILE);
@@ -219,7 +183,7 @@ void cleanup_platform_config_files(void)
 
 void cleanup_cache_files(void)
 {
-	boost::filesystem::path dir_path(get_config_file_dir());
+	boost::filesystem::path dir_path(CONFIG_FILE_DIR);
 	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
 		if (boost::filesystem::extension(itr->path()) == ".cache") {
 			boost::filesystem::remove(itr->path());
@@ -229,7 +193,7 @@ void cleanup_cache_files(void)
 
 void cleanup_backup_files(void)
 {
-	boost::filesystem::path dir_path(get_config_file_dir());
+	boost::filesystem::path dir_path(CONFIG_FILE_DIR);
 	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
 		if (boost::filesystem::extension(itr->path()) == ".bak") {
 			boost::filesystem::remove(itr->path());

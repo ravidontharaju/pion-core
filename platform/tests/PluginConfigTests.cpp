@@ -19,12 +19,13 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/mpl/list.hpp>
@@ -38,11 +39,6 @@ using namespace pion;
 using namespace pion::platform;
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
 VocabularyManager g_vocab_mgr;
@@ -53,7 +49,6 @@ DatabaseManager g_database_mgr(g_vocab_mgr);
 class PluginConfigFixture {
 public:
 	PluginConfigFixture(const std::string& concrete_plugin_class) {
-		setup_plugins_directory();
 		cleanup_platform_config_files();
 		m_concrete_plugin_class = concrete_plugin_class;
 		BOOST_REQUIRE_NO_THROW(m_config_ptr = ConfigManager::createPluginConfig(m_concrete_plugin_class));
@@ -72,7 +67,7 @@ public:
 class DCCodecFactory : public CodecFactory, public PluginConfigFixture {
 public:
 	DCCodecFactory(void) : CodecFactory(g_vocab_mgr), PluginConfigFixture("LogCodec") {
-		g_vocab_mgr.setConfigFile(get_vocabularies_file());
+		g_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		g_vocab_mgr.openConfigFile();
 
 		xmlNodePtr event_type_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("EventType"));
@@ -148,7 +143,7 @@ template <typename DefaultConstructablePluginConfig>
 class PluginConfig_F : public DefaultConstructablePluginConfig {
 public:
 	PluginConfig_F() {
-		m_config_file_path = get_config_file_dir() + this->m_config_file;
+		m_config_file_path = CONFIG_FILE_DIR + this->m_config_file;
 	}
 	~PluginConfig_F() {
 	}

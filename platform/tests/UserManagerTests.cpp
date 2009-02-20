@@ -19,6 +19,7 @@
 
 #include <pion/PionConfig.hpp>
 #include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -32,7 +33,6 @@ using namespace pion::server;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_config_file_dir(void);
 extern void cleanup_platform_config_files(void);
 
 
@@ -45,7 +45,7 @@ public:
 		// The default constructor for UserManager sets the config file to "users.xml".
 		// Since that's a relative path, we set the current directory to the test config directory.
 		BOOST_REQUIRE(GET_DIRECTORY(m_old_cwd, DIRECTORY_MAX_SIZE) != NULL);
-		BOOST_REQUIRE(CHANGE_DIRECTORY(get_config_file_dir().c_str()) == 0);
+		BOOST_REQUIRE(CHANGE_DIRECTORY(CONFIG_FILE_DIR.c_str()) == 0);
 	}
 	~NewUserManager_F() {
 		BOOST_CHECK(CHANGE_DIRECTORY(m_old_cwd) == 0);

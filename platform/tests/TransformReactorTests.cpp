@@ -14,6 +14,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/Event.hpp>
 #include "../server/PlatformConfig.hpp"
 
@@ -22,56 +23,12 @@ using namespace pion;
 using namespace pion::platform;
 
 
-/// external functions defined in PionEnterpriseUnitTests.cpp
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_license_file(void);
-extern void setup_plugins_directory(void);
-extern void remove_license_file(void);
-extern void make_valid_license_file(void);
-extern void make_invalid_license_file(void);
-extern bool check_reactor_events_in(pion::platform::ReactionEngine& reaction_engine,
-	const std::string& reactor_id, const boost::uint64_t expected);
-extern bool check_reactor_events_out(pion::platform::ReactionEngine& reaction_engine,
-	const std::string& reactor_id, const boost::uint64_t expected);
-
-/*********************
- * Refactor these into a utility class
- */
-
-bool check_reactor_events_in(pion::platform::ReactionEngine& reaction_engine,
-	const std::string& reactor_id, const boost::uint64_t expected)
-{
-	for (int i = 0; i < 10; ++i) {
-		if (reaction_engine.getEventsIn(reactor_id) == expected) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	return (reaction_engine.getEventsIn(reactor_id) == expected);
-}
-
-bool check_reactor_events_out(pion::platform::ReactionEngine& reaction_engine,
-	const std::string& reactor_id, const boost::uint64_t expected)
-{
-	for (int i = 0; i < 10; ++i) {
-		if (reaction_engine.getEventsOut(reactor_id) == expected) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	return (reaction_engine.getEventsOut(reactor_id) == expected);
-}
-
-
-
-
-
-
 /// static strings used by these unit tests
-static const std::string LOG_FILE(get_log_file_dir() + "tr2.log");
-static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "tr2-reactors.tmpl");
-static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
-static const std::string PLATFORM_CONFIG_FILE(get_config_file_dir() + "platform.xml");
+static const std::string LOG_FILE(LOG_FILE_DIR + "tr2.log");
+static const std::string TR2_REACTORS_TEMPLATE_FILE(CONFIG_FILE_DIR + "tr2-reactors.tmpl");
 
-static const std::string LOG_OUTPUT_FILE(get_log_file_dir() + "tr2.out");
-static const std::string LOG_EXPECTED_FILE(get_log_file_dir() + "tr2-expected.out");
+static const std::string LOG_OUTPUT_FILE(LOG_FILE_DIR + "tr2.out");
+static const std::string LOG_EXPECTED_FILE(LOG_FILE_DIR + "tr2-expected.out");
 
 
 /// interface class for TransformReactor tests
@@ -82,15 +39,13 @@ public:
 		m_transformer_id("25bcc7f0-e109-11dd-aef9-001c25b8b54e"),
 		m_output_log_id("18883550-e105-11dd-8c4d-001c25b8b54e")
 	{
-		setup_plugins_directory();
-
 		if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
 			boost::filesystem::remove(REACTORS_CONFIG_FILE);
 
 		if (boost::filesystem::exists(LOG_OUTPUT_FILE))
 			boost::filesystem::remove(LOG_OUTPUT_FILE);
 
-		boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
+		boost::filesystem::copy_file(TR2_REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
 
 		// start the ServiceManager, ReactionEngine, etc., add plugin paths
 		m_platform_cfg.setConfigFile(PLATFORM_CONFIG_FILE);
@@ -142,14 +97,14 @@ BOOST_AUTO_TEST_CASE(checkTransformLogFile) {
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(16));
 
 	// make sure that the reactor received all of the events read
-	BOOST_CHECK(check_reactor_events_in(m_platform_cfg.getReactionEngine(), m_transformer_id, events_read));
+	BOOST_CHECK(PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), m_transformer_id, events_read));
 
 	// flush all events in the transformreactor to bypass waiting for time-outs (though there are none)
 	m_platform_cfg.getReactionEngine().stopReactor(m_transformer_id);
 
 	// check number of output events for each of the log reactors
 	// (make sure they have finished writing data)
-	BOOST_CHECK(check_reactor_events_out(m_platform_cfg.getReactionEngine(), m_output_log_id, static_cast<boost::uint64_t>(16)));
+	BOOST_CHECK(PionPlatformUnitTest::checkReactorEventsOut(m_platform_cfg.getReactionEngine(), m_output_log_id, static_cast<boost::uint64_t>(16)));
 
 	// make sure that the output files match what is expected
 	BOOST_CHECK(PionUnitTest::check_files_match(LOG_OUTPUT_FILE, LOG_EXPECTED_FILE));

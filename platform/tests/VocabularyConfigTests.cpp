@@ -18,10 +18,11 @@
 //
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/VocabularyConfig.hpp>
 #include <pion/platform/VocabularyManager.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/test/unit_test.hpp>
@@ -33,9 +34,7 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_config_file_dir(void);
 extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
 extern void cleanup_vocab_config_files(void);
 
 
@@ -712,7 +711,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(NewVocabularyManager_S,
 									   boost::mpl::list<NewVocabularyManager_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadConfigFile) {
-	BOOST_CHECK_NO_THROW(F::setConfigFile(get_vocabularies_file()));
+	BOOST_CHECK_NO_THROW(F::setConfigFile(VOCABS_CONFIG_FILE));
 	BOOST_CHECK_NO_THROW(F::openConfigFile());
 }
 
@@ -743,7 +742,7 @@ BOOST_AUTO_TEST_SUITE_END()
 class VocabularyManagerWithConfigFilesLoaded_F : public NewVocabularyManager_F {
 public:
 	VocabularyManagerWithConfigFilesLoaded_F() {
-		setConfigFile(get_vocabularies_file());
+		setConfigFile(VOCABS_CONFIG_FILE);
 		openConfigFile();
 
 		// It doesn't seem like the user should have to provide both the file name and the ID, since the ID is in the file.

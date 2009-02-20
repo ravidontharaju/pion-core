@@ -23,6 +23,7 @@
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/mpl/list.hpp>
@@ -41,20 +42,13 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_backup_files(void);
 
 /// static strings used by these unit tests
-static const std::string COMMON_LOG_FILE(get_log_file_dir() + "common.log");
-static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
-static const std::string EXTENDED_LOG_FILE(get_log_file_dir() + "extended.log");
-static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
-static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
+static const std::string COMMON_LOG_FILE(LOG_FILE_DIR + "common.log");
+static const std::string COMBINED_LOG_FILE(LOG_FILE_DIR + "combined.log");
+static const std::string EXTENDED_LOG_FILE(LOG_FILE_DIR + "extended.log");
 
 
 /// cleans up config files relevant to Codecs in the working directory
@@ -76,7 +70,6 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeCodecPtr) {
 	
 	PionPluginPtr<Codec> ppp;
 	CodecPtr p;
-	setup_plugins_directory();
 	ppp.open("LogCodec");
 	p = CodecPtr(ppp.create());
 	BOOST_CHECK_EQUAL(p->getContentType(), "text/ascii");
@@ -98,7 +91,6 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredAfterCodecPtr) {
 /*
 	CodecPtr p;
 	PionPluginPtr<Codec> ppp;
-	setup_plugins_directory();
 	ppp.open("LogCodec");
 	p = CodecPtr(ppp.create());
 	BOOST_CHECK_EQUAL(p->getContentType(), "text/ascii");
@@ -109,7 +101,6 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredAfterCodecPtr) {
 class PluginPtrReadyToAddCodec_F : public PionPluginPtr<Codec> {
 public:
 	PluginPtrReadyToAddCodec_F() {
-		setup_plugins_directory();
 	}
 };
 
@@ -186,7 +177,6 @@ template<const char* plugin_type, LINEAGE lineage>
 class CodecPtr_F {
 public:
 	CodecPtr_F() : m_config_ptr(NULL) {
-		setup_plugins_directory();
 		cleanup_codec_config_files(true);
 		BOOST_REQUIRE(lineage == CREATED || lineage == CLONED || lineage == MANUFACTURED);
 		if (lineage == MANUFACTURED) {
@@ -287,7 +277,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedTypeAndEmptyS
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 	Event::EventType some_type = vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
 
@@ -305,7 +295,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 				"</Codec></PionConfig>",
 				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() returns.
@@ -324,7 +314,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTh
 				"</Codec></PionConfig>",
 				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
@@ -339,7 +329,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDi
 				"</Codec></PionConfig>",
 				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
@@ -356,7 +346,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
 				"</Codec></PionConfig>",
 				F::m_config_ptr);
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 
 	// Confirm that setConfig() throws an exception.
@@ -422,7 +412,7 @@ private:
 
 	void initVocabularyManager() {
 		// Initialize the VocabularyManager.
-		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
 	}
 
@@ -1304,7 +1294,7 @@ BOOST_AUTO_TEST_CASE(checkCodecFactoryDestructor) {
 
 BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterCodecFactoryDestroyed) {
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 	{
 		CodecFactory codecFactory(vocab_mgr);
@@ -1366,9 +1356,9 @@ public:
 private:
 	// "from scratch" means without using any pre-existing files
 	void initVocabularyManagerFromScratch() {
-		if (boost::filesystem::exists(get_vocabularies_file()))
-			boost::filesystem::remove(get_vocabularies_file());
-		this->m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		if (boost::filesystem::exists(VOCABS_CONFIG_FILE))
+			boost::filesystem::remove(VOCABS_CONFIG_FILE);
+		this->m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		this->m_vocab_mgr.createConfigFile();
 		this->m_vocab_mgr.addVocabulary("urn:vocab:v1", "v1", "no comment");
 
@@ -1609,9 +1599,8 @@ public:
 		cleanup_codec_config_files(false);
 		
 		if (! m_config_loaded) {
-			setup_plugins_directory();
 			// load the CLF vocabulary
-			m_vocab_mgr.setConfigFile(get_vocabularies_file());
+			m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
@@ -1910,9 +1899,8 @@ public:
 		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 
 		if (! m_config_loaded) {
-			setup_plugins_directory();
 			// load the CLF vocabulary
-			m_vocab_mgr.setConfigFile(get_vocabularies_file());
+			m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}

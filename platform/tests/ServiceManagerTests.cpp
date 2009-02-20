@@ -18,6 +18,8 @@
 //
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -34,8 +36,6 @@ using namespace pion::server;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_config_file_dir(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
 
@@ -44,11 +44,10 @@ class ServicesConfigFile_F
 public:
 	ServicesConfigFile_F() {
 		// get everything set up first
-		setup_plugins_directory();
 		cleanup_platform_config_files();
 
 		// open the default service configuration file for writing
-		m_services_config_file_path = get_config_file_dir() + "services.xml";
+		m_services_config_file_path = SERVICES_CONFIG_FILE;
 		m_services_config_file.open(m_services_config_file_path);
 
 		// get the service manager and set its config file 

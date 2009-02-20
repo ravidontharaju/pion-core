@@ -20,12 +20,13 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionScheduler.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/VocabularyManager.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/DatabaseManager.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <boost/regex.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/thread/thread.hpp>
@@ -46,25 +47,14 @@ using boost::mpl::lambda;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
 extern void cleanup_cache_files(void);
 
 
 /// static strings used by these unit tests
-static const std::string COMBINED_LOG_FILE(get_log_file_dir() + "combined.log");
-static const std::string NEW_LOG_FILE(get_log_file_dir() + "new.log");
-static const std::string NEW_DATABASE_FILE(get_log_file_dir() + "clickstream.db");
-static const std::string REACTORS_TEMPLATE_FILE(get_config_file_dir() + "reactors.tmpl");
-static const std::string REACTORS_CONFIG_FILE(get_config_file_dir() + "reactors.xml");
-static const std::string CODECS_TEMPLATE_FILE(get_config_file_dir() + "codecs.tmpl");
-static const std::string CODECS_CONFIG_FILE(get_config_file_dir() + "codecs.xml");
-static const std::string DATABASES_TEMPLATE_FILE(get_config_file_dir() + "databases.tmpl");
-static const std::string DATABASES_CONFIG_FILE(get_config_file_dir() + "databases.xml");
+static const std::string COMBINED_LOG_FILE(LOG_FILE_DIR + "combined.log");
+static const std::string NEW_LOG_FILE(LOG_FILE_DIR + "new.log");
+static const std::string NEW_DATABASE_FILE(LOG_FILE_DIR + "clickstream.db");
 
 
 /// cleans up reactor config files in the working directory
@@ -98,7 +88,6 @@ template<typename plugin_class>
 class PluginPtrReadyToOpenReactor_F : public PionPluginPtr<Reactor> {
 public:
 	PluginPtrReadyToOpenReactor_F() {
-		setup_plugins_directory();
 		m_plugin_name = plugin_class::name();
 	}
 	~PluginPtrReadyToOpenReactor_F() {
@@ -177,10 +166,9 @@ public:
 		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
 		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
 	{
-		setup_plugins_directory();
 		cleanup_reactor_config_files();
 		
-		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
 		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
 		m_codec_factory.openConfigFile();
@@ -673,12 +661,11 @@ public:
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 		m_filter_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
-		m_config_filename(get_config_file_dir() + "reactorsWithStatus.xml")
+		m_config_filename(CONFIG_FILE_DIR + "reactorsWithStatus.xml")
 	{
-		setup_plugins_directory();
 		cleanup_reactor_config_files();
 		
-		m_vocab_mgr.setConfigFile(get_vocabularies_file());
+		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
 		m_codec_factory.setConfigFile(CODECS_CONFIG_FILE);
 		m_codec_factory.openConfigFile();

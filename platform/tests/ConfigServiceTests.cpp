@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/net/TCPStream.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/HTTPResponse.hpp>
@@ -33,12 +34,6 @@ using namespace pion::server;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern const std::string& get_platform_config_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_platform_config_files(void);
 
 
@@ -54,11 +49,10 @@ public:
 		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int")
 	{
 		// get everything setup first
-		setup_plugins_directory();
 		cleanup_platform_config_files();
 
 		// start the ServiceManager, ReactionEngine, etc.
-		m_platform_cfg.setConfigFile(get_platform_config_file());
+		m_platform_cfg.setConfigFile(PLATFORM_CONFIG_FILE);
 		m_platform_cfg.openConfigFile();
 	}
 	

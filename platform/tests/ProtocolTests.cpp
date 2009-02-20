@@ -18,10 +18,11 @@
 //
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/platform/ProtocolFactory.hpp>
-#include <pion/PionUnitTestDefs.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -30,15 +31,7 @@ using namespace pion::platform;
 
 
 /// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_log_file_dir(void);
-extern const std::string& get_config_file_dir(void);
-extern const std::string& get_vocabulary_path(void);
-extern const std::string& get_vocabularies_file(void);
-extern void setup_plugins_directory(void);
 extern void cleanup_vocab_config_files(void);
-
-static const std::string PROTOCOLS_CONFIG_FILE(get_config_file_dir() + "protocols.xml");
-static const std::string PROTOCOLS_TEMPLATE_FILE(get_config_file_dir() + "protocols.tmpl");
 
 
 /// cleans up config files relevant to Codecs in the working directory
@@ -71,7 +64,6 @@ BOOST_AUTO_TEST_CASE(checkPionPluginPtrDeclaredBeforeProtocolPtr) {
 	
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
-	setup_plugins_directory();
 	ppp.open("HTTPProtocol");
 	p = ProtocolPtr(ppp.create());
 }
@@ -82,7 +74,6 @@ BOOST_AUTO_TEST_CASE(checkHTTPProtocolClone) {
 
 	PionPluginPtr<Protocol> ppp;
 	ProtocolPtr p;
-	setup_plugins_directory();
 	ppp.open("HTTPProtocol");
 	p = ProtocolPtr(ppp.create());
 	ProtocolPtr pc;
@@ -103,7 +94,7 @@ BOOST_AUTO_TEST_CASE(checkProtocolFactoryDestructor) {
 
 BOOST_AUTO_TEST_CASE(checkLockVocabularyManagerAfterProtocolFactoryDestroyed) {
 	VocabularyManager vocab_mgr;
-	vocab_mgr.setConfigFile(get_vocabularies_file());
+	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
 	{
 		ProtocolFactory protocolFactory(vocab_mgr);
@@ -122,9 +113,8 @@ public:
 		cleanup_protocol_config_files(false);
 
 		if (! m_config_loaded) {
-			setup_plugins_directory();
 			// load the CLF vocabulary
-			m_vocab_mgr.setConfigFile(get_vocabularies_file());
+			m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 			m_vocab_mgr.openConfigFile();
 			m_config_loaded = true;
 		}
