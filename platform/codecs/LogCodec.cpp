@@ -201,10 +201,15 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 
 	// skip the rest of the record...if there's something left
 	while (!traits_type::eq_int_type(c, traits_type::eof())) {
-		if (m_event_split.find(c) != std::string::npos) {
-			c = buf_ptr->snextc();
+		if (m_event_split.find(c) != std::string::npos)
 			break;
-		}
+		c = buf_ptr->snextc();
+	}
+
+	// skip "empty events" (i.e. records with no data)
+	while (!traits_type::eq_int_type(c, traits_type::eof())) {
+		if (m_event_split.find(c) == std::string::npos)
+			break;
 		c = buf_ptr->snextc();
 	}
 
