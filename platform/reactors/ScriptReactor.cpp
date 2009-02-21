@@ -382,9 +382,9 @@ void ScriptReactor::openPipe(void)
 #endif
 
 	// prepare c++ streams to use pipes for reading and writing events
-	m_input_streambuf_ptr.reset(new StreamBuffer( m_input_pipe ));
+	m_input_streambuf_ptr.reset(new OStreamBuffer( m_input_pipe ));
 	m_input_stream_ptr.reset(new std::ostream(m_input_streambuf_ptr.get()));
-	m_output_streambuf_ptr.reset(new StreamBuffer( m_output_pipe ));
+	m_output_streambuf_ptr.reset(new IStreamBuffer( m_output_pipe ));
 	m_output_stream_ptr.reset(new std::istream(m_output_streambuf_ptr.get()));
 }
 

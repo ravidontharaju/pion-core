@@ -68,21 +68,21 @@ class ScriptReactor :
 	public pion::platform::Reactor
 {
 public:	
-	
+
 	/// exception thrown if the Reactor configuration does not define an Input Codec
 	class EmptyInputCodecException : public PionException {
 	public:
 		EmptyInputCodecException(const std::string& reactor_id)
 			: PionException("ScriptReactor configuration is missing a required InputCodec parameter: ", reactor_id) {}
 	};
-	
+
 	/// exception thrown if the Reactor configuration does not define an Output Codec
 	class EmptyOutputCodecException : public PionException {
 	public:
 		EmptyOutputCodecException(const std::string& reactor_id)
 			: PionException("ScriptReactor configuration is missing a required OutputCodec parameter: ", reactor_id) {}
 	};
-	
+
 	/// exception thrown if the Reactor configuration does not define a Command
 	class EmptyCommandException : public PionException {
 	public:
@@ -108,7 +108,7 @@ public:
 	class ReadFromPipeException : public PionException {
 	public:
 		ReadFromPipeException(const std::string& reactor_id)
-			: PionException("ScriptReactor failed reading event from pipe: ", reactor_id) {}
+			: PionException("ScriptReactor failed reading an event from pipe: ", reactor_id) {}
 	};
 
 	/// exception thrown if the Reactor has trouble writing events to the pipe
@@ -126,16 +126,16 @@ public:
 		m_input_pipe(INVALID_DESCRIPTOR), m_output_pipe(INVALID_DESCRIPTOR), m_child(INVALID_PROCESS)
 	{
 	}
-	
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ScriptReactor() { stop(); }
-	
+
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
-	
+
 	/// called by the ReactorEngine to stop Event processing
 	virtual void stop(void) { stopIfRunning(); }
-	
+
 	/**
 	 * sets configuration parameters for this Reactor
 	 *
@@ -144,7 +144,7 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
 	/**
 	 * this updates the Vocabulary information used by this Reactor; it should
 	 * be called whenever the global Vocabulary is updated
@@ -152,101 +152,136 @@ public:
 	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
-	
+
 	/**
 	 * this updates the Codecs that are used by this Reactor; it should
 	 * be called whenever any Codec's configuration is updated
 	 */
 	virtual void updateCodecs(void);
-	
+
 	/**
 	 * processes an Event by delivering it to the shell script or program
 	 *
 	 * @param e pointer to the Event to process
 	 */
 	virtual void process(const pion::platform::EventPtr& e);
-	
+
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-	
+
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
-	
-	
+
+
 private:
 
 	/// stops the reactor and returns true if it was running
 	bool stopIfRunning(void);
-	
+
 	/// thread function to read events from the script command
 	void readEvents(void);
-	
+
 	/// opens a pipe to the script command
 	void openPipe(void);
 
 	/// closes the pipe to the script command	
 	void closePipe(void);
-	
+
 	/// parses out individual arguments from a command string
 	void parseArguments(void);
-	
-	
-	/// data type for an iostreams streambuf that uses a C-style file descriptor
-	typedef boost::iostreams::stream_buffer<boost::iostreams::file_descriptor>	StreamBuffer;
-	
+
+
+#ifdef BOOST_IOSTREAMS_WINDOWS
+	struct winpipe_handle_source : private boost::iostreams::file_descriptor {
+		typedef char char_type;
+		struct category : boost::iostreams::source_tag, boost::iostreams::closable_tag { };
+		std::streamsize read(char_type* s, std::streamsize n) {
+			DWORD result = 0, error = 0;
+			if (!::ReadFile(handle(), s, n, &result, NULL) && (error = GetLastError()) != ERROR_BROKEN_PIPE)
+				throw boost::iostreams::detail::bad_read();
+			return error == ERROR_BROKEN_PIPE ? -1 : static_cast<std::streamsize>(result);
+		}
+		using boost::iostreams::file_descriptor::close;
+		using boost::iostreams::file_descriptor::handle;
+		explicit winpipe_handle_source(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+	};
+
+	struct winpipe_handle_sink : private boost::iostreams::file_descriptor {
+		typedef char char_type;
+		struct category : boost::iostreams::sink_tag, boost::iostreams::closable_tag { };
+		std::streamsize write(const char_type* s, std::streamsize n) {
+			DWORD ignore = 0;
+			if (!::WriteFile(handle(), s, n, &ignore, NULL))
+				throw boost::iostreams::detail::bad_write();
+			return n;
+		}
+		using boost::iostreams::file_descriptor::close;
+		using boost::iostreams::file_descriptor::handle;
+		explicit winpipe_handle_sink(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+	};
+
+	/// data types for iostreams streambufs that use Windows pipe file-handles
+	typedef boost::iostreams::stream_buffer<winpipe_handle_source>	IStreamBuffer;
+	typedef boost::iostreams::stream_buffer<winpipe_handle_sink>	OStreamBuffer;
+#else
+	/// data types for iostreams streambufs that use C-style file descriptors
+	typedef boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_source>	IStreamBuffer;
+	typedef boost::iostreams::stream_buffer<boost::iostreams::file_descriptor_sink>		OStreamBuffer;
+#endif
+
 
 	/// name of the InputCodec element for Pion XML config files
 	static const std::string			INPUT_CODEC_ELEMENT_NAME;
-	
+
 	/// name of the OutputCodec element for Pion XML config files
 	static const std::string			OUTPUT_CODEC_ELEMENT_NAME;
-	
+
 	/// name of the Command element for Pion XML config files
 	static const std::string			COMMAND_ELEMENT_NAME;
-	
+
 
 	/// primary logging interface used by this class
 	PionLogger							m_logger;
-	
+
 	/// pointer to the Codec that is used for writing Events to the script
 	pion::platform::CodecPtr			m_input_codec_ptr;
-	
+
 	/// pointer to the Codec that is used for reading Events from the script
 	pion::platform::CodecPtr			m_output_codec_ptr;
-	
+
 	/// unique identifier of the Codec that is used for writing Events
 	std::string							m_input_codec_id;
-	
+
 	/// unique identifier of the Codec that is used for reading Events
 	std::string							m_output_codec_id;
-	
+
 	/// name of the shell script or program to execute (includes all arguments)
 	std::string							m_command;
-	
+
 	/// vector of command arguments parsed out (the first is the executable or script)
 	std::vector<std::string>			m_args;
-	
+
 	/// pipe used to write Events to the shell script or program
 	FILE_DESC_TYPE						m_input_pipe;
-	
+
 	/// pipe used to read Events from the shell script or program
 	FILE_DESC_TYPE						m_output_pipe;
-	
+
 	/// process id for the shell script or program
 	PROCESS_INFO_TYPE					m_child;
-	
+
 	/// pointer to a C++ stream buffer used to write Events to the pipe
-	boost::scoped_ptr<StreamBuffer>		m_input_streambuf_ptr;
-	
+	boost::scoped_ptr<OStreamBuffer>	m_input_streambuf_ptr;
+
 	/// pointer to a C++ stream buffer used to read Events from the pipe
-	boost::scoped_ptr<StreamBuffer>		m_output_streambuf_ptr;
-	
+	boost::scoped_ptr<IStreamBuffer>	m_output_streambuf_ptr;
+
 	/// pointer to a C++ iostream used to write Events to the pipe
 	boost::scoped_ptr<std::ostream>		m_input_stream_ptr;
-	
+
 	/// pointer to a C++ iostream used to read Events from the pipe
 	boost::scoped_ptr<std::istream>		m_output_stream_ptr;
-	
+
 	/// thread used to read events generated by the script
 	boost::scoped_ptr<boost::thread>	m_thread_ptr;
 
