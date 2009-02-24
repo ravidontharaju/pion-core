@@ -255,6 +255,7 @@ pion.reactors.initConfiguredReactors = function() {
 			},
 			onError: pion.handleFetchError
 		});
+		pion.reactors.connection_store = new dojox.data.XmlStore({url: '/config/connections'});
 	}
 }
 
@@ -653,15 +654,27 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	dojo.forEach(reactor.reactor_inputs, function(reactor_input) {
 		reactor_inputs_store.newItem({
 			ID: reactor_input.id,
-			name: reactor_input.source.config.Name
+			Source: reactor_input.source.config.Name,
+			DeleteButton: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'
 		});
+	});
+	pion.reactors.connection_store.fetch({
+		query: {'To': reactor.config['@id'], 'Type': 'input'},
+		onItem: function(item) {
+			var source = pion.reactors.connection_store.getValue(item, 'From');
+			var connection_id = pion.reactors.connection_store.getValue(item, '@id');
+			reactor_inputs_store.newItem({
+				ID: connection_id,
+				Source: source
+			});
+		},
+		onError: pion.handleFetchError
 	});
 	var reactor_inputs_grid_layout = [{
 		rows: [
-			{ field: 'name', name: 'From', styles: '', width: 'auto' },
+			{ field: 'Source', name: 'From', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ name: 'Delete', styles: 'align: center;', width: 3, 
-				value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'}
+			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', defaultValue: '', width: 3 }
 		]
 	}];
 	var reactor_inputs_grid = new dojox.grid.DataGrid({
@@ -674,28 +687,31 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	reactor_inputs_grid.startup();
 	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
-			this.store.deleteItem(this.getItem(e.rowIndex));
-			var reactor_input = reactor.reactor_inputs[e.rowIndex];
-			dojo.xhrDelete({
-				url: '/config/connections/' + reactor_input.id,
-				handleAs: 'xml',
-				timeout: 5000,
-				load: function(response, ioArgs) {
-					var incoming_reactor = reactor_input.source;
-					reactor_input.line.removeShape();
-					reactor.reactor_inputs.splice(e.rowIndex, 1);
+			var item = this.getItem(e.rowIndex);
+			if (this.store.hasAttribute(item, 'DeleteButton')) {
+				this.store.deleteItem(item);
+				var reactor_input = reactor.reactor_inputs[e.rowIndex];
+				dojo.xhrDelete({
+					url: '/config/connections/' + reactor_input.id,
+					handleAs: 'xml',
+					timeout: 5000,
+					load: function(response, ioArgs) {
+						var incoming_reactor = reactor_input.source;
+						reactor_input.line.removeShape();
+						reactor.reactor_inputs.splice(e.rowIndex, 1);
 
-					// remove reactor from the outputs of incoming_reactor
-					for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-						if (incoming_reactor.reactor_outputs[j].sink == reactor) {
-							incoming_reactor.reactor_outputs.splice(j, 1);
-							break;
+						// remove reactor from the outputs of incoming_reactor
+						for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+							if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+								incoming_reactor.reactor_outputs.splice(j, 1);
+								break;
+							}
 						}
-					}
-					return response;
-				},
-				error: pion.getXhrErrorHandler(dojo.xhrDelete)
-			});
+						return response;
+					},
+					error: pion.getXhrErrorHandler(dojo.xhrDelete)
+				});
+			}
 		}
 	});
 
@@ -705,15 +721,27 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	dojo.forEach(reactor.reactor_outputs, function(reactor_output) {
 		reactor_outputs_store.newItem({
 			ID: reactor_output.id,
-			name: reactor_output.sink.config.Name
+			Sink: reactor_output.sink.config.Name,
+			DeleteButton: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'
 		});
+	});
+	pion.reactors.connection_store.fetch({
+		query: {'From': reactor.config['@id'], 'Type': 'output'},
+		onItem: function(item) {
+			var sink = pion.reactors.connection_store.getValue(item, 'To');
+			var connection_id = pion.reactors.connection_store.getValue(item, '@id');
+			reactor_outputs_store.newItem({
+				ID: connection_id,
+				Sink: sink
+			});
+		},
+		onError: pion.handleFetchError
 	});
 	var reactor_outputs_grid_layout = [{
 		rows: [
-			{ field: 'name', name: 'To', styles: '', width: 'auto' },
+			{ field: 'Sink', name: 'To', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ name: 'Delete', styles: 'align: center;', width: 3, 
-				value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'}
+			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', defaultValue: '', width: 3 }
 		]
 	}];
 	var reactor_outputs_grid = new dojox.grid.DataGrid({
@@ -726,28 +754,31 @@ pion.reactors.showReactorConfigDialog = function(reactor) {
 	reactor_outputs_grid.startup();
 	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
-			this.store.deleteItem(this.getItem(e.rowIndex));
-			var reactor_output = reactor.reactor_outputs[e.rowIndex];
-			dojo.xhrDelete({
-				url: '/config/connections/' + reactor_output.id,
-				handleAs: 'xml',
-				timeout: 5000,
-				load: function(response, ioArgs) {
-					var outgoing_reactor = reactor_output.sink;
-					reactor_output.line.removeShape();
-					reactor.reactor_outputs.splice(e.rowIndex, 1);
+			var item = this.getItem(e.rowIndex);
+			if (this.store.hasAttribute(item, 'DeleteButton')) {
+				this.store.deleteItem(item);
+				var reactor_output = reactor.reactor_outputs[e.rowIndex];
+				dojo.xhrDelete({
+					url: '/config/connections/' + reactor_output.id,
+					handleAs: 'xml',
+					timeout: 5000,
+					load: function(response, ioArgs) {
+						var outgoing_reactor = reactor_output.sink;
+						reactor_output.line.removeShape();
+						reactor.reactor_outputs.splice(e.rowIndex, 1);
 
-					// remove reactor from the inputs of outgoing_reactor
-					for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-						if (outgoing_reactor.reactor_inputs[j].source == reactor) {
-							outgoing_reactor.reactor_inputs.splice(j, 1);
-							break;
+						// remove reactor from the inputs of outgoing_reactor
+						for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+							if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+								outgoing_reactor.reactor_inputs.splice(j, 1);
+								break;
+							}
 						}
-					}
-					return response;
-				},
-				error: pion.getXhrErrorHandler(dojo.xhrDelete)
-			});
+						return response;
+					},
+					error: pion.getXhrErrorHandler(dojo.xhrDelete)
+				});
+			}
 		}
 	});
 
