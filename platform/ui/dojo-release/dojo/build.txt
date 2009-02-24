@@ -144,6 +144,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/widgets/TermTextBox.js
 ./../../release/dojo-release/plugins/codecs/Codec.js
 ./../../release/dojo-release/plugins/codecs/LogCodec.js
+./../../release/dojo-release/plugins/codecs/XMLCodec.js
 ./../../release/dojo-release/pion/codecs.js
 ./../../release/dojo-release/plugins/reactors/LogOutputReactor.js
 ./../../release/dojo-release/pion/terms.js

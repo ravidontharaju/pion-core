@@ -3,6 +3,7 @@ dojo.require("plugins.codecs.Codec");
 dojo.require("dojox.data.XmlStore");
 
 dojo.require("plugins.codecs.LogCodec");
+dojo.require("plugins.codecs.XMLCodec");
 
 var selected_codec_pane = null;
 var codec_config_store;          // one item per codec

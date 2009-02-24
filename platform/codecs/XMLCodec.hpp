@@ -193,12 +193,24 @@ private:
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string		TERM_ATTRIBUTE_NAME;
 
+	/// name of an XML element specifying the tag to use for Event elements
+	static const std::string		EVENT_TAG_ELEMENT_NAME;
+
+	/// default tag to use for Event elements
+	static const std::string		DEFAULT_EVENT_TAG;
+
+	/// name of an XML element specifying the tag to use for elements containing Event elements
+	static const std::string		EVENT_CONTAINER_TAG_ELEMENT_NAME;
+
+	/// default tag to use for Event container elements
+	static const std::string		DEFAULT_EVENT_CONTAINER_TAG;
+
+
 	/// name of an XML element representing an Event
-	static const std::string		EVENT_ELEMENT_NAME;
+	std::string						m_event_tag;
 
 	/// name of an XML element containing Event elements
-	static const std::string		EVENTS_ELEMENT_NAME;
-
+	std::string						m_event_container_tag;
 
 	/// used to configure which fields map to Vocabulary Terms (for reading)
 	FieldMap						m_field_map;
@@ -214,13 +226,13 @@ private:
 	bool							m_flush_after_write;
 
 	/// pointer to XML writer
-    xmlTextWriterPtr				m_xml_writer;
+	xmlTextWriterPtr				m_xml_writer;
 
 	/// buffer used by xmlTextWriter
-    xmlBufferPtr					m_buf;
+	xmlBufferPtr					m_buf;
 
 	/// pointer to XML parser
-    xmlTextReaderPtr				m_xml_reader;
+	xmlTextReaderPtr				m_xml_reader;
 
 	/// keeps track of whether a first Event has been written yet
 	bool							m_no_events_written;

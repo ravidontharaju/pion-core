@@ -49,6 +49,7 @@ CodecPtr JSONCodec::clone(void) const
 		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term);
 	}
 	new_codec->m_JSON_field_ptr_map = m_JSON_field_ptr_map;
+	new_codec->m_no_events_written = true;
 	return CodecPtr(new_codec);
 }
 

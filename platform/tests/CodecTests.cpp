@@ -1279,6 +1279,90 @@ BOOST_AUTO_TEST_CASE(checkWriteWithMultipleValuesForATerm) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+class XMLCodecWithNonDefaultEventTags_F : public ConfiguredCodecPtr_F<XMLCodec_name, CREATED> {
+public:
+	XMLCodecWithNonDefaultEventTags_F() : ConfiguredCodecPtr_F<XMLCodec_name, CREATED>(
+		"<PionConfig><Codec>"
+			"<Plugin>" + std::string(XMLCodec_name) + "</Plugin>"
+			"<Name>" + NAME_1 + "</Name>"
+			"<EventType>" + EVENT_TYPE_2 + "</EventType>"
+			"<EventTag>Apple</EventTag>"
+			"<EventContainerTag>Applecart</EventContainerTag>"
+			"<Field term=\"" + FIELD_TERM_INT_16  + "\">" + FIELD_NAME_INT_16  + "</Field>"
+			"<Field term=\"" + FIELD_TERM_UINT_64 + "\">" + FIELD_NAME_UINT_64 + "</Field>"
+			"<Field term=\"" + FIELD_TERM_DATE    + "\">" + FIELD_NAME_DATE    + "</Field>"
+		"</Codec></PionConfig>")
+	{
+		m_event_ptr = event_factory.create(this->p->getEventType());
+		m_vocab = &this->m_vocab_mgr.getVocabulary();
+	}
+	~XMLCodecWithNonDefaultEventTags_F() {
+	}
+
+	EventFactory event_factory;
+	EventPtr m_event_ptr;
+	const Vocabulary* m_vocab;
+};
+
+BOOST_FIXTURE_TEST_SUITE(XMLCodecWithNonDefaultEventTags_S, XMLCodecWithNonDefaultEventTags_F)
+
+BOOST_AUTO_TEST_CASE(checkReadWithEmptyRootElement) {
+	EventFactory event_factory;
+	EventPtr ep(event_factory.create(p->getEventType()));
+	std::stringstream ss("<Applecart></Applecart>");
+	BOOST_CHECK(p->read(ss, *ep) == false);
+	BOOST_CHECK(p->read(ss, *ep) == false);
+}
+
+BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
+	const boost::int16_t FIELD_VALUE_INT_16 = 500;
+	const boost::uint64_t FIELD_VALUE_UINT_64 = E1_FIELD_VALUE_UINT_64;
+	const int YEAR = 2008;
+	const int MONTH = 6;
+	const int DAY = 16;
+
+	std::ostringstream oss;
+	oss << "<Applecart><Apple>" 
+		<< "<" << FIELD_NAME_INT_16  << ">" << FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">" 
+		<< "<" << FIELD_NAME_UINT_64 << ">" << FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">" 
+		<< "<" << FIELD_NAME_DATE    << ">" << YEAR << "-" << MONTH << "-" << DAY << "</" << FIELD_NAME_DATE << ">" 
+		<< "</Apple></Applecart>";
+	std::istringstream in(oss.str());
+
+	BOOST_CHECK(p->read(in, *m_event_ptr));
+
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
+}
+
+BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
+	// initialize the event
+	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+
+	// Specify the expected usage of the non-default tags.
+	std::ostringstream oss;
+	oss << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		<< "<Applecart>\n"
+		<< "\t<Apple>\n"
+		<< "\t\t<" << FIELD_NAME_INT_16  << ">" << E1_FIELD_VALUE_INT_16  << "</" << FIELD_NAME_INT_16  << ">\n" 
+		<< "\t\t<" << FIELD_NAME_UINT_64 << ">" << E1_FIELD_VALUE_UINT_64 << "</" << FIELD_NAME_UINT_64 << ">\n" 
+		<< "\t</Apple>\n"
+		<< "</Applecart>\n";
+	std::string expected_output_string = oss.str();
+
+	// Confirm that the output is as expected.
+	std::ostringstream out;
+	BOOST_REQUIRE_NO_THROW(p->write(out, *m_event_ptr));
+	BOOST_REQUIRE_NO_THROW(p->finish(out));
+	BOOST_CHECK_EQUAL(out.str(), expected_output_string);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE(codecFactoryCreationAndDestruction_S)
 
 BOOST_AUTO_TEST_CASE(checkCodecFactoryConstructor) {

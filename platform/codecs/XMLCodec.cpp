@@ -34,10 +34,12 @@ namespace plugins {		// begin namespace plugins
 
 // static members of XMLCodec
 const std::string			XMLCodec::CONTENT_TYPE = "text/xml";
+const std::string			XMLCodec::EVENT_TAG_ELEMENT_NAME = "EventTag";
+const std::string			XMLCodec::EVENT_CONTAINER_TAG_ELEMENT_NAME = "EventContainerTag";
 const std::string			XMLCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			XMLCodec::TERM_ATTRIBUTE_NAME = "term";
-const std::string			XMLCodec::EVENT_ELEMENT_NAME = "Event";
-const std::string			XMLCodec::EVENTS_ELEMENT_NAME = "Events";
+const std::string			XMLCodec::DEFAULT_EVENT_TAG = "Event";
+const std::string			XMLCodec::DEFAULT_EVENT_CONTAINER_TAG = "Events";
 
 
 // XMLCodec member functions
@@ -50,6 +52,9 @@ CodecPtr XMLCodec::clone(void) const
 		new_codec->mapFieldToTerm((*i)->field_name, (*i)->term);
 	}
 	new_codec->m_XML_field_ptr_map = m_XML_field_ptr_map;
+	new_codec->m_event_container_tag = m_event_container_tag;
+	new_codec->m_event_tag = m_event_tag;
+	new_codec->m_no_events_written = true;
 	return CodecPtr(new_codec);
 }
 
@@ -75,13 +80,13 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 			throw PionException("xmlTextWriter failed to write the start of the document");
 
 		// Start the root element, named "Events".
-		if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)"Events") < 0)
+		if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)m_event_container_tag.c_str()) < 0)
 			throw PionException("xmlTextWriter failed to write a start-tag");
 
 		m_no_events_written = false;
 	}
 
-	if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)"Event") < 0)
+	if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)m_event_tag.c_str()) < 0)
 		throw PionException("xmlTextWriter failed to write an Event start-tag");
 
 	// Iterate through each field in the current format.
@@ -237,7 +242,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 		if (ret <= 0)
 			throw PionException("XML parser error");
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, EVENTS_ELEMENT_NAME.c_str()) != 0)
+		if (strcmp((char*)name, m_event_container_tag.c_str()) != 0)
 			throw PionException("XML parser error");
 
 		m_first_read_attempt = false;
@@ -251,9 +256,9 @@ bool XMLCodec::read(std::istream& in, Event& e)
 		if (ret < 0)
 			throw PionException("XML parser error");
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, EVENT_ELEMENT_NAME.c_str()) == 0)
+		if (strcmp((char*)name, m_event_tag.c_str()) == 0)
 			break;
-		if (strcmp((char*)name, EVENTS_ELEMENT_NAME.c_str()) == 0) {
+		if (strcmp((char*)name, m_event_container_tag.c_str()) == 0) {
 			// Setting eofbit gives the caller a way to distinguish between the case where there is
 			// currently not enough data in the stream to parse an Event and the case where the
 			// Events end-tag has been reached.
@@ -272,7 +277,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 		if (xmlTextReaderRead(m_xml_reader) != 1)
 			throw PionException("XML parser error");
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, EVENT_ELEMENT_NAME.c_str()) == 0)
+		if (strcmp((char*)name, m_event_tag.c_str()) == 0)
 			break;
 
 		// get the Term corresponding to the tag
@@ -355,7 +360,13 @@ void XMLCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	reset();
 	Codec::setConfig(v, config_ptr);
 
-	// TODO: options
+	// Read in the tags to use for Events and Event containers, or use the defaults if no tags are specified.
+	if (! ConfigManager::getConfigOption(EVENT_TAG_ELEMENT_NAME, m_event_tag, config_ptr)) {
+		m_event_tag = DEFAULT_EVENT_TAG;
+	}
+	if (! ConfigManager::getConfigOption(EVENT_CONTAINER_TAG_ELEMENT_NAME, m_event_container_tag, config_ptr)) {
+		m_event_container_tag = DEFAULT_EVENT_CONTAINER_TAG;
+	}
 
 	// next, map the fields to Terms
 	xmlNodePtr codec_field_node = config_ptr;
