@@ -86,7 +86,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			dojo.connect(this.extraction_rule_grid, 'onApplyCellEdit', this, _this._handleCellEdit);
 
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
-			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });			
+			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
+			dojo.query("select", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); }); // Includes pion.widgets.SimpleSelect widgets, even when inside an <input> element in the markup.
 		},
 		getHeight: function() {
 			// TODO: replace 530 with some computed value

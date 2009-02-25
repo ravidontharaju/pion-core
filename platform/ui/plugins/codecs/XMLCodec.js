@@ -16,8 +16,8 @@ dojo.declare("plugins.codecs.XMLCodecPane",
 			this.form.attr('value', {EventTag: 'Event', EventContainerTag: 'Events'});
 		},
  		getHeight: function() {
-			// TODO: replace 530 with some computed value
-			return 530;
+			// TODO: replace 540 with some computed value
+			return 540;
 		}
 	}
 );
