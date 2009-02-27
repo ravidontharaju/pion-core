@@ -24,6 +24,10 @@
 			<Type>shortstring</Type>
 			<Comment>Unique identifier assigned to the clickstream visitor session</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#visitor-id">
+			<Type>shortstring</Type>
+			<Comment>Unique identifier assigned to the visitor (across sessions)</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#cookie-id">
 			<Type>string</Type>
 			<Comment>Cookie identifier used for sessionizing clickstream ("name:value")</Comment>
@@ -284,5 +288,21 @@
 			<Type>uint32</Type>
 			<Comment>Number of seconds between the first and last session requests</Comment>
 		</Term>
+        <Term id="urn:vocab:clickstream#sitename">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Web site name</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#computername">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Computer Name</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#win32status">
+            <Type>shortstring</Type>
+            <Comment>WebTrends Win32 Status</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#cs-version">
+            <Type>shortstring</Type>
+            <Comment>WebTrends HTTP client version</Comment>
+        </Term>
 	</Vocabulary>
 </PionConfig>
