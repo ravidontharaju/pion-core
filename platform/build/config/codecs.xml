@@ -107,6 +107,37 @@
 	<Field term="urn:vocab:clickstream#session-dwell">x-session-dwell</Field>
     <Field term="urn:vocab:clickstream#session-length">x-session-length</Field>
   </Codec>
+  <Codec id="264bb8ce-a5ab-4f57-bec7-084082e0ab27">
+    <Name>WebTrends Log</Name>
+    <Comment>Codec for parsing WebTrends</Comment>
+    <Plugin>LogCodec</Plugin>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Flush>false</Flush>
+    <Headers>false</Headers>
+    <Events comment="#"/>
+    <Fields split=" " consume="true"/>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#authuser">cs-username</Field>
+    <Field term="urn:vocab:clickstream#sitename">s-sitename</Field>
+    <Field term="urn:vocab:clickstream#computername">s-computername</Field>
+    <Field term="urn:vocab:clickstream#s-ip">s-ip</Field>
+    <Field term="urn:vocab:clickstream#method">cs-method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">cs-uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">cs-uri-query</Field>
+    <Field term="urn:vocab:clickstream#status">sc-status</Field>
+    <Field term="urn:vocab:clickstream#win32status">sc-win32-status</Field>
+    <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
+    <Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#s-port">s-port</Field>
+    <Field term="urn:vocab:clickstream#cs-version">cs-version</Field>
+    <Field term="urn:vocab:clickstream#host">cs-Host</Field>
+    <Field term="urn:vocab:clickstream#useragent">cs(User-Agent)</Field>
+    <Field term="urn:vocab:clickstream#cookie">cs(Cookie)</Field>
+    <Field term="urn:vocab:clickstream#referer">cs(Referer)</Field>
+  </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
     <Plugin>LogCodec</Plugin>
     <Name>Stock Price Log</Name>
