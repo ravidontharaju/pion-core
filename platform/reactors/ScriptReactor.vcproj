@@ -19,11 +19,6 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="pion-common.lib"
-				GenerateManifest="false"
-			/>
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
@@ -35,11 +30,6 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
 			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="pion-common.lib"
-				GenerateManifest="false"
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
@@ -47,10 +37,6 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
 			>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="pion-common.lib"
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
@@ -61,10 +47,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="pion-common.lib"
 			/>
 		</Configuration>
 	</Configurations>
