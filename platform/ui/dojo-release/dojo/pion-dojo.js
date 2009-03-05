@@ -24584,7 +24584,7 @@ return _1785;
 console.debug("markAsChanged");
 dojo.addClass(this.domNode,"unsaved_changes");
 },protocol:""});
-plugins.protocols.source_options=["query","cookie","cs-header","sc-header","cs-content","sc-content"];
+plugins.protocols.source_options=["query","cookie","cs-header","sc-header","cs-content","sc-content","cs-raw-content","sc-raw-content"];
 }
 if(!dojo._hasResource["pion.protocols"]){
 dojo._hasResource["pion.protocols"]=true;

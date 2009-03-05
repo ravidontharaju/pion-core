@@ -19,7 +19,7 @@
 
 #ifdef _MSC_VER
 // This could be any valid .lib file; its only purpose is to prevent the compiler  
-// from trying to link to boost_zlib-*.lib (e.g. boost_zip-vc80-mt-1_35.dll).  
+// from trying to link to boost_zlib-*.lib (e.g. boost_zip-vc80-mt-1_37.dll).  
 // LogInputReactor only uses zlib indirectly, through boost_iostreams-*.dll.
 #define BOOST_ZLIB_BINARY "zdll.lib"
 
