@@ -23,6 +23,9 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
+#include <boost/iostreams/concepts.hpp>
+#include <boost/logic/tribool.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/net/HTTPParser.hpp>
@@ -171,14 +174,54 @@ public:
 
 private:
 
+	/// container type for decoded HTTP payload content
+	typedef std::vector< std::pair<boost::shared_array<char>,size_t> >	DecoderContainer;
+
+	/// Boost.iostreams sink used to receive decoded HTTP payload content
+	class DecoderSink
+		: public boost::iostreams::sink
+	{
+	public:
+	
+		/// default constructor
+		DecoderSink(void) : m_bytes(0) {}
+
+		/// stores data in the sink
+		std::streamsize write(const char* s, std::streamsize n) {
+			if (n > 0) {
+				boost::shared_array<char> ptr(new char[n]);
+				memcpy(ptr.get(), s, n);
+				m_data.push_back( std::make_pair(ptr, n) );
+				m_bytes += n;
+			}
+			return n;
+		}
+		
+		/// returns the container populated with decoded HTTP payload content
+		inline const DecoderContainer& getContainer(void) const { return m_data; }
+		
+		/// returns total number of bytes in decoded HTTP payload content
+		inline std::streamsize getBytes(void) const { return m_bytes; }
+		
+	private:
+	
+		/// container that is populated with decoded HTTP payload content
+		DecoderContainer	m_data;
+		
+		/// total number of bytes in decoded HTTP payload content
+		std::streamsize		m_bytes;
+	};
+
 	/// data source supported for field content extraction
 	enum ExtractionSource {
 		EXTRACT_QUERY,			//< use map of query pairs from request URI & content (requires name=)
 		EXTRACT_COOKIE,			//< use map of cookies from request+response (requires name=)
 		EXTRACT_CS_HEADER,		//< use HTTP request header (requires name=)
 		EXTRACT_SC_HEADER,		//< use HTTP response header (requires name=)
-		EXTRACT_CS_CONTENT,		//< use HTTP request payload content
-		EXTRACT_SC_CONTENT		//< use HTTP response payload content
+		EXTRACT_CS_CONTENT,		//< use HTTP request payload content (decoded)
+		EXTRACT_SC_CONTENT,		//< use HTTP response payload content (decoded)
+		EXTRACT_CS_RAW_CONTENT,	//< use HTTP request payload content (raw)
+		EXTRACT_SC_RAW_CONTENT	//< use HTTP response payload content (raw)
 	};
 
 	/// data type used to determine whether or not payload content should be saved
@@ -208,10 +251,50 @@ private:
 		 * processes content extraction for HTTPMessage payload content
 		 *
 		 * @param event_ptr_ref pointer to the Event being generated
+		 * @param content_type type of content from Content-Type HTTP header
+		 * @param content_ptr pointer to a blob of payload content data
+		 * @param content_length length of the payload content data blob
+		 */
+		inline void processContentNoCheck(pion::platform::EventPtr& event_ptr_ref,
+			const char *content_ptr, const size_t content_length) const;
+
+		/**
+		 * processes content extraction for HTTPMessage payload content
+		 *
+		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param http_msg the message object to extract payload content from
 		 */
 		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
 			const pion::net::HTTPMessage& http_msg) const;
+
+		/**
+		 * processes content extraction for HTTPMessage payload content
+		 * (decodes content if it is encoded)
+		 *
+		 * @param event_ptr_ref pointer to the Event being generated
+		 * @param http_msg the message object to extract payload content from
+		 * @param decoded_flag has the payload content been decoded ?
+		 * @param decoded_content cached value of decoded payload content
+		 * @param decoded_content_length length of the cached decoded payload content
+		 */
+		inline void processDecodedContent(pion::platform::EventPtr& event_ptr_ref,
+			const pion::net::HTTPMessage& http_msg,
+			boost::logic::tribool& decoded_flag,
+			boost::shared_array<char>& decoded_content,
+			size_t& decoded_content_length) const;
+
+		/**
+		 * attempts to decode payload content for HTTPMessage
+		 *
+		 * @param http_msg the message object to extract payload content from
+		 * @param decoded_content cached value of decoded payload content
+		 * @param decoded_content_length length of the cached decoded payload content
+		 *
+		 * @return bool true if content was decoded, false if not
+		 */
+		bool tryDecoding(const pion::net::HTTPMessage& http_msg,
+			boost::shared_array<char>& decoded_content,
+			size_t& decoded_content_length) const;
 
 		/// vocabulary term for the event field where the content is stored
 		pion::platform::Vocabulary::Term	m_term;
@@ -343,11 +426,17 @@ private:
 	/// string used for response header extraction source type
 	static const std::string	EXTRACT_SC_HEADER_STRING;
 
-	/// string used for request content extraction source type
+	/// string used for decoded request content extraction source type
 	static const std::string	EXTRACT_CS_CONTENT_STRING;
 
-	/// string used for response content extraction source type
+	/// string used for decoded response content extraction source type
 	static const std::string	EXTRACT_SC_CONTENT_STRING;
+
+	/// string used for raw request content extraction source type
+	static const std::string	EXTRACT_CS_RAW_CONTENT_STRING;
+
+	/// string used for raw response content extraction source type
+	static const std::string	EXTRACT_SC_RAW_CONTENT_STRING;
 
 	/// urn:vocab:clickstream#cs-data-packets
     static const std::string	VOCAB_CLICKSTREAM_CS_DATA_PACKETS;
@@ -529,35 +618,64 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 	}
 }
 	
+inline void HTTPProtocol::ExtractionRule::processContentNoCheck(pion::platform::EventPtr& event_ptr_ref,
+	const char *content_ptr, const size_t content_length) const
+{
+	boost::match_results<const char*> mr;
+	if ( m_match.empty() ) {
+		(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
+								   (content_length > m_max_size
+									? m_max_size : content_length));
+	} else if ( boost::regex_search(content_ptr, mr, m_match) ) {
+		if (m_format.empty() || mr.empty()) {
+			(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
+									   (content_length > m_max_size
+										? m_max_size : content_length));
+		} else {
+			std::string content_str(mr.format(m_format));
+			(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
+									   (content_str.size() > m_max_size
+										? m_max_size : content_str.size()));
+		}
+	}
+}
+
 inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
 	const pion::net::HTTPMessage& http_msg) const
 {
-	boost::match_results<const char*> mr;
 	if (m_max_size > 0
 		&& http_msg.getContentLength() > 0
 		&& ( m_type_regex.empty()
 			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
 	{
-		if ( m_match.empty() ) {
-			(*event_ptr_ref).setString(m_term.term_ref, http_msg.getContent(),
-									   (http_msg.getContentLength() > m_max_size
-										? m_max_size : http_msg.getContentLength()));
-		} else if ( boost::regex_search(http_msg.getContent(), mr, m_match) ) {
-			if (m_format.empty() || mr.empty()) {
-				(*event_ptr_ref).setString(m_term.term_ref, http_msg.getContent(),
-										   (http_msg.getContentLength() > m_max_size
-											? m_max_size : http_msg.getContentLength()));
-			} else {
-				std::string content_str(mr.format(m_format));
-				(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
-										   (content_str.size() > m_max_size
-											? m_max_size : content_str.size()));
-			}
+		processContentNoCheck(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+	}
+}
+
+inline void HTTPProtocol::ExtractionRule::processDecodedContent(pion::platform::EventPtr& event_ptr_ref,
+	const pion::net::HTTPMessage& http_msg, boost::logic::tribool& decoded_flag,
+	boost::shared_array<char>& decoded_content, size_t& decoded_content_length) const
+{
+	if (m_max_size > 0
+		&& http_msg.getContentLength() > 0
+		&& ( m_type_regex.empty()
+			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
+	{
+		// try decoding the content if we haven't already done so
+		if (boost::indeterminate(decoded_flag))
+			decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length);
+	
+		if (decoded_flag && decoded_content.get() != NULL) {
+			// we already have decoded content -> use it
+			processContentNoCheck(event_ptr_ref, decoded_content.get(), decoded_content_length);
+		} else {
+			// no encoding used or unable to decode -> use raw payload content
+			processContentNoCheck(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
 		}
 	}
 }
-	
-	
+
+
 }	// end namespace plugins
 }	// end namespace pion
 

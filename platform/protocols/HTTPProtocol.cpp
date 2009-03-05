@@ -17,6 +17,12 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <iostream>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/algorithm/string.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include "HTTPProtocol.hpp"
@@ -47,6 +53,8 @@ const std::string HTTPProtocol::EXTRACT_CS_HEADER_STRING = "cs-header";
 const std::string HTTPProtocol::EXTRACT_SC_HEADER_STRING = "sc-header";
 const std::string HTTPProtocol::EXTRACT_CS_CONTENT_STRING = "cs-content";
 const std::string HTTPProtocol::EXTRACT_SC_CONTENT_STRING = "sc-content";
+const std::string HTTPProtocol::EXTRACT_CS_RAW_CONTENT_STRING = "cs-raw-content";
+const std::string HTTPProtocol::EXTRACT_SC_RAW_CONTENT_STRING = "sc-raw-content";
 	
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_DATA_PACKETS="urn:vocab:clickstream#cs-data-packets";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_DATA_PACKETS="urn:vocab:clickstream#sc-data-packets";
@@ -384,6 +392,14 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_sc_data_packets_term_ref, m_sc_data_packets);
 	(*event_ptr_ref).setUInt(m_cs_missing_packets_term_ref, m_cs_missing_packets);
 	(*event_ptr_ref).setUInt(m_sc_missing_packets_term_ref, m_sc_missing_packets);
+	
+	// used to cache decoded payload content
+	size_t decoded_request_length;
+	size_t decoded_response_length;
+	boost::shared_array<char> decoded_request_content;
+	boost::shared_array<char> decoded_response_content;
+	boost::logic::tribool decoded_request_flag(boost::indeterminate);
+	boost::logic::tribool decoded_response_flag(boost::indeterminate);
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -408,11 +424,21 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_CS_CONTENT:
-				// extract HTTP payload content from request
-				rule.processContent(event_ptr_ref, m_request);
+				// extract decoded HTTP payload content from request
+				rule.processDecodedContent(event_ptr_ref, m_request, decoded_request_flag,
+					decoded_request_content, decoded_request_length);
 				break;
 			case EXTRACT_SC_CONTENT:
-				// extract HTTP payload content from response
+				// extract decoded HTTP payload content from response
+				rule.processDecodedContent(event_ptr_ref, m_response, decoded_response_flag,
+					decoded_response_content, decoded_response_length);
+				break;
+			case EXTRACT_CS_RAW_CONTENT:
+				// extract raw HTTP payload content from request
+				rule.processContent(event_ptr_ref, m_request);
+				break;
+			case EXTRACT_SC_RAW_CONTENT:
+				// extract raw HTTP payload content from response
 				rule.processContent(event_ptr_ref, m_response);
 				break;
 		}
@@ -517,6 +543,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			rule_ptr->m_source = EXTRACT_CS_CONTENT;
 		} else if (source_str == EXTRACT_SC_CONTENT_STRING) {
 			rule_ptr->m_source = EXTRACT_SC_CONTENT;
+		} else if (source_str == EXTRACT_CS_RAW_CONTENT_STRING) {
+			rule_ptr->m_source = EXTRACT_CS_RAW_CONTENT;
+		} else if (source_str == EXTRACT_SC_RAW_CONTENT_STRING) {
+			rule_ptr->m_source = EXTRACT_SC_RAW_CONTENT;
 		} else {
 			throw UnknownSourceException(source_str);
 		}
@@ -537,6 +567,8 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		}
 		case EXTRACT_CS_CONTENT:
 		case EXTRACT_SC_CONTENT:
+		case EXTRACT_CS_RAW_CONTENT:
+		case EXTRACT_SC_RAW_CONTENT:
 			break;	// ignore parameter name attribute
 		}
 		
@@ -715,6 +747,86 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (m_authuser_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_AUTHUSER);
 }
+
+
+// class HTTPProtocol::ExtractionRule
+
+bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& http_msg, 
+	boost::shared_array<char>& decoded_content, size_t& decoded_content_length) const
+{
+	// check if content is encoded
+	const std::string& content_encoding(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING));
+	if (content_encoding.empty()) {
+		return false;
+	}
+		
+	// attempt to decode content
+	boost::iostreams::filtering_streambuf<boost::iostreams::input> decoder;
+	
+	if (content_encoding == "gzip" || content_encoding == "x-gzip") {
+
+		// payload has gzip (LZ77) encoding
+		decoder.push(boost::iostreams::gzip_decompressor());
+
+	} else if (content_encoding == "deflate") {
+
+		// payload has deflate ("zlib") encoding
+		decoder.push(boost::iostreams::zlib_decompressor());
+
+	} else if (content_encoding == "compress" || content_encoding == "x-compress") {
+
+		// payload has compress (LZW) encoding
+		// CAN'T HANDLE
+		return false;
+	
+	} else {
+
+		// unrecognized content encoding
+		// CAN'T HANDLE
+		return false;
+	}
+
+	// for input filters, the source should be pushed last
+	decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
+		http_msg.getContentLength()) );
+
+	// write encoded content to stream
+	DecoderSink decoder_sink;
+
+	// NOTE: iostreams::copy() does not work as of 1.37.0 b/c it creates a copy
+	// of decoder_sink instead of using a reference to decoder_sink (UGH!)
+	//size_t len = boost::iostreams::copy(decoder, decoder_sink);
+	{
+		char buf[4096];
+		std::streamsize num_read;
+		while ((num_read=decoder.sgetn(buf, 4096)) == 4096)
+			decoder_sink.write(buf, 4096);
+		if (num_read > 0) 
+			decoder_sink.write(buf, num_read);
+	}
+	
+	// initialize decoded content cache to hold results
+	decoded_content_length = decoder_sink.getBytes();
+	decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0
+
+	if (decoded_content_length > 0) {	
+		// copy results into decoded content cache (a contiguous array)
+		char *decoded_ptr = decoded_content.get();
+		const DecoderContainer& container = decoder_sink.getContainer();
+		for (DecoderContainer::const_iterator it = container.begin();
+			it != container.end(); ++it)
+		{
+			if (it->second > 0) {
+				memcpy(decoded_ptr, it->first.get(), it->second);
+				decoded_ptr += it->second;
+			}
+		}
+	}
+
+	// content was decoded
+	return true;
+}
+
 
 }	// end namespace plugins
 }	// end namespace pion
