@@ -6,4 +6,4 @@ copy dojo-for-pion.profile.js %buildscripts%\profiles
 
 rem Create a release build in C:\dojo-release-1.2.3-src\release\dojo-release...
 cd %buildscripts%
-build.bat profile=dojo-for-pion action=release releaseName=dojo-release layerOptimize=shrinksafe.keepLines
+build.bat profile=dojo-for-pion action=release releaseName=dojo-release layerOptimize=shrinksafe.keepLines localeList="en-us,en-gb,en,ROOT"

@@ -20928,4 +20928,4 @@ _1437.push(word);
 return _1437.join("");
 }});
 }
-dojo.i18n._preloadLocalizations("dojo.nls.dojo-for-pion",["he","nl","tr","no","ko","el","en","en-gb","ROOT","zh-cn","hu","es","fi-fi","pt-br","ca","fi","he-il","xx","ru","it","fr","cs","de-de","fr-fr","it-it","es-es","ja","sk","da","sl","pl","de","sv","pt","pt-pt","nl-nl","zh-tw","ko-kr","ar","en-us","zh","th","ja-jp"]);
+dojo.i18n._preloadLocalizations("dojo.nls.dojo-for-pion",["xx","ROOT","en","en-us","en-gb"]);

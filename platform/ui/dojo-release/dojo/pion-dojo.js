@@ -25567,4 +25567,4 @@ this._getFocusItems(this.domNode);
 setTimeout(dojo.hitch(dijit,"focus",this._firstFocusItem),50);
 }
 };
-dojo.i18n._preloadLocalizations("dojo.nls.pion-dojo",["he","nl","tr","no","ko","el","en","en-gb","ROOT","zh-cn","hu","es","fi-fi","pt-br","ca","fi","he-il","xx","ru","it","fr","cs","de-de","fr-fr","it-it","es-es","ja","sk","da","sl","pl","de","sv","pt","pt-pt","nl-nl","zh-tw","ko-kr","ar","en-us","zh","th","ja-jp"]);
+dojo.i18n._preloadLocalizations("dojo.nls.pion-dojo",["xx","ROOT","en","en-us","en-gb"]);
