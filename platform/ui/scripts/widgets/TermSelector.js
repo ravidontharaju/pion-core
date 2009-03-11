@@ -48,6 +48,7 @@ dojo.declare("pion.widgets.TermSelector",
 			this.inherited(arguments);
 			var _this = this;
 			var initial_vocab_id = this.initial_term? this.initial_term.toString().split('#')[0] : '';
+			this.category = (this.query && this.query.category)? this.query.category : 'any';
 			pion.vocabularies.vocabularies_by_id = {};
 			var index = 0;
 			var index_of_initial_vocab = 0;
@@ -95,15 +96,17 @@ dojo.declare("pion.widgets.TermSelector",
 						onItem: function(item) {
 							var id = _this.vocabulary.vocab_term_store.getValue(item, 'ID');
 							var full_id = _this.vocabulary.vocab_term_store.getValue(item, 'full_id');
-							if (_this.initial_term && _this.initial_term.toString() == full_id)
-								index_of_initial_term = index;
-							_this.term_comments_by_id[full_id] = _this.vocabulary.vocab_term_store.getValue(item, 'Comment');
-							if (dojo.isIE) {
-								_this.term_select.add(new Option(id, full_id));
-							} else {
-								_this.term_select.add(new Option(id, full_id), null);
+							if (_this.category == 'any' || _this.category == pion.terms.categories_by_id[full_id]) {
+								if (_this.initial_term && _this.initial_term.toString() == full_id)
+									index_of_initial_term = index;
+								_this.term_comments_by_id[full_id] = _this.vocabulary.vocab_term_store.getValue(item, 'Comment');
+								if (dojo.isIE) {
+									_this.term_select.add(new Option(id, full_id));
+								} else {
+									_this.term_select.add(new Option(id, full_id), null);
+								}
+								++index;
 							}
-							++index;
 						},
 						onComplete: function() {
 							_this.term_select.selectedIndex = index_of_initial_term;

@@ -21,6 +21,7 @@ dojo.require("plugins.reactors.FilterReactor");
 dojo.require("plugins.reactors.TransformReactor");
 dojo.require("plugins.reactors.ScriptReactor");
 dojo.require("plugins.reactors.DatabaseOutputReactor");
+dojo.require("plugins.reactors.FissionReactor");
 
 // configuration parameters
 var STEP = 10;

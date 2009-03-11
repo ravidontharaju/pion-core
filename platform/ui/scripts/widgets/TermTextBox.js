@@ -32,7 +32,7 @@ dojo.declare("pion.widgets._TermTextBox",
 					onValueSelected: function(value) {
 						if (textBox._tabbingAway) {
 							delete textBox._tabbingAway;
-						} else{
+						} else {
 							textBox.focus(); // focus the textbox before the popup closes to avoid reopening the popup
 						}
 						setTimeout(dojo.hitch(textBox, "_close"), 1); // allow focus time to take
@@ -41,6 +41,7 @@ dojo.declare("pion.widgets._TermTextBox",
 						pion.widgets._TermTextBox.superclass._setValueAttr.call(textBox, value, true);
 					},
 					initial_term: textBox.value,
+					query: textBox.query,
 					lang: textBox.lang,
 					constraints: textBox.constraints
 				});
@@ -122,6 +123,7 @@ dojo.declare("pion.widgets._TermTextBox",
 dojo.declare("pion.widgets.TermTextBox",
 	pion.widgets._TermTextBox,
 	{
+		query: {},
 		baseClass: "dijitTextBox",
 		popupClass: "pion.widgets.TermSelector"
 	}

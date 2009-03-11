@@ -1,0 +1,30 @@
+<div class="dijitDialog reactor_dialog" tabindex="-1" waiRole="dialog" waiState="labelledby-${id}_title">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Fission Reactor Initialization</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<table
+			><tr
+				><td><label>Name:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+			></tr><tr
+				><td><label>Comments:</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+			></tr><tr
+				><td><label>Input&nbsp;Event&nbsp;Type:</label></td
+				><td><input dojoType="pion.widgets.SimpleSelect" name="InputEventType"
+							store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
+			></tr><tr
+				><td><label>Input&nbsp;Event&nbsp;Term:</label></td
+				><td><input dojoType="pion.widgets.TermTextBox" name="InputEventTerm" query="{category: 'string'}" style="width: 100%;" /></td
+			></tr><tr
+				><td><label>Codec:</label></td
+				><td><input dojoType="pion.widgets.SimpleSelect" name="Codec" store="pion.codecs.config_store" searchAttr="Name"/></td
+			></tr
+		></table>
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: tryConfig">Save</button>
+		<button dojoType=dijit.form.Button class="cancel">Cancel</button>
+	</div>
+</div>

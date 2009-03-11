@@ -21347,6 +21347,7 @@ node.appendChild(dojo.doc.createTextNode(text));
 this.inherited(arguments);
 var _this=this;
 var _1491=this.initial_term?this.initial_term.toString().split("#")[0]:"";
+this.category=(this.query&&this.query.category)?this.query.category:"any";
 pion.vocabularies.vocabularies_by_id={};
 var index=0;
 var _1493=0;
@@ -21389,6 +21390,7 @@ var _149c=0;
 _this.vocabulary.vocab_term_store.fetch({onItem:function(item){
 var id=_this.vocabulary.vocab_term_store.getValue(item,"ID");
 var _149f=_this.vocabulary.vocab_term_store.getValue(item,"full_id");
+if(_this.category=="any"||_this.category==pion.terms.categories_by_id[_149f]){
 if(_this.initial_term&&_this.initial_term.toString()==_149f){
 _149c=index;
 }
@@ -21399,6 +21401,7 @@ _this.term_select.add(new Option(id,_149f));
 _this.term_select.add(new Option(id,_149f),null);
 }
 ++index;
+}
 },onComplete:function(){
 _this.term_select.selectedIndex=_149c;
 _this.term_select.onchange();
@@ -21460,7 +21463,7 @@ _14a7.focus();
 }
 setTimeout(dojo.hitch(_14a7,"_close"),1);
 pion.widgets._TermTextBox.superclass._setValueAttr.call(_14a7,value,true);
-},initial_term:_14a7.value,lang:_14a7.lang,constraints:_14a7.constraints});
+},initial_term:_14a7.value,query:_14a7.query,lang:_14a7.lang,constraints:_14a7.constraints});
 }
 if(!this._opened){
 dijit.popup.open({parent:this,popup:this._picker,around:this.domNode,onCancel:dojo.hitch(this,this._close),onClose:function(){
@@ -21520,7 +21523,7 @@ dijit.placeOnScreenAroundElement(p.domNode.parentNode,this.domNode,{"BL":"TL","T
 }
 }
 }});
-dojo.declare("pion.widgets.TermTextBox",pion.widgets._TermTextBox,{baseClass:"dijitTextBox",popupClass:"pion.widgets.TermSelector"});
+dojo.declare("pion.widgets.TermTextBox",pion.widgets._TermTextBox,{query:{},baseClass:"dijitTextBox",popupClass:"pion.widgets.TermSelector"});
 dojo.declare("pion.widgets.TermTextCell",dojox.grid.cells._Widget,{widgetClass:"pion.widgets.TermTextBox",getWidgetProps:function(_14af){
 return dojo.mixin(this.inherited(arguments),{value:_14af});
 }});
@@ -23213,6 +23216,33 @@ this.put_data+=this.reactor.custom_put_data_from_field_mapping_store;
 this.reactor.field_mapping_store.newItem({ID:this.reactor.field_mapping_store.next_id++});
 }});
 plugins.reactors.DatabaseOutputReactorDialog.grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget},rows:[{field:"Field",name:"Database Column Name",width:20,widgetClass:"dijit.form.ValidationTextBox",widgetProps:{regExp:"[a-zA-Z][\\w]*",required:"true",invalidMessage:"Illegal database column name"}},{field:"Term",name:"Term",width:"auto",type:pion.widgets.TermTextCell},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
+}
+if(!dojo._hasResource["plugins.reactors.FissionReactor"]){
+dojo._hasResource["plugins.reactors.FissionReactor"]=true;
+dojo.provide("plugins.reactors.FissionReactor");
+dojo.declare("plugins.reactors.FissionReactor",[plugins.reactors.Reactor],{postCreate:function(){
+this.config.Plugin="FissionReactor";
+this.inherited("postCreate",arguments);
+}});
+plugins.reactors.FissionReactor.label="Fission Reactor";
+dojo.declare("plugins.reactors.FissionReactorInitDialog",[plugins.reactors.ReactorInitDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\" tabindex=\"-1\" waiRole=\"dialog\" waiState=\"labelledby-${id}_title\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Fission Reactor Initialization</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\">\r\n\t\t<table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr><tr\r\n\t\t\t\t><td><label>Input&nbsp;Event&nbsp;Type:</label></td\r\n\t\t\t\t><td><input dojoType=\"pion.widgets.SimpleSelect\" name=\"InputEventType\"\r\n\t\t\t\t\t\t\tstore=\"pion.terms.store\" searchAttr=\"id\" query=\"{Type: 'object'}\" /></td\r\n\t\t\t></tr><tr\r\n\t\t\t\t><td><label>Input&nbsp;Event&nbsp;Term:</label></td\r\n\t\t\t\t><td><input dojoType=\"pion.widgets.TermTextBox\" name=\"InputEventTerm\" query=\"{category: 'string'}\" style=\"width: 100%;\" /></td\r\n\t\t\t></tr><tr\r\n\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t><td><input dojoType=\"pion.widgets.SimpleSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t></table>\r\n\t</div>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick: tryConfig\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+this.inherited("postMixInProperties",arguments);
+if(this.templatePath){
+this.templateString="";
+}
+},widgetsInTemplate:true,postCreate:function(){
+this.plugin="FissionReactor";
+console.debug("plugins.reactors.FissionReactorInitDialog.postCreate");
+this.inherited("postCreate",arguments);
+}});
+dojo.declare("plugins.reactors.FissionReactorDialog",[plugins.reactors.ReactorDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\" tabindex=\"-1\" waiRole=\"dialog\" waiState=\"labelledby-${id}_title\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Fission Reactor Configuration</span>\r\n\t\t<span dojoAttachPoint=\"closeButtonNode\" class=\"dijitDialogCloseIcon\" dojoAttachEvent=\"onclick: onCancel\">\r\n\t\t\t<span dojoAttachPoint=\"closeText\" class=\"closeText\">x</span>\r\n\t\t</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\">\r\n\t\t<!--start div to set padding for top half of dialog-->\r\n\t\t<div class=\"reactor_dialog_top\">\r\n\r\n\t\t\t<!--start reactor header info-->\r\n\t\t\t<div class=\"reactor_name\">\r\n\t\t\t\t<img src=\"/plugins/reactors/processing/FissionReactor/dialog-icon.png\" width=\"17\" height=\"17\" border=\"0\" />\r\n\t\t\t\t&nbsp; Fission Reactor\r\n\t\t\t</div>\r\n\t\t\t<div class=\"reactor_cat\">\r\n\t\t\t\t<strong>Name:</strong> FissionReactor\r\n\t\t\t\t&nbsp;&nbsp;&nbsp;\r\n\t\t\t\t<strong>Category:</strong> Processing\r\n\t\t\t</div>\r\n\r\n\t\t\t<div style=\"clear:both;\"></div>\r\n\r\n\t\t\t<p>Split each input event into a collection of output events.</p>\r\n\t\t\t<!--end reactor header info-->\r\n\r\n\t\t\t <!--start reactor settings-->\r\n\t\t\t<table cellpadding=\"0\" cellspacing=\"5\" border=\"0\"\r\n\t\t\t\t><tr\r\n\t\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t\t></tr><tr\r\n\t\t\t\t\t><td><label>ID:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"@id\" class=\"id_text_box\" disabled=\"true\"/></td\r\n\t\t\t\t></tr><tr\r\n\t\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t\t></tr><tr\r\n\t\t\t\t\t><td><label>Input&nbsp;Event&nbsp;Type:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"pion.widgets.SimpleSelect\" name=\"InputEventType\"\r\n\t\t\t\t\t\t\t\tstore=\"pion.terms.store\" searchAttr=\"id\" query=\"{Type: 'object'}\" /></td\r\n\t\t\t\t></tr><tr\r\n\t\t\t\t\t><td><label>Input&nbsp;Event&nbsp;Term:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"pion.widgets.TermTextBox\" name=\"InputEventTerm\" query=\"{category: 'string'}\" style=\"width: 100%;\" /></td\r\n\t\t\t\t></tr><tr\r\n\t\t\t\t\t><td><label>Codec:</label></td\r\n\t\t\t\t\t><td><input dojoType=\"pion.widgets.SimpleSelect\" name=\"Codec\" store=\"pion.codecs.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t\t></tr\r\n\t\t\t></table>\r\n\t\t\t<div style=\"clear:both;\"></div>\r\n\t\t\t<!--end reactor settings-->\r\n\r\n\t\t</div>\r\n\t\t<!--end div to set padding for top half of dialog-->\r\n\r\n\t\t<!--start div to set padding for bottom half of dialog-->\r\n\t\t<div class=\"reactor_dialog_bottom\">\r\n\r\n\t\t\t<!--start connections-->\r\n\t\t\t<div class=\"p_reactor_grid_blocks\">\r\n\t\t\t\t<h2>Connections</h2>\r\n\t\t\t\t<h3>Input Connections</h3>\r\n\t\t\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\" style=\"width: 618px\"></div>\r\n\t\t\t\t<h3>Output Connections</h3>\r\n\t\t\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\" style=\"width: 618px\"></div>\r\n\t\t\t</div>\r\n\t\t\t<!--end connections-->\r\n\r\n\t\t\t<!--start buttons--> \r\n\t\t\t<div class=\"save_cancel_delete\">\r\n\t\t\t\t<button dojoType=dijit.form.Button class=\"save\" type=\"submit\">Save</button>\r\n\t\t\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t\t\t\t<button dojoType=dijit.form.Button class=\"delete\">Delete Reactor</button>\r\n\t\t\t</div>\r\n\t\t\t<!--end buttons--> \r\n\r\n\t\t</div>\r\n\t\t<!--end div to set padding for bottom half of dialog-->\r\n\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+this.inherited("postMixInProperties",arguments);
+if(this.templatePath){
+this.templateString="";
+}
+},widgetsInTemplate:true,postCreate:function(){
+this.inherited("postCreate",arguments);
+}});
 }
 if(!dojo._hasResource["pion.reactors"]){
 dojo._hasResource["pion.reactors"]=true;
@@ -25359,10 +25389,14 @@ return;
 }
 };
 pion.escapeXml=function(value){
+if(value===false){
+return value.toString();
+}else{
 if(value){
 return value.toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }else{
 return "";
+}
 }
 };
 pion.makeXmlLeafElement=function(_184c,value){
