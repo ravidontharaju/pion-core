@@ -105,6 +105,26 @@ public:
 			: PionException("Platform configuration includes an empty plug-in path: ", config_file) {}
 	};
 
+	/// exception thrown if the config file does not contain a DataDirectory element
+	class MissingDataDirectoryException : public PionException {
+	public:
+		MissingDataDirectoryException(const std::string& config_file)
+			: PionException("Platform configuration file does not define a data directory: ", config_file) {}
+	};
+	
+	/// exception thrown if the directory configured is not found
+	class DirectoryNotFoundException : public PionException {
+	public:
+		DirectoryNotFoundException(const std::string& dir)
+			: PionException("Platform configuration DataDirectory not found: ", dir) {}
+	};
+	
+	/// exception thrown if the directory configuration option is not a directory
+	class NotADirectoryException : public PionException {
+	public:
+		NotADirectoryException(const std::string& dir)
+			: PionException("Platform configuration DataDirectory is not a directory: ", dir) {}
+	};
 	
 	/// constructs a new PlatformConfig instance
 	PlatformConfig(void);
@@ -149,6 +169,9 @@ public:
 
 	/// returns the name of the logging configuration file
 	inline const std::string& getLogConfigFile(void) const { return m_log_config_file; }
+
+	/// returns the directory in which data files are stored
+	inline const std::string& getDataDirectory(void) const { return m_data_directory; }
 
 	
 private:
@@ -209,6 +232,9 @@ private:
 	/// name of the plug-in path element for Pion XML config files
 	static const std::string		PLUGIN_PATH_ELEMENT_NAME;
 
+	/// name of the data directory element for Pion XML config files
+	static const std::string		DATA_DIRECTORY_ELEMENT_NAME;
+
 	/// name of the reaction engine element for Pion XML config files
 	static const std::string		REACTION_ENGINE_ELEMENT_NAME;
 	
@@ -248,6 +274,9 @@ private:
 
 	/// name of the logging configuration file
 	std::string								m_log_config_file;
+	
+	/// directory in which database files are stored
+	std::string								m_data_directory;
 	
 	/// name of the user that the server should use
 	std::string								m_user_name;

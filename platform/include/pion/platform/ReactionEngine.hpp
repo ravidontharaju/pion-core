@@ -420,6 +420,12 @@ public:
 	/// sets the value of the "multithreaded branches" setting
 	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
 
+	/// sets the directory in which data files are stored
+	inline void setDataDirectory(const std::string& dir) { m_data_directory = dir; }
+
+	/// returns the directory in which data files are stored
+	inline const std::string& getDataDirectory(void) const { return m_data_directory; }
+
 	/// returns true if the ReactionEngine is running
 	inline bool isRunning(void) const { return m_is_running; }	
 
@@ -637,6 +643,9 @@ private:
 	
 	/// connection to this object from the DatabaseManager
 	boost::signals::scoped_connection	m_db_connection;
+
+	/// directory in which data files are stored
+	std::string						m_data_directory;
 		
 	/// true if the reaction engine is running
 	bool							m_is_running;

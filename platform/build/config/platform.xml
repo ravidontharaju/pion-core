@@ -9,6 +9,7 @@
 	<LogConfig>logconfig.txt</LogConfig>
 	<PluginPath>../plugins</PluginPath>
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
+	<DataDirectory>./</DataDirectory>
 	<!--
 	<ReactionEngine>
 		<MaxThreads>32</MaxThreads>

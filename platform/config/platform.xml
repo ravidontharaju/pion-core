@@ -8,6 +8,7 @@
 	<ServiceConfig>services.xml</ServiceConfig>
 	<UserConfig>users.xml</UserConfig>
 	<LogConfig>logconfig.txt</LogConfig>
+	<DataDirectory>./</DataDirectory>
 	<PluginPath>../../platform/codecs/.libs/</PluginPath>
 	<PluginPath>../../platform/databases/.libs/</PluginPath>
 	<PluginPath>../../platform/reactors/.libs/</PluginPath>

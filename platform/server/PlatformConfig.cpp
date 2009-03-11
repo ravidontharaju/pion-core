@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <boost/filesystem/operations.hpp>
 #include <pion/PionPlugin.hpp>
 #include "PlatformConfig.hpp"
 #ifndef _MSC_VER
@@ -51,6 +52,7 @@ const std::string			PlatformConfig::USER_CONFIG_ELEMENT_NAME = "UserConfig";
 const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
 const std::string			PlatformConfig::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
+const std::string			PlatformConfig::DATA_DIRECTORY_ELEMENT_NAME = "DataDirectory";
 const std::string			PlatformConfig::REACTION_ENGINE_ELEMENT_NAME = "ReactionEngine";
 const std::string			PlatformConfig::MAX_THREADS_ELEMENT_NAME = "MaxThreads";
 const std::string			PlatformConfig::MULTITHREAD_BRANCHES_ELEMENT_NAME = "MultithreadBranches";
@@ -261,6 +263,19 @@ void PlatformConfig::openConfigFile(void)
 	// open the ProtocolFactory configuration
 	m_protocol_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_protocol_factory.openConfigFile();
+
+	// get the DataDirectory config parameter
+	if (! ConfigManager::getConfigOption(DATA_DIRECTORY_ELEMENT_NAME, m_data_directory,
+										 m_config_node_ptr->children))
+		throw MissingDataDirectoryException(getConfigFile());
+	m_data_directory = ConfigManager::resolveRelativePath(m_data_directory);
+	m_reaction_engine.setDataDirectory(m_data_directory);
+
+	// make sure that the directory exists
+	if (! boost::filesystem::exists(m_data_directory) )
+		throw DirectoryNotFoundException(m_data_directory);
+	if (! boost::filesystem::is_directory(m_data_directory) )
+		throw NotADirectoryException(m_data_directory);
 
 	// get the DatabaseManager config file
 	if (! ConfigManager::getConfigOption(DATABASE_CONFIG_ELEMENT_NAME, config_file,

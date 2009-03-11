@@ -9,8 +9,9 @@
 	<ServiceConfig>services.xml</ServiceConfig>
 	<UserConfig>users.xml</UserConfig>
 	<LogConfig>logconfig.txt</LogConfig>
-	<PluginPath>/usr/share/pion/plugins</PluginPath>
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
+	<PluginPath>/usr/share/pion/plugins</PluginPath>
+	<DataDirectory>/var/lib/pion</DataDirectory>
 	<!--
 	<ReactionEngine>
 		<MaxThreads>32</MaxThreads>
