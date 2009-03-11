@@ -2,7 +2,6 @@ dojo.provide("plugins.reactors.FissionReactor");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("pion.terms");
 dojo.require("pion.codecs");
-dojo.require("pion.widgets.SimpleSelect");
 dojo.require("pion.widgets.TermTextBox");
 dojo.require("dijit.form.TextBox");
 dojo.require("dijit.form.Button");
