@@ -57,24 +57,6 @@ public:
 
 	virtual ~TransformReactorTests_F() {}
 
-	boost::uint64_t processLogFile(const std::string& reactor_id, const std::string& log_file) {
-		std::ifstream in(log_file.c_str(), std::ios::in);
-		BOOST_REQUIRE(in.is_open());
-
-		// push events from the log file into the TransformReactor
-		boost::uint64_t events_read = 0;
-		EventPtr event_ptr;
-		m_event_factory.create(event_ptr, m_codec_ptr->getEventType());
-		while (m_codec_ptr->read(in, *event_ptr)) {
-			++events_read;
-			m_platform_cfg.getReactionEngine().send(reactor_id, event_ptr);
-			m_event_factory.create(event_ptr, m_codec_ptr->getEventType());
-		}
-
-		in.close();
-
-		return events_read;
-	}
 
 	const std::string				m_clf_codec_id;
 	const std::string				m_transformer_id;
@@ -91,20 +73,21 @@ BOOST_FIXTURE_TEST_SUITE(TransformReactorTests_S, TransformReactorTests_F)
 
 BOOST_AUTO_TEST_CASE(checkTransformLogFile) {
 	// read in events from the log file
-	boost::uint64_t events_read = processLogFile(m_transformer_id, LOG_FILE);
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_platform_cfg.getReactionEngine(), m_transformer_id, *m_codec_ptr, LOG_FILE);
 
 	// make sure that all events were read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(16));
 
 	// make sure that the reactor received all of the events read
-	BOOST_CHECK(PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), m_transformer_id, events_read));
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), m_transformer_id, events_read);
 
 	// flush all events in the transformreactor to bypass waiting for time-outs (though there are none)
 	m_platform_cfg.getReactionEngine().stopReactor(m_transformer_id);
 
 	// check number of output events for each of the log reactors
 	// (make sure they have finished writing data)
-	BOOST_CHECK(PionPlatformUnitTest::checkReactorEventsOut(m_platform_cfg.getReactionEngine(), m_output_log_id, static_cast<boost::uint64_t>(16)));
+	PionPlatformUnitTest::checkReactorEventsOut(m_platform_cfg.getReactionEngine(), m_output_log_id, static_cast<boost::uint64_t>(16));
 
 	// make sure that the output files match what is expected
 	BOOST_CHECK(PionUnitTest::check_files_match(LOG_OUTPUT_FILE, LOG_EXPECTED_FILE));

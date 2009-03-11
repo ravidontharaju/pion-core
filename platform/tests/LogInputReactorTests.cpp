@@ -48,8 +48,6 @@ static const std::string NEW_OUTPUT_LOG_FILE(LOG_FILE_DIR + "new.log");
 static const std::string NEW_INPUT_LOG_FNAME("combined-new");
 
 
-const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
-
 const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
 const boost::uint64_t TOTAL_LINES_IN_ALL_CLF_LOG_FILES = 7;
 const boost::uint64_t NUM_LINES_IN_LARGE_LOG_FILE = 20000;
@@ -206,22 +204,6 @@ public:
 		xmlNodePtr config_ptr = makeLogInputReactorConfig("", "", "", std::string("large") + file_ext);
 		m_reaction_engine->setReactorConfig(m_log_reader_id, config_ptr);
 	}
-	void waitForMinimumNumberOfEventsIn(
-		const std::string& reactor_id,
-		boost::uint64_t time_limit,
-		boost::uint64_t min_num_events_in)
-	{
-		boost::uint64_t total_nsec = 0;
-		boost::uint32_t num_nsec = 100000000; // 0.1 seconds
-		while (total_nsec < time_limit) {
-			PionScheduler::sleep(0, num_nsec);
-			if (m_reaction_engine->getEventsIn(reactor_id) >= min_num_events_in)
-				return;
-			total_nsec += num_nsec;
-		}
-		BOOST_REQUIRE_GE(m_reaction_engine->getEventsIn(reactor_id), min_num_events_in);
-//		BOOST_FAIL("LogInputReactor was taking too long to read the required number of events from a log file.");
-	}
 	void makeNewLogFileByCopying(const std::string& fname_of_file_to_copy) {
 		boost::filesystem::copy_file(LOG_FILE_DIR + fname_of_file_to_copy + file_ext,
 									 LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + file_ext);
@@ -261,7 +243,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessed) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the LogInputReactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -274,7 +256,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEvents) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the new log file has some expected values in it.
 	F::m_reaction_engine->stopReactor(F::m_log_writer_id);
@@ -318,7 +300,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleLog
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming all the log files.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
@@ -335,7 +317,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(spotCheckEventsForMultipleLogFiles) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming all the log files.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 
 	// Stop the LogOutputReactor and extract all the URLs from the output log.
 	F::m_reaction_engine->stopReactor(F::m_log_writer_id);
@@ -366,7 +348,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -389,7 +371,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestart) {
 	boost::uint64_t expected_events_out = events_out_at_start + num_lines_in_new_input_log_file;
 
 	// Wait up to one second for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in);
 
 	// Confirm the expected totals of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -402,7 +384,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -430,7 +412,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	boost::uint64_t expected_events_out = num_lines_in_new_input_log_file;
 
 	// Wait up to one second for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in);
 
 	// Confirm the expected totals of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -449,15 +431,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Calibrate.
-	boost::uint32_t num_nsec = 10000000; // 0.01 seconds (Start small, since we need to run 10 intervals before finishing the file.)
-	PionScheduler::sleep(0, num_nsec);
-	while (F::m_reaction_engine->getEventsIn(F::m_log_reader_id) < NUM_LINES_IN_LARGE_LOG_FILE / 100) { // i.e. less than 1% read
-		num_nsec *= 2;
-		if (num_nsec >= 1000000000) { // 1 second
-			BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
-		}
-		PionScheduler::sleep(0, num_nsec);
-	}
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE / 100); // i.e. less than 1% read
 
 	// Stop and restart the LogInputReactor 10 times.
 	boost::uint64_t prev_num_events_in = 0;
@@ -471,7 +445,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	}
 
 	// Wait up to 20 seconds for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE, 20);
 
 	// Confirm that the LogInputReactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
@@ -485,15 +459,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Calibrate.
-	boost::uint32_t num_nsec = 10000000; // 0.01 seconds (Start small, since we need to run 10 intervals before finishing the file.)
-	PionScheduler::sleep(0, num_nsec);
-	while (F::m_reaction_engine->getEventsIn(F::m_log_reader_id) < NUM_LINES_IN_LARGE_LOG_FILE / 100) { // i.e. less than 1% read
-		num_nsec *= 2;
-		if (num_nsec >= 1000000000) { // 1 second
-			BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
-		}
-		PionScheduler::sleep(0, num_nsec);
-	}
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE / 100); // i.e. less than 1% read
 
 	// Stop and restart the ReactorEngine 10 times.
 	boost::uint64_t prev_num_events_in = 0;
@@ -513,7 +479,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	}
 
 	// Wait up to 20 seconds for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE, 20);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), static_cast<boost::uint64_t>(NUM_LINES_IN_LARGE_LOG_FILE));
@@ -528,15 +494,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngi
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Run until at least a few events have been read.
-	boost::uint32_t num_nsec = 10000000; // 0.01 seconds
-	PionScheduler::sleep(0, num_nsec);
-	while (F::m_reaction_engine->getEventsIn(F::m_log_reader_id) < 10) {
-		num_nsec *= 2;
-		if (num_nsec >= 1000000000) { // 1 second
-			BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
-		}
-		PionScheduler::sleep(0, num_nsec);
-	}
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, 10UL);
 
 	// Stop the LogInputReactor and save the numbers of input events and output events.
 	F::m_reaction_engine->stopReactor(F::m_log_reader_id);
@@ -562,7 +520,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngi
 	boost::uint64_t expected_events_out = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete;
 
 	// Wait up to 20 seconds for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in, 20);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -580,8 +538,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleRea
 	F::m_reaction_engine->startReactor(log_reader_id_2);
 
 	// Wait up to one second for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -604,8 +562,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleRea
 	F::m_reaction_engine->startReactor(log_reader_id_2);
 
 	// Wait up to one second for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  TOTAL_LINES_IN_ALL_CLF_LOG_FILES);
@@ -625,8 +583,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMu
 	F::m_reaction_engine->startReactor(log_reader_id_2);
 
 	// Wait up to one second for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -656,8 +614,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterRestartForMu
 	boost::uint64_t expected_events_out = events_out_at_start + num_lines_in_new_input_log_file;
 
 	// Wait up to one second for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, expected_events_in);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, expected_events_in);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -677,8 +635,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	F::m_reaction_engine->startReactor(log_reader_id_2);
 
 	// Wait up to one second for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -709,8 +667,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConsumedFilesSkippedAfterEngineReload
 	boost::uint64_t expected_events_out = num_lines_in_new_input_log_file;
 
 	// Wait up to one second for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, expected_events_in);
-	this->waitForMinimumNumberOfEventsIn(log_reader_id_2, ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, log_reader_id_2, expected_events_in);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -724,7 +682,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the default log file.
-	waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the history cache exists and has the default log file and no others.
 	std::string history_cache_filename = CONFIG_FILE_DIR + F::m_log_reader_id + ".cache";
@@ -743,7 +701,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 
 	// Wait up to 2 seconds for the LogInputReactor to finish consuming the new log file.
 	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 2 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE + num_lines_in_new_input_log_file);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE + num_lines_in_new_input_log_file, 2);
 
 	// Confirm that the history cache exists and has the expected two log files and no others.
 	history_cache.clear();
@@ -812,7 +770,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testReadingCompressedLogs) {
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Wait up to one second for the LogInputReactor to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
 	// Confirm that the LogInputReactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_DEFAULT_LOG_FILE);
@@ -839,15 +797,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedCompressedFileResume
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
 	// Run until at least a few events have been read.
-	boost::uint32_t num_nsec = 10000000; // 0.01 seconds
-	PionScheduler::sleep(0, num_nsec);
-	while (F::m_reaction_engine->getEventsIn(F::m_log_reader_id) < 10) {
-		num_nsec *= 2;
-		if (num_nsec >= 1000000000) { // 1 second
-			BOOST_FAIL("LogInputReactor was taking too long to start reading a log file.");
-		}
-		PionScheduler::sleep(0, num_nsec);
-	}
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, 10UL);
 
 	// Stop the LogInputReactor and save the numbers of input events and output events.
 	F::m_reaction_engine->stopReactor(F::m_log_reader_id);
@@ -873,7 +823,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedCompressedFileResume
 	boost::uint64_t expected_events_out = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete;
 
 	// Wait up to 20 seconds for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, expected_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in, 20);
 
 	// Confirm that the Reactor has the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
@@ -949,8 +899,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	}
 
 	// Wait up to 20 seconds for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id_2, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE, 20);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id_2, NUM_LINES_IN_LARGE_LOG_FILE, 20);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_LARGE_LOG_FILE);
@@ -977,8 +927,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 	}
 
 	// Wait up to 20 seconds for the LogInputReactors to finish consuming the log file.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id_2, 20 * ONE_SECOND, NUM_LINES_IN_LARGE_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_LARGE_LOG_FILE, 20);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id_2, NUM_LINES_IN_LARGE_LOG_FILE, 20);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  NUM_LINES_IN_LARGE_LOG_FILE);
@@ -1018,8 +968,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngi
 	boost::uint64_t expected_events_out_2 = NUM_LINES_IN_LARGE_LOG_FILE - events_out_before_delete_2;
 
 	// Wait up to 20 seconds for the expected number of input events.
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id,   20 * ONE_SECOND, expected_events_in_1);
-	this->waitForMinimumNumberOfEventsIn(F::m_log_reader_id_2, 20 * ONE_SECOND, expected_events_in_2);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, expected_events_in_1, 20);
+	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id_2, expected_events_in_2, 20);
 
 	// Confirm that both LogInputReactors have the expected number of input events and output events.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in_1);

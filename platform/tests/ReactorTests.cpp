@@ -159,6 +159,7 @@ public:
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
 		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
+		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
 		m_ie_or_firefox_filter_id("183a2b12-caf8-11dd-ba3c-0019d185f6fc"),
 		m_not_ie_from_google_filter_id("105ee482-caf8-11dd-8a85-0019d185f6fc"),
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
@@ -212,6 +213,7 @@ public:
 	ReactionEngine		m_reaction_engine;
 	const std::string	m_combined_id;
 	const std::string	m_ie_filter_id;
+	const std::string	m_do_nothing_id;
 	const std::string	m_ie_or_firefox_filter_id;
 	const std::string	m_not_ie_from_google_filter_id;
 	const std::string	m_log_reader_id;
@@ -484,96 +486,48 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	// start the log reader reactor
 	m_reaction_engine.startReactor(m_log_reader_id);
 	
-	// open the CLF log file
-	std::ifstream in;
-	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
-	BOOST_REQUIRE(in.is_open());
+	// make sure that the log input reactor has consumed all of the events
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_log_reader_id, 4UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_log_reader_id, 4UL);
+
+	// check the IE or Firefox Filter Reactor (match_all_comparisons = false)
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_ie_or_firefox_filter_id, 4UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_ie_or_firefox_filter_id, 2UL);
+
+	// check the Not IE From Google Filter Reactor (match_all_comparisons = true)
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_not_ie_from_google_filter_id, 4UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_not_ie_from_google_filter_id, 1UL);
+
+	// make sure that the log output reactor has written all of the events
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_log_writer_id, 4UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_log_writer_id, 4UL);
+
 
 	// push events from the log file into the IE filter reactor
-	boost::uint64_t events_read = 0;
-	EventFactory event_factory;
-	EventPtr event_ptr;
-	event_factory.create(event_ptr, m_combined_codec->getEventType());
-	while (m_combined_codec->read(in, *event_ptr)) {
-		++events_read;
-		m_reaction_engine.send(m_ie_filter_id, event_ptr);
-		event_factory.create(event_ptr, m_combined_codec->getEventType());
-	}
-	
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_ie_filter_id, *m_combined_codec, COMBINED_LOG_FILE);
+		
 	// make sure that four events were read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(4));
 	
-	//
-	// check the IE or Firefox Filter Reactor (match_all_comparisons = false)
-	//
-
-	// make sure that the reactor received all of the events read
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_ie_or_firefox_filter_id) == events_read) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_or_firefox_filter_id), events_read);
-	
-	// make sure that only two events passed the filter
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsOut(m_ie_or_firefox_filter_id) == static_cast<boost::uint64_t>(2)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_ie_or_firefox_filter_id), static_cast<boost::uint64_t>(2));
-
-	//
-	// check the Not IE From Google Filter Reactor (match_all_comparisons = true)
-	//
-
-	// make sure that the reactor received all of the events read
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_not_ie_from_google_filter_id) == events_read) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_not_ie_from_google_filter_id), events_read);
-	
-	// make sure that only one event passed the filter
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsOut(m_not_ie_from_google_filter_id) == static_cast<boost::uint64_t>(1)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_not_ie_from_google_filter_id), static_cast<boost::uint64_t>(1));
-
-	//
 	// check the IE Filter Reactor
-	//
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_ie_filter_id, 4UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_ie_filter_id, 1UL);
 
-	// make sure that the reactor received all of the events read
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_ie_filter_id) == events_read) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_filter_id), events_read);
-	
-	// make sure that only one event passed the filter
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsOut(m_ie_filter_id) == static_cast<boost::uint64_t>(1)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_ie_filter_id), static_cast<boost::uint64_t>(1));
+	// check the do nothing Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_do_nothing_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_do_nothing_id, 1UL);
 
-	// make sure that the log input reactor has consumed all of the events
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_log_reader_id) == static_cast<boost::uint64_t>(4)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_reader_id), static_cast<boost::uint64_t>(4));
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_log_reader_id), static_cast<boost::uint64_t>(4));
 
-	// make sure that the log output reactor has written all of the events
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsIn(m_log_writer_id) == static_cast<boost::uint64_t>(4)) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_writer_id), static_cast<boost::uint64_t>(4));
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_log_writer_id), static_cast<boost::uint64_t>(4));
+	// check the total number of operations (sum of getEventsIn() for each reactor)
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_reader_id), 4UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_or_firefox_filter_id), 4UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_not_ie_from_google_filter_id), 4UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_log_writer_id), 4UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_ie_filter_id), 4UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_do_nothing_id), 1UL);
+	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsIn(m_clickstream_id), 0UL);
 
-	// make sure that the number of operations equals 13
 	BOOST_CHECK_EQUAL(m_reaction_engine.getTotalOperations(), static_cast<boost::uint64_t>(21));
 	
 	//
@@ -601,31 +555,15 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 }
 
 BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
-	// open the CLF log file
-	std::ifstream in;
-	in.open(COMBINED_LOG_FILE.c_str(), std::ios::in);
-	BOOST_REQUIRE(in.is_open());
-	
 	// push events from the log file into the data store reactor
-	boost::uint64_t events_read = 0;
-	EventFactory event_factory;
-	EventPtr event_ptr;
-	event_factory.create(event_ptr, m_combined_codec->getEventType());
-	while (m_combined_codec->read(in, *event_ptr)) {
-		++events_read;
-		m_reaction_engine.send(m_clickstream_id, event_ptr);
-		event_factory.create(event_ptr, m_combined_codec->getEventType());
-	}
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_clickstream_id, *m_combined_codec, COMBINED_LOG_FILE);
 	
 	// make sure that four events were read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(4));
 	
 	// make sure that the reactor received all of the events read
-	for (int i = 0; i < 10; ++i) {
-		if (m_reaction_engine.getEventsOut(m_clickstream_id) == events_read) break;
-		PionScheduler::sleep(0, 100000000); // 0.1 seconds
-	}
-	BOOST_CHECK_EQUAL(m_reaction_engine.getEventsOut(m_clickstream_id), events_read);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_clickstream_id, events_read);
 	
 	//
 	// check the contents of the new database

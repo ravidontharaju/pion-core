@@ -175,21 +175,6 @@ public:
 		BOOST_REQUIRE(config_ptr);
 		return config_ptr;
 	}
-	void waitForMinimumNumberOfEventsIn(
-		const std::string& reactor_id,
-		boost::uint64_t time_limit,
-		boost::uint64_t min_num_events_in)
-	{
-		boost::uint64_t total_nsec = 0;
-		boost::uint32_t num_nsec = 100000000; // 0.1 seconds
-		while (total_nsec < time_limit) {
-			PionScheduler::sleep(0, num_nsec);
-			if (m_platform_cfg.getReactionEngine().getEventsIn(reactor_id) >= min_num_events_in)
-				return;
-			total_nsec += num_nsec;
-		}
-		BOOST_FAIL("LogInputReactor was taking too long to read the required number of Events from a log file.");
-	}
 	boost::uint64_t extractNumEventsInFromResponse(const HTTPResponsePtr& response_ptr) {
 		std::string response_content(response_ptr->getContent());
 		boost::smatch rx_matches;
@@ -354,7 +339,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE, 5);
 
 	// Send request to the LogOutputReactor to rotate its output file.
 	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
@@ -377,7 +362,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
 	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, expected_total_events_in, 5);
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected contents.
 	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
@@ -401,7 +386,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
 	// Wait for a few Events to be processed.
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, 10);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, 10UL, 5);
 
 	// Send request to the LogOutputReactor to rotate its output file.
 	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
@@ -418,12 +403,12 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	BOOST_CHECK(boost::filesystem::exists(NEW_OUTPUT_LOG_FILE));
 
 	// Wait for a few more Events to be processed and stop the LogInputReactor.
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_in_at_rotation + 10);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, num_events_in_at_rotation + 10UL, 5);
 	m_platform_cfg.getReactionEngine().stopReactor(log_input_reactor_id);
 	boost::uint64_t num_events_from_log_input_reactor = m_platform_cfg.getReactionEngine().getEventsOut(log_input_reactor_id);
 
 	// Wait until the LogOutputReactor has processed all Events sent by the LogInputReactor and then stop it.
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_from_log_input_reactor);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, num_events_from_log_input_reactor, 5);
 	m_platform_cfg.getReactionEngine().stopReactor(log_output_reactor_id);
 
 	// Count the number of lines in the timestamped file.
@@ -468,7 +453,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, xml_log_output_reactor_id);
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
-	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), xml_log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE, 5);
 
 	// Send request to the LogOutputReactor to rotate its output file.
 	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + xml_log_output_reactor_id + "/rotate");
@@ -492,7 +477,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
 	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
-	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), xml_log_output_reactor_id, expected_total_events_in, 5);
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
@@ -513,7 +498,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	m_platform_cfg.getReactionEngine().addReactorConnection(log_input_reactor_id, xml_log_output_reactor_id);
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
-	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), xml_log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE, 5);
 
 	// Send request to the LogOutputReactor to rotate its output file.
 	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + xml_log_output_reactor_id + "/rotate");
@@ -537,7 +522,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	// Create another log file for the LogInputReactor to find, and give it time to find and process it.
 	boost::filesystem::copy_file("logs/comb-log-2.log", "logs/combined-2.log");
 	int expected_total_events_in = NUM_LINES_IN_DEFAULT_LOG_FILE + NUM_LINES_IN_COMB_LOG_2;
-	this->waitForMinimumNumberOfEventsIn(xml_log_output_reactor_id, 5 * ONE_SECOND, expected_total_events_in);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), xml_log_output_reactor_id, expected_total_events_in, 5);
 
 	// Stop the LogOutputReactor and check if the new log file that was just created has the expected size.
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
@@ -550,7 +535,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE, 5);
 
 	// Send request to the LogOutputReactor to rotate its output file.
 	HTTPResponsePtr response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
@@ -607,7 +592,7 @@ BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
 	bool expected_error_logged = false;
 	for (int i = 0; i < 10; ++i) {
 		// Wait for at least one more Event, so that the LogOutputReactor will attempt to rotate the log file.
-		this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, num_events_in_at_rotation + 1);
+		PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, num_events_in_at_rotation + 1UL, 5);
 
 		response_ptr = sendRequestAndGetResponse("/query/reactors/" + log_output_reactor_id + "/rotate");
 		std::string response_content(response_ptr->getContent());
@@ -630,7 +615,7 @@ BOOST_AUTO_TEST_CASE(testNonRotateQueryToLogOutputReactor) {
 	std::string log_output_reactor_id = "a92b7278-e306-11dc-85f0-0016cb926e68";
 	m_platform_cfg.getReactionEngine().startReactor(log_input_reactor_id);
 
-	this->waitForMinimumNumberOfEventsIn(log_output_reactor_id, 5 * ONE_SECOND, NUM_LINES_IN_DEFAULT_LOG_FILE);
+	PionPlatformUnitTest::checkReactorEventsIn(m_platform_cfg.getReactionEngine(), log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE, 5);
 
 	confirmDefaultQueryBehavior("/query/reactors/" + log_output_reactor_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
