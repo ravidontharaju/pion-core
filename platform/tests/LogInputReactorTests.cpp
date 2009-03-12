@@ -686,6 +686,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 
 	// Confirm that the history cache exists and has the default log file and no others.
 	std::string history_cache_filename = CONFIG_FILE_DIR + F::m_log_reader_id + ".cache";
+	if (! boost::filesystem::exists(history_cache_filename)) {
+		// Wait another second for the cache file to appear.
+		PionScheduler::sleep(0, 1000000000);
+		BOOST_REQUIRE(boost::filesystem::exists(history_cache_filename));
+	}
 	std::ifstream history_cache(history_cache_filename.c_str());
 	BOOST_REQUIRE(history_cache);
 	std::string default_log_file = std::string("combined") + F::m_file_ext;
