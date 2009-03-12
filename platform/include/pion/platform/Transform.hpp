@@ -65,18 +65,26 @@ public:
 	{
 	}
 
+   /**
+	* updateVocabulary Updates all Transform classes to use new vocabulary value
+	*
+	* @param v New vocabulary object, updates only m_term for each class
+	*/
 	void updateVocabulary(const Vocabulary& v)
 	{
 		// assume that Term references never change
 		m_term = v[m_term.term_ref];
 	}
 
+   /**
+	* removeTerm removes m_term.term_ref value(s) from event
+	*
+	* @param e EventPtr pointing to event, where value will be removed from
+	*/
 	inline void removeTerm(EventPtr& e)
 	{
 		e->clear(m_term.term_ref);
 	}
-
-//	bool checkForValidSetType(const Vocabulary::DataType type) const;
 
 	/**
 	 * transforms event terms
@@ -87,6 +95,7 @@ public:
 	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s) = 0;
 
+	/// Definitions for static ELEMENT NAMEs
 	static const std::string			LOOKUP_TERM_NAME;
 	static const std::string			TERM_ELEMENT_NAME;
 	static const std::string			LOOKUP_MATCH_ELEMENT_NAME;
@@ -105,6 +114,15 @@ public:
 	static const std::string			REGEXP_ATTRIBUTE_NAME;
 };
 
+	/**
+	 * AssignValue Assigns "value" into "term" of "e" -- does the appropriate casts to make it fit
+	 *
+	 * @param e the Event to assign the term/value into
+	 * @param term the term (type) to use for assignment
+	 * @param value the value (as a string) to assign, using appropriate cast
+	 *
+	 * @return true if the assignment was possible/done
+	 */
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
 {
 	switch (term.term_type) {
@@ -154,6 +172,15 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	return true;
 }
 
+	/**
+	 * getStringValue obtains a string value from event, using iterator ec, with term term
+	 *
+	 * @param s the string to retrieve the value into
+	 * @param term the term (for type identification) on how to treat/cast the value
+	 * @param ec Event::ConstIterator, to point to the specific value (one term may have multiple values)
+	 *
+	 * @return std::string returns s
+	 */
 inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term, const Event::ConstIterator ec)
 {
 	switch (term.term_type) {
@@ -207,17 +234,26 @@ inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term,
 }
 
 /// TransformAssignValue -- Transformation based on assigning a value to a Term
-// Current implementation takes the std::string value of the "SetValue", and does
-// a lexical cast upon assignment -- theoretically an implementation that did a lexical
-// cast to start with, and then used an assignment might be faster... (once vs. many times)
-// Also, this implementation will throw a every assignment (if not possible to lexically cast)
-// while, a pre-cast version would throw once -- at configuration time...
+/// Current implementation takes the std::string value of the "SetValue", and does
+/// a lexical cast upon assignment -- theoretically an implementation that did a lexical
+/// cast to start with, and then used an assignment might be faster... (once vs. many times)
+/// Also, this implementation will throw a every assignment (if not possible to lexically cast)
+/// while, a pre-cast version would throw once -- at configuration time...
 class PION_PLATFORM_API TransformAssignValue
 	: public Transform
 {
+	/// The value to set the target event/term to
 	std::string					m_tr_set_value;
 
 public:
+
+	/**
+	 * TransformAssignValue constructs a transformation assignment based on Value
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignValue entity
+	 */
 	TransformAssignValue(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
@@ -228,6 +264,14 @@ public:
 		m_tr_set_value = val;
 	}
 
+	/**
+	 * transform Assigns a fixed value to event/term
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event (dummy), passed in only for conformity
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		return AssignValue(d, m_term, m_tr_set_value);
@@ -236,7 +280,7 @@ public:
 
 
 /// TransformAssignTerm -- Transformation based on copying Terms from the source event
-// Should the type be re-cast, if non-matching?
+/// Should the type be re-cast, if non-matching?
 class PION_PLATFORM_API TransformAssignTerm
 	: public Transform
 {
@@ -244,6 +288,14 @@ class PION_PLATFORM_API TransformAssignTerm
 	Vocabulary::TermRef			m_src_term_ref;
 
 public:
+
+	/**
+	 * TransformAssignTerm constructs a transformation assignment based on a source term
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
+	 */
 	TransformAssignTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term), m_src_term_ref(Vocabulary::UNDEFINED_TERM_REF)
 	{
@@ -256,6 +308,14 @@ public:
 			throw MissingTransformField("Invalid Source-Term in TransformationAssignTerm");
 	}
 
+	/**
+	 * transform Assigns a copy of the source term into the destination event/term
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyCopied = false;
@@ -277,19 +337,32 @@ class PION_PLATFORM_API TransformLookup
 
 	/// Term to pull out of the source event
 	Vocabulary::TermRef			m_lookup_term_ref;
+
 	/// [optional] regular expression to apply to Lookup Term
 	boost::regex				m_match;
+
 	/// [optional] format to apply to regular expression, default: $&
 	std::string					m_format;
+
 	/// Treatment for default value, if lookup fails
 	enum { DEF_UNDEF, DEF_SRCTERM, DEF_OUTPUT, DEF_FIXED }
 								m_default;
+
 	/// [optional] fixed string to use as default value with DEF_FIXED
 	std::string					m_fixed;
+
 	/// Keys & Values, hashmap for keys
 	KVP							m_lookup;
 
 public:
+
+	/**
+	 * TransformLookup constructs a transformation assignment based on a lookup set of values
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the Lookup entity
+	 */
 	TransformLookup(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
@@ -358,13 +431,19 @@ public:
 			throw MissingTransformField("No Key-Values in TransformationLookup");
 	}
 
+	/// Destructor, to dispose of the lookup table
 	virtual ~TransformLookup() {
 		m_lookup.clear();
 	}
 
-	// Note, that the transformation will iterate based on lookup_term
-	// - No terms (not found); no iterations, not even default actions
-	// - 1..n: iterate full functionality for each found term
+	/**
+	 * transform Assigns a value based on regex/lookup/default
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to use as basis for lookup
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		Event::ValuesRange values_range = s->equal_range(m_lookup_term_ref);
@@ -412,9 +491,19 @@ class PION_PLATFORM_API TransformRules
 
 	/// set value, for assignment, or for use as format for TYPE_REGEX
 	std::vector<std::string>					m_set_value;
+
 	/// pointer to instantiated & configured Comparison
 	std::vector<Comparison *>					m_comparison;
+
 public:
+
+	/**
+	 * TransformRules constructs a transformation assignment based on a set of Rules
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the Rules entity
+	 */
 	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
@@ -464,11 +553,20 @@ public:
 		}
 	}
 
+	/// Destructor for TransformRules -- needed for clearing comparison objects
 	virtual ~TransformRules() {
 		for (unsigned int i = 0; i < m_comparison.size(); i++)
 			delete m_comparison[i];
 	}
 
+	/**
+	 * transform modifies the destination event, based on rules
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyAssigned = false;
@@ -504,11 +602,22 @@ class PION_PLATFORM_API TransformRegex
 {
 	/// identifies the Vocabulary Term that is being copied from
 	Vocabulary::TermRef							m_src_term_ref;
+
 	/// set format for regex's
 	std::vector<std::string>					m_format;
+
 	/// regex's
 	std::vector<boost::regex>					m_regex;
+
 public:
+
+	/**
+	 * TransformRegex constructs a transformation assignment based on a series of consecutive regular expressions
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the Regex entity
+	 */
 	TransformRegex(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
 		: Transform(v, term)
 	{
@@ -550,10 +659,17 @@ public:
 			throw MissingTransformField("No Regexp's in TransformationRegex");
 	}
 
+	/// Destructor -- not needed
 	virtual ~TransformRegex() {	}
 
-	// Unlike other transformations, this one iterates event term values on the outside,
-	// since the whole set of regexp's are applied strictly in sequence to the values
+	/**
+	 * transform Adds a term to destination based on a series of successive regular expressions
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyAssigned = false;
@@ -561,7 +677,6 @@ public:
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			// Take the original value from source term set
-//			std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
 			std::string str;
 			getStringValue(str, m_v[m_src_term_ref], ec);
 			// Run through all regexp's
