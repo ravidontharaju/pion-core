@@ -214,8 +214,23 @@ public:
 	 */
 	virtual void setConfig(const Vocabulary& v, const xmlNodePtr config_ptr);
 
+	/**
+	 * generic simple, non-escaped, string-replace function; replace every instance of search with substitute
+	 *
+	 * @param src string to modify
+	 * @param search string to find (and substitute)
+	 * @param substitute string to put in place of search in src
+	 */
 	void stringReplace(std::string& src, const char* search, const std::string& substitute);
 
+	/**
+	 * replace TABLE/FIELD/COLUMNS/QUESTIONS/PARAMS with appropriate values in pseudo-SQL
+	 *
+	 * @param query string to modify, contains the original pseudo-SQL
+	 * @param field_map fieldMap to use for substitutions of COLUMNS/PARAMS
+	 * @param table_name name of table to use to substitute TABLE
+	 * @return std::string returns modified query
+	 */
 	std::string& stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map, const std::string& table_name);
 
 	/// Database Isolation Levels
@@ -252,7 +267,6 @@ protected:
 	/// data type that maps query identifiers to pointers of compiled queries
 	typedef std::map<QueryID, QueryPtr>		QueryMap;
 
-
 	/// unique identifier used to represent the "insert event" query
 	static const std::string				INSERT_QUERY_ID;
 
@@ -282,7 +296,19 @@ protected:
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
 	static const std::string				SELECT_STAT_ELEMENT_NAME;
 
+	/**
+	 * readConfig must be called by a Database implementation as soon as it has called setConfig
+	 *
+	 * @param config_ptr Pointer to XML configuration (passed in as config_ptr)
+	 * @param engine_str String identifying the database/engine that is being initialized
+	 */
 	void readConfig(const xmlNodePtr config_ptr, std::string engine_str);
+
+	/**
+	 * readConfigDetails is called by readConfig, once it locates the SQL details for an engine
+	 *
+	 * @param config_ptr XML file & pointer to where SQL details are found
+	 */
 	void readConfigDetails(const xmlNodePtr config_ptr);
 
 	/// Database engine name, e.g. MySQL-MyISAM
