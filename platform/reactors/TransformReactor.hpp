@@ -76,12 +76,14 @@ public:
 			: PionException("TransformReactor configuration is missing a required comparison value: ", reactor_id) {}
 	};
 
+	/// exception thrown if a set value is missing from transformation configuration
 	class EmptyTransformationException : public PionException {
 	public:
 		EmptyTransformationException(const std::string& reactor_id)
 			: PionException("TransformReactor configuration is missing the set value: ", reactor_id) {}
 	};
 
+	/// exception thrown if source term is missing from assign term transformation
 	class EmptySetTermException : public PionException {
 	public:
 		EmptySetTermException(const std::string& reactor_id)
@@ -158,6 +160,7 @@ private:
 	enum { DO_NEVER, DO_SOMETIMES, DO_ALWAYS }
 									m_deliver_original;
 
+	/// what part of original event is copied over
 	enum { COPY_ALL, COPY_UNCHANGED, COPY_NONE }
 									m_copy_original;
 

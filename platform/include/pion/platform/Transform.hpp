@@ -43,6 +43,7 @@ public:
 	/// a copy to Vocabulary pointer, for parsing TransformXXX entries
 	const Vocabulary&			m_v;
 
+	/// invalid/missing type of transformation
 	class MissingTransformField : public PionException {
 	public:
 		MissingTransformField(const std::string& str)
