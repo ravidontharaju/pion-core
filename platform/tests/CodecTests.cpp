@@ -576,6 +576,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
+	BOOST_CHECK_NO_THROW(F::p->finish(out));
 	std::string output_str = out.str();
 	std::istringstream in(output_str);
 	EventPtr event_ptr_2(event_factory.create(F::p->getEventType()));

@@ -229,125 +229,206 @@ bool XMLCodec::read(std::istream& in, Event& e)
 		throw WrongEventTypeException();
 
 	e.clear();
-
+	
 	if (m_first_read_attempt) {
+		// verify that field mappings are defined
 		if (m_field_map.empty())
 			throw PionException("Codec is not configured yet.");
+
+		// initialize xml reader to use
 	    m_xml_reader = xmlReaderForIO(xmlInputReadCallback, xmlInputCloseCallback, (void*)(&in), NULL, NULL, XML_PARSE_NOBLANKS);
 		if (!m_xml_reader)
 			throw PionException("failed to create XML parser");
 
-		// parse the 'Events' start-tag
-		int ret = xmlTextReaderRead(m_xml_reader);
-		if (ret <= 0)
-			throw PionException("XML parser error");
-		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, m_event_container_tag.c_str()) != 0)
-			throw PionException("XML parser error");
+		if (! m_event_container_tag.empty()) {
+			// parse the 'Events' start-tag
+			while (1) {
+				int ret = xmlTextReaderRead(m_xml_reader);
+				if (ret == 0) {
+					return false;
+				} else if (ret < 0) {
+					throw PionException("XML parser error");
+				}
+		
+				if (xmlTextReaderNodeType(m_xml_reader) == 1) {
+					const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
+					if (name == NULL)
+						throw PionException("XML parser error");
+					if (strcmp((char*)name, m_event_container_tag.c_str()) == 0)
+						break;
+				}
+			}
+		}
 
 		m_first_read_attempt = false;
 	}
-
+	
 	// parse the input until the next 'Event' start-tag is found
 	while (1) {
 		int ret = xmlTextReaderRead(m_xml_reader);
-		if (ret == 0)
+		if (ret == 0) {
+			// set eof bit (finished ok) if no outside container
+			if (m_event_container_tag.empty())
+				in.setstate(std::ios::eofbit);
 			return false;
-		if (ret < 0)
+		} else if (ret < 0) {
 			throw PionException("XML parser error");
+		}
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, m_event_tag.c_str()) == 0)
-			break;
-		if (strcmp((char*)name, m_event_container_tag.c_str()) == 0) {
-			// Setting eofbit gives the caller a way to distinguish between the case where there is
-			// currently not enough data in the stream to parse an Event and the case where the
-			// Events end-tag has been reached.
-			in.setstate(std::ios::eofbit);
-
-			return false;
+		if (xmlTextReaderNodeType(m_xml_reader) == 1) {	// start xml element
+			if (name == NULL)
+				throw PionException("XML parser error");
+			if (strcmp((char*)name, m_event_tag.c_str()) == 0)
+				break;
+		} else if (xmlTextReaderNodeType(m_xml_reader) == 15) {	// end xml element
+			if (name == NULL)
+				throw PionException("XML parser error");
+			// check for </Event>
+			if (strcmp((char*)name, m_event_tag.c_str()) == 0) {
+				return true;	// empty event !
+			}
+			// check for </Events>
+			if (!m_event_container_tag.empty() && strcmp((char*)name, m_event_container_tag.c_str()) == 0) {
+				// Setting eofbit gives the caller a way to distinguish between the case where there is
+				// currently not enough data in the stream to parse an Event and the case where the
+				// Events end-tag has been reached.
+				in.setstate(std::ios::eofbit);
+				return false;
+			}
 		}
 	}
 
 	// parse the input until the 'Event' end-tag is found
+	std::string open_element_name;
 	while (1) {
-		// First check whether the Event element has already been closed (due to empty-element tag <Event/>).
-		if (xmlTextReaderIsEmptyElement(m_xml_reader))
-			break;
-
 		if (xmlTextReaderRead(m_xml_reader) != 1)
 			throw PionException("XML parser error");
+
+		// check for start or end XML element
 		const xmlChar* name = xmlTextReaderConstName(m_xml_reader);
-		if (strcmp((char*)name, m_event_tag.c_str()) == 0)
-			break;
-
-		// get the Term corresponding to the tag
-		XMLCodec::FieldMap::const_iterator i = m_field_map.find(std::string((char*)name));
-		if (i == m_field_map.end())
-			// TODO: Should we just skip unknown Terms instead?
-			throw PionException("Unknown Term in Event");
-		const pion::platform::Vocabulary::Term& term = i->second->term;
-
-		// get the value of the Term from the contents of the element
-		if (xmlTextReaderRead(m_xml_reader) != 1)
-			throw PionException("XML parser error");
-		const std::string value_str((char*)xmlTextReaderConstValue(m_xml_reader));
-
-		// parse the end-tag for the Term 
-		if (xmlTextReaderRead(m_xml_reader) != 1)
-			throw PionException("XML parser error");
-
-		switch (term.term_type) {
-			case pion::platform::Vocabulary::TYPE_NULL:
-				// do nothing
-				break;
-			case pion::platform::Vocabulary::TYPE_INT8:
-			case pion::platform::Vocabulary::TYPE_INT16:
-			case pion::platform::Vocabulary::TYPE_INT32:
-				e.setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_INT64:
-				e.setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_UINT8:
-			case pion::platform::Vocabulary::TYPE_UINT16:
-			case pion::platform::Vocabulary::TYPE_UINT32:
-				e.setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_UINT64:
-				e.setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_FLOAT:
-				e.setFloat(term.term_ref, boost::lexical_cast<float>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_DOUBLE:
-				e.setDouble(term.term_ref, boost::lexical_cast<double>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
-				e.setLongDouble(term.term_ref, boost::lexical_cast<long double>(value_str));
-				break;
-			case pion::platform::Vocabulary::TYPE_SHORT_STRING:
-			case pion::platform::Vocabulary::TYPE_STRING:
-			case pion::platform::Vocabulary::TYPE_LONG_STRING:
-				e.setString(term.term_ref, value_str);
-				break;
-			case pion::platform::Vocabulary::TYPE_CHAR:
-				if (value_str.size() > term.term_size) {
-					e.setString(term.term_ref, std::string(value_str, 0, term.term_size));
-				} else {
-					e.setString(term.term_ref, value_str);
-				}
-				break;
-			case pion::platform::Vocabulary::TYPE_DATE_TIME:
-			case pion::platform::Vocabulary::TYPE_DATE:
-			case pion::platform::Vocabulary::TYPE_TIME:
-			{
-				PionDateTime dt;
-				m_XML_field_ptr_map[term.term_ref]->time_facet.fromString(value_str, dt);
-				e.setDateTime(term.term_ref, dt);
-				break;
+		if (xmlTextReaderNodeType(m_xml_reader) == 15) {		// end xml element
+			if (name == NULL)
+				throw PionException("XML parser error");
+			if (strcmp((char*)name, m_event_tag.c_str()) == 0)
+				break;	// found </Event> - done parsing current event
+			if (!m_event_container_tag.empty() && strcmp((char*)name, m_event_container_tag.c_str()) == 0) {
+				// assume </Event> before </Events>
+				in.setstate(std::ios::eofbit);
+				return true;
 			}
-			default:
-				return false;
+			if (strcmp((char*)name, open_element_name.c_str()) == 0)
+				open_element_name.clear();	// found closing node for ignored element
+		} else if (xmlTextReaderNodeType(m_xml_reader) == 1) {	// start xml element
+			// check for field element
+			if (name == NULL)
+				throw PionException("XML parser error");
+			if (! open_element_name.empty())
+				continue;	// skip contents if inside of an ignored element
+			open_element_name = (char*)name;
+
+			// get the Term corresponding to the tag
+			XMLCodec::FieldMap::const_iterator i = m_field_map.find(open_element_name);
+			if (i == m_field_map.end())
+				continue;	// ignore current element
+			const pion::platform::Vocabulary::Term& term = i->second->term;
+
+			// get the value of the Term from the contents of the element
+			std::string value_str;
+			bool found_end_of_field = false;
+			while (!found_end_of_field) {
+				if (xmlTextReaderRead(m_xml_reader) != 1)
+					throw PionException("XML parser error");
+				switch (xmlTextReaderNodeType(m_xml_reader)) {
+				case 1:	// start element
+					name = xmlTextReaderConstName(m_xml_reader);
+					if (name) {
+						value_str += '<';
+						value_str += (char*) name;
+						value_str += '>';
+					}
+					break;
+						
+				case 15:	// end element
+					name = xmlTextReaderConstName(m_xml_reader);
+					if (name) {
+						if (strcmp((char*)name, open_element_name.c_str()) == 0) {
+							// found end of data field
+							open_element_name.clear();
+							found_end_of_field = true;
+							break;
+						} else {
+							value_str += "</";
+							value_str += (char*) name;
+							value_str += '>';
+						}
+					}
+					break;
+					
+				case 3:		// text node
+					name = xmlTextReaderValue(m_xml_reader);
+					if (name) {
+						value_str += (char*) name;
+					}
+					break;
+					
+				default:
+					break;
+				}
+			}	// done getting field value
+					
+			switch (term.term_type) {
+				case pion::platform::Vocabulary::TYPE_NULL:
+					// do nothing
+					break;
+				case pion::platform::Vocabulary::TYPE_INT8:
+				case pion::platform::Vocabulary::TYPE_INT16:
+				case pion::platform::Vocabulary::TYPE_INT32:
+					e.setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_INT64:
+					e.setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_UINT8:
+				case pion::platform::Vocabulary::TYPE_UINT16:
+				case pion::platform::Vocabulary::TYPE_UINT32:
+					e.setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_UINT64:
+					e.setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_FLOAT:
+					e.setFloat(term.term_ref, boost::lexical_cast<float>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_DOUBLE:
+					e.setDouble(term.term_ref, boost::lexical_cast<double>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_LONG_DOUBLE:
+					e.setLongDouble(term.term_ref, boost::lexical_cast<long double>(value_str));
+					break;
+				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
+				case pion::platform::Vocabulary::TYPE_STRING:
+				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+					e.setString(term.term_ref, value_str);
+					break;
+				case pion::platform::Vocabulary::TYPE_CHAR:
+					if (value_str.size() > term.term_size) {
+						e.setString(term.term_ref, std::string(value_str, 0, term.term_size));
+					} else {
+						e.setString(term.term_ref, value_str);
+					}
+					break;
+				case pion::platform::Vocabulary::TYPE_DATE_TIME:
+				case pion::platform::Vocabulary::TYPE_DATE:
+				case pion::platform::Vocabulary::TYPE_TIME:
+				{
+					PionDateTime dt;
+					m_XML_field_ptr_map[term.term_ref]->time_facet.fromString(value_str, dt);
+					e.setDateTime(term.term_ref, dt);
+					break;
+				}
+				default:
+					return false;
+			}
 		}
 	}
 

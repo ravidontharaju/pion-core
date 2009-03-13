@@ -71,4 +71,131 @@
     <Field term="urn:vocab:clickstream#date">clf-date</Field>
     <Field term="urn:vocab:clickstream#referer">cs-Referer</Field>
   </Codec>
+  <Codec id="4e97184e-0e66-11de-a6a9-0019d185f6fc">
+    <Name>Response Content Log</Name>
+    <Comment>Codec that includes HTTP response content</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#s-ip">s-ip</Field> 
+    <Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
+    <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
+    <Field term="urn:vocab:clickstream#cs-send-time">cs-send-time</Field>
+    <Field term="urn:vocab:clickstream#sc-reply-time">sc-reply-time</Field>
+    <Field term="urn:vocab:clickstream#sc-send-time">sc-send-time</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:clickstream#sc-content">sc-content</Field>
+  </Codec>
+  <Codec id="e899e9c6-0f56-11de-af9a-001cc02bd66b">
+    <Name>RSS Channel Extraction Codec</Name>
+    <Comment>Extracts RSS channels from HTTP response content</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:rss#channel-event</EventType>
+    <EventTag>channel</EventTag>
+    <EventContainerTag>rss</EventContainerTag>
+    <Field term="urn:vocab:rss#channel-title">title</Field>
+    <Field term="urn:vocab:rss#channel-category">category</Field>
+    <Field term="urn:vocab:rss#channel-link">link</Field>
+    <Field term="urn:vocab:rss#channel-description">description</Field>
+    <Field term="urn:vocab:rss#channel-pubDate">pubDate</Field>
+    <Field term="urn:vocab:rss#lastBuildDate">lastBuildDate</Field>
+    <Field term="urn:vocab:rss#copyright">copyright</Field>
+    <Field term="urn:vocab:rss#language">language</Field>
+    <Field term="urn:vocab:rss#managingEditor">managingEditor</Field>
+    <Field term="urn:vocab:rss#webMaster">webMaster</Field>
+    <Field term="urn:vocab:rss#cloud">cloud</Field>
+    <Field term="urn:vocab:rss#docs">docs</Field>
+    <Field term="urn:vocab:rss#generator">generator</Field>
+    <Field term="urn:vocab:rss#ttl">ttl</Field>
+    <Field term="urn:vocab:rss#rating">rating</Field>
+    <Field term="urn:vocab:rss#image">image</Field>
+    <Field term="urn:vocab:rss#textInput">textInput</Field>
+    <Field term="urn:vocab:rss#skipDays">skipDays</Field>
+    <Field term="urn:vocab:rss#skipHours">skipHours</Field>
+  </Codec>
+  <Codec id="a5b7533e-0e8c-11de-b992-0019d185f6fc">
+    <Name>RSS Channel Log Format</Name>
+    <Comment>Codec for describing RSS channel requests</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:rss#channel-event</EventType>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:rss#channel-title">title</Field>
+    <Field term="urn:vocab:rss#channel-category">category</Field>
+    <Field term="urn:vocab:rss#channel-link">link</Field>
+    <Field term="urn:vocab:rss#channel-description">description</Field>
+    <Field term="urn:vocab:rss#channel-pubDate">pubDate</Field>
+    <Field term="urn:vocab:rss#lastBuildDate">lastBuildDate</Field>
+    <Field term="urn:vocab:rss#copyright">copyright</Field>
+    <Field term="urn:vocab:rss#language">language</Field>
+    <Field term="urn:vocab:rss#managingEditor">managingEditor</Field>
+    <Field term="urn:vocab:rss#webMaster">webMaster</Field>
+    <Field term="urn:vocab:rss#cloud">cloud</Field>
+    <Field term="urn:vocab:rss#docs">docs</Field>
+    <Field term="urn:vocab:rss#generator">generator</Field>
+    <Field term="urn:vocab:rss#ttl">ttl</Field>
+    <Field term="urn:vocab:rss#rating">rating</Field>
+    <Field term="urn:vocab:rss#image">image</Field>
+    <Field term="urn:vocab:rss#textInput">textInput</Field>
+    <Field term="urn:vocab:rss#skipDays">skipDays</Field>
+    <Field term="urn:vocab:rss#skipHours">skipHours</Field>
+  </Codec>
+  <Codec id="e6e6f014-101f-11de-a58a-0019d185f6fc">
+    <Plugin>XMLCodec</Plugin>
+    <Name>RSS Item Extraction Codec</Name>
+    <EventType>urn:vocab:rss#item-event</EventType>
+    <EventTag>item</EventTag>
+    <EventContainerTag>channel</EventContainerTag>
+    <Comment>Extracts RSS channel items from HTTP response content</Comment>
+    <Field term="urn:vocab:rss#item-title">title</Field>
+    <Field term="urn:vocab:rss#item-category">category</Field>
+    <Field term="urn:vocab:rss#item-link">link</Field>
+    <Field term="urn:vocab:rss#item-description">description</Field>
+    <Field term="urn:vocab:rss#item-pubDate">pubDate</Field>
+    <Field term="urn:vocab:rss#item-author">author</Field>
+    <Field term="urn:vocab:rss#item-comments">comments</Field>
+    <Field term="urn:vocab:rss#item-enclosure">enclosure</Field>
+    <Field term="urn:vocab:rss#item-guid">guid</Field>
+    <Field term="urn:vocab:rss#item-source">source</Field>
+  </Codec>
+  <Codec id="e783021a-101f-11de-8332-0019d185f6fc">
+    <Name>RSS Item Log Format</Name>
+    <Comment>Codec describing requests for RSS channel items</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:rss#item-event</EventType>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:rss#item-title">title</Field>
+    <Field term="urn:vocab:rss#item-category">category</Field>
+    <Field term="urn:vocab:rss#item-link">link</Field>
+    <Field term="urn:vocab:rss#item-description">description</Field>
+    <Field term="urn:vocab:rss#item-pubDate">pubDate</Field>
+    <Field term="urn:vocab:rss#item-author">author</Field>
+    <Field term="urn:vocab:rss#item-comments">comments</Field>
+    <Field term="urn:vocab:rss#item-enclosure">enclosure</Field>
+    <Field term="urn:vocab:rss#item-guid">guid</Field>
+    <Field term="urn:vocab:rss#item-source">source</Field>
+  </Codec>
 </PionConfig>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config">
+  <Vocabulary id="urn:vocab:rss">
+    <Name>RSS Channels</Name>
+    <Comment>Vocabulary for describing RSS channels</Comment>
+    <Locked>true</Locked>
+    <Term id="urn:vocab:rss#channel-event">
+      <Type>object</Type>
+      <Comment>RSS channel request</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#channel-title">
+      <Type>shortstring</Type>
+      <Comment>Name of the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#channel-category">
+      <Type>string</Type>
+      <Comment>Specify one or more categories that the channel belongs to</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#channel-link">
+      <Type>string</Type>
+      <Comment>URL to the HTML website corresponding to the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#channel-description">
+      <Type>string</Type>
+      <Comment>Phrase or sentence describing the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#channel-pubDate">
+      <Type format="%a, %d %b %Y %H:%M:%S %z">datetime</Type>
+    </Term>
+    <Term id="urn:vocab:rss#lastBuildDate">
+      <Type format="%a, %d %b %Y %H:%M:%S %z">datetime</Type>
+      <Comment>The last time the content of the channel changed</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#copyright">
+      <Type>shortstring</Type>
+      <Comment>Copyright notice for content in the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#language">
+      <Type>shortstring</Type>
+      <Comment>The language the channel is written in</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#managingEditor">
+      <Type>shortstring</Type>
+      <Comment>Email address for person responsible for editorial content</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#webMaster">
+      <Type>shortstring</Type>
+      <Comment>Email address for person responsible for technical issues relating to channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#cloud">
+      <Type>string</Type>
+      <Comment>Allows processes to register with a cloud to be notified of updates to the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#docs">
+      <Type>string</Type>
+      <Comment>URL that points to the documentation for the format used in the RSS file</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#generator">
+      <Type>shortstring</Type>
+      <Comment>String indicating the program used to generate the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#ttl">
+      <Type>uint32</Type>
+      <Comment>Time to live, or number of minutes that indicates how long a channel can be cached before refreshing from the source</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#rating">
+      <Type>string</Type>
+      <Comment>The PICS rating for the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#image">
+      <Type>string</Type>
+      <Comment>Specifies a GIF, JPEG or PNG image that can be displayed with the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#textInput">
+      <Type>string</Type>
+      <Comment>Specifies a text input box that can be displayed with the channel</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#skipDays">
+      <Type>string</Type>
+      <Comment>A hint for aggregators telling them which days they can skip</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#skipHours">
+      <Type>string</Type>
+      <Comment>A hint for aggregators telling them which hours they can skip</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-event">
+      <Type>object</Type>
+      <Comment>RSS channel item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-author">
+      <Type>shortstring</Type>
+      <Comment>Email address of the author of the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-description">
+      <Type>string</Type>
+      <Comment>The item synopsis</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-link">
+      <Type>string</Type>
+      <Comment>The URL of the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-title">
+      <Type>shortstring</Type>
+      <Comment>The title of the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-category">
+      <Type>string</Type>
+      <Comment>Includes the item in one or more categories</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-comments">
+      <Type>string</Type>
+      <Comment>URL of a page for comments relating to the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-enclosure">
+      <Type>string</Type>
+      <Comment>Describes a media object that is attached to the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-guid">
+      <Type>shortstring</Type>
+      <Comment>A string that uniquely identifies the item</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-pubDate">
+      <Type format="%a, %d %b %Y %H:%M:%S %z">datetime</Type>
+      <Comment>Indicates when the item was published</Comment>
+    </Term>
+    <Term id="urn:vocab:rss#item-source">
+      <Type>string</Type>
+      <Comment>The RSS channel that the item came from</Comment>
+    </Term>
+  </Vocabulary>
+</PionConfig>

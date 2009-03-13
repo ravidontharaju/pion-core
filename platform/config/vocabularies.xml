@@ -2,5 +2,7 @@
 <PionConfig xmlns="http://purl.org/pion/config">
   <VocabularyPath>vocabularies</VocabularyPath>
   <VocabularyConfig id="urn:vocab:clickstream">vocabularies/clickstream.xml</VocabularyConfig>
+  <VocabularyConfig id="urn:vocab:rss">vocabularies/rss.xml</VocabularyConfig>
+  <VocabularyConfig id="urn:vocab:atom">vocabularies/atom.xml</VocabularyConfig>
   <VocabularyConfig id="urn:vocab:stocks">vocabularies/stocks.xml</VocabularyConfig>
 </PionConfig>

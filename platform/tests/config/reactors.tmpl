@@ -77,6 +77,66 @@
     <Field term="urn:vocab:clickstream#status">status</Field>
     <Field term="urn:vocab:clickstream#bytes">bytes</Field>
   </Reactor>
+  <Reactor id="fd69757c-0e8b-11de-8031-0019d185f6fc">
+    <Name>RSS Channels Fission Reactor</Name>
+    <Comment>Extracts RSS channels from an HTTP request</Comment>
+    <Plugin>FissionReactor</Plugin>
+    <Codec>e899e9c6-0f56-11de-af9a-001cc02bd66b</Codec>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="0a4757fa-0e8c-11de-8f1d-0019d185f6fc">
+    <Name>RSS Channels Log</Name>
+    <Comment>Stores RSS channel events into a log file</Comment>
+    <Plugin>LogOutputReactor</Plugin>
+    <Codec>a5b7533e-0e8c-11de-b992-0019d185f6fc</Codec>
+    <Filename>../logs/rss_channels.xml</Filename>
+  </Reactor>
+  <Connection id="1268a9e8-0e8c-11de-a1f0-0019d185f6fc">
+  	<Type>reactor</Type>
+    <From>fd69757c-0e8b-11de-8031-0019d185f6fc</From>
+    <To>0a4757fa-0e8c-11de-8f1d-0019d185f6fc</To>
+  </Connection>
+  <Reactor id="5f5ba5b6-1021-11de-b1a4-0019d185f6fc">
+    <Name>RSS Items Fission Reactor</Name>
+    <Comment>Extracts RSS channel items from an HTTP request</Comment>
+    <Plugin>FissionReactor</Plugin>
+    <Codec>e6e6f014-101f-11de-a58a-0019d185f6fc</Codec>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="5ff1bf10-1021-11de-bfa7-0019d185f6fc">
+    <Name>RSS Items Log</Name>
+    <Comment>Stores RSS channel item events into a log file</Comment>
+    <Plugin>LogOutputReactor</Plugin>
+    <Codec>e783021a-101f-11de-8332-0019d185f6fc</Codec>
+    <Filename>../logs/rss_items.xml</Filename>
+  </Reactor>
+  <Connection id="72008d12-1021-11de-a527-0019d185f6fc">
+  	<Type>reactor</Type>
+    <From>5f5ba5b6-1021-11de-b1a4-0019d185f6fc</From>
+    <To>5ff1bf10-1021-11de-bfa7-0019d185f6fc</To>
+  </Connection>
   <Connection id="1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2">
   	<Type>reactor</Type>
     <From>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Events>
+	<Event>
+		<date>2009-03-11</date>
+		<time>17:55:43</time>
+		<c-ip>10.0.0.13</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/rss.xml</uri-stem>
+		<uri-query></uri-query>
+		<host>www.pion.org</host>
+		<title>Pion 1.1.4 is released!</title>
+		<link>http://www.pion.org/node/110</link>
+		<description>&lt;p&gt;Pion 1.1.4 is now available. This is the first public release in the 1.1&lt;br /&gt;
+branch. We have new reactors (ScriptReactor, OmnitureAnalyticsReactor)&lt;br /&gt;
+and a completely rewritten TransformReactor. We also have speed&lt;br /&gt;
+improvements and new UI features.&lt;/p&gt;
+&lt;p&gt;Community edition:&lt;br /&gt;
+* New ScriptReactor (232)&lt;br /&gt;
+* TransformReactor -- refactored with all new features (385, 386, 424)&lt;br /&gt;
+* All new term selection tool for UI (359, 405, 95)&lt;br /&gt;
+* FilterReactor UI supports MatchAllValues (383)&lt;br /&gt;
+* TransformReactor supports MatchAllValues (384, 386)&lt;br /&gt;
+* Log parsing error no longer skips rest of the log file (311)&lt;br /&gt;
+* Build updated to Boost 1.36 &amp;amp; 1.37 (314, 270)&lt;br /&gt;
+* Overall speed improvement due to non-locking config changes (341, 145)&lt;br /&gt;
+* Fixed unit tests (419, 423)&lt;br /&gt;
+* Replace &quot;filtering&quot; selects with regular selects in UI (428)&lt;br /&gt;
+* Count and track errors in HTTPRequestSender (436)&lt;/p&gt;
+&lt;p&gt;Enterprise edition:&lt;br /&gt;
+* SnifferReactor has multiple processing threads (220)&lt;br /&gt;
+* New configurable OmnitureReactor (361, 364, 422)&lt;br /&gt;
+* AggregateReactor used 100% of CPU if using Object Term (437)&lt;/p&gt;
+</description>
+		<pubDate>Tue, 17 Feb 2009 01:01:42</pubDate>
+		<comments>http://www.pion.org/node/110#comments</comments>
+		<guid>110 at http://www.pion.org</guid>
+	</Event>
+	<Event>
+		<date>2009-03-11</date>
+		<time>17:55:43</time>
+		<c-ip>10.0.0.13</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/rss.xml</uri-stem>
+		<uri-query></uri-query>
+		<host>www.pion.org</host>
+		<title>Pion 1.0.12 Released</title>
+		<category>Announcements</category>
+		<link>http://www.pion.org/node/106</link>
+		<description>&lt;p&gt;Pion 1.0.12 is now available.  This release primarily adds support to SnifferReactor and HTTPProtocol for new clickstream vocabulary terms.  A few bug fixes are also included.&lt;/p&gt;
+&lt;p&gt;Our Community Edition release includes the following updates:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Added additional clickstream request and response time stamps (434)
+&lt;/li&gt;&lt;li&gt;Added support to HTTPProtocol for digest HTTP authentication (429)
+&lt;/li&gt;&lt;li&gt;Added support to HTTPProtocol for data center and end user times (433)
+&lt;/li&gt;&lt;li&gt;Added support to HTTPProtocol for various packet counters (430)
+&lt;/li&gt;&lt;/ul&gt;
+&lt;p&gt;Our Enterprise Edition release includes the following additional updates:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Added support to SnifferReactor for various packet counters (430)
+&lt;/li&gt;&lt;li&gt;Added support to SnifferReactor for SSL handshake time (431)
+&lt;/li&gt;&lt;li&gt;Added support to SnifferReactor for client and server MAC addresses (432)
+&lt;/li&gt;&lt;li&gt;GoogleAnalyticsReactor was stopping whenever any error was encountered (435)
+&lt;/li&gt;&lt;/ul&gt;
+&lt;p&gt;For a summary of all changes, please see our Trac database at:&lt;br /&gt;
+&lt;a href=&quot;http://trac.atomiclabs.com/query?status=new&amp;amp;status=assigned&amp;amp;status=reopened&amp;amp;status=closed&amp;amp;group=component&amp;amp;milestone=Pion+1.0.12&amp;amp;order=owner&quot; title=&quot;http://trac.atomiclabs.com/query?status=new&amp;amp;status=assigned&amp;amp;status=reopened&amp;amp;status=closed&amp;amp;group=component&amp;amp;milestone=Pion+1.0.12&amp;amp;order=owner&quot;&gt;http://trac.atomiclabs.com/query?status=new&amp;amp;status=assigned&amp;amp;status=reope...&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Binary and source code downloads are now available on our website at:&lt;br /&gt;
+&lt;a href=&quot;http://www.atomiclabs.com/pion/download.php&quot; title=&quot;http://www.atomiclabs.com/pion/download.php&quot;&gt;http://www.atomiclabs.com/pion/download.php&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;No changes were made to our &quot;common&quot; or &quot;network&quot; libraries since the previous (1.0.10) release.&lt;/p&gt;
+</description>
+		<pubDate>Wed, 11 Feb 2009 00:21:31</pubDate>
+		<comments>http://www.pion.org/node/106#comments</comments>
+		<guid>106 at http://www.pion.org</guid>
+	</Event>
+	<Event>
+		<date>2009-03-11</date>
+		<time>17:55:43</time>
+		<c-ip>10.0.0.13</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/rss.xml</uri-stem>
+		<uri-query></uri-query>
+		<host>www.pion.org</host>
+		<title>Pion - Rule Your Data</title>
+		<link>http://www.pion.org/node/6</link>
+		<description>&lt;div style=&quot;width: 628px; border:1px solid #6096b6; padding: 15px; margin: 0 0 -20px 0; background-color: #d8ecf8; height: auto;&quot;&gt;
+&lt;h1 style=&quot;font-size: 24px; color:#31363e;&quot;&gt;Pion 1.0 is now available!&lt;/h1&gt;
+&lt;div style=&quot;width: 266px; border:1px solid #6096b6; padding: 15px; float: left; margin-right: 30px; background-color: #ffffff;&quot;&gt;
+&lt;h2 style=&quot;color: #6096b6; font-size: 20px; border-bottom: 1px dotted #cccccc;&quot;&gt;&lt;a href=&quot;/projects/pion-platform&quot;&gt;Pion&amp;trade; CEP Platform&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;The open source platform for building complex event processing applications&lt;br /&gt;
+&lt;br /&gt;
+&lt;a href=&quot;/projects/pion-platform&quot;&gt;Learn More&lt;/a&gt;&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;&lt;a href=&quot;/projects/pion-platform/download&quot;&gt;Download&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;div style=&quot;width: 266px; border:1px solid #6096b6; padding: 15px; float: left; background-color: #ffffff;&quot;&gt;
+&lt;h2 style=&quot;color: #6096b6; font-size: 20px; border-bottom: 1px dotted #cccccc;&quot;&gt;&lt;a href=&quot;/projects/pion-network-library&quot;&gt;Pion&amp;trade; Network Library&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;C++ development library for implementing lightweight HTTP interfaces&lt;br /&gt;
+&lt;br /&gt;
+&lt;a href=&quot;/projects/pion-network-library&quot;&gt;Learn More&lt;/a&gt;&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;&lt;a href=&quot;/projects/pion-network-library/download&quot;&gt;Download&lt;/a&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;
+&lt;div style=&quot;clear: both;&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+</description>
+		<pubDate>Thu, 14 Feb 2008 18:42:13</pubDate>
+		<comments>http://www.pion.org/node/6#comments</comments>
+		<guid>6 at http://www.pion.org</guid>
+	</Event>
+</Events>

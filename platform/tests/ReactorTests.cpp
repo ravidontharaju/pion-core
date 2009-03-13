@@ -55,6 +55,11 @@ extern void cleanup_cache_files(void);
 static const std::string COMBINED_LOG_FILE(LOG_FILE_DIR + "combined.log");
 static const std::string NEW_LOG_FILE(LOG_FILE_DIR + "new.log");
 static const std::string NEW_DATABASE_FILE(LOG_FILE_DIR + "clickstream.db");
+static const std::string RSS_REQUEST_LOG_FILE(LOG_FILE_DIR + "rss_request.xml");
+static const std::string RSS_CHANNELS_LOG_FILE(LOG_FILE_DIR + "rss_channels.xml");
+static const std::string RSS_CHANNELS_EXPECTED_FILE(LOG_FILE_DIR + "rss_channels_expected.xml");
+static const std::string RSS_ITEMS_LOG_FILE(LOG_FILE_DIR + "rss_items.xml");
+static const std::string RSS_ITEMS_EXPECTED_FILE(LOG_FILE_DIR + "rss_items_expected.xml");
 
 
 /// cleans up reactor config files in the working directory
@@ -158,6 +163,7 @@ public:
 		: m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 		m_combined_id("3f49f2da-bfe3-11dc-8875-0016cb926e68"),
+		m_rss_request_id("4e97184e-0e66-11de-a6a9-0019d185f6fc"),
 		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
 		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
 		m_ie_or_firefox_filter_id("183a2b12-caf8-11dd-ba3c-0019d185f6fc"),
@@ -165,7 +171,9 @@ public:
 		m_log_reader_id("c7a9f95a-e305-11dc-98ce-0016cb926e68"),
 		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
 		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
-		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68")
+		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68"),
+		m_rss_fission_id("fd69757c-0e8b-11de-8031-0019d185f6fc"),
+		m_rss_log_id("0a4757fa-0e8c-11de-8f1d-0019d185f6fc")
 	{
 		cleanup_reactor_config_files();
 		
@@ -178,6 +186,9 @@ public:
 		
 		m_combined_codec = m_codec_factory.getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);
+
+		m_rss_request_codec = m_codec_factory.getCodec(m_rss_request_id);
+		BOOST_CHECK(m_rss_request_codec);
 	}
 	virtual ~ReactionEngineTestInterface_F() {}
 
@@ -212,6 +223,7 @@ public:
 	DatabaseManager		m_database_mgr;
 	ReactionEngine		m_reaction_engine;
 	const std::string	m_combined_id;
+	const std::string	m_rss_request_id;
 	const std::string	m_ie_filter_id;
 	const std::string	m_do_nothing_id;
 	const std::string	m_ie_or_firefox_filter_id;
@@ -220,7 +232,10 @@ public:
 	const std::string	m_log_writer_id;
 	const std::string	m_clickstream_id;
 	const std::string	m_embedded_db_id;
+	const std::string	m_rss_fission_id;
+	const std::string	m_rss_log_id;
 	CodecPtr			m_combined_codec;
+	CodecPtr			m_rss_request_codec;
 };
 
 
@@ -316,10 +331,47 @@ public:
 		cleanup_cache_files();
 		boost::filesystem::remove(NEW_LOG_FILE);
 		boost::filesystem::remove(NEW_DATABASE_FILE);
+		boost::filesystem::remove(RSS_CHANNELS_LOG_FILE);
+		boost::filesystem::remove(RSS_ITEMS_LOG_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.openConfigFile();
 	}
 	virtual ~ReactionEngineAlreadyRunningTests_F() {}
+
+	//TODO: move to PionUnitTestsDefs.hpp in pion-common
+	static bool check_files_exact_match(const std::string& fileA, const std::string& fileB) {
+		// open files
+		std::ifstream a_file(fileA.c_str(), std::ios::in | std::ios::binary);
+		BOOST_REQUIRE(a_file.is_open());
+
+		std::ifstream b_file(fileB.c_str(), std::ios::in | std::ios::binary);
+		BOOST_REQUIRE(b_file.is_open());
+
+		// read and compare data in files
+		static const unsigned int BUF_SIZE = 4096;
+		char a_buf[BUF_SIZE];
+		char b_buf[BUF_SIZE];
+
+		while (a_file.getline(a_buf, BUF_SIZE)) {
+			if (! b_file.getline(b_buf, BUF_SIZE))
+				return false;
+			if (memcmp(a_buf, b_buf, BUF_SIZE) != 0)
+				return false;
+		}
+		if (b_file.getline(b_buf, BUF_SIZE))
+			return false;
+		if (a_file.gcount() != b_file.gcount())
+			return false;
+		if (memcmp(a_buf, b_buf, a_file.gcount()) != 0)
+			return false;
+
+		a_file.close();
+		b_file.close();
+
+		// files match
+		return true;
+	}
+
 };
 
 
@@ -552,6 +604,27 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 		}
 	}
 	BOOST_CHECK(found_it);
+}
+
+BOOST_AUTO_TEST_CASE(checkExtractRSSUsingFissionReactor) {
+
+	// push events from the log file into the IE filter reactor
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_rss_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
+		
+	// make sure that the event was read from the log
+	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
+	
+	// check the RSS Fission Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_fission_id, 1UL);
+
+	// check the RSS Output Log Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_log_id, 1UL);
+
+	// make sure that the output files match what is expected
+	BOOST_CHECK(check_files_exact_match(RSS_CHANNELS_LOG_FILE, RSS_CHANNELS_EXPECTED_FILE));
 }
 
 BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
