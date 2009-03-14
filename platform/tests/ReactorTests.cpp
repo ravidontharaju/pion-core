@@ -352,13 +352,13 @@ public:
 		char a_buf[BUF_SIZE];
 		char b_buf[BUF_SIZE];
 
-		while (a_file.getline(a_buf, BUF_SIZE)) {
-			if (! b_file.getline(b_buf, BUF_SIZE))
+		while (a_file.read(a_buf, BUF_SIZE)) {
+			if (! b_file.read(b_buf, BUF_SIZE))
 				return false;
 			if (memcmp(a_buf, b_buf, BUF_SIZE) != 0)
 				return false;
 		}
-		if (b_file.getline(b_buf, BUF_SIZE))
+		if (b_file.read(b_buf, BUF_SIZE))
 			return false;
 		if (a_file.gcount() != b_file.gcount())
 			return false;
@@ -622,6 +622,9 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSUsingFissionReactor) {
 	// check the RSS Output Log Reactor
 	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_log_id, 1UL);
 	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_log_id, 1UL);
+
+	// stop the log reactor to flush its output stream
+	m_reaction_engine.stopReactor(m_rss_log_id);
 
 	// make sure that the output files match what is expected
 	BOOST_CHECK(check_files_exact_match(RSS_CHANNELS_LOG_FILE, RSS_CHANNELS_EXPECTED_FILE));
