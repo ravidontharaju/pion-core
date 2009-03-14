@@ -172,8 +172,10 @@ public:
 		m_log_writer_id("a92b7278-e306-11dc-85f0-0016cb926e68"),
 		m_clickstream_id("a8928460-eb0c-11dc-9b68-0019e3f89cd2"),
 		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68"),
-		m_rss_fission_id("fd69757c-0e8b-11de-8031-0019d185f6fc"),
-		m_rss_log_id("0a4757fa-0e8c-11de-8f1d-0019d185f6fc")
+		m_rss_channels_fission_id("fd69757c-0e8b-11de-8031-0019d185f6fc"),
+		m_rss_channels_log_id("0a4757fa-0e8c-11de-8f1d-0019d185f6fc"),
+		m_rss_items_fission_id("5f5ba5b6-1021-11de-b1a4-0019d185f6fc"),
+		m_rss_items_log_id("5ff1bf10-1021-11de-bfa7-0019d185f6fc")
 	{
 		cleanup_reactor_config_files();
 		
@@ -232,8 +234,10 @@ public:
 	const std::string	m_log_writer_id;
 	const std::string	m_clickstream_id;
 	const std::string	m_embedded_db_id;
-	const std::string	m_rss_fission_id;
-	const std::string	m_rss_log_id;
+	const std::string	m_rss_channels_fission_id;
+	const std::string	m_rss_channels_log_id;
+	const std::string	m_rss_items_fission_id;
+	const std::string	m_rss_items_log_id;
 	CodecPtr			m_combined_codec;
 	CodecPtr			m_rss_request_codec;
 };
@@ -606,28 +610,52 @@ BOOST_AUTO_TEST_CASE(checkNumberofIERequestsInLogFile) {
 	BOOST_CHECK(found_it);
 }
 
-BOOST_AUTO_TEST_CASE(checkExtractRSSUsingFissionReactor) {
+BOOST_AUTO_TEST_CASE(checkExtractRSSChannelsUsingFissionReactor) {
 
 	// push events from the log file into the IE filter reactor
 	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
-		m_reaction_engine, m_rss_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
+		m_reaction_engine, m_rss_channels_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
 		
 	// make sure that the event was read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
 	
 	// check the RSS Fission Reactor
-	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_fission_id, 1UL);
-	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_channels_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_channels_fission_id, 1UL);
 
 	// check the RSS Output Log Reactor
-	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_log_id, 1UL);
-	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_channels_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_channels_log_id, 1UL);
 
 	// stop the log reactor to flush its output stream
-	m_reaction_engine.stopReactor(m_rss_log_id);
+	m_reaction_engine.stopReactor(m_rss_channels_log_id);
 
 	// make sure that the output files match what is expected
 	BOOST_CHECK(check_files_exact_match(RSS_CHANNELS_LOG_FILE, RSS_CHANNELS_EXPECTED_FILE));
+}
+
+BOOST_AUTO_TEST_CASE(checkExtractRSSItemsUsingFissionReactor) {
+
+	// push events from the log file into the IE filter reactor
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_rss_items_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
+		
+	// make sure that the event was read from the log
+	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
+	
+	// check the RSS Fission Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_items_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_items_fission_id, 1UL);
+
+	// check the RSS Output Log Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_rss_items_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_rss_items_log_id, 1UL);
+
+	// stop the log reactor to flush its output stream
+	m_reaction_engine.stopReactor(m_rss_items_log_id);
+
+	// make sure that the output files match what is expected
+	BOOST_CHECK(check_files_exact_match(RSS_ITEMS_LOG_FILE, RSS_ITEMS_EXPECTED_FILE));
 }
 
 BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
