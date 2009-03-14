@@ -21389,10 +21389,10 @@ var _149c=0;
 _this.vocabulary.vocab_term_store.fetch({sort:[{attribute:"ID"}],onItem:function(item){
 var _149e=_this.vocabulary.vocab_term_store.getValue(item,"full_id");
 var _149f=true;
-if(_this.query.category){
+if(_this.query&&_this.query.category){
 _149f=(pion.terms.categories_by_id[_149e]==_this.query.category);
 }else{
-if(_this.query.type){
+if(_this.query&&_this.query.type){
 var type=_this.vocabulary.vocab_term_store.getValue(item,"Type");
 _149f=(type==_this.query.type);
 }

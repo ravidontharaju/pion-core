@@ -97,9 +97,9 @@ dojo.declare("pion.widgets.TermSelector",
 						onItem: function(item) {
 							var full_id = _this.vocabulary.vocab_term_store.getValue(item, 'full_id');
 							var add_term = true;
-							if (_this.query.category) {
+							if (_this.query && _this.query.category) {
 								add_term = (pion.terms.categories_by_id[full_id] == _this.query.category);
-							} else if (_this.query.type) {
+							} else if (_this.query && _this.query.type) {
 								var type = _this.vocabulary.vocab_term_store.getValue(item, 'Type');
 								add_term = (type == _this.query.type);
 							}
