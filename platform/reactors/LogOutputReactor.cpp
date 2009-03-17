@@ -84,13 +84,17 @@ void LogOutputReactor::updateCodecs(void)
 	
 void LogOutputReactor::process(const EventPtr& e)
 {
-	// write the Event to the log file
 	PION_ASSERT(m_codec_ptr);
 	PION_ASSERT(m_log_stream.is_open());
+	
+	// make sure that the event type matches the codec
+	if (e->getType() != m_codec_ptr->getEventType())
+		return;
 
 	// lock mutex to ensure that only one Event may be written at a time
 	boost::mutex::scoped_lock log_writer_lock(m_log_writer_mutex);
 	
+	// write the Event to the log file
 	m_codec_ptr->write(m_log_stream, *e);
 	if (! m_log_stream)
 		throw WriteToLogException(m_log_filename);
