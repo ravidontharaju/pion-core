@@ -56,6 +56,17 @@
 		<!--start div to set padding for bottom half of dialog-->
 		<div class="reactor_dialog_bottom">
 
+			<!--start copy terms-->
+			<div class="p_reactor_grid_blocks">
+				<h2>Terms to copy (optional)</h2>
+				<h4>For each input event, these terms will be copied to every resulting output event.</h4>
+				<div class="reactor_dialog_grid" dojoAttachPoint="copy_term_grid_node" style="width: 618px"></div>
+				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewCopyTerm" class="add_new_row">ADD NEW TERM TO COPY</button>
+			</div>
+			<!--end copy terms-->
+
+			<br />
+
 			<!--start connections-->
 			<div class="p_reactor_grid_blocks">
 				<h2>Connections</h2>

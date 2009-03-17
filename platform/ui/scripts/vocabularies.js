@@ -3,7 +3,6 @@ dojo.require("plugins.vocabularies.Vocabulary");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.TextBox");
-dojo.require("dijit.form.Textarea");
 dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dijit.form.Button");
 dojo.require("dijit.layout.ContentPane");
