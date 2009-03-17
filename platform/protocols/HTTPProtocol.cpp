@@ -779,7 +779,10 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	} else if (content_encoding == "deflate") {
 
 		// payload has deflate ("zlib") encoding
-		decoder.push(boost::iostreams::zlib_decompressor());
+		boost::iostreams::zlib_params deflate_param;
+		// need to set "noheader" because the filter defaults to using a header
+		deflate_param.noheader = true;
+		decoder.push(boost::iostreams::zlib_decompressor(deflate_param));
 
 	} else if (content_encoding == "compress" || content_encoding == "x-compress") {
 
@@ -804,13 +807,17 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	// NOTE: iostreams::copy() does not work as of 1.37.0 b/c it creates a copy
 	// of decoder_sink instead of using a reference to decoder_sink (UGH!)
 	//size_t len = boost::iostreams::copy(decoder, decoder_sink);
-	{
+	try {
 		char buf[4096];
 		std::streamsize num_read;
 		while ((num_read=decoder.sgetn(buf, 4096)) == 4096)
 			decoder_sink.write(buf, 4096);
 		if (num_read > 0) 
 			decoder_sink.write(buf, num_read);
+	} catch (std::exception& e) {
+		// NOTE: content decoding errors throw exceptions!
+		// these should not cause the event to be lost!
+		//std::cerr << "error: " << content_encoding << " decoding failed after " << decoder_sink.getBytes() << " bytes: " << e.what() << std::endl;
 	}
 	
 	// initialize decoded content cache to hold results
