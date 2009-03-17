@@ -46,7 +46,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 	} else {
 		if (ioArgs.xhr.status == 500) {
 			var dialog = new dijit.Dialog({title: 'Pion Server Error'});
-			dialog.setContent(response.responseText);
+			dialog.setContent(response.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
 			dialog.show();
 		}
 		if (finalErrorHandler) {

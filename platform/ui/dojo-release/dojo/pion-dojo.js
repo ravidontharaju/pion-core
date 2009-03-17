@@ -25402,7 +25402,7 @@ return;
 }else{
 if(_184a.xhr.status==500){
 var _184e=new dijit.Dialog({title:"Pion Server Error"});
-_184e.setContent(_1849.responseText);
+_184e.setContent(_1849.responseText.replace(/</g,"&lt;").replace(/>/g,"&gt;"));
 _184e.show();
 }
 if(_184c){
