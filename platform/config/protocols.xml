@@ -72,7 +72,7 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#sc-content">
 			<Source>sc-content</Source>
-			<ContentType>^text/</ContentType>
+			<ContentType>(^text/|application/.*\+xml)</ContentType>
 			<MaxSize>524288</MaxSize>
 		</Extract>
 	</Protocol>
