@@ -341,41 +341,6 @@ public:
 		m_reaction_engine.openConfigFile();
 	}
 	virtual ~ReactionEngineAlreadyRunningTests_F() {}
-
-	//TODO: move to PionUnitTestsDefs.hpp in pion-common
-	static bool check_files_exact_match(const std::string& fileA, const std::string& fileB) {
-		// open files
-		std::ifstream a_file(fileA.c_str(), std::ios::in | std::ios::binary);
-		BOOST_REQUIRE(a_file.is_open());
-
-		std::ifstream b_file(fileB.c_str(), std::ios::in | std::ios::binary);
-		BOOST_REQUIRE(b_file.is_open());
-
-		// read and compare data in files
-		static const unsigned int BUF_SIZE = 4096;
-		char a_buf[BUF_SIZE];
-		char b_buf[BUF_SIZE];
-
-		while (a_file.read(a_buf, BUF_SIZE)) {
-			if (! b_file.read(b_buf, BUF_SIZE))
-				return false;
-			if (memcmp(a_buf, b_buf, BUF_SIZE) != 0)
-				return false;
-		}
-		if (b_file.read(b_buf, BUF_SIZE))
-			return false;
-		if (a_file.gcount() != b_file.gcount())
-			return false;
-		if (memcmp(a_buf, b_buf, a_file.gcount()) != 0)
-			return false;
-
-		a_file.close();
-		b_file.close();
-
-		// files match
-		return true;
-	}
-
 };
 
 
@@ -631,7 +596,7 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSChannelsUsingFissionReactor) {
 	m_reaction_engine.stopReactor(m_rss_channels_log_id);
 
 	// make sure that the output files match what is expected
-	BOOST_CHECK(check_files_exact_match(RSS_CHANNELS_LOG_FILE, RSS_CHANNELS_EXPECTED_FILE));
+	BOOST_CHECK(PionUnitTest::check_files_exact_match(RSS_CHANNELS_LOG_FILE, RSS_CHANNELS_EXPECTED_FILE, true));
 }
 
 BOOST_AUTO_TEST_CASE(checkExtractRSSItemsUsingFissionReactor) {
@@ -655,7 +620,7 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSItemsUsingFissionReactor) {
 	m_reaction_engine.stopReactor(m_rss_items_log_id);
 
 	// make sure that the output files match what is expected
-	BOOST_CHECK(check_files_exact_match(RSS_ITEMS_LOG_FILE, RSS_ITEMS_EXPECTED_FILE));
+	BOOST_CHECK(PionUnitTest::check_files_exact_match(RSS_ITEMS_LOG_FILE, RSS_ITEMS_EXPECTED_FILE, true));
 }
 
 BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {
