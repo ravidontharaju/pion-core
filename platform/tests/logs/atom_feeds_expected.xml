@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Events>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<title>mikedickey.com</title>
+		<generator>WordPress</generator>
+	</Event>
+</Events>

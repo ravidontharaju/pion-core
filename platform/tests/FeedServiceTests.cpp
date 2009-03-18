@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	
 	// initially, there should be only two connections of type "reactor"
 	getConnectionInfo(num_reactors, num_input, num_output);
-	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(6));
+	BOOST_CHECK_EQUAL(num_reactors, static_cast<unsigned int>(8));
 	BOOST_CHECK_EQUAL(num_input, static_cast<unsigned int>(0));
 	BOOST_CHECK_EQUAL(num_output, static_cast<unsigned int>(0));
 	
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(6, 0, 1);
+	checkConnectionInfo(8, 0, 1);
 	
 	// connect a stream to localhost
 	TCPStream input_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	BOOST_REQUIRE(! ec);
 	
 	// re-check the connections recognized
-	checkConnectionInfo(6, 1, 1);
+	checkConnectionInfo(8, 1, 1);
 
 	// send data from the common log file to the input connection
 	std::ifstream common_log;
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	input_tcp_stream.close();
 	
 	// re-check the connections recognized
-	checkConnectionInfo(6, 0, 1);
+	checkConnectionInfo(8, 0, 1);
 	
 	// read data in from the output stream
 	bool found_it = false;

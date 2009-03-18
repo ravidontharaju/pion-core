@@ -265,6 +265,104 @@
     <Field term="urn:vocab:rss#item-guid">guid</Field>
     <Field term="urn:vocab:rss#item-source">source</Field>
   </Codec>
+  <Codec id="5674ccae-13cb-11de-91f0-001cc02bd66b">
+    <Plugin>XMLCodec</Plugin>
+    <Name>Atom Feed Extraction Codec</Name>
+    <EventType>urn:vocab:atom#feed-event</EventType>
+    <EventTag>feed</EventTag>
+    <EventContainerTag></EventContainerTag>
+    <Comment>Extracts Atom feeds from HTTP response content</Comment>
+    <Field term="urn:vocab:atom#feed-id">id</Field>
+    <Field term="urn:vocab:atom#feed-link">link</Field>
+    <Field term="urn:vocab:atom#feed-title">title</Field>
+    <Field term="urn:vocab:atom#feed-subtitle">subtitle</Field>
+    <Field term="urn:vocab:atom#feed-summary">summary</Field>
+    <Field term="urn:vocab:atom#feed-category">category</Field>
+    <Field term="urn:vocab:atom#feed-author">author</Field>
+    <Field term="urn:vocab:atom#feed-contributor">contributor</Field>
+    <Field term="urn:vocab:atom#feed-rights">rights</Field>
+    <Field term="urn:vocab:atom#feed-updated">updated</Field>
+    <Field term="urn:vocab:atom#icon">icon</Field>
+    <Field term="urn:vocab:atom#logo">logo</Field>
+    <Field term="urn:vocab:atom#generator">generator</Field>
+  </Codec>
+  <Codec id="57037210-13cb-11de-9ec2-001cc02bd66b">
+    <Name>Atom Feed Log Format</Name>
+    <Comment>Codec for describing Atom feed requests</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:atom#feed-event</EventType>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:atom#feed-id">id</Field>
+    <Field term="urn:vocab:atom#feed-link">link</Field>
+    <Field term="urn:vocab:atom#feed-title">title</Field>
+    <Field term="urn:vocab:atom#feed-subtitle">subtitle</Field>
+    <Field term="urn:vocab:atom#feed-summary">summary</Field>
+    <Field term="urn:vocab:atom#feed-category">category</Field>
+    <Field term="urn:vocab:atom#feed-author">author</Field>
+    <Field term="urn:vocab:atom#feed-contributor">contributor</Field>
+    <Field term="urn:vocab:atom#feed-rights">rights</Field>
+    <Field term="urn:vocab:atom#feed-updated">updated</Field>
+    <Field term="urn:vocab:atom#icon">icon</Field>
+    <Field term="urn:vocab:atom#logo">logo</Field>
+    <Field term="urn:vocab:atom#generator">generator</Field>
+  </Codec>
+  <Codec id="5748f38a-13cb-11de-912b-001cc02bd66b">
+    <Plugin>XMLCodec</Plugin>
+    <Name>Atom Entry Extraction Codec</Name>
+    <EventType>urn:vocab:atom#entry-event</EventType>
+    <EventTag>entry</EventTag>
+    <EventContainerTag>feed</EventContainerTag>
+    <Comment>Extracts Atom feed entries from HTTP response content</Comment>
+    <Field term="urn:vocab:atom#entry-id">id</Field>
+    <Field term="urn:vocab:atom#entry-link">link</Field>
+    <Field term="urn:vocab:atom#entry-title">title</Field>
+    <Field term="urn:vocab:atom#entry-summary">summary</Field>
+    <Field term="urn:vocab:atom#entry-category">category</Field>
+    <Field term="urn:vocab:atom#entry-author">author</Field>
+    <Field term="urn:vocab:atom#entry-contributor">contributor</Field>
+    <Field term="urn:vocab:atom#entry-rights">rights</Field>
+    <Field term="urn:vocab:atom#entry-updated">updated</Field>
+    <Field term="urn:vocab:atom#entry-source">source</Field>
+    <Field term="urn:vocab:atom#entry-published">published</Field>
+    <Field term="urn:vocab:atom#entry-content">content</Field>
+  </Codec>
+  <Codec id="579100b2-13cb-11de-9631-001cc02bd66b">
+    <Name>Atom Entry Log Format</Name>
+    <Comment>Codec describing requests for Atom feed entries</Comment>
+    <Plugin>XMLCodec</Plugin>
+    <EventType>urn:vocab:atom#entry-event</EventType>
+    <Field term="urn:vocab:clickstream#date">date</Field>
+    <Field term="urn:vocab:clickstream#time">time</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#bytes">bytes</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#status">status</Field>
+    <Field term="urn:vocab:clickstream#method">method</Field>
+    <Field term="urn:vocab:clickstream#uri-stem">uri-stem</Field>
+    <Field term="urn:vocab:clickstream#uri-query">uri-query</Field>
+    <Field term="urn:vocab:clickstream#host">host</Field>
+    <Field term="urn:vocab:atom#entry-id">id</Field>
+    <Field term="urn:vocab:atom#entry-link">link</Field>
+    <Field term="urn:vocab:atom#entry-title">title</Field>
+    <Field term="urn:vocab:atom#entry-summary">summary</Field>
+    <Field term="urn:vocab:atom#entry-category">category</Field>
+    <Field term="urn:vocab:atom#entry-author">author</Field>
+    <Field term="urn:vocab:atom#entry-contributor">contributor</Field>
+    <Field term="urn:vocab:atom#entry-rights">rights</Field>
+    <Field term="urn:vocab:atom#entry-updated">updated</Field>
+    <Field term="urn:vocab:atom#entry-source">source</Field>
+    <Field term="urn:vocab:atom#entry-published">published</Field>
+    <Field term="urn:vocab:atom#entry-content">content</Field>
+  </Codec>
   <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
     <Plugin>LogCodec</Plugin>
     <Name>Stock Price Log</Name>

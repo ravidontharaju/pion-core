@@ -79,10 +79,11 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 		if (xmlTextWriterStartDocument(m_xml_writer, NULL, "UTF-8", NULL) < 0)
 			throw PionException("xmlTextWriter failed to write the start of the document");
 
-		// Start the root element, named "Events".
-		if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)m_event_container_tag.c_str()) < 0)
-			throw PionException("xmlTextWriter failed to write a start-tag");
-
+		if (! m_event_container_tag.empty()) {
+			// Start the root element, named "Events".
+			if (xmlTextWriterStartElement(m_xml_writer, (xmlChar*)m_event_container_tag.c_str()) < 0)
+				throw PionException("xmlTextWriter failed to write a start-tag");
+		}
 		m_no_events_written = false;
 	}
 
@@ -324,6 +325,8 @@ bool XMLCodec::read(std::istream& in, Event& e)
 				throw PionException("XML parser error");
 			if (! open_element_name.empty())
 				continue;	// skip contents if inside of an ignored element
+			if (xmlTextReaderIsEmptyElement(m_xml_reader) == 1)
+				continue;	// no element contents to extract/assign and attributes not supported yet
 			open_element_name = (char*)name;
 
 			// get the Term corresponding to the tag
@@ -365,12 +368,13 @@ bool XMLCodec::read(std::istream& in, Event& e)
 					break;
 					
 				case 3:		// text node
+				case 4:		// CDATA node
 					name = xmlTextReaderValue(m_xml_reader);
 					if (name) {
 						value_str += (char*) name;
 					}
 					break;
-					
+
 				default:
 					break;
 				}
@@ -446,7 +450,11 @@ void XMLCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		m_event_tag = DEFAULT_EVENT_TAG;
 	}
 	if (! ConfigManager::getConfigOption(EVENT_CONTAINER_TAG_ELEMENT_NAME, m_event_container_tag, config_ptr)) {
-		m_event_container_tag = DEFAULT_EVENT_CONTAINER_TAG;
+		if (ConfigManager::findConfigNodeByName(EVENT_CONTAINER_TAG_ELEMENT_NAME, config_ptr)) {
+			m_event_container_tag = "";
+		} else {
+			m_event_container_tag = DEFAULT_EVENT_CONTAINER_TAG;
+		}
 	}
 
 	// next, map the fields to Terms

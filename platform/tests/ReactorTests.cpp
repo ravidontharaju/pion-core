@@ -60,6 +60,11 @@ static const std::string RSS_CHANNELS_LOG_FILE(LOG_FILE_DIR + "rss_channels.xml"
 static const std::string RSS_CHANNELS_EXPECTED_FILE(LOG_FILE_DIR + "rss_channels_expected.xml");
 static const std::string RSS_ITEMS_LOG_FILE(LOG_FILE_DIR + "rss_items.xml");
 static const std::string RSS_ITEMS_EXPECTED_FILE(LOG_FILE_DIR + "rss_items_expected.xml");
+static const std::string ATOM_REQUEST_LOG_FILE(LOG_FILE_DIR + "atom_request.xml");
+static const std::string ATOM_FEEDS_LOG_FILE(LOG_FILE_DIR + "atom_feeds.xml");
+static const std::string ATOM_FEEDS_EXPECTED_FILE(LOG_FILE_DIR + "atom_feeds_expected.xml");
+static const std::string ATOM_ENTRIES_LOG_FILE(LOG_FILE_DIR + "atom_entries.xml");
+static const std::string ATOM_ENTRIES_EXPECTED_FILE(LOG_FILE_DIR + "atom_entries_expected.xml");
 
 
 /// cleans up reactor config files in the working directory
@@ -175,7 +180,11 @@ public:
 		m_rss_channels_fission_id("fd69757c-0e8b-11de-8031-0019d185f6fc"),
 		m_rss_channels_log_id("0a4757fa-0e8c-11de-8f1d-0019d185f6fc"),
 		m_rss_items_fission_id("5f5ba5b6-1021-11de-b1a4-0019d185f6fc"),
-		m_rss_items_log_id("5ff1bf10-1021-11de-bfa7-0019d185f6fc")
+		m_rss_items_log_id("5ff1bf10-1021-11de-bfa7-0019d185f6fc"),
+		m_atom_feeds_fission_id("57137402-13d6-11de-9b7e-001cc02bd66b"),
+		m_atom_feeds_log_id("5763fd50-13d6-11de-bde1-001cc02bd66b"),
+		m_atom_entries_fission_id("58115b62-13d6-11de-8e09-001cc02bd66b"),
+		m_atom_entries_log_id("8c7451fc-13d6-11de-8672-001cc02bd66b")
 	{
 		cleanup_reactor_config_files();
 		
@@ -189,8 +198,8 @@ public:
 		m_combined_codec = m_codec_factory.getCodec(m_combined_id);
 		BOOST_CHECK(m_combined_codec);
 
-		m_rss_request_codec = m_codec_factory.getCodec(m_rss_request_id);
-		BOOST_CHECK(m_rss_request_codec);
+		m_request_content_codec = m_codec_factory.getCodec(m_rss_request_id);
+		BOOST_CHECK(m_request_content_codec);
 	}
 	virtual ~ReactionEngineTestInterface_F() {}
 
@@ -238,8 +247,12 @@ public:
 	const std::string	m_rss_channels_log_id;
 	const std::string	m_rss_items_fission_id;
 	const std::string	m_rss_items_log_id;
+	const std::string	m_atom_feeds_fission_id;
+	const std::string	m_atom_feeds_log_id;
+	const std::string	m_atom_entries_fission_id;
+	const std::string	m_atom_entries_log_id;
 	CodecPtr			m_combined_codec;
-	CodecPtr			m_rss_request_codec;
+	CodecPtr			m_request_content_codec;
 };
 
 
@@ -337,6 +350,8 @@ public:
 		boost::filesystem::remove(NEW_DATABASE_FILE);
 		boost::filesystem::remove(RSS_CHANNELS_LOG_FILE);
 		boost::filesystem::remove(RSS_ITEMS_LOG_FILE);
+		boost::filesystem::remove(ATOM_FEEDS_LOG_FILE);
+		boost::filesystem::remove(ATOM_ENTRIES_LOG_FILE);
 		m_reaction_engine.setConfigFile(REACTORS_CONFIG_FILE);
 		m_reaction_engine.openConfigFile();
 	}
@@ -579,7 +594,7 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSChannelsUsingFissionReactor) {
 
 	// push events from the log file into the IE filter reactor
 	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
-		m_reaction_engine, m_rss_channels_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
+		m_reaction_engine, m_rss_channels_fission_id, *m_request_content_codec, RSS_REQUEST_LOG_FILE);
 		
 	// make sure that the event was read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
@@ -603,7 +618,7 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSItemsUsingFissionReactor) {
 
 	// push events from the log file into the IE filter reactor
 	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
-		m_reaction_engine, m_rss_items_fission_id, *m_rss_request_codec, RSS_REQUEST_LOG_FILE);
+		m_reaction_engine, m_rss_items_fission_id, *m_request_content_codec, RSS_REQUEST_LOG_FILE);
 		
 	// make sure that the event was read from the log
 	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
@@ -621,6 +636,54 @@ BOOST_AUTO_TEST_CASE(checkExtractRSSItemsUsingFissionReactor) {
 
 	// make sure that the output files match what is expected
 	BOOST_CHECK(PionUnitTest::check_files_exact_match(RSS_ITEMS_LOG_FILE, RSS_ITEMS_EXPECTED_FILE, true));
+}
+
+BOOST_AUTO_TEST_CASE(checkExtractAtomFeedsUsingFissionReactor) {
+
+	// push events from the log file into the IE filter reactor
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_atom_feeds_fission_id, *m_request_content_codec, ATOM_REQUEST_LOG_FILE);
+		
+	// make sure that the event was read from the log
+	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
+	
+	// check the Atom Fission Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_atom_feeds_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_atom_feeds_fission_id, 1UL);
+
+	// check the Atom Output Log Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_atom_feeds_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_atom_feeds_log_id, 1UL);
+
+	// stop the log reactor to flush its output stream
+	m_reaction_engine.stopReactor(m_atom_feeds_log_id);
+
+	// make sure that the output files match what is expected
+	BOOST_CHECK(PionUnitTest::check_files_exact_match(ATOM_FEEDS_LOG_FILE, ATOM_FEEDS_EXPECTED_FILE, true));
+}
+
+BOOST_AUTO_TEST_CASE(checkExtractAtomEntriesUsingFissionReactor) {
+
+	// push events from the log file into the IE filter reactor
+	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+		m_reaction_engine, m_atom_entries_fission_id, *m_request_content_codec, ATOM_REQUEST_LOG_FILE);
+		
+	// make sure that the event was read from the log
+	BOOST_CHECK_EQUAL(events_read, static_cast<boost::uint64_t>(1));
+	
+	// check the Atom Fission Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_atom_entries_fission_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_atom_entries_fission_id, 1UL);
+
+	// check the Atom Output Log Reactor
+	PionPlatformUnitTest::checkReactorEventsIn(m_reaction_engine, m_atom_entries_log_id, 1UL);
+	PionPlatformUnitTest::checkReactorEventsOut(m_reaction_engine, m_atom_entries_log_id, 1UL);
+
+	// stop the log reactor to flush its output stream
+	m_reaction_engine.stopReactor(m_atom_entries_log_id);
+
+	// make sure that the output files match what is expected
+	BOOST_CHECK(PionUnitTest::check_files_exact_match(ATOM_ENTRIES_LOG_FILE, ATOM_ENTRIES_EXPECTED_FILE, true));
 }
 
 BOOST_AUTO_TEST_CASE(checkDatabaseOutputReactor) {

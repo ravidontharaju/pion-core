@@ -137,6 +137,66 @@
     <From>5f5ba5b6-1021-11de-b1a4-0019d185f6fc</From>
     <To>5ff1bf10-1021-11de-bfa7-0019d185f6fc</To>
   </Connection>
+  <Reactor id="57137402-13d6-11de-9b7e-001cc02bd66b">
+    <Name>Atom Feeds Fission Reactor</Name>
+    <Comment>Extracts Atom feeds from an HTTP request</Comment>
+    <Plugin>FissionReactor</Plugin>
+    <Codec>5674ccae-13cb-11de-91f0-001cc02bd66b</Codec>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="5763fd50-13d6-11de-bde1-001cc02bd66b">
+    <Name>Atom Feeds Log</Name>
+    <Comment>Stores Atom feed events into a log file</Comment>
+    <Plugin>LogOutputReactor</Plugin>
+    <Codec>57037210-13cb-11de-9ec2-001cc02bd66b</Codec>
+    <Filename>../logs/atom_feeds.xml</Filename>
+  </Reactor>
+  <Connection id="57baa862-13d6-11de-8210-001cc02bd66b">
+  	<Type>reactor</Type>
+    <From>57137402-13d6-11de-9b7e-001cc02bd66b</From>
+    <To>5763fd50-13d6-11de-bde1-001cc02bd66b</To>
+  </Connection>
+  <Reactor id="58115b62-13d6-11de-8e09-001cc02bd66b">
+    <Name>Atom Entries Fission Reactor</Name>
+    <Comment>Extracts Atom feed entries from an HTTP request</Comment>
+    <Plugin>FissionReactor</Plugin>
+    <Codec>5748f38a-13cb-11de-912b-001cc02bd66b</Codec>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="8c7451fc-13d6-11de-8672-001cc02bd66b">
+    <Name>Atom Entries Log</Name>
+    <Comment>Stores Atom feed entry events into a log file</Comment>
+    <Plugin>LogOutputReactor</Plugin>
+    <Codec>579100b2-13cb-11de-9631-001cc02bd66b</Codec>
+    <Filename>../logs/atom_entries.xml</Filename>
+  </Reactor>
+  <Connection id="a429c926-13d6-11de-b9ab-001cc02bd66b">
+  	<Type>reactor</Type>
+    <From>58115b62-13d6-11de-8e09-001cc02bd66b</From>
+    <To>8c7451fc-13d6-11de-8672-001cc02bd66b</To>
+  </Connection>
   <Connection id="1b7f88d2-dc1d-11dc-9d44-0019e3f89cd2">
   	<Type>reactor</Type>
     <From>153f6c40-cb78-11dc-8fa0-0019e3f89cd2</From>

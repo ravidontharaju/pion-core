@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Events>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/06/01/my-new-saluki/</id>
+		<title>My new saluki</title>
+		<summary> My latest toy has me even more excited then the Mac Pro: a Saluki made by Rivendell Bicycle Works in Walnut Creek, CA.  These guys design, build and sell bikes that are practical, comfortable, and exceptionally beautiful.  Their craftsmanship and attention to detail is outstanding, and I&amp;#8217;ve been wanting to have one [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;&lt;a href=&quot;/images/saluki_profile_big.jpg&quot;&gt;&lt;img src=&quot;/images/saluki_profile_small.jpg&quot; style=&quot;margin-left: 10px&quot; align=&quot;right&quot; border=&quot;0&quot; /&gt;&lt;/a&gt; My latest toy has me even more excited then the Mac Pro: a Saluki made by &lt;a href=&quot;http://www.rivbike.com/&quot;&gt;Rivendell Bicycle Works&lt;/a&gt; in Walnut Creek, CA.  These guys design, build and sell bikes that are practical, comfortable, and exceptionally beautiful.  Their craftsmanship and attention to detail is outstanding, and I&amp;#8217;ve been wanting to have one of my own for years.  This past Saturday was my lucky day.&lt;/p&gt;
+&lt;p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/05/15/the-trolls-in-redmond/</id>
+		<title>The Trolls in Redmond</title>
+		<summary>Microsoft has been on a downward spiral ever since the DOJ rained on its monopoly parade in 2000, causing Bill Gates to pass the reigns over to Steve Ballmer.  Since then, nearly every major effort at Microsoft has turned out to be a failure. While the S&amp;#38;P 500 has since gained over 40% in [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;Microsoft has been on a downward spiral ever since the DOJ &lt;a href=&quot;http://money.cnn.com/2000/06/07/technology/microsoft_chronology/&quot;&gt;rained on its monopoly parade&lt;/a&gt; in 2000, causing Bill Gates to &lt;a href=&quot;http://money.cnn.com/2000/01/13/technology/microsoft/&quot;&gt;pass the reigns&lt;/a&gt; over to Steve Ballmer.  Since then, nearly every major effort at Microsoft has turned out to be a failure. While the S&amp;amp;P 500 has since gained over 40% in value, Microsoft&amp;#8217;s stock has remained stagnant.&lt;/p&gt;
+&lt;p&gt;Rather than &amp;#8220;Chief Executive Officer,&amp;#8221; a more appropriate title for Ballmer would probably be &amp;#8220;Chief of &lt;a href=&quot;http://en.wikipedia.org/wiki/Fear%2C_uncertainty_and_doubt&quot;&gt;FUD&lt;/a&gt;.&amp;#8221;  Linux and other open source software has grown to become a major competitive force in the marketplace, displacing Microsoft&amp;#8217;s market share by offering far better technology at much lower costs.  In response, Ballmer has called Linux a &amp;#8220;&lt;a href=&quot;http://www.theregister.co.uk/2001/06/02/ballmer_linux_is_a_cancer/&quot;&gt;cancer&lt;/a&gt;,&amp;#8221; and spread ridiculous lies such as, &amp;#8220;if you use any open-source software, you have to make the rest of your software open source.&amp;#8221;  I guess that nowadays, innovating is just too difficult for Redmond.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/04/29/libpion-010-released/</id>
+		<title>libpion 0.1.0 released!</title>
+		<summary>Today I released my first 3,000 lines of open source (LGPL) code.
+libpion is a library that makes it easy for C++ software developers to implement lightweight HTTP interfaces. I&amp;#8217;ve been working on this new project on and off for the past few weeks and using it as a way to learn Boost, asio and GNU [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;Today I released my first 3,000 lines of open source (&lt;a href=&quot;http://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License&quot;&gt;LGPL&lt;/a&gt;) code.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.atomiclabs.com/libpion&quot;&gt;libpion&lt;/a&gt; is a library that makes it easy for C++ software developers to implement lightweight HTTP interfaces. I&amp;#8217;ve been working on this new project on and off for the past few weeks and using it as a way to learn &lt;a href=&quot;http://www.boost.org&quot;&gt;Boost, &lt;/a&gt;&lt;a href=&quot;http://asio.sourceforge.net/&quot;&gt;asio&lt;/a&gt; and &lt;a href=&quot;http://en.wikipedia.org/wiki/GNU_build_system&quot;&gt;GNU autotools&lt;/a&gt;.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/04/19/mac-vms-revisited/</id>
+		<title>Mac VMs Revisited</title>
+		<summary>I received my shiny new 8-core Mac Pro today, and boy is it FAST!  I&amp;#8217;ve been working lately on a C++ project in Xcode (libpion).  It&amp;#8217;s new and therefore was already building fairly quickly on my MacBook Pro.  But on my new machine I hit &amp;#8220;build&amp;#8221;, watch all eight CPU bars jump [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;I received my shiny new 8-core Mac Pro today, and boy is it FAST!  I&amp;#8217;ve been working lately on a C++ project in Xcode (&lt;a href=&quot;http://www.atomiclabs.com/libpion&quot;&gt;libpion&lt;/a&gt;).  It&amp;#8217;s new and therefore was already building fairly quickly on my MacBook Pro.  But on my new machine I hit &amp;#8220;build&amp;#8221;, watch all eight CPU bars jump up, and then &amp;#8212; almost instantly &amp;#8212; it&amp;#8217;s done.  I haven&amp;#8217;t been this excited about a new tech toy since Santa gave me (the original) Game Boy for Christmas!  =)&lt;/p&gt;
+&lt;p&gt;In my last post on &lt;a href=&quot;http://www.mikedickey.com/2007/04/14/mac-virtual-machines/&quot;&gt;Mac Virtual Machines&lt;/a&gt;, I ran a few tests to compare VMware Fusion &amp;amp; Parallels for Mac.  Eric pointed out a few tips in his comments that he felt would help improve the accuracy of these tests, so I decided to run them again on my new toy.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/04/14/mac-virtual-machines/</id>
+		<title>Mac Virtual Machines</title>
+		<summary>Virtual machines have come a long way since I first started playing around with VMware several years ago.  As a software developer and Mac user, I&amp;#8217;ve been anxiously following the great leaps forward made by Intel, Apple, Parallels and VMware over the past year.
+</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;Virtual machines have come a long way since I first started playing around with VMware several years ago.  As a software developer and Mac user, I&amp;#8217;ve been anxiously following the great leaps forward made by &lt;a href=&quot;http://www.intel.com&quot;&gt;Intel&lt;/a&gt;, &lt;a href=&quot;http://www.apple.com&quot;&gt;Apple&lt;/a&gt;, &lt;a href=&quot;http://www.parallels.com&quot;&gt;Parallels&lt;/a&gt; and &lt;a href=&quot;http://www.vmware.com&quot;&gt;VMware&lt;/a&gt; over the past year.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/04/02/the-metaverse-ahead/</id>
+		<title>The Metaverse Ahead</title>
+		<summary>3PointD, one of my favorite blogs about the Metaverse and 3D Web, had its first birthday yesterday.  To celebrate, Mark Wallace made a few predictions on &amp;#8220;the Metaverse ahead.&amp;#8221;  Mark&amp;#8217;s discussion on mashups and convergence got me thinking about how this relates to my work on SPUD.
+</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;&lt;a href=&quot;http://www.3pointd.com&quot;&gt;3PointD&lt;/a&gt;, one of my favorite blogs about the Metaverse and 3D Web, had its first birthday yesterday.  To celebrate, Mark Wallace &lt;a href=&quot;http://www.3pointd.com/20070401/3pointd-turns-1-on-the-metaverse-ahead/&quot;&gt;made a few predictions&lt;/a&gt; on &amp;#8220;the Metaverse ahead.&amp;#8221;  Mark&amp;#8217;s discussion on mashups and convergence got me thinking about how this relates to my work on &lt;a href=&quot;http://www.atomiclabs.com/spud&quot;&gt;SPUD&lt;/a&gt;.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/02/26/on-openid/</id>
+		<title>On OpenID</title>
+		<summary>OpenID is an exciting new protocol specification relating to online identities and single sign-in authentication.  Lately, it has been attracting a lot of attention and support, and I&amp;#8217;m planning for it to play a major role in SPUD.  Today I read a blog entry discussing OpenID by Tim Bray, and had the following [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;&lt;a href=&quot;http://www.openid.org&quot;&gt;OpenID&lt;/a&gt; is an exciting new protocol specification relating to online identities and single sign-in authentication.  Lately, it has been attracting a lot of attention and support, and I&amp;#8217;m planning for it to play a major role in &lt;a href=&quot;http://www.atomiclabs.com/spud&quot;&gt;SPUD&lt;/a&gt;.  Today I read &lt;a href=&quot;http://www.tbray.org/ongoing/When/200x/2007/02/24/OpenID&quot;&gt;a blog entry&lt;/a&gt; discussing OpenID by Tim Bray, and had the following comments:&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/02/20/aussies-using-p2p-for-new-virtual-world/</id>
+		<title>Aussies Using P2P for new Virtual World</title>
+		<summary>Robert Scoble reports that an Australian company is working on a new Second Life competitor called &amp;#8220;Outback Online&amp;#8221; that replaces centrally-hosted servers with P2P technology to provide better graphics and more scalable islands.  You can sign-up on their website for an Alpha version they plan to release this summer.
+</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;&lt;a href=&quot;http://scobleizer.com/2007/02/19/new-virtual-world-coming-from-australia/&quot;&gt;Robert Scoble reports&lt;/a&gt; that an Australian company is working on a new Second Life competitor called &amp;#8220;&lt;a href=&quot;http://www.outbackonline.com&quot;&gt;Outback Online&lt;/a&gt;&amp;#8221; that replaces centrally-hosted servers with P2P technology to provide better graphics and more scalable islands.  You can &lt;a href=&quot;http://www.outbackonline.com&quot;&gt;sign-up on their website&lt;/a&gt; for an Alpha version they plan to release this summer.&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/02/01/opensim-open-source-second-life-server/</id>
+		<title>OpenSim: Open Source Second Life Server</title>
+		<summary>The OpenSL Project (which is sponsored by The Electric Sheep Company) has taken the lead on open source Second Life development, being the first to release an (&amp;#8221;alpha&amp;#8221;) open source server for the SL client, called &amp;#8220;OpenSim.&amp;#8221;  When SL opened up their client software in January, I predicted that someone would use the code [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;&lt;a href=&quot;http://opensecondlife.org/&quot;&gt;The OpenSL Project&lt;/a&gt; (which is sponsored by &lt;a href=&quot;http://www.electricsheepcompany.com/&quot;&gt;The Electric Sheep Company&lt;/a&gt;) has taken the lead on open source Second Life development, being the first to release an (&amp;#8221;alpha&amp;#8221;) open source server for the SL client, called &amp;#8220;OpenSim.&amp;#8221;  When SL &lt;a href=&quot;http://blog.secondlife.com/2007/01/08/embracing-the-inevitable/&quot;&gt;opened up their client software&lt;/a&gt; in January, I &lt;a href=&quot;http://web3d.net/node/24&quot;&gt;predicted&lt;/a&gt; that someone would use the code and protocol documents to reverse-engineer a server soon.  Holy cow!  I had no idea they would do it in less than a month!&lt;break&gt;&lt;/break&gt;&lt;/p&gt;
+</content>
+	</Event>
+	<Event>
+		<date>2009-03-17</date>
+		<time>22:51:34</time>
+		<c-ip>192.168.1.10</c-ip>
+		<status>200</status>
+		<method>GET</method>
+		<uri-stem>/feed/atom</uri-stem>
+		<uri-query></uri-query>
+		<host>mikedickey.com</host>
+		<id>http://www.mikedickey.com/2007/01/30/second-life-bad-content-or-ui/</id>
+		<title>Second Life: Bad Content or UI?</title>
+		<summary>Lately, I have grown disillusioned with Clay Shirky&amp;#8217;s and other&amp;#8217;s posts about Second Life on Valleywag.  The tone of these seems to have shifted largely from objective criticism to an obsessive pursuit that demeans Second Life&amp;#8217;s accomplishments by attempting to make it synonymous with &amp;#8220;sex.&amp;#8221;  For those who regularly use Second Life for [...]</summary>
+		<author>&lt;name&gt;mike&lt;/name&gt;</author>
+		<content>&lt;p&gt;Lately, I have grown disillusioned with Clay Shirky&amp;#8217;s and other&amp;#8217;s &lt;a href=&quot;http://valleywag.com/tech/second%20life/&quot;&gt;posts about Second Life&lt;/a&gt; on &lt;a href=&quot;http://valleywag.com/&quot;&gt;Valleywag&lt;/a&gt;.  The tone of these seems to have shifted largely from objective criticism to an obsessive pursuit that demeans Second Life&amp;#8217;s accomplishments by attempting to make it synonymous with &amp;#8220;sex.&amp;#8221;  For those who regularly use Second Life for purposes other than sex, these rants sound too absurd for rational consideration.  But, I suspect this should be expected from a publication that calls itself &amp;#8220;Silicon Valley&amp;#8217;s Gossip Blog.&amp;#8221;&lt;/p&gt;
+</content>
+	</Event>
+</Events>
