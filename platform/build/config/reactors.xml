@@ -112,4 +112,210 @@
     <From>3205a532-eae1-11dc-937c-0019e3f89cd2</From>
     <To>3ad3e114-eae2-11dc-9b4c-0019e3f89cd2</To>
   </Connection>
+  <Reactor id="e68db792-13cb-11de-ac58-001cc02bd66b">
+    <Plugin>FilterReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>190</X>
+    <Y>70</Y>
+    <Name>RSS Requests</Name>
+    <Comment>Pass through RSS requests only</Comment>
+    <MatchAllComparisons>true</MatchAllComparisons>
+    <Comparison>
+      <Term>urn:vocab:clickstream#http-event</Term>
+      <Type>is-defined</Type>
+      <MatchAllValues>false</MatchAllValues>
+    </Comparison>
+    <Comparison>
+      <Term>urn:vocab:clickstream#content-type</Term>
+      <Type>contains</Type>
+      <Value>rss+xml</Value>
+      <MatchAllValues>false</MatchAllValues>
+    </Comparison>
+  </Reactor>
+  <Reactor id="5afcf08e-13cc-11de-b78a-001cc02bd66b">
+    <Plugin>FissionReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>390</X>
+    <Y>190</Y>
+    <Name>Extract Atom Feeds</Name>
+    <Comment>Extracts Atom feed events from HTTP request events</Comment>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+    <Codec>5674ccae-13cb-11de-91f0-001cc02bd66b</Codec>
+    <Running>true</Running>
+  </Reactor>
+  <Reactor id="76a08e2c-13cc-11de-b9cd-001cc02bd66b">
+    <Plugin>FissionReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>390</X>
+    <Y>270</Y>
+    <Name>Extract Atom Entries</Name>
+    <Comment>Extract Atom feed entry events from HTTP request events</Comment>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+    <Codec>5748f38a-13cb-11de-912b-001cc02bd66b</Codec>
+    <Running>true</Running>
+  </Reactor>
+  <Reactor id="9705dd8e-13cc-11de-850b-001cc02bd66b">
+    <Plugin>LogOutputReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>570</X>
+    <Y>190</Y>
+    <Name>Atom Feeds Log</Name>
+    <Comment>Stores Atom feed events</Comment>
+    <Codec>57037210-13cb-11de-9ec2-001cc02bd66b</Codec>
+    <Filename>atom_feeds.log</Filename>
+  </Reactor>
+  <Reactor id="bb268aba-13cc-11de-abaf-001cc02bd66b">
+    <Plugin>LogOutputReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>570</X>
+    <Y>270</Y>
+    <Name>Atom Entries Log</Name>
+    <Comment>Stores Atom feed entry events</Comment>
+    <Codec>579100b2-13cb-11de-9631-001cc02bd66b</Codec>
+    <Filename>atom_entries.log</Filename>
+  </Reactor>
+  <Reactor id="f33ea950-13cc-11de-8d36-001cc02bd66b">
+    <Plugin>FilterReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>190</X>
+    <Y>230</Y>
+    <Name>Atom Requests</Name>
+    <Comment>Pass through RSS requests only</Comment>
+    <MatchAllComparisons>true</MatchAllComparisons>
+    <Comparison>
+      <Term>urn:vocab:clickstream#http-event</Term>
+      <Type>is-defined</Type>
+      <MatchAllValues>false</MatchAllValues>
+    </Comparison>
+    <Comparison>
+      <Term>urn:vocab:clickstream#content-type</Term>
+      <Type>contains</Type>
+      <Value>atom+xml</Value>
+      <MatchAllValues>false</MatchAllValues>
+    </Comparison>
+  </Reactor>
+  <Reactor id="fd69757c-0e8b-11de-8031-0019d185f6fc">
+    <Plugin>FissionReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>390</X>
+    <Y>110</Y>
+    <Name>Extract RSS Channels</Name>
+    <Comment>Extracts RSS channels from an HTTP request</Comment>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <Codec>e899e9c6-0f56-11de-af9a-001cc02bd66b</Codec>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="0a4757fa-0e8c-11de-8f1d-0019d185f6fc">
+    <Plugin>LogOutputReactor</Plugin>
+    <Name>RSS Channels Log</Name>
+    <Comment>Stores RSS channel events into a log file</Comment>
+    <Workspace>News Feeds</Workspace>
+    <X>570</X>
+    <Y>110</Y>
+    <Codec>a5b7533e-0e8c-11de-b992-0019d185f6fc</Codec>
+    <Filename>rss_channels.xml</Filename>
+  </Reactor>
+  <Reactor id="5f5ba5b6-1021-11de-b1a4-0019d185f6fc">
+    <Plugin>FissionReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>390</X>
+    <Y>30</Y>
+    <Name>Extract RSS Items</Name>
+    <Comment>Extracts RSS channel items from an HTTP request</Comment>
+    <InputEventType>urn:vocab:clickstream#http-event</InputEventType>
+    <InputEventTerm>urn:vocab:clickstream#sc-content</InputEventTerm>
+    <Codec>e6e6f014-101f-11de-a58a-0019d185f6fc</Codec>
+    <CopyTerm>urn:vocab:clickstream#date</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#c-ip</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#bytes</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#time-taken</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#status</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#method</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-stem</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#uri-query</CopyTerm>
+    <CopyTerm>urn:vocab:clickstream#host</CopyTerm>
+  </Reactor>
+  <Reactor id="5ff1bf10-1021-11de-bfa7-0019d185f6fc">
+    <Plugin>LogOutputReactor</Plugin>
+    <Workspace>News Feeds</Workspace>
+    <X>570</X>
+    <Y>30</Y>
+    <Name>RSS Items Log</Name>
+    <Comment>Stores RSS channel item events into a log file</Comment>
+    <Codec>e783021a-101f-11de-8332-0019d185f6fc</Codec>
+    <Filename>rss_items.xml</Filename>
+  </Reactor>
+  <Connection id="9afe6dd4-13cc-11de-aa20-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>5afcf08e-13cc-11de-b78a-001cc02bd66b</From>
+    <To>9705dd8e-13cc-11de-850b-001cc02bd66b</To>
+  </Connection>
+  <Connection id="d5cfcd86-13cc-11de-b9eb-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>76a08e2c-13cc-11de-b9cd-001cc02bd66b</From>
+    <To>bb268aba-13cc-11de-abaf-001cc02bd66b</To>
+  </Connection>
+  <Connection id="0fe8a948-13cd-11de-817a-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>f33ea950-13cc-11de-8d36-001cc02bd66b</From>
+    <To>5afcf08e-13cc-11de-b78a-001cc02bd66b</To>
+  </Connection>
+  <Connection id="11d0641c-13cd-11de-8a14-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>f33ea950-13cc-11de-8d36-001cc02bd66b</From>
+    <To>76a08e2c-13cc-11de-b9cd-001cc02bd66b</To>
+  </Connection>
+  <Connection id="b87a306c-13ce-11de-9924-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>5f5ba5b6-1021-11de-b1a4-0019d185f6fc</From>
+    <To>5ff1bf10-1021-11de-bfa7-0019d185f6fc</To>
+  </Connection>
+  <Connection id="ba7ebafe-13ce-11de-a92f-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>e68db792-13cb-11de-ac58-001cc02bd66b</From>
+    <To>5f5ba5b6-1021-11de-b1a4-0019d185f6fc</To>
+  </Connection>
+  <Connection id="befa0e08-13ce-11de-b48e-001cc02bd66b">
+    <Type>reactor</Type>
+    <From>e68db792-13cb-11de-ac58-001cc02bd66b</From>
+    <To>fd69757c-0e8b-11de-8031-0019d185f6fc</To>
+  </Connection>
+  <Connection id="1268a9e8-0e8c-11de-a1f0-0019d185f6fc">
+    <Type>reactor</Type>
+    <From>fd69757c-0e8b-11de-8031-0019d185f6fc</From>
+    <To>0a4757fa-0e8c-11de-8f1d-0019d185f6fc</To>
+  </Connection>
 </PionConfig>
