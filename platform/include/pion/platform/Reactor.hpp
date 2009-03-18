@@ -109,7 +109,8 @@ public:
 	
 	/// clears statistic counters for the Reactor
 	virtual void clearStats(void) {
-		m_events_in = m_events_out = 0;
+		// atomic_count doesn't support assignment -- ugh!
+		//m_events_in = m_events_out = boost::detail::atomic_count(0);
 	}
 	
 	/**
@@ -165,7 +166,7 @@ public:
 			ConfigReadLock cfg_lock(*this);
 			// re-check after locking
 			if ( isRunning() ) {
-				++m_events_in;		// not thread-safe: "best effort" counter
+				++m_events_in;
 				process(e);
 			}
 		}
@@ -208,10 +209,10 @@ public:
 	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
 
 	/// returns the total number of Events received by this Reactor
-	inline boost::uint64_t getEventsIn(void) const { return m_events_in; }
+	inline boost::uint32_t getEventsIn(void) const { return m_events_in; }
 		
 	/// returns the total number of Events delivered by this Reactor
-	inline boost::uint64_t getEventsOut(void) const { return m_events_out; }
+	inline boost::uint32_t getEventsOut(void) const { return m_events_out; }
 
 	/// returns true if the Reactor is running
 	inline bool isRunning(void) const { return m_is_running; }
@@ -305,16 +306,6 @@ protected:
 	}
 
 	/**
-	 * increments the incoming Events counter.  This is not thread-safe and
-	 * should be called only when the Reactor's mutex is locked.
-	 * processes a new Event.  Derived Reactors should call deliverEvent()
-	 * to send Events to output connections
-	 *
-	 * @param e pointer to the Event to process
-	 */
-	inline void incrementEventsIn(void) { ++m_events_in; }
-
-	/**
 	 * delivers an Event to the output connections.  This is not thread-safe
 	 * and should be called only while a ConfigReadLock is held by the thread
 	 *
@@ -322,7 +313,7 @@ protected:
 	 * @param return_immediately if true, all delivery will use other threads
 	 */
 	inline void deliverEvent(const EventPtr& e, bool return_immediately = false) {
-		++m_events_out;		// not thread-safe: "best effort" counter
+		++m_events_out;
 		if (! m_connections.empty()) {
 			if (m_multithread_branches) {
 				// iterate through each Reactor after the first one and send the Event
@@ -473,14 +464,12 @@ private:
 	ConnectionMap					m_connections;
 	
 	/// the total number of Events received by this Reactor
-	/// note that this counter is "imperfect" since it may be changed by
-	/// multiple threads at the same time
-	boost::uint64_t					m_events_in;
+	/// note that this counter is likely to "wrap-around" and start back at zero
+	boost::detail::atomic_count		m_events_in;
 
 	/// the total number of Events delivered by this Reactor
-	/// note that this counter is "imperfect" since it may be changed by
-	/// multiple threads at the same time
-	boost::uint64_t					m_events_out;
+	/// note that this counter is likely to "wrap-around" and start back at zero
+	boost::detail::atomic_count		m_events_out;
 	
 	/// if true, use multiple threads for Event delivery when a Reactor has
 	/// more than one output connection (CACHED VALUE FROM REACTIONENGINE)

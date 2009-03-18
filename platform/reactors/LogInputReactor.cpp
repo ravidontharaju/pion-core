@@ -451,9 +451,7 @@ void LogInputReactor::readFromLog(void)
 					event_factory.create(event_ptr, event_type);
 					*event_ptr += *original_event_ptr;
 					// deliver the Event to connected Reactors
-					ConfigReadLock cfg_lock(*this);
-					incrementEventsIn();
-					deliverEvent(event_ptr);
+					(*this)(event_ptr);
 				}
 				break;
 			}
@@ -477,21 +475,15 @@ void LogInputReactor::readFromLog(void)
 				}
 
 				// deliver the Event to connected Reactors
-				if (event_read) {
-					ConfigReadLock cfg_lock(*this);
-					incrementEventsIn();
-					deliverEvent(event_ptr);
-				}
+				if (event_read)
+					(*this)(event_ptr);
 
 				break;
 			}
 
 			// deliver the Event to connected Reactors
-			if (event_read) {
-				ConfigReadLock cfg_lock(*this);
-				incrementEventsIn();
-				deliverEvent(event_ptr);
-			}
+			if (event_read)
+				(*this)(event_ptr);
 
 		} while (isRunning()); 
 
