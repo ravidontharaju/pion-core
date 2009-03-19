@@ -15,6 +15,9 @@
 
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
+#ifdef _MSC_VER
+	#include <openssl/applink.c>
+#endif
 #endif
 
 #include <iostream>
@@ -88,6 +91,7 @@ int main (int argc, char *argv[])
 	
 #ifdef PION_HAVE_SSL
 	// initialize the OpenSSL library
+	CRYPTO_malloc_init();
 	SSL_library_init();
 #endif
 
