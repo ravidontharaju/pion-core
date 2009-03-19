@@ -1,6 +1,8 @@
 dojo.provide("pion.about");
 dojo.require("dijit.Dialog");
 
+pion.about.ops_temporarily_suppressed = false;
+
 dojo.declare("pion.about.LicenseKeyDialog",
 	[ dijit.Dialog ],
 	{
@@ -52,7 +54,18 @@ dojo.declare("pion.about.LicenseKeyDialog",
 				}
 			});
 
-			this.connect(this, "hide", function() {this.destroyRecursive(false)});
+			this.connect(this, "hide", function() {
+				this.destroyRecursive(false);
+				if (_this.always_callback) {
+					_this.always_callback();
+				}
+				if (pion.about.ops_temporarily_suppressed) {
+					// turn ops back on
+					var ops_toggle_button = dijit.byId('ops_toggle_button');
+					ops_toggle_button.setAttribute('checked', false);
+					pion.about.ops_temporarily_suppressed = false;
+				}
+			});
 		},
 		submitKey: function(e) {
 			//var key = dojo.byId('license_key').value;
@@ -68,7 +81,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 				load: function(response){
 					console.debug('response: ', response);
 					_this.hide();
-					pion.about.doDialog();
+					pion.about.doDialog({always_callback: _this.success_callback});
 					return response;
 				},
 				error: function(response, ioArgs) {
@@ -80,7 +93,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 		},
 		doLicenseStuff: function(pion_version, pion_edition, key_status) {
 
-			///// FOR TESTING!			
+			///// FOR TESTING!
 			//key_status = "invalid";
 			//key_status = "empty";
 
@@ -159,7 +172,64 @@ dojo.declare("pion.about.LicenseKeyDialog",
 	}
 );
 
-pion.about.doDialog = function() {
-	var dialog = new pion.about.LicenseKeyDialog();
+pion.about.doDialog = function(kw_args) {
+	var ops_toggle_button = dijit.byId('ops_toggle_button');
+	if (!ops_toggle_button.checked) {
+		ops_toggle_button.setAttribute('checked', true);
+		pion.about.ops_temporarily_suppressed = true;
+	}
+	var dialog = new pion.about.LicenseKeyDialog(kw_args);
 	dialog.show();
 };
+
+pion.about.checkKeyStatus = function(kw_args) {
+	dojo.xhrGet({
+		url: '/key/status',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			if (dojo.isIE) {
+				var key_status = response.getElementsByTagName('Status')[0].childNodes[0].nodeValue;
+			} else {
+				var key_status = response.getElementsByTagName('Status')[0].textContent;
+			}
+			if (key_status == 'valid') {
+				if (kw_args.always_callback) {
+					kw_args.always_callback();
+				}
+				if (kw_args.success_callback) {
+					kw_args.success_callback();
+				}
+			} else {
+				// KeyService is running, but no valid key is present, so display the license key dialog.
+				pion.about.doDialog(kw_args);
+			}
+			return response;
+		},
+		error: function(response, ioArgs) {
+			if (ioArgs.xhr.status == 401) {
+				if (!dojo.cookie("logged_in")) {
+					location.replace('login.html'); // exit and go to main login page
+				}
+				pion.login.doLoginDialog({
+					success_callback: function() {
+						pion.about.doDialog(kw_args);
+					},
+					suppress_default_key_status_check: true
+				});
+			} else if (ioArgs.xhr.status == 404) {
+				// status = 404 (Not Found) => KeyService not running
+				// This is expected for Pion Community Edition, and no further action or notification wrt license keys is needed.
+				// If kw_args.success_callback is defined, it will not be called, and even if the user somehow succeeds in
+				// sending a request to do something that requires a license key, they will get an error from the server.
+				if (kw_args.always_callback) {
+					kw_args.always_callback();
+				}
+			} else {
+				pion.about.doDialog(kw_args);
+			}
+			return response;
+		}
+	});
+}

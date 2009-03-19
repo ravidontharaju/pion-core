@@ -40,7 +40,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 			}
 
 			// make user log in, then redo the request
-			pion.login.doLoginDialog(function(){xhrFunc(ioArgs.args)});
+			pion.login.doLoginDialog({success_callback: function(){xhrFunc(ioArgs.args)}});
 		}
 		return;
 	} else {
@@ -102,7 +102,7 @@ pion.handleFetchError = function(errorData, request) {
 			}
 
 			// make user log in, then redo the request
-			pion.login.doLoginDialog(function(){request.store.fetch(request)});
+			pion.login.doLoginDialog({success_callback: function(){request.store.fetch(request)}});
 		}
 		return;
 	}
@@ -173,8 +173,13 @@ var init = function() {
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
 
 	// Send a request to /config to see if a login is needed.
-	// pion.terms.init() and pion.reactors.init() will be called as soon as the 
-	// request succeeds, or if it fails, as soon as the login succeeds.
+	// login_success_callback() will be called if the user was already logged in, or after a login succeeds.
+	// Before login_success_callback() is called, a license key check will be done, and the user may be prompted to 
+	// enter a key; however, even if they don't enter a valid key, login_success_callback() will still be called.
+	var login_success_callback = function() {
+		pion.terms.init();
+		pion.reactors.init();
+	}
 	dojo.xhrGet({
 		url: '/config',
 		preventCache: true,
@@ -183,19 +188,14 @@ var init = function() {
 		load: function(response, ioArgs) {
 			// The user must be logged in since the request succeeded.
 			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
-
-			pion.terms.init();
-			pion.reactors.init();
+			pion.about.checkKeyStatus({always_callback: login_success_callback});
 		},
 		error: function(response, ioArgs) {
 			if (ioArgs.xhr.status == 401) {
 				if (!dojo.cookie("logged_in")) {
 					location.replace('login.html'); // exit and go to main login page
 				}
-				pion.login.doLoginDialog(function(){
-					pion.terms.init();
-					pion.reactors.init();
-				});
+				pion.login.doLoginDialog({success_callback: login_success_callback});
 			} else {
 				console.error('HTTP status code: ', ioArgs.xhr.status);
 			}

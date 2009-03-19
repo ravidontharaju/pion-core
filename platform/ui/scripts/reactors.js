@@ -514,6 +514,18 @@ pion.reactors.handleDropOnWorkspace = function(source, nodes, copy, target) {
 
 	var reactor_type = nodes[0].getAttribute("reactor_type");
 
+	pion.reactors.showReactorInitDialog(reactor_type);
+}
+
+pion.reactors.showReactorInitDialog = function(reactor_type) {
+	if (plugins.reactors[reactor_type].edition == 'Enterprise') {
+		pion.about.checkKeyStatus({success_callback: function() {pion.reactors._showReactorInitDialog(reactor_type)}});
+	} else {
+		pion.reactors._showReactorInitDialog(reactor_type);
+	}
+}
+
+pion.reactors._showReactorInitDialog = function(reactor_type) {
 	var dialog_class_name = 'plugins.reactors.' + reactor_type + 'InitDialog';
 	console.debug("dialog_class_name: ", dialog_class_name);
 	var dialog_class = dojo.getObject(dialog_class_name);
@@ -639,6 +651,14 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 }
 
 pion.reactors.showReactorConfigDialog = function(reactor) {
+	if (plugins.reactors[reactor.config.Plugin].edition == 'Enterprise') {
+		pion.about.checkKeyStatus({success_callback: function() {pion.reactors._showReactorConfigDialog(reactor)}});
+	} else {
+		pion.reactors._showReactorConfigDialog(reactor);
+	}
+}
+
+pion.reactors._showReactorConfigDialog = function(reactor) {
 	var dialog_class_name = 'plugins.reactors.' + reactor.config.Plugin + 'Dialog';
 	console.debug('dialog_class_name = ', dialog_class_name);
 	var dialog_class = dojo.getObject(dialog_class_name);

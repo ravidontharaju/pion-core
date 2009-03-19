@@ -65,7 +65,7 @@ pion.login.onLoginSuccess = function() {
 
 pion.login.latestUsername = "";
 
-pion.login.doLoginDialog = function(login_success_callback) {
+pion.login.doLoginDialog = function(kw_args) {
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	if (!ops_toggle_button.checked) {
@@ -102,8 +102,11 @@ pion.login.doLoginDialog = function(login_success_callback) {
 					//dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
 					pion.login.ops_temporarily_suppressed = false;
 				}
-				if (login_success_callback) {
-					login_success_callback();
+				if (kw_args.suppress_default_key_status_check) {
+					if (kw_args.success_callback)
+						kw_args.success_callback();
+				} else {
+					pion.about.checkKeyStatus({always_callback: kw_args.success_callback});
 				}
 				return response;
 			},
@@ -111,7 +114,7 @@ pion.login.doLoginDialog = function(login_success_callback) {
 				pion.login.login_pending = false;
 				if (ioArgs.xhr.status == 401) {
 					// name and/or password was incorrect, so try again
-					pion.login.doLoginDialog(login_success_callback);
+					pion.login.doLoginDialog(kw_args);
 					
 					return;
 				}
