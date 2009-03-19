@@ -176,8 +176,8 @@ void Database::readConfig(const xmlNodePtr config_ptr, std::string engine_str)
 /// Only used by stringSubstitutes, so non-inlined is fine for performance
 void Database::stringReplace(std::string& src, const char* search, const std::string& substitute)
 {
-	std::string::size_type i;
-	while ((i = src.find(search)) != std::string::npos)
+	std::string::size_type i = 0;
+	while ((i = src.find(search, i)) != std::string::npos)
 		src.replace(i, strlen(search), substitute);
 }
 
