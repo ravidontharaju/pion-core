@@ -107,7 +107,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 			throw UnknownTermException(term_id);
 
 		// add the field mapping
-		m_field_map.insert(std::make_pair(term_ref, std::make_pair(field_name, v[term_ref])));
+		m_field_map.push_back(std::make_pair(field_name, v[term_ref]));
 
 		// step to the next field mapping
 		field_node = field_node->next;
@@ -125,8 +125,12 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 		m_database_ptr->updateVocabulary(v);
 
 	// update Term mappings (note: references never change for a given id)
+	// TaO090319: field_map no longer contains termref, can't be updated without
+	//			stop/start of database, i.e. reconstruct the whole field_map
+/*
 	for (Query::FieldMap::iterator i = m_field_map.begin(); i != m_field_map.end(); ++i)
 		i->second.second = v[i->first];
+*/
 }
 
 void DatabaseOutputReactor::updateDatabases(void)
@@ -157,7 +161,7 @@ void DatabaseOutputReactor::process(const EventPtr& e)
 	// signal the writer thread if the queue is full
 	if (++m_num_queued == m_queue_max)
 		m_wakeup_writer.notify_one();
-		
+
 	queue_lock.unlock();
 
 	// deliver the event to other Reactors (if any are connected)
@@ -182,7 +186,7 @@ void DatabaseOutputReactor::start(void)
 {
 	ConfigWriteLock cfg_lock(*this);
 	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
-	if (! m_is_running) {	
+	if (! m_is_running) {
 		m_is_running = true;
 
 		// open a new database connection

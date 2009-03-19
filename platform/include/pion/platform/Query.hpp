@@ -44,10 +44,12 @@ class Query
 public:
 
 	/// data type for a pair where first is a field name, and second is Term info
+//	typedef std::pair<std::string, Vocabulary::Term>		FieldData;
 	typedef std::pair<std::string, Vocabulary::Term>		FieldData;
 
 	/// data type for a map of Term references to database field names
-	typedef std::map<Vocabulary::TermRef, FieldData>		FieldMap;
+//	typedef std::map<Vocabulary::TermRef, FieldData>		FieldMap;
+	typedef std::vector<FieldData>							FieldMap;
 
 
 	/// virtual destructor -> this class is just an interface
@@ -211,15 +213,12 @@ private:
 
 inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool copy_strings)
 {
-	unsigned int param = 0;
-	for (Query::FieldMap::const_iterator field_it = field_map.begin();
-		 field_it != field_map.end(); ++field_it)
-	{
-		const Event::ParameterValue *value_ptr = e.getPointer(field_it->first);
+	for (unsigned int param = 0; param < field_map.size(); param++) {
+		const Event::ParameterValue *value_ptr = e.getPointer(field_map[param].second.term_ref);
 		if (value_ptr == NULL) {
 			bindNull(param);
 		} else {
-			switch(field_it->second.second.term_type) {
+			switch(field_map[param].second.term_type) {
 				case Vocabulary::TYPE_NULL:
 				case Vocabulary::TYPE_OBJECT:
 					bindNull(param);
@@ -265,44 +264,40 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 					break;
 			}
 		}
-		++param;
 	}
 }
 
 inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 {
-	unsigned int param = 0;
-	for (Query::FieldMap::const_iterator field_it = field_map.begin();
-		 field_it != field_map.end(); ++field_it)
-	{
-		switch(field_it->second.second.term_type) {
+	for (unsigned int param = 0; param < field_map.size(); param++) {
+		switch(field_map[param].second.term_type) {
 			case Vocabulary::TYPE_NULL:
 			case Vocabulary::TYPE_OBJECT:
 				break;
 			case Vocabulary::TYPE_INT8:
 			case Vocabulary::TYPE_INT16:
 			case Vocabulary::TYPE_INT32:
-				e->setInt(field_it->first, fetchInt(param));
+				e->setInt(field_map[param].second.term_ref, fetchInt(param));
 				break;
 			case Vocabulary::TYPE_INT64:
-				e->setBigInt(field_it->first, fetchBigInt(param));
+				e->setBigInt(field_map[param].second.term_ref, fetchBigInt(param));
 				break;
 			case Vocabulary::TYPE_UINT8:
 			case Vocabulary::TYPE_UINT16:
 			case Vocabulary::TYPE_UINT32:
-				e->setUInt(field_it->first, fetchUInt(param));
+				e->setUInt(field_map[param].second.term_ref, fetchUInt(param));
 				break;
 			case Vocabulary::TYPE_UINT64:
-				e->setUBigInt(field_it->first, fetchUBigInt(param));
+				e->setUBigInt(field_map[param].second.term_ref, fetchUBigInt(param));
 				break;
 			case Vocabulary::TYPE_FLOAT:
-				e->setFloat(field_it->first, fetchFloat(param));
+				e->setFloat(field_map[param].second.term_ref, fetchFloat(param));
 				break;
 			case Vocabulary::TYPE_DOUBLE:
-				e->setDouble(field_it->first, fetchDouble(param));
+				e->setDouble(field_map[param].second.term_ref, fetchDouble(param));
 				break;
 			case Vocabulary::TYPE_LONG_DOUBLE:
-				e->setLongDouble(field_it->first, fetchLongDouble(param));
+				e->setLongDouble(field_map[param].second.term_ref, fetchLongDouble(param));
 				break;
 			case Vocabulary::TYPE_SHORT_STRING:
 			case Vocabulary::TYPE_STRING:
@@ -312,7 +307,7 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				{
 					std::string val;
 					fetchString(param, val);
-					e->setString(field_it->first, val);
+					e->setString(field_map[param].second.term_ref, val);
 				}
 				break;
 			case Vocabulary::TYPE_DATE_TIME:
@@ -321,11 +316,10 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				{
 					PionDateTime val;
 					fetchDateTime(param, val);
-					e->setDateTime(field_it->first, val);
+					e->setDateTime(field_map[param].second.term_ref, val);
 				}
 				break;
 		}
-		++param;
 	}
 }
 

@@ -188,18 +188,15 @@ std::string& Database::stringSubstitutes(std::string& query, const pion::platfor
 	stringReplace(query, ":TABLE", table_name);
 
 	std::string fields, columns, questions, params;
-	Query::FieldMap::const_iterator field_it = field_map.begin();
-	int p = 1;
-	while (field_it != field_map.end()) {
-		fields += field_it->second.first + ' ' +
-					m_sql_affinity[field_it->second.second.term_type];
+	for (unsigned int p = 0; p < field_map.size(); p++) {
+		fields += field_map[p].first + ' ' +
+					m_sql_affinity[field_map[p].second.term_type];
 // Now using m_sql_affinity[] table instead of a lookup function
 //					getSQLAPIAffinity(field_it->second.second.term_type);
-		columns += field_it->second.first;
+		columns += field_map[p].first;
 		questions += '?';
-		params += ':' + boost::lexical_cast<std::string>(p);
-		p++;
-		if (++field_it != field_map.end()) {
+		params += ':' + boost::lexical_cast<std::string>(p+1);	// Params are 1-based
+		if (p+1 < field_map.size()) {			// Add commas, but not after last
 			fields += ',';
 			columns += ',';
 			questions += ',';
