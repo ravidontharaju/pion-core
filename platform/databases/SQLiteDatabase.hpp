@@ -120,6 +120,15 @@ public:
 														const std::string& table_name);
 
 	/**
+	 * prepares a generic query
+	 *
+	 * @param query the SQL for the query
+	 *
+	 * @return QueryPtr smart pointer to the new query
+	 */
+	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query);
+
+	/**
 	 * returns the query that is used to begin new transactions
 	 *
 	 * @return QueryPtr smart pointer to the "begin transaction" query
@@ -357,6 +366,18 @@ protected:
 		 * @return true if there is a result row available
 		 */
 		virtual bool run(void);
+
+		/**
+		 * runs a generic query
+	 	*
+	 	* @param ins a FieldMap of input fields
+	 	* @param src input event, used for ins FieldMap
+	 	* @param outs a FieldMap of output fields
+	 	* @param dest output event, used for outs FieldMap
+	 	*
+	 	* @return bool if output event was modified
+	 	*/
+		virtual bool runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src, const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest);
 
 		/// resets the compiled query so that it can be run again
 		virtual void reset(void) { sqlite3_reset(m_sqlite_stmt); }

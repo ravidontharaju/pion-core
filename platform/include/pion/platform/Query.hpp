@@ -183,6 +183,18 @@ public:
 	 */
 	virtual bool run(void) = 0;
 
+	/**
+	 * runs a generic query
+ 	*
+ 	* @param ins a FieldMap of input fields
+ 	* @param src input event, used for ins FieldMap
+ 	* @param outs a FieldMap of output fields
+ 	* @param dest output event, used for outs FieldMap
+ 	*
+ 	* @return bool if output event was modified
+ 	*/
+	virtual bool runFullQuery(const FieldMap& ins, const EventPtr& src, const FieldMap& outs, EventPtr& dest) = 0;
+
 	/// resets the compiled query so that it can be run again
 	virtual void reset(void) = 0;
 

@@ -166,6 +166,27 @@ QueryPtr SQLiteDatabase::getCommitTransactionQuery(void)
 	return i->second;
 }
 
+QueryPtr SQLiteDatabase::prepareFullQuery(const std::string& query)
+{
+	PION_ASSERT(is_open());
+
+	QueryPtr query_ptr(new SQLiteQuery(query, m_sqlite_db));
+	return query_ptr;
+}
+
+bool SQLiteDatabase::SQLiteQuery::runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src, const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest)
+{
+	bool changes = false;
+	sqlite3_reset(m_sqlite_stmt);
+	bindEvent(ins, *src);
+	while (sqlite3_step(m_sqlite_stmt) == SQLITE_ROW) {
+		// FIXME: put a size limit...
+		fetchEvent(outs, dest);
+		changes = true;
+	}
+	return changes;
+}
+
 
 // SQLiteDatabase::SQLiteQuery member functions
 
