@@ -201,18 +201,6 @@ public:
 	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query) = 0;
 
 	/**
-	 * runs a generic query
-	 *
-	 * @param ins a FieldMap of input fields
-	 * @param src input event, used for ins FieldMap
-	 * @param outs a FieldMap of output fields
-	 * @param dest output event, used for outs FieldMap
-	 *
-	 * @return bool if output event was modified
-	 */
-	virtual bool runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src, const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest);
-
-	/**
 	 * returns the query that is used to begin new transactions
 	 *
 	 * @return QueryPtr smart pointer to the "begin transaction" query
