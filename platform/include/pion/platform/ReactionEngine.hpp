@@ -159,6 +159,9 @@ public:
 
 	/// this updates all of the Databases used by Reactors
 	void updateDatabases(void);
+
+	/// attempts to start all reactors that should be initialized in a "running" state and are not running
+	void restartReactorsThatShouldBeRunning(void);
 	
 	/**
 	 * starts Event processing for a collection Reactor
@@ -193,7 +196,7 @@ public:
 	 */
 	void setReactorLocation(const std::string& reactor_id,
 							const xmlNodePtr config_ptr);
-	
+
 	/**
 	 * adds a new managed Reactor
 	 *
@@ -520,20 +523,12 @@ private:
 			reactor_ptr->setReactionEngine(*this);
 			if (config_ptr != NULL)
 				reactor_ptr->setConfig(m_vocabulary, config_ptr);
-
-			// Get the default behavior regarding whether the Reactor should start out running.
-			bool start_out_running = (reactor_ptr->getType() == Reactor::TYPE_COLLECTION? false : true);
-
-			// Override the default behavior, if the Reactor's run status is specified in the configuration.
-			if (config_ptr) {
-				std::string run_status_str;
-				if (ConfigManager::getConfigOption(Reactor::RUNNING_ELEMENT_NAME, run_status_str, config_ptr)) {
-					start_out_running = (run_status_str == "true");
-				}
+			try {
+				reactor_ptr->startOutRunning(config_ptr, true);
+			} catch (std::exception& e) {
+				// log but don't propagate exceptions from startOutRunning()
+				PION_LOG_ERROR(m_logger, e.what());
 			}
-
-			if (start_out_running)
-				reactor_ptr->start();
 		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;
 		} catch (std::exception& e) {

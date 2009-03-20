@@ -162,6 +162,30 @@ void ReactionEngine::updateDatabases(void)
 {
 	m_plugins.run(boost::bind(&Reactor::updateDatabases, _1));
 }
+
+void ReactionEngine::restartReactorsThatShouldBeRunning(void)
+{
+	try {
+		// step through each reactor config node
+		xmlNodePtr reactor_node = m_config_node_ptr->children;
+		while ( (reactor_node = findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
+		{
+			// get the reactor identifier
+			std::string reactor_id;
+			if (getNodeId(reactor_node, reactor_id)) {
+				// attempt to restart the Reactor if necessary
+				m_plugins.run(reactor_id,
+					boost::bind(&Reactor::startOutRunning, _1, reactor_node->children, true));
+			}
+	
+			// look for more reactor config nodes
+			reactor_node = reactor_node->next;
+		}
+	} catch (std::exception& e) {
+		// log but don't propagate exceptions
+		PION_LOG_ERROR(m_logger, e.what());
+	}
+}
 	
 void ReactionEngine::setReactorConfig(const std::string& reactor_id,
 									  const xmlNodePtr config_ptr)

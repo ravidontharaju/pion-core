@@ -173,6 +173,16 @@ public:
 	}
 
 	/**
+	 * returns true if the reactor should be initialized in a "running" state
+	 *
+	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 *                   configuration parameters
+	 * @param exec_start if true, and the reactor is not running, and it should be initialized in
+	 *                   a "running" state, then attempt to start the reactor
+	 */
+	bool startOutRunning(const xmlNodePtr config_ptr, bool exec_start);
+
+	/**
 	 * connects another Reactor to the output of this Reactor
 	 *
 	 * @param connection_id unique identifier associated with the output connection

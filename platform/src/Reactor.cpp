@@ -48,6 +48,27 @@ void Reactor::updateVocabulary(const Vocabulary& v)
 	ConfigWriteLock cfg_lock(*this);
 	PlatformPlugin::updateVocabulary(v);
 }
+
+bool Reactor::startOutRunning(const xmlNodePtr config_ptr, bool exec_start)
+{
+	// Get the default behavior regarding whether the Reactor should start out running.
+	bool start_out_running = (getType() == Reactor::TYPE_COLLECTION? false : true);
+
+	// Override the default behavior, if the Reactor's run status is specified in the configuration.
+	if (config_ptr) {
+		std::string run_status_str;
+		if (ConfigManager::getConfigOption(Reactor::RUNNING_ELEMENT_NAME, run_status_str, config_ptr)) {
+			start_out_running = (run_status_str == "true");
+		}
+	}
+	
+	// start the reactor ?
+	if (exec_start && start_out_running && !isRunning()) {
+		start();
+	}
+	
+	return start_out_running;
+}
 	
 void Reactor::addConnection(Reactor& output_reactor)
 {
