@@ -822,7 +822,8 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	
 	// initialize decoded content cache to hold results
 	decoded_content_length = decoder_sink.getBytes();
-	decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0
+	decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
+	decoded_content.get()[decoded_content_length] = '\0';		// null terminate buffer since it may be re-used
 
 	if (decoded_content_length > 0) {	
 		// copy results into decoded content cache (a contiguous array)
