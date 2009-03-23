@@ -195,7 +195,7 @@ SQLiteDatabase::SQLiteQuery::SQLiteQuery(const std::string& sql_query, sqlite3 *
 	: Query(sql_query), m_sqlite_db(db_ptr), m_sqlite_stmt(NULL)
 {
 	PION_ASSERT(db_ptr != NULL);
-	if (sqlite3_prepare(m_sqlite_db, sql_query.c_str(), sql_query.size(),
+	if (sqlite3_prepare_v2(m_sqlite_db, sql_query.c_str(), sql_query.size(),
 						&m_sqlite_stmt, NULL) != SQLITE_OK)
 		SQLiteDatabase::throwAPIException(m_sqlite_db);
 	PION_ASSERT(m_sqlite_stmt != NULL);
