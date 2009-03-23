@@ -25,6 +25,13 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionPlugin.hpp>
 
+#ifdef PION_HAVE_SSL
+	#include <openssl/ssl.h>
+#ifdef _MSC_VER
+	#include <openssl/applink.c>
+#endif
+#endif
+
 #define BOOST_TEST_MODULE pion-platform-unit-tests
 #include <boost/test/unit_test.hpp>
 
@@ -62,6 +69,9 @@ struct PionPlatformUnitTestsConfig {
 		pion::PionPlugin::addPluginDirectory("../protocols/.libs");
 		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
 #endif
+
+		CRYPTO_malloc_init();
+		SSL_library_init();	// TODO: asio should handle this, why not?!?!
 	}
 	~PionPlatformUnitTestsConfig() {
 		std::cout << "global teardown specific to pion-platform\n";
