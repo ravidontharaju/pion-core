@@ -195,6 +195,18 @@ private:
 	 */
 	void getLogFilesInLogDirectory(LogFileCollection& files);
 	
+	/**
+	 * delivers an Event from a log file to the output connections (thread-safe)
+	 *
+	 * @param e pointer to the Event to deliver
+	 * @param return_immediately if true, all delivery will use other threads
+	 */
+	inline void deliverEventFromLog(const pion::platform::EventPtr& e, bool return_immediately = false) {
+		incrementEventsIn();
+		ConfigReadLock cfg_lock(*this);
+		deliverEvent(e, return_immediately);
+	}
+
 	/// sends notification that the worker thread has finished
 	inline void finishWorkerThread(void) {
 		boost::mutex::scoped_lock worker_lock(m_worker_mutex);

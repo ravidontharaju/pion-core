@@ -451,7 +451,7 @@ void LogInputReactor::readFromLog(void)
 					event_factory.create(event_ptr, event_type);
 					*event_ptr += *original_event_ptr;
 					// deliver the Event to connected Reactors
-					(*this)(event_ptr);
+					deliverEventFromLog(event_ptr);
 				}
 				break;
 			}
@@ -476,14 +476,14 @@ void LogInputReactor::readFromLog(void)
 
 				// deliver the Event to connected Reactors
 				if (event_read)
-					(*this)(event_ptr);
+					deliverEventFromLog(event_ptr);
 
 				break;
 			}
 
 			// deliver the Event to connected Reactors
 			if (event_read)
-				(*this)(event_ptr);
+				deliverEventFromLog(event_ptr);
 
 		} while (isRunning()); 
 

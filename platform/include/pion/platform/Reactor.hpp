@@ -389,6 +389,16 @@ protected:
 		}
 	}
 
+	/**
+	 * increments the incoming Events counter.  This is not thread-safe and
+	 * should be called only when the Reactor's mutex is locked.
+	 * processes a new Event.  Derived Reactors should call deliverEvent()
+	 * to send Events to output connections
+	 *
+	 * @param e pointer to the Event to process
+	 */
+	inline void incrementEventsIn(void) { ++m_events_in; }
+
 	/// write only XML statistics (excluding Reactor elements) for this Reactor to the output stream
 	void writeStatsOnlyXML(std::ostream& out) const;
 	
