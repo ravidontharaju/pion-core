@@ -29,12 +29,12 @@ $PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
 $TARBALL_NAME = $PACKAGE_NAME . "-" . $PLATFORM;
 $CONFIG_DIR = File::Spec->catdir( ($PACKAGE_DIR, "config") );
 $PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
-$LIBS_DIR = ($PLATFORM eq "win32") ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
+$LIBS_DIR = ($PLATFORM =~ /^win32/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
 
 # platform-specific variables
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 	$SHARED_LIB_SUFFIX = "dll";
 	$PLUGIN_LIB_SUFFIX = "dll";
 	$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || File::Spec->rootdir();
@@ -78,7 +78,7 @@ if ($PLATFORM eq "win32") {
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX . ".1.{35,36,37}.*");
 }
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-common." . $SHARED_LIB_SUFFIX);
 	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-net." . $SHARED_LIB_SUFFIX);
 	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-platform." . $SHARED_LIB_SUFFIX);
@@ -116,7 +116,7 @@ mkdir($UI_DIR) unless -d $UI_DIR;
 
 # copy our third party library files into "libs"
 print "Copying system library files..\n";
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 	copy($ICONV_LIB, $LIBS_DIR);
 	copy($APR_ICONV_LIB, $LIBS_DIR);
 	copy($LIBXML_LIB, $LIBS_DIR);
@@ -158,7 +158,7 @@ foreach (bsd_glob($NET_PLUGINS_GLOB)) {
 	copy($_, $PLUGINS_DIR);
 }
 
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 	foreach (@PLATFORM_PLUGINS) {
 		copy($_, $PLUGINS_DIR);
 	}
@@ -181,7 +181,7 @@ copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
 # copy other misc files
 copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
 copy("ChangeLog", File::Spec->catfile($PACKAGE_DIR, "HISTORY.txt"));
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "README.bin.msvc"),
 		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
 } else {
@@ -194,15 +194,18 @@ copy($SERVER_EXE, $PACKAGE_DIR);
 
 # platform-specific finishing touches
 print "Creating binary tarballs..\n";
-if ($PLATFORM eq "win32") {
+if ($PLATFORM =~ /^win32/i) {
 
 	# copy startup script
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
-		
+
 	# create zip package
-	chdir $BIN_DIR;
-	`zip -r9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+	use Archive::Zip;
+	$zip = new Archive::Zip;
+	$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
+	$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
+	undef $zip;
 
 } else {
 
