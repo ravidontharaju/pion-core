@@ -16,8 +16,8 @@ PionPlatformUnitTests_SOURCES = \
 	VocabularyConfigTests.cpp VocabularyTests.cpp ProtocolTests.cpp \
 	LogInputReactorTests.cpp TransformReactorTests.cpp \
 	QueryServiceTests.cpp
-PionPlatformUnitTests_LDADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @BOOST_TEST_LIB@ @PION_PLATFORM_LIBS@
-PionPlatformUnitTests_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
+PionPlatformUnitTests_LDADD = ../../sqlite/libpion-sqlite.la ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @BOOST_TEST_LIB@ @PION_PLATFORM_LIBS@
+PionPlatformUnitTests_DEPENDENCIES = ../../sqlite/libpion-sqlite.la ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
 PionPerformanceTests_SOURCES = PionPerformanceTests.cpp
 PionPerformanceTests_LDADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @BOOST_TEST_LIB@ @PION_PLATFORM_LIBS@
