@@ -63,4 +63,4 @@ AC_OUTPUT(pion-platform.pc Makefile
 	platform/src/Makefile platform/server/Makefile platform/tests/Makefile
 	platform/codecs/Makefile platform/protocols/Makefile
 	platform/reactors/Makefile platform/databases/Makefile
-	platform/services/Makefile)
+	platform/services/Makefile sqlite/Makefile)

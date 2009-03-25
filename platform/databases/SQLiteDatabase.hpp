@@ -23,7 +23,7 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Database.hpp>
-#include <sqlite3.h>
+#include "../../sqlite/pion-sqlite.h"
 
 
 namespace pion {		// begin namespace pion

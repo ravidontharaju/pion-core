@@ -39,7 +39,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$PLUGIN_LIB_SUFFIX = "dll";
 	$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || File::Spec->rootdir();
 	$LOG4CXX_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "log4cxx." . $SHARED_LIB_SUFFIX);
-	$SQLITE_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "SQLite-3.5.8", "lib"), "sqlite3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-0.4.0", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
 	$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
 	$APR_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libapr-1." . $SHARED_LIB_SUFFIX);
@@ -59,7 +58,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
 	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
 	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx.10." . $SHARED_LIB_SUFFIX);
-	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
 	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
 	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
@@ -71,7 +69,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
 	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid." . $SHARED_LIB_SUFFIX . ".16");
 	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX . ".10");
-	$SQLITE_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libsqlite3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl." . $SHARED_LIB_SUFFIX . ".0");
 	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX . ".0");
 	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX . ".0");
@@ -83,6 +80,7 @@ if ($PLATFORM =~ /^win32/i) {
 	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-net." . $SHARED_LIB_SUFFIX);
 	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-platform." . $SHARED_LIB_SUFFIX);
 	$PION_SERVER_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-server." . $SHARED_LIB_SUFFIX);
+	$PION_SQLITE_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-sqlite." . $SHARED_LIB_SUFFIX);
 	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 	@PLATFORM_PLUGINS = bsd_glob("platform/" . "{codecs,protocols,databases,reactors,services}" . "/.libs/*." . $PLUGIN_LIB_SUFFIX);
 } else {
@@ -90,6 +88,7 @@ if ($PLATFORM =~ /^win32/i) {
 	$PION_NET_GLOB = File::Spec->catfile( ("net", "src", ".libs"), "libpion-net-*." . $SHARED_LIB_SUFFIX);
 	$PION_PLATFORM_GLOB = File::Spec->catfile( ("platform", "src", ".libs"), "libpion-platform-*." . $SHARED_LIB_SUFFIX);
 	$PION_SERVER_GLOB = File::Spec->catfile( ("platform", "server", ".libs"), "libpion-server-*." . $SHARED_LIB_SUFFIX);
+	$PION_SQLITE_GLOB = File::Spec->catfile( ("sqlite", ".libs"), "libpion-sqlite-*." . $SHARED_LIB_SUFFIX);
 	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 	$PLATFORM_PLUGINS_GLOB = File::Spec->catfile( ("platform", "{codecs,protocols,databases,reactors,services}", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 }
@@ -130,7 +129,6 @@ if ($PLATFORM =~ /^win32/i) {
 copy($APR_LIB, $LIBS_DIR);
 copy($APR_UTIL_LIB, $LIBS_DIR);
 copy($LOG4CXX_LIB, $LIBS_DIR);
-copy($SQLITE_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
 foreach (@BOOST_LIBS) {
 	copy($_, $LIBS_DIR);
@@ -149,6 +147,9 @@ foreach (bsd_glob($PION_PLATFORM_GLOB)) {
 	copy($_, $LIBS_DIR);
 }
 foreach (bsd_glob($PION_SERVER_GLOB)) {
+	copy($_, $LIBS_DIR);
+}
+foreach (bsd_glob($PION_SQLITE_GLOB)) {
 	copy($_, $LIBS_DIR);
 }
 

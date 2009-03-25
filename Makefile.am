@@ -4,7 +4,7 @@
 
 ACLOCAL_AMFLAGS = -I common/build
 
-SUBDIRS = @PION_COMMON_MAKEDIRS@ @PION_NET_MAKEDIRS@ platform
+SUBDIRS = sqlite @PION_COMMON_MAKEDIRS@ @PION_NET_MAKEDIRS@ platform
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pion-platform.pc
