@@ -25,6 +25,9 @@
 #include <pion/platform/Database.hpp>
 #include "../../sqlite/pion-sqlite.h"
 
+#if SQLITE_VERSION_NUMBER != 3006011
+#error Incorrect version of Pion-SQLite
+#endif
 
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
