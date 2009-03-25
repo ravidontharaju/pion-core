@@ -31,11 +31,6 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
 			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="sqlite3.lib"
-				ModuleDefinitionFile=""
-			/>
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
@@ -53,11 +48,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="PION_FULL"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="sqlite3.lib"
-				ModuleDefinitionFile=""
 			/>
 		</Configuration>
 	</Configurations>
