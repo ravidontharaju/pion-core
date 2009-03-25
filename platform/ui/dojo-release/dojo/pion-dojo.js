@@ -23412,7 +23412,7 @@ if(!file_protocol){
 var _1654=0;
 var _1655=0;
 setInterval(function(){
-if(!_163d.checked){
+if(!_163d.checked&&pion.current_page=="Reactors"){
 dojo.xhrGet({url:"/config/reactors/stats",preventCache:true,handleAs:"xml",timeout:1000,load:function(_1656,_1657){
 var node=_1656.getElementsByTagName("TotalOps")[0];
 var _1659=parseInt(dojo.isIE?node.xml.match(/.*>(\d*)<.*/)[1]:node.textContent);
@@ -25598,6 +25598,7 @@ firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexO
 var _1878=function(){
 pion.terms.init();
 pion.reactors.init();
+pion.current_page="Reactors";
 };
 dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1879,_187a){
 dojo.cookie("logged_in","true",{expires:1});

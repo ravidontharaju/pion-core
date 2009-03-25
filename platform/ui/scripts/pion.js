@@ -179,6 +179,7 @@ var init = function() {
 	var login_success_callback = function() {
 		pion.terms.init();
 		pion.reactors.init();
+		pion.current_page = 'Reactors';
 	}
 	dojo.xhrGet({
 		url: '/config',
