@@ -246,6 +246,12 @@ void PlatformConfig::openConfigFile(void)
 	m_vocab_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_vocab_mgr.openConfigFile();
 	
+	// get the DataDirectory config parameter
+	if (! ConfigManager::getConfigOption(DATA_DIRECTORY_ELEMENT_NAME, m_data_directory,
+										 m_config_node_ptr->children))
+		throw MissingDataDirectoryException(getConfigFile());
+	m_data_directory = ConfigManager::resolveRelativePath(m_data_directory);
+
 	// get the CodecFactory config file
 	if (! ConfigManager::getConfigOption(CODEC_CONFIG_ELEMENT_NAME, config_file,
 										 m_config_node_ptr->children))
@@ -253,6 +259,7 @@ void PlatformConfig::openConfigFile(void)
 	
 	// open the CodecFactory configuration
 	m_codec_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_codec_factory.setDataDirectory(m_data_directory);
 	m_codec_factory.openConfigFile();
 	
 	// get the ProtocolFactory config file
@@ -262,14 +269,8 @@ void PlatformConfig::openConfigFile(void)
 	
 	// open the ProtocolFactory configuration
 	m_protocol_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_protocol_factory.setDataDirectory(m_data_directory);
 	m_protocol_factory.openConfigFile();
-
-	// get the DataDirectory config parameter
-	if (! ConfigManager::getConfigOption(DATA_DIRECTORY_ELEMENT_NAME, m_data_directory,
-										 m_config_node_ptr->children))
-		throw MissingDataDirectoryException(getConfigFile());
-	m_data_directory = ConfigManager::resolveRelativePath(m_data_directory);
-	m_reaction_engine.setDataDirectory(m_data_directory);
 
 	// make sure that the directory exists
 	if (! boost::filesystem::exists(m_data_directory) )
@@ -284,6 +285,7 @@ void PlatformConfig::openConfigFile(void)
 	
 	// open the DatabaseManager configuration
 	m_database_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_database_mgr.setDataDirectory(m_data_directory);
 	m_database_mgr.openConfigFile();
 	
 	// get the ReactionEngine config file
@@ -329,6 +331,7 @@ void PlatformConfig::openConfigFile(void)
 	
 	// open the ReactionEngine configuration
 	m_reaction_engine.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_reaction_engine.setDataDirectory(m_data_directory);
 	m_reaction_engine.openConfigFile();
 	
 	// get the ServiceManager config file
@@ -338,6 +341,7 @@ void PlatformConfig::openConfigFile(void)
 	
 	// open the ServiceManager configuration
 	m_service_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_service_mgr.setDataDirectory(m_data_directory);
 	m_service_mgr.openConfigFile();
 
 	// get the UserManager config file
@@ -347,6 +351,7 @@ void PlatformConfig::openConfigFile(void)
 
 	// open the UserManager configuration
 	m_user_mgr_ptr->setConfigFile(ConfigManager::resolveRelativePath(config_file));
+	m_user_mgr_ptr->setDataDirectory(m_data_directory);
 	m_user_mgr_ptr->openConfigFile();
 
 	PION_LOG_INFO(m_logger, "Loaded platform configuration file: " << m_config_file);

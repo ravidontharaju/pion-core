@@ -160,7 +160,10 @@ public:
 	virtual void openConfigFile(void);
 	
 	/// sets the name of the config file to use
-	inline void setConfigFile(const std::string& config_file) { m_config_file = config_file; }
+	inline void setConfigFile(const std::string& config_file) {
+		m_config_file = config_file;
+		resetDataDirectory();
+	}
 	
 	/// returns the name of the config file being used
 	inline const std::string& getConfigFile(void) const { return m_config_file; }
@@ -174,6 +177,17 @@ public:
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
 	
+	/// sets the directory in which data files are stored
+	inline void setDataDirectory(const std::string& dir) { m_data_directory = dir; }
+
+	/// returns the directory in which data files are stored
+	inline const std::string& getDataDirectory(void) const { return m_data_directory; }
+
+	/// resets the data file directory to the same path as the config file
+	inline void resetDataDirectory(void) {
+		m_data_directory = resolveRelativePath(m_config_file, "./");
+	}
+
 	/// removes the config file (after backing it up)
 	void removeConfigFile(void);
 	
@@ -437,7 +451,9 @@ protected:
 		: m_logger(PION_GET_LOGGER("pion.platform.ConfigManager")),
 		m_config_file(default_config_file),
 		m_config_doc_ptr(NULL), m_config_node_ptr(NULL)
-	{}
+	{
+		resetDataDirectory();
+	}
 	
 	/// closes the config file	
 	void closeConfigFile(void);
@@ -552,6 +568,9 @@ protected:
 	/// name of the XML config file being used
 	std::string						m_config_file;
 	
+	/// directory in which data files are stored (from platform configuration)
+	std::string						m_data_directory;
+
 	/// pointer to the root of the XML document tree (if libxml support is enabled)
 	xmlDocPtr 						m_config_doc_ptr;
 	

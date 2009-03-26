@@ -47,8 +47,8 @@ void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_database_name, config_ptr))
 		throw EmptyFilenameException(getId());
 
-	// resolve paths relative to the DatabaseManager's config file location
-	m_database_name = getDatabaseManager().resolveRelativePath(m_database_name);
+	// resolve paths relative to the platform DataDirectory
+	m_database_name = ConfigManager::resolveRelativePath(getDatabaseManager().getDataDirectory(), m_database_name);
 }
 
 DatabasePtr SQLiteDatabase::clone(void) const

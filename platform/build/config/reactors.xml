@@ -15,12 +15,12 @@
     <Workspace>Web Log Processing</Workspace>
     <X>250</X>
     <Y>300</Y>
-    <Database>e75d88f0-e7df-11dc-a76c-0016cb926e68</Database>
-    <Table>clickstream</Table>
+    <Database>aace93fc-19c0-11de-9293-001cc02bd66b</Database>
+    <Table>REQUESTS</Table>
     <Field term="urn:vocab:clickstream#date">date</Field>
     <Field term="urn:vocab:clickstream#time">time</Field>
     <Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
-    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field> 
+    <Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
     <Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
     <Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
     <Field term="urn:vocab:clickstream#cs-send-time">cs_send_time</Field>
@@ -33,6 +33,9 @@
     <Field term="urn:vocab:clickstream#host">host</Field>
     <Field term="urn:vocab:clickstream#referer">referrer</Field>
     <Field term="urn:vocab:clickstream#useragent">user_agent</Field>
+    <Field term="urn:vocab:clickstream#cookie">cookie</Field>
+    <Field term="urn:vocab:clickstream#set-cookie">set_cookie</Field>
+    <Field term="urn:vocab:clickstream#session-group">session_group</Field>
     <Field term="urn:vocab:clickstream#session-id">session_id</Field>
     <Field term="urn:vocab:clickstream#page-number">page_num</Field>
     <Field term="urn:vocab:clickstream#request-number">request_num</Field>
