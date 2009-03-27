@@ -1,3 +1,18 @@
+Version 1.2.4 (2009-03-27)
+==========================
+* Build updated to Boost 1.36 & 1.37 (314, 270)
+* Removed dependencies on sqlite since it is now embedded into platform (475)
+* HTTPParser dropping requests when TCP connection contained 304 responses (481)
+* Updated PionLockedQueue so that it now always keeps track of the size (469)
+
+
+Version 1.1.4 (2009-02-16)
+==========================
+* Build updated to Boost 1.36 & 1.37 (314, 270)
+* Updates to support and use the latest Boost.Lockfree library (408, 409)
+* Unit test cleanup and refactoring (416)
+
+
 Version 1.0.10 (2009-01-22)
 ===========================
 * Added support and unit tests for maximum HTTP payload content sizes (399)
