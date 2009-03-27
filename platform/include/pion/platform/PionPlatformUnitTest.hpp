@@ -56,37 +56,30 @@ const std::string PLATFORM_TEMPLATE_FILE(CONFIG_FILE_DIR + "platform.tmpl");
 
 struct PionPlatformUnitTest {
 
-	template <typename StatisticType>
-	static void checkStatisticIsGE(boost::function0<StatisticType> get_stat_f,
-		const StatisticType expected_value, const boost::uint32_t wait_seconds)
-	{
-		// wait up to one second for the number to exceed the expected value
-		const int num_checks_allowed = 10 * wait_seconds;
-		for (int i = 0; i < num_checks_allowed; ++i) {
-			if (get_stat_f() >= expected_value) break;
-			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
-		}
-		BOOST_REQUIRE_GE( get_stat_f(), expected_value );
-	}
-
 	static void checkReactorEventsIn(pion::platform::ReactionEngine& reaction_engine,
 		const std::string& reactor_id, const boost::uint64_t expected_value,
 		const boost::uint32_t wait_seconds = 1)
 	{
-		boost::function0<boost::uint64_t> get_stat_f(
-			boost::bind(&pion::platform::ReactionEngine::getEventsIn, 
-			&reaction_engine, boost::cref(reactor_id)) );
-		checkStatisticIsGE(get_stat_f, expected_value, wait_seconds);
+		// wait up to one second for the number to exceed the expected value
+		const int num_checks_allowed = 10 * wait_seconds;
+		for (int i = 0; i < num_checks_allowed; ++i) {
+			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
+			if (reaction_engine.getEventsIn(reactor_id) >= expected_value) break;
+		}
+		BOOST_REQUIRE_GE( reaction_engine.getEventsIn(reactor_id), expected_value );
 	}
 
 	static void checkReactorEventsOut(pion::platform::ReactionEngine& reaction_engine,
 		const std::string& reactor_id, const boost::uint64_t expected_value,
 		const boost::uint32_t wait_seconds = 1)
 	{
-		boost::function0<boost::uint64_t> get_stat_f(
-			boost::bind(&pion::platform::ReactionEngine::getEventsOut, 
-			&reaction_engine, boost::cref(reactor_id)) );
-		checkStatisticIsGE(get_stat_f, expected_value, wait_seconds);
+		// wait up to one second for the number to exceed the expected value
+		const int num_checks_allowed = 10 * wait_seconds;
+		for (int i = 0; i < num_checks_allowed; ++i) {
+			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
+			if (reaction_engine.getEventsOut(reactor_id) >= expected_value) break;
+		}
+		BOOST_REQUIRE_GE( reaction_engine.getEventsOut(reactor_id), expected_value );
 	}
 	
 	static boost::uint64_t feedFileToReactor(pion::platform::ReactionEngine& reaction_engine,

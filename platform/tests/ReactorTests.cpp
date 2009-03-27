@@ -200,8 +200,10 @@ public:
 
 		m_request_content_codec = m_codec_factory.getCodec(m_rss_request_id);
 		BOOST_CHECK(m_request_content_codec);
+
+		m_reaction_engine.start();
 	}
-	virtual ~ReactionEngineTestInterface_F() {}
+	virtual ~ReactionEngineTestInterface_F() { m_reaction_engine.stop(); }
 
 	std::string getReactorConfigOptionFromConfigFile(const std::string& reactor_id, const std::string& option_name) {
 		// Parse the entire config file.
@@ -741,8 +743,9 @@ public:
 		m_codec_factory.openConfigFile();
 
 		m_reaction_engine.setConfigFile(m_config_filename);
+		m_reaction_engine.start();
 	}
-	virtual ~ReactionEngineReadyForReactorConfigFile_F() {}
+	virtual ~ReactionEngineReadyForReactorConfigFile_F() { m_reaction_engine.stop(); }
 
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
