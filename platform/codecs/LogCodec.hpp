@@ -504,13 +504,15 @@ inline void LogCodec::writeELFHeaders(std::ostream& out) const
 inline LogCodec::int_type LogCodec::consumeVoidsAndComments(streambuf_type *buf_ptr)
 {
 	int_type c = buf_ptr->sgetc();
+	char * const read_buf = m_read_buf.get();
+	char * read_ptr;
+
 	while (!traits_type::eq_int_type(c, traits_type::eof())) {
 		if (m_field_split.find(c) != std::string::npos || m_event_split.find(c) != std::string::npos) {
 			c = buf_ptr->snextc();
 		} else if (m_comment_chars.find(c) != std::string::npos) {
 			// ignore comment line (sorta...)
-			char * const read_buf = m_read_buf.get();
-			char * read_ptr = read_buf;
+			read_ptr = read_buf;
 			do {
 				// check for end of line
 				if (m_event_split.find(c) != std::string::npos)

@@ -141,8 +141,8 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 	char delim_start;
 	char delim_end;
 	char escape_char;
-	char * read_ptr;
 	char * const read_buf = m_read_buf.get();
+	char * read_ptr;
 
 	for (i = m_format.begin(); !traits_type::eq_int_type(c, traits_type::eof()) &&
 		   m_event_split.find(c) == std::string::npos && i != m_format.end(); ++i)
@@ -162,7 +162,7 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 
 		// parse the field contents
 		read_ptr = read_buf;
-		while (!traits_type::eq_int_type(c, traits_type::eof())) {
+		do {
 			if ((delim_end != '\0' && c == delim_end) && read_ptr > read_buf && read_ptr[-1] == escape_char)
 				--read_ptr;	// escaped end-delimiter...overwrite the escape-character
 			else if ((delim_end != '\0' && c == delim_end) ||
@@ -170,17 +170,15 @@ bool LogCodec::read(std::istream& input_stream, Event& e)
 											m_event_split.find(c) != std::string::npos)))
 			{
 				// we've reached the end of the field contents
-				*(read_ptr++) = '\0';
 				if (delim_end != '\0' && c == delim_end)
 					c = buf_ptr->snextc();	// skip over end-delimiter
 				break;
 			}
 			if (read_ptr < m_read_end)
 				*(read_ptr++) = c;
-			else if (read_ptr == m_read_end)
-				*(read_ptr++) = '\0';
 			c = buf_ptr->snextc();
-		}
+		} while (!traits_type::eq_int_type(c, traits_type::eof()));
+		*read_ptr = '\0';
 
 		// only parse-and-set values that are not null/empty
 		if (read_ptr != read_buf && *read_buf != '\0' && read_buf != (*i)->log_empty_val)
