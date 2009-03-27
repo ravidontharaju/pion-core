@@ -366,8 +366,9 @@ void ScriptReactor::openPipe(void)
 		arg_ptr[ m_args.size() ] = NULL;
 
 		// execute command (ignore return since we're in a new process anyway)
-		// note: execvp is wrapper for execve() that also searches the paths
+		// note: execvp() is wrapper for execve() that also searches the paths
 		::execvp(m_args[0].c_str(), arg_ptr.get());
+		_exit(127);
 	} else {
 		// inside parent process
 		// close ends of pipes used by child
