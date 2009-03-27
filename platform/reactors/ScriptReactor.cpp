@@ -188,6 +188,7 @@ void ScriptReactor::process(const EventPtr& e)
 	m_input_codec_ptr->write(*m_input_stream_ptr, *e);
 	if (! *m_input_stream_ptr)
 		throw WriteToPipeException(getId());
+	m_input_stream_ptr->flush();
 
 	// unlock mutex after writing to pipe
 	write_lock.unlock();
@@ -305,7 +306,7 @@ void ScriptReactor::openPipe(void)
 		NULL,			// process security attributes
 		NULL,			// primary thread security attributes
 		TRUE,			// handles are inherited
-		0,				// creation flags
+		DETACHED_PROCESS,	// creation flags
 		NULL,			// use parent's environment
 		NULL,			// use parent's current directory
 		&start_info,	// STARTUPINFO pointer
