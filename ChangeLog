@@ -1,3 +1,25 @@
+Version 1.2.4 (2009-03-27)
+==========================
+
+* New FissionReactor for splitting a single event into many (442, 457)
+* Added Atom & RSS Vocabularies, Codecs and examples (458, 459, 476, 487, 491)
+* LogOutputReactor now ignores events when their type does not match Codec (485)
+* HTTPProtocol now supports gzip/deflate decoding of payload content (465)
+* TransformReactor supports CSV import/export for lookup key-value pairs (453)
+* Updated ScriptReactor to work much better on Windows (440)
+* Added input and output feeds to the Reactor Connection grids (451)
+* Made XMLCodec more flexible & configurable for both input and ouput (455)
+* Vocabulary terms are now sorted in the TermSelectors & can filter types (447)
+* Fixed display of server errors in UI to escape HTML characters (479)
+* Fixed spurious events in/out reactor counters (484)
+* Added clickstream#content-type vocabulary term & support in HTTPProtocol (488)
+* Added DataDirectory to platform.xml, now default location for databases (519)
+* Improved OpenSSL initialization on Windows platforms (480)
+* Removed dependencies on sqlite since it is now embedded into platform (475)
+* HTTPParser dropping requests when TCP connection contained 304 responses (481)
+* Updated PionLockedQueue so that it now always keeps track of the size (469)
+
+
 Version 1.1.4 (2009-02-16)
 ==========================
 
