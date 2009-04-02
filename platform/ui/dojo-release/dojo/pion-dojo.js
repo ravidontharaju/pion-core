@@ -21701,7 +21701,7 @@ this.inherited("postCreate",arguments);
 this.special_config_elements.push("Events");
 this.special_config_elements.push("Fields");
 },_initFieldMappingGridLayout:function(){
-this.field_mapping_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"FieldName",name:"Field Name",width:15,formatter:pion.xmlCellFormatter},{field:"Term",name:"Term",width:15,type:pion.widgets.TermTextCell},{field:"StartChar",name:"Start Char",styles:"text-align: center",width:3},{field:"EndChar",name:"End Char",styles:"text-align: center",width:3},{field:"StartEndOptional",name:"Start/End Optional",width:4,type:dojox.grid.cells.Bool},{field:"EscapeChar",name:"Escape Char",styles:"text-align: center",width:3},{field:"EmptyString",name:"Empty String",width:3,formatter:pion.xmlCellFormatter},{field:"Order",name:"Order",width:"auto",widgetClass:"dijit.form.NumberSpinner"},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
+this.field_mapping_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"FieldName",name:"Field Name",width:15,formatter:pion.xmlCellFormatter},{field:"Term",name:"Term",width:15,type:pion.widgets.TermTextCell},{field:"StartChar",name:"Start Char",styles:"text-align: center",width:3},{field:"EndChar",name:"End Char",styles:"text-align: center",width:3},{field:"StartEndOptional",name:"Start/End Optional",width:4,type:dojox.grid.cells.Bool},{field:"URLEncode",name:"URL Encode",width:4,type:dojox.grid.cells.Bool},{field:"EscapeChar",name:"Escape Char",styles:"text-align: center",width:3},{field:"EmptyString",name:"Empty String",width:3,formatter:pion.xmlCellFormatter},{field:"Order",name:"Order",width:"auto",widgetClass:"dijit.form.NumberSpinner"},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
 },getHeight:function(){
 return 610;
 },_addCustomConfigValues:function(_14d9,item){
@@ -21767,7 +21767,7 @@ var store=pion.codecs.config_store;
 _this.order_map=[];
 var order=1;
 dojo.forEach(store.getValues(_14e1,"Field"),function(_14e5){
-var _14e6={ID:_this.field_mapping_store.next_id++,FieldName:store.getValue(_14e5,"text()"),Term:store.getValue(_14e5,"@term"),StartChar:store.getValue(_14e5,"@start"),EndChar:store.getValue(_14e5,"@end"),StartEndOptional:store.getValue(_14e5,"@optional"),EscapeChar:store.getValue(_14e5,"@escape"),EmptyString:store.getValue(_14e5,"@empty"),Order:order};
+var _14e6={ID:_this.field_mapping_store.next_id++,FieldName:store.getValue(_14e5,"text()"),Term:store.getValue(_14e5,"@term"),StartChar:store.getValue(_14e5,"@start"),EndChar:store.getValue(_14e5,"@end"),StartEndOptional:store.getValue(_14e5,"@optional"),URLEncode:store.getValue(_14e5,"@urlencode"),EscapeChar:store.getValue(_14e5,"@escape"),EmptyString:store.getValue(_14e5,"@empty"),Order:order};
 _this.field_mapping_store.newItem(_14e6);
 _this.order_map.push(order++);
 });
@@ -21823,6 +21823,9 @@ _14f2+=" end=\""+pion.escapeXml(store.getValue(item,"EndChar"))+"\"";
 }
 if(store.getValue(item,"StartEndOptional")){
 _14f2+=" optional=\"true\"";
+}
+if(store.getValue(item,"URLEncode")){
+_14f2+=" urlencode=\"true\"";
 }
 if(store.getValue(item,"EscapeChar")){
 _14f2+=" escape=\""+pion.escapeXml(store.getValue(item,"EscapeChar"))+"\"";

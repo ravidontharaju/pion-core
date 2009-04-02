@@ -36,6 +36,8 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					{ field: 'EndChar', name: 'End Char', styles: 'text-align: center', width: 3 },
 					{ field: 'StartEndOptional', name: 'Start/End Optional', width: 4, 
 						type: dojox.grid.cells.Bool },
+					{ field: 'URLEncode', name: 'URL Encode', width: 4, 
+						type: dojox.grid.cells.Bool },
 					// TODO: restore validation.
 					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center', width: 3 },
 					{ field: 'EmptyString', name: 'Empty String', width: 3,
@@ -128,6 +130,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					StartChar: store.getValue(field_mapping, '@start'),
 					EndChar: store.getValue(field_mapping, '@end'),
 					StartEndOptional: store.getValue(field_mapping, '@optional'),
+					URLEncode: store.getValue(field_mapping, '@urlencode'),
 					EscapeChar: store.getValue(field_mapping, '@escape'),
 					EmptyString: store.getValue(field_mapping, '@empty'),
 					Order: order
@@ -193,6 +196,9 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				}
 				if (store.getValue(item, 'StartEndOptional')) {
 					put_data += ' optional="true"';
+				}
+				if (store.getValue(item, 'URLEncode')) {
+					put_data += ' urlencode="true"';
 				}
 				if (store.getValue(item, 'EscapeChar')) {
 					put_data += ' escape="' + pion.escapeXml(store.getValue(item, 'EscapeChar')) + '"';
