@@ -108,10 +108,10 @@
     <Field term="urn:vocab:clickstream#session-length">x-session-length</Field>
   </Codec>
   <Codec id="264bb8ce-a5ab-4f57-bec7-084082e0ab27">
-    <Name>WebTrends Log</Name>
-    <Comment>Codec for parsing WebTrends</Comment>
     <Plugin>LogCodec</Plugin>
+    <Name>WebTrends Log</Name>
     <EventType>urn:vocab:clickstream#http-event</EventType>
+    <Comment>Codec for parsing WebTrends</Comment>
     <Flush>false</Flush>
     <Headers>false</Headers>
     <Events comment="#"/>
@@ -133,9 +133,9 @@
     <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
     <Field term="urn:vocab:clickstream#s-port">s-port</Field>
     <Field term="urn:vocab:clickstream#cs-version">cs-version</Field>
-    <Field term="urn:vocab:clickstream#host">cs-Host</Field>
-    <Field term="urn:vocab:clickstream#useragent">cs(User-Agent)</Field>
-    <Field term="urn:vocab:clickstream#cookie">cs(Cookie)</Field>
+    <Field term="urn:vocab:clickstream#host" urlencode="true">cs-host</Field>
+    <Field term="urn:vocab:clickstream#useragent" urlencode="true">cs(User-Agent)</Field>
+    <Field term="urn:vocab:clickstream#cookie" urlencode="true">cs(Cookie)</Field>
     <Field term="urn:vocab:clickstream#referer">cs(Referer)</Field>
   </Codec>
   <Codec id="4e97184e-0e66-11de-a6a9-0019d185f6fc">
@@ -270,7 +270,7 @@
     <Name>Atom Feed Extraction Codec</Name>
     <EventType>urn:vocab:atom#feed-event</EventType>
     <EventTag>feed</EventTag>
-    <EventContainerTag></EventContainerTag>
+    <EventContainerTag/>
     <Comment>Extracts Atom feeds from HTTP response content</Comment>
     <Field term="urn:vocab:atom#feed-id">id</Field>
     <Field term="urn:vocab:atom#feed-link">link</Field>

@@ -29,6 +29,7 @@
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
 #include <pion/PionDateTime.hpp>
+#include <pion/net/HTTPTypes.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -156,16 +157,18 @@ private:
 	struct LogField {
 		/// constructs a new LogField structure
 		LogField(const std::string& field, const pion::platform::Vocabulary::Term& term, char delim_start,
-				 char delim_end, bool opt_delims, char escape_char, const std::string& empty_val)
+				 char delim_end, bool opt_delims, bool urlencode, char escape_char, const std::string& empty_val)
 			: log_field(field), log_term(term), log_delim_start(delim_start), log_delim_end(delim_end),
-			  log_opt_delims(opt_delims), log_escape_char(escape_char), log_empty_val(empty_val)
+			  log_opt_delims(opt_delims), log_urlencode(urlencode), log_escape_char(escape_char),
+			  log_empty_val(empty_val)
 		{}
 
 		/// copy constructor
 		LogField(const LogField& f)
 			: log_field(f.log_field), log_term(f.log_term), log_delim_start(f.log_delim_start),
 			  log_delim_end(f.log_delim_end), log_opt_delims(f.log_opt_delims),
-			  log_escape_char(f.log_escape_char), log_empty_val(f.log_empty_val)
+			  log_urlencode(f.log_urlencode), log_escape_char(f.log_escape_char),
+			  log_empty_val(f.log_empty_val)
 		{}
 
 		/// assignment operator
@@ -175,6 +178,7 @@ private:
 			log_delim_start = f.log_delim_start;
 			log_delim_end = f.log_delim_end;
 			log_opt_delims = f.log_opt_delims;
+			log_urlencode = f.log_urlencode;
 			log_escape_char = f.log_escape_char;
 			log_empty_val = f.log_empty_val;
 			return *this;
@@ -217,6 +221,8 @@ private:
 		char								log_delim_end;
 		/// whether start/end delimiters are optional (default: false)
 		bool								log_opt_delims;
+		/// if true that the log field is url-encoded
+		bool								log_urlencode;
 		/// a character that escapes a delimiter within a field value (default: "\")
 		char								log_escape_char;
 		/// a string that represents an empty field value (default: "-" if no delimiters)
@@ -252,12 +258,13 @@ private:
 	 * @param delim_start character used to delimit the start of the data field value
 	 * @param delim_end character used to delimit the end of the data field value
 	 * @param opt_delims flag to specify if start/end delimiters are optional
+	 * @param urlencode flag to specify if the field content is urlencoded
 	 * @param escape_char character used to escape a delimiter within a field value
 	 * @param empty_val string used to represent an empty data field value
 	 */
 	inline void mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
-							   char delim_start, char delim_end, bool opt_delims, char escape_char,
-							   const std::string& empty_val);
+							   char delim_start, char delim_end, bool opt_delims,
+							   bool urlencode, char escape_char, const std::string& empty_val);
 
 	/**
 	 * translate C-style escape sequences in-place
@@ -314,6 +321,9 @@ private:
 
 	/// name of the delimiters-optional attribute for Pion XML config files
 	static const std::string		OPTIONAL_ATTRIBUTE_NAME;
+
+	/// name of the urlencode attribute for Pion XML config files
+	static const std::string		URLENCODE_ATTRIBUTE_NAME;
 
 	/// name of the escape character attribute for Pion XML config files
 	static const std::string		ESCAPE_ATTRIBUTE_NAME;
@@ -403,8 +413,8 @@ private:
 // inline member functions for LogCodec
 
 inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
-									 char delim_start, char delim_end, bool opt_delims, char escape_char,
-									 const std::string& empty_val)
+									 char delim_start, char delim_end, bool opt_delims,
+									 bool urlencode, char escape_char, const std::string& empty_val)
 {
 	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
 		if (i->second->log_term.term_ref == term.term_ref)
@@ -415,7 +425,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platf
 		throw PionException("Duplicate Field Name");
 
 	// prepare a new Logfield object
-	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, opt_delims, escape_char, empty_val));
+	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, opt_delims, urlencode, escape_char, empty_val));
 	switch (term.term_type) {
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -437,7 +447,7 @@ inline char * LogCodec::cstyle(char *cstring)
 	size_t len = strlen(cstring);
 	int num, nlen;
 
-	while (ptr = strchr(ptr, '\\')) {
+	while ( (ptr = strchr(ptr, '\\')) ) {
 		nlen = 1;
 		switch (ptr[1]) {
 		case 'a': *ptr = '\a'; break;
@@ -577,21 +587,42 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
-			if (ss.size() > 0)
-				oss << ss.get();
+			if (ss.size() > 0) {
+				if (log_urlencode) {
+					std::string temp_str(ss.get());
+					oss << pion::net::HTTPTypes::url_encode(temp_str);
+				} else {
+					oss.write(ss.get(), ss.size());
+				}
+			}
 			break;
 		}
 		case pion::platform::Vocabulary::TYPE_CHAR:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
-			if (ss.size() > 0)
-				oss.write(ss.get(), ss.size() < log_term.term_size ? ss.size() : log_term.term_size);
+			if (ss.size() > 0) {
+				if (log_urlencode) {
+					std::string temp_str(ss.get());
+					temp_str = pion::net::HTTPTypes::url_encode(temp_str);
+					if (temp_str.size() > log_term.term_size)
+						temp_str.resize(log_term.term_size);
+					oss << temp_str;
+				} else {
+					oss.write(ss.get(), ss.size() < log_term.term_size ? ss.size() : log_term.term_size);
+				}
+			}
 			break;
 		}
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
-			log_time_facet.write(oss, boost::get<const PionDateTime&>(value));
+			if (log_urlencode) {
+				std::string temp_str;
+				log_time_facet.toString(temp_str, boost::get<const PionDateTime&>(value));
+				oss << pion::net::HTTPTypes::url_encode(temp_str);
+			} else {
+				log_time_facet.write(oss, boost::get<const PionDateTime&>(value));
+			}
 			break;
 		default:
 			// ignore unsupported field...
@@ -647,20 +678,36 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-			e.setString(log_term.term_ref, buf);
+			if (log_urlencode) {
+				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				e.setString(log_term.term_ref, temp_str);
+			} else {
+				e.setString(log_term.term_ref, buf);
+			}
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
-			if (strlen(buf) > log_term.term_size)
+			if (log_urlencode) {
+				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				if (temp_str.size() > log_term.term_size)
+					temp_str.resize(log_term.term_size);
+				e.setString(log_term.term_ref, temp_str);
+			} else if (strlen(buf) > log_term.term_size) {
 				e.setString(log_term.term_ref, std::string(buf, log_term.term_size));
-			else
+			} else {
 				e.setString(log_term.term_ref, buf);
+			}
 			break;
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
 		{
 			PionDateTime dt;
-			log_time_facet.fromString(buf, dt);
+			if (log_urlencode) {
+				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				log_time_facet.fromString(temp_str, dt);
+			} else {
+				log_time_facet.fromString(buf, dt);
+			}
 			e.setDateTime(log_term.term_ref, dt);
 			break;
 		}
