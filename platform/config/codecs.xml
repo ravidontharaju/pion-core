@@ -113,7 +113,7 @@
     <EventType>urn:vocab:clickstream#http-event</EventType>
     <Comment>Codec for parsing WebTrends</Comment>
     <Flush>false</Flush>
-    <Headers>false</Headers>
+    <Headers>true</Headers>
     <Events comment="#"/>
     <Fields split=" " consume="true"/>
     <Field term="urn:vocab:clickstream#date">date</Field>
