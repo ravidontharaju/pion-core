@@ -178,6 +178,18 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_num_queued
 	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
 
+	// In addition; if full status is requested, get Database/Table/Fields
+	if (branches.size() > 2 && branches[2] == "full") {
+		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_database_id << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
+			<< '<' << TABLE_ELEMENT_NAME << '>' << m_table_name << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
+		for (unsigned int i = 0; i < m_field_map.size(); i++) {
+			// <Field id="0" col="dbcol">vocab:uri</Field>
+			out << '<' << FIELD_ELEMENT_NAME << " id=\"" << i << "\" col=\""
+				<< m_field_map[i].first << "\">" << m_field_map[i].second.term_id
+				<< "</" << FIELD_ELEMENT_NAME << '>' << std::endl;
+		}
+	}
+
 	writeEndReactorXML(out);
 	ConfigManager::writeEndPionStatsXML(out);
 }
