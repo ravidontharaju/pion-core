@@ -28,6 +28,10 @@
 			<Type>shortstring</Type>
 			<Comment>Unique identifier assigned to the visitor (across sessions)</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#content-id">
+			<Type>shortstring</Type>
+			<Comment>Unique identifier assigned to a http request (in storage)</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#cookie-id">
 			<Type>string</Type>
 			<Comment>Cookie identifier used for sessionizing clickstream ("name:value")</Comment>
