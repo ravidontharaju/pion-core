@@ -18,4 +18,10 @@
     <Comment>Embedded SQLite database for storing clickstream visitor sessions</Comment>
     <Filename>cs_sessions.db</Filename>
   </Database>
+  <Database id="f364c6aa-19c0-11de-a84f-001cc02bd66b">
+    <Plugin>SQLiteDatabase</Plugin>
+    <Name>Clickstream Content</Name>
+    <Comment>Embedded SQLite database for storing clickstream content</Comment>
+    <Filename>cs_content.db</Filename>
+  </Database>
 </PionConfig>
