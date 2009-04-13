@@ -137,5 +137,3 @@ function userPaneSelected(pane) {
 	var slide_duration = dijit.byId('user_config_accordion').duration;
 	setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 }
-
-dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);
