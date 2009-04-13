@@ -16,6 +16,7 @@ dojo.require("pion.users");
 dojo.require("pion.system");
 dojo.require("pion.login");
 dojo.require("pion.terms");
+dojo.require("pion.services");
 dojo.require("pion.about");
 
 var vocab_config_page_initialized = false;
@@ -179,6 +180,7 @@ var init = function() {
 	var login_success_callback = function() {
 		pion.terms.init();
 		pion.reactors.init();
+		pion.services.init();
 		pion.current_page = 'Reactors';
 	}
 	dojo.xhrGet({
@@ -268,6 +270,8 @@ function configPageSelected(page) {
 			pion.system.init();
 			system_config_page_initialized = true;
 		}
+	} else if (page.onSelect) {
+		page.onSelect();
 	}
 }
 
