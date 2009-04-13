@@ -165,6 +165,26 @@ pion.initOptionalValue = function(store, item, new_item_object, tag_name, option
 	}
 }
 
+pion.loadCss = function(href) {
+	// (Adapted from createFrame() in dojo/_firebug/firebug.js.)
+	var styleElement = document.createElement("link");
+	styleElement.href = href;
+	styleElement.rel = "stylesheet";
+	styleElement.type = "text/css";
+	var styleParent = document.getElementsByTagName("head");
+	if (styleParent) {
+		styleParent = styleParent[0];
+	}
+	if (!styleParent) {
+		styleParent = document.getElementsByTagName("html")[0];
+	}
+	if (dojo.isIE) {
+		window.setTimeout(function(){ styleParent.appendChild(styleElement); }, 0);
+	} else {
+		styleParent.appendChild(styleElement);
+	}
+};
+
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
 
