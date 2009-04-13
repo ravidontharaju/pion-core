@@ -383,9 +383,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			ConfigManager::writeBeginPionConfigXML(ss);
 
 			// Iterate through all the subdirectories of the Database directory (e.g. SQLiteDatabase).
-			std::string reactor_directory = m_ui_directory + "/plugins/databases";
+			std::string database_directory = m_ui_directory + "/plugins/databases";
 			boost::filesystem::directory_iterator end;
-			for (boost::filesystem::directory_iterator it(reactor_directory); it != end; ++it) {
+			for (boost::filesystem::directory_iterator it(database_directory); it != end; ++it) {
 				if (boost::filesystem::is_directory(*it)) {
 					// Skip directories starting with a '.'.
 					if (it->path().leaf().substr(0, 1) == ".") continue;
@@ -788,6 +788,28 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			getConfig().getServiceManager().writeConfigXML(ss);
+		} else if (branches[1] == "plugins") {
+
+			// Send a list of all Services found in the UI directory
+
+			ConfigManager::writeBeginPionConfigXML(ss);
+
+			// Iterate through all the subdirectories of the Service directory.
+			std::string service_directory = m_ui_directory + "/plugins/services";
+			boost::filesystem::directory_iterator end;
+			for (boost::filesystem::directory_iterator it(service_directory); it != end; ++it) {
+				if (boost::filesystem::is_directory(*it)) {
+					// Skip directories starting with a '.'.
+					if (it->path().leaf().substr(0, 1) == ".") continue;
+
+					ss << "<Service>"
+					   << "<Plugin>" << it->path().leaf() << "</Plugin>"
+					   << "</Service>";
+				}
+			}
+
+			ConfigManager::writeEndPionConfigXML(ss);
+
 		} else {
 			if (! getConfig().getServiceManager().writeConfigXML(ss, branches[1])) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
