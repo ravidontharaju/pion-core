@@ -19,6 +19,7 @@ copy /y %releaseDir%\dojox\gfx                              ..\dojo-release\dojo
 copy /y %releaseDir%\dojox\grid\compat\_grid\tundraGrid.css ..\dojo-release\dojox\grid\compat\_grid\tundraGrid.css
 copy /y %releaseDir%\dojox\grid\compat\_grid\images         ..\dojo-release\dojox\grid\compat\_grid\images
 xcopy /y /s %releaseDir%\dojox\grid\resources               ..\dojo-release\dojox\grid\resources
+copy /y %releaseDir%\dojox\data\QueryReadStore.js           ..\dojo-release\dojox\data\QueryReadStore.js
 
 rem The remaining files are currently only needed for AggregateReactor.
 copy /y %releaseDir%\dojox\html\_base.js                      ..\dojo-release\dojox\html\_base.js
