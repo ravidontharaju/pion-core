@@ -84,7 +84,7 @@ pion.reactors.init = function() {
 	store.fetch({
 		query: {category: 'generic'},
 		onItem: function(item) {
-				pion.reactors.generic_comparison_types.push(store.getValue(item, 'name'));
+			pion.reactors.generic_comparison_types.push(store.getValue(item, 'name'));
 		}
 	});
 

@@ -226,13 +226,17 @@ label.disabled {
 #menu {
 	margin: 0;
 	padding: 0;
-	width: 700px;
-	float:right;
-	clear:both;
-	position:relative;
-	text-align:right;
+	/* It seems like a hack to have to explicitly specify the width here.     */
+	/* Is there some other way to do this so that the tabs don't either wrap  */
+	/* around or extend beyond the right edge of "topBar" (that works on both */
+	/* FF and IE) when another tab is added?                                  */
+	width: 760px;
+	float: right;
+	clear: both;
+	position: relative;
+	text-align: right;
 	right: 10px;
-	bottom:0;
+	bottom: 0;
 }
 
 #menu div {

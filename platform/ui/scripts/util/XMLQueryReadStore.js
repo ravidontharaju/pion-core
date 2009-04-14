@@ -415,6 +415,17 @@ dojo.declare("pion.util.XMLQueryReadStore",
 				fetchHandler(this._items, request, this._numRows);
 			}else{
 				var xhrFunc = this.requestMethod.toLowerCase()=="post" ? dojo.xhrPost : dojo.xhrGet;
+
+
+// Temporary code to simulate some Replay queries.
+console.info('In pion.util.XMLQueryReadStore._fetchItems(), this.url = ', this.url);
+console.info('In pion.util.XMLQueryReadStore._fetchItems(), serverQuery = ', serverQuery);
+if (serverQuery.color)
+	this.url = '/plugins/services/ReplayService/fake-sessions-search-response-' + serverQuery.start + '-' + serverQuery.count + '.xml';
+else
+	this.url = '/plugins/services/ReplayService/fake-initial-sessions-response-' + serverQuery.start + '-' + serverQuery.count + '.xml';
+
+
 				var xhrHandler = xhrFunc({url: this.url, handleAs: "xml", content: serverQuery});
 				xhrHandler.addCallback(dojo.hitch(this, function(data){
 					this._xhrFetchHandler(data, request, fetchHandler, errorHandler);
