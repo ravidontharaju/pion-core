@@ -420,7 +420,7 @@ dojo.declare("pion.util.XMLQueryReadStore",
 // Temporary code to simulate some Replay queries.
 console.info('In pion.util.XMLQueryReadStore._fetchItems(), this.url = ', this.url);
 console.info('In pion.util.XMLQueryReadStore._fetchItems(), serverQuery = ', serverQuery);
-if (serverQuery.color)
+if (serverQuery.Param)
 	this.url = '/plugins/services/ReplayService/fake-sessions-search-response-' + serverQuery.start + '-' + serverQuery.count + '.xml';
 else
 	this.url = '/plugins/services/ReplayService/fake-initial-sessions-response-' + serverQuery.start + '-' + serverQuery.count + '.xml';
