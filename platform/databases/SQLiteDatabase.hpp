@@ -380,7 +380,11 @@ protected:
 	 	*
 	 	* @return bool if output event was modified
 	 	*/
-		virtual bool runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src, const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest);
+		virtual bool runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src,
+									const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest, unsigned int limit);
+
+		virtual bool runFullGetMore(const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest,
+									unsigned int limit);
 
 		/// resets the compiled query so that it can be run again
 		virtual void reset(void) { sqlite3_reset(m_sqlite_stmt); }

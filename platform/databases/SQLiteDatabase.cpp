@@ -177,15 +177,27 @@ QueryPtr SQLiteDatabase::prepareFullQuery(const std::string& query)
 	return query_ptr;
 }
 
-bool SQLiteDatabase::SQLiteQuery::runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src, const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest)
+bool SQLiteDatabase::SQLiteQuery::runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src,
+	const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest, unsigned int limit)
 {
 	bool changes = false;
 	sqlite3_reset(m_sqlite_stmt);
 	bindEvent(ins, *src);
 	while (sqlite3_step(m_sqlite_stmt) == SQLITE_ROW) {
-		// FIXME: put a size limit...
 		fetchEvent(outs, dest);
 		changes = true;
+		if (!--limit) return changes;
+	}
+	return changes;
+}
+
+bool SQLiteDatabase::SQLiteQuery::runFullGetMore(const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest,
+	unsigned int limit)
+{
+	while (sqlite3_step(m_sqlite_stmt) == SQLITE_ROW) {
+		fetchEvent(outs, dest);
+		changes = true;
+		if (!--limit) return changes;
 	}
 	return changes;
 }

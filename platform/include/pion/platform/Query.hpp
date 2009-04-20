@@ -190,10 +190,23 @@ public:
  	* @param src input event, used for ins FieldMap
  	* @param outs a FieldMap of output fields
  	* @param dest output event, used for outs FieldMap
+	* @param limit how many results max
  	*
  	* @return bool if output event was modified
  	*/
-	virtual bool runFullQuery(const FieldMap& ins, const EventPtr& src, const FieldMap& outs, EventPtr& dest) = 0;
+	virtual bool runFullQuery(const FieldMap& ins, const EventPtr& src,
+			const FieldMap& outs, EventPtr& dest,unsigned int limit) = 0;
+
+	/**
+	 * gets more results for generic query
+ 	*
+ 	* @param outs a FieldMap of output fields
+ 	* @param dest output event, used for outs FieldMap
+	* @param limit how many results max
+ 	*
+ 	* @return bool if output event was modified
+ 	*/
+	virtual bool runFullGetMore(const FieldMap& outs, EventPtr& dest,unsigned int limit) = 0;
 
 	/// resets the compiled query so that it can be run again
 	virtual void reset(void) = 0;
