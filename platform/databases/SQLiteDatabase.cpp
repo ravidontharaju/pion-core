@@ -194,6 +194,7 @@ bool SQLiteDatabase::SQLiteQuery::runFullQuery(const pion::platform::Query::Fiel
 bool SQLiteDatabase::SQLiteQuery::runFullGetMore(const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest,
 	unsigned int limit)
 {
+	bool changes = false;
 	while (sqlite3_step(m_sqlite_stmt) == SQLITE_ROW) {
 		fetchEvent(outs, dest);
 		changes = true;
