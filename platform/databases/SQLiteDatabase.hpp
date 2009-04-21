@@ -320,7 +320,11 @@ protected:
 
 		/// Fetch a string from a column
 		virtual void fetchString(unsigned int param, std::string& value) {
-			value = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
+			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
+			if (ptr)
+				value = ptr;
+			else
+				value = "";
 		}
 
 		/// Fetch an int from a column
@@ -361,8 +365,11 @@ protected:
 		/// Fetch a date from a column
 		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
 			// %Y-%m-%dT%H:%M:%S%F
-			PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
-			val = time_facet.fromString((const char *)sqlite3_column_text(m_sqlite_stmt, param));
+			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
+			if (ptr) {
+				PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
+				val = time_facet.fromString(ptr);
+			}
 //			val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
 //			val = f.fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
 		}
