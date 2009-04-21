@@ -360,7 +360,11 @@ protected:
 
 		/// Fetch a date from a column
 		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
-            val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
+			// %Y-%m-%dT%H:%M:%S%F
+			PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
+			val = time_facet.fromString((const char *)sqlite3_column_text(m_sqlite_stmt, param));
+//			val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
+//			val = f.fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
 		}
 
 		/**
