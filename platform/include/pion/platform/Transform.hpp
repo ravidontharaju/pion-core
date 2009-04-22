@@ -146,7 +146,7 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 			e->setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value));
 			break;
 		case Vocabulary::TYPE_UINT64:
-			e->setUInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
+			e->setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
 			break;
 		case Vocabulary::TYPE_FLOAT:
 			e->setFloat(term.term_ref, boost::lexical_cast<float>(value));
