@@ -209,7 +209,7 @@ if ($PLATFORM =~ /^win32/i) {
 	# create zip package
 	use Archive::Zip;
 	$zip = new Archive::Zip;
-	$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
+	$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME, sub { -f });
 	$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
 	undef $zip;
 
