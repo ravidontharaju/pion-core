@@ -7,6 +7,7 @@ use File::Spec;
 use File::Path;
 use File::Copy;
 use File::Glob ':glob';
+use Archive::Zip;
 
 # include perl source with common subroutines
 require File::Spec->catfile( ("common", "build"), "common.pl");
@@ -200,55 +201,57 @@ copy($SERVER_EXE, $PACKAGE_DIR);
 
 # platform-specific finishing touches
 print "Creating binary tarballs..\n";
-if ($PLATFORM =~ /^win32/i) {
 
+if ($PLATFORM =~ /^win32/i) {
 	# copy startup script
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
 
+	# create zip package
 	if ($NOZIP ne "nozip") {
-		# create zip package
-		use Archive::Zip;
 		$zip = new Archive::Zip;
-		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
+		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME, sub { -f });
 		$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
 		undef $zip;
 	}
-
 } else {
-
 	# copy startup script
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.sh"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
 
 	# set executable permissions for unix platforms
-	`chmod a+x $PACKAGE_DIR/pion $PACKAGE_DIR/start_pion.sh`;
+	system("chmod a+x $PACKAGE_DIR/pion $PACKAGE_DIR/start_pion.sh");
 
-	# create tarballs & zip file
+	# create tarballs
 	if ($NOZIP ne "nozip") {
-		`cd bin; tar cfz $TARBALL_NAME.tar.gz $PACKAGE_NAME`;
-		`cd bin; tar cfj $TARBALL_NAME.tar.bz2 $PACKAGE_NAME`;
-		`cd bin; zip -qr9 $TARBALL_NAME.zip $PACKAGE_NAME`;
+#		system("tar -C $BIN_DIR -czf $BIN_DIR/$TARBALL_NAME.tar.gz $PACKAGE_NAME");
+		system("tar -C $BIN_DIR -cjf $BIN_DIR/$TARBALL_NAME.tar.bz2 $PACKAGE_NAME");
 	}
 
-	if ($PLATFORM eq "osx") {
-		# Build application bundle for Mac OS X
-		print "Creating Mac OS X application bundle..\n";
-		$OSX_BIN_DIRECTORY = "./bin/osx/" . $PACKAGE_NAME;
-		`rm -rf ./bin/osx`;
-		`mkdir -p ./bin/osx/$PACKAGE_NAME`;
-		`platypus -V $VERSION -a "Pion Community Edition" -u "Atomic Labs, Inc." -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_BIN_DIRECTORY/Pion`;
-	
-		# Platypus' icon support is broken; copy file into .app package
-		`cp platform/build/appIcon.icns $OSX_BIN_DIRECTORY/Pion.app/Contents/Resources`;
-	
-		# Copy other misc files
-		`cp COPYING $OSX_BIN_DIRECTORY/LICENSE.txt`;
-		`cp ChangeLog $OSX_BIN_DIRECTORY/HISTORY.txt`;
-		`cp platform/build/README.bin.osx $OSX_BIN_DIRECTORY/README.txt`;
-		`(cd bin/osx; zip -qr9 ${TARBALL_NAME}_app.zip $PACKAGE_NAME)`;
-		`mv ./bin/osx/${TARBALL_NAME}_app.zip ./bin/`;
-	}
+#	if ($PLATFORM eq "osx") {
+#		# Build application bundle for Mac OS X
+#		print "Creating Mac OS X application bundle..\n";
+#		$OSX_PACKAGE_DIR = "$BIN_DIR/osx/$PACKAGE_NAME";
+#		rmtree($OSX_PACKAGE_DIR);
+#		mkpath($OSX_PACKAGE_DIR);
+#		system("platypus -V $VERSION -a 'Pion Community Edition' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
+#
+#		# Platypus' icon support is broken; copy file into .app package
+#		copy("platform/build/appIcon.icns", "$OSX_PACKAGE_DIR/Pion.app/Contents/Resources");
+#
+#		# Copy other misc files
+#		copy("COPYING", "$OSX_PACKAGE_DIR/LICENSE.txt");
+#		copy("ChangeLog", "$OSX_PACKAGE_DIR/HISTORY.txt");
+#		copy("platform/build/README.bin.osx", "$OSX_PACKAGE_DIR/README.txt");
+#
+#		# create zip package
+#		if ($NOZIP ne "nozip") {
+#			$zip = new Archive::Zip;
+#			$zip->addTree($OSX_PACKAGE_DIR, $PACKAGE_NAME);
+#			$zip->writeToFileNamed("$BIN_DIR/${TARBALL_NAME}_app.zip");
+#			undef $zip;
+#		}
+#	}
 }
 
 print "* Done creating binary packages.\n";
