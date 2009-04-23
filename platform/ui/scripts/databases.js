@@ -1,6 +1,6 @@
 dojo.provide("pion.databases");
+dojo.require("pion.plugins");
 dojo.require("plugins.databases.Database");
-dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.data.XmlStore");
 
@@ -44,71 +44,64 @@ pion.databases._adjustAccordionSize = function() {
 pion.databases.init = function() {
 	pion.databases.selected_pane = null;
 
-	// All Databases available in the UI directory.
-	var config_databases_plugins_store = new dojox.data.XmlStore({url: '/config/databases/plugins'});
+	pion.databases.getAllDatabasesInUIDirectory = function() {
+		var d = new dojo.Deferred();
+		var store = new dojox.data.XmlStore({url: '/config/databases/plugins'});
+		store.fetch({
+			onComplete: function(items) {
+				var databases_in_ui_dir = dojo.map(items, function(item) {
+					return store.getValue(item, 'Plugin').toString();
+				});
+				d.callback(databases_in_ui_dir);
+			}
+		});
+		return d;
+	}
 
-	dojo.xhrGet({
-		url: '/config/plugins',
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			// Get list of all plugins found on any of the configured plugin paths.
-			pion.available_plugins = [];
-			var plugin_elements = response.getElementsByTagName('Plugin');
-			dojo.forEach(plugin_elements, function(n) {
-				pion.available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
-			});
-
-			var items = [];
-			config_databases_plugins_store.fetch({
-				onItem: function(item) {
-					var plugin = config_databases_plugins_store.getValue(item, 'Plugin').toString();
-
-					// Skip plugins that can't be found on any of the configured plugin paths.
-					if (dojo.indexOf(pion.available_plugins, plugin) != -1) {
-						// Check if the module for this Database is already loaded, and if not, load it.
-						var database_class = "plugins.databases." + plugin;
-						var prototype = dojo.getObject(database_class);
-						if (!prototype) {
-							var path = '/plugins/databases/' + plugin + '/' + plugin;
-							dojo.registerModulePath(database_class, path);
-							dojo.requireIf(true, database_class);
-							prototype = dojo.getObject(database_class);
-						}
-						console.debug('label = ', prototype['label']);
-
-						items.push({plugin: plugin, label: prototype['label']});
-					}
-				},
-				onComplete: function() {
-					pion.databases.plugin_data_store = new dojo.data.ItemFileWriteStore({
-						data: {
-							identifier: 'plugin',
-							items: items
-						}
-					});
-
-					if (file_protocol) {
-						pion.databases._adjustAccordionSize();
-					} else {
-						pion.databases.config_store.fetch({
-							onComplete: function (items, request) {
-								var config_accordion = dijit.byId('database_config_accordion');
-								for (var i = 0; i < items.length; ++i) {
-									pion.databases.createNewPaneFromItem(items[i]);
-								}
-								var first_pane = config_accordion.getChildren()[0];
-								config_accordion.selectChild(first_pane);
-							},
-							onError: pion.handleFetchError
-						});
-					}
+	// databases_in_ui_dir: all Databases for which a UI was found in the UI directory 
+	//                      (as specified in services.xml, in PlatformService "config-service").
+	var initUsableDatabasePlugins = function(databases_in_ui_dir) {
+		var d = new dojo.Deferred();
+		plugin_data_store_items = [];
+		dojo.forEach(databases_in_ui_dir, function(database) {
+			// Skip plugins that can't be found on any of the configured plugin paths.
+			if (dojo.indexOf(pion.plugins.loaded_plugins, database) != -1) {
+				var prototype = pion.plugins.getPluginPrototype('plugins.databases', database, '/plugins/databases');
+				plugin_data_store_items.push({plugin: database, label: prototype.label});
+			}
+			pion.databases.plugin_data_store = new dojo.data.ItemFileWriteStore({
+				data: {
+					identifier: 'plugin',
+					items: plugin_data_store_items
 				}
 			});
-			return response;
-		},
-		error: pion.handleXhrGetError
-	});
+		});
+		d.callback();
+		return d;
+	}
+
+	var initConfiguredDatabases = function() {
+		if (file_protocol) {
+			pion.databases._adjustAccordionSize();
+		} else {
+			pion.databases.config_store.fetch({
+				onComplete: function (items, request) {
+					var config_accordion = dijit.byId('database_config_accordion');
+					for (var i = 0; i < items.length; ++i) {
+						pion.databases.createNewPaneFromItem(items[i]);
+					}
+					var first_pane = config_accordion.getChildren()[0];
+					config_accordion.selectChild(first_pane);
+				},
+				onError: pion.handleFetchError
+			});
+		}
+	}
+
+	pion.plugins.initLoadedPluginList()
+		.addCallback(pion.databases.getAllDatabasesInUIDirectory)
+		.addCallback(initUsableDatabasePlugins)
+		.addCallback(initConfiguredDatabases);
 
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
@@ -170,7 +163,7 @@ pion.databases.init = function() {
 	}
 
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);
-	
+
 	pion.databases.createNewPaneFromItem = function(item) {
 		var title = pion.databases.config_store.getValue(item, 'Name');
 		var plugin = pion.databases.config_store.getValue(item, 'Plugin');
@@ -189,7 +182,7 @@ pion.databases.init = function() {
 		dijit.byId('database_config_accordion').addChild(database_pane);
 		return database_pane;
 	}
-	
+
 	pion.databases.createNewPaneFromStore = function(id, database_config_page_is_selected) {
 		pion.databases.config_store.fetch({
 			query: {'@id': id},

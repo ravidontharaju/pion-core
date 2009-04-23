@@ -1,5 +1,6 @@
 dojo.provide("pion.reactors");
 dojo.require("pion.login");
+dojo.require("pion.plugins");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.dnd.move");
@@ -88,54 +89,46 @@ pion.reactors.init = function() {
 		}
 	});
 
-	// All Reactors available in the UI directory.
-	var config_reactors_plugins_store = new dojox.data.XmlStore({url: '/config/reactors/plugins'});
+	pion.reactors.getAllReactorsInUIDirectory = function() {
+		var d = new dojo.Deferred();
+		var store = new dojox.data.XmlStore({url: '/config/reactors/plugins'});
+		store.fetch({
+			onComplete: function(items) {
+				var reactors_in_ui_dir = dojo.map(items, function(item) {
+					var plugin = store.getValue(item, 'Plugin').toString();
+					var category = store.getValue(item, 'ReactorType').toString();
+					return {plugin: plugin, category: category};
+				});
+				d.callback(reactors_in_ui_dir);
+			}
+		});
+		return d;
+	}
 
-	dojo.xhrGet({
-		url: '/config/plugins',
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			// Get list of all plugins found on any of the configured plugin paths.
-			pion.available_plugins = [];
-			var plugin_elements = response.getElementsByTagName('Plugin');
-			dojo.forEach(plugin_elements, function(n) {
-				pion.available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
-			});
+	// reactors_in_ui_dir: all Reactors for which a UI was found in the UI directory 
+	//                     (as specified in services.xml, in PlatformService "config-service").
+	var initUsableReactorPlugins = function(reactors_in_ui_dir) {
+		var d = new dojo.Deferred();
+		dojo.forEach(reactors_in_ui_dir, function(reactor) {
+			var reactor_name = reactor.plugin;
+			// Skip plugins that can't be found on any of the configured plugin paths.
+			if (dojo.indexOf(pion.plugins.loaded_plugins, reactor_name) != -1) {
+				var prototype = pion.plugins.getPluginPrototype('plugins.reactors', reactor_name, '/plugins/reactors/' + reactor.category);
+				pion.reactors.categories[reactor_name] = reactor.category;
+				var icon = reactor.category + '/' + reactor_name + '/icon.png';
+				var icon_url = dojo.moduleUrl('plugins.reactors', icon);
+				console.debug('icon_url = ', icon_url);
+				reactor_buckets[reactor.category].insertNodes(false, [{reactor_type: reactor_name, src: icon_url, alt: prototype['label']}]);
+			}
+		});
+		d.callback();
+		return d;
+	}
 
-			config_reactors_plugins_store.fetch({
-				onItem: function(item) {
-					var plugin = config_reactors_plugins_store.getValue(item, 'Plugin').toString();
-
-					// Skip plugins that can't be found on any of the configured plugin paths.
-					if (dojo.indexOf(pion.available_plugins, plugin) != -1) {
-						var category = config_reactors_plugins_store.getValue(item, 'ReactorType').toString();
-
-						// Check if the module for this Reactor is already loaded, and if not, load it.
-						var reactor_class = "plugins.reactors." + plugin;
-						var prototype = dojo.getObject(reactor_class);
-						if (!prototype) {
-							var path = '/plugins/reactors/' + category + '/' + plugin + '/' + plugin;
-							dojo.registerModulePath(reactor_class, path);
-							dojo.requireIf(true, reactor_class);
-							prototype = dojo.getObject(reactor_class);
-						}
-
-						pion.reactors.categories[plugin] = category;
-						var icon = category + '/' + plugin + '/icon.png';
-						var icon_url = dojo.moduleUrl('plugins.reactors', icon);
-						console.debug('icon_url = ', icon_url);
-						reactor_buckets[category].insertNodes(false, [{reactor_type: plugin, src: icon_url, alt: prototype['label']}]);
-					}
-				},
-				onComplete: function() {
-					pion.reactors.initConfiguredReactors();
-				}
-			});
-			return response;
-		},
-		error: pion.handleXhrGetError
-	});
+	pion.plugins.initLoadedPluginList()
+		.addCallback(pion.reactors.getAllReactorsInUIDirectory)
+		.addCallback(initUsableReactorPlugins)
+		.addCallback(pion.reactors._initConfiguredReactors);
 
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
 	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
@@ -205,7 +198,7 @@ pion.reactors.init = function() {
 	}
 }
 
-pion.reactors.initConfiguredReactors = function() {
+pion.reactors._initConfiguredReactors = function() {
 	if (file_protocol) {
 		addWorkspace();
 		pion.reactors.workspace_box = workspace_boxes[0];

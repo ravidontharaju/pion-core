@@ -1,46 +1,42 @@
 dojo.provide("pion.services");
+dojo.require("pion.plugins");
 dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services'});
 
 pion.services.init = function() {
-	// Request list of all Services available in the UI directory.
-	var config_services_plugins_store = new dojox.data.XmlStore({url: '/config/services/plugins'});
+	pion.services.getAllServicesInUIDirectory = function() {
+		var d = new dojo.Deferred();
+		var store = new dojox.data.XmlStore({url: '/config/services/plugins'});
+		store.fetch({
+			onComplete: function(items) {
+				var services_in_ui_dir = dojo.map(items, function(item) {
+					return store.getValue(item, 'Plugin').toString();
+				});
+				d.callback(services_in_ui_dir);
+			}
+		});
+		return d;
+	}
 
-	dojo.xhrGet({
-		url: '/config/plugins',
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			// Get list of all plugins found on any of the configured plugin paths.
-			pion.available_plugins = [];
-			var plugin_elements = response.getElementsByTagName('Plugin');
-			dojo.forEach(plugin_elements, function(n) {
-				pion.available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
-			});
+	// services_in_ui_dir: all Services for which a UI was found in the UI directory 
+	//                     (as specified in services.xml, in PlatformService "config-service").
+	var initUsableServicePlugins = function(services_in_ui_dir) {
+		var d = new dojo.Deferred();
+		plugin_data_store_items = [];
+		dojo.forEach(services_in_ui_dir, function(service) {
+			// Skip plugins that can't be found on any of the configured plugin paths.
+			if (dojo.indexOf(pion.plugins.loaded_plugins, service) != -1) {
+				var prototype = pion.plugins.getPluginPrototype('plugins.services', service, '/plugins/services');
+				new prototype({title: prototype['label']});
+				console.debug('UI for service "', prototype['label'], '" has been added.');
+			}
+		});
+		d.callback();
+		return d;
+	}
 
-			config_services_plugins_store.fetch({
-				onItem: function(item) {
-					var plugin = config_services_plugins_store.getValue(item, 'Plugin').toString();
-
-					// Skip plugins that can't be found on any of the configured plugin paths.
-					if (dojo.indexOf(pion.available_plugins, plugin) != -1) {
-						// Check if the module for this Service is already loaded, and if not, load it.
-						var service_class = "plugins.services." + plugin;
-						var prototype = dojo.getObject(service_class);
-						if (!prototype) {
-							var path = '/plugins/services/' + plugin + '/' + plugin;
-							dojo.registerModulePath(service_class, path);
-							dojo.requireIf(true, service_class);
-							prototype = dojo.getObject(service_class);
-						}
-						new prototype({title: prototype['label']});
-						console.debug('UI for service "', prototype['label'], '" has been added.');
-					}
-				}
-			});
-			return response;
-		},
-		error: pion.handleXhrGetError
-	});
+	pion.plugins.initLoadedPluginList()
+		.addCallback(pion.services.getAllServicesInUIDirectory)
+		.addCallback(initUsableServicePlugins);
 }
