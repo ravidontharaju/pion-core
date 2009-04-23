@@ -17,7 +17,7 @@ require File::Spec->catfile( ("common", "build"), "common.pl");
 # -----------------------------------
 
 # check command line parameters
-die("usage: make_binary.pl <VERSION> <PLATFORM>") if ($#ARGV < 1);
+die("usage: make_binary.pl <VERSION> <PLATFORM> [nozip]") if ($#ARGV < 1);
 
 # set some global variables
 $VERSION = $ARGV[0];
@@ -206,12 +206,14 @@ if ($PLATFORM =~ /^win32/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
 
-	# create zip package
-	use Archive::Zip;
-	$zip = new Archive::Zip;
-	$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
-	$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
-	undef $zip;
+	if ($NOZIP ne "nozip") {
+		# create zip package
+		use Archive::Zip;
+		$zip = new Archive::Zip;
+		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
+		$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
+		undef $zip;
+	}
 
 } else {
 
