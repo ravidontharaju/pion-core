@@ -415,7 +415,7 @@ dojo.declare("pion.util.XMLQueryReadStore",
 				fetchHandler(this._items, request, this._numRows);
 			}else{
 				var xhrFunc = this.requestMethod.toLowerCase()=="post" ? dojo.xhrPost : dojo.xhrGet;
-				var xhrHandler = xhrFunc({url: this.url, handleAs: "xml", content: serverQuery});
+				var xhrHandler = xhrFunc({url: this.url, handleAs: "xml", content: serverQuery, timeout: 10000});
 				xhrHandler.addCallback(dojo.hitch(this, function(data){
 					this._xhrFetchHandler(data, request, fetchHandler, errorHandler);
 				}));
