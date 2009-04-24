@@ -137,6 +137,7 @@ pion-dojo.js:
 ./../../release/dojo-release/dojox/string/sprintf.js
 ./../../release/dojo-release/dojox/dtl/filter/strings.js
 ./../../release/dojo-release/pion/login.js
+./../../release/dojo-release/pion/plugins.js
 ./../../release/dojo-release/plugins/reactors/Reactor.js
 ./../../release/dojo-release/pion/widgets/SimpleSelect.js
 ./../../release/dojo-release/plugins/reactors/LogInputReactor.js
@@ -160,6 +161,7 @@ pion-dojo.js:
 ./../../release/dojo-release/plugins/vocabularies/Vocabulary.js
 ./../../release/dojo-release/pion/vocabularies.js
 ./../../release/dojo-release/plugins/protocols/Protocol.js
+./../../release/dojo-release/plugins/protocols/HTTPProtocol.js
 ./../../release/dojo-release/pion/protocols.js
 ./../../release/dojo-release/pion/widgets/User.js
 ./../../release/dojo-release/pion/users.js

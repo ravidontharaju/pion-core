@@ -493,6 +493,28 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
 			
+		} else if (branches[1] == "plugins") {
+
+			// Send a list of all Protocols found in the UI directory
+
+			ConfigManager::writeBeginPionConfigXML(ss);
+
+			// Iterate through all the subdirectories of the Protocol directory (e.g. HTTPProtocol).
+			std::string protocol_directory = m_ui_directory + "/plugins/protocols";
+			boost::filesystem::directory_iterator end;
+			for (boost::filesystem::directory_iterator it(protocol_directory); it != end; ++it) {
+				if (boost::filesystem::is_directory(*it)) {
+					// Skip directories starting with a '.'.
+					if (it->path().leaf().substr(0, 1) == ".") continue;
+
+					ss << "<Protocol>"
+					   << "<Plugin>" << it->path().leaf() << "</Plugin>"
+					   << "</Protocol>";
+				}
+			}
+
+			ConfigManager::writeEndPionConfigXML(ss);
+
 		} else if (branches.size() == 2) {
 			// branches[1] == protocol_id
 			

@@ -1,9 +1,13 @@
 dojo.provide("pion.protocols");
+dojo.require("pion.plugins");
 dojo.require("plugins.protocols.Protocol");
+dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.data.XmlStore");
 
+// Protocols don't have to be listed here to be usable, but they do to be included in pion-dojo.js.
+dojo.require("plugins.protocols.HTTPProtocol");
+
 var selected_protocol_pane = null;
-var protocol_config_store;          // one item per protocol
 
 pion.protocols.getHeight = function() {
 	// set by _adjustAccordionSize
@@ -24,7 +28,60 @@ pion.protocols.config_store.getIdentity = function(item) {
 pion.protocols.default_id = "593f044a-ac60-11dd-aba3-001cc02bd66b";
 
 pion.protocols.init = function() {
-	protocol_config_store = pion.protocols.config_store;
+	pion.protocols.getAllProtocolsInUIDirectory = function() {
+		var d = new dojo.Deferred();
+		var store = new dojox.data.XmlStore({url: '/config/protocols/plugins'});
+		store.fetch({
+			onComplete: function(items) {
+				var protocols_in_ui_dir = dojo.map(items, function(item) {
+					return store.getValue(item, 'Plugin').toString();
+				});
+				d.callback(protocols_in_ui_dir);
+			}
+		});
+		return d;
+	}
+
+	// protocols_in_ui_dir: all Protocols for which a UI was found in the UI directory 
+	//                      (as specified in services.xml, in PlatformService "config-service").
+	var initUsableProtocolPlugins = function(protocols_in_ui_dir) {
+		var d = new dojo.Deferred();
+		plugin_data_store_items = [];
+		dojo.forEach(protocols_in_ui_dir, function(protocol) {
+			// Skip plugins that can't be found on any of the configured plugin paths.
+			if (dojo.indexOf(pion.plugins.loaded_plugins, protocol) != -1) {
+				var prototype = pion.plugins.getPluginPrototype('plugins.protocols', protocol, '/plugins/protocols');
+				plugin_data_store_items.push({plugin: protocol, label: prototype.label});
+			}
+			pion.protocols.plugin_data_store = new dojo.data.ItemFileWriteStore({
+				data: {
+					identifier: 'plugin',
+					items: plugin_data_store_items
+				}
+			});
+		});
+		d.callback();
+		return d;
+	}
+
+	var initConfiguredProtocols = function() {
+		pion.protocols.config_store.fetch({
+			onComplete: function (items, request) {
+				var config_accordion = dijit.byId('protocol_config_accordion');
+				for (var i = 0; i < items.length; ++i) {
+					pion.protocols.createNewPaneFromItem(items[i]);
+				}
+				var first_pane = config_accordion.getChildren()[0];
+				config_accordion.selectChild(first_pane);
+			},
+			onError: pion.handleFetchError
+		});
+	}
+
+	pion.plugins.initLoadedPluginList()
+		.addCallback(pion.protocols.getAllProtocolsInUIDirectory)
+		.addCallback(initUsableProtocolPlugins)
+		.addCallback(initConfiguredProtocols);
 
 	dojo.subscribe("protocol_config_accordion-selectChild", protocolPaneSelected);
 
@@ -60,17 +117,6 @@ pion.protocols.init = function() {
 			onError: pion.handleFetchError
 		});
 	}
-
-	function onComplete(items, request){
-		var config_accordion = dijit.byId('protocol_config_accordion');
-		for (var i = 0; i < items.length; ++i) {
-			pion.protocols.createNewPaneFromItem(items[i]);
-		}
-		var first_pane = config_accordion.getChildren()[0];
-		config_accordion.selectChild(first_pane);
-	}
-
-	protocol_config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
 
 	dojo.connect(dojo.byId('add_new_protocol_button'), 'click', addNewProtocol);
 }
