@@ -153,11 +153,6 @@ foreach (bsd_glob($PION_SQLITE_GLOB)) {
 	copy($_, $LIBS_DIR);
 }
 
-# add symbolic link to make sqlite work on RHEL5
-if ($PLATFORM eq "el5") {
-	`cd $LIBS_DIR; ln -s libpion-sqlite-$VERSION.so libsqlite3.so.0`;
-}
-
 # copy the Pion plugin files into "plugins"
 print "Copying Pion plugin files..\n";
 foreach (bsd_glob($NET_PLUGINS_GLOB)) {
