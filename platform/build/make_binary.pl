@@ -7,7 +7,6 @@ use File::Spec;
 use File::Path;
 use File::Copy;
 use File::Glob ':glob';
-use Archive::Zip;
 
 # include perl source with common subroutines
 require File::Spec->catfile( ("common", "build"), "common.pl");
@@ -209,8 +208,9 @@ if ($PLATFORM =~ /^win32/i) {
 
 	# create zip package
 	if ($NOZIP ne "nozip") {
+		require Archive::Zip;
 		$zip = new Archive::Zip;
-		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME, sub { -f });
+		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
 		$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
 		undef $zip;
 	}
@@ -246,6 +246,7 @@ if ($PLATFORM =~ /^win32/i) {
 #
 #		# create zip package
 #		if ($NOZIP ne "nozip") {
+#			require Archive::Zip;
 #			$zip = new Archive::Zip;
 #			$zip->addTree($OSX_PACKAGE_DIR, $PACKAGE_NAME);
 #			$zip->writeToFileNamed("$BIN_DIR/${TARBALL_NAME}_app.zip");
