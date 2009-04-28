@@ -165,6 +165,26 @@ public:
 	virtual void fetchDateTime(unsigned int param, PionDateTime& val) = 0;
 
 	/**
+	 * binds a date value to a query parameter
+	 *
+	 * @param param the query parameter number to which the value will be bound (starting with 0)
+	 * @param value the value to bind to the query parameter
+	 */
+	virtual void bindDate(unsigned int param, const PionDateTime& value) = 0;
+
+	virtual void fetchDate(unsigned int param, PionDateTime& val) = 0;
+
+	/**
+	 * binds a time value to a query parameter
+	 *
+	 * @param param the query parameter number to which the value will be bound (starting with 0)
+	 * @param value the value to bind to the query parameter
+	 */
+	virtual void bindTime(unsigned int param, const PionDateTime& value) = 0;
+
+	virtual void fetchTime(unsigned int param, PionDateTime& val) = 0;
+
+	/**
 	 * binds the data contained within an Event to the query parameters
 	 * (this asssumes that field_map is ordered the same as the parameters)
 	 *
@@ -283,9 +303,13 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 						copy_strings);
 					break;
 				case Vocabulary::TYPE_DATE_TIME:
-				case Vocabulary::TYPE_DATE:
-				case Vocabulary::TYPE_TIME:
 					bindDateTime(param, boost::get<const PionDateTime&>(*value_ptr));
+					break;
+				case Vocabulary::TYPE_DATE:
+					bindDate(param, boost::get<const PionDateTime&>(*value_ptr));
+					break;
+				case Vocabulary::TYPE_TIME:
+					bindTime(param, boost::get<const PionDateTime&>(*value_ptr));
 					break;
 			}
 		}
@@ -336,11 +360,23 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				}
 				break;
 			case Vocabulary::TYPE_DATE_TIME:
-			case Vocabulary::TYPE_DATE:
-			case Vocabulary::TYPE_TIME:
 				{
 					PionDateTime val;
 					fetchDateTime(param, val);
+					e->setDateTime(field_map[param].second.term_ref, val);
+				}
+				break;
+			case Vocabulary::TYPE_DATE:
+				{
+					PionDateTime val;
+					fetchDate(param, val);
+					e->setDateTime(field_map[param].second.term_ref, val);
+				}
+				break;
+			case Vocabulary::TYPE_TIME:
+				{
+					PionDateTime val;
+					fetchTime(param, val);
 					e->setDateTime(field_map[param].second.term_ref, val);
 				}
 				break;
