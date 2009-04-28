@@ -49,7 +49,7 @@ public:
 			: PionException("FissionReactor configuration references an unknown term: ", term_id) {}
 	};
 
-	/// exception thrown if the Reactor configuration uses an event type for a Term that is not an object
+	/// exception thrown if the Reactor configuration uses a Term that is not an object as the input event type
 	class NotAnObjectException : public PionException {
 	public:
 		NotAnObjectException(const std::string& event_type)
@@ -117,9 +117,11 @@ public:
 	virtual void updateCodecs(void);
 
 	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
+	 * Processes an Event by filtering it out if it's not of the input event type,
+	 * otherwise extracting from it the value(s) of the input event term and 
+	 * parsing those values into output Events using the Codec.
+	 * If any 'copy terms' are specified, the values of those Terms are copied
+	 * from the input Event to every resulting output Event.
 	 *
 	 * @param e pointer to the Event to process
 	 */

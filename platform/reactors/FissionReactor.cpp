@@ -65,7 +65,7 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	if (! ConfigManager::getConfigOption(INPUT_EVENT_TERM_ELEMENT_NAME, config_str, config_ptr))
 		throw EmptyInputEventTermException(getId());
 
-	// find vocabulary term for input event type
+	// find vocabulary term for input event term
 	term_ref = v.findTerm(config_str);
 	if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(config_str);
@@ -121,7 +121,7 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 				if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 					throw UnknownTermException(copy_term_str);
 
-				// add the copy terms collection
+				// add it to the copy terms collection
 				m_copy_terms.push_back(v[term_ref]);
 			}
 		}
