@@ -1,5 +1,6 @@
 dojo.provide("pion.services");
 dojo.require("pion.plugins");
+dojo.require("plugins.services.Service");
 dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services'});
@@ -28,8 +29,8 @@ pion.services.init = function() {
 			// Skip plugins that can't be found on any of the configured plugin paths.
 			if (dojo.indexOf(pion.plugins.loaded_plugins, service) != -1) {
 				var prototype = pion.plugins.getPluginPrototype('plugins.services', service, '/plugins/services');
-				new prototype({title: prototype['label']});
-				console.debug('UI for service "', prototype['label'], '" has been added.');
+				new prototype({title: prototype.label});
+				console.debug('UI for service "', prototype.label, '" has been added.');
 			}
 		});
 		d.callback();

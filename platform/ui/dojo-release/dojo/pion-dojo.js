@@ -25356,6 +25356,20 @@ var _1846=new pion.widgets.XMLImportDialog();
 _1846.show();
 };
 }
+if(!dojo._hasResource["plugins.services.Service"]){
+dojo._hasResource["plugins.services.Service"]=true;
+dojo.provide("plugins.services.Service");
+dojo.declare("plugins.services.Service",[dijit.layout.BorderContainer,dijit._Templated],{postCreate:function(){
+this.inherited("postCreate",arguments);
+dijit.byId("main_stack_container").addChild(this,0);
+},onSelect:function(){
+dijit.byId("main_stack_container").resize({h:this.height});
+if(!this.initialized){
+this.initialized=true;
+this.init();
+}
+}});
+}
 if(!dojo._hasResource["pion.services"]){
 dojo._hasResource["pion.services"]=true;
 dojo.provide("pion.services");
@@ -25378,8 +25392,8 @@ plugin_data_store_items=[];
 dojo.forEach(_184d,function(_184f){
 if(dojo.indexOf(pion.plugins.loaded_plugins,_184f)!=-1){
 var _1850=pion.plugins.getPluginPrototype("plugins.services",_184f,"/plugins/services");
-new _1850({title:_1850["label"]});
-console.debug("UI for service \"",_1850["label"],"\" has been added.");
+new _1850({title:_1850.label});
+console.debug("UI for service \"",_1850.label,"\" has been added.");
 }
 });
 d.callback();
