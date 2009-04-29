@@ -21,6 +21,7 @@ This distribution includes the following files:
 README.txt         This README file
 HISTORY.txt        Pion Platform version history (or "change log")
 LICENSE.txt        The GNU Affero General Public License
+pion-manual.pdf    Latest version of the Pion User Manual
 Pion.app           Mac OS X (10.5 Universal) binary application
 
 To start Pion, just double-click on the Pion.app (or "Pion") application.

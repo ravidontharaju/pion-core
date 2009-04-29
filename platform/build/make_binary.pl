@@ -189,6 +189,8 @@ if ($PLATFORM =~ /^win32/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "README.bin"),
 		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
 }
+copy(File::Spec->catfile( ("platform", "build"), "pion-manual.pdf"),
+	File::Spec->catfile($PACKAGE_DIR, "pion-manual.pdf"));
 
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);
