@@ -85,6 +85,7 @@ public:
 		: pion::platform::Codec(), m_read_buf(new char[READ_BUFFER_SIZE+1]),
 		m_read_end(m_read_buf.get() + READ_BUFFER_SIZE),
 		m_flush_after_write(false), m_handle_elf_headers(false), m_wrote_elf_headers(false),
+		m_time_offset(0),
 		m_event_split(EVENT_SPLIT_SET), m_event_join(EVENT_JOIN_STRING), m_comment_chars(COMMENT_CHAR_SET),
 		m_field_split(FIELD_SPLIT_SET), m_field_join(FIELD_JOIN_STRING), m_consume_delims(true)
 	{}
@@ -157,10 +158,11 @@ private:
 	struct LogField {
 		/// constructs a new LogField structure
 		LogField(const std::string& field, const pion::platform::Vocabulary::Term& term, char delim_start,
-				 char delim_end, bool opt_delims, bool urlencode, char escape_char, const std::string& empty_val)
+				 char delim_end, bool opt_delims, bool urlencode, char escape_char, const std::string& empty_val,
+				 bool do_time_offset, const PionDateTime::time_duration_type& time_offset)
 			: log_field(field), log_term(term), log_delim_start(delim_start), log_delim_end(delim_end),
 			  log_opt_delims(opt_delims), log_urlencode(urlencode), log_escape_char(escape_char),
-			  log_empty_val(empty_val)
+			  log_empty_val(empty_val), log_do_time_offset(do_time_offset), log_time_offset(time_offset)
 		{}
 
 		/// copy constructor
@@ -168,7 +170,7 @@ private:
 			: log_field(f.log_field), log_term(f.log_term), log_delim_start(f.log_delim_start),
 			  log_delim_end(f.log_delim_end), log_opt_delims(f.log_opt_delims),
 			  log_urlencode(f.log_urlencode), log_escape_char(f.log_escape_char),
-			  log_empty_val(f.log_empty_val)
+			  log_empty_val(f.log_empty_val), log_do_time_offset(f.log_do_time_offset), log_time_offset(f.log_time_offset)
 		{}
 
 		/// assignment operator
@@ -181,6 +183,8 @@ private:
 			log_urlencode = f.log_urlencode;
 			log_escape_char = f.log_escape_char;
 			log_empty_val = f.log_empty_val;
+			log_do_time_offset = f.log_do_time_offset;
+			log_time_offset = f.log_time_offset;
 			return *this;
 		}
 
@@ -227,6 +231,10 @@ private:
 		char								log_escape_char;
 		/// a string that represents an empty field value (default: "-" if no delimiters)
 		std::string							log_empty_val;
+		/// whether to apply a time offset to dates and times
+		bool								log_do_time_offset;
+		/// time offset to apply
+		PionDateTime::time_duration_type	log_time_offset;
 	};
 
 	/// data type for a pointer to a LogField object
@@ -264,7 +272,8 @@ private:
 	 */
 	inline void mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
 							   char delim_start, char delim_end, bool opt_delims,
-							   bool urlencode, char escape_char, const std::string& empty_val);
+							   bool urlencode, char escape_char, const std::string& empty_val,
+							   bool do_time_offset, const PionDateTime::time_duration_type& time_offset);
 
 	/**
 	 * translate C-style escape sequences in-place
@@ -306,6 +315,9 @@ private:
 
 	/// name of the headers element for Pion XML config files
 	static const std::string		HEADERS_ELEMENT_NAME;
+
+	/// name of the time offset element for Pion XML config files
+	static const std::string		TIME_OFFSET_ELEMENT_NAME;
 
 	/// name of the field mapping element for Pion XML config files
 	static const std::string		FIELD_ELEMENT_NAME;
@@ -390,6 +402,9 @@ private:
 	/// did we write the ELF headers already?
 	bool							m_wrote_elf_headers;
 
+	/// time offset in minutes
+	boost::int32_t					m_time_offset;
+
 	/// the event split set for the log file
 	std::string						m_event_split;
 
@@ -414,7 +429,8 @@ private:
 
 inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platform::Vocabulary::Term& term,
 									 char delim_start, char delim_end, bool opt_delims,
-									 bool urlencode, char escape_char, const std::string& empty_val)
+									 bool urlencode, char escape_char, const std::string& empty_val,
+									 bool do_time_offset, const PionDateTime::time_duration_type& time_offset)
 {
 	for (FieldMap::const_iterator i = m_field_map.begin(); i != m_field_map.end(); ++i) {
 		if (i->second->log_term.term_ref == term.term_ref)
@@ -425,7 +441,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platf
 		throw PionException("Duplicate Field Name");
 
 	// prepare a new Logfield object
-	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, opt_delims, urlencode, escape_char, empty_val));
+	LogFieldPtr field_ptr(new LogField(field, term, delim_start, delim_end, opt_delims, urlencode, escape_char, empty_val, do_time_offset, time_offset));
 	switch (term.term_type) {
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
@@ -616,14 +632,20 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_DATE_TIME:
 		case pion::platform::Vocabulary::TYPE_DATE:
 		case pion::platform::Vocabulary::TYPE_TIME:
+		{
+			PionDateTime dt = boost::get<const PionDateTime&>(value);
+			if (log_do_time_offset) {
+				dt -= log_time_offset;
+			}
 			if (log_urlencode) {
 				std::string temp_str;
-				log_time_facet.toString(temp_str, boost::get<const PionDateTime&>(value));
+				log_time_facet.toString(temp_str, dt);
 				oss << pion::net::HTTPTypes::url_encode(temp_str);
 			} else {
-				log_time_facet.write(oss, boost::get<const PionDateTime&>(value));
+				log_time_facet.write(oss, dt);
 			}
 			break;
+		}
 		default:
 			// ignore unsupported field...
 			break;
@@ -707,6 +729,9 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 				log_time_facet.fromString(temp_str, dt);
 			} else {
 				log_time_facet.fromString(buf, dt);
+			}
+			if (log_do_time_offset) {
+				dt += log_time_offset;
 			}
 			e.setDateTime(log_term.term_ref, dt);
 			break;

@@ -21,6 +21,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.inherited("postCreate", arguments);
 			this.special_config_elements.push('Events');
 			this.special_config_elements.push('Fields');
+			this.form.attr('value', {TimeOffset: 0});
 		},
 		_initFieldMappingGridLayout: function() {
 			this.field_mapping_grid_layout = [{

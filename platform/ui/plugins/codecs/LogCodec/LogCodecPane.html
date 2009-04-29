@@ -16,11 +16,10 @@
 						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
 						><td rowspan="4" valign="top" width="20">&nbsp;</td
 						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
+						><td rowspan="3" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
 					></tr><tr
 						><td><label>ID</label></td
 						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
-						><td rowspan="3">&nbsp;</td
 					></tr><tr
 						><td><label>Plugin&nbsp;Type</label></td
 						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
@@ -28,6 +27,8 @@
 						><td><label>Event&nbsp;Type</label></td
 						><td><input dojoType="pion.widgets.SimpleSelect" name="EventType"
 								store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
+						><td><label>Time&nbsp;Offset&nbsp;(minutes)</label></td
+						><td><input dojoType="dijit.form.TextBox" name="TimeOffset" style="width: 50px;"/></td
 					></tr
 				></table
 				><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Flush"/

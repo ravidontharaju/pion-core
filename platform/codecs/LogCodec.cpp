@@ -31,6 +31,7 @@ namespace plugins {		// begin namespace plugins
 const std::string			LogCodec::CONTENT_TYPE = "text/ascii";
 const std::string			LogCodec::FLUSH_ELEMENT_NAME = "Flush";
 const std::string			LogCodec::HEADERS_ELEMENT_NAME = "Headers";	// this means ELF
+const std::string			LogCodec::TIME_OFFSET_ELEMENT_NAME = "TimeOffset";
 const std::string			LogCodec::FIELD_ELEMENT_NAME = "Field";
 const std::string			LogCodec::TERM_ATTRIBUTE_NAME = "term";
 const std::string			LogCodec::START_ATTRIBUTE_NAME = "start";
@@ -72,6 +73,7 @@ CodecPtr LogCodec::clone(void) const
 	new_codec->m_flush_after_write = m_flush_after_write;
 	new_codec->m_handle_elf_headers = m_handle_elf_headers;
 	new_codec->m_wrote_elf_headers = false;	// Important!
+	new_codec->m_time_offset = m_time_offset;
 	new_codec->m_event_split = m_event_split;
 	new_codec->m_event_join = m_event_join;
 	new_codec->m_comment_chars = m_comment_chars;
@@ -81,7 +83,8 @@ CodecPtr LogCodec::clone(void) const
 	for (CurrentFormat::const_iterator i = m_format.begin(); i != m_format.end(); ++i) {
 		new_codec->mapFieldToTerm((*i)->log_field, (*i)->log_term, (*i)->log_delim_start, (*i)->log_delim_end,
 								  (*i)->log_opt_delims, (*i)->log_urlencode,
-								  (*i)->log_escape_char, (*i)->log_empty_val);
+								  (*i)->log_escape_char, (*i)->log_empty_val,
+								  (*i)->log_do_time_offset, (*i)->log_time_offset);
 	}
 	return CodecPtr(new_codec);
 }
@@ -240,6 +243,18 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			m_handle_elf_headers = true;
 	}
 
+	// check if the Codec should apply an offset when reading and writing dates and times
+	bool do_time_offset = false;
+	PionDateTime::time_duration_type time_offset(0, 0, 0);
+	std::string time_offset_option;
+	if (ConfigManager::getConfigOption(TIME_OFFSET_ELEMENT_NAME, time_offset_option, config_ptr)) {
+		m_time_offset = boost::lexical_cast<boost::int32_t>(time_offset_option);
+		if (m_time_offset != 0) {
+			do_time_offset = true;
+			time_offset = PionDateTime::time_duration_type(0, m_time_offset, 0);
+		}
+	}
+
 	// next, map the fields to Terms
 	xmlNodePtr codec_field_node = config_ptr;
 	while ((codec_field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, codec_field_node)) != NULL) {
@@ -331,7 +346,7 @@ void LogCodec::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		}
 
 		// add the field mapping
-		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end, opt_delims, urlencode, escape_char, empty_val);
+		mapFieldToTerm(field_name, v[term_ref], delim_start, delim_end, opt_delims, urlencode, escape_char, empty_val, do_time_offset, time_offset);
 
 		// step to the next field mapping
 		codec_field_node = codec_field_node->next;
