@@ -531,6 +531,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterRest
 }
 */
 
+/*
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngineReloaded) {
 	this->setupForLargeLogFile();
 
@@ -578,6 +579,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkPartiallyConsumedFileResumedAfterEngi
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id),  expected_events_in);
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsOut(F::m_log_reader_id), expected_events_out);
 }
+*/
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkNumberOfEventsProcessedForMultipleReaders) {
 	// Make another LogInputReactor.
