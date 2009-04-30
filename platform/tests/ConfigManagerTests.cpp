@@ -20,7 +20,6 @@
 #include <pion/PionConfig.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string.hpp>
 #include <cstring>
 
 using namespace pion;
@@ -33,24 +32,25 @@ BOOST_AUTO_TEST_CASE(checkCreateUUID) {
 }
 
 BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsRelative) {
-	std::string base_path("/opt/pion/config/platform.xml");
 	std::string relative_path("../ui");
 #if defined(_MSC_VER)
-	BOOST_CHECK_EQUAL(boost::to_lower_copy(ConfigManager::resolveRelativePath(base_path, relative_path)), "c:\\opt\\pion\\ui");
+	std::string base_path("c:\\opt\\pion\\config\\platform.xml");
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "c:\\opt\\pion\\ui");
 #else
+	std::string base_path("/opt/pion/config/platform.xml");
 	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsNotRelative) {
-	std::string base_path("/opt/pion/config/platform.xml");
 #if defined(_MSC_VER)
-	std::string relative_path("C:\\opt\\pion\\ui");
-	BOOST_CHECK_EQUAL(boost::to_lower_copy(ConfigManager::resolveRelativePath(base_path, relative_path)), "c:\\opt\\pion\\ui");
+	std::string base_path("c:\\opt\\pion\\config\\platform.xml");
+	std::string relative_path("c:\\opt\\pion\\ui");
 #else
+	std::string base_path("/opt/pion/config/platform.xml");
 	std::string relative_path("/opt/pion/ui");
-	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), "/opt/pion/ui");
 #endif
+	BOOST_CHECK_EQUAL(ConfigManager::resolveRelativePath(base_path, relative_path), relative_path);
 }
 
 BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithSomeValidInputs) {
