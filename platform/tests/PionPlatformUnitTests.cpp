@@ -24,6 +24,12 @@
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
 
+#ifdef PION_HAVE_SSL
+#ifdef _MSC_VER
+	#include <openssl/applink.c>
+#endif
+#endif
+
 #define BOOST_TEST_MODULE pion-platform-unit-tests
 #include <boost/test/unit_test.hpp>
 
