@@ -225,31 +225,32 @@ if ($PLATFORM =~ /^win32/i) {
 		system("tar -C $BIN_DIR -cjf $BIN_DIR/$TARBALL_NAME.tar.bz2 $PACKAGE_NAME");
 	}
 
-#	if ($PLATFORM eq "osx") {
-#		# Build application bundle for Mac OS X
-#		print "Creating Mac OS X application bundle..\n";
-#		$OSX_PACKAGE_DIR = "$BIN_DIR/osx/$PACKAGE_NAME";
-#		rmtree($OSX_PACKAGE_DIR);
-#		mkpath($OSX_PACKAGE_DIR);
-#		system("platypus -V $VERSION -a 'Pion Community Edition' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
-#
-#		# Platypus' icon support is broken; copy file into .app package
-#		copy("platform/build/appIcon.icns", "$OSX_PACKAGE_DIR/Pion.app/Contents/Resources");
-#
-#		# Copy other misc files
-#		copy("COPYING", "$OSX_PACKAGE_DIR/LICENSE.txt");
-#		copy("ChangeLog", "$OSX_PACKAGE_DIR/HISTORY.txt");
-#		copy("platform/build/README.bin.osx", "$OSX_PACKAGE_DIR/README.txt");
-#
-#		# create zip package
-#		if ($NOZIP ne "nozip") {
-#			require Archive::Zip;
-#			$zip = new Archive::Zip;
-#			$zip->addTree($OSX_PACKAGE_DIR, $PACKAGE_NAME);
-#			$zip->writeToFileNamed("$BIN_DIR/${TARBALL_NAME}_app.zip");
-#			undef $zip;
-#		}
-#	}
+	if ($PLATFORM eq "osx") {
+		# Build application bundle for Mac OS X
+		print "Creating Mac OS X application bundle..\n";
+		$OSX_PACKAGE_DIR = "$BIN_DIR/osx/$PACKAGE_NAME";
+		rmtree($OSX_PACKAGE_DIR);
+		mkpath($OSX_PACKAGE_DIR);
+		system("platypus -V $VERSION -a 'Pion Community Edition' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
+
+		# Platypus' icon support is broken; copy file into .app package
+		copy("platform/build/appIcon.icns", "$OSX_PACKAGE_DIR/Pion.app/Contents/Resources");
+
+		# Copy other misc files
+		copy("COPYING", "$OSX_PACKAGE_DIR/LICENSE.txt");
+		copy("ChangeLog", "$OSX_PACKAGE_DIR/HISTORY.txt");
+		copy("platform/build/README.bin.osx", "$OSX_PACKAGE_DIR/README.txt");
+		copy("platform/build/pion-manual.pdf", "$OSX_PACKAGE_DIR/pion-manual.pdf");
+
+		# create zip package
+		if ($NOZIP ne "nozip") {
+			require Archive::Zip;
+			$zip = new Archive::Zip;
+			$zip->addTree($OSX_PACKAGE_DIR, $PACKAGE_NAME);
+			$zip->writeToFileNamed("$BIN_DIR/${TARBALL_NAME}_app.zip");
+			undef $zip;
+		}
+	}
 }
 
 print "* Done creating binary packages.\n";
