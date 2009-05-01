@@ -2,7 +2,7 @@ Version 2.0.4 (2009-05-01)
 ==========================
 
 * Added a time zone offset feature to LogCodec (545)
-* Added the first user manual documentation for Pion (315)
+* Added the first user manual documentation for Pion (551)
 * Resolved SQLite linking problems on RHEL5 & OSX via log4cxx rebuild (547)
 * Fixed date/time data storage when using a SQLiteDatabase engine (526)
 * Fixed crashes due to NULL/empty event fields with SQLiteDatabase (550)
