@@ -306,6 +306,38 @@ protected:
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
+		/**
+		 * binds a date_time value to a query parameter (use bindString() instead)
+		 *
+		 * @param param the query parameter number to which the value will be bound (starting with 0)
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindDate(unsigned int param, const PionDateTime& value) {
+			// store it as an iso extended string
+			pion::PionTimeFacet f("%Y-%m-%d");
+			std::string as_string(f.toString(boost::get<const PionDateTime&>(value)));
+//			std::string as_string(boost::posix_time::to_iso_extended_string(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string.c_str(),
+								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+
+		/**
+		 * binds a date_time value to a query parameter (use bindString() instead)
+		 *
+		 * @param param the query parameter number to which the value will be bound (starting with 0)
+		 * @param value the value to bind to the query parameter
+		 */
+		virtual void bindTime(unsigned int param, const PionDateTime& value) {
+			// store it as an iso extended string
+			pion::PionTimeFacet f("%H:%M:%S");
+			std::string as_string(f.toString(boost::get<const PionDateTime&>(value)));
+//			std::string as_string(boost::posix_time::to_iso_extended_string(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string.c_str(),
+								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+
 		/// Fetch a string from a column
 		virtual void fetchString(unsigned int param, std::string& value) {
 			value = (const char *)sqlite3_column_text(m_sqlite_stmt, param+1);
@@ -349,6 +381,26 @@ protected:
 		/// Fetch a date from a column
 		virtual void fetchDateTime(unsigned int param, PionDateTime& val) {
             val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param+1)));
+		}
+
+		/// Fetch a time from a column
+		virtual void fetchDate(unsigned int param, PionDateTime& val) {
+			// %Y-%m-%dT%H:%M:%S%F
+			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
+			if (ptr) {
+				PionTimeFacet time_facet("%Y-%m-%d");
+				val = time_facet.fromString(ptr);
+			}
+		}
+
+		/// Fetch a time from a column
+		virtual void fetchTime(unsigned int param, PionDateTime& val) {
+			// %Y-%m-%dT%H:%M:%S%F
+			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
+			if (ptr) {
+				PionTimeFacet time_facet("%H:%M:%S");
+				val = time_facet.fromString(ptr);
+			}
 		}
 
 		/**
