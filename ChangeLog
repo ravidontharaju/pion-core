@@ -1,10 +1,13 @@
-
-Version 2.0.2 (2009-04-21)
+Version 2.0.4 (2009-05-01)
 ==========================
 
-* Embedded SQLite now using _v2 calls and mutexes for better concurrency
-* Added FullQuery and getMore functionality to Database classes
-* Making SQLite reads NULL resistant, fixed date/time reads
+* Added a time zone offset feature to LogCodec (545)
+* Added the first user manual documentation for Pion (315)
+* Resolved SQLite linking problems on RHEL5 & OSX via log4cxx rebuild (547)
+* Fixed date/time data storage when using a SQLiteDatabase engine (526)
+* Fixed crashes due to NULL/empty event fields with SQLiteDatabase (550)
+* SQLiteDatabase now using _v2 calls and mutexes for better concurrency (548)
+* Added FullQuery and getMore functionality to Database classes (549)
 
 
 Version 1.2.6 (2009-04-03)
