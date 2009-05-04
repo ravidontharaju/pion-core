@@ -49,8 +49,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.field_mapping_grid = new dojox.grid.DataGrid({
 				store: this.field_mapping_store,
 				structure: this.field_mapping_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.field_mapping_grid_node.appendChild(this.field_mapping_grid.domNode);
 			this.field_mapping_grid.startup();
