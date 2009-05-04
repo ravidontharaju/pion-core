@@ -21593,7 +21593,7 @@ var _this=this;
 this.field_mapping_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
 this.field_mapping_store.next_id=0;
 this._initFieldMappingGridLayout();
-this.field_mapping_grid=new dojox.grid.DataGrid({store:this.field_mapping_store,structure:this.field_mapping_grid_layout,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+this.field_mapping_grid=new dojox.grid.DataGrid({store:this.field_mapping_store,structure:this.field_mapping_grid_layout,singleClickEdit:true},document.createElement("div"));
 this.field_mapping_grid_node.appendChild(this.field_mapping_grid.domNode);
 this.field_mapping_grid.startup();
 this.field_mapping_grid.connect(this.field_mapping_grid,"onCellClick",function(e){
@@ -24360,7 +24360,7 @@ dojo.connect(n,"change",_this,_this.markAsChanged);
 },initGrid:function(){
 var _this=this;
 this.vocab_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"ID",name:"ID",width:15,editable:false},{field:"Type",name:"Type",width:15,widgetClass:"pion.widgets.SimpleSelect",widgetProps:{store:pion.terms.type_store,searchAttr:"description"}},{field:"Format",name:"Format",width:10},{field:"Size",name:"Size",width:3},{field:"Comment",name:"Comment",width:"auto",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
-this.vocab_term_grid=new dojox.grid.DataGrid({store:this.vocabulary.vocab_term_store,structure:this.vocab_grid_layout,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+this.vocab_term_grid=new dojox.grid.DataGrid({store:this.vocabulary.vocab_term_store,structure:this.vocab_grid_layout,singleClickEdit:true},document.createElement("div"));
 this.vocab_term_grid_node.appendChild(this.vocab_term_grid.domNode);
 this.vocab_term_grid.startup();
 this.vocab_term_grid.connect(this.vocab_term_grid,"onCellClick",function(e){
@@ -24609,7 +24609,7 @@ var _this=this;
 this.extraction_rule_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
 this.extraction_rule_store.next_id=0;
 this.extraction_rule_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"Term",name:"Term",width:16,type:pion.widgets.TermTextCell},{field:"Source",name:"Source",styles:"",width:7,type:dojox.grid.cells.Select,options:plugins.protocols.source_options},{field:"Name",name:"Name",width:7,formatter:pion.xmlCellFormatter},{field:"Match",name:"Match",width:8,formatter:pion.xmlCellFormatter},{field:"Format",name:"Format",width:8,formatter:pion.xmlCellFormatter},{field:"ContentType",name:"ContentType",width:8,formatter:pion.xmlCellFormatter},{field:"MaxSize",name:"MaxSize",width:"auto",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,value:"<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>"},]}];
-this.extraction_rule_grid=new dojox.grid.DataGrid({store:this.extraction_rule_store,structure:this.extraction_rule_grid_layout,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+this.extraction_rule_grid=new dojox.grid.DataGrid({store:this.extraction_rule_store,structure:this.extraction_rule_grid_layout,singleClickEdit:true},document.createElement("div"));
 this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
 this.extraction_rule_grid.startup();
 this.extraction_rule_grid.connect(this.extraction_rule_grid,"onCellClick",function(e){

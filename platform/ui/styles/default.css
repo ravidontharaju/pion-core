@@ -962,11 +962,6 @@ The following are also available, if the need arises.
 	background: url("../images/button-add-new-plugin-path-on.png");
 }
 
-
-.plugin_pane_grid {
-	overflow: auto;
-}
-
 .codec_grid {
 	height: 180px;
 }

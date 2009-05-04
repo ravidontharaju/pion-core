@@ -72,8 +72,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			this.extraction_rule_grid = new dojox.grid.DataGrid({
 				store: this.extraction_rule_store,
 				structure: this.extraction_rule_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
 			this.extraction_rule_grid.startup();

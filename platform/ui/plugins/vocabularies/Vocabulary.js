@@ -361,8 +361,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.vocab_term_grid = new dojox.grid.DataGrid({
 				store: this.vocabulary.vocab_term_store,
 				structure: this.vocab_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.vocab_term_grid_node.appendChild(this.vocab_term_grid.domNode);
 			this.vocab_term_grid.startup();
