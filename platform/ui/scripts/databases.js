@@ -222,7 +222,12 @@ pion.databases.init = function() {
 		dialog.show();
 		dialog.execute = function(dialogFields) {
 			console.debug(dialogFields);
-			_initNewDatabase(dialogFields['Plugin']);
+			if (plugins.databases[dialogFields.Plugin] &&
+				plugins.databases[dialogFields.Plugin].edition == 'Enterprise') {
+				pion.about.checkKeyStatus({success_callback: function() {_initNewDatabase(dialogFields.Plugin);}});
+			} else {
+				_initNewDatabase(dialogFields.Plugin);
+			}
 		}
 	}
 
@@ -255,7 +260,7 @@ pion.databases.init = function() {
 			}
 			post_data += '</Database></PionConfig>';
 			console.debug('post_data: ', post_data);
-
+	
 			dojo.rawXhrPost({
 				url: '/config/databases',
 				contentType: "text/xml",

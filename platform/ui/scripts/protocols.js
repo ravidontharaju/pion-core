@@ -118,18 +118,25 @@ pion.protocols.init = function() {
 		});
 	}
 
-	dojo.connect(dojo.byId('add_new_protocol_button'), 'click', addNewProtocol);
-}
+	function addNewProtocol() {
+		var dialog = new plugins.protocols.ProtocolInitDialog({title: 'Add New Protocol'});
 
-function addNewProtocol() {
-	var dialog = new plugins.protocols.ProtocolInitDialog({title: 'Add New Protocol'});
+		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+		dialog.show();
+		dialog.execute = function(dialogFields) {
+			console.debug(dialogFields);
+			if (plugins.protocols[dialogFields.Plugin] &&
+				plugins.protocols[dialogFields.Plugin].edition == 'Enterprise') {
+				pion.about.checkKeyStatus({success_callback: function() {_sendPostRequest(dialogFields)}});
+			} else {
+				_sendPostRequest(dialogFields);
+			}
+		}
+	}
 
-	dialog.show();
-	dialog.execute = function(dialogFields) {
-		console.debug(dialogFields);
+	function _sendPostRequest(dialogFields) {
 		var post_data = '<PionConfig><Protocol>';
 		for (var tag in dialogFields) {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
@@ -140,7 +147,7 @@ function addNewProtocol() {
 		}
 		post_data += '</Protocol></PionConfig>';
 		console.debug('post_data: ', post_data);
-		
+
 		dojo.rawXhrPost({
 			url: '/config/protocols',
 			contentType: "text/xml",
@@ -155,6 +162,8 @@ function addNewProtocol() {
 			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 		});
 	}
+
+	dojo.connect(dojo.byId('add_new_protocol_button'), 'click', addNewProtocol);
 }
 
 pion.protocols._adjustAccordionSize = function() {
