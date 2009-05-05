@@ -32,18 +32,10 @@ pion.codecs.init = function() {
 	dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
 
 	pion.codecs.createNewPaneFromItem = function(item) {
-		var title = pion.codecs.config_store.getValue(item, 'Name');
-		var plugin = pion.codecs.config_store.getValue(item, 'Plugin');
-		var codec_pane_node = document.createElement('span');
-		var pane_class_name = 'plugins.codecs.' + plugin + 'Pane';
-		var pane_class = dojo.getObject(pane_class_name);
-		if (pane_class) {
-			console.debug('found class ', pane_class_name);
-			var codec_pane = new pane_class({ 'class': 'codec_pane', title: title }, codec_pane_node);
-		} else {
-			console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
-			var codec_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: title }, codec_pane_node);
-		}
+		// We're doing lazy loading of Codec panes.  Here we create a placeholder pane,
+		// which will be replaced with a real one if and when it's selected.
+		var title = pion.codecs.config_store.getValue(item, 'Name').toString();
+		var codec_pane = new dijit.layout.AccordionPane({ title: title });
 		codec_pane.config_item = item;
 		codec_pane.uuid = pion.codecs.config_store.getValue(item, '@id');
 		dijit.byId('codec_config_accordion').addChild(codec_pane);
@@ -153,23 +145,47 @@ function codecPaneSelected(pane) {
 		return;
 	}
 
-	selected_codec_pane = pane;
-	console.debug('Fetching item ', pane.uuid);
-	var store = pion.codecs.config_store;
-	store.fetch({
-		query: {'@id': pane.uuid},
-		onItem: function(item) {
-			console.debug('item: ', item);
-			pane.populateFromConfigItem(item);
-		},
-		onError: pion.handleFetchError
-	});
+	if (! pane.initialized) {
+		// The selected pane is just a placeholder, so now create the real thing.
+		var plugin = pion.codecs.config_store.getValue(pane.config_item, 'Plugin');
+		var pane_class_name = 'plugins.codecs.' + plugin + 'Pane';
+		var pane_class = dojo.getObject(pane_class_name);
+		if (pane_class) {
+			console.debug('found class ', pane_class_name);
+			var new_pane = new pane_class({ 'class': 'codec_pane', title: pane.title });
+		} else {
+			console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
+			var new_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: pane.title });
+		}
+		new_pane.initialized = true;
+		new_pane.uuid = pane.uuid;
 
-	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-	var slide_duration = dijit.byId('codec_config_accordion').duration;
-	setTimeout(function() {
-					dojo.style(pane.containerNode, "overflow", "hidden");
-					pion.codecs._adjustAccordionSize();
-			   },
-			   slide_duration + 50);
+		// Replace the uninitialized (placeholder) pane with the real one and call selectChild() again.
+		var config_accordion = dijit.byId('codec_config_accordion');
+		var idx = config_accordion.getIndexOfChild(pane);
+		config_accordion.addChild(new_pane, idx);
+		config_accordion.selectChild(new_pane);
+		config_accordion.removeChild(pane);
+	} else {
+		// Pane is initialized, so populate (or re-populate) it.
+		selected_codec_pane = pane;
+		console.debug('Fetching item ', pane.uuid);
+		var store = pion.codecs.config_store;
+		store.fetch({
+			query: {'@id': pane.uuid},
+			onItem: function(item) {
+				console.debug('item: ', item);
+				pane.populateFromConfigItem(item);
+			},
+			onError: pion.handleFetchError
+		});
+	
+		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+		var slide_duration = dijit.byId('codec_config_accordion').duration;
+		setTimeout(function() {
+						dojo.style(pane.containerNode, "overflow", "hidden");
+						pion.codecs._adjustAccordionSize();
+				   },
+				   slide_duration + 50);
+	}
 }
