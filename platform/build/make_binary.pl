@@ -237,7 +237,6 @@ if ($PLATFORM =~ /^win32/i) {
 		copy("COPYING", "$OSX_PACKAGE_DIR/LICENSE.txt");
 		copy("ChangeLog", "$OSX_PACKAGE_DIR/HISTORY.txt");
 		copy("platform/build/README.bin.osx", "$OSX_PACKAGE_DIR/README.txt");
-		copy("platform/build/pion-manual.pdf", "$OSX_PACKAGE_DIR/pion-manual.pdf");
 
 		# create zip package
 		if ($NOZIP ne "nozip") {
