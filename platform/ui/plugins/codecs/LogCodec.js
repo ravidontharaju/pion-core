@@ -21,7 +21,21 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.inherited("postCreate", arguments);
 			this.special_config_elements.push('Events');
 			this.special_config_elements.push('Fields');
+			this.populateWithDefaults();
+		},
+		populateWithDefaults: function() {
+			this.inherited('populateWithDefaults', arguments);
 			this.form.attr('value', {TimeOffset: 0});
+
+			// TODO: Is this the right thing to do, or should the default values be used, as in custom_post_data?
+			this.form.attr('value', {
+				'@event_split_set': '',
+				'@event_join_string': '',
+				'@comment_prefix': '',
+				'@field_split_set': '',
+				'@field_join_string': '',
+				'@consec_field_delims': 'true'
+			});
 		},
 		_initFieldMappingGridLayout: function() {
 			this.field_mapping_grid_layout = [{
@@ -73,13 +87,13 @@ dojo.declare("plugins.codecs.LogCodecPane",
 				}
 			}
 
+			var events_item = store.getValue(item, 'Events');
+			if (events_item) {
+				config['@event_split_set'] = store.getValue(events_item, '@split');
+				config['@event_join_string'] = store.getValue(events_item, '@join');
+				config['@comment_prefix'] = store.getValue(events_item, '@comment');
+			}
 			if (! headers) {
-				var events_item = store.getValue(item, 'Events');
-				if (events_item) {
-					config['@event_split_set'] = store.getValue(events_item, '@split');
-					config['@event_join_string'] = store.getValue(events_item, '@join');
-					config['@comment_prefix'] = store.getValue(events_item, '@comment');
-				}
 				var fields_item = store.getValue(item, 'Fields');
 				if (fields_item) {
 					config['@field_split_set'] = store.getValue(fields_item, '@split');

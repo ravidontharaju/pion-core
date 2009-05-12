@@ -56,7 +56,7 @@ pion.codecs.init = function() {
 		});
 	}
 
-	function onComplete(items, request){
+	function onComplete(items, request) {
 		var config_accordion = dijit.byId('codec_config_accordion');
 		for (var i = 0; i < items.length; ++i) {
 			pion.codecs.createNewPaneFromItem(items[i]);
@@ -129,6 +129,42 @@ pion.codecs._adjustAccordionSize = function() {
 	dijit.byId('main_stack_container').resize({h: pion.codecs.height});
 }
 
+function replaceCodecAccordionPane(old_pane) {
+	var plugin = pion.codecs.config_store.getValue(old_pane.config_item, 'Plugin');
+	var pane_class_name = 'plugins.codecs.' + plugin + 'Pane';
+	var pane_class = dojo.getObject(pane_class_name);
+	if (pane_class) {
+		console.debug('found class ', pane_class_name);
+		var new_pane = new pane_class({ 'class': 'codec_pane', title: old_pane.title });
+	} else {
+		console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
+		var new_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: old_pane.title });
+	}
+	new_pane.uuid = old_pane.uuid;
+	new_pane.config_item = old_pane.config_item;
+	new_pane.initialized = true;
+
+	// Replace the uninitialized (placeholder) pane with the real one and call selectChild() again.
+	var config_accordion = dijit.byId('codec_config_accordion');
+	var idx = config_accordion.getIndexOfChild(old_pane);
+	config_accordion.addChild(new_pane, idx);
+	config_accordion.selectChild(new_pane);
+	config_accordion.removeChild(old_pane);
+}
+
+function updateCodecPane(pane) {
+	console.debug('Fetching item ', pane.uuid);
+	var store = pion.codecs.config_store;
+	store.fetch({
+		query: {'@id': pane.uuid},
+		onItem: function(item) {
+			console.debug('item: ', item);
+			pane.populateFromConfigItem(item);
+		},
+		onError: pion.handleFetchError
+	});
+}
+
 function codecPaneSelected(pane) {
 	console.debug('Selected ' + pane.title);
 
@@ -145,45 +181,18 @@ function codecPaneSelected(pane) {
 		return;
 	}
 
-	if (! pane.initialized) {
-		// The selected pane is just a placeholder, so now create the real thing.
-		var plugin = pion.codecs.config_store.getValue(pane.config_item, 'Plugin');
-		var pane_class_name = 'plugins.codecs.' + plugin + 'Pane';
-		var pane_class = dojo.getObject(pane_class_name);
-		if (pane_class) {
-			console.debug('found class ', pane_class_name);
-			var new_pane = new pane_class({ 'class': 'codec_pane', title: pane.title });
-		} else {
-			console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
-			var new_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: pane.title });
-		}
-		new_pane.initialized = true;
-		new_pane.uuid = pane.uuid;
-
-		// Replace the uninitialized (placeholder) pane with the real one and call selectChild() again.
-		var config_accordion = dijit.byId('codec_config_accordion');
-		var idx = config_accordion.getIndexOfChild(pane);
-		config_accordion.addChild(new_pane, idx);
-		config_accordion.selectChild(new_pane);
-		config_accordion.removeChild(pane);
-	} else {
-		// Pane is initialized, so populate (or re-populate) it.
+	if (! pane.initialized)
+		// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+		// then be selected, causing this function to be called again, this time with pane.initialized = true;
+		replaceCodecAccordionPane(pane);
+	else {
 		selected_codec_pane = pane;
-		console.debug('Fetching item ', pane.uuid);
-		var store = pion.codecs.config_store;
-		store.fetch({
-			query: {'@id': pane.uuid},
-			onItem: function(item) {
-				console.debug('item: ', item);
-				pane.populateFromConfigItem(item);
-			},
-			onError: pion.handleFetchError
-		});
+		updateCodecPane(pane);
 	
 		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
 		var slide_duration = dijit.byId('codec_config_accordion').duration;
 		setTimeout(function() {
-						dojo.style(pane.containerNode, "overflow", "hidden");
+						dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
 						pion.codecs._adjustAccordionSize();
 				   },
 				   slide_duration + 50);

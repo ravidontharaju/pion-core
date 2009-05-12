@@ -12,7 +12,11 @@ dojo.declare("plugins.codecs.XMLCodecPane",
 		},
 		widgetsInTemplate: true,
 		postCreate: function() {
-			this.inherited("postCreate", arguments);
+			this.inherited('postCreate', arguments);
+			this.populateWithDefaults();
+		},
+		populateWithDefaults: function() {
+			this.inherited('populateWithDefaults', arguments);
 			this.form.attr('value', {EventTag: 'Event', EventContainerTag: 'Events'});
 		},
  		getHeight: function() {
