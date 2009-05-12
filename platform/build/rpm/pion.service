@@ -15,6 +15,7 @@ RETVAL=0
 
 start() {
 	echo -n $"Starting $prog: "
+	ulimit -s 512
 	daemon $prog -D
 	RETVAL=$?
 	echo
