@@ -427,6 +427,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 .tundra .collectionHeader .dijitAccordionTitle {
+	background-image: none;
 	background: #ffcccc;
 	font-size: 12px;
 	font-weight: bold;
@@ -435,6 +436,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 .tundra .processingHeader .dijitAccordionTitle {
+	background-image: none;
 	background: #cce5ff;
 	font-size: 12px;
 	font-weight: bold;
@@ -443,6 +445,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 .tundra .storageHeader .dijitAccordionTitle {
+	background-image: none;
 	background: #cedaa6;
 	font-size: 12px;
 	font-weight: bold;
@@ -1010,22 +1013,6 @@ The following are also available, if the need arises.
 	text-decoration: none;
 	background: url("../images/accordion-title-bg.png");
 	color: #ffffff;
-}
-
-
-.tundra .collectionHeader .dijitAccordionTitle {
-	background-image: none;
-	color:#333333;
-}
-
-.tundra .processingHeader .dijitAccordionTitle {
-	background-image: none;
-	color:#333333;
-}
-
-.tundra .storageHeader .dijitAccordionTitle {
-	background-image: none;
-	color:#333333;
 }
 
 /*
