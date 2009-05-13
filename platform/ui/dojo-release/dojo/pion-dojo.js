@@ -21277,12 +21277,20 @@ this._setValueAttr(this._resetValue,true);
 return this.containerNode.value;
 },_setValueAttr:function(value){
 if(this.doneAddingOptions){
+if(value===null){
+this.containerNode.selectedIndex=-1;
+}else{
 this.containerNode.value=value;
+}
 this._handleOnChange(value,true);
 }else{
 var h=this.connect(this,"_onDoneAddingOptions",function(){
 this.disconnect(h);
+if(value===null){
+this.containerNode.selectedIndex=-1;
+}else{
 this.containerNode.value=value;
+}
 this._handleOnChange(value,true);
 });
 }
@@ -21882,6 +21890,7 @@ n.setAttribute("disabled",true);
 });
 dojo.query("select",this.separators).forEach(function(n){
 dijit.byNode(n).attr("disabled",true);
+dijit.byNode(n).attr("value",null);
 });
 dojo.query("label.disable_for_ELF",this.separators).forEach(function(n){
 dojo.addClass(n,"disabled");

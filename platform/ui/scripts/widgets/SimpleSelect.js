@@ -40,12 +40,20 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 		// summary:
 		//		Hook so attr('value', value) works.
 		if (this.doneAddingOptions) {
-			this.containerNode.value = value;
+			if (value === null) {
+				this.containerNode.selectedIndex = -1;
+			} else {
+				this.containerNode.value = value;
+			}
 			this._handleOnChange(value, true);
 		} else {
 			var h = this.connect(this, '_onDoneAddingOptions', function() {
 				this.disconnect(h);
-				this.containerNode.value = value;
+				if (value === null) {
+					this.containerNode.selectedIndex = -1;
+				} else {
+					this.containerNode.value = value;
+				}
 				this._handleOnChange(value, true);
 			});
 		}

@@ -228,9 +228,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			dojo.query('input.disable_for_ELF', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
 			dojo.query('select', this.separators).forEach(function(n) {
 				dijit.byNode(n).attr('disabled', true);
-
-				// TODO: change pion.widgets.SimpleSelect to make this work, i.e. so that nothing is selected.
-				//dijit.byNode(n).attr('value', null);
+				dijit.byNode(n).attr('value', null);
 			});
 			dojo.query('label.disable_for_ELF', this.separators).forEach(function(n) { dojo.addClass(n, 'disabled'); });
 			var form_values = this.form.attr('value');
