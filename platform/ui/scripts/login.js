@@ -69,16 +69,16 @@ pion.login.doLoginDialog = function(kw_args) {
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	if (!ops_toggle_button.checked) {
-		ops_toggle_button.setAttribute('checked', true);
+		ops_toggle_button.attr('checked', true);
 		//dojo.addClass(dojo.byId('counterBackground'), 'hidden');
 		pion.login.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.login.LoginDialog({});
-	dialog.setValues({Username: pion.login.latestUsername});
+	dialog.attr('value', {Username: pion.login.latestUsername});
 	dojo.connect(dialog.domNode, 'onkeypress', 
 		function(event) {
 			if (event.keyCode == dojo.keys.ENTER) {
-				dialog.execute(dialog.getValues()); 
+				dialog.execute(dialog.attr('value')); 
 				dialog.destroyRecursive();
 			}
 		}
@@ -98,7 +98,7 @@ pion.login.doLoginDialog = function(kw_args) {
 				console.debug('login response: ioArgs.xhr = ', ioArgs.xhr);
 				if (pion.login.ops_temporarily_suppressed) {
 					// turn ops back on
-					ops_toggle_button.setAttribute('checked', false);
+					ops_toggle_button.attr('checked', false);
 					//dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
 					pion.login.ops_temporarily_suppressed = false;
 				}

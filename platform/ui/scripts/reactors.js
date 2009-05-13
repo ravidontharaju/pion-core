@@ -531,7 +531,7 @@ pion.reactors._showReactorInitDialog = function(reactor_type) {
 				if (plugins.reactors[reactor_type].option_defaults[option])
 					options.push(option);
 			}
-			dialog.setValues({options: options});
+			dialog.attr('value', {options: options});
 		}
 	} else {
 		var dialog = new plugins.reactors.ReactorInitDialog({title: plugins.reactors[reactor_type].label + ' Initialization', plugin: reactor_type});
@@ -660,7 +660,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	} else {
 		var dialog = new plugins.reactors.ReactorDialog({title: reactor.config.Plugin + ' Configuration', reactor: reactor});
 	}
-	dialog.setValues(reactor.config);
+	dialog.attr('value', reactor.config);
 
 	var reactor_inputs_store = new dojo.data.ItemFileWriteStore({
 		data: { identifier: 'ID', items: [] }
@@ -804,9 +804,6 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	});
 
 	// The following use forEach to allow either zero or multiple matches.
-	dojo.query(".dijitComboBox[name='event_type']", dialog.domNode).forEach(function(n) {
-		dijit.byNode(n).setValue(reactor.event_type || 1);  // '1' means the item in the event data store with term_ref = 1
-	});
 	dojo.query(".dijitButton.delete", dialog.domNode).forEach(function(n) {
 		dojo.connect(n, 'click', function() { dialog.onCancel(); pion.reactors.deleteReactorIfConfirmed(reactor); })
 	});
@@ -838,7 +835,7 @@ pion.reactors.showXMLDialog = function(reactor) {
 			var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre><br/>';
 			console.debug('html = ', html);
 			var dialog = new dijit.Dialog({title: reactor.config.Name + ' Configuration', style: 'width: 600px'});
-			dialog.setContent(html);
+			dialog.attr('content', html);
 			dialog.show();
 			return response;
 		},

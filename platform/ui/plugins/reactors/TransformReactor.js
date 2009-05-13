@@ -420,7 +420,7 @@ dojo.declare("plugins.reactors.TransformReactor.KeyValuePairImportDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		enableApply: function() {
-			this.apply_button.setAttribute('disabled', false);
+			this.apply_button.attr('disabled', false);
 		},
 		widgetsInTemplate: true
 	}
@@ -452,8 +452,8 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 			this.lookup_store.next_id = 0;
 			this.connect(this.lookup_store, 'onNew', function() {
-				this.export_xml_button.setAttribute('disabled', false);
-				this.export_csv_button.setAttribute('disabled', false);
+				this.export_xml_button.attr('disabled', false);
+				this.export_csv_button.attr('disabled', false);
 			});
 			this._populateLookupStore();
 
@@ -512,7 +512,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				this.output_radio_button.attr('disabled', false);
 			} else {
 				this.format_text_box.attr('disabled', true);
-				this.format_text_box.setValue('');
+				this.format_text_box.attr('value', '');
 				//this.format_text_box.domNode.style.visibility = 'hidden';
 				this.output_radio_button.attr('disabled', true);
 				this.attr('value', {DefaultAction: 'leave-undefined'});
@@ -524,7 +524,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				this.default_value.domNode.style.visibility = 'visible';
 			} else {
 				this.default_value.attr('disabled', true);
-				this.default_value.setValue('');
+				this.default_value.attr('value', '');
 				this.default_value.domNode.style.visibility = 'hidden';
 			}
 		},
@@ -568,7 +568,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				content += pion.escapeXml(element) + '<br />';
 			}
 			var dialog = new dijit.Dialog({title: 'Exported Key Value Pairs in XML Format', style: 'width: 600px'});
-			dialog.setContent(content);
+			dialog.attr('content', content);
 			dialog.show();
 		},
 		_onImportCsvKeyValuePairs: function(e) {
@@ -615,7 +615,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				content += pion.escapeXml(element) + '<br />';
 			}
 			var dialog = new dijit.Dialog({title: 'Exported Key Value Pairs in CSV Format', style: 'width: 600px'});
-			dialog.setContent(content);
+			dialog.attr('content', content);
 			dialog.show();
 		},
 		_handleAddNewLookup: function() {
@@ -639,7 +639,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			this.inherited("postCreate", arguments);
 
 			if (plugins.reactors.TransformReactor.getBool(this.transformation_store, this.transformation_item, 'StopOnFirstMatch'))
-				this.setValues({options: ['StopOnFirstMatch']});
+				this.attr('value', {options: ['StopOnFirstMatch']});
 
 			// Create and populate a datastore for the Rule grid.
 			this.rule_store = new dojo.data.ItemFileWriteStore({

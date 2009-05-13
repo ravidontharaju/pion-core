@@ -34,7 +34,7 @@ dojo.declare("pion.widgets.UserPane",
 				}
 			}
 			console.dir(config);
-			this.form.setValues(config);
+			this.form.attr('value', config);
 
 			console.debug('config = ', config);
 			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
@@ -46,7 +46,7 @@ dojo.declare("pion.widgets.UserPane",
 		},
 		save: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			var config = this.form.getValues();
+			var config = this.form.attr('value');
 
 			var put_data = '<PionConfig><User>';
 			for (var tag in config) {

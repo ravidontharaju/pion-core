@@ -279,20 +279,20 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
 				this.format_widget.attr('disabled', false);
-				this.format_widget.setValue('%Y');
+				this.format_widget.attr('value', '%Y');
 				this.format_widget.domNode.style.visibility = 'visible';
 			} else {
 				this.format_widget.attr('disabled', true);
-				this.format_widget.setValue('');
+				this.format_widget.attr('value', '');
 				this.format_widget.domNode.style.visibility = 'hidden';
 			}
 			if (type == 'fixed-length string') {
 				this.size_widget.attr('disabled', false);
-				this.size_widget.setValue('1');
+				this.size_widget.attr('value', '1');
 				this.size_widget.domNode.style.visibility = 'visible';
 			} else {
 				this.size_widget.attr('disabled', true);
-				this.size_widget.setValue('');
+				this.size_widget.attr('value', '');
 				this.size_widget.domNode.style.visibility = 'hidden';
 			}
 		},

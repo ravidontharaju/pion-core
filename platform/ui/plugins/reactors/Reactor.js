@@ -145,7 +145,7 @@ dojo.declare("plugins.reactors.Reactor",
 					var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
 					console.debug('html = ', html);
 					var dialog = new dijit.Dialog({title: 'Reactor Diagnostics'});
-					dialog.setContent(html);
+					dialog.attr('content', html);
 					dialog.show();
 					return response;
 				},

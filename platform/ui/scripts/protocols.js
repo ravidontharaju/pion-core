@@ -193,7 +193,7 @@ function protocolPaneSelected(pane) {
 	}
 	if (selected_protocol_pane && dojo.hasClass(selected_protocol_pane.domNode, 'unsaved_changes')) {
 		var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-		dialog.setContent('Please save or cancel unsaved changes before selecting another Protocol.');
+		dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Protocol.');
 		dialog.show();
 		
 		// Return to the previously selected pane.

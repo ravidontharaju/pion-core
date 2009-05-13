@@ -101,10 +101,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			}
 			this.form.attr('value', config);
 
-			// The comment field needs to be set separately, because dijit.form.Form.setValues doesn't handle <textarea> elements.
-			// It would be great if the comment could be an <input> with dojoType="dijit.form.Textarea", but for some reason, this
-			// doesn't work inside a template.  The comment field can't be assigned an id, because that would cause an error if
-			// there were multiple codecs.  That suggests using a dojoAttachPoint, but that doesn't work.  So, I have to do a query.
+			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
 			comment_node.value = config.Comment;
 
@@ -177,7 +174,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			return put_data;
 		},
 		doPutRequest: function() {
-			var config = this.form.getValues();
+			var config = this.form.attr('value');
 
 			// see comment in populateFromConfigItem about comment field
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];

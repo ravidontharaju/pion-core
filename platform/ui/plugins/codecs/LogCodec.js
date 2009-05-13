@@ -226,22 +226,24 @@ dojo.declare("plugins.codecs.LogCodecPane",
 		},
 		disableAndClearFieldSeparatorFields: function() {
 			dojo.query('input.disable_for_ELF', this.separators).forEach(function(n) { n.setAttribute('disabled', true); });
-			dojo.query('.dijitComboBox', this.separators).forEach(function(n) {
-				dijit.byNode(n).setDisabled(true);
-				dijit.byNode(n).setDisplayedValue('');
+			dojo.query('select', this.separators).forEach(function(n) {
+				dijit.byNode(n).attr('disabled', true);
+
+				// TODO: change pion.widgets.SimpleSelect to make this work, i.e. so that nothing is selected.
+				//dijit.byNode(n).attr('value', null);
 			});
 			dojo.query('label.disable_for_ELF', this.separators).forEach(function(n) { dojo.addClass(n, 'disabled'); });
-			var form_values = this.form.getValues();
+			var form_values = this.form.attr('value');
 			form_values['@field_split_set'] = '';
 			form_values['@field_join_string'] = '';
-			this.form.setValues(form_values);
+			this.form.attr('value', form_values);
 		},
 		updateDisabling: function(e) {
 			if (e.target.checked) {
 				this.disableAndClearFieldSeparatorFields();
 			} else {
 				dojo.query('input.disable_for_ELF', this.separators).forEach(function(n) { n.removeAttribute('disabled'); });
-				dojo.query('.dijitComboBox', this.separators).forEach(function(n) { dijit.byNode(n).setDisabled(false); });
+				dojo.query('select', this.separators).forEach(function(n) { dijit.byNode(n).attr('disabled', false); });
 				dojo.query('label.disable_for_ELF', this.separators).forEach(function(n) { dojo.removeClass(n, 'disabled'); });
 			}
 		}

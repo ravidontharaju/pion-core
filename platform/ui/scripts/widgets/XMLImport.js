@@ -23,11 +23,11 @@ dojo.declare("pion.widgets.XMLImportDialog",
 		},
 		enableApply: function() {
 			console.debug("enableApply called");
-			this.apply_button.setAttribute('disabled', false);
+			this.apply_button.attr('disabled', false);
 		},
 		applyXML: function() {
 			console.debug("applyXML called");
-			this.apply_button.setAttribute('disabled', true);
+			this.apply_button.attr('disabled', true);
 
 			// TODO: check if already PionConfig first
 

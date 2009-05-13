@@ -57,12 +57,9 @@ dojo.declare("plugins.databases.DatabasePane",
 				}
 			}
 			console.dir(config);
-			this.database_form.setValues(config);
+			this.database_form.attr('value', config);
 
-			// The comment field needs to be set separately, because dijit.form.Form.setValues doesn't handle <textarea> elements.
-			// It would be great if the comment could be an <input> with dojoType="dijit.form.Textarea", but for some reason, this
-			// doesn't work inside a template.  The comment field can't be assigned an id, because that would cause an error if
-			// there were multiple databases.  That suggests using a dojoAttachPoint, but that doesn't work.  So, I have to do a query.
+			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
 			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
 			comment_node.value = config.Comment;
 
@@ -84,7 +81,7 @@ dojo.declare("plugins.databases.DatabasePane",
 		},
 		save: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			var config = this.database_form.getValues();
+			var config = this.database_form.attr('value');
 
 			// see comment in populateFromConfigItem about comment field
 			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];

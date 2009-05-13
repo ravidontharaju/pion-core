@@ -112,7 +112,7 @@ pion.databases.init = function() {
 		}
 		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
 			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-			dialog.setContent('Please save or cancel unsaved changes before selecting another Database.');
+			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Database.');
 			dialog.show();
 
 			// Return to the previously selected pane.
@@ -242,7 +242,7 @@ pion.databases.init = function() {
 			console.debug('class ', dialog_class_name, ' not found; using plugins.databases.DatabaseInitDialog instead.');
 			var dialog = new plugins.databases.DatabaseInitDialog({title: title});
 		}
-		dialog.setValues({Plugin: plugin});
+		dialog.attr('value', {Plugin: plugin});
 
 		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);

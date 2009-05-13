@@ -62,7 +62,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 				if (pion.about.ops_temporarily_suppressed) {
 					// turn ops back on
 					var ops_toggle_button = dijit.byId('ops_toggle_button');
-					ops_toggle_button.setAttribute('checked', false);
+					ops_toggle_button.attr('checked', false);
 					pion.about.ops_temporarily_suppressed = false;
 				}
 			});
@@ -175,7 +175,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 pion.about.doDialog = function(kw_args) {
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	if (!ops_toggle_button.checked) {
-		ops_toggle_button.setAttribute('checked', true);
+		ops_toggle_button.attr('checked', true);
 		pion.about.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.about.LicenseKeyDialog(kw_args);

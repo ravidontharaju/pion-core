@@ -173,7 +173,7 @@ function codecPaneSelected(pane) {
 	}
 	if (selected_codec_pane && dojo.hasClass(selected_codec_pane.domNode, 'unsaved_changes')) {
 		var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-		dialog.setContent('Please save or cancel unsaved changes before selecting another Codec.');
+		dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Codec.');
 		dialog.show();
 		
 		// Return to the previously selected pane.
