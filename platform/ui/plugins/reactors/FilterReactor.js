@@ -128,8 +128,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
 						type: dojox.grid.cells.Bool},
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.comparison_grid = new dojox.grid.DataGrid({

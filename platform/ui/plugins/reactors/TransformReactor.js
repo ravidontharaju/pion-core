@@ -230,8 +230,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						formatter: pion.xmlCellFormatter2 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						type: pion.widgets.TermTextCell },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.transformation_grid = new dojox.grid.DataGrid({
@@ -464,8 +463,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 					{ field: 'Key', name: 'Key', width: 14 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.lookup_grid = new dojox.grid.DataGrid({
@@ -664,8 +662,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>'},
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.rule_grid = new dojox.grid.DataGrid({
@@ -819,8 +816,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false,
 						value: '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>'},
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.regex_grid = new dojox.grid.DataGrid({

@@ -77,8 +77,7 @@ dojo.declare("plugins.codecs.CodecPane",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Term', name: 'Term', width: 'auto', 
 						type: pion.widgets.TermTextCell },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 		},

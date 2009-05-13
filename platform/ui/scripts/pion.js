@@ -157,6 +157,10 @@ pion.xmlCellFormatter2 = function(d) {
 	}
 }
 
+pion.makeDeleteButton = function() {
+	return '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
+}
+
 pion.initOptionalValue = function(store, item, new_item_object, tag_name, optional_default) {
 	if (store.hasAttribute(item, tag_name)) {
 		new_item_object[tag_name] = store.getValue(item, tag_name);

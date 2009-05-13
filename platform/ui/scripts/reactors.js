@@ -669,7 +669,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		reactor_inputs_store.newItem({
 			ID: reactor_input.id,
 			Source: reactor_input.source.config.Name,
-			DeleteButton: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'
+			DeleteButton: 'yes'
 		});
 	});
 	pion.reactors.connection_store.fetch({
@@ -684,11 +684,18 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		},
 		onError: pion.handleFetchError
 	});
+	var makeDeleteButtonIfNeeded = function(v) {
+		if (v == 'yes') {
+			return '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
+		} else {
+			return '';
+		}
+	}
 	var reactor_inputs_grid_layout = [{
 		rows: [
 			{ field: 'Source', name: 'From', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', defaultValue: '', width: 3 }
+			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', width: 3, formatter: makeDeleteButtonIfNeeded }
 		]
 	}];
 	var reactor_inputs_grid = new dojox.grid.DataGrid({
@@ -736,7 +743,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		reactor_outputs_store.newItem({
 			ID: reactor_output.id,
 			Sink: reactor_output.sink.config.Name,
-			DeleteButton: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'
+			DeleteButton: 'yes'
 		});
 	});
 	pion.reactors.connection_store.fetch({
@@ -755,7 +762,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		rows: [
 			{ field: 'Sink', name: 'To', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', defaultValue: '', width: 3 }
+			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', width: 3, formatter: makeDeleteButtonIfNeeded }
 		]
 	}];
 	var reactor_outputs_grid = new dojox.grid.DataGrid({

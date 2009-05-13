@@ -59,8 +59,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Order', name: 'Order', width: 'auto',
 						widgetClass: "dijit.form.NumberSpinner" },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 		},

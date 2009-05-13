@@ -162,7 +162,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
-			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
+				var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
 				_this._updateCustomPutDataFromFieldMappingStore();
 				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromFieldMappingStore');
 				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromFieldMappingStore');
@@ -206,6 +206,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 		{ field: 'Term', name: 'Term', width: 'auto', 
 			type: pion.widgets.TermTextCell },
 		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
-			value: '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>'},
+			formatter: function() { return pion.makeDeleteButton(); } // This looks redundant, but pion.makeDeleteButton() isn't defined yet when this file is loaded.
+		}
 	]
 }];
