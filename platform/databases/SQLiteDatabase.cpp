@@ -82,6 +82,10 @@ void SQLiteDatabase::open(bool create_backup)
 		}
 		throw OpenDatabaseException(m_database_name);
 	}
+
+	// execute all PreSQL (if any)
+	for (unsigned i = 0; i < m_pre_sql.size(); i++)
+		sqlite3_exec(m_sqlite_db, m_pre_sql[i].c_str(), NULL, NULL, &m_error_ptr);
 }
 
 void SQLiteDatabase::close(void)
