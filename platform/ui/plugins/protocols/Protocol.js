@@ -41,51 +41,57 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			this.special_config_elements = ['Extract', 'tagName', 'childNodes'];
-			this.form.attr('value', {MaxRequestContentLength: 1048576, MaxResponseContentLength: 1048576});
+			this.populateWithDefaults();
 			var _this = this;
-			this.extraction_rule_store = new dojo.data.ItemFileWriteStore({
-				data: { identifier: 'ID', items: [] }
-			});
-			this.extraction_rule_store.next_id = 0;
 
-			this.extraction_rule_grid_layout = [{
-				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
-				rows: [
-					{ field: 'Term', name: 'Term', width: 16, 
-						type: pion.widgets.TermTextCell },
-					{ field: 'Source', name: 'Source', styles: '', width: 7, 
-						type: dojox.grid.cells.Select, options: plugins.protocols.source_options },
-					{ field: 'Name', name: 'Name', width: 7,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'Match', name: 'Match', width: 8,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'Format', name: 'Format', width: 8,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'ContentType', name: 'ContentType', width: 8,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'MaxSize', name: 'MaxSize', width: 'auto',
-						formatter: pion.xmlCellFormatter },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
-				]
-			}];
-			this.extraction_rule_grid = new dojox.grid.DataGrid({
-				store: this.extraction_rule_store,
-				structure: this.extraction_rule_grid_layout,
-				singleClickEdit: true
-			}, document.createElement('div'));
-			this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
-			this.extraction_rule_grid.startup();
-			this.extraction_rule_grid.connect(this.extraction_rule_grid, 'onCellClick', function(e) {
-				if (e.cell.name == 'Delete') {
-					this.store.deleteItem(this.getItem(e.rowIndex));
-					_this.markAsChanged();
-				}
-			});
-			dojo.connect(this.extraction_rule_grid, 'onApplyCellEdit', this, _this._handleCellEdit);
+			this.has_extraction_rules = 'extraction_rule_grid_node' in this;
+			if (this.has_extraction_rules) {
+				this.extraction_rule_store = new dojo.data.ItemFileWriteStore({
+					data: { identifier: 'ID', items: [] }
+				});
+				this.extraction_rule_store.next_id = 0;
+	
+				this.extraction_rule_grid_layout = [{
+					defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
+					rows: [
+						{ field: 'Term', name: 'Term', width: 16, 
+							type: pion.widgets.TermTextCell },
+						{ field: 'Source', name: 'Source', styles: '', width: 7, 
+							type: dojox.grid.cells.Select, options: plugins.protocols.source_options },
+						{ field: 'Name', name: 'Name', width: 7,
+							formatter: pion.xmlCellFormatter },
+						{ field: 'Match', name: 'Match', width: 8,
+							formatter: pion.xmlCellFormatter },
+						{ field: 'Format', name: 'Format', width: 8,
+							formatter: pion.xmlCellFormatter },
+						{ field: 'ContentType', name: 'ContentType', width: 8,
+							formatter: pion.xmlCellFormatter },
+						{ field: 'MaxSize', name: 'MaxSize', width: 'auto',
+							formatter: pion.xmlCellFormatter },
+						{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					]
+				}];
+				this.extraction_rule_grid = new dojox.grid.DataGrid({
+					store: this.extraction_rule_store,
+					structure: this.extraction_rule_grid_layout,
+					singleClickEdit: true
+				}, document.createElement('div'));
+				this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
+				this.extraction_rule_grid.startup();
+				this.extraction_rule_grid.connect(this.extraction_rule_grid, 'onCellClick', function(e) {
+					if (e.cell.name == 'Delete') {
+						this.store.deleteItem(this.getItem(e.rowIndex));
+						_this.markAsChanged();
+					}
+				});
+				dojo.connect(this.extraction_rule_grid, 'onApplyCellEdit', this, _this._handleCellEdit);
+			}
 
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 			dojo.query("select", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); }); // Includes pion.widgets.SimpleSelect widgets, even when inside an <input> element in the markup.
+		},
+		populateWithDefaults: function() {
 		},
 		getHeight: function() {
 			// TODO: replace 530 with some computed value
@@ -113,7 +119,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
 			title_node.firstChild.nodeValue = this.title;
 
-			this._reloadExtractionRuleStore(item);
+			if (this.has_extraction_rules)
+				this._reloadExtractionRuleStore(item);
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;
@@ -158,33 +165,38 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		onExtractionRulePutDataReady: function() {
 		},
 		save: function() {
-			this.connect(this, 'onExtractionRulePutDataReady', 'doPutRequest');
-			var _this = this;
-			var put_data = '';
-			var store = this.extraction_rule_store;
-			store.fetch({
-				onItem: function(item) {
-					put_data += '<Extract term="' + store.getValue(item, 'Term') + '">';
-					put_data += pion.makeXmlLeafElement('Source', store.getValue(item, 'Source'));
-					if (store.getValue(item, 'Name'))
-						put_data += pion.makeXmlLeafElement('Name', store.getValue(item, 'Name'));
-					if (store.getValue(item, 'Match'))
-						put_data += pion.makeXmlLeafElement('Match', store.getValue(item, 'Match'));
-					if (store.getValue(item, 'Format'))
-						put_data += pion.makeXmlLeafElement('Format', store.getValue(item, 'Format'));
-					if (store.getValue(item, 'ContentType'))
-						put_data += pion.makeXmlLeafElement('ContentType', store.getValue(item, 'ContentType'));
-					if (store.getValue(item, 'MaxSize'))
-						put_data += pion.makeXmlLeafElement('MaxSize', store.getValue(item, 'MaxSize'));
-					put_data += '</Extract>';
-				},
-				onComplete: function() {
-					_this.extraction_rule_put_data = put_data;
-					_this.onExtractionRulePutDataReady();
-					dojo.removeClass(_this.domNode, 'unsaved_changes');
-				},
-				onError: pion.handleFetchError
-			});
+			if (this.has_extraction_rules) {
+				this.connect(this, 'onExtractionRulePutDataReady', 'doPutRequest');
+				var _this = this;
+				var put_data = '';
+				var store = this.extraction_rule_store;
+				store.fetch({
+					onItem: function(item) {
+						put_data += '<Extract term="' + store.getValue(item, 'Term') + '">';
+						put_data += pion.makeXmlLeafElement('Source', store.getValue(item, 'Source'));
+						if (store.getValue(item, 'Name'))
+							put_data += pion.makeXmlLeafElement('Name', store.getValue(item, 'Name'));
+						if (store.getValue(item, 'Match'))
+							put_data += pion.makeXmlLeafElement('Match', store.getValue(item, 'Match'));
+						if (store.getValue(item, 'Format'))
+							put_data += pion.makeXmlLeafElement('Format', store.getValue(item, 'Format'));
+						if (store.getValue(item, 'ContentType'))
+							put_data += pion.makeXmlLeafElement('ContentType', store.getValue(item, 'ContentType'));
+						if (store.getValue(item, 'MaxSize'))
+							put_data += pion.makeXmlLeafElement('MaxSize', store.getValue(item, 'MaxSize'));
+						put_data += '</Extract>';
+					},
+					onComplete: function() {
+						_this.extraction_rule_put_data = put_data;
+						_this.onExtractionRulePutDataReady();
+						dojo.removeClass(_this.domNode, 'unsaved_changes');
+					},
+					onError: pion.handleFetchError
+				});
+			} else {
+				this.extraction_rule_put_data = '';
+				this.doPutRequest();
+			}
 		},
 		doPutRequest: function() {
 			var config = this.form.attr('value');
