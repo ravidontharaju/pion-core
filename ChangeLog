@@ -1,5 +1,14 @@
+Version 1.0.16 (2009-05-15)
+===========================
+
+* Miscellaneous improvements to Windows MSVC build projects (564)
+* Improved ClickstreamReactor's pruning of orphaned HTTP requests (568)
+* Fixed date/time data storage when using a SQLiteDatabase engine (526)
+
+
 Version 1.0.14 (2009-03-31)
 ===========================
+
 * HTTPParser dropping requests when TCP connection contained 304 responses (481)
 * Updated PionLockedQueue so that it now always keeps track of the size (469)
 
