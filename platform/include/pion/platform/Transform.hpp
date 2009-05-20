@@ -362,6 +362,9 @@ class PION_PLATFORM_API TransformLookup
 	/// Keys & Values, hashmap for keys
 	KVP							m_lookup;
 
+	/// Is this rule running?
+	bool						m_running;
+
 public:
 
 	/**
@@ -437,6 +440,8 @@ public:
 		}
 		if (m_lookup.empty())
 			throw MissingTransformField("No Key-Values in TransformationLookup");
+
+		m_running = true;
 	}
 
 	/// Destructor, to dispose of the lookup table
@@ -454,6 +459,8 @@ public:
 	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
+		if (!m_running)
+			return false;
 		Event::ValuesRange values_range = s->equal_range(m_lookup_term_ref);
 		Event::ConstIterator ec = values_range.first;
 		// if ec == values_range.second ... source term was not found...
@@ -470,8 +477,8 @@ public:
 				} catch (...) {
 					// Get the source string again
 					getStringValue(str, m_v[m_lookup_term_ref], ec);
-					// Try to clear the regex, so this won't get called again
-					m_match = "";
+					// Not running anymore
+					m_running = false;
 					// Throw on this, to get an error message logged
 					throw RegexFailure("str=" + str + ", regex=" + m_match.str());
 				}
