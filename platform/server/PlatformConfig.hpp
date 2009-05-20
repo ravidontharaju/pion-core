@@ -172,6 +172,9 @@ public:
 
 	/// returns the directory in which data files are stored
 	inline const std::string& getDataDirectory(void) const { return m_data_directory; }
+	
+	/// returns true if pion is running in "debug mode"
+	inline bool getDebugMode(void) const { return m_debug_mode; }
 
 	
 private:
@@ -235,6 +238,9 @@ private:
 	/// name of the data directory element for Pion XML config files
 	static const std::string		DATA_DIRECTORY_ELEMENT_NAME;
 
+	/// name of the debug mode element for Pion XML config files
+	static const std::string		DEBUG_MODE_ELEMENT_NAME;
+
 	/// name of the reaction engine element for Pion XML config files
 	static const std::string		REACTION_ENGINE_ELEMENT_NAME;
 	
@@ -292,6 +298,9 @@ private:
 
 	/// collection of plugin paths that were successfully added
 	std::vector<std::string>				m_plugin_paths;
+	
+	/// true if pion is running in "debug mode"
+	bool									m_debug_mode;
 	
 	/// mutex to make class thread-safe
 	mutable boost::mutex					m_mutex;	
