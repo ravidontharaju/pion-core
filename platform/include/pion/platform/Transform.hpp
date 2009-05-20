@@ -50,6 +50,13 @@ public:
 			: PionException("Invalid type of transformation: ", str) {}
 	};
 
+	/// exception thrown if regex_replace fails and throws
+	class RegexFailure : public PionException {
+	public:
+		RegexFailure(const std::string& what)
+			: PionException("Transformation failed: ", what) {}
+	};
+
 //	mutable PionLogger			m_logger;
 
 	/// virtual destructor: you may extend this class
@@ -380,7 +387,7 @@ public:
 			try {
 				m_match = val;
 			} catch (...) {
-				throw MissingTransformField("Invalid regular expression in TransformationLookup");
+				throw MissingTransformField("Invalid regular expression in TransformationLookup: " + val);
 			}
 		}
 		//	[opt]		<Format>escape(format)</Format>
@@ -457,8 +464,18 @@ public:
 			std::string str;
 			getStringValue(str, m_v[m_lookup_term_ref], ec);
 			// If regex defined, do the regular expression, replacing the key value
-			if (! m_match.empty())
-				str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
+			if (! m_match.empty()) {
+				try {
+					str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
+				} catch (...) {
+					// Get the source string again
+					getStringValue(str, m_v[m_lookup_term_ref], ec);
+					// Try to clear the regex, so this won't get called again
+					m_match = "";
+					// Throw on this, to get an error message logged
+					throw RegexFailure("str=" + str + ", regex=" + m_match.str());
+				}
+			}
 			// Find the value, using the key
 			KVP::const_iterator i = m_lookup.find(str);
 			if (i != m_lookup.end())	// Found: assign the lookup value
@@ -495,6 +512,9 @@ class PION_PLATFORM_API TransformRules
 
 	/// pointer to instantiated & configured Comparison
 	std::vector<Comparison *>					m_comparison;
+
+	/// are we running?
+	std::vector<bool>							m_running;
 
 public:
 
@@ -550,6 +570,9 @@ public:
 				throw MissingTransformField("Missing SetValue in TransformationAssignRules");
 			m_set_value.push_back(val);
 
+			// Set running state
+			m_running.push_back(true);
+
 			RuleNode = RuleNode->next;
 		}
 	}
@@ -572,27 +595,36 @@ public:
 	{
 		bool AnyAssigned = false;
 		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
-		for (unsigned int i = 0; i < m_comparison.size(); i++) {
-			Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
-			for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
-				if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second))) {
-					if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
-						// Get the original value
+		for (unsigned int i = 0; i < m_comparison.size(); i++)
+			if (m_running[i]) {
+				Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
+				for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
+					try {
+						if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second))) {
+							if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
+								// Get the original value
+								std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
+								// For Regex... get the precompiled from Comparison
+								// For Format... use the set_value
+								str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
+															boost::format_all | boost::format_no_copy);
+								// Assign the result
+								AnyAssigned |= AssignValue(d, m_term, str);
+							} else
+								AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						}
+					} catch (...) {
+						// Get the original value again...
 						std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
-						// For Regex... get the precompiled from Comparison
-						// For Format... use the set_value
-						str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
-													boost::format_all | boost::format_no_copy);
-						// Assign the result
-						AnyAssigned |= AssignValue(d, m_term, str);
-					} else
-						AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
-				}
+						// This rule won't be running again...
+						m_running[i] = false;
+						// Throw on this, to get an error message logged
+						throw RegexFailure("str=" + str + ", regex=" + m_comparison[i]->getRegex().str());
+					}
+				// If short_circuit AND any values were assigned -> don't go further in the chain
+				if (m_short_circuit && AnyAssigned)
+					break;
 			}
-			// If short_circuit AND any values were assigned -> don't go further in the chain
-			if (m_short_circuit && AnyAssigned)
-				break;
-		}
 		return AnyAssigned;
 	}
 };
@@ -609,6 +641,9 @@ class PION_PLATFORM_API TransformRegex
 
 	/// regex's
 	std::vector<boost::regex>					m_regex;
+
+	/// Is still regex still alive?
+	std::vector<bool>							m_running;
 
 public:
 
@@ -654,6 +689,7 @@ public:
 				throw MissingTransformField("Invalid regular expression in TransformationRegex");
 			}
 			m_regex.push_back(reg);
+			m_running.push_back(true);
 			RegexNode = RegexNode->next;
 		}
 		if (m_regex.empty())
@@ -681,11 +717,20 @@ public:
 			std::string str;
 			getStringValue(str, m_v[m_src_term_ref], ec);
 			// Run through all regexp's
-			for (unsigned int i = 0; i < m_regex.size(); i++) {
-				std::string res = boost::regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
-				if (!res.empty())
-					str = res;
-			}
+			for (unsigned int i = 0; i < m_regex.size(); i++)
+				if (m_running[i]) {
+					std::string res;
+					try {
+						res = boost::regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
+					} catch (...) {
+						// This rule won't be running again...
+						m_running[i] = false;
+						// Throw on this, to get an error message logged
+						throw RegexFailure("str=" + str + ", regex=" + m_regex[i].str());
+					}
+					if (!res.empty())
+						str = res;
+				}
 			AnyAssigned |= AssignValue(d, m_term, str);
 		}
 		return AnyAssigned;
