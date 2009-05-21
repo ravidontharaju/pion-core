@@ -18,6 +18,7 @@
 //
 
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 #include "TransformReactor.hpp"
 
 using namespace pion::platform;
@@ -216,8 +217,15 @@ void TransformReactor::process(const EventPtr& e)
 			break;
 	}
 
-	for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
-		(*i)->transform(new_e, e);		// transform   d <- s
+	try {
+		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
+			(*i)->transform(new_e, e);		// transform   d <- s
+	} catch (...) {
+		// Likely Boost.regex throw
+		if (getReactionEngine().getDebugMode())		// Are we in debug mode?
+			stop();									// Yes: stop the reactor
+		throw;										// Continue throw to log error
+	}
 
 	deliverEvent(new_e);			// Deliver the modified event
 
