@@ -188,6 +188,12 @@ public:
 		m_data_directory = resolveRelativePath(m_config_file, "./");
 	}
 
+	/// sets the "debug mode" flag
+	inline void setDebugMode(bool b) { m_debug_mode = b; }
+
+	/// returns true if pion is running in "debug mode"
+	inline bool getDebugMode(void) const { return m_debug_mode; }
+
 	/// removes the config file (after backing it up)
 	void removeConfigFile(void);
 	
@@ -449,7 +455,7 @@ protected:
 	 */
 	ConfigManager(const std::string& default_config_file)
 		: m_logger(PION_GET_LOGGER("pion.platform.ConfigManager")),
-		m_config_file(default_config_file),
+		m_config_file(default_config_file), m_debug_mode(false),
 		m_config_doc_ptr(NULL), m_config_node_ptr(NULL)
 	{
 		resetDataDirectory();
@@ -570,6 +576,9 @@ protected:
 	
 	/// directory in which data files are stored (from platform configuration)
 	std::string						m_data_directory;
+
+	/// true if pion is running in "debug mode"
+	bool							m_debug_mode;
 
 	/// pointer to the root of the XML document tree (if libxml support is enabled)
 	xmlDocPtr 						m_config_doc_ptr;

@@ -53,6 +53,7 @@ const std::string			PlatformConfig::LOG_CONFIG_ELEMENT_NAME = "LogConfig";
 const std::string			PlatformConfig::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 const std::string			PlatformConfig::DATA_DIRECTORY_ELEMENT_NAME = "DataDirectory";
+const std::string			PlatformConfig::DEBUG_MODE_ELEMENT_NAME = "DebugMode";
 const std::string			PlatformConfig::REACTION_ENGINE_ELEMENT_NAME = "ReactionEngine";
 const std::string			PlatformConfig::MAX_THREADS_ELEMENT_NAME = "MaxThreads";
 const std::string			PlatformConfig::MULTITHREAD_BRANCHES_ELEMENT_NAME = "MultithreadBranches";
@@ -68,7 +69,7 @@ PlatformConfig::PlatformConfig(void)
 	m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 	m_service_mgr(*this), m_user_mgr_ptr(new UserManager),
-	m_user_id(-1), m_group_id(-1)
+	m_user_id(-1), m_group_id(-1), m_debug_mode(false)
 {
 	setLogger(PION_GET_LOGGER("pion.server.PlatformConfig"));
 }
@@ -252,6 +253,19 @@ void PlatformConfig::openConfigFile(void)
 		throw MissingDataDirectoryException(getConfigFile());
 	m_data_directory = ConfigManager::resolveRelativePath(m_data_directory);
 
+	// get the DebugMode config parameter
+	std::string debug_str;
+	if (ConfigManager::getConfigOption(DEBUG_MODE_ELEMENT_NAME, debug_str,
+		m_config_node_ptr->children))
+	{
+		m_debug_mode = (debug_str == "true");
+		if (m_debug_mode) {
+			PION_LOG_WARN(m_logger, "Debugging mode enabled - do not use in production!");
+		}
+	} else {
+		m_debug_mode = false;
+	}
+
 	// get the CodecFactory config file
 	if (! ConfigManager::getConfigOption(CODEC_CONFIG_ELEMENT_NAME, config_file,
 										 m_config_node_ptr->children))
@@ -260,6 +274,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the CodecFactory configuration
 	m_codec_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_codec_factory.setDataDirectory(m_data_directory);
+	m_codec_factory.setDebugMode(m_debug_mode);
 	m_codec_factory.openConfigFile();
 	
 	// get the ProtocolFactory config file
@@ -270,6 +285,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the ProtocolFactory configuration
 	m_protocol_factory.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_protocol_factory.setDataDirectory(m_data_directory);
+	m_protocol_factory.setDebugMode(m_debug_mode);
 	m_protocol_factory.openConfigFile();
 
 	// make sure that the directory exists
@@ -286,6 +302,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the DatabaseManager configuration
 	m_database_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_database_mgr.setDataDirectory(m_data_directory);
+	m_database_mgr.setDebugMode(m_debug_mode);
 	m_database_mgr.openConfigFile();
 	
 	// get the ReactionEngine config file
@@ -332,6 +349,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the ReactionEngine configuration
 	m_reaction_engine.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_reaction_engine.setDataDirectory(m_data_directory);
+	m_reaction_engine.setDebugMode(m_debug_mode);
 	m_reaction_engine.openConfigFile();
 	
 	// get the ServiceManager config file
@@ -342,6 +360,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the ServiceManager configuration
 	m_service_mgr.setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_service_mgr.setDataDirectory(m_data_directory);
+	m_service_mgr.setDebugMode(m_debug_mode);
 	m_service_mgr.openConfigFile();
 
 	// get the UserManager config file
@@ -352,6 +371,7 @@ void PlatformConfig::openConfigFile(void)
 	// open the UserManager configuration
 	m_user_mgr_ptr->setConfigFile(ConfigManager::resolveRelativePath(config_file));
 	m_user_mgr_ptr->setDataDirectory(m_data_directory);
+	m_user_mgr_ptr->setDebugMode(m_debug_mode);
 	m_user_mgr_ptr->openConfigFile();
 
 	PION_LOG_INFO(m_logger, "Loaded platform configuration file: " << m_config_file);
@@ -363,6 +383,8 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 	
 	out << "\t<" << VERSION_ELEMENT_NAME << '>' << PION_VERSION
 		<< "</" << VERSION_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << DEBUG_MODE_ELEMENT_NAME << '>' << (m_debug_mode ? "true" : "false")
+		<< "</" << DEBUG_MODE_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << getConfigFile()
 		<< "</" << PLATFORM_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << VOCABULARY_CONFIG_ELEMENT_NAME << '>' << m_vocab_mgr.getConfigFile()
@@ -382,7 +404,9 @@ void PlatformConfig::writeConfigXML(std::ostream& out) const
 		<< "\t<" << LOG_CONFIG_ELEMENT_NAME << '>' << getLogConfigFile()
 		<< "</" << LOG_CONFIG_ELEMENT_NAME << '>' << std::endl
 		<< "\t<" << VOCABULARY_PATH_ELEMENT_NAME << '>' << m_vocab_mgr.getVocabularyPath()
-		<< "</" << VOCABULARY_PATH_ELEMENT_NAME << '>' << std::endl;
+		<< "</" << VOCABULARY_PATH_ELEMENT_NAME << '>' << std::endl
+		<< "\t<" << DATA_DIRECTORY_ELEMENT_NAME << '>' << m_data_directory
+		<< "</" << DATA_DIRECTORY_ELEMENT_NAME << '>' << std::endl;
 	
 	boost::mutex::scoped_lock platform_lock(m_mutex);
 	for (std::vector<std::string>::const_iterator path_it = m_plugin_paths.begin();
