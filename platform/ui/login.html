@@ -57,14 +57,14 @@
             </div>
 
 			<div class="rightCol">
-			<form method="get" action="/login">
+			<form method="POST" action="/login">
 			<input type="hidden" name="url" value="/">
             <table cellpadding="5" cellspacing="5" border="0">
             <tr>
             	<td rowspan="5" width="20" style="border-left: 1px #999999 solid;">&nbsp;</td>
             	<tr>
                 	<th colspan="2" style="border-bottom: 1px #999999 solid;">Sign in to Pion</th>
-                </tr><tr><form>
+                </tr><tr>
                 	<td width="50%" align="right" nowrap>Username</td>
                     <td align="right"><input type="text" name="user"></td>
                 </tr><tr>
@@ -73,7 +73,7 @@
                 </tr><tr>
                 	<td>&nbsp;</td>
                     <td align="right"><input type="image" src="images/button-sign-in-off.png" alt="Sign In"></td>
-                </tr></form>
+                </tr>
              </table> 
              </form>
             </div>
