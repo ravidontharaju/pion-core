@@ -1,3 +1,15 @@
+Version 2.0.6 (2009-05-26)
+==========================
+
+* Improved TransformReactor error handling for bad regular expressions (581)
+* Fixed UI bugs in IE that caused accordion grid contents to spill out (559)
+* UI login page no longer sends/displays password in browser URL field (580)
+* "Match All Comparisons" checkbox in FilterReactor UI was incorrect (576)
+* Added DebugMode flag to platform.xml for alternative testing behaviors (586)
+* HTTPParser exception thrown when Content-Length had leading whitespace (585)
+* Miscellaneous improvements to Windows MSVC build projects (564)
+
+
 Version 2.0.4 (2009-05-01)
 ==========================
 
