@@ -38,12 +38,9 @@ if ($PLATFORM =~ /^win32/i) {
 	$SHARED_LIB_SUFFIX = "dll";
 	$PLUGIN_LIB_SUFFIX = "dll";
 	$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || File::Spec->rootdir();
-	$LOG4CXX_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "log4cxx." . $SHARED_LIB_SUFFIX);
+	$LOGGING_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "CHANGE_ME_apache-log4cxx-0.10.0", "bin"), "log4cxx." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-0.4.0", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
 	$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
-	$APR_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libapr-1." . $SHARED_LIB_SUFFIX);
-	$APR_UTIL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libaprutil-1." . $SHARED_LIB_SUFFIX);
-	$APR_ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "apache", "apache-log4cxx-0.10.0", "bin"), "libapriconv-1." . $SHARED_LIB_SUFFIX);
 	$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin"), "libxml2." . $SHARED_LIB_SUFFIX);
 	$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
 	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
@@ -57,10 +54,8 @@ if ($PLATFORM =~ /^win32/i) {
 	$PLUGIN_LIB_SUFFIX = "so";
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
 	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
-	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx.10." . $SHARED_LIB_SUFFIX);
+	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0.3.0.0." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
-	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX);
-	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX);
 } else {
@@ -68,10 +63,8 @@ if ($PLATFORM =~ /^win32/i) {
 	$PLUGIN_LIB_SUFFIX = "so";
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
 	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid." . $SHARED_LIB_SUFFIX . ".16");
-	$LOG4CXX_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cxx." . $SHARED_LIB_SUFFIX . ".10");
+	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0." . $SHARED_LIB_SUFFIX . ".3");
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl." . $SHARED_LIB_SUFFIX . ".0");
-	$APR_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libapr-1." . $SHARED_LIB_SUFFIX . ".0");
-	$APR_UTIL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libaprutil-1." . $SHARED_LIB_SUFFIX . ".0");
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX . ".1.{35,36,37}.*");
 }
@@ -117,7 +110,6 @@ mkdir($UI_DIR) unless -d $UI_DIR;
 print "Copying system library files..\n";
 if ($PLATFORM =~ /^win32/i) {
 	copy($ICONV_LIB, $LIBS_DIR);
-	copy($APR_ICONV_LIB, $LIBS_DIR);
 	copy($LIBXML_LIB, $LIBS_DIR);
 	copy($ZLIB_LIB, $LIBS_DIR);
 	copy($BZIP_LIB, $LIBS_DIR);
@@ -126,9 +118,7 @@ if ($PLATFORM =~ /^win32/i) {
 } else {
 	copy($UUID_LIB, $LIBS_DIR);
 }
-copy($APR_LIB, $LIBS_DIR);
-copy($APR_UTIL_LIB, $LIBS_DIR);
-copy($LOG4CXX_LIB, $LIBS_DIR);
+copy($LOGGING_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
 foreach (@BOOST_LIBS) {
 	copy($_, $LIBS_DIR);

@@ -6,54 +6,56 @@
 ## root logger configuration; syntax is LOG_LEVEL, <APPENDER>+
 ##
 ## Use this to log only to the console
-log4j.rootLogger=WARN, stdout
+log4cplus.rootLogger=WARN, stdout
 ##
 ## Use this to log only to log files
-#log4j.rootLogger=WARN, logfile
+#log4cplus.rootLogger=WARN, logfile
 ## Use this to log both to log files and the console
-#log4j.rootLogger=WARN, stdout, logfile
+#log4cplus.rootLogger=WARN, stdout, logfile
 
 ##
 ## stdout console appender configuration
 ##
-log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4cplus.appender.stdout=log4cplus::ConsoleAppender
+log4cplus.appender.stdout.layout=log4cplus::PatternLayout
 ##
 ## This is the default pattern used for console logging
-log4j.appender.stdout.layout.ConversionPattern=%-4r %-5p %c - %m%n
+log4cplus.appender.stdout.layout.ConversionPattern=%d{%H:%M:%S.%q} %-5p %c - %m%n
 ##
 ## Use this pattern to include thread number, source file and line number
-#log4j.appender.stdout.layout.ConversionPattern=%-4r %-5p [%t] (%F:%L) %c - %m%n
+#log4cplus.appender.stdout.layout.ConversionPattern=%d{%Y-%m-%d %H:%M:%S.%q} %-5p [%t] (%F:%L) %c - %m%n
 
 ##
 ## Pion log file configuration (to disable, remove it from the rootLogger)
 ##
-log4j.appender.logfile=org.apache.log4j.DailyRollingFileAppender
-log4j.appender.logfile.layout=org.apache.log4j.PatternLayout
+log4cplus.appender.logfile=log4cplus::RollingFileAppender
+log4cplus.appender.logfile.layout=log4cplus::PatternLayout
 ##
 ## The name and location for the log file
-log4j.appender.logfile.File=/var/log/pion/pion-platform.log
+log4cplus.appender.logfile.File=./pion.log
 ##
 ## The frequency at which log files will be rotated
-log4j.appender.logfile.DatePattern='.'yyyy-MM-dd
+log4cplus.appender.logfile.DatePattern='.'yyyy-MM-dd
 ##
 ## The maximum size of log files before they are rotated
-log4j.appender.logfile.MaxFileSize=100KB
+log4cplus.appender.logfile.MaxFileSize=100KB
 ##
 ## The number of backup log files to keep
-log4j.appender.logfile.MaxBackupIndex=10
+log4cplus.appender.logfile.MaxBackupIndex=10
 ##
 ## This is the default pattern used for the log file
-#log4j.appender.logfile.layout.ConversionPattern=%d %-5p %c - %m%n
+#log4cplus.appender.logfile.layout.ConversionPattern=%d %-5p %c - %m%n
 ##
 ## Use this pattern to include thread number, source file and line number
-log4j.appender.logfile.layout.ConversionPattern=%d %-5p [%t] (%F:%L) %c - %m%n
+log4cplus.appender.logfile.layout.ConversionPattern=%d %-5p [%t] (%F:%L) %c - %m%n
 
 ##
 ## Log level settings
 ##
 ## Set the default logging settings
-log4j.logger.pion=INFO
-log4j.logger.pion.net=WARN
-log4j.logger.pion.platform=WARN
-log4j.logger.pion.server=WARN
+log4cplus.logger.pion=INFO
+log4cplus.logger.pion.net=WARN
+log4cplus.logger.pion.platform=WARN
+log4cplus.logger.pion.server=WARN
+log4cplus.logger.pion.plugins=WARN
+log4cplus.logger.pion.enterprise=WARN

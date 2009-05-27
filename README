@@ -19,8 +19,9 @@ of the platforms supported by Pion within the "common/doc" subdirectory
 
 Build and installation summary:
 
-# ./configure [--with-openssl] [--with-log4cxx]
-# make all
+# ./autogen.sh  (only required if using subversion checkout)
+# ./configure   (run ./configure --help to see available options)
+# make all      (this will build everything except Pion's unit tests)
 # make check	(this will build and run Pion's unit tests)
 # make install	(this may require superuser/Administrator privileges)
 
