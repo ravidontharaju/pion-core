@@ -105,38 +105,39 @@ AC_SUBST(PION_XML_LIB)
 # Check for "Yet Another" JSON Library (YAJL)
 AC_MSG_CHECKING([for JSON support (yajl)])
 AC_ARG_WITH([yajl],
-    AC_HELP_STRING([--with-yajl@<:@=DIR@:>@],[location of Yet Another JSON Library (YAJL)]),
-    [ yajl_location=$withval ], [ without_yajl=true ])
-if test "$without_yajl" != "true"; then
-	AC_MSG_RESULT(yes)
-	# Check for YAJL headers
-	AC_MSG_CHECKING(for yajl headers)
+    AC_HELP_STRING([--with-yajl@<:@=DIR@:>@],[location of YAJL Library (enables JSON support); use --without-yajl to disable]),
+    [ yajl_location=$withval ], [ yajl_location=yes ])
+if test "x$yajl_location" == "xno"; then
+	# YAJL is disabled
+	AC_MSG_RESULT(no)
+	PION_CODECS="LogCodec.la XMLCodec.la"
+else
+	# Add paths if location is defined
 	if test "x$yajl_location" != "xyes"; then
 		CPPFLAGS="$CPPFLAGS -I$yajl_location/include"
 		LDFLAGS="$LDFLAGS -L$yajl_location/lib"
 	fi
-	AC_CHECK_HEADERS([yajl/yajl_gen.h],,AC_MSG_ERROR([Unable to find the YAJL headers]))
 	# Check for YAJL library
 	LIBS_SAVED="$LIBS"
 	LIBS="$LIBS_SAVED -lyajl"
-	AC_MSG_CHECKING(linking with yajl)
 	AC_TRY_LINK([#include <yajl/yajl_gen.h>],[ yajl_gen handle = yajl_gen_alloc(0); yajl_gen_free(handle); return(0); ],
-		[ AC_MSG_RESULT(ok) ],
-		[ AC_MSG_RESULT(failed)
-		  AC_MSG_ERROR(Unable to link with the YAJL library)
-		])
+		[ AC_MSG_RESULT(ok)
+		  PION_HAVE_JSON="-DPION_HAVE_JSON" ],
+		[ AC_MSG_RESULT(no)
+		  AC_MSG_WARN(Unable to link with the YAJL library - disabling JSONCodec) ])
 	LIBS="$LIBS_SAVED"
-	PION_JSON_LIB="-lyajl"
-	# Found the YAJL library
-	PION_HAVE_JSON="-DPION_HAVE_JSON"
-	PION_CODECS="LogCodec.la XMLCodec.la JSONCodec.la"
-else
-	# Display notice if YAJL is disabled
-	AC_MSG_RESULT(no)
+fi
+if test "x$PION_HAVE_JSON" == "x"; then
+	# YAJL library not available/working
 	PION_CODECS="LogCodec.la XMLCodec.la"
+else
+	# Found the YAJL library
+	PION_JSON_LIB="-lyajl"
+	PION_CODECS="LogCodec.la XMLCodec.la JSONCodec.la"
 fi
 AC_SUBST(PION_HAVE_JSON)
 AC_SUBST(PION_JSON_LIB)
+
 
 PION_DATABASES="SQLiteDatabase.la"
 PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB $PION_JSON_LIB"
