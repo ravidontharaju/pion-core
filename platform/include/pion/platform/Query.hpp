@@ -74,6 +74,17 @@ public:
 	virtual void fetchString(unsigned int param, std::string& value) = 0;
 
 	/**
+	 * binds a std::string value to a query parameter (BLOB)
+	 *
+	 * @param param the query parameter number to which the value will be bound (starting with 0)
+	 * @param value the value to bind to the query parameter
+	 * @param copy_value if true, the string will be copied into a temporary buffer
+	 */
+	virtual void bindBlob(unsigned int param, const std::string& value, bool copy_value = true) = 0;
+
+	virtual void fetchBlob(unsigned int param, std::string& value) = 0;
+
+	/**
 	 * binds a string (const char *) value to a query parameter
 	 *
 	 * @param param the query parameter number to which the value will be bound (starting with 0)

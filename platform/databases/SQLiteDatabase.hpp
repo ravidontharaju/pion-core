@@ -215,6 +215,19 @@ protected:
 		}
 
 		/**
+		 * binds a std::string value to a query parameter (Blob)
+		 *
+		 * @param param the query parameter number to which the value will be bound (starting with 0)
+		 * @param value the value to bind to the query parameter
+		 * @param copy_value if true, the string will be copied into a temporary buffer
+		 */
+		virtual void bindBlob(unsigned int param, const std::string& value, bool copy_value = true) {
+			if (sqlite3_bind_blob(m_sqlite_stmt, param+1, value.c_str(),
+								  value.size(), (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
+				SQLiteDatabase::throwAPIException(m_sqlite_db);
+		}
+
+		/**
 		 * binds a string (const char *) value to a query parameter
 		 *
 		 * @param param the query parameter number to which the value will be bound (starting with 0)
@@ -355,6 +368,16 @@ protected:
 			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
 			if (ptr)
 				value = ptr;
+			else
+				value = "";
+		}
+
+		/// Fetch a Blob from a column
+		virtual void fetchBlob(unsigned int param, std::string& value) {
+			const char *ptr = (const char *)sqlite3_column_blob(m_sqlite_stmt, param);
+			int size = sqlite3_column_bytes(m_sqlite_stmt, param);
+			if (ptr && size > 0)
+				value = std::string(ptr, size);
 			else
 				value = "";
 		}
