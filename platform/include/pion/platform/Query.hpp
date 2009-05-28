@@ -313,6 +313,10 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 						boost::get<const Event::SimpleString&>(*value_ptr).get(),
 						copy_strings);
 					break;
+				case Vocabulary::TYPE_BLOB:
+					bindBlob(param,
+						boost::get<const Event::SimpleString&>(*value_ptr).get(),
+						copy_strings);
 				case Vocabulary::TYPE_DATE_TIME:
 					bindDateTime(param, boost::get<const PionDateTime&>(*value_ptr));
 					break;
@@ -367,6 +371,13 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				{
 					std::string val;
 					fetchString(param, val);
+					e->setString(field_map[param].second.term_ref, val);
+				}
+				break;
+			case Vocabulary::TYPE_BLOB:
+				{
+					std::string val;
+					fetchBlob(param, val);
 					e->setString(field_map[param].second.term_ref, val);
 				}
 				break;

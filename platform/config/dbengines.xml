@@ -37,6 +37,7 @@
 			<Pair>datetime,TEXT</Pair>
 			<Pair>date,TEXT</Pair>
 			<Pair>time,TEXT</Pair>
+			<Pair>blob,BLOB</Pair>
 		</TypeMap>
 	</Template>
 </DatabaseTemplates>

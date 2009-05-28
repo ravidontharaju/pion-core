@@ -728,6 +728,7 @@ public:
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_BLOB:
 			setString(value);
 			break;
 		}
@@ -779,6 +780,7 @@ public:
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_BLOB:
 			str << boost::get<const SimpleString&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
@@ -838,6 +840,7 @@ public:
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_BLOB:
 			str = boost::get<const SimpleString&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:

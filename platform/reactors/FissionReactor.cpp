@@ -96,6 +96,7 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	case Vocabulary::TYPE_STRING:
 	case Vocabulary::TYPE_LONG_STRING:
 	case Vocabulary::TYPE_CHAR:
+	case Vocabulary::TYPE_BLOB:
 		break;	// these are all OK
 	}
 

@@ -168,6 +168,7 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_BLOB:
 			e->setString(term.term_ref, value);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
@@ -235,6 +236,7 @@ inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term,
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+		case Vocabulary::TYPE_BLOB:
 			s = boost::get<const Event::SimpleString&>(ec->value).get();
 			break;
 	}

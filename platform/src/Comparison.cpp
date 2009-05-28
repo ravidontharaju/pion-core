@@ -58,6 +58,7 @@ bool Comparison::checkForValidType(const ComparisonType type) const
 			case Vocabulary::TYPE_LONG_STRING:
 			case Vocabulary::TYPE_CHAR:
 			case Vocabulary::TYPE_REGEX:
+			case Vocabulary::TYPE_BLOB:
 				result = isStringType(type);
 				break;
 			case Vocabulary::TYPE_DATE_TIME:
@@ -123,6 +124,7 @@ void Comparison::configure(const ComparisonType type,
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_REGEX:
+				case Vocabulary::TYPE_BLOB:
 					m_str_value = value;	// this should actually be handled above
 					break;
 				case Vocabulary::TYPE_DATE_TIME:

@@ -71,6 +71,7 @@ public:
 		TYPE_TIME,				///< represents a specific time of day using term_format
 		TYPE_CHAR,				///< fixed-length string of size term_size
 		TYPE_REGEX,				///< regular expression in Transformation
+		TYPE_BLOB,				///< BLOB; like longstring, but may contain NULLs
 		TYPE_OBJECT				///< object may contain other terms (boost::any)
 	};
 	
