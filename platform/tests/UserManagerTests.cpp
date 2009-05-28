@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE(checkOpenConfigFileWithNoUsers) {
 	BOOST_CHECK_NO_THROW(openConfigFile());
 }
 
+#ifdef PION_HAVE_SSL
 BOOST_AUTO_TEST_CASE(checkOpenConfigFileWithNoUserId) {
 	startWritingUsersConfigFile();
 	m_users_config_file << "<User><Password>123</Password></User>\n";
@@ -150,6 +151,7 @@ BOOST_AUTO_TEST_CASE(checkOpenConfigFileWithDuplicateUserIds) {
 
 	BOOST_CHECK_THROW(openConfigFile(), UserManager::DuplicateUserException);
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -218,9 +220,14 @@ BOOST_AUTO_TEST_CASE(checkWriteConfigXMLConsistency) {
 
 BOOST_AUTO_TEST_CASE(checkAddUser) {
 	std::string user_id = "new_user";
+#ifdef PION_HAVE_SSL
 	BOOST_CHECK_EQUAL(addUser(user_id, m_basic_user_config_ptr), user_id);
+#else
+	BOOST_CHECK_THROW(addUser(user_id, m_basic_user_config_ptr), UserManager::MissingOpenSSLException);
+#endif
 }
 
+#ifdef PION_HAVE_SSL
 BOOST_AUTO_TEST_CASE(checkAddUserWithDifferentIdThanConfigData) {
 	std::string user_id = "new_user";
 	std::string config_data_str = "<PionConfig><User id =\"" + user_id + "\"><Password>123</Password></User></PionConfig>";
@@ -256,12 +263,18 @@ BOOST_AUTO_TEST_CASE(checkAddUserWithEmptyPassword) {
 	std::string user_id = "new_user";
 	BOOST_CHECK_THROW(addUser(user_id, m_user_config_ptr), UserManager::NoPasswordException);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(checkSetUserConfigForExistingUser) {
 	std::string existing_user_id = "test1";
+#ifdef PION_HAVE_SSL
 	BOOST_CHECK_NO_THROW(setUserConfig(existing_user_id, m_basic_user_config_ptr));
+#else
+	BOOST_CHECK_THROW(setUserConfig(existing_user_id, m_basic_user_config_ptr), UserManager::MissingOpenSSLException);
+#endif
 }
 
+#ifdef PION_HAVE_SSL
 BOOST_AUTO_TEST_CASE(checkSetUserConfigForNonExistentUser) {
 	std::string non_existent_user_id = "smurf";
 	BOOST_CHECK_THROW(setUserConfig(non_existent_user_id, m_basic_user_config_ptr), UserManager::UserNotFoundException);
@@ -278,15 +291,22 @@ BOOST_AUTO_TEST_CASE(checkSetUserConfigUpdatesUserConfig) {
 	boost::regex expected_substring("<T1>blueberry</T1>");
 	BOOST_CHECK(boost::regex_search(ss.str(), expected_substring));
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(checkRemoveExistingUser) {
 	std::string existing_user_id = "test1";
+#ifdef PION_HAVE_SSL
 	BOOST_CHECK(removeUser(existing_user_id));
+#else
+	BOOST_CHECK_THROW(removeUser(existing_user_id), UserManager::MissingOpenSSLException);
+#endif
 }
 
+#ifdef PION_HAVE_SSL
 BOOST_AUTO_TEST_CASE(checkRemoveNonExistentUser) {
 	std::string non_existent_user_id = "smurf";
 	BOOST_CHECK(!removeUser(non_existent_user_id));
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -70,8 +70,10 @@ struct PionPlatformUnitTestsConfig {
 		pion::PionPlugin::addPluginDirectory("../../net/services/.libs");
 #endif
 
+#ifdef PION_HAVE_SSL
 		CRYPTO_malloc_init();
 		SSL_library_init();	// TODO: asio should handle this, why not?!?!
+#endif
 	}
 	~PionPlatformUnitTestsConfig() {
 		std::cout << "global teardown specific to pion-platform\n";
