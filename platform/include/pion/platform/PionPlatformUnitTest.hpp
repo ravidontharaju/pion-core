@@ -39,7 +39,11 @@ const std::string LOG_FILE_DIR(get_log_file_dir());
 const std::string VOCABS_CONFIG_FILE(CONFIG_FILE_DIR + "vocabularies.xml");
 const std::string VOCABS_TEMPLATE_FILE(CONFIG_FILE_DIR + "vocabularies.tmpl");
 const std::string CODECS_CONFIG_FILE(CONFIG_FILE_DIR + "codecs.xml");
+#ifdef PION_HAVE_JSON
 const std::string CODECS_TEMPLATE_FILE(CONFIG_FILE_DIR + "codecs.tmpl");
+#else
+const std::string CODECS_TEMPLATE_FILE(CONFIG_FILE_DIR + "codecs-no-json.tmpl");
+#endif
 const std::string DATABASES_CONFIG_FILE(CONFIG_FILE_DIR + "databases.xml");
 const std::string DATABASES_TEMPLATE_FILE(CONFIG_FILE_DIR + "databases.tmpl");
 const std::string REACTORS_CONFIG_FILE(CONFIG_FILE_DIR + "reactors.xml");

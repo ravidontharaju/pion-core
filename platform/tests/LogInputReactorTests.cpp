@@ -224,7 +224,9 @@ public:
 
 
 typedef boost::mpl::list<RunningReactionEngineWithLogInputReactor_F<LogCodec_id, LogCodec_file_ext>,
+#ifdef PION_HAVE_JSON
 						 RunningReactionEngineWithLogInputReactor_F<JSONCodec_id, JSONCodec_file_ext>,
+#endif
 						 RunningReactionEngineWithLogInputReactor_F<XMLCodec_id, XMLCodec_file_ext> > codec_fixture_list;
 
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(RunningReactionEngineWithLogInputReactor_S, codec_fixture_list)
@@ -758,8 +760,10 @@ extern const char bzip2_file_ext[] = ".bz2";
 
 typedef boost::mpl::list<LogInputReactorInterfaceForCompressedLogFiles_F<LogCodec_id,  LogCodec_file_ext,  gzip_file_ext>,
 						 LogInputReactorInterfaceForCompressedLogFiles_F<LogCodec_id,  LogCodec_file_ext,  bzip2_file_ext>,
+#ifdef PION_HAVE_JSON
 						 LogInputReactorInterfaceForCompressedLogFiles_F<JSONCodec_id, JSONCodec_file_ext, gzip_file_ext>,
 						 LogInputReactorInterfaceForCompressedLogFiles_F<JSONCodec_id, JSONCodec_file_ext, bzip2_file_ext>,
+#endif
 						 LogInputReactorInterfaceForCompressedLogFiles_F<XMLCodec_id,  XMLCodec_file_ext,  gzip_file_ext>,
 						 LogInputReactorInterfaceForCompressedLogFiles_F<XMLCodec_id,  XMLCodec_file_ext,  bzip2_file_ext>
 > compressed_log_fixture_list;

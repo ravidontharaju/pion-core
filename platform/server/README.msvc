@@ -1,10 +1,7 @@
 Running pion:
 -------------
 
-NOTE: currently, only the PION_FULL configurations work correctly, so unless
-you want to debug the code, stick with configurations Debug_DLL_full and
-Release_DLL_full.
-
+NOTE: currently, the Debug_static and Release_static configurations are not supported.
 
 Make sure the following are on your path (with appropriate changes if you 
 installed anything in other than the suggested location):
@@ -27,4 +24,3 @@ C:\pion-platform\platform\server>..\..\bin\debug_dll_full\pion.exe -c platform.x
 
 To run pion.exe from within the IDE, go to pion Property Pages -> Debugging,
 and set 'Command Arguments' to: -c platform.xml
-

@@ -111,9 +111,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenLogCodec) {
 	BOOST_CHECK_NO_THROW(F::open("LogCodec"));
 }
 
+#ifdef PION_HAVE_JSON
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenJSONCodec) {
 	BOOST_CHECK_NO_THROW(F::open("JSONCodec"));
 }
+#endif
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOpenXMLCodec) {
 	BOOST_CHECK_NO_THROW(F::open("XMLCodec"));
@@ -144,7 +146,9 @@ extern const char JSONCodec_name[] = "JSONCodec";
 extern const char XMLCodec_name[]  = "XMLCodec";
 
 typedef boost::mpl::list<PluginPtrWithCodecLoaded_F<LogCodec_name>,
+#ifdef PION_HAVE_JSON
 						 PluginPtrWithCodecLoaded_F<JSONCodec_name>,
+#endif
 						 PluginPtrWithCodecLoaded_F<XMLCodec_name> > codec_fixture_list;
 
 // PluginPtrWithCodecLoaded_S contains tests that should pass for any type of Codec
@@ -223,8 +227,10 @@ protected:
 typedef boost::mpl::list<
 	CodecPtr_F<LogCodec_name, CREATED>,
 	CodecPtr_F<LogCodec_name, CLONED>,
+#ifdef PION_HAVE_JSON
 	CodecPtr_F<JSONCodec_name, CREATED>,
 	CodecPtr_F<JSONCodec_name, CLONED>,
+#endif
 	CodecPtr_F<XMLCodec_name, CREATED>,
 	CodecPtr_F<XMLCodec_name, CLONED>
 > CodecPtr_fixture_list;
@@ -461,9 +467,11 @@ typedef boost::mpl::list<
 	ConfiguredCodecPtr_F<LogCodec_name, CREATED>,
 	ConfiguredCodecPtr_F<LogCodec_name, CLONED>,
 	ConfiguredCodecPtr_F<LogCodec_name, MANUFACTURED>,
+#ifdef PION_HAVE_JSON
 	ConfiguredCodecPtr_F<JSONCodec_name, CREATED>,
 	ConfiguredCodecPtr_F<JSONCodec_name, CLONED>,
 	ConfiguredCodecPtr_F<JSONCodec_name, MANUFACTURED>,
+#endif
 	ConfiguredCodecPtr_F<XMLCodec_name, CREATED>,
 	ConfiguredCodecPtr_F<XMLCodec_name, CLONED>,
 	ConfiguredCodecPtr_F<XMLCodec_name, MANUFACTURED>
@@ -634,9 +642,11 @@ typedef boost::mpl::list<
 	ReconfiguredCodecPtr_F<LogCodec_name, CREATED>,
 	ReconfiguredCodecPtr_F<LogCodec_name, CLONED>,
 	ReconfiguredCodecPtr_F<LogCodec_name, MANUFACTURED>,
+#ifdef PION_HAVE_JSON
 	ReconfiguredCodecPtr_F<JSONCodec_name, CREATED>,
 	ReconfiguredCodecPtr_F<JSONCodec_name, CLONED>,
 	ReconfiguredCodecPtr_F<JSONCodec_name, MANUFACTURED>,
+#endif
 	ReconfiguredCodecPtr_F<XMLCodec_name, CREATED>,
 	ReconfiguredCodecPtr_F<XMLCodec_name, CLONED>,
 	ReconfiguredCodecPtr_F<XMLCodec_name, MANUFACTURED>
@@ -718,8 +728,10 @@ public:
 typedef boost::mpl::list<
 	CodecPtrWithVariousFieldTerms_F<LogCodec_name, CREATED>,
 	CodecPtrWithVariousFieldTerms_F<LogCodec_name, CLONED>,
+#ifdef PION_HAVE_JSON
 	CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CREATED>,
 	CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CLONED>,
+#endif
 	CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CREATED>,
 	CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CLONED>
 > ConfiguredCodecPtrNoFactory_fixture_list;
@@ -804,6 +816,7 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+#ifdef PION_HAVE_JSON
 typedef CodecPtrWithVariousFieldTerms_F<JSONCodec_name, CREATED> ConfiguredJSONCodecPtr_F;
 BOOST_FIXTURE_TEST_SUITE(ConfiguredJSONCodecPtr_S, ConfiguredJSONCodecPtr_F)
 
@@ -1043,6 +1056,7 @@ BOOST_AUTO_TEST_CASE(checkWriteWithMultipleValuesForATerm) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif
 
 
 typedef CodecPtrWithVariousFieldTerms_F<XMLCodec_name, CREATED> ConfiguredXMLCodecPtr_F;
@@ -1483,8 +1497,10 @@ private:
 typedef boost::mpl::list<
 	CodecPtrWithFieldsOfAllTypes_F<LogCodec_name, CREATED>,
 	CodecPtrWithFieldsOfAllTypes_F<LogCodec_name, CLONED>,
+#ifdef PION_HAVE_JSON
 	CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CREATED>,
 	CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CLONED>,
+#endif
 	CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CREATED>,
 	CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CLONED>
 > CodecPtrWithFieldsOfAllTypes_fixture_list;
@@ -1646,6 +1662,7 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+#ifdef PION_HAVE_JSON
 typedef CodecPtrWithFieldsOfAllTypes_F<JSONCodec_name, CREATED> JSONCodecPtrWithFieldsOfAllTypes_F;
 BOOST_FIXTURE_TEST_SUITE(JSONCodecPtrWithFieldsOfAllTypes_S, JSONCodecPtrWithFieldsOfAllTypes_F)
 
@@ -1664,6 +1681,7 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif
 
 
 typedef CodecPtrWithFieldsOfAllTypes_F<XMLCodec_name, CREATED> XMLCodecPtrWithFieldsOfAllTypes_F;
@@ -1735,11 +1753,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadLogCodec) {
 	xmlFreeNodeList(config_ptr);
 }
 
+#ifdef PION_HAVE_JSON
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadJSONCodec) {
 	xmlNodePtr config_ptr(F::createCodecConfig("JSONCodec"));
 	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
 	xmlFreeNodeList(config_ptr);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadXMLCodec) {
 	xmlNodePtr config_ptr(F::createCodecConfig("XMLCodec"));
@@ -1750,8 +1770,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadXMLCodec) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkLoadMultipleCodecs) {
 	xmlNodePtr config_ptr(F::createCodecConfig("LogCodec"));
 	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+#ifdef PION_HAVE_JSON
 	xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>("JSONCodec"));
 	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
+#endif
 	xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>("XMLCodec"));
 	BOOST_CHECK_NO_THROW(F::addCodec(config_ptr));
 	xmlFreeNodeList(config_ptr);
@@ -1792,7 +1814,9 @@ public:
 };
 
 typedef boost::mpl::list<CodecFactoryWithCodecLoaded_F<LogCodec_name>,
+#ifdef PION_HAVE_JSON
 						 CodecFactoryWithCodecLoaded_F<JSONCodec_name>,
+#endif
 						 CodecFactoryWithCodecLoaded_F<XMLCodec_name> > codec_fixture_list_2;
 
 // CodecFactoryWithCodecLoaded_S contains tests that should pass for any type of Codec
@@ -1853,6 +1877,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithLogCodecLoaded_S, boost::
 BOOST_AUTO_TEST_SUITE_END()
 
 
+#ifdef PION_HAVE_JSON
 // CodecFactoryWithJSONCodecLoaded_S contains tests that are specific to JSONCodecs
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithJSONCodecLoaded_S, boost::mpl::list<CodecFactoryWithCodecLoaded_F<JSONCodec_name> >)
 
@@ -1863,6 +1888,7 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithJSONCodecLoaded_S, boost:
 //}
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif
 
 
 // CodecFactoryWithXMLCodecLoaded_S contains tests that are specific to XMLCodecs
@@ -1882,8 +1908,10 @@ public:
 	CodecFactoryWithMultipleCodecsLoaded_F() {
 		xmlNodePtr config_ptr(NewCodecFactory_F::createCodecConfig(LogCodec_name));
 		m_LogCodec_id = addCodec(config_ptr);
+#ifdef PION_HAVE_JSON
 		xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>(JSONCodec_name));
 		m_JSONCodec_id = addCodec(config_ptr);
+#endif
 		xmlNodeSetContent(config_ptr,  reinterpret_cast<const xmlChar*>(XMLCodec_name));
 		m_XMLCodec_id = addCodec(config_ptr);
 		xmlFreeNodeList(config_ptr);
@@ -1899,13 +1927,17 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithMultipleCodecsLoaded_S,
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetCodec) {
 	BOOST_CHECK(F::getCodec(F::m_LogCodec_id));
+#ifdef PION_HAVE_JSON
 	BOOST_CHECK(F::getCodec(F::m_JSONCodec_id));
+#endif
 	BOOST_CHECK(F::getCodec(F::m_XMLCodec_id));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveCodec) {
 	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_LogCodec_id));
+#ifdef PION_HAVE_JSON
 	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_JSONCodec_id));
+#endif
 	BOOST_CHECK_NO_THROW(F::removeCodec(F::m_XMLCodec_id));
 }
 
@@ -1928,7 +1960,9 @@ public:
 };
 
 typedef boost::mpl::list<CodecFactoryWithCodecPtr_F<LogCodec_name>,
+#ifdef PION_HAVE_JSON
 						 CodecFactoryWithCodecPtr_F<JSONCodec_name>,
+#endif
 						 CodecFactoryWithCodecPtr_F<XMLCodec_name> > codec_fixture_list_3;
 
 // CodecFactoryWithCodecPtr_S contains tests that should pass for any type of Codec.
@@ -1951,6 +1985,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetContentType) {
 BOOST_AUTO_TEST_SUITE_END()
 
 
+#ifdef PION_HAVE_JSON
 // CodecFactoryWithJSONCodecPtr_S contains tests that are specific to JSONCodecs
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecFactoryWithJSONCodecPtr_S, boost::mpl::list<CodecFactoryWithCodecPtr_F<JSONCodec_name> >)
 
@@ -1959,6 +1994,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetContentType) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif
 
 
 // CodecFactoryWithXMLCodecPtr_S contains tests that are specific to XMLCodecs

@@ -439,6 +439,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	BOOST_CHECK_EQUAL(num_events_in_timestamped_log_file + num_events_in_most_current_log_file, num_events_from_log_input_reactor);
 }
 
+#ifdef PION_HAVE_YAJL
 BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	// Add a LogOutputReactor with an JSONCodec.
 	xmlNodePtr config_ptr = makeReactorConfigFromString(
@@ -483,6 +484,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	m_platform_cfg.getReactionEngine().stopReactor(xml_log_output_reactor_id);
 	BOOST_CHECK_EQUAL(boost::filesystem::file_size(log_output_file), 228UL);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	// Add a LogOutputReactor with an XMLCodec.
