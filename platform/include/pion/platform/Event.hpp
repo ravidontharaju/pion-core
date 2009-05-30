@@ -187,7 +187,7 @@ public:
 		inline bool operator==(const SimpleString& rhs) const {
 			if (m_len != rhs.m_len)
 				return false;
-			return (strncmp(m_ptr, rhs.m_ptr, m_len) == 0);
+			return (memcmp(m_ptr, rhs.m_ptr, m_len) == 0);
 		}
 
 		/// returns a raw pointer to the character array

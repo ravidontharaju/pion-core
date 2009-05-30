@@ -221,9 +221,9 @@ protected:
 		 * @param value the value to bind to the query parameter
 		 * @param copy_value if true, the string will be copied into a temporary buffer
 		 */
-		virtual void bindBlob(unsigned int param, const std::string& value, bool copy_value = true) {
-			if (sqlite3_bind_blob(m_sqlite_stmt, param+1, value.c_str(),
-								  value.size(), (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
+		virtual void bindBlob(unsigned int param, const char *value, size_t size, bool copy_value = true) {
+			if (sqlite3_bind_blob(m_sqlite_stmt, param+1, value,
+								  size, (copy_value ? SQLITE_TRANSIENT : SQLITE_STATIC)) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
