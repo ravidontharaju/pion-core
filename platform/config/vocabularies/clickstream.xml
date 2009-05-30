@@ -312,5 +312,9 @@
             <Type>shortstring</Type>
             <Comment>WebTrends HTTP client version</Comment>
         </Term>
+        <Term id="urn:vocab:clickstream#compressed">
+            <Type>uint8</Type>
+            <Comment>ContentStorage compressed</Comment>
+        </Term>
 	</Vocabulary>
 </PionConfig>
