@@ -8,10 +8,10 @@ check_PROGRAMS = PionPlatformUnitTests
 bin_PROGRAMS = PionPerformanceTests
 TESTS = $(check_PROGRAMS)
 
-PionPlatformUnitTests_SOURCES = \
+PionPlatformUnitTests_SOURCES = PionPlatformUnitTests.cpp \
 	CodecTests.cpp ComparisonTests.cpp ConfigManagerTests.cpp \
 	ConfigServiceTests.cpp EventTests.cpp FeedServiceTests.cpp \
-	PionPlatformUnitTests.cpp PluginConfigTests.cpp ReactorTests.cpp \
+	PluginConfigTests.cpp ReactorTests.cpp \
 	ServiceManagerTests.cpp UserManagerTests.cpp \
 	VocabularyConfigTests.cpp VocabularyTests.cpp ProtocolTests.cpp \
 	LogInputReactorTests.cpp TransformReactorTests.cpp \
