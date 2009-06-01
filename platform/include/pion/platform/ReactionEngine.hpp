@@ -390,6 +390,9 @@ public:
 		return m_plugins.getStatistic(reactor_id, boost::bind(&Reactor::getEventsOut, _1));
 	}
 	
+	/// returns the number of events queued in ReactionScheduler
+	inline std::size_t getEventsQueued(void) const { return m_scheduler.getQueueSize(); }
+
 	/**
 	 * returns the running status of a Reactor
 	 *

@@ -106,6 +106,9 @@ public:
 	virtual void post(boost::function0<void> work_func) {
 		m_reaction_queue.push(work_func);
 	}
+	
+	/// returns the number of events queued in ReactionScheduler
+	inline std::size_t getQueueSize(void) const { return m_reaction_queue.size(); }
 
 	
 protected:
