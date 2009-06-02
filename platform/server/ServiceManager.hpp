@@ -130,7 +130,10 @@ public:
 	ServiceManager(PlatformConfig& platform_config);
 	
 	/// virtual destructor
-	virtual ~ServiceManager();
+	virtual ~ServiceManager() { shutdown(); }
+	
+	/// shuts down the service manager -> stops all servers and threads
+	void shutdown(void);
 	
 	/// opens an existing config file and loads the data it contains
 	virtual void openConfigFile(void);

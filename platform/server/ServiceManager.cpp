@@ -69,12 +69,20 @@ ServiceManager::ServiceManager(PlatformConfig& platform_config)
 	platform_config.getReactionEngine().registerForUpdates(boost::bind(&ServiceManager::updateReactors, this));
 }
 
-ServiceManager::~ServiceManager()
+void ServiceManager::shutdown(void)
 {
-	// stop servers first
 	boost::mutex::scoped_lock services_lock(m_mutex);
-	m_servers.clear();
+
+	// stop servers first otherwise you might have lingering threads
+	// that cause seg faults during shutdown
+	for (ServerList::iterator it=m_servers.begin(); it!=m_servers.end(); ++it)
+		(*it)->stop();
+
+	// stop scheduler after stopping servers
 	m_scheduler.shutdown();
+
+	// finally, it's safe to clear the HTTPServer/WebServer objects
+	m_servers.clear();
 }
 
 void ServiceManager::openConfigFile(void)
