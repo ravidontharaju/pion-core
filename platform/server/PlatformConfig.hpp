@@ -134,6 +134,8 @@ public:
 		// make sure that the ReactionEngine stops before the ServiceManager
 		// This will cleanly terminate any temporary Reactor connections first
 		m_reaction_engine.stop();
+		// make sure the ServiceManager has shutdown before everything starts to destruct
+		m_service_mgr.shutdown();
 	}
 	
 	/// opens an existing platform config file
