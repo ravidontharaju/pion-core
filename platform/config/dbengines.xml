@@ -12,6 +12,9 @@
 		<CreateStat>CREATE TABLE IF NOT EXISTS :TABLE ( :FIELDS , KEY (timedate) )</CreateStat>
 		<UpdateStat>INSERT INTO :TABLE ( :COLUMNS ) VALUES ( :PARAMS )</UpdateStat>
 		<SelectStat>SELECT :COLUMNS FROM :TABLE</SelectStat>
+		<PreSQL>PRAGMA read_uncommitted = true</PreSQL>
+		<PreSQL>PRAGMA synchronous = off</PreSQL>
+		<PreSQL>PRAGMA journal_mode = off</PreSQL>
 		<TypeMap>
 			<Pair>null,NONE</Pair>
 			<Pair>object,NONE</Pair>

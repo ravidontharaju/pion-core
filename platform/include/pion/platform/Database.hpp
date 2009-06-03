@@ -300,6 +300,7 @@ protected:
 	static const std::string				CREATE_LOG_ELEMENT_NAME;
 	static const std::string				INSERT_LOG_ELEMENT_NAME;
 	static const std::string				ISOLATION_ELEMENT_NAME;
+	static const std::string				PRESQL_ELEMENT_NAME;
 
 	static const std::string				CREATE_STAT_ELEMENT_NAME;
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
@@ -345,6 +346,9 @@ protected:
 
 	/// Affinity map; index is term_type, value should be compatible SQL type
 	std::vector<std::string>				m_sql_affinity;
+
+	/// PreSQL statements, to be executed before table operations
+	std::vector<std::string>				m_pre_sql;
 };
 
 

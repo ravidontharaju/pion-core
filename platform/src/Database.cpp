@@ -45,6 +45,7 @@ const std::string			Database::COMMIT_ELEMENT_NAME = "CommitInsert";
 const std::string			Database::CREATE_LOG_ELEMENT_NAME = "CreateLog";
 const std::string			Database::INSERT_LOG_ELEMENT_NAME = "InsertLog";
 const std::string			Database::ISOLATION_ELEMENT_NAME = "IsolationLevel";
+const std::string			Database::PRESQL_ELEMENT_NAME = "PreSQL";
 
 const std::string			Database::CREATE_STAT_ELEMENT_NAME = "CreateStat";
 const std::string			Database::UPDATE_STAT_ELEMENT_NAME = "UpdateStat";
@@ -118,6 +119,17 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 		}
 	} else
 		throw MissingTypeMap(getId());
+
+	// Optional PreSQL section -- just fill in the m_pre_sql array
+	m_pre_sql.clear();
+	xmlNodePtr presql_node;
+	if ((presql_node = ConfigManager::findConfigNodeByName(PRESQL_ELEMENT_NAME, config_ptr)) != NULL) {
+		std::string presql_str;
+		while (ConfigManager::getConfigOption(PRESQL_ELEMENT_NAME, presql_str, presql_node)) {
+			m_pre_sql.push_back(presql_str);
+			presql_node = presql_node->next;
+		}
+	}
 }
 
 /// Find Queries, Isolation level and Mapping Pairs from reactors.xml OR dbengines.xml
