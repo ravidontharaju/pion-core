@@ -7,6 +7,7 @@
 lib_LTLIBRARIES = libpion-sqlite.la
 
 libpion_sqlite_la_SOURCES = pion-sqlite.c pion-sqlite.h
+libpion_sqlite_la_CFLAGS = -DSQLITE_THREADSAFE=2 -DSQLITE_TEMP_STORE=2 -DSQLITE_DEFAULT_AUTOVACUUM=0
 libpion_sqlite_la_LDFLAGS = -no-undefined -release $(PION_LIBRARY_VERSION)
 
 EXTRA_DIST = *.vcproj
