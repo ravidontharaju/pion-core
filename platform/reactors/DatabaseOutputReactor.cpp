@@ -305,8 +305,8 @@ void DatabaseOutputReactor::insertEvents(void)
 				PION_ASSERT(m_database_ptr->is_open());
 
 				// begin a new transaction
-//				begin_transaction_ptr->run();
-//				begin_transaction_ptr->reset();
+				begin_transaction_ptr->run();
+				begin_transaction_ptr->reset();
 
 				// step through the event queue, inserting each event individually
 				for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
@@ -318,8 +318,8 @@ void DatabaseOutputReactor::insertEvents(void)
 				}
 
 				// end & commit the transaction
-//				commit_transaction_ptr->run();
-//				commit_transaction_ptr->reset();
+				commit_transaction_ptr->run();
+				commit_transaction_ptr->reset();
 
 				// done flushing the queue
 				PION_LOG_DEBUG(m_logger, "Database output thread wrote " << insert_queue_ptr->size() << " events: " << getId());
