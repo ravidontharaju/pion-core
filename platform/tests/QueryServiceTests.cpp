@@ -167,14 +167,6 @@ public:
 		
 		return response_ptr;
 	}
-	// From a string representation of a Reactor configuration, obtain an xmlNodePtr that
-	// points to a list of all the child nodes needed by Reactor::setConfig().
-	xmlNodePtr makeReactorConfigFromString(const std::string& inner_config_str) {
-		std::string config_str = std::string("<PionConfig><Reactor>") + inner_config_str + "</Reactor></PionConfig>";
-		xmlNodePtr config_ptr = pion::platform::ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
-		BOOST_REQUIRE(config_ptr);
-		return config_ptr;
-	}
 	boost::uint64_t extractNumEventsInFromResponse(const HTTPResponsePtr& response_ptr) {
 		std::string response_content(response_ptr->getContent());
 		boost::smatch rx_matches;
@@ -371,7 +363,7 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithSomeInput) {
 
 BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
-	xmlNodePtr config_ptr = makeReactorConfigFromString(
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Perpetual CLF Log Reader</Name>"
 		"<Plugin>LogInputReactor</Plugin>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
@@ -442,7 +434,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 #ifdef PION_HAVE_YAJL
 BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	// Add a LogOutputReactor with an JSONCodec.
-	xmlNodePtr config_ptr = makeReactorConfigFromString(
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>JSON Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
 		"<Codec>9446b74a-71e4-426c-b965-ae55260375af</Codec>"
@@ -488,7 +480,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 
 BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	// Add a LogOutputReactor with an XMLCodec.
-	xmlNodePtr config_ptr = makeReactorConfigFromString(
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>XML Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
 		"<Codec>f7bb0fd8-3fe0-4227-accb-aaba2440a638</Codec>"
@@ -574,7 +566,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForUnchangedLogFile) {
 
 BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
 	// Add a "perpetual" LogInputReactor, i.e. with JustOne set to true.
-	xmlNodePtr config_ptr = makeReactorConfigFromString(
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Perpetual CLF Log Reader</Name>"
 		"<Plugin>LogInputReactor</Plugin>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"

@@ -21,11 +21,13 @@
 #define __PION_PIONPLATFORMUNITTEST_HEADER__
 
 #include <fstream>
+#include <libxml/tree.h>
 #include <boost/function.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/ReactionEngine.hpp>
+#include <pion/platform/ConfigManager.hpp>
 
 /// returns the path to the unit test config file directory
 const std::string& get_config_file_dir(void);
@@ -108,7 +110,15 @@ struct PionPlatformUnitTest {
 	
 		return events_read;
 	}
-	
+
+	// From a string representation of a Reactor configuration, obtain an xmlNodePtr that
+	// points to a list of all the child nodes needed by Reactor::setConfig().
+	static xmlNodePtr makeReactorConfigFromString(const std::string& inner_config_str) {
+		std::string config_str = std::string("<PionConfig><Reactor>") + inner_config_str + "</Reactor></PionConfig>";
+		xmlNodePtr config_ptr = pion::platform::ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
+		BOOST_REQUIRE(config_ptr);
+		return config_ptr;
+	}
 };
 
 #endif

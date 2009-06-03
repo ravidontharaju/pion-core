@@ -114,7 +114,7 @@ public:
 		m_input_codec_id = codec_id;
 
 		// Add a LogOutputReactor and connect it to the LogInputReactor so it has something to send output to.
-		config_ptr = makeReactorConfigFromString(
+		config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 			"<Name>DLF Log Writer</Name>"
 			"<Plugin>LogOutputReactor</Plugin>"
 			"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
@@ -142,15 +142,6 @@ public:
 		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
 	}
 
-	// From a string representation of a Reactor configuration, obtain an xmlNodePtr that
-	// points to a list of all the child nodes needed by Reactor::setConfig().
-	xmlNodePtr makeReactorConfigFromString(const std::string& inner_config_str) {
-		std::string config_str = std::string("<PionConfig><Reactor>") + inner_config_str + "</Reactor></PionConfig>";
-		xmlNodePtr config_ptr = ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
-		BOOST_REQUIRE(config_ptr);
-		return config_ptr;
-	}
-
 	// Make a LogInputReactor configuration, using defaults for unspecified values.
 	xmlNodePtr makeLogInputReactorConfig(const std::string& name = "",
 										 const std::string& codec = "",
@@ -167,7 +158,7 @@ public:
 		inner_config_str += !filename.empty()?  filename :  std::string("combined.*\\") + file_ext; // e.g. combined.*\.xml
 		inner_config_str += "</Filename>";
 
-		return makeReactorConfigFromString(inner_config_str);
+		return PionPlatformUnitTest::makeReactorConfigFromString(inner_config_str);
 	}
 	std::string multiFileRegex(void) {
 		return std::string("comb.*\\") + file_ext; // e.g. comb.*\.xml
