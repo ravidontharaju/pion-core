@@ -82,13 +82,6 @@ void SQLiteDatabase::open(bool create_backup)
 		}
 		throw OpenDatabaseException(m_database_name);
 	}
-
-	// set a 2s busy timeout to deal with db locking
-	sqlite3_busy_timeout(m_sqlite_db, 2000);
-
-	// execute all PreSQL (if any)
-	for (unsigned i = 0; i < m_pre_sql.size(); i++)
-		sqlite3_exec(m_sqlite_db, m_pre_sql[i].c_str(), NULL, NULL, &m_error_ptr);
 }
 
 void SQLiteDatabase::close(void)
