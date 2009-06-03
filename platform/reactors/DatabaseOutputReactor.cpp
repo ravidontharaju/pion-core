@@ -31,8 +31,8 @@ namespace plugins {		// begin namespace plugins
 
 // static members of DatabaseOutputReactor
 
-const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 1000;
-const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_TIMEOUT = 10;
+const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_SIZE = 10000;
+const boost::uint32_t		DatabaseOutputReactor::DEFAULT_QUEUE_TIMEOUT = 5;
 const std::string			DatabaseOutputReactor::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
@@ -47,6 +47,11 @@ const char *				DatabaseOutputReactor::CHARSET_FOR_TABLES = "abcdefghijklmnopqrs
 
 void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
+	// stop reactor for config changes, but cache running status
+	// so that it can be restarted later if necessary
+	const bool was_running = isRunning();
+	stop();
+
 	// first set config options for the Reactor base class
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
@@ -58,8 +63,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
 
 	// prepare the event queue
-	while (m_event_queue.size() < m_queue_max)
-		m_event_queue.push_back( EventPtr() );
+	m_event_queue_ptr->reserve(m_queue_max);
 
 	// get the database to use
 	if (! ConfigManager::getConfigOption(DATABASE_ELEMENT_NAME, m_database_id, config_ptr))
@@ -114,6 +118,10 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	}
 	if (m_field_map.empty())
 		throw NoFieldsException(getId());
+
+	// if config changed while running, restart reactor
+	if (was_running)
+		startNoLock();
 }
 
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
@@ -143,31 +151,6 @@ void DatabaseOutputReactor::updateDatabases(void)
 	}
 }
 
-void DatabaseOutputReactor::process(const EventPtr& e)
-{
-	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
-
-	// if the event queue is full, we need to wait for the writer..
-	while (m_num_queued >= m_queue_max) {
-		m_wakeup_writer.notify_one();
-		m_flushed_queue.wait(queue_lock);
-		if (! isRunning())
-			return;
-	}
-
-	// add the event to the insert queue
-	m_event_queue[m_num_queued] = e;
-
-	// signal the writer thread if the queue is full
-	if (++m_num_queued == m_queue_max)
-		m_wakeup_writer.notify_one();
-
-	queue_lock.unlock();
-
-	// deliver the event to other Reactors (if any are connected)
-	deliverEvent(e);
-}
-
 void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {
@@ -175,7 +158,9 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 
-	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_num_queued
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+
+	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_event_queue_ptr->size()
 	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
 
 	// In addition; if full status is requested, get Database/Table/Fields
@@ -190,6 +175,8 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 		}
 	}
 
+	queue_lock.unlock();
+
 	writeEndReactorXML(out);
 	ConfigManager::writeEndPionStatsXML(out);
 }
@@ -197,6 +184,11 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 void DatabaseOutputReactor::start(void)
 {
 	ConfigWriteLock cfg_lock(*this);
+	startNoLock();
+}
+
+void DatabaseOutputReactor::startNoLock(void)
+{
 	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 	if (! m_is_running) {
 		m_is_running = true;
@@ -210,7 +202,7 @@ void DatabaseOutputReactor::start(void)
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseOutputReactor::insertEvents, this)));
 
 		// wait for the writer thread to startup
-		m_flushed_queue.wait(queue_lock);
+		m_swapped_queue.wait(queue_lock);
 	}
 }
 
@@ -219,26 +211,55 @@ void DatabaseOutputReactor::stop(void)
 	ConfigWriteLock cfg_lock(*this);
 	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 	if (m_is_running) {
-		// set flag to notify reader thread to shutdown
+		// set flag to notify output thread to shutdown
 		PION_LOG_DEBUG(m_logger, "Stopping database output thread: " << getId());
 		m_is_running = false;
 		m_wakeup_writer.notify_one();
 		queue_lock.unlock();
 
-		// wait for reader thread to shutdown
+		// wait for output thread to shutdown
 		m_thread->join();
 
-		// close the database connection
+		// close the database connection (ensure that data is flushed)
 		boost::mutex::scoped_lock queue_lock_two(m_queue_mutex);
 		m_database_ptr.reset();
+		
+		// clear the event queue
+		m_event_queue_ptr->clear();
 	}
+}
+
+void DatabaseOutputReactor::process(const EventPtr& e)
+{
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+
+	// signal the writer thread if the queue is full (wait for swap)
+	while (m_event_queue_ptr->size() >= m_queue_max) {
+
+		// wakeup the writer thread to swap queues & insert events
+		m_wakeup_writer.notify_one();
+
+		// wait until the writer thread has swapped the queues
+		m_swapped_queue.wait(queue_lock);
+		
+		// exit immediately if no longer running
+		if (! isRunning())
+			return;
+	}
+
+	// add the event to the insert queue
+	m_event_queue_ptr->push_back(e);
+
+	// release lock -> no longer necessary
+	queue_lock.unlock();
+
+	// deliver the event to other Reactors (if any are connected)
+	deliverEvent(e);
 }
 
 void DatabaseOutputReactor::insertEvents(void)
 {
 	PION_LOG_DEBUG(m_logger, "Database output thread is running: " << getId());
-
-	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 
 	try {
 		// open up the database if it isn't already open
@@ -261,30 +282,36 @@ void DatabaseOutputReactor::insertEvents(void)
 		QueryPtr commit_transaction_ptr(m_database_ptr->getCommitTransactionQuery());
 		PION_ASSERT(commit_transaction_ptr);
 
+		// queue of events pending insertion into the database
+		boost::scoped_ptr<EventQueue>	insert_queue_ptr(new EventQueue);
+		insert_queue_ptr->reserve(m_queue_max);
+
 		// notify all threads that we have started up
-		m_flushed_queue.notify_all();
+		{
+			// lock first to ensure start() thread is waiting when signal is sent
+			boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+			m_swapped_queue.notify_all();
+		}
 
 		while (m_is_running) {
-			// wait until it is time to go!
-			m_wakeup_writer.timed_wait(queue_lock,
-				boost::get_system_time() + boost::posix_time::time_duration(0, 0, m_queue_timeout, 0) );
+		
+			// check if new events are available in the "insert_queue"
+			if (checkEventQueue(insert_queue_ptr)) {
 
-			// check for spurious wake-ups
-			if (m_num_queued != 0) {
+				PION_LOG_DEBUG(m_logger, "Database output thread woke with " << insert_queue_ptr->size() << " events available: " << getId());
+
+				// check sanity of shared variables
 				PION_ASSERT(m_database_ptr);
 				PION_ASSERT(m_database_ptr->is_open());
-				PION_ASSERT(insert_query_ptr);
-				PION_ASSERT(begin_transaction_ptr);
-				PION_ASSERT(commit_transaction_ptr);
 
 				// begin a new transaction
 				begin_transaction_ptr->run();
 				begin_transaction_ptr->reset();
 
 				// step through the event queue, inserting each event individually
-				for (unsigned int n = 0; n < m_num_queued; ++n) {
+				for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
 					// bind the event to the insert query
-					insert_query_ptr->bindEvent(m_field_map, *m_event_queue[n], false);
+					insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
 					// execute the query to insert the record
 					insert_query_ptr->run();
 					insert_query_ptr->reset();
@@ -294,23 +321,49 @@ void DatabaseOutputReactor::insertEvents(void)
 				commit_transaction_ptr->run();
 				commit_transaction_ptr->reset();
 
-				// done flushing the queue! notify all pending inserters
-				PION_LOG_DEBUG(m_logger, "Database output thread wrote " << m_num_queued << " events: " << getId());
-				m_num_queued = 0;
-				m_flushed_queue.notify_all();
+				// done flushing the queue
+				PION_LOG_DEBUG(m_logger, "Database output thread wrote " << insert_queue_ptr->size() << " events: " << getId());
+				insert_queue_ptr->clear();
+
 			} else {
 				PION_LOG_DEBUG(m_logger, "Database output thread woke with no new events: " << getId());
 			}
 		}
+		
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(m_logger, e.what());
 		m_is_running = false;
-		m_flushed_queue.notify_all();
+		m_swapped_queue.notify_all();
 	}
 
 	PION_LOG_DEBUG(m_logger, "Database output thread is exiting: " << getId());
 }
 
+bool DatabaseOutputReactor::checkEventQueue(boost::scoped_ptr<EventQueue>& insert_queue_ptr)
+{
+	// acquire ownership of queue
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+	
+	// skip waiting if the queue is already full (missed wakeup signal)
+	if (m_event_queue_ptr->size() < m_queue_max) {
+
+		// wait until the queue is full or the timeout expires
+		m_wakeup_writer.timed_wait(queue_lock,
+			boost::get_system_time() + boost::posix_time::time_duration(0, 0, m_queue_timeout, 0) );
+	
+		// check for early & spurious wake-ups
+		if (m_event_queue_ptr->size() == 0)
+			return false;
+	}
+	
+	// swap the event queues
+	insert_queue_ptr.swap(m_event_queue_ptr);
+
+	// notify threads that the event queue has been swapped
+	m_swapped_queue.notify_all();
+
+	return true;
+}
 
 }	// end namespace plugins
 }	// end namespace pion

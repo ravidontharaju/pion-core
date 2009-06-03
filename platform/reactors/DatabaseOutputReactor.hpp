@@ -97,7 +97,8 @@ public:
 	DatabaseOutputReactor(void)
 		: pion::platform::Reactor(TYPE_STORAGE),
 		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
-		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(0), m_num_queued(0)
+		m_event_queue_ptr(new EventQueue), m_is_flushing(false),
+		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(0)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -160,12 +161,24 @@ public:
 
 private:
 
+	/// data type for a collection of queued Events
+	typedef std::vector<pion::platform::EventPtr>	EventQueue;
+
+
+	/// starts the reactor (without locking)
+	void startNoLock(void);
+
 	/// function used by the writer thread to store events to the database
 	void insertEvents(void);
 
-
-	/// data type for a collection of queued Events
-	typedef std::vector<pion::platform::EventPtr>	EventQueue;
+	/**
+	 * checks for new events queued for database storage
+	 *
+	 * @param insert_queue_ptr event queue ptr that will be swapped with available event queue
+	 *
+	 * @return bool true if there are new events available
+	 */
+	bool checkEventQueue(boost::scoped_ptr<EventQueue>& insert_queue_ptr);
 
 
 	/// default maximum number of events that may be queued for insertion
@@ -214,7 +227,10 @@ private:
 	pion::platform::DatabasePtr				m_database_ptr;
 
 	/// collection of events queued for storage to the database
-	EventQueue								m_event_queue;
+	boost::scoped_ptr<EventQueue>			m_event_queue_ptr;
+
+	/// true while the worker thread is busy flushing the event queue
+	volatile bool							m_is_flushing;
 
 	/// maximum number of events that may be queued for insertion
 	boost::uint32_t							m_queue_max;
@@ -222,17 +238,14 @@ private:
 	/// number of seconds before the queue is automatically flushed due to timeout
 	boost::uint32_t							m_queue_timeout;
 
-	/// number of events that are currently queued for storage to the database
-	boost::uint32_t							m_num_queued;
-
 	/// used to protect the Event queue
 	boost::mutex							m_queue_mutex;
 
 	/// condition triggered to notify the writer thread to save events to the database
 	boost::condition						m_wakeup_writer;
 
-	/// condition triggered to notify all threads that the the queue was flushed
-	boost::condition						m_flushed_queue;
+	/// condition triggered to notify all threads that the the queue was swapped
+	boost::condition						m_swapped_queue;
 
 	/// thread used to store events to the database
 	boost::scoped_ptr<boost::thread>		m_thread;
