@@ -270,6 +270,7 @@ protected:
 		// Query_map will be overridden
 //		m_query_map = d.m_query_map;
 		m_sql_affinity = d.m_sql_affinity;
+		m_pre_sql = d.m_pre_sql;
 	}
 
 
