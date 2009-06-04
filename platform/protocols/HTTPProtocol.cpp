@@ -82,6 +82,7 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CACHED="urn:vocab:clickstream#
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE="urn:vocab:clickstream#date";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_TIME="urn:vocab:clickstream#time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATE_TIME="urn:vocab:clickstream#date-time";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_EPOCH_TIME="urn:vocab:clickstream#epoch-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CLF_DATE="urn:vocab:clickstream#clf-date";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_START_TIME="urn:vocab:clickstream#request-start-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_END_TIME="urn:vocab:clickstream#request-end-time";
@@ -245,6 +246,7 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_date_term_ref = m_date_term_ref;
 	retval->m_time_term_ref = m_time_term_ref;
 	retval->m_date_time_term_ref = m_date_time_term_ref;
+	retval->m_epoch_time_term_ref = m_epoch_time_term_ref;
 	retval->m_clf_date_term_ref = m_clf_date_term_ref;
 	retval->m_request_start_time_term_ref = m_request_start_time_term_ref;
 	retval->m_request_end_time_term_ref = m_request_end_time_term_ref;
@@ -346,6 +348,8 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setDateTime(m_request_end_time_term_ref, m_request_end_time); 
 	(*event_ptr_ref).setDateTime(m_response_start_time_term_ref, m_response_start_time); 
 	(*event_ptr_ref).setDateTime(m_response_end_time_term_ref, m_response_end_time); 
+	(*event_ptr_ref).setUInt(m_epoch_time_term_ref,
+		PionTimeFacet::to_time_t(m_request_start_time) );
 
 	// set time duration fields
 	(*event_ptr_ref).setUInt(m_time_taken_term_ref,
@@ -698,6 +702,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_date_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_DATE_TIME);
 	if (m_date_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_DATE_TIME);
+
+	m_epoch_time_term_ref = v.findTerm(VOCAB_CLICKSTREAM_EPOCH_TIME);
+	if (m_epoch_time_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_EPOCH_TIME);
 
 	m_clf_date_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CLF_DATE);
 	if (m_clf_date_term_ref == Vocabulary::UNDEFINED_TERM_REF)
