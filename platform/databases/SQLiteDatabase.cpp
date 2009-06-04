@@ -85,7 +85,8 @@ void SQLiteDatabase::open(bool create_backup)
 	}
 
 	// set a 2s busy timeout to deal with db locking
-	sqlite3_busy_timeout(m_sqlite_db, 2000);
+	// Change to 10s, to support purging...
+	sqlite3_busy_timeout(m_sqlite_db, 10000);
 
 	// execute all PreSQL (if any)
 	for (unsigned i = 0; i < m_pre_sql.size(); i++)
