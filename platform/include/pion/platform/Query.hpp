@@ -254,7 +254,7 @@ protected:
 	 * @param t timestamp to use for writing
 	 */
 	static void writeDateString(char *buf, const pion::PionDateTime& t) {
-		sprintf(buf, "%d-%d-%d",
+		sprintf(buf, "%.2d-%.2d-%.2d",
 			static_cast<int>( t.date().year() ),
 			static_cast<int>( t.date().month() ),
 			static_cast<int>( t.date().day() ));
@@ -267,7 +267,7 @@ protected:
 	 * @param t timestamp to use for writing
 	 */
 	static void writeTimeString(char *buf, const pion::PionDateTime& t) {
-		sprintf(buf, "%d:%d:%d",
+		sprintf(buf, "%.2d:%.2d:%.2d",
 			static_cast<int>( t.time_of_day().hours() ),
 			static_cast<int>( t.time_of_day().minutes() ),
 			static_cast<int>( t.time_of_day().seconds() ));
@@ -280,7 +280,7 @@ protected:
 	 * @param t timestamp to use for writing
 	 */
 	static void writeDateTimeString(char *buf, const pion::PionDateTime& t) {
-		sprintf(buf, "%d-%d-%d %d:%d:%d",
+		sprintf(buf, "%.2d-%.2d-%.2d %.2d:%.2d:%.2d",
 			static_cast<int>( t.date().year() ),
 			static_cast<int>( t.date().month() ),
 			static_cast<int>( t.date().day() ),
