@@ -20,6 +20,7 @@
 #ifndef __PION_QUERY_HEADER__
 #define __PION_QUERY_HEADER__
 
+#include <cstdio>
 #include <string>
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
@@ -257,11 +258,92 @@ protected:
 		: m_sql_query(sql_query)
 	{}
 
+	/**
+	 * writes simple date string into buffer (%Y-%m-%d)
+	 *
+	 * @param buf buffer to write to (size must be > 10 bytes)
+	 * @param t timestamp to use for writing
+	 */
+	static void writeDateString(char *buf, const pion::PionDateTime& t) {
+		sprintf(buf, "%d-%d-%d",
+			static_cast<int>( t.date().year() ),
+			static_cast<int>( t.date().month() ),
+			static_cast<int>( t.date().day() ));
+	}
+
+	/**
+	 * writes simple time string into buffer (%H-%M-%S)
+	 *
+	 * @param buf buffer to write to (size must be > 8 bytes)
+	 * @param t timestamp to use for writing
+	 */
+	static void writeTimeString(char *buf, const pion::PionDateTime& t) {
+		sprintf(buf, "%d:%d:%d",
+			static_cast<int>( t.time_of_day().hours() ),
+			static_cast<int>( t.time_of_day().minutes() ),
+			static_cast<int>( t.time_of_day().seconds() ));
+	}
+
+	/**
+	 * writes simple date & time string into buffer (%Y-%m-%d %H-%M-%S)
+	 *
+	 * @param buf buffer to write to (size must be > 19 bytes)
+	 * @param t timestamp to use for writing
+	 */
+	static void writeDateTimeString(char *buf, const pion::PionDateTime& t) {
+		sprintf(buf, "%d-%d-%d %d:%d:%d",
+			static_cast<int>( t.date().year() ),
+			static_cast<int>( t.date().month() ),
+			static_cast<int>( t.date().day() ),
+			static_cast<int>( t.time_of_day().hours() ),
+			static_cast<int>( t.time_of_day().minutes() ),
+			static_cast<int>( t.time_of_day().seconds() ));
+	}
+	
+	/**
+	 * return static buffer with date string (%Y-%m-%d)
+	 *
+	 * @param t timestamp to use for writing
+	 *
+	 * @return char * static buffer containing output (not thread safe, must be used immediately)
+	 */
+	inline char *getDateString(const pion::PionDateTime& t) const {
+		writeDateString(m_time_buf, t);
+		return m_time_buf;
+	}
+
+	/**
+	 * return static buffer with time string (%H-%M-%S)
+	 *
+	 * @param buf buffer to write to (size must be > 8 bytes)
+	 *
+	 * @return char * static buffer containing output (not thread safe, must be used immediately)
+	 */
+	inline char *getTimeString(const pion::PionDateTime& t) const {
+		writeTimeString(m_time_buf, t);
+		return m_time_buf;
+	}
+
+	/**
+	 * return static buffer with date and time string (%Y-%m-%d %H-%M-%S)
+	 *
+	 * @param buf buffer to write to (size must be > 19 bytes)
+	 *
+	 * @return char * static buffer containing output (not thread safe, must be used immediately)
+	 */
+	inline char *getDateTimeString(const pion::PionDateTime& t) const {
+		writeDateTimeString(m_time_buf, t);
+		return m_time_buf;
+	}
+
 
 private:
 
 	/// the SQL that was compiled to initialize this query
 	const std::string					m_sql_query;
+
+	/// buffer used to serialize PionDateTime objects for databases
+	mutable char						m_time_buf[25];
 };
 
 

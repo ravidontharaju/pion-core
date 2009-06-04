@@ -325,9 +325,9 @@ protected:
 		 */
 		virtual void bindDateTime(unsigned int param, const PionDateTime& value) {
 			// store it as an iso extended string
-			std::string as_string(boost::posix_time::to_iso_extended_string(value));
-			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string.c_str(),
-								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+			char *as_string = getDateTimeString(boost::get<const PionDateTime&>(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string,
+								  strlen(as_string), SQLITE_TRANSIENT) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
@@ -339,11 +339,9 @@ protected:
 		 */
 		virtual void bindDate(unsigned int param, const PionDateTime& value) {
 			// store it as an iso extended string
-//			pion::PionTimeFacet f("%Y-%m-%d");
-//			std::string as_string(f.toString(boost::get<const PionDateTime&>(value)));
-			std::string as_string(boost::posix_time::to_iso_extended_string(value));
-			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string.c_str(),
-								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+			char *as_string = getDateString(boost::get<const PionDateTime&>(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string,
+								  strlen(as_string), SQLITE_TRANSIENT) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
@@ -355,11 +353,9 @@ protected:
 		 */
 		virtual void bindTime(unsigned int param, const PionDateTime& value) {
 			// store it as an iso extended string
-//			pion::PionTimeFacet f("%H:%M:%S");
-//			std::string as_string(f.toString(boost::get<const PionDateTime&>(value)));
-			std::string as_string(boost::posix_time::to_iso_extended_string(value));
-			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string.c_str(),
-								  as_string.size(), SQLITE_TRANSIENT) != SQLITE_OK)
+			char *as_string = getTimeString(boost::get<const PionDateTime&>(value));
+			if (sqlite3_bind_text(m_sqlite_stmt, param+1, as_string,
+								  strlen(as_string), SQLITE_TRANSIENT) != SQLITE_OK)
 				SQLiteDatabase::throwAPIException(m_sqlite_db);
 		}
 
@@ -422,7 +418,8 @@ protected:
 			// %Y-%m-%dT%H:%M:%S%F
 			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
 			if (ptr) {
-				PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
+//				PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
+				PionTimeFacet time_facet("%Y-%m-%d %H:%M:%S");
 				val = time_facet.fromString(ptr);
 			}
 //			val = boost::posix_time::time_from_string(reinterpret_cast<const char *>(sqlite3_column_text(m_sqlite_stmt, param)));
@@ -434,8 +431,7 @@ protected:
 			// %Y-%m-%dT%H:%M:%S%F
 			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
 			if (ptr) {
-				PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
-//				PionTimeFacet time_facet("%Y-%m-%d");
+				PionTimeFacet time_facet("%Y-%m-%d");
 				val = time_facet.fromString(ptr);
 			}
 		}
@@ -445,8 +441,7 @@ protected:
 			// %Y-%m-%dT%H:%M:%S%F
 			const char *ptr = (const char *)sqlite3_column_text(m_sqlite_stmt, param);
 			if (ptr) {
-				PionTimeFacet time_facet("%Y-%m-%dT%H:%M:%S%F");
-//				PionTimeFacet time_facet("%H:%M:%S");
+				PionTimeFacet time_facet("%H:%M:%S");
 				val = time_facet.fromString(ptr);
 			}
 		}
