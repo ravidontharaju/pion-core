@@ -510,6 +510,10 @@ private:
     static const std::string	VOCAB_CLICKSTREAM_DATE_TIME;
     pion::platform::Vocabulary::TermRef	m_date_time_term_ref;
 
+    /// urn:vocab:clickstream#epoch-time
+    static const std::string	VOCAB_CLICKSTREAM_EPOCH_TIME;
+    pion::platform::Vocabulary::TermRef	m_epoch_time_term_ref;
+
     /// urn:vocab:clickstream#clf-date
     static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
     pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
