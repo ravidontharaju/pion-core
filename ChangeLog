@@ -2,8 +2,8 @@ Version 2.0.8 (2009-06-05)
 ==========================
 
 * ServiceManager shutdown was sometimes causing segmentation faults (597)
-* Updated DatabaseOutputReactor so that writes to the database are asynchronous (599)
-* Drastically improved performance of SQLiteDatabase & other users of SQLite (600)
+* Updated DatabaseOutputReactor so that database writes are asynchronous (599)
+* Drastically improved the insert performance of SQLiteDatabase (600)
 * Fixed bug with "./configure --with-debug" failing on boost thread tests (598)
 
 
