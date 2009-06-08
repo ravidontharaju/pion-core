@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;SQLITE_API=__declspec(dllexport);_USRDLL"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;SQLITE_API=__declspec(dllexport);SQLITE_THREADSAFE=2;SQLITE_TEMP_STORE=2;SQLITE_DEFAULT_AUTOVACUUM=0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;SQLITE_API=__declspec(dllexport);_USRDLL"
+				PreprocessorDefinitions="_DEBUG;_USRDLL;SQLITE_API=__declspec(dllexport);SQLITE_THREADSAFE=2;SQLITE_TEMP_STORE=2;SQLITE_DEFAULT_AUTOVACUUM=0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -74,7 +74,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/GL"
-				PreprocessorDefinitions="NDEBUG;SQLITE_API=__declspec(dllexport);_USRDLL"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;SQLITE_API=__declspec(dllexport);SQLITE_THREADSAFE=2;SQLITE_TEMP_STORE=2;SQLITE_DEFAULT_AUTOVACUUM=0"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -100,7 +100,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/GL"
-				PreprocessorDefinitions="NDEBUG;SQLITE_API=__declspec(dllexport);_USRDLL"
+				PreprocessorDefinitions="NDEBUG;_USRDLL;SQLITE_API=__declspec(dllexport);SQLITE_THREADSAFE=2;SQLITE_TEMP_STORE=2;SQLITE_DEFAULT_AUTOVACUUM=0"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
