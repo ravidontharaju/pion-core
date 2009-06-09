@@ -8,4 +8,5 @@ pion_platform_include_HEADERS = Event.hpp Comparison.hpp ConfigManager.hpp \
 	PlatformPlugin.hpp Codec.hpp Database.hpp Reactor.hpp \
 	PluginConfig.hpp CodecFactory.hpp DatabaseManager.hpp \
 	ReactionScheduler.hpp ReactionEngine.hpp Query.hpp Transform.hpp \
-	Protocol.hpp ProtocolFactory.hpp RuleChain.hpp PionPlatformUnitTest.hpp
+	Protocol.hpp ProtocolFactory.hpp RuleChain.hpp \
+	PionPlatformUnitTest.hpp DatabaseInserter.hpp
