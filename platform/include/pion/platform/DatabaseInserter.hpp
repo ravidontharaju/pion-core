@@ -40,7 +40,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 ///
 /// DatabaseInserter: inserts Events into database transaction tables
 ///
-class DatabaseInserter
+class PION_PLATFORM_API DatabaseInserter
 {
 public:
 
