@@ -607,7 +607,8 @@ public:
 				Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
 				for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
 					try {
-						if (m_comparison[i]->evaluateRange(std::make_pair(ec, values_range.second))) {
+						Event::ConstIterator ec_past = ec;
+						if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
 							if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
 								// Get the original value
 								std::string str = boost::get<const Event::SimpleString&>(ec->value).get();
