@@ -361,6 +361,27 @@ public:
 								const xmlNodePtr starting_node);
 
 	/**
+	 * get the value of an attribute in a pointed-to XML node
+	 *
+	 * @param name Name, as const char* of the parameter
+	 * @param ptr xmlNodePtr of the node, to find the attribute in
+	 * @return std::string of the value of the attribute (or empty string)
+	 */
+	static std::string getAttribute(const char *name, const xmlNodePtr ptr);
+
+	/**
+	 * get the value of an attribute in a pointed-to XML node
+	 * 
+	 * @param name Name, as std::string of the parameter
+	 * @param ptr xmlNodePtr of the node, to find the attribute in
+	 * @return std::string of the value of the attribute (or empty string)
+	 */
+	static std::string getAttribute(const std::string& name, const xmlNodePtr ptr)
+	{
+		return getAttribute(name.c_str(), ptr);
+	}
+
+	/**
 	 * retrieves the value for a simple configuration option that is contained
 	 * within an XML element node.
 	 *

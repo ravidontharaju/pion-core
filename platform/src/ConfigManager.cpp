@@ -470,6 +470,18 @@ bool ConfigManager::getConfigOption(const std::string& option_name,
 	return false;
 }
 
+std::string ConfigManager::getAttribute(const char *name, const xmlNodePtr ptr)
+{
+	std::string id_str;
+	xmlChar *xml_char_ptr = xmlGetProp(ptr, reinterpret_cast<const xmlChar*>(name));
+	if (xml_char_ptr != NULL) {
+		if (xml_char_ptr[0] != '\0')
+			id_str = reinterpret_cast<char*>(xml_char_ptr);
+		xmlFree(xml_char_ptr);
+	}
+	return id_str;
+}
+
 bool ConfigManager::updateConfigOption(const std::string& option_name,
 									   const std::string& option_value,
 									   xmlNodePtr parent_node)
