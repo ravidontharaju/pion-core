@@ -169,6 +169,14 @@ public:
 	/// returns the name of the database table that events are inserted into
 	const std::string& getTableName(void) const { return m_table_name; }
 
+	/// sets (overrides) the table name; must be called before start()
+	bool setTableName(const std::string& name)
+	{
+		if (m_is_running) return false;
+		m_table_name = name;
+		return true;
+	}
+
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
 
