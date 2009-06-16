@@ -35,6 +35,8 @@ const std::string			DatabaseInserter::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseInserter::QUEUE_SIZE_ELEMENT_NAME = "QueueSize";
 const std::string			DatabaseInserter::QUEUE_TIMEOUT_ELEMENT_NAME = "QueueTimeout";
 const std::string			DatabaseInserter::TERM_ATTRIBUTE_NAME = "term";
+const std::string			DatabaseInserter::INDEX_ATTRIBUTE_NAME = "index";
+const std::string			DatabaseInserter::SQL_ATTRIBUTE_NAME = "sql";
 const char *				DatabaseInserter::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 
@@ -89,14 +91,13 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			throw IllegalCharactersException(field_name);
 
 		// next get the Term we want to map to
-		xml_char_ptr = xmlGetProp(field_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
-		if (xml_char_ptr == NULL || xml_char_ptr[0]=='\0') {
-			if (xml_char_ptr != NULL)
-				xmlFree(xml_char_ptr);
+		const std::string term_id = ConfigManager::getAttribute(TERM_ATTRIBUTE_NAME, field_node);
+		if (term_id.empty())
 			throw EmptyTermException();
-		}
-		const std::string term_id(reinterpret_cast<char*>(xml_char_ptr));
-		xmlFree(xml_char_ptr);
+
+		const std::string index_str = ConfigManager::getAttribute(INDEX_ATTRIBUTE_NAME, field_node);
+
+		const std::string sql_str = ConfigManager::getAttribute(SQL_ATTRIBUTE_NAME, field_node);
 
 		// make sure that the Term is valid
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
@@ -105,6 +106,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 		// add the field mapping
 		m_field_map.push_back(std::make_pair(field_name, v[term_ref]));
+		m_index_map.push_back(index_str);
 
 		// step to the next field mapping
 		field_node = field_node->next;

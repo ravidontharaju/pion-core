@@ -239,6 +239,12 @@ private:
 	/// legal character set for SQL92 column/table names
 	static const char *						CHARSET_FOR_TABLES;
 
+	/// Optional field, to index a column
+	static const std::string				INDEX_ATTRIBUTE_NAME;
+
+	/// Optional field, to override type
+	static const std::string				SQL_ATTRIBUTE_NAME;
+
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
@@ -253,6 +259,9 @@ private:
 
 	/// maps Term references to database field names
 	Query::FieldMap							m_field_map;
+
+	/// Corresponding (to FieldMap) index map
+	std::vector<std::string>				m_index_map;
 
 	/// pointer to the database that is used to store events
 	DatabasePtr								m_database_ptr;
