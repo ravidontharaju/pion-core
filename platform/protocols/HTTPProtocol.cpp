@@ -97,7 +97,8 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickst
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_END_USER_TIME="urn:vocab:clickstream#end-user-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATA_CENTER_TIME="urn:vocab:clickstream#data-center-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_AUTHUSER="urn:vocab:clickstream#authuser";
-	
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_C_IP="urn:vocab:clickstream#c-ip";
+
 
 // HTTPProtocol member functions
 
@@ -261,6 +262,7 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_end_user_time_term_ref = m_end_user_time_term_ref;
 	retval->m_data_center_time_term_ref = m_data_center_time_term_ref;
 	retval->m_authuser_term_ref = m_authuser_term_ref;
+	retval->m_c_ip_term_ref = m_c_ip_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -321,7 +323,17 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			}
 		}
 	}
-
+	
+	// check for X-Forwarded-For header
+	const std::string& xff_header = m_request.getHeader(HTTPTypes::HEADER_X_FORWARDED_FOR);
+	if (!xff_header.empty()) {
+	    std::string public_ip;
+	    if (parseForwardedFor(xff_header, public_ip)) {
+	        // set c-ip field if a good match was found
+			(*event_ptr_ref).setString(m_c_ip_term_ref, public_ip);
+	    }
+	}
+	
 	// populate some more fields...
 	(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
 	(*event_ptr_ref).setString(m_uri_query_term_ref, m_request.getQueryString());
@@ -762,6 +774,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_authuser_term_ref = v.findTerm(VOCAB_CLICKSTREAM_AUTHUSER);
 	if (m_authuser_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_AUTHUSER);
+
+	m_c_ip_term_ref = v.findTerm(VOCAB_CLICKSTREAM_C_IP);
+	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_C_IP);
 }
 
 
