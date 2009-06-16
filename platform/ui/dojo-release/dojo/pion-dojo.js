@@ -23221,10 +23221,10 @@ var _162f=store.getValue(_162c,"@sql");
 var _1630=(_162f!==undefined&&_162f!==null);
 var _1631={ID:_this.field_mapping_store.next_id++,Field:store.getValue(_162c,"text()"),Term:store.getValue(_162c,"@term")};
 if(_162e){
-_1631.IndexBool=(index!="false");
+_1631.Indexed=(index!="false");
 _1631.Index=index;
 }else{
-_1631.IndexBool=plugins.reactors.DatabaseOutputReactor.grid_option_defaults.IndexBool;
+_1631.Indexed=plugins.reactors.DatabaseOutputReactor.grid_option_defaults.Indexed;
 }
 if(_1630){
 _1631.SqlType=_162f;
@@ -23246,7 +23246,7 @@ var store=this.field_mapping_store;
 store.fetch({onItem:function(item){
 _1633+="<Field term=\""+store.getValue(item,"Term")+"\"";
 var index=store.getValue(item,"Index");
-if(store.getValue(item,"IndexBool")==true){
+if(store.getValue(item,"Indexed")==true){
 if(index===undefined||index=="false"){
 _1633+=" index=\"true\"";
 }else{
@@ -23268,7 +23268,7 @@ _this[_1632]=_1633;
 },onError:pion.handleFetchError});
 }});
 plugins.reactors.DatabaseOutputReactor.label="Embedded Storage Reactor";
-plugins.reactors.DatabaseOutputReactor.grid_option_defaults={IndexBool:false};
+plugins.reactors.DatabaseOutputReactor.grid_option_defaults={Indexed:false};
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",[plugins.reactors.ReactorInitDialog],{templateString:"<div class=\"dijitDialog reactor_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Database Output Reactor Initialization</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><table\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Name:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Name\" class=\"name_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Comments:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Comment\" class=\"comment_text_box\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Database:</label></td\r\n\t\t\t\t><td><input dojoType=\"pion.widgets.SimpleSelect\" name=\"Database\" store=\"pion.databases.config_store\" searchAttr=\"Name\"/></td\r\n\t\t\t></tr\r\n\t\t\t><tr\r\n\t\t\t\t><td><label>Table:</label></td\r\n\t\t\t\t><td><input dojoType=\"dijit.form.TextBox\" name=\"Table\"/></td\r\n\t\t\t></tr\r\n\t\t></table\r\n\t></div>\r\n\t<h3>Field Mappings</h3>\r\n\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"field_mapping_grid_node\"></div>\r\n\t<button dojoType=dijit.form.Button dojoAttachEvent=\"onClick: _handleAddNewMapping\" class=\"add_new_row\">ADD NEW MAPPING</button>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick: tryConfig\">Save</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\">Cancel</button>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
@@ -23296,7 +23296,7 @@ var _this=this;
 var store=this.field_mapping_store;
 store.fetch({onItem:function(item){
 _163a+="<Field term=\""+store.getValue(item,"Term")+"\"";
-if(store.getValue(item,"IndexBool")==true){
+if(store.getValue(item,"Indexed")==true){
 _163a+=" index=\"true\"";
 }
 _163a+=">";
@@ -23340,7 +23340,7 @@ this.put_data+=this.reactor.custom_put_data_from_field_mapping_store;
 },_handleAddNewMapping:function(){
 this.reactor.field_mapping_store.newItem({ID:this.reactor.field_mapping_store.next_id++});
 }});
-plugins.reactors.DatabaseOutputReactorDialog.grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget},rows:[{field:"Field",name:"Database Column Name",width:20,widgetClass:"dijit.form.ValidationTextBox",widgetProps:{regExp:"[a-zA-Z][\\w]*",required:"true",invalidMessage:"Illegal database column name"}},{field:"Term",name:"Term",width:"auto",type:pion.widgets.TermTextCell},{field:"IndexBool",name:"Index",width:3,type:dojox.grid.cells.Bool},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:function(){
+plugins.reactors.DatabaseOutputReactorDialog.grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget},rows:[{field:"Field",name:"Database Column Name",width:20,widgetClass:"dijit.form.ValidationTextBox",widgetProps:{regExp:"[a-zA-Z][\\w]*",required:"true",invalidMessage:"Illegal database column name"}},{field:"Term",name:"Term",width:"auto",type:pion.widgets.TermTextCell},{field:"Indexed",name:"Indexed",styles:"text-align: center;",width:4,type:dojox.grid.cells.Bool},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:function(){
 return pion.makeDeleteButton();
 }}]}];
 }

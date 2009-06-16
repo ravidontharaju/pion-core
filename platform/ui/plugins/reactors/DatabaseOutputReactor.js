@@ -58,10 +58,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 							Term: store.getValue(field_mapping, '@term')
 						};
 						if (index_present) {
-							new_item.IndexBool = (index != 'false'); // 'index' could be true, false, or an SQL index definition 
+							new_item.Indexed = (index != 'false'); // 'index' could be true, false, or an SQL index definition 
 							new_item.Index = index; // Won't be displayed, but needs to be saved.
 						} else {
-							new_item.IndexBool = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.IndexBool;
+							new_item.Indexed = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.Indexed;
 						}
 						if (sql_type_present) {
 							new_item.SqlType = sql_type; // Won't be displayed, but needs to be saved.
@@ -95,14 +95,14 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 				onItem: function(item) {
 					put_data += '<Field term="' + store.getValue(item, 'Term') + '"';
 					var index = store.getValue(item, 'Index');
-					if (store.getValue(item, 'IndexBool') == true) { // i.e. if 'Index' column is checked
+					if (store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
 						if (index === undefined || index == 'false') {
 							put_data += ' index="true"';
 						} else {
 							put_data += ' index="' + index + '"';
 						}
 					} else {
-						// The 'Index' column is not checked, so don't insert 'index' attribute unless
+						// The 'Indexed' column is not checked, so don't insert 'index' attribute unless
 						// it was explicitly set to 'false' in the original configuration.
 						if (index == 'false') {
 							put_data += ' index="false"';
@@ -127,7 +127,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 plugins.reactors.DatabaseOutputReactor.label = 'Embedded Storage Reactor';
 
 plugins.reactors.DatabaseOutputReactor.grid_option_defaults = {
-	IndexBool: false
+	Indexed: false
 };
 
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
@@ -171,7 +171,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			store.fetch({
 				onItem: function(item) {
 					post_data += '<Field term="' + store.getValue(item, 'Term') + '"';
-					if (store.getValue(item, 'IndexBool') == true) { // i.e. if 'Index' column is checked
+					if (store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
 						post_data += ' index="true"';
 					}
 					post_data += '>';
@@ -249,7 +249,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
 		{ field: 'Term', name: 'Term', width: 'auto', 
 			type: pion.widgets.TermTextCell },
-		{ field: 'IndexBool', name: 'Index', width: 3, 
+		{ field: 'Indexed', name: 'Indexed', styles: 'text-align: center;', width: 4, 
 			type: dojox.grid.cells.Bool},
 		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 			formatter: function() { return pion.makeDeleteButton(); } // This looks redundant, but pion.makeDeleteButton() isn't defined yet when this file is loaded.
