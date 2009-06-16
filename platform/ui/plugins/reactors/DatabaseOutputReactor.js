@@ -44,11 +44,24 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 				query: {'@id': this.config['@id']},
 				onItem: function(item) {
 					dojo.forEach(store.getValues(item, 'Field'), function(field_mapping) {
-						_this.field_mapping_store.newItem({
+						// Read.js stipulates that if an attribute is not present, getValue() should return undefined,
+						// but XmlStore.getValue() returns null (and XmlStore.hasAttribute() incorrectly returns true).
+						// See http://bugs.dojotoolkit.org/ticket/9419
+						var index = store.getValue(field_mapping, '@index');
+						var index_not_present = (index === undefined || index === null);
+
+						var new_item = {
 							ID: _this.field_mapping_store.next_id++,
 							Field: store.getValue(field_mapping, 'text()'),
 							Term: store.getValue(field_mapping, '@term')
-						});
+						};
+						if (index_not_present) {
+							new_item.IndexBool = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.IndexBool;
+						} else {
+							new_item.IndexBool = (index != 'false'); // 'index' could be true, false, or an SQL index definition 
+							new_item.Index = index; // Won't be displayed, but needs to be saved.
+						}
+						_this.field_mapping_store.newItem(new_item);
 					});
 				},
 				onComplete: function() {
@@ -75,7 +88,22 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			var store = this.field_mapping_store;
 			store.fetch({
 				onItem: function(item) {
-					put_data += '<Field term="' + store.getValue(item, 'Term') + '">';
+					put_data += '<Field term="' + store.getValue(item, 'Term') + '"';
+					var index = store.getValue(item, 'Index');
+					if (store.getValue(item, 'IndexBool') == true) { // i.e. if 'Index' column is checked
+						if (index === undefined || index == 'false') {
+							put_data += ' index="true"';
+						} else {
+							put_data += ' index="' + index + '"';
+						}
+					} else {
+						// The 'Index' column is not checked, so don't insert 'index' attribute unless
+						// it was explicitly set to 'false' in the original configuration.
+						if (index == 'false') {
+							put_data += ' index="false"';
+						}
+					}
+					put_data += '>';
 					put_data += pion.escapeXml(store.getValue(item, 'Field'));
 					put_data += '</Field>';
 				},
@@ -89,6 +117,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 );
 
 plugins.reactors.DatabaseOutputReactor.label = 'Embedded Storage Reactor';
+
+plugins.reactors.DatabaseOutputReactor.grid_option_defaults = {
+	IndexBool: false
+};
 
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 	[ plugins.reactors.ReactorInitDialog ],
@@ -130,7 +162,11 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			var store = this.field_mapping_store;
 			store.fetch({
 				onItem: function(item) {
-					post_data += '<Field term="' + store.getValue(item, 'Term') + '">';
+					post_data += '<Field term="' + store.getValue(item, 'Term') + '"';
+					if (store.getValue(item, 'IndexBool') == true) { // i.e. if 'Index' column is checked
+						post_data += ' index="true"';
+					}
+					post_data += '>';
 					post_data += pion.escapeXml(store.getValue(item, 'Field'));
 					post_data += '</Field>';
 				},
@@ -205,6 +241,8 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
 		{ field: 'Term', name: 'Term', width: 'auto', 
 			type: pion.widgets.TermTextCell },
+		{ field: 'IndexBool', name: 'Index', width: 3, 
+			type: dojox.grid.cells.Bool},
 		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 			formatter: function() { return pion.makeDeleteButton(); } // This looks redundant, but pion.makeDeleteButton() isn't defined yet when this file is loaded.
 		}
