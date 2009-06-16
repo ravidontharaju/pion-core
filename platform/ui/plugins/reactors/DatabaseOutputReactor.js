@@ -48,18 +48,23 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 						// but XmlStore.getValue() returns null (and XmlStore.hasAttribute() incorrectly returns true).
 						// See http://bugs.dojotoolkit.org/ticket/9419
 						var index = store.getValue(field_mapping, '@index');
-						var index_not_present = (index === undefined || index === null);
+						var index_present = (index !== undefined && index !== null);
+						var sql_type = store.getValue(field_mapping, '@sql');
+						var sql_type_present = (sql_type !== undefined && sql_type !== null);
 
 						var new_item = {
 							ID: _this.field_mapping_store.next_id++,
 							Field: store.getValue(field_mapping, 'text()'),
 							Term: store.getValue(field_mapping, '@term')
 						};
-						if (index_not_present) {
-							new_item.IndexBool = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.IndexBool;
-						} else {
+						if (index_present) {
 							new_item.IndexBool = (index != 'false'); // 'index' could be true, false, or an SQL index definition 
 							new_item.Index = index; // Won't be displayed, but needs to be saved.
+						} else {
+							new_item.IndexBool = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.IndexBool;
+						}
+						if (sql_type_present) {
+							new_item.SqlType = sql_type; // Won't be displayed, but needs to be saved.
 						}
 						_this.field_mapping_store.newItem(new_item);
 					});
@@ -102,6 +107,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 						if (index == 'false') {
 							put_data += ' index="false"';
 						}
+					}
+					if (store.hasAttribute(item, 'SqlType')) {
+						put_data += ' sql="' + store.getValue(item, 'SqlType') + '"';
 					}
 					put_data += '>';
 					put_data += pion.escapeXml(store.getValue(item, 'Field'));
