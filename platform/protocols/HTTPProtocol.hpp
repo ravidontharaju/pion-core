@@ -170,6 +170,17 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
+	
+	/**
+	 * parses an X-Forwarded-For HTTP header, and extracts from it an IP
+	 * address that best matches the client's public IP address (if any are found)
+	 *
+	 * @param header the X-Forwarded-For HTTP header to parse
+	 * @param public_ip the extract IP address, if found
+	 *
+	 * @return bool true if a public IP address was found and extracted
+	 */
+	static inline bool parseForwardedFor(const std::string& header, std::string& public_ip);
 
 
 private:
@@ -570,6 +581,10 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_AUTHUSER;
 	pion::platform::Vocabulary::TermRef	m_authuser_term_ref;
 
+	/// urn:vocab:clickstream#c-ip
+	static const std::string	VOCAB_CLICKSTREAM_C_IP;
+	pion::platform::Vocabulary::TermRef	m_c_ip_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 
@@ -586,6 +601,8 @@ private:
 	/// * urn:vocab:clickstream#sc-ack-packets
 	/// * urn:vocab:clickstream#cs-duplicate-packets
 	/// * urn:vocab:clickstream#sc-duplicate-packets
+	///
+	/// SnifferReactor will also set clickstream#proxy-ip if c-ip is defined by Protocol
 };
 
 
@@ -677,6 +694,44 @@ inline void HTTPProtocol::ExtractionRule::processDecodedContent(pion::platform::
 			processContentNoCheck(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
 		}
 	}
+}
+
+inline bool HTTPProtocol::parseForwardedFor(const std::string& header, std::string& public_ip)
+{
+	// static regex's used to check for ipv4 address
+	static const boost::regex IPV4_ADDR_RX("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}");
+
+	/// static regex used to check for private/local networks:
+	/// 10.*
+	/// 127.*
+	/// 192.168.*
+	/// 172.16-31.*
+	static const boost::regex PRIVATE_NET_RX("(10\\.[0-9]{1,3}|127\\.[0-9]{1,3}|192\\.168|172\\.1[6-9]|172\\.2[0-9]|172\\.3[0-1])\\.[0-9]{1,3}\\.[0-9]{1,3}");
+
+	// sanity check
+	if (header.empty())
+		return false;
+	
+	// local variables re-used by while loop
+	boost::match_results<std::string::const_iterator> m;
+	std::string::const_iterator start_it = header.begin();
+
+	// search for next ip address within the header
+	while (boost::regex_search(start_it, header.end(), m, IPV4_ADDR_RX)) {
+		// get ip that matched
+		std::string ip_str(m[0].first, m[0].second);
+		// check if public network ip address
+		if (! boost::regex_match(ip_str, PRIVATE_NET_RX) ) {
+			// match found!
+			public_ip = ip_str;
+			return true;
+		}
+		// update search starting position
+		start_it = m[0].second;
+	}
+	
+	// no matches found
+	return false;
 }
 
 
