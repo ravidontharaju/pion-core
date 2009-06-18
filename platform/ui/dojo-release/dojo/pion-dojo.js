@@ -21054,7 +21054,7 @@ this.prev_events_in=0;
 var _1459=new dojo.dnd.Target(this.domNode,{accept:["connector"]});
 dojo.connect(_1459,"onDndDrop",pion.reactors.handleDropOnReactor);
 this.name_div=document.createElement("div");
-this.name_div.innerHTML=this.config.Name;
+this.name_div.innerHTML=pion.escapeXml(this.config.Name);
 dojo.addClass(this.name_div,"name");
 this.domNode.appendChild(this.name_div);
 var _this=this;
@@ -21238,7 +21238,7 @@ this.inherited("postCreate",arguments);
 var _this=this;
 },reactor:"",execute:function(_1483){
 dojo.mixin(this.reactor.config,_1483);
-this.reactor.name_div.innerHTML=_1483.Name;
+this.reactor.name_div.innerHTML=pion.escapeXml(_1483.Name);
 this.put_data="<PionConfig><Reactor>"+pion.makeXmlLeafElement("Plugin",this.reactor.config.Plugin)+pion.makeXmlLeafElement("Workspace",this.reactor.config.Workspace)+"<X>"+this.reactor.config.X+"</X><Y>"+this.reactor.config.Y+"</Y>";
 for(var tag in _1483){
 if(dojo.indexOf(this.reactor.special_config_elements,tag)==-1){
@@ -21954,7 +21954,7 @@ var url=dojo.moduleUrl("plugins","codecs.json");
 pion.codecs.plugin_data_store=new dojo.data.ItemFileReadStore({url:url});
 dojo.subscribe("codec_config_accordion-selectChild",codecPaneSelected);
 pion.codecs.createNewPaneFromItem=function(item){
-var title=pion.codecs.config_store.getValue(item,"Name").toString();
+var title=pion.escapeXml(pion.codecs.config_store.getValue(item,"Name"));
 var _150d=new dijit.layout.AccordionPane({title:title});
 _150d.config_item=item;
 _150d.uuid=pion.codecs.config_store.getValue(item,"@id");
@@ -23095,7 +23095,7 @@ pion.databases._adjustAccordionSize();
 };
 dojo.subscribe("database_config_accordion-selectChild",_paneSelected);
 pion.databases.createNewPaneFromItem=function(item){
-var title=pion.databases.config_store.getValue(item,"Name");
+var title=pion.escapeXml(pion.codecs.config_store.getValue(item,"Name"));
 var _160b=pion.databases.config_store.getValue(item,"Plugin");
 var _160c=document.createElement("span");
 var _160d="plugins.databases."+_160b+"Pane";
@@ -24911,7 +24911,7 @@ _17c3.selectChild(_17c5);
 pion.plugins.initLoadedPluginList().addCallback(pion.protocols.getAllProtocolsInUIDirectory).addCallback(_17bb).addCallback(_17c0);
 dojo.subscribe("protocol_config_accordion-selectChild",protocolPaneSelected);
 pion.protocols.createNewPaneFromItem=function(item){
-var title=pion.protocols.config_store.getValue(item,"Name");
+var title=pion.escapeXml(pion.codecs.config_store.getValue(item,"Name"));
 var _17c8=pion.protocols.config_store.getValue(item,"Plugin");
 var _17c9=document.createElement("span");
 var _17ca="plugins.protocols."+_17c8+"Pane";

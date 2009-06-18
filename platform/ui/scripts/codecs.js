@@ -34,7 +34,7 @@ pion.codecs.init = function() {
 	pion.codecs.createNewPaneFromItem = function(item) {
 		// We're doing lazy loading of Codec panes.  Here we create a placeholder pane,
 		// which will be replaced with a real one if and when it's selected.
-		var title = pion.codecs.config_store.getValue(item, 'Name').toString();
+		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
 		var codec_pane = new dijit.layout.AccordionPane({ title: title });
 		codec_pane.config_item = item;
 		codec_pane.uuid = pion.codecs.config_store.getValue(item, '@id');

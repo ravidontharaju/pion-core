@@ -165,7 +165,7 @@ pion.databases.init = function() {
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);
 
 	pion.databases.createNewPaneFromItem = function(item) {
-		var title = pion.databases.config_store.getValue(item, 'Name');
+		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
 		var plugin = pion.databases.config_store.getValue(item, 'Plugin');
 		var database_pane_node = document.createElement('span');
 		var pane_class_name = 'plugins.databases.' + plugin + 'Pane';

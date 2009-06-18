@@ -19,7 +19,7 @@ dojo.declare("plugins.reactors.Reactor",
 			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
 
 			this.name_div = document.createElement('div');
-			this.name_div.innerHTML = this.config.Name;
+			this.name_div.innerHTML = pion.escapeXml(this.config.Name);
 			dojo.addClass(this.name_div, 'name');
 			this.domNode.appendChild(this.name_div);
 
@@ -325,7 +325,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 		reactor: '',
 		execute: function(dialogFields) {
 			dojo.mixin(this.reactor.config, dialogFields);
-			this.reactor.name_div.innerHTML = dialogFields.Name;
+			this.reactor.name_div.innerHTML = pion.escapeXml(dialogFields.Name);
 
 			this.put_data = '<PionConfig><Reactor>'
 							+ pion.makeXmlLeafElement('Plugin', this.reactor.config.Plugin)

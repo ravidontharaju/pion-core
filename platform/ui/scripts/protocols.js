@@ -86,7 +86,7 @@ pion.protocols.init = function() {
 	dojo.subscribe("protocol_config_accordion-selectChild", protocolPaneSelected);
 
 	pion.protocols.createNewPaneFromItem = function(item) {
-		var title = pion.protocols.config_store.getValue(item, 'Name');
+		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
 		var plugin = pion.protocols.config_store.getValue(item, 'Plugin');
 		var protocol_pane_node = document.createElement('span');
 		var pane_class_name = 'plugins.protocols.' + plugin + 'Pane';
