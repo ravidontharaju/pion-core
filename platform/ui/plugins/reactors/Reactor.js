@@ -219,6 +219,19 @@ dojo.declare("plugins.reactors.Reactor",
 				},
 				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
+		},
+		getOptionalBool: function(store, item, attribute) {
+			// Read.js stipulates that if an attribute is not present, getValue() should return undefined,
+			// but XmlStore.getValue() returns null (and XmlStore.hasAttribute() incorrectly returns true).
+			// See http://bugs.dojotoolkit.org/ticket/9419
+			// Once this is fixed, the following two lines can be replaced with 
+			// if (store.hasAttribute(item, attribute))
+			var temp = store.getValue(item, attribute);
+			if (temp !== undefined && temp !== null)
+				// convert XmlItem to string and then to boolean
+				return store.getValue(item, attribute).toString() == 'true';
+			else
+				return plugins.reactors[this.config.Plugin].grid_option_defaults[attribute];
 		}
 	}
 );
