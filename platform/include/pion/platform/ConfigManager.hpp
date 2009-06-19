@@ -360,6 +360,44 @@ public:
 								std::string& option_value,
 								const xmlNodePtr starting_node);
 
+
+	/**
+	 * retrieves the value for a simple configuration option that is contained
+	 * within an XML element node.
+	 * Difference from getConfigOption; see return value
+	 *
+	 * @param option_name the name of the option's element node
+	 * @param option_value the value (text content) of the option's element node
+	 * @param starting_node pointer to the node to start searching with; both it
+	 *                      and any following sibling nodes will be checked
+	 *
+	 * @return false if not defined (not found), true otherwise
+	 */
+	static bool getConfigOptionEmptyOk(const std::string& option_name,
+								std::string& option_value,
+								const xmlNodePtr starting_node);
+
+	/**
+	 * get the value of an attribute in a pointed-to XML node
+	 *
+	 * @param name Name, as const char* of the parameter
+	 * @param ptr xmlNodePtr of the node, to find the attribute in
+	 * @return std::string of the value of the attribute (or empty string)
+	 */
+	static std::string getAttribute(const char *name, const xmlNodePtr ptr);
+
+	/**
+	 * get the value of an attribute in a pointed-to XML node
+	 * 
+	 * @param name Name, as std::string of the parameter
+	 * @param ptr xmlNodePtr of the node, to find the attribute in
+	 * @return std::string of the value of the attribute (or empty string)
+	 */
+	static std::string getAttribute(const std::string& name, const xmlNodePtr ptr)
+	{
+		return getAttribute(name.c_str(), ptr);
+	}
+
 	/**
 	 * retrieves the value for a simple configuration option that is contained
 	 * within an XML element node.

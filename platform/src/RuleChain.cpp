@@ -80,7 +80,7 @@ void RuleChain::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// get the value parameter (only if type is not generic)
 		std::string value_str;
 		if (! Comparison::isGenericType(comparison_type)) {
-			if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str,
+			if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, value_str,
 												 comparison_node->children))
 				throw EmptyValueException();
 		}
