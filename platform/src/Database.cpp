@@ -51,6 +51,9 @@ const std::string			Database::CREATE_STAT_ELEMENT_NAME = "CreateStat";
 const std::string			Database::UPDATE_STAT_ELEMENT_NAME = "UpdateStat";
 const std::string			Database::SELECT_STAT_ELEMENT_NAME = "SelectStat";
 
+const std::string			Database::INSERT_IGNORE_ELEMENT_NAME = "InsertIgnore";
+const std::string			Database::DROP_TABLE_ELEMENT_NAME = "DropTable";
+
 // Database member functions
 
 void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -83,6 +86,12 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 
 	if (! ConfigManager::getConfigOption(SELECT_STAT_ELEMENT_NAME, m_select_stat, config_ptr))
 		throw DatabaseConfigMissing(SELECT_STAT_ELEMENT_NAME);
+
+	if (! ConfigManager::getConfigOption(INSERT_IGNORE_ELEMENT_NAME, m_insert_ignore, config_ptr))
+		throw DatabaseConfigMissing(INSERT_IGNORE_ELEMENT_NAME);
+
+	if (! ConfigManager::getConfigOption(DROP_TABLE_ELEMENT_NAME, m_drop_table, config_ptr))
+		throw DatabaseConfigMissing(DROP_TABLE_ELEMENT_NAME);
 
 	// If IsolationLevel is not defined, assume ReadUncommitted
 	// If IsolationLevel is defined, make sure it matches, otherwise throw exception

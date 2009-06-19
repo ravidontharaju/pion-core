@@ -62,15 +62,27 @@ DatabasePtr SQLiteDatabase::clone(void) const
 	return DatabasePtr(db_ptr);
 }
 
-void SQLiteDatabase::open(bool create_backup)
+void SQLiteDatabase::open(unsigned partition)
 {
 	// create a backup copy of the database before opening it
 	const bool is_new_database = ! boost::filesystem::exists(m_database_name);
+/* "no backups no more" since it's not supported by Enterprise database either...
 	if (! is_new_database && create_backup) {
 		const std::string backup_filename(m_database_name + BACKUP_FILE_EXTENSION);
 		if (boost::filesystem::exists(backup_filename))
 			boost::filesystem::remove(backup_filename);
 		boost::filesystem::copy_file(m_database_name, backup_filename);
+	}
+*/
+	// If Partitioning: Change "name.db" into "name_001.db" or, "name" into "name_001.db"
+	if (partition) {
+		char buff[10];
+		sprintf(buff, "_%03u.db", partition);
+		std::string::size_type i = 0;
+		if ((i = m_database_name.find(".db", i)) != std::string::npos)
+			m_database_name.replace(i, strlen(".db"), buff);
+		else
+			m_database_name += buff;
 	}
 
 	// open up the database
@@ -84,8 +96,7 @@ void SQLiteDatabase::open(bool create_backup)
 		throw OpenDatabaseException(m_database_name);
 	}
 
-	// set a 2s busy timeout to deal with db locking
-	// Change to 10s, to support purging...
+	// set a 10s busy timeout to deal with db locking
 	sqlite3_busy_timeout(m_sqlite_db, 10000);
 
 	// execute all PreSQL (if any)
@@ -131,9 +142,18 @@ QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 }
 
 void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
-								 const std::string& table_name)
+								std::string table_name,
+								const Query::IndexMap& index_map,
+								unsigned partition)
 {
 	PION_ASSERT(is_open());
+
+	// If partition is defined, change table_name
+	if (partition) {
+		char buff[10];
+		sprintf(buff, "_%03u", partition);
+		table_name += buff;
+	}
 
 	// build a SQL query to create the output table if it doesn't yet exist
 	std::string create_table_sql = m_create_log;
@@ -141,6 +161,32 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 
 	// run the SQL query to create the table
 	runQuery(create_table_sql);
+
+	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] [dbname.] indexname ON tablename ( indexcolumn [, indexcolumn] )
+	//		indexcolumn:  indexcolumn [COLLATE collatename] [ ASC | DESC]
+	// DROP INDEX [IF EXISTS] [dbname.] indexname
+	for (unsigned i = 0; i < index_map.size(); i++) {
+		std::string Sql;
+		const std::string idxname = table_name + "_" + field_map[i].first + "_idx";
+		if (index_map[i] == "false" || index_map[i].empty())
+			Sql = "DROP INDEX IF EXISTS " + idxname;
+		else if (index_map[i] == "true")
+			Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
+		else if (index_map[i] == "unique")
+			Sql = "CREATE UNIQUE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
+		else
+			Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + index_map[i] + " )";
+
+		if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
+			throw SQLiteAPIException(getSQLiteError());
+	}
+}
+
+void SQLiteDatabase::dropTable(void)
+{
+	if (m_sqlite_db)
+		throw DBStillOpen(m_database_name);
+	unlink(m_database_name.c_str());
 }
 
 QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,

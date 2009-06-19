@@ -52,6 +52,7 @@ public:
 //	typedef std::map<Vocabulary::TermRef, FieldData>		FieldMap;
 	typedef std::vector<FieldData>							FieldMap;
 
+	typedef std::vector<std::string>						IndexMap;
 
 	/// virtual destructor -> this class is just an interface
 	virtual ~Query() {}

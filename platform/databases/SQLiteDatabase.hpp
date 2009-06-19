@@ -55,6 +55,13 @@ public:
 			: PionException("SQLiteDatabase API error: ", sqlite_error_msg) {}
 	};
 
+	/// exception thrown if the the SQLite API returns an unexpected result
+	class DBStillOpen : public PionException {
+	public:
+		DBStillOpen(const std::string& database_id)
+			: PionException("SQLiteDatabase DROP on table which is still open: ", database_id) {}
+	};
+
 
 	/**
 	 * constructs a new SQLiteDatabase object
@@ -64,7 +71,11 @@ public:
 	{}
 
 	/// virtual destructor: this class is meant to be extended
-	virtual ~SQLiteDatabase() { m_query_map.clear(); close(); }
+	virtual ~SQLiteDatabase()
+	{
+		m_query_map.clear();
+		close();
+	}
 
 	/**
 	 * clones the Database, returning a pointer to the cloned copy
@@ -78,7 +89,7 @@ public:
 	 *
 	 * @param create_backup if true, create a backup of the old database before opening
 	 */
-	virtual void open(bool create_backup = false);
+	virtual void open(unsigned partition = 0);
 
 	/// closes the database connection
 	virtual void close(void);
@@ -107,9 +118,19 @@ public:
 	 *
 	 * @param field_map mapping of Vocabulary Terms to Database fields
 	 * @param table_name name of the table to create
+	 * @param index_map table of indexes, matches field_map
+	 * @param partition optional partition number (default 0 = no partition)
 	 */
 	virtual void createTable(const pion::platform::Query::FieldMap& field_map,
-							 const std::string& table_name);
+							std::string table_name,
+							const pion::platform::Query::IndexMap& index_map,
+							unsigned partition);
+
+	/**
+	 * drops table, fastest way
+	 *
+	 */
+	virtual void dropTable(void);
 
 	/**
 	 * prepares the query that is used to insert events

@@ -7,11 +7,17 @@
 		<IsolationLevel>ReadUncommitted</IsolationLevel>
 		<BeginInsert>BEGIN</BeginInsert>
 		<CommitInsert>COMMIT</CommitInsert>
-		<CreateLog>CREATE TABLE IF NOT EXISTS :TABLE ( id INTEGER PRIMARY KEY AUTOINCREMENT, :FIELDS )</CreateLog>
+		<CreateLog>CREATE TABLE IF NOT EXISTS :TABLE ( :FIELDS )</CreateLog>
 		<InsertLog>INSERT INTO :TABLE ( :COLUMNS ) VALUES ( :PARAMS )</InsertLog>
+		<InsertIgnore>INSERT OR IGNORE INTO :TABLE ( :COLUMNS ) VALUES ( :PARAMS )</InsertIgnore>
 		<CreateStat>CREATE TABLE IF NOT EXISTS :TABLE ( :FIELDS , KEY (timedate) )</CreateStat>
 		<UpdateStat>INSERT INTO :TABLE ( :COLUMNS ) VALUES ( :PARAMS )</UpdateStat>
 		<SelectStat>SELECT :COLUMNS FROM :TABLE</SelectStat>
+		<DropTable>DROP TABLE :TABLE</DropTable>
+		<DropIndex>DROP INDEX IF EXISTS :IDX</DropIndex>
+		<CreateIndexNormal>CREATE INDEX IF NOT EXISTS :IDX ON :TABLE ( :FIELDS )</CreateIndexNormal>
+		<CreateIndexUnique>CREATE UNIQUE INDEX IF NOT EXISTS :IDX ON :TABLE ( :FIELDS )</CreateIndexUnique>
+		<CreateIndexCustom>CREATE INDEX IF NOT EXISTS :IDX ON :TABLE ( :FIELDS )</CreateIndexCustom>
 		<PreSQL>PRAGMA read_uncommitted = true</PreSQL>
 		<PreSQL>PRAGMA synchronous = off</PreSQL>
 		<PreSQL>PRAGMA journal_mode = off</PreSQL>

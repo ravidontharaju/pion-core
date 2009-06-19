@@ -146,9 +146,9 @@ public:
 	/**
 	 * opens the database connection
 	 *
-	 * @param create_backup if true, create a backup of the old database before opening
+	 * @param partition partition number, if non-zero
 	 */
-	virtual void open(bool create_backup = false) = 0;
+	virtual void open(unsigned partition = 0) = 0;
 
 	/// closes the database connection
 	virtual void close(void) = 0;
@@ -176,9 +176,18 @@ public:
 	 *
 	 * @param field_map mapping of Vocabulary Terms to Database fields
 	 * @param table_name name of the table to create
+	 * @param index_map table of indexes, matches field_map
 	 */
 	virtual void createTable(const Query::FieldMap& field_map,
-							 const std::string& table_name) = 0;
+							std::string table_name,
+							const Query::IndexMap& index_map,
+							unsigned partition = 0) = 0;
+
+	/**
+	 * drops table, fastest way
+	 *
+	 */
+	virtual void dropTable(void) = 0;
 
 	/**
 	 * prepares the query that is used to insert events
@@ -271,6 +280,8 @@ protected:
 //		m_query_map = d.m_query_map;
 		m_sql_affinity = d.m_sql_affinity;
 		m_pre_sql = d.m_pre_sql;
+		m_insert_ignore = d.m_insert_ignore;
+		m_drop_table = d.m_drop_table;
 	}
 
 
@@ -307,6 +318,10 @@ protected:
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
 	static const std::string				SELECT_STAT_ELEMENT_NAME;
 
+	static const std::string				INSERT_IGNORE_ELEMENT_NAME;
+	static const std::string				DROP_TABLE_ELEMENT_NAME;
+
+
 	/**
 	 * readConfig must be called by a Database implementation as soon as it has called setConfig
 	 *
@@ -338,6 +353,9 @@ protected:
 	std::string								m_create_stat;
 	std::string								m_update_stat;
 	std::string								m_select_stat;
+
+	std::string								m_insert_ignore;
+	std::string								m_drop_table;
 
 	/// Isolation level, default is SA_ReadUncommitted (for speed/ease)
 	IsolationLevel_t						m_isolation_level;
