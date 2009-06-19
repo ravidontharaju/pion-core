@@ -272,7 +272,7 @@ public:
 	{
 		// <Value>escape(value)</Value>
 		std::string val;
-		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, val, config_ptr))
+		if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, val, config_ptr))
 			throw MissingTransformField("Missing Value in TransformationAssignValue");
 		m_tr_set_value = val;
 	}
@@ -391,7 +391,7 @@ public:
 			throw MissingTransformField("Invalid LookupTerm in TransformationAssignLookup");
 		//[opt]		<Match>escape(regexp)</Match>
 		std::string val;
-		if (ConfigManager::getConfigOption(LOOKUP_MATCH_ELEMENT_NAME, val, config_ptr)) {
+		if (ConfigManager::getConfigOptionEmptyOk(LOOKUP_MATCH_ELEMENT_NAME, val, config_ptr)) {
 			try {
 				m_match = val;
 			} catch (...) {
@@ -400,7 +400,7 @@ public:
 		}
 		//	[opt]		<Format>escape(format)</Format>
 		m_format.clear();
-		if (ConfigManager::getConfigOption(LOOKUP_FORMAT_ELEMENT_NAME, val, config_ptr))
+		if (ConfigManager::getConfigOptionEmptyOk(LOOKUP_FORMAT_ELEMENT_NAME, val, config_ptr))
 			m_format = val;
 
 		//	[opt]		<DefaultAction>leave-undefined|src-term|output|fixedvalue</DefaultAction>
@@ -415,7 +415,7 @@ public:
 		}
 		//	[opt]		<DefaultValue>escape(text)</DefaultValue>
 		m_fixed.clear();
-		if (m_default == DEF_FIXED && ConfigManager::getConfigOption(LOOKUP_DEFAULT_ELEMENT_NAME, val, config_ptr))
+		if (m_default == DEF_FIXED && ConfigManager::getConfigOptionEmptyOk(LOOKUP_DEFAULT_ELEMENT_NAME, val, config_ptr))
 			m_fixed = val;
 		//	[rpt/]		<Lookup key="escape(key)">escape(value)</Lookup>
 		xmlNodePtr LookupNode = config_ptr;
@@ -569,7 +569,7 @@ public:
 			//	<Value>escape(test-value)</Value>
 			std::string value_str;
 			if (!Comparison::isGenericType(ctype))
-				if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, value_str, RuleNode->children))
+				if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, value_str, RuleNode->children))
 					throw MissingTransformField("Missing Value in TransformationAssignRules");
 
 			Comparison *comp = new Comparison(v[term_ref]);
@@ -578,7 +578,7 @@ public:
 
 			//	<SetValue>escape(set-value)</SetValue>
 			val.clear();
-			if (! ConfigManager::getConfigOption(TRANSFORMATION_SET_VALUE_NAME, val, RuleNode->children))
+			if (! ConfigManager::getConfigOptionEmptyOk(TRANSFORMATION_SET_VALUE_NAME, val, RuleNode->children))
 				throw MissingTransformField("Missing SetValue in TransformationAssignRules");
 			m_set_value.push_back(val);
 

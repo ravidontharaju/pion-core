@@ -470,6 +470,18 @@ bool ConfigManager::getConfigOption(const std::string& option_name,
 	return false;
 }
 
+bool ConfigManager::getConfigOptionEmptyOk(const std::string& option_name,
+							std::string& option_value,
+							const xmlNodePtr starting_node)
+{
+	if (findConfigNodeByName(option_name, starting_node)) {
+		option_value.clear();
+		getConfigOption(option_name, option_value, starting_node);
+		return true;
+	} else
+		return false;
+}
+
 std::string ConfigManager::getAttribute(const char *name, const xmlNodePtr ptr)
 {
 	std::string id_str;
