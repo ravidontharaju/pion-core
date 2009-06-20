@@ -227,7 +227,7 @@ void DatabaseInserter::insertEvents(void)
 		PION_ASSERT(m_database_ptr->is_open());
 
 		// create the database table if it does not yet exist
-		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map);
+		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
 
 		// prepare the query used to insert new events into the table
 		QueryPtr insert_query_ptr(m_database_ptr->prepareInsertQuery(m_field_map, m_table_name));

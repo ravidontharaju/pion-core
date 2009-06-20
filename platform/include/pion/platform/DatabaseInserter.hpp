@@ -177,6 +177,14 @@ public:
 		return true;
 	}
 
+	/// set partition number -- must be called before start()
+	bool setPartition(unsigned partition)
+	{
+		if (m_is_running) return false;
+		m_partition = partition;
+		return true;
+	}
+
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
 
@@ -289,6 +297,9 @@ private:
 	
 	/// true if the worker thread is running
 	volatile bool							m_is_running;
+
+	/// partition number (or 0 for no partition)
+	unsigned								m_partition;
 };
 
 
