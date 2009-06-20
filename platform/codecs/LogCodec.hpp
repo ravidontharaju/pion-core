@@ -601,6 +601,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_BLOB:
 		{
 			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
 			if (ss.size() > 0) {
@@ -700,6 +701,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
+		case pion::platform::Vocabulary::TYPE_BLOB:
 			if (log_urlencode) {
 				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
 				e.setString(log_term.term_ref, temp_str);

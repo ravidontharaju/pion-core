@@ -142,6 +142,7 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+				case pion::platform::Vocabulary::TYPE_BLOB:
 					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
 					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)ss->get());
 					break;
@@ -412,6 +413,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+				case pion::platform::Vocabulary::TYPE_BLOB:
 					e.setString(term.term_ref, value_str);
 					break;
 				case pion::platform::Vocabulary::TYPE_CHAR:
