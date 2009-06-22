@@ -166,6 +166,9 @@ public:
 	/// returns the unique identifier for the database being used
 	const std::string& getDatabaseId(void) const { return m_database_id; }
 
+	/// returns the DatabasePtr (for queries)
+	DatabasePtr getDatabasePtr(void) { return m_database_ptr; }
+
 	/// returns the name of the database table that events are inserted into
 	const std::string& getTableName(void) const { return m_table_name; }
 

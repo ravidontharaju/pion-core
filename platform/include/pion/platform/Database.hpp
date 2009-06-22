@@ -175,11 +175,11 @@ public:
 	 * creates a database table for output, if it does not already exist
 	 *
 	 * @param field_map mapping of Vocabulary Terms to Database fields
-	 * @param table_name name of the table to create
+	 * @param table_name name of the table to create (modified to reflect partition)
 	 * @param index_map table of indexes, matches field_map
 	 */
 	virtual void createTable(const Query::FieldMap& field_map,
-							std::string table_name,
+							std::string& table_name,
 							const Query::IndexMap& index_map,
 							unsigned partition = 0) = 0;
 

@@ -122,7 +122,7 @@ public:
 	 * @param partition optional partition number (default 0 = no partition)
 	 */
 	virtual void createTable(const pion::platform::Query::FieldMap& field_map,
-							std::string table_name,
+							std::string& table_name,
 							const pion::platform::Query::IndexMap& index_map,
 							unsigned partition);
 

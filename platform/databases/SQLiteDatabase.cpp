@@ -142,7 +142,7 @@ QueryPtr SQLiteDatabase::addQuery(QueryID query_id,
 }
 
 void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
-								std::string table_name,
+								std::string& table_name,
 								const Query::IndexMap& index_map,
 								unsigned partition)
 {
