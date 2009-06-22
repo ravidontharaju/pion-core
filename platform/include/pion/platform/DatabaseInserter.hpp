@@ -114,7 +114,7 @@ public:
 		m_database_mgr_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
-		m_is_running(false)
+		m_is_running(false), m_partition(0)
 	{}
 
 	/// virtual destructor: this class may be extended
