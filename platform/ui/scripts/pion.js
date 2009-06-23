@@ -140,6 +140,8 @@ pion.makeXmlLeafElementFromItem = function(store, item, tag_name, optional_defau
 }
 
 pion.xmlCellFormatter = function(d) {
+	if (d == '')
+		return '';
 	if (d && d.toString()) {
 		return pion.escapeXml(d);
 	} else {
@@ -148,6 +150,8 @@ pion.xmlCellFormatter = function(d) {
 }
 
 pion.xmlCellFormatter2 = function(d) {
+	if (d == '')
+		return '';
 	if (d && d.toString()) {
 		if (d.toString().substr(0, 8) == '<button ')
 			return d;

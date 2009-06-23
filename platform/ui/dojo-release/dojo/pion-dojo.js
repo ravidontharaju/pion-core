@@ -25798,6 +25798,9 @@ return "";
 }
 };
 pion.xmlCellFormatter=function(d){
+if(d==""){
+return "";
+}
 if(d&&d.toString()){
 return pion.escapeXml(d);
 }else{
@@ -25805,6 +25808,9 @@ return this.defaultValue;
 }
 };
 pion.xmlCellFormatter2=function(d){
+if(d==""){
+return "";
+}
 if(d&&d.toString()){
 if(d.toString().substr(0,8)=="<button "){
 return d;
