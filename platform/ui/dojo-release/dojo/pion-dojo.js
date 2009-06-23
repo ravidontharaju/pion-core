@@ -21334,6 +21334,7 @@ this._onChange();
 }
 },_onDoneAddingOptions:function(){
 this.doneAddingOptions=true;
+this._onChange();
 }});
 }
 if(!dojo._hasResource["plugins.reactors.LogInputReactor"]){
