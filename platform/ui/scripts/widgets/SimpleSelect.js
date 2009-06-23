@@ -107,5 +107,6 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 
 	_onDoneAddingOptions: function() {
 		this.doneAddingOptions = true;
+		this._onChange();
 	}
 });
