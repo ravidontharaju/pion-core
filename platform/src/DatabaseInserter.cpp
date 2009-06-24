@@ -72,6 +72,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 	// next, map the database fields to Terms
 	m_field_map.clear();
+	m_index_map.clear();
 	xmlNodePtr field_node = config_ptr;
 	while ( (field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, field_node)) != NULL)
 	{
