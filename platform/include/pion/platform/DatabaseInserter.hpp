@@ -191,6 +191,9 @@ public:
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
 
+	/// returns a copy of the index map
+	Query::IndexMap getIndexMap(void) const { return m_index_map; }
+
 	/// returns true if the worker thread is running
 	inline bool isRunning(void) const { return m_is_running; }
 	
@@ -272,7 +275,7 @@ private:
 	Query::FieldMap							m_field_map;
 
 	/// Corresponding (to FieldMap) index map
-	std::vector<std::string>				m_index_map;
+	Query::IndexMap							m_index_map;
 
 	/// pointer to the database that is used to store events
 	DatabasePtr								m_database_ptr;
