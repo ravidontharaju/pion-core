@@ -154,6 +154,25 @@ void DatabaseInserter::start(void)
 		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 		PION_ASSERT(m_database_ptr);
 
+		// open up the database if it isn't already open
+		m_database_ptr->open();
+		PION_ASSERT(m_database_ptr->is_open());
+
+		// create the database table if it does not yet exist
+		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
+
+		// prepare the query used to insert new events into the table
+		m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+		PION_ASSERT(m_insert_query_ptr);
+
+		// prepare the query used to begin new transactions
+		m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
+		PION_ASSERT(m_begin_transaction_ptr);
+
+		// prepare the query used to commit transactions
+		m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
+		PION_ASSERT(m_commit_transaction_ptr);
+
 		// spawn a new thread that will be used to save events to the database
 		PION_LOG_DEBUG(m_logger, "Starting worker thread: " << m_database_id);
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseInserter::insertEvents, this)));
@@ -178,6 +197,9 @@ void DatabaseInserter::stop(void)
 
 		// close the database connection (ensure that data is flushed)
 		boost::mutex::scoped_lock queue_lock_two(m_queue_mutex);
+		m_insert_query_ptr.reset();
+		m_begin_transaction_ptr.reset();
+		m_commit_transaction_ptr.reset();
 		m_database_ptr.reset();
 		
 		// clear the event queue
@@ -222,25 +244,13 @@ void DatabaseInserter::insertEvents(void)
 	PION_LOG_DEBUG(m_logger, "Worker thread is running: " << m_database_id);
 
 	try {
-		// open up the database if it isn't already open
+
+		// sanity checks (should all be handled now by start())
 		PION_ASSERT(m_database_ptr);
-		m_database_ptr->open();
 		PION_ASSERT(m_database_ptr->is_open());
-
-		// create the database table if it does not yet exist
-		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
-
-		// prepare the query used to insert new events into the table
-		QueryPtr insert_query_ptr(m_database_ptr->prepareInsertQuery(m_field_map, m_table_name));
-		PION_ASSERT(insert_query_ptr);
-
-		// prepare the query used to begin new transactions
-		QueryPtr begin_transaction_ptr(m_database_ptr->getBeginTransactionQuery());
-		PION_ASSERT(begin_transaction_ptr);
-
-		// prepare the query used to commit transactions
-		QueryPtr commit_transaction_ptr(m_database_ptr->getCommitTransactionQuery());
-		PION_ASSERT(commit_transaction_ptr);
+		PION_ASSERT(m_insert_query_ptr);
+		PION_ASSERT(m_begin_transaction_ptr);
+		PION_ASSERT(m_commit_transaction_ptr);
 
 		// queue of events pending insertion into the database
 		boost::scoped_ptr<EventQueue>	insert_queue_ptr(new EventQueue);
@@ -260,26 +270,22 @@ void DatabaseInserter::insertEvents(void)
 
 				PION_LOG_DEBUG(m_logger, "Worker thread woke with " << insert_queue_ptr->size() << " events available: " << m_database_id);
 
-				// check sanity of shared variables
-				PION_ASSERT(m_database_ptr);
-				PION_ASSERT(m_database_ptr->is_open());
-
 				// begin a new transaction
-				begin_transaction_ptr->run();
-				begin_transaction_ptr->reset();
+				m_begin_transaction_ptr->run();
+				m_begin_transaction_ptr->reset();
 
 				// step through the event queue, inserting each event individually
 				for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
 					// bind the event to the insert query
-					insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
+					m_insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
 					// execute the query to insert the record
-					insert_query_ptr->run();
-					insert_query_ptr->reset();
+					m_insert_query_ptr->run();
+					m_insert_query_ptr->reset();
 				}
 
 				// end & commit the transaction
-				commit_transaction_ptr->run();
-				commit_transaction_ptr->reset();
+				m_commit_transaction_ptr->run();
+				m_commit_transaction_ptr->reset();
 
 				// done flushing the queue
 				PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);

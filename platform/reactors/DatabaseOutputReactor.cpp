@@ -40,10 +40,29 @@ const std::string			DatabaseOutputReactor::EVENTS_QUEUED_ELEMENT_NAME = "EventsQ
 void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	ConfigWriteLock cfg_lock(*this);
-	Reactor::setConfig(v, config_ptr);
-	m_inserter.setLogger(m_logger);
-	m_inserter.setDatabaseManager(getDatabaseManager());
-	m_inserter.setConfig(v, config_ptr);
+	try {
+		// stop for config changes, but cache running status
+		// so that it can be restarted when finished
+		const bool was_running = m_inserter.isRunning();
+		m_inserter.stop();
+	
+		// update reactor base class config
+		Reactor::setConfig(v, config_ptr);
+	
+		// initialize inserter parameters
+		m_inserter.setLogger(m_logger);
+		m_inserter.setDatabaseManager(getDatabaseManager());
+		
+		// update inserter config
+		m_inserter.setConfig(v, config_ptr);
+		
+		// restart inserter if it was running
+		if (was_running)
+			m_inserter.start();
+	} catch (...) {
+		m_is_running = false;
+		throw;
+	}
 }
 
 void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)

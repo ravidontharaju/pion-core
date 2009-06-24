@@ -279,6 +279,15 @@ private:
 
 	/// pointer to the database that is used to store events
 	DatabasePtr								m_database_ptr;
+	
+	/// points to the query used to insert records into the database
+	QueryPtr								m_insert_query_ptr;
+
+	/// points to the query used to begin a transaction
+	QueryPtr								m_begin_transaction_ptr;
+
+	/// points to the query used to commit/end a transaction
+	QueryPtr								m_commit_transaction_ptr;
 
 	/// collection of events queued for storage to the database
 	boost::scoped_ptr<EventQueue>			m_event_queue_ptr;
