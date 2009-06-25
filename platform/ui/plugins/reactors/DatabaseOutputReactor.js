@@ -203,10 +203,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
-				var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
+			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
 				_this._updateCustomPutDataFromFieldMappingStore();
 				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromFieldMappingStore');
 				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromFieldMappingStore');
@@ -226,6 +226,14 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 					this.store.deleteItem(this.getItem(e.rowIndex));
 				}
 			});
+
+			// See comments in FilterReactorDialog.postCreate() before copying these anywhere.
+			// Adding these fixed a problem where opening the configuration dialog for the second (or later) time
+			// was taking much longer than the first time, due to the connection to 'onDelete' not going away, which
+			// caused reloadFieldMappingStore() to take forever, since _updateCustomPutDataFromFieldMappingStore()
+			// was getting called for each item that was deleted.
+			this.connect(this, "onCancel", function() {this.destroyRecursive(false)});
+			this.connect(this, "execute", function() {this.destroyRecursive(false)});
 		},
 		// _updateCustomPutDataFromFieldMappingStore() will be passed arguments related to the item which triggered the call, which we ignore.
 		_updateCustomPutDataFromFieldMappingStore: function() {

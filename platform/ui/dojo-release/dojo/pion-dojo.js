@@ -23341,6 +23341,12 @@ if(e.cell.name=="Delete"){
 this.store.deleteItem(this.getItem(e.rowIndex));
 }
 });
+this.connect(this,"onCancel",function(){
+this.destroyRecursive(false);
+});
+this.connect(this,"execute",function(){
+this.destroyRecursive(false);
+});
 },_updateCustomPutDataFromFieldMappingStore:function(){
 this.reactor.updateNamedCustomPutData("custom_put_data_from_field_mapping_store");
 },_insertCustomData:function(){
