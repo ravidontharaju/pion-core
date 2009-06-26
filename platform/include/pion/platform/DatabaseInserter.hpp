@@ -190,7 +190,11 @@ public:
 
 	/// Wipe out existing database before opening?
 	bool setWipe(bool wipe)
-	{	m_wipe = wipe; }
+	{
+		if (m_is_running) return false;
+		m_wipe = wipe;
+		return true;
+	}
 
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
