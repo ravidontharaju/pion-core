@@ -99,7 +99,7 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 		for (unsigned int i = 0; i < field_map.size(); i++) {
 			// <Field id="0" col="dbcol">vocab:uri</Field>
 			// <Field id="0" col="dbcol" index="true">vocab:uri</Field>
-			const std::string idx_str = (index_map.size() >= j && index_map[j] != "false") ? "true" : "false";
+			const std::string idx_str = (index_map.size() >= i && index_map[i] != "false") ? "true" : "false";
 			out << '<' << FIELD_ELEMENT_NAME << " id=\"" << i << "\" col=\""
 				<< field_map[i].first << "\" index=\"" << idx_str << "\">" << field_map[i].second.term_id
 				<< "</" << FIELD_ELEMENT_NAME << '>' << std::endl;
