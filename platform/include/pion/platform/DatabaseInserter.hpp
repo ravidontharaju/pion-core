@@ -114,7 +114,7 @@ public:
 		m_database_mgr_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
-		m_is_running(false), m_partition(0)
+		m_is_running(false), m_partition(0), m_wipe(false)
 	{}
 
 	/// virtual destructor: this class may be extended
@@ -187,6 +187,10 @@ public:
 		m_partition = partition;
 		return true;
 	}
+
+	/// Wipe out existing database before opening?
+	bool setWipe(bool wipe)
+	{	m_wipe = wipe; }
 
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
@@ -315,6 +319,9 @@ private:
 
 	/// partition number (or 0 for no partition)
 	unsigned								m_partition;
+
+	/// wipe out previous content before opening?
+	bool									m_wipe;
 };
 
 

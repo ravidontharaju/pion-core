@@ -158,6 +158,9 @@ void DatabaseInserter::start(void)
 		m_database_ptr->open();
 		PION_ASSERT(m_database_ptr->is_open());
 
+		if (m_wipe)
+			m_database_ptr->dropTable(m_table_name, m_partition);
+
 		// create the database table if it does not yet exist
 		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
 
