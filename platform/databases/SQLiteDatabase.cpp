@@ -188,7 +188,7 @@ void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 //		throw DBStillOpen(m_database_name);
 		close();
 		unlink(m_database_name.c_str());
-		open(partition);
+		open();			// NOTE: don't id partition, it doubles up...
 	} else {
 		if (partition) {
 			char buff[10];
