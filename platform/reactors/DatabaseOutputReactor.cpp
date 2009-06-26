@@ -95,10 +95,13 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter.getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
 			<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter.getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
 		Query::FieldMap field_map(m_inserter.getFieldMap());
+		Query::IndexMap index_map(m_inserter.getIndexMap());
 		for (unsigned int i = 0; i < field_map.size(); i++) {
 			// <Field id="0" col="dbcol">vocab:uri</Field>
+			// <Field id="0" col="dbcol" index="true">vocab:uri</Field>
+			const std::string idx_str = (index_map.size() >= j && index_map[j] != "false") ? "true" : "false";
 			out << '<' << FIELD_ELEMENT_NAME << " id=\"" << i << "\" col=\""
-				<< field_map[i].first << "\">" << field_map[i].second.term_id
+				<< field_map[i].first << "\" index=\"" << idx_str << "\">" << field_map[i].second.term_id
 				<< "</" << FIELD_ELEMENT_NAME << '>' << std::endl;
 		}
 	}
