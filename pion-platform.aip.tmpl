@@ -48,6 +48,9 @@
     <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
     <ROW Fragment="UI.aip" Path="&lt;AI_FRAGS&gt;UI.aip"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiActionTextComponent">
+    <ROW Action="remove_service" Description="Uninstalling Pion Service"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
     <ROW Name="ai_replace_pion_path.vbs" SourcePath="common\build\ai_replace_pion_path.vbs"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
@@ -86,6 +89,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
     <ROW Action="ai_fix_install_service_bat" Type="1030" Source="ai_replace_pion_path.vbs"/>
     <ROW Action="remove_service" Type="1090" Source="nssm.exe" Target="remove &quot;pion-community&quot; confirm"/>
+    <ROW Action="run_install_service_bat" Type="1058" Source="APPDIR" Target="[#pion_install_service.bat]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
     <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
@@ -98,6 +102,7 @@
     <ROW Action="DetectService" Condition="REMOVE=&quot;ALL&quot;" Sequence="1652" AdditionalSeq="AI_DATA_SETTER_1"/>
     <ROW Action="AI_DATA_SETTER_1" Condition="REMOVE=&quot;ALL&quot;" Sequence="1651"/>
     <ROW Action="remove_service" Condition="REMOVE=&quot;ALL&quot; AND AI_SERVICE_STATE &lt;&gt; &quot;Not Found&quot;" Sequence="1653"/>
+    <ROW Action="run_install_service_bat" Condition="NOT Installed" Sequence="5937"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
