@@ -155,7 +155,7 @@ void DatabaseInserter::start(void)
 		PION_ASSERT(m_database_ptr);
 
 		// open up the database if it isn't already open
-		m_database_ptr->open();
+		m_database_ptr->open(m_partition);
 		PION_ASSERT(m_database_ptr->is_open());
 
 		if (m_wipe)
