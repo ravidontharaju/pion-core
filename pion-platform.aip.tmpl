@@ -48,15 +48,11 @@
     <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
     <ROW Fragment="UI.aip" Path="&lt;AI_FRAGS&gt;UI.aip"/>
   </COMPONENT>
-  <COMPONENT cid="caphyon.advinst.msicomp.MsiActionTextComponent">
-    <ROW Action="remove_service" Description="Uninstalling Pion Service"/>
-  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
     <ROW Name="ai_replace_pion_path.vbs" SourcePath="common\build\ai_replace_pion_path.vbs"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
     <ROW Name="default_banner.bmp" SourcePath="&lt;AI_RES&gt;default-banner.bmp"/>
     <ROW Name="default_dialog.bmp" SourcePath="&lt;AI_RES&gt;default-dialog.bmp"/>
-    <ROW Name="nssm.exe" SourcePath="winutils\bin\release\nssm.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
     <ATTRIBUTE name="FixedSizeBitmaps" value="0"/>
@@ -77,10 +73,12 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_DATA_SETTER" Type="51" Source="ai_fix_install_service_bat" Target="[APPDIR]"/>
     <ROW Action="AI_DATA_SETTER_1" Type="51" Source="CustomActionData" Target="pion-community"/>
+    <ROW Action="AI_DATA_SETTER_2" Type="51" Source="CustomActionData" Target="pion-community"/>
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
     <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
     <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="DetectPreviouslyInstalledService" Type="1" Source="aicustact.dll" Target="DetectService"/>
     <ROW Action="DetectService" Type="1" Source="aicustact.dll" Target="DetectService"/>
     <ROW Action="PropertySource" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="PropertySource_1" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
@@ -88,7 +86,7 @@
     <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
     <ROW Action="ai_fix_install_service_bat" Type="1030" Source="ai_replace_pion_path.vbs"/>
-    <ROW Action="remove_service" Type="1090" Source="nssm.exe" Target="remove &quot;pion-community&quot; confirm"/>
+    <ROW Action="remove_service" Type="1122" Source="APPDIR" Target="[#pion_uninstall_service.bat]"/>
     <ROW Action="run_install_service_bat" Type="1058" Source="APPDIR" Target="[#pion_install_service.bat]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
@@ -97,12 +95,14 @@
     <ROW Action="AI_STORE_LOCATION" Condition="Not Installed" Sequence="1501"/>
     <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
     <ROW Action="PropertySource_1" Condition="OLDPRODUCTS" Sequence="101"/>
-    <ROW Action="ai_fix_install_service_bat" Condition="NOT Installed" Sequence="5936" AdditionalSeq="AI_DATA_SETTER"/>
-    <ROW Action="AI_DATA_SETTER" Condition="NOT Installed" Sequence="5935"/>
+    <ROW Action="ai_fix_install_service_bat" Condition="NOT Installed" Sequence="5938" AdditionalSeq="AI_DATA_SETTER"/>
+    <ROW Action="AI_DATA_SETTER" Condition="NOT Installed" Sequence="5937"/>
     <ROW Action="DetectService" Condition="REMOVE=&quot;ALL&quot;" Sequence="1652" AdditionalSeq="AI_DATA_SETTER_1"/>
     <ROW Action="AI_DATA_SETTER_1" Condition="REMOVE=&quot;ALL&quot;" Sequence="1651"/>
     <ROW Action="remove_service" Condition="REMOVE=&quot;ALL&quot; AND AI_SERVICE_STATE &lt;&gt; &quot;Not Found&quot;" Sequence="1653"/>
-    <ROW Action="run_install_service_bat" Condition="NOT Installed" Sequence="5937"/>
+    <ROW Action="run_install_service_bat" Condition="NOT Installed AND AI_SERVICE_STATE = &quot;Not Found&quot;" Sequence="5939"/>
+    <ROW Action="DetectPreviouslyInstalledService" Condition="NOT Installed" Sequence="5936" AdditionalSeq="AI_DATA_SETTER_2"/>
+    <ROW Action="AI_DATA_SETTER_2" Condition="NOT Installed" Sequence="5935"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
