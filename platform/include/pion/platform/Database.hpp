@@ -186,8 +186,10 @@ public:
 	/**
 	 * drops table, fastest way
 	 *
+	 * @param table_name name of the table to drop
+	 * @param partition optional partition number
 	 */
-	virtual void dropTable(void) = 0;
+	virtual void dropTable(std::string& table_name, unsigned partition = 0) = 0;
 
 	/**
 	 * prepares the query that is used to insert events

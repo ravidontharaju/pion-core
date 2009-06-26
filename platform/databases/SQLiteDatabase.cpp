@@ -182,11 +182,25 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 	}
 }
 
-void SQLiteDatabase::dropTable(void)
+void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 {
-	if (m_sqlite_db)
-		throw DBStillOpen(m_database_name);
-	unlink(m_database_name.c_str());
+	if (m_sqlite_db) {
+//		throw DBStillOpen(m_database_name);
+		close();
+		unlink(m_database_name.c_str());
+		open(partition);
+	} else {
+		if (partition) {
+			char buff[10];
+			sprintf(buff, "_%03u.db", partition);
+			std::string::size_type i = 0;
+			if ((i = table_name.find(".db", i)) != std::string::npos)
+				table_name.replace(i, strlen(".db"), buff);
+			else
+				table_name += buff;
+		}
+		unlink(table_name.c_str());
+	}
 }
 
 QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
