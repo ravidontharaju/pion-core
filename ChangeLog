@@ -1,3 +1,14 @@
+Version 2.0.10 (2009-06-29)
+===========================
+
+* TransformReactor rules were sometimes updating the wrong term value (617)
+* Transform & Filter reactors did not allow empty string comparisons (615)
+* Setting a term value to an empty string now removes it from the event (625)
+* HTTPProtocol now checks X-Forwarded-For for client IP, if available (619)
+* Added proxy-ip, which is defined if an X-Forwarded-For header is found (619)
+* Fixed slow load of DatabaseOutputReactor UI when opened several times (632)
+
+
 Version 2.0.8 (2009-06-05)
 ==========================
 
