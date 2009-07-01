@@ -62,6 +62,20 @@ DatabasePtr SQLiteDatabase::clone(void) const
 	return DatabasePtr(db_ptr);
 }
 
+std::string dbPartition(std::string name, unsigned partition)
+{
+	if (partition) {
+		char buff[10];
+		sprintf(buff, "_%03u.db", partition);
+		std::string::size_type i = 0;
+		if ((i = name.find(".db", i)) != std::string::npos)
+			name.replace(i, strlen(".db"), buff);
+		else
+			name += buff;
+	}
+	return name;
+}
+
 void SQLiteDatabase::open(unsigned partition)
 {
 	// create a backup copy of the database before opening it
@@ -75,25 +89,17 @@ void SQLiteDatabase::open(unsigned partition)
 	}
 */
 	// If Partitioning: Change "name.db" into "name_001.db" or, "name" into "name_001.db"
-	if (partition) {
-		char buff[10];
-		sprintf(buff, "_%03u.db", partition);
-		std::string::size_type i = 0;
-		if ((i = m_database_name.find(".db", i)) != std::string::npos)
-			m_database_name.replace(i, strlen(".db"), buff);
-		else
-			m_database_name += buff;
-	}
+	std::string dbname = dbPartition(m_database_name, partition);
 
 	// open up the database
 //	if (sqlite3_open_v2(m_database_name.c_str(), &m_sqlite_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
-	if (sqlite3_open_v2(m_database_name.c_str(), &m_sqlite_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, NULL) != SQLITE_OK) {
+	if (sqlite3_open_v2(dbname.c_str(), &m_sqlite_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, NULL) != SQLITE_OK) {
 		// prevent memory leak (sqlite3 assigns handle even if error)
 		if (m_sqlite_db != NULL) {
 			sqlite3_close(m_sqlite_db);
 			m_sqlite_db = NULL;
 		}
-		throw OpenDatabaseException(m_database_name);
+		throw OpenDatabaseException(dbname);
 	}
 
 	// set a 10s busy timeout to deal with db locking
@@ -185,21 +191,11 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 {
 	if (m_sqlite_db) {
-//		throw DBStillOpen(m_database_name);
 		close();
-		unlink(m_database_name.c_str());
-		open();			// NOTE: don't id partition, it doubles up...
+		unlink(dbPartition(table_name).c_str());
+		open(partition);
 	} else {
-		if (partition) {
-			char buff[10];
-			sprintf(buff, "_%03u.db", partition);
-			std::string::size_type i = 0;
-			if ((i = table_name.find(".db", i)) != std::string::npos)
-				table_name.replace(i, strlen(".db"), buff);
-			else
-				table_name += buff;
-		}
-		unlink(table_name.c_str());
+		unlink(dbPartition(table_name).c_str());
 	}
 }
 
