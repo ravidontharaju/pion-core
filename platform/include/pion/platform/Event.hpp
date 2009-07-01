@@ -171,6 +171,20 @@ public:
 	/// are for internal use by the Event class ("intrusive" pointers are
 	/// used here to reduce and also have more control over memory operations)
 	struct ParameterNode {
+		/// default constructor
+		ParameterNode(void) {}
+		
+		/// constructs ParameterNode initialized with a value
+		template <typename T>
+		ParameterNode(const Vocabulary::TermRef& tr, const T& v) :
+			term_ref(tr), value(v)
+		{}
+
+		/// constructs ParameterNode initialized with BLOB parameters
+		ParameterNode(const Vocabulary::TermRef& tr, typename SimpleString::BlobParams& p) :
+			term_ref(tr), value(p)
+		{}
+	
 		/// pointer to parent node (used by rbtree algorithms)
 		ParameterNode *			m_parent_ptr;
 		/// pointer to left node (used by rbtree algorithms)
@@ -290,8 +304,7 @@ public:
 			node_ptr != tree_algo::end_node(&e.m_param_tree);
 			node_ptr = tree_algo::next_node(node_ptr))
 		{
-			new_param_ptr = createParameter();
-			copyParameter(node_ptr, new_param_ptr);
+			new_param_ptr = createParameter(node_ptr->term_ref, node_ptr->value);
 			tree_algo::insert_equal_upper_bound(&m_param_tree,
 				new_param_ptr, m_item_compare);
 		}
@@ -308,9 +321,9 @@ public:
 	{
 		std::pair<ParameterNode*, ParameterNode*> range =
 			tree_algo::equal_range(&e.m_param_tree, term_ref, e.m_key_compare);
+		ParameterNode *new_param_ptr;
 		while (range.first != range.second) {
-			ParameterNode *new_param_ptr = createParameter();
-			copyParameter(range.first, new_param_ptr);
+			new_param_ptr = createParameter(range.first->term_ref, range.first->value);
 			tree_algo::insert_equal_upper_bound(&m_param_tree,
 				new_param_ptr, m_item_compare);
 			range.first = tree_algo::next_node(range.first);
@@ -835,9 +848,21 @@ protected:
 	template <typename T>	
 	inline void insert(const Vocabulary::TermRef& term_ref, const T& value) {
 		PION_ASSERT(term_ref != Vocabulary::UNDEFINED_TERM_REF);
-		ParameterNode *new_param_ptr = createParameter();
-		new_param_ptr->term_ref = term_ref;
-		new_param_ptr->value = value;
+		ParameterNode *new_param_ptr = createParameter(term_ref, value);
+		tree_algo::insert_equal_upper_bound(&m_param_tree,
+			new_param_ptr, m_item_compare);
+	}
+	
+	/**
+	 * inserts a new parameter into the Event
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value pointer to a buffer to assign to the term
+	 * @param len size of the buffer in octets
+	 */
+	inline void insert(const Vocabulary::TermRef& term_ref, const CharType *value, const std::size_t len) {
+		PION_ASSERT(term_ref != Vocabulary::UNDEFINED_TERM_REF);
+		ParameterNode *new_param_ptr = createParameter(term_ref, value, len);
 		tree_algo::insert_equal_upper_bound(&m_param_tree,
 			new_param_ptr, m_item_compare);
 	}
@@ -845,11 +870,29 @@ protected:
 	/**
 	 * allocates a new parameter node object
 	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 *
 	 * @return ParameterNode* pointer to a new parameter node object
 	 */
-	inline ParameterNode *createParameter(void) {
+	template <typename T>	
+	inline ParameterNode *createParameter(const Vocabulary::TermRef& term_ref, const T& value) {
 		void *mem_ptr = m_alloc_ptr->malloc(sizeof(ParameterNode));
-		return new (mem_ptr) ParameterNode();
+		return new (mem_ptr) ParameterNode(term_ref, value);
+	}
+	
+	/**
+	 * allocates a new parameter node object
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value pointer to a buffer to assign to the term
+	 * @param len size of the buffer in octets
+	 *
+	 * @return ParameterNode* pointer to a new parameter node object
+	 */
+	inline ParameterNode *createParameter(const Vocabulary::TermRef& term_ref, const CharType *value, const std::size_t len) {
+		void *mem_ptr = m_alloc_ptr->malloc(sizeof(ParameterNode));
+		return new (mem_ptr) ParameterNode(term_ref, SimpleString::BlobParams(*m_alloc_ptr, value, len));
 	}
 	
 	/**
@@ -860,17 +903,6 @@ protected:
 	inline void destroyParameter(ParameterNode *param_ptr) {
 		param_ptr->~ParameterNode();
 		m_alloc_ptr->free(param_ptr, sizeof(ParameterNode));
-	}
-	
-	/**
-	 * copies a parameter node object
-	 *
-	 * @param src_ptr pointer to the source object
-	 * @param dest_ptr pointer to the destination object
-	 */
-	inline void copyParameter(ParameterNode *src_ptr, ParameterNode *dest_ptr) {
-		dest_ptr->term_ref = src_ptr->term_ref;
-		dest_ptr->value = src_ptr->value;
 	}
 	
 

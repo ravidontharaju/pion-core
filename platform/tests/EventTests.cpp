@@ -218,6 +218,7 @@ BOOST_AUTO_TEST_CASE(checkEventCopyValues) {
 }
 
 BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
+	EventAllocator event_alloc;
 	Event::ParameterValue pv1 = boost::int32_t(4);
 	Event::ParameterValue pv2 = boost::int32_t(4);
 	BOOST_CHECK(pv1 == pv2);
@@ -230,7 +231,6 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf1[] = "abc";
-	EventAllocator event_alloc;
 	pv1 = Event::SimpleString(event_alloc, buf1, strlen(buf1));
 	BOOST_CHECK(!(pv1 == pv2));
 
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	BOOST_CHECK(!(pv1 == pv2));
 }
 
-BOOST_AUTO_TEST_CASE(checkParameterValueCallsPionBlobDestructor) {
+BOOST_AUTO_TEST_CASE(checkParameterValueCreatedWithBlobParams) {
 	EventAllocator event_alloc;
 
 	Event::SimpleString str(event_alloc, "abc");
@@ -258,6 +258,7 @@ BOOST_AUTO_TEST_CASE(checkParameterValueCallsPionBlobDestructor) {
 		Event::ParameterValue pv1 = str;
 		BOOST_CHECK(! str.unique());
 		BOOST_CHECK_EQUAL(str.use_count(), 2);
+		BOOST_CHECK_EQUAL(strcmp(boost::get<Event::SimpleString&>(pv1).get(), "abc"), 0);
 	}	// should destruct SimpleString copy
 
 	BOOST_CHECK(str.unique());
@@ -268,9 +269,29 @@ BOOST_AUTO_TEST_CASE(checkParameterValueCallsPionBlobDestructor) {
 	BOOST_CHECK_EQUAL(str.use_count(), 2);
 
 	pv2 = boost::uint32_t(42);	// should destruct SimpleString copy
-
+	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(pv2), 42U);
 	BOOST_CHECK(str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 1);
 }
 
+BOOST_AUTO_TEST_CASE(checkParameterValueConstructedFromValue) {
+	EventAllocator event_alloc;
+
+	boost::uint32_t num(42);
+	Event::ParameterValue pv1(num);
+	BOOST_CHECK_EQUAL(num, boost::get<boost::uint32_t>(pv1));
+
+	std::string abc_str("abc");
+	Event::SimpleString::BlobParams bp(event_alloc, "abc", 3);
+	Event::ParameterValue pv2(bp);
+	BOOST_CHECK_EQUAL(abc_str, boost::get<Event::SimpleString&>(pv2).get());
+
+	Event::SimpleString str(event_alloc, "abc");
+	Event::ParameterValue pv3(str);
+	BOOST_CHECK(! str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 2);
+	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::SimpleString&>(pv3).get(), "abc"), 0);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
+
