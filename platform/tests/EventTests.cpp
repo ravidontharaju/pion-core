@@ -247,4 +247,30 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	BOOST_CHECK(!(pv1 == pv2));
 }
 
+BOOST_AUTO_TEST_CASE(checkParameterValueCallsPionBlobDestructor) {
+	EventAllocator event_alloc;
+
+	Event::SimpleString str(event_alloc, "abc");
+	BOOST_CHECK(str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 1);
+
+	{
+		Event::ParameterValue pv1 = str;
+		BOOST_CHECK(! str.unique());
+		BOOST_CHECK_EQUAL(str.use_count(), 2);
+	}	// should destruct SimpleString copy
+
+	BOOST_CHECK(str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 1);
+
+	Event::ParameterValue pv2 = str;
+	BOOST_CHECK(! str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 2);
+
+	pv2 = boost::uint32_t(42);	// should destruct SimpleString copy
+
+	BOOST_CHECK(str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 1);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

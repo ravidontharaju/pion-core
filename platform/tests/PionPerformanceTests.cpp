@@ -953,6 +953,7 @@ int main(void) {
 	test_ptr.reset(new EventPtrAllocTest<4>());
 	test_ptr->run();
 
+*/
 	// run the CLFEventPtrAllocTest with one thread
 	test_ptr.reset(new CLFEventPtrAllocTest<1>());
 	test_ptr->run();
@@ -968,7 +969,7 @@ int main(void) {
 	// run the CLFEventPtrAllocTest with four threads
 	test_ptr.reset(new CLFEventPtrAllocTest<4>());
 	test_ptr->run();
-*/
+/* */
 	// run the CLFEventPtrCopyTest with one threads
 	test_ptr.reset(new CLFEventPtrCopyTest<1>());
 	test_ptr->run();
