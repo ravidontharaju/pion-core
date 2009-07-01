@@ -71,7 +71,7 @@
     <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
-    <ROW Action="AI_DATA_SETTER" Type="51" Source="ai_fix_install_service_bat" Target="[APPDIR]"/>
+    <ROW Action="AI_DATA_SETTER" Type="51" Source="ai_replace_pion_path.vbs" Target="[APPDIR]"/>
     <ROW Action="AI_DATA_SETTER_1" Type="51" Source="CustomActionData" Target="pion-community"/>
     <ROW Action="AI_DATA_SETTER_2" Type="51" Source="CustomActionData" Target="pion-community"/>
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
@@ -85,7 +85,7 @@
     <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
-    <ROW Action="ai_fix_install_service_bat" Type="1030" Source="ai_replace_pion_path.vbs"/>
+    <ROW Action="ai_replace_pion_path.vbs" Type="1030" Source="ai_replace_pion_path.vbs"/>
     <ROW Action="remove_service" Type="1122" Source="APPDIR" Target="[#pion_uninstall_service.bat]"/>
     <ROW Action="run_install_service_bat" Type="1058" Source="APPDIR" Target="[#pion_install_service.bat]"/>
   </COMPONENT>
@@ -95,7 +95,7 @@
     <ROW Action="AI_STORE_LOCATION" Condition="Not Installed" Sequence="1501"/>
     <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
     <ROW Action="PropertySource_1" Condition="OLDPRODUCTS" Sequence="101"/>
-    <ROW Action="ai_fix_install_service_bat" Condition="NOT Installed" Sequence="5938" AdditionalSeq="AI_DATA_SETTER"/>
+    <ROW Action="ai_replace_pion_path.vbs" Condition="NOT Installed" Sequence="5938" AdditionalSeq="AI_DATA_SETTER"/>
     <ROW Action="AI_DATA_SETTER" Condition="NOT Installed" Sequence="5937"/>
     <ROW Action="DetectService" Condition="REMOVE=&quot;ALL&quot;" Sequence="1652" AdditionalSeq="AI_DATA_SETTER_1"/>
     <ROW Action="AI_DATA_SETTER_1" Condition="REMOVE=&quot;ALL&quot;" Sequence="1651"/>

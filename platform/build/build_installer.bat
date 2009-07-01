@@ -12,7 +12,7 @@ copy %INSTALL_PRJ%.tmpl %INSTALL_PRJ%
 
 %AI_EXE% /edit %INSTALL_PRJ% /SetVersion %2
 %AI_EXE% /edit %INSTALL_PRJ% /NewSync APPDIR\ %1
-%AI_EXE% /edit %INSTALL_PRJ% /NewShortcut -name "Start Pion" -dir SHORTCUTDIR -target APPDIR\start_pion.bat
+%AI_EXE% /edit %INSTALL_PRJ% /NewShortcut -name "Start Pion" -dir SHORTCUTDIR -target APPDIR\start_pion.bat -wkdir APPDIR
 %AI_EXE% /edit %INSTALL_PRJ% /NewShortcut -name License -dir SHORTCUTDIR -target APPDIR\LICENSE.txt
 %AI_EXE% /edit %INSTALL_PRJ% /NewShortcut -name ReadMe -dir SHORTCUTDIR -target APPDIR\README.txt
 %AI_EXE% /edit %INSTALL_PRJ% /NewShortcut -name "Pion Documentation" -dir SHORTCUTDIR -target APPDIR\pion-manual.pdf
