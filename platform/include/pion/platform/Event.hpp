@@ -37,6 +37,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/intrusive/rbtree_algorithms.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionBlob.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -153,57 +154,7 @@ public:
 	/// purpose of this class to provide some additional safety versus using
 	/// a raw pointer, and to keep track of the size of the string buffer
 	/// for memory deallocation when it is being destroyed
-	class SimpleString {
-	public:
-		
-		/**
-		 * contructs a SimpleString derived from a c-style string
-		 *
-		 * @param ptr raw pointer to a character array
-		 * @param len length of the string, in bytes
-		 */
-		SimpleString(const CharType *ptr, std::size_t len)
-			: m_len(len), m_ptr(ptr)
-		{}
-	
-		/// default constructor
-		SimpleString(void)
-			: m_len(0), m_ptr(NULL)
-		{}
-
-		/// copy constructor
-		SimpleString(const SimpleString& str)
-			: m_len(str.m_len), m_ptr(str.m_ptr)
-		{}
-
-		/// assignment operator
-		SimpleString& operator=(const SimpleString& str) {
-			m_ptr = str.m_ptr;
-			m_len = str.m_len;
-			return *this;
-		}
-
-		/// equality operator
-		inline bool operator==(const SimpleString& rhs) const {
-			if (m_len != rhs.m_len)
-				return false;
-			return (memcmp(m_ptr, rhs.m_ptr, m_len) == 0);
-		}
-
-		/// returns a raw pointer to the character array
-		inline const CharType *get(void) const { return m_ptr; }
-		
-		/// returns the size of the string, in bytes
-		inline std::size_t size(void) const { return m_len; }
-
-	private:
-
-		/// size of the string, in bytes
-		std::size_t			m_len;
-		
-		/// raw pointer to the string contents
-		const CharType *	m_ptr;
-	};
+	typedef PionBlob<CharType,AllocType>	SimpleString;
 	
 	/// data type that holds the values for Event parameters.
 	/// a variant is used to avoid unnecessary heap allocations;
@@ -648,7 +599,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		insert(term_ref, createSimpleString(value, strlen(value)));
+		insert(term_ref, SimpleString(*m_alloc_ptr, value, strlen(value)));
 	}
 	
 	/**
@@ -661,7 +612,7 @@ public:
 	inline void setString(const Vocabulary::TermRef& term_ref,
 						  const CharType *value, std::size_t len)
 	{
-		insert(term_ref, createSimpleString(value, len));
+		insert(term_ref, SimpleString(*m_alloc_ptr, value, len));
 	}
 	
 	/**
@@ -671,7 +622,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		insert(term_ref, createSimpleString(value.c_str(), value.size()));
+		insert(term_ref, SimpleString(*m_alloc_ptr, value.c_str(), value.size()));
 	}
 	
 	/**
@@ -907,8 +858,6 @@ protected:
 	 * @param param_ptr pointer to the parameter node object
 	 */
 	inline void destroyParameter(ParameterNode *param_ptr) {
-		if (boost::get<SimpleString&>(& param_ptr->value))
-			destroySimpleString(boost::get<SimpleString&>(param_ptr->value));
 		param_ptr->~ParameterNode();
 		m_alloc_ptr->free(param_ptr, sizeof(ParameterNode));
 	}
@@ -921,44 +870,7 @@ protected:
 	 */
 	inline void copyParameter(ParameterNode *src_ptr, ParameterNode *dest_ptr) {
 		dest_ptr->term_ref = src_ptr->term_ref;
-		// check if destination currently contains a SimpleString
-		if (boost::get<SimpleString&>(& dest_ptr->value)) {
-			// it does; free the string
-			destroySimpleString(boost::get<SimpleString&>(dest_ptr->value));
-		}
-		// check if source value is a SimpleString
-		if (boost::get<SimpleString&>(& src_ptr->value)) {
-			dest_ptr->value = createSimpleString(
-				boost::get<SimpleString&>(src_ptr->value).get(),
-				boost::get<SimpleString&>(src_ptr->value).size());
-		} else {
-			// not a SimpleString; just use operator=()
-			dest_ptr->value = src_ptr->value;
-		}
-	}
-	
-	/**
-	 * creates a new SimpleString object derived from a c-style string
-	 *
-	 * @param ptr pointer to an existing c-style string that will be copied
-	 * @param len size or length of the existing string (excluding null-term)
-	 *
-	 * @return SimpleString newly-created SimpleString object
-	 */
-	inline SimpleString createSimpleString(const CharType *ptr, std::size_t len) {
-		CharType *new_buf = static_cast<CharType*>(m_alloc_ptr->malloc(len + 1));
-		memcpy(new_buf, ptr, len);
-		new_buf[len] = '\0';
-		return SimpleString(new_buf, len);
-	}
-	
-	/**
-	 * deallocates the memory used by a SimpleString Event parameter
-	 *
-	 * @param str the SimpleString object to free
-	 */
-	inline void destroySimpleString(SimpleString& str) {
-		m_alloc_ptr->free(const_cast<char*>(str.get()), str.size() + 1);
+		dest_ptr->value = src_ptr->value;
 	}
 	
 

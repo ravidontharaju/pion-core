@@ -825,7 +825,7 @@ protected:
 		while (m_queue.pop(event_ptr)) ;
 	}
 
-private:
+protected:
 	
 	/// a shared queue of Event pointers
 	QueueType<EventPtr>			m_queue;
@@ -859,6 +859,43 @@ protected:
 		e->setString(3, "GET /robots.txt HTTP/1.0");
 		e->setUInt(4, 404);
 		e->setUInt(5, 208);
+	}
+};
+
+
+///
+/// CLFEventPtrCopyTest: tests the performance of copying EventPtr objects that
+///                      contain common log format data using 1 or more threads
+///
+template < TEST_TEMPLATE_PARAMS >
+class CLFEventPtrCopyTest :
+	public CLFEventPtrAllocTest<ProducerThreads, ConsumerThreads, QueueType>
+{
+public:
+
+	/// default constructor
+	CLFEventPtrCopyTest(void) {
+		AllocTest<ProducerThreads, ConsumerThreads>::setTestDescriptionWithThreads("CLFEventPtrCopyTest");
+	}
+
+	/// virtual destructor
+	virtual ~CLFEventPtrCopyTest() { PerformanceTest::stop(); }
+
+protected:
+
+	/// thread function used to produce objects
+	virtual void produce(boost::uint64_t& thread_counter) {
+		EventFactory f;
+		EventPtr copy;
+		EventPtr e = f.create(Vocabulary::UNDEFINED_TERM_REF);
+		this->updateEvent(e);
+		while (PerformanceTest::isRunning()) {
+			copy = f.create(Vocabulary::UNDEFINED_TERM_REF);
+			*copy += *e;
+			if (ConsumerThreads > 0)
+				this->m_queue.push(copy);
+			++thread_counter;
+		}
 	}
 };
 
@@ -899,7 +936,7 @@ int main(void) {
 	test_ptr.reset(new EventSharedGCCPoolAllocTest<2>());
 	test_ptr->run();
 #endif
-*/
+
 	// run the EventPtrAllocTest with one thread
 	test_ptr.reset(new EventPtrAllocTest<1>());
 	test_ptr->run();
@@ -930,6 +967,14 @@ int main(void) {
 
 	// run the CLFEventPtrAllocTest with four threads
 	test_ptr.reset(new CLFEventPtrAllocTest<4>());
+	test_ptr->run();
+*/
+	// run the CLFEventPtrCopyTest with one threads
+	test_ptr.reset(new CLFEventPtrCopyTest<1>());
+	test_ptr->run();
+
+	// run the CLFEventPtrCopyTest with four threads
+	test_ptr.reset(new CLFEventPtrCopyTest<4>());
 	test_ptr->run();
 
 	// run the WorkTestIoService with 1 producer & 1 consumer

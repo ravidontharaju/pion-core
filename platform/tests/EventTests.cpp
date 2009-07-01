@@ -230,19 +230,20 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf1[] = "abc";
-	pv1 = Event::SimpleString(buf1, strlen(buf1));
+	EventAllocator event_alloc;
+	pv1 = Event::SimpleString(event_alloc, buf1, strlen(buf1));
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf2[] = "abc";
-	pv2 = Event::SimpleString(buf2, strlen(buf2));
+	pv2 = Event::SimpleString(event_alloc, buf2, strlen(buf2));
 	BOOST_CHECK(pv1 == pv2);
 
 	char buf3[] = "abd";
-	pv2 = Event::SimpleString(buf3, strlen(buf3));
+	pv2 = Event::SimpleString(event_alloc, buf3, strlen(buf3));
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf4[] = "ab";
-	pv2 = Event::SimpleString(buf4, strlen(buf4));
+	pv2 = Event::SimpleString(event_alloc, buf4, strlen(buf4));
 	BOOST_CHECK(!(pv1 == pv2));
 }
 
