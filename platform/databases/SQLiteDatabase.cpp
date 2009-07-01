@@ -192,10 +192,10 @@ void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 {
 	if (m_sqlite_db) {
 		close();
-		unlink(dbPartition(table_name).c_str());
+		unlink(dbPartition(table_name, partition).c_str());
 		open(partition);
 	} else {
-		unlink(dbPartition(table_name).c_str());
+		unlink(dbPartition(table_name, partition).c_str());
 	}
 }
 
