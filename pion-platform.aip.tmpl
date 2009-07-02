@@ -87,7 +87,7 @@
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
     <ROW Action="ai_replace_pion_path.vbs" Type="1030" Source="ai_replace_pion_path.vbs"/>
     <ROW Action="remove_service" Type="1122" Source="APPDIR" Target="[#pion_uninstall_service.bat]"/>
-    <ROW Action="run_install_service_bat" Type="1058" Source="APPDIR" Target="[#pion_install_service.bat]"/>
+    <ROW Action="run_install_service_bat" Type="1122" Source="APPDIR" Target="[#pion_install_service.bat]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
     <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
