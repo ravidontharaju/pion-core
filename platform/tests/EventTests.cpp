@@ -79,16 +79,14 @@ public:
 BOOST_FIXTURE_TEST_SUITE(EventTests_S, EventTests_F)
 
 BOOST_AUTO_TEST_CASE(checkEventAllocatorIsOk) {
-	EventAllocator event_alloc;
-
-	void *mem_ptr = event_alloc.malloc(sizeof(Event));
-	Event *event_ptr = new (mem_ptr) Event(m_object_term.term_ref, &event_alloc);
+	void *mem_ptr = m_event_factory.getAllocator().malloc(sizeof(Event));
+	Event *event_ptr = new (mem_ptr) Event(m_object_term.term_ref, &m_event_factory.getAllocator());
 	event_ptr->setInt(m_plain_int_term.term_ref, 24);
 	event_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224);
 	event_ptr->setDateTime(m_date_term.term_ref, PionDateTime(boost::gregorian::date(2007, 4, 5)));
 	
 	event_ptr->~Event();
-	event_alloc.free(event_ptr, sizeof(Event));	
+	m_event_factory.getAllocator().free(event_ptr, sizeof(Event));	
 }
 
 BOOST_AUTO_TEST_CASE(checkEmptyEventValues) {
@@ -119,10 +117,57 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(*value_ptr), 24);
 	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_fixed_term.term_ref), short_msg_str);
+	BOOST_CHECK_EQUAL(event_ptr->getBlob(m_fixed_term.term_ref).get(), short_msg_str);
 	PionDateTime pdt = event_ptr->getDateTime(m_date_term.term_ref);
 	BOOST_CHECK_EQUAL(pdt.date().year(), 2007);
 	BOOST_CHECK_EQUAL(pdt.date().month(), 4);
 	BOOST_CHECK_EQUAL(pdt.date().day(), 5);
+	
+	boost::uint32_t n;
+	BOOST_CHECK(event_ptr->getInt(m_plain_int_term.term_ref, n));
+	BOOST_CHECK_EQUAL(n, 24UL);
+	BOOST_CHECK(event_ptr->getUBigInt(m_big_int_term.term_ref, n));
+	BOOST_CHECK_EQUAL(n, 2025221224UL);
+	
+	std::string str;
+	BOOST_CHECK(event_ptr->getString(m_fixed_term.term_ref, str));
+	BOOST_CHECK_EQUAL(str, short_msg_str);
+
+	Event::BlobType b;
+	BOOST_CHECK(event_ptr->getBlob(m_fixed_term.term_ref, b));
+	BOOST_CHECK(! b.empty());
+	BOOST_CHECK(! b.unique());
+	BOOST_CHECK_EQUAL(b.use_count(), 2);
+	BOOST_CHECK_EQUAL(short_msg_str, b.get());
+}
+
+BOOST_AUTO_TEST_CASE(checkEventAssignmentToBlobValues) {
+	addAllTerms();
+	std::string short_msg_str("short msg");
+	EventPtr event_a(m_event_factory.create(m_object_term.term_ref));
+	event_a->setString(m_fixed_term.term_ref, short_msg_str);
+	BOOST_CHECK(event_a->getBlob(m_fixed_term.term_ref) == short_msg_str);
+	BOOST_CHECK(event_a->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK_EQUAL(event_a->getBlob(m_fixed_term.term_ref).use_count(), 1);
+	BOOST_CHECK_EQUAL(strcmp(event_a->getString(m_fixed_term.term_ref), short_msg_str.c_str()), 0);
+
+	EventPtr event_b(m_event_factory.create(m_object_term.term_ref));
+	event_b->setBlob(m_fixed_term.term_ref, event_a->getBlob(m_fixed_term.term_ref));
+	BOOST_CHECK(event_b->getBlob(m_fixed_term.term_ref) == short_msg_str);
+	BOOST_CHECK(! event_a->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK(! event_b->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK_EQUAL(event_a->getBlob(m_fixed_term.term_ref).use_count(), 2);
+	BOOST_CHECK_EQUAL(event_b->getBlob(m_fixed_term.term_ref).use_count(), 2);
+
+	EventPtr event_c(m_event_factory.create(m_object_term.term_ref));
+	*event_c += *event_b;
+	BOOST_CHECK(event_c->getBlob(m_fixed_term.term_ref) == short_msg_str);
+	BOOST_CHECK(! event_a->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK(! event_b->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK(! event_c->getBlob(m_fixed_term.term_ref).unique());
+	BOOST_CHECK_EQUAL(event_a->getBlob(m_fixed_term.term_ref).use_count(), 3);
+	BOOST_CHECK_EQUAL(event_b->getBlob(m_fixed_term.term_ref).use_count(), 3);
+	BOOST_CHECK_EQUAL(event_c->getBlob(m_fixed_term.term_ref).use_count(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(checkMultipleTermValues) {
@@ -218,7 +263,6 @@ BOOST_AUTO_TEST_CASE(checkEventCopyValues) {
 }
 
 BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
-	EventAllocator event_alloc;
 	Event::ParameterValue pv1 = boost::int32_t(4);
 	Event::ParameterValue pv2 = boost::int32_t(4);
 	BOOST_CHECK(pv1 == pv2);
@@ -231,26 +275,28 @@ BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf1[] = "abc";
-	pv1 = Event::SimpleString(event_alloc, buf1, strlen(buf1));
+	pv1 = Event::BlobType(m_event_factory.getAllocator(), buf1, strlen(buf1));
+	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv1).get(), "abc"), 0);
 	BOOST_CHECK(!(pv1 == pv2));
 
 	char buf2[] = "abc";
-	pv2 = Event::SimpleString(event_alloc, buf2, strlen(buf2));
+	pv2 = m_event_factory.make_blob(buf2, strlen(buf2));
+	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv2).get(), "abc"), 0);
 	BOOST_CHECK(pv1 == pv2);
 
 	char buf3[] = "abd";
-	pv2 = Event::SimpleString(event_alloc, buf3, strlen(buf3));
+	pv2 = m_event_factory.make_blob(buf3);
+	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv2).get(), "abd"), 0);
 	BOOST_CHECK(!(pv1 == pv2));
 
-	char buf4[] = "ab";
-	pv2 = Event::SimpleString(event_alloc, buf4, strlen(buf4));
+	const std::string str("dab");
+	pv2 = m_event_factory.make_blob(str);
+	BOOST_CHECK_EQUAL(str, boost::get<Event::BlobType&>(pv2).get());
 	BOOST_CHECK(!(pv1 == pv2));
 }
 
 BOOST_AUTO_TEST_CASE(checkParameterValueCreatedWithBlobParams) {
-	EventAllocator event_alloc;
-
-	Event::SimpleString str(event_alloc, "abc");
+	Event::BlobType str(m_event_factory.getAllocator(), "abc");
 	BOOST_CHECK(str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 1);
 
@@ -258,8 +304,8 @@ BOOST_AUTO_TEST_CASE(checkParameterValueCreatedWithBlobParams) {
 		Event::ParameterValue pv1 = str;
 		BOOST_CHECK(! str.unique());
 		BOOST_CHECK_EQUAL(str.use_count(), 2);
-		BOOST_CHECK_EQUAL(strcmp(boost::get<Event::SimpleString&>(pv1).get(), "abc"), 0);
-	}	// should destruct SimpleString copy
+		BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv1).get(), "abc"), 0);
+	}	// should destruct BlobType copy
 
 	BOOST_CHECK(str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 1);
@@ -268,29 +314,29 @@ BOOST_AUTO_TEST_CASE(checkParameterValueCreatedWithBlobParams) {
 	BOOST_CHECK(! str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 2);
 
-	pv2 = boost::uint32_t(42);	// should destruct SimpleString copy
+	pv2 = boost::uint32_t(42);	// should destruct BlobType copy
 	BOOST_CHECK_EQUAL(boost::get<boost::uint32_t>(pv2), 42U);
 	BOOST_CHECK(str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(checkParameterValueConstructedFromValue) {
-	EventAllocator event_alloc;
-
 	boost::uint32_t num(42);
 	Event::ParameterValue pv1(num);
 	BOOST_CHECK_EQUAL(num, boost::get<boost::uint32_t>(pv1));
 
 	std::string abc_str("abc");
-	Event::SimpleString::BlobParams bp(event_alloc, "abc", 3);
+	Event::BlobType::BlobParams bp(m_event_factory.getAllocator(), "abc", 3);
 	Event::ParameterValue pv2(bp);
-	BOOST_CHECK_EQUAL(abc_str, boost::get<Event::SimpleString&>(pv2).get());
+	BOOST_CHECK_EQUAL(abc_str, boost::get<Event::BlobType&>(pv2).get());
 
-	Event::SimpleString str(event_alloc, "abc");
+	Event::BlobType str(m_event_factory.make_blob("abc"));
+	BOOST_CHECK(str.unique());
+	BOOST_CHECK_EQUAL(str.use_count(), 1);
 	Event::ParameterValue pv3(str);
 	BOOST_CHECK(! str.unique());
 	BOOST_CHECK_EQUAL(str.use_count(), 2);
-	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::SimpleString&>(pv3).get(), "abc"), 0);
+	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv3).get(), "abc"), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

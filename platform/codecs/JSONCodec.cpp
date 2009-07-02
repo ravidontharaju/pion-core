@@ -70,7 +70,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 	// iterate through each field in the current format
 	CurrentFormat::const_iterator i;
 	std::string value_str;
-	const pion::platform::Event::SimpleString* ss;
+	const pion::platform::Event::BlobType* ss;
 	for (i = m_format.begin(); i != m_format.end(); ++i) {
 		// get the range of values for the field Term
 		pion::platform::Vocabulary::TermRef term_ref = (*i)->term.term_ref;
@@ -118,11 +118,11 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
 				case pion::platform::Vocabulary::TYPE_BLOB:
-					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					ss = &boost::get<const pion::platform::Event::BlobType&>(i2->value);
 					yajl_gen_string(m_yajl_generator, (unsigned char*)ss->get(), ss->size());
 					break;
 				case pion::platform::Vocabulary::TYPE_CHAR:
-					ss = &boost::get<const pion::platform::Event::SimpleString&>(i2->value);
+					ss = &boost::get<const pion::platform::Event::BlobType&>(i2->value);
 					yajl_gen_string(m_yajl_generator, (unsigned char*)ss->get(),
 									ss->size() < (*i)->term.term_size? ss->size() : (*i)->term.term_size);
 					break;

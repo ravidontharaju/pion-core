@@ -173,7 +173,7 @@ void FissionReactor::process(const EventPtr& e)
 		for (Event::ConstIterator it = range.first; it != range.second; ++it) {
 
 			// create an input stream based upon the term value
-			const Event::SimpleString& ss = boost::get<const Event::SimpleString&>(it->value);
+			const Event::BlobType& ss = boost::get<const Event::BlobType&>(it->value);
 			boost::iostreams::stream<boost::iostreams::array_source> input_stream(ss.get(), ss.size());
 
 			// read Event(s) from the input stream

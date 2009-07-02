@@ -148,13 +148,13 @@ protected:
 public:
 
 	/// used to identify the type of Event (TermRef maps to Terms of type OBJECT)
-	typedef Vocabulary::TermRef		EventType;
+	typedef Vocabulary::TermRef				EventType;
 	
-	/// simple string data type used for Event parameter values.  the main
-	/// purpose of this class to provide some additional safety versus using
-	/// a raw pointer, and to keep track of the size of the string buffer
-	/// for memory deallocation when it is being destroyed
-	typedef PionBlob<CharType,AllocType>	SimpleString;
+	/// data type used for storing strings & BLOBs as Event parameter values
+	typedef PionBlob<CharType,AllocType>	BlobType;
+
+	/// data type used for parameters that construct BLOBs
+	typedef typename BlobType::BlobParams	BlobParams;
 	
 	/// data type that holds the values for Event parameters.
 	/// a variant is used to avoid unnecessary heap allocations;
@@ -163,7 +163,7 @@ public:
 	/// possible values assigned to it
 	typedef boost::variant<boost::int32_t, boost::uint32_t,
 		boost::int64_t, boost::uint64_t, float, double, long double,
-		PionDateTime, SimpleString>		ParameterValue;
+		PionDateTime, BlobType>				ParameterValue;
 	
 	/// data type used to contain the information for a single Event parameter.
 	/// it is made public only for use with iterators.  note that only the
@@ -180,11 +180,6 @@ public:
 			term_ref(tr), value(v)
 		{}
 
-		/// constructs ParameterNode initialized with BLOB parameters
-		ParameterNode(const Vocabulary::TermRef& tr, typename SimpleString::BlobParams& p) :
-			term_ref(tr), value(p)
-		{}
-	
 		/// pointer to parent node (used by rbtree algorithms)
 		ParameterNode *			m_parent_ptr;
 		/// pointer to left node (used by rbtree algorithms)
@@ -447,10 +442,225 @@ public:
 	 * @return const CharType * the value of the field
 	 */
 	inline const CharType *getString(const Vocabulary::TermRef& term_ref) const {
-		PION_ASSERT(getPointer(term_ref)!=NULL && boost::get<const SimpleString&>(getPointer(term_ref)));
-		return boost::get<const SimpleString&>(*getPointer(term_ref)).get();
+		PION_ASSERT(getPointer(term_ref)!=NULL && boost::get<const BlobType&>(getPointer(term_ref)));
+		return boost::get<const BlobType&>(*getPointer(term_ref)).get();
 	}
 	
+	/**
+	 * shorthand for retrieving the (const) BlobType value of field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @return const BlobType& the value of the field
+	 */
+	inline const BlobType& getBlob(const Vocabulary::TermRef& term_ref) const {
+		PION_ASSERT(getPointer(term_ref)!=NULL && boost::get<const BlobType&>(getPointer(term_ref)));
+		return boost::get<const BlobType&>(*getPointer(term_ref));
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of an integer field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getInt(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const boost::int32_t&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of an unsigned integer field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getUInt(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const boost::uint32_t&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of a big integer field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getBigInt(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const boost::int64_t&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of an unsigned big integer field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getUBigInt(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const boost::uint64_t&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of a floating point number field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getFloat(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const float&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * shorthand for retrieving the (const) value of a double floating point number field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getDouble(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const double&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value of a long double floating point number field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getLongDouble(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const long double&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) value date_time field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getDateTime(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const PionDateTime&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * shorthand for retrieving the (const) BlobType value of field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getBlob(const Vocabulary::TermRef& term_ref, T& v) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			v = boost::get<const BlobType&>(*param_ptr);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * shorthand for retrieving the (const) BlobType value of field (specialization for std::string)
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	inline bool getBlob(const Vocabulary::TermRef& term_ref, std::string& str) const {
+		const ParameterValue *param_ptr = getPointer(term_ref);
+		if (param_ptr) {
+			str = boost::get<const BlobType&>(*param_ptr).get();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * shorthand for retrieving the (const) value of a string field
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	template <typename T>
+	inline bool getString(const Vocabulary::TermRef& term_ref, T& v) const {
+		return getBlob(term_ref, v);
+	}
+
+	/**
+	 * shorthand for retrieving the (const) value of a string field (specialization for std::string)
+	 * 
+	 * @param term_ref numeric identifier for the term
+	 * @param v will be set to the value of the term if it is defined
+	 *
+	 * @return true if the term is defined and v was set to its value, or false if not
+	 */
+	inline bool getString(const Vocabulary::TermRef& term_ref, std::string& str) const {
+		return getBlob(term_ref, str);
+	}
+
 	/**
 	 * sets the value for a particular term to an integer
 	 *
@@ -610,9 +820,12 @@ public:
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
+	 * @param len length of the string object, in bytes
 	 */
-	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		insert(term_ref, SimpleString(*m_alloc_ptr, value, strlen(value)));
+	inline void setBlob(const Vocabulary::TermRef& term_ref,
+						  const CharType *value, std::size_t len)
+	{
+		insert(term_ref, make_blob(value, len));
 	}
 	
 	/**
@@ -620,12 +833,9 @@ public:
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
-	 * @param len length of the string object, in bytes
 	 */
-	inline void setString(const Vocabulary::TermRef& term_ref,
-						  const CharType *value, std::size_t len)
-	{
-		insert(term_ref, SimpleString(*m_alloc_ptr, value, len));
+	inline void setBlob(const Vocabulary::TermRef& term_ref, const CharType *value) {
+		insert(term_ref, make_blob(value, strlen(value)));
 	}
 	
 	/**
@@ -634,8 +844,61 @@ public:
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
 	 */
+	inline void setBlob(const Vocabulary::TermRef& term_ref, const std::string& value) {
+		insert(term_ref, make_blob(value));
+	}
+	
+	/**
+	 * sets the value for a particular term to an existing BlobType value
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setBlob(const Vocabulary::TermRef& term_ref, const BlobType& value) {
+		insert(term_ref, value);
+	}
+	
+	/**
+	 * sets the value for a particular term to a string using a character array  (alias for setBlob)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 * @param len length of the string object, in bytes
+	 */
+	inline void setString(const Vocabulary::TermRef& term_ref,
+						  const CharType *value, std::size_t len)
+	{
+		setBlob(term_ref, value, len);
+	}
+	
+	/**
+	 * sets the value for a particular term to a string using a character array  (alias for setBlob)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
+		setBlob(term_ref, value);
+	}
+	
+	/**
+	 * sets the value for a particular term to a string using a std::string  (alias for setBlob)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		insert(term_ref, SimpleString(*m_alloc_ptr, value.c_str(), value.size()));
+		setBlob(term_ref, value);
+	}
+	
+	/**
+	 * sets the value for a particular term to an existing BlobType value (alias for setBlob)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setString(const Vocabulary::TermRef& term_ref, const BlobType& value) {
+		setBlob(term_ref, value);
 	}
 	
 	/**
@@ -745,7 +1008,7 @@ public:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
-			str << boost::get<const SimpleString&>(value).get();
+			str << boost::get<const BlobType&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
@@ -805,7 +1068,7 @@ public:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
-			str = boost::get<const SimpleString&>(value).get();
+			str = boost::get<const BlobType&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
@@ -818,6 +1081,21 @@ public:
 		}
 	}
 	
+	/// can be used to construct a new BLOB object based upon an existing std::string
+	inline BlobParams make_blob(const std::string& str) const {
+		return BlobParams(*m_alloc_ptr, str.c_str(), str.size());
+	}
+	
+	/// can be used to construct a new BLOB object based upon an existing memory buffer
+	inline BlobParams make_blob(const CharType *ptr, const std::size_t len) const {
+		return BlobParams(*m_alloc_ptr, ptr, len);
+	}
+
+	/// can be used to construct a new BLOB object based upon a c-style string
+	inline BlobParams make_blob(const CharType *ptr) const {
+		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
+	}
+
 	/// returns the number of references to this Event
 	inline boost::uint32_t getReferences(void) const { return m_references; }
 	
@@ -854,20 +1132,6 @@ protected:
 	}
 	
 	/**
-	 * inserts a new parameter into the Event
-	 *
-	 * @param term_ref numeric identifier for the term
-	 * @param value pointer to a buffer to assign to the term
-	 * @param len size of the buffer in octets
-	 */
-	inline void insert(const Vocabulary::TermRef& term_ref, const CharType *value, const std::size_t len) {
-		PION_ASSERT(term_ref != Vocabulary::UNDEFINED_TERM_REF);
-		ParameterNode *new_param_ptr = createParameter(term_ref, value, len);
-		tree_algo::insert_equal_upper_bound(&m_param_tree,
-			new_param_ptr, m_item_compare);
-	}
-	
-	/**
 	 * allocates a new parameter node object
 	 *
 	 * @param term_ref numeric identifier for the term
@@ -879,20 +1143,6 @@ protected:
 	inline ParameterNode *createParameter(const Vocabulary::TermRef& term_ref, const T& value) {
 		void *mem_ptr = m_alloc_ptr->malloc(sizeof(ParameterNode));
 		return new (mem_ptr) ParameterNode(term_ref, value);
-	}
-	
-	/**
-	 * allocates a new parameter node object
-	 *
-	 * @param term_ref numeric identifier for the term
-	 * @param value pointer to a buffer to assign to the term
-	 * @param len size of the buffer in octets
-	 *
-	 * @return ParameterNode* pointer to a new parameter node object
-	 */
-	inline ParameterNode *createParameter(const Vocabulary::TermRef& term_ref, const CharType *value, const std::size_t len) {
-		void *mem_ptr = m_alloc_ptr->malloc(sizeof(ParameterNode));
-		return new (mem_ptr) ParameterNode(term_ref, SimpleString::BlobParams(*m_alloc_ptr, value, len));
 	}
 	
 	/**
@@ -1139,6 +1389,24 @@ public:
 			ptr->clear();
 		else
 			ptr = create(t);
+	}
+	
+	/// returns the EventAllocator used by this factory
+	inline EventAllocator& getAllocator(void) { return m_event_alloc; }
+	
+	/// can be used to construct a new BLOB object based upon an existing std::string
+	inline Event::BlobParams make_blob(const std::string& str) const {
+		return Event::BlobParams(m_event_alloc, str.c_str(), str.size());
+	}
+	
+	/// can be used to construct a new BLOB object based upon an existing memory buffer
+	inline Event::BlobParams make_blob(const char *ptr, const std::size_t len) const {
+		return Event::BlobParams(m_event_alloc, ptr, len);
+	}
+
+	/// can be used to construct a new BLOB object based upon an existing c-style string
+	inline Event::BlobParams make_blob(const char *ptr) const {
+		return Event::BlobParams(m_event_alloc, ptr, strlen(ptr));
 	}
 	
 	

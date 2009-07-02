@@ -343,7 +343,7 @@ private:
 	public:
 		CompareStringExactMatch(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return m_value == boost::get<const Event::SimpleString&>(event_value).get();
+			return m_value == boost::get<const Event::BlobType&>(event_value).get();
 		}
 	private:
 		const std::string&	m_value;
@@ -355,7 +355,7 @@ private:
 		CompareStringContains(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			return boost::algorithm::contains(
-				boost::get<const Event::SimpleString&>(event_value).get(),
+				boost::get<const Event::BlobType&>(event_value).get(),
 				m_value.c_str());
 		}
 	private:
@@ -368,7 +368,7 @@ private:
 		CompareStringStartsWith(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			return boost::algorithm::starts_with(
-				boost::get<const Event::SimpleString&>(event_value).get(),
+				boost::get<const Event::BlobType&>(event_value).get(),
 				m_value.c_str());
 		}
 	private:
@@ -381,7 +381,7 @@ private:
 		CompareStringEndsWith(const std::string& value) : m_value(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			return boost::algorithm::ends_with(
-				boost::get<const Event::SimpleString&>(event_value).get(),
+				boost::get<const Event::BlobType&>(event_value).get(),
 				m_value.c_str());
 		}
 	private:
@@ -395,7 +395,7 @@ private:
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			boost::algorithm::is_less p;
 			return boost::algorithm::lexicographical_compare(
-				boost::get<const Event::SimpleString&>(event_value).get(),
+				boost::get<const Event::BlobType&>(event_value).get(),
 				m_value.c_str(), p);
 		}
 	private:
@@ -409,7 +409,7 @@ private:
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			boost::algorithm::is_less p;
 			return boost::algorithm::lexicographical_compare(m_value.c_str(),
-				boost::get<const Event::SimpleString&>(event_value).get(), p);
+				boost::get<const Event::BlobType&>(event_value).get(), p);
 		}
 	private:
 		const std::string&	m_value;
@@ -423,7 +423,7 @@ private:
 			// note: regex_match must match the ENTIRE string; use regex_search
 			// instead to match any part of the string
 			return boost::regex_search(
-				boost::get<const Event::SimpleString&>(event_value).get(), m_regex);
+				boost::get<const Event::BlobType&>(event_value).get(), m_regex);
 		}
 	private:
 		const boost::regex&	m_regex;

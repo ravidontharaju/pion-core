@@ -603,7 +603,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_BLOB:
 		{
-			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
+			const pion::platform::Event::BlobType& ss = boost::get<const pion::platform::Event::BlobType&>(value);
 			if (ss.size() > 0) {
 				if (log_urlencode) {
 					std::string temp_str(ss.get());
@@ -616,7 +616,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		}
 		case pion::platform::Vocabulary::TYPE_CHAR:
 		{
-			const pion::platform::Event::SimpleString& ss = boost::get<const pion::platform::Event::SimpleString&>(value);
+			const pion::platform::Event::BlobType& ss = boost::get<const pion::platform::Event::BlobType&>(value);
 			if (ss.size() > 0) {
 				if (log_urlencode) {
 					std::string temp_str(ss.get());
