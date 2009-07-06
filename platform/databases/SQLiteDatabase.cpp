@@ -79,8 +79,8 @@ std::string dbPartition(std::string name, unsigned partition)
 void SQLiteDatabase::open(unsigned partition)
 {
 	// create a backup copy of the database before opening it
-	const bool is_new_database = ! boost::filesystem::exists(m_database_name);
 /* "no backups no more" since it's not supported by Enterprise database either...
+	const bool is_new_database = ! boost::filesystem::exists(m_database_name);
 	if (! is_new_database && create_backup) {
 		const std::string backup_filename(m_database_name + BACKUP_FILE_EXTENSION);
 		if (boost::filesystem::exists(backup_filename))
