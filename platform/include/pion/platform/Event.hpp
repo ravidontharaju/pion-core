@@ -913,7 +913,6 @@ public:
 		switch (t.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
-		case Vocabulary::TYPE_REGEX:
 			// not serializable
 			throw TermTypeNotSerializableException();
 			break;
@@ -956,6 +955,7 @@ public:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
 			setString(value);
 			break;
 		}
@@ -974,7 +974,6 @@ public:
 		switch (t.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
-		case Vocabulary::TYPE_REGEX:
 			// not serializable
 			throw TermTypeNotSerializableException();
 			break;
@@ -1008,6 +1007,7 @@ public:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
 			str << boost::get<const BlobType&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
@@ -1034,7 +1034,6 @@ public:
 		switch (t.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
-		case Vocabulary::TYPE_REGEX:
 			// not serializable
 			throw TermTypeNotSerializableException();
 			break;
@@ -1068,6 +1067,7 @@ public:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
 			str = boost::get<const BlobType&>(value).get();
 			break;
 		case Vocabulary::TYPE_DATE_TIME:

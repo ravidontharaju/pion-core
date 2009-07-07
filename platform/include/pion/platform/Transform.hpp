@@ -139,7 +139,6 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
-		case Vocabulary::TYPE_REGEX:
 			return false;				// No assignment -- not assignable type...
 			break;
 		case Vocabulary::TYPE_INT8:
@@ -172,6 +171,7 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
 			e->setString(term.term_ref, value);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
@@ -198,7 +198,6 @@ inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term,
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
-		case Vocabulary::TYPE_REGEX:
 			// not serializable
 			s.clear();
 			break;
@@ -240,6 +239,7 @@ inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term,
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
 			s = boost::get<const Event::BlobType&>(ec->value).get();
 			break;
 	}

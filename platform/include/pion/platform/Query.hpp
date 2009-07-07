@@ -20,8 +20,22 @@
 #ifndef __PION_QUERY_HEADER__
 #define __PION_QUERY_HEADER__
 
+#ifdef _MSC_VER
+// This could be any valid .lib file; its only purpose is to prevent the compiler  
+// from trying to link to boost_zlib-*.lib (e.g. boost_zip-vc80-mt-1_37.dll).  
+// ContentStorageReactor only uses zlib indirectly, through boost_iostreams-*.dll.
+#define BOOST_ZLIB_BINARY "zdll.lib"
+#endif
+
 #include <cstdio>
 #include <string>
+
+// For ZBlob compression
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
@@ -85,6 +99,28 @@ public:
 	virtual void bindBlob(unsigned int param, const char *value, size_t size, bool copy_value = true) = 0;
 
 	virtual void fetchBlob(unsigned int param, std::string& value) = 0;
+
+	void bindZBlob(unsigned int param, const char *value, size_t size, bool copy_value = true)
+	{
+		std::string temp;
+		boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+		out.push(boost::iostreams::zlib_compressor());
+		out.push(boost::iostreams::back_inserter(temp));
+		std::string data(value, size);
+		boost::iostreams::copy(boost::make_iterator_range(data), out);
+		bindBlob(param, temp.data(), temp.size());
+	}
+
+	void fetchZBlob(unsigned int param, std::string& value)
+	{
+		std::string temp;
+		fetchBlob(param, temp);
+		boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+		in.push(boost::iostreams::zlib_decompressor());
+		in.push(boost::make_iterator_range(temp));
+		boost::iostreams::copy(in, boost::iostreams::back_inserter(value));
+	}
+
 
 	/**
 	 * binds a string (const char *) value to a query parameter
@@ -391,13 +427,18 @@ inline void Query::bindEvent(const FieldMap& field_map, const Event& e, bool cop
 				case Vocabulary::TYPE_STRING:
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_REGEX:
 					bindString(param,
 						boost::get<const Event::BlobType&>(*value_ptr).get(),
 						copy_strings);
 					break;
 				case Vocabulary::TYPE_BLOB:
 					bindBlob(param,
+						boost::get<const Event::BlobType&>(*value_ptr).get(),
+						boost::get<const Event::BlobType&>(*value_ptr).size(),
+						copy_strings);
+					break;
+				case Vocabulary::TYPE_ZBLOB:
+					bindZBlob(param,
 						boost::get<const Event::BlobType&>(*value_ptr).get(),
 						boost::get<const Event::BlobType&>(*value_ptr).size(),
 						copy_strings);
@@ -452,7 +493,6 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 			case Vocabulary::TYPE_STRING:
 			case Vocabulary::TYPE_LONG_STRING:
 			case Vocabulary::TYPE_CHAR:
-			case Vocabulary::TYPE_REGEX:
 				{
 					std::string val;
 					fetchString(param, val);
@@ -463,6 +503,13 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				{
 					std::string val;
 					fetchBlob(param, val);
+					e->setString(field_map[param].second.term_ref, val.c_str(), val.size());
+				}
+				break;
+			case Vocabulary::TYPE_ZBLOB:
+				{
+					std::string val;
+					fetchZBlob(param, val);
 					e->setString(field_map[param].second.term_ref, val.c_str(), val.size());
 				}
 				break;

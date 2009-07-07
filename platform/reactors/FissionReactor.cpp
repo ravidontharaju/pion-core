@@ -89,7 +89,6 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	case Vocabulary::TYPE_DATE_TIME:
 	case Vocabulary::TYPE_DATE:
 	case Vocabulary::TYPE_TIME:
-	case Vocabulary::TYPE_REGEX:
 		throw TermNotStringException(config_str);
 		break;
 	case Vocabulary::TYPE_SHORT_STRING:
@@ -97,6 +96,7 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	case Vocabulary::TYPE_LONG_STRING:
 	case Vocabulary::TYPE_CHAR:
 	case Vocabulary::TYPE_BLOB:
+	case Vocabulary::TYPE_ZBLOB:
 		break;	// these are all OK
 	}
 
