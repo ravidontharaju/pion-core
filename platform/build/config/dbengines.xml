@@ -44,6 +44,7 @@
 			<Pair>date,TEXT</Pair>
 			<Pair>time,TEXT</Pair>
 			<Pair>blob,BLOB</Pair>
+			<Pair>zblob,BLOB</Pair>
 		</TypeMap>
 	</Template>
 </DatabaseTemplates>
