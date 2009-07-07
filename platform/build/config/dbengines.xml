@@ -39,7 +39,6 @@
 			<Pair>string,TEXT</Pair>
 			<Pair>longstring,TEXT</Pair>
 			<Pair>char,TEXT</Pair>
-			<Pair>regex,TEXT</Pair>
 			<Pair>datetime,TEXT</Pair>
 			<Pair>date,TEXT</Pair>
 			<Pair>time,TEXT</Pair>
