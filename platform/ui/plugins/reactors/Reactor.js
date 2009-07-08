@@ -279,6 +279,12 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			if (this._insertCustomData) {
 				this._insertCustomData(dialogFields);
 			}
+			var other_defaults = plugins.reactors[this.plugin].other_defaults;
+			if (other_defaults) {
+				for (var key in other_defaults) {
+					this.post_data += '<' + key + '>' + other_defaults[key] + '</' + key + '>';
+				}
+			}
 			this.post_data += '</Reactor></PionConfig>';
 			console.debug('post_data: ', this.post_data);
 	
