@@ -16,6 +16,10 @@
 			<Type>object</Type>
 			<Comment>Event that represents a single clickstream visitor session</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#content-event">
+			<Type>object</Type>
+			<Comment>Event that represents page content sent to a visitor</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#session-group">
 			<Type>shortstring</Type>
 			<Comment>Clickstream session group this event was assigned to</Comment>
