@@ -18,9 +18,10 @@
 		{name: 'string', description: 'medium string', category: 'string'},
 		{name: 'longstring', description: 'large string', category: 'string'},
 		{name: 'char', description: 'fixed-length string', category: 'string'},
+		{name: 'blob', description: 'binary large object', category: 'string'},
+		{name: 'zblob', description: 'blob (stored compressed)', category: 'string'},
 		{name: 'date', description: 'specific date', category: 'date'},
 		{name: 'time', description: 'specific time', category: 'time'},
-		{name: 'datetime', description: 'specific time & date', category: 'date_time'},
-		{name: 'regex', description: 'regular expression', category: 'string'}
+		{name: 'datetime', description: 'specific time & date', category: 'date_time'}
 	]
 }
