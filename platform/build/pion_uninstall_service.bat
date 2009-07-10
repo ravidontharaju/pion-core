@@ -1,1 +1,1 @@
-nssm remove "pion-community" confirm
+"{APPDIR}nssm.exe" remove "pion-community" confirm
