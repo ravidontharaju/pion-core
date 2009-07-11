@@ -14,6 +14,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 		postCreate: function(){
 			this.config.Plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
+			this._initOptions(this.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
 			this.special_config_elements.push('Field');
 			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -205,6 +206,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+			this.reactor._initOptions(this.reactor.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
 				_this._updateCustomPutDataFromFieldMappingStore();
@@ -264,3 +266,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 		}
 	]
 }];
+
+plugins.reactors.DatabaseOutputReactor.option_defaults = {
+	IgnoreInsert: false
+}

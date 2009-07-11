@@ -269,7 +269,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					this.post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 				}
 			}
-			if (dialogFields.options && plugins.reactors[this.plugin].option_defaults) {
+			if ('options' in dialogFields && plugins.reactors[this.plugin].option_defaults) {
 				for (var option in plugins.reactors[this.plugin].option_defaults) {
 					this.post_data += '<' + option + '>';
 					this.post_data += (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
@@ -356,7 +356,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 					this.put_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 				}
 			}
-			if (dialogFields.options && plugins.reactors[this.reactor.config.Plugin].option_defaults) {
+			if ('options' in dialogFields && plugins.reactors[this.reactor.config.Plugin].option_defaults) {
 				for (var option in plugins.reactors[this.reactor.config.Plugin].option_defaults) {
 					var option_val = (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
 					this.put_data += '<' + option + '>' + option_val + '</' + option + '>';

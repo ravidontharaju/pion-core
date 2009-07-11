@@ -27,28 +27,31 @@
 
 			<!--start reactor settings-->
 			 <table
-				 ><tr
-					 ><td><label>Name:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
+				><tr
+					><td><label>Name:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Name" class="name_text_box"/></td
 				></tr><tr
-					 ><td><label>ID:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
+					><td><label>ID:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@id" class="id_text_box" disabled="true"/></td
 				></tr><tr
-					 ><td><label>Comments:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
+					><td><label>Comments:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Comment" class="comment_text_box"/></td
 				></tr><tr
-					 ><td><label>Database:</label></td
-					 ><td><input dojoType="pion.widgets.SimpleSelect" name="Database" store="pion.databases.config_store" searchAttr="Name"/></td
+					><td><label>Database:</label></td
+					><td><input dojoType="pion.widgets.SimpleSelect" name="Database" store="pion.databases.config_store" searchAttr="Name"/></td
 				></tr><tr
-					 ><td><label>Table:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="Table"/></td
+					><td><label>Table:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Table"/></td
 				></tr><tr
-					 ><td><label>Queue Size:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="QueueSize"/></td
+					><td><label>Queue Size:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="QueueSize"/></td
 				></tr><tr
-					 ><td><label>Queue Timeout:</label></td
-					 ><td><input dojoType="dijit.form.TextBox" name="QueueTimeout"/></td
-				 ></tr
+					><td><label>Queue Timeout:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="QueueTimeout"/></td
+				></tr><tr
+					><td><label>Ignore Insert Errors</label></td
+					><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="IgnoreInsert"/></td
+				></tr
 			 ></table>
 			<!--end reactor settings-->
 
