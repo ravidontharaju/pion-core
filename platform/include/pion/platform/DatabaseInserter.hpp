@@ -267,6 +267,12 @@ private:
 	/// Optional field, to override type
 	static const std::string				SQL_ATTRIBUTE_NAME;
 
+	/// Use the IgnoreInsert statement for inserting data
+	static const std::string				IGNORE_INSERT_ELEMENT_NAME;
+
+	/// Default for ignoring inserts
+	static const std::string				DEFAULT_IGNORE;
+
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
@@ -317,6 +323,9 @@ private:
 
 	/// thread used to store events to the database
 	boost::scoped_ptr<boost::thread>		m_thread;
+
+	/// ignore insert errors?
+	bool									m_ignore_insert;
 	
 	/// true if the worker thread is running
 	volatile bool							m_is_running;

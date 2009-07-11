@@ -145,7 +145,10 @@ public:
 	virtual pion::platform::QueryPtr prepareInsertQuery(const pion::platform::Query::FieldMap& field_map,
 														const std::string& table_name);
 
-	/**
+	virtual pion::platform::QueryPtr prepareInsertIgnoreQuery(const pion::platform::Query::FieldMap& field_map,
+														const std::string& table_name);
+
+/**
 	 * prepares a generic query
 	 *
 	 * @param query the SQL for the query

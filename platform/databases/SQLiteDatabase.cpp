@@ -217,6 +217,24 @@ QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
 	return addQuery(Database::INSERT_QUERY_ID, insert_sql);
 }
 
+QueryPtr SQLiteDatabase::prepareInsertIgnoreQuery(const Query::FieldMap& field_map,
+											const std::string& table_name)
+{
+	PION_ASSERT(is_open());
+
+	// exit early if it already exists
+	QueryMap::const_iterator query_it = m_query_map.find(INSERT_IGNORE_QUERY_ID);
+	if (query_it != m_query_map.end())
+		return query_it->second;
+
+	// build a SQL query that can be used to insert a new record
+	std::string insert_sql = m_insert_ignore;
+	stringSubstitutes(insert_sql, field_map, table_name);
+
+	// compile the SQL query into a prepared statement
+	return addQuery(Database::INSERT_IGNORE_QUERY_ID, insert_sql);
+}
+
 QueryPtr SQLiteDatabase::getBeginTransactionQuery(void)
 {
 	PION_ASSERT(is_open());

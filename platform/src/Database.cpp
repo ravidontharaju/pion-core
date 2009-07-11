@@ -29,6 +29,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of Database
 
 const std::string			Database::INSERT_QUERY_ID = "urn:sql:insert-event";
+const std::string			Database::INSERT_IGNORE_QUERY_ID = "urn:sql:insert-ignore-event";
 const std::string			Database::BEGIN_QUERY_ID = "urn:sql:begin-transaction";
 const std::string			Database::COMMIT_QUERY_ID = "urn:sql:commit-transaction";
 

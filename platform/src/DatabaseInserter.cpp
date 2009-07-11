@@ -29,6 +29,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 const boost::uint32_t		DatabaseInserter::DEFAULT_QUEUE_SIZE = 10000;
 const boost::uint32_t		DatabaseInserter::DEFAULT_QUEUE_TIMEOUT = 5;
+const std::string			DatabaseInserter::DEFAULT_IGNORE = "false";
 const std::string			DatabaseInserter::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseInserter::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseInserter::FIELD_ELEMENT_NAME = "Field";
@@ -38,6 +39,7 @@ const std::string			DatabaseInserter::TERM_ATTRIBUTE_NAME = "term";
 const std::string			DatabaseInserter::INDEX_ATTRIBUTE_NAME = "index";
 const std::string			DatabaseInserter::SQL_ATTRIBUTE_NAME = "sql";
 const char *				DatabaseInserter::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+const std::string			DatabaseInserter::IGNORE_INSERT_ELEMENT_NAME = "IgnoreInsert";
 
 
 // DatabaseInserter member functions
@@ -56,6 +58,13 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 	// get the queue timeout parameter
 	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
+
+	// get the queue timeout parameter
+	std::string ignore_str;
+	m_ignore_insert = false;
+	ConfigManager::getConfigOption(IGNORE_INSERT_ELEMENT_NAME, ignore_str, DEFAULT_IGNORE, config_ptr);
+	if (ignore_str == "true")
+		m_ignore_insert = true;
 
 	// prepare the event queue
 	m_event_queue_ptr->reserve(m_queue_max);
@@ -165,7 +174,7 @@ void DatabaseInserter::start(void)
 		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
 
 		// prepare the query used to insert new events into the table
-		m_insert_query_ptr = m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+		m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
 		PION_ASSERT(m_insert_query_ptr);
 
 		// prepare the query used to begin new transactions

@@ -202,6 +202,9 @@ public:
 	virtual QueryPtr prepareInsertQuery(const Query::FieldMap& field_map,
 										const std::string& table_name) = 0;
 
+	virtual QueryPtr prepareInsertIgnoreQuery(const Query::FieldMap& field_map,
+										const std::string& table_name) = 0;
+
 	/**
 	 * prepares a generic query
 	 *
@@ -292,6 +295,7 @@ protected:
 
 	/// unique identifier used to represent the "insert event" query
 	static const std::string				INSERT_QUERY_ID;
+	static const std::string				INSERT_IGNORE_QUERY_ID;
 
 
 	/// unique identifier used to represent the "begin transaction" query
