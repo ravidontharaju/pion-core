@@ -17,11 +17,6 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#if defined _MSC_VER
-#include <rpc.h>
-#else
-#include <uuid.h>
-#endif
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -254,28 +249,6 @@ std::string ConfigManager::xml_encode(const std::string& str)
 		}
 	}
 	
-	return result;
-}
-
-std::string ConfigManager::createUUID(void)
-{
-#if defined _MSC_VER
-	UUID u;
-	UuidCreate(&u);
-	unsigned char *str = NULL;
-	UuidToStringA(&u, &str);
-	std::string result((char*)str);
-	RpcStringFreeA(&str);
-#else
-	uuid_t *u;
-	char *str = NULL;
-	uuid_create(&u);
-	uuid_make(u, UUID_MAKE_V1);
-	uuid_export(u, UUID_FMT_STR, &str, NULL);
-	std::string result(str);
-	uuid_destroy(u);
-	free(str);
-#endif
 	return result;
 }
 

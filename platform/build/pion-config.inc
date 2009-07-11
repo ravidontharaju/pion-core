@@ -2,54 +2,6 @@
 # pion-platform autoconf configuration file
 # -----------------------------------------
 
-# Check for OSSP UUID library (REQUIRED)
-AC_MSG_CHECKING([for OSSP UUID library (required)])
-AC_ARG_WITH([uuid],
-    AC_HELP_STRING([--with-uuid@<:@=DIR@:>@],[location of OSSP UUID library]),
-    [ uuid_location=$withval ], [ without_uuid=true ])
-# Check for uuid headers
-if test "x$uuid_location" == "xyes"; then
-	AC_MSG_RESULT(checking default locations)
-	TRY_LOCATION="/usr/local /usr"
-elif test "x$uuid_location" == "x"; then
-	AC_MSG_RESULT(checking default locations)
-	TRY_LOCATION="/usr/local /usr"
-else
-	AC_MSG_RESULT(checking $uuid_location)
-	TRY_LOCATION="$uuid_location"
-	LDFLAGS="$LDFLAGS -L$uuid_location/lib"
-fi
-AC_MSG_CHECKING(for OSSP UUID headers)
-FOUND_UUID_HEADERS="false"
-for uuid_location in $TRY_LOCATION ;
-do
-	if test -r "$uuid_location/include/uuid.h"; then
-		CPPFLAGS="$CPPFLAGS -I$uuid_location/include"
-		FOUND_UUID_HEADERS="true"
-		break;
-	fi
-done
-if test "$FOUND_UUID_HEADERS" == "true"; then
-	AC_MSG_RESULT([found in $uuid_location])
-else
-	AC_MSG_RESULT(not found)
-	AC_MSG_ERROR([Unable to find the OSSP UUID headers])
-fi
-# Check for uuid library
-LIBS_SAVED="$LIBS"
-LIBS="$LIBS_SAVED `$uuid_location/bin/uuid-config --all --libs`"
-AC_MSG_CHECKING(linking with uuid)
-AC_TRY_LINK([#include <uuid.h>],[ uuid_t *ptr; uuid_create(&ptr); return(0); ],
-	[ AC_MSG_RESULT(ok) ],
-	[ AC_MSG_RESULT(failed)
-	  AC_MSG_ERROR(Unable to link with the OSSP UUID library)
-	])
-# Found the uuid library
-LIBS="$LIBS_SAVED"
-PION_UUID_LIB="-luuid"
-AC_SUBST(PION_UUID_LIB)
-
-
 # Check for libxml2 library (REQUIRED)
 AC_MSG_CHECKING([for libxml library (required)])
 AC_ARG_WITH([libxml],
@@ -140,7 +92,7 @@ AC_SUBST(PION_JSON_LIB)
 
 
 PION_DATABASES="SQLiteDatabase.la"
-PION_PLATFORM_LIBS="$PION_XML_LIB $PION_UUID_LIB $PION_JSON_LIB"
+PION_PLATFORM_LIBS="$PION_XML_LIB $PION_JSON_LIB"
 AC_SUBST(PION_PLATFORM_LIBS)
 AC_SUBST(PION_DATABASES)
 AC_SUBST(PION_CODECS)

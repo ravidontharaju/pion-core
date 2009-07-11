@@ -53,7 +53,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$SHARED_LIB_SUFFIX = "dylib";
 	$PLUGIN_LIB_SUFFIX = "so";
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
-	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid.16." . $SHARED_LIB_SUFFIX);
 	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0.3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.0." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
@@ -62,7 +61,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$SHARED_LIB_SUFFIX = "so";
 	$PLUGIN_LIB_SUFFIX = "so";
 	$SYSTEM_LIB_DIR = File::Spec->catdir( (File::Spec->rootdir(), "usr", "local", "lib") );
-	$UUID_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libuuid." . $SHARED_LIB_SUFFIX . ".16");
 	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0." . $SHARED_LIB_SUFFIX . ".3");
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl." . $SHARED_LIB_SUFFIX . ".0");
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
@@ -116,8 +114,6 @@ if ($PLATFORM =~ /^win32/i) {
 	copy($BZIP_LIB, $LIBS_DIR);
 	copy($OPENSSLA_LIB, $LIBS_DIR);
 	copy($OPENSSLB_LIB, $LIBS_DIR);
-} else {
-	copy($UUID_LIB, $LIBS_DIR);
 }
 copy($LOGGING_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);

@@ -27,6 +27,8 @@
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <pion/PionId.hpp>
+#include <pion/PionBlob.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/PionLockedQueue.hpp>
 #include <pion/platform/Event.hpp>
@@ -187,6 +189,93 @@ private:
 	
 	/// a timer used to schedule counter samples
 	boost::asio::deadline_timer		m_timer;
+};
+
+
+///
+/// HashValueTest: tests performance of hash_value(T)
+///
+template <typename T>
+class HashValueTest :
+	public PerformanceTest
+{
+public:
+
+	/// default constructor
+	HashValueTest(void) {
+		PerformanceTest::setTestDescription("HashValueTest");
+		PerformanceTest::setCountDescription("ops");
+	}
+
+	/// constructs with value to use for hashing
+	template <typename X>
+	HashValueTest(const X& x) :
+		m_value(x)
+	{
+		PerformanceTest::setTestDescription("HashValueTest");
+		PerformanceTest::setCountDescription("ops");
+	}
+
+	/// virtual destructor
+	virtual ~HashValueTest() { PerformanceTest::stop(); }
+
+	/// starts the performance test
+	virtual void start(void) {
+		boost::thread thr(boost::bind(&HashValueTest::produce, this));
+	}
+
+protected:
+
+	/// produces hash values
+	virtual void produce(void) {
+		while (isRunning()) {
+			(void)hash_value(m_value);
+			++m_counter;
+		}
+	}
+	
+	/// value used for hashing
+	T	m_value;
+};
+
+
+///
+/// HashPionIdBlobTest: tests performance of HashPionIdBlob(PionBlob)
+///
+template <typename T>
+class HashPionIdBlobTest :
+	public HashValueTest<T>
+{
+public:
+
+	/// default constructor
+	HashPionIdBlobTest(void) {
+		PerformanceTest::setTestDescription("HashPionIdBlobTest");
+		PerformanceTest::setCountDescription("ops");
+	}
+
+	/// constructs with value to use for hashing
+	template <typename X>
+	HashPionIdBlobTest(const X& x) :
+		HashValueTest<T>(x)
+	{
+		PerformanceTest::setTestDescription("HashPionIdBlobTest");
+		PerformanceTest::setCountDescription("ops");
+	}
+
+	/// virtual destructor
+	virtual ~HashPionIdBlobTest() { PerformanceTest::stop(); }
+
+protected:
+
+	/// produces hash values
+	virtual void produce(void) {
+		HashPionIdBlob hasher;
+		while (HashValueTest<T>::isRunning()) {
+			(void)hasher(HashValueTest<T>::m_value);
+			++HashValueTest<T>::m_counter;
+		}
+	}
 };
 
 
@@ -954,6 +1043,23 @@ int main(void) {
 	test_ptr->run();
 
 */
+	{
+	// run the HashValueTest for a PionBlob
+	typedef PionBlob<char,PionPoolAllocator<> >	BlobType;
+	PionPoolAllocator<> pool_alloc;
+	BlobType b(pool_alloc, "bb49b9ca-e733-47c0-9a26-0f8f53ea1660");
+	test_ptr.reset(new HashValueTest<BlobType>(b));
+	test_ptr->run();
+
+	// run the HashValueTest again but using HashPionIdBlob
+	test_ptr.reset(new HashPionIdBlobTest<BlobType>(b));
+	test_ptr->run();
+	}
+
+	// run the HashValueTest for a PionId
+	test_ptr.reset(new HashValueTest<PionId>("bb49b9ca-e733-47c0-9a26-0f8f53ea1660"));
+	test_ptr->run();
+
 	// run the CLFEventPtrAllocTest with one thread
 	test_ptr.reset(new CLFEventPtrAllocTest<1>());
 	test_ptr->run();

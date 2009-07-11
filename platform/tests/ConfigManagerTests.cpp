@@ -25,12 +25,6 @@
 using namespace pion;
 using namespace pion::platform;
 
-
-BOOST_AUTO_TEST_CASE(checkCreateUUID) {
-	std::string UUID = ConfigManager::createUUID();
-	BOOST_CHECK_EQUAL(UUID.length(), static_cast<std::size_t>(36));
-}
-
 BOOST_AUTO_TEST_CASE(checkResolveRelativePathThatIsRelative) {
 	std::string relative_path("../ui");
 #if defined(_MSC_VER)

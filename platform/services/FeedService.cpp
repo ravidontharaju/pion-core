@@ -19,9 +19,9 @@
 
 #include <sstream>
 #include <boost/bind.hpp>
+#include <pion/PionId.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
-#include <pion/platform/ConfigManager.hpp>
 #include "PlatformConfig.hpp"
 #include "FeedService.hpp"
 
@@ -41,7 +41,7 @@ FeedHandler::FeedHandler(pion::platform::ReactionEngine &reaction_engine,
 						 pion::net::TCPConnectionPtr& tcp_conn)
 	: m_reaction_engine(reaction_engine),
 	m_logger(PION_GET_LOGGER("pion.server.FeedHandler")),
-	m_connection_id(ConfigManager::createUUID()),
+	m_connection_id(PionId().to_string()),
 	m_connection_info(createConnectionInfo(tcp_conn)),
 	m_reactor_id(reactor_id), m_codec_ptr(codec_ptr),
 	m_tcp_conn(tcp_conn), m_tcp_stream(m_tcp_conn)

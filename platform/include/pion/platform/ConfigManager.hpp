@@ -27,6 +27,7 @@
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
+#include <pion/PionId.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -256,10 +257,10 @@ public:
 	static std::string xml_encode(const std::string& str);
 	
 	/// returns a string containing a new UUID value
-	static std::string createUUID(void);
+	inline std::string createUUID(void) { return m_id_gen().to_string(); }
 
 	/// returns a unique XML filename based on a UUID
-	static std::string createFilename(void);
+	std::string createFilename(void);
 
 	/**
 	 * creates a unique XML filename based on a UUID that is located in the given path
@@ -268,7 +269,7 @@ public:
 	 *
 	 * @return std::string absolute path to the new filename
 	 */
-	static std::string createFilename(const std::string& file_path);
+	std::string createFilename(const std::string& file_path);
 	
 	/**
 	 * returns an XML configuration list for a new Plugin
@@ -607,7 +608,10 @@ protected:
 
 	
 	/// primary logging interface used by this class
-	PionLogger						m_logger;	
+	PionLogger						m_logger;
+	
+	/// UUID generator
+	PionIdGenerator                 m_id_gen;
 	
 	/// name of the XML config file being used
 	std::string						m_config_file;
