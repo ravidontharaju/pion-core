@@ -53,6 +53,9 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 
+	// parse RuleChain configuration
+	m_rules.setConfig(v, config_ptr);
+
 	// get the maximum number of events that may be queued for insertion
 	ConfigManager::getConfigOption(QUEUE_SIZE_ELEMENT_NAME, m_queue_max, DEFAULT_QUEUE_SIZE, config_ptr);
 
@@ -227,28 +230,32 @@ std::size_t DatabaseInserter::getEventsQueued(void) const
 
 void DatabaseInserter::insert(const EventPtr& e)
 {
-	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+	// check filter rules first
+	if ( m_rules(e) ) {
 
-	// make sure worker thread is running
-	if (! m_is_running)
-		return;
-	
-	// signal the worker thread if the queue is full (wait for swap)
-	while (m_event_queue_ptr->size() >= m_queue_max) {
+		boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 
-		// wakeup the worker thread to swap queues & insert events
-		m_wakeup_worker.notify_one();
-
-		// wait until the worker thread has swapped the queues
-		m_swapped_queue.wait(queue_lock);
-		
-		// exit immediately if no longer running
+		// make sure worker thread is running
 		if (! m_is_running)
 			return;
-	}
+	
+		// signal the worker thread if the queue is full (wait for swap)
+		while (m_event_queue_ptr->size() >= m_queue_max) {
 
-	// add the event to the insert queue
-	m_event_queue_ptr->push_back(e);
+			// wakeup the worker thread to swap queues & insert events
+			m_wakeup_worker.notify_one();
+
+			// wait until the worker thread has swapped the queues
+			m_swapped_queue.wait(queue_lock);
+		
+			// exit immediately if no longer running
+			if (! m_is_running)
+				return;
+		}
+
+		// add the event to the insert queue
+		m_event_queue_ptr->push_back(e);
+	}
 }
 
 void DatabaseInserter::insertEvents(void)

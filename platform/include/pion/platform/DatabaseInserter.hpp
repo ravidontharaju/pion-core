@@ -28,6 +28,7 @@
 #include <pion/PionException.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/platform/Event.hpp>
+#include <pion/platform/RuleChain.hpp>
 #include <pion/platform/Query.hpp>
 #include <pion/platform/Database.hpp>
 #include <pion/platform/DatabaseManager.hpp>
@@ -335,6 +336,9 @@ private:
 
 	/// wipe out previous content before opening?
 	bool									m_wipe;
+
+	/// a chain of Comparison rules used determine if event should be inserted
+	pion::platform::RuleChain			m_rules;
 };
 
 
