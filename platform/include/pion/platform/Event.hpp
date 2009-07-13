@@ -1360,8 +1360,13 @@ public:
 		: m_event_alloc(EventAllocatorFactory::getAllocator())
 	{}
 	
-	/// construct an EventFactory using an existing Event's allocator
-	EventFactory(Event& e)
+	/// construct an EventFactory using an existing EventAllocator
+	explicit EventFactory(EventAllocator& alloc)
+		: m_event_alloc(alloc)
+	{}
+
+	/// construct an EventFactory using the EventAllocator of an existing Event
+	explicit EventFactory(Event& e)
 		: m_event_alloc(*e.getAllocator())
 	{}
 	

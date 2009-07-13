@@ -78,7 +78,19 @@ public:
 	/// the number of samples to take (one per second)
 	enum { NUM_SAMPLES = 10 };
 
-
+	/// data type for a pointer to a thread
+	typedef boost::shared_ptr<boost::thread>	ThreadPtr;
+	
+	/// data type for a container of counters
+	typedef std::vector<boost::uint64_t>		CounterContainer;
+	
+	/// data type for a container of threads
+	typedef std::vector<ThreadPtr>			ThreadContainer;
+	
+	/// data type for a pointer to an EventAllocator
+	typedef boost::shared_ptr<EventAllocator>	EventAllocatorPtr;
+	
+	
 	/**
 	 * constructs a new PerformanceTest
 	 *
@@ -221,7 +233,7 @@ public:
 
 	/// starts the performance test
 	virtual void start(void) {
-		boost::thread thr(boost::bind(&HashValueTest::produce, this));
+		m_consumer_ptr.reset(new boost::thread(boost::bind(&HashValueTest::produce, this)));
 	}
 
 protected:
@@ -234,8 +246,18 @@ protected:
 		}
 	}
 	
+	/// stops the performance test
+	virtual void stopTest(void) {
+		PerformanceTest::stopTest();	// sets m_is_running = false
+		m_consumer_ptr->join();		// ensures consumer thread has finished
+		m_consumer_ptr.reset();
+	}
+
 	/// value used for hashing
-	T	m_value;
+	T		m_value;
+
+	/// pointer to the consumer thread (needed for clean stop())
+	ThreadPtr	m_consumer_ptr;
 };
 
 
@@ -304,13 +326,13 @@ public:
 
 	/// starts the performance test
 	virtual void start(void) {
-		for (unsigned int n = 0; n < ProducerThreads; ++n) {
-			m_producer_threads.push_back(ThreadPtr(new boost::thread(boost::bind(&AllocTest::produce,
-				this, boost::ref(m_producer_counters[n])))));
-		}
 		for (unsigned int n = 0; n < ConsumerThreads; ++n) {
 			m_consumer_threads.push_back(ThreadPtr(new boost::thread(boost::bind(&AllocTest::consume,
 				this, boost::ref(m_consumer_counters[n])))));
+		}
+		for (unsigned int n = 0; n < ProducerThreads; ++n) {
+			m_producer_threads.push_back(ThreadPtr(new boost::thread(boost::bind(&AllocTest::produce,
+				this, boost::ref(m_producer_counters[n])))));
 		}
 	}
 	
@@ -352,14 +374,14 @@ protected:
 	/// stops the performance test
 	virtual void stopTest(void) {
 		PerformanceTest::stopTest();	// sets m_is_running = false
-		for (unsigned int n = 0; n < ConsumerThreads; ++n) {
-			if (m_consumer_threads[n]) m_consumer_threads[n]->join();
-		}
-		m_consumer_threads.clear();
 		for (unsigned int n = 0; n < ProducerThreads; ++n) {
 			if (m_producer_threads[n]) m_producer_threads[n]->join();
 		}
 		m_producer_threads.clear();
+		for (unsigned int n = 0; n < ConsumerThreads; ++n) {
+			if (m_consumer_threads[n]) m_consumer_threads[n]->join();
+		}
+		m_consumer_threads.clear();
 	}
 
 	/// thread function used to produce objects
@@ -372,16 +394,6 @@ protected:
 	/// require that there is at least one producer thread
 	/// (it's ok to have 0 Consumer threads)
 	BOOST_STATIC_ASSERT(ProducerThreads > 0);
-	
-	/// data type for a pointer to a thread
-	typedef boost::shared_ptr<boost::thread>	ThreadPtr;
-	
-	/// data type for a container of counters
-	typedef std::vector<boost::uint64_t>		CounterContainer;
-	
-	/// data type for a container of threads
-	typedef std::vector<ThreadPtr>				ThreadContainer;
-	
 	
 	/// an array of counters used by the producer threads
 	CounterContainer			m_producer_counters;
@@ -610,7 +622,10 @@ protected:
 			// sleep 1/8 second if the queue is empty
 			while (PerformanceTest::isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
-			delete event_ptr;
+			if (event_ptr) {
+				delete event_ptr;
+				event_ptr = NULL;	// prevent double-delete
+			}
 			if (! PerformanceTest::isRunning()) break;
 			++thread_counter;
 		}
@@ -673,8 +688,11 @@ protected:
 			// sleep 1/8 second if the queue is empty
 			while (PerformanceTest::isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
-			event_ptr->~Event();
-			EventBoostPoolAlloc::deallocate(event_ptr);
+			if (event_ptr) {
+				event_ptr->~Event();
+				EventBoostPoolAlloc::deallocate(event_ptr);
+				event_ptr = NULL;	// prevent double-delete
+			}
 			if (! PerformanceTest::isRunning()) break;
 			++thread_counter;
 		}
@@ -767,7 +785,10 @@ protected:
 			// sleep 1/8 second if the queue is empty
 			while (PerformanceTest::isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
-			deallocateEvent(event_ptr);
+			if (event_ptr) {
+				deallocateEvent(event_ptr);
+				event_ptr = NULL;	// prevent double-delete
+			}
 			if (! PerformanceTest::isRunning()) break;
 			++thread_counter;
 		}
@@ -841,8 +862,11 @@ protected:
 			// sleep 1/8 second if the queue is empty
 			while (PerformanceTest::isRunning() && !m_queue.pop(event_ptr))
 				PionScheduler::sleep(0, 125000000);
-			event_ptr->~Event();
-			m_pool_alloc.deallocate(event_ptr, 1);
+			if (event_ptr) {
+				event_ptr->~Event();
+				m_pool_alloc.deallocate(event_ptr, 1);
+				event_ptr = NULL;	// prevent double-delete
+			}
 			if (! PerformanceTest::isRunning()) break;
 			++thread_counter;
 		}
@@ -890,7 +914,9 @@ protected:
 	/// thread function used to produce objects
 	virtual void produce(boost::uint64_t& thread_counter) {
 		EventPtr e;
-		EventFactory f;
+		PerformanceTest::EventAllocatorPtr alloc_ptr(new EventAllocator);
+		this->addAllocator(alloc_ptr);
+		EventFactory f(*alloc_ptr);
 		while (PerformanceTest::isRunning()) {
 			e = f.create(Vocabulary::UNDEFINED_TERM_REF);
 			updateEvent(e);
@@ -915,7 +941,20 @@ protected:
 	}
 
 protected:
+
+	/// adds an allocator pointer for later release
+	void addAllocator(PerformanceTest::EventAllocatorPtr& ptr) {
+		boost::mutex::scoped_lock alloc_lock(m_alloc_mutex);
+		m_allocs.push_back(ptr);
+	}
+
 	
+	/// used to allocate memory for Events (avoids memory bloat of using EventFactory standalone)
+	std::vector<PerformanceTest::EventAllocatorPtr>		m_allocs;
+
+	/// mutex used to protect the event allocator pointers
+	boost::mutex				m_alloc_mutex;
+
 	/// a shared queue of Event pointers
 	QueueType<EventPtr>			m_queue;
 };
@@ -974,7 +1013,9 @@ protected:
 
 	/// thread function used to produce objects
 	virtual void produce(boost::uint64_t& thread_counter) {
-		EventFactory f;
+		PerformanceTest::EventAllocatorPtr alloc_ptr(new EventAllocator);
+		this->addAllocator(alloc_ptr);
+		EventFactory f(*alloc_ptr);
 		EventPtr copy;
 		EventPtr e = f.create(Vocabulary::UNDEFINED_TERM_REF);
 		this->updateEvent(e);
@@ -1054,6 +1095,7 @@ int main(void) {
 	// run the HashValueTest again but using HashPionIdBlob
 	test_ptr.reset(new HashPionIdBlobTest<BlobType>(b));
 	test_ptr->run();
+	test_ptr.reset();	// needed to release the PionBlob reference
 	}
 
 	// run the HashValueTest for a PionId

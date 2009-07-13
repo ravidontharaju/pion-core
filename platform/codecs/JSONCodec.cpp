@@ -59,7 +59,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 		yajl_gen_config conf;
 		conf.beautify = 1;
 		conf.indentString = INDENT_STRING.c_str();
-		m_yajl_generator = yajl_gen_alloc(&conf);
+		m_yajl_generator = yajl_gen_alloc(&conf, NULL);
 		yajl_gen_array_open(m_yajl_generator);
 		m_no_events_written = false;
 	}
@@ -254,7 +254,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 	if (m_first_read_attempt) {
 		yajl_parser_config cfg = { 1, 1 };
 		m_context = boost::shared_ptr<Context>(new Context(m_field_map, m_json_object_queue));
-		m_yajl_handle = yajl_alloc(&callbacks, &cfg, (void*)m_context.get());
+		m_yajl_handle = yajl_alloc(&callbacks, &cfg, NULL, (void*)m_context.get());
 		m_first_read_attempt = false;
 	}
 
