@@ -278,7 +278,7 @@ void DatabaseInserter::insert(const EventPtr& e)
 			m_keys[boost::get<const Event::BlobType&>(values_range.first->value)] = ts();
 			// Pruning needed?
 			if (m_keys.size() > m_max_keys) {
-				boost::uint32_t min_age = 0xffff;
+				boost::uint32_t min_age = 0xffffffff;
 				ki = m_keys.end();
 				for (KeyHash::iterator i = m_keys.begin(); i != m_keys.end(); i++)
 					if (i->second < min_age) {
