@@ -229,7 +229,7 @@
 			<Comment>Payload content sent from client to server</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#sc-content">
-			<Type>blob</Type>
+			<Type>zblob</Type>
 			<Comment>Payload content sent from server to client</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#rfc931">
