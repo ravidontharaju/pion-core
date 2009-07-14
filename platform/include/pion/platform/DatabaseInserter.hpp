@@ -362,7 +362,7 @@ private:
 	Vocabulary::TermRef						m_key_term_ref;
 
 	/// Max number of keys in hash map
-	unsigned								m_max_keys;
+	boost::uint32_t							m_max_keys;
 };
 
 
