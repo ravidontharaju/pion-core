@@ -108,6 +108,14 @@ public:
 			: PionException("DatabaseInserter configuration has a field name with illegal characters: ", field_name) {}
 	};
 
+	/// exception thrown if the DatabaseInserter configuration has a field name with illegal characters
+	class NoUniqueKeyFound: public PionException {
+	public:
+		NoUniqueKeyFound(void)
+			: PionException("DatabaseInserter configuration has MaxKeys, but there is no Unique indexed column") {}
+	};
+
+
 
 	/// constructs a new DatabaseInserter object
 	DatabaseInserter(void) :
@@ -274,6 +282,12 @@ private:
 	/// Default for ignoring inserts
 	static const std::string				DEFAULT_IGNORE;
 
+	/// Optional MaxKeys, use only if unique index
+	static const std::string				MAX_KEYS_ELEMENT_NAME;
+
+	/// Default value for MaxKeys (0)
+	static const boost::uint32_t			DEFAULT_MAX_KEYS;
+
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
@@ -338,7 +352,17 @@ private:
 	bool									m_wipe;
 
 	/// a chain of Comparison rules used determine if event should be inserted
-	pion::platform::RuleChain			m_rules;
+	pion::platform::RuleChain				m_rules;
+
+	/// Hash map; incomplete, bounded "unique key" vs. "age" -- for avoiding multiple inserts
+	typedef PION_HASH_MAP<pion::platform::Event::BlobType, boost::uint32_t, PION_HASH(pion::platform::Event::BlobType)> KeyHash;
+	KeyHash									m_keys;
+
+	/// The term ref, that has a unique index
+	Vocabulary::TermRef						m_key_term_ref;
+
+	/// Max number of keys in hash map
+	unsigned								m_max_keys;
 };
 
 

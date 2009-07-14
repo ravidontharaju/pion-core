@@ -40,6 +40,8 @@ const std::string			DatabaseInserter::INDEX_ATTRIBUTE_NAME = "index";
 const std::string			DatabaseInserter::SQL_ATTRIBUTE_NAME = "sql";
 const char *				DatabaseInserter::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 const std::string			DatabaseInserter::IGNORE_INSERT_ELEMENT_NAME = "IgnoreInsert";
+const std::string			DatabaseInserter::MAX_KEYS_ELEMENT_NAME = "MaxKeys";
+const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_KEYS = 0;
 
 
 // DatabaseInserter member functions
@@ -61,6 +63,9 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 	// get the queue timeout parameter
 	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
+
+	// get the optional max_keys parameter
+	ConfigManager::getConfigOption(MAX_KEYS_ELEMENT_NAME, m_max_keys, DEFAULT_MAX_KEYS, config_ptr);
 
 	// get the queue timeout parameter
 	std::string ignore_str;
@@ -86,6 +91,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	m_field_map.clear();
 	m_index_map.clear();
 	xmlNodePtr field_node = config_ptr;
+	m_key_term_ref = Vocabulary::UNDEFINED_TERM_REF;
 	while ( (field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, field_node)) != NULL)
 	{
 		// parse new field mapping
@@ -121,11 +127,18 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		m_field_map.push_back(std::make_pair(field_name, v[term_ref]));
 		m_index_map.push_back(index_str);
 
+		// Try to find the unique key term, if max_keys is defined
+		if (m_max_keys && index_str == "unique")
+			m_key_term_ref = term_ref;
+
 		// step to the next field mapping
 		field_node = field_node->next;
 	}
 	if (m_field_map.empty())
 		throw NoFieldsException();
+
+	if (m_max_keys && m_key_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw NoUniqueKeyFound();
 
 	// if config changed while running, then restart
 	queue_lock.unlock();
@@ -228,6 +241,14 @@ std::size_t DatabaseInserter::getEventsQueued(void) const
 	return m_event_queue_ptr->size();
 }
 
+/// get an epoch based timestamp
+boost::uint32_t ts(void)
+{
+	static const boost::posix_time::ptime start(boost::gregorian::date(1970,1,1));
+	boost::posix_time::ptime t(boost::posix_time::second_clock::local_time());
+	return (t - start).total_seconds();
+}
+
 void DatabaseInserter::insert(const EventPtr& e)
 {
 	// check filter rules first
@@ -238,7 +259,37 @@ void DatabaseInserter::insert(const EventPtr& e)
 		// make sure worker thread is running
 		if (! m_is_running)
 			return;
-	
+
+		// do we have collision avoidance?
+		if (m_max_keys) {
+			Event::ValuesRange values_range = e->equal_range(m_key_term_ref);
+
+			// If key is not found, then "null key" and no insert
+			if (values_range.first == values_range.second)
+				return;
+
+			KeyHash::iterator ki = m_keys.find(boost::get<const Event::BlobType&>(values_range.first->value));
+			// Do we have this key already?
+			if (ki != m_keys.end()) {
+				ki->second = ts();						// Update age
+				return;									// Bail out
+			}
+			// Add key & age
+			m_keys[boost::get<const Event::BlobType&>(values_range.first->value)] = ts();
+			// Pruning needed?
+			if (m_keys.size() > m_max_keys) {
+				uint32_t min_age = 0xffff;
+				ki = m_keys.end();
+				for (KeyHash::iterator i = m_keys.begin(); i != m_keys.end(); i++)
+					if (i->second < min_age) {
+						min_age = i->second;
+						ki = i;
+					}
+				if (ki != m_keys.end())
+					m_keys.erase(ki);
+			}
+		}	
+
 		// signal the worker thread if the queue is full (wait for swap)
 		while (m_event_queue_ptr->size() >= m_queue_max) {
 
