@@ -80,7 +80,7 @@
     <Field term="urn:vocab:clickstream#session-id">x-session-id</Field>
     <Field term="urn:vocab:clickstream#cookie-id">x-cookie-id</Field>
     <Field term="urn:vocab:clickstream#page-number">x-page-num</Field>
-    <Field term="urn:vocab:clickstream#request-number">x-request-num</Field>
+    <Field term="urn:vocab:clickstream#page-hits">x-page-hits</Field>
     <Field term="urn:vocab:clickstream#page-load">x-page-load</Field>
     <Field term="urn:vocab:clickstream#page-dwell">x-page-dwell</Field>
     <Field term="urn:vocab:clickstream#page-title" start="&quot;" end="&quot;">x-page-title</Field>
@@ -102,8 +102,8 @@
     <Field term="urn:vocab:clickstream#session-group">x-session-group</Field>
     <Field term="urn:vocab:clickstream#session-id">x-session-id</Field>
     <Field term="urn:vocab:clickstream#cookie-id">x-cookie-id</Field>
-    <Field term="urn:vocab:clickstream#page-number">x-page-num</Field>
-    <Field term="urn:vocab:clickstream#request-number">x-request-num</Field>
+    <Field term="urn:vocab:clickstream#session-pages">x-session-pages</Field>
+    <Field term="urn:vocab:clickstream#session-hits">x-session-hits</Field>
     <Field term="urn:vocab:clickstream#session-dwell">x-session-dwell</Field>
     <Field term="urn:vocab:clickstream#session-length">x-session-length</Field>
   </Codec>

@@ -16,10 +16,6 @@
 			<Type>object</Type>
 			<Comment>Event that represents a single clickstream visitor session</Comment>
 		</Term>
-		<Term id="urn:vocab:clickstream#content-event">
-			<Type>object</Type>
-			<Comment>Event that represents page content sent to a visitor</Comment>
-		</Term>
 		<Term id="urn:vocab:clickstream#session-group">
 			<Type>shortstring</Type>
 			<Comment>Clickstream session group this event was assigned to</Comment>
@@ -308,9 +304,21 @@
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took loading a page's content</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#page-hits">
+			<Type>uint32</Type>
+			<Comment>Number of HTTP requests associated with the page view</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#page-dwell">
 			<Type>uint32</Type>
 			<Comment>Number of seconds spent viewing a completed page view</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-pages">
+			<Type>uint32</Type>
+			<Comment>Number of page views associated with a visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#session-hits">
+			<Type>uint32</Type>
+			<Comment>Number of HTTP requests associated with a visitor session</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#session-dwell">
 			<Type>uint32</Type>
