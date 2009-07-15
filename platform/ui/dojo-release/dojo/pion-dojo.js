@@ -25836,39 +25836,85 @@ return pion.escapeXml(d);
 return this.defaultValue;
 }
 };
+pion.datetimeCellFormatter=function(t){
+return Date(t*1000).toLocaleString();
+};
+pion.utcDatetimeCellFormatter=function(t){
+var d=new Date(t*1000);
+var month=d.getUTCMonth()+1;
+var date=d.getUTCDate();
+var hour=d.getUTCHours();
+var min=d.getUTCMinutes();
+if(month<10){
+month="0"+month;
+}
+if(date<10){
+date="0"+date;
+}
+if(hour<10){
+hour="0"+hour;
+}
+if(min<10){
+min="0"+min;
+}
+return t+" ("+d.getUTCFullYear()+"-"+month+"-"+date+" "+hour+":"+min+")";
+};
+pion.localDatetimeCellFormatter=function(t){
+var d=new Date(t*1000);
+var month=d.getMonth()+1;
+var date=d.getDate();
+var hour=d.getHours();
+var min=d.getMinutes();
+if(month<10){
+month="0"+month;
+}
+if(date<10){
+date="0"+date;
+}
+if(hour<10){
+hour="0"+hour;
+}
+if(min<10){
+min="0"+min;
+}
+return t+" ("+d.getUTCFullYear()+"-"+month+"-"+date+" "+hour+":"+min+")";
+};
 pion.makeDeleteButton=function(){
 return "<button dojoType=dijit.form.Button class=\"delete_row\"><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>";
 };
 pion.makeEditButton=function(){
 return "<button dojoType=dijit.form.Button><img src=\"images/icon-edit.png\" alt=\"EDIT\" border=\"0\" /></button>";
 };
-pion.initOptionalValue=function(store,item,_18a9,_18aa,_18ab){
-if(store.hasAttribute(item,_18aa)){
-_18a9[_18aa]=store.getValue(item,_18aa);
+pion.grid_cell_padding=8;
+pion.scrollbar_width=20;
+pion.datetime_cell_width=180;
+pion.initOptionalValue=function(store,item,_18b6,_18b7,_18b8){
+if(store.hasAttribute(item,_18b7)){
+_18b6[_18b7]=store.getValue(item,_18b7);
 }else{
-if(_18ab!==undefined){
-_18a9[_18aa]=_18ab;
+if(_18b8!==undefined){
+_18b6[_18b7]=_18b8;
 }
 }
 };
 pion.loadCss=function(href){
-var _18ad=document.createElement("link");
-_18ad.href=href;
-_18ad.rel="stylesheet";
-_18ad.type="text/css";
-var _18ae=document.getElementsByTagName("head");
-if(_18ae){
-_18ae=_18ae[0];
+var _18ba=document.createElement("link");
+_18ba.href=href;
+_18ba.rel="stylesheet";
+_18ba.type="text/css";
+var _18bb=document.getElementsByTagName("head");
+if(_18bb){
+_18bb=_18bb[0];
 }
-if(!_18ae){
-_18ae=document.getElementsByTagName("html")[0];
+if(!_18bb){
+_18bb=document.getElementsByTagName("html")[0];
 }
 if(dojo.isIE){
 window.setTimeout(function(){
-_18ae.appendChild(_18ad);
+_18bb.appendChild(_18ba);
 },0);
 }else{
-_18ae.appendChild(_18ad);
+_18bb.appendChild(_18ba);
 }
 };
 var init=function(){
@@ -25876,25 +25922,25 @@ dojo.byId("outer").style.visibility="visible";
 dojo.subscribe("main_stack_container-selectChild",configPageSelected);
 file_protocol=(window.location.protocol=="file:");
 firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexOf("Firefox")>=0;
-var _18af=function(){
+var _18bc=function(){
 pion.terms.init();
 pion.reactors.init();
 pion.services.init();
 pion.current_page="Reactors";
 };
-dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_18b0,_18b1){
+dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_18bd,_18be){
 dojo.cookie("logged_in","true",{expires:1});
-pion.about.checkKeyStatus({always_callback:_18af});
-},error:function(_18b2,_18b3){
-if(_18b3.xhr.status==401){
+pion.about.checkKeyStatus({always_callback:_18bc});
+},error:function(_18bf,_18c0){
+if(_18c0.xhr.status==401){
 if(!dojo.cookie("logged_in")){
 location.replace("login.html");
 }
-pion.login.doLoginDialog({success_callback:_18af});
+pion.login.doLoginDialog({success_callback:_18bc});
 }else{
-console.error("HTTP status code: ",_18b3.xhr.status);
+console.error("HTTP status code: ",_18c0.xhr.status);
 }
-return _18b2;
+return _18bf;
 }});
 };
 dojo.addOnLoad(init);
@@ -25967,28 +26013,28 @@ page.onSelect();
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_18b6,_18b7){
-var _18b8;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_18c3,_18c4){
+var _18c5;
 if(value!==undefined){
-_18b8=this.filter(value);
-if(_18b8!==null&&((typeof _18b8!="number")||!isNaN(_18b8))){
-if(_18b7===undefined||!_18b7.toString){
-_18b7=this.format(_18b8,this.constraints);
+_18c5=this.filter(value);
+if(_18c5!==null&&((typeof _18c5!="number")||!isNaN(_18c5))){
+if(_18c4===undefined||!_18c4.toString){
+_18c4=this.format(_18c5,this.constraints);
 }
 }else{
-_18b7="";
+_18c4="";
 }
 }
-if(_18b7!=null&&_18b7!=undefined){
-this.textbox.value=_18b7;
+if(_18c4!=null&&_18c4!=undefined){
+this.textbox.value=_18c4;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_18b8,_18b6);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_18c5,_18c3);
 };
 dijit.Dialog.prototype._size=function(){
 var mb=dojo.marginBox(this.domNode);
-var _18ba=dijit.getViewport();
-if(mb.w>=_18ba.w||mb.h>=_18ba.h){
-dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_18ba.h*0.9))+"px",overflow:"auto",position:"relative"});
+var _18c7=dijit.getViewport();
+if(mb.w>=_18c7.w||mb.h>=_18c7.h){
+dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_18c7.h*0.9))+"px",overflow:"auto",position:"relative"});
 }
 };
 dijit.DialogUnderlay.prototype.postCreate=function(){

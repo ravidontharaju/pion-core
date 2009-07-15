@@ -161,6 +161,48 @@ pion.xmlCellFormatter2 = function(d) {
 	}
 }
 
+pion.datetimeCellFormatter = function(t) {
+	return Date(t * 1000).toLocaleString();
+}
+
+pion.utcDatetimeCellFormatter = function(t) {
+	var d = new Date(t * 1000);
+	var month = d.getUTCMonth() + 1;
+	var date = d.getUTCDate();
+	var hour = d.getUTCHours();
+	var min = d.getUTCMinutes();
+
+	if (month < 10)
+		month = '0' + month;
+	if (date < 10)
+		date = '0' + date;
+	if (hour < 10)
+		hour = '0' + hour;
+	if (min < 10)
+		min = '0' + min;
+
+	return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+}
+
+pion.localDatetimeCellFormatter = function(t) {
+	var d = new Date(t * 1000);
+	var month = d.getMonth() + 1;
+	var date = d.getDate();
+	var hour = d.getHours();
+	var min = d.getMinutes();
+
+	if (month < 10)
+		month = '0' + month;
+	if (date < 10)
+		date = '0' + date;
+	if (hour < 10)
+		hour = '0' + hour;
+	if (min < 10)
+		min = '0' + min;
+
+	return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+}
+
 pion.makeDeleteButton = function() {
 	return '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
 }
@@ -168,6 +210,12 @@ pion.makeDeleteButton = function() {
 pion.makeEditButton = function() {
 	return '<button dojoType=dijit.form.Button><img src="images/icon-edit.png" alt="EDIT" border="0" /></button>';
 }
+
+// These are empirical values obtained through inspecting the html in Firebug.
+// TODO: find a way to calculate them using dojo.
+pion.grid_cell_padding = 8;
+pion.scrollbar_width = 20;
+pion.datetime_cell_width = 180;
 
 pion.initOptionalValue = function(store, item, new_item_object, tag_name, optional_default) {
 	if (store.hasAttribute(item, tag_name)) {
