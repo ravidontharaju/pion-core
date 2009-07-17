@@ -378,9 +378,14 @@ void DatabaseInserter::insertEvents(void)
 						boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 						boost::uint32_t min_age = m_last_time - m_max_age;
 						size_before = m_keys.size();
-						for (KeyHash::iterator i = m_keys.begin(); i != m_keys.end(); i++)
-							if (i->second < min_age)
-								m_keys.erase(i);
+						KeyHash::iterator cur_it;
+						KeyHash::iterator i = m_keys.begin();
+						while (i != m_keys.end()) {
+							cur_it = i;
+							++i;
+							if (cur_it->second < min_age)
+								m_keys.erase(cur_it);
+						}
 						size_after = m_keys.size();
 					}
 					PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " events, " << size_after << " left in key cache");
