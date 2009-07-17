@@ -293,14 +293,8 @@ private:
 	/// Term to use for determining event age
 	static const std::string				EVENT_AGE_ELEMENT_NAME;
 
-	/// Use event timestamps?
-	static const std::string				KEYS_USE_TIMESTAMP_ELEMENT_NAME;
-
 	/// Default max_age is 0, so it won't trigger when not necessary
 	static const boost::uint32_t			DEFAULT_MAX_AGE;
-
-	/// Default use timestamp is true, so we go by event times
-	static const std::string				DEFAULT_USE_TIMESTAMP;
 
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
@@ -368,15 +362,12 @@ private:
 	/// a chain of Comparison rules used determine if event should be inserted
 	pion::platform::RuleChain				m_rules;
 
-	/// Hash map; incomplete, bounded "unique key" vs. "age" -- for avoiding multiple inserts
+	/// Hash map; incomplete, time bounded "unique key" vs. "age" -- for avoiding multiple inserts
 	typedef PION_HASH_MAP<pion::platform::Event::BlobType, boost::uint32_t, PION_HASH(pion::platform::Event::BlobType)> KeyHash;
 	KeyHash									m_keys;
 
 	/// The term ref, that has a unique index
 	Vocabulary::TermRef						m_key_term_ref;
-
-	/// Max number of keys in hash map
-//	boost::uint32_t							m_max_keys;
 
 	/// MaxAge of keys in hash map (if configured)
 	boost::uint32_t							m_max_age;

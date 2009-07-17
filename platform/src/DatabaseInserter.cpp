@@ -43,8 +43,6 @@ const std::string			DatabaseInserter::IGNORE_INSERT_ELEMENT_NAME = "IgnoreInsert
 const std::string			DatabaseInserter::MAX_KEY_AGE_ELEMENT_NAME = "MaxAge";
 const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_AGE = 0;
 const std::string			DatabaseInserter::EVENT_AGE_ELEMENT_NAME = "AgeTerm";
-const std::string			DatabaseInserter::KEYS_USE_TIMESTAMP_ELEMENT_NAME = "AgeTimestamp";
-const std::string			DatabaseInserter::DEFAULT_USE_TIMESTAMP = "true";
 
 
 // DatabaseInserter member functions
