@@ -114,8 +114,11 @@ private:
 	/// name of the field element for Pion XML config files
 	static const std::string				FIELD_ELEMENT_NAME;
 
-	/// name of the events queued element for Pion XML config files
+	/// name of the events queued element for Pion XML statistics
 	static const std::string				EVENTS_QUEUED_ELEMENT_NAME;
+
+	/// name of the KeyCacheSize element for Pion XML statistics
+	static const std::string				KEY_CACHE_SIZE_ELEMENT_NAME;
 
 	/// primary logging interface used by this class
 	PionLogger								m_logger;

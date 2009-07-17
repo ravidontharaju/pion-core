@@ -215,6 +215,7 @@ BOOST_AUTO_TEST_CASE(testMinimalQueryToDatabaseOutputReactor) {
 			"<EventsIn>0</EventsIn>\n"
 			"<EventsOut>0</EventsOut>\n"
 			"<EventsQueued>0</EventsQueued>\n"
+			"<KeyCacheSize>0</KeyCacheSize>\n"
 		"</Reactor>\n"
 	"</PionStats>\n";
 	BOOST_CHECK_EQUAL(response_content, expected_response);

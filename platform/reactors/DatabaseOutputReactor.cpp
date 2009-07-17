@@ -33,6 +33,7 @@ const std::string			DatabaseOutputReactor::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseOutputReactor::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
+const std::string			DatabaseOutputReactor::KEY_CACHE_SIZE_ELEMENT_NAME = "KeyCacheSize";
 
 
 // DatabaseOutputReactor member functions
@@ -89,6 +90,10 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	// write number of events queued for insertion
 	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_inserter.getEventsQueued()
 	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
+
+	// write size of the key cache
+	out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << m_inserter.getKeyCacheSize()
+	    << "</" << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << std::endl;
 
 	// In addition; if full status is requested, get Database/Table/Fields
 	if (branches.size() > 2 && branches[2] == "full") {

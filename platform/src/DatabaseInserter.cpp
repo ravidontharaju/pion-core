@@ -255,6 +255,12 @@ std::size_t DatabaseInserter::getEventsQueued(void) const
 	return m_event_queue_ptr->size();
 }
 
+std::size_t DatabaseInserter::getKeyCacheSize(void) const
+{
+	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+	return m_keys.size();
+}
+
 void DatabaseInserter::insert(const EventPtr& e)
 {
 	// check filter rules first
@@ -350,45 +356,56 @@ void DatabaseInserter::insertEvents(void)
 
 				PION_LOG_DEBUG(m_logger, "Worker thread woke with " << insert_queue_ptr->size() << " events available: " << m_database_id);
 
-				// begin a new transaction
-				m_begin_transaction_ptr->run();
-				m_begin_transaction_ptr->reset();
+				try {
 
-				// step through the event queue, inserting each event individually
-				for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
-					// bind the event to the insert query
-					m_insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
-					// execute the query to insert the record
-					m_insert_query_ptr->run();
-					m_insert_query_ptr->reset();
-				}
-
-				// end & commit the transaction
-				m_commit_transaction_ptr->run();
-				m_commit_transaction_ptr->reset();
-
-				// done flushing the queue
-				PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);
-				insert_queue_ptr->clear();
-
-				// Pruning needed?
-				if (m_max_age) {
-					boost::uint32_t size_before, size_after;
-					{
-						boost::mutex::scoped_lock queue_lock(m_queue_mutex);
-						boost::uint32_t min_age = m_last_time - m_max_age;
-						size_before = m_keys.size();
-						KeyHash::iterator cur_it;
-						KeyHash::iterator i = m_keys.begin();
-						while (i != m_keys.end()) {
-							cur_it = i;
-							++i;
-							if (cur_it->second < min_age)
-								m_keys.erase(cur_it);
-						}
-						size_after = m_keys.size();
+					// begin a new transaction
+					m_begin_transaction_ptr->run();
+					m_begin_transaction_ptr->reset();
+	
+					// step through the event queue, inserting each event individually
+					for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
+						// bind the event to the insert query
+						m_insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
+						// execute the query to insert the record
+						m_insert_query_ptr->run();
+						m_insert_query_ptr->reset();
 					}
-					PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " events, " << size_after << " left in key cache");
+	
+					// end & commit the transaction
+					m_commit_transaction_ptr->run();
+					m_commit_transaction_ptr->reset();
+
+					// done flushing the queue
+					PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);
+					insert_queue_ptr->clear();
+	
+					// Pruning needed?
+					if (m_max_age) {
+						boost::uint32_t size_before, size_after;
+						{
+							boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+							boost::uint32_t min_age = m_last_time - m_max_age;
+							size_before = m_keys.size();
+							KeyHash::iterator cur_it;
+							KeyHash::iterator i = m_keys.begin();
+							while (i != m_keys.end()) {
+								cur_it = i;
+								++i;
+								if (cur_it->second < min_age)
+									m_keys.erase(cur_it);
+							}
+							size_after = m_keys.size();
+						}
+						PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " keys from cache, " << size_after << " left");
+					}
+
+				} catch (Database::DatabaseBusyException& e) {
+				
+					// data was busy and could not recover after timeout
+					PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events because database was busy: " << m_database_id);
+					insert_queue_ptr->clear();	// drop events in insert queue
+					m_keys.clear();				// erase key cache since it may be inaccurate
+
 				}
 
 			} else {

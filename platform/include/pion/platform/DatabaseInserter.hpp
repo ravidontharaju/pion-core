@@ -177,6 +177,9 @@ public:
 	/// returns the total number of events queued
 	std::size_t getEventsQueued(void) const;
 
+	/// returns the total number of items in the key cache
+	std::size_t getKeyCacheSize(void) const;
+
 	/// returns the unique identifier for the database being used
 	const std::string& getDatabaseId(void) const { return m_database_id; }
 

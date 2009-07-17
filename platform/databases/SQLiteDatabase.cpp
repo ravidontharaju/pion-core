@@ -306,8 +306,9 @@ bool SQLiteDatabase::SQLiteQuery::run(void)
 	// step forward to the next row in the query (if there are any)
 	bool row_available = false;
 	switch (sqlite3_step(m_sqlite_stmt)) {
+		case SQLITE_LOCKED:
 		case SQLITE_BUSY:
-			throw SQLiteDatabase::DatabaseBusyException();
+			throw Database::DatabaseBusyException();
 			break;
 		case SQLITE_ROW:
 			// a new result row is available
