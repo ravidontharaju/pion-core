@@ -76,7 +76,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	ConfigManager::getConfigOption(KEYS_USE_TIMESTAMP_ELEMENT_NAME, m_use_event_time, DEFAULT_USE_TIMESTAMP, config_ptr);
 
 	// get the optional max_keys parameter
-	if (m_use_event_time) {
+	if (m_max_age && m_use_event_time) {
 		std::string term_str;
 		if (!ConfigManager::getConfigOption(EVENT_AGE_ELEMENT_NAME, term_str, config_ptr))
 			throw MissingEventTime(EVENT_AGE_ELEMENT_NAME);
