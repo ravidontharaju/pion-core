@@ -42,6 +42,11 @@ const char *				DatabaseInserter::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwx
 const std::string			DatabaseInserter::IGNORE_INSERT_ELEMENT_NAME = "IgnoreInsert";
 const std::string			DatabaseInserter::MAX_KEYS_ELEMENT_NAME = "MaxKeys";
 const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_KEYS = 0;
+const std::string			DatabaseInserter::MAX_KEY_AGE_ELEMENT_NAME = "MaxAge";
+const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_AGE = 1800;
+const std::string			DatabaseInserter::EVENT_AGE_ELEMENT_NAME = "AgeTerm";
+const std::string			DatabaseInserter::KEYS_USE_TIMESTAMP_ELEMENT_NAME = "AgeTimestamp";
+const bool					DatabaseInserter::DEFAULT_USE_TIMESTAMP = "true";
 
 
 // DatabaseInserter member functions
@@ -64,8 +69,21 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// get the queue timeout parameter
 	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
 
+	// get the optional max_age parameter
+	ConfigManager::getConfigOption(MAX_KEY_AGE_ELEMENT_NAME, m_max_age, DEFAULT_MAX_AGE, config_ptr);
+
 	// get the optional max_keys parameter
-	ConfigManager::getConfigOption(MAX_KEYS_ELEMENT_NAME, m_max_keys, DEFAULT_MAX_KEYS, config_ptr);
+	ConfigManager::getConfigOption(KEYS_USE_TIMESTAMP_ELEMENT_NAME, m_use_event_time, DEFAULT_USE_TIMESTAMP, config_ptr);
+
+	// get the optional max_keys parameter
+	if (m_use_event_time) {
+		std::string term_str;
+		if (!ConfigManager::getConfigOption(EVENT_AGE_ELEMENT_NAME, term_str, config_ptr))
+			throw MissingEventTime(EVENT_AGE_ELEMENT_NAME);
+		m_timestamp_term_ref = v.findTerm(term_str);
+		if (m_timestamp_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw UnknownTermException(term_str);
+	}
 
 	// get the queue timeout parameter
 	std::string ignore_str;
@@ -128,7 +146,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		m_index_map.push_back(index_str);
 
 		// Try to find the unique key term, if max_keys is defined
-		if (m_max_keys && index_str == "unique")
+		if (m_max_age && index_str == "unique")
 			m_key_term_ref = term_ref;
 
 		// step to the next field mapping
@@ -137,7 +155,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	if (m_field_map.empty())
 		throw NoFieldsException();
 
-	if (m_max_keys && m_key_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+	if (m_max_age && m_key_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw NoUniqueKeyFound();
 
 	// if config changed while running, then restart
@@ -241,14 +259,6 @@ std::size_t DatabaseInserter::getEventsQueued(void) const
 	return m_event_queue_ptr->size();
 }
 
-/// get an epoch based timestamp
-boost::uint32_t ts(void)
-{
-	static const boost::posix_time::ptime start(boost::gregorian::date(1970,1,1));
-	boost::posix_time::ptime t(boost::posix_time::second_clock::local_time());
-	return (t - start).total_seconds();
-}
-
 void DatabaseInserter::insert(const EventPtr& e)
 {
 	// check filter rules first
@@ -261,7 +271,7 @@ void DatabaseInserter::insert(const EventPtr& e)
 			return;
 
 		// do we have collision avoidance?
-		if (m_max_keys) {
+		if (m_max_age) {
 			Event::ValuesRange values_range = e->equal_range(m_key_term_ref);
 
 			// If key is not found, then "null key" and no insert
@@ -269,25 +279,16 @@ void DatabaseInserter::insert(const EventPtr& e)
 				return;
 
 			KeyHash::iterator ki = m_keys.find(boost::get<const Event::BlobType&>(values_range.first->value));
+			m_last_time = m_use_event_time ? e->getUInt(m_timestamp_term_ref) : PionTimeFacet::to_time_t(boost::posix_time::second_clock::local_time());
 			// Do we have this key already?
 			if (ki != m_keys.end()) {
-				ki->second = ts();						// Update age
+				ki->second = m_last_time;				// Update age
 				return;									// Bail out
 			}
 			// Add key & age
-			m_keys[boost::get<const Event::BlobType&>(values_range.first->value)] = ts();
-			// Pruning needed?
-			if (m_keys.size() > m_max_keys) {
-				boost::uint32_t min_age = 0xffffffff;
-				ki = m_keys.end();
-				for (KeyHash::iterator i = m_keys.begin(); i != m_keys.end(); i++)
-					if (i->second < min_age) {
-						min_age = i->second;
-						ki = i;
-					}
-				if (ki != m_keys.end())
-					m_keys.erase(ki);
-			}
+			m_keys[boost::get<const Event::BlobType&>(values_range.first->value)] = m_last_time;
+
+			// Pruning will be done in insert thread
 		}	
 
 		// signal the worker thread if the queue is full (wait for swap)
@@ -360,6 +361,21 @@ void DatabaseInserter::insertEvents(void)
 				// done flushing the queue
 				PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);
 				insert_queue_ptr->clear();
+
+				// Pruning needed?
+				if (m_max_age) {
+					boost::uint32_t size_before, size_after;
+					{
+						boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+						boost::uint32_t min_age = m_last_time - m_max_age;
+						size_before = m_keys.size();
+						for (KeyHash::iterator i = m_keys.begin(); i != m_keys.end(); i++)
+							if (i->second < min_age)
+								m_keys.erase(i);
+						size_after = m_keys.size();
+					}
+					PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " events, " << size_after << " left in key cache");
+				}
 
 			} else {
 				PION_LOG_DEBUG(m_logger, "Worker thread woke with no new events: " << m_database_id);

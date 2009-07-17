@@ -112,10 +112,15 @@ public:
 	class NoUniqueKeyFound: public PionException {
 	public:
 		NoUniqueKeyFound(void)
-			: PionException("DatabaseInserter configuration has MaxKeys, but there is no Unique indexed column") {}
+			: PionException("DatabaseInserter configuration has MaxAge, but there is no Unique indexed column") {}
 	};
 
-
+	/// exception thrown if the DatabaseInserter is configured to keep a key cache, with age, but age term is not defined
+	class MissingEventTime: public PionException {
+	public:
+		MissingEventTime(const std::string& element )
+			: PionException("DatabaseInserter configuration has MaxAge, but the age term is missing: " + element) {}
+	};
 
 	/// constructs a new DatabaseInserter object
 	DatabaseInserter(void) :
@@ -288,6 +293,12 @@ private:
 	/// Default value for MaxKeys (0)
 	static const boost::uint32_t			DEFAULT_MAX_KEYS;
 
+	static const std::string				MAX_KEY_AGE_ELEMENT_NAME;
+	static const std::string				EVENT_AGE_ELEMENT_NAME;
+	static const std::string				KEYS_USE_TIMESTAMP_ELEMENT_NAME;
+	static const boost::uint32_t			DEFAULT_MAX_AGE;
+	static const bool						DEFAULT_USE_TIMESTAMP;
+
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
@@ -362,7 +373,18 @@ private:
 	Vocabulary::TermRef						m_key_term_ref;
 
 	/// Max number of keys in hash map
-	boost::uint32_t							m_max_keys;
+//	boost::uint32_t							m_max_keys;
+
+	/// MaxAge of keys in hash map (if configured)
+	boost::uint32_t							m_max_age;
+
+	/// Use Event time for age calculation in key hash map 
+	bool									m_use_event_time;
+
+	/// Term ref to use for finding the timestamp from an event
+	Vocabulary::TermRef						m_timestamp_term_ref;
+
+	boost::uint32_t							m_last_time;
 };
 
 
