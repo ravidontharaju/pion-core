@@ -128,7 +128,7 @@ public:
 		m_database_mgr_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
-		m_is_running(false), m_partition(0), m_wipe(false)
+		m_is_running(false), m_partition(0), m_wipe(false), m_max_age(0), m_last_time(0)
 	{}
 
 	/// virtual destructor: this class may be extended
@@ -381,12 +381,10 @@ private:
 	/// MaxAge of keys in hash map (if configured)
 	boost::uint32_t							m_max_age;
 
-	/// Use Event time for age calculation in key hash map 
-	bool									m_use_event_time;
-
 	/// Term ref to use for finding the timestamp from an event
 	Vocabulary::TermRef						m_timestamp_term_ref;
 
+	/// most recent timestamp used for key cache pruning
 	boost::uint32_t							m_last_time;
 };
 

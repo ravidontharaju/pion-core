@@ -71,14 +71,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	ConfigManager::getConfigOption(MAX_KEY_AGE_ELEMENT_NAME, m_max_age, DEFAULT_MAX_AGE, config_ptr);
 
 	// get the optional max_keys parameter
-	std::string stamp_str;
-	m_use_event_time = true;
-	ConfigManager::getConfigOption(KEYS_USE_TIMESTAMP_ELEMENT_NAME, stamp_str, DEFAULT_USE_TIMESTAMP, config_ptr);
-	if (stamp_str == "false")
-		m_use_event_time = false;
-
-	// get the optional max_keys parameter
-	if (m_max_age && m_use_event_time) {
+	if (m_max_age) {
 		std::string term_str;
 		if (!ConfigManager::getConfigOption(EVENT_AGE_ELEMENT_NAME, term_str, config_ptr))
 			throw MissingEventTime(EVENT_AGE_ELEMENT_NAME);
@@ -252,6 +245,9 @@ void DatabaseInserter::stop(void)
 		
 		// clear the event queue
 		m_event_queue_ptr->clear();
+		
+		// clear the key cache
+		m_keys.clear();
 	}
 }
 
@@ -274,21 +270,34 @@ void DatabaseInserter::insert(const EventPtr& e)
 
 		// do we have collision avoidance?
 		if (m_max_age) {
-			Event::ValuesRange values_range = e->equal_range(m_key_term_ref);
+			// look for key within the event
+			const Event::ParameterValue *param_ptr = e->getPointer(m_key_term_ref);
 
 			// If key is not found, then "null key" and no insert
-			if (values_range.first == values_range.second)
+			if (param_ptr == NULL) {
+				// log warning if we're not ignoring insert errors
+				if (! m_ignore_insert)
+					PION_LOG_WARN(m_logger, "Event missing required table key: " << m_database_id);
 				return;
+			}
 
-			KeyHash::iterator ki = m_keys.find(boost::get<const Event::BlobType&>(values_range.first->value));
-			m_last_time = m_use_event_time ? e->getUInt(m_timestamp_term_ref) : PionTimeFacet::to_time_t(boost::posix_time::second_clock::local_time());
+			// Lookup key in memory cache
+			KeyHash::iterator ki = m_keys.find(boost::get<const Event::BlobType&>(*param_ptr));
+			
+			// Update timestamp used for pruning
+			boost::uint32_t event_timestamp;
+			if (e->getUInt(m_timestamp_term_ref, event_timestamp) && event_timestamp > m_last_time) {
+				m_last_time = event_timestamp;
+			}
+
 			// Do we have this key already?
 			if (ki != m_keys.end()) {
 				ki->second = m_last_time;				// Update age
 				return;									// Bail out
 			}
+
 			// Add key & age
-			m_keys[boost::get<const Event::BlobType&>(values_range.first->value)] = m_last_time;
+			m_keys[boost::get<const Event::BlobType&>(*param_ptr)] = m_last_time;
 
 			// Pruning will be done in insert thread
 		}	
