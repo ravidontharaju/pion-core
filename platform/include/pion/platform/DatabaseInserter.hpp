@@ -287,16 +287,19 @@ private:
 	/// Default for ignoring inserts
 	static const std::string				DEFAULT_IGNORE;
 
-	/// Optional MaxKeys, use only if unique index
-	static const std::string				MAX_KEYS_ELEMENT_NAME;
-
-	/// Default value for MaxKeys (0)
-	static const boost::uint32_t			DEFAULT_MAX_KEYS;
-
+	/// Max age for event
 	static const std::string				MAX_KEY_AGE_ELEMENT_NAME;
+
+	/// Term to use for determining event age
 	static const std::string				EVENT_AGE_ELEMENT_NAME;
+
+	/// Use event timestamps?
 	static const std::string				KEYS_USE_TIMESTAMP_ELEMENT_NAME;
+
+	/// Default max_age is 0, so it won't trigger when not necessary
 	static const boost::uint32_t			DEFAULT_MAX_AGE;
+
+	/// Default use timestamp is true, so we go by event times
 	static const bool						DEFAULT_USE_TIMESTAMP;
 
 	/// primary logging interface used by this class
