@@ -300,7 +300,7 @@ private:
 	static const boost::uint32_t			DEFAULT_MAX_AGE;
 
 	/// Default use timestamp is true, so we go by event times
-	static const bool						DEFAULT_USE_TIMESTAMP;
+	static const std::string				DEFAULT_USE_TIMESTAMP;
 
 	/// primary logging interface used by this class
 	PionLogger								m_logger;

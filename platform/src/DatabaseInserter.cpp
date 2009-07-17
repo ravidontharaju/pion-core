@@ -44,7 +44,7 @@ const std::string			DatabaseInserter::MAX_KEY_AGE_ELEMENT_NAME = "MaxAge";
 const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_AGE = 0;
 const std::string			DatabaseInserter::EVENT_AGE_ELEMENT_NAME = "AgeTerm";
 const std::string			DatabaseInserter::KEYS_USE_TIMESTAMP_ELEMENT_NAME = "AgeTimestamp";
-const bool					DatabaseInserter::DEFAULT_USE_TIMESTAMP = "true";
+const std::string			DatabaseInserter::DEFAULT_USE_TIMESTAMP = "true";
 
 
 // DatabaseInserter member functions
@@ -71,7 +71,11 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	ConfigManager::getConfigOption(MAX_KEY_AGE_ELEMENT_NAME, m_max_age, DEFAULT_MAX_AGE, config_ptr);
 
 	// get the optional max_keys parameter
-	ConfigManager::getConfigOption(KEYS_USE_TIMESTAMP_ELEMENT_NAME, m_use_event_time, DEFAULT_USE_TIMESTAMP, config_ptr);
+	std::string stamp_str;
+	m_use_event_time = true;
+	ConfigManager::getConfigOption(KEYS_USE_TIMESTAMP_ELEMENT_NAME, stamp_str, DEFAULT_USE_TIMESTAMP, config_ptr);
+	if (stamp_str == "false")
+		m_use_event_time = false;
 
 	// get the optional max_keys parameter
 	if (m_max_age && m_use_event_time) {
