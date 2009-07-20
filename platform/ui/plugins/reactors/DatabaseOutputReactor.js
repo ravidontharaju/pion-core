@@ -15,28 +15,96 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			this.config.Plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
 			this._initOptions(this.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
-			this.special_config_elements.push('Field');
+			this.special_config_elements.push('Comparison', 'Field');
 			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
 			});
 			this.field_mapping_store.next_id = 0;
+			this.comparison_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
+			});
+			this.comparison_store.next_id = 0;
+			this.prepareToHandleLoadNotification();
+			this._populateComparisonStore();
 			this._populateFieldMappingStore();
 		},
-		reloadFieldMappingStore: function() {
-			// First empty this.field_mapping_store.
+		prepareToHandleLoadNotification: function() {
+			this.comparison_store_is_ready = false;
+			this.field_mapping_store_is_ready = false;
+			var h1 = this.connect(this, 'onDonePopulatingComparisonStore', function() {
+				this.disconnect(h1);
+				this._updatePutDataIfGridStoresReady();
+			});
+			var h2 = this.connect(this, 'onDonePopulatingFieldMappingStore', function() {
+				this.disconnect(h2);
+				this._updatePutDataIfGridStoresReady();
+			});
+		},
+		_updatePutDataIfGridStoresReady: function() {
+			if (this.comparison_store_is_ready && this.field_mapping_store_is_ready) {
+				this.updateNamedCustomPutData('custom_put_data_from_config');
+				this.comparison_store_is_ready = false;
+				this.field_mapping_store_is_ready = false;
+				this.onDonePopulatingGridStores();
+			}
+		},
+		onDonePopulatingGridStores: function() {
+		},
+		reloadGridStores: function() {
+			// Delete all items from this.comparison_store, then repopulate
+			// it from the Reactor's configuration.
 			var _this = this;
+			this.comparison_store.fetch({
+				onItem: function(item) {
+					_this.comparison_store.deleteItem(item);
+				},
+				onComplete: function() {
+					_this._populateComparisonStore();
+				},
+				onError: pion.handleFetchError
+			});
+
+			// Delete all items from this.field_mapping_store, then repopulate
+			// it from the Reactor's configuration.
 			this.field_mapping_store.fetch({
 				onItem: function(item) {
 					_this.field_mapping_store.deleteItem(item);
 				},
 				onComplete: function() {
-					// Then repopulate this.field_mapping_store from the Reactor's configuration.
 					_this._populateFieldMappingStore();
 				},
 				onError: pion.handleFetchError
 			});
+
+			this.prepareToHandleLoadNotification();
 		},
-		onDonePopulatingFieldMappingStore: function() {
+		_populateComparisonStore: function() {
+			var _this = this;
+			var store = pion.reactors.config_store;
+			store.fetch({
+				query: {'@id': this.config['@id']},
+				onItem: function(item) {
+					var comparisons = store.getValues(item, 'Comparison');
+					for (var i = 0; i < comparisons.length; ++i) {
+						var comparison_item = {
+							ID: _this.comparison_store.next_id++,
+							Term: store.getValue(comparisons[i], 'Term'),
+							Type: store.getValue(comparisons[i], 'Type'),
+							MatchAllValues: _this.getOptionalBool(store, comparisons[i], 'MatchAllValues')
+						}
+						if (store.hasAttribute(comparisons[i], 'Value'))
+							comparison_item.Value = store.getValue(comparisons[i], 'Value');
+						_this.comparison_store.newItem(comparison_item);
+					}
+				},
+				onComplete: function() {
+					_this.comparison_store_is_ready = true;
+					_this.onDonePopulatingComparisonStore();
+				},
+				onError: pion.handleFetchError
+			});
+		},
+		onDonePopulatingComparisonStore: function() {
 		},
 		_populateFieldMappingStore: function() {
 			var _this = this;
@@ -71,18 +139,17 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 					});
 				},
 				onComplete: function() {
-					// At this point, _this.field_mapping_store reflects the Reactor's current configuration,
-					// so update _this.custom_put_data_from_config.
-					_this.updateNamedCustomPutData('custom_put_data_from_config');
-
+					_this.field_mapping_store_is_ready = true;
 					_this.onDonePopulatingFieldMappingStore();
 				},
 				onError: pion.handleFetchError
 			});
 		},
+		onDonePopulatingFieldMappingStore: function() {
+		},
 		// _updateCustomData() is called after a successful PUT request.
 		_updateCustomData: function() {
-			this.custom_put_data_from_config = this.custom_put_data_from_field_mapping_store;
+			this.custom_put_data_from_config = this.custom_put_data_from_grid_stores;
 		},
 		// _insertCustomData() is called when moving the Reactor.
 		_insertCustomData: function() {
@@ -91,33 +158,48 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 		updateNamedCustomPutData: function(property_to_update) {
 			var put_data = '';
 			var _this = this;
-			var store = this.field_mapping_store;
-			store.fetch({
+			var c_store = this.comparison_store;
+			var fm_store = this.field_mapping_store;
+			c_store.fetch({
 				onItem: function(item) {
-					put_data += '<Field term="' + store.getValue(item, 'Term') + '"';
-					var index = store.getValue(item, 'Index');
-					if (store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
-						if (index === undefined || index == 'false') {
-							put_data += ' index="true"';
-						} else {
-							put_data += ' index="' + index + '"';
-						}
-					} else {
-						// The 'Indexed' column is not checked, so don't insert 'index' attribute unless
-						// it was explicitly set to 'false' in the original configuration.
-						if (index == 'false') {
-							put_data += ' index="false"';
-						}
-					}
-					if (store.hasAttribute(item, 'SqlType')) {
-						put_data += ' sql="' + store.getValue(item, 'SqlType') + '"';
-					}
-					put_data += '>';
-					put_data += pion.escapeXml(store.getValue(item, 'Field'));
-					put_data += '</Field>';
+					put_data += '<Comparison>';
+					put_data += '<Term>' + c_store.getValue(item, 'Term') + '</Term>';
+					put_data += '<Type>' + c_store.getValue(item, 'Type') + '</Type>';
+					if (c_store.hasAttribute(item, 'Value'))
+						put_data += pion.makeXmlLeafElement('Value', c_store.getValue(item, 'Value'));
+					put_data += '<MatchAllValues>' + c_store.getValue(item, 'MatchAllValues') + '</MatchAllValues>';
+					put_data += '</Comparison>';
 				},
 				onComplete: function() {
-					_this[property_to_update] = put_data;
+					fm_store.fetch({
+						onItem: function(item) {
+							put_data += '<Field term="' + fm_store.getValue(item, 'Term') + '"';
+							var index = fm_store.getValue(item, 'Index');
+							if (fm_store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
+								if (index === undefined || index == 'false') {
+									put_data += ' index="true"';
+								} else {
+									put_data += ' index="' + index + '"';
+								}
+							} else {
+								// The 'Indexed' column is not checked, so don't insert 'index' attribute unless
+								// it was explicitly set to 'false' in the original configuration.
+								if (index == 'false') {
+									put_data += ' index="false"';
+								}
+							}
+							if (fm_store.hasAttribute(item, 'SqlType')) {
+								put_data += ' sql="' + fm_store.getValue(item, 'SqlType') + '"';
+							}
+							put_data += '>';
+							put_data += pion.escapeXml(fm_store.getValue(item, 'Field'));
+							put_data += '</Field>';
+						},
+						onComplete: function() {
+							_this[property_to_update] = put_data;
+						},
+						onError: pion.handleFetchError
+					});
 				},
 				onError: pion.handleFetchError
 			});
@@ -127,7 +209,14 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 
 plugins.reactors.DatabaseOutputReactor.label = 'Embedded Storage Reactor';
 
+
+plugins.reactors.DatabaseOutputReactor.option_defaults = {
+	IgnoreInsert: false,
+	MatchAllComparisons: false
+};
+
 plugins.reactors.DatabaseOutputReactor.grid_option_defaults = {
+	MatchAllValues: false,
 	Indexed: false
 };
 
@@ -208,13 +297,60 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.inherited("postCreate", arguments);
 			this.reactor._initOptions(this.reactor.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
 			var _this = this;
-			var h = dojo.connect(this.reactor, 'onDonePopulatingFieldMappingStore', function() {
-				_this._updateCustomPutDataFromFieldMappingStore();
-				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromFieldMappingStore');
-				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromFieldMappingStore');
+			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
+				_this._updateCustomPutDataFromGridStores();
+				_this.connect(_this.reactor.comparison_store, 'onSet', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.comparison_store, 'onDelete', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromGridStores');
 				dojo.disconnect(h);
 			});
-			this.reactor.reloadFieldMappingStore();
+			this.reactor.reloadGridStores();
+
+			this.comparison_grid_layout = [{
+				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
+				rows: [
+					{ field: 'Term', name: 'Term', width: 20, 
+						type: pion.widgets.TermTextCell },
+					{ field: 'Type', name: 'Comparison', width: 15, 
+						widgetClass: "pion.widgets.SimpleSelect", 
+						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
+					{ field: 'Value', name: 'Value', width: 'auto',
+						formatter: pion.xmlCellFormatter },
+					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
+						type: dojox.grid.cells.Bool},
+					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+				]
+			}];
+			this.comparison_grid = new dojox.grid.DataGrid({
+				store: this.reactor.comparison_store,
+				structure: this.comparison_grid_layout,
+				singleClickEdit: true,
+				autoHeight: true
+			}, document.createElement('div'));
+			this.comparison_grid._prev_term_type_category = this.comparison_grid.structure[0].rows[1].widgetProps.query.category;
+			this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
+			this.comparison_grid.startup();
+			this.comparison_grid.connect(this.comparison_grid, 'onCellClick', function(e) {
+				if (e.cell.name == 'Comparison') {
+					var item = this.getItem(e.rowIndex);
+					var term = this.store.getValue(item, 'Term').toString();
+					if (pion.terms.categories_by_id[term] != this._prev_term_type_category) {
+						this._prev_term_type_category = pion.terms.categories_by_id[term];
+						if (e.cell.widget) {
+							e.cell.widget.setQuery({category: pion.terms.categories_by_id[term]});
+						} else {
+							// Since the widget hasn't been created yet, we can just change widgetProps.query. 
+							// (Note that with FilteringSelect, setting widgetProps.query has the desired effect even
+							// when the widget already exists.)
+							this.structure[0].rows[1].widgetProps.query.category = pion.terms.categories_by_id[term];
+						}
+					}
+				} else if (e.cell.name == 'Delete') {
+					this.store.deleteItem(this.getItem(e.rowIndex));
+				}
+			});
+
 			var field_mapping_grid = new dojox.grid.DataGrid({
 				store: this.reactor.field_mapping_store,
 				structure: plugins.reactors.DatabaseOutputReactorDialog.grid_layout,
@@ -237,13 +373,23 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.connect(this, "onCancel", function() {this.destroyRecursive(false)});
 			this.connect(this, "execute", function() {this.destroyRecursive(false)});
 		},
-		// _updateCustomPutDataFromFieldMappingStore() will be passed arguments related to the item which triggered the call, which we ignore.
-		_updateCustomPutDataFromFieldMappingStore: function() {
-			this.reactor.updateNamedCustomPutData('custom_put_data_from_field_mapping_store');
+		_onUpdateMatchAllComparisons: function(e) {
+			this.reactor.comparison_store.match_all_comparisons = e.target.checked;
+			this.reactor.updateNamedCustomPutData('custom_put_data_from_grid_stores');
+		},
+		// _updateCustomPutDataFromGridStores() will be passed arguments related to the item which triggered the call, which we ignore.
+		_updateCustomPutDataFromGridStores: function() {
+			this.reactor.updateNamedCustomPutData('custom_put_data_from_grid_stores');
 		},
 		// _insertCustomData() is called (indirectly) when the user clicks 'Save Reactor'.
 		_insertCustomData: function() {
-			this.put_data += this.reactor.custom_put_data_from_field_mapping_store;
+			this.put_data += this.reactor.custom_put_data_from_grid_stores;
+		},
+		_handleAddNewComparison: function() {
+			this.reactor.comparison_store.newItem({
+				ID: this.reactor.comparison_store.next_id++,
+				MatchAllValues: false
+			});
 		},
 		_handleAddNewMapping: function() {
 			this.reactor.field_mapping_store.newItem({ID: this.reactor.field_mapping_store.next_id++});
@@ -266,7 +412,3 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 		}
 	]
 }];
-
-plugins.reactors.DatabaseOutputReactor.option_defaults = {
-	IgnoreInsert: false
-}

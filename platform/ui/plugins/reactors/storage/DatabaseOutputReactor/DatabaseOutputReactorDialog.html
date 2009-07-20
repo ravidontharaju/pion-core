@@ -61,6 +61,16 @@
 		<!--start div to set padding for bottom half of dialog-->
 		<div class="reactor_dialog_bottom">
 
+			<div class="s_reactor_grid_blocks">
+				<h2>Inclusion Conditions</h2>
+				<input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="MatchAllComparisons" dojoAttachEvent="onClick: _onUpdateMatchAllComparisons" />
+				<label>Match All Comparisons</label>
+				<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node" style="width: 618px"></div>
+				<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
+			</div>
+
+			<br />
+
 			<!--start field mappings-->
 			<div class="s_reactor_grid_blocks">
 				<h2>Field Mappings</h2>
