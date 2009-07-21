@@ -127,10 +127,14 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 							Term: store.getValue(field_mapping, '@term')
 						};
 						if (index_present) {
-							new_item.Indexed = (index != 'false'); // 'index' could be true, false, or an SQL index definition 
+							if (index == 'false' || index == 'true' || index == 'unique') {
+								new_item.IndexOption = index;
+							} else {
+								new_item.IndexOption = 'custom';
+							}
 							new_item.Index = index; // Won't be displayed, but needs to be saved.
 						} else {
-							new_item.Indexed = plugins.reactors.DatabaseOutputReactor.grid_option_defaults.Indexed;
+							new_item.IndexOption = 'false';
 						}
 						if (sql_type_present) {
 							new_item.SqlType = sql_type; // Won't be displayed, but needs to be saved.
@@ -175,18 +179,17 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 						onItem: function(item) {
 							put_data += '<Field term="' + fm_store.getValue(item, 'Term') + '"';
 							var index = fm_store.getValue(item, 'Index');
-							if (fm_store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
-								if (index === undefined || index == 'false') {
-									put_data += ' index="true"';
-								} else {
-									put_data += ' index="' + index + '"';
-								}
-							} else {
-								// The 'Indexed' column is not checked, so don't insert 'index' attribute unless
+							var index_option = fm_store.getValue(item, 'IndexOption');
+							if (index_option == 'custom') {
+								put_data += ' index="' + index + '"';
+							} else if (index_option == 'false') {
+								// Since 'false' is the default, don't insert 'index' attribute unless
 								// it was explicitly set to 'false' in the original configuration.
 								if (index == 'false') {
 									put_data += ' index="false"';
 								}
+							} else { // i.e. 'true' or 'unique'
+								put_data += ' index="' + index_option + '"';
 							}
 							if (fm_store.hasAttribute(item, 'SqlType')) {
 								put_data += ' sql="' + fm_store.getValue(item, 'SqlType') + '"';
@@ -216,8 +219,7 @@ plugins.reactors.DatabaseOutputReactor.option_defaults = {
 };
 
 plugins.reactors.DatabaseOutputReactor.grid_option_defaults = {
-	MatchAllValues: false,
-	Indexed: false
+	MatchAllValues: false
 };
 
 dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
@@ -261,8 +263,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			store.fetch({
 				onItem: function(item) {
 					post_data += '<Field term="' + store.getValue(item, 'Term') + '"';
-					if (store.getValue(item, 'Indexed') == true) { // i.e. if 'Indexed' column is checked
-						post_data += ' index="true"';
+					var index_option = store.getValue(item, 'IndexOption');
+					if (index_option != 'false') { // i.e. 'true' or 'unique'
+						post_data += ' index="' + index_option + '"';
 					}
 					post_data += '>';
 					post_data += pion.escapeXml(store.getValue(item, 'Field'));
@@ -279,7 +282,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			this.post_data += this.custom_post_data_from_field_mapping_store;
 		},
 		_handleAddNewMapping: function() {
-			this.field_mapping_store.newItem({ID: this.field_mapping_store.next_id++});
+			this.field_mapping_store.newItem({
+				ID: this.field_mapping_store.next_id++,
+				IndexOption: 'false'
+			});
 		}
 	}
 );
@@ -364,6 +370,18 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 					this.store.deleteItem(this.getItem(e.rowIndex));
 				}
 			});
+			field_mapping_grid.canEdit = function(cell, row_index) {
+				switch (cell.name) {
+					// Disable editing of 'Index' cell if value is 'custom'.
+					case 'Index':
+						var item = this.getItem(row_index);
+						var index_option = this.store.getValue(item, 'IndexOption').toString();
+						return index_option != 'custom';
+
+					default:
+						return true;
+				}
+			}
 
 			// See comments in FilterReactorDialog.postCreate() before copying these anywhere.
 			// Adding these fixed a problem where opening the configuration dialog for the second (or later) time
@@ -392,7 +410,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			});
 		},
 		_handleAddNewMapping: function() {
-			this.reactor.field_mapping_store.newItem({ID: this.reactor.field_mapping_store.next_id++});
+			this.reactor.field_mapping_store.newItem({
+				ID: this.reactor.field_mapping_store.next_id++,
+				IndexOption: 'false'
+			});
 		}
 	}
 );
@@ -405,8 +426,8 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
 		{ field: 'Term', name: 'Term', width: 'auto', 
 			type: pion.widgets.TermTextCell },
-		{ field: 'Indexed', name: 'Indexed', styles: 'text-align: center;', width: 4, 
-			type: dojox.grid.cells.Bool},
+		{ field: 'IndexOption', name: 'Index', styles: 'text-align: center;', width: 4, 
+			type: dojox.grid.cells.Select, options: ['true', 'false', 'unique'] },
 		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
 			formatter: function() { return pion.makeDeleteButton(); } // This looks redundant, but pion.makeDeleteButton() isn't defined yet when this file is loaded.
 		}
