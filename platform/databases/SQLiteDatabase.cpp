@@ -113,8 +113,13 @@ void SQLiteDatabase::open(unsigned partition)
 
 void SQLiteDatabase::close(void)
 {
-	if (m_sqlite_db != NULL)
+	if (m_sqlite_db != NULL) {
+		// This should never happen -- but let's close all prepared statements that might have been left open, so close will succeed
+		sqlite3_stmt *pStmt;
+		while ((pStmt = sqlite3_next_stmt(m_sqlite_db, 0)) != 0)
+			sqlite3_finalize(pStmt);
 		sqlite3_close(m_sqlite_db);
+	}
 	m_sqlite_db = NULL;
 }
 
