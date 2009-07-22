@@ -40,9 +40,9 @@ const std::string			DatabaseInserter::INDEX_ATTRIBUTE_NAME = "index";
 const std::string			DatabaseInserter::SQL_ATTRIBUTE_NAME = "sql";
 const char *				DatabaseInserter::CHARSET_FOR_TABLES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 const std::string			DatabaseInserter::IGNORE_INSERT_ELEMENT_NAME = "IgnoreInsert";
-const std::string			DatabaseInserter::MAX_KEY_AGE_ELEMENT_NAME = "MaxAge";
+const std::string			DatabaseInserter::MAX_KEY_AGE_ELEMENT_NAME = "KeyCacheMaxAge";
 const boost::uint32_t		DatabaseInserter::DEFAULT_MAX_AGE = 0;
-const std::string			DatabaseInserter::EVENT_AGE_ELEMENT_NAME = "AgeTerm";
+const std::string			DatabaseInserter::EVENT_AGE_ELEMENT_NAME = "KeyCacheAgeTerm";
 
 
 // DatabaseInserter member functions
