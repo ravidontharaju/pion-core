@@ -31,7 +31,7 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>
-			<Match>&lt;TITLE&gt;(.*)&lt;/TITLE&gt;</Match>
+			<Match>&lt;TITLE&gt;(.*?)&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
 			<ContentType>^text/html</ContentType>
 			<MaxSize>10240</MaxSize>
@@ -68,7 +68,7 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>
-			<Match>&lt;TITLE&gt;(.*)&lt;/TITLE&gt;</Match>
+			<Match>&lt;TITLE&gt;(.*?)&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
 			<ContentType>^text/html</ContentType>
 			<MaxSize>10240</MaxSize>
