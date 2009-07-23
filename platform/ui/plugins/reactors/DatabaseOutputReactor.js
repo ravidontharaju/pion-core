@@ -305,10 +305,13 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();
+				_this._checkForUniqueIndex();
 				_this.connect(_this.reactor.comparison_store, 'onSet', '_updateCustomPutDataFromGridStores');
 				_this.connect(_this.reactor.comparison_store, 'onDelete', '_updateCustomPutDataFromGridStores');
 				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_updateCustomPutDataFromGridStores');
 				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_updateCustomPutDataFromGridStores');
+				_this.connect(_this.reactor.field_mapping_store, 'onSet', '_checkForUniqueIndex');
+				_this.connect(_this.reactor.field_mapping_store, 'onDelete', '_checkForUniqueIndex');
 				dojo.disconnect(h);
 			});
 			this.reactor.reloadGridStores();
@@ -398,6 +401,42 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		// _updateCustomPutDataFromGridStores() will be passed arguments related to the item which triggered the call, which we ignore.
 		_updateCustomPutDataFromGridStores: function() {
 			this.reactor.updateNamedCustomPutData('custom_put_data_from_grid_stores');
+		},
+		_checkForUniqueIndex: function() {
+			// This is called whenever a field mapping row is changed or deleted.
+			// If there is any 'Index' cell with value 'unique' or 'custom', the "key cache" parameter edit boxes 
+			// are enabled, otherwise they are disabled and their values cleared.
+			// (A custom index is treated as unique because it might be unique; it's the server's job to return an 
+			// error if there are custom indexes, but no unique indexes (custom or otherwise), and a non-zero
+			// Key Cache Max Age is specified.)
+			var _this = this;
+			var unique_index_exists = false;
+			var fm_store = this.reactor.field_mapping_store;
+			fm_store.fetch({
+				onItem: function(item) {
+					var index = fm_store.getValue(item, 'Index');
+					var index_option = fm_store.getValue(item, 'IndexOption');
+					if (index_option == 'unique' || index_option == 'custom') {
+						unique_index_exists = true;
+					}
+				},
+				onComplete: function() {
+					if (unique_index_exists) {
+						dojo.removeClass(_this.key_cache_max_age_label, 'disabled');
+						_this.key_cache_max_age.attr('disabled', false);
+						dojo.removeClass(_this.key_cache_age_term_label, 'disabled');
+						_this.key_cache_age_term.attr('disabled', false);
+					} else {
+						dojo.addClass(_this.key_cache_max_age_label, 'disabled');
+						_this.key_cache_max_age.attr('disabled', true);
+						_this.key_cache_max_age.attr('value', '');
+						dojo.addClass(_this.key_cache_age_term_label, 'disabled');
+						_this.key_cache_age_term.attr('disabled', true);
+						_this.key_cache_age_term.attr('value', '');
+					}
+				},
+				onError: pion.handleFetchError
+			});
 		},
 		// _insertCustomData() is called (indirectly) when the user clicks 'Save Reactor'.
 		_insertCustomData: function() {
