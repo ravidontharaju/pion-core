@@ -74,7 +74,6 @@ if ($PLATFORM =~ /^win32/i) {
 	$PION_SQLITE_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-sqlite." . $SHARED_LIB_SUFFIX);
 	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 	@PLATFORM_PLUGINS = bsd_glob("platform/" . "{codecs,protocols,databases,reactors,services}" . "/.libs/*." . $PLUGIN_LIB_SUFFIX);
-	$WINUTILS_GLOB = File::Spec->catfile( ("winutils", ($BIN_DIR), "release"), "*.exe");
 } else {
 	$PION_COMMON_GLOB = File::Spec->catfile( ("common", "src", ".libs"), "libpion-common-*." . $SHARED_LIB_SUFFIX);
 	$PION_NET_GLOB = File::Spec->catfile( ("net", "src", ".libs"), "libpion-net-*." . $SHARED_LIB_SUFFIX);
@@ -189,11 +188,6 @@ if ($PLATFORM =~ /^win32/i) {
 	# copy startup script
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
-
-	# copy winutils binaries
-	foreach (bsd_glob($WINUTILS_GLOB)) {
-		copy($_, $PACKAGE_DIR);
-	}
 
 	# create zip package
 	if ($NOZIP ne "nozip") {
