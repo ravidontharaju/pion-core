@@ -15,19 +15,22 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
-    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="SystemFolder" Directory_Parent="TARGETDIR" DefaultDir="System~1|SystemFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
-    <ROW Component="SHORTCUTDIR" ComponentId="{22D796A1-A83F-4D89-AE55-6D35951E6316}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="NTEventLogAppender.dll" ComponentId="{ACC3925F-6E6D-4DB9-9FDA-7190F415EF98}" Directory_="SystemFolder" Attributes="0" KeyPath="NTEventLogAppender.dll"/>
+    <ROW Component="nssm.exe" ComponentId="{57DEB182-7B67-4562-BA99-29D2B1367BA8}" Directory_="APPDIR" Attributes="0" KeyPath="nssm.exe"/>
     <ROW Component="pion_install_service.bat" ComponentId="{47296B9D-D63D-4660-BFEB-2E6AFF5BB5C0}" Directory_="APPDIR" Attributes="0" KeyPath="pion_install_service.bat"/>
     <ROW Component="pion_uninstall_service.bat" ComponentId="{9567DA08-5614-4F26-909C-577DA35F8FEE}" Directory_="APPDIR" Attributes="0" KeyPath="pion_uninstall_service.bat" Type="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="pion_uninstall_service.bat pion_install_service.bat SHORTCUTDIR"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Directory_="APPDIR" Attributes="0" Components="pion_uninstall_service.bat pion_install_service.bat NTEventLogAppender.dll nssm.exe"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="NTEventLogAppender.dll" Component_="NTEventLogAppender.dll" FileName="NTEven~1.dll|NTEventLogAppender.dll" Attributes="0" SourcePath="platform\build\3rdparty\NTEventLogAppender.dll" SelfReg="false" Sequence="3"/>
+    <ROW File="nssm.exe" Component_="nssm.exe" FileName="nssm.exe" Attributes="0" SourcePath="platform\build\3rdparty\nssm.exe" SelfReg="false" Sequence="4"/>
     <ROW File="pion_install_service.bat" Component_="pion_install_service.bat" FileName="pion_i~1.bat|pion_install_service.bat" Attributes="0" SourcePath="platform\build\pion_install_service.bat" SelfReg="false" Sequence="2"/>
     <ROW File="pion_uninstall_service.bat" Component_="pion_uninstall_service.bat" FileName="pion_u~1.bat|pion_uninstall_service.bat" Attributes="0" SourcePath="platform\build\pion_uninstall_service.bat" SelfReg="false" Sequence="1"/>
   </COMPONENT>
@@ -66,9 +69,6 @@
     <ROW Dialog_="MaintenanceWelcomeDlg" Control_="Next" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="2"/>
     <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="1"/>
     <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="3"/>
-  </COMPONENT>
-  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
-    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_DATA_SETTER" Type="51" Source="replace_path_install_service" Target="pion_install_service.bat|[APPDIR]"/>
@@ -120,10 +120,6 @@
     <ROW Module="Microsoft_VC80_CRT_x86.msm" Path="common\redist\Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
     <ROW Module="policy_8_0_Microsoft_VC80_ATL_x86.msm" Path="common\redist\policy_8_0_Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
     <ROW Module="policy_8_0_Microsoft_VC80_CRT_x86.msm" Path="common\redist\policy_8_0_Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
-  </COMPONENT>
-  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
-    <ROW Shortcut="Install_Pion_Service" Directory_="SHORTCUTDIR" Name="Instal~1|Install Pion Service" Component_="pion_install_service.bat" Target="[#pion_install_service.bat]" Description="Register Pion as Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
-    <ROW Shortcut="Remove_Pion_Service" Directory_="SHORTCUTDIR" Name="Remove~1|Remove Pion Service" Component_="pion_uninstall_service.bat" Target="[#pion_uninstall_service.bat]" Description="Unregister Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
     <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>

@@ -9,6 +9,7 @@ EXIT -1
 SET AI_EXE=%AI_DIR%\%AI_EXE%
 IF EXIST %INSTALL_PRJ% del %INSTALL_PRJ%
 copy %INSTALL_PRJ%.tmpl %INSTALL_PRJ%
+copy platform\build\win32\config\*.* %1\config\
 
 %AI_EXE% /edit %INSTALL_PRJ% /SetVersion %2
 %AI_EXE% /edit %INSTALL_PRJ% /NewSync APPDIR\ %1

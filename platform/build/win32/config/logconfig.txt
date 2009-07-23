@@ -1,0 +1,70 @@
+# ---------------------------------------------------------
+# Pion logging configuration file (Apache Log4j compatible)
+# ---------------------------------------------------------
+
+##
+## root logger configuration; syntax is LOG_LEVEL, <APPENDER>+
+##
+## Use this to log only to the console
+log4cplus.rootLogger=WARN, stdout, nteventlog
+
+##
+## Use this to log only to log files
+#log4cplus.rootLogger=WARN, logfile
+## Use this to log both to log files and the console
+#log4cplus.rootLogger=WARN, stdout, logfile
+
+##
+## NT Event Log appender configuration
+##
+log4cplus.appender.nteventlog=log4cplus::NTEventLogAppender
+log4cplus.appender.nteventlog.layout=log4cplus::PatternLayout
+log4cplus.appender.nteventlog.source=Pion
+log4cplus.appender.nteventlog.layout.ConversionPattern=%d{%H:%M:%S.%q} %-5p %c - %m%n
+
+##
+## stdout console appender configuration
+##
+log4cplus.appender.stdout=log4cplus::ConsoleAppender
+log4cplus.appender.stdout.layout=log4cplus::PatternLayout
+##
+## This is the default pattern used for console logging
+log4cplus.appender.stdout.layout.ConversionPattern=%d{%H:%M:%S.%q} %-5p %c - %m%n
+##
+## Use this pattern to include thread number, source file and line number
+#log4cplus.appender.stdout.layout.ConversionPattern=%d{%Y-%m-%d %H:%M:%S.%q} %-5p [%t] (%F:%L) %c - %m%n
+
+##
+## Pion log file configuration (to disable, remove it from the rootLogger)
+##
+log4cplus.appender.logfile=log4cplus::RollingFileAppender
+log4cplus.appender.logfile.layout=log4cplus::PatternLayout
+##
+## The name and location for the log file
+log4cplus.appender.logfile.File=./pion.log
+##
+## The frequency at which log files will be rotated
+log4cplus.appender.logfile.DatePattern='.'yyyy-MM-dd
+##
+## The maximum size of log files before they are rotated
+log4cplus.appender.logfile.MaxFileSize=100KB
+##
+## The number of backup log files to keep
+log4cplus.appender.logfile.MaxBackupIndex=10
+##
+## This is the default pattern used for the log file
+#log4cplus.appender.logfile.layout.ConversionPattern=%d %-5p %c - %m%n
+##
+## Use this pattern to include thread number, source file and line number
+log4cplus.appender.logfile.layout.ConversionPattern=%d %-5p [%t] (%F:%L) %c - %m%n
+
+##
+## Log level settings
+##
+## Set the default logging settings
+log4cplus.logger.pion=INFO
+log4cplus.logger.pion.net=WARN
+log4cplus.logger.pion.platform=WARN
+log4cplus.logger.pion.server=WARN
+log4cplus.logger.pion.plugins=WARN
+log4cplus.logger.pion.enterprise=WARN
