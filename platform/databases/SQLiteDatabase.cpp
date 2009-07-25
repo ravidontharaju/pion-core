@@ -91,6 +91,10 @@ void SQLiteDatabase::open(unsigned partition)
 	// If Partitioning: Change "name.db" into "name_001.db" or, "name" into "name_001.db"
 	std::string dbname = dbPartition(m_database_name, partition);
 
+	// We'll try to enable the shared cache
+	if (sqlite3_enable_shared_cache(1) != SQLITE_OK)
+		throw SQLiteAPIException(getSQLiteError());
+
 	// open up the database
 //	if (sqlite3_open_v2(m_database_name.c_str(), &m_sqlite_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
 	if (sqlite3_open_v2(dbname.c_str(), &m_sqlite_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX, NULL) != SQLITE_OK) {
