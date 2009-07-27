@@ -120,6 +120,12 @@ public:
 	virtual bool checkRecoveryPacket(bool request, const char* ptr, size_t len);
 
 	/**
+	 * called by SnifferReactor when initializing the protocol.
+	 * @param syn_ack_time time between SYN+ACK packet and it's acknowledgment
+	 * @param new_conn
+	 */
+	virtual void setConnectionData(boost::uint32_t syn_ack_time, bool new_conn); 
+	/**
 	 * sets configuration parameters for this Protocol
 	 *
 	 * @param v the Vocabulary that this Protocol will use to describe Terms
