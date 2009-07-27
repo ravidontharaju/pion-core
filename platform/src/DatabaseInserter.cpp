@@ -229,8 +229,8 @@ void DatabaseInserter::stop(void)
 	boost::mutex::scoped_lock queue_lock(m_queue_mutex);
 	if (m_is_running) {
 		// set flag to notify worker thread to shutdown
-		PION_LOG_DEBUG(m_logger, "Stopping worker thread: " << m_database_id);
 		m_is_running = false;
+		PION_LOG_DEBUG(m_logger, "Stopping worker thread: " << m_database_id);
 		m_wakeup_worker.notify_one();
 		queue_lock.unlock();
 
@@ -266,6 +266,10 @@ std::size_t DatabaseInserter::getKeyCacheSize(void) const
 
 void DatabaseInserter::insert(const EventPtr& e)
 {
+	// if not running... there might not be filter rules...
+	if (! m_is_running)
+		return;
+
 	// check filter rules first
 	if ( m_rules(e) ) {
 
