@@ -120,7 +120,7 @@ if test "$without_yajl" != "true"; then
 	LIBS_SAVED="$LIBS"
 	LIBS="$LIBS_SAVED -lyajl"
 	AC_MSG_CHECKING(linking with yajl)
-	AC_TRY_LINK([#include <yajl/yajl_gen.h>],[ yajl_gen handle = yajl_gen_alloc(0); yajl_gen_free(handle); return(0); ],
+	AC_TRY_LINK([#include <yajl/yajl_gen.h>],[ yajl_gen handle = yajl_gen_alloc(0, 0); yajl_gen_free(handle); return(0); ],
 		[ AC_MSG_RESULT(ok) ],
 		[ AC_MSG_RESULT(failed)
 		  AC_MSG_ERROR(Unable to link with the YAJL library)

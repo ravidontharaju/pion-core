@@ -36,10 +36,6 @@ bool Protocol::checkRecoveryPacket(bool request, const char* ptr, size_t len)
 	return false;
 }
 
-void Protocol::setConnectionData(boost::uint32_t syn_ack_time, bool new_conn)
-{
-}
-
 void Protocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	PlatformPlugin::setConfig(v, config_ptr);

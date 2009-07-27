@@ -222,7 +222,7 @@
 		</Term>
 		<Term id="urn:vocab:clickstream#time-taken">
 			<Type>uint32</Type>
-			<Comment>Number of microseconds that it took to complete an HTTP event</Comment>
+			<Comment>Number of microseconds that it took to complete an HTTP event, from the end user's perspective</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#cs-send-time">
 			<Type>uint32</Type>
@@ -248,13 +248,33 @@
 			<Type>uint32</Type>
 			<Comment>Number of microseconds that it took to negotiate an SSL handshake</Comment>
 		</Term>
-		<Term id="urn:vocab:clickstream#end-user-time">
-			<Type>uint32</Type>
-			<Comment>Estimated number of microseconds that it took to complete an HTTP event, from the end users' perspective</Comment>
-		</Term>
 		<Term id="urn:vocab:clickstream#data-center-time">
 			<Type>uint32</Type>
 			<Comment>Number of microseconds from the last request packet to the last response packet</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cp-rtt">
+			<Type>uint32</Type>
+			<Comment>Average round trip time in microseconds from the client to the Pion server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#ps-rtt">
+			<Type>uint32</Type>
+			<Comment>Average round trip time in microseconds from the Pion server to the protocol server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cp-rtt-sum">
+			<Type>uint64</Type>
+			<Comment>Sum of all round trip time measurements from the client to the Pion server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#ps-rtt-sum">
+			<Type>uint64</Type>
+			<Comment>Sum of all round trip time measurements from the Pion server to the protocol server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cp-rtt-packets">
+			<Type>uint32</Type>
+			<Comment>Number of round trip time measurements from the client to the Pion server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#ps-rtt-packets">
+			<Type>uint32</Type>
+			<Comment>Number of round trip time measurements from the Pion server to the protocol server</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#page-load">
 			<Type>uint32</Type>
