@@ -190,15 +190,15 @@ void DatabaseInserter::start(void)
 		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 		PION_ASSERT(m_database_ptr);
 
-		// open up the database if it isn't already open
-		m_database_ptr->open(m_partition);
-		PION_ASSERT(m_database_ptr->is_open());
-
 		if (m_wipe) {
 			m_database_ptr->dropTable(m_table_name, m_partition);
 			PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
 		}
 
+		// open up the database if it isn't already open
+		// TODO: This only works with SQLite (wiping before opening)
+		m_database_ptr->open(m_partition);
+		PION_ASSERT(m_database_ptr->is_open());
 
 		// create the database table if it does not yet exist
 		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
