@@ -6,4 +6,4 @@ SUBDIRS = include src codecs protocols databases reactors server services @PION_
 
 EXTRA_DIST = *.vcproj build/*.vsprops build/README* build/appIcon.icns \
 	build/*.sh build/*.pl build/*.bat build/pion-icon.png build/config \
-	build/rpm build/*.pdf config doc ui build/3rdparty
+	build/rpm build/*.pdf config doc ui build/3rdparty build/win32/config
