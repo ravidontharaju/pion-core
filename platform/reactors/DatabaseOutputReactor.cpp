@@ -44,22 +44,29 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	try {
 		// stop for config changes, but cache running status
 		// so that it can be restarted when finished
-		const bool was_running = m_inserter.isRunning();
-		m_inserter.stop();
+		bool was_running = false;
+		if (m_inserter) {
+			was_running = m_inserter->isRunning();
+			if (was_running)
+				m_inserter->stop();
+		}
+
+		// This will destruct earlier, if it existed
+		m_inserter.reset(new pion::platform::DatabaseInserter());
 	
 		// update reactor base class config
 		Reactor::setConfig(v, config_ptr);
 	
 		// initialize inserter parameters
-		m_inserter.setLogger(m_logger);
-		m_inserter.setDatabaseManager(getDatabaseManager());
+		m_inserter->setLogger(m_logger);
+		m_inserter->setDatabaseManager(getDatabaseManager());
 		
 		// update inserter config
-		m_inserter.setConfig(v, config_ptr);
+		m_inserter->setConfig(v, config_ptr);
 		
 		// restart inserter if it was running
 		if (was_running)
-			m_inserter.start();
+			m_inserter->start();
 	} catch (...) {
 		m_is_running = false;
 		throw;
@@ -71,13 +78,15 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Reactor base class that might be needed
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
-	m_inserter.updateVocabulary(v);
+	if (m_inserter)
+		m_inserter->updateVocabulary(v);
 }
 
 void DatabaseOutputReactor::updateDatabases(void)
 {
 	ConfigWriteLock cfg_lock(*this);
-	m_inserter.updateDatabases();
+	if (m_inserter)
+		m_inserter->updateDatabases();
 }
 
 void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
@@ -88,19 +97,19 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	writeStatsOnlyXML(out);
 
 	// write number of events queued for insertion
-	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_inserter.getEventsQueued()
+	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_inserter->getEventsQueued()
 	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
 
 	// write size of the key cache
-	out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << m_inserter.getKeyCacheSize()
+	out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << m_inserter->getKeyCacheSize()
 	    << "</" << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << std::endl;
 
 	// In addition; if full status is requested, get Database/Table/Fields
 	if (branches.size() > 2 && branches[2] == "full") {
-		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter.getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
-			<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter.getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
-		Query::FieldMap field_map(m_inserter.getFieldMap());
-		Query::IndexMap index_map(m_inserter.getIndexMap());
+		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter->getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
+			<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter->getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
+		Query::FieldMap field_map(m_inserter->getFieldMap());
+		Query::IndexMap index_map(m_inserter->getIndexMap());
 		for (unsigned int i = 0; i < field_map.size(); i++) {
 			// <Field id="0" col="dbcol">vocab:uri</Field>
 			// <Field id="0" col="dbcol" index="true">vocab:uri</Field>
@@ -120,7 +129,8 @@ void DatabaseOutputReactor::start(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (! m_is_running) {
 		m_is_running = true;
-		m_inserter.start();
+		if (m_inserter)
+			m_inserter->start();
 	}
 }
 
@@ -129,14 +139,15 @@ void DatabaseOutputReactor::stop(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (m_is_running) {
 		m_is_running = false;
-		m_inserter.stop();
+		if (m_inserter)
+			m_inserter->stop();
 	}
 }
 
 void DatabaseOutputReactor::process(const EventPtr& e)
 {
 	// add the event to the insert queue
-	m_inserter.insert(e);
+	m_inserter->insert(e);
 
 	// deliver the event to other Reactors (if any are connected)
 	deliverEvent(e);

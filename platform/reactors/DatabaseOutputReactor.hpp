@@ -97,7 +97,10 @@ public:
 	virtual void stop(void);
 
 	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; m_inserter.setLogger(log_ptr); }
+	inline void setLogger(PionLogger log_ptr) { 
+		m_logger = log_ptr;
+		m_inserter->setLogger(log_ptr);
+	}
 
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
@@ -123,8 +126,10 @@ private:
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
+	typedef boost::shared_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
+
 	/// class that manages insertion of events into the database
-	pion::platform::DatabaseInserter		m_inserter;
+	DatabaseInserterPtr						m_inserter;
 };
 
 
