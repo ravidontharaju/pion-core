@@ -44,12 +44,9 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 	try {
 		// stop for config changes, but cache running status
 		// so that it can be restarted when finished
-		bool was_running = false;
-		if (m_inserter) {
-			was_running = m_inserter->isRunning();
-			if (was_running)
-				m_inserter->stop();
-		}
+		bool was_running = m_is_running;
+		if (m_is_running)
+		  stop();
 
 		// This will destruct earlier, if it existed
 		m_inserter.reset(new pion::platform::DatabaseInserter());
@@ -66,7 +63,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		
 		// restart inserter if it was running
 		if (was_running)
-			m_inserter->start();
+			start();
 	} catch (...) {
 		m_is_running = false;
 		throw;
