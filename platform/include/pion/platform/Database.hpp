@@ -160,8 +160,9 @@ public:
 	 * runs a simple query, ignoring any results returned
 	 *
 	 * @param sql_query SQL query to execute
+	 * @param suppress Suppress errors/exceptions
 	 */
-	virtual void runQuery(const std::string& sql_query) = 0;
+	virtual void runQuery(const std::string& sql_query, bool suppress = false) = 0;
 
 	/**
 	 * adds a compiled SQL query to the database

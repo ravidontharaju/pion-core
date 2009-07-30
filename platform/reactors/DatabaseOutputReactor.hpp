@@ -126,7 +126,7 @@ private:
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
-	typedef boost::shared_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
+	typedef boost::scoped_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
 
 	/// class that manages insertion of events into the database
 	DatabaseInserterPtr						m_inserter;

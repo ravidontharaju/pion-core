@@ -127,14 +127,14 @@ void SQLiteDatabase::close(void)
 	m_sqlite_db = NULL;
 }
 
-void SQLiteDatabase::runQuery(const std::string& sql_query)
+void SQLiteDatabase::runQuery(const std::string& sql_query, bool suppress)
 {
 	// sanity checks
 	PION_ASSERT(is_open());
 	PION_ASSERT(! sql_query.empty());
 
 	// execute the query
-	if (sqlite3_exec(m_sqlite_db, sql_query.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
+	if (sqlite3_exec(m_sqlite_db, sql_query.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK && !suppress)
 		throw SQLiteAPIException(getSQLiteError());
 }
 
