@@ -1,1 +1,1 @@
-"{APPDIR}nssm.exe" install2cons "pion-community" "Atomic Labs Pion (Community Edition)" "Pion is your friendly neighborhood complex event processing solution." "{APPDIR}pion.exe" "-c config\platform.xml"
+"{APPDIR}nssm.exe" install2cons "pion-community" "Atomic Labs Pion (Community Edition)" "Provides data capture, processing and integration capabilities for analytics." "{APPDIR}pion.exe" "-c config\platform.xml"
