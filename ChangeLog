@@ -1,3 +1,25 @@
+Version 2.1.4 (2009-07-31)
+==========================
+
+* Switched default logging to use log4cplus 1.0.3 instead of log4cxx (274, 514)
+* Updated and merged in the latest version of the boost.lockfree library (647)
+* Added PionId class to replace dependency on the OSSP UUID library (515)
+* The Unix build scripts now auto-detect everything correctly (591)
+* Fixed copy methods for HTTPMessage, HTTPRequest & HTTPResponse (590)
+* Added setMaxContentLength() method to HTTPServer (589)
+* Added detailed documentation and screenshots for all Pion reactors (315)
+* A new MSI installer now automates installation of Pion on Windows (276)
+* Pion now runs as a service on Windows and logs to the OS Event Log (211, 284)
+* Updated the JSONCodec to use YAJL library version 1.0.5 (646)
+* Reduced the default stack size of threads in the start_pion script (570)
+* Created a new DatabaseInserter class based upon DBOR refactoring (612)
+* Replaced string storage in Events with reference-counting PionBlob (252)
+* DatabaseInserter support for indexed field mappings (605, 659)
+* DatabaseInserter support for unique index cache (658
+* DatabaseInserter no longer stops the Reactor if database is busy (656)
+* Fixed various concurrency bugs in PionPerformanceTests (648)
+
+
 Version 2.0.10 (2009-06-29)
 ===========================
 
