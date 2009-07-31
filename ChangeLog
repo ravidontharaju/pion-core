@@ -1,3 +1,14 @@
+Version 2.1.4 (2009-07-31)
+==========================
+
+* Switched default logging to use log4cplus 1.0.3 instead of log4cxx (274, 514)
+* Updated and merged in the latest version of the boost.lockfree library (647)
+* Added PionId class to replace dependency on the OSSP UUID library (515)
+* The Unix build scripts now auto-detect everything correctly (591)
+* Fixed copy methods for HTTPMessage, HTTPRequest & HTTPResponse (590)
+* Added setMaxContentLength() method to HTTPServer (589)
+
+
 Version 2.0.8 (2009-06-05)
 ==========================
 * Fixed bug with "./configure --with-debug" failing on boost thread tests (598)
