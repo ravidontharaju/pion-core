@@ -195,43 +195,44 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	 */
 inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term, const Event::ConstIterator ec)
 {
+	std::ostringstream ss;
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
 		case Vocabulary::TYPE_OBJECT:
 			// not serializable
-			s.clear();
+			ss.clear();
 			break;
 		case Vocabulary::TYPE_INT8:
 		case Vocabulary::TYPE_INT16:
 		case Vocabulary::TYPE_INT32:
-			s = boost::get<const boost::int32_t&>(ec->value);
+			ss << boost::get<const boost::int32_t&>(ec->value);
 			break;
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_UINT16:
 		case Vocabulary::TYPE_UINT32:
-			s = boost::get<const boost::uint32_t&>(ec->value);
+			ss << boost::get<const boost::uint32_t&>(ec->value);
 			break;
 		case Vocabulary::TYPE_INT64:
-			s = boost::get<const boost::int64_t&>(ec->value);
+			ss << boost::get<const boost::int64_t&>(ec->value);
 			break;
 		case Vocabulary::TYPE_UINT64:
-			s = boost::get<const boost::uint64_t&>(ec->value);
+			ss << boost::get<const boost::uint64_t&>(ec->value);
 			break;
 		case Vocabulary::TYPE_FLOAT:
-			s = boost::get<const float&>(ec->value);
+			ss << boost::get<const float&>(ec->value);
 			break;
 		case Vocabulary::TYPE_DOUBLE:
-			s = boost::get<const double&>(ec->value);
+			ss << boost::get<const double&>(ec->value);
 			break;
 		case Vocabulary::TYPE_LONG_DOUBLE:
-			s = boost::get<const long double&>(ec->value);
+			ss << boost::get<const long double&>(ec->value);
 			break;
 		case Vocabulary::TYPE_DATE_TIME:
 		case Vocabulary::TYPE_DATE:
 		case Vocabulary::TYPE_TIME:
 			{
 				pion::PionTimeFacet f(term.term_format);
-				s = f.toString(boost::get<const PionDateTime&>(ec->value));
+				ss << f.toString(boost::get<const PionDateTime&>(ec->value));
 				break;
 			}
 		case Vocabulary::TYPE_SHORT_STRING:
@@ -240,9 +241,10 @@ inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term,
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
 		case Vocabulary::TYPE_ZBLOB:
-			s = boost::get<const Event::BlobType&>(ec->value).get();
+			ss << boost::get<const Event::BlobType&>(ec->value).get();
 			break;
 	}
+	s = ss.str();
 	return s;
 }
 
