@@ -461,7 +461,7 @@ inline char * LogCodec::cstyle(char *cstring)
 {
 	char *ptr = cstring;
 	size_t len = strlen(cstring);
-	int num, nlen;
+	size_t num, nlen;
 
 	while ( (ptr = strchr(ptr, '\\')) ) {
 		nlen = 1;

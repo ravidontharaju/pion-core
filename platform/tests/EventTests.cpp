@@ -84,9 +84,9 @@ BOOST_AUTO_TEST_CASE(checkEventAllocatorIsOk) {
 	event_ptr->setInt(m_plain_int_term.term_ref, 24);
 	event_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224);
 	event_ptr->setDateTime(m_date_term.term_ref, PionDateTime(boost::gregorian::date(2007, 4, 5)));
-	
+
 	event_ptr->~Event();
-	m_event_factory.getAllocator().free(event_ptr, sizeof(Event));	
+	m_event_factory.getAllocator().free(event_ptr, sizeof(Event));
 }
 
 BOOST_AUTO_TEST_CASE(checkEmptyEventValues) {
@@ -108,27 +108,29 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	std::string short_msg_str("short msg");
 	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
 	event_ptr->setInt(m_plain_int_term.term_ref, 24);
-	event_ptr->setUBigInt(m_big_int_term.term_ref, 2025221224);
+	event_ptr->setUBigInt(m_big_int_term.term_ref, 0x1FFFFFFFFFFFFFFFULL);
 	event_ptr->setString(m_fixed_term.term_ref, short_msg_str);
 	event_ptr->setDateTime(m_date_term.term_ref, PionDateTime(boost::gregorian::date(2007, 4, 5)));
 
 	const Event::ParameterValue *value_ptr = event_ptr->getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
 	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(*value_ptr), 24);
-	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 0x1FFFFFFFFFFFFFFF);
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_fixed_term.term_ref), short_msg_str);
 	BOOST_CHECK_EQUAL(event_ptr->getBlob(m_fixed_term.term_ref).get(), short_msg_str);
 	PionDateTime pdt = event_ptr->getDateTime(m_date_term.term_ref);
 	BOOST_CHECK_EQUAL(pdt.date().year(), 2007);
 	BOOST_CHECK_EQUAL(pdt.date().month(), 4);
 	BOOST_CHECK_EQUAL(pdt.date().day(), 5);
-	
+
 	boost::uint32_t n;
 	BOOST_CHECK(event_ptr->getInt(m_plain_int_term.term_ref, n));
 	BOOST_CHECK_EQUAL(n, 24UL);
-	BOOST_CHECK(event_ptr->getUBigInt(m_big_int_term.term_ref, n));
-	BOOST_CHECK_EQUAL(n, 2025221224UL);
-	
+
+	boost::uint64_t n64;
+	BOOST_CHECK(event_ptr->getUBigInt(m_big_int_term.term_ref, n64));
+	BOOST_CHECK_EQUAL(n64, 0x1FFFFFFFFFFFFFFF);
+
 	std::string str;
 	BOOST_CHECK(event_ptr->getString(m_fixed_term.term_ref, str));
 	BOOST_CHECK_EQUAL(str, short_msg_str);
@@ -176,12 +178,12 @@ BOOST_AUTO_TEST_CASE(checkMultipleTermValues) {
 	event_ptr->setInt(m_plain_int_term.term_ref, 100);
 	event_ptr->setInt(m_plain_int_term.term_ref, 1000);
 	event_ptr->setInt(m_plain_int_term.term_ref, 10000);
-	
+
 	BOOST_CHECK(! event_ptr->empty());
 	BOOST_CHECK(event_ptr->isDefined(m_plain_int_term.term_ref));
 	BOOST_CHECK(event_ptr->find(m_plain_int_term.term_ref) != event_ptr->end());
 	BOOST_CHECK_EQUAL(event_ptr->getInt(m_plain_int_term.term_ref) % 10, 0);
-	
+
 	Event::ValuesRange range = event_ptr->equal_range(m_plain_int_term.term_ref);
 	BOOST_CHECK(range.first == event_ptr->begin());
 	BOOST_CHECK(range.first != range.second);
