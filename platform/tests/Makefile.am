@@ -2,7 +2,7 @@
 # pion-platform automake configuration file 
 # -----------------------------------------
 
-AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include @PION_TESTS_CPPFLAGS@
+AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include @PION_TESTS_CPPFLAGS@ @PION_HAVE_JSON@
 
 check_PROGRAMS = PionPlatformUnitTests
 bin_PROGRAMS = PionPerformanceTests
