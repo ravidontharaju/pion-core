@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 	const Event::ParameterValue *value_ptr = event_ptr->getPointer(m_plain_int_term.term_ref);
 	BOOST_REQUIRE(value_ptr != NULL);
 	BOOST_CHECK_EQUAL(boost::get<boost::int32_t>(*value_ptr), 24);
-	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 0x1FFFFFFFFFFFFFFF);
+	BOOST_CHECK_EQUAL(event_ptr->getUBigInt(m_big_int_term.term_ref), 0x1FFFFFFFFFFFFFFFULL);
 	BOOST_CHECK_EQUAL(event_ptr->getString(m_fixed_term.term_ref), short_msg_str);
 	BOOST_CHECK_EQUAL(event_ptr->getBlob(m_fixed_term.term_ref).get(), short_msg_str);
 	PionDateTime pdt = event_ptr->getDateTime(m_date_term.term_ref);
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(checkEventAssignmentValues) {
 
 	boost::uint64_t n64;
 	BOOST_CHECK(event_ptr->getUBigInt(m_big_int_term.term_ref, n64));
-	BOOST_CHECK_EQUAL(n64, 0x1FFFFFFFFFFFFFFF);
+	BOOST_CHECK_EQUAL(n64, 0x1FFFFFFFFFFFFFFFULL);
 
 	std::string str;
 	BOOST_CHECK(event_ptr->getString(m_fixed_term.term_ref, str));
