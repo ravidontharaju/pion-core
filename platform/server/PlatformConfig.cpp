@@ -209,9 +209,10 @@ void PlatformConfig::openConfigFile(void)
 
 	// Step through plugin path definitions
 	m_plugin_paths.clear();
-	PionPlugin::resetPluginDirectories();
 	std::string plugin_path;
 	xmlNodePtr path_node = m_config_node_ptr->children;
+	if (ConfigManager::findConfigNodeByName(PLUGIN_PATH_ELEMENT_NAME, path_node) != NULL) 
+		PionPlugin::resetPluginDirectories();
 	while ( (path_node = ConfigManager::findConfigNodeByName(PLUGIN_PATH_ELEMENT_NAME, path_node)) != NULL)
 	{
 		// get the plug-in path value
