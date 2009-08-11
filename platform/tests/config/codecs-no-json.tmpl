@@ -286,4 +286,17 @@
     <Field term="urn:vocab:atom#entry-published">published</Field>
     <Field term="urn:vocab:atom#entry-content">content</Field>
   </Codec>
+  <Codec id="90eb7478-1629-11dd-81cb-0019e3f89cd2">
+    <Plugin>LogCodec</Plugin>
+    <Name>Stock Price Log</Name>
+    <EventType>urn:vocab:stocks#stock_event</EventType>
+    <TimeOffset>0</TimeOffset>
+    <Comment>Codec for log files with stock prices</Comment>
+    <Flush>false</Flush>
+    <Headers>false</Headers>
+    <Events/>
+    <Fields consume="false"/>
+    <Field term="urn:vocab:stocks#symbol">symbol</Field>
+    <Field term="urn:vocab:stocks#price">price</Field>
+  </Codec>
 </PionConfig>
