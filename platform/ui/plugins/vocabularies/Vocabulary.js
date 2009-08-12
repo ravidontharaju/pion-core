@@ -297,6 +297,9 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 			}
 		},
 		execute: function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			var item_object = {
 				ID: dialogFields['@id'],
 				Type: dialogFields.Type,
@@ -320,7 +323,7 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 );
 
 dojo.declare("plugins.vocabularies.VocabularyPane",
-	[ dijit.layout.AccordionPane ],
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("plugins", "vocabularies/VocabularyPane.html"),
 		postMixInProperties: function() {
@@ -336,6 +339,10 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 		},
+		getHeight: function() {
+			// TODO: replace with some computed value
+			return 450;
+		},
 		initGrid: function() {
 			var _this = this;
 			this.vocab_grid_layout = [{
@@ -343,7 +350,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				rows: [
 					{ field: 'ID', name: 'ID', width: 15, editable: false },
 					{ field: 'Type', name: 'Type', width: 15,
-						widgetClass: "pion.widgets.SimpleSelect", 
+						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.terms.type_store, searchAttr: "description"} },
 					{ field: 'Format', name: 'Format', width: 10 },
 					{ field: 'Size', name: 'Size', width: 3 },
@@ -442,10 +449,6 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				var comment_node = dojo.query('textarea.comment', _this.form.domNode)[0];
 				comment_node.value = _this.vocabulary.config.Comment? _this.vocabulary.config.Comment : '';
 	
-				_this.title = _this.vocabulary.config.Name? _this.vocabulary.config.Name : _this.vocabulary.config['@id'];
-				var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', _this.domNode)[0];
-				title_node.firstChild.nodeValue = _this.title;
-
 				_this.vocab_term_grid.setStore(_this.vocabulary.vocab_term_store);
 
 				// Wait a bit for change events on widgets to get handled.

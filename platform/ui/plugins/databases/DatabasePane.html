@@ -1,43 +1,29 @@
-<div class='dijitAccordionPane database_pane'
-	><div dojoAttachPoint='titleNode,focusNode' dojoAttachEvent='ondijitclick:_onTitleClick,onkeypress:_onTitleKeyPress,onfocus:_handleFocus,onblur:_handleFocus'
-		class='dijitAccordionTitle' wairole="tab"
-		><div class='dijitAccordionArrow'></div
-		><div class='arrowTextUp' waiRole="presentation">&#9650;</div
-		><div class='arrowTextDown' waiRole="presentation">&#9660;</div
-		><div dojoAttachPoint='titleTextNode' class='dijitAccordionText'>${title}</div></div
-	><div
-		><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'
-			class='dijitAccordionBody' wairole="tabpanel"
-			><form dojoAttachPoint="database_form" dojoType="dijit.form.Form"
-				><br /><table cellpadding="5" cellspacing="0" border="0" width="100%"
-					><tr
-						><td><label>Name</label></td
-						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
-						><td rowspan="4" valign="top" width="20">&nbsp;</td
-						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment" dojoAttachEvent="onChange:markAsChanged"></textarea></td
-					></tr
-					><tr
-						><td><label>ID</label></td
-						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
-						><td rowspan="3">&nbsp;</td
-					></tr
-					><tr
-						><td><label>Plugin&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
-					></tr
-					><tr
-						><td><label>Filename</label></td
-						><td><input dojoType="dijit.form.TextBox" name="Filename" style="width: 100%;"/></td
-					></tr
-				></table
-				><hr noshade="noshade" size="1" color="#999999"
-				><div class="save_cancel_delete"
-					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button
-					><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
-					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete2">Delete Database</button
-				></div
-			></form
+<div class='database_pane' dojoAttachPoint='containerNode'
+	><form dojoAttachPoint="form" dojoType="dijit.form.Form"
+		><br /><table cellpadding="5" cellspacing="0" border="0" width="100%"
+			><tr
+				><td><label>Name</label></td
+				><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
+				><td rowspan="4" valign="top" width="20">&nbsp;</td
+				><td rowspan="1"><label>Comments</label></td
+				><td rowspan="4" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment" dojoAttachEvent="onChange: markAsChanged"></textarea></td
+			></tr><tr
+				><td><label>ID</label></td
+				><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
+				><td rowspan="3">&nbsp;</td
+			></tr><tr
+				><td><label>Plugin&nbsp;Type</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
+			></tr><tr
+				><td><label>Filename</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Filename" style="width: 100%;"/></td
+			></tr
+		></table
+		><hr noshade="noshade" size="1" color="#999999"
+		><div class="save_cancel_delete"
+			><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: save">Save Changes</button
+			><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: cancel">Cancel Changes</button
+			><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick: delete2">Delete Database</button
 		></div
-	></div>
-</div>
+	></form
+></div>

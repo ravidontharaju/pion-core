@@ -32,7 +32,7 @@ dojo.declare("plugins.databases.DatabaseInitDialog",
 );
 
 dojo.declare("plugins.databases.DatabasePane",
-	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("plugins", "databases/DatabasePane.html"),
 		postMixInProperties: function() {
@@ -44,8 +44,8 @@ dojo.declare("plugins.databases.DatabasePane",
 			this.inherited("postCreate", arguments);
 		},
 		getHeight: function() {
-			// TODO: What makes sense here as a default?  Should this just throw an exception?
-			return 100;
+			// TODO: replace 200 with some computed value based on DatabasePane.html
+			return 200;
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.databases.config_store;
@@ -57,16 +57,11 @@ dojo.declare("plugins.databases.DatabasePane",
 				}
 			}
 			console.dir(config);
-			this.database_form.attr('value', config);
+			this.form.attr('value', config);
 
 			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
-			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
+			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
 			comment_node.value = config.Comment;
-
-			console.debug('config = ', config);
-			this.title = config.Name;
-			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
-			title_node.firstChild.nodeValue = this.title;
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;
@@ -81,10 +76,10 @@ dojo.declare("plugins.databases.DatabasePane",
 		},
 		save: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			var config = this.database_form.attr('value');
+			var config = this.form.attr('value');
 
 			// see comment in populateFromConfigItem about comment field
-			var comment_node = dojo.query('textarea.comment', this.database_form.domNode)[0];
+			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
 			config.Comment = comment_node.value;
 
 			this.put_data = '<PionConfig><Database>';

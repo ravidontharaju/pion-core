@@ -406,7 +406,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	font-size: 11px;
 }
 
-.sidebar {
+.tundra .sidebar {
 	line-height: 150%;
 	padding: 0 5px 5px 5px;
 	background:#cccccc;
@@ -426,7 +426,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	border-bottom: 1px #ffffff solid;
 }
 
-.tundra .collectionHeader .dijitAccordionTitle {
+#sidebarMain .collectionHeader {
 	background-image: none;
 	background: #ffcccc;
 	font-size: 12px;
@@ -435,7 +435,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	padding: 5px;
 }
 
-.tundra .processingHeader .dijitAccordionTitle {
+#sidebarMain .processingHeader {
 	background-image: none;
 	background: #cce5ff;
 	font-size: 12px;
@@ -444,7 +444,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	padding: 5px;
 }
 
-.tundra .storageHeader .dijitAccordionTitle {
+#sidebarMain .storageHeader {
 	background-image: none;
 	background: #cedaa6;
 	font-size: 12px;
@@ -455,7 +455,6 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 
 .reactorBucket {
 	background: #ffffff;
-	padding: 5px;
 }
 
 .connectorBucket {
@@ -860,32 +859,15 @@ The following are also available, if the need arises.
 }
 
 .unsaved_changes {
-	border: 1px dashed #666666;
-}
-
-
-.tundra .dijitAccordionPane .dijitAccordionArrow {
-	background:url("../images/arrowDown.png") no-repeat;
-}
-
-.dj_ie6 .tundra .dijitAccordionPane .dijitAccordionArrow {
-	background-image: url("../images/arrowDown.png"); 
-}
-
-.tundra .dijitAccordionPane-selected .dijitAccordionArrow {
-	background:url("../images/circleIcon.png") no-repeat;
-	margin-top:2px;
-}
-
-.dj_ie6 .tundra .dijitAccordionPane-selected .dijitAccordionArrow {
-	background-image: url("../images/circleIcon.png"); 
+	background: yellow !important;
+	/*border: 1px dashed #666666 !important;*/
 }
 
 
 /* Vocab Config Styles */
 
 
-.tundra .vocab_pane .dijitAccordionBody{
+.tundra .vocab_pane {
 	padding-left: 10px;
 	padding-right: 10px;
 	height: auto;
@@ -896,7 +878,7 @@ The following are also available, if the need arises.
 /* Codecs Config Styles */
 
 
-.tundra .codec_pane .dijitAccordionBody{
+.tundra .codec_pane {
 	padding-left: 10px;
 	padding-right: 10px;
 	height: auto;
@@ -907,8 +889,9 @@ The following are also available, if the need arises.
 /* Database Config Styles */
 
 
-.tundra .database_pane .dijitAccordionBody{
+.tundra .database_pane {
 	padding-left: 10px;
+	padding-right: 10px;
 	height: auto;
 	background: url("../images/bg-accordion-pane.png");
 }
@@ -917,7 +900,7 @@ The following are also available, if the need arises.
 /* Protocols Config Styles */
 
 
-.tundra .protocol_pane .dijitAccordionBody{
+.tundra .protocol_pane {
 	padding-left: 10px;
 	padding-right: 10px;
 	height: auto;
@@ -928,8 +911,9 @@ The following are also available, if the need arises.
 /* Users Config Styles */
 
 
-.tundra .user_pane .dijitAccordionBody{
+.tundra .user_pane {
 	padding-left: 10px;
+	padding-right: 10px;
 	height: auto;
 	background: url("../images/bg-accordion-pane.png");
 }
@@ -1002,12 +986,7 @@ The following are also available, if the need arises.
 	zoom: 1;	/* MOW: what the heck is this doing in here? */
 }
 
-/*Accordion Title Styles */
-
-
-.tundra .dijitAccordionPane .dijitAccordionTitle {
-	text-decoration: underline; 
-}
+/* Accordion Title Styles */
 
 .tundra .dijitAccordionTitle-selected {
 	text-decoration: none;

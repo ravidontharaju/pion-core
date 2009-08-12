@@ -81,6 +81,14 @@ pion.reactors.init = function() {
 		reactor_buckets[category].creator = dndSourceReactorCreator;
 	}
 
+	// Add classes for the accordion buttons, so default.css can assign each its own color.
+	// Since the buttons are created by dijit.layout.AccordionContainer from scratch, there's nowhere in the
+	// sidebar markup in index.html to put these classes.
+	var accordion_buttons = dojo.query('.dijitAccordionTitle', dojo.byId('sidebarMain')).map(dijit.byNode);
+	dojo.forEach(accordion_buttons, function(button) {
+		dojo.addClass(button.domNode, button.contentWidget['class'] + 'Header');
+	});
+
 	var store = pion.reactors.comparison_type_store;
 	store.fetch({
 		query: {category: 'generic'},
@@ -1007,7 +1015,13 @@ function showWorkspaceConfigDialog(workspace_pane) {
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
 	dialog.show();
-	dialog.execute = function(dialogFields) { updateWorkspaceConfig(dialogFields, workspace_pane); }
+	dialog.execute_already_called = false;
+	dialog.execute = function(dialogFields) {
+		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+		this.execute_already_called = true;
+
+		updateWorkspaceConfig(dialogFields, workspace_pane);
+	}
 }
 
 function updateWorkspaceConfig(dialogFields, workspace_pane) {

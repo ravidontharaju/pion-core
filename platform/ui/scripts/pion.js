@@ -109,6 +109,13 @@ pion.handleFetchError = function(errorData, request) {
 	}
 }
 
+pion.getFetchErrorHandler = function(msg) {
+	return function(errorData, request) {
+		console.error(msg);
+		return pion.handleFetchError(errorData, request);
+	}
+}
+
 // Substitutes entity references for characters that have special meaning in XML.
 pion.escapeXml = function(value) {
 	if (value === false) {
@@ -155,6 +162,12 @@ pion.xmlCellFormatter2 = function(d) {
 	if (d && d.toString()) {
 		if (d.toString().substr(0, 8) == '<button ')
 			return d;
+
+		// This is a workaround for a dojo "feature" that tries to block html formatting in cells.
+		// See http://bugs.dojotoolkit.org/ticket/9173
+		if (d.toString().substr(0, 11) == '&lt;button ')
+			return d.replace(/&lt;/g, '<');
+
 		return pion.escapeXml(d);
 	} else {
 		return this.defaultValue;
@@ -209,6 +222,10 @@ pion.makeDeleteButton = function() {
 
 pion.makeEditButton = function() {
 	return '<button dojoType=dijit.form.Button><img src="images/icon-edit.png" alt="EDIT" border="0" /></button>';
+}
+
+pion.makeInsertAboveButton = function() {
+	return '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>';
 }
 
 // These are empirical values obtained through inspecting the html in Firebug.

@@ -85,6 +85,9 @@ pion.login.doLoginDialog = function(kw_args) {
 	);
 	dialog.show();
 	dialog.execute = function(dialogFields) {
+		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+		this.execute_already_called = true;
+
 		console.debug('dialogFields = ', dialogFields);
 		pion.login.latestUsername = dialogFields.Username;
 		dojo.xhrGet({

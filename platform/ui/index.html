@@ -132,13 +132,13 @@
 						</div>
 						<div id="sidebarMain" dojoType="dijit.layout.ContentPane" region="center">
 							<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
-								<div dojoType="dijit.layout.AccordionPane" class="collectionHeader" selected="true" title="Collection Reactors">
+								<div dojoType="dijit.layout.ContentPane" class="collection" selected="true" title="Collection Reactors">
 									<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
-								<div dojoType="dijit.layout.AccordionPane" class="processingHeader" title="Processing Reactors">
+								<div dojoType="dijit.layout.ContentPane" class="processing" title="Processing Reactors">
 									<div jsId="processingReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
-								<div dojoType="dijit.layout.AccordionPane" class="storageHeader" title="Storage Reactors">
+								<div dojoType="dijit.layout.ContentPane" class="storage" title="Storage Reactors">
 									<div jsId="storageReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 								</div>
 							</div>
@@ -175,48 +175,52 @@
 				</div>
 				<!-- end tabbed workspaces -->
 			</div>
-			<div id="vocab_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Vocabularies" style="width: 95%;">
+			<div id="vocab_config" dojoType="dijit.layout.ContentPane" title="Vocabularies" style="width: 95%;">
 				<div id="vocab_config_header" class="config_header">
 					<h1>Vocabulary Configuration</h1>
 				</div>
 				<div id="vocab_config_content" class="config_content">
 					<div id="vocab_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
 					<div>
 						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW VOCABULARY</button>
 					</div>
 				</div>
 			</div>
-			<div id="codec_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Codecs" style="width: 95%;">
+			<div id="codec_config" dojoType="dijit.layout.ContentPane" title="Codecs" style="width: 95%;">
 				<div id="codec_config_header" class="config_header">
 					<h1>Codec Configuration</h1>
 				</div>
 				<div id="codec_config_content" class="config_content">
 					<div id="codec_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
 					<div>
 						<button id="add_new_codec_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW CODEC</button>
 					</div>
 				</div>
 			</div>
-			<div id="database_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Databases" style="width: 95%;">
+			<div id="database_config" dojoType="dijit.layout.ContentPane" title="Databases" style="width: 95%;">
 				<div id="database_config_header" class="config_header">
 					<h1>Database Configuration</h1>
 				</div>
 				<div id="database_config_content" class="config_content">
 					<div id="database_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
 					<div>
 						<button id="add_new_database_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW DATABASE</button>
 					</div>
 				</div>
 			</div>
-			<div id="protocol_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Protocols" style="width: 95%;">
+			<div id="protocol_config" dojoType="dijit.layout.ContentPane" title="Protocols" style="width: 95%;">
 				<div id="protocol_config_header" class="config_header">
 					<h1>Protocol Configuration</h1>
 				</div>
 				<div id="protocol_config_content" class="config_content">
 					<div id="protocol_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
 					<div>
 						<button id="add_new_protocol_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW PROTOCOL</button>
@@ -225,15 +229,16 @@
 			</div>
 
 			<!--Start Users-->
-			<div id="user_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="Users" style="width: 95%;">
+			<div id="user_config" dojoType="dijit.layout.ContentPane" title="Users" style="width: 95%;">
 				<div id="user_config_header" class="config_header">
 					<h1>Users Configuration</h1>
 				</div>
 				<div id="user_config_content" class="config_content">
 					<div id="user_config_accordion" dojoType="dijit.layout.AccordionContainer">
+						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
-					<div id="user_config_controls">
-						<button dojoType=dijit.form.Button class="add_new_pane" onClick="addNewUser">ADD A NEW USER</button>
+					<div>
+						<button id="add_new_user_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW USER</button>
 					</div>
 				</div>
 			</div>

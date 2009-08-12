@@ -132,7 +132,7 @@ dojo.declare("pion.widgets.TermTextBox",
 dojo.declare("pion.widgets.TermTextCell",
 	dojox.grid.cells._Widget,
 	{
-		widgetClass: "pion.widgets.TermTextBox",
+		widgetClass: pion.widgets.TermTextBox,
 		getWidgetProps: function(inDatum) {
 			return dojo.mixin(this.inherited(arguments), {
 				value: inDatum

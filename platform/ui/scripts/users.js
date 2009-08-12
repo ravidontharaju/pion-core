@@ -2,8 +2,6 @@ dojo.provide("pion.users");
 dojo.require("pion.widgets.User");
 dojo.require("dojox.data.XmlStore");
 
-var selected_user_pane = null;
-
 pion.users.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.users.height;
@@ -12,24 +10,126 @@ pion.users.getHeight = function() {
 pion.users.config_store = new dojox.data.XmlStore({url: '/config/users'});
 
 pion.users.init = function() {
-	var url = dojo.moduleUrl('plugins', 'users.json');
-	pion.users.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
+	pion.users.selected_pane = null;
 
-	dojo.subscribe("user_config_accordion-selectChild", userPaneSelected);
+	pion.users._replaceAccordionPane = function(old_pane) {
+		var new_pane = new pion.widgets.UserPane({title: old_pane.title});
+		new_pane.uuid = old_pane.uuid;
+		new_pane.config_item = old_pane.config_item;
+		new_pane.initialized = true;
+	
+		var config_accordion = dijit.byId("user_config_accordion");
+		var idx = config_accordion.getIndexOfChild(old_pane);
+		config_accordion.pendingSelection = new_pane;
+		config_accordion.pendingRemoval = old_pane;
+		config_accordion.addChild(new_pane, idx);
+	}
+
+	pion.users._updatePane = function(pane) {
+		console.debug('Fetching item ', pane.uuid);
+		var store = pion.users.config_store;
+		store.fetch({
+			query: {'@id': pane.uuid},
+			onItem: function(item) {
+				console.debug('item: ', item);
+				pane.populateFromConfigItem(item);
+			},
+			onError: pion.handleFetchError
+		});
+
+		pion.users._adjustAccordionSize();
+		dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
+		// ???????????? Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	}
+
+	function _paneSelected(pane) {
+		console.debug('Selected ' + pane.title);
+
+		var selected_pane = pion.users.selected_pane;
+		if (pane == selected_pane) {
+			return;
+		}
+		var config_accordion = dijit.byId("user_config_accordion");
+		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
+			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
+			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another User.');
+			dialog.show();
+
+			// Return to the previously selected pane.
+			setTimeout(function(){config_accordion.selectChild(selected_pane);}, 500);
+			return;
+		}
+		setTimeout(
+			function() {
+				if (config_accordion.pendingRemoval) {
+					config_accordion.removeChild(config_accordion.pendingRemoval);
+					config_accordion.pendingRemoval = false;
+				}
+				if (! pane.initialized)
+					// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+					// then be selected, causing this function to be called again, this time with pane.initialized = true;
+					pion.users._replaceAccordionPane(pane);
+				else {
+					pion.users.selected_pane = pane;
+					pion.users._updatePane(pane);
+				}
+			},
+			config_accordion.duration + 100
+		);
+	}
+
+	function _paneAdded(pane) {
+		var config_accordion = dijit.byId("user_config_accordion");
+		setTimeout(
+			function() {
+				if (config_accordion.pendingSelection) {
+					config_accordion.selectChild(config_accordion.pendingSelection);
+					config_accordion.pendingSelection = false;
+				}
+			},
+			config_accordion.duration // Duration shouldn't be relevant here, but what should this be???
+		);
+	}
+
+	function _paneRemoved(pane) {
+	}
+
+	dojo.subscribe("user_config_accordion-selectChild", _paneSelected);
+	dojo.subscribe("user_config_accordion-addChild", _paneAdded);
+	dojo.subscribe("user_config_accordion-removeChild", _paneRemoved);
+
+	pion.users.createNewPaneFromItem = function(item) {
+		// We're doing lazy loading of User panes.  Here we create a placeholder pane,
+		// which will be replaced with a real one if and when it's selected.
+		var title = pion.escapeXml(pion.users.config_store.getValue(item, '@id'));
+		var user_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
+		user_pane.config_item = item;
+		user_pane.uuid = pion.users.config_store.getValue(item, '@id');
+		dijit.byId('user_config_accordion').addChild(user_pane);
+		return user_pane;
+	}
+
+	pion.users.createNewPaneFromStore = function(id, user_config_page_is_selected) {
+		pion.users.config_store.fetch({
+			query: {'@id': id},
+			onItem: function(item) {
+				var user_pane = pion.users.createNewPaneFromItem(item);
+				if (user_config_page_is_selected) {
+					pion.users._adjustAccordionSize();
+					dijit.byId('user_config_accordion').selectChild(user_pane);
+				}
+			},
+			onError: pion.handleFetchError
+		});
+	}
 
 	function onComplete(items, request){
 		var config_accordion = dijit.byId('user_config_accordion');
 		for (var i = 0; i < items.length; ++i) {
-			var title = pion.users.config_store.getValue(items[i], '@id');
-			var user_pane = createNewUserPane(title);
-			user_pane.config_item = items[i];
-			user_pane.uuid = pion.users.config_store.getValue(items[i], '@id');
-			config_accordion.addChild(user_pane);
+			pion.users.createNewPaneFromItem(items[i]);
 		}
-		pion.users._adjustAccordionSize();
-
 		var first_pane = config_accordion.getChildren()[0];
-		config_accordion.selectChild(first_pane);
+		config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
 	}
 
 	if (file_protocol) {
@@ -38,64 +138,56 @@ pion.users.init = function() {
 		pion.users.config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
 	}
 
-	dojo.connect(dojo.byId('add_new_user_button'), 'click', addNewUser);
-}
+	function addNewUser() {
+		var dialog = new pion.widgets.UserInitDialog();
 
-function createNewUserPane(title) {
-	var user_pane_node = document.createElement('span');
-	var user_pane = new pion.widgets.UserPane({'class': 'user_pane', title: title}, user_pane_node);
-	return user_pane;
-}
+		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-function addNewUser() {
-	var dialog = new pion.widgets.UserInitDialog();
+		dialog.show();
+		dialog.execute = function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
 
-	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+			// TODO: override pion.users.config_store._getPostContent() (see XmlStore._getPostContent())
+			// with the code below to build the post data.
+			// Then we can get rid of createNewPaneFromStore(), and do the following here:
+			// 		var item = pion.users.config_store.newItem({...});
+			// 		pion.users.createNewPaneFromItem(item);
 
-	dialog.show();
-	dialog.execute = function(dialogFields) {
-		console.debug(dialogFields);
-		var id = dialogFields['@id'];
-		delete dialogFields['@id'];
-		var post_data = '<PionConfig><User id="' + pion.escapeXml(id) + '">';
-		for (var tag in dialogFields) {
-			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-			post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
+			console.debug(dialogFields);
+			var id = dialogFields['@id'];
+			delete dialogFields['@id'];
+			var post_data = '<PionConfig><User id="' + pion.escapeXml(id) + '">';
+			for (var tag in dialogFields) {
+				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
+				post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
+			}
+			post_data += '</User></PionConfig>';
+			console.debug('post_data: ', post_data);
+
+			dojo.rawXhrPost({
+				url: '/config/users',
+				contentType: "text/xml",
+				handleAs: "xml",
+				postData: post_data,
+				load: function(response){
+					pion.users.createNewPaneFromStore(id, true);
+				},
+				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+			});
 		}
-		post_data += '</User></PionConfig>';
-		console.debug('post_data: ', post_data);
-
-		dojo.rawXhrPost({
-			url: '/config/users',
-			contentType: "text/xml",
-			handleAs: "xml",
-			postData: post_data,
-			load: function(response){
-				var config_accordion = dijit.byId('user_config_accordion');
-				var user_pane = createNewUserPane(id);
-				user_pane.uuid = id;
-				config_accordion.addChild(user_pane);
-				pion.users._adjustAccordionSize();
-				config_accordion.selectChild(user_pane);
-			},
-			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
-		});
 	}
+
+	dojo.connect(dojo.byId('add_new_user_button'), 'click', addNewUser);
 }
 
 pion.users._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('user_config_accordion');
-	var num_users = config_accordion.getChildren().length;
-	console.debug("num_users = " + num_users);
-
-	var user_pane_body_height = 210;
-	var title_height = 0;
-	if (num_users > 0) {
-		var first_pane = config_accordion.getChildren()[0];
-		title_height = first_pane.getTitleHeight();
-	}
-	var accordion_height = user_pane_body_height + num_users * title_height;
+	var accordion_height = pion.users.selected_pane.getHeight();
+	dojo.forEach(config_accordion.getChildren(), function(pane) {
+		accordion_height += pane._buttonWidget.getTitleHeight();
+	});
 	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value
@@ -103,37 +195,4 @@ pion.users._adjustAccordionSize = function() {
 	// but it's not enough, maybe because of padding.
 	pion.users.height = accordion_height + 160;
 	dijit.byId('main_stack_container').resize({h: pion.users.height});
-}
-
-function userPaneSelected(pane) {
-	console.debug('Selected ' + pane.title);
-
-	if (pane == selected_user_pane) {
-		return;
-	}
-	if (selected_user_pane && dojo.hasClass(selected_user_pane.domNode, 'unsaved_changes')) {
-		var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-		dialog.attr('content', 'Please save or cancel unsaved changes before selecting another User.');
-		dialog.show();
-
-		// Return to the previously selected pane.
-		setTimeout("dijit.byId('user_config_accordion').selectChild(selected_user_pane)", 500);
-		return;
-	}
-
-	selected_user_pane = pane;
-	console.debug('Fetching item ', pane.uuid);
-	var store = pion.users.config_store;
-	store.fetch({
-		query: {'@id': pane.uuid},
-		onItem: function(item) {
-			console.debug('item: ', item);
-			pane.populateFromConfigItem(item);
-		},
-		onError: pion.handleFetchError
-	});
-
-	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-	var slide_duration = dijit.byId('user_config_accordion').duration;
-	setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
 }

@@ -1,87 +1,76 @@
-<div class='dijitAccordionPane codec_pane'
-	><div dojoAttachPoint='titleNode,focusNode' dojoAttachEvent='ondijitclick:_onTitleClick,onkeypress:_onTitleKeyPress,onfocus:_handleFocus,onblur:_handleFocus'
-		class='dijitAccordionTitle' wairole="tab"
-		><div class='dijitAccordionArrow'></div
-		><div class='arrowTextUp' waiRole="presentation">&#9650;</div
-		><div class='arrowTextDown' waiRole="presentation">&#9660;</div
-		><div dojoAttachPoint='titleTextNode' class='dijitAccordionText'>${title}</div></div
-	><div
-		><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'
-			class='dijitAccordionBody' wairole="tabpanel"
-			><form dojoAttachPoint="form" dojoType="dijit.form.Form"
-				><br/
-				><table cellpadding="5" cellspacing="0" border="0" width="100%"
-					><tr
-						><td><label>Name</label></td
-						><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
-						><td rowspan="4" valign="top" width="20">&nbsp;</td
-						><td rowspan="1"><label>Comments</label></td
-						><td rowspan="3" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
-					></tr><tr
-						><td><label>ID</label></td
-						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
-					></tr><tr
-						><td><label>Plugin&nbsp;Type</label></td
-						><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
-					></tr><tr
-						><td><label>Event&nbsp;Type</label></td
-						><td><input dojoType="pion.widgets.SimpleSelect" name="EventType"
-								store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
-						><td><label>Time&nbsp;Offset&nbsp;(minutes)</label></td
-						><td><input dojoType="dijit.form.TextBox" name="TimeOffset" style="width: 50px;"/></td
-					></tr
-				></table
-				><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Flush"/
-				><label>Flush output stream after each write</label
-				><br/
-				><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Headers" dojoAttachEvent="onClick: updateDisabling"/
-				><label>Extended Log Format</label
-				><table cellpadding="5" cellspacing="0" border="0" width="100%" dojoAttachPoint="separators"
-					><tr
-						><th width="120px"></th
-						><th>Record Separators</th
-						><th rowspan="4" valign="top" width="20">&nbsp;</th
-						><th width="120px"></th
-						><th>Field Separators</th
-					></tr><tr
-						><td><label>Split&nbsp;Set</label></td
-						><td><input dojoType="dijit.form.TextBox" name="@event_split_set" style="width: 100%;"/></td
-						><td><label class="disable_for_ELF">Split&nbsp;Set</label></td
-						><td><input class="disable_for_ELF" dojoType="dijit.form.TextBox" name="@field_split_set" style="width: 95%;"/></td
-					></tr><tr
-						><td><label>Join&nbsp;String</label></td
-						><td><input dojoType="dijit.form.TextBox" name="@event_join_string" style="width: 100%;"/></td
-						><td><label class="disable_for_ELF">Join&nbsp;String</label></td
-						><td><input class="disable_for_ELF" dojoType="dijit.form.TextBox" name="@field_join_string" style="width: 95%;"/></td
-					></tr><tr
-						><td><label>Comment&nbsp;Char</label></td
-						><td><input dojoType="dijit.form.ValidationTextBox" regExp=".?" name="@comment_prefix" style="width: 100%;"/></td
-						><td><label class="disable_for_ELF">Consecutive&nbsp;Delimiters</label></td
-						><td
-							 ><select dojoType="pion.widgets.SimpleSelect" style="width: 95%;" name="@consec_field_delims"
-								><option value="true">equivalent to single delimiter</option
-								><option value="false">indicate empty fields</option
-							></select
-						></td
-					></tr
-				></table
-				><table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #999999;" width="99%"
-					><tr
-						><td class="matrixMainHeader">Map Field Names to Terms</td
-					></tr><tr
-						><td style="background-color: #f1f1f1;"
-							><div class="codec_grid plugin_pane_grid" dojoAttachPoint="field_mapping_grid_node"></div
-							><button dojoType=dijit.form.Button class="add_new_row" dojoAttachEvent="onClick:_handleAddNewField">ADD NEW ROW</button
-						></td
-					></tr
-				></table
-				><hr noshade="noshade" size="1" color="#999999"
-				><div class="save_cancel_delete"
-					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button
-					><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
-					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete2">Delete Codec</button
-				></div
-			></form
-		></div
-	></div>
-</div>
+<div class='codec_pane' dojoAttachPoint='containerNode'
+		><form dojoAttachPoint="form" dojoType="dijit.form.Form"
+			><br/
+			><table cellpadding="5" cellspacing="0" border="0" width="100%"
+				><tr
+					><td><label>Name</label></td
+					><td><input dojoAttachPoint="name" dojoType="dijit.form.TextBox" name="Name" style="width: 100%;"/></td
+					><td rowspan="4" valign="top" width="20">&nbsp;</td
+					><td rowspan="1"><label>Comments</label></td
+					><td rowspan="3" valign="top"><textarea rows="4" style="width: 95%" name="Comment" class="comment"></textarea></td
+				></tr><tr
+					><td><label>ID</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true" style="width: 100%;"/></td
+				></tr><tr
+					><td><label>Plugin&nbsp;Type</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
+				></tr><tr
+					><td><label>Event&nbsp;Type</label></td
+					><td><input dojoType="pion.widgets.SimpleSelect" name="EventType"
+							store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
+					><td><label>Time&nbsp;Offset&nbsp;(minutes)</label></td
+					><td><input dojoType="dijit.form.TextBox" name="TimeOffset" style="width: 50px;"/></td
+				></tr
+			></table
+			><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Flush"/
+			><label>Flush output stream after each write</label
+			><br/
+			><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="Headers" dojoAttachEvent="onClick: updateDisabling"/
+			><label>Extended Log Format</label
+			><table cellpadding="5" cellspacing="0" border="0" width="100%" dojoAttachPoint="separators"
+				><tr
+					><th width="120px"></th
+					><th>Record Separators</th
+					><th rowspan="4" valign="top" width="20">&nbsp;</th
+					><th width="120px"></th
+					><th>Field Separators</th
+				></tr><tr
+					><td><label>Split&nbsp;Set</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@event_split_set" style="width: 100%;"/></td
+					><td><label class="disable_for_ELF">Split&nbsp;Set</label></td
+					><td><input class="disable_for_ELF" dojoType="dijit.form.TextBox" name="@field_split_set" style="width: 95%;"/></td
+				></tr><tr
+					><td><label>Join&nbsp;String</label></td
+					><td><input dojoType="dijit.form.TextBox" name="@event_join_string" style="width: 100%;"/></td
+					><td><label class="disable_for_ELF">Join&nbsp;String</label></td
+					><td><input class="disable_for_ELF" dojoType="dijit.form.TextBox" name="@field_join_string" style="width: 95%;"/></td
+				></tr><tr
+					><td><label>Comment&nbsp;Char</label></td
+					><td><input dojoType="dijit.form.ValidationTextBox" regExp=".?" name="@comment_prefix" style="width: 100%;"/></td
+					><td><label class="disable_for_ELF">Consecutive&nbsp;Delimiters</label></td
+					><td
+						 ><select dojoType="pion.widgets.SimpleSelect" style="width: 95%;" name="@consec_field_delims"
+							><option value="true">equivalent to single delimiter</option
+							><option value="false">indicate empty fields</option
+						></select
+					></td
+				></tr
+			></table
+			><table cellpadding="5" cellspacing="0" border="0" style="border: 1px solid #999999;" width="99%"
+				><tr
+					><td class="matrixMainHeader">Map Field Names to Terms</td
+				></tr><tr
+					><td style="background-color: #f1f1f1;"
+						><div class="codec_grid plugin_pane_grid" dojoAttachPoint="field_mapping_grid_node"></div
+						><button dojoType=dijit.form.Button class="add_new_row" dojoAttachEvent="onClick: _handleAddNewField">ADD NEW ROW</button
+					></td
+				></tr
+			></table
+			><hr noshade="noshade" size="1" color="#999999"
+			><div class="save_cancel_delete"
+				><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: save">Save Changes</button
+				><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: cancel">Cancel Changes</button
+				><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick: delete2">Delete Codec</button
+			></div
+		></form
+></div>

@@ -19,19 +19,10 @@ pion.vocabularies.getHeight = function() {
 
 pion.vocabularies._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('vocab_config_accordion');
-	var num_vocabs = config_accordion.getChildren().length;
-	console.debug("num_vocabs = " + num_vocabs);
-
-	// TODO: replace 450 with some computed value, which takes into account the height of the grid 
-	// (in .vocab_grid in defaults.css) and the variable comment box height.
-	var vocab_pane_body_height = 450;
-
-	var title_height = 0;
-	if (num_vocabs > 0) {
-		var first_pane = config_accordion.getChildren()[0];
-		var title_height = first_pane.getTitleHeight();
-	}
-	var accordion_height = vocab_pane_body_height + num_vocabs * title_height;
+	var accordion_height = pion.vocabularies.selected_pane.getHeight();
+	dojo.forEach(config_accordion.getChildren(), function(pane) {
+		accordion_height += pane._buttonWidget.getTitleHeight();
+	});
 	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
@@ -71,6 +62,18 @@ pion.vocabularies.addNewVocabulary = function() {
 
 	dialog.show();
 	dialog.execute = function(dialogFields) {
+		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+		this.execute_already_called = true;
+
+		// TODO: override pion.vocabularies.config_store._getPostContent() (see XmlStore._getPostContent())
+		// with the code below to build the post data.
+		// Then we can get rid of createNewPaneFromStore(), and do the following here:
+		// 		var item = pion.vocabularies.config_store.newItem({
+		// 			Name: dialogFields.Name,
+		// 			Comment: dialogFields.Comment
+		// 		});
+		// 		pion.vocabularies.createNewPaneFromItem(item);
+
 		var post_data = '<PionConfig><Vocabulary>';
 		post_data += pion.makeXmlLeafElement('Name', dialogFields.Name);
 		post_data += pion.makeXmlLeafElement('Comment', dialogFields.Comment);
@@ -98,35 +101,86 @@ pion.vocabularies.addNewVocabulary = function() {
 pion.vocabularies.config_store = new dojox.data.XmlStore({url: '/config/vocabularies', rootItem: 'VocabularyConfig', attributeMap: {'VocabularyConfig.id': '@id'}});
 
 pion.vocabularies.init = function() {
+	pion.vocabularies.selected_pane = null;
 	var selected_pane = null;
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
 	var delete_col_index = attributes_by_column.length;
 
+	pion.vocabularies._replaceAccordionPane = function(old_pane) {
+		var new_pane = new plugins.vocabularies.VocabularyPane({title: old_pane.title, config: old_pane.config});
+		new_pane.uuid = old_pane.uuid;
+		new_pane.config_item = old_pane.config_item;
+		new_pane.initialized = true;
+	
+		var config_accordion = dijit.byId("vocab_config_accordion");
+		var idx = config_accordion.getIndexOfChild(old_pane);
+		config_accordion.pendingSelection = new_pane;
+		config_accordion.pendingRemoval = old_pane;
+		config_accordion.addChild(new_pane, idx);
+	}
+
+	pion.vocabularies._updatePane = function(pane) {
+		pane.populateFromServerVocabStore();
+		pion.vocabularies._adjustAccordionSize();
+		dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
+		// ???????????? Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	}
+
 	function _paneSelected(pane) {
 		console.debug('Selected ' + pane.title);
 
+		var selected_pane = pion.vocabularies.selected_pane;
 		if (pane == selected_pane) {
 			return;
 		}
+		var config_accordion = dijit.byId("vocab_config_accordion");
 		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
 			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
 			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Vocabulary.');
 			dialog.show();
-			
+
 			// Return to the previously selected pane.
-			setTimeout(function(){dijit.byId('vocab_config_accordion').selectChild(selected_pane);}, 500);
+			setTimeout(function(){config_accordion.selectChild(selected_pane);}, 500);
 			return;
 		}
-		selected_pane = pane;
-		pion.vocabularies.selected_pane = selected_pane;
-		pane.populateFromServerVocabStore();
+		setTimeout(
+			function() {
+				if (config_accordion.pendingRemoval) {
+					config_accordion.removeChild(config_accordion.pendingRemoval);
+					config_accordion.pendingRemoval = false;
+				}
+				if (! pane.initialized)
+					// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+					// then be selected, causing this function to be called again, this time with pane.initialized = true;
+					pion.vocabularies._replaceAccordionPane(pane);
+				else {
+					pion.vocabularies.selected_pane = pane;
+					pion.vocabularies._updatePane(pane);
+				}
+			},
+			config_accordion.duration + 100
+		);
+	}
 
-		//// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-		//var slide_duration = dijit.byId('vocab_config_accordion').duration;
-		//setTimeout(function(){dojo.style(pane.containerNode, "overflow", "hidden")}, slide_duration + 50);
+	function _paneAdded(pane) {
+		var config_accordion = dijit.byId("vocab_config_accordion");
+		setTimeout(
+			function() {
+				if (config_accordion.pendingSelection) {
+					config_accordion.selectChild(config_accordion.pendingSelection);
+					config_accordion.pendingSelection = false;
+				}
+			},
+			config_accordion.duration // Duration shouldn't be relevant here, but what should this be???
+		);
+	}
+
+	function _paneRemoved(pane) {
 	}
 
 	dojo.subscribe("vocab_config_accordion-selectChild", _paneSelected);
+	dojo.subscribe("vocab_config_accordion-addChild", _paneAdded);
+	dojo.subscribe("vocab_config_accordion-removeChild", _paneRemoved);
 
 	pion.vocabularies.createNewPaneFromItem = function(item) {
 		var id = pion.vocabularies.config_store.getValue(item, '@id');
@@ -160,9 +214,8 @@ pion.vocabularies.init = function() {
 				var id = vocab_pane.vocabulary.config['@id'];
 				pion.vocabularies.vocabularies_by_id[id] = vocab_pane.vocabulary;
 			}
-			pion.vocabularies._adjustAccordionSize();
 			var first_pane = config_accordion.getChildren()[0];
-			config_accordion.selectChild(first_pane);
+			config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
 		},
 		onError: pion.handleFetchError
 	});

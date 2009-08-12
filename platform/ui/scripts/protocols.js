@@ -7,8 +7,6 @@ dojo.require("dojox.data.XmlStore");
 // Protocols don't have to be listed here to be usable, but they do to be included in pion-dojo.js.
 dojo.require("plugins.protocols.HTTPProtocol");
 
-var selected_protocol_pane = null;
-
 pion.protocols.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.protocols.height;
@@ -28,6 +26,8 @@ pion.protocols.config_store.getIdentity = function(item) {
 pion.protocols.default_id = "593f044a-ac60-11dd-aba3-001cc02bd66b";
 
 pion.protocols.init = function() {
+	pion.protocols.selected_pane = null;
+
 	pion.protocols.getAllProtocolsInUIDirectory = function() {
 		var d = new dojo.Deferred();
 		var store = new dojox.data.XmlStore({url: '/config/protocols/plugins'});
@@ -72,7 +72,7 @@ pion.protocols.init = function() {
 					pion.protocols.createNewPaneFromItem(items[i]);
 				}
 				var first_pane = config_accordion.getChildren()[0];
-				config_accordion.selectChild(first_pane);
+				config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
 			},
 			onError: pion.handleFetchError
 		});
@@ -83,27 +83,112 @@ pion.protocols.init = function() {
 		.addCallback(initUsableProtocolPlugins)
 		.addCallback(initConfiguredProtocols);
 
-	dojo.subscribe("protocol_config_accordion-selectChild", protocolPaneSelected);
-
-	pion.protocols.createNewPaneFromItem = function(item) {
-		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
-		var plugin = pion.protocols.config_store.getValue(item, 'Plugin');
-		var protocol_pane_node = document.createElement('span');
+	pion.protocols._replaceAccordionPane = function(old_pane) {
+		var plugin = pion.protocols.config_store.getValue(old_pane.config_item, 'Plugin');
 		var pane_class_name = 'plugins.protocols.' + plugin + 'Pane';
 		var pane_class = dojo.getObject(pane_class_name);
 		if (pane_class) {
 			console.debug('found class ', pane_class_name);
-			var protocol_pane = new pane_class({ 'class': 'protocol_pane', title: title }, protocol_pane_node);
+			var new_pane = new pane_class({title: old_pane.title});
 		} else {
 			console.debug('class ', pane_class_name, ' not found; using plugins.protocols.ProtocolPane instead.');
-			var protocol_pane = new plugins.protocols.ProtocolPane({ 'class': 'protocol_pane', title: title }, protocol_pane_node);
+			var new_pane = new plugins.protocols.ProtocolPane({title: old_pane.title});
 		}
+		new_pane.uuid = old_pane.uuid;
+		new_pane.config_item = old_pane.config_item;
+		new_pane.initialized = true;
+
+		var config_accordion = dijit.byId("protocol_config_accordion");
+		var idx = config_accordion.getIndexOfChild(old_pane);
+		config_accordion.pendingSelection = new_pane;
+		config_accordion.pendingRemoval = old_pane;
+		config_accordion.addChild(new_pane, idx);
+	}
+
+	pion.protocols._updatePane = function(pane) {
+		console.debug('Fetching item ', pane.uuid);
+		var store = pion.protocols.config_store;
+		store.fetch({
+			query: {'@id': pane.uuid},
+			onItem: function(item) {
+				console.debug('item: ', item);
+				pane.populateFromConfigItem(item);
+			},
+			onError: pion.handleFetchError
+		});
+
+		pion.protocols._adjustAccordionSize();
+		dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
+		// ???????????? Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	}
+
+	function _paneSelected(pane) {
+		console.debug('Selected ' + pane.title);
+
+		var selected_pane = pion.protocols.selected_pane;
+		if (pane == selected_pane) {
+			return;
+		}
+		var config_accordion = dijit.byId("protocol_config_accordion");
+		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
+			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
+			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Protocol.');
+			dialog.show();
+
+			// Return to the previously selected pane.
+			setTimeout(function(){config_accordion.selectChild(selected_pane);}, 500);
+			return;
+		}
+		setTimeout(
+			function() {
+				if (config_accordion.pendingRemoval) {
+					config_accordion.removeChild(config_accordion.pendingRemoval);
+					config_accordion.pendingRemoval = false;
+				}
+				if (! pane.initialized)
+					// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+					// then be selected, causing this function to be called again, this time with pane.initialized = true;
+					pion.protocols._replaceAccordionPane(pane);
+				else {
+					pion.protocols.selected_pane = pane;
+					pion.protocols._updatePane(pane);
+				}
+			},
+			config_accordion.duration + 100
+		);
+	}
+
+	function _paneAdded(pane) {
+		var config_accordion = dijit.byId("protocol_config_accordion");
+		setTimeout(
+			function() {
+				if (config_accordion.pendingSelection) {
+					config_accordion.selectChild(config_accordion.pendingSelection);
+					config_accordion.pendingSelection = false;
+				}
+			},
+			config_accordion.duration // Duration shouldn't be relevant here, but what should this be???
+		);
+	}
+
+	function _paneRemoved(pane) {
+	}
+
+	dojo.subscribe("protocol_config_accordion-selectChild", _paneSelected);
+	dojo.subscribe("protocol_config_accordion-addChild", _paneAdded);
+	dojo.subscribe("protocol_config_accordion-removeChild", _paneRemoved);
+
+	pion.protocols.createNewPaneFromItem = function(item) {
+		// We're doing lazy loading of Protocol panes.  Here we create a placeholder pane,
+		// which will be replaced with a real one if and when it's selected.
+		var title = pion.escapeXml(pion.protocols.config_store.getValue(item, 'Name'));
+		var protocol_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
 		protocol_pane.config_item = item;
 		protocol_pane.uuid = pion.protocols.config_store.getValue(item, '@id');
 		dijit.byId('protocol_config_accordion').addChild(protocol_pane);
 		return protocol_pane;
 	}
-	
+
 	pion.protocols.createNewPaneFromStore = function(id, protocol_config_page_is_selected) {
 		pion.protocols.config_store.fetch({
 			query: {'@id': id},
@@ -126,6 +211,9 @@ pion.protocols.init = function() {
 
 		dialog.show();
 		dialog.execute = function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			console.debug(dialogFields);
 			if (plugins.protocols[dialogFields.Plugin] &&
 				plugins.protocols[dialogFields.Plugin].edition == 'Enterprise') {
@@ -137,6 +225,12 @@ pion.protocols.init = function() {
 	}
 
 	function _sendPostRequest(dialogFields) {
+		// TODO: override pion.protocols.config_store._getPostContent() (see XmlStore._getPostContent())
+		// with the code below to build the post data.
+		// Then we can get rid of createNewPaneFromStore(), and do the following here:
+		// 		var item = pion.protocols.config_store.newItem({...});
+		// 		pion.protocols.createNewPaneFromItem(item);
+
 		var post_data = '<PionConfig><Protocol>';
 		for (var tag in dialogFields) {
 			console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
@@ -168,56 +262,13 @@ pion.protocols.init = function() {
 
 pion.protocols._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('protocol_config_accordion');
-	var num_protocols = config_accordion.getChildren().length;
-	console.debug("num_protocols = " + num_protocols);
-
-	var protocol_pane_body_height = selected_protocol_pane.getHeight();
-	var title_height = 0;
-	if (num_protocols > 0) {
-		var first_pane = config_accordion.getChildren()[0];
-		title_height = first_pane.getTitleHeight();
-	}
-	var accordion_height = protocol_pane_body_height + num_protocols * title_height;
+	var accordion_height = pion.protocols.selected_pane.getHeight();
+	dojo.forEach(config_accordion.getChildren(), function(pane) {
+		accordion_height += pane._buttonWidget.getTitleHeight();
+	});
 	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
 	pion.protocols.height = accordion_height + 160;
 	dijit.byId('main_stack_container').resize({h: pion.protocols.height});
-}
-
-function protocolPaneSelected(pane) {
-	console.debug('Selected ' + pane.title);
-
-	if (pane == selected_protocol_pane) {
-		return;
-	}
-	if (selected_protocol_pane && dojo.hasClass(selected_protocol_pane.domNode, 'unsaved_changes')) {
-		var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-		dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Protocol.');
-		dialog.show();
-		
-		// Return to the previously selected pane.
-		setTimeout("dijit.byId('protocol_config_accordion').selectChild(selected_protocol_pane)", 500);
-		return;
-	}
-
-	selected_protocol_pane = pane;
-	console.debug('Fetching item ', pane.uuid);
-	var store = pion.protocols.config_store;
-	store.fetch({
-		query: {'@id': pane.uuid},
-		onItem: function(item) {
-			console.debug('item: ', item);
-			pane.populateFromConfigItem(item);
-		},
-		onError: pion.handleFetchError
-	});
-
-	// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-	var slide_duration = dijit.byId('protocol_config_accordion').duration;
-	setTimeout(function() {
-					dojo.style(pane.containerNode, "overflow", "hidden");
-					pion.protocols._adjustAccordionSize();
-			   },
-			   slide_duration + 50);
 }

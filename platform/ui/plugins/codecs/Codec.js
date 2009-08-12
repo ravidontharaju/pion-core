@@ -24,12 +24,13 @@ dojo.declare("plugins.codecs.CodecInitDialog",
 );
 
 dojo.declare("plugins.codecs.CodecPane",
-	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("plugins", "codecs/CodecPane.html"),
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 
+			//TODO: Is this still needed, since dijit.layout.ContentPane doesn't have a template?
 			// This is needed to work correctly in all of the following cases:
 			// 1) when dijit.layout.AccordionPane and plugins.codecs.CodecPane are both built (e.g. when using pion-dojo.js),
 			// 2) when dijit.layout.AccordionPane is built but plugins.codecs.CodecPane is not (e.g. when using dojo-for-pion.js), and
@@ -104,11 +105,6 @@ dojo.declare("plugins.codecs.CodecPane",
 			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
 			comment_node.value = config.Comment;
-
-			this.title = config.Name;
-			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
-			title_node.firstChild.nodeValue = this.title;
-
 			this._reloadFieldMappingStore(item);
 
 			// Wait a bit for change events on widgets to get handled.

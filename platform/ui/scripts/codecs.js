@@ -5,9 +5,6 @@ dojo.require("dojox.data.XmlStore");
 dojo.require("plugins.codecs.LogCodec");
 dojo.require("plugins.codecs.XMLCodec");
 
-var selected_codec_pane = null;
-var codec_config_store;          // one item per codec
-
 pion.codecs.getHeight = function() {
 	// set by _adjustAccordionSize
 	return pion.codecs.height;
@@ -24,24 +21,26 @@ pion.codecs.config_store.getIdentity = function(item) {
 }
 
 pion.codecs.init = function() {
-	codec_config_store = pion.codecs.config_store;
+	pion.codecs.selected_pane = null;
 
 	var url = dojo.moduleUrl('plugins', 'codecs.json');
 	pion.codecs.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
 
 	dojo.subscribe("codec_config_accordion-selectChild", codecPaneSelected);
+	dojo.subscribe("codec_config_accordion-addChild", codecPaneAdded);
+	dojo.subscribe("codec_config_accordion-removeChild", codecPaneRemoved);
 
 	pion.codecs.createNewPaneFromItem = function(item) {
 		// We're doing lazy loading of Codec panes.  Here we create a placeholder pane,
 		// which will be replaced with a real one if and when it's selected.
 		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
-		var codec_pane = new dijit.layout.AccordionPane({ title: title });
+		var codec_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
 		codec_pane.config_item = item;
 		codec_pane.uuid = pion.codecs.config_store.getValue(item, '@id');
 		dijit.byId('codec_config_accordion').addChild(codec_pane);
 		return codec_pane;
 	}
-	
+
 	pion.codecs.createNewPaneFromStore = function(id, codec_config_page_is_selected) {
 		pion.codecs.config_store.fetch({
 			query: {'@id': id},
@@ -52,7 +51,7 @@ pion.codecs.init = function() {
 					dijit.byId('codec_config_accordion').selectChild(codec_pane);
 				}
 			},
-			onError: pion.handleFetchError
+			onError: pion.getFetchErrorHandler('fetch() called by pion.codecs.createNewPaneFromStore()')
 		});
 	}
 
@@ -61,15 +60,10 @@ pion.codecs.init = function() {
 		for (var i = 0; i < items.length; ++i) {
 			pion.codecs.createNewPaneFromItem(items[i]);
 		}
-		var first_pane = config_accordion.getChildren()[0];
-		config_accordion.selectChild(first_pane);
+		config_accordion.removeChild(config_accordion.getChildren()[0]); // Remove placeholder, which causes first remaining child to be selected.
 	}
 
-	if (file_protocol) {
-		dijit.byId('codec_config_accordion').removeChild(selected_codec_pane);
-	} else {
-		codec_config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
-	}
+	pion.codecs.config_store.fetch({ onComplete: onComplete, onError: pion.getFetchErrorHandler('fetch() called by pion.codecs.init()') });
 
 	dojo.connect(dojo.byId('add_new_codec_button'), 'click', addNewCodec);
 }
@@ -82,6 +76,9 @@ function addNewCodec() {
 
 	dialog.show();
 	dialog.execute = function(dialogFields) {
+		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+		this.execute_already_called = true;
+
 		console.debug(dialogFields);
 		var post_data = '<PionConfig><Codec>';
 		for (var tag in dialogFields) {
@@ -93,7 +90,7 @@ function addNewCodec() {
 		}
 		post_data += '</Codec></PionConfig>';
 		console.debug('post_data: ', post_data);
-		
+
 		dojo.rawXhrPost({
 			url: '/config/codecs',
 			contentType: "text/xml",
@@ -112,16 +109,10 @@ function addNewCodec() {
 
 pion.codecs._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('codec_config_accordion');
-	var num_codecs = config_accordion.getChildren().length;
-	console.debug("num_codecs = " + num_codecs);
-
-	var codec_pane_body_height = selected_codec_pane.getHeight();
-	var title_height = 0;
-	if (num_codecs > 0) {
-		var first_pane = config_accordion.getChildren()[0];
-		title_height = first_pane.getTitleHeight();
-	}
-	var accordion_height = codec_pane_body_height + num_codecs * title_height;
+	var accordion_height = pion.codecs.selected_pane.getHeight();
+	dojo.forEach(config_accordion.getChildren(), function(pane) {
+		accordion_height += pane._buttonWidget.getTitleHeight();
+	});
 	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
@@ -135,21 +126,20 @@ function replaceCodecAccordionPane(old_pane) {
 	var pane_class = dojo.getObject(pane_class_name);
 	if (pane_class) {
 		console.debug('found class ', pane_class_name);
-		var new_pane = new pane_class({ 'class': 'codec_pane', title: old_pane.title });
+		var new_pane = new pane_class({title: old_pane.title});
 	} else {
 		console.debug('class ', pane_class_name, ' not found; using plugins.codecs.CodecPane instead.');
-		var new_pane = new plugins.codecs.CodecPane({ 'class': 'codec_pane', title: old_pane.title });
+		var new_pane = new plugins.codecs.CodecPane({title: old_pane.title});
 	}
 	new_pane.uuid = old_pane.uuid;
 	new_pane.config_item = old_pane.config_item;
 	new_pane.initialized = true;
 
-	// Replace the uninitialized (placeholder) pane with the real one and call selectChild() again.
 	var config_accordion = dijit.byId('codec_config_accordion');
 	var idx = config_accordion.getIndexOfChild(old_pane);
+	config_accordion.pendingSelection = new_pane;
+	config_accordion.pendingRemoval = old_pane;
 	config_accordion.addChild(new_pane, idx);
-	config_accordion.selectChild(new_pane);
-	config_accordion.removeChild(old_pane);
 }
 
 function updateCodecPane(pane) {
@@ -161,40 +151,63 @@ function updateCodecPane(pane) {
 			console.debug('item: ', item);
 			pane.populateFromConfigItem(item);
 		},
-		onError: pion.handleFetchError
+		onError: pion.getFetchErrorHandler('fetch() called by codecPaneSelected()')
 	});
+
+	pion.codecs._adjustAccordionSize();
+	dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
+	// ???????????? Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
 }
 
 function codecPaneSelected(pane) {
 	console.debug('Selected ' + pane.title);
-
-	if (pane == selected_codec_pane) {
+	var selected_pane = pion.codecs.selected_pane;
+	if (pane == selected_pane) {
 		return;
 	}
-	if (selected_codec_pane && dojo.hasClass(selected_codec_pane.domNode, 'unsaved_changes')) {
+	var config_accordion = dijit.byId("codec_config_accordion");
+	if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
 		var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
 		dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Codec.');
 		dialog.show();
-		
+
 		// Return to the previously selected pane.
-		setTimeout("dijit.byId('codec_config_accordion').selectChild(selected_codec_pane)", 500);
+		setTimeout(function(){config_accordion.selectChild(selected_pane);}, 500);
 		return;
 	}
+	setTimeout(
+		function() {
+			if (config_accordion.pendingRemoval) {
+				config_accordion.removeChild(config_accordion.pendingRemoval);
+				config_accordion.pendingRemoval = false;
+			}
+			if (! pane.initialized)
+				// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+				// then be selected, causing this function to be called again, this time with pane.initialized = true;
+				replaceCodecAccordionPane(pane);
+			else {
+				pion.codecs.selected_pane = pane;
+				updateCodecPane(pane);
+			}
+		},
+		config_accordion.duration + 100
+	);
+}
 
-	if (! pane.initialized)
-		// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
-		// then be selected, causing this function to be called again, this time with pane.initialized = true;
-		replaceCodecAccordionPane(pane);
-	else {
-		selected_codec_pane = pane;
-		updateCodecPane(pane);
-	
-		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-		var slide_duration = dijit.byId('codec_config_accordion').duration;
-		setTimeout(function() {
-						dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
-						pion.codecs._adjustAccordionSize();
-				   },
-				   slide_duration + 50);
-	}
+function codecPaneAdded(pane) {
+	console.debug("Added " + pane.title);
+	var config_accordion = dijit.byId("codec_config_accordion");
+	setTimeout(
+		function() {
+			if (config_accordion.pendingSelection) {
+				config_accordion.selectChild(config_accordion.pendingSelection);
+				config_accordion.pendingSelection = false;
+			}
+		},
+		config_accordion.duration // Duration shouldn't be relevant here, but what should this be???
+	);
+}
+
+function codecPaneRemoved(pane) {
+	console.debug("Removed " + pane.title);
 }

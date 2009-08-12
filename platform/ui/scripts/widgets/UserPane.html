@@ -1,39 +1,26 @@
-<div class='dijitAccordionPane user_pane'
-	><div dojoAttachPoint='titleNode,focusNode' dojoAttachEvent='ondijitclick:_onTitleClick,onkeypress:_onTitleKeyPress,onfocus:_handleFocus,onblur:_handleFocus'
-		class='dijitAccordionTitle' wairole="tab"
-		><div class='dijitAccordionArrow'></div
-		><div class='arrowTextUp' waiRole="presentation">&#9650;</div
-		><div class='arrowTextDown' waiRole="presentation">&#9660;</div
-		><div dojoAttachPoint='titleTextNode' class='dijitAccordionText'>${title}</div></div
-	><div
-		><div dojoAttachPoint='containerNode' style='overflow: hidden; height: 1px; display: none'
-			class='dijitAccordionBody' wairole="tabpanel"
-			><form dojoAttachPoint="form" dojoType="dijit.form.Form"
-				><br /><table cellpadding="5" cellspacing="0" border="0" width="100%"
-					><tr
-						><td><label>Username</label></td
-						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true"/></td
-					></tr
-					><tr
-						><td><label>Last name</label></td
-						><td><input dojoType="dijit.form.TextBox" name="LastName"/></td
-					></tr
-					><tr
-						><td><label>First name</label></td
-						><td><input dojoType="dijit.form.TextBox" name="FirstName"/></td
-					></tr
-					><tr
-						><td><label>Password</label></td
-						><td><input dojoType="dijit.form.TextBox" name="Password" type="password"/></td
-					></tr
-				></table
-				><hr noshade="noshade" size="1" color="#999999"
-				><div class="save_cancel_delete"
-					><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button
-					><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
-					><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete2">Delete User</button
-				></div
-			></form
+<div class='user_pane' dojoAttachPoint='containerNode'
+	><form dojoAttachPoint="form" dojoType="dijit.form.Form"
+		><br/
+		><table cellpadding="5" cellspacing="0" border="0" width="100%"
+			><tr
+				><td><label>Username</label></td
+				><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true"/></td
+			></tr><tr
+				><td><label>Last name</label></td
+				><td><input dojoType="dijit.form.TextBox" name="LastName"/></td
+			></tr><tr
+				><td><label>First name</label></td
+				><td><input dojoType="dijit.form.TextBox" name="FirstName"/></td
+			></tr><tr
+				><td><label>Password</label></td
+				><td><input dojoType="dijit.form.TextBox" name="Password" type="password"/></td
+			></tr
+		></table
+		><hr noshade="noshade" size="1" color="#999999"
+		><div class="save_cancel_delete"
+			><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button
+			><button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick:cancel">Cancel Changes</button
+			><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick:delete2">Delete User</button
 		></div
-	></div>
-</div>
+	></form
+></div>

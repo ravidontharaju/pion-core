@@ -16,7 +16,7 @@ dojo.declare("pion.widgets.UserInitDialog",
 );
 
 dojo.declare("pion.widgets.UserPane",
-	[ dijit.layout.AccordionPane ], // inherit from this class, which in turn mixes in _Templated and _Layout
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("pion", "widgets/UserPane.html"),
 		postMixInProperties: function() {
@@ -24,6 +24,10 @@ dojo.declare("pion.widgets.UserPane",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
+		getHeight: function() {
+			// TODO: replace with some computed value
+			return 210;
+		},
 		populateFromConfigItem: function(item) {
 			var store = pion.users.config_store;
 			var config = {};
@@ -35,10 +39,6 @@ dojo.declare("pion.widgets.UserPane",
 			}
 			console.dir(config);
 			this.form.attr('value', config);
-
-			console.debug('config = ', config);
-			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
-			title_node.firstChild.nodeValue = this.title;
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;

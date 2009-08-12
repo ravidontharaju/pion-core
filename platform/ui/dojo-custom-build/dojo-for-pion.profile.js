@@ -23,6 +23,7 @@ dependencies = {
 			"dijit.layout.TabContainer",
 			"dijit.Menu",
 			"dijit.Tree",
+			"dojox.data.dom",
 			"dojox.data.XmlStore",
 			"dojox.gfx",
 			"dojox.grid.DataGrid",

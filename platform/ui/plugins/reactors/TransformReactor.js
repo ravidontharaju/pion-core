@@ -481,6 +481,9 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.lookup_store;
@@ -537,6 +540,9 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 			dialog.show();
 			dialog.execute = function(dialogFields) {
+				if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+				this.execute_already_called = true;
+
 				var wrapped_XML = '<PionConfig>' + this.XML_text_area.value + '</PionConfig>';
 				var trimmed_XML = wrapped_XML.replace(/>\s*/g, '>');
 				if (dojo.isIE) {
@@ -580,6 +586,9 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 			dialog.show();
 			dialog.execute = function(dialogFields) {
+				if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+				this.execute_already_called = true;
+
 				var lines = this.XML_text_area.value.split('\n');
 				dojo.forEach(lines, function(line) {
 					if (results = line.match(/^"(.*)","(.*)"$/)) {
@@ -654,14 +663,13 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 					{ field: 'Term', name: 'Term', width: 14, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Comparison', width: 10, 
-						widgetClass: "pion.widgets.SimpleSelect", 
+						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
 					{ field: 'SetValue', name: 'Set Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>'},
+					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
@@ -733,6 +741,9 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.rule_store;
@@ -814,8 +825,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Format', name: 'Format', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false,
-						value: '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>'},
+					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
@@ -861,6 +871,9 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.regex_store;

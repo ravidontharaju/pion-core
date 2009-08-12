@@ -24,16 +24,10 @@ pion.databases.config_store.getIdentity = function(item) {
 
 pion.databases._adjustAccordionSize = function() {
 	var config_accordion = dijit.byId('database_config_accordion');
-	var num_databases = config_accordion.getChildren().length;
-	console.debug("num_databases = " + num_databases);
-
-	var database_pane_body_height = pion.databases.selected_pane.getHeight();
-	var title_height = 0;
-	if (num_databases > 0) {
-		var first_pane = config_accordion.getChildren()[0];
-		title_height = first_pane.getTitleHeight();
-	}
-	var accordion_height = database_pane_body_height + num_databases * title_height;
+	var accordion_height = pion.databases.selected_pane.getHeight();
+	dojo.forEach(config_accordion.getChildren(), function(pane) {
+		accordion_height += pane._buttonWidget.getTitleHeight();
+	});
 	config_accordion.resize({h: accordion_height});
 
 	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
@@ -91,7 +85,7 @@ pion.databases.init = function() {
 						pion.databases.createNewPaneFromItem(items[i]);
 					}
 					var first_pane = config_accordion.getChildren()[0];
-					config_accordion.selectChild(first_pane);
+					config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
 				},
 				onError: pion.handleFetchError
 			});
@@ -103,44 +97,29 @@ pion.databases.init = function() {
 		.addCallback(initUsableDatabasePlugins)
 		.addCallback(initConfiguredDatabases);
 
-	function _paneSelected(pane) {
-		console.debug('Selected ' + pane.title);
-
-		var selected_pane = pion.databases.selected_pane;
-		if (pane == selected_pane) {
-			return;
-		}
-		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
-			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
-			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Database.');
-			dialog.show();
-
-			// Return to the previously selected pane.
-			setTimeout(function(){dijit.byId('database_config_accordion').selectChild(selected_pane);}, 500);
-			return;
-		}
-
-		pion.databases.selected_pane = pane;
-
-		// TODO: When should we use the item we have rather than querying the store?  Should we 
-		// always do a query in case the configuration has been updated in some other way?
-		// Is there a clean way to avoid another query after we've just created a database (and
-		// received a response that has all the info we need)?
-		/*
-		if (pane.config_item) {
-			pane.populateFromConfigItem(pane.config_item);
+	pion.databases._replaceAccordionPane = function(old_pane) {
+		var plugin = pion.databases.config_store.getValue(old_pane.config_item, 'Plugin');
+		var pane_class_name = 'plugins.databases.' + plugin + 'Pane';
+		var pane_class = dojo.getObject(pane_class_name);
+		if (pane_class) {
+			console.debug('found class ', pane_class_name);
+			var new_pane = new pane_class({title: old_pane.title});
 		} else {
-			console.debug('Fetching item ', pane.uuid);
-			var store = pion.databases.config_store;
-			store.fetch({
-				query: {'@id': pane.uuid},
-				onItem: function(item) {
-					pane.config_item = item;
-					pane.populateFromConfigItem(item);
-				}
-			});
+			console.debug('class ', pane_class_name, ' not found; using plugins.databases.DatabasePane instead.');
+			var new_pane = new plugins.databases.DatabasePane({title: old_pane.title});
 		}
-		*/
+		new_pane.uuid = old_pane.uuid;
+		new_pane.config_item = old_pane.config_item;
+		new_pane.initialized = true;
+
+		var config_accordion = dijit.byId("database_config_accordion");
+		var idx = config_accordion.getIndexOfChild(old_pane);
+		config_accordion.pendingSelection = new_pane;
+		config_accordion.pendingRemoval = old_pane;
+		config_accordion.addChild(new_pane, idx);
+	}
+
+	pion.databases._updatePane = function(pane) {
 		console.debug('Fetching item ', pane.uuid);
 		var store = pion.databases.config_store;
 		store.fetch({
@@ -152,31 +131,70 @@ pion.databases.init = function() {
 			onError: pion.handleFetchError
 		});
 
-		// Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
-		// At that time, AccordionContainer will also be done with resizing, so it's safe to call _adjustAccordionSize().
-		var slide_duration = dijit.byId('database_config_accordion').duration;
-		setTimeout(function(){
-						dojo.style(pane.containerNode, "overflow", "hidden");
-						pion.databases._adjustAccordionSize();
-					},
-					slide_duration + 50);
+		pion.databases._adjustAccordionSize();
+		dojo.style(pane.containerNode, "overflow", "hidden"); // For IE.
+		// ???????????? Wait until after dijit.layout.AccordionContainer._transition has set overflow: "auto", then change it back to "hidden".
+	}
+
+	function _paneSelected(pane) {
+		console.debug('Selected ' + pane.title);
+
+		var selected_pane = pion.databases.selected_pane;
+		if (pane == selected_pane) {
+			return;
+		}
+		var config_accordion = dijit.byId("database_config_accordion");
+		if (selected_pane && dojo.hasClass(selected_pane.domNode, 'unsaved_changes')) {
+			var dialog = new dijit.Dialog({title: "Warning: unsaved changes"});
+			dialog.attr('content', 'Please save or cancel unsaved changes before selecting another Database.');
+			dialog.show();
+
+			// Return to the previously selected pane.
+			setTimeout(function(){config_accordion.selectChild(selected_pane);}, 500);
+			return;
+		}
+		setTimeout(
+			function() {
+				if (config_accordion.pendingRemoval) {
+					config_accordion.removeChild(config_accordion.pendingRemoval);
+					config_accordion.pendingRemoval = false;
+				}
+				if (! pane.initialized)
+					// The selected pane is just a placeholder, so now replace it with the real thing.  The new pane will 
+					// then be selected, causing this function to be called again, this time with pane.initialized = true;
+					pion.databases._replaceAccordionPane(pane);
+				else {
+					pion.databases.selected_pane = pane;
+					pion.databases._updatePane(pane);
+				}
+			},
+			config_accordion.duration + 100
+		);
+	}
+
+	function _paneAdded(pane) {
+		var config_accordion = dijit.byId("database_config_accordion");
+		setTimeout(
+			function() {
+				if (config_accordion.pendingSelection) {
+					config_accordion.selectChild(config_accordion.pendingSelection);
+					config_accordion.pendingSelection = false;
+				}
+			},
+			config_accordion.duration // Duration shouldn't be relevant here, but what should this be???
+		);
+	}
+
+	function _paneRemoved(pane) {
 	}
 
 	dojo.subscribe("database_config_accordion-selectChild", _paneSelected);
+	dojo.subscribe("database_config_accordion-addChild", _paneAdded);
+	dojo.subscribe("database_config_accordion-removeChild", _paneRemoved);
 
 	pion.databases.createNewPaneFromItem = function(item) {
-		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
-		var plugin = pion.databases.config_store.getValue(item, 'Plugin');
-		var database_pane_node = document.createElement('span');
-		var pane_class_name = 'plugins.databases.' + plugin + 'Pane';
-		var pane_class = dojo.getObject(pane_class_name);
-		if (pane_class) {
-			console.debug('found class ', pane_class_name);
-			var database_pane = new pane_class({ 'class': 'database_pane', title: title }, database_pane_node);
-		} else {
-			console.debug('class ', pane_class_name, ' not found; using plugins.databases.DatabasePane instead.');
-			var database_pane = new plugins.databases.DatabasePane({ 'class': 'database_pane', title: title }, database_pane_node);
-		}
+		var title = pion.databases.config_store.getValue(item, 'Name').toString();
+		var database_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
 		database_pane.config_item = item;
 		database_pane.uuid = pion.databases.config_store.getValue(item, '@id');
 		dijit.byId('database_config_accordion').addChild(database_pane);
@@ -221,10 +239,15 @@ pion.databases.init = function() {
 		var dialog = new plugins.databases.SelectPluginDialog({title: 'Select Database Plugin'});
 		dialog.show();
 		dialog.execute = function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
 			console.debug(dialogFields);
 			if (plugins.databases[dialogFields.Plugin] &&
 				plugins.databases[dialogFields.Plugin].edition == 'Enterprise') {
-				pion.about.checkKeyStatus({success_callback: function() {_initNewDatabase(dialogFields.Plugin);}});
+				pion.about.checkKeyStatus({success_callback: function() {
+					_initNewDatabase(dialogFields.Plugin);
+				}});
 			} else {
 				_initNewDatabase(dialogFields.Plugin);
 			}
@@ -249,6 +272,15 @@ pion.databases.init = function() {
 
 		dialog.show();
 		dialog.execute = function(dialogFields) {
+			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
+			this.execute_already_called = true;
+
+			// TODO: override pion.databases.config_store._getPostContent() (see XmlStore._getPostContent())
+			// with the code below to build the post data.
+			// Then we can get rid of createNewPaneFromStore(), and do the following here:
+			// 		var item = pion.databases.config_store.newItem({...});
+			// 		pion.databases.createNewPaneFromItem(item);
+
 			console.debug(dialogFields);
 			var post_data = '<PionConfig><Database>';
 			for (var tag in dialogFields) {
@@ -260,7 +292,7 @@ pion.databases.init = function() {
 			}
 			post_data += '</Database></PionConfig>';
 			console.debug('post_data: ', post_data);
-	
+
 			dojo.rawXhrPost({
 				url: '/config/databases',
 				contentType: "text/xml",

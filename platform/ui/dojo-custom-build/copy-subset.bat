@@ -1,6 +1,6 @@
 rem Copy a subset of dojo-release (containing all needed files) onto the local dojo-release folder.
 
-set releaseDir=C:\dojo-release-1.2.3-src\release\dojo-release
+set releaseDir=C:\dojo-release-1.3.2-src\release\dojo-release
 
 xcopy /y /s %releaseDir%\dojo\resources          ..\dojo-release\dojo\resources
 copy /y %releaseDir%\dojo\nls\pion-dojo_*.js     ..\dojo-release\dojo\nls

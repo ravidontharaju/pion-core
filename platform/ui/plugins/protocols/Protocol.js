@@ -25,7 +25,7 @@ dojo.declare("plugins.protocols.ProtocolInitDialog",
 );
 
 dojo.declare("plugins.protocols.ProtocolPane",
-	[ dijit.layout.AccordionPane ],
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("plugins", "protocols/ProtocolPane.html"),
 		postMixInProperties: function() {
@@ -114,10 +114,6 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
 			comment_node.value = config.Comment;
-
-			this.title = config.Name;
-			var title_node = dojo.query('.dijitAccordionTitle .dijitAccordionText', this.domNode)[0];
-			title_node.firstChild.nodeValue = this.title;
 
 			if (this.has_extraction_rules)
 				this._reloadExtractionRuleStore(item);

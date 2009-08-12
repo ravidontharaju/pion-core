@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2004-2008, The Dojo Foundation All Rights Reserved.
+	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
 	Available via Academic Free License >= 2.1 OR the modified BSD license.
 	see: http://dojotoolkit.org/license for details
 */
@@ -573,7 +573,7 @@ dojox.gfx.createSurface = function(parentNode, width, height){
 		" windowless='true'" +
 		" maxFramerate='60'" +
 		" onLoad='" + onLoadName + "'" +
-		" onError='__dojoSilverligthError'" +
+		" onError='__dojoSilverlightError'" +
 		" /><iframe style='visibility:hidden;height:0;width:0'/>";
 	}else{
 		obj = "<object type='application/x-silverlight' data='data:application/x-silverlight,' id='" +
@@ -583,7 +583,7 @@ dojox.gfx.createSurface = function(parentNode, width, height){
 		"<param name='windowless' value='true' />" +
 		"<param name='maxFramerate' value='60' />" +
 		"<param name='onLoad' value='" + onLoadName + "' />" +
-		"<param name='onError' value='__dojoSilverligthError' />" +
+		"<param name='onError' value='__dojoSilverlightError' />" +
 		"</object>";
 	}
 	parentNode.innerHTML = obj;
@@ -607,7 +607,9 @@ dojox.gfx.createSurface = function(parentNode, width, height){
 	return s;	// dojox.gfx.Surface
 };
 
-__dojoSilverligthError = function(sender, err){
+// the function below is meant to be global, it is called from
+// the Silverlight's error handler
+__dojoSilverlightError = function(sender, err){
 	var t = "Silverlight Error:\n" +
 		"Code: " + err.ErrorCode + "\n" +
 		"Type: " + err.ErrorType + "\n" +

@@ -58,14 +58,14 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					{ field: 'EmptyString', name: 'Empty String', width: 3,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Order', name: 'Order', width: 'auto',
-						widgetClass: "dijit.form.NumberSpinner" },
+						widgetClass: dijit.form.NumberSpinner },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 		},
  		getHeight: function() {
-			// TODO: replace 610 with some computed value
-			return 610;
+			// TODO: replace 620 with some computed value
+			return 620;
 		},
 		_addCustomConfigValues: function(config, item) {
 			var store = pion.codecs.config_store;
