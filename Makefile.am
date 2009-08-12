@@ -2,7 +2,7 @@
 # pion-platform automake configuration file 
 # -----------------------------------------
 
-ACLOCAL_AMFLAGS = -I common/build
+ACLOCAL_AMFLAGS = -I common/build -I platform/build
 
 SUBDIRS = sqlite @PION_COMMON_MAKEDIRS@ @PION_NET_MAKEDIRS@ platform
 

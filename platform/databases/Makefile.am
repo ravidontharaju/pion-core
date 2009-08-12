@@ -4,10 +4,8 @@
 
 AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include
 
-EXTRA_LTLIBRARIES = SQLiteDatabase.la
-
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
-pion_plugins_LTLIBRARIES = @PION_DATABASES@
+pion_plugins_LTLIBRARIES = SQLiteDatabase.la
 
 SQLiteDatabase_la_SOURCES = SQLiteDatabase.hpp SQLiteDatabase.cpp
 SQLiteDatabase_la_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include

@@ -4,10 +4,10 @@
 
 AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include
 
-EXTRA_LTLIBRARIES = LogCodec.la JSONCodec.la XMLCodec.la
+EXTRA_LTLIBRARIES = JSONCodec.la
 
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
-pion_plugins_LTLIBRARIES = @PION_CODECS@
+pion_plugins_LTLIBRARIES = LogCodec.la XMLCodec.la @PION_JSON_CODEC@
 
 LogCodec_la_SOURCES = LogCodec.hpp LogCodec.cpp
 LogCodec_la_LDFLAGS = -no-undefined -module -avoid-version -rpath '$(libdir)'

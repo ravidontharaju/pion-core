@@ -62,7 +62,6 @@ AC_ARG_WITH([yajl],
 if test "x$yajl_location" == "xno"; then
 	# YAJL is disabled
 	AC_MSG_RESULT(no)
-	PION_CODECS="LogCodec.la XMLCodec.la"
 else
 	# Add paths if location is defined
 	if test "x$yajl_location" != "xyes"; then
@@ -73,26 +72,67 @@ else
 	LIBS_SAVED="$LIBS"
 	LIBS="$LIBS_SAVED -lyajl"
 	AC_TRY_LINK([#include <yajl/yajl_gen.h>],[ yajl_gen handle = yajl_gen_alloc(0, 0); yajl_gen_free(handle); return(0); ],
-		[ AC_MSG_RESULT(ok)
-		  PION_HAVE_JSON="-DPION_HAVE_JSON" ],
+		[ PION_JSON_LIB="-lyajl"
+		  PION_JSON_CODEC="JSONCodec.la"
+		  PION_HAVE_JSON="-DPION_HAVE_JSON"
+		  AC_MSG_RESULT(ok) ],
 		[ AC_MSG_RESULT(no)
 		  AC_MSG_WARN(Unable to link with the YAJL library - disabling JSONCodec) ])
 	LIBS="$LIBS_SAVED"
 fi
-if test "x$PION_HAVE_JSON" == "x"; then
-	# YAJL library not available/working
-	PION_CODECS="LogCodec.la XMLCodec.la"
-else
-	# Found the YAJL library
-	PION_JSON_LIB="-lyajl"
-	PION_CODECS="LogCodec.la XMLCodec.la JSONCodec.la"
-fi
 AC_SUBST(PION_HAVE_JSON)
 AC_SUBST(PION_JSON_LIB)
+AC_SUBST(PION_JSON_CODEC)
 
 
-PION_DATABASES="SQLiteDatabase.la"
+# Check for Python development libraries (parts copied/adapted from az_python.m4)
+AC_MSG_CHECKING([for Python support])
+AC_ARG_WITH([python],
+    AC_HELP_STRING([--with-python@<:@=PYTHON@:>@],
+    [absolute path name of Python executable; use --without-python to disable]),
+    [ python_location=$withval ], [ python_location=yes ])
+if test "x$python_location" == "xno"; then
+	# Python support is disabled
+	AC_MSG_RESULT(no)
+	az_python_use=false
+	AM_CONDITIONAL(PYTHON_USE, test x"$az_python_use" = x"true")
+else
+	if test "x$python_location" != "xyes"; then
+		# path to python executable specified
+		AC_SUBST([PYTHON], ["${withval}"])
+	else
+		# look for python executable
+		AC_PATH_PROG([PYTHON], python, [])
+	fi
+	if test -x "$PYTHON"; then
+		AZ_PYTHON_VERSION_CHECK([2.5],
+			[ AC_MSG_RESULT(yes)
+			  az_python_use=true
+			],
+			[ AC_MSG_RESULT(no)
+			  az_python_use=false
+			])
+	else
+		AC_MSG_RESULT(no)
+		AC_MSG_WARN([Unable to find path to python: $PYTHON])
+		az_python_use=false
+	fi
+	AM_CONDITIONAL(PYTHON_USE, test x"$az_python_use" = x"true")
+	if test "x$az_python_use" == "xtrue"; then
+		AZ_PYTHON_PREFIX( )
+		AZ_PYTHON_CSPEC()
+		AZ_PYTHON_LSPEC()
+		PION_HAVE_PYTHON="-DPION_HAVE_PYTHON"
+		PION_PYTHON_REACTOR="PythonReactor.la"
+		AC_MSG_NOTICE([Python support successfully enabled])
+	else
+		AC_MSG_WARN([Python support disabled])
+	fi
+fi
+AC_SUBST(PION_HAVE_PYTHON)
+AC_SUBST(PION_PYTHON_REACTOR)
+
+
+# Define platform libraries
 PION_PLATFORM_LIBS="$PION_XML_LIB $PION_JSON_LIB"
 AC_SUBST(PION_PLATFORM_LIBS)
-AC_SUBST(PION_DATABASES)
-AC_SUBST(PION_CODECS)
