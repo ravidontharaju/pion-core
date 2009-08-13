@@ -607,7 +607,7 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			extract_node->children))
 		{
 			try {
-				rule_ptr->m_match.assign(regex_str, boost::regex_constants::icase);
+				rule_ptr->m_match.assign(regex_str);
 			} catch (...) {
 				throw BadMatchRegexException(regex_str);
 			}
@@ -618,7 +618,7 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			extract_node->children))
 		{
 			try {
-				rule_ptr->m_type_regex.assign(regex_str, boost::regex_constants::icase);
+				rule_ptr->m_type_regex.assign(regex_str);
 			} catch (...) {
 				throw BadContentRegexException(regex_str);
 			}
