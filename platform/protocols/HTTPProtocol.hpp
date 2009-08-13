@@ -108,7 +108,7 @@ public:
 		m_response_end_time(boost::date_time::not_a_date_time),
 		m_response_ack_time(boost::date_time::not_a_date_time),
 		m_cs_data_packets(0), m_sc_data_packets(0),
-		m_cs_missing_packets(0), m_sc_missing_packets(0), m_sc_ack_sum(0)
+		m_cs_missing_packets(0), m_sc_missing_packets(0)
 	{}
 
 	/// virtual destructor
@@ -387,9 +387,6 @@ private:
 	/// total number of missing response data packets
 	boost::uint32_t				m_sc_missing_packets;
 
-	/// sum of acknowledgement times for all response packets
-	boost::uint64_t				m_sc_ack_sum;
-
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
 
@@ -545,10 +542,6 @@ private:
     static const std::string	VOCAB_CLICKSTREAM_RESPONSE_END_TIME;
     pion::platform::Vocabulary::TermRef	m_response_end_time_term_ref;
 
-	/// urn:vocab:clickstream#time-taken
-	static const std::string	VOCAB_CLICKSTREAM_TIME_TAKEN;
-	pion::platform::Vocabulary::TermRef	m_time_taken_term_ref;
-
 	/// urn:vocab:clickstream#cs-send-time
 	static const std::string	VOCAB_CLICKSTREAM_CS_SEND_TIME;
 	pion::platform::Vocabulary::TermRef	m_cs_send_time_term_ref;
@@ -568,10 +561,6 @@ private:
 	/// urn:vocab:clickstream#sc-ack-time
 	static const std::string	VOCAB_CLICKSTREAM_SC_ACK_TIME;
 	pion::platform::Vocabulary::TermRef	m_sc_ack_time_term_ref;
-
-	/// urn:vocab:clickstream#end-user-time
-	static const std::string	VOCAB_CLICKSTREAM_END_USER_TIME;
-	pion::platform::Vocabulary::TermRef	m_end_user_time_term_ref;
 
 	/// urn:vocab:clickstream#data-center-time
 	static const std::string	VOCAB_CLICKSTREAM_DATA_CENTER_TIME;
