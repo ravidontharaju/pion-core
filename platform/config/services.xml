@@ -36,7 +36,7 @@
 			<Comment>Delivers Dojo source files (for debugging)</Comment>
 			<Plugin>FileService</Plugin>
 			<Resource>/dojo-src</Resource>
-			<Option name="directory">C:/dojo-release-1.2.3-src/</Option>
+			<Option name="directory">C:/dojo-release-1.3.2-src/</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
