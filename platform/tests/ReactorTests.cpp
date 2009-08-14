@@ -91,8 +91,20 @@ class TransformReactor      { public: static std::string name() { return "Transf
 class LogInputReactor       { public: static std::string name() { return "LogInputReactor"; } };
 class LogOutputReactor      { public: static std::string name() { return "LogOutputReactor"; } };
 class DatabaseOutputReactor { public: static std::string name() { return "DatabaseOutputReactor"; } };
+#ifdef PION_HAVE_PYTHON
+class PythonReactor         { public: static std::string name() { return "PythonReactor"; } };
+#endif // PION_HAVE_PYTHON
 
-typedef boost::mpl::list<FilterReactor, TransformReactor, LogInputReactor, LogOutputReactor, DatabaseOutputReactor> reactor_list;
+typedef boost::mpl::list<
+	FilterReactor
+	, TransformReactor
+	, LogInputReactor
+	, LogOutputReactor
+	, DatabaseOutputReactor
+#ifdef PION_HAVE_PYTHON
+	, PythonReactor
+#endif // PION_HAVE_PYTHON
+> reactor_list;
 
 template<typename plugin_class>
 class PluginPtrReadyToOpenReactor_F : public PionPluginPtr<Reactor> {

@@ -28,7 +28,7 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-// static members of LogInputReactor
+// static members of PythonReactor
 	
 const std::string			PythonReactor::FILENAME_ELEMENT_NAME = "Filename";
 boost::mutex				PythonReactor::m_init_mutex;
