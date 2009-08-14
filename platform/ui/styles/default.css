@@ -1043,3 +1043,13 @@ The following are also available, if the need arises.
 	border: 1px solid #ccc;
 	text-align:center;
 }
+
+div.glowing {
+	background: url("../images/circleIcon.png") repeat;
+	z-index: 200;
+}
+
+div.normal {
+	background: url("../images/0.gif");
+	z-index: 100;
+}

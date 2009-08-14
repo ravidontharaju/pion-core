@@ -236,9 +236,16 @@ pion.reactors._initConfiguredReactors = function() {
 				reactor_config_store.fetch({
 					query: {tagName: 'Connection'},
 					onItem: function(item, request) {
-						pion.reactors.createConnection(reactor_config_store.getValue(item, 'From').toString(),
-													   reactor_config_store.getValue(item, 'To').toString(),
-													   reactor_config_store.getValue(item, '@id').toString());
+						var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
+						var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
+
+						// TODO: handle the case where start_reactor.workspace != end_reactor.workspace
+						pion.reactors.workspace_box = start_reactor.workspace;
+						surface = pion.reactors.workspace_box.my_surface;
+						dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+
+						var connection_id = reactor_config_store.getValue(item, '@id').toString();
+						pion.reactors.createConnection(start_reactor, end_reactor, connection_id);
 					},
 					onComplete: function(items, request) {
 						console.debug('done fetching Connections');
@@ -278,14 +285,69 @@ pion.reactors.createReactorInConfiguredWorkspace = function(config) {
 	console.debug('X, Y = ', config.X, ', ', config.Y);
 }
 
-pion.reactors.createConnection = function(startNode_id, endNode_id, connection_id) {
-	var start_reactor = pion.reactors.reactors_by_id[startNode_id];
-	var end_reactor   = pion.reactors.reactors_by_id[endNode_id];
-	pion.reactors.workspace_box = start_reactor.workspace;
-	var workspace_box = pion.reactors.workspace_box;
-	surface = workspace_box.my_surface;
-	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
+pion.reactors.createConnection = function(start_reactor, end_reactor, connection_id) {
 	var line = surface.createPolyline().setStroke("black");
+
+	var removeConnection = function() {
+		dojo.xhrDelete({
+			url: '/config/connections/' + connection_id,
+			handleAs: 'xml',
+			timeout: 5000,
+			load: function(response, ioArgs) {
+				// Find index of end_reactor in outputs of start_reactor.
+				for (var i1 = 0; i1 < start_reactor.reactor_outputs.length; ++i1) {
+					if (start_reactor.reactor_outputs[i1].id == connection_id) break;
+				}
+
+				// Find index of start_reactor in inputs of end_reactor.
+				for (var i2 = 0; i2 < end_reactor.reactor_inputs.length; ++i2) {
+					if (end_reactor.reactor_inputs[i2].id == connection_id) break;
+				}
+
+				// Get the connection line.  (Same as end_reactor.reactor_inputs[i2].line.)
+				var line = start_reactor.reactor_outputs[i1].line;
+
+				// Remove the divs associated with the line and tell the line to erase itself.
+				pion.reactors.workspace_box.node.removeChild(line.div1);
+				pion.reactors.workspace_box.node.removeChild(line.div2);
+				line.removeShape();
+
+				// Remove end_reactor from outputs of start_reactor and vice versa.
+				start_reactor.reactor_outputs.splice(i1, 1);
+				end_reactor.reactor_inputs.splice(i2, 1);
+
+				return response;
+			},
+			error: pion.getXhrErrorHandler(dojo.xhrDelete)
+		});
+	}
+
+	line.div1 = document.createElement('div');
+	line.div1.style.position = 'absolute';
+	line.div1.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
+	line.div1.onmouseover = function() {
+		line.div1.className = 'glowing';
+		line.div2.className = 'glowing';
+	};
+	line.div1.onmouseout = function() {
+		line.div1.className = 'normal';
+		line.div2.className = 'normal';
+	};
+	pion.reactors.workspace_box.node.appendChild(line.div1);
+	
+	line.div2 = document.createElement('div');
+	line.div2.style.position = 'absolute';
+	line.div2.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
+	line.div2.onmouseover = function() {
+		line.div1.className = 'glowing';
+		line.div2.className = 'glowing';
+	};
+	line.div2.onmouseout = function() {
+		line.div1.className = 'normal';
+		line.div2.className = 'normal';
+	};
+	pion.reactors.workspace_box.node.appendChild(line.div2);
+
 	pion.reactors.updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
 
 	start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
@@ -469,6 +531,26 @@ pion.reactors.updateConnectionLine = function(poly, start_node, end_node) {
 	}
 	//console.debug("x1 = ", x1, ", y1 = ", y1, ', x2 = ', x2, ', y2 = ', y2);
 	poly.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}, a1, {x: x2, y: y2}, a2]).setStroke("black");
+
+	var radius = 6;
+	poly.div1.style.top = (y1 - radius) + "px";
+	poly.div1.style.height = (2 * radius) + "px";
+	if (x1 < x2) {
+		poly.div1.style.left = x1 + "px";
+		poly.div1.style.width = (x2 - x1) + "px";
+	} else {
+		poly.div1.style.left = x2 + "px";
+		poly.div1.style.width = (x1 - x2) + "px";
+	}
+	poly.div2.style.left = (x2 - radius) + "px";
+	poly.div2.style.width = (2 * radius) + "px";
+	if (y1 < y2) {
+		poly.div2.style.top = y1 + "px";
+		poly.div2.style.height = (y2 - y1) + "px";
+	} else {
+		poly.div2.style.top = y2 + "px";
+		poly.div2.style.height = (y1 - y2) + "px";
+	}
 }
 
 pion.reactors.createReactor = function(config, node) {
@@ -589,7 +671,7 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 	workspace_box.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
 	var xOffset = dojo.byId("reactor_config_content").offsetLeft;
 	var yOffset = dojo.byId("reactor_config_content").offsetTop;
-	yOffset += dojo.byId("reactor_config").offsetTop;
+	yOffset += dojo.byId("main_stack_container").offsetTop;
 	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
 	mouseConnection = dojo.connect(workspace_box.node, 'onmousemove', 
 		function(event) {
@@ -640,12 +722,7 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 			var node = response.getElementsByTagName('Connection')[0];
 			var id = node.getAttribute('id');
 			console.debug('connection id (from server): ', id);
-
-			var line = surface.createPolyline().setStroke("black");
-			pion.reactors.updateConnectionLine(line, source_reactor.domNode, sink_reactor.domNode);
-
-			source_reactor.reactor_outputs.push({sink: sink_reactor, line: line, id: id});
-			sink_reactor.reactor_inputs.push({source: source_reactor, line: line, id: id});
+			pion.reactors.createConnection(source_reactor, sink_reactor, id);
 		},
 		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 	});

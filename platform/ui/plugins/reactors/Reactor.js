@@ -65,6 +65,7 @@ dojo.declare("plugins.reactors.Reactor",
 			this.domNode.style.left = newLeftTop.l + "px";
 			this.domNode.style.position = "absolute";
 			this.domNode.style.background = 'url(../plugins/reactors/' + category + '/' + this.config.Plugin + '/bg-moveable.png) repeat-x';
+			this.domNode.style.zIndex = 300;
 
 			// Add a context menu for the new reactor.
 			var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
