@@ -38,14 +38,6 @@ class PythonReactor :
 {
 public:	
 	
-	/// exception thrown if the Reactor configuration does not define a Filename
-	class EmptyFilenameException : public PionException {
-	public:
-		EmptyFilenameException(const std::string& reactor_id)
-			: PionException("PythonReactor configuration is missing a required Filename parameter: ", reactor_id) {}
-	};
-
-
 	/// constructs a new PythonReactorReactor object
 	PythonReactor(void);
 	
@@ -76,12 +68,17 @@ private:
 	/// name of the Filename element for Pion XML config files
 	static const std::string		FILENAME_ELEMENT_NAME;
 
+	/// name of the PythonSource element for Pion XML config files
+	static const std::string		PYTHON_SOURCE_ELEMENT_NAME;
+
 	/// mutex used to protect the initialization counter
 	static boost::mutex				m_init_mutex;
 	
 	/// total number of PythonReactor instances
 	static boost::uint32_t			m_init_num;
 
+	/// string containing python source code to execute
+	std::string						m_source;
 
 	/// path to a file containing the Python source code to execute
 	std::string						m_source_file;

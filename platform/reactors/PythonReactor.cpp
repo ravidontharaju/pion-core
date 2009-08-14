@@ -31,6 +31,7 @@ namespace plugins {		// begin namespace plugins
 // static members of PythonReactor
 	
 const std::string			PythonReactor::FILENAME_ELEMENT_NAME = "Filename";
+const std::string			PythonReactor::PYTHON_SOURCE_ELEMENT_NAME = "PythonSource";
 boost::mutex				PythonReactor::m_init_mutex;
 boost::uint32_t				PythonReactor::m_init_num = 0;
 
@@ -59,9 +60,11 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 	
-	// get name of source code file
-	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_source_file, config_ptr))
-		throw EmptyFilenameException(getId());
+	// get string containing source code to execute (optional)
+	ConfigManager::getConfigOption(PYTHON_SOURCE_ELEMENT_NAME, m_source, config_ptr);
+
+	// get string containing name of the source code file to execute (optional)
+	ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_source_file, config_ptr);
 }
 	
 void PythonReactor::process(const EventPtr& e)
