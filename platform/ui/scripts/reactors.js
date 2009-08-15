@@ -23,6 +23,7 @@ dojo.require("plugins.reactors.TransformReactor");
 dojo.require("plugins.reactors.ScriptReactor");
 dojo.require("plugins.reactors.DatabaseOutputReactor");
 dojo.require("plugins.reactors.FissionReactor");
+dojo.require("plugins.reactors.PythonReactor");
 
 // configuration parameters
 var STEP = 10;

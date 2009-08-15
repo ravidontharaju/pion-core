@@ -178,6 +178,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/databases.js
 ./../../release/dojo-release/plugins/reactors/DatabaseOutputReactor.js
 ./../../release/dojo-release/plugins/reactors/FissionReactor.js
+./../../release/dojo-release/plugins/reactors/PythonReactor.js
 ./../../release/dojo-release/pion/reactors.js
 ./../../release/dojo-release/plugins/vocabularies/Vocabulary.js
 ./../../release/dojo-release/pion/vocabularies.js
