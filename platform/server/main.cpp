@@ -13,6 +13,12 @@
 	#include <sys/stat.h>
 #endif
 
+// mlockall support on LINUX
+#ifndef _MSC_VER
+	#include <sys/mman.h>
+	#include <string.h>
+#endif
+
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
 #ifdef _MSC_VER
@@ -42,11 +48,14 @@ int main (int argc, char *argv[])
 {
 	// get platform config file
 	bool run_as_daemon = false;
+	bool lock_memory = false;
 	std::string platform_config_file("/etc/pion/platform.xml");
 	for (int argnum=1; argnum < argc; ++argnum) {
 		if (argv[argnum][0] == '-') {
 			if (argv[argnum][1] == 'D') {
 				run_as_daemon = true;
+			} else if (argv[argnum][1] == 'M') {
+				lock_memory = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = boost::filesystem::system_complete(argv[++argnum]).normalize().file_string();
 			} else if (strncmp(argv[argnum], "--version", 9) == 0) {
@@ -93,6 +102,12 @@ int main (int argc, char *argv[])
 	// initialize the OpenSSL library
 	CRYPTO_malloc_init();
 	SSL_library_init();
+#endif
+
+#ifndef _MSC_VER
+	if (lock_memory)
+		if (mlockall(MCL_CURRENT | MCL_FUTURE))
+			PION_LOG_FATAL(pion_log, "Failed to lock memory: " << strerror(errno));
 #endif
 
 	PlatformConfig platform_cfg;
