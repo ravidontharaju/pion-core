@@ -17,3 +17,7 @@ include platform/build/platform.inc
 all-local: docs
 
 clean-local: clean-docs
+
+install-data-local:
+	@if ! test -d $(sysconfdir)/pion; then mkdir $(sysconfdir)/pion; fi
+	@(cd platform/build/config; tar cf - *) | (cd $(sysconfdir)/pion; tar xf -)
