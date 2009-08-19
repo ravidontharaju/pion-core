@@ -126,7 +126,8 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	// connect a stream to localhost
 	TCPStream output_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
 	boost::system::error_code ec;
-	ec = output_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+	ec = output_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+		m_platform_cfg.getServiceManager().getPort());
 	BOOST_REQUIRE(! ec);
 
 	// request an output feed from the "do nothing" reactor
@@ -140,7 +141,8 @@ BOOST_AUTO_TEST_CASE(checkFeedServiceReactorConnections) {
 	
 	// connect a stream to localhost
 	TCPStream input_tcp_stream(m_platform_cfg.getServiceManager().getIOService());
-	ec = input_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+	ec = input_tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+		m_platform_cfg.getServiceManager().getPort());
 	BOOST_REQUIRE(! ec);
 	
 	// establish an input feed to the "do nothing" reactor

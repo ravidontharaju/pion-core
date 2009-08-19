@@ -186,6 +186,9 @@ public:
 	/// this notifies all the service plug-ins that the Reactors were updated
 	void updateReactors(void);
 	
+	/// returns port number the first server is listing to (for unit tests)
+	unsigned int getPort(void) const;
+
 	
 private:
 

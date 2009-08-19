@@ -379,6 +379,16 @@ void ServiceManager::handleServerError(HTTPRequestPtr& http_request,
 	writer->send();
 }
 
+unsigned int ServiceManager::getPort(void) const
+{
+	unsigned int port_num = 0;
+	boost::mutex::scoped_lock services_lock(m_mutex);
+	ServerList::const_iterator it = m_servers.begin();
+	if (it != m_servers.end())
+		port_num = (*it)->getPort();
+	return port_num;
+}
+
 	
 }	// end namespace server
 }	// end namespace pion

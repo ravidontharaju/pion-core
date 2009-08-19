@@ -63,7 +63,7 @@ public:
 			<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
 			<< "    <Server id=\"main-server\">\n"
-			<< "        <Port>8080</Port>\n";
+			<< "        <Port>0</Port>\n";
 	}
 
 	void finishWritingServicesConfigFile() {
@@ -175,7 +175,8 @@ BOOST_AUTO_TEST_CASE(checkRedirectElementHasDesiredEffect) {
 	TCPConnection tcp_conn(m_service_manager->getIOService());
 	tcp_conn.setLifecycle(TCPConnection::LIFECYCLE_KEEPALIVE);
 	boost::system::error_code error_code;
-	error_code = tcp_conn.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+	error_code = tcp_conn.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+		m_service_manager->getPort());
 	BOOST_REQUIRE(!error_code);
 
 	// send a request to /xyz and check that the response is from HelloService

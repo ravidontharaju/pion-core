@@ -68,7 +68,8 @@ public:
 		// connect a stream to localhost
 		TCPStream tcp_stream(m_platform_cfg.getServiceManager().getIOService());
 		boost::system::error_code ec;
-		ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+		ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+			m_platform_cfg.getServiceManager().getPort());
 		BOOST_REQUIRE(! ec);
 		
 		// send the HTTPRequest

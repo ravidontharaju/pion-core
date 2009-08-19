@@ -123,7 +123,8 @@ public:
 	void confirmDefaultQueryBehavior(const std::string& resource, int expected_events_out) {
 		// Connect a stream to localhost.
 		TCPStream tcp_stream(m_platform_cfg.getServiceManager().getIOService());
-		boost::system::error_code ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+		boost::system::error_code ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+			m_platform_cfg.getServiceManager().getPort());
 		BOOST_REQUIRE(! ec);
 
 		HTTPRequest http_request;
@@ -149,7 +150,8 @@ public:
 	HTTPResponsePtr sendRequestAndGetResponse(const std::string& resource, const std::string& request_method = "") {
 		// Connect a stream to localhost.
 		TCPStream tcp_stream(m_platform_cfg.getServiceManager().getIOService());
-		m_ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"), 8080);
+		m_ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+			m_platform_cfg.getServiceManager().getPort());
 		BOOST_REQUIRE(! m_ec);
 		
 		// Send the request to the server.
