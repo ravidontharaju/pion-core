@@ -1,1 +1,0 @@
-"{APPDIR}nssm.exe" remove "pion-community" confirm
