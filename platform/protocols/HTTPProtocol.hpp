@@ -617,7 +617,7 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 											   (content_ref.size() > m_max_size
 												? m_max_size : content_ref.size()));
 				} else {
-					std::string content_str(mr.format(m_format));
+					std::string content_str(mr.format(m_format, boost::format_all));
 					(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
 											   (content_str.size() > m_max_size
 												? m_max_size : content_str.size()));
@@ -642,7 +642,7 @@ inline void HTTPProtocol::ExtractionRule::processContentNoCheck(pion::platform::
 									   (content_length > m_max_size
 										? m_max_size : content_length));
 		} else {
-			std::string content_str(mr.format(m_format));
+			std::string content_str(mr.format(m_format, boost::format_all));
 			(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
 									   (content_str.size() > m_max_size
 										? m_max_size : content_str.size()));
