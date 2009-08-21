@@ -31,6 +31,10 @@
 #endif
 #endif
 
+#ifndef SYSCONFDIR
+	#define SYSCONFDIR "/usr/local/etc"
+#endif
+
 #include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include "PlatformConfig.hpp"
@@ -57,6 +61,8 @@ int parse_args(int argc, char *argv[], bool& run_as_daemon, bool& lock_memory, s
 	platform_config_file = "config\\platform.xml";
 #else
 	platform_config_file = "/etc/pion/platform.xml";
+	if (! boost::filesystem::exists(platform_config_file) )
+		platform_config_file = std::string(SYSCONFDIR) + "/pion/platform.xml";
 #endif
 
 	for (int argnum=1; argnum < argc; ++argnum) {

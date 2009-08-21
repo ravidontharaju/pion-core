@@ -7,9 +7,9 @@
 	<ServiceConfig>services.xml</ServiceConfig>
 	<UserConfig>users.xml</UserConfig>
 	<LogConfig>logconfig.txt</LogConfig>
-	<PluginPath>../plugins</PluginPath>
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
-	<DataDirectory>./</DataDirectory>
+	<PluginPath>@PION_PLUGINS_DIRECTORY@</PluginPath>
+	<DataDirectory>@PION_DATA_DIRECTORY@</DataDirectory>
 	<!--
 	<ReactionEngine>
 		<MaxThreads>32</MaxThreads>

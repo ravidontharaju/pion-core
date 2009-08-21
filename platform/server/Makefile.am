@@ -2,8 +2,7 @@
 # pion-platform automake configuration file 
 # -----------------------------------------
 
-AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include
-
+AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include -DSYSCONFDIR='"@sysconfdir@"'
 lib_LTLIBRARIES = libpion-server.la
 
 libpion_server_la_SOURCES = PlatformService.hpp PlatformService.cpp \

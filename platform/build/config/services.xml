@@ -23,7 +23,7 @@
 			<Comment>Delivers user interface files</Comment>
 			<Plugin>FileService</Plugin>
 			<Resource>/</Resource>
-			<Option name="directory">./ui/</Option>
+			<Option name="directory">@PION_UI_DIRECTORY@</Option>
 			<Option name="cache">1</Option>
 			<Option name="scan">2</Option>
 			<Option name="writable">false</Option>
@@ -33,7 +33,7 @@
 			<Comment>Pion platform configuration service</Comment>
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
-			<UIDirectory>./ui/</UIDirectory>
+			<UIDirectory>@PION_UI_DIRECTORY@</UIDirectory>
 		</PlatformService>
 		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>
