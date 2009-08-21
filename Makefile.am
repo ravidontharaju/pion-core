@@ -15,7 +15,7 @@ include common/build/doxygen.inc
 include platform/build/platform.inc
 
 all-local: docs
-	@(cd platform/build/config; tar cf - *) | (cd platform/config; tar xf -)
+	@(cd platform/build; tar cf - config --exclude=\\.svn) | (cd platform; tar xf -)
 	@sed -e 's;<LogConfig>.*</LogConfig>;<LogConfig>../build/config/logconfig.txt</LogConfig>;' -e 's;<DataDirectory>.*</DataDirectory>;<DataDirectory>.</DataDirectory>;' -e 's;<PluginPath>.*</PluginPath>;<PluginPath>../../platform/codecs/.libs/</PluginPath><PluginPath>../../platform/databases/.libs/</PluginPath><PluginPath>../../platform/reactors/.libs</PluginPath><PluginPath>../../platform/protocols/.libs/</PluginPath><PluginPath>../../platform/services/.libs/</PluginPath><PluginPath>../../net/services/.libs/</PluginPath>;' platform/build/config/platform.xml > platform/config/platform.xml
 	@sed -e 's;\@PION_UI_DIRECTORY\@;../../platform/ui;' platform/build/config/services.xml > platform/config/services.xml
 
