@@ -57,7 +57,7 @@ int parse_args(int argc, char *argv[], bool& run_as_daemon, bool& lock_memory, s
 	run_as_daemon = false;
 	lock_memory = false;
 
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 	platform_config_file = "config\\platform.xml";
 #else
 	platform_config_file = "/etc/pion/platform.xml";
@@ -90,7 +90,7 @@ int parse_args(int argc, char *argv[], bool& run_as_daemon, bool& lock_memory, s
 }
 
 /// Windows Service stuff
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 #define SVCNAME TEXT("Pion")
 
 /// store command line parameters to pass between main() and SvcMain
@@ -176,7 +176,7 @@ void WINAPI SvcMain( DWORD dwArgc, LPTSTR *lpszArgv )
 	bool run_as_daemon = false;
 	bool lock_memory = false;
 	
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 	std::string platform_config_file("config\\platform.xml");
 #else
 	std::string platform_config_file("/etc/pion/platform.xml");
@@ -194,7 +194,7 @@ int main (int argc, char *argv[])
 	bool run_as_daemon = false;
 	bool lock_memory = false;
 
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 	std::string platform_config_file("config\\platform.xml");
 #else
 	std::string platform_config_file("/etc/pion/platform.xml");
@@ -203,7 +203,7 @@ int main (int argc, char *argv[])
 	if(parse_args(argc, argv, run_as_daemon, lock_memory, platform_config_file) != 0)
 		return 1;
 
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 	if(run_as_daemon) {
 		// running as Windows Service
 		// initialize the global variables to be used by SrvMain
@@ -241,7 +241,7 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 		daemonize_server();
 	
 	// setup signal handler
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
 #else
 	signal(SIGPIPE, SIG_IGN);
@@ -273,7 +273,7 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 		platform_cfg.openConfigFile();
 		
 		PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 		if(run_as_daemon)
 			report_service_status( SERVICE_RUNNING, NO_ERROR, 0 );
 #endif
@@ -288,7 +288,7 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 	return 0;
 }
 
-#ifdef PION_WIN32
+#ifdef _MSC_VER
 /// run server as Windows service
 void daemonize_server(void)
 {
