@@ -91,10 +91,10 @@
     <ROW Condition="NOT UPGRADE_ENTERPRISE_EDITION" Description="Pion Enterprise Edition installation detected. Community Edition cannot be installed. Installation will abort now."/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiMergeModsComponent">
-    <ROW Module="Microsoft_VC80_ATL_x86.msm" Path="common\redist\Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
-    <ROW Module="Microsoft_VC80_CRT_x86.msm" Path="common\redist\Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
-    <ROW Module="policy_8_0_Microsoft_VC80_ATL_x86.msm" Path="common\redist\policy_8_0_Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
-    <ROW Module="policy_8_0_Microsoft_VC80_CRT_x86.msm" Path="common\redist\policy_8_0_Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
+    <ROW Module="Microsoft_VC80_ATL_x86.msm" Path="common\build\Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
+    <ROW Module="Microsoft_VC80_CRT_x86.msm" Path="common\build\Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
+    <ROW Module="policy_8_0_Microsoft_VC80_ATL_x86.msm" Path="common\build\policy_8_0_Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
+    <ROW Module="policy_8_0_Microsoft_VC80_CRT_x86.msm" Path="common\build\policy_8_0_Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServCtrlComponent">
     <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
