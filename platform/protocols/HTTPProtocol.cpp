@@ -464,8 +464,8 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	}
 
 	// parse content extraction rules
-	
 	xmlNodePtr extract_node = config_ptr;
+	m_extraction_rules.clear();
 	while ((extract_node = ConfigManager::findConfigNodeByName(EXTRACT_ELEMENT_NAME, extract_node)) != NULL) {
 		// get the Term we want to use
 		xmlChar *xml_char_ptr = xmlGetProp(extract_node, reinterpret_cast<const xmlChar*>(TERM_ATTRIBUTE_NAME.c_str()));
