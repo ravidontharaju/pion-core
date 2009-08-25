@@ -143,6 +143,12 @@ public:
 	virtual void updateDatabases(void) {}
 	
 	/**
+	 * this updates the Protocols that are used by this Reactor; it should
+	 * be called whenever any Protocol's configuration is updated
+	 */
+	virtual void updateProtocols(void) {}
+	
+	/**
 	 * handle an HTTP query (from QueryService)
 	 *
 	 * @param out the ostream to write the statistics info into

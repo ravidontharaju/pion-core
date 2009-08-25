@@ -60,6 +60,7 @@ ReactionEngine::ReactionEngine(VocabularyManager& vocab_mgr,
 	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
 	m_codec_connection = m_codec_factory.registerForUpdates(boost::bind(&ReactionEngine::updateCodecs, this));
 	m_db_connection = m_database_mgr.registerForUpdates(boost::bind(&ReactionEngine::updateDatabases, this));
+	m_protocol_connection = m_protocol_factory.registerForUpdates(boost::bind(&ReactionEngine::updateProtocols, this));
 }
 
 void ReactionEngine::openConfigFile(void)
@@ -161,6 +162,11 @@ void ReactionEngine::updateCodecs(void)
 void ReactionEngine::updateDatabases(void)
 {
 	m_plugins.run(boost::bind(&Reactor::updateDatabases, _1));
+}
+
+void ReactionEngine::updateProtocols(void)
+{
+	m_plugins.run(boost::bind(&Reactor::updateProtocols, _1));
 }
 
 void ReactionEngine::restartReactorsThatShouldBeRunning(void)
