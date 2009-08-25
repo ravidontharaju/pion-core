@@ -160,6 +160,9 @@ public:
 	/// this updates all of the Databases used by Reactors
 	void updateDatabases(void);
 
+	/// this updates all of the Protocols used by Reactors
+	void updateProtocols(void);
+
 	/// attempts to start all reactors that should be initialized in a "running" state and are not running
 	void restartReactorsThatShouldBeRunning(void);
 	
@@ -635,6 +638,9 @@ private:
 	
 	/// connection to this object from the DatabaseManager
 	boost::signals::scoped_connection	m_db_connection;
+
+	/// connection to this object from the ProtocolFactory
+	boost::signals::scoped_connection	m_protocol_connection;
 
 	/// true if the reaction engine is running
 	bool							m_is_running;
