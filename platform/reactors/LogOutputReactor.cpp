@@ -48,8 +48,8 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// get the Codec that the Reactor should use
 	if (! ConfigManager::getConfigOption(CODEC_ELEMENT_NAME, m_codec_id, config_ptr))
 		throw EmptyCodecException(getId());
-	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
-	PION_ASSERT(m_codec_ptr);
+	// make sure the codec exists (but leave it uninitialized)
+	(void)getCodecFactory().getCodec(m_codec_id);
 	
 	// get the filename regex to use for finding log files
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_log_filename, config_ptr))
@@ -73,12 +73,11 @@ void LogOutputReactor::updateCodecs(void)
 	// check if the codec was deleted (if so, stop now!)
 	if (! getCodecFactory().hasPlugin(m_codec_id)) {
 		stop();
-		ConfigWriteLock cfg_lock(*this);
-		m_codec_ptr.reset();
 	} else {
 		// update the codec pointer
 		ConfigWriteLock cfg_lock(*this);
-		m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+		if (m_codec_ptr)
+			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
 	}
 }
 	
@@ -134,9 +133,6 @@ void LogOutputReactor::query(std::ostream& out, const QueryBranches& branches,
 		}
 
 		if (isRunning()) {
-			// refresh the Codec
-			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
-
 			openLogFileNoLock();
 		}
 	} else {
@@ -160,6 +156,11 @@ void LogOutputReactor::openLogFileNoLock(void)
 	m_log_stream.open(m_log_filename.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 	if (! m_log_stream.is_open())
 		throw OpenLogException(m_log_filename);
+
+	// initialize the codec for writing
+	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+	PION_ASSERT(m_codec_ptr);
+
 	PION_LOG_DEBUG(m_logger, "Opened output log file: " << m_log_filename);
 }
 
@@ -177,6 +178,7 @@ void LogOutputReactor::closeLogFileNoLock(void)
 	// close the log file if it is open
 	if (m_log_stream.is_open()) {
 		m_codec_ptr->finish(m_log_stream);
+		m_codec_ptr.reset();
 		m_log_stream.close();
 		// remove the log file if no events were written to it
 		if (boost::filesystem::file_size(m_log_filename) == 0) {
