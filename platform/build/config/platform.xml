@@ -6,8 +6,8 @@
 	<ReactorConfig>reactors.xml</ReactorConfig>
 	<ServiceConfig>services.xml</ServiceConfig>
 	<UserConfig>users.xml</UserConfig>
-	<LogConfig>logconfig.txt</LogConfig>
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
+	<LogConfig>@PION_LOG_CONFIG@</LogConfig>
 	<PluginPath>@PION_PLUGINS_DIRECTORY@</PluginPath>
 	<DataDirectory>@PION_DATA_DIRECTORY@</DataDirectory>
 	<!--

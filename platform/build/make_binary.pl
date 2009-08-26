@@ -162,27 +162,12 @@ copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ),
 	File::Spec->catdir( ($PACKAGE_DIR, "ui") ));
 
 # copy the configuration files
+my %templates = ("PION_PLUGINS_DIRECTORY" => "../plugins",
+	"PION_DATA_DIRECTORY" => "./",
+	"PION_UI_DIRECTORY" => "./ui",
+	"PION_LOG_CONFIG" => "logconfig.txt");
 copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
-	File::Spec->catdir( ($PACKAGE_DIR, "config") ));
-
-# process configuration templates
-open(FROMFILE, File::Spec->catfile( ("platform", "build", "config"), "platform.xml")) or die "could not open platform.xml template";
-open(TOFILE, ">", File::Spec->catfile( ($PACKAGE_DIR, "config"), "platform.xml")) or die "could not open platform.xml for writing";
-while ( <FROMFILE> ) {
-	s,\@PION_PLUGINS_DIRECTORY\@,../plugins,;
-	s,\@PION_DATA_DIRECTORY\@,./,;
-	print TOFILE $_;
-}
-close(FROMFILE);
-close(TOFILE);
-open(FROMFILE, File::Spec->catfile( ("platform", "build", "config"), "services.xml")) or die "could not open services.xml template";
-open(TOFILE, ">", File::Spec->catfile( ($PACKAGE_DIR, "config"), "services.xml")) or die "could not open services.xml for writing";
-while ( <FROMFILE> ) {
-	s,\@PION_UI_DIRECTORY\@,./ui,;
-	print TOFILE $_;
-}
-close(FROMFILE);
-close(TOFILE);
+	File::Spec->catdir( ($PACKAGE_DIR, "config") ), %templates);
 
 # copy other misc files
 copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
