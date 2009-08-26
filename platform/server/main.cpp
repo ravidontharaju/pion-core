@@ -75,7 +75,7 @@ int parse_args(int argc, char *argv[], bool& run_as_daemon, bool& lock_memory, s
 				platform_config_file = boost::filesystem::system_complete(argv[++argnum]).normalize().file_string();
 			} else if (strncmp(argv[argnum], "--version", 9) == 0) {
 				std::cout << "pion version " << PION_VERSION << std::endl;
-				return 0;
+				return 1;
 			} else {
 				argument_error();
 				return 1;
@@ -352,5 +352,5 @@ void daemonize_server(void)
 /// displays an error message if the arguments are invalid
 void argument_error(void)
 {
-	std::cerr << "usage:   pion [-c SERVICE_CONFIG_FILE] [-D]" << std::endl;
+	std::cerr << "usage:   pion [-c PLATFORM_XML_FILE] [-D] [-M]" << std::endl;
 }
