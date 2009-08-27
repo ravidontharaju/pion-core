@@ -25860,10 +25860,8 @@ dojo.addClass(this.domNode,"unsaved_changes");
 },_handleAddNewRule:function(){
 this.markAsChanged();
 this.extraction_rule_store.newItem({ID:this.extraction_rule_store.next_id++});
-},onExtractionRulePutDataReady:function(){
 },save:function(){
 if(this.has_extraction_rules){
-this.connect(this,"onExtractionRulePutDataReady","doPutRequest");
 var _this=this;
 var _1888="";
 var store=this.extraction_rule_store;
@@ -25888,7 +25886,7 @@ _1888+=pion.makeXmlLeafElement("MaxSize",store.getValue(item,"MaxSize"));
 _1888+="</Extract>";
 },onComplete:function(){
 _this.extraction_rule_put_data=_1888;
-_this.onExtractionRulePutDataReady();
+_this.doPutRequest();
 dojo.removeClass(_this.domNode,"unsaved_changes");
 },onError:pion.handleFetchError});
 }else{

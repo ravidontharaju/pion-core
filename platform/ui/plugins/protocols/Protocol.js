@@ -158,11 +158,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			this.markAsChanged();
 			this.extraction_rule_store.newItem({ID: this.extraction_rule_store.next_id++});
 		},
-		onExtractionRulePutDataReady: function() {
-		},
 		save: function() {
 			if (this.has_extraction_rules) {
-				this.connect(this, 'onExtractionRulePutDataReady', 'doPutRequest');
 				var _this = this;
 				var put_data = '';
 				var store = this.extraction_rule_store;
@@ -184,7 +181,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 					},
 					onComplete: function() {
 						_this.extraction_rule_put_data = put_data;
-						_this.onExtractionRulePutDataReady();
+						_this.doPutRequest();
 						dojo.removeClass(_this.domNode, 'unsaved_changes');
 					},
 					onError: pion.handleFetchError
