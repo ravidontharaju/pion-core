@@ -20,10 +20,14 @@
 #ifndef __PION_PYTHONREACTOR_HEADER__
 #define __PION_PYTHONREACTOR_HEADER__
 
+// NOTE: According to API docs, Python.h must be #include'd FIRST
+#include <Python.h>
 #include <string>
 #include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>
+#include <pion/platform/ReactionEngine.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -38,6 +42,42 @@ class PythonReactor :
 {
 public:	
 	
+	/// exception thrown if there is an internal error encountered with the Python API
+	class InternalPythonException : public PionException {
+	public:
+		InternalPythonException(const std::string& reactor_id)
+			: PionException("PythonReactor internal API error: ", reactor_id) {}
+	};
+
+	/// exception thrown if the source code file configured is not found
+	class SourceFileNotFoundException : public PionException {
+	public:
+		SourceFileNotFoundException(const std::string& filename)
+			: PionException("PythonReactor source code file not found: ", filename) {}
+	};
+
+	/// exception thrown if the source code file cannot be read
+	class ReadSourceFileException : public PionException {
+	public:
+		ReadSourceFileException(const std::string& filename)
+			: PionException("PythonReactor unable to read source code from file: ", filename) {}
+	};
+
+	/// exception thrown if the source code fails to compile
+	class FailedToCompileException : public PionException {
+	public:
+		FailedToCompileException(const std::string& filename)
+			: PionException("PythonReactor compile failure: ", filename) {}
+	};
+
+	/// exception thrown if there is an exception thrown while executing the byte code
+	class PythonRuntimeException : public PionException {
+	public:
+		PythonRuntimeException(const std::string& error_msg)
+			: PionException("PythonReactor runtime exception: ", error_msg) {}
+	};
+
+
 	/// constructs a new PythonReactorReactor object
 	PythonReactor(void);
 	
@@ -62,9 +102,45 @@ public:
 	 */
 	virtual void process(const pion::platform::EventPtr& e);
 	
+	/// called by the ReactorEngine to start Event processing
+	virtual void start(void);
+	
+	/// called by the ReactorEngine to stop Event processing
+	virtual void stop(void);
+
+	/// sets the logger to be used
+	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) { return m_logger; }
+
+	
+protected:
+
+	/// releases and resets all Python byte code symbols held by the Reactor
+	void resetPythonSymbols(void);
+	
+	/// compiles the Python source code into executable byte code and initializes the module
+	void compilePythonSource(void);
+	
+	/// initialize the Python module using the compiled byte code
+	void initPythonModule(void);
+	
+	/// reads the Python source code from the file pointed to by m_source_file
+	std::string getSourceCodeFromFile(void);
+
+	/// if the Python error indicator is set, clear it and return a corresponding message
+	std::string getPythonError(void);
+
 	
 private:
 	
+	/// name of the "virtual" module that Python source code is imported into
+	static const std::string		PYTHON_MODULE_NAME;
+
+	/// name of the process function in Python source code
+	static const std::string		PROCESS_FUNCTION_NAME;
+
 	/// name of the Filename element for Pion XML config files
 	static const std::string		FILENAME_ELEMENT_NAME;
 
@@ -77,11 +153,23 @@ private:
 	/// total number of PythonReactor instances
 	static boost::uint32_t			m_init_num;
 
+	/// primary logging interface used by this class
+	PionLogger						m_logger;
+
 	/// string containing python source code to execute
 	std::string						m_source;
 
 	/// path to a file containing the Python source code to execute
 	std::string						m_source_file;
+
+	/// pointer to a PythonObject containing the compiled bytecode to execute
+	PyObject *						m_byte_code;
+	
+	/// pointer to a PythonObject containing the compiled module (derived from byte code)
+	PyObject *						m_module;
+	
+	/// pointer to the process function defined within the compiled module
+	PyObject *						m_process_func;
 };
 
 

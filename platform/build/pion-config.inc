@@ -105,7 +105,7 @@ else
 		AC_PATH_PROG([PYTHON], python, [])
 	fi
 	if test -x "$PYTHON"; then
-		AZ_PYTHON_VERSION_CHECK([2.5],
+		AZ_PYTHON_VERSION_CHECK([2.3],
 			[ AC_MSG_RESULT(yes)
 			  az_python_use=true
 			],
