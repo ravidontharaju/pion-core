@@ -238,7 +238,11 @@ void LogInputReactor::stop(void)
 void LogInputReactor::scheduleLogFileCheck(boost::uint32_t seconds)
 {
 	boost::mutex::scoped_lock worker_lock(m_worker_mutex);
-	if (seconds == 0) {
+	if (! m_is_running) {
+	    // stop() was called after last isRunning() check in checkForLogFiles()
+	    worker_lock.unlock();
+		finishWorkerThread();
+	} else if (seconds == 0) {
 		getScheduler().getIOService().post(boost::bind(&LogInputReactor::checkForLogFiles, this));
 	} else {
 		if (! m_timer_ptr)
