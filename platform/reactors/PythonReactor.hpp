@@ -23,6 +23,7 @@
 // NOTE: According to API docs, Python.h must be #include'd FIRST
 #include <Python.h>
 #include <string>
+#include <boost/thread/tss.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/PionException.hpp>
@@ -68,6 +69,13 @@ public:
 	public:
 		FailedToCompileException(const std::string& filename)
 			: PionException("PythonReactor compile failure: ", filename) {}
+	};
+
+	/// exception thrown if a Python source function is defined but it is not callable
+	class NotCallableException : public PionException {
+	public:
+		NotCallableException(const std::string& name)
+			: PionException("PythonReactor attribute defined is not callable: ", name) {}
 	};
 
 	/// exception thrown if there is an exception thrown while executing the byte code
@@ -117,6 +125,20 @@ public:
 	
 protected:
 
+	/**
+	 * initialize the Python state for the current thread, if not done already
+	 *
+	 * @return PyThreadState* pointer to the current thread's state
+	 */
+	static PyThreadState * initThreadState(void);
+
+	/**
+	 * callback function used to release Python state for each thread when it exits
+	 * 
+	 * @param ptr pointer to the Python thread state to be released
+	 */
+	static void releaseThreadState(PyThreadState *ptr);
+	
 	/// releases and resets all Python byte code symbols held by the Reactor
 	void resetPythonSymbols(void);
 	
@@ -131,6 +153,28 @@ protected:
 
 	/// if the Python error indicator is set, clear it and return a corresponding message
 	std::string getPythonError(void);
+
+	
+	/// simple object used to manage the Python GIL lock & thread-safety
+	class PythonLock {
+	public:
+
+		/// initializes the current thread's state, acquires the GIL and makes the thread active
+		PythonLock(void)
+			: m_thr_state_ptr(NULL)
+		{
+			m_thr_state_ptr = PythonReactor::initThreadState();
+			PyEval_AcquireThread(m_thr_state_ptr);
+		}
+		
+		/// releases the GIL and releases the current thread state
+		~PythonLock() { PyEval_ReleaseThread(m_thr_state_ptr); }
+
+	private:
+
+		/// pointer to the state of the current thread
+		PyThreadState *	m_thr_state_ptr;
+	};
 
 	
 private:
@@ -170,6 +214,12 @@ private:
 	
 	/// pointer to the process function defined within the compiled module
 	PyObject *						m_process_func;
+	
+	/// pointer to the global Python interpreter object
+	static PyInterpreterState *		m_interp_ptr;
+
+	/// thread-specific pointer to Python thread states
+	static boost::thread_specific_ptr<PyThreadState> *	m_state_ptr;
 };
 
 

@@ -25,6 +25,22 @@
 #include <pion/platform/ConfigManager.hpp>
 #include "PythonReactor.hpp"
 
+
+// Python callback functions
+extern "C" {
+	static PyObject* pion_ret10(PyObject *self, PyObject *args)
+	{
+		return Py_BuildValue("i", 10);
+	}
+	
+	static PyMethodDef PionPythonCallbackMethods[] = {
+		{"ret10", pion_ret10, METH_VARARGS,
+		"Return the number ten."},
+		{NULL, NULL, 0, NULL}
+	};
+}
+
+
 using namespace std;
 using namespace pion::platform;
 
@@ -41,6 +57,8 @@ const string			PythonReactor::FILENAME_ELEMENT_NAME = "Filename";
 const string			PythonReactor::PYTHON_SOURCE_ELEMENT_NAME = "PythonSource";
 boost::mutex			PythonReactor::m_init_mutex;
 boost::uint32_t			PythonReactor::m_init_num = 0;
+PyInterpreterState *	PythonReactor::m_interp_ptr = NULL;
+boost::thread_specific_ptr<PyThreadState> *		PythonReactor::m_state_ptr = NULL;
 
 
 // PythonReactor member functions
@@ -51,21 +69,49 @@ PythonReactor::PythonReactor(void)
 	m_byte_code(NULL), m_module(NULL), m_process_func(NULL)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
-	if (++m_init_num == 1)
+	if (++m_init_num == 1) {
+		PION_LOG_DEBUG(m_logger, "Initializing Python interpreter");
+		// initialize the thread specific state pointers
+		m_state_ptr = new boost::thread_specific_ptr<PyThreadState>(&PythonReactor::releaseThreadState);
+		// initialize python interpreter
 		Py_Initialize();
+		// setup module callback functions
+		Py_InitModule("pion", PionPythonCallbackMethods);
+		// initialize thread support
+		PyEval_InitThreads();
+		// get a pointer to the global Python interpreter
+		PyThreadState *thr_state_ptr = PyThreadState_Get();
+		m_interp_ptr = thr_state_ptr->interp;
+		PION_ASSERT(m_interp_ptr);
+		// release the global lock (GIL) since PyEval_InitThreads() acquires it
+		PyEval_ReleaseThread(thr_state_ptr);
+		// keep track of the thread since it's been initialized inside Python
+		m_state_ptr->reset(thr_state_ptr);
+	}
 }
 	
 PythonReactor::~PythonReactor()
 {
 	stop();
+
 	{
 		// free the compiled byte code (if any)
 		ConfigWriteLock cfg_lock(*this);
+		PythonLock py_lock;
 		resetPythonSymbols();
 	}
+
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
-	if (--m_init_num == 0)
-		Py_Finalize();
+	if (--m_init_num == 0) {
+		PION_LOG_DEBUG(m_logger, "Releasing Python thread states");
+		delete m_state_ptr;
+		m_state_ptr = NULL;
+		m_interp_ptr = NULL;
+
+		PION_LOG_DEBUG(m_logger, "Shutting down Python interpreter");
+		// TODO: this causes the Python interpreter to crash; WHY???
+//		Py_Finalize();
+	}
 }
 
 void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
@@ -85,6 +131,9 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		m_source = getSourceCodeFromFile();
 	}
 
+	// make sure the thread has been initialized and acquire the GIL lock
+	PythonLock py_lock;
+
 	// pre-compile the python source code to check for errors early
 	compilePythonSource();
 	
@@ -98,6 +147,10 @@ void PythonReactor::start(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (! m_is_running) {
 		PION_LOG_DEBUG(m_logger, "Starting reactor: " << getId());
+
+		// make sure the thread has been initialized and acquire the GIL lock
+		PythonLock py_lock;
+
 		if (! m_source_file.empty()) {
 			// make sure that the source code has not changed since last read
 			string src_code = getSourceCodeFromFile();
@@ -116,17 +169,28 @@ void PythonReactor::stop(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (m_is_running) {
 		PION_LOG_DEBUG(m_logger, "Stopping reactor: " << getId());
+
+		// make sure the thread has been initialized and acquire the GIL lock
+		PythonLock py_lock;
+
+		// release process function pointer and imported source code module
 		Py_XDECREF(m_process_func);
 		Py_XDECREF(m_module);
 		//Py_XDECREF(m_byte_code);	// leave this alone so that re-start() works without source change
 		m_process_func = m_module = NULL;
+
 		m_is_running = false;
 	}
 }
 
 void PythonReactor::process(const EventPtr& e)
 {
-	if (m_process_func && PyCallable_Check(m_process_func)) {
+	if (m_process_func) {
+	
+		// make sure the thread has been initialized and acquire the GIL lock
+		PythonLock py_lock;
+
+		// generate a dict object to use as a parameter for the process() function
 		PyObject *python_dict = PyDict_New();
 		if (! python_dict)
 			throw InternalPythonException(getId());
@@ -159,10 +223,29 @@ void PythonReactor::process(const EventPtr& e)
 	
 	deliverEvent(e);
 }
+
+PyThreadState *PythonReactor::initThreadState(void)
+{
+	// check if the thread's state has already been initialized with Python
+	PyThreadState *thr_state_ptr = m_state_ptr->get();
+	if (thr_state_ptr == NULL) {
+		// the thread's state has not yet been initialized with Python
+		thr_state_ptr = PyThreadState_New(m_interp_ptr);
+		m_state_ptr->reset(thr_state_ptr);
+	}
+	return thr_state_ptr;
+}
+
+void PythonReactor::releaseThreadState(PyThreadState *ptr)
+{
+	// TODO: is having a thread instance created necessary for this call?
+	PyThreadState_Clear(ptr);
+	PyThreadState_Delete(ptr);
+}
 	
 void PythonReactor::resetPythonSymbols(void)
 {
-	// assumes ConfigWriteLock
+	// assumes ConfigWriteLock and PythonLock
 	PION_LOG_DEBUG(m_logger, "Resetting Python symbols");
 	Py_XDECREF(m_process_func);
 	Py_XDECREF(m_module);
@@ -172,7 +255,7 @@ void PythonReactor::resetPythonSymbols(void)
 
 void PythonReactor::compilePythonSource(void)
 {
-	// assumes ConfigWriteLock
+	// assumes ConfigWriteLock and PythonLock
 
 	// free the compiled byte code (if any)
 	resetPythonSymbols();
@@ -188,7 +271,7 @@ void PythonReactor::compilePythonSource(void)
 
 void PythonReactor::initPythonModule(void)
 {
-	// assumes ConfigWriteLock
+	// assumes ConfigWriteLock and PythonLock
 
 	if (m_byte_code) {
 		PION_LOG_DEBUG(m_logger, "Initializing Python module");
@@ -203,6 +286,8 @@ void PythonReactor::initPythonModule(void)
 		// find process() function in Python module
 		m_process_func = PyObject_GetAttrString(m_module, PROCESS_FUNCTION_NAME.c_str());
 		if (m_process_func) {
+			if (! PyCallable_Check(m_process_func))
+				throw NotCallableException(PROCESS_FUNCTION_NAME);
 			PION_LOG_DEBUG(m_logger, "Found process() function");
 		} else {
 			PyErr_Clear();
@@ -237,6 +322,7 @@ std::string PythonReactor::getSourceCodeFromFile(void)
 
 std::string PythonReactor::getPythonError(void)
 {
+	// assumes PythonLock
 	PyObject *ptype = NULL;
 	PyObject *pvalue = NULL;
 	PyObject *ptraceback = NULL;
