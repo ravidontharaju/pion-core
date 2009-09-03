@@ -46,7 +46,7 @@ const std::string			ServiceManager::REDIRECT_TARGET_ELEMENT_NAME = "Target";
 const std::string			ServiceManager::RESOURCE_ELEMENT_NAME = "Resource";
 const std::string			ServiceManager::OPTION_ELEMENT_NAME = "Option";
 const std::string			ServiceManager::AUTH_ELEMENT_NAME = "Auth";
-const std::string			ServiceManager::AUTH_TYPE_ELEMENT_NAME = "Type";
+const std::string			ServiceManager::AUTH_TYPE_ELEMENT_NAME = "AuthType";
 const std::string			ServiceManager::AUTH_RESTRICT_ELEMENT_NAME = "Restrict";
 const std::string			ServiceManager::AUTH_PERMIT_ELEMENT_NAME = "Permit";
 const std::string			ServiceManager::AUTH_LOGIN_ELEMENT_NAME = "Login";
@@ -123,19 +123,33 @@ void ServiceManager::openConfigFile(void)
 		HTTPServerPtr server_ptr(new HTTPServer(m_scheduler, boost::lexical_cast<unsigned int>(port_str)));
 		m_servers.push_back(server_ptr);
 
-		// get the Authentication configuration
-		HTTPAuthPtr auth_ptr(new HTTPCookieAuth(m_platform_config.getUserManagerPtr()));
+		// get the Authentication type configuration
+		HTTPAuthPtr auth_ptr;
 		std::string value;
+		if (! ConfigManager::getConfigOption(AUTH_TYPE_ELEMENT_NAME, value, server_node->children)) {
+			// default to cookie authentication
+			value = "Cookie";
+		}
+		if (value == "Basic") {
+			// use HTTP Basic authentication
+			auth_ptr.reset(new HTTPBasicAuth(m_platform_config.getUserManagerPtr()));
+		} else if (value == "Cookie") {
+			// use session cookie authentication
+			auth_ptr.reset(new HTTPCookieAuth(m_platform_config.getUserManagerPtr()));
+			// parse parameters specific to cookie authentication
+			if(ConfigManager::getConfigOption(AUTH_LOGIN_ELEMENT_NAME, value,server_node->children)){
+				auth_ptr->setOption("login",value);
+			}
+			if(ConfigManager::getConfigOption(AUTH_LOGOUT_ELEMENT_NAME, value,server_node->children)){
+				auth_ptr->setOption("logout",value);
+			}
+			if(ConfigManager::getConfigOption(AUTH_REDIRECT_ELEMENT_NAME, value,server_node->children)){
+				auth_ptr->setOption("redirect",value);
+			}
+		} else {
+			throw UnknownAuthTypeException(server_id);
+		}
 
-		if(ConfigManager::getConfigOption(AUTH_LOGIN_ELEMENT_NAME, value,server_node->children)){
-			auth_ptr->setOption("login",value);
-		}
-		if(ConfigManager::getConfigOption(AUTH_LOGOUT_ELEMENT_NAME, value,server_node->children)){
-			auth_ptr->setOption("logout",value);
-		}
-		if(ConfigManager::getConfigOption(AUTH_REDIRECT_ELEMENT_NAME, value,server_node->children)){
-			auth_ptr->setOption("redirect",value);
-		}
 		// step through restricted URL definitions
 		xmlNodePtr restrict_node=server_node->children;
 		while ( (restrict_node = ConfigManager::findConfigNodeByName(AUTH_RESTRICT_ELEMENT_NAME, restrict_node)) != NULL)

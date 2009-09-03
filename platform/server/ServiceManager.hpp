@@ -91,6 +91,13 @@ public:
 			: PionException("Server configuration does not define a port number: ", server_id) {}
 	};
 
+	/// exception thrown if the config file contains a unknown AuthType value
+	class UnknownAuthTypeException : public PionException {
+	public:
+		UnknownAuthTypeException(const std::string& server_id)
+			: PionException("Server configuration has unknown AuthType parameter: ", server_id) {}
+	};
+
 	/// exception thrown if there is an error loading an SSL key file
 	class SSLKeyException : public PionException {
 	public:
