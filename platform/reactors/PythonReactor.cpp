@@ -94,23 +94,35 @@ PythonReactor::~PythonReactor()
 {
 	stop();
 
-	{
+	// get the current thread state, acquire GIL and make it "active"
+	PyThreadState *thr_state_ptr = PythonReactor::initThreadState();
+	PyEval_AcquireThread(thr_state_ptr);
+
+	try {
 		// free the compiled byte code (if any)
-		ConfigWriteLock cfg_lock(*this);
-		PythonLock py_lock;
 		resetPythonSymbols();
-	}
 
-	boost::mutex::scoped_lock init_lock(m_init_mutex);
-	if (--m_init_num == 0) {
-		PION_LOG_DEBUG(m_logger, "Releasing Python thread states");
-		delete m_state_ptr;
-		m_state_ptr = NULL;
-		m_interp_ptr = NULL;
+		boost::mutex::scoped_lock init_lock(m_init_mutex);
+		if (--m_init_num == 0) {
+			// there are no more PythonReactor instances left
+			PION_LOG_DEBUG(m_logger, "Releasing Python thread states");
 
-		PION_LOG_DEBUG(m_logger, "Shutting down Python interpreter");
-		// TODO: this causes the Python interpreter to crash; WHY???
-//		Py_Finalize();
+			// remove the current thread to make sure it does not get "released"
+			m_state_ptr->release();
+
+			// release data for all other registered threads
+			delete m_state_ptr;
+			m_state_ptr = NULL;
+			m_interp_ptr = NULL;
+
+			PION_LOG_DEBUG(m_logger, "Shutting down Python interpreter");
+			Py_Finalize();	// note: this releases data for the current thread
+		} else {
+			PyEval_ReleaseThread(thr_state_ptr);
+		}
+	} catch (...) {
+		PyEval_ReleaseThread(thr_state_ptr);
+		throw;
 	}
 }
 
