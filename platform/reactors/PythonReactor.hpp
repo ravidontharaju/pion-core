@@ -138,7 +138,17 @@ protected:
 	 * @param ptr pointer to the Python thread state to be released
 	 */
 	static void releaseThreadState(PyThreadState *ptr);
-	
+
+	/**
+	 * finds a python function within the compiled byte code for a module
+	 *
+	 * @param module_ptr pointer to the compiled byte code for the module
+	 * @param func_name name of the Python function to find
+	 *
+	 * @return pointer to the function object, or NULL if not found
+	 */	
+	PyObject *findPythonFunction(PyObject *module_ptr, const std::string& func_name);
+
 	/// releases and resets all Python byte code symbols held by the Reactor
 	void resetPythonSymbols(void);
 	
@@ -182,6 +192,12 @@ private:
 	/// name of the "virtual" module that Python source code is imported into
 	static const std::string		PYTHON_MODULE_NAME;
 
+	/// name of the start function in Python source code
+	static const std::string		START_FUNCTION_NAME;
+
+	/// name of the stop function in Python source code
+	static const std::string		STOP_FUNCTION_NAME;
+
 	/// name of the process function in Python source code
 	static const std::string		PROCESS_FUNCTION_NAME;
 
@@ -211,6 +227,12 @@ private:
 	
 	/// pointer to a PythonObject containing the compiled module (derived from byte code)
 	PyObject *						m_module;
+	
+	/// pointer to the start function defined within the compiled module
+	PyObject *						m_start_func;
+	
+	/// pointer to the stop function defined within the compiled module
+	PyObject *						m_stop_func;
 	
 	/// pointer to the process function defined within the compiled module
 	PyObject *						m_process_func;

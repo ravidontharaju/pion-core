@@ -26,21 +26,6 @@
 #include "PythonReactor.hpp"
 
 
-// Python callback functions
-extern "C" {
-	static PyObject* pion_ret10(PyObject *self, PyObject *args)
-	{
-		return Py_BuildValue("i", 10);
-	}
-	
-	static PyMethodDef PionPythonCallbackMethods[] = {
-		{"ret10", pion_ret10, METH_VARARGS,
-		"Return the number ten."},
-		{NULL, NULL, 0, NULL}
-	};
-}
-
-
 using namespace std;
 using namespace pion::platform;
 
@@ -49,9 +34,44 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
+// Python callback functions
+
+static PyObject* pion_deliver(PyObject *self, PyObject *args)
+{
+	// check that callback parameter is a dictionary
+	PyObject *event_ptr;
+	if (! PyArg_ParseTuple(args, "O:event_object", &event_ptr)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+	if (! PyDict_Check(event_ptr)) {
+		PyErr_SetString(PyExc_TypeError, "parameter must be a dictionary");
+		return NULL;
+	}
+
+	// TODO: parse dict into an event
+	printf("deliver() callback got a valid dictionary object\n");
+	
+	// TODO: deliver the event to other reactors
+	// ...
+
+	// return "none" (OK)
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+	
+static PyMethodDef PionPythonCallbackMethods[] = {
+	{"deliver", pion_deliver, METH_VARARGS,
+	"Delivers an event to the reactor's output connections."},
+	{NULL, NULL, 0, NULL}
+};
+
+
 // static members of PythonReactor
 	
 const string			PythonReactor::PYTHON_MODULE_NAME = "pion";
+const string			PythonReactor::START_FUNCTION_NAME = "start";
+const string			PythonReactor::STOP_FUNCTION_NAME = "stop";
 const string			PythonReactor::PROCESS_FUNCTION_NAME = "process";
 const string			PythonReactor::FILENAME_ELEMENT_NAME = "Filename";
 const string			PythonReactor::PYTHON_SOURCE_ELEMENT_NAME = "PythonSource";
@@ -66,7 +86,8 @@ boost::thread_specific_ptr<PyThreadState> *		PythonReactor::m_state_ptr = NULL;
 PythonReactor::PythonReactor(void)
 	: Reactor(TYPE_PROCESSING),
 	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
-	m_byte_code(NULL), m_module(NULL), m_process_func(NULL)
+	m_byte_code(NULL), m_module(NULL),
+	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
@@ -171,8 +192,23 @@ void PythonReactor::start(void)
 				compilePythonSource();
 			}
 		}
+
+		// initialize Python module code and start the reactor
 		initPythonModule();
 		m_is_running = true;
+
+		if (m_start_func) {
+			// execute the Python module's start() function
+			PION_LOG_DEBUG(m_logger, "Calling Python start() function");
+			PyObject *retval = PyObject_CallObject(m_start_func, NULL);
+		
+			// check for uncaught runtime exceptions
+			if (retval == NULL && PyErr_Occurred()) {
+				throw PythonRuntimeException(getPythonError());
+			}
+		
+			Py_XDECREF(retval);
+		}
 	}
 }
 
@@ -185,11 +221,26 @@ void PythonReactor::stop(void)
 		// make sure the thread has been initialized and acquire the GIL lock
 		PythonLock py_lock;
 
-		// release process function pointer and imported source code module
+		if (m_stop_func) {
+			// execute the Python module's stop() function
+			PION_LOG_DEBUG(m_logger, "Calling Python stop() function");
+			PyObject *retval = PyObject_CallObject(m_stop_func, NULL);
+		
+			// check for uncaught runtime exceptions
+			if (retval == NULL && PyErr_Occurred()) {
+				throw PythonRuntimeException(getPythonError());
+			}
+		
+			Py_XDECREF(retval);
+		}
+
+		// release function pointers and imported source code module
+		Py_XDECREF(m_start_func);
+		Py_XDECREF(m_stop_func);
 		Py_XDECREF(m_process_func);
 		Py_XDECREF(m_module);
 		//Py_XDECREF(m_byte_code);	// leave this alone so that re-start() works without source change
-		m_process_func = m_module = NULL;
+		m_start_func = m_stop_func = m_process_func = m_module = NULL;
 
 		m_is_running = false;
 	}
@@ -218,7 +269,7 @@ void PythonReactor::process(const EventPtr& e)
 		PyTuple_SetItem(python_args, 0, python_dict);	// note: python_dict reference is stolen here
 
 		// call the process() function, passing the dict as an argument
-		PION_LOG_DEBUG(m_logger, "Calling process() function");
+		PION_LOG_DEBUG(m_logger, "Calling Python process() function");
 		PyObject *retval = PyObject_CallObject(m_process_func, python_args);
 		
 		// check for uncaught runtime exceptions
@@ -254,15 +305,31 @@ void PythonReactor::releaseThreadState(PyThreadState *ptr)
 	PyThreadState_Clear(ptr);
 	PyThreadState_Delete(ptr);
 }
-	
+
+PyObject *PythonReactor::findPythonFunction(PyObject *module_ptr, const std::string& func_name)
+{
+	PyObject *func_ptr = PyObject_GetAttrString(module_ptr, func_name.c_str());
+	if (func_ptr) {
+		if (! PyCallable_Check(func_ptr))
+			throw NotCallableException(func_name);
+		PION_LOG_DEBUG(m_logger, "Found " << func_name << "() function");
+	} else {
+		PyErr_Clear();
+		PION_LOG_WARN(m_logger, "Unable to find " << func_name << "() function");
+	}
+	return func_ptr;
+}
+
 void PythonReactor::resetPythonSymbols(void)
 {
 	// assumes ConfigWriteLock and PythonLock
 	PION_LOG_DEBUG(m_logger, "Resetting Python symbols");
+	Py_XDECREF(m_start_func);
+	Py_XDECREF(m_stop_func);
 	Py_XDECREF(m_process_func);
 	Py_XDECREF(m_module);
 	Py_XDECREF(m_byte_code);
-	m_process_func = m_module = m_byte_code = NULL;
+	m_start_func = m_stop_func = m_process_func = m_module = m_byte_code = NULL;
 }
 
 void PythonReactor::compilePythonSource(void)
@@ -287,6 +354,7 @@ void PythonReactor::initPythonModule(void)
 
 	if (m_byte_code) {
 		PION_LOG_DEBUG(m_logger, "Initializing Python module");
+
 		// note: Python API calls for "char*" but never will modify it (API design bug work-around)
 		m_module = PyImport_ExecCodeModule(const_cast<char*>(PYTHON_MODULE_NAME.c_str()), m_byte_code);
 		if (m_module == NULL) {
@@ -295,16 +363,14 @@ void PythonReactor::initPythonModule(void)
 			throw FailedToCompileException(getPythonError());
 		}
 	
+		// find start() function in Python module
+		m_start_func = findPythonFunction(m_module, START_FUNCTION_NAME);
+
+		// find stop() function in Python module
+		m_stop_func = findPythonFunction(m_module, STOP_FUNCTION_NAME);
+
 		// find process() function in Python module
-		m_process_func = PyObject_GetAttrString(m_module, PROCESS_FUNCTION_NAME.c_str());
-		if (m_process_func) {
-			if (! PyCallable_Check(m_process_func))
-				throw NotCallableException(PROCESS_FUNCTION_NAME);
-			PION_LOG_DEBUG(m_logger, "Found process() function");
-		} else {
-			PyErr_Clear();
-			PION_LOG_WARN(m_logger, "Unable to find process() function");
-		}
+		m_process_func = findPythonFunction(m_module, PROCESS_FUNCTION_NAME);
 	}
 }
 
