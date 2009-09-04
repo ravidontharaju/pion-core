@@ -51,7 +51,18 @@ def get_cookie(con, user, password):
 	return cookie_match.group(1)
 
 
-def parse_args():
+def get_con(options):
+	# establish connection to Pion server
+	if (options.ssl):
+		con = httplib.HTTPSConnection(options.server, options.port);
+	else:
+		con = httplib.HTTPConnection(options.server, options.port);
+	# get session cookie
+	options.cookie = get_cookie(con, options.user, options.password)
+	return con
+
+
+def get_arg_parser():
 	# prepare argument parser
 	parser = optparse.OptionParser()
 	parser.add_option("-u", "--user", action="store", default="pion",
@@ -64,6 +75,12 @@ def parse_args():
 		help="port number on the Pion server to connect to")
 	parser.add_option("", "--ssl", action="store_true", default=False,
 		help="use SSL encryption for the Pion server connection")
+	return parser
+
+
+def parse_args():
+	# prepare argument parser
+	parser = get_arg_parser()
 	parser.add_option("-r", "--reactor", action="store",
 		help="identifier of reactor to perform an action upon")
 	parser.add_option("", "--stats", action="store_true", default=False,
@@ -108,14 +125,9 @@ def main():
 	# parse command-line options
 	options, uristem = parse_args()
 	# establish connection to Pion server
-	if (options.ssl):
-		con = httplib.HTTPSConnection(options.server, options.port);
-	else:
-		con = httplib.HTTPConnection(options.server, options.port);
-	# get session cookie
-	cookie = get_cookie(con, options.user, options.password)
+	con = get_con(options)
 	# retrieve and display resource from Pion server
-	r = get_response(con, uristem, {'Cookie' : 'pion_session_id="' + cookie + '"'})
+	r = get_response(con, uristem, {'Cookie' : 'pion_session_id="' + options.cookie + '"'})
 	print_response(r)
 	# close the HTTP connection
 	con.close()
