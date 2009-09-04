@@ -94,7 +94,7 @@ def parse_args():
 		print 'error: missing required --reactor argument'
 		sys.exit(1)
 	elif (options.stats):
-		uristem = '/config/reactors/stats'
+		uristem = '/query/reactors'
 	else:
 		if (len(arguments) != 1):
 			print 'error: No uri-stem argument was specified'

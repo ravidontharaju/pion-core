@@ -136,7 +136,6 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 void LogInputReactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {
-	ConfigManager::writeBeginPionStatsXML(out);
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 	
@@ -155,7 +154,6 @@ void LogInputReactor::query(std::ostream& out, const QueryBranches& branches,
 	logs_consumed_lock.unlock();
 	
 	writeEndReactorXML(out);
-	ConfigManager::writeEndPionStatsXML(out);
 }
 
 void LogInputReactor::start(void)

@@ -300,8 +300,9 @@ public:
 	 * @param out the ostream to write the statistics into
 	 * @param reactor_id include only the Reactor that matches this unique
 	 *                   identifier, or include all Reactors if empty
+	 * @param details if true, then display detailed stats using the reactor's query service
 	 */
-	void writeStatsXML(std::ostream& out, const std::string& reactor_id = "") const;
+	void writeStatsXML(std::ostream& out, const std::string& reactor_id = "", const bool details = false);
 
 	/**
 	 * writes info for particular connections to an output stream (as XML)
@@ -358,10 +359,15 @@ public:
 	inline void query(const std::string& reactor_id, std::ostream& out,
 		const Reactor::QueryBranches& branches, const Reactor::QueryParams& qp)
 	{
-		Reactor *reactor_ptr = m_plugins.get(reactor_id);
-		if (reactor_ptr == NULL)
-			throw ReactorNotFoundException(reactor_id);
-		return reactor_ptr->query(out, branches, qp);
+		if (branches.size() < 3) {
+			// query request for /query/<reactor_id>
+			writeStatsXML(out, reactor_id, true);
+		} else {
+			Reactor *reactor_ptr = m_plugins.get(reactor_id);
+			if (reactor_ptr == NULL)
+				throw ReactorNotFoundException(reactor_id);
+			reactor_ptr->query(out, branches, qp);
+		}
 	}
 
 	/**

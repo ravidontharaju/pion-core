@@ -89,7 +89,6 @@ void DatabaseOutputReactor::updateDatabases(void)
 void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {
-	ConfigManager::writeBeginPionStatsXML(out);
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 
@@ -101,10 +100,12 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << m_inserter->getKeyCacheSize()
 	    << "</" << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << std::endl;
 
+	// write database identifier and table name
+	out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter->getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
+		<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter->getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
+
 	// In addition; if full status is requested, get Database/Table/Fields
 	if (branches.size() > 2 && branches[2] == "full") {
-		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter->getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
-			<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter->getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
 		Query::FieldMap field_map(m_inserter->getFieldMap());
 		Query::IndexMap index_map(m_inserter->getIndexMap());
 		for (unsigned int i = 0; i < field_map.size(); i++) {
@@ -118,7 +119,6 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	}
 
 	writeEndReactorXML(out);
-	ConfigManager::writeEndPionStatsXML(out);
 }
 
 void DatabaseOutputReactor::start(void)

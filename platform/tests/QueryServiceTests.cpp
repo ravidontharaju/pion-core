@@ -218,6 +218,8 @@ BOOST_AUTO_TEST_CASE(testMinimalQueryToDatabaseOutputReactor) {
 			"<EventsOut>0</EventsOut>\n"
 			"<EventsQueued>0</EventsQueued>\n"
 			"<KeyCacheSize>0</KeyCacheSize>\n"
+			"<Database>e75d88f0-e7df-11dc-a76c-0016cb926e68</Database>\n"
+			"<Table>clickstream</Table>\n"
 		"</Reactor>\n"
 	"</PionStats>\n";
 	BOOST_CHECK_EQUAL(response_content, expected_response);
@@ -310,14 +312,11 @@ BOOST_AUTO_TEST_CASE(testSendRotateQueryToLogOutputReactorWithNoInput) {
 	// even though this time the query has an additional branch requesting log file rotation.
 	std::string response_content(response_ptr->getContent());
 	std::string expected_response = 
-	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-	"<PionStats xmlns=\"http://purl.org/pion/config\">\n"
 		"<Reactor id=\"" + reactor_id + "\">\n"
 			"<Running>true</Running>\n"
 			"<EventsIn>0</EventsIn>\n"
 			"<EventsOut>0</EventsOut>\n"
-		"</Reactor>\n"
-	"</PionStats>\n";
+		"</Reactor>\n";
 	BOOST_CHECK_EQUAL(response_content, expected_response);
 
 	// Check that the log file is empty (since no data is flowing).

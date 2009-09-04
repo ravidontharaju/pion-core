@@ -645,16 +645,18 @@ void ReactionEngine::stopNoLock(void)
 	}
 }
 
-void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id) const
+void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id, const bool details)
 {
 	writeBeginPionStatsXML(out);
 
+	const Reactor::QueryBranches branches;
+	const Reactor::QueryParams qp;
 	boost::mutex::scoped_lock engine_lock(m_mutex);
 
 	if (only_id.empty()) {
 		// step through each reactor configured
 		std::string reactor_id;
-		const Reactor *reactor_ptr;
+		Reactor *reactor_ptr;
 		xmlNodePtr reactor_node = m_config_node_ptr->children;
 		while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL)
 		{
@@ -663,7 +665,11 @@ void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id
 				&& (reactor_ptr = m_plugins.get(reactor_id)) != NULL)
 			{
 				// write reactor statistics
-				reactor_ptr->writeStatsXML(out);
+				if (details) {
+					reactor_ptr->query(out, branches, qp);
+				} else {
+					reactor_ptr->writeStatsXML(out);
+				}
 			}
 			// step to the next Reactor
 			reactor_node = reactor_node->next;
@@ -674,10 +680,14 @@ void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id
 			<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
 	} else {
 		// get a pointer to the reactor
-		const Reactor *reactor_ptr = m_plugins.get(only_id);
+		Reactor *reactor_ptr = m_plugins.get(only_id);
 
 		// write reactor statistics
-		reactor_ptr->writeStatsXML(out);
+		if (details) {
+			reactor_ptr->query(out, branches, qp);
+		} else {
+			reactor_ptr->writeStatsXML(out);
+		}
 	}
 	
 	writeEndPionStatsXML(out);

@@ -112,11 +112,9 @@ void Reactor::removeConnection(const std::string& connection_id)
 void Reactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {
-	ConfigManager::writeBeginPionStatsXML(out);
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 	writeEndReactorXML(out);
-	ConfigManager::writeEndPionStatsXML(out);
 }
 
 void Reactor::writeStatsOnlyXML(std::ostream& out) const

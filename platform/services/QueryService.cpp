@@ -60,14 +60,19 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 	 */
 
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-		if (branches.size() >= 2 && branches.front() == "reactors") {
-			if (getConfig().getReactionEngine().hasPlugin(branches.at(1))) {
-				getConfig().getReactionEngine().query(
-					branches.at(1), ss, branches,
-					request->getQueryParams());
+		if (!branches.empty() && branches.front() == "reactors") {
+			if (branches.size() >= 2) {
+				if (getConfig().getReactionEngine().hasPlugin(branches.at(1))) {
+					getConfig().getReactionEngine().query(
+						branches.at(1), ss, branches,
+						request->getQueryParams());
+				} else {
+					HTTPServer::handleNotFoundRequest(request, tcp_conn);
+					return;
+				}
 			} else {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
+				// send detailed statistics for all Reactors
+				getConfig().getReactionEngine().writeStatsXML(ss, "", true);
 			}
 		} else {
 			throw UnknownQueryException();
@@ -79,7 +84,7 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 		response_ptr->addHeader("Allow", "GET");
 	}
 
-	// Set Content-type to "text/plain" (plain ascii text)
+	// Set Content-type to "text/xml"
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, response_ptr,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
