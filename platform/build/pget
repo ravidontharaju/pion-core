@@ -6,6 +6,10 @@
 import sys, httplib, optparse, re, xml.dom.minidom
 
 
+# from http://code.activestate.com/recipes/576750/
+pretty_print = lambda doc: '\n'.join([line for line in doc.toprettyxml(indent=' '*2).split('\n') if line.strip()])
+
+
 def get_response(con, uristem, headers = {}):
 	try:
 		con.request('GET', uristem, None, headers)
@@ -27,7 +31,8 @@ def print_response(r):
 	ctype = r.getheader('Content-Type');
 	if (ctype.lower().startswith('text/xml')):
 		doc = xml.dom.minidom.parseString(body)
-		print doc.toprettyxml()	
+		print pretty_print(doc)
+		#print doc.toprettyxml()	
 	else:
 		print body
 
@@ -59,40 +64,49 @@ def parse_args():
 		help="port number on the Pion server to connect to")
 	parser.add_option("", "--ssl", action="store_true", default=False,
 		help="use SSL encryption for the Pion server connection")
-	parser.add_option("", "--stats", action="store_true", default=False,
-		help="retrieves statistics for all Pion reactors")
 	parser.add_option("-r", "--reactor", action="store",
 		help="identifier of reactor to perform an action upon")
-	parser.add_option("-a", "--action", action="store",
-		help="action to perform on reactor (start, stop, etc.)")
+	parser.add_option("", "--stats", action="store_true", default=False,
+		help="retrieves statistics for one or all Pion reactors")
+	parser.add_option("", "--start", action="store_true", default=False,
+		help="starts a reactor if it is not already running")
+	parser.add_option("", "--stop", action="store_true", default=False,
+		help="stops a reactor if it is running")
+	parser.add_option("", "--query", action="store",
+		help="calls a reactor's query service")
 	# parse command-line arguments
 	options, arguments = parser.parse_args()		
 	# check validity of arguments
 	if (options.reactor):
-		if (not options.action):
-			print 'error: --reactor argument requires corresponding --action'
-			sys.exit(1)
-	elif (options.action):
-		print 'error: --action argument requires corresponding --reactor'
+		if (options.start):
+			uristem = '/config/reactors/' + options.reactor + '/start'
+		elif (options.stop):
+			uristem = '/config/reactors/' + options.reactor + '/stop'
+		elif (options.stats):
+			uristem = '/query/reactors/' + options.reactor
+		elif (options.query):
+			if (options.query[0] != '/'):
+				options.query = '/' + options.query
+			uristem = '/query/reactors/' + options.reactor + options.query
+		else:
+			uristem = '/config/reactors/' + options.reactor
+	elif (options.start or options.stop or options.query):
+		print 'error: missing required --reactor argument'
 		sys.exit(1)
-	if (len(arguments) != 1):	# check uri stem argument (required)
-		if (not options.stats and not options.reactor):	# zero is ok for --stats and --reactor
-			print 'error: No uri-stem argument specified'
+	elif (options.stats):
+		uristem = '/config/reactors/stats'
+	else:
+		if (len(arguments) != 1):
+			print 'error: No uri-stem argument was specified'
 			sys.exit(1)
+		uristem = arguments[0]
 	# return argument data
-	return options, arguments;
+	return options, uristem
 
 
 def main():
 	# parse command-line options
-	options, arguments = parse_args()
-	# determine resource to be requested
-	if (options.stats):	# get and display reactor statistics
-		uristem = '/config/reactors/stats'
-	elif (options.reactor):
-		uristem = '/config/reactors/' + options.reactor + '/' + options.action
-	else:	# get resource and display the response
-		uristem = arguments[0]
+	options, uristem = parse_args()
 	# establish connection to Pion server
 	if (options.ssl):
 		con = httplib.HTTPSConnection(options.server, options.port);
