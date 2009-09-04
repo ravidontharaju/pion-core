@@ -1,0 +1,113 @@
+#!/usr/bin/python
+# ---------------------------------------------
+# pion cookie authentication HTTP query wrapper
+# ---------------------------------------------
+
+import sys, httplib, optparse, re, xml.dom.minidom
+
+
+def get_response(con, uristem, headers = {}):
+	try:
+		con.request('GET', uristem, None, headers)
+	except:
+		print 'error: unable to establish connection to Pion server'
+		sys.exit(1)
+	r = con.getresponse()
+	if (r.status == 401):
+		print 'error: Unable to authenticate to Pion server'
+		sys.exit(1)
+	if (r.status >= 400 and r.status <= 599):
+		print 'error: response =', r.status, r.reason
+		sys.exit(1)
+	return r
+
+
+def print_response(r):
+	body = r.read()
+	ctype = r.getheader('Content-Type');
+	if (ctype.lower().startswith('text/xml')):
+		doc = xml.dom.minidom.parseString(body)
+		print doc.toprettyxml()	
+	else:
+		print body
+
+
+def get_cookie(con, user, password):
+	r = get_response(con, '/login?user=' + user + '&pass=' + password)
+	r.read()	# needed to reset the connection for the next request
+	if (r.status != 204):
+		print 'error: Bad response for Pion server login request (', r.status, ')'
+		sys.exit(1)
+	cookie_rx = re.compile(r'.*pion_session_id="([^"]+)".*')
+	cookie_match = cookie_rx.match(r.getheader('Set-Cookie'))
+	if (not cookie_match or cookie_match.lastindex != 1):
+		print 'error: Unable to retrieve session cookie from Pion server'
+		sys.exit(1)
+	return cookie_match.group(1)
+
+
+def parse_args():
+	# prepare argument parser
+	parser = optparse.OptionParser()
+	parser.add_option("-u", "--user", action="store", default="pion",
+		help="name of user to authenticate as")
+	parser.add_option("-p", "--password", action="store", default="pion",
+		help="password of user to authenticate as")
+	parser.add_option("-s", "--server", action="store", default="localhost",
+		help="hostname or IP address of the Pion server")
+	parser.add_option("", "--port", action="store", default=8888, type="int",
+		help="port number on the Pion server to connect to")
+	parser.add_option("", "--ssl", action="store_true", default=False,
+		help="use SSL encryption for the Pion server connection")
+	parser.add_option("", "--stats", action="store_true", default=False,
+		help="retrieves statistics for all Pion reactors")
+	parser.add_option("-r", "--reactor", action="store",
+		help="identifier of reactor to perform an action upon")
+	parser.add_option("-a", "--action", action="store",
+		help="action to perform on reactor (start, stop, etc.)")
+	# parse command-line arguments
+	options, arguments = parser.parse_args()		
+	# check validity of arguments
+	if (options.reactor):
+		if (not options.action):
+			print 'error: --reactor argument requires corresponding --action'
+			sys.exit(1)
+	elif (options.action):
+		print 'error: --action argument requires corresponding --reactor'
+		sys.exit(1)
+	if (len(arguments) != 1):	# check uri stem argument (required)
+		if (not options.stats and not options.reactor):	# zero is ok for --stats and --reactor
+			print 'error: No uri-stem argument specified'
+			sys.exit(1)
+	# return argument data
+	return options, arguments;
+
+
+def main():
+	# parse command-line options
+	options, arguments = parse_args()
+	# determine resource to be requested
+	if (options.stats):	# get and display reactor statistics
+		uristem = '/config/reactors/stats'
+	elif (options.reactor):
+		uristem = '/config/reactors/' + options.reactor + '/' + options.action
+	else:	# get resource and display the response
+		uristem = arguments[0]
+	# establish connection to Pion server
+	if (options.ssl):
+		con = httplib.HTTPSConnection(options.server, options.port);
+	else:
+		con = httplib.HTTPConnection(options.server, options.port);
+	# get session cookie
+	cookie = get_cookie(con, options.user, options.password)
+	# retrieve and display resource from Pion server
+	r = get_response(con, uristem, {'Cookie' : 'pion_session_id="' + cookie + '"'})
+	print_response(r)
+	# close the HTTP connection
+	con.close()
+
+
+# call main() if script is being executed	
+if __name__ == '__main__':
+	main()
+

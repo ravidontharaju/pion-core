@@ -182,6 +182,11 @@ if ($PLATFORM =~ /^win32/i) {
 copy(File::Spec->catfile( ("platform", "doc"), "pion-manual.pdf"),
 	File::Spec->catfile($PACKAGE_DIR, "pion-manual.pdf"));
 
+# copy the pget python script
+copy(File::Spec->catfile( ("platform", "build"), "pget"),
+	File::Spec->catfile($PACKAGE_DIR, "pget"));
+chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget")) if (! ($PLATFORM =~ /^win32/i));
+
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);
 
