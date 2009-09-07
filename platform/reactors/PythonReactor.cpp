@@ -308,7 +308,7 @@ void PythonReactor::releaseThreadState(PyThreadState *ptr)
 
 PyObject *PythonReactor::findPythonFunction(PyObject *module_ptr, const std::string& func_name)
 {
-	PyObject *func_ptr = PyObject_GetAttrString(module_ptr, func_name.c_str());
+	PyObject *func_ptr = PyObject_GetAttrString(module_ptr, const_cast<char*>(func_name.c_str()));
 	if (func_ptr) {
 		if (! PyCallable_Check(func_ptr))
 			throw NotCallableException(func_name);
