@@ -3,7 +3,7 @@
 # pion server monitor script
 # --------------------------
 
-import pget, sys, time
+import pget, sys, time, commands
 
 
 # defines a mapping of reactor statistics to maximum threshold values
@@ -65,8 +65,8 @@ def get_metrics(con, options, reactors):
 def main():
 	# parse command-line options
 	parser = pget.get_arg_parser()
-	parser.add_option("-i", "--interval", action="store", type="int", default="10",
-		help="interval of time (in seconds) between Pion statistics requests")
+	parser.add_option("-c", "--command", action="store",
+		help="command to execute at the end of each interval")
 	options, arguments = parser.parse_args()		
 	# argument sanity check
 	options.interval = None
@@ -92,6 +92,8 @@ def main():
 		metrics.sort()
 		for m in metrics:
 			print m
+		if (options.command):
+			print commands.getoutput(options.command)
 		if (not options.interval):
 			break
 		# sleep a bit
