@@ -6,6 +6,23 @@
 import sys, httplib, optparse, re, xml.dom.minidom
 
 
+class Reactor:
+	"""Basic class to hold information about a reactor"""
+	def __init__(self, id, type, name, comment):
+		self.id = id
+		self.type = type
+		self.name = name
+		self.comment = comment
+	def __str__(self):
+		return '%s(%s)' % (self.type, self.name)
+	def __hash__(self):
+		return hash(self.id)
+	def __lt__(self, other):
+		return self.type < other.type
+	def __eq__(self, other):
+		return self.id == other.id
+
+
 # from http://code.activestate.com/recipes/576750/
 pretty_print = lambda doc: '\n'.join([line for line in doc.toprettyxml(indent=' '*2).split('\n') if line.strip()])
 
@@ -32,7 +49,8 @@ def print_response(r):
 	if (ctype.lower().startswith('text/xml')):
 		doc = xml.dom.minidom.parseString(body)
 		print pretty_print(doc)
-		#print doc.toprettyxml()	
+		#print doc.toprettyxml()
+		doc.unlink()
 	else:
 		print body
 
@@ -59,7 +77,55 @@ def get_con(options):
 		con = httplib.HTTPConnection(options.server, options.port);
 	# get session cookie
 	options.cookie = get_cookie(con, options.user, options.password)
+	options.headers = {'Cookie' : 'pion_session_id="' + options.cookie + '"'}
 	return con
+
+
+def get_reactors(con, options):
+	# query reactor configuration
+	r = get_response(con, '/config/reactors', options.headers)
+	if (r.status != 200):
+		print 'error: Unable to retrieve reactor configuration'
+		sys.exit(1)
+	# parse XML response
+	doc = xml.dom.minidom.parseString(r.read())
+	reactor_nodes = doc.getElementsByTagName("Reactor")
+	reactors = list()
+	for r in reactor_nodes:
+		# get attributes for each reactor
+		id = r.attributes['id'].value
+		type = r.getElementsByTagName("Plugin")[0].firstChild.data
+		name = r.getElementsByTagName("Name")[0].firstChild.data
+		comment = r.getElementsByTagName("Comment")[0].firstChild.data
+		reactors.append( Reactor(id, type, name, comment) )
+	doc.unlink()
+	return reactors
+
+
+def get_stats_xml(reactor, fields, node):
+	if (node.localName in fields):
+		reactor.stats.append( (node.localName, node.firstChild.data) )
+	else:
+		for n in node.childNodes:
+			get_stats_xml(reactor, fields, n)
+	
+
+def get_stats(con, options, reactor, fields=()):
+	# query reactor statistcs
+	r = get_response(con, '/query/reactors/' + reactor.id, options.headers)
+	if (r.status != 200):
+		print 'error: Unable to retrieve reactor statistics: %s' % reactor.id
+		sys.exit(1)
+	# parse XML response
+	doc = xml.dom.minidom.parseString(r.read())
+	node = doc.getElementsByTagName("Reactor")[0]
+	# extract statistic nodes
+	reactor.running = node.getElementsByTagName('Running')[0].firstChild.data
+	reactor.events_in = node.getElementsByTagName('EventsIn')[0].firstChild.data
+	reactor.events_out = node.getElementsByTagName('EventsOut')[0].firstChild.data
+	reactor.stats = list()
+	if (fields):
+		get_stats_xml(reactor, fields, node)
 
 
 def get_arg_parser():
@@ -91,44 +157,60 @@ def parse_args():
 		help="stops a reactor if it is running")
 	parser.add_option("", "--query", action="store",
 		help="calls a reactor's query service")
+	parser.add_option("-l", "--list", action="store", default=None,
+		help="list reactors of a specific type (or \"all\")")
 	# parse command-line arguments
 	options, arguments = parser.parse_args()		
 	# check validity of arguments
 	if (options.reactor):
 		if (options.start):
-			uristem = '/config/reactors/' + options.reactor + '/start'
+			options.uristem = '/config/reactors/' + options.reactor + '/start'
 		elif (options.stop):
-			uristem = '/config/reactors/' + options.reactor + '/stop'
+			options.uristem = '/config/reactors/' + options.reactor + '/stop'
 		elif (options.stats):
-			uristem = '/query/reactors/' + options.reactor
+			options.uristem = '/query/reactors/' + options.reactor
 		elif (options.query):
 			if (options.query[0] != '/'):
 				options.query = '/' + options.query
-			uristem = '/query/reactors/' + options.reactor + options.query
+			options.uristem = '/query/reactors/' + options.reactor + options.query
 		else:
-			uristem = '/config/reactors/' + options.reactor
+			options.uristem = '/config/reactors/' + options.reactor
 	elif (options.start or options.stop or options.query):
 		print 'error: missing required --reactor argument'
 		sys.exit(1)
+	elif (options.list):
+		pass
 	elif (options.stats):
-		uristem = '/query/reactors'
+		options.uristem = '/query/reactors'
 	else:
 		if (len(arguments) != 1):
 			print 'error: No uri-stem argument was specified'
 			sys.exit(1)
-		uristem = arguments[0]
+		options.uristem = arguments[0]
 	# return argument data
-	return options, uristem
+	return options
 
 
 def main():
 	# parse command-line options
-	options, uristem = parse_args()
+	options = parse_args()
 	# establish connection to Pion server
 	con = get_con(options)
-	# retrieve and display resource from Pion server
-	r = get_response(con, uristem, {'Cookie' : 'pion_session_id="' + options.cookie + '"'})
-	print_response(r)
+	if (options.list):
+		# retrieve a collection of reactor objects from pion config
+		reactors = get_reactors(con, options)
+		reactors.sort()
+		for r in reactors:
+			if (options.list == r.type or options.list == 'all'):
+				print r.id, '=', r
+				if (options.stats):
+					get_stats(con, options, r)
+					print "  Running=%s, EventsIn=%s, EventsOut=%s" % (
+						r.running, r.events_in, r.events_out )
+	else:
+		# retrieve and display resource from Pion server
+		r = get_response(con, options.uristem, options.headers)
+		print_response(r)
 	# close the HTTP connection
 	con.close()
 
@@ -136,4 +218,3 @@ def main():
 # call main() if script is being executed	
 if __name__ == '__main__':
 	main()
-
