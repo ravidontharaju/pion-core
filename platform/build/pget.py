@@ -95,8 +95,10 @@ def get_reactors(con, options):
 		# get attributes for each reactor
 		id = r.attributes['id'].value
 		type = r.getElementsByTagName("Plugin")[0].firstChild.data
-		name = r.getElementsByTagName("Name")[0].firstChild.data
-		comment = r.getElementsByTagName("Comment")[0].firstChild.data
+		try: name = r.getElementsByTagName("Name")[0].firstChild.data
+		except: pass
+		try: comment = r.getElementsByTagName("Comment")[0].firstChild.data
+		except: pass
 		reactors.append( Reactor(id, type, name, comment) )
 	doc.unlink()
 	return reactors
@@ -104,7 +106,9 @@ def get_reactors(con, options):
 
 def get_stats_xml(reactor, fields, node):
 	if (node.localName in fields):
-		reactor.stats.append( (node.localName, node.firstChild.data) )
+		try:
+			reactor.stats.append( (node.localName, node.firstChild.data) )
+		except: pass
 	else:
 		for n in node.childNodes:
 			get_stats_xml(reactor, fields, n)
