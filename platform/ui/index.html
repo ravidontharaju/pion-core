@@ -47,15 +47,6 @@
 		djConfig="isDebug: true, debugAtAllCosts: false, parseOnLoad: true, popup: true, cacheBust: (new Date()).getTime()"></script>
 	<script type="text/javascript" src="dojo-src/dojox/gfx.js"></script>
 	<script type="text/javascript" src="scripts/pion.js"></script>
-	<script type="text/javascript">
-		dojo.require("dijit.layout.ContentPane");
-		dojo.require("dijit.layout.StackContainer");
-		dojo.require("dijit.layout.BorderContainer");
-		dojo.require("dijit.layout.AccordionContainer");
-		dojo.require("dijit.layout.TabContainer");
-		dojo.require("dijit.form.Button");
-		dojo.require("dojo.parser");
-	</script>
 	-->
 
 	<!-- Use this block to use the source version of the UI and a custom built version of Dojo.  -->
@@ -292,6 +283,9 @@
 						<tr>
 							<td align="right" width="80px"><label>Vocabularies</label></td>
 							<td id="vocab_path">your/path/here/VocabularyPath</td>
+						</tr><tr>
+							<td align="right" width="80px"><label>Data Directory</label></td>
+							<td id="data_directory">your/path/here/DataDirectory</td>
 						</tr>
 					</table>
 					<br />

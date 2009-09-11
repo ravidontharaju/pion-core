@@ -54,6 +54,7 @@ pion.system.init = function() {
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].xml;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].xml;
 				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].xml;
+				dojo.byId('data_directory').innerHTML     = response.getElementsByTagName('DataDirectory')[0].xml;
 			} else {
 				dojo.byId('platform_conf_file').innerHTML = response.getElementsByTagName('PlatformConfig')[0].textContent;
 				dojo.byId('reactor_conf_file').innerHTML  = response.getElementsByTagName('ReactorConfig')[0].textContent;
@@ -65,6 +66,7 @@ pion.system.init = function() {
 				dojo.byId('service_conf_file').innerHTML  = response.getElementsByTagName('ServiceConfig')[0].textContent;
 				dojo.byId('log_conf_file').innerHTML      = response.getElementsByTagName('LogConfig')[0].textContent;
 				dojo.byId('vocab_path').innerHTML         = response.getElementsByTagName('VocabularyPath')[0].textContent;
+				dojo.byId('data_directory').innerHTML     = response.getElementsByTagName('DataDirectory')[0].textContent;
 			}
 
 			// in the plugin paths table, save the first placeholder row node for cloning and then remove all rows

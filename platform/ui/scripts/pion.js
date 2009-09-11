@@ -194,7 +194,8 @@ pion.utcDatetimeCellFormatter = function(t) {
 	if (min < 10)
 		min = '0' + min;
 
-	return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+	//return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+	return d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
 }
 
 pion.localDatetimeCellFormatter = function(t) {
@@ -213,7 +214,8 @@ pion.localDatetimeCellFormatter = function(t) {
 	if (min < 10)
 		min = '0' + min;
 
-	return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+	//return t + ' (' + d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
+	return d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
 }
 
 pion.makeDeleteButton = function() {
@@ -232,7 +234,7 @@ pion.makeInsertAboveButton = function() {
 // TODO: find a way to calculate them using dojo.
 pion.grid_cell_padding = 8;
 pion.scrollbar_width = 20;
-pion.datetime_cell_width = 180;
+pion.datetime_cell_width = 100;
 
 pion.initOptionalValue = function(store, item, new_item_object, tag_name, optional_default) {
 	if (store.hasAttribute(item, tag_name)) {
