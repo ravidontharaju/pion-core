@@ -21,12 +21,12 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Python31\include"
+				AdditionalIncludeDirectories="C:\Python26\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalLibraryDirectories="C:\Python31\libs"
+				AdditionalLibraryDirectories="C:\Python26\libs"
 			/>
 		</Configuration>
 		<Configuration
@@ -37,12 +37,12 @@
 			>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Python31\include"
+				AdditionalIncludeDirectories="C:\Python26\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalLibraryDirectories="C:\Python31\libs"
+				AdditionalLibraryDirectories="C:\Python26\libs"
 			/>
 		</Configuration>
 	</Configurations>
