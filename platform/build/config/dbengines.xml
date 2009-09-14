@@ -21,6 +21,8 @@
 		<PreSQL>PRAGMA read_uncommitted = true</PreSQL>
 		<PreSQL>PRAGMA synchronous = off</PreSQL>
 		<PreSQL>PRAGMA journal_mode = off</PreSQL>
+                <PreSQL>PRAGMA page_size = 8192</PreSQL>
+                <PreSQL>PRAGMA cache_size = 65536</PreSQL>
 		<TypeMap>
 			<Pair>null,NONE</Pair>
 			<Pair>object,NONE</Pair>
