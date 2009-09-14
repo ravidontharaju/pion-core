@@ -21,18 +21,18 @@ KEY_METRICS = {
 		'KeyCacheSize' : 100000,       # recent index keys cached
 		},
 	'MultiDatabaseReactor' : {
-		'EventsQueued' : 7000,	       # events queued for db inserts
+		'EventsQueued' : 7500,	       # events queued for db inserts
 		'KeyCacheSize' : 100000,       # recent index keys cached
 		},
 	'ClickstreamReactor' : {
 		'OpenSessions' : 100000,       # open visitor sessions
-		'OpenPages' : 10000,           # open page events
-		'OpenEvents' : 100000,         # open request events
-		'OpenOrphans' : 100000,        # open orphaned requests
+		'OpenPages' : 100000,           # open page events
+		'OpenEvents' : 250000,         # open request events
+		'OpenOrphans' : 200000,        # open orphaned requests
 		},
 	'SessionFilterReactor' : {
 		'OpenSessions' : 100000,       # open visitor sessions
-		'OpenEvents' : 100000,         # events actively cached
+		'OpenEvents' : 250000,         # events actively cached
 		},
 	'SnifferReactor' : {
 		'BitsPerSecond' : 300000000,   # average bps for a capture device
@@ -158,7 +158,7 @@ def main():
 		last_metrics += "------------------------------------------\n"
 		metrics_error = False
 		for m in metrics:
-			if (not metrics_error and m.value > m.max):
+			if (m.value > m.max):
 				metrics_error = True
 				last_metrics += '*'
 			last_metrics += str(m) + '\n'
