@@ -13,6 +13,8 @@ dojo.declare("pion.util.XMLQueryReadStore",
 
 		rootItem: "",
 
+		preventCache: true,
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Copied from dojox.data.XmlStore
 /* dojo.data.api.Read */
@@ -415,7 +417,7 @@ dojo.declare("pion.util.XMLQueryReadStore",
 				fetchHandler(this._items, request, this._numRows);
 			}else{
 				var xhrFunc = this.requestMethod.toLowerCase()=="post" ? dojo.xhrPost : dojo.xhrGet;
-				var xhrHandler = xhrFunc({url: this.url, handleAs: "xml", content: serverQuery, timeout: 10000});
+				var xhrHandler = xhrFunc({url: this.url, handleAs: "xml", content: serverQuery, timeout: 10000, preventCache: this.preventCache});
 				xhrHandler.addCallback(dojo.hitch(this, function(data){
 					this._xhrFetchHandler(data, request, fetchHandler, errorHandler);
 				}));
