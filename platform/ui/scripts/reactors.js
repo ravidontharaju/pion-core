@@ -309,9 +309,7 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 				var line = start_reactor.reactor_outputs[i1].line;
 
 				// Remove the divs associated with the line and tell the line to erase itself.
-				pion.reactors.workspace_box.node.removeChild(line.div1);
-				pion.reactors.workspace_box.node.removeChild(line.div2);
-				line.removeShape();
+				pion.reactors.removeLine(line);
 
 				// Remove end_reactor from outputs of start_reactor and vice versa.
 				start_reactor.reactor_outputs.splice(i1, 1);
@@ -353,6 +351,12 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 
 	start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
 	end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
+}
+
+pion.reactors.removeLine = function(line) {
+	pion.reactors.workspace_box.node.removeChild(line.div1);
+	pion.reactors.workspace_box.node.removeChild(line.div2);
+	line.removeShape();
 }
 
 pion.reactors.reselectCurrentWorkspace = function() {
@@ -804,7 +808,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 					timeout: 5000,
 					load: function(response, ioArgs) {
 						var incoming_reactor = reactor_input.source;
-						reactor_input.line.removeShape();
+						pion.reactors.removeLine(reactor_input.line);
 						reactor.reactor_inputs.splice(e.rowIndex, 1);
 
 						// remove reactor from the outputs of incoming_reactor
@@ -871,7 +875,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 					timeout: 5000,
 					load: function(response, ioArgs) {
 						var outgoing_reactor = reactor_output.sink;
-						reactor_output.line.removeShape();
+						pion.reactors.removeLine(reactor_output.line);
 						reactor.reactor_outputs.splice(e.rowIndex, 1);
 
 						// remove reactor from the inputs of outgoing_reactor
@@ -948,7 +952,7 @@ function deleteReactor(reactor) {
 			// incoming reactors, and remove the lines connecting them.
 			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
 				var incoming_reactor = reactor.reactor_inputs[i].source;
-				reactor.reactor_inputs[i].line.removeShape();
+				pion.reactors.removeLine(reactor.reactor_inputs[i].line);
 				
 				// remove reactor from the outputs of incoming_reactor
 				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
@@ -959,7 +963,7 @@ function deleteReactor(reactor) {
 			}
 			for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
 				var outgoing_reactor = reactor.reactor_outputs[i].sink;
-				reactor.reactor_outputs[i].line.removeShape();
+				pion.reactors.removeLine(reactor.reactor_outputs[i].line);
 
 				// remove reactor from the inputs of outgoing_reactor
 				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
