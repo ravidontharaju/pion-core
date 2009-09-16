@@ -35,7 +35,7 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-// Define the Reactor class and callback functions for the pion Python module
+// Define the Reactor and Event classes and callback functions for the pion Python module
 // see http://docs.python.org/extending/newtypes.html
 
 typedef struct {
@@ -208,6 +208,93 @@ Reactor_create(const char *id, const char *name, PythonReactor *this_ptr)
 	return self;
 }
 
+
+// Python Event class
+
+typedef struct {
+	PyDictObject	d;
+	PyObject *		type;
+} PythonEventObject;
+
+static void
+Event_dealloc(PythonEventObject* self)
+{
+	Py_XDECREF(self->type);
+	PyObject *obj = (PyObject*) self;
+	obj->ob_type->tp_free(obj);
+}
+
+static int
+Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
+{
+	PyObject *type=NULL, *tmp;
+
+	static char *kwlist[] = {(char*)"type", NULL};
+
+	if (PyDict_Type.tp_init((PyObject *)self, args, kwds) < 0)
+		return -1;
+
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &type))
+		return -1; 
+
+	if (type) {
+		tmp = self->type;
+		Py_INCREF(type);
+		self->type = type;
+		Py_XDECREF(tmp);
+	}
+
+	return 0;
+}
+
+static PyMemberDef Event_members[] = {
+    {(char*)"type", T_OBJECT_EX, offsetof(PythonEventObject, type), 0,
+     (char*)"type of Event"},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject PythonEventType = {
+	PyObject_HEAD_INIT(NULL)
+	0,                         /*ob_size*/
+	"pion.Event",              /*tp_name*/
+	sizeof(PythonEventObject), /*tp_basicsize*/
+	0,                         /*tp_itemsize*/
+	(destructor)Event_dealloc, /*tp_dealloc*/
+	0,                         /*tp_print*/
+	0,                         /*tp_getattr*/
+	0,                         /*tp_setattr*/
+	0,                         /*tp_compare*/
+	0,                         /*tp_repr*/
+	0,                         /*tp_as_number*/
+	0,                         /*tp_as_sequence*/
+	0,                         /*tp_as_mapping*/
+	0,                         /*tp_hash */
+	0,                         /*tp_call*/
+	0,                         /*tp_str*/
+	0,                         /*tp_getattro*/
+	0,                         /*tp_setattro*/
+	0,                         /*tp_as_buffer*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+	"pion Event objects",      /* tp_doc */
+	0,		                   /* tp_traverse */
+	0,		                   /* tp_clear */
+	0,		                   /* tp_richcompare */
+	0,		                   /* tp_weaklistoffset */
+	0,		                   /* tp_iter */
+	0,		                   /* tp_iternext */
+	0,                         /* tp_methods */
+	Event_members,             /* tp_members */
+	0,                         /* tp_getset */
+	0,                         /* tp_base */
+	0,                         /* tp_dict */
+	0,                         /* tp_descr_get */
+	0,                         /* tp_descr_set */
+	0,                         /* tp_dictoffset */
+	(initproc)Event_init,      /* tp_init */
+	0,                         /* tp_alloc */
+	0,                         /* tp_new */
+};
+
 static PyMethodDef PionPythonCallbackMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
@@ -234,7 +321,7 @@ PythonReactor::PythonReactor(void)
 	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
 	m_byte_code(NULL), m_module(NULL),
 	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL),
-	m_reactor_ptr(NULL)
+	m_reactor_ptr(NULL), m_vocab_ptr(NULL)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
@@ -243,13 +330,21 @@ PythonReactor::PythonReactor(void)
 		m_state_ptr = new boost::thread_specific_ptr<PyThreadState>(&PythonReactor::releaseThreadState);
 		// initialize python interpreter
 		Py_Initialize();
-		// setup pion module: Reactor data type and callback functions
+		// setup pion module: Reactor data types and callback functions
 		PyObject *m = Py_InitModule("pion", PionPythonCallbackMethods);
 		if (PyType_Ready(&PythonReactorType) < 0) {
 			PION_LOG_ERROR(m_logger, "Error initializing Reactor data type");
 		} else {
 			Py_INCREF(&PythonReactorType);
 			PyModule_AddObject(m, "Reactor", (PyObject*) &PythonReactorType);
+		}
+		// setup Event data type
+		PythonEventType.tp_base = &PyDict_Type;
+		if (PyType_Ready(&PythonEventType) < 0) {
+			PION_LOG_ERROR(m_logger, "Error initializing Event data type");
+		} else {
+			Py_INCREF(&PythonEventType);
+			PyModule_AddObject(m, "Event", (PyObject*) &PythonEventType);
 		}
 		// initialize thread support
 		PyEval_InitThreads();
@@ -317,6 +412,9 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		PION_LOG_DEBUG(m_logger, "Loading Python source code from: " << m_source_file);
 		m_source = getSourceCodeFromFile();
 	}
+	
+	// get copy of vocabulary used to map terms to python and back
+	m_vocab_ptr = &v;
 
 	// make sure the thread has been initialized and acquire the GIL lock
 	PythonLock py_lock;
@@ -335,6 +433,13 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		initPythonModule();
 }
 
+void PythonReactor::updateVocabulary(const Vocabulary& v)
+{
+	ConfigWriteLock cfg_lock(*this);
+	Reactor::updateVocabulary(v);
+	m_vocab_ptr = &v;
+}
+	
 void PythonReactor::start(void)
 {
 	ConfigWriteLock cfg_lock(*this);
@@ -422,14 +527,20 @@ void PythonReactor::stop(void)
 void PythonReactor::process(const EventPtr& e)
 {
 	if (m_process_func) {
-	
+
 		// make sure the thread has been initialized and acquire the GIL lock
 		PythonLock py_lock;
 
-		// generate a dict object to use as a parameter for the process() function
-		PyObject *python_dict = PyDict_New();
-		if (! python_dict)
+		// generate a python Event object to use as a parameter for the process() function
+		PythonEventObject *py_event = PyObject_New(PythonEventObject, &PythonEventType);
+		if (py_event == NULL)
 			throw InternalPythonException(getId());
+		Py_XDECREF(py_event->type);
+		py_event->type = PyString_FromString((*m_vocab_ptr)[e->getType()].term_id.c_str());
+		if (py_event->type == NULL) {
+			Py_DECREF((PyObject*) py_event);
+			throw InternalPythonException(getId());
+		}
 		// TODO: populate the dict object with data from the source event
 		// build argument list to process() function
 		// it takes two arguments:
@@ -437,12 +548,12 @@ void PythonReactor::process(const EventPtr& e)
 		// the second is a dict type representing the Event to process
 		PyObject *python_args = PyTuple_New(2);
 		if (! python_args) {
-			Py_DECREF(python_dict);
+			Py_DECREF((PyObject*) py_event);
 			throw InternalPythonException(getId());
 		}
 		Py_INCREF(m_reactor_ptr);
 		PyTuple_SetItem(python_args, 0, m_reactor_ptr);
-		PyTuple_SetItem(python_args, 1, python_dict);	// note: python_dict reference is stolen here
+		PyTuple_SetItem(python_args, 1, (PyObject*) py_event);	// note: py_event reference is stolen here
 
 		// call the process() function, passing the dict as an argument
 		PION_LOG_DEBUG(m_logger, "Calling Python process() function");
@@ -455,14 +566,28 @@ void PythonReactor::process(const EventPtr& e)
 		}
 		Py_DECREF(python_args);
 		Py_XDECREF(retval);
+
+	} else {
+		// no process() python function defined, just pass events through
+		PION_LOG_DEBUG(m_logger, "Delivering pion event to connections");
+		deliverEvent(e);
 	}
 }
 
 void PythonReactor::deliverToConnections(const EventPtr& e)
 {
+	// we must acquire read lock to be safe, since python code may call this
+	// from it's own independent threads
 	ConfigReadLock cfg_lock(*this);
-	PION_LOG_DEBUG(m_logger, "Delivering event to connections");
-	deliverEvent(e, true);
+	PION_LOG_DEBUG(m_logger, "Delivering python event to connections");
+	// don't let exceptions thrown downstream propogate up
+	try {
+		deliverEvent(e);
+	} catch (std::exception& e) {
+		PION_LOG_ERROR(m_logger, e.what());
+	} catch (...) {
+		PION_LOG_ERROR(m_logger, "caught unrecognized exception");
+	}
 }
 
 PyThreadState *PythonReactor::initThreadState(void)
