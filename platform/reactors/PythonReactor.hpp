@@ -85,6 +85,13 @@ public:
 			: PionException("PythonReactor runtime exception: ", error_msg) {}
 	};
 
+	/// exception thrown if there is an error initialize the Reactor Python class object
+	class InitReactorObjectException : public PionException {
+	public:
+		InitReactorObjectException(const std::string& error_msg)
+			: PionException("PythonReactor unable to initialize Reactor object: ", error_msg) {}
+	};
+
 
 	/// constructs a new PythonReactorReactor object
 	PythonReactor(void);
@@ -115,6 +122,9 @@ public:
 	
 	/// called by the ReactorEngine to stop Event processing
 	virtual void stop(void);
+	
+	/// delivers an event to the reactor's connections (used by Python callbacks)
+	void deliverToConnections(const pion::platform::EventPtr& e);
 
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
@@ -236,6 +246,9 @@ private:
 	
 	/// pointer to the process function defined within the compiled module
 	PyObject *						m_process_func;
+	
+	/// pointer to a Python Reactor class object that represents this reactor
+	PyObject *						m_reactor_ptr;
 	
 	/// pointer to the global Python interpreter object
 	static PyInterpreterState *		m_interp_ptr;

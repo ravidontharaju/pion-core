@@ -19,6 +19,7 @@
 
 // NOTE: According to API docs, Python.h must be #include'd FIRST
 #include <Python.h>
+#include "structmember.h"
 #include <sstream>
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
@@ -34,9 +35,83 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-// Python callback functions
+// Define the Reactor class and callback functions for the pion Python module
+// see http://docs.python.org/extending/newtypes.html
 
-static PyObject* pion_deliver(PyObject *self, PyObject *args)
+typedef struct {
+	PyObject_HEAD
+	PyObject *		id;
+	PyObject *		name;
+	PythonReactor *	__this;
+} PythonReactorObject;
+
+static void
+Reactor_dealloc(PythonReactorObject* self)
+{
+	Py_XDECREF(self->id);
+	Py_XDECREF(self->name);
+	self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *
+Reactor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PythonReactorObject *self;
+	self = (PythonReactorObject *)type->tp_alloc(type, 0);
+	if (self != NULL) {
+		self->id = PyString_FromString("");
+		if (self->id == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+
+		self->name = PyString_FromString("");
+		if (self->name == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+
+		self->__this = NULL;
+	}
+	return (PyObject *)self;
+}
+
+static int
+Reactor_init(PythonReactorObject *self, PyObject *args, PyObject *kwds)
+{
+	PyObject *id=NULL, *name=NULL, *tmp;
+
+	static char *kwlist[] = {(char*)"id", (char*)"name", NULL};
+
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &id, &name))
+		return -1; 
+
+	if (id) {
+		tmp = self->id;
+		Py_INCREF(id);
+		self->id = id;
+		Py_XDECREF(tmp);
+	}
+
+	if (name) {
+		tmp = self->name;
+		Py_INCREF(name);
+		self->name = name;
+		Py_XDECREF(tmp);
+	}
+
+	return 0;
+}
+
+static PyMemberDef Reactor_members[] = {
+    {(char*)"id", T_OBJECT_EX, offsetof(PythonReactorObject, id), 0,
+     (char*)"unique identifier of the PythonReactor"},
+    {(char*)"name", T_OBJECT_EX, offsetof(PythonReactorObject, name), 0,
+     (char*)"name assigned to the PythonReactor"},
+    {NULL}  /* Sentinel */
+};
+
+static PyObject* Reactor_deliver(PythonReactorObject *self, PyObject *args)
 {
 	// check that callback parameter is a dictionary
 	PyObject *event_ptr;
@@ -49,20 +124,91 @@ static PyObject* pion_deliver(PyObject *self, PyObject *args)
 		return NULL;
 	}
 
-	// TODO: parse dict into an event
-	printf("deliver() callback got a valid dictionary object\n");
+	// TODO: parse python dict object into a pion event object
+	EventFactory event_factory;
+	EventPtr e;
+	event_factory.create(e, 0);	// TODO: use correct event type
 	
-	// TODO: deliver the event to other reactors
-	// ...
+	// deliver the event to other reactors
+	PythonReactor *ptr = self->__this;
+	ptr->deliverToConnections(e);
 
 	// return "none" (OK)
 	Py_INCREF(Py_None);
 	return Py_None;
 }
-	
+
+static PyMethodDef Reactor_methods[] = {
+	{(char*)"deliver", (PyCFunction)Reactor_deliver, METH_VARARGS,
+	(char*)"Delivers an event to the reactor's output connections."},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject PythonReactorType = {
+	PyObject_HEAD_INIT(NULL)
+	0,                         /*ob_size*/
+	"pion.Reactor",            /*tp_name*/
+	sizeof(PythonReactorObject),     /*tp_basicsize*/
+	0,                         /*tp_itemsize*/
+	(destructor)Reactor_dealloc, /*tp_dealloc*/
+	0,                         /*tp_print*/
+	0,                         /*tp_getattr*/
+	0,                         /*tp_setattr*/
+	0,                         /*tp_compare*/
+	0,                         /*tp_repr*/
+	0,                         /*tp_as_number*/
+	0,                         /*tp_as_sequence*/
+	0,                         /*tp_as_mapping*/
+	0,                         /*tp_hash */
+	0,                         /*tp_call*/
+	0,                         /*tp_str*/
+	0,                         /*tp_getattro*/
+	0,                         /*tp_setattro*/
+	0,                         /*tp_as_buffer*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+	"pion Reactor objects",    /* tp_doc */
+	0,		                   /* tp_traverse */
+	0,		                   /* tp_clear */
+	0,		                   /* tp_richcompare */
+	0,		                   /* tp_weaklistoffset */
+	0,		                   /* tp_iter */
+	0,		                   /* tp_iternext */
+	Reactor_methods,           /* tp_methods */
+	Reactor_members,           /* tp_members */
+	0,                         /* tp_getset */
+	0,                         /* tp_base */
+	0,                         /* tp_dict */
+	0,                         /* tp_descr_get */
+	0,                         /* tp_descr_set */
+	0,                         /* tp_dictoffset */
+	(initproc)Reactor_init,    /* tp_init */
+	0,                         /* tp_alloc */
+	Reactor_new,               /* tp_new */
+};
+
+static PythonReactorObject *
+Reactor_create(const char *id, const char *name, PythonReactor *this_ptr)
+{
+	PythonReactorObject *self;
+	self = (PythonReactorObject *) PythonReactorType.tp_alloc(&PythonReactorType, 0);
+	if (self != NULL) {
+		self->id = PyString_FromString(id);
+		if (self->id == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+
+		self->name = PyString_FromString(id);
+		if (self->name == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+		self->__this = this_ptr;
+	}
+	return self;
+}
+
 static PyMethodDef PionPythonCallbackMethods[] = {
-	{"deliver", pion_deliver, METH_VARARGS,
-	"Delivers an event to the reactor's output connections."},
 	{NULL, NULL, 0, NULL}
 };
 
@@ -87,7 +233,8 @@ PythonReactor::PythonReactor(void)
 	: Reactor(TYPE_PROCESSING),
 	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
 	m_byte_code(NULL), m_module(NULL),
-	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL)
+	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL),
+	m_reactor_ptr(NULL)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
@@ -96,8 +243,14 @@ PythonReactor::PythonReactor(void)
 		m_state_ptr = new boost::thread_specific_ptr<PyThreadState>(&PythonReactor::releaseThreadState);
 		// initialize python interpreter
 		Py_Initialize();
-		// setup module callback functions
-		Py_InitModule("pion", PionPythonCallbackMethods);
+		// setup pion module: Reactor data type and callback functions
+		PyObject *m = Py_InitModule("pion", PionPythonCallbackMethods);
+		if (PyType_Ready(&PythonReactorType) < 0) {
+			PION_LOG_ERROR(m_logger, "Error initializing Reactor data type");
+		} else {
+			Py_INCREF(&PythonReactorType);
+			PyModule_AddObject(m, "Reactor", (PyObject*) &PythonReactorType);
+		}
 		// initialize thread support
 		PyEval_InitThreads();
 		// get a pointer to the global Python interpreter
@@ -122,6 +275,7 @@ PythonReactor::~PythonReactor()
 	try {
 		// free the compiled byte code (if any)
 		resetPythonSymbols();
+		Py_XDECREF(m_reactor_ptr);
 
 		boost::mutex::scoped_lock init_lock(m_init_mutex);
 		if (--m_init_num == 0) {
@@ -167,6 +321,12 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// make sure the thread has been initialized and acquire the GIL lock
 	PythonLock py_lock;
 
+	// create Reactor object to be passed to Python functions
+	Py_XDECREF(m_reactor_ptr);
+	m_reactor_ptr = (PyObject*) Reactor_create(getId().c_str(), getName().c_str(), this);
+	if (m_reactor_ptr == NULL)
+		throw InitReactorObjectException(getPythonError());
+
 	// pre-compile the python source code to check for errors early
 	compilePythonSource();
 	
@@ -189,6 +349,7 @@ void PythonReactor::start(void)
 			string src_code = getSourceCodeFromFile();
 			if (src_code != m_source) {
 				PION_LOG_DEBUG(m_logger, "Reloading Python source code from: " << m_source_file);
+				m_source = src_code;
 				compilePythonSource();
 			}
 		}
@@ -200,7 +361,13 @@ void PythonReactor::start(void)
 		if (m_start_func) {
 			// execute the Python module's start() function
 			PION_LOG_DEBUG(m_logger, "Calling Python start() function");
-			PyObject *retval = PyObject_CallObject(m_start_func, NULL);
+			PyObject *python_args = PyTuple_New(1);
+			if (! python_args)
+				throw InternalPythonException(getId());
+			Py_INCREF(m_reactor_ptr);
+			PyTuple_SetItem(python_args, 0, m_reactor_ptr);
+			PyObject *retval = PyObject_CallObject(m_start_func, python_args);
+			Py_DECREF(python_args);
 		
 			// check for uncaught runtime exceptions
 			if (retval == NULL && PyErr_Occurred()) {
@@ -224,7 +391,13 @@ void PythonReactor::stop(void)
 		if (m_stop_func) {
 			// execute the Python module's stop() function
 			PION_LOG_DEBUG(m_logger, "Calling Python stop() function");
-			PyObject *retval = PyObject_CallObject(m_stop_func, NULL);
+			PyObject *python_args = PyTuple_New(1);
+			if (! python_args)
+				throw InternalPythonException(getId());
+			Py_INCREF(m_reactor_ptr);
+			PyTuple_SetItem(python_args, 0, m_reactor_ptr);
+			PyObject *retval = PyObject_CallObject(m_stop_func, python_args);
+			Py_DECREF(python_args);
 		
 			// check for uncaught runtime exceptions
 			if (retval == NULL && PyErr_Occurred()) {
@@ -258,15 +431,18 @@ void PythonReactor::process(const EventPtr& e)
 		if (! python_dict)
 			throw InternalPythonException(getId());
 		// TODO: populate the dict object with data from the source event
-
 		// build argument list to process() function
-		// it takes only one argument, which is a dict type
-		PyObject *python_args = PyTuple_New(1);
+		// it takes two arguments:
+		// the first is the Reactor class object
+		// the second is a dict type representing the Event to process
+		PyObject *python_args = PyTuple_New(2);
 		if (! python_args) {
 			Py_DECREF(python_dict);
 			throw InternalPythonException(getId());
 		}
-		PyTuple_SetItem(python_args, 0, python_dict);	// note: python_dict reference is stolen here
+		Py_INCREF(m_reactor_ptr);
+		PyTuple_SetItem(python_args, 0, m_reactor_ptr);
+		PyTuple_SetItem(python_args, 1, python_dict);	// note: python_dict reference is stolen here
 
 		// call the process() function, passing the dict as an argument
 		PION_LOG_DEBUG(m_logger, "Calling Python process() function");
@@ -277,14 +453,16 @@ void PythonReactor::process(const EventPtr& e)
 			Py_DECREF(python_args);
 			throw PythonRuntimeException(getPythonError());
 		}
-		
-		// TODO: use the object returned for delivery to other reactors???
-
 		Py_DECREF(python_args);
 		Py_XDECREF(retval);
 	}
-	
-	deliverEvent(e);
+}
+
+void PythonReactor::deliverToConnections(const EventPtr& e)
+{
+	ConfigReadLock cfg_lock(*this);
+	PION_LOG_DEBUG(m_logger, "Delivering event to connections");
+	deliverEvent(e, true);
 }
 
 PyThreadState *PythonReactor::initThreadState(void)
