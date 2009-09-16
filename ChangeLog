@@ -1,3 +1,11 @@
+Version 2.1.8 (2009-09-16)
+==========================
+
+* Fixed occasional LogInputReactor unit test failures on Unix (273)
+* Increased default SQLite cache sizes to improve insert performance (717)
+* Updated default config file to use localtime instead of GMT for logging (722)
+
+
 Version 2.1.6 (2009-08-28)
 ==========================
 
