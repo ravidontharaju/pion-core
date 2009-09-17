@@ -325,8 +325,8 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 	line.div1.style.position = 'absolute';
 	line.div1.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
 	line.div1.onmouseover = function() {
-		line.div1.className = 'glowing';
-		line.div2.className = 'glowing';
+		line.div1.className = 'glowing_horiz';
+		line.div2.className = 'glowing_vert';
 	};
 	line.div1.onmouseout = function() {
 		line.div1.className = 'normal';
@@ -338,8 +338,8 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 	line.div2.style.position = 'absolute';
 	line.div2.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
 	line.div2.onmouseover = function() {
-		line.div1.className = 'glowing';
-		line.div2.className = 'glowing';
+		line.div1.className = 'glowing_horiz';
+		line.div2.className = 'glowing_vert';
 	};
 	line.div2.onmouseout = function() {
 		line.div1.className = 'normal';

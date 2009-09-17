@@ -1044,8 +1044,13 @@ The following are also available, if the need arises.
 	text-align:center;
 }
 
-div.glowing {
-	background: url("../images/circleIcon.png") repeat;
+div.glowing_horiz {
+	background: url("../images/glow-for-horizontal-lines.png") repeat;
+	z-index: 200;
+}
+
+div.glowing_vert {
+	background: url("../images/glow-for-vertical-lines.png") repeat;
 	z-index: 200;
 }
 
