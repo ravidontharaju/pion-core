@@ -689,6 +689,8 @@ void PythonReactor::toPythonEvent(const Event& e, PyObject *& obj) const
 			break;
 		case Vocabulary::TYPE_UINT8:
 		case Vocabulary::TYPE_UINT16:
+			new_value = PyInt_FromLong(boost::get<boost::uint32_t>(it->value));
+			break;
 		case Vocabulary::TYPE_UINT32:
 			new_value = PyLong_FromUnsignedLong(boost::get<boost::uint32_t>(it->value));
 			break;
@@ -837,18 +839,25 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 			case Vocabulary::TYPE_INT8:
 			case Vocabulary::TYPE_INT16:
 			case Vocabulary::TYPE_INT32:
-				if (! PyLong_Check(obj)) {
-					std::string error_msg("long integer required: ");
+				if (! PyInt_Check(obj)) {
+					std::string error_msg("integer required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
-				e->setInt(term_ref, PyLong_AsLong(obj) );
+				e->setInt(term_ref, PyInt_AsLong(obj) );
 				break;
 			case Vocabulary::TYPE_UINT8:
 			case Vocabulary::TYPE_UINT16:
+				if (! PyInt_Check(obj)) {
+					std::string error_msg("integer required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setUInt(term_ref, PyInt_AsLong(obj) );
+				break;
 			case Vocabulary::TYPE_UINT32:
 				if (! PyLong_Check(obj)) {
-					std::string error_msg("long integer required: ");
+					std::string error_msg("long required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
@@ -856,7 +865,7 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 				break;
 			case Vocabulary::TYPE_INT64:
 				if (! PyLong_Check(obj)) {
-					std::string error_msg("long integer required: ");
+					std::string error_msg("long required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
@@ -864,7 +873,7 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 				break;
 			case Vocabulary::TYPE_UINT64:
 				if (! PyLong_Check(obj)) {
-					std::string error_msg("long integer required: ");
+					std::string error_msg("long required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
@@ -909,7 +918,7 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 					Py_ssize_t len = PyByteArray_Size(obj);
 					e->setBlob(term_ref, buf, len);
 				} else {
-					std::string error_msg("string or byte array required: ");
+					std::string error_msg("str or byte array required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
