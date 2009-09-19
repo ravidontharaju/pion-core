@@ -571,6 +571,9 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 	std::ostringstream oss;
 
 	switch(log_term.term_type) {
+		case pion::platform::Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
+			break;	// ignore unsupported field
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
@@ -602,6 +605,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_BLOB:
+		case pion::platform::Vocabulary::TYPE_ZBLOB:
 		{
 			const pion::platform::Event::BlobType& ss = boost::get<const pion::platform::Event::BlobType&>(value);
 			if (ss.size() > 0) {
@@ -647,9 +651,6 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			}
 			break;
 		}
-		default:
-			// ignore unsupported field...
-			break;
 	}
 
 	if (log_delim_start != '\0')
@@ -673,6 +674,9 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 {
 	switch(log_term.term_type) {
+		case pion::platform::Vocabulary::TYPE_NULL:
+		case pion::platform::Vocabulary::TYPE_OBJECT:
+			break;	// ignore unsupported field
 		case pion::platform::Vocabulary::TYPE_INT8:
 		case pion::platform::Vocabulary::TYPE_INT16:
 		case pion::platform::Vocabulary::TYPE_INT32:
@@ -702,6 +706,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
 		case pion::platform::Vocabulary::TYPE_BLOB:
+		case pion::platform::Vocabulary::TYPE_ZBLOB:
 			if (log_urlencode) {
 				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
 				e.setString(log_term.term_ref, temp_str);
@@ -738,9 +743,6 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 			e.setDateTime(log_term.term_ref, dt);
 			break;
 		}
-		default:
-			// ignore unsupported field...
-			break;
 	}
 }
 

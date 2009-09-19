@@ -105,6 +105,7 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 			int rc = 0;
 			switch ((*i)->term.term_type) {
 				case pion::platform::Vocabulary::TYPE_NULL:
+				case pion::platform::Vocabulary::TYPE_OBJECT:
 					// TODO: should we output an empty element instead of nothing?
 					break;
 				case pion::platform::Vocabulary::TYPE_INT8:
@@ -143,6 +144,7 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
 				case pion::platform::Vocabulary::TYPE_BLOB:
+				case pion::platform::Vocabulary::TYPE_ZBLOB:
 					ss = &boost::get<const pion::platform::Event::BlobType&>(i2->value);
 					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)ss->get());
 					break;
@@ -162,8 +164,6 @@ void XMLCodec::write(std::ostream& out, const Event& e)
 					(*i)->time_facet.toString(value_str, boost::get<const PionDateTime&>(i2->value));
 					rc = xmlTextWriterWriteElement(m_xml_writer, field_name, (xmlChar*)value_str.c_str());
 					break;
-				default:
-					throw PionException("not supported yet");
 			}
 			if (rc < 0)
 				throw PionException("xmlTextWriter failed to write a Term element");
@@ -383,6 +383,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 					
 			switch (term.term_type) {
 				case pion::platform::Vocabulary::TYPE_NULL:
+				case pion::platform::Vocabulary::TYPE_OBJECT:
 					// do nothing
 					break;
 				case pion::platform::Vocabulary::TYPE_INT8:
@@ -414,6 +415,7 @@ bool XMLCodec::read(std::istream& in, Event& e)
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
 				case pion::platform::Vocabulary::TYPE_BLOB:
+				case pion::platform::Vocabulary::TYPE_ZBLOB:
 					e.setString(term.term_ref, value_str);
 					break;
 				case pion::platform::Vocabulary::TYPE_CHAR:
@@ -432,8 +434,6 @@ bool XMLCodec::read(std::istream& in, Event& e)
 					e.setDateTime(term.term_ref, dt);
 					break;
 				}
-				default:
-					return false;
 			}
 		}
 	}

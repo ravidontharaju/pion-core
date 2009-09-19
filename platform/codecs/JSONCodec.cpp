@@ -81,6 +81,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 			yajl_gen_string(m_yajl_generator, (unsigned char*)(*i)->field_name.c_str(), (*i)->field_name.size());
 			switch ((*i)->term.term_type) {
 				case pion::platform::Vocabulary::TYPE_NULL:
+				case pion::platform::Vocabulary::TYPE_OBJECT:
 					// TODO: should we output an empty string instead of nothing?
 					break;
 				case pion::platform::Vocabulary::TYPE_INT8:
@@ -118,6 +119,7 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
 				case pion::platform::Vocabulary::TYPE_BLOB:
+				case pion::platform::Vocabulary::TYPE_ZBLOB:
 					ss = &boost::get<const pion::platform::Event::BlobType&>(i2->value);
 					yajl_gen_string(m_yajl_generator, (unsigned char*)ss->get(), ss->size());
 					break;
@@ -132,8 +134,6 @@ void JSONCodec::write(std::ostream& out, const Event& e)
 					(*i)->time_facet.toString(value_str, boost::get<const PionDateTime&>(i2->value));
 					yajl_gen_string(m_yajl_generator, (unsigned char*)value_str.c_str(), value_str.size());
 					break;
-				default:
-					throw PionException("not supported yet");
 			}
 		}
 	}
@@ -331,6 +331,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 		const pion::platform::Vocabulary::Term& term = m_JSON_field_ptr_map[term_ref]->term;
 		switch (term.term_type) {
 			case pion::platform::Vocabulary::TYPE_NULL:
+			case pion::platform::Vocabulary::TYPE_OBJECT:
 				// do nothing
 				break;
 			case pion::platform::Vocabulary::TYPE_INT8:
@@ -362,6 +363,7 @@ bool JSONCodec::read(std::istream& in, Event& e)
 			case pion::platform::Vocabulary::TYPE_STRING:
 			case pion::platform::Vocabulary::TYPE_LONG_STRING:
 			case pion::platform::Vocabulary::TYPE_BLOB:
+			case pion::platform::Vocabulary::TYPE_ZBLOB:
 				e.setString(term_ref, value_str);
 				break;
 			case pion::platform::Vocabulary::TYPE_CHAR:
@@ -380,8 +382,6 @@ bool JSONCodec::read(std::istream& in, Event& e)
 				e.setDateTime(term_ref, dt);
 				break;
 			}
-			default:
-				return false;
 		}
 	}
 	return true;
