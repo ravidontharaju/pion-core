@@ -20,6 +20,7 @@
 // NOTE: According to API docs, Python.h must be #include'd FIRST
 #include <Python.h>
 #include "structmember.h"
+#include "datetime.h"
 #include <sstream>
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
@@ -124,14 +125,9 @@ static PyObject* Reactor_deliver(PythonReactorObject *self, PyObject *args)
 		return NULL;
 	}
 
-	// TODO: parse python dict object into a pion event object
-	EventFactory event_factory;
-	EventPtr e;
-	event_factory.create(e, 0);	// TODO: use correct event type
-	
 	// deliver the event to other reactors
 	PythonReactor *ptr = self->__this;
-	ptr->deliverToConnections(e);
+	ptr->deliverToConnections(event_ptr);
 
 	// return "none" (OK)
 	Py_INCREF(Py_None);
@@ -224,6 +220,21 @@ Event_dealloc(PythonEventObject* self)
 	obj->ob_type->tp_free(obj);
 }
 
+static PyObject *
+Event_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PythonEventObject *self;
+	self = (PythonEventObject *) type->tp_base->tp_new(type, args, kwds);
+	if (self != NULL) {
+		self->type = PyString_FromString("");
+		if (self->type == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+	}
+	return (PyObject *)self;
+}
+
 static int
 Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
 {
@@ -234,15 +245,13 @@ Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
 	if (PyDict_Type.tp_init((PyObject *)self, args, kwds) < 0)
 		return -1;
 
-	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &type))
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "O:event_type", kwlist, &type))
 		return -1; 
 
-	if (type) {
-		tmp = self->type;
-		Py_INCREF(type);
-		self->type = type;
-		Py_XDECREF(tmp);
-	}
+	tmp = self->type;
+	Py_INCREF(type);
+	self->type = type;
+	Py_XDECREF(tmp);
 
 	return 0;
 }
@@ -292,8 +301,31 @@ static PyTypeObject PythonEventType = {
 	0,                         /* tp_dictoffset */
 	(initproc)Event_init,      /* tp_init */
 	0,                         /* tp_alloc */
-	0,                         /* tp_new */
+	Event_new,                 /* tp_new */
 };
+
+static PythonEventObject *
+Event_create(const char *type)
+{
+    PyObject *args = PyTuple_New(0);
+    if (args == NULL)
+    	return NULL;
+    
+    PyObject *kwds = PyDict_New();
+    if (kwds == NULL) {
+    	Py_DECREF(args);
+    	return NULL;
+    }
+    
+    PythonEventObject *self = (PythonEventObject*) Event_new(&PythonEventType, args, kwds);
+	Py_DECREF(args);
+	Py_DECREF(kwds);
+	if (self != NULL) {
+		self->type = PyString_FromString(type);
+	}
+
+	return self;
+}
 
 static PyMethodDef PionPythonCallbackMethods[] = {
 	{NULL, NULL, 0, NULL}
@@ -532,28 +564,27 @@ void PythonReactor::process(const EventPtr& e)
 		PythonLock py_lock;
 
 		// generate a python Event object to use as a parameter for the process() function
-		PythonEventObject *py_event = PyObject_New(PythonEventObject, &PythonEventType);
-		if (py_event == NULL)
-			throw InternalPythonException(getId());
-		Py_XDECREF(py_event->type);
-		py_event->type = PyString_FromString((*m_vocab_ptr)[e->getType()].term_id.c_str());
-		if (py_event->type == NULL) {
-			Py_DECREF((PyObject*) py_event);
-			throw InternalPythonException(getId());
+		PyObject *py_event = NULL;
+		try {
+			toPythonEvent(*e, py_event);
+		} catch (...) {
+			if (PyErr_Occurred())
+				PION_LOG_ERROR(m_logger, getPythonError());
+			throw;
 		}
-		// TODO: populate the dict object with data from the source event
+
 		// build argument list to process() function
 		// it takes two arguments:
 		// the first is the Reactor class object
 		// the second is a dict type representing the Event to process
 		PyObject *python_args = PyTuple_New(2);
 		if (! python_args) {
-			Py_DECREF((PyObject*) py_event);
+			Py_DECREF(py_event);
 			throw InternalPythonException(getId());
 		}
 		Py_INCREF(m_reactor_ptr);
 		PyTuple_SetItem(python_args, 0, m_reactor_ptr);
-		PyTuple_SetItem(python_args, 1, (PyObject*) py_event);	// note: py_event reference is stolen here
+		PyTuple_SetItem(python_args, 1, py_event);	// note: py_event reference is stolen here
 
 		// call the process() function, passing the dict as an argument
 		PION_LOG_DEBUG(m_logger, "Calling Python process() function");
@@ -574,7 +605,7 @@ void PythonReactor::process(const EventPtr& e)
 	}
 }
 
-void PythonReactor::deliverToConnections(const EventPtr& e)
+void PythonReactor::deliverToConnections(PyObject *event_ptr)
 {
 	// we must acquire read lock to be safe, since python code may call this
 	// from it's own independent threads
@@ -582,11 +613,371 @@ void PythonReactor::deliverToConnections(const EventPtr& e)
 	PION_LOG_DEBUG(m_logger, "Delivering python event to connections");
 	// don't let exceptions thrown downstream propogate up
 	try {
+		EventPtr e;
+		fromPythonEvent(event_ptr, e);
 		deliverEvent(e);
 	} catch (std::exception& e) {
-		PION_LOG_ERROR(m_logger, e.what());
+		std::string error_msg(e.what());
+		if (PyErr_Occurred()) {
+			error_msg += " (";
+			error_msg += getPythonError();
+			error_msg += ')';
+		}
+		PION_LOG_ERROR(m_logger, error_msg);
 	} catch (...) {
-		PION_LOG_ERROR(m_logger, "caught unrecognized exception");
+		if (PyErr_Occurred())
+			PION_LOG_ERROR(m_logger, getPythonError());
+		else
+			PION_LOG_ERROR(m_logger, "caught unrecognized exception");
+	}
+}
+
+void PythonReactor::toPythonEvent(const Event& e, PyObject *& obj) const
+{
+	// needed for python date time API functions
+	PyDateTime_IMPORT; 
+
+	// create a new Python event using the Pion Event's type
+	const Vocabulary& v = *m_vocab_ptr;
+	PythonEventObject *self = Event_create(v[e.getType()].term_id.c_str());
+	if (! self)
+		throw EventConversionException("unable to create python event");
+	obj = (PyObject*) self;
+
+	// variables used for Pion Event iteration
+	std::string term_id;
+	Vocabulary::TermRef term_ref = Vocabulary::UNDEFINED_TERM_REF;
+	Vocabulary::DataType term_type = Vocabulary::TYPE_NULL;
+	PyObject *key = NULL;
+	PyObject *values = NULL;
+
+	// iterate each item defined within the Pion Event
+	for (Event::ConstIterator it = e.begin(); it != e.end(); ++it) {
+	
+		// check if this term is different from the last
+		if (it->term_ref != term_ref) {
+			// have moved to a new term -> if not the first then add its values
+			if (term_ref != Vocabulary::UNDEFINED_TERM_REF) {
+				PyDict_SetItem(obj, key, values);
+				Py_DECREF(key);
+				Py_DECREF(values);
+			}
+			// set the current term ref, id and type
+			term_ref = it->term_ref;
+			const Vocabulary::Term& tmp_term(v[term_ref]);
+			term_id = tmp_term.term_id;
+			term_type = tmp_term.term_type;
+			// Python key for this term will match it's uri identifier
+			key = PyString_FromString(term_id.c_str());
+			// create a new list to hold the values for this term
+			values = PyList_New(0);
+		}
+
+		// next we need to come up with a "new value" based on the Pion Event item
+		// the Pion Event value needs to be type converted into a corresponding Python object
+		PyObject *new_value = NULL;
+		switch (term_type) {
+		case Vocabulary::TYPE_NULL:
+		case Vocabulary::TYPE_OBJECT:
+			// this shouldn't happen in practice, but if it does this is the most logical conversion
+			new_value = PyInt_FromLong(1);
+			break;
+		case Vocabulary::TYPE_INT8:
+		case Vocabulary::TYPE_INT16:
+		case Vocabulary::TYPE_INT32:
+			new_value = PyInt_FromLong(boost::get<boost::int32_t>(it->value));
+			break;
+		case Vocabulary::TYPE_UINT8:
+		case Vocabulary::TYPE_UINT16:
+		case Vocabulary::TYPE_UINT32:
+			new_value = PyLong_FromUnsignedLong(boost::get<boost::uint32_t>(it->value));
+			break;
+		case Vocabulary::TYPE_INT64:
+			new_value = PyLong_FromLongLong(boost::get<boost::int64_t>(it->value));
+			break;
+		case Vocabulary::TYPE_UINT64:
+			new_value = PyLong_FromUnsignedLongLong(boost::get<boost::uint64_t>(it->value));
+			break;
+		case Vocabulary::TYPE_FLOAT:
+			new_value = PyFloat_FromDouble(boost::get<float>(it->value));
+			break;
+		case Vocabulary::TYPE_DOUBLE:
+			new_value = PyFloat_FromDouble(boost::get<double>(it->value));
+			break;
+		case Vocabulary::TYPE_LONG_DOUBLE:
+			new_value = PyFloat_FromDouble(boost::get<long double>(it->value));
+			break;
+		case Vocabulary::TYPE_SHORT_STRING:
+		case Vocabulary::TYPE_STRING:
+		case Vocabulary::TYPE_LONG_STRING:
+		case Vocabulary::TYPE_CHAR:
+			{
+			const Event::BlobType& b = boost::get<const Event::BlobType&>(it->value);
+			new_value = PyString_FromStringAndSize(b.get(), b.size());
+			break;
+			}
+		case Vocabulary::TYPE_BLOB:
+		case Vocabulary::TYPE_ZBLOB:
+			{
+			const Event::BlobType& b = boost::get<const Event::BlobType&>(it->value);
+			new_value = PyByteArray_FromStringAndSize(b.get(), b.size());
+			break;
+			}
+		case Vocabulary::TYPE_DATE_TIME:
+			{
+			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
+			new_value = PyDateTime_FromDateAndTime(d.date().year(),
+				d.date().month(), d.date().day(),
+				d.time_of_day().hours(), d.time_of_day().minutes(),
+				d.time_of_day().seconds(),
+				d.time_of_day().total_microseconds() % 1000000UL);
+			break;
+			}
+		case Vocabulary::TYPE_DATE:
+			{
+			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
+			new_value = PyDate_FromDate(d.date().year(), d.date().month(),
+				d.date().day());
+			break;
+			}
+		case Vocabulary::TYPE_TIME:
+			{
+			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
+			new_value = PyTime_FromTime(d.time_of_day().hours(),
+				d.time_of_day().minutes(), d.time_of_day().seconds(),
+				d.time_of_day().total_microseconds() % 1000000UL);
+			break;
+			}
+		}
+		
+		// make sure conversion was successful
+		if (! new_value) {
+			Py_DECREF(obj);
+			Py_XDECREF(key);
+			Py_XDECREF(values);
+			throw EventConversionException(term_id);
+		}
+		
+		// append item value to the list of python values
+		PyList_Append(values, new_value);
+		Py_DECREF(new_value);
+	}
+
+	// add the last term to the python event
+	if (key) {
+		PyDict_SetItem(obj, key, values);
+		Py_DECREF(key);
+		Py_DECREF(values);
+	}
+}
+
+void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
+{
+	// needed for python date time API functions
+	PyDateTime_IMPORT; 
+
+	// find the term corresponding with the event type
+	const Vocabulary& v = *m_vocab_ptr;
+	char *term_str = PyString_AsString(((PythonEventObject*)obj)->type);
+	if (! term_str)
+		throw EventConversionException("event type field must be a string");
+	Vocabulary::TermRef term_ref = v.findTerm( term_str );
+	if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
+		std::string error_msg("unknown event type: ");
+		error_msg += term_str;
+		throw EventConversionException(error_msg);
+	}
+			
+	// create a new Pion Event object
+	EventFactory event_factory;
+	event_factory.create(e, term_ref);
+	
+	// populate new Pion Event object
+	Py_ssize_t pos = 0;
+	PyObject *key = NULL;
+	PyObject *values = NULL;
+
+	// iterate through each item within the python event
+	while (PyDict_Next(obj, &pos, &key, &values)) {
+
+		// get the Pion term identifier for the Python key
+		term_str = PyString_AsString(key);
+		if (! term_str) {
+			std::string error_msg("Event key is not a string: ");
+			error_msg += term_str;
+			throw EventConversionException(error_msg);
+		}
+		term_ref = v.findTerm( term_str );
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
+			std::string error_msg("unknown term: ");
+			error_msg += term_str;
+			throw EventConversionException(error_msg);
+		}
+		const Vocabulary::DataType term_type = v[term_ref].term_type;
+		
+		// make sure that values is a list
+		if (! PySequence_Check(values)) {
+			std::string error_msg("Event values must be a sequence: ");
+			error_msg += term_str;
+			throw EventConversionException(error_msg);
+		}
+
+		// iterate through each of the values defined
+		Py_ssize_t num_values = PySequence_Size(values);
+		for (Py_ssize_t n = 0; n < num_values; ++n) {
+			PyObject *obj = PySequence_GetItem(values, n);
+			PION_ASSERT(obj);
+				
+			switch (term_type) {
+			case Vocabulary::TYPE_NULL:
+			case Vocabulary::TYPE_OBJECT:
+				// although not really supported, this is the most logical conversion
+				e->setInt(term_ref, 1);
+				break;
+			case Vocabulary::TYPE_INT8:
+			case Vocabulary::TYPE_INT16:
+			case Vocabulary::TYPE_INT32:
+				if (! PyLong_Check(obj)) {
+					std::string error_msg("long integer required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setInt(term_ref, PyLong_AsLong(obj) );
+				break;
+			case Vocabulary::TYPE_UINT8:
+			case Vocabulary::TYPE_UINT16:
+			case Vocabulary::TYPE_UINT32:
+				if (! PyLong_Check(obj)) {
+					std::string error_msg("long integer required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setUInt(term_ref, PyLong_AsUnsignedLong(obj) );
+				break;
+			case Vocabulary::TYPE_INT64:
+				if (! PyLong_Check(obj)) {
+					std::string error_msg("long integer required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setBigInt(term_ref, PyLong_AsLongLong(obj) );
+				break;
+			case Vocabulary::TYPE_UINT64:
+				if (! PyLong_Check(obj)) {
+					std::string error_msg("long integer required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setUBigInt(term_ref, PyLong_AsUnsignedLongLong(obj) );
+				break;
+			case Vocabulary::TYPE_FLOAT:
+				if (! PyFloat_Check(obj)) {
+					std::string error_msg("float required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setFloat(term_ref, PyFloat_AsDouble(obj) );
+				break;
+			case Vocabulary::TYPE_DOUBLE:
+				if (! PyFloat_Check(obj)) {
+					std::string error_msg("float required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setDouble(term_ref, PyFloat_AsDouble(obj) );
+				break;
+			case Vocabulary::TYPE_LONG_DOUBLE:
+				if (! PyFloat_Check(obj)) {
+					std::string error_msg("float required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				e->setLongDouble(term_ref, PyFloat_AsDouble(obj) );
+				break;
+			case Vocabulary::TYPE_SHORT_STRING:
+			case Vocabulary::TYPE_STRING:
+			case Vocabulary::TYPE_LONG_STRING:
+			case Vocabulary::TYPE_CHAR:
+			case Vocabulary::TYPE_BLOB:
+			case Vocabulary::TYPE_ZBLOB:
+				if (PyString_Check(obj)) {
+					char *buf = PyString_AsString(obj);
+					Py_ssize_t len = PyString_Size(obj);
+					e->setString(term_ref, buf, len);
+				} else if (PyByteArray_Check(obj)) {
+					char *buf = PyByteArray_AsString(obj);
+					Py_ssize_t len = PyByteArray_Size(obj);
+					e->setBlob(term_ref, buf, len);
+				} else {
+					std::string error_msg("string or byte array required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				break;
+			case Vocabulary::TYPE_DATE_TIME:
+				{
+				if (! PyDateTime_Check(obj)) {
+					std::string error_msg("datetime required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
+					PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+				boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
+					PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
+					boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
+				PionDateTime d(date, time);
+				e->setDateTime(term_ref, d);
+				break;
+				}
+			case Vocabulary::TYPE_DATE:
+				{
+				if (PyDateTime_Check(obj)) {
+					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
+						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+					boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
+						PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
+						boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
+					PionDateTime d(date, time);
+					e->setDateTime(term_ref, d);
+				} else if (PyDate_Check(obj)) {
+					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
+						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+					PionDateTime d(date);
+					e->setDateTime(term_ref, d);
+				} else {
+					std::string error_msg("date or datetime required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				break;
+				}
+			case Vocabulary::TYPE_TIME:
+				{
+				if (PyDateTime_Check(obj)) {
+					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
+						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
+					boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
+						PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
+						boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
+					PionDateTime d(date, time);
+					e->setDateTime(term_ref, d);
+				} else if (PyTime_Check(obj)) {
+					boost::gregorian::date date(1970, 1, 1);
+					boost::posix_time::time_duration time(PyDateTime_TIME_GET_HOUR(obj),
+						PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
+						boost_msec_to_fsec(PyDateTime_TIME_GET_MICROSECOND(obj)) );
+					PionDateTime d(date, time);
+					e->setDateTime(term_ref, d);
+				} else {
+					std::string error_msg("time or datetime required: ");
+					error_msg += term_str;
+					throw EventConversionException(error_msg);
+				}
+				break;
+				}
+			}
+		}
 	}
 }
 
@@ -604,7 +995,6 @@ PyThreadState *PythonReactor::initThreadState(void)
 
 void PythonReactor::releaseThreadState(PyThreadState *ptr)
 {
-	// TODO: is having a thread instance created necessary for this call?
 	PyThreadState_Clear(ptr);
 	PyThreadState_Delete(ptr);
 }

@@ -92,6 +92,13 @@ public:
 			: PionException("PythonReactor unable to initialize Reactor object: ", error_msg) {}
 	};
 
+	/// exception thrown if there is an error converting between Pion and Python events
+	class EventConversionException : public PionException {
+	public:
+		EventConversionException(const std::string& error_msg)
+			: PionException("PythonReactor event conversion error: ", error_msg) {}
+	};
+
 
 	/// constructs a new PythonReactorReactor object
 	PythonReactor(void);
@@ -131,8 +138,8 @@ public:
 	/// called by the ReactorEngine to stop Event processing
 	virtual void stop(void);
 	
-	/// delivers an event to the reactor's connections (used by Python callbacks)
-	void deliverToConnections(const pion::platform::EventPtr& e);
+	/// delivers a Python event to the reactor's connections (used by Python callbacks)
+	void deliverToConnections(PyObject *event_ptr);
 
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
@@ -142,6 +149,22 @@ public:
 
 	
 protected:
+
+	/**
+	 * converts a Pion Event into a Python event object
+	 *
+	 * @param e the pion event to convert from
+	 * @param obj pointer will be assigned to the resulting Python event object
+	 */
+	void toPythonEvent(const pion::platform::Event& e, PyObject *& obj) const;
+
+	/**
+	 * converts a Python event object into a Pion Event
+	 *
+	 * @param obj pointer to a PythonEventObject to convert from
+	 * @param e pointer will be assigned to the resulting Pion Event object
+	 */
+	void fromPythonEvent(PyObject *obj, pion::platform::EventPtr& e) const;
 
 	/**
 	 * initialize the Python state for the current thread, if not done already
@@ -181,6 +204,12 @@ protected:
 
 	/// if the Python error indicator is set, clear it and return a corresponding message
 	std::string getPythonError(void);
+
+	/// convert microseconds into boost fractional seconds
+	static inline boost::uint64_t boost_msec_to_fsec(boost::uint64_t n);
+
+	/// convert boost fractional seconds into microseconds
+	static inline boost::uint64_t boost_fsec_to_msec(boost::uint64_t n);
 
 	
 	/// simple object used to manage the Python GIL lock & thread-safety
@@ -267,6 +296,69 @@ private:
 	/// thread-specific pointer to Python thread states
 	static boost::thread_specific_ptr<PyThreadState> *	m_state_ptr;
 };
+
+
+// inline functions for PythonReactor
+
+inline boost::uint64_t PythonReactor::boost_msec_to_fsec(boost::uint64_t n) {
+	switch (boost::posix_time::time_duration::resolution()) {
+	case boost::date_time::sec:
+		n /= 1000000;
+		break;
+	case boost::date_time::tenth:
+		n /= 100000;
+		break;
+	case boost::date_time::hundreth:
+		n /= 10000;
+		break;
+	case boost::date_time::milli:
+		n /= 1000;
+		break;
+	case boost::date_time::ten_thousandth:
+		n /= 100;
+		break;
+	case boost::date_time::micro:
+		// good to go
+		break;
+	case boost::date_time::nano:
+		n *= 1000;
+		break;
+	case boost::date_time::NumResolutions:
+		// shouldn't happen
+		break;
+	}
+	return n;
+}
+
+inline boost::uint64_t PythonReactor::boost_fsec_to_msec(boost::uint64_t n) {
+	switch (boost::posix_time::time_duration::resolution()) {
+	case boost::date_time::sec:
+		n *= 1000000;
+		break;
+	case boost::date_time::tenth:
+		n *= 100000;
+		break;
+	case boost::date_time::hundreth:
+		n *= 10000;
+		break;
+	case boost::date_time::milli:
+		n *= 1000;
+		break;
+	case boost::date_time::ten_thousandth:
+		n *= 100;
+		break;
+	case boost::date_time::micro:
+		// good to go
+		break;
+	case boost::date_time::nano:
+		n /= 1000;
+		break;
+	case boost::date_time::NumResolutions:
+		// shouldn't happen
+		break;
+	}
+	return n;
+}
 
 
 }	// end namespace plugins
