@@ -228,7 +228,7 @@ Event_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	if (self != NULL) {
 		self->type = PyString_FromString("");
 		if (self->type == NULL) {
-			Py_DECREF(self);
+			Py_DECREF((PyObject*) self);
 			return NULL;
 		}
 	}
@@ -713,16 +713,11 @@ void PythonReactor::toPythonEvent(const Event& e, PyObject *& obj) const
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
-			{
-			const Event::BlobType& b = boost::get<const Event::BlobType&>(it->value);
-			new_value = PyString_FromStringAndSize(b.get(), b.size());
-			break;
-			}
 		case Vocabulary::TYPE_BLOB:
 		case Vocabulary::TYPE_ZBLOB:
 			{
 			const Event::BlobType& b = boost::get<const Event::BlobType&>(it->value);
-			new_value = PyByteArray_FromStringAndSize(b.get(), b.size());
+			new_value = PyString_FromStringAndSize(b.get(), b.size());
 			break;
 			}
 		case Vocabulary::TYPE_DATE_TIME:
@@ -840,7 +835,7 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 			case Vocabulary::TYPE_INT16:
 			case Vocabulary::TYPE_INT32:
 				if (! PyInt_Check(obj)) {
-					std::string error_msg("integer required: ");
+					std::string error_msg("int required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
@@ -849,7 +844,7 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 			case Vocabulary::TYPE_UINT8:
 			case Vocabulary::TYPE_UINT16:
 				if (! PyInt_Check(obj)) {
-					std::string error_msg("integer required: ");
+					std::string error_msg("int required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
@@ -913,12 +908,8 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 					char *buf = PyString_AsString(obj);
 					Py_ssize_t len = PyString_Size(obj);
 					e->setString(term_ref, buf, len);
-				} else if (PyByteArray_Check(obj)) {
-					char *buf = PyByteArray_AsString(obj);
-					Py_ssize_t len = PyByteArray_Size(obj);
-					e->setBlob(term_ref, buf, len);
 				} else {
-					std::string error_msg("str or byte array required: ");
+					std::string error_msg("str required: ");
 					error_msg += term_str;
 					throw EventConversionException(error_msg);
 				}
