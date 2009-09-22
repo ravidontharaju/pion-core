@@ -807,17 +807,52 @@ The following are also available, if the need arises.
 	font-weight: 100;
 }
 
-.tundra .delete_row .dijitButtonNode {
-	background: url("../images/button-delete-row-off.png") no-repeat;
-	background-color: none;
-	border: none;
-	margin: -3px 0 0 0;
+.tundra button.restore {
+	background-image: url('../images/icon-restore.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	border: solid #999999 1px;
+	width: auto;
+	height: 22px;
+	padding-left: 25px;
 }
+
+.tundra button.restore:hover {
+	background-image: url('../images/icon-restore-hover.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+.tundra button.disabled.restore {
+	background-image: url('../images/icon-restore-disabled.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+.tundra button.delete_row {
+	background-image: url('../images/icon-delete.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	border: solid #999999 1px;
+	width: auto;
+	height: 22px;
+	padding-left: 25px;
+}
+
+.tundra button.delete_row:hover {
+	background-image: url('../images/icon-delete-hover.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+/*
+I don't think this is being used anywhere.
 
 .tundra .delete_row.dijitButtonHover .dijitButtonNode {
 	background: url("../images/button-delete-row-on.png") no-repeat;
 	background-color: none;
 }
+*/
 
 .tundra .add_new_pane .dijitButtonNode {
 	background: #ffffff url("../images/button-add-new-pane-off.png") no-repeat;
