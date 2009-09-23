@@ -387,6 +387,9 @@ dojo.declare("pion.util.XMLQueryReadStore",
 			//		  // The serverQuery contains more data than the query, so they might differ!
 			//
 	
+			if (this.sortRequiresNewRequest && request.sort) { // Client needs to generate a new request.
+				return;
+			}
 			var serverQuery = request.serverQuery || request.query || {};
 			//Need to add start and count
 			if(!this.doClientPaging){
