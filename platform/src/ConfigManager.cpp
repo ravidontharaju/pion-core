@@ -220,32 +220,41 @@ void ConfigManager::writeEndPionStatsXML(std::ostream& out)
 	
 std::string ConfigManager::xml_encode(const std::string& str)
 {
-	// return early if we can
-	if (str.find_first_of("&<>\"'") == std::string::npos)
-		return str;
-	
-	// otherwise, build a result string
 	std::string result;
-	result.reserve(str.size() + 20);	// Assume 5 tag converted (length increases)
+	result.reserve(str.size() + 20);	// Assume ~5 characters converted (length increases)
 	for (std::string::size_type pos = 0; pos < str.size(); ++pos) {
-		switch(str[pos]) {
-			case '&':
-				result += "&amp;";
-				break;
-			case '<':
-				result += "&lt;";
-				break;
-			case '>':
-				result += "&gt;";
-				break;
-			case '\"':
-				result += "&quot;";
-				break;
-			case '\'':
-				result += "&apos;";
-				break;
-			default:
-				result += str[pos];
+		if (str[pos] >= '\x00' && str[pos] < '\x20') {
+			// Strip out invalid XML characters.  (See http://www.w3.org/TR/REC-xml/#charsets .)
+			switch(str[pos]) {
+				case '\x09':
+				case '\x0A':
+				case '\x0D':
+					result += str[pos];
+					break;
+				default:
+					; // Strip it out.
+			}
+		} else {
+			// Escape special XML characters.
+			switch(str[pos]) {
+				case '&':
+					result += "&amp;";
+					break;
+				case '<':
+					result += "&lt;";
+					break;
+				case '>':
+					result += "&gt;";
+					break;
+				case '\"':
+					result += "&quot;";
+					break;
+				case '\'':
+					result += "&apos;";
+					break;
+				default:
+					result += str[pos];
+			}
 		}
 	}
 	
