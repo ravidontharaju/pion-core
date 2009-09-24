@@ -3,7 +3,7 @@
 # pion cookie authentication HTTP query wrapper
 # ---------------------------------------------
 
-import sys, httplib, optparse, re, xml.dom.minidom
+import sys, httplib, socket, optparse, re, xml.dom.minidom
 
 
 class Reactor:
@@ -70,6 +70,8 @@ def get_cookie(con, user, password):
 
 
 def get_con(options):
+	# set default connection timeout = 10 seconds
+	socket.setdefaulttimeout(10)
 	# establish connection to Pion server
 	if (options.ssl):
 		con = httplib.HTTPSConnection(options.server, options.port);
