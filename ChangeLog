@@ -1,3 +1,9 @@
+Version 2.1.10 (2009-09-25)
+===========================
+
+* Made ConfigManager::xml_encode() more robust when given binary data (726)
+
+
 Version 2.1.8 (2009-09-16)
 ==========================
 
