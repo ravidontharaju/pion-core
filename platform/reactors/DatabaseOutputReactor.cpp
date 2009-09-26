@@ -126,8 +126,15 @@ void DatabaseOutputReactor::start(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (! m_is_running) {
 		m_is_running = true;
-		if (m_inserter)
-			m_inserter->start();
+		if (m_inserter) {
+			try {
+				m_inserter->start();
+			} catch (...) {
+				// failed to start inserter -> update running state to false
+				m_is_running = false;
+				throw;
+			}
+		}
 	}
 }
 
