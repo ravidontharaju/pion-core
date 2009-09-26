@@ -186,34 +186,46 @@ void DatabaseInserter::start(void)
 	if (! m_is_running) {
 		m_is_running = true;
 
-		// open a new database connection
-		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
-		PION_ASSERT(m_database_ptr);
+		try {
 
-		if (m_wipe) {
-			m_database_ptr->dropTable(m_table_name, m_partition);
-			PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
+			// open a new database connection
+			m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+			PION_ASSERT(m_database_ptr);
+
+			if (m_wipe) {
+				m_database_ptr->dropTable(m_table_name, m_partition);
+				PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
+			}
+
+			// open up the database if it isn't already open
+			// TODO: This only works with SQLite (wiping before opening)
+			m_database_ptr->open(m_partition);
+			PION_ASSERT(m_database_ptr->is_open());
+
+			// create the database table if it does not yet exist
+			m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
+
+			// prepare the query used to insert new events into the table
+			m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+			PION_ASSERT(m_insert_query_ptr);
+
+			// prepare the query used to begin new transactions
+			m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
+			PION_ASSERT(m_begin_transaction_ptr);
+
+			// prepare the query used to commit transactions
+			m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
+			PION_ASSERT(m_commit_transaction_ptr);
+		
+		} catch (...) {
+			// failed to initialize properly -> reset and update running state to false
+			m_insert_query_ptr.reset();
+			m_begin_transaction_ptr.reset();
+			m_commit_transaction_ptr.reset();
+			m_database_ptr.reset();
+			m_is_running = false;
+			throw;
 		}
-
-		// open up the database if it isn't already open
-		// TODO: This only works with SQLite (wiping before opening)
-		m_database_ptr->open(m_partition);
-		PION_ASSERT(m_database_ptr->is_open());
-
-		// create the database table if it does not yet exist
-		m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
-
-		// prepare the query used to insert new events into the table
-		m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
-		PION_ASSERT(m_insert_query_ptr);
-
-		// prepare the query used to begin new transactions
-		m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
-		PION_ASSERT(m_begin_transaction_ptr);
-
-		// prepare the query used to commit transactions
-		m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
-		PION_ASSERT(m_commit_transaction_ptr);
 
 		// spawn a new thread that will be used to save events to the database
 		PION_LOG_DEBUG(m_logger, "Starting worker thread: " << m_database_id);
