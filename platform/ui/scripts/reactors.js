@@ -776,7 +776,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	});
 	var makeDeleteButtonIfNeeded = function(v) {
 		if (v == 'yes') {
-			return '<button dojoType=dijit.form.Button class="delete_row"><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
+			return '<button dojoType=dijit.form.Button><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
 		} else {
 			return '';
 		}
