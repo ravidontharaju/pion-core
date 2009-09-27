@@ -26,7 +26,7 @@ KEY_METRICS = {
 		},
 	'ClickstreamReactor' : {
 		'OpenSessions' : 100000,       # open visitor sessions
-		'OpenPages' : 100000,           # open page events
+		'OpenPages' : 100000,          # open page events
 		'OpenEvents' : 250000,         # open request events
 		'OpenOrphans' : 200000,        # open orphaned requests
 		},
@@ -35,8 +35,12 @@ KEY_METRICS = {
 		'OpenEvents' : 250000,         # events actively cached
 		},
 	'SnifferReactor' : {
-		'BitsPerSecond' : 300000000,   # average bps for a capture device
-		'PacketQueueSize' : 30000,     # packets waiting to be processed
+		'BitsPerSecond' : 300000000,            # average bps for a capture device
+		'PacketQueueSize' : 30000,              # packets waiting to be processed
+		'TcpSessionCount' : 100000,             # open tcp connections
+		'SslSessionKeyCount' : 100000,          # cached SSL session keys
+		'TcpReassemblyPacketCount' : 100000,    # packets waiting to be processed
+		'TcpReassemblyPayloadSize' : 100000000, # total bytes in packets waiting
 		},
 	}
 

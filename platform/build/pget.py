@@ -70,12 +70,14 @@ def get_cookie(con, user, password):
 
 
 def get_con(options):
-	# set default connection timeout = 10 seconds
-	socket.setdefaulttimeout(10)
 	# establish connection to Pion server
 	if (options.ssl):
 		con = httplib.HTTPSConnection(options.server, options.port);
 	else:
+		# set default connection timeout = 10 seconds
+		# NOTE: this breaks SSL for Python < 2.5
+		#       so only setting a timeout for non-SSL
+		socket.setdefaulttimeout(10)
 		con = httplib.HTTPConnection(options.server, options.port);
 	# get session cookie
 	options.cookie = get_cookie(con, options.user, options.password)
