@@ -17,29 +17,32 @@ SMTP_PASSWORD = ''
 # defines a mapping of reactor statistics to maximum threshold values
 KEY_METRICS = {
 	'DatabaseOutputReactor' : {
-		'EventsQueued' : 7500,         # events queued for db inserts
-		'KeyCacheSize' : 100000,       # recent index keys cached
+		'EventsQueued' : 7500,                  # events queued for db inserts
+		'KeyCacheSize' : 100000,                # recent index keys cached
 		},
 	'MultiDatabaseReactor' : {
-		'EventsQueued' : 7500,	       # events queued for db inserts
-		'KeyCacheSize' : 100000,       # recent index keys cached
+		'EventsQueued' : 7500,	                # events queued for db inserts
+		'KeyCacheSize' : 100000,                # recent index keys cached
+		'CurrentTotalSessions' : 100000,        # events queued for db inserts
+		'CurrentActiveSessions' : 100000,       # recent index keys cached
+		'PreviousActiveSessions' : 100000,      # recent index keys cached
 		},
 	'ClickstreamReactor' : {
-		'OpenSessions' : 100000,       # open visitor sessions
-		'OpenPages' : 100000,          # open page events
-		'OpenEvents' : 250000,         # open request events
-		'OpenOrphans' : 200000,        # open orphaned requests
+		'OpenSessions' : 100000,                # open visitor sessions
+		'OpenPages' : 25000,                    # open page events
+		'OpenEvents' : 100000,                  # open request events
+		'OpenOrphans' : 100000,                 # open orphaned requests
 		},
 	'SessionFilterReactor' : {
-		'OpenSessions' : 100000,       # open visitor sessions
-		'OpenEvents' : 250000,         # events actively cached
+		'OpenSessions' : 100000,                # open visitor sessions
+		'OpenEvents' : 250000,                  # events actively cached
 		},
 	'SnifferReactor' : {
 		'BitsPerSecond' : 300000000,            # average bps for a capture device
 		'PacketQueueSize' : 30000,              # packets waiting to be processed
 		'TcpSessionCount' : 100000,             # open tcp connections
 		'SslSessionKeyCount' : 100000,          # cached SSL session keys
-		'TcpReassemblyPacketCount' : 100000,    # packets waiting to be processed
+		'TcpReassemblyPacketCount' : 500000,    # packets waiting to be processed
 		'TcpReassemblyPayloadSize' : 100000000, # total bytes in packets waiting
 		},
 	}
