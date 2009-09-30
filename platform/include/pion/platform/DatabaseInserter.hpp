@@ -213,6 +213,11 @@ public:
 		return true;
 	}
 
+	boost::uint32_t getRotate(void)
+	{
+		return m_cache_size ? (m_cache_consumption * 100UL / m_cache_size) : 0;
+	}
+
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
 
@@ -380,6 +385,21 @@ private:
 
 	/// most recent timestamp used for key cache pruning
 	boost::uint32_t							m_last_time;
+
+	/// Counter for index cache consumption
+	boost::uint64_t							m_cache_consumption;
+
+	/// Cache overhead (per item)
+	boost::uint32_t							m_cache_overhead;
+
+	/// Name of term to count stats on
+	std::vector<Vocabulary::Term>			m_cache_terms;
+
+	/// How many rows have been inserted
+	boost::uint64_t							m_cache_rows;
+
+	/// How big is the database cache
+	boost::uint64_t							m_cache_size;
 };
 
 

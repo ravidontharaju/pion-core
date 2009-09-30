@@ -101,6 +101,9 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// next, map the database fields to Terms
 	m_field_map.clear();
 	m_index_map.clear();
+	m_cache_consumption = 0;
+	m_cache_rows = 0;
+	m_cache_terms.clear();
 	xmlNodePtr field_node = config_ptr;
 	m_key_term_ref = Vocabulary::UNDEFINED_TERM_REF;
 	while ( (field_node = ConfigManager::findConfigNodeByName(FIELD_ELEMENT_NAME, field_node)) != NULL)
@@ -141,6 +144,9 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		// Try to find the unique key term, if max_keys is defined
 		if (m_max_age && index_str == "unique")
 			m_key_term_ref = term_ref;
+
+		if (!index_str.empty() && index_str != "false")
+			m_cache_terms.push_back(v[term_ref]);
 
 		// step to the next field mapping
 		field_node = field_node->next;
@@ -216,6 +222,11 @@ void DatabaseInserter::start(void)
 			// prepare the query used to commit transactions
 			m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
 			PION_ASSERT(m_commit_transaction_ptr);
+
+			m_cache_overhead = m_database_ptr->getCache(Database::CACHE_INDEX_ROW_OVERHEAD);
+			m_cache_size = m_database_ptr->getCache(Database::CACHE_PAGE_CACHE_SIZE);
+
+			PION_LOG_DEBUG(m_logger, "Database cache overhead: " << m_cache_overhead << ", cache size: " << m_cache_size / 1024UL << "k");
 		
 		} catch (...) {
 			// failed to initialize properly -> reset and update running state to false
@@ -323,7 +334,62 @@ void DatabaseInserter::insert(const EventPtr& e)
 			m_keys[boost::get<const Event::BlobType&>(*param_ptr)] = m_last_time;
 
 			// Pruning will be done in insert thread
-		}	
+		}
+
+		for (unsigned i = 0; i < m_cache_terms.size(); i++) {
+			boost::uint32_t size;
+			switch (m_cache_terms[i].term_type) {
+				case Vocabulary::TYPE_NULL:
+				case Vocabulary::TYPE_OBJECT:
+					size = 0;
+					break;
+				case Vocabulary::TYPE_INT8:
+				case Vocabulary::TYPE_UINT8:
+					size = 1;
+					break;
+				case Vocabulary::TYPE_INT16:
+				case Vocabulary::TYPE_UINT16:
+					size = 2;
+					break;
+				case Vocabulary::TYPE_INT32:
+				case Vocabulary::TYPE_UINT32:
+					size = 4;
+					break;
+				case Vocabulary::TYPE_INT64:
+				case Vocabulary::TYPE_UINT64:
+					size = 8;
+					break;
+				case Vocabulary::TYPE_FLOAT:
+				case Vocabulary::TYPE_DOUBLE:
+				case Vocabulary::TYPE_LONG_DOUBLE:
+					size = 8;							// 8-byte IEEE float
+					break;
+				case Vocabulary::TYPE_SHORT_STRING:
+				case Vocabulary::TYPE_STRING:
+				case Vocabulary::TYPE_LONG_STRING:
+				case Vocabulary::TYPE_CHAR:
+				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:			// It won't be compressed in the index
+					try {
+						// Measure the size
+						size = (boost::get<const Event::BlobType&>(*e->getPointer(m_cache_terms[i].term_ref))).size();
+					} catch (...) {
+						size = 0;						// Default to zero when not found
+					}
+					break;
+				case Vocabulary::TYPE_DATE_TIME:
+					size = 4+1+2+1+2 +1+ 2+1+2+1+2;		// 2009-09-29T11:43:00
+					break;
+				case Vocabulary::TYPE_DATE:
+					size = 4+1+2+1+2;					// 2009-09-29
+					break;
+				case Vocabulary::TYPE_TIME:
+					size = 2+1+2+1+2;					// 11:43:00
+					break;
+			}
+			m_cache_consumption += size + m_cache_overhead;
+		}
+		m_cache_rows++;
 
 		// signal the worker thread if the queue is full (wait for swap)
 		while (m_event_queue_ptr->size() >= m_queue_max) {

@@ -67,7 +67,7 @@ public:
 	 * constructs a new SQLiteDatabase object
 	 */
 	SQLiteDatabase(void)
-		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL)
+		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL), m_cache_size(0)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -93,6 +93,19 @@ public:
 
 	/// closes the database connection
 	virtual void close(void);
+
+	/// get various database related configuration parameters
+	virtual boost::uint64_t getCache(CACHEPARAM what)
+	{
+		switch (what) {
+			case CACHE_INDEX_ROW_OVERHEAD:
+				return 9;	// SQLite has a 9 byte rowid
+			case CACHE_PAGE_CACHE_SIZE:
+				return m_cache_size;
+			case CACHE_PAGE_UTILIZATION:
+				return 85;	// average efficiency for index
+		}
+	}
 
 	/// returns true if the database connection is open
 	virtual bool is_open(void) const { return m_sqlite_db != NULL; }
@@ -530,6 +543,9 @@ private:
 
 	/// points the an error message returned from a SQLite API call
 	char *							m_error_ptr;
+
+	/// calculated page cache size
+	boost::uint64_t					m_cache_size;
 };
 
 

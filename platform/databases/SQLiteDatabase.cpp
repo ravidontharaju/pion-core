@@ -18,6 +18,7 @@
 //
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/regex.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/DatabaseManager.hpp>
 #include "SQLiteDatabase.hpp"
@@ -109,10 +110,30 @@ void SQLiteDatabase::open(unsigned partition)
 	// set a 10s busy timeout to deal with db locking
 	sqlite3_busy_timeout(m_sqlite_db, 10000);
 
+	// Set up defaults for page & cache size
+	boost::uint64_t page_size = 1024;
+	boost::uint64_t cache_size = 2000;
+	boost::regex regex_cache_size("pragma\\s+cache_size\\s+=\\s*([0-9]+)", boost::regex::extended | boost::regex::icase);
+	boost::regex regex_default_cache_size("pragma\\s+default_cache_size\\s+=\\s*([0-9]+)", boost::regex::extended | boost::regex::icase);
+	boost::regex regex_page_size("pragma\\s+page_size\\s+=\\s*([0-9]+)", boost::regex::extended | boost::regex::icase);
 	// execute all PreSQL (if any)
-	for (unsigned i = 0; i < m_pre_sql.size(); i++)
+	for (unsigned i = 0; i < m_pre_sql.size(); i++) {
 		if (sqlite3_exec(m_sqlite_db, m_pre_sql[i].c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
 			throw SQLiteAPIException(getSQLiteError());
+		std::string s;
+		if (regex_search(m_pre_sql[i], regex_cache_size))
+			s = regex_replace(m_pre_sql[i], regex_cache_size, "$1", boost::format_all | boost::format_first_only | boost::format_no_copy);
+		if (regex_search(m_pre_sql[i], regex_default_cache_size))
+			s = regex_replace(m_pre_sql[i], regex_default_cache_size, "$1", boost::format_all | boost::format_first_only | boost::format_no_copy);
+		if (!s.empty())
+			cache_size = boost::lexical_cast<boost::uint64_t>(s);
+		if (regex_search(m_pre_sql[i], regex_page_size)) {
+			s = regex_replace(m_pre_sql[i], regex_page_size, "$1", boost::format_all | boost::format_first_only | boost::format_no_copy);
+			if (!s.empty())
+				page_size = boost::lexical_cast<boost::uint64_t>(s);
+		}
+	}
+	m_cache_size = page_size * cache_size;
 }
 
 void SQLiteDatabase::close(void)
