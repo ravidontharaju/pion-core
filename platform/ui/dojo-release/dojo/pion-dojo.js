@@ -27054,7 +27054,7 @@ return pion.handleFetchError(_19a4,_19a5);
 };
 };
 pion.escapeXml=function(value){
-if(value===false){
+if(value===false||value===0){
 return value.toString();
 }else{
 if(value){

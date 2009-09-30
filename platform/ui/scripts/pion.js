@@ -118,7 +118,7 @@ pion.getFetchErrorHandler = function(msg) {
 
 // Substitutes entity references for characters that have special meaning in XML.
 pion.escapeXml = function(value) {
-	if (value === false) {
+	if (value === false || value === 0) {
 		return value.toString();
 	} else if (value) {
 		return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
