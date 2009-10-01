@@ -210,6 +210,7 @@ void DatabaseInserter::start(void)
 
 			// create the database table if it does not yet exist
 			m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
+			m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
 
 			// prepare the query used to insert new events into the table
 			m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
@@ -337,11 +338,10 @@ void DatabaseInserter::insert(const EventPtr& e)
 		}
 
 		for (unsigned i = 0; i < m_cache_terms.size(); i++) {
-			boost::uint32_t size;
+			boost::uint32_t size = 0;
 			switch (m_cache_terms[i].term_type) {
 				case Vocabulary::TYPE_NULL:
 				case Vocabulary::TYPE_OBJECT:
-					size = 0;
 					break;
 				case Vocabulary::TYPE_INT8:
 				case Vocabulary::TYPE_UINT8:
@@ -483,6 +483,8 @@ void DatabaseInserter::insertEvents(void)
 						}
 						PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " keys from cache, " << size_after << " left");
 					}
+
+					m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
 
 				} catch (Database::DatabaseBusyException& e) {
 				

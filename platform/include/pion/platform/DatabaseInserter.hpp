@@ -128,7 +128,7 @@ public:
 		m_database_mgr_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
-		m_is_running(false), m_partition(0), m_wipe(false), m_max_age(0), m_last_time(0)
+		m_is_running(false), m_partition(0), m_wipe(false), m_max_age(0), m_last_time(0), m_table_size(0)
 	{}
 
 	/// virtual destructor: this class may be extended
@@ -213,10 +213,12 @@ public:
 		return true;
 	}
 
-	boost::uint32_t getRotate(void)
+	boost::uint32_t getRotate(void) const
 	{
 		return m_cache_size ? (m_cache_consumption * 100UL / m_cache_size) : 0;
 	}
+
+	boost::uint64_t getTableSize(void) const { return m_table_size; }
 
 	/// returns a copy of the mapping of database fields to event terms
 	Query::FieldMap getFieldMap(void) const { return m_field_map; }
@@ -400,6 +402,9 @@ private:
 
 	/// How big is the database cache
 	boost::uint64_t							m_cache_size;
+
+	/// How big is the database file
+	boost::uint64_t							m_table_size;
 };
 
 

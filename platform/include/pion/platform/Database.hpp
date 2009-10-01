@@ -154,7 +154,12 @@ public:
 	virtual void close(void) = 0;
 
 	/// Cache related queries
-	enum CACHEPARAM { CACHE_INDEX_ROW_OVERHEAD, CACHE_PAGE_CACHE_SIZE, CACHE_PAGE_UTILIZATION };
+	enum CACHEPARAM {
+		CACHE_INDEX_ROW_OVERHEAD, 
+		CACHE_PAGE_CACHE_SIZE, 
+		CACHE_PAGE_UTILIZATION,
+		DB_FILE_SIZE
+	};
 
 	/// Get various cache related parameters
 	virtual boost::uint64_t getCache(CACHEPARAM what) = 0;

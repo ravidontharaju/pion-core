@@ -63,20 +63,6 @@ DatabasePtr SQLiteDatabase::clone(void) const
 	return DatabasePtr(db_ptr);
 }
 
-std::string dbPartition(std::string name, unsigned partition)
-{
-	if (partition) {
-		char buff[10];
-		sprintf(buff, "_%03u.db", partition);
-		std::string::size_type i = 0;
-		if ((i = name.find(".db", i)) != std::string::npos)
-			name.replace(i, strlen(".db"), buff);
-		else
-			name += buff;
-	}
-	return name;
-}
-
 void SQLiteDatabase::open(unsigned partition)
 {
 	// create a backup copy of the database before opening it
@@ -89,6 +75,7 @@ void SQLiteDatabase::open(unsigned partition)
 		boost::filesystem::copy_file(m_database_name, backup_filename);
 	}
 */
+	m_partition = partition;
 	// If Partitioning: Change "name.db" into "name_001.db" or, "name" into "name_001.db"
 	std::string dbname = dbPartition(m_database_name, partition);
 
@@ -220,6 +207,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 
 void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 {
+	m_partition = partition;
 	if (m_sqlite_db) {
 		close();
 //		if (unlink(dbPartition(table_name, partition).c_str()))

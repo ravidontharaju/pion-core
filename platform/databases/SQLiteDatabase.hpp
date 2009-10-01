@@ -67,7 +67,7 @@ public:
 	 * constructs a new SQLiteDatabase object
 	 */
 	SQLiteDatabase(void)
-		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL), m_cache_size(0)
+		: pion::platform::Database(), m_sqlite_db(NULL), m_error_ptr(NULL), m_cache_size(0), m_partition(0)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -94,6 +94,21 @@ public:
 	/// closes the database connection
 	virtual void close(void);
 
+	/// Produce database name, based on table name, and partition#
+	std::string dbPartition(std::string name, unsigned partition)
+	{
+		if (partition) {
+			char buff[10];
+			sprintf(buff, "_%03u.db", partition);
+			std::string::size_type i = 0;
+			if ((i = name.find(".db", i)) != std::string::npos)
+				name.replace(i, strlen(".db"), buff);
+			else
+				name += buff;
+		}
+		return name;
+	}
+
 	/// get various database related configuration parameters
 	virtual boost::uint64_t getCache(CACHEPARAM what)
 	{
@@ -104,7 +119,15 @@ public:
 				return m_cache_size;
 			case CACHE_PAGE_UTILIZATION:
 				return 85;	// average efficiency for index
+			case DB_FILE_SIZE:
+				{
+					boost::filesystem::path f(dbPartition(m_database_name, m_partition).c_str(), boost::filesystem::native );
+  					if (!boost::filesystem::exists(f) || !boost::filesystem::is_regular(f))
+						return 0;
+					return boost::filesystem::file_size(f);
+				}
 		}
+		return 0;	// Just to make compiler happy...
 	}
 
 	/// returns true if the database connection is open
@@ -546,6 +569,9 @@ private:
 
 	/// calculated page cache size
 	boost::uint64_t					m_cache_size;
+
+	/// local copy of partition#
+	unsigned						m_partition;
 };
 
 
