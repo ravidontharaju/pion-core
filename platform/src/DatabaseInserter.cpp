@@ -260,6 +260,7 @@ void DatabaseInserter::stop(void)
 
 		// wait for worker thread to shutdown
 		m_thread->join();
+		m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
 
 		// close the database connection (ensure that data is flushed)
 		boost::mutex::scoped_lock queue_lock_two(m_queue_mutex);
