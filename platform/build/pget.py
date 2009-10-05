@@ -27,36 +27,56 @@ class Reactor:
 pretty_print = lambda doc: '\n'.join([line for line in doc.toprettyxml(indent=' '*2).split('\n') if line.strip()])
 
 
-def get_response(con, uristem, headers = {}):
+def send_request(con, uristem, **args):
+	# process args dictionary
+	if ('method' in args):
+		method = args['method']
+	else:
+		method = 'GET'
+	if ('body' in args):
+		body = args['body']
+	else:
+		body = ''
+	if ('headers' in args):
+		headers = args['headers']
+	else:
+		headers = {}
+	# send the request	
 	try:
-		con.request('GET', uristem, None, headers)
+		con.request(method, uristem, body, headers)
 	except:
 		print 'error: unable to establish connection to Pion server'
 		sys.exit(1)
+	# get the response
 	r = con.getresponse()
+	# check response status
 	if (r.status == 401):
 		print 'error: Unable to authenticate to Pion server'
 		sys.exit(1)
 	if (r.status >= 400 and r.status <= 599):
 		print 'error: response =', r.status, r.reason
 		sys.exit(1)
+	# return the response
 	return r
 
 
 def print_response(r):
 	body = r.read()
-	ctype = r.getheader('Content-Type');
-	if (ctype.lower().startswith('text/xml')):
-		doc = xml.dom.minidom.parseString(body)
-		print pretty_print(doc)
-		#print doc.toprettyxml()
-		doc.unlink()
+	if (body):
+		ctype = r.getheader('Content-Type');
+		if (ctype.lower().startswith('text/xml')):
+			doc = xml.dom.minidom.parseString(body)
+			print pretty_print(doc)
+			#print doc.toprettyxml()
+			doc.unlink()
+		else:
+			print body
 	else:
-		print body
+		print "No response body ( status =", r.status, ')'
 
 
 def get_cookie(con, user, password):
-	r = get_response(con, '/login?user=' + user + '&pass=' + password)
+	r = send_request(con, '/login?user=' + user + '&pass=' + password)
 	r.read()	# needed to reset the connection for the next request
 	if (r.status != 204):
 		print 'error: Bad response for Pion server login request (', r.status, ')'
@@ -87,7 +107,7 @@ def get_con(options):
 
 def get_reactors(con, options):
 	# query reactor configuration
-	r = get_response(con, '/config/reactors', options.headers)
+	r = send_request(con, '/config/reactors', headers=options.headers)
 	if (r.status != 200):
 		print 'error: Unable to retrieve reactor configuration'
 		sys.exit(1)
@@ -120,7 +140,7 @@ def get_stats_xml(reactor, fields, node):
 
 def get_stats(con, options, reactor, fields=()):
 	# query reactor statistcs
-	r = get_response(con, '/query/reactors/' + reactor.id, options.headers)
+	r = send_request(con, '/query/reactors/' + reactor.id, headers=options.headers)
 	if (r.status != 200):
 		print 'error: Unable to retrieve reactor statistics: %s' % reactor.id
 		sys.exit(1)
@@ -134,6 +154,66 @@ def get_stats(con, options, reactor, fields=()):
 	reactor.stats = list()
 	if (fields):
 		get_stats_xml(reactor, fields, node)
+
+
+def list_reactors(con, options):
+	# retrieve a collection of reactor objects from pion config
+	reactors = get_reactors(con, options)
+	reactors.sort()
+	for r in reactors:
+		if (options.list == r.type or options.list == 'all'):
+			print r.id, '=', r
+			if (options.stats):
+				get_stats(con, options, r)
+				print "  Running=%s, EventsIn=%s, EventsOut=%s" % (
+					r.running, r.events_in, r.events_out )
+
+
+def add_key(con, options):
+	# prompt for key parameters
+	print 'Adding a new RSA private key to keystore'
+	key_name = ''
+	while (not key_name):
+		key_name = raw_input('Descriptive name: ')
+	key_pem = ''
+	while (not key_pem):
+		key_file = raw_input('PEM-encoded file: ')
+		if (not key_file):
+			continue
+		# open and read key file
+		try:
+			f = open(key_file, 'r')
+			key_pem = f.read()
+		except:
+			print 'error: unable to read file:', key_file
+			continue;
+		# look for "RSA PRIVATE KEY"
+		header_rx = re.compile(r'-----BEGIN\sRSA\sPRIVATE\sKEY-----')
+		if (not header_rx.search(key_pem)):
+			print 'error: file does not contain a PEM-encoded private key:', key_file
+			key_pem = ''
+	# prompt for optional password
+	key_password = raw_input('Password (if set): ')
+	# build XML document to represent the new key
+	xml_doc = xml.dom.minidom.getDOMImplementation().createDocument(None, 'PionConfig', None)
+	key_tag = xml_doc.createElement('Key');
+	xml_doc.documentElement.appendChild(key_tag)
+	# add Name element
+	name_tag = xml_doc.createElement('Name');
+	name_tag.appendChild( xml_doc.createTextNode(key_name) )
+	key_tag.appendChild(name_tag)
+	# add PEM element
+	pem_tag = xml_doc.createElement('PEM');
+	pem_tag.appendChild( xml_doc.createTextNode(key_pem) )
+	key_tag.appendChild(pem_tag)
+	if (key_password):
+		# add Password element
+		password_tag = xml_doc.createElement('Password');
+		password_tag.appendChild( xml_doc.createTextNode(key_password) )
+		key_tag.appendChild(password_tag)
+	# send POST request to add the new RSA private key to the keystore
+	r = send_request(con, '/keystore', body=xml_doc.toxml(), headers=options.headers, method='POST')
+	print_response(r)
 
 
 def get_arg_parser():
@@ -167,6 +247,12 @@ def parse_args():
 		help="calls a reactor's query service")
 	parser.add_option("-l", "--list", action="store", default=None,
 		help="list reactors of a specific type (or \"all\")")
+	parser.add_option("", "--listkeys", action="store_true", default=False,
+		help="lists all RSA private keys in keystore")
+	parser.add_option("", "--addkey", action="store_true", default=False,
+		help="add a new RSA private key to keystore")
+	parser.add_option("", "--removekey", action="store",
+		help="removes specified RSA private key from keystore")
 	# parse command-line arguments
 	options, arguments = parser.parse_args()		
 	# check validity of arguments
@@ -186,8 +272,10 @@ def parse_args():
 	elif (options.start or options.stop or options.query):
 		print 'error: missing required --reactor argument'
 		sys.exit(1)
-	elif (options.list):
+	elif (options.list or options.addkey or options.removekey):
 		pass
+	elif (options.listkeys):
+		options.uristem = '/keystore'
 	elif (options.stats):
 		options.uristem = '/query/reactors'
 	else:
@@ -205,19 +293,21 @@ def main():
 	# establish connection to Pion server
 	con = get_con(options)
 	if (options.list):
-		# retrieve a collection of reactor objects from pion config
-		reactors = get_reactors(con, options)
-		reactors.sort()
-		for r in reactors:
-			if (options.list == r.type or options.list == 'all'):
-				print r.id, '=', r
-				if (options.stats):
-					get_stats(con, options, r)
-					print "  Running=%s, EventsIn=%s, EventsOut=%s" % (
-						r.running, r.events_in, r.events_out )
+		# display list of reactors
+		list_reactors(con, options)
+	elif (options.addkey):
+		# add an RSA private key to keystore
+		add_key(con, options)
+	elif (options.removekey):
+		# send DELETE request to remove RSA private key from keystore
+		r = send_request(con, '/keystore/' + options.removekey, headers=options.headers, method='DELETE')
+		if (r.status == 204):
+			print 'Removed key', options.removekey
+		else:
+			print_response(r)
 	else:
 		# retrieve and display resource from Pion server
-		r = get_response(con, options.uristem, options.headers)
+		r = send_request(con, options.uristem, headers=options.headers)
 		print_response(r)
 	# close the HTTP connection
 	con.close()
