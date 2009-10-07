@@ -606,7 +606,7 @@ pion.reactors.handleDropOnWorkspace = function(source, nodes, copy, target) {
 }
 
 pion.reactors.showReactorInitDialog = function(reactor_type) {
-	if (plugins.reactors[reactor_type].edition == 'Enterprise') {
+	if (pion.key_service_running && plugins.reactors[reactor_type].edition == 'Enterprise') {
 		pion.about.checkKeyStatus({success_callback: function() {pion.reactors._showReactorInitDialog(reactor_type)}});
 	} else {
 		pion.reactors._showReactorInitDialog(reactor_type);
@@ -734,7 +734,7 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 }
 
 pion.reactors.showReactorConfigDialog = function(reactor) {
-	if (plugins.reactors[reactor.config.Plugin].edition == 'Enterprise') {
+	if (pion.key_service_running && plugins.reactors[reactor.config.Plugin].edition == 'Enterprise') {
 		pion.about.checkKeyStatus({success_callback: function() {pion.reactors._showReactorConfigDialog(reactor)}});
 	} else {
 		pion.reactors._showReactorConfigDialog(reactor);

@@ -282,6 +282,7 @@ var init = function() {
 		pion.services.init();
 		pion.current_page = 'Reactors';
 	}
+	pion.key_service_running = false;
 	dojo.xhrGet({
 		url: '/config',
 		preventCache: true,

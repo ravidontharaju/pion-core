@@ -24007,8 +24007,7 @@ console.debug("See http://trac.atomiclabs.com/ticket/685.");
 return;
 }
 this.execute_already_called=true;
-console.debug(_16d1);
-if(plugins.databases[_16d1.Plugin]&&plugins.databases[_16d1.Plugin].edition=="Enterprise"){
+if(pion.key_service_running&&plugins.databases[_16d1.Plugin]&&plugins.databases[_16d1.Plugin].edition=="Enterprise"){
 pion.about.checkKeyStatus({success_callback:function(){
 _16d2(_16d1.Plugin);
 }});
@@ -24967,7 +24966,7 @@ var _17b0=nodes[0].getAttribute("reactor_type");
 pion.reactors.showReactorInitDialog(_17b0);
 };
 pion.reactors.showReactorInitDialog=function(_17b1){
-if(plugins.reactors[_17b1].edition=="Enterprise"){
+if(pion.key_service_running&&plugins.reactors[_17b1].edition=="Enterprise"){
 pion.about.checkKeyStatus({success_callback:function(){
 pion.reactors._showReactorInitDialog(_17b1);
 }});
@@ -25064,7 +25063,7 @@ pion.reactors.createConnection(_17ca,_17cb,id);
 },error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_17cc})});
 };
 pion.reactors.showReactorConfigDialog=function(_17d0){
-if(plugins.reactors[_17d0.config.Plugin].edition=="Enterprise"){
+if(pion.key_service_running&&plugins.reactors[_17d0.config.Plugin].edition=="Enterprise"){
 pion.about.checkKeyStatus({success_callback:function(){
 pion.reactors._showReactorConfigDialog(_17d0);
 }});
@@ -26221,8 +26220,7 @@ console.debug("See http://trac.atomiclabs.com/ticket/685.");
 return;
 }
 this.execute_already_called=true;
-console.debug(_18dc);
-if(plugins.protocols[_18dc.Plugin]&&plugins.protocols[_18dc.Plugin].edition=="Enterprise"){
+if(pion.key_service_running&&plugins.protocols[_18dc.Plugin]&&plugins.protocols[_18dc.Plugin].edition=="Enterprise"){
 pion.about.checkKeyStatus({success_callback:function(){
 _18dd(_18dc);
 }});
@@ -26925,6 +26923,7 @@ _1988.show();
 };
 pion.about.checkKeyStatus=function(_1989){
 dojo.xhrGet({url:"/key/status",preventCache:true,handleAs:"xml",timeout:5000,load:function(_198a,_198b){
+pion.key_service_running=true;
 if(dojo.isIE){
 var _198c=_198a.getElementsByTagName("Status")[0].childNodes[0].nodeValue;
 }else{
@@ -26951,6 +26950,7 @@ pion.about.doDialog(_1989);
 },suppress_default_key_status_check:true});
 }else{
 if(_198e.xhr.status==404){
+pion.key_service_running=false;
 if(_1989.always_callback){
 _1989.always_callback();
 }
@@ -27204,6 +27204,7 @@ pion.reactors.init();
 pion.services.init();
 pion.current_page="Reactors";
 };
+pion.key_service_running=false;
 dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_19c6,_19c7){
 dojo.cookie("logged_in","true",{expires:1});
 pion.about.checkKeyStatus({always_callback:_19c5});

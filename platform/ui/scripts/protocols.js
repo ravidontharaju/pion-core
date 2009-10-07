@@ -213,9 +213,8 @@ pion.protocols.init = function() {
 		dialog.execute = function(dialogFields) {
 			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
 			this.execute_already_called = true;
-
-			console.debug(dialogFields);
-			if (plugins.protocols[dialogFields.Plugin] &&
+			if (pion.key_service_running &&
+				plugins.protocols[dialogFields.Plugin] &&
 				plugins.protocols[dialogFields.Plugin].edition == 'Enterprise') {
 				pion.about.checkKeyStatus({success_callback: function() {_sendPostRequest(dialogFields)}});
 			} else {

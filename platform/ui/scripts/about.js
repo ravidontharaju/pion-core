@@ -189,6 +189,7 @@ pion.about.checkKeyStatus = function(kw_args) {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
+			pion.key_service_running = true;
 			if (dojo.isIE) {
 				var key_status = response.getElementsByTagName('Status')[0].childNodes[0].nodeValue;
 			} else {
@@ -223,6 +224,7 @@ pion.about.checkKeyStatus = function(kw_args) {
 				// This is expected for Pion Community Edition, and no further action or notification wrt license keys is needed.
 				// If kw_args.success_callback is defined, it will not be called, and even if the user somehow succeeds in
 				// sending a request to do something that requires a license key, they will get an error from the server.
+				pion.key_service_running = false;
 				if (kw_args.always_callback) {
 					kw_args.always_callback();
 				}
