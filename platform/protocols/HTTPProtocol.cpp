@@ -201,7 +201,19 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 			 // wait until the response is parsed before generating an event
 			rc = boost::indeterminate;
 		} else {
-			generateEvent(event_ptr_ref);
+			// finished parsing response
+			if (m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_CONTINUE) {
+				// if response is 100 (Continue), then just skip it
+				m_response_parser.reset();
+				m_response.clear();
+				m_response_start_time = m_response_end_time = m_response_ack_time
+					= boost::date_time::not_a_date_time;
+				m_sc_data_packets = m_sc_missing_packets = 0;
+				rc = boost::indeterminate;
+			} else {
+				// response is finished -> generate a new event
+				generateEvent(event_ptr_ref);
+			}
 		}
 	}
 
