@@ -1,3 +1,11 @@
+Version 2.1.12 (2009-10-07)
+===========================
+
+* DatabaseOutputReactor queued events indefinitely when DB open failed (728)
+* SQLite default page cache sizes were causing ~4GB memory usage (730)
+* HTTPProtocol was not handling "100 Continue" responses properly (737)
+
+
 Version 2.1.10 (2009-09-25)
 ===========================
 
