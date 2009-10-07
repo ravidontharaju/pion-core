@@ -725,6 +725,7 @@ The following are also available, if the need arises.
 	font-weight: 100;
 }
 
+.tundra button.cancel,
 .tundra .cancel .dijitButtonNode {
 	background: #ffffff url("../images/button-cancel-off.png") repeat-x;
 	border: solid #999999 1px;
@@ -738,10 +739,12 @@ The following are also available, if the need arises.
 	padding-right: 2px;
 }
 
+.tundra button.cancel:hover,
 .tundra .cancel.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-cancel-on.png") repeat-x;
 }
 
+.tundra button.delete,
 .tundra .delete .dijitButtonNode {
 	background: #ffffff url("../images/button-delete-off.png") repeat-x;
 	border: solid #999999 1px;
@@ -755,6 +758,7 @@ The following are also available, if the need arises.
 	padding-right: 2px;
 }
 
+.tundra button.delete:hover,
 .tundra .delete.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-delete-on.png") repeat-x;
 }
