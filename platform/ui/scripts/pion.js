@@ -219,7 +219,7 @@ pion.localDatetimeCellFormatter = function(t) {
 }
 
 pion.makeDeleteButton = function() {
-	return '<button dojoType=dijit.form.Button><img src="images/icon-delete.png" alt="DELETE" border="0" /></button>';
+	return '<button dojoType=dijit.form.Button class="delete_row"></button>';
 }
 
 pion.makeEditButton = function() {

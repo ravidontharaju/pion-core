@@ -815,10 +815,10 @@ The following are also available, if the need arises.
 	background-image: url('../images/icon-restore.png');
 	background-position: center center;
 	background-repeat: no-repeat;
-	border: solid #999999 1px;
+	border: outset #CCCCCC 3px;
 	width: auto;
 	height: 22px;
-	padding-left: 25px;
+	padding-left: 20px;
 }
 
 .tundra button.restore:hover {
@@ -837,10 +837,10 @@ The following are also available, if the need arises.
 	background-image: url('../images/icon-delete.png');
 	background-position: center center;
 	background-repeat: no-repeat;
-	border: solid #999999 1px;
+	border: outset #CCCCCC 3px;
 	width: auto;
 	height: 22px;
-	padding-left: 25px;
+	padding-left: 20px;
 }
 
 .tundra button.delete_row:hover {

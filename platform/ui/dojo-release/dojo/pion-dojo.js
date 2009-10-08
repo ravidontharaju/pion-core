@@ -25092,7 +25092,7 @@ _17d5.newItem({ID:_17d9,Source:_17d8});
 },onError:pion.handleFetchError});
 var _17da=function(v){
 if(v=="yes"){
-return "<button dojoType=dijit.form.Button><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>";
+return "<button dojoType=dijit.form.Button class=\"delete_row\"></button>";
 }else{
 return "";
 }
@@ -27153,7 +27153,7 @@ min="0"+min;
 return d.getFullYear()+"-"+month+"-"+date+" "+hour+":"+min;
 };
 pion.makeDeleteButton=function(){
-return "<button dojoType=dijit.form.Button><img src=\"images/icon-delete.png\" alt=\"DELETE\" border=\"0\" /></button>";
+return "<button dojoType=dijit.form.Button class=\"delete_row\"></button>";
 };
 pion.makeEditButton=function(){
 return "<button dojoType=dijit.form.Button><img src=\"images/icon-edit.png\" alt=\"EDIT\" border=\"0\" /></button>";
