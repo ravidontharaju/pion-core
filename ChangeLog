@@ -1,3 +1,23 @@
+Version 2.2.2 (2009-10-09)
+==========================
+
+* Added a new PythonReactor that allows you to build Reactors using Python (651)
+* Reactor connections can now be easily deleted by just clicking on them (682)
+* Added new cp-rtt and ps-rtt "round trip time" performance metrics (660)
+* Fixed broken handling of zblob data type in various Codec plug-ins (724)
+* HTTPProtocol now defaults to using case-sensitive regular expressions (686)
+* Improved Windows installer to be much simpler and better integrated (668, 680)
+* Added pget.py and pmon.py scripts for monitoring and managing Pion (593, 604)
+* Added -M pion executable option to lock memory usage on Unix platforms (371)
+* Updated UI "restore default" and "delete" buttons to be consistent (733)
+* Updated Pion user interface to use Dojo 1.3.2 (558)
+* HTTPParser query parameter parsing failed on LF & CR characters (681)
+* Improved autoconf detection for support of Boost.Lockfree library (692)
+* Improved error handling in PluginManager when loading fails (736)
+* Fixed "make install" on Unix platforms using autoconf (378)
+* Pion's unit tests now use random port numbers (690)
+
+
 Version 2.1.12 (2009-10-07)
 ===========================
 
