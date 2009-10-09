@@ -1,3 +1,13 @@
+Version 2.2.2 (2009-10-09)
+==========================
+
+* HTTPParser query parameter parsing failed on LF & CR characters (681)
+* Improved autoconf detection for support of Boost.Lockfree library (692)
+* Improved error handling in PluginManager when loading fails (736)
+* Fixed "make install" on Unix platforms using autoconf (378)
+* Pion's unit tests now use random port numbers (690)
+
+
 Version 2.1.4 (2009-07-31)
 ==========================
 
