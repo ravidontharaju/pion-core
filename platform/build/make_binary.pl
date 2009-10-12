@@ -32,6 +32,7 @@ $PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
 $LIBS_DIR = ($PLATFORM =~ /^win32/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
+$DLL_FULL_DIR = "release_dll_full";
 
 # platform-specific variables
 if ($PLATFORM =~ /^win32/i) {
@@ -46,7 +47,7 @@ if ($PLATFORM =~ /^win32/i) {
 	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
 	$OPENSSLA_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8g", "bin"), "libeay32." . $SHARED_LIB_SUFFIX);
 	$OPENSSLB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8g", "bin"), "ssleay32." . $SHARED_LIB_SUFFIX);
-	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion.exe");
+	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
 	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.37.0", "lib") );
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc80-mt-1_37." . $SHARED_LIB_SUFFIX);
 } elsif ($PLATFORM eq "osx") {
@@ -67,11 +68,11 @@ if ($PLATFORM =~ /^win32/i) {
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX . ".1.{35,36,37}.*");
 }
 if ($PLATFORM =~ /^win32/i) {
-	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-common." . $SHARED_LIB_SUFFIX);
-	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-net." . $SHARED_LIB_SUFFIX);
-	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-platform." . $SHARED_LIB_SUFFIX);
-	$PION_SERVER_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-server." . $SHARED_LIB_SUFFIX);
-	$PION_SQLITE_GLOB = File::Spec->catfile( (($BIN_DIR), "release_dll_full"), "pion-sqlite." . $SHARED_LIB_SUFFIX);
+	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-common." . $SHARED_LIB_SUFFIX);
+	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-net." . $SHARED_LIB_SUFFIX);
+	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-platform." . $SHARED_LIB_SUFFIX);
+	$PION_SERVER_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-server." . $SHARED_LIB_SUFFIX);
+	$PION_SQLITE_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-sqlite." . $SHARED_LIB_SUFFIX);
 	$NET_PLUGINS_GLOB = File::Spec->catfile( ("net", "services", ".libs"), "*." . $PLUGIN_LIB_SUFFIX);
 	@PLATFORM_PLUGINS = bsd_glob("platform/" . "{codecs,protocols,databases,reactors,services}" . "/.libs/*." . $PLUGIN_LIB_SUFFIX);
 } else {

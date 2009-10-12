@@ -15,15 +15,17 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
     <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
     <ROW Directory="SystemFolder" Directory_Parent="TARGETDIR" DefaultDir="System~1|SystemFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
     <ROW Component="NTEventLogAppender.dll" ComponentId="{ACC3925F-6E6D-4DB9-9FDA-7190F415EF98}" Directory_="SystemFolder" Attributes="0" KeyPath="NTEventLogAppender.dll"/>
+    <ROW Component="SHORTCUTDIR" ComponentId="{A797AAF8-435D-4317-B6F5-7333D36C2292}" Directory_="SHORTCUTDIR" Attributes="0"/>
     <ROW Component="pion.exe" ComponentId="{55C4B9AC-0124-4B9F-9F2F-950AE46BA5A5}" Directory_="APPDIR" Attributes="0" KeyPath="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="NTEventLogAppender.dll pion.exe"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="NTEventLogAppender.dll pion.exe SHORTCUTDIR"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
@@ -65,6 +67,9 @@
     <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="1"/>
     <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="3"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
@@ -101,6 +106,10 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
     <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion (Community Edition)" ServiceType="16" StartType="2" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="Start_Pion" Directory_="SHORTCUTDIR" Name="StartP~1|Start Pion" Component_="pion.exe" Target="[SystemFolder]net.exe" Arguments="start pion" Description="Start Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1"/>
+    <ROW Shortcut="Stop_Pion" Directory_="SHORTCUTDIR" Name="StopPi~1|Stop Pion" Component_="pion.exe" Target="[SystemFolder]net.exe" Arguments="stop pion" Description="Stop Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
     <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>
