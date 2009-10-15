@@ -21733,7 +21733,6 @@ pion.login.login_pending=false;
 pion.login.onLoginSuccess=function(){
 dojo.cookie("logged_in","true",{expires:1});
 };
-pion.login.latestUsername="";
 pion.login.doLoginDialog=function(_14ec){
 pion.login.login_pending=true;
 var _14ed=dijit.byId("ops_toggle_button");
@@ -21742,7 +21741,7 @@ _14ed.attr("checked",true);
 pion.login.ops_temporarily_suppressed=true;
 }
 var _14ee=new pion.login.LoginDialog({});
-_14ee.attr("value",{Username:pion.login.latestUsername});
+_14ee.attr("value",{Username:dojo.cookie("latest_username")});
 dojo.connect(_14ee.domNode,"onkeypress",function(event){
 if(event.keyCode==dojo.keys.ENTER){
 _14ee.execute(_14ee.attr("value"));
@@ -21756,8 +21755,7 @@ console.debug("See http://trac.atomiclabs.com/ticket/685.");
 return;
 }
 this.execute_already_called=true;
-console.debug("dialogFields = ",_14f0);
-pion.login.latestUsername=_14f0.Username;
+document.cookie="user="+encodeURIComponent(_14f0.Username);
 dojo.xhrGet({url:"/login?user="+_14f0.Username+"&pass="+_14f0.Password,preventCache:true,handleAs:"xml",load:function(_14f1,_14f2){
 pion.login.login_pending=false;
 pion.login.onLoginSuccess();

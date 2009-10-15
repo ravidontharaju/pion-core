@@ -63,8 +63,6 @@ pion.login.onLoginSuccess = function() {
 	dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
 }
 
-pion.login.latestUsername = "";
-
 pion.login.doLoginDialog = function(kw_args) {
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
@@ -74,7 +72,7 @@ pion.login.doLoginDialog = function(kw_args) {
 		pion.login.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.login.LoginDialog({});
-	dialog.attr('value', {Username: pion.login.latestUsername});
+	dialog.attr('value', {Username: dojo.cookie('latest_username')});
 	dojo.connect(dialog.domNode, 'onkeypress', 
 		function(event) {
 			if (event.keyCode == dojo.keys.ENTER) {
@@ -88,8 +86,9 @@ pion.login.doLoginDialog = function(kw_args) {
 		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
 		this.execute_already_called = true;
 
-		console.debug('dialogFields = ', dialogFields);
-		pion.login.latestUsername = dialogFields.Username;
+		// Same as in login.html.  Note that dojo.cookie also uses encodeURIComponent().
+		document.cookie = 'user=' + encodeURIComponent(dialogFields.Username);
+
 		dojo.xhrGet({
 			url: '/login?user=' + dialogFields.Username + '&pass=' + dialogFields.Password,
 			preventCache: true,
