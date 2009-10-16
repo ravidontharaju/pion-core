@@ -1,2 +1,2 @@
 @ECHO OFF
-net start pion
+pion.exe -c config/platform.xml
