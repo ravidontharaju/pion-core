@@ -529,6 +529,11 @@ void LogInputReactor::recordLogFileAsDone() {
 	std::ofstream history_cache(m_history_cache_filename.c_str(), std::ios::out | std::ios::app);
 	if (! history_cache)
 		throw PionException("Unable to open history cache file for writing.");
+	{
+		// signal finished processing log
+		std::string log_leaf = log_file_path.leaf();
+		signal("FinishedLog", (void*) &log_leaf);
+	}
 	history_cache << log_file_path.leaf() << std::endl;
 }
 	

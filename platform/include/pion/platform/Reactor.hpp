@@ -25,6 +25,7 @@
 #include <list>
 #include <libxml/tree.h>
 #include <boost/bind.hpp>
+#include <boost/signal.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
@@ -86,6 +87,13 @@ public:
 	public:
 		ConfigLockException(const std::string& reactor_id)
 			: PionException("Error obtaining Reactor configuration lock: ", reactor_id) {}
+	};
+
+	/// exception thrown if an unknown signal is referenced
+	class UnknownSignalException : public PionException {
+	public:
+		UnknownSignalException(const std::string& reactor_id, const std::string& signal_id)
+			: PionException("Unknown signal for Reactor " + reactor_id + ": ", signal_id) {}
 	};
 	
 
@@ -160,6 +168,23 @@ public:
 	virtual void query(std::ostream& out, const QueryBranches& branches,
 		const QueryParams& qp);
 	
+	/**
+	 * subscribes an external observer to a named signal
+	 *
+	 * @param signal_id unique identifier for the signal
+	 * @param f callback function or slot to connect to the signal - signature must be (const std::string&, const std::string&, void*)
+	 *
+	 * @return boost::signals::connection object that represents the new slot connection
+	 */
+	template <typename F>
+	inline boost::signals::connection subscribe(const std::string& signal_id, F f) {
+		ConfigWriteLock cfg_lock(*this);
+		SignalMap::iterator it = m_signals.find(signal_id);
+		if (it == m_signals.end())
+			throw UnknownSignalException(getId(), signal_id);
+		return it->second->connect(f);
+	}
+
 	/**
 	 * public function to process a new Event.  checks to make sure the reactor
 	 * is running, increments "events in" counter, and ensures configuration
@@ -238,6 +263,16 @@ public:
 	
 		
 protected:
+
+	/// pointer to a named signal object - signature is (reactor_id, signal_name, void *)
+	typedef boost::signal3<void, const std::string&, const std::string&, void*> SignalType;
+
+	/// pointer to a named signal object - signature is (reactor_id, signal_name, void *)
+	typedef boost::shared_ptr<SignalType> SignalPtr;
+	
+	/// data type for a map of signal names to signal object pointers
+	typedef PION_HASH_MAP<std::string, SignalPtr, PION_HASH_STRING> SignalMap;
+
 
 	/// configuration reader lock -> multiple concurrent "readers" are allowed.
 	/// helps guarantee configuration will not change until the lock is released
@@ -405,6 +440,42 @@ protected:
 	 */
 	inline void incrementEventsIn(void) { ++m_events_in; }
 
+	/**
+	 * publishes a new signal to which external observers may subscribe (should be called in constructor)
+	 *
+	 * @param signal_id unique identifier for the signal
+	 */
+	inline void publish(const std::string& signal_id) {
+		SignalPtr signal_ptr(new SignalType);
+		ConfigWriteLock cfg_lock(*this);
+		m_signals.insert(std::make_pair(signal_id, signal_ptr));
+	}
+
+	/**
+	 * emits a signal to all external observers which are subscribed
+	 * *without locking* (must already have ConfigReadLock or ConfigWriteLock)
+	 *
+	 * @param signal_id unique identifier for the signal
+	 * @param ptr points to an object that carries additional information about the signal
+	 */
+	inline void signalNoLock(const std::string& signal_id, void *ptr = NULL) {
+		SignalMap::iterator it = m_signals.find(signal_id);
+		if (it == m_signals.end())
+			throw UnknownSignalException(getId(), signal_id);
+		(*it->second)(getId(), signal_id, ptr);
+	}
+
+	/**
+	 * emits a signal to all external observers which are subscribed
+	 *
+	 * @param signal_id unique identifier for the signal
+	 * @param ptr points to an object that carries additional information about the signal
+	 */
+	inline void signal(const std::string& signal_id, void *ptr = NULL) {
+		ConfigReadLock cfg_lock(*this);
+		signalNoLock(signal_id, ptr);
+	}
+
 	/// write only XML statistics (excluding Reactor elements) for this Reactor to the output stream
 	void writeStatsOnlyXML(std::ostream& out) const;
 	
@@ -414,9 +485,12 @@ protected:
 	/// write ending XML element for this Reactor
 	void writeEndReactorXML(std::ostream& out) const;		
 
-	
+
+	/// map of signals supported by this reactor
+	SignalMap					m_signals;
+
 	/// will be true if the Reactor is "running"
-	volatile bool		m_is_running;
+	volatile bool				m_is_running;
 
 	
 private:

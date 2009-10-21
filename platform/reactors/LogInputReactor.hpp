@@ -116,7 +116,10 @@ public:
 		: Reactor(TYPE_COLLECTION),
 		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
 		m_just_one(false), m_tail_f(false), m_frequency(DEFAULT_FREQUENCY), m_worker_is_active(false)
-	{}
+	{
+		// publish the "FinishedLog" signal
+		publish("FinishedLog");
+	}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~LogInputReactor() { stop(); }

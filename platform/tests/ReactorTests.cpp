@@ -358,7 +358,9 @@ class ReactionEngineAlreadyRunningTests_F
 	: public ReactionEngineTestInterface_F
 {
 public:
-	ReactionEngineAlreadyRunningTests_F() {
+	ReactionEngineAlreadyRunningTests_F()
+		: m_finished_log_callbacks(0U)
+	{
 		cleanup_cache_files();
 		boost::filesystem::remove(NEW_LOG_FILE);
 		boost::filesystem::remove(NEW_DATABASE_FILE);
@@ -370,6 +372,17 @@ public:
 		m_reaction_engine.openConfigFile();
 	}
 	virtual ~ReactionEngineAlreadyRunningTests_F() {}
+
+	void finishedLog(const std::string& reactor_id, const std::string& signal_id, void *ptr) {
+		BOOST_CHECK_EQUAL(reactor_id, m_log_reader_id);
+		BOOST_CHECK_EQUAL(signal_id, "FinishedLog");
+		BOOST_REQUIRE(ptr);
+		std::string *str_ptr = (std::string *) ptr;
+		BOOST_CHECK_NE(*str_ptr, "");
+		++m_finished_log_callbacks;
+	}
+	
+	unsigned long m_finished_log_callbacks;
 };
 
 
@@ -491,6 +504,25 @@ BOOST_AUTO_TEST_CASE(checkStartReactorOfTypeCollection) {
 
 	// Check that the correct run status was saved in the config file.
 	BOOST_CHECK_EQUAL(getReactorConfigOptionFromConfigFile(m_log_reader_id, "Running"), "true");
+}
+
+BOOST_AUTO_TEST_CASE(checkReactorSignalCallbacks) {
+	// subscribe to signal
+	boost::signals::scoped_connection conn =
+		m_reaction_engine.subscribe(m_log_reader_id, "FinishedLog",
+		boost::bind(&ReactionEngineAlreadyRunningTests_F::finishedLog, this, _1, _2, _3));
+
+	// The Reactor should not be running yet (tested in checkReactorOfTypeCollectionIsNotRunning).
+	m_reaction_engine.startReactor(m_log_reader_id);
+
+	// wait up to one second for the reactor to finish reading the log file
+	const unsigned long EXPECTED_LOGS = 1U;
+	const int num_checks_allowed = 10;
+	for (int i = 0; i < num_checks_allowed; ++i) {
+		pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
+		if (m_finished_log_callbacks >= EXPECTED_LOGS) break;
+	}
+	BOOST_REQUIRE_GE(m_finished_log_callbacks, EXPECTED_LOGS);
 }
 
 BOOST_AUTO_TEST_CASE(checkStopReactorOfTypeCollection) {

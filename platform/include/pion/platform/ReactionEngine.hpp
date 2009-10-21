@@ -349,6 +349,24 @@ public:
 	}
 
 	/**
+	 * subscribes an external observer to a Reactor's named signal
+	 *
+	 * @param reactor_id unique identifier associated with the Reactor
+	 * @param signal_id unique identifier for the signal
+	 * @param f callback function or slot to connect to the signal - signature must be
+	 *          (const std::string& reactor_id, const std::string& signal_id, void*)
+	 *
+	 * @return boost::signals::connection object that represents the new slot connection
+	 */
+	template <typename F>
+	inline boost::signals::connection subscribe(const std::string& reactor_id, const std::string& signal_id, F f) {
+		Reactor *reactor_ptr = m_plugins.get(reactor_id);
+		if (reactor_ptr == NULL)
+			throw ReactorNotFoundException(reactor_id);
+		return reactor_ptr->subscribe(signal_id, f);
+	}
+
+	/**
 	 * use a Reactor to handle an HTTP query (from QueryService)
 	 *
 	 * @param reactor_id unique identifier associated with the Reactor
