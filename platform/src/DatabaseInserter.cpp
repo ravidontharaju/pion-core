@@ -195,7 +195,8 @@ void DatabaseInserter::start(void)
 		try {
 
 			// open a new database connection
-			m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+			if (!m_database_ptr)
+				m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 			PION_ASSERT(m_database_ptr);
 
 			if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {

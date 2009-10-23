@@ -235,6 +235,14 @@ public:
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
 
+	/// does table exist (table name, and partition must be already configured)
+	inline bool tableExists(void)
+	{
+		if (!m_database_ptr)
+			m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+		return m_database_ptr->tableExists(m_table_name, m_partition);
+	}
+
 
 private:
 
