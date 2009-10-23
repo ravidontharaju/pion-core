@@ -222,6 +222,16 @@ void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
 	}
 }
 
+// Testing whether a partitioned database/table exists...
+bool SQLiteDatabase::tableExists(std::string& table_name, unsigned partition)
+{
+	m_partition = partition;	// We'll try to grab the partition number for later
+	if (m_sqlite_db)			// Is a database handle open already?
+		return true;			//	yes -> then there's a database... (too late to ask)
+	else						//  otherwise -> just find out if the database file exists
+		return boost::filesystem::exists(dbPartition(m_database_name, partition));
+}
+
 QueryPtr SQLiteDatabase::prepareInsertQuery(const Query::FieldMap& field_map,
 											const std::string& table_name)
 {

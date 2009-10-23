@@ -204,6 +204,14 @@ public:
 	virtual void dropTable(std::string& table_name, unsigned partition = 0) = 0;
 
 	/**
+	 * table exists?
+	 *
+	 * @param table_name name of the table to drop
+	 * @param partition optional partition number
+	 */
+	virtual bool tableExists(std::string& table_name, unsigned partition = 0) = 0;
+
+	/**
 	 * prepares the query that is used to insert events
 	 *
 	 * @param field_map mapping of Vocabulary Terms to Database fields

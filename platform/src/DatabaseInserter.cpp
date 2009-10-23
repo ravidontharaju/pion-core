@@ -198,7 +198,7 @@ void DatabaseInserter::start(void)
 			m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 			PION_ASSERT(m_database_ptr);
 
-			if (m_wipe) {
+			if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {
 				m_database_ptr->dropTable(m_table_name, m_partition);
 				PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
 			}
