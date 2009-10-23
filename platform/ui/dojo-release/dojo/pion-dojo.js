@@ -11925,7 +11925,7 @@ this.inherited(arguments);
 if(dojo.isSafari||dojo.isOpera){
 this.hiddenFocusNode.focus();
 }else{
-this.scrollboxNode.focus();
+//this.scrollboxNode.focus();
 }
 },setStructure:function(_bdd){
 var vs=this.structure=_bdd;
