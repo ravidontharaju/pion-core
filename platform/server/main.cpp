@@ -266,25 +266,29 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 			PION_LOG_FATAL(pion_log, "Failed to lock memory: " << strerror(errno));
 #endif
 
-	PlatformConfig platform_cfg;
-	try {
-		// load the platform configuration
-		platform_cfg.setConfigFile(platform_config_file);
-		platform_cfg.openConfigFile();
-		
-		PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
+	// PlatformConfig destructor can throw exceptions, make sure we handle them
+	try	{
+		PlatformConfig platform_cfg;
+		try {
+			// load the platform configuration
+			platform_cfg.setConfigFile(platform_config_file);
+			platform_cfg.openConfigFile();
+			
+			PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
 #ifdef _MSC_VER
-		if(run_as_daemon)
-			report_service_status( SERVICE_RUNNING, NO_ERROR, 0 );
+			if(run_as_daemon)
+				report_service_status( SERVICE_RUNNING, NO_ERROR, 0 );
 #endif
-		// wait for shutdown
-		main_shutdown_manager.wait();
+			// wait for shutdown
+			main_shutdown_manager.wait();
+		} catch (std::exception& e) {
+			PION_LOG_FATAL(pion_log, e.what());
+		}
+
+		PION_LOG_INFO(pion_log, "Pion is shutting down");
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(pion_log, e.what());
 	}
-
-	PION_LOG_INFO(pion_log, "Pion is shutting down");
-	
 	return 0;
 }
 

@@ -167,9 +167,15 @@ void LogOutputReactor::openLogFileNoLock(void)
 void LogOutputReactor::stop(void)
 {
 	ConfigWriteLock cfg_lock(*this);
-	if (m_is_running) {
-		closeLogFileNoLock();
-		m_is_running = false;
+	// if left unhandled, can cause crash on Windows platform 
+	// when invoked via PluginManager::run(boost::bind(&Reactor::stop, _1))
+	try {
+		if (m_is_running) {
+			closeLogFileNoLock();
+			m_is_running = false;
+		}
+	} catch(std::exception& e) {
+		PION_LOG_ERROR(m_logger, e.what());
 	}
 }
 
@@ -189,7 +195,7 @@ void LogOutputReactor::closeLogFileNoLock(void)
 		}
 		// clear any pending error flags to be safe
 		m_log_stream.clear();
-	}		
+	}	
 }
 
 	
