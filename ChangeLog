@@ -1,3 +1,11 @@
+Version 2.2.4 (2009-10-27)
+===========================
+
+* Updated "start_pion.bat" on Windows to start Pion as an application (739)
+* Multiple Pion instances were able to bind to the same port on Windows (707)
+* Linux RPM installer used the wrong permissions for /var/log/pion (746)
+
+
 Version 2.2.2 (2009-10-09)
 ==========================
 
