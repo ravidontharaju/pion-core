@@ -95,23 +95,27 @@ int main (int argc, char *argv[])
 	SSL_library_init();
 #endif
 
-	PlatformConfig platform_cfg;
-	try {
-		// load the platform configuration
-		platform_cfg.setConfigFile(platform_config_file);
-		platform_cfg.openConfigFile();
-		
-		PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
+	// PlatformConfig destructor can throw exceptions, make sure we handle them
+	try	{
+		PlatformConfig platform_cfg;
+		try {
+			// load the platform configuration
+			platform_cfg.setConfigFile(platform_config_file);
+			platform_cfg.openConfigFile();
+			
+			PION_LOG_INFO(pion_log, "Pion has started successfully (v" << PION_VERSION << ')');
 
-		// wait for shutdown
-		main_shutdown_manager.wait();
+			// wait for shutdown
+			main_shutdown_manager.wait();
+		} catch (std::exception& e) {
+			PION_LOG_FATAL(pion_log, e.what());
+		}
+
+		PION_LOG_INFO(pion_log, "Pion is shutting down");
 		
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(pion_log, e.what());
 	}
-
-	PION_LOG_INFO(pion_log, "Pion is shutting down");
-	
 	return 0;
 }
 
