@@ -3,7 +3,6 @@ Version 2.1.14 (2009-10-27)
 
 * Multiple Pion instances were able to bind to the same port on Windows (707)
 * Linux RPM installer used the wrong permissions for /var/log/pion (746)
-* Replay - Unable to view a session after performing a search with IE7 (747)
 
 
 Version 2.1.12 (2009-10-07)
