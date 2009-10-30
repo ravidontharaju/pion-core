@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PionConfig xmlns="http://purl.org/pion/config" pion_version="2.2.5">
+  <Vocabulary id="urn:vocab:stocks">
+    <Name>Stock Prices</Name>
+    <Comment>Vocabulary used to represent stock prices</Comment>
+    <Term id="urn:vocab:stocks#stock_event">
+      <Type>object</Type>
+      <Comment>stock price update event</Comment>
+    </Term>
+    <Term id="urn:vocab:stocks#symbol">
+      <Type>shortstring</Type>
+      <Comment>ticker symbol</Comment>
+    </Term>
+    <Term id="urn:vocab:stocks#price">
+      <Type>float</Type>
+      <Comment>current stock price</Comment>
+    </Term>
+  </Vocabulary>
+</PionConfig>

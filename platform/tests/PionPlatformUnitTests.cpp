@@ -135,40 +135,20 @@ const std::string& get_vocabulary_path(void)
 /// cleans up vocabulary config files in the tests config directory
 void cleanup_vocab_config_files(void)
 {
-	static const std::string VOCAB_A_TEMPLATE_FILE(get_vocabulary_path() + "a.tmpl");
-	static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
-	static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
-	static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
-	static const std::string VOCAB_ATOM_TEMPLATE_FILE(get_vocabulary_path() + "atom.tmpl");
-	static const std::string VOCAB_ATOM_CONFIG_FILE(get_vocabulary_path() + "atom.xml");
-	static const std::string VOCAB_RSS_TEMPLATE_FILE(get_vocabulary_path() + "rss.tmpl");
-	static const std::string VOCAB_RSS_CONFIG_FILE(get_vocabulary_path() + "rss.xml");
-	static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clickstream.tmpl");
-	static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clickstream.xml");
-
-	if (boost::filesystem::exists(VOCAB_A_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_A_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_A_TEMPLATE_FILE, VOCAB_A_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(VOCAB_ATOM_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_ATOM_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_ATOM_TEMPLATE_FILE, VOCAB_ATOM_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(VOCAB_RSS_CONFIG_FILE))
-		boost::filesystem::remove(VOCAB_RSS_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCAB_RSS_TEMPLATE_FILE, VOCAB_RSS_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
-		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
-	boost::filesystem::copy_file(CLF_VOCABULARY_TEMPLATE_FILE, CLF_VOCABULARY_CONFIG_FILE);
-	
 	if (boost::filesystem::exists(VOCABS_CONFIG_FILE))
 		boost::filesystem::remove(VOCABS_CONFIG_FILE);
 	boost::filesystem::copy_file(VOCABS_TEMPLATE_FILE, VOCABS_CONFIG_FILE);
+
+	// Copy all *.tmpl files in the "vocabularies" subdirectory of the tests config directory to *.xml files.
+	boost::filesystem::path vocab_dir_path(get_vocabulary_path());
+	for (boost::filesystem::directory_iterator itr(vocab_dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+		if (boost::filesystem::extension(itr->path()) == ".tmpl") {
+			boost::filesystem::path xml_config_file = boost::filesystem::change_extension(itr->path(), ".xml");
+			if (boost::filesystem::exists(xml_config_file))
+				boost::filesystem::remove(xml_config_file);
+			boost::filesystem::copy_file(itr->path(), xml_config_file);
+		}
+	}
 }
 
 /// cleans up platform config files in the working directory
