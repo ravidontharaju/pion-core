@@ -93,7 +93,21 @@ public:
 		InitializeRootConfigException(const std::string& file_name)
 			: PionException("Unable to initialize configuration file: ", file_name) {}
 	};
-	
+
+	/// exception thrown if there is an error writing a config file
+	class WriteConfigException : public PionException {
+	public:
+		WriteConfigException(const std::string& file_name)
+			: PionException("Unable to write config to file: ", file_name) {}
+	};
+
+	/// exception thrown if there is an error updating the configuration in memory
+	class UpdateConfigException : public PionException {
+	public:
+		UpdateConfigException(const std::string& element_name)
+			: PionException("Unable to update configuration.  Element name: ", element_name) {}
+	};
+
 	/// exception thrown if there is an error reading a config file
 	class ReadConfigException : public PionException {
 	public:
@@ -159,7 +173,9 @@ public:
 	
 	/// opens an existing config file and finds the root Pion "config" element
 	virtual void openConfigFile(void);
-	
+
+	static xmlDocPtr getConfigFromFile(const std::string& config_file, const std::string& root_element_name, xmlNodePtr& config_ptr, PionLogger& logger);
+
 	/// sets the name of the config file to use
 	inline void setConfigFile(const std::string& config_file) {
 		m_config_file = config_file;
@@ -602,7 +618,10 @@ protected:
 	
 	/// name of the comment element for Pion XML config files
 	static const std::string		COMMENT_ELEMENT_NAME;
-	
+
+	/// name of the attribute for the Pion version number
+	static const std::string		PION_VERSION_ATTRIBUTE_NAME;
+
 	/// name of the unique identifier attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;
 
@@ -611,7 +630,7 @@ protected:
 	PionLogger						m_logger;
 	
 	/// UUID generator
-	PionIdGenerator                 m_id_gen;
+	PionIdGenerator					m_id_gen;
 	
 	/// name of the XML config file being used
 	std::string						m_config_file;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PionConfig xmlns="http://purl.org/pion/config">
+<PionConfig xmlns="http://purl.org/pion/config" pion_version="2.2.5">
   <Database id="aace93fc-19c0-11de-9293-001cc02bd66b">
     <Plugin>SQLiteDatabase</Plugin>
     <Name>Clickstream Requests</Name>

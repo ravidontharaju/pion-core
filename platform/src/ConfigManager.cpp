@@ -35,6 +35,7 @@ const std::string		ConfigManager::STATS_ELEMENT_NAME = "PionStats";
 const std::string		ConfigManager::PLUGIN_ELEMENT_NAME = "Plugin";
 const std::string		ConfigManager::NAME_ELEMENT_NAME = "Name";
 const std::string		ConfigManager::COMMENT_ELEMENT_NAME = "Comment";
+const std::string		ConfigManager::PION_VERSION_ATTRIBUTE_NAME = "pion_version";
 const std::string		ConfigManager::ID_ATTRIBUTE_NAME = "id";
 
 		
@@ -65,6 +66,12 @@ void ConfigManager::createConfigFile(void)
 				   reinterpret_cast<const xmlChar*>(CONFIG_NAMESPACE_URL.c_str())) == NULL)
 		throw InitializeRootConfigException(m_config_file);
 
+	// add the version for the "config" element
+	if (xmlNewProp(m_config_node_ptr,
+				   reinterpret_cast<const xmlChar*>(PION_VERSION_ATTRIBUTE_NAME.c_str()),
+				   reinterpret_cast<const xmlChar*>(PION_VERSION)) == NULL)
+		throw InitializeRootConfigException(m_config_file);
+
 	// save the new config file
 	saveConfigFile();
 }
@@ -75,22 +82,57 @@ void ConfigManager::openConfigFile(void)
 	if (m_config_doc_ptr != NULL)
 		throw ConfigAlreadyOpenException(m_config_file);
 
+	m_config_doc_ptr = getConfigFromFile(m_config_file, ROOT_ELEMENT_NAME, m_config_node_ptr, m_logger);
+	if (m_config_doc_ptr == NULL)
+		throw ConfigManager::ReadConfigException(m_config_file);
+}
+
+xmlDocPtr ConfigManager::getConfigFromFile(const std::string& config_file, const std::string& root_element_name, xmlNodePtr& config_ptr, PionLogger& logger)
+{
 	// make sure the config file exists
-	if (! boost::filesystem::exists(m_config_file))
-		throw MissingConfigFileException(m_config_file);
+	if (! boost::filesystem::exists(config_file))
+		throw MissingConfigFileException(config_file);
 
 	// read the existing config file
-	if ((m_config_doc_ptr = xmlReadFile(m_config_file.c_str(), NULL, XML_PARSE_NOBLANKS)) == NULL)
-		throw ReadConfigException(m_config_file);
+	xmlDocPtr xml_doc_ptr = xmlReadFile(config_file.c_str(), NULL, XML_PARSE_NOBLANKS);
+	if (xml_doc_ptr == NULL)
+		throw ReadConfigException(config_file);
 
 	// make sure that the root element is what it should be
-	if ( (m_config_node_ptr = xmlDocGetRootElement(m_config_doc_ptr)) == NULL
-		|| xmlStrcmp(m_config_node_ptr->name,
-					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) )
+	if ( (config_ptr = xmlDocGetRootElement(xml_doc_ptr)) == NULL
+		|| xmlStrcmp(config_ptr->name,
+					 reinterpret_cast<const xmlChar*>(root_element_name.c_str())) )
 	{
-		// config file is missing the root Pion "config" element
-		throw MissingRootElementException(m_config_file);
+		// config file is missing the expected root element
+		throw MissingRootElementException(config_file);
 	}
+
+	// If the version number in the file is different than the current one, make a backup of the file
+	// and update the version attribute in memory and in the file.
+	xmlChar* xml_char_ptr = xmlGetProp(config_ptr,
+									   reinterpret_cast<const xmlChar*>(PION_VERSION_ATTRIBUTE_NAME.c_str()));
+	std::string pion_version = "unversioned";
+	if (xml_char_ptr != NULL && xml_char_ptr[0]!='\0')
+		pion_version = reinterpret_cast<char*>(xml_char_ptr);
+	xmlFree(xml_char_ptr);
+	if (pion_version != PION_VERSION) {
+		try {
+			const std::string backup_filename(config_file + BACKUP_FILE_EXTENSION + "." + pion_version);
+			if (boost::filesystem::exists(backup_filename))
+				boost::filesystem::remove(backup_filename);
+			boost::filesystem::copy_file(config_file, backup_filename);
+		} catch (...) {
+			PION_LOG_WARN(logger, "Failed to backup configuration file: " << config_file);
+		}
+		if (xmlSetProp(config_ptr,
+					   reinterpret_cast<const xmlChar*>(PION_VERSION_ATTRIBUTE_NAME.c_str()),
+					   reinterpret_cast<const xmlChar*>(PION_VERSION)) == NULL)
+			throw UpdateConfigException(root_element_name);
+		if (xmlSaveFormatFileEnc(config_file.c_str(), xml_doc_ptr, "UTF-8", 1) == -1)
+			throw WriteConfigException(config_file);
+	}
+
+	return xml_doc_ptr;
 }
 
 void ConfigManager::closeConfigFile(void)
@@ -106,8 +148,8 @@ void ConfigManager::saveConfigFile(void)
 	backupConfigFile();
 	
 	// save the latest XML config document to the file
-	xmlSaveFormatFileEnc(m_config_file.c_str(),
-						 m_config_doc_ptr, "UTF-8", 1);
+	if (xmlSaveFormatFileEnc(m_config_file.c_str(), m_config_doc_ptr, "UTF-8", 1) == -1)
+		throw WriteConfigException(m_config_file);
 }
 	
 void ConfigManager::removeConfigFile(void)
@@ -197,8 +239,8 @@ void ConfigManager::writeConfigXMLHeader(std::ostream& out)
 void ConfigManager::writeBeginPionConfigXML(std::ostream& out)
 {
 	writeConfigXMLHeader(out);
-	out << '<' << ROOT_ELEMENT_NAME << " xmlns=\""
-		<< CONFIG_NAMESPACE_URL << "\">" << std::endl;
+	out << '<' << ROOT_ELEMENT_NAME << " xmlns=\"" << CONFIG_NAMESPACE_URL << "\" "
+		<< PION_VERSION_ATTRIBUTE_NAME << "=\"" << PION_VERSION << "\">" << std::endl;
 }
 
 void ConfigManager::writeEndPionConfigXML(std::ostream& out)
