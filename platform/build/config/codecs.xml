@@ -109,32 +109,33 @@
   </Codec>
   <Codec id="264bb8ce-a5ab-4f57-bec7-084082e0ab27">
     <Plugin>LogCodec</Plugin>
-    <Name>WebTrends Log</Name>
+    <Name>Webtrends (IIS) Log Format</Name>
     <EventType>urn:vocab:clickstream#http-event</EventType>
-    <Comment>Codec for parsing WebTrends</Comment>
+    <Comment>Codec for Internet Information Server log files</Comment>
     <Flush>false</Flush>
     <Headers>true</Headers>
     <Events comment="#"/>
     <Fields split=" " consume="true"/>
     <Field term="urn:vocab:clickstream#date">date</Field>
     <Field term="urn:vocab:clickstream#time">time</Field>
-    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
-    <Field term="urn:vocab:clickstream#authuser">cs-username</Field>
-    <Field term="urn:vocab:clickstream#sitename">s-sitename</Field>
-    <Field term="urn:vocab:clickstream#computername">s-computername</Field>
     <Field term="urn:vocab:clickstream#s-ip">s-ip</Field>
     <Field term="urn:vocab:clickstream#method">cs-method</Field>
     <Field term="urn:vocab:clickstream#uri-stem">cs-uri-stem</Field>
     <Field term="urn:vocab:clickstream#uri-query">cs-uri-query</Field>
+    <Field term="urn:vocab:clickstream#s-port">s-port</Field>
+    <Field term="urn:vocab:clickstream#authuser">cs-username</Field>
+    <Field term="urn:vocab:clickstream#c-ip">c-ip</Field>
+    <Field term="urn:vocab:clickstream#useragent" urlencode="true">cs(User-Agent)</Field>
     <Field term="urn:vocab:clickstream#status">sc-status</Field>
+    <Field term="urn:vocab:clickstream#substatus">sc-substatus</Field>
     <Field term="urn:vocab:clickstream#win32status">sc-win32-status</Field>
+    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
+    <Field term="urn:vocab:clickstream#sitename">s-sitename</Field>
+    <Field term="urn:vocab:clickstream#computername">s-computername</Field>
     <Field term="urn:vocab:clickstream#sc-bytes">sc-bytes</Field>
     <Field term="urn:vocab:clickstream#cs-bytes">cs-bytes</Field>
-    <Field term="urn:vocab:clickstream#time-taken">time-taken</Field>
-    <Field term="urn:vocab:clickstream#s-port">s-port</Field>
     <Field term="urn:vocab:clickstream#cs-version">cs-version</Field>
     <Field term="urn:vocab:clickstream#host" urlencode="true">cs-host</Field>
-    <Field term="urn:vocab:clickstream#useragent" urlencode="true">cs(User-Agent)</Field>
     <Field term="urn:vocab:clickstream#cookie" urlencode="true">cs(Cookie)</Field>
     <Field term="urn:vocab:clickstream#referer">cs(Referer)</Field>
   </Codec>
