@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DatabaseTemplates>
-	<Template>
+<DatabaseTemplates xmlns="http://purl.org/pion/config" pion_version="2.2.5">
+		<Template>
 		<Engine>SQLite</Engine>
 		<Client>SQLite</Client>
 		<Description>SQLite File based Lightweight database</Description>
@@ -21,8 +21,8 @@
 		<PreSQL>PRAGMA read_uncommitted = true</PreSQL>
 		<PreSQL>PRAGMA synchronous = off</PreSQL>
 		<PreSQL>PRAGMA journal_mode = off</PreSQL>
-                <PreSQL>PRAGMA page_size = 8192</PreSQL>
-                <PreSQL>PRAGMA cache_size = 8192</PreSQL>
+		<PreSQL>PRAGMA page_size = 8192</PreSQL>
+		<PreSQL>PRAGMA cache_size = 8192</PreSQL>
 		<TypeMap>
 			<Pair>null,NONE</Pair>
 			<Pair>object,NONE</Pair>
