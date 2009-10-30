@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(checkWriteConfigXMLForUser) {
 	boost::regex expected_output(".*<PionConfig.*>\\s*"
 								 "(<User id=\"test2\">\\s*"
 								 "<Password>\\w*</Password>.*"
-								 "</User>\\s*)+"
+								 "</User>\\s*)"
 								 "</PionConfig>\\s*");
 	BOOST_CHECK(boost::regex_match(ss.str(), expected_output));
 }

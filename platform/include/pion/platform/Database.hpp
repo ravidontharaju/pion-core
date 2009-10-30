@@ -27,6 +27,7 @@
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
 #include <pion/platform/Query.hpp>
+#include <pion/PionLogger.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -116,8 +117,8 @@ public:
 	};
 
 	/// constructs a new Database object
-	Database(void)
-		: m_isolation_level(IL_LevelUnknown)
+	Database(const std::string& logger_name)
+		: m_isolation_level(IL_LevelUnknown), m_logger(PION_GET_LOGGER(logger_name))
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -394,6 +395,9 @@ protected:
 
 	/// PreSQL statements, to be executed before table operations
 	std::vector<std::string>				m_pre_sql;
+
+	/// primary logging interface used by this class
+	PionLogger								m_logger;
 };
 
 

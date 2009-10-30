@@ -162,19 +162,10 @@ void Database::readConfig(const xmlNodePtr config_ptr, std::string engine_str)
 
 	xmlDocPtr template_doc_ptr = NULL;
 	if (! ConfigManager::getConfigOption(CLIENT_ELEMENT_NAME, m_database_client, config_ptr)) {
-		// Nope... let's hunt the template file...
-		if (! boost::filesystem::exists(templateFile))
-			throw MissingTemplateException(templateFile);
-
-		if ((template_doc_ptr = xmlReadFile(templateFile.c_str(), NULL, XML_PARSE_NOBLANKS)) == NULL)
-			throw ReadConfigException(templateFile);
-
+		// Client element not found, so we need to get it from the template file.
 		xmlNodePtr template_ptr;
-		if ( (template_ptr = xmlDocGetRootElement(template_doc_ptr)) == NULL
-			|| xmlStrcmp(template_ptr->name,
-					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) ) {
-			throw MissingRootElementException(ROOT_ELEMENT_NAME);
-		}
+		if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
+			throw ReadConfigException(templateFile);
 
 		template_ptr = template_ptr->children;
 		std::string		engine_name_str;
