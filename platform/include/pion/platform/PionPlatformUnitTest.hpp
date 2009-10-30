@@ -58,6 +58,8 @@ const std::string SERVICES_CONFIG_FILE(CONFIG_FILE_DIR + "services.xml");
 const std::string SERVICES_TEMPLATE_FILE(CONFIG_FILE_DIR + "services.tmpl");
 const std::string PLATFORM_CONFIG_FILE(CONFIG_FILE_DIR + "platform.xml");
 const std::string PLATFORM_TEMPLATE_FILE(CONFIG_FILE_DIR + "platform.tmpl");
+const std::string DBENGINES_CONFIG_FILE(CONFIG_FILE_DIR + "dbengines.xml");
+const std::string DBENGINES_TEMPLATE_FILE(CONFIG_FILE_DIR + "dbengines.tmpl");
 
 
 struct PionPlatformUnitTest {
