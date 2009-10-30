@@ -139,6 +139,10 @@ void cleanup_vocab_config_files(void)
 	static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
 	static const std::string VOCAB_B_TEMPLATE_FILE(get_vocabulary_path() + "b.tmpl");
 	static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
+	static const std::string VOCAB_ATOM_TEMPLATE_FILE(get_vocabulary_path() + "atom.tmpl");
+	static const std::string VOCAB_ATOM_CONFIG_FILE(get_vocabulary_path() + "atom.xml");
+	static const std::string VOCAB_RSS_TEMPLATE_FILE(get_vocabulary_path() + "rss.tmpl");
+	static const std::string VOCAB_RSS_CONFIG_FILE(get_vocabulary_path() + "rss.xml");
 	static const std::string CLF_VOCABULARY_TEMPLATE_FILE(get_vocabulary_path() + "clickstream.tmpl");
 	static const std::string CLF_VOCABULARY_CONFIG_FILE(get_vocabulary_path() + "clickstream.xml");
 
@@ -149,6 +153,14 @@ void cleanup_vocab_config_files(void)
 	if (boost::filesystem::exists(VOCAB_B_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_B_CONFIG_FILE);
 	boost::filesystem::copy_file(VOCAB_B_TEMPLATE_FILE, VOCAB_B_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(VOCAB_ATOM_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_ATOM_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_ATOM_TEMPLATE_FILE, VOCAB_ATOM_CONFIG_FILE);
+	
+	if (boost::filesystem::exists(VOCAB_RSS_CONFIG_FILE))
+		boost::filesystem::remove(VOCAB_RSS_CONFIG_FILE);
+	boost::filesystem::copy_file(VOCAB_RSS_TEMPLATE_FILE, VOCAB_RSS_CONFIG_FILE);
 	
 	if (boost::filesystem::exists(CLF_VOCABULARY_CONFIG_FILE))
 		boost::filesystem::remove(CLF_VOCABULARY_CONFIG_FILE);
@@ -191,6 +203,10 @@ void cleanup_platform_config_files(void)
 	if (boost::filesystem::exists(USERS_CONFIG_FILE))
 		boost::filesystem::remove(USERS_CONFIG_FILE);
 	boost::filesystem::copy_file(USERS_TEMPLATE_FILE, USERS_CONFIG_FILE);
+
+	if (boost::filesystem::exists(DBENGINES_CONFIG_FILE))
+		boost::filesystem::remove(DBENGINES_CONFIG_FILE);
+	boost::filesystem::copy_file(DBENGINES_TEMPLATE_FILE, DBENGINES_CONFIG_FILE);
 }
 
 void cleanup_cache_files(void)
