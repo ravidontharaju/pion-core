@@ -903,6 +903,18 @@ I don't think this is being used anywhere.
 }
 
 
+/* Styles affecting all Config Panes */
+/* TODO: Add new class config_pane and refactor all the rules common to 
+   all of vocab_pane, codec_pane, database_pane, protocol_pane, user_pane.
+   Then change the following rule to:
+   .tundra config_pane textarea.comment { ...
+*/
+
+.tundra textarea.comment {
+	width: 300px;
+}
+
+
 /* Vocab Config Styles */
 
 
