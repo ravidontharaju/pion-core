@@ -22,6 +22,7 @@
 
 #include <map>
 #include <string>
+#include <boost/regex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -172,9 +173,16 @@ public:
 	 * runs a simple query, ignoring any results returned
 	 *
 	 * @param sql_query SQL query to execute
-	 * @param suppress Suppress errors/exceptions
+	 * @param suppress Regex to describe what errors/exceptions to suppress
 	 */
-	virtual void runQuery(const std::string& sql_query, bool suppress = false) = 0;
+	virtual void runQuery(const std::string& sql_query, const boost::regex& suppress) = 0;
+
+	/// Same as runQuery, but no errors are suppressed
+	inline void runQuery(const std::string& sql_query)
+	{
+		static boost::regex no_suppress;
+		runQuery(sql_query, no_suppress);
+	}
 
 	/**
 	 * adds a compiled SQL query to the database
@@ -230,10 +238,18 @@ public:
 	 * prepares a generic query
 	 *
 	 * @param query the SQL for the query
+	 * @param suppress regex containing pattern of suppressable errors
 	 *
 	 * @return QueryPtr smart pointer to the new query
 	 */
-	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query) = 0;
+	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query, const boost::regex& suppress) = 0;
+
+	/// same as prepareFullQuery, but no errors are suppressed
+	inline pion::platform::QueryPtr prepareFullQuery(const std::string& query)
+	{
+		static boost::regex no_suppress;
+		return prepareFullQuery(query, no_suppress);
+	}
 
 	/**
 	 * returns the query that is used to begin new transactions
@@ -297,10 +313,15 @@ protected:
 		m_begin_insert = d.m_begin_insert;
 		m_commit_insert = d.m_commit_insert;
 		m_create_log = d.m_create_log;
+		m_create_log_attr = d.m_create_log_attr;
 		m_insert_log = d.m_insert_log;
+		m_insert_log_attr = d.m_insert_log_attr;
 		m_create_stat = d.m_create_stat;
+		m_create_stat_attr = d.m_create_stat_attr;
 		m_update_stat = d.m_update_stat;
+		m_update_stat_attr = d.m_update_stat_attr;
 		m_select_stat = d.m_select_stat;
+		m_select_stat_attr = d.m_select_stat_attr;
 		m_isolation_level = d.m_isolation_level;
 		// Query_map will be overridden
 //		m_query_map = d.m_query_map;
@@ -308,6 +329,7 @@ protected:
 		m_pre_sql = d.m_pre_sql;
 		m_insert_ignore = d.m_insert_ignore;
 		m_drop_table = d.m_drop_table;
+		m_drop_table_attr = d.m_drop_table_attr;
 	}
 
 
@@ -345,6 +367,8 @@ protected:
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
 	static const std::string				SELECT_STAT_ELEMENT_NAME;
 
+	static const std::string				IGNORE_ATTRIBUTE_NAME;
+
 	static const std::string				INSERT_IGNORE_ELEMENT_NAME;
 	static const std::string				DROP_TABLE_ELEMENT_NAME;
 
@@ -374,15 +398,28 @@ protected:
 	/// begin & commit insert strings
 	std::string								m_begin_insert;
 	std::string								m_commit_insert;
+
+	/// Database create/insert statements, and their optional ignore attributes
 	std::string								m_create_log;
+	boost::regex							m_create_log_attr;
+
 	std::string								m_insert_log;
+	boost::regex							m_insert_log_attr;
 
 	std::string								m_create_stat;
+	boost::regex							m_create_stat_attr;
+
 	std::string								m_update_stat;
+	boost::regex							m_update_stat_attr;
+
 	std::string								m_select_stat;
+	boost::regex							m_select_stat_attr;
 
 	std::string								m_insert_ignore;
+	boost::regex							m_insert_ignore_attr;
+
 	std::string								m_drop_table;
+	boost::regex							m_drop_table_attr;
 
 	/// Isolation level, default is SA_ReadUncommitted (for speed/ease)
 	IsolationLevel_t						m_isolation_level;
@@ -395,6 +432,9 @@ protected:
 
 	/// PreSQL statements, to be executed before table operations
 	std::vector<std::string>				m_pre_sql;
+
+	/// Optional "ignore" attributes for PreSQL statements
+	std::vector<boost::regex>				m_pre_sql_attr;
 
 	/// primary logging interface used by this class
 	PionLogger								m_logger;

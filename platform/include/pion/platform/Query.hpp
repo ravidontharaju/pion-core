@@ -260,11 +260,21 @@ public:
  	* @param outs a FieldMap of output fields
  	* @param dest output event, used for outs FieldMap
 	* @param limit how many results max
+	* @param suppress regex containing pattern of suppressable errors
  	*
  	* @return bool if output event was modified
  	*/
 	virtual bool runFullQuery(const FieldMap& ins, const EventPtr& src,
-			const FieldMap& outs, EventPtr& dest,unsigned int limit) = 0;
+			const FieldMap& outs, EventPtr& dest, unsigned int limit,
+			const boost::regex& suppress) = 0;
+
+	/// Same as runFullQuery, but no errors are suppressed
+	inline bool runFullQuery(const FieldMap& ins, const EventPtr& src,
+			const FieldMap& outs, EventPtr& dest, unsigned int limit)
+	{
+		static boost::regex no_suppress;
+		return runFullQuery(ins, src, outs, dest, limit, no_suppress);
+	}
 
 	/**
 	 * gets more results for generic query

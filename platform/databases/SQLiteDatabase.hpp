@@ -137,9 +137,9 @@ public:
 	 * runs a simple query, ignoring any results returned
 	 *
 	 * @param sql_query SQL query to execute
-	 * @param suppress Suppress errors/exceptions
+	 * @param suppress Regex to describe what errors/exceptions to suppress
 	 */
-	virtual void runQuery(const std::string& sql_query, bool suppress = false);
+	virtual void runQuery(const std::string& sql_query, const boost::regex& suppress);
 
 	/**
 	 * adds a compiled SQL query to the database
@@ -197,10 +197,11 @@ public:
 	 * prepares a generic query
 	 *
 	 * @param query the SQL for the query
+	 * @param suppress regex containing pattern of suppressable errors
 	 *
 	 * @return QueryPtr smart pointer to the new query
 	 */
-	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query);
+	virtual pion::platform::QueryPtr prepareFullQuery(const std::string& query, const boost::regex& suppress);
 
 	/**
 	 * returns the query that is used to begin new transactions
@@ -531,11 +532,13 @@ protected:
 	 	* @param src input event, used for ins FieldMap
 	 	* @param outs a FieldMap of output fields
 	 	* @param dest output event, used for outs FieldMap
+		* @param suppress regex containing pattern of suppressable errors
 	 	*
 	 	* @return bool if output event was modified
 	 	*/
 		virtual bool runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src,
-									const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest, unsigned int limit);
+									const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest,
+									unsigned int limit, const boost::regex& suppress);
 
 		virtual bool runFullGetMore(const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest,
 									unsigned int limit);
