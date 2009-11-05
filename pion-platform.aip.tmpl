@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT type="Advanced Installer" CreateVersion="7.0.1" version="7.1.3" modules="professional" RootPath="." Language="en">
+<DOCUMENT type="Advanced Installer" CreateVersion="7.0.1" version="7.2.1" modules="professional" RootPath="." Language="en">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="ALLUSERS" Value="2"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
@@ -101,8 +101,11 @@
     <ROW Module="policy_8_0_Microsoft_VC80_ATL_x86.msm" Path="common\build\policy_8_0_Microsoft_VC80_ATL_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
     <ROW Module="policy_8_0_Microsoft_VC80_CRT_x86.msm" Path="common\build\policy_8_0_Microsoft_VC80_CRT_x86.msm" Feature="MainFeature" Directory="APPDIR"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiServConfigFailureActionsComponent">
+    <ROW MsiServiceConfigFailureActions="ServiceName" Name="Pion" Event="1" ResetPeriod="0" Actions="0" DelayActions="0" Component_="pion.exe"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServCtrlComponent">
-    <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
+    <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="0" Component_="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
     <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion (Community Edition)" ServiceType="16" StartType="2" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
