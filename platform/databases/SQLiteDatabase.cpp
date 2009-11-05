@@ -135,14 +135,14 @@ void SQLiteDatabase::close(void)
 	m_sqlite_db = NULL;
 }
 
-void SQLiteDatabase::runQuery(const std::string& sql_query, bool suppress)
+void SQLiteDatabase::runQuery(const std::string& sql_query, const boost::regex& suppress)
 {
 	// sanity checks
 	PION_ASSERT(is_open());
 	PION_ASSERT(! sql_query.empty());
 
 	// execute the query
-	if (sqlite3_exec(m_sqlite_db, sql_query.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK && !suppress)
+	if (sqlite3_exec(m_sqlite_db, sql_query.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK && !suppress.empty())
 		throw SQLiteAPIException(getSQLiteError());
 }
 
@@ -183,7 +183,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 	stringSubstitutes(create_table_sql, field_map, table_name);
 
 	// run the SQL query to create the table
-	runQuery(create_table_sql);
+	runQuery(create_table_sql, m_create_log_attr);
 
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] [dbname.] indexname ON tablename ( indexcolumn [, indexcolumn] )
 	//		indexcolumn:  indexcolumn [COLLATE collatename] [ ASC | DESC]
@@ -286,7 +286,7 @@ QueryPtr SQLiteDatabase::getCommitTransactionQuery(void)
 	return i->second;
 }
 
-QueryPtr SQLiteDatabase::prepareFullQuery(const std::string& query)
+QueryPtr SQLiteDatabase::prepareFullQuery(const std::string& query, const boost::regex& suppress)
 {
 	PION_ASSERT(is_open());
 
@@ -295,7 +295,7 @@ QueryPtr SQLiteDatabase::prepareFullQuery(const std::string& query)
 }
 
 bool SQLiteDatabase::SQLiteQuery::runFullQuery(const pion::platform::Query::FieldMap& ins, const pion::platform::EventPtr& src,
-	const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest, unsigned int limit)
+	const pion::platform::Query::FieldMap& outs, pion::platform::EventPtr& dest, unsigned int limit, const boost::regex& suppress)
 {
 	bool changes = false;
 	sqlite3_reset(m_sqlite_stmt);

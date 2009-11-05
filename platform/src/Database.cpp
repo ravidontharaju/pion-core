@@ -52,6 +52,8 @@ const std::string			Database::CREATE_STAT_ELEMENT_NAME = "CreateStat";
 const std::string			Database::UPDATE_STAT_ELEMENT_NAME = "UpdateStat";
 const std::string			Database::SELECT_STAT_ELEMENT_NAME = "SelectStat";
 
+const std::string			Database::IGNORE_ATTRIBUTE_NAME = "ignore";
+
 const std::string			Database::INSERT_IGNORE_ELEMENT_NAME = "InsertIgnore";
 const std::string			Database::DROP_TABLE_ELEMENT_NAME = "DropTable";
 
@@ -60,6 +62,12 @@ const std::string			Database::DROP_TABLE_ELEMENT_NAME = "DropTable";
 void Database::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	PlatformPlugin::setConfig(v, config_ptr);
+}
+
+/// Funny that there is no clear() method for regex'es...
+const boost::regex inline getRegex(const std::string& str)
+{
+	return (str.empty() ? boost::regex() : boost::regex(str));
 }
 
 void Database::readConfigDetails(const xmlNodePtr config_ptr)
@@ -76,23 +84,38 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 	if (! ConfigManager::getConfigOption(CREATE_LOG_ELEMENT_NAME, m_create_log, config_ptr))
 		throw DatabaseConfigMissing(CREATE_LOG_ELEMENT_NAME);
 
+	// CREATE_LOG_ELEMENT_NAME was already found, check if "ignore" attribute exists...
+	m_create_log_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(CREATE_LOG_ELEMENT_NAME, config_ptr)));
+
 	if (! ConfigManager::getConfigOption(INSERT_LOG_ELEMENT_NAME, m_insert_log, config_ptr))
 		throw DatabaseConfigMissing(INSERT_LOG_ELEMENT_NAME);
+
+	m_insert_log_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(INSERT_LOG_ELEMENT_NAME, config_ptr)));
 
 	if (! ConfigManager::getConfigOption(CREATE_STAT_ELEMENT_NAME, m_create_stat, config_ptr))
 		throw DatabaseConfigMissing(CREATE_STAT_ELEMENT_NAME);
 
+	m_create_stat_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(CREATE_STAT_ELEMENT_NAME, config_ptr)));
+
 	if (! ConfigManager::getConfigOption(UPDATE_STAT_ELEMENT_NAME, m_update_stat, config_ptr))
 		throw DatabaseConfigMissing(UPDATE_STAT_ELEMENT_NAME);
+
+	m_update_stat_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(UPDATE_STAT_ELEMENT_NAME, config_ptr)));
 
 	if (! ConfigManager::getConfigOption(SELECT_STAT_ELEMENT_NAME, m_select_stat, config_ptr))
 		throw DatabaseConfigMissing(SELECT_STAT_ELEMENT_NAME);
 
+	m_select_stat_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(SELECT_STAT_ELEMENT_NAME, config_ptr)));
+
 	if (! ConfigManager::getConfigOption(INSERT_IGNORE_ELEMENT_NAME, m_insert_ignore, config_ptr))
 		throw DatabaseConfigMissing(INSERT_IGNORE_ELEMENT_NAME);
 
+	m_insert_ignore_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(INSERT_IGNORE_ELEMENT_NAME, config_ptr)));
+
 	if (! ConfigManager::getConfigOption(DROP_TABLE_ELEMENT_NAME, m_drop_table, config_ptr))
 		throw DatabaseConfigMissing(DROP_TABLE_ELEMENT_NAME);
+
+	m_drop_table_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(DROP_TABLE_ELEMENT_NAME, config_ptr)));
 
 	// If IsolationLevel is not defined, assume ReadUncommitted
 	// If IsolationLevel is defined, make sure it matches, otherwise throw exception
@@ -109,7 +132,9 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 		else
 			throw InvalidIsolationLevel(isolation_level_str);
 	} else
-		m_isolation_level = IL_LevelUnknown;
+		m_isolation_level = IL_ReadUncommitted;
+//	Setting the undefined default to Read Uncommitted for performance
+//		m_isolation_level = IL_LevelUnknown;
 
 	m_sql_affinity.clear();
 	m_sql_affinity.resize(Vocabulary::TYPE_OBJECT + 1);  // TODO: this depends on TYPE_OBJECT being last; should do something better here.
@@ -132,11 +157,13 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 
 	// Optional PreSQL section -- just fill in the m_pre_sql array
 	m_pre_sql.clear();
+	m_pre_sql_attr.clear();
 	xmlNodePtr presql_node;
 	if ((presql_node = ConfigManager::findConfigNodeByName(PRESQL_ELEMENT_NAME, config_ptr)) != NULL) {
 		std::string presql_str;
 		while (ConfigManager::getConfigOption(PRESQL_ELEMENT_NAME, presql_str, presql_node)) {
 			m_pre_sql.push_back(presql_str);
+			m_pre_sql_attr.push_back(getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, presql_node)));
 			presql_node = presql_node->next;
 		}
 	}
