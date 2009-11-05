@@ -155,6 +155,13 @@ label.disabled {
 	font-style: italic;
 }
 
+.id_text_box {
+	width: 240px;
+}
+
+.comment_text_box {
+	width: 400px;
+}
 
 .matrixMainHeader {
 	background: url(../images/bg-matrix-main-header.png) repeat-x;
@@ -898,8 +905,20 @@ I don't think this is being used anywhere.
 }
 
 .unsaved_changes {
-	background: yellow !important;
+	background: #FFFFCC !important;
 	/*border: 1px dashed #666666 !important;*/
+}
+
+
+/* Styles affecting all Config Panes */
+/* TODO: Add new class config_pane and refactor all the rules common to 
+   all of vocab_pane, codec_pane, database_pane, protocol_pane, user_pane.
+   Then change the following rule to:
+   .tundra config_pane textarea.comment { ...
+*/
+
+.tundra textarea.comment {
+	width: 250px;
 }
 
 
