@@ -28,6 +28,7 @@
 #include <boost/signal.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/function/function1.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>

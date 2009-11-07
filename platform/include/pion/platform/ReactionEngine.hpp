@@ -23,6 +23,7 @@
 #include <string>
 #include <libxml/tree.h>
 #include <boost/bind.hpp>
+#include <boost/function/function0.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>
