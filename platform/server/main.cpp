@@ -24,6 +24,8 @@
 	#include <string.h>
 #endif
 
+#include <pion/PionConfig.hpp>
+
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
 #ifdef _MSC_VER
