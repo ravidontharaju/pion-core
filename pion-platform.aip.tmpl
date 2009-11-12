@@ -105,7 +105,7 @@
     <ROW MsiServiceConfigFailureActions="ServiceName" Name="Pion" Event="1" ResetPeriod="0" Actions="0" DelayActions="0" Component_="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServCtrlComponent">
-    <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="0" Component_="pion.exe"/>
+    <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
     <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion (Community Edition)" ServiceType="16" StartType="2" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
