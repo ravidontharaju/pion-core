@@ -28,9 +28,9 @@
 
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
-#ifdef _MSC_VER
-	#include <openssl/applink.c>
-#endif
+//#ifdef _MSC_VER
+//	#include <openssl/applink.c>
+//#endif
 #endif
 
 #ifndef SYSCONFDIR
