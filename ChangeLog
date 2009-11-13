@@ -1,5 +1,14 @@
+Version 2.2.6 (2009-11-13)
+==========================
+
+* Windows installer no longer attempts to start/stop the Pion service (758)
+* Windows installer now makes backups of configuration files (759)
+* Pion now includes its version number in all configuration files (760)
+* Updated Webtrends (IIS) Codec to include support for substatus field (761)
+
+
 Version 2.2.4 (2009-10-27)
-===========================
+==========================
 
 * Updated "start_pion.bat" on Windows to start Pion as an application (739)
 * Multiple Pion instances were able to bind to the same port on Windows (707)
