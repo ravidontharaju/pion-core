@@ -13440,7 +13440,8 @@ this._props=_cde||{};
 dojo.mixin(this,_cde);
 },format:function(_cdf,_ce0){
 var f,i=this.grid.edit.info,d=this.get?this.get(_cdf,_ce0):(this.value||this.defaultValue);
-d=(d&&d.replace)?d.replace(/</g,"&lt;"):d;
+//d=(d&&d.replace)?d.replace(/</g,"&lt;"):d;
+// ^^^ See http://trac.atomiclabs.com/ticket/769.
 if(this.editable&&(this.alwaysEditing||(i.rowIndex==_cdf&&i.cell==this))){
 return this.formatEditing(d,_cdf);
 }else{
