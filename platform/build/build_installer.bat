@@ -1,5 +1,5 @@
 @echo off
-SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.2.1"
+SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3"
 SET AI_EXE="advinst.exe"
 SET INSTALL_PRJ="pion-platform.aip"
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
@@ -12,6 +12,7 @@ copy %INSTALL_PRJ%.tmpl %INSTALL_PRJ%
 
 copy platform\build\win32\config\*.* %1\config\
 copy %1\pion.exe platform\build\win32\pion.exe
+xcopy "%1\config" "%1\config-%2\" /E /Y
 
 %AI_EXE% /edit %INSTALL_PRJ% /SetVersion %2
 %AI_EXE% /edit %INSTALL_PRJ% /NewSync APPDIR\ %1

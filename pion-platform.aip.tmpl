@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT type="Advanced Installer" CreateVersion="7.0.1" version="7.2.1" modules="professional" RootPath="." Language="en">
+<DOCUMENT type="Advanced Installer" CreateVersion="7.0.1" version="7.3" modules="professional" RootPath="." Language="en">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="ALLUSERS" Value="2"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
@@ -9,7 +9,7 @@
     <ROW Property="Manufacturer" Value="Atomic Labs" ValueLocId="*"/>
     <ROW Property="ProductCode" Value="1033:{8C9712B1-631F-46F9-8E1C-F9E845FD6128} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
-    <ROW Property="ProductName" Value="Pion [|ProductVersion] Community Edition" ValueLocId="*"/>
+    <ROW Property="ProductName" Value="Pion Community Edition" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION"/>
     <ROW Property="UpgradeCode" Value="{23FD622B-018A-4972-A04D-E27EDB88D034}"/>
@@ -20,21 +20,40 @@
     <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
     <ROW Directory="SystemFolder" Directory_Parent="TARGETDIR" DefaultDir="System~1|SystemFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+    <ROW Directory="config_DIR" Directory_Parent="APPDIR" DefaultDir="config"/>
+    <ROW Directory="vocabularies_DIR" Directory_Parent="config_DIR" DefaultDir="vocabu~1|vocabularies"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="Config_Files" Directory_="config_DIR" Attributes="128" KeyPath="codecs.xml" Type="0"/>
     <ROW Component="NTEventLogAppender.dll" ComponentId="{ACC3925F-6E6D-4DB9-9FDA-7190F415EF98}" Directory_="SystemFolder" Attributes="0" KeyPath="NTEventLogAppender.dll"/>
     <ROW Component="SHORTCUTDIR" ComponentId="{A797AAF8-435D-4317-B6F5-7333D36C2292}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="Vocabularies" Directory_="vocabularies_DIR" Attributes="128" KeyPath="atom.xml" Type="0"/>
     <ROW Component="pion.exe" ComponentId="{55C4B9AC-0124-4B9F-9F2F-950AE46BA5A5}" Directory_="APPDIR" Attributes="0" KeyPath="pion.exe"/>
     <ROW Component="postinstall.html" ComponentId="{60491FA9-F5AB-4B4C-8C1F-C2C20E929C4F}" Directory_="APPDIR" Attributes="0" KeyPath="postinstall.html" Type="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="NTEventLogAppender.dll pion.exe SHORTCUTDIR postinstall.html"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="NTEventLogAppender.dll pion.exe SHORTCUTDIR postinstall.html Config_Files Vocabularies"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
     <ROW File="NTEventLogAppender.dll" Component_="NTEventLogAppender.dll" FileName="NTEven~1.dll|NTEventLogAppender.dll" Attributes="0" SourcePath="platform\build\3rdparty\NTEventLogAppender.dll" SelfReg="false" Sequence="1"/>
+    <ROW File="atom.xml" Component_="Vocabularies" FileName="atom.xml" Attributes="0" SourcePath="platform\build\config\vocabularies\atom.xml" SelfReg="false" Sequence="14"/>
+    <ROW File="clickstream.xml" Component_="Vocabularies" FileName="clicks~1.xml|clickstream.xml" Attributes="0" SourcePath="platform\build\config\vocabularies\clickstream.xml" SelfReg="false" Sequence="15"/>
+    <ROW File="codecs.xml" Component_="Config_Files" FileName="codecs.xml" Attributes="0" SourcePath="platform\build\config\codecs.xml" SelfReg="false" Sequence="4"/>
+    <ROW File="databases.xml" Component_="Config_Files" FileName="databa~1.xml|databases.xml" Attributes="0" SourcePath="platform\build\config\databases.xml" SelfReg="false" Sequence="5"/>
+    <ROW File="dbengines.xml" Component_="Config_Files" FileName="dbengi~1.xml|dbengines.xml" Attributes="0" SourcePath="platform\build\config\dbengines.xml" SelfReg="false" Sequence="6"/>
+    <ROW File="logconfig.txt" Component_="Config_Files" FileName="logcon~1.txt|logconfig.txt" Attributes="0" SourcePath="platform\build\config\logconfig.txt" SelfReg="false" Sequence="7"/>
     <ROW File="pion.exe" Component_="pion.exe" FileName="pion.exe" Attributes="0" SourcePath="platform\build\win32\pion.exe" SelfReg="false" Sequence="2"/>
+    <ROW File="platform.xml" Component_="Config_Files" FileName="platform.xml" Attributes="0" SourcePath="platform\build\config\platform.xml" SelfReg="false" Sequence="8"/>
     <ROW File="postinstall.html" Component_="postinstall.html" FileName="postin~1.htm|postinstall.html" Attributes="0" SourcePath="platform\build\win32\postinstall.html" SelfReg="false" Sequence="3"/>
+    <ROW File="protocols.xml" Component_="Config_Files" FileName="protoc~1.xml|protocols.xml" Attributes="0" SourcePath="platform\build\config\protocols.xml" SelfReg="false" Sequence="9"/>
+    <ROW File="reactors.xml" Component_="Config_Files" FileName="reactors.xml" Attributes="0" SourcePath="platform\build\config\reactors.xml" SelfReg="false" Sequence="10"/>
+    <ROW File="rss.xml" Component_="Vocabularies" FileName="rss.xml" Attributes="0" SourcePath="platform\build\config\vocabularies\rss.xml" SelfReg="false" Sequence="16"/>
+    <ROW File="services.xml" Component_="Config_Files" FileName="services.xml" Attributes="0" SourcePath="platform\build\config\services.xml" SelfReg="false" Sequence="11"/>
+    <ROW File="sslkey.pem" Component_="Config_Files" FileName="sslkey.pem" Attributes="0" SourcePath="platform\build\config\sslkey.pem" SelfReg="false" Sequence="12"/>
+    <ROW File="stocks.xml" Component_="Vocabularies" FileName="stocks.xml" Attributes="0" SourcePath="platform\build\config\vocabularies\stocks.xml" SelfReg="false" Sequence="17"/>
+    <ROW File="users.xml" Component_="Config_Files" FileName="users.xml" Attributes="0" SourcePath="platform\build\config\users.xml" SelfReg="false" Sequence="13"/>
+    <ROW File="vocabularies.xml" Component_="Config_Files" FileName="vocabu~1.xml|vocabularies.xml" Attributes="0" SourcePath="platform\build\config\vocabularies.xml" SelfReg="false" Sequence="18"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
     <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="0" Languages="en" InstallationType="4"/>
@@ -48,15 +67,17 @@
     <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
-    <ROW Fragment="FolderDlg.aip" Path="&lt;AI_FRAGS&gt;FolderDlg.aip"/>
+    <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
+    <ROW Fragment="FolderDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\FolderDlg.aip"/>
     <ROW Fragment="Sequences.aip" Path="&lt;AI_FRAGS&gt;Sequences.aip"/>
     <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
-    <ROW Fragment="UI.aip" Path="&lt;AI_FRAGS&gt;UI.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_THEMES&gt;classic\fragments\UI.aip"/>
+    <ROW Fragment="Validation.aip" Path="&lt;AI_FRAGS&gt;Validation.aip"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
-    <ROW Name="default_banner.bmp" SourcePath="&lt;AI_RES&gt;default-banner.bmp"/>
-    <ROW Name="default_dialog.bmp" SourcePath="&lt;AI_RES&gt;default-dialog.bmp"/>
+    <ROW Name="default_banner.bmp" SourcePath="&lt;AI_THEMES&gt;classic\resources\default-banner.bmp"/>
+    <ROW Name="default_dialog.bmp" SourcePath="&lt;AI_THEMES&gt;classic\resources\default-dialog.bmp"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
     <ATTRIBUTE name="FixedSizeBitmaps" value="0"/>
@@ -83,7 +104,7 @@
     <ROW Action="PropertySource" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="PropertySource_1" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
-    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]" MultiBuildTarget="DefaultBuild:[ProgramMenuFolder][ProductName] [ProductVersion]"/>
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
@@ -115,6 +136,10 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
     <ROW Shortcut="Start_Pion" Directory_="SHORTCUTDIR" Name="StartP~1|Start Pion" Component_="pion.exe" Target="[SystemFolder]net.exe" Arguments="start pion" Description="Start Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1"/>
     <ROW Shortcut="Stop_Pion" Directory_="SHORTCUTDIR" Name="StopPi~1|Stop Pion" Component_="pion.exe" Target="[SystemFolder]net.exe" Arguments="stop pion" Description="Stop Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
+    <ROW ThemeName="classic" ThemeManifestFilePath="&lt;AI_THEMES&gt;classic\classic.ini"/>
+    <ATTRIBUTE name="UsedTheme" value="classic"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
     <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>
