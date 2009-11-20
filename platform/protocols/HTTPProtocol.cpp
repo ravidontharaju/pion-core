@@ -96,8 +96,7 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickst
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATA_CENTER_TIME="urn:vocab:clickstream#data-center-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_AUTHUSER="urn:vocab:clickstream#authuser";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_C_IP="urn:vocab:clickstream#c-ip";
-const std::string	HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_STATUS="urn:vocab:clickstream#request-status";
-const std::string	HTTPProtocol::VOCAB_CLICKSTREAM_RESPONSE_STATUS="urn:vocab:clickstream##response-status";
+
 
 // HTTPProtocol member functions
 
@@ -112,7 +111,6 @@ void HTTPProtocol::reset(void)
 		= boost::date_time::not_a_date_time;
 	m_cs_data_packets = m_sc_data_packets = m_cs_missing_packets
 		= m_sc_missing_packets = 0;
-	//todo: 
 }
 
 bool HTTPProtocol::close(EventPtr& event_ptr_ref)
@@ -275,9 +273,6 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 
 	retval->m_extraction_rules = m_extraction_rules;
 
-	retval->m_request_status_ref = m_request_status_ref;
-	retval->m_response_status_ref = m_response_status_ref;
-
 	return ProtocolPtr(retval);
 }
 
@@ -412,8 +407,6 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	boost::shared_array<char> decoded_response_content;
 	boost::logic::tribool decoded_request_flag(boost::indeterminate);
 	boost::logic::tribool decoded_response_flag(boost::indeterminate);
-
-	// todo
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -761,14 +754,6 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_c_ip_term_ref = v.findTerm(VOCAB_CLICKSTREAM_C_IP);
 	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_C_IP);
-
-	m_request_status_ref = v.findTerm(VOCAB_CLICKSTREAM_REQUEST_STATUS);
-	if (m_request_status_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_REQUEST_STATUS);
-
-	m_response_status_ref = v.findTerm(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
-	if (m_response_status_ref == Vocabulary::UNDEFINED_TERM_REF)
-		throw UnknownTermException(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
 }
 
 
