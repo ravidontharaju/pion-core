@@ -372,5 +372,13 @@
             <Type>uint8</Type>
             <Comment>ContentStorage compressed</Comment>
         </Term>
+        <Term id="urn:vocab:clickstream#request-status">
+            <Type>uint8</Type>
+            <Comment>HTTP request status code</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#response-status">
+            <Type>uint8</Type>
+            <Comment>HTTP response status code</Comment>
+        </Term>
 	</Vocabulary>
 </PionConfig>
