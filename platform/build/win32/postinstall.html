@@ -1,77 +1,72 @@
-<html>
-<title>Pion Enterprise Edition Post Installation Instructions</title>
-<body>
-<pre>
-PION COMMUNITY EDITION
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Pion &trade; Rule Your Data</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Language" content="en-us" />
 
-Copyright (C) 2007-2009 Atomic Labs, Inc.
+		<style type="text/css" media="screen">
 
-Home page:  http://www.pion.org
+			p {
+			font-size: 12px;
+			font-family: Helvetica, "Arial", sans-serif;
+			}
 
-Pion Community Edition is published under the GNU Affero General Public License.
-See LICENSE.txt for licensing information.  Alternative commercial licenses
-are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
+			body {
+			margin: 0;
+			padding: 0;
+			font-family: Helvetica, Arial, Sans-Serif;
+			font-size: 12px;
+			}
 
-Pion Community Edition's source code can be downloaded from our website at:
-http://www.pion.org/projects/pion-platform/download
+			li {
+			padding: 5px 0;
+			}
 
-This binary distribution may include several third party libraries which are
-used by Pion.  A list of these libraries along with license information and
-links to download source code is available at the following URL:
-http://www.pion.org/projects/pion-platform/documentation/libraries
+		</style>
 
-This distribution includes the following files:
+		<META NAME="ROBOTS" CONTENT="NOFOLLOW">
+	</head>
+	<body link="#3399cc" vlink="#3399cc">
 
-config/            Directory containing Pion configuration files
-libs/              Directory containing Pion & third party library files
-plugins/           Directory containing Pion plugin files
-ui/                Directory containing Pion user interface files
-pion.exe           The Pion Platform server executable
-start_pion.bat     Windows batch file used to start Pion
-pion-manual.pdf    Latest version of the Pion User Manual
-HISTORY.txt        Pion Platform version history (or "change log")
-LICENSE.txt        The GNU Affero General Public License
-README.txt         This README file
+		<div style="width: 600px; margin-left: 30px;">
 
-To start Pion, just run the ".\start_pion.bat" script from a command prompt.
-This will setup your environment paths and start the Pion server executable.
+			<h1>Pion is now installed.</h1>
 
-Once the server is running, open your favorite web browser (Firefox, Safari
-or IE7) and point it to the following URL:
-http://localhost:8888
+			<h2>Pion can be run as either a service or an application.</h2>
 
-This will open the Pion user interface to the "Reactors configuration" page.
-For an intro to Pion's user interface, please see the online tour at:
-http://www.pion.org/projects/pion-platform/tour
+			<h3>Option 1: Start Pion as service</h3>
 
-To stop Pion, type Ctrl-C if it is running in the foreground, or
-"killall pion" if it is running in the background.
+				<p>
+					The service can be started and stopped from the Services window (accessible through Administrative Tools in the Control Panel), where it will appear as 'Atomic Labs Pion (Community Edition)', or through shortcuts 'Start Pion' and 'Stop Pion' in the Start Menu.
+					For Windows Vista or Windows Server 2008, you must change the properties of the service (from the Services window) before you can start it:
+				</p>
 
-This release has the following limitations:
+				<ol>
+					<li>
+						Right click on the service.
+					<li>
+						Select Properties, and then the "Log on" tab.
+					<li>
+						Select "This account:" and enter <code>administrator</code>, then enter the administrator password.
+					<li>
+						Now you can start the service.
+				</ol>
 
-a) If you drag a reactor over top an existing reactor within the workspace,
-   it sometimes becomes un-droppable.  Drag around existing reactors instead.
+			<h3>Option 2: Start Pion as application</h3>
 
-b) You must hit <enter> after making any changes within the user interface
-   configuration grids.  If you hit the "save" button before hitting <enter>,
-   your change will not be saved.
+				<p>
+					Open a command prompt window in the installation directory and run <code>start_pion.bat</code>.
+				</p>
 
-c) You must stop, and then start some Reactors for them to recognize certain
-   configuration changes.
+			<h3>Load interface</h3>
 
-Please see our ticket-tracking system for more information on planned
-functionality, known problems, or to report bugs:
-http://www.pion.org/ticket-tracking
+				Once Pion is running, you can use it by opening a browser (Firefox, IE7 or Safari) and pointing it to http://localhost:8888.
 
-For online assistance, please see our user forums at:
-http://www.pion.org/forum
+			<h3>Login</h3>
 
-Also, our mailing lists are available at:
-http://www.pion.org/mailing-lists
+				The default username and password are both "pion"
 
-For commercial support & maintenance, alternative licensing options and
-professional services, please contact Atomic Labs, Inc. at:
-http://www.atomiclabs.com/contact/
-</pre>
-</body>
+		</div>
+	</body>
 </html>
