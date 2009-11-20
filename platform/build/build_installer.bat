@@ -12,7 +12,7 @@ copy %INSTALL_PRJ%.tmpl %INSTALL_PRJ%
 
 copy platform\build\win32\config\*.* %1\config\
 copy %1\pion.exe platform\build\win32\pion.exe
-xcopy "%1\config" "%1\config-%2\" /E /Y
+move "%1\config" "%1\config-new"
 
 %AI_EXE% /edit %INSTALL_PRJ% /SetVersion %2
 %AI_EXE% /edit %INSTALL_PRJ% /NewSync APPDIR\ %1
@@ -22,3 +22,4 @@ xcopy "%1\config" "%1\config-%2\" /E /Y
 %AI_EXE% /build %INSTALL_PRJ% 
 
 del platform\build\win32\pion.exe
+move "%1\config-new" "%1\config"
