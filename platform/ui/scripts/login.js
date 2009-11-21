@@ -61,9 +61,12 @@ pion.login.login_pending = false;
 
 pion.login.onLoginSuccess = function() {
 	dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
+	dojo.byId('current_user_menu_section').style.visibility = 'visible';
+	dojo.byId('current_user').innerHTML = dojo.cookie('user');
 }
 
 pion.login.doLoginDialog = function(kw_args) {
+	dojo.byId('current_user_menu_section').style.visibility = 'hidden';
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	if (!ops_toggle_button.checked) {
@@ -72,7 +75,7 @@ pion.login.doLoginDialog = function(kw_args) {
 		pion.login.ops_temporarily_suppressed = true;
 	}
 	var dialog = new pion.login.LoginDialog({});
-	dialog.attr('value', {Username: dojo.cookie('latest_username')});
+	dialog.attr('value', {Username: dojo.cookie('user')});
 	dojo.connect(dialog.domNode, 'onkeypress', 
 		function(event) {
 			if (event.keyCode == dojo.keys.ENTER) {

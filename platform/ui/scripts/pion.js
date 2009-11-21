@@ -291,6 +291,8 @@ var init = function() {
 		load: function(response, ioArgs) {
 			// The user must be logged in since the request succeeded.
 			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
+			dojo.byId('current_user_menu_section').style.visibility = 'visible';
+			dojo.byId('current_user').innerHTML = dojo.cookie('user');
 			pion.about.checkKeyStatus({always_callback: login_success_callback});
 		},
 		error: function(response, ioArgs) {

@@ -141,6 +141,10 @@ a.header {
 	color: #ffffff;
 }
 
+.username_in_header {
+	color: #ffffff;
+	font-weight: bold;
+}
 
 a img {
 	border: none;

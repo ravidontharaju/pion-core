@@ -21733,8 +21733,11 @@ pion.login.ops_temporarily_suppressed=false;
 pion.login.login_pending=false;
 pion.login.onLoginSuccess=function(){
 dojo.cookie("logged_in","true",{expires:1});
+dojo.byId("current_user_menu_section").style.visibility="visible";
+dojo.byId("current_user").innerHTML=dojo.cookie("user");
 };
 pion.login.doLoginDialog=function(_14ec){
+dojo.byId("current_user_menu_section").style.visibility="hidden";
 pion.login.login_pending=true;
 var _14ed=dijit.byId("ops_toggle_button");
 if(!_14ed.checked){
@@ -21742,7 +21745,7 @@ _14ed.attr("checked",true);
 pion.login.ops_temporarily_suppressed=true;
 }
 var _14ee=new pion.login.LoginDialog({});
-_14ee.attr("value",{Username:dojo.cookie("latest_username")});
+_14ee.attr("value",{Username:dojo.cookie("user")});
 dojo.connect(_14ee.domNode,"onkeypress",function(event){
 if(event.keyCode==dojo.keys.ENTER){
 _14ee.execute(_14ee.attr("value"));
@@ -27206,6 +27209,8 @@ pion.current_page="Reactors";
 pion.key_service_running=false;
 dojo.xhrGet({url:"/config",preventCache:true,handleAs:"xml",timeout:5000,load:function(_19c6,_19c7){
 dojo.cookie("logged_in","true",{expires:1});
+dojo.byId("current_user_menu_section").style.visibility="visible";
+dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.about.checkKeyStatus({always_callback:_19c5});
 },error:function(_19c8,_19c9){
 if(_19c9.xhr.status==401){
