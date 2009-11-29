@@ -119,6 +119,7 @@ def get_reactors(con, options):
 		# get attributes for each reactor
 		id = r.attributes['id'].value
 		type = r.getElementsByTagName("Plugin")[0].firstChild.data
+		name = comment = ''
 		try: name = r.getElementsByTagName("Name")[0].firstChild.data
 		except: pass
 		try: comment = r.getElementsByTagName("Comment")[0].firstChild.data
