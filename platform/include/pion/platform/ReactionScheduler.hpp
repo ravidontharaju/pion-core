@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/function/function0.hpp>
 #include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionScheduler.hpp>

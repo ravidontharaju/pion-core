@@ -21,7 +21,7 @@
 #define __PION_VOCABULARY_HEADER__
 
 #include <string>
-#include <list>
+#include <vector>
 #include <boost/any.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
