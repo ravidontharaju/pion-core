@@ -7,6 +7,7 @@ dojo.declare("plugins.services.Service",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			dijit.byId('main_stack_container').addChild(this, 0);
+			pion.services.labels_by_tab_id[this.id] = this.title;
 		},
 		onSelect: function() {
 			dijit.byId('main_stack_container').resize({h: this.height});

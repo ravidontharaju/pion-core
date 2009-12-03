@@ -1,21 +1,38 @@
 <div class='user_pane' dojoAttachPoint='containerNode'
 	><form dojoAttachPoint="form" dojoType="dijit.form.Form"
 		><br/
-		><table cellpadding="5" cellspacing="0" border="0" width="100%"
-			><tr
-				><td><label>Username</label></td
-				><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true"/></td
-			></tr><tr
-				><td><label>Last name</label></td
-				><td><input dojoType="dijit.form.TextBox" name="LastName"/></td
-			></tr><tr
-				><td><label>First name</label></td
-				><td><input dojoType="dijit.form.TextBox" name="FirstName"/></td
-			></tr><tr
-				><td><label>Password</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Password" type="password"/></td
-			></tr
-		></table
+		><div
+			><div style="float: left"
+				><table cellpadding="5" cellspacing="0" border="0" width="275px"
+					><tr
+						><td><label>Username</label></td
+						><td><input dojoType="dijit.form.TextBox" name="@id" disabled="true"/></td
+					></tr><tr
+						><td><label>Last name</label></td
+						><td><input dojoType="dijit.form.TextBox" name="LastName"/></td
+					></tr><tr
+						><td><label>First name</label></td
+						><td><input dojoType="dijit.form.TextBox" name="FirstName"/></td
+					></tr><tr
+						><td><label>Password</label></td
+						><td><input dojoType="dijit.form.TextBox" name="Password" type="password"/></td
+					></tr
+				></table
+			></div
+			><div style="float: right; margin-top: -15px"
+				><label>Visible Configuration Tabs</label><br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="reactor_config" />Reactors<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="vocab_config" />Vocabularies<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="codec_config" />Codecs<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="database_config" />Databases<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="protocol_config" />Protocols<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="user_config" dojoAttachEvent="onClick: _warnIfDisablingSelf" />Users<br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="system_config" />System<br /
+			></div
+			><div style="float: right; margin-right: 50px" dojoAttachPoint="visible_service_tabs"
+			></div
+			><div style="clear: both"></div
+		></div
 		><hr noshade="noshade" size="1" color="#999999"
 		><div class="save_cancel_delete"
 			><button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick:save">Save Changes</button

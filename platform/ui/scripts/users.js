@@ -150,6 +150,9 @@ pion.users.init = function() {
 				console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 				post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 			}
+			for (var resource in pion.tab_ids_by_resource) {
+				post_data += '<Permit>' + resource + '</Permit>';
+			}
 			post_data += '</User></PionConfig>';
 			console.debug('post_data: ', post_data);
 

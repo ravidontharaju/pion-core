@@ -19,6 +19,7 @@ dojo.require("pion.terms");
 dojo.require("pion.services");
 dojo.require("pion.about");
 
+var reactor_config_page_initialized = false;
 var vocab_config_page_initialized = false;
 var codec_config_page_initialized = false;
 var database_config_page_initialized = false;
@@ -264,10 +265,61 @@ pion.loadCss = function(href) {
 	}
 };
 
+// Contains ids of all the children of 'main_stack_container' in index.html.
+pion.resources_by_tab_id = {
+	reactor_config:  '/config/reactors',
+	vocab_config:    '/config/vocabularies',
+	codec_config:    '/config/codecs',
+	database_config: '/config/databases',
+	protocol_config: '/config/protocols',
+	user_config:     '/config/users',
+	system_config:   '/config'
+};
+
+// This is called by pion.services.init(), since the latter may (indirectly) add to pion.resources_by_tab_id.
+pion.initTabs = function() {
+	dojo.xhrGet({
+		url: '/config/users/' + dojo.cookie('user'),
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var main_stack = dijit.byId('main_stack_container');
+			var permitted_resources = dojo.map(response.getElementsByTagName('Permit'), function(resource) {
+				return dojo.isIE? resource.childNodes[0].nodeValue : resource.textContent;
+			});
+
+			// TODO: it would be a lot nicer to add only the permitted tabs, instead of creating
+			// all of them and then deleting the ones not found on the list of permitted tabs.
+			for (var tab_id in pion.resources_by_tab_id) {
+				if (dojo.indexOf(permitted_resources, pion.resources_by_tab_id[tab_id]) == -1) {
+					main_stack.removeChild(dijit.byId(tab_id));
+				}
+			}
+
+			var tabs = main_stack.getChildren();
+			if (tabs.length > 0) {
+				main_stack.selectChild(tabs[0]);
+				configPageSelected(tabs[0]);
+			} else {
+				//TODO: Show some kind of explanation for the lack of tabs?
+			}
+
+			// Don't be tempted to move this earlier to avoid calling configPageSelected() above:
+			// selectChild(page) won't trigger configPageSelected(page) if page was already selected.
+			dojo.subscribe("main_stack_container-selectChild", configPageSelected);
+
+			return response;
+		}
+	});
+	pion.tab_ids_by_resource = {};
+	for (var tab_id in pion.resources_by_tab_id) {
+		pion.tab_ids_by_resource[pion.resources_by_tab_id[tab_id]] = tab_id;
+	}
+}
+
 var init = function() {
 	dojo.byId('outer').style.visibility = 'visible';
-
-	dojo.subscribe("main_stack_container-selectChild", configPageSelected);
 
 	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
@@ -278,9 +330,7 @@ var init = function() {
 	// enter a key; however, even if they don't enter a valid key, login_success_callback() will still be called.
 	var login_success_callback = function() {
 		pion.terms.init();
-		pion.reactors.init();
 		pion.services.init();
-		pion.current_page = 'Reactors';
 	}
 	pion.key_service_running = false;
 	dojo.xhrGet({
@@ -325,8 +375,13 @@ function configPageSelected(page) {
 	console.debug('Selected ' + page.title + ' configuration page');
 	pion.current_page = page.title;
 	if (page.title == "Reactors") {
-		pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
-		dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
+		if (reactor_config_page_initialized) {
+			pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
+			dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
+		} else {
+			pion.reactors.init();
+			reactor_config_page_initialized = true;
+		}
 	} else if (page.title == "Vocabularies") {
 		if (vocab_config_page_initialized) {
 			dijit.byId('main_stack_container').resize({h: pion.vocabularies.getHeight()});

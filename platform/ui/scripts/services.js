@@ -5,6 +5,8 @@ dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services'});
 
+pion.services.labels_by_tab_id = {};
+
 pion.services.init = function() {
 	pion.services.getAllServicesInUIDirectory = function() {
 		var d = new dojo.Deferred();
@@ -29,7 +31,7 @@ pion.services.init = function() {
 			// Skip plugins that can't be found on any of the configured plugin paths.
 			if (dojo.indexOf(pion.plugins.loaded_plugins, service) != -1) {
 				var prototype = pion.plugins.getPluginPrototype('plugins.services', service, '/plugins/services');
-				new prototype({title: prototype.label});
+				new prototype({title: prototype.label, id: prototype.tab_id});
 				console.debug('UI for service "', prototype.label, '" has been added.');
 			}
 		});
@@ -39,5 +41,6 @@ pion.services.init = function() {
 
 	pion.plugins.initLoadedPluginList()
 		.addCallback(pion.services.getAllServicesInUIDirectory)
-		.addCallback(initUsableServicePlugins);
+		.addCallback(initUsableServicePlugins)
+		.addCallback(pion.initTabs);
 }
