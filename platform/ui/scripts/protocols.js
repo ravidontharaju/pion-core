@@ -1,5 +1,6 @@
 dojo.provide("pion.protocols");
 dojo.require("pion.plugins");
+dojo.require("pion.widgets.ConfigAccordion");
 dojo.require("plugins.protocols.Protocol");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.data.XmlStore");
@@ -27,6 +28,7 @@ pion.protocols.default_id = "593f044a-ac60-11dd-aba3-001cc02bd66b";
 
 pion.protocols.init = function() {
 	pion.protocols.selected_pane = null;
+	pion.protocols.config_accordion = dijit.byId('protocol_config_accordion');
 
 	pion.protocols.getAllProtocolsInUIDirectory = function() {
 		var d = new dojo.Deferred();
@@ -67,12 +69,7 @@ pion.protocols.init = function() {
 	var initConfiguredProtocols = function() {
 		pion.protocols.config_store.fetch({
 			onComplete: function (items, request) {
-				var config_accordion = dijit.byId('protocol_config_accordion');
-				for (var i = 0; i < items.length; ++i) {
-					pion.protocols.createNewPaneFromItem(items[i]);
-				}
-				var first_pane = config_accordion.getChildren()[0];
-				config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
+				pion.protocols.config_accordion.createPanesFromAllItems(items, pion.protocols.config_store);
 			},
 			onError: pion.handleFetchError
 		});
@@ -178,22 +175,11 @@ pion.protocols.init = function() {
 	dojo.subscribe("protocol_config_accordion-addChild", _paneAdded);
 	dojo.subscribe("protocol_config_accordion-removeChild", _paneRemoved);
 
-	pion.protocols.createNewPaneFromItem = function(item) {
-		// We're doing lazy loading of Protocol panes.  Here we create a placeholder pane,
-		// which will be replaced with a real one if and when it's selected.
-		var title = pion.escapeXml(pion.protocols.config_store.getValue(item, 'Name'));
-		var protocol_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
-		protocol_pane.config_item = item;
-		protocol_pane.uuid = pion.protocols.config_store.getValue(item, '@id');
-		dijit.byId('protocol_config_accordion').addChild(protocol_pane);
-		return protocol_pane;
-	}
-
 	pion.protocols.createNewPaneFromStore = function(id, protocol_config_page_is_selected) {
 		pion.protocols.config_store.fetch({
 			query: {'@id': id},
 			onItem: function(item) {
-				var protocol_pane = pion.protocols.createNewPaneFromItem(item);
+				var protocol_pane = pion.protocols.config_accordion.createNewPaneFromItem(item, pion.protocols.config_store);
 				if (protocol_config_page_is_selected) {
 					pion.protocols._adjustAccordionSize();
 					dijit.byId('protocol_config_accordion').selectChild(protocol_pane);

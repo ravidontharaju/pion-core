@@ -1,5 +1,6 @@
 dojo.provide("pion.users");
 dojo.require("pion.widgets.User");
+dojo.require("pion.widgets.ConfigAccordion");
 dojo.require("dojox.data.XmlStore");
 
 pion.users.getHeight = function() {
@@ -11,6 +12,8 @@ pion.users.config_store = new dojox.data.XmlStore({url: '/config/users'});
 
 pion.users.init = function() {
 	pion.users.selected_pane = null;
+	pion.users.config_accordion = dijit.byId('user_config_accordion');
+	pion.users.config_accordion.title_attribute = '@id';
 
 	pion.users._replaceAccordionPane = function(old_pane) {
 		var new_pane = new pion.widgets.UserPane({title: old_pane.title});
@@ -98,22 +101,11 @@ pion.users.init = function() {
 	dojo.subscribe("user_config_accordion-addChild", _paneAdded);
 	dojo.subscribe("user_config_accordion-removeChild", _paneRemoved);
 
-	pion.users.createNewPaneFromItem = function(item) {
-		// We're doing lazy loading of User panes.  Here we create a placeholder pane,
-		// which will be replaced with a real one if and when it's selected.
-		var title = pion.escapeXml(pion.users.config_store.getValue(item, '@id'));
-		var user_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
-		user_pane.config_item = item;
-		user_pane.uuid = pion.users.config_store.getValue(item, '@id');
-		dijit.byId('user_config_accordion').addChild(user_pane);
-		return user_pane;
-	}
-
 	pion.users.createNewPaneFromStore = function(id, user_config_page_is_selected) {
 		pion.users.config_store.fetch({
 			query: {'@id': id},
 			onItem: function(item) {
-				var user_pane = pion.users.createNewPaneFromItem(item);
+				var user_pane = pion.users.config_accordion.createNewPaneFromItem(item, pion.users.config_store);
 				if (user_config_page_is_selected) {
 					pion.users._adjustAccordionSize();
 					dijit.byId('user_config_accordion').selectChild(user_pane);
@@ -123,13 +115,8 @@ pion.users.init = function() {
 		});
 	}
 
-	function onComplete(items, request){
-		var config_accordion = dijit.byId('user_config_accordion');
-		for (var i = 0; i < items.length; ++i) {
-			pion.users.createNewPaneFromItem(items[i]);
-		}
-		var first_pane = config_accordion.getChildren()[0];
-		config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
+	function onComplete(items, request) {
+		pion.users.config_accordion.createPanesFromAllItems(items, pion.users.config_store);
 	}
 
 	if (file_protocol) {

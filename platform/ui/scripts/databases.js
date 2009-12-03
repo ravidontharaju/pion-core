@@ -1,5 +1,6 @@
 dojo.provide("pion.databases");
 dojo.require("pion.plugins");
+dojo.require("pion.widgets.ConfigAccordion");
 dojo.require("plugins.databases.Database");
 dojo.require("dojo.data.ItemFileWriteStore");
 dojo.require("dojox.data.XmlStore");
@@ -37,6 +38,7 @@ pion.databases._adjustAccordionSize = function() {
 
 pion.databases.init = function() {
 	pion.databases.selected_pane = null;
+	pion.databases.config_accordion = dijit.byId('database_config_accordion');
 
 	pion.databases.getAllDatabasesInUIDirectory = function() {
 		var d = new dojo.Deferred();
@@ -80,12 +82,7 @@ pion.databases.init = function() {
 		} else {
 			pion.databases.config_store.fetch({
 				onComplete: function (items, request) {
-					var config_accordion = dijit.byId('database_config_accordion');
-					for (var i = 0; i < items.length; ++i) {
-						pion.databases.createNewPaneFromItem(items[i]);
-					}
-					var first_pane = config_accordion.getChildren()[0];
-					config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
+					pion.databases.config_accordion.createPanesFromAllItems(items, pion.databases.config_store);
 				},
 				onError: pion.handleFetchError
 			});
@@ -192,20 +189,11 @@ pion.databases.init = function() {
 	dojo.subscribe("database_config_accordion-addChild", _paneAdded);
 	dojo.subscribe("database_config_accordion-removeChild", _paneRemoved);
 
-	pion.databases.createNewPaneFromItem = function(item) {
-		var title = pion.databases.config_store.getValue(item, 'Name').toString();
-		var database_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
-		database_pane.config_item = item;
-		database_pane.uuid = pion.databases.config_store.getValue(item, '@id');
-		dijit.byId('database_config_accordion').addChild(database_pane);
-		return database_pane;
-	}
-
 	pion.databases.createNewPaneFromStore = function(id, database_config_page_is_selected) {
 		pion.databases.config_store.fetch({
 			query: {'@id': id},
 			onItem: function(item) {
-				var database_pane = pion.databases.createNewPaneFromItem(item);
+				var database_pane = pion.databases.config_accordion.createNewPaneFromItem(item, pion.databases.config_store);
 				if (database_config_page_is_selected) {
 					pion.databases._adjustAccordionSize();
 					dijit.byId('database_config_accordion').selectChild(database_pane);

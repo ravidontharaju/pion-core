@@ -1,4 +1,5 @@
 dojo.provide("pion.codecs");
+dojo.require("pion.widgets.ConfigAccordion");
 dojo.require("plugins.codecs.Codec");
 dojo.require("dojox.data.XmlStore");
 
@@ -22,6 +23,7 @@ pion.codecs.config_store.getIdentity = function(item) {
 
 pion.codecs.init = function() {
 	pion.codecs.selected_pane = null;
+	pion.codecs.config_accordion = dijit.byId('codec_config_accordion');
 
 	var url = dojo.moduleUrl('plugins', 'codecs.json');
 	pion.codecs.plugin_data_store = new dojo.data.ItemFileReadStore({url: url});
@@ -30,22 +32,11 @@ pion.codecs.init = function() {
 	dojo.subscribe("codec_config_accordion-addChild", codecPaneAdded);
 	dojo.subscribe("codec_config_accordion-removeChild", codecPaneRemoved);
 
-	pion.codecs.createNewPaneFromItem = function(item) {
-		// We're doing lazy loading of Codec panes.  Here we create a placeholder pane,
-		// which will be replaced with a real one if and when it's selected.
-		var title = pion.escapeXml(pion.codecs.config_store.getValue(item, 'Name'));
-		var codec_pane = new dijit.layout.ContentPane({ title: title, content: 'loading...'});
-		codec_pane.config_item = item;
-		codec_pane.uuid = pion.codecs.config_store.getValue(item, '@id');
-		dijit.byId('codec_config_accordion').addChild(codec_pane);
-		return codec_pane;
-	}
-
 	pion.codecs.createNewPaneFromStore = function(id, codec_config_page_is_selected) {
 		pion.codecs.config_store.fetch({
 			query: {'@id': id},
 			onItem: function(item) {
-				var codec_pane = pion.codecs.createNewPaneFromItem(item);
+				var codec_pane = pion.codecs.config_accordion.createNewPaneFromItem(item, pion.codecs.config_store);
 				if (codec_config_page_is_selected) {
 					pion.codecs._adjustAccordionSize();
 					dijit.byId('codec_config_accordion').selectChild(codec_pane);
@@ -56,11 +47,7 @@ pion.codecs.init = function() {
 	}
 
 	function onComplete(items, request) {
-		var config_accordion = dijit.byId('codec_config_accordion');
-		for (var i = 0; i < items.length; ++i) {
-			pion.codecs.createNewPaneFromItem(items[i]);
-		}
-		config_accordion.removeChild(config_accordion.getChildren()[0]); // Remove placeholder, which causes first remaining child to be selected.
+		pion.codecs.config_accordion.createPanesFromAllItems(items, pion.codecs.config_store);
 	}
 
 	pion.codecs.config_store.fetch({ onComplete: onComplete, onError: pion.getFetchErrorHandler('fetch() called by pion.codecs.init()') });

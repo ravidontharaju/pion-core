@@ -1,4 +1,5 @@
 dojo.provide("pion.vocabularies");
+dojo.require("pion.widgets.ConfigAccordion");
 dojo.require("plugins.vocabularies.Vocabulary");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.form.Form");
@@ -102,14 +103,23 @@ pion.vocabularies.config_store = new dojox.data.XmlStore({url: '/config/vocabula
 
 pion.vocabularies.init = function() {
 	pion.vocabularies.selected_pane = null;
+	pion.vocabularies.config_accordion = dijit.byId('vocab_config_accordion');
+	pion.vocabularies.config_accordion.title_attribute = '@id';
+	pion.vocabularies.config_accordion.createNewPaneFromItem = function(item, store) {
+		var id = pion.vocabularies.config_store.getValue(item, '@id');
+		var title = pion.escapeXml(store.getValue(item, this.title_attribute));
+		var vocab_pane_node = document.createElement('span');
+		var vocab_pane = new plugins.vocabularies.VocabularyPane({ 'class': 'vocab_pane', title: title, config: {'@id': id} }, vocab_pane_node);
+		this.addChild(vocab_pane);
+		return vocab_pane;
+	}
+
 	var selected_pane = null;
 	var attributes_by_column = ['@id', 'Type', '@format', 'Size', 'Comment'];
 	var delete_col_index = attributes_by_column.length;
 
 	pion.vocabularies._replaceAccordionPane = function(old_pane) {
 		var new_pane = new plugins.vocabularies.VocabularyPane({title: old_pane.title, config: old_pane.config});
-		new_pane.uuid = old_pane.uuid;
-		new_pane.config_item = old_pane.config_item;
 		new_pane.initialized = true;
 	
 		var config_accordion = dijit.byId("vocab_config_accordion");
@@ -182,20 +192,11 @@ pion.vocabularies.init = function() {
 	dojo.subscribe("vocab_config_accordion-addChild", _paneAdded);
 	dojo.subscribe("vocab_config_accordion-removeChild", _paneRemoved);
 
-	pion.vocabularies.createNewPaneFromItem = function(item) {
-		var id = pion.vocabularies.config_store.getValue(item, '@id');
-		var title = id; // Replaced by Name in populateFromServerVocabItem().
-		var vocab_pane_node = document.createElement('span');
-		var vocab_pane = new plugins.vocabularies.VocabularyPane({ 'class': 'vocab_pane', title: title, config: {'@id': id} }, vocab_pane_node);
-		dijit.byId('vocab_config_accordion').addChild(vocab_pane);
-		return vocab_pane;
-	}
-
 	pion.vocabularies.createNewPaneFromStore = function(id, vocabulary_config_page_is_selected) {
 		pion.vocabularies.config_store.fetch({
 			query: {'@id': id},
 			onItem: function(item) {
-				var vocab_pane = pion.vocabularies.createNewPaneFromItem(item);
+				var vocab_pane = pion.vocabularies.config_accordion.createNewPaneFromItem(item, pion.vocabularies.config_store);
 				if (vocabulary_config_page_is_selected) {
 					pion.vocabularies._adjustAccordionSize();
 					dijit.byId('vocab_config_accordion').selectChild(vocab_pane);
@@ -207,15 +208,12 @@ pion.vocabularies.init = function() {
 
 	pion.vocabularies.config_store.fetch({
 		onComplete: function(items, request) {
-			var config_accordion = dijit.byId('vocab_config_accordion');
+			pion.vocabularies.config_accordion.createPanesFromAllItems(items, pion.vocabularies.config_store);
 			pion.vocabularies.vocabularies_by_id = {};
-			for (var i = 0; i < items.length; ++i) {
-				var vocab_pane = pion.vocabularies.createNewPaneFromItem(items[i]);
-				var id = vocab_pane.vocabulary.config['@id'];
-				pion.vocabularies.vocabularies_by_id[id] = vocab_pane.vocabulary;
-			}
-			var first_pane = config_accordion.getChildren()[0];
-			config_accordion.removeChild(first_pane); // Remove placeholder, which causes first remaining child to be selected.
+			dojo.forEach(pion.vocabularies.config_accordion.getChildren(), function(pane) {
+				var id = pane.vocabulary.config['@id'];
+				pion.vocabularies.vocabularies_by_id[id] = pane.vocabulary;
+			});
 		},
 		onError: pion.handleFetchError
 	});

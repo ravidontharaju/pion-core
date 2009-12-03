@@ -164,6 +164,7 @@ pion-dojo.js:
 ./../../release/dojo-release/plugins/reactors/Reactor.js
 ./../../release/dojo-release/pion/widgets/SimpleSelect.js
 ./../../release/dojo-release/plugins/reactors/LogInputReactor.js
+./../../release/dojo-release/pion/widgets/ConfigAccordion.js
 ./../../release/dojo-release/pion/widgets/TermSelector.js
 ./../../release/dojo-release/pion/widgets/TermTextBox.js
 ./../../release/dojo-release/plugins/codecs/Codec.js
