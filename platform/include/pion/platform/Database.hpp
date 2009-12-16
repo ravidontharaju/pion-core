@@ -327,6 +327,7 @@ protected:
 //		m_query_map = d.m_query_map;
 		m_sql_affinity = d.m_sql_affinity;
 		m_pre_sql = d.m_pre_sql;
+		m_pre_sql_attr = d.m_pre_sql_attr;
 		m_insert_ignore = d.m_insert_ignore;
 		m_drop_table = d.m_drop_table;
 		m_drop_table_attr = d.m_drop_table_attr;
