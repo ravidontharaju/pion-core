@@ -200,7 +200,7 @@ Reactor_create(const char *id, const char *name, PythonReactor *this_ptr)
 			return NULL;
 		}
 
-		self->name = PyString_FromString(id);
+		self->name = PyString_FromString(name);
 		if (self->name == NULL) {
 			Py_DECREF(self);
 			return NULL;
