@@ -61,9 +61,11 @@ int main(int argc, char *argv[])
 	ifstream dfile(argv[2]);
 	if (!dfile.good()) fatal(3, "ERROR", string("Cannot access ") + argv[2]);
 	string data, tmp;
+	getline(dfile, data);
 	while (dfile.good()) {
 		getline(dfile, tmp);
-		data += tmp + "\n";
+		if (dfile.eof()) break;
+		data += "\n" + tmp;
 	}
 
 	regex rx;
