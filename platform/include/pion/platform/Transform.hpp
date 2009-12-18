@@ -611,31 +611,46 @@ public:
 		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
 		for (unsigned int i = 0; i < m_comparison.size(); i++)
 			if (m_running[i]) {
-				Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
-				for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
-					try {
-						Event::ConstIterator ec_past = ec;
-						if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
-							if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
-								// Get the original value
-								std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-								// For Regex... get the precompiled from Comparison
-								// For Format... use the set_value
-								str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
-															boost::format_all | boost::format_no_copy);
-								// Assign the result
-								AnyAssigned |= AssignValue(d, m_term, str);
-							} else
-								AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+				switch (m_comparison[i]->getType()) {
+					// We'll take out the two cases, where there might not be values to iterate through, and just test for existence
+					case Comparison::TYPE_IS_DEFINED:
+						if (s->isDefined(m_comparison[i]->getTerm().term_ref))
+							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						break;
+					case Comparison::TYPE_IS_NOT_DEFINED:
+						if (! s->isDefined(m_comparison[i]->getTerm().term_ref))
+							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						break;
+					default:
+						{
+							Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
+							for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
+								try {
+									Event::ConstIterator ec_past = ec;
+									if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
+										if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
+											// Get the original value
+											std::string str = boost::get<const Event::BlobType&>(ec->value).get();
+											// For Regex... get the precompiled from Comparison
+											// For Format... use the set_value
+											str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
+																		boost::format_all | boost::format_no_copy);
+											// Assign the result
+											AnyAssigned |= AssignValue(d, m_term, str);
+										} else
+											AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+									}
+								} catch (...) {
+									// Get the original value again...
+									std::string str = boost::get<const Event::BlobType&>(ec->value).get();
+									// This rule won't be running again...
+									m_running[i] = false;
+									// Throw on this, to get an error message logged
+									throw RegexFailure("str=" + str + ", regex=" + m_comparison[i]->getRegex().str());
+								}
 						}
-					} catch (...) {
-						// Get the original value again...
-						std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-						// This rule won't be running again...
-						m_running[i] = false;
-						// Throw on this, to get an error message logged
-						throw RegexFailure("str=" + str + ", regex=" + m_comparison[i]->getRegex().str());
-					}
+						break;
+				}
 				// If short_circuit AND any values were assigned -> don't go further in the chain
 				if (m_short_circuit && AnyAssigned)
 					break;
