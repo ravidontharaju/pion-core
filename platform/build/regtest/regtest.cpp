@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 {
 	if (argc != 3 && argc != 4)
 		fatal(1, "Usage", string(argv[0]) + " [-l] <regex-file> <data-file>\n"
-			"\t-s = treat data-file as a list of single-line inputs");
+			"\t-l = treat data-file as a list of single-line inputs");
 	bool list = string(argv[1]) == "-l";
 	char *rf = argv[list ? 2 : 1], *df = argv[list ? 3 : 2];
 	vector<string> rspecs, rfrmts, dlines;
