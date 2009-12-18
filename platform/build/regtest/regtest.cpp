@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include "boost/regex.hpp"
 
 using namespace std;
@@ -43,63 +44,77 @@ static void fatal(int rc, string type, string msg)
 
 int main(int argc, char *argv[])
 {
-	if (argc != 3) fatal(1, "Usage", string(argv[0]) + " <regex-file> <data-file>");
+	if (argc != 3 && argc != 4)
+		fatal(1, "Usage", string(argv[0]) + " [-l] <regex-file> <data-file>\n"
+			"\t-s = treat data-file as a list of single-line inputs");
+	bool list = string(argv[1]) == "-l";
+	char *rf = argv[list ? 2 : 1], *df = argv[list ? 3 : 2];
+	vector<string> rspecs, rfrmts, dlines;
 
-	ifstream rfile(argv[1]);
-	if (!rfile.good()) fatal(2, "ERROR", string("Cannot access ") + argv[1]);
-	string spec[50], format[50];
-	int i = 0;
-	while (i < 50 && rfile.good()) {
-		getline(rfile, spec[i]);
+	ifstream rfile(rf);
+	if (!rfile.good()) fatal(2, "ERROR", string("Cannot access ") + rf);
+	int ri = 0;
+	string rtmp1, rtmp2;
+	do {
+		getline(rfile, rtmp1); getline(rfile, rtmp2);
 		if (rfile.eof()) break;
-		if (spec[i][0] != 'P' && spec[i][0] != 'R' && spec[i][0] != 'S')
+		if (rtmp1[0] != 'P' && rtmp1[0] != 'R' && rtmp1[0] != 'S')
 			fatal(3, "ERROR", string("Bad regex specifier"));
-		getline(rfile, format[i]);
-		i++;
-	}
+		rspecs.push_back(rtmp1); rfrmts.push_back(rtmp2);
+		ri++;
+	} while (rfile.good());
 
-	ifstream dfile(argv[2]);
-	if (!dfile.good()) fatal(3, "ERROR", string("Cannot access ") + argv[2]);
-	string data, tmp;
-	getline(dfile, data);
-	while (dfile.good()) {
-		getline(dfile, tmp);
+	ifstream dfile(df);
+	if (!dfile.good()) fatal(3, "ERROR", string("Cannot access ") + df);
+	int di = 0;
+	string dtmp;
+	do {
+		getline(dfile, dtmp);
 		if (dfile.eof()) break;
-		data += "\n" + tmp;
+		dlines.push_back(dtmp);
+		di++;
+	} while (dfile.good());
+
+	if (list) {
+		string data;
+		for (int dj = 0; dj < di; dj++) {
+			if (!data.empty()) data += "\n";
+			data += dlines[dj];
+		}
+		dlines.assign(di = 1, data);
 	}
 
-	regex rx;
-	for (int j = 0; j < i; j++) {
-		string regexp = spec[j].substr(1);
-		if (j > 0) cout << string(40, '=') << endl;
-		cout << spec[j][0] << "REGEX[" << j << "]: " << regexp << endl;
-		cout << "XMLREG[" << j << "]: " << xml_encode(regexp) << endl;
-		cout << "FORMAT[" << j << "]: " << format[j] << endl;
-		cout << "XMLFMT[" << j << "]: " << xml_encode(format[j]) << endl;
-		cout << "RESULT[" << j << "]:";
+	for (int rj = 0; rj < ri; rj++) {
+		string regexp = rspecs[rj].substr(1);
+		if (rj > 0) cout << string(40, '=') << endl;
+		cout << rspecs[rj][0] << "REGEX[" << rj << "]: " << regexp << endl;
+		cout << "XMLREG[" << rj << "]: " << xml_encode(regexp) << endl;
+		cout << "FORMAT[" << rj << "]: " << rfrmts[rj] << endl;
+		cout << "XMLFMT[" << rj << "]: " << xml_encode(rfrmts[rj]) << endl;
+		cout << "RESULT[" << rj << "]: ";
 		try {
-			rx = regexp;
-			if (spec[j][0] == 'P') {
-				match_results<string::const_iterator> mr;
-				if (regex_search(data, mr, rx))
-					data = mr.format(format[j], boost::format_all);
-				else {
-					cout << " MATCH FAILED!";
-					data = "";
+			regex rx(regexp);
+			cout << "Valid Regex" << endl;
+			for (int dj = 0; dj < di; dj++) {
+				if (rspecs[rj][0] == 'P') {
+					match_results<string::const_iterator> mr;
+					if (regex_search(dlines[dj], mr, rx))
+						dlines[dj] = mr.format(rfrmts[rj], boost::format_all);
+					else // MATCH FAILED
+						dlines[dj] = "";
+				} else {
+					string res = regex_replace(dlines[dj], rx, rfrmts[rj],
+						boost::format_all | boost::format_no_copy);
+					if (!res.empty())
+						dlines[dj] = res;
+					else // EMPTY RESULT
+						if (rspecs[rj][0] == 'R') dlines[dj] = res;
 				}
-			} else {
-				string res = regex_replace(data, rx, format[j], boost::format_all | boost::format_no_copy);
-				if (res.empty()) {
-					cout << " EMPTY RESULT!";
-					if (spec[j][0] == 'R') data = res;
-				} else
-					data = res;
+				cout << dlines[dj] << endl;
 			}
 		} catch (...) {
-			cout << " EXCEPTION!" << endl;
+			cout << "EXCEPTION!" << endl;
 			break;
 		}
-		cout << endl;
-		if (!data.empty()) cout << data << endl;
 	}
 }
