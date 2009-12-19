@@ -543,7 +543,7 @@ public:
 		: Transform(v, term)
 	{
 		// <StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
-		m_short_circuit = true;
+		m_short_circuit = false;
 		std::string short_circuit_str;
 		if (! ConfigManager::getConfigOption(RULES_STOP_ON_FIRST_ELEMENT_NAME, short_circuit_str, config_ptr))
 			throw MissingTransformField("Missing StopOnFirstMatch in TransformationAssignRules");
@@ -615,7 +615,9 @@ public:
 					// We'll take out the two cases, where there might not be values to iterate through, and just test for existence
 					case Comparison::TYPE_IS_DEFINED:
 						if (s->isDefined(m_comparison[i]->getTerm().term_ref))
+					case Comparison::TYPE_TRUE:			// Sort of jumps into the middle
 							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+					case Comparison::TYPE_FALSE:
 						break;
 					case Comparison::TYPE_IS_NOT_DEFINED:
 						if (! s->isDefined(m_comparison[i]->getTerm().term_ref))
