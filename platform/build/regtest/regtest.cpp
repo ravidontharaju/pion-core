@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		di++;
 	} while (dfile.good());
 
-	if (list) {
+	if (!list) {
 		string data;
 		for (int dj = 0; dj < di; dj++) {
 			if (!data.empty()) data += "\n";
