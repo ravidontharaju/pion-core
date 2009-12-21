@@ -268,4 +268,4 @@ dojo.declare("plugins.protocols.ProtocolPane",
 	}
 );
 
-plugins.protocols.source_options = ['query', 'cookie', 'cs-header', 'sc-header', 'cs-content', 'sc-content', 'cs-raw-content', 'sc-raw-content'];
+plugins.protocols.source_options = ['query', 'cookie', 'cs-cookie', 'sc-cookie', 'cs-header', 'sc-header', 'cs-content', 'sc-content', 'cs-raw-content', 'sc-raw-content'];
