@@ -26052,7 +26052,7 @@ return _18aa;
 console.debug("markAsChanged");
 dojo.addClass(this.domNode,"unsaved_changes");
 },protocol:""});
-plugins.protocols.source_options=["query","cookie","cs-header","sc-header","cs-content","sc-content","cs-raw-content","sc-raw-content"];
+plugins.protocols.source_options=["query","cookie","cs-cookie","sc-cookie","cs-header","sc-header","cs-content","sc-content","cs-raw-content","sc-raw-content"];
 }
 if(!dojo._hasResource["plugins.protocols.HTTPProtocol"]){
 dojo._hasResource["plugins.protocols.HTTPProtocol"]=true;
