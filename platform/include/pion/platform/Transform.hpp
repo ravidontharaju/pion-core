@@ -134,7 +134,7 @@ public:
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
 {
 	if (value.empty())		// New shortcut -- if empty value, don't assign
-	  return false;
+	  return true;
 
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
