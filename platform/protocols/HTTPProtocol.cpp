@@ -421,6 +421,8 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			case EXTRACT_COOKIE:
 				// extract cookie parameter from request
 				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+				// extract set-cookie parameters from response
+				rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_CS_HEADER:
 				// extract HTTP header from request
