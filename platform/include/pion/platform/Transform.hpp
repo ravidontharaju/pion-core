@@ -336,8 +336,8 @@ public:
 		bool AnyCopied = false;
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
-			std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-			AnyCopied |= AssignValue(d, m_term, str);
+			std::string str;
+			AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_src_term_ref], ec));
 		}
 		return AnyCopied;	// true, if any were copied...
 	}
@@ -474,7 +474,6 @@ public:
 		bool AnyCopied = false;
 		while (ec != values_range.second) {
 			// Get the source term
-//			std::string str = boost::get<const Event::BlobType&>(ec->value).get();
 			std::string str;
 			getStringValue(str, m_v[m_lookup_term_ref], ec);
 			// If regex defined, do the regular expression, replacing the key value
@@ -499,7 +498,10 @@ public:
 					case DEF_UNDEF:		// Leave undefined, i.e. do nothing
 						break;
 					case DEF_SRCTERM:	// Re-get the original value, assign it
-						AnyCopied |= AssignValue(d, m_term, boost::get<const Event::BlobType&>(ec->value).get());
+						{
+							std::string str;
+							AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_lookup_term_ref], ec));
+						}
 						break;
 					case DEF_OUTPUT:	// Assign the regex output value
 						AnyCopied |= AssignValue(d, m_term, str);
@@ -632,11 +634,11 @@ public:
 									if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
 										if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
 											// Get the original value
-											std::string str = boost::get<const Event::BlobType&>(ec->value).get();
 											// For Regex... get the precompiled from Comparison
 											// For Format... use the set_value
-											str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
-																		boost::format_all | boost::format_no_copy);
+											std::string str;
+											str = boost::regex_replace(getStringValue(str, m_comparison[i]->getTerm(), ec), m_comparison[i]->getRegex(),
+																		m_set_value[i], boost::format_all | boost::format_no_copy);
 											// Assign the result
 											AnyAssigned |= AssignValue(d, m_term, str);
 										} else
@@ -644,11 +646,11 @@ public:
 									}
 								} catch (...) {
 									// Get the original value again...
-									std::string str = boost::get<const Event::BlobType&>(ec->value).get();
+									std::string str;
 									// This rule won't be running again...
 									m_running[i] = false;
 									// Throw on this, to get an error message logged
-									throw RegexFailure("str=" + str + ", regex=" + m_comparison[i]->getRegex().str());
+									throw RegexFailure("str=" + getStringValue(str, m_comparison[i]->getTerm(), ec) + ", regex=" + m_comparison[i]->getRegex().str());
 								}
 						}
 						break;
