@@ -134,7 +134,7 @@ public:
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
 {
 	if (value.empty())		// New shortcut -- if empty value, don't assign
-	  return false;
+	  return true;
 
 	switch (term.term_type) {
 		case Vocabulary::TYPE_NULL:
@@ -336,8 +336,8 @@ public:
 		bool AnyCopied = false;
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
-			std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-			AnyCopied |= AssignValue(d, m_term, str);
+			std::string str;
+			AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_src_term_ref], ec));
 		}
 		return AnyCopied;	// true, if any were copied...
 	}
@@ -474,7 +474,6 @@ public:
 		bool AnyCopied = false;
 		while (ec != values_range.second) {
 			// Get the source term
-//			std::string str = boost::get<const Event::BlobType&>(ec->value).get();
 			std::string str;
 			getStringValue(str, m_v[m_lookup_term_ref], ec);
 			// If regex defined, do the regular expression, replacing the key value
@@ -499,7 +498,10 @@ public:
 					case DEF_UNDEF:		// Leave undefined, i.e. do nothing
 						break;
 					case DEF_SRCTERM:	// Re-get the original value, assign it
-						AnyCopied |= AssignValue(d, m_term, boost::get<const Event::BlobType&>(ec->value).get());
+						{
+							std::string str;
+							AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_lookup_term_ref], ec));
+						}
 						break;
 					case DEF_OUTPUT:	// Assign the regex output value
 						AnyCopied |= AssignValue(d, m_term, str);
@@ -543,7 +545,7 @@ public:
 		: Transform(v, term)
 	{
 		// <StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
-		m_short_circuit = true;
+		m_short_circuit = false;
 		std::string short_circuit_str;
 		if (! ConfigManager::getConfigOption(RULES_STOP_ON_FIRST_ELEMENT_NAME, short_circuit_str, config_ptr))
 			throw MissingTransformField("Missing StopOnFirstMatch in TransformationAssignRules");
@@ -611,31 +613,48 @@ public:
 		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
 		for (unsigned int i = 0; i < m_comparison.size(); i++)
 			if (m_running[i]) {
-				Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
-				for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
-					try {
-						Event::ConstIterator ec_past = ec;
-						if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
-							if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
-								// Get the original value
-								std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-								// For Regex... get the precompiled from Comparison
-								// For Format... use the set_value
-								str = boost::regex_replace(str, m_comparison[i]->getRegex(), m_set_value[i],
-															boost::format_all | boost::format_no_copy);
-								// Assign the result
-								AnyAssigned |= AssignValue(d, m_term, str);
-							} else
-								AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+				switch (m_comparison[i]->getType()) {
+					// We'll take out the two cases, where there might not be values to iterate through, and just test for existence
+					case Comparison::TYPE_IS_DEFINED:
+						if (s->isDefined(m_comparison[i]->getTerm().term_ref))
+					case Comparison::TYPE_TRUE:			// Sort of jumps into the middle
+							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+					case Comparison::TYPE_FALSE:
+						break;
+					case Comparison::TYPE_IS_NOT_DEFINED:
+						if (! s->isDefined(m_comparison[i]->getTerm().term_ref))
+							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						break;
+					default:
+						{
+							Event::ValuesRange values_range = s->equal_range(m_comparison[i]->getTerm().term_ref);
+							for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++)
+								try {
+									Event::ConstIterator ec_past = ec;
+									if (m_comparison[i]->evaluateRange(std::make_pair(ec, ++ec_past))) {
+										if (m_comparison[i]->getType() == Comparison::TYPE_REGEX) {		// Only for POSITIVE regex...
+											// Get the original value
+											// For Regex... get the precompiled from Comparison
+											// For Format... use the set_value
+											std::string str;
+											str = boost::regex_replace(getStringValue(str, m_comparison[i]->getTerm(), ec), m_comparison[i]->getRegex(),
+																		m_set_value[i], boost::format_all | boost::format_no_copy);
+											// Assign the result
+											AnyAssigned |= AssignValue(d, m_term, str);
+										} else
+											AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+									}
+								} catch (...) {
+									// Get the original value again...
+									std::string str;
+									// This rule won't be running again...
+									m_running[i] = false;
+									// Throw on this, to get an error message logged
+									throw RegexFailure("str=" + getStringValue(str, m_comparison[i]->getTerm(), ec) + ", regex=" + m_comparison[i]->getRegex().str());
+								}
 						}
-					} catch (...) {
-						// Get the original value again...
-						std::string str = boost::get<const Event::BlobType&>(ec->value).get();
-						// This rule won't be running again...
-						m_running[i] = false;
-						// Throw on this, to get an error message logged
-						throw RegexFailure("str=" + str + ", regex=" + m_comparison[i]->getRegex().str());
-					}
+						break;
+				}
 				// If short_circuit AND any values were assigned -> don't go further in the chain
 				if (m_short_circuit && AnyAssigned)
 					break;
