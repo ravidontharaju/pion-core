@@ -57,6 +57,8 @@ const std::string HTTPProtocol::TERM_ATTRIBUTE_NAME = "term";
 
 const std::string HTTPProtocol::EXTRACT_QUERY_STRING = "query";
 const std::string HTTPProtocol::EXTRACT_COOKIE_STRING = "cookie";
+const std::string HTTPProtocol::EXTRACT_CS_COOKIE_STRING = "cs-cookie";
+const std::string HTTPProtocol::EXTRACT_SC_COOKIE_STRING = "sc-cookie";
 const std::string HTTPProtocol::EXTRACT_CS_HEADER_STRING = "cs-header";
 const std::string HTTPProtocol::EXTRACT_SC_HEADER_STRING = "sc-header";
 const std::string HTTPProtocol::EXTRACT_CS_CONTENT_STRING = "cs-content";
@@ -424,6 +426,14 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 				// extract set-cookie parameters from response
 				rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
 				break;
+			case EXTRACT_CS_COOKIE:
+				// extract cookie parameter from request
+				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+				break;
+			case EXTRACT_SC_COOKIE:
+				// extract set-cookie parameters from response
+				rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
+				break;
 			case EXTRACT_CS_HEADER:
 				// extract HTTP header from request
 				rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
@@ -545,6 +555,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			rule_ptr->m_source = EXTRACT_QUERY;
 		} else if (source_str == EXTRACT_COOKIE_STRING) {
 			rule_ptr->m_source = EXTRACT_COOKIE;
+		} else if (source_str == EXTRACT_CS_COOKIE_STRING) {
+			rule_ptr->m_source = EXTRACT_CS_COOKIE;
+		} else if (source_str == EXTRACT_SC_COOKIE_STRING) {
+			rule_ptr->m_source = EXTRACT_SC_COOKIE;
 		} else if (source_str == EXTRACT_CS_HEADER_STRING) {
 			rule_ptr->m_source = EXTRACT_CS_HEADER;
 		} else if (source_str == EXTRACT_SC_HEADER_STRING) {
@@ -565,6 +579,8 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		switch (rule_ptr->m_source) {
 		case EXTRACT_QUERY:
 		case EXTRACT_COOKIE:
+		case EXTRACT_CS_COOKIE:
+		case EXTRACT_SC_COOKIE:
 		case EXTRACT_CS_HEADER:
 		case EXTRACT_SC_HEADER:
 		{

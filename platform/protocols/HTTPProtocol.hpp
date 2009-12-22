@@ -227,6 +227,8 @@ private:
 	enum ExtractionSource {
 		EXTRACT_QUERY,			//< use map of query pairs from request URI & content (requires name=)
 		EXTRACT_COOKIE,			//< use map of cookies from request+response (requires name=)
+		EXTRACT_CS_COOKIE,		//< use map of cookies from request (requires name=)
+		EXTRACT_SC_COOKIE,		//< use map of cookies from response (requires name=)
 		EXTRACT_CS_HEADER,		//< use HTTP request header (requires name=)
 		EXTRACT_SC_HEADER,		//< use HTTP response header (requires name=)
 		EXTRACT_CS_CONTENT,		//< use HTTP request payload content (decoded)
@@ -427,6 +429,12 @@ private:
 
 	/// string used for cookie extraction source type
 	static const std::string	EXTRACT_COOKIE_STRING;
+
+	/// string used for request cookie extraction source type
+	static const std::string	EXTRACT_CS_COOKIE_STRING;
+
+	/// string used for response cookie extraction source type
+	static const std::string	EXTRACT_SC_COOKIE_STRING;
 
 	/// string used for request header extraction source type
 	static const std::string	EXTRACT_CS_HEADER_STRING;
