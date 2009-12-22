@@ -7,6 +7,7 @@ dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
+dojo.require("pion._base");
 dojo.require("pion.reactors");
 dojo.require("pion.vocabularies");
 dojo.require("pion.codecs");
@@ -29,47 +30,6 @@ var system_config_page_initialized = false;
 var file_protocol = false;
 var firefox_on_mac;
 
-pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
-	console.error('In pion.handleXhrError: response = ', response, ', ioArgs.args = ', ioArgs.args);
-	if (ioArgs.xhr.status == 401) {
-		if (pion.login.login_pending) {
-			// redo the request when the login succeeds
-			var h = dojo.connect(pion.login, "onLoginSuccess", function(){ dojo.disconnect(h); xhrFunc(ioArgs.args)});
-		} else {
-			// if user logged out, exit and go to main login page
-			if (!dojo.cookie("logged_in")) {
-				location.replace('login.html');
-			}
-
-			// make user log in, then redo the request
-			pion.login.doLoginDialog({success_callback: function(){xhrFunc(ioArgs.args)}});
-		}
-		return;
-	} else {
-		if (ioArgs.xhr.status == 500) {
-			var dialog = new dijit.Dialog({title: 'Pion Server Error'});
-			dialog.attr('content', response.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-			dialog.show();
-		}
-		if (finalErrorHandler) {
-			finalErrorHandler();
-		}
-	}
-	return response;
-}
-
-pion.handleXhrGetError = function(response, ioArgs) {
-	console.error('In pion.handleXhrGetError: response = ', response, ', ioArgs.args = ', ioArgs.args);
-	return pion.handleXhrError(response, ioArgs, dojo.xhrGet);
-}
-
-pion.getXhrErrorHandler = function(xhrFunc, args_mixin, finalErrorHandler) {
-	return function(response, ioArgs) {
-		dojo.mixin(ioArgs.args, args_mixin);
-		return pion.handleXhrError(response, ioArgs, xhrFunc, finalErrorHandler);
-	}
-}
-
 pion.doDeleteConfirmationDialog = function(message, delete_function, delete_function_arg) {
 	var dialog = pion.delete_confirmation_dialog;
 	if (!dialog) {
@@ -91,146 +51,6 @@ pion.doDeleteConfirmationDialog = function(message, delete_function, delete_func
 	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
 
-pion.handleFetchError = function(errorData, request) {
-	console.debug('In pion.handleFetchError: request = ', request, ', errorData = ' + errorData);
-	if (errorData.status == 401) {
-		if (pion.login.login_pending) {
-			// redo the request when the login succeeds
-			var h = dojo.connect(pion.login, "onLoginSuccess", function(){ dojo.disconnect(h); request.store.fetch(request); });
-		} else {
-			// if user logged out, exit and go to main login page
-			if (!dojo.cookie("logged_in")) {
-				location.replace('login.html');
-			}
-
-			// make user log in, then redo the request
-			pion.login.doLoginDialog({success_callback: function(){request.store.fetch(request)}});
-		}
-		return;
-	}
-}
-
-pion.getFetchErrorHandler = function(msg) {
-	return function(errorData, request) {
-		console.error(msg);
-		return pion.handleFetchError(errorData, request);
-	}
-}
-
-// Substitutes entity references for characters that have special meaning in XML.
-pion.escapeXml = function(value) {
-	if (value === false || value === 0) {
-		return value.toString();
-	} else if (value) {
-		return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-	} else {
-		return '';
-	}
-}
-
-pion.makeXmlLeafElement = function(tag_name, value) {
-	return '<' + tag_name + '>' + pion.escapeXml(value) + '</' + tag_name + '>';
-}
-
-pion.makeXmlLeafElementFromItem = function(store, item, tag_name, optional_default) {
-	if (store.hasAttribute(item, tag_name)) {
-		var value = store.getValue(item, tag_name); // From dojo.data.api.Read, this must be defined.
-		if (value.toString() == '') {
-			return '';
-		} else {
-			return pion.makeXmlLeafElement(tag_name, value);
-		}
-	} else if (optional_default !== undefined) {
-		return pion.makeXmlLeafElement(tag_name, optional_default);
-	} else {
-		return '';
-	}
-}
-
-pion.xmlCellFormatter = function(d) {
-	if (d == '')
-		return '';
-	if (d && d.toString()) {
-		return pion.escapeXml(d);
-	} else {
-		return this.defaultValue;
-	}
-}
-
-pion.xmlCellFormatter2 = function(d) {
-	if (d == '')
-		return '';
-	if (d && d.toString()) {
-		if (d.toString().substr(0, 8) == '<button ')
-			return d;
-
-		// This is a workaround for a dojo "feature" that tries to block html formatting in cells.
-		// See http://bugs.dojotoolkit.org/ticket/9173
-		if (d.toString().substr(0, 11) == '&lt;button ')
-			return d.replace(/&lt;/g, '<');
-
-		return pion.escapeXml(d);
-	} else {
-		return this.defaultValue;
-	}
-}
-
-pion.datetimeCellFormatter = function(t) {
-	return Date(t * 1000).toLocaleString();
-}
-
-pion.utcDatetimeCellFormatter = function(t) {
-	var d = new Date(t * 1000);
-	var month = d.getUTCMonth() + 1;
-	var date = d.getUTCDate();
-	var hour = d.getUTCHours();
-	var min = d.getUTCMinutes();
-
-	if (month < 10)
-		month = '0' + month;
-	if (date < 10)
-		date = '0' + date;
-	if (hour < 10)
-		hour = '0' + hour;
-	if (min < 10)
-		min = '0' + min;
-
-	//return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
-	return d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
-}
-
-pion.localDatetimeCellFormatter = function(t) {
-	var d = new Date(t * 1000);
-	var month = d.getMonth() + 1;
-	var date = d.getDate();
-	var hour = d.getHours();
-	var min = d.getMinutes();
-
-	if (month < 10)
-		month = '0' + month;
-	if (date < 10)
-		date = '0' + date;
-	if (hour < 10)
-		hour = '0' + hour;
-	if (min < 10)
-		min = '0' + min;
-
-	//return t + ' (' + d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
-	return d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
-}
-
-pion.makeDeleteButton = function() {
-	return '<button dojoType=dijit.form.Button class="delete_row"></button>';
-}
-
-pion.makeEditButton = function() {
-	return '<button dojoType=dijit.form.Button><img src="images/icon-edit.png" alt="EDIT" border="0" /></button>';
-}
-
-pion.makeInsertAboveButton = function() {
-	return '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>';
-}
-
 // These are empirical values obtained through inspecting the html in Firebug.
 // TODO: find a way to calculate them using dojo.
 pion.grid_cell_padding = 8;
@@ -244,26 +64,6 @@ pion.initOptionalValue = function(store, item, new_item_object, tag_name, option
 		new_item_object[tag_name] = optional_default;
 	}
 }
-
-pion.loadCss = function(href) {
-	// (Adapted from createFrame() in dojo/_firebug/firebug.js.)
-	var styleElement = document.createElement("link");
-	styleElement.href = href;
-	styleElement.rel = "stylesheet";
-	styleElement.type = "text/css";
-	var styleParent = document.getElementsByTagName("head");
-	if (styleParent) {
-		styleParent = styleParent[0];
-	}
-	if (!styleParent) {
-		styleParent = document.getElementsByTagName("html")[0];
-	}
-	if (dojo.isIE) {
-		window.setTimeout(function(){ styleParent.appendChild(styleElement); }, 0);
-	} else {
-		styleParent.appendChild(styleElement);
-	}
-};
 
 // Contains ids of all the children of 'main_stack_container' in index.html.
 pion.resources_by_tab_id = {
