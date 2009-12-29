@@ -582,6 +582,14 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_C_IP;
 	pion::platform::Vocabulary::TermRef	m_c_ip_term_ref;
 
+	/// urn:vocab:clickstream#request-status
+	static const std::string	VOCAB_CLICKSTREAM_REQUEST_STATUS;
+	pion::platform::Vocabulary::TermRef	m_request_status_term_ref;
+
+	/// urn:vocab:clickstream#response-status
+	static const std::string	VOCAB_CLICKSTREAM_RESPONSE_STATUS;
+	pion::platform::Vocabulary::TermRef	m_response_status_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 

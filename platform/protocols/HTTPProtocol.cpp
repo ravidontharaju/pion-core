@@ -98,6 +98,8 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_ACK_TIME="urn:vocab:clickst
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_DATA_CENTER_TIME="urn:vocab:clickstream#data-center-time";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_AUTHUSER="urn:vocab:clickstream#authuser";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_C_IP="urn:vocab:clickstream#c-ip";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_STATUS="urn:vocab:clickstream#request-status";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_RESPONSE_STATUS="urn:vocab:clickstream#response-status";
 
 
 // HTTPProtocol member functions
@@ -269,6 +271,8 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_data_center_time_term_ref = m_data_center_time_term_ref;
 	retval->m_authuser_term_ref = m_authuser_term_ref;
 	retval->m_c_ip_term_ref = m_c_ip_term_ref;
+	retval->m_request_status_term_ref = m_request_status_term_ref;
+	retval->m_response_status_term_ref = m_response_status_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -402,6 +406,10 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_cs_missing_packets_term_ref, m_cs_missing_packets);
 	(*event_ptr_ref).setUInt(m_sc_missing_packets_term_ref, m_sc_missing_packets);
 	
+	// set availability metrics
+	(*event_ptr_ref).setUInt(m_request_status_term_ref, m_request.getStatus());
+	(*event_ptr_ref).setUInt(m_response_status_term_ref, m_response.getStatus());
+
 	// used to cache decoded payload content
 	size_t decoded_request_length;
 	size_t decoded_response_length;
@@ -772,6 +780,14 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_c_ip_term_ref = v.findTerm(VOCAB_CLICKSTREAM_C_IP);
 	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_C_IP);
+
+	m_request_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REQUEST_STATUS);
+	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_REQUEST_STATUS);
+
+	m_response_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
+	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
 }
 
 
