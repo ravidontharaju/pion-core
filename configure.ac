@@ -13,6 +13,9 @@ AC_CONFIG_SRCDIR(platform/src/Vocabulary.cpp)
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
 
+# Disable static libraries to speed up build (they are not used)
+AM_DISABLE_STATIC
+
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
