@@ -16,6 +16,10 @@
 			<Type>object</Type>
 			<Comment>Event that represents a single clickstream visitor session</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#tcp-event">
+			<Type>object</Type>
+			<Comment>Event that represents TCP session information</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#session-group">
 			<Type>shortstring</Type>
 			<Comment>Clickstream session group this event was assigned to</Comment>
@@ -379,6 +383,10 @@
         <Term id="urn:vocab:clickstream#response-status">
             <Type>uint8</Type>
             <Comment>HTTP response status code</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#tcp-status">
+            <Type>uint8</Type>
+            <Comment>TCP handshake status code</Comment>
         </Term>
 	</Vocabulary>
 </PionConfig>
