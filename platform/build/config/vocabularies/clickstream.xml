@@ -388,5 +388,9 @@
             <Type>uint8</Type>
             <Comment>TCP handshake status code</Comment>
         </Term>
+        <Term id="urn:vocab:clickstream#visitor-status">
+            <Type>shortstring</Type>
+            <Comment>New visitor: how determined? c=Cookie, v=visitorDB, a=anonDB</Comment>
+        </Term>
 	</Vocabulary>
 </PionConfig>
