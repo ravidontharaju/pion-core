@@ -110,6 +110,8 @@ void HTTPProtocol::reset(void)
 	m_response_parser.reset();
 	m_request.clear();
 	m_response.clear();
+	m_response.setStatusCode(0U);
+	m_response.setStatusMessage("");
 	m_request_start_time = m_request_end_time = m_request_ack_time
 		= m_response_start_time = m_response_end_time = m_response_ack_time
 		= boost::date_time::not_a_date_time;

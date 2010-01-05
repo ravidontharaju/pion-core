@@ -109,7 +109,10 @@ public:
 		m_response_ack_time(boost::date_time::not_a_date_time),
 		m_cs_data_packets(0), m_sc_data_packets(0),
 		m_cs_missing_packets(0), m_sc_missing_packets(0)
-	{}
+	{
+		m_response.setStatusCode(0U);
+		m_response.setStatusMessage("");
+	}
 
 	/// virtual destructor
 	virtual ~HTTPProtocol() {}
