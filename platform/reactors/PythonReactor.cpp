@@ -200,7 +200,7 @@ Reactor_create(const char *id, const char *name, PythonReactor *this_ptr)
 			return NULL;
 		}
 
-		self->name = PyString_FromString(id);
+		self->name = PyString_FromString(name);
 		if (self->name == NULL) {
 			Py_DECREF(self);
 			return NULL;
@@ -223,7 +223,7 @@ Event_dealloc(PythonEventObject* self)
 {
 	Py_XDECREF(self->type);
 	PyObject *obj = (PyObject*) self;
-	obj->ob_type->tp_free(obj);
+	obj->ob_type->tp_base->tp_dealloc(obj);
 }
 
 static PyObject *
