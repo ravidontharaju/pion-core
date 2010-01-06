@@ -223,7 +223,7 @@ Event_dealloc(PythonEventObject* self)
 {
 	Py_XDECREF(self->type);
 	PyObject *obj = (PyObject*) self;
-	obj->ob_type->tp_free(obj);
+	obj->ob_type->tp_base->tp_dealloc(obj);
 }
 
 static PyObject *
