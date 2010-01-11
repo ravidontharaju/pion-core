@@ -44,6 +44,14 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 				this.containerNode.selectedIndex = -1;
 			} else {
 				this.containerNode.value = value;
+				if (this.containerNode.value != value) {
+					if (dojo.some(this.containerNode.options, function(opt) { return opt.value == value; })) {
+						this.onError(new Error("SimpleSelect error: value could not be set to '" + value + "'."));
+					} else {
+						this.onError(new Error("SimpleSelect error: '" + value + "' is not one of the current options."));
+					}
+					return;
+				}
 			}
 			this._handleOnChange(value, true);
 		} else {
@@ -53,10 +61,61 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 					this.containerNode.selectedIndex = -1;
 				} else {
 					this.containerNode.value = value;
+					if (this.containerNode.value != value) {
+						if (dojo.some(this.containerNode.options, function(opt) { return opt.value == value; })) {
+							this.onError(new Error("SimpleSelect error: value could not be set to '" + value + "'."));
+						} else {
+							this.onError(new Error("SimpleSelect error: '" + value + "' is not one of the current options."));
+						}
+						return;
+					}
 				}
 				this._handleOnChange(value, true);
 			});
 		}
+	},
+
+	deferredSet: function(v) {
+		var dfd = new dojo.Deferred();
+		this.focus();
+
+		//if (this.attr('value') == v) {
+		if (this._lastValueReported == v) {
+			dfd.callback(v);
+			return dfd;
+		}
+		//TODO: replace the two connects below with this:
+		/*
+		var h = dojo.connect(this, 'readyForCallback', function(e, is_error) {
+console.info("~~~~~~~~~~~~~~~~~~~~~ In readyForCallback() callback, e = ", e, ", is_error = ", is_error);
+			dojo.disconnect(h);
+			if (is_error)
+				dfd.errback(e);
+			else
+				dfd.callback(e);
+		});
+		*/
+		var h1 = dojo.connect(this, 'onChangeDone', function(e) {
+			dojo.disconnect(h1);
+			dojo.disconnect(h2);
+			dfd.callback(e);
+		});
+		var h2 = dojo.connect(this, 'onError', function(e) {
+			dojo.disconnect(h1);
+			dojo.disconnect(h2);
+			dfd.errback(e);
+		});
+
+		this.attr('value', v);
+		return dfd;
+	},
+
+	onChangeDone: function(/*Event*/ e){
+		//readyForCallback(e, false);
+	},
+
+	onError: function(/*Error*/ e){
+		//readyForCallback(e, true);
 	},
 
 	_onChange: function(/*Event*/ e){
@@ -79,6 +138,7 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 		this.doneAddingOptions = false;
 		this.containerNode.options.length = 0;
 		var _this = this;
+		this.first_option = null;
 		this.store.fetch({
 			query: _this.query, 
 			onItem: function(item) {
@@ -89,9 +149,12 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 				} else {
 					_this.containerNode.add(new Option(label, key), null);
 				}
+				if (_this.first_option == null) {
+					_this.first_option = key;
+				}
 			},
 			onComplete: function() {
-				_this._onDoneAddingOptions();
+				_this._onDoneAddingOptions(_this.first_option);
 			},
 			onError: pion.handleFetchError
 		});

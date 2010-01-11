@@ -1,4 +1,5 @@
 dojo.provide("plugins.services.Service");
+dojo.require("pion.services");
 dojo.require("dijit.layout.BorderContainer");
 
 dojo.declare("plugins.services.Service",

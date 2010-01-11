@@ -51,12 +51,6 @@ pion.doDeleteConfirmationDialog = function(message, delete_function, delete_func
 	setTimeout("dijit.byId('cancel_delete').focus()", 500);
 }
 
-// These are empirical values obtained through inspecting the html in Firebug.
-// TODO: find a way to calculate them using dojo.
-pion.grid_cell_padding = 8;
-pion.scrollbar_width = 20;
-pion.datetime_cell_width = 100;
-
 pion.initOptionalValue = function(store, item, new_item_object, tag_name, optional_default) {
 	if (store.hasAttribute(item, tag_name)) {
 		new_item_object[tag_name] = store.getValue(item, tag_name);

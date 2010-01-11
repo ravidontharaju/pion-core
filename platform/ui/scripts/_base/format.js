@@ -1,5 +1,11 @@
 dojo.provide("pion._base.format");
 
+// These are empirical values obtained through inspecting the html in Firebug.
+// TODO: find a way to calculate them using dojo.
+pion.grid_cell_padding = 8;
+pion.scrollbar_width = 20;
+pion.datetime_cell_width = 100;
+
 // Substitutes entity references for characters that have special meaning in XML.
 pion.escapeXml = function(value) {
 	if (value === false || value === 0) {
