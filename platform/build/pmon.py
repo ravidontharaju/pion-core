@@ -28,6 +28,8 @@ KEY_METRICS = {
 		'PreviousActiveSessions' : 100000,      # recent index keys cached
 		},
 	'ClickstreamReactor' : {
+		'SessionCookies' : 100000,              # cookie id's mapped to sessions
+		'AnonSessions' : 100000,                # anonymous visitor sessions
 		'OpenSessions' : 100000,                # open visitor sessions
 		'OpenPages' : 25000,                    # open page events
 		'OpenEvents' : 100000,                  # open request events
