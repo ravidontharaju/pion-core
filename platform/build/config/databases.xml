@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config" pion_version="2.2.9">
+  <Database id="face93fc-19c0-11de-9293-001cc02bd66b">
+    <Plugin>SQLiteDatabase</Plugin>
+    <Name>Clickstream Requests</Name>
+    <Filename>requests.db</Filename>
+    <Comment>Embedded SQLite database for storing clickstream HTTP requests</Comment>
+  </Database>
   <Database id="aace93fc-19c0-11de-9293-001cc02bd66b">
     <Plugin>SQLiteDatabase</Plugin>
     <Name>Clickstream Requests</Name>
