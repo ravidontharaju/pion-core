@@ -16,6 +16,14 @@ SMTP_PASSWORD = ''
 
 # defines a mapping of reactor statistics to maximum threshold values
 KEY_METRICS = {
+	'OmnitureAnalyticsReactor' : {
+		'RequestsQueued' : 7500,                # requests queued for delivery
+		'OpenSessions' : 100000,                # open visitor sessions
+		},
+	'GoogleAnalyticsReactor' : {
+		'RequestsQueued' : 7500,                # requests queued for delivery
+		'OpenSessions' : 100000,                # open visitor sessions
+		},
 	'DatabaseOutputReactor' : {
 		'EventsQueued' : 7500,                  # events queued for db inserts
 		'KeyCacheSize' : 100000,                # recent index keys cached
