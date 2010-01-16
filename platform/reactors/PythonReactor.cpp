@@ -122,6 +122,7 @@ static PyObject* Reactor_deliver(PythonReactorObject *self, PyObject *args)
 {
 	// check that callback parameter is a dictionary
 	PyObject *event_ptr;
+	// Note: event_ptr is a borrowed reference -- do not decrement ref count
 	if (! PyArg_ParseTuple(args, "O:event_object", &event_ptr)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
@@ -774,14 +775,14 @@ void PythonReactor::toPythonEvent(const Event& e, PyObject *& obj) const
 	}
 }
 
-void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
+void PythonReactor::fromPythonEvent(PyObject *py_event, EventPtr& e) const
 {
 	// needed for python date time API functions
 	PyDateTime_IMPORT; 
 
 	// find the term corresponding with the event type
 	const Vocabulary& v = *m_vocab_ptr;
-	char *term_str = PyString_AsString(((PythonEventObject*)obj)->type);
+	char *term_str = PyString_AsString(((PythonEventObject*)py_event)->type);
 	if (! term_str)
 		throw EventConversionException("event type field must be a string");
 	Vocabulary::TermRef term_ref = v.findTerm( term_str );
@@ -794,14 +795,14 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 	// create a new Pion Event object
 	EventFactory event_factory;
 	event_factory.create(e, term_ref);
-	
+
 	// populate new Pion Event object
 	Py_ssize_t pos = 0;
 	PyObject *key = NULL;
 	PyObject *values = NULL;
 
 	// iterate through each item within the python event
-	while (PyDict_Next(obj, &pos, &key, &values)) {
+	while (PyDict_Next(py_event, &pos, &key, &values)) {
 
 		// get the Pion term identifier for the Python key
 		term_str = PyString_AsString(key);
@@ -828,8 +829,12 @@ void PythonReactor::fromPythonEvent(PyObject *obj, EventPtr& e) const
 		// iterate through each of the values defined
 		Py_ssize_t num_values = PySequence_Size(values);
 		for (Py_ssize_t n = 0; n < num_values; ++n) {
+			// NOTE: returns a *new* reference!
+			// it's safe to assume the original sequence will not change, so
+			// just decrement the reference early to simplify bookkeeping
 			PyObject *obj = PySequence_GetItem(values, n);
 			PION_ASSERT(obj);
+			Py_XDECREF(obj);
 				
 			switch (term_type) {
 			case Vocabulary::TYPE_NULL:
@@ -1009,8 +1014,10 @@ PyObject *PythonReactor::findPythonFunction(PyObject *module_ptr, const std::str
 {
 	PyObject *func_ptr = PyObject_GetAttrString(module_ptr, const_cast<char*>(func_name.c_str()));
 	if (func_ptr) {
-		if (! PyCallable_Check(func_ptr))
+		if (! PyCallable_Check(func_ptr)) {
+			Py_DECREF(func_ptr);
 			throw NotCallableException(func_name);
+		}
 		PION_LOG_DEBUG(m_logger, "Found " << func_name << "() function");
 	} else {
 		PyErr_Clear();

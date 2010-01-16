@@ -37,6 +37,7 @@ const std::string		ReactionEngine::TYPE_ELEMENT_NAME = "Type";
 const std::string		ReactionEngine::FROM_ELEMENT_NAME = "From";
 const std::string		ReactionEngine::TO_ELEMENT_NAME = "To";
 const std::string		ReactionEngine::TOTAL_OPS_ELEMENT_NAME = "TotalOps";
+const std::string		ReactionEngine::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
 const std::string		ReactionEngine::CONNECTION_TYPE_REACTOR = "reactor";
 const std::string		ReactionEngine::CONNECTION_TYPE_INPUT = "input";
 const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
@@ -678,6 +679,11 @@ void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id
 		// write total operations
 		out << "\t<" << TOTAL_OPS_ELEMENT_NAME << '>' << getTotalOperations()
 			<< "</" << TOTAL_OPS_ELEMENT_NAME << '>' << std::endl;
+
+		// write events queued
+		out << "\t<" << EVENTS_QUEUED_ELEMENT_NAME << '>' << getEventsQueued()
+			<< "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
+			
 	} else {
 		// get a pointer to the reactor
 		Reactor *reactor_ptr = m_plugins.get(only_id);
