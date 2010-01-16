@@ -609,8 +609,11 @@ private:
 	/// name of the to connection element for Pion XML config files
 	static const std::string		TO_ELEMENT_NAME;
 	
-	/// name of the total operations element for Pion XML config files
+	/// name of the total operations element for Pion XML statistics
 	static const std::string		TOTAL_OPS_ELEMENT_NAME;
+	
+	/// name of the events queued element for Pion XML statistics
+	static const std::string		EVENTS_QUEUED_ELEMENT_NAME;
 	
 	/// type identifier for internal reactor connections
 	static const std::string		CONNECTION_TYPE_REACTOR;
