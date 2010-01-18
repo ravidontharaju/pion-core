@@ -622,7 +622,8 @@ void PythonReactor::deliverToConnections(PyObject *event_ptr)
 	try {
 		EventPtr e;
 		fromPythonEvent(event_ptr, e);
-		deliverEvent(e);
+		// must return immediately to avoid Python thread deadlocks
+		deliverEvent(e, true);
 	} catch (std::exception& e) {
 		std::string error_msg(e.what());
 		if (PyErr_Occurred()) {
