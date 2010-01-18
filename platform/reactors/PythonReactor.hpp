@@ -217,17 +217,30 @@ protected:
 	public:
 
 		/// initializes the current thread's state, acquires the GIL and makes the thread active
-		PythonLock(void)
-			: m_thr_state_ptr(NULL)
+		PythonLock(bool inverse = false)
+			: m_inversed(inverse), m_thr_state_ptr(NULL)
 		{
 			m_thr_state_ptr = PythonReactor::initThreadState();
-			PyEval_AcquireThread(m_thr_state_ptr);
+			if (m_inversed) {
+				PyEval_ReleaseThread(m_thr_state_ptr);
+			} else {
+				PyEval_AcquireThread(m_thr_state_ptr);
+			}
 		}
 		
 		/// releases the GIL and releases the current thread state
-		~PythonLock() { PyEval_ReleaseThread(m_thr_state_ptr); }
+		~PythonLock() {
+			if (m_inversed) {
+				PyEval_AcquireThread(m_thr_state_ptr);
+			} else {
+				PyEval_ReleaseThread(m_thr_state_ptr);
+			}
+		}
 
 	private:
+	
+		/// true if behaviour should be inversed
+		bool			m_inversed;
 
 		/// pointer to the state of the current thread
 		PyThreadState *	m_thr_state_ptr;
