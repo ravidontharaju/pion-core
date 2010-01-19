@@ -1,3 +1,18 @@
+Version 2.2.10 (2010-01-20)
+===========================
+
+* Fixed various memory leaks within PythonReactor (818)
+* Fixed deadlocks when using multiple PythonReactors in same data flow (824)
+* TransformReactor now allows assignments from any type, not just strings (811)
+* TransformReactor now continues evaluating rules after is-(not-)defined (791)
+* TransformReactor rules now stop when the first condition matches (797)
+* Added new cs-cookie and sc-cookie extraction rules for HTTPProtocol (796)
+* Added EventsQueued statistic to ReactionEngine /config/reactors/stats (823)
+* Added new visitor-status field to clickstream vocabulary (785)
+* HTTPParser will now ignore attributes from Set-Cookie HTTP headers (808)
+* Disabled default building of static libraries in Unix autoconf scripts (825)
+
+
 Version 2.2.8 (2009-12-04)
 ==========================
 
