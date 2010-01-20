@@ -273,7 +273,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// respond with the new Codec's configuration
 				if (! getConfig().getCodecFactory().writeConfigXML(ss, codec_id))
-					throw CodecFactory::CodecNotFoundException(branches[1]);
+					throw CodecFactory::CodecNotFoundException(codec_id);
 				
 			} else {
 				// send a 405 (method not allowed) response
@@ -368,7 +368,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// respond with the new Database's configuration
 				if (! getConfig().getDatabaseManager().writeConfigXML(ss, database_id))
-					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
+					throw DatabaseManager::DatabaseNotFoundException(database_id);
 				
 			} else {
 				// send a 405 (method not allowed) response
@@ -485,7 +485,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				
 				// respond with the new Protocol's configuration
 				if (! getConfig().getProtocolFactory().writeConfigXML(ss, protocol_id))
-					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+					throw ProtocolFactory::ProtocolNotFoundException(protocol_id);
 				
 			} else {
 				// send a 405 (method not allowed) response
@@ -878,7 +878,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 				// respond with the new User's configuration
 				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, user_id))
-					throw UserManager::UserNotFoundException(branches[1]);
+					throw UserManager::UserNotFoundException(user_id);
 
 			} else {
 				// send a 405 (method not allowed) response
