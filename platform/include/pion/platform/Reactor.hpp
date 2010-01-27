@@ -60,7 +60,7 @@ public:
 	typedef std::vector<std::string>			QueryBranches;
 	
 	/// data type for a dictionary of strings (used for HTTP headers)
-	typedef PION_HASH_MULTIMAP<std::string, std::string, PION_HASH_STRING > QueryParams;
+	typedef StringDictionary					QueryParams;
 	
 	/// data type used to describe the type of Reactor
 	enum ReactorType {
