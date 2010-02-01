@@ -223,8 +223,12 @@ std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
 
 void ReactionEngine::removeReactor(const std::string& reactor_id)
 {
+	Reactor *reactor_ptr = m_plugins.get(reactor_id);
+	if (reactor_ptr == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
 	// If the Reactor is still running, stop it.
-	if (m_plugins.get(reactor_id)->isRunning()) {
+	if (reactor_ptr->isRunning()) {
 		stopReactor(reactor_id);
 	}
 
