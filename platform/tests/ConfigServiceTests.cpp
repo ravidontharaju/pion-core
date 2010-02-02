@@ -134,8 +134,28 @@ public:
 		HTTPResponsePtr response_ptr(sendRequest(request));
 
 		return checkIfReactorIsRunning(reactor_id, *response_ptr);
-	}	
-	
+	}
+
+	inline xmlNodePtr checkGetConfig(const std::string& resource)
+	{
+		HTTPRequest request;
+		request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+		request.setResource(resource);
+		HTTPResponsePtr response_ptr(sendRequest(request));
+
+		// check the response status code
+		BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
+
+		// parse the response content
+		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(),
+										   response_ptr->getContentLength());
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		return node_ptr;
+	}
+
 	/**
 	 * uses the ConfigService to add a new resource (plugin, connection, etc.)
 	 *
@@ -272,7 +292,6 @@ public:
 	 * @param resource the resource representing the item to remove
 	 */
 	inline void checkDeleteResource(const std::string& resource) {
-		// make a request to remove the "log writer" reactor
 		HTTPRequest request;
 		request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
 		request.setResource(resource);
@@ -414,6 +433,17 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveLogWriterReactor) {
 	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasPlugin(m_log_writer_id));
 }
 
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveNonexistentReactor) {
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
+	request.setResource("/config/reactors/BOGUS");
+	HTTPResponsePtr response_ptr(sendRequest(request));
+
+	// Check for the expected error code and message.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_SERVER_ERROR);
+	BOOST_CHECK_EQUAL(response_ptr->getContent(), "No reactors found for identifier: BOGUS");
+}
+
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewConnection) {
 	std::string connection_config_str = "<PionConfig><Connection>"
 		"<Type>reactor</Type>"
@@ -510,6 +540,145 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveEmbeddedDatabase) {
 	
 	// make sure that the Database was removed
 	BOOST_CHECK(! m_platform_cfg.getDatabaseManager().hasPlugin(m_embedded_db_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkGetServersConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/servers");
+	xmlNodePtr plugin_node = ConfigManager::findConfigNodeByAttr("Server",
+																 "id", "main-server",
+																 node_ptr->children);
+	BOOST_REQUIRE(plugin_node);
+	BOOST_REQUIRE(plugin_node->children);
+}
+
+BOOST_AUTO_TEST_CASE(checkGetOneServerConfig) {
+	xmlNodePtr config_node = checkGetConfig("/config/servers/main-server");
+	BOOST_REQUIRE(config_node);
+	xmlNodePtr server_node = ConfigManager::findConfigNodeByName("Server", config_node->children);
+	BOOST_REQUIRE(server_node);
+	xmlNodePtr port_node = ConfigManager::findConfigNodeByName("Port", server_node->children);
+	BOOST_REQUIRE(port_node);
+	xmlChar* xml_char_ptr = xmlNodeGetContent(port_node);
+	BOOST_REQUIRE(xml_char_ptr);
+	BOOST_CHECK_EQUAL(reinterpret_cast<char*>(xml_char_ptr), "0");
+	xmlFree(xml_char_ptr);
+}
+
+BOOST_AUTO_TEST_CASE(checkGetServicesConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/services");
+	xmlNodePtr plugin_node = ConfigManager::findConfigNodeByAttr("PlatformService",
+																 "id", "config-service",
+																 node_ptr->children);
+	BOOST_REQUIRE(plugin_node);
+	BOOST_REQUIRE(plugin_node->children);
+}
+
+BOOST_AUTO_TEST_CASE(checkGetOneServiceConfig) {
+	xmlNodePtr config_node = checkGetConfig("/config/services/config-service");
+	BOOST_REQUIRE(config_node);
+	xmlNodePtr service_node = ConfigManager::findConfigNodeByName("PlatformService", config_node->children);
+	BOOST_REQUIRE(service_node);
+	xmlNodePtr resource_node = ConfigManager::findConfigNodeByName("Resource", service_node->children);
+	BOOST_REQUIRE(resource_node);
+	xmlChar* xml_char_ptr = xmlNodeGetContent(resource_node);
+	BOOST_REQUIRE(xml_char_ptr);
+	BOOST_CHECK_EQUAL(reinterpret_cast<char*>(xml_char_ptr), "/config");
+	xmlFree(xml_char_ptr);
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewPlatformService) {
+	std::string service_config_str = "<PionConfig><PlatformService>"
+		"<Plugin>QueryService</Plugin>"
+		"<Resource>/query</Resource>"
+		"<Server>main-server</Server>"
+		"</PlatformService></PionConfig>";
+	
+	// make a request to add a new PlatformService
+	std::string service_id = checkAddResource("/config/services", "PlatformService", service_config_str);
+	
+	// make sure that the PlatformService was created
+	BOOST_CHECK(m_platform_cfg.getServiceManager().hasPlugin(service_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkGetServicesConfigAfterAddingService) {
+	std::string service_config_str = "<PionConfig><PlatformService>"
+		"<Plugin>QueryService</Plugin>"
+		"<Resource>/query</Resource>"
+		"<Server>main-server</Server>"
+		"</PlatformService></PionConfig>";
+	
+	// make a request to add a new PlatformService
+	std::string service_id = checkAddResource("/config/services", "PlatformService", service_config_str);
+	
+	xmlNodePtr node_ptr = checkGetConfig("/config/services");
+	xmlNodePtr plugin_node = ConfigManager::findConfigNodeByAttr("PlatformService",
+																 "id", service_id,
+																 node_ptr->children);
+	BOOST_REQUIRE(plugin_node);
+	BOOST_REQUIRE(plugin_node->children);
+
+	xmlNodePtr config_node = checkGetConfig("/config/services/" + service_id);
+	BOOST_REQUIRE(config_node);
+	xmlNodePtr service_node = ConfigManager::findConfigNodeByName("PlatformService", config_node->children);
+	BOOST_REQUIRE(service_node);
+	xmlNodePtr resource_node = ConfigManager::findConfigNodeByName("Resource", service_node->children);
+	BOOST_REQUIRE(resource_node);
+	xmlChar* xml_char_ptr = xmlNodeGetContent(resource_node);
+	BOOST_REQUIRE(xml_char_ptr);
+	BOOST_CHECK_EQUAL(reinterpret_cast<char*>(xml_char_ptr), "/query");
+	xmlFree(xml_char_ptr);
+}
+
+BOOST_AUTO_TEST_CASE(checkServiceWorksAfterBeingAdded) {
+	std::string service_config_str = "<PionConfig><PlatformService>"
+		"<Plugin>ConfigService</Plugin>"
+		"<Resource>/new-config</Resource>"
+		"<Server>main-server</Server>"
+		"<UIDirectory>../../platform/ui</UIDirectory>"
+		"</PlatformService></PionConfig>";
+	
+	// Make a request to add another ConfigService.
+	std::string service_id = checkAddResource("/config/services", "PlatformService", service_config_str);
+
+	// Send a request to the new ConfigService and spot check the response.
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+	request.setResource("/new-config/vocabularies");
+	HTTPResponsePtr response_ptr(sendRequest(request));
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_OK);
+	BOOST_CHECK(boost::regex_search(response_ptr->getContent(), boost::regex("urn:vocab:test_b")));
+}
+
+BOOST_AUTO_TEST_CASE(checkRemoveService) {
+	// make a request to remove the QueryService
+	checkDeleteResource("/config/services/query-service");
+
+	// make sure that it was removed
+	BOOST_CHECK(! m_platform_cfg.getServiceManager().hasPlugin("query-service"));
+}
+
+// TODO: Currently, nested PlatformServices can't be removed.
+// If we want to support nested PlatformServices, we'll need to update ConfigManager::removePluginConfig()
+// so that it no longer assumes that the configuration it's trying to remove is at the top level.
+/*
+BOOST_AUTO_TEST_CASE(checkRemoveNestedService) {
+	// make a request to remove the QueryService
+	checkDeleteResource("/config/services/query-service-2");
+
+	// make sure that it was removed
+	BOOST_CHECK(! m_platform_cfg.getServiceManager().hasPlugin("query-service-2"));
+}
+*/
+
+BOOST_AUTO_TEST_CASE(checkRemoveNonexistentService) {
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
+	request.setResource("/config/services/BOGUS");
+	HTTPResponsePtr response_ptr(sendRequest(request));
+
+	// Check for the expected error code and message.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_SERVER_ERROR);
+	BOOST_CHECK_EQUAL(response_ptr->getContent(), "No platform service found for identifier: BOGUS");
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewVocabulary) {

@@ -39,10 +39,10 @@ const std::string		ConfigService::UI_DIRECTORY_ELEMENT_NAME = "UIDirectory";
 
 // ConfigService member functions
 
-void ConfigService::setConfig(pion::server::PlatformConfig& platform_cfg,
+void ConfigService::setConfig(const pion::platform::Vocabulary& v,
 							  const xmlNodePtr config_ptr)
 {
-	pion::server::PlatformService::setConfig(platform_cfg, config_ptr);
+	pion::server::PlatformService::setConfig(v, config_ptr);
 	
 	// get the UI directory
 	if (! ConfigManager::getConfigOption(UI_DIRECTORY_ELEMENT_NAME, m_ui_directory, config_ptr))
@@ -151,7 +151,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			
-			// returns a list of all Vocabularies
+			// returns a list of all Terms
 			getConfig().getVocabularyManager().writeTermConfigXML(ss);
 			
 		} else if (branches.size() == 2) {
@@ -804,12 +804,85 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		// END CONNECTIONS CONFIG
 		//
+	} else if (branches.front() == "servers") {
+		//
+		// BEGIN SERVERS CONFIG
+		//
+		if (branches.size() == 1) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for all Servers
+				getConfig().getServiceManager().writeServersXML(ss);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+		} else if (branches.size() == 2) {
+			// branches[1] == server_id
+
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing Server's configuration
+				if (! getConfig().getServiceManager().writeServerXML(ss, branches[1]))
+					throw PionPlugin::PluginNotFoundException(branches[1]);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
+		}
+		//
+		// END SERVERS CONFIG
+		//
 	} else if (branches.front() == "services") {
 		//
 		// BEGIN SERVICES CONFIG
 		//
 		if (branches.size() == 1) {
-			getConfig().getServiceManager().writeConfigXML(ss);
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for all PlatformServices
+				getServiceManager().writeConfigXML(ss);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+
+				// add (create) a new PlatformService
+
+				// convert request content into XML configuration info
+				xmlNodePtr service_config_ptr =
+					ServiceManager::createPlatformServiceConfig(request->getContent(),
+																request->getContentLength());
+
+				std::string service_id;
+				// add the new PlatformService to the ServiceManager
+				try {
+					service_id = getServiceManager().addPlatformService(service_config_ptr);
+				} catch (std::exception&) {
+					xmlFreeNodeList(service_config_ptr);
+					throw;
+				}
+				xmlFreeNodeList(service_config_ptr);
+
+				// send a 201 (created) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+				// respond with the new PlatformService's configuration
+				if (! getServiceManager().writeConfigXML(ss, service_id))
+					throw ServiceManager::PlatformServiceNotFoundException(service_id);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+
 		} else if (branches[1] == "plugins") {
 
 			// Send a list of all Services found in the UI directory
@@ -832,11 +905,33 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 			ConfigManager::writeEndPionConfigXML(ss);
 
-		} else {
-			if (! getConfig().getServiceManager().writeConfigXML(ss, branches[1])) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
-				return;
+		} else if (branches.size() == 2) {
+			// branches[1] == service_id
+
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+				// retrieve an existing PlatformService's configuration
+
+				if (! getServiceManager().writeConfigXML(ss, branches[1]))
+					throw ServiceManager::PlatformServiceNotFoundException(branches[1]);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+				// delete an existing PlatformService
+
+				getServiceManager().removePlatformService(branches[1]);
+
+				// send a 204 (no content) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+
+			} else {
+				// send a 405 (method not allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
+
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
 		}
 		//
 		// END SERVICES CONFIG

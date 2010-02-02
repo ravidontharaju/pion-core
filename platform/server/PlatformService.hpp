@@ -52,6 +52,20 @@ public:
 			: PionException("Platform service missing configuration: ", service_id) {}
 	};
 
+	/// exception thrown if the config file contains a Service without a Server identifier specified
+	class ServerIdOfServiceUnspecifiedException : public PionException {
+	public:
+		ServerIdOfServiceUnspecifiedException(const std::string& service_id)
+			: PionException("Service configuration file includes a Service without a Server identifier: ", service_id) {}
+	};
+
+	/// exception thrown if the config file contains a Server with an empty or missing HTTP resource
+	class EmptyServiceResourceException : public PionException {
+	public:
+		EmptyServiceResourceException(const std::string& service_id)
+			: PionException("Service configuration does not define a resource: ", service_id) {}
+	};
+
 	
 	/// constructs a new PlatformService object
 	PlatformService(void) : m_config_ptr(NULL) {}
@@ -77,8 +91,16 @@ public:
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(PlatformConfig& platform_cfg,
+	virtual void setConfig(const pion::platform::Vocabulary& v,
 						   const xmlNodePtr config_ptr);
+
+	inline virtual void setPlatformConfig(PlatformConfig& platform_cfg) {
+		m_config_ptr = &platform_cfg;
+	}
+
+	inline void setServerId(const std::string& server_id) { m_server_id = server_id; }
+
+	inline std::string getServerId(void) { return m_server_id; }
 
 	/**
 	 * this updates the Codecs that are used by this service; it should
@@ -139,6 +161,14 @@ private:
 	
 	/// pointer to the Platform configuration manager
 	PlatformConfig		*m_config_ptr;
+
+	std::string m_server_id;
+
+	/// name of the server (HTTPServer) element for Pion XML config files
+	static const std::string		SERVER_ELEMENT_NAME;
+
+	/// name of the HTTP resource element for Pion XML config files
+	static const std::string		RESOURCE_ELEMENT_NAME;
 };
 
 

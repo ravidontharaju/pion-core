@@ -68,7 +68,7 @@ PlatformConfig::PlatformConfig(void)
 	m_vocab_mgr(), m_codec_factory(m_vocab_mgr), 
 	m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
-	m_service_mgr(*this), m_user_mgr_ptr(new UserManager),
+	m_service_mgr(m_vocab_mgr, *this), m_user_mgr_ptr(new UserManager),
 	m_user_id(-1), m_group_id(-1), m_debug_mode(false)
 {
 	setLogger(PION_GET_LOGGER("pion.server.PlatformConfig"));

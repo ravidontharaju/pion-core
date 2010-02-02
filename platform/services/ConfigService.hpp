@@ -53,11 +53,11 @@ public:
 	/**
 	 * sets configuration parameters for this ConfigService
 	 *
-	 * @param platform_cfg reference to the platform configuration manager
+	 * @param v the Vocabulary that this Service will use to describe Terms
 	 * @param config_ptr pointer to a list of XML nodes containing ConfigService
 	 *                   configuration parameters
 	 */
-	virtual void setConfig(pion::server::PlatformConfig& platform_cfg,
+	virtual void setConfig(const pion::platform::Vocabulary& v,
 						   const xmlNodePtr config_ptr);
 
 	/**

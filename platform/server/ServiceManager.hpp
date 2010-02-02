@@ -31,6 +31,7 @@
 #include <pion/net/WebService.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include "PlatformService.hpp"
+#include <pion/platform/PluginConfig.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -45,7 +46,7 @@ class PlatformConfig;
 /// ServiceManager: manages configuration for platform services
 ///
 class PION_SERVER_API ServiceManager :
-	public pion::platform::ConfigManager
+	public pion::platform::PluginConfig<PlatformService>
 {
 public:
 	
@@ -64,19 +65,26 @@ public:
 	};
 	
 	/// exception thrown if the config file contains a Service with an empty or missing plug-in type
-	class EmptyServicePluginException : public PionException {
+	class EmptyServicePluginTypeException : public PionException {
 	public:
-		EmptyServicePluginException(const std::string& service_id)
+		EmptyServicePluginTypeException(const std::string& service_id)
 			: PionException("Service configuration does not define a plug-in type: ", service_id) {}
 	};
 	
-	/// exception thrown if the config file contains a Server with an empty or missing HTTP resource
+	/// exception thrown if the config file contains a Service with an empty or missing HTTP resource
 	class EmptyServiceResourceException : public PionException {
 	public:
 		EmptyServiceResourceException(const std::string& service_id)
 			: PionException("Service configuration does not define a resource: ", service_id) {}
 	};
-	
+
+	/// exception thrown if the config file contains a Service with an empty or missing Server identifier
+	class EmptyServiceServerIdException : public PionException {
+	public:
+		EmptyServiceServerIdException(const std::string& config_file)
+			: PionException("Service configuration file includes a Service without a Server identifier: ", config_file) {}
+	};
+
 	/// exception thrown if the config file contains a WebService option with an empty name
 	class EmptyOptionNameException : public PionException {
 	public:
@@ -122,19 +130,25 @@ public:
 	/// exception used to propagate exceptions thrown by web services
 	class WebServiceException : public PionException {
 	public:
-		WebServiceException(const std::string& resource, const std::string& error_msg)
-			: PionException(std::string("Service (") + resource,
+		WebServiceException(const std::string& service_id, const std::string& error_msg)
+			: PionException(std::string("Service (") + service_id,
 							std::string("): ") + error_msg)
 		{}
 	};
 
-	
+	/// exception thrown if a PlatformService cannot be found
+	class PlatformServiceNotFoundException : public PionException {
+	public:
+		PlatformServiceNotFoundException(const std::string& service_id)
+			: PionException("No platform service found for identifier: ", service_id) {}
+	};
+
 	/**
 	 * constructs a new ServiceManager instance
 	 *
 	 * @param platform_config reference to the global platform configuration manager
 	 */
-	ServiceManager(PlatformConfig& platform_config);
+	ServiceManager(const pion::platform::VocabularyManager& vocab_mgr, PlatformConfig& platform_config);
 	
 	/// virtual destructor
 	virtual ~ServiceManager() { shutdown(); }
@@ -146,15 +160,11 @@ public:
 	virtual void openConfigFile(void);
 
 	/**
-	 * writes the entire configuration tree to an output stream (as XML)
+	 * writes the configurations for all servers to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the configuration tree into
 	 */
-	virtual void writeConfigXML(std::ostream& out) const {
-		boost::mutex::scoped_lock services_lock(m_mutex);
-		ConfigManager::writeConfigXMLHeader(out);
-		ConfigManager::writeConfigXML(out, m_config_node_ptr, true);
-	}
+	virtual void writeServersXML(std::ostream& out) const;
 	
 	/**
 	 * writes the configuration data for a particular server (as XML)
@@ -162,7 +172,7 @@ public:
 	 * @param out the ostream to write the configuration tree into
 	 * @param server_id unique identifier associated with the HTTP server
 	 */
-	bool writeConfigXML(std::ostream& out, const std::string& server_id) const;
+	bool writeServerXML(std::ostream& out, const std::string& server_id) const;
 
 	/**
 	 * schedules work to be performed by one of the pooled threads
@@ -196,7 +206,69 @@ public:
 	/// returns port number the first server is listing to (for unit tests)
 	unsigned int getPort(void) const;
 
-	
+	/**
+	 * adds a new managed PlatformService
+	 *
+	 * @param config_ptr pointer to a list of XML nodes containing PlatformService
+	 *                   configuration parameters (must include a Plugin type)
+	 *
+	 * @return std::string the new PlatformService's unique identifier
+	 */
+	std::string addPlatformService(const xmlNodePtr config_ptr);
+
+	/**
+	 * removes a managed PlatformService
+	 *
+	 * @param service_id unique identifier associated with the PlatformService
+	 */
+	void removePlatformService(const std::string& service_id);
+
+	/**
+	 * uses a memory buffer to generate XML configuration data for a PlatformService
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the PlatformService
+	 */
+	static xmlNodePtr createPlatformServiceConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(PLATFORM_SERVICE_ELEMENT_NAME, buf, len);
+	}
+
+protected:
+
+	/**
+	 * adds a new plug-in object (without locking or config file updates).  This
+	 * function must be defined properly for any derived classes that wish to
+	 * use openPluginConfig().
+	 *
+	 * @param plugin_id unique identifier associated with the plug-in
+	 * @param plugin_name the name of the plug-in to load (searches
+	 *                    plug-in directories and appends extensions)
+	 * @param config_ptr pointer to a list of XML nodes containing plug-in
+	 *                   configuration parameters
+	 */
+	virtual void addPluginNoLock(const std::string& plugin_id,
+								 const std::string& plugin_name,
+								 const xmlNodePtr config_ptr)
+	{
+		try {
+			PlatformService *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
+			new_plugin_ptr->setId(plugin_id);
+			new_plugin_ptr->setServiceManager(*this);
+			new_plugin_ptr->setPlatformConfig(m_platform_config);
+			if (config_ptr != NULL)
+				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+
+			pion::net::HTTPServerPtr server_ptr = m_servers[new_plugin_ptr->getServerId()];
+			server_ptr->addResource(new_plugin_ptr->getResource(), boost::ref(*new_plugin_ptr));
+		} catch (PionPlugin::PluginNotFoundException&) {
+			throw;
+		} catch (std::exception& e) {
+			throw PluginException(e.what());
+		}
+	}
+
 private:
 
 	/**
@@ -208,9 +280,9 @@ private:
 	 * @param plugin_type will be assigned to the service's plug-in type
 	 * @param http_resource will be assigned to the service's HTTP resource
 	 */
-	void getServiceConfig(xmlNodePtr service_node, const std::string& server_id,
-						  std::string& service_id, std::string& plugin_type,
-						  std::string& http_resource);
+	void getWebServiceConfig(xmlNodePtr service_node, const std::string& server_id,
+							 std::string& service_id, std::string& plugin_type,
+							 std::string& http_resource);
 	
 	/**
 	 * used to send responses when a server error occurs (when an exception is caught)
@@ -223,9 +295,11 @@ private:
 								  pion::net::TCPConnectionPtr& tcp_conn,
 								  const std::string& error_msg);
 
+	void addWebService(xmlNodePtr service_node, const std::string& server_id);
+
 	
-	/// data type for a list of HTTPServer pointers
-	typedef std::list<pion::net::HTTPServerPtr>		ServerList;
+	/// data type for a map of HTTPServer pointers by id
+	typedef std::map<std::string, pion::net::HTTPServerPtr>		ServerMap;
 	
 	/// data type for a collection of web services
 	typedef PluginManager<pion::net::WebService>	WebServiceManager;
@@ -264,9 +338,12 @@ private:
 	/// name of an element specifying the target of a redirect for Pion XML config files
 	static const std::string		REDIRECT_TARGET_ELEMENT_NAME;
 
-	/// name of the HTTP resource element for Pion XML config files
-	static const std::string		RESOURCE_ELEMENT_NAME;
-	
+	/// name of the HTTP resource element of a WebService for Pion XML config files
+	static const std::string		WEB_SERVICE_RESOURCE_ELEMENT_NAME;
+
+	/// name of the element containing the Server a WebService belongs to for Pion XML config files
+	static const std::string		WEB_SERVICE_SERVER_ELEMENT_NAME;
+
 	/// name of the WebService option element for Pion XML config files
 	static const std::string		OPTION_ELEMENT_NAME;
 	
@@ -299,18 +376,15 @@ private:
 	
 	/// used to manage a worker thread pool shared by all servers
 	PionSingleServiceScheduler		m_scheduler;
-	
+
 	/// collection of HTTP servers
-	ServerList						m_servers;
+	ServerMap						m_servers;
 
 	/// collection of regular web services used by the HTTP servers
 	WebServiceManager				m_web_services;
 
-	/// collection of platform services used by the HTTP servers
-	PlatformServiceManager			m_platform_services;
-	
 	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;	
+	mutable boost::mutex			m_mutex;
 };
 
 

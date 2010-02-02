@@ -25,6 +25,14 @@
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 
+namespace pion {		// begin namespace pion
+namespace server {		// begin namespace server (Pion Server)
+
+// forward declarations
+class ServiceManager;
+
+}	// end namespace server
+}	// end namespace pion
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
@@ -47,7 +55,7 @@ public:
 	/// constructs a new PlatformPlugin object
 	PlatformPlugin(void) :
 		m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
-		m_reaction_engine_ptr(NULL), m_protocol_factory_ptr(NULL)
+		m_reaction_engine_ptr(NULL), m_protocol_factory_ptr(NULL), m_service_mgr_ptr(NULL)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -107,9 +115,12 @@ public:
 	/// sets the ReactionEngine that will used by the plugin to access Reactors
 	inline void setReactionEngine(ReactionEngine& engine) { m_reaction_engine_ptr = & engine; }
 
-	/// sets the ReactionEngine that will used by the plugin to access Reactors
+	/// sets the ProtocolFactory that will used by the plugin to access Protocols
 	inline void setProtocolFactory(ProtocolFactory& factory) { m_protocol_factory_ptr = & factory; }
-	
+
+	/// sets the ServiceManager that will used by the plugin to access PlatformServices
+	inline void setServiceManager(pion::server::ServiceManager& mgr) { m_service_mgr_ptr = & mgr; }
+
 protected:
 	
 	/// protected copy function (use clone() instead)
@@ -137,10 +148,16 @@ protected:
 		return *m_reaction_engine_ptr;
 	}
 
-	/// returns the ReactionEngine to use for accessing Reactors
+	/// returns the ProtocolFactory to use for accessing Protocols
 	inline ProtocolFactory& getProtocolFactory(void) {
 		PION_ASSERT(m_protocol_factory_ptr != NULL);
 		return *m_protocol_factory_ptr;
+	}
+
+	/// returns the ServiceManager to use for accessing PlatformServices
+	inline pion::server::ServiceManager& getServiceManager(void) {
+		PION_ASSERT(m_service_mgr_ptr != NULL);
+		return *m_service_mgr_ptr;
 	}
 
 private:
@@ -172,6 +189,9 @@ private:
 
 	/// pointer to the ProtocolFactory, used by the plugin to access NetworkProtocols
 	ProtocolFactory *				m_protocol_factory_ptr;
+
+	/// pointer to the ServiceManager, used by the plugin to access PlatformServices
+	pion::server::ServiceManager *	m_service_mgr_ptr;
 };
 
 	

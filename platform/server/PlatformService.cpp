@@ -29,13 +29,32 @@ using namespace pion::platform;
 namespace pion {		// begin namespace pion
 namespace server {		// begin namespace server (Pion Server)
 
-		
+// static members of PlatformService
+const std::string			PlatformService::SERVER_ELEMENT_NAME = "Server";
+const std::string			PlatformService::RESOURCE_ELEMENT_NAME = "Resource";
+
 // PlatformService member functions
 
-void PlatformService::setConfig(PlatformConfig& platform_cfg, const xmlNodePtr config_ptr)
+void PlatformService::setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr)
 {
-	m_config_ptr = &platform_cfg;
-	PlatformPlugin::setConfig(platform_cfg.getVocabularyManager().getVocabulary(), config_ptr);
+	PlatformPlugin::setConfig(v, config_ptr);
+
+	// find the HTTP resource
+	std::string http_resource;
+	if (! ConfigManager::getConfigOption(RESOURCE_ELEMENT_NAME, http_resource, config_ptr))
+		throw EmptyServiceResourceException(getId());
+
+	// remove the trailing slash (if any) from the HTTP resource
+	http_resource = HTTPServer::stripTrailingSlash(http_resource);
+
+	setResource(http_resource);
+
+	// m_server_id will already be assigned if the Service config is nested in a Server config.
+	if (m_server_id.empty()) {
+		// Find the ID of the Server this Service belongs to.
+		if (! ConfigManager::getConfigOption(SERVER_ELEMENT_NAME, m_server_id, config_ptr))
+			throw ServerIdOfServiceUnspecifiedException(getId());
+	}
 }
 
 void PlatformService::splitPathBranches(PathBranches& branches,
@@ -51,7 +70,7 @@ void PlatformService::splitPathBranches(PathBranches& branches,
 	if (!branches.empty() && branches.back().empty())
 		branches.pop_back();
 }
-	
-	
+
+
 }	// end namespace server
 }	// end namespace pion
