@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(checkComboOfVariousConfigCases) {
 		<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
 		<< "    <Server id=\"server-1\">\n"
-		<< "        <Port>1</Port>\n"
+		<< "        <Port>2050</Port>\n"
 		<< "        <PlatformService id=\"query-service-1-A\">\n"
 		<< "            <Name>Query Service 1-A</Name>\n"
 		<< "            <Plugin>QueryService</Plugin>\n"
@@ -414,7 +414,7 @@ BOOST_AUTO_TEST_CASE(checkComboOfVariousConfigCases) {
 		<< "        </WebService>\n"
 		<< "    </Server>\n"
 		<< "    <Server id=\"server-2\">\n"
-		<< "        <Port>2</Port>\n"
+		<< "        <Port>2051</Port>\n"
 		<< "    </Server>\n"
 		<< "    <PlatformService id=\"query-service-1-B\">\n"
 		<< "        <Name>Query Service 1-B</Name>\n"
@@ -452,17 +452,19 @@ BOOST_AUTO_TEST_CASE(checkComboOfVariousConfigCases) {
 
 	// try to parse the services config file and confirm that no exception is thrown
 	BOOST_CHECK_NO_THROW(m_service_manager->openConfigFile());
+	// Use the following to find out what the problem is (address-already-in-use most likely) if errors occur
+//	m_service_manager->openConfigFile();
 
 	// open a connection on port 1
 	TCPConnection tcp_conn_1(m_service_manager->getIOService());
 	tcp_conn_1.setLifecycle(TCPConnection::LIFECYCLE_KEEPALIVE);
-	m_ec = tcp_conn_1.connect(boost::asio::ip::address::from_string("127.0.0.1"), 1);
+	m_ec = tcp_conn_1.connect(boost::asio::ip::address::from_string("127.0.0.1"), 2050);
 	BOOST_REQUIRE(!m_ec);
 
 	// open a connection on port 2
 	TCPConnection tcp_conn_2(m_service_manager->getIOService());
 	tcp_conn_2.setLifecycle(TCPConnection::LIFECYCLE_KEEPALIVE);
-	m_ec = tcp_conn_2.connect(boost::asio::ip::address::from_string("127.0.0.1"), 2);
+	m_ec = tcp_conn_2.connect(boost::asio::ip::address::from_string("127.0.0.1"), 2051);
 	BOOST_REQUIRE(!m_ec);
 
 	// Send a request to each Service and spot check the response.
