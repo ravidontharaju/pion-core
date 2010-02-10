@@ -29,6 +29,10 @@
 			<Source>sc-header</Source>
 			<Name>Content-Type</Name>
 		</Extract>
+		<Extract term="urn:vocab:clickstream#location">
+			<Source>sc-header</Source>
+			<Name>Location</Name>
+		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>
 			<Match>(?i)&lt;TITLE&gt;(.*?)&lt;/TITLE&gt;</Match>
@@ -65,6 +69,10 @@
 		<Extract term="urn:vocab:clickstream#content-type">
 			<Source>sc-header</Source>
 			<Name>Content-Type</Name>
+		</Extract>
+		<Extract term="urn:vocab:clickstream#location">
+			<Source>sc-header</Source>
+			<Name>Location</Name>
 		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>

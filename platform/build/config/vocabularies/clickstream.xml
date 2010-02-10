@@ -224,6 +224,10 @@
 			<Type>string</Type>
 			<Comment>The Content-Type HTTP response header</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#location">
+			<Type>string</Type>
+			<Comment>The Location HTTP response header</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#cs-content">
 			<Type>blob</Type>
 			<Comment>Payload content sent from client to server</Comment>
@@ -231,6 +235,14 @@
 		<Term id="urn:vocab:clickstream#sc-content">
 			<Type>zblob</Type>
 			<Comment>Payload content sent from server to client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-headers">
+			<Type>zblob</Type>
+			<Comment>All HTTP headers sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-headers">
+			<Type>zblob</Type>
+			<Comment>All HTTP headers sent from server to client</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#rfc931">
 			<Type>shortstring</Type>
@@ -255,6 +267,10 @@
 		<Term id="urn:vocab:clickstream#new-session">
 			<Type>uint8</Type>
 			<Comment>1 if the (http or page) event triggered the generation of a new visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#page-object">
+			<Type>uint8</Type>
+			<Comment>1 if the http event matched the page object detection rules</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#time-taken">
 			<Type>uint32</Type>

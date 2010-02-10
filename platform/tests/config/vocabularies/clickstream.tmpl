@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PionConfig xmlns="http://purl.org/pion/config">
+<PionConfig xmlns="http://purl.org/pion/config" pion_version="3.0.0">
 	<Vocabulary id="urn:vocab:clickstream">
 		<Name>Clickstream</Name>
 		<Comment>Vocabulary for describing clickstream (website traffic) events.</Comment>
@@ -15,6 +15,10 @@
 		<Term id="urn:vocab:clickstream#session-event">
 			<Type>object</Type>
 			<Comment>Event that represents a single clickstream visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#tcp-event">
+			<Type>object</Type>
+			<Comment>Event that represents TCP session information</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#session-group">
 			<Type>shortstring</Type>
@@ -220,6 +224,10 @@
 			<Type>string</Type>
 			<Comment>The Content-Type HTTP response header</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#location">
+			<Type>string</Type>
+			<Comment>The Location HTTP response header</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#cs-content">
 			<Type>blob</Type>
 			<Comment>Payload content sent from client to server</Comment>
@@ -227,6 +235,14 @@
 		<Term id="urn:vocab:clickstream#sc-content">
 			<Type>zblob</Type>
 			<Comment>Payload content sent from server to client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-headers">
+			<Type>zblob</Type>
+			<Comment>All HTTP headers sent from client to server</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#sc-headers">
+			<Type>zblob</Type>
+			<Comment>All HTTP headers sent from server to client</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#rfc931">
 			<Type>shortstring</Type>
@@ -251,6 +267,10 @@
 		<Term id="urn:vocab:clickstream#new-session">
 			<Type>uint8</Type>
 			<Comment>1 if the (http or page) event triggered the generation of a new visitor session</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#page-object">
+			<Type>uint8</Type>
+			<Comment>1 if the http event matched the page object detection rules</Comment>
 		</Term>
 		<Term id="urn:vocab:clickstream#time-taken">
 			<Type>uint32</Type>
@@ -371,6 +391,18 @@
         <Term id="urn:vocab:clickstream#compressed">
             <Type>uint8</Type>
             <Comment>ContentStorage compressed</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#request-status">
+            <Type>uint8</Type>
+            <Comment>HTTP request status code</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#response-status">
+            <Type>uint8</Type>
+            <Comment>HTTP response status code</Comment>
+        </Term>
+        <Term id="urn:vocab:clickstream#tcp-status">
+            <Type>uint8</Type>
+            <Comment>TCP handshake status code</Comment>
         </Term>
         <Term id="urn:vocab:clickstream#visitor-status">
             <Type>shortstring</Type>

@@ -402,6 +402,12 @@ private:
 	/// name of the MaxResponseContentLength element for Pion XML config files
 	static const std::string	MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME;
 
+	/// name of the RawRequestHeaders element for Pion XML config files
+	static const std::string	RAW_REQUEST_HEADERS_ELEMENT_NAME;
+
+	/// name of the RawResponseHeaders element for Pion XML config files
+	static const std::string	RAW_RESPONSE_HEADERS_ELEMENT_NAME;
+
 	/// name of the ContentType element for Pion XML config files
 	static const std::string	CONTENT_TYPE_ELEMENT_NAME;
 
@@ -472,6 +478,14 @@ private:
 	/// urn:vocab:clickstream#sc-missing-packets
     static const std::string	VOCAB_CLICKSTREAM_SC_MISSING_PACKETS;
     pion::platform::Vocabulary::TermRef	m_sc_missing_packets_term_ref; 
+
+	/// urn:vocab:clickstream#cs-headers
+    static const std::string	VOCAB_CLICKSTREAM_CS_HEADERS;
+    pion::platform::Vocabulary::TermRef	m_cs_headers_term_ref; 
+
+    /// urn:vocab:clickstream#sc-headers
+    static const std::string	VOCAB_CLICKSTREAM_SC_HEADERS;
+    pion::platform::Vocabulary::TermRef	m_sc_headers_term_ref; 
 
 	/// urn:vocab:clickstream#cs-bytes
     static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;

@@ -46,6 +46,8 @@ namespace plugins {		// begin namespace plugins
 	
 const std::string HTTPProtocol::MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME = "MaxRequestContentLength";
 const std::string HTTPProtocol::MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME = "MaxResponseContentLength";
+const std::string HTTPProtocol::RAW_REQUEST_HEADERS_ELEMENT_NAME = "RawRequestHeaders";
+const std::string HTTPProtocol::RAW_RESPONSE_HEADERS_ELEMENT_NAME = "RawResponseHeaders";
 const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
 const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
 const std::string HTTPProtocol::EXTRACT_ELEMENT_NAME = "Extract";
@@ -70,6 +72,8 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_DATA_PACKETS="urn:vocab:cli
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_DATA_PACKETS="urn:vocab:clickstream#sc-data-packets";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_MISSING_PACKETS="urn:vocab:clickstream#cs-missing-packets";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_MISSING_PACKETS="urn:vocab:clickstream#sc-missing-packets";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_HEADERS="urn:vocab:clickstream#cs-headers";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_HEADERS="urn:vocab:clickstream#sc-headers";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_BYTES="urn:vocab:clickstream#cs-bytes";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_SC_BYTES="urn:vocab:clickstream#sc-bytes";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_BYTES="urn:vocab:clickstream#bytes";
@@ -245,6 +249,8 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_sc_data_packets_term_ref = m_sc_data_packets_term_ref;
 	retval->m_cs_missing_packets_term_ref = m_cs_missing_packets_term_ref;
 	retval->m_sc_missing_packets_term_ref = m_sc_missing_packets_term_ref;
+	retval->m_cs_headers_term_ref = m_cs_headers_term_ref;
+	retval->m_sc_headers_term_ref = m_sc_headers_term_ref;
 	retval->m_cs_bytes_term_ref = m_cs_bytes_term_ref;
 	retval->m_sc_bytes_term_ref = m_sc_bytes_term_ref;
 	retval->m_bytes_term_ref = m_bytes_term_ref;
@@ -299,6 +305,10 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_status_term_ref, m_response.getStatusCode());
 	(*event_ptr_ref).setString(m_comment_term_ref, m_response.getStatusMessage());
 	(*event_ptr_ref).setString(m_method_term_ref, m_request.getMethod());
+	if (! m_request_parser.getRawHeaders().empty())
+		(*event_ptr_ref).setString(m_cs_headers_term_ref, m_request_parser.getRawHeaders());
+	if (! m_response_parser.getRawHeaders().empty())
+		(*event_ptr_ref).setString(m_sc_headers_term_ref, m_response_parser.getRawHeaders());
 
 	// construct uri string
 	std::string uri_str(m_request.getResource());
@@ -496,6 +506,25 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	} else {
 		m_response_parser.resetMaxContentLength();
 	}
+	
+	// parse RawRequestHeaders config parameter
+	std::string raw_headers_str;
+	if (ConfigManager::getConfigOption(RAW_REQUEST_HEADERS_ELEMENT_NAME,
+		raw_headers_str, config_ptr))
+	{
+		m_request_parser.setSaveRawHeaders(raw_headers_str == "true");
+	} else {
+		m_request_parser.setSaveRawHeaders(false);
+	}
+
+	// parse RawResponseHeaders config parameter
+	if (ConfigManager::getConfigOption(RAW_RESPONSE_HEADERS_ELEMENT_NAME,
+		raw_headers_str, config_ptr))
+	{
+		m_response_parser.setSaveRawHeaders(raw_headers_str == "true");
+	} else {
+		m_response_parser.setSaveRawHeaders(false);
+	}
 
 	// parse content extraction rules
 	xmlNodePtr extract_node = config_ptr;
@@ -670,6 +699,14 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_sc_missing_packets_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_MISSING_PACKETS);
 	if (m_sc_missing_packets_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_MISSING_PACKETS);
+
+	m_cs_headers_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_HEADERS);
+	if (m_cs_headers_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_HEADERS);
+
+	m_sc_headers_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SC_HEADERS);
+	if (m_sc_headers_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SC_HEADERS);
 
 	m_cs_bytes_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_BYTES);
 	if (m_cs_bytes_term_ref == Vocabulary::UNDEFINED_TERM_REF)
