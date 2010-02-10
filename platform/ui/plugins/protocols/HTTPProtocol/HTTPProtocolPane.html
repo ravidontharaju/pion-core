@@ -21,10 +21,16 @@
 						store="pion.terms.store" searchAttr="id" query="{Type: 'object'}" /></td
 			></tr><tr
 				><td><label>Max&nbsp;Request&nbsp;Content&nbsp;Length</label></td
-				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxRequestContentLength" regExp="[1-9][0-9]*" required="true"></td
+				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxRequestContentLength" regExp="[1-9][0-9]*" required="true" /></td
+				><td></td
+				><td align="right"><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="RawRequestHeaders" /></td
+				><td><label>Save&nbsp;Raw&nbsp;Request&nbsp;Headers</label></td
 			></tr><tr
 				><td><label>Max&nbsp;Response&nbsp;Content&nbsp;Length</label></td
-				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxResponseContentLength" regExp="[1-9][0-9]*" required="true"></td
+				><td><input dojoType="dijit.form.ValidationTextBox" type="text" name="MaxResponseContentLength" regExp="[1-9][0-9]*" required="true" /></td
+				><td></td
+				><td align="right"><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="RawResponseHeaders" /></td
+				><td><label>Save&nbsp;Raw&nbsp;Response&nbsp;Headers</label></td
 			></tr
 		></table
 		><br/
