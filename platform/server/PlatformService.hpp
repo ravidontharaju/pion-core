@@ -56,7 +56,7 @@ public:
 	class ServerIdOfServiceUnspecifiedException : public PionException {
 	public:
 		ServerIdOfServiceUnspecifiedException(const std::string& service_id)
-			: PionException("Service configuration file includes a Service without a Server identifier: ", service_id) {}
+			: PionException("Service configuration includes a Service without a Server identifier: ", service_id) {}
 	};
 
 	/// exception thrown if the config file contains a Server with an empty or missing HTTP resource
