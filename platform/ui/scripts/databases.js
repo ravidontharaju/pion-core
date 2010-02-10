@@ -61,7 +61,7 @@ pion.databases.init = function() {
 		plugin_data_store_items = [];
 		dojo.forEach(databases_in_ui_dir, function(database) {
 			// Skip plugins that can't be found on any of the configured plugin paths.
-			if (dojo.indexOf(pion.plugins.loaded_plugins, database) != -1) {
+			if (dojo.indexOf(pion.plugins.available_plugins, database) != -1) {
 				var prototype = pion.plugins.getPluginPrototype('plugins.databases', database, '/plugins/databases');
 				plugin_data_store_items.push({plugin: database, label: prototype.label});
 			}
@@ -89,7 +89,7 @@ pion.databases.init = function() {
 		}
 	}
 
-	pion.plugins.initLoadedPluginList()
+	pion.plugins.initAvailablePluginList()
 		.addCallback(pion.databases.getAllDatabasesInUIDirectory)
 		.addCallback(initUsableDatabasePlugins)
 		.addCallback(initConfiguredDatabases);

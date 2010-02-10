@@ -19,6 +19,10 @@ dojo.require("pion.login");
 dojo.require("pion.terms");
 dojo.require("pion.services");
 dojo.require("pion.about");
+dojo.require("pion.widgets.Wizard");
+dojo.require("pion.widgets.LicenseKey");
+dojo.require("pion.widgets.EditionSelector");
+dojo.requireLocalization("pion", "wizard");
 
 var reactor_config_page_initialized = false;
 var vocab_config_page_initialized = false;
@@ -112,45 +116,561 @@ pion.initTabs = function() {
 	}
 }
 
-var init = function() {
-	dojo.byId('outer').style.visibility = 'visible';
-
-	file_protocol = (window.location.protocol == "file:");
-	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
-
-	// Send a request to /config to see if a login is needed.
-	// login_success_callback() will be called if the user was already logged in, or after a login succeeds.
-	// Before login_success_callback() is called, a license key check will be done, and the user may be prompted to 
-	// enter a key; however, even if they don't enter a valid key, login_success_callback() will still be called.
-	var login_success_callback = function() {
-		pion.terms.init();
-		pion.services.init();
+pion.applyTemplatesIfNeeded = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	
+	if (pion.edition != 'Replay') {
+		dfd.callback(wizard_config);
+		return dfd;
 	}
-	pion.key_service_running = false;
+
+	var labels = dojo.map(wizard_config.reactors, function(item) {return item.label});
+	var mdr_index = dojo.indexOf(labels, 'mdr');
 	dojo.xhrGet({
-		url: '/config',
+		url: '/resources/MDRTemplate.tmpl',
+		handleAs: 'text',
+		timeout: 20000,
+		load: function(response, ioArgs) {
+			wizard_config.reactors[mdr_index].config += dojo.string.substitute(
+				response,
+				{
+					MaxDiskUsage: pion.wizard.max_disk_usage
+				}
+			);
+			dfd.callback(wizard_config);
+
+			return response;
+		},
+		error: pion.handleXhrGetError
+	});
+
+	return dfd;
+}
+
+pion.addReactorsFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	
+	if (wizard_config.reactors.length == 0) {
+		dfd.callback(wizard_config);
+		return dfd;
+	}
+
+	var num_reactors_added = 0;
+	var _this = this;
+	wizard_config.reactor_ids = {};
+	dojo.forEach(wizard_config.reactors, function(reactor) {
+		var post_data = '<PionConfig><Reactor>' + reactor.config + '</Reactor></PionConfig>';  
+		dojo.rawXhrPost({
+			url: '/config/reactors',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				var node = response.getElementsByTagName('Reactor')[0];
+				wizard_config.reactor_ids[reactor.label] = node.getAttribute('id');
+				if (++num_reactors_added == wizard_config.reactors.length) {
+					dfd.callback(wizard_config);
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
+	});
+
+	return dfd;
+}
+
+pion.addConnectionsFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	
+	if (wizard_config.connections.length == 0)
+		dfd.callback(wizard_config);
+
+	var num_connections_added = 0;
+	var _this = this;
+	dojo.forEach(wizard_config.connections, function(connection) {
+		var post_data = '<PionConfig><Connection><Type>reactor</Type>'
+			+ '<From>' + wizard_config.reactor_ids[connection.from] + '</From>'
+			+ '<To>' + wizard_config.reactor_ids[connection.to] + '</To>'
+			+ '</Connection></PionConfig>';  
+		dojo.rawXhrPost({
+			url: '/config/connections',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				if (++num_connections_added == wizard_config.connections.length) {
+					dfd.callback(wizard_config);
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
+	});
+
+	return dfd;
+}
+
+pion.addReplayIfNeeded = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	
+	if (pion.edition != 'Replay') {
+		dfd.callback(wizard_config);
+		return dfd;
+	}
+
+	var replay_config = 
+		'<Name>Replay Query Service</Name>' +
+		'<Comment>Pion Replay query service</Comment>' +
+		'<Plugin>ReplayService</Plugin>' +
+		'<Resource>/replay</Resource>' +
+		'<Server>main-server</Server>' +
+		'<Namespace id="0">' +
+			'<Comment>Default Instance</Comment>' +
+			'<MultiDatabaseOutputReactor>' + wizard_config.reactor_ids['mdr'] + '</MultiDatabaseOutputReactor>' +
+		'</Namespace>';
+
+	var post_data = '<PionConfig><PlatformService>' + replay_config + '</PlatformService></PionConfig>';  
+	dojo.rawXhrPost({
+		url: '/config/services',
+		contentType: "text/xml",
+		handleAs: "xml",
+		postData: post_data,
+		load: function(response) {
+			var node = response.getElementsByTagName('PlatformService')[0];
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	});
+
+	return dfd;
+}
+
+pion.wizardDone = function(exit_early) {
+	dojo.addClass('wizard', 'hidden');
+	dojo.byId('outer').style.visibility = 'visible';
+	dojo.byId('current_user_menu_section').style.visibility = 'visible';
+	dojo.byId('current_user').innerHTML = dojo.cookie('user');
+
+	if (exit_early) {
+		pion.setup_success_callback();
+		return;
+	}
+
+	var sniffer_config =
+								'<Plugin>SnifferReactor</Plugin>'
+								+ '<Workspace>Clickstream ???</Workspace>'
+								+ '<X>50</X>'
+								+ '<Y>100</Y>'
+								+ '<Name>Capture Traffic</Name>'
+								+ '<Comment>Captures raw network traffic to generate HTTP request events</Comment>'
+								+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
+								+ '<ProcessingThreads>3</ProcessingThreads>'
+								+ '<MaxPacketQueueSize>100000</MaxPacketQueueSize>'
+								+ '<QueueEventDelivery>true</QueueEventDelivery>';
+	dojo.forEach(pion.wizard.devices, function(device) {
+		var tcp_ports = dojo.map(pion.wizard.ports, function(item) {return 'tcp port ' + item});
+		sniffer_config += '<Capture><Interface>' + device + '</Interface><Filter>';
+		sniffer_config += tcp_ports.join(' or ');
+		sniffer_config += '</Filter></Capture>';
+	});
+
+	var clickstream_config =
+		'<Plugin>ClickstreamReactor</Plugin>' + 
+		'<Workspace>Clickstream ???</Workspace>' +
+		'<X>250</X>' +
+		'<Y>200</Y>' +
+		'<Name>Sessionize Traffic</Name>' +
+		'<Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>' +
+		'<SessionTimeout>1800</SessionTimeout>' +
+		'<PageTimeout>10</PageTimeout>' +
+		'<MaxOpenPages>5</MaxOpenPages>' +
+		'<MaxOpenEvents>100</MaxOpenEvents>' +
+		'<IgnoreRobotTraffic>true</IgnoreRobotTraffic>' +
+		'<UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>' +
+		'<AnonPersistence>false</AnonPersistence>' +
+		'<CookiePersistence>true</CookiePersistence>' +
+		'<SessionGroup id="default">' +
+			'<Name>Default Group</Name>' +
+			'<Cookie type="s">__utma</Cookie>' +
+			'<Cookie type="v">__utmz</Cookie>' +
+			'<Cookie type="v">s_vi</Cookie>' +
+		'</SessionGroup>';
+	if (pion.wizard.host_suffixes.length > 0) {
+		var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
+		var num_pieces = pieces_of_first_host_suffix.length;
+		var session_group_name = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
+		clickstream_config +=
+			'<SessionGroup id="' + session_group_name + '">' +
+				'<Name>' + session_group_name + '</Name>';
+		dojo.forEach(pion.wizard.host_suffixes, function(host) {
+			clickstream_config += '<Host>' + dojo.trim(host) + '</Host>';
+		});
+		dojo.forEach(pion.wizard.cookies, function(cookie) {
+			clickstream_config += '<Cookie type="' + (cookie.is_visitor_cookie? 'v' : 's') + '">' + cookie.name + '</Cookie>';
+		});
+		clickstream_config +=
+			'</SessionGroup>';
+	}
+	clickstream_config +=
+		'<PageObjects>' +
+			'<MatchAllComparisons>false</MatchAllComparisons>' +
+			'<Comparison>' +
+				'<Term>urn:vocab:clickstream#uri-stem</Term>' +
+				'<Type>regex</Type>' +
+				'<Value>\.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>' +
+				'<MatchAllValues>false</MatchAllValues>' +
+			'</Comparison>' +
+			'<Comparison>' +
+				'<Term>urn:vocab:clickstream#content-type</Term>' +
+				'<Type>regex</Type>' +
+				'<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>' +
+				'<MatchAllValues>false</MatchAllValues>' +
+			'</Comparison>' +
+		'</PageObjects>';
+	if (pion.wizard.analytics_provider == 'Google') {
+		var analytics_config =
+			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
+			'<Workspace>Clickstream ???</Workspace>' +
+			'<X>250</X>' +
+			'<Y>300</Y>' +
+			'<Name>Google Analytics</Name>' +
+			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
+			'<NumConnections>32</NumConnections>' +
+			'<EncryptConnections>false</EncryptConnections>';
+	} else if (pion.wizard.analytics_provider == 'Omniture') {
+		var analytics_config =
+			'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
+			'<Workspace>Clickstream ???</Workspace>' +
+			'<X>250</X>' +
+			'<Y>300</Y>' +
+			'<Name>Omniture Analytics</Name>' +
+			'<NumConnections>32</NumConnections>' +
+			'<HttpHost>' + pion.wizard.omniture_host + '</HttpHost>' +
+			'<AccountId>' + pion.wizard.omniture_report_suite + '</AccountId>' +
+			'<EncryptConnections>false</EncryptConnections>' +
+			'<SendTimestamp>true</SendTimestamp>' +
+			'<Query name="ipaddress">urn:vocab:clickstream#c-ip</Query>' +
+			'<Query name="userAgent">urn:vocab:clickstream#useragent</Query>' +
+			'<Query name="pageName">urn:vocab:clickstream#page-title</Query>' +
+			'<Query name="referrer">urn:vocab:clickstream#referer</Query>' +
+			'<Query name="visitorID">[computed]</Query>' +
+			'<Query name="server">[computed]</Query>' +
+			'<Query name="pageURL">[computed]</Query>' +
+			'<Query name="timestamp">[computed]</Query>' +
+			'<Query name="reportSuiteID">[computed]</Query>';
+	} else {
+		// TODO:
+	}
+
+	if (pion.edition == 'Replay') {
+		var chr_config = 
+			'<Plugin>ContentHashReactor</Plugin>' + 
+			'<Workspace>Clickstream ???</Workspace>' + 
+			'<X>250</X>' + 
+			'<Y>100</Y>' + 
+			'<Name>Detect Page Content</Name>' + 
+			'<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>' + 
+			'<MatchAllComparisons>true</MatchAllComparisons>' + 
+			'<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>' + 
+			'<Comparison>' + 
+				'<Term>urn:vocab:clickstream#status</Term>' + 
+				'<Type>equals</Type>' + 
+				'<Value>200</Value>' + 
+				'<MatchAllValues>false</MatchAllValues>' + 
+			'</Comparison>' + 
+			'<Comparison>' + 
+				'<Term>urn:vocab:clickstream#content-type</Term>' + 
+				'<Type>starts-with</Type>' + 
+				'<Value>text/html</Value>' + 
+				'<MatchAllValues>false</MatchAllValues>' + 
+			'</Comparison>';
+
+		// The remainder will be added in pion.applyTemplatesIfNeeded().
+		var mdr_config = 
+			'<Workspace>Clickstream ???</Workspace>' + 
+			'<X>450</X>' + 
+			'<Y>200</Y>';
+
+		var reactors = [
+			{label: 'sniffer', config: sniffer_config},
+			{label: 'chr', config: chr_config},
+			{label: 'clickstream', config: clickstream_config},
+			{label: 'mdr', config: mdr_config}
+		];
+		var connections = [
+			{from: 'sniffer', to: 'chr'},
+			{from: 'chr', to: 'clickstream'},
+			{from: 'clickstream', to: 'mdr'}
+		];
+
+	} else {
+		var reactors = [
+			{label: 'sniffer', config: sniffer_config},
+			{label: 'clickstream', config: clickstream_config}
+		];
+		var connections = [
+			{from: 'sniffer', to: 'clickstream'}
+		];
+	}
+
+	// TODO: Is there any use for this?
+	var replay_config = '';
+
+	if (analytics_config) {
+		reactors.push({label: 'analytics', config: analytics_config});
+		connections.push({from: 'clickstream', to: 'analytics'});
+	}
+	wizard_config = {reactors: reactors, connections: connections, replay_config: replay_config};
+	pion.applyTemplatesIfNeeded(wizard_config)
+	.addCallback(pion.addReactorsFromWizard)
+	.addCallback(pion.addConnectionsFromWizard)
+	.addCallback(pion.addReplayIfNeeded)
+	.addCallback(pion.setup_success_callback);
+}
+
+pion.checkEdition = function() {
+	var form = dijit.byId('select_edition_form');
+	pion.edition = form.attr('value').edition;
+	if (pion.edition) {
+		dojo.cookie('pion_edition', pion.edition);
+		var template = dojo.byId('wizard_warning').innerHTML;
+		dojo.byId('wizard_warning').innerHTML = dojo.string.substitute(
+			template,
+			{
+				Edition: pion.edition,
+				RecommendedRAM: 99, 
+				RecommendedDiskSpace: 99
+			}
+		);
+		return true;
+	} else {
+		return "Please select an edition.";
+	}
+}
+
+pion.setup_success_callback = function() {
+	pion.terms.init();
+	pion.services.init();
+}
+
+pion.editionSetup = function(license_key_type) {
+	pion.wizard = dijit.byId('wizard');
+
+	// Overrides dijit.layout.StackContainer.back()
+	pion.wizard.back = function() {
+		if (pion.wizard.selectedChildWidget.returnPane) {
+			pion.wizard.selectChild(dijit.byId(pion.wizard.selectedChildWidget.returnPane));
+		} else {
+			this.selectChild(this._adjacent(false));
+		}
+	}
+
+	pion.wizard_nlsStrings = dojo.i18n.getLocalization("pion", "wizard");
+
+	dojo.xhrGet({
+		url: '/config/reactors',
 		preventCache: true,
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
 			// The user must be logged in since the request succeeded.
 			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
-			dojo.byId('current_user_menu_section').style.visibility = 'visible';
-			dojo.byId('current_user').innerHTML = dojo.cookie('user');
-			pion.about.checkKeyStatus({always_callback: login_success_callback});
+
+// TODO:
+// The 'pion_edition' cookie should never be saved unless the user accepts the corresponding license.
+// So, presence of the 'pion_edition' cookie is evidence that the user did accept the corresponding license.
+// However, the presence of a valid license is *not* such evidence, since they could have created the file 'license.key' themselves.
+// So, if a license key is found, do we still need to check for the 'pion_edition' cookie, and prompt for license agreement if it's missing?
+// (Note that this will also give us the opportunity to create the cookie.)
+
+			var reactors = response.getElementsByTagName('Reactor');
+			if (reactors.length) {
+				if (license_key_type == 'enterprise' || license_key_type == 'replay') {
+					// After pion.initTabs() is called, the Reactors tab will be selected, unless
+					// a Replay service is configured, in which case the Replay tab will be selected.
+					dojo.byId('wizard').style.display = 'none';
+					dojo.byId('outer').style.visibility = 'visible';
+					dojo.byId('current_user_menu_section').style.visibility = 'visible';
+					dojo.byId('current_user').innerHTML = dojo.cookie('user');
+					pion.setup_success_callback();
+				} else { // license_key_type == 'none'
+					if (dojo.cookie('pion_edition')) {
+						pion.edition = dojo.cookie('pion_edition');
+					}
+					if (pion.edition == 'Core' || pion.edition == 'Lite') {
+						dojo.byId('wizard').style.display = 'none';
+						dojo.byId('outer').style.visibility = 'visible';
+						dojo.byId('current_user_menu_section').style.visibility = 'visible';
+						dojo.byId('current_user').innerHTML = dojo.cookie('user');
+						pion.setup_success_callback();
+					} else {
+						var dialog = new pion.widgets.EditionSelectorDialog;
+						dialog.show();
+					}
+				}
+			} else {
+				var wizard = dijit.byId('wizard');
+				dojo.removeClass('wizard', 'hidden');
+
+				pion.wizard.cookies = [];
+				pion.wizard.devices = [];
+				pion.wizard.max_disk_usage = 'NA';
+
+				// This doesn't work: for some reason, it makes the radio buttons unselectable.
+				//var template = dojo.byId('select_analytics_provider_form').innerHTML;
+				//dojo.byId('select_analytics_provider_form').innerHTML = dojo.string.substitute(
+				//	template,
+				//	{
+				//		omniture_label: pion.wizard_nlsStrings.omniture_label,
+				//		webtrends_label: pion.wizard_nlsStrings.webtrends_label,
+				//		google_label: pion.wizard_nlsStrings.google_label, 
+				//		unica_label: pion.wizard_nlsStrings.unica_label
+				//	}
+				//);
+				dojo.forEach(dojo.query('label', dojo.byId('select_analytics_provider_form')), function(node) {
+					node.innerHTML = dojo.string.substitute(
+						node.innerHTML,
+						{
+							omniture_label: pion.wizard_nlsStrings.omniture_label,
+							webtrends_label: pion.wizard_nlsStrings.webtrends_label,
+							google_label: pion.wizard_nlsStrings.google_label, 
+							unica_label: pion.wizard_nlsStrings.unica_label
+						}
+					);
+				});
+
+				dijit.byId('select_edition_form').license_key_type = license_key_type;
+				if (license_key_type == 'enterprise') {
+					dijit.byId('select_edition_form').attr('value', {edition: 'Enterprise'});
+				} else if (license_key_type == 'replay') {
+					dijit.byId('select_edition_form').attr('value', {edition: 'Replay'});
+				}
+
+				// Assign next-button label for page 1 (which was already selected).
+				var first_page = wizard.selectedChildWidget;
+				dojo.forEach(dojo.query('.next_button', first_page.domNode), function(node) {
+					wizard.nextButton.attr('label', node.innerHTML);
+				});
+
+				dojo.subscribe('wizard-selectChild', function(page) {
+					dojo.forEach(dojo.query('.prev_button', page.domNode), function(node) {
+						wizard.previousButton.attr('label', node.innerHTML);
+						if (node.getAttribute('returnPane'))
+							page.returnPane = node.getAttribute('returnPane');
+					});
+					dojo.forEach(dojo.query('.next_button', page.domNode), function(node) {
+						wizard.nextButton.attr('label', node.innerHTML);
+					});
+					var edition_specific_query = '.next_button_' + pion.edition.toLowerCase();
+					dojo.forEach(dojo.query(edition_specific_query, page.domNode), function(node) {
+						wizard.nextButton.attr('label', node.innerHTML);
+					});
+					dojo.forEach(dojo.query('.done_button', page.domNode), function(node) {
+						wizard.doneButton.attr('label', node.innerHTML);
+					});
+
+					if (page.id == 'capture_devices_pane') {
+						if (! page.device_list_initialized) {
+							// Create a temporary dummy SnifferReactor.
+							var post_data = '<PionConfig><Reactor>'
+								+ '<Plugin>SnifferReactor</Plugin>'
+								+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
+								+ '</Reactor></PionConfig>';  
+							dojo.rawXhrPost({
+								url: '/config/reactors',
+								contentType: "text/xml",
+								handleAs: "xml",
+								postData: post_data,
+								load: function(response) {
+									var node = response.getElementsByTagName('Reactor')[0];
+									var id = node.getAttribute('id');
+
+									// Create an XML data store with all available interfaces, then use them to populate the Capture Devices pane.
+									var interface_xml_store = new dojox.data.XmlStore({url: '/query/reactors/' + id + '/interfaces'});
+									var device_list_div = dojo.byId('device_list');
+									interface_xml_store.fetch({
+										query: {tagName: 'Interface'},
+										onItem: function(item) {
+											var device_name = interface_xml_store.getValue(item, 'Name');
+											var description = interface_xml_store.getValue(item, 'Description');
+
+											var check_box_div = document.createElement('div');
+											device_list_div.appendChild(check_box_div);
+											new dijit.form.CheckBox({name: 'device_check_boxes', value: device_name}, check_box_div);
+											var device_label = dojo.create('label', {innerHTML: device_name});
+											device_list_div.appendChild(device_label);
+											var description_span = dojo.create('span', {innerHTML: description});
+											device_list_div.appendChild(description_span);
+											device_list_div.appendChild(dojo.create('br'));
+										},
+										onComplete: function() {
+											// Delete the dummy SnifferReactor.
+											dojo.xhrDelete({
+												url: '/config/reactors/' + id,
+												handleAs: 'xml',
+												timeout: 5000,
+												load: function(response, ioArgs) {
+													return response;
+												},
+												error: pion.getXhrErrorHandler(dojo.xhrDelete)
+											});
+											page.device_list_initialized = true;
+										}
+									});
+								},
+								error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+							});
+						}
+					}
+				});
+			}
 		},
 		error: function(response, ioArgs) {
+			pion.handleXhrGetError();
+
+			// Can't be 401, because the only way to get here is from pion.checkKeyService()
+			// and only if the KeyService response was not 401.
+			/*
 			if (ioArgs.xhr.status == 401) {
-				if (!dojo.cookie("logged_in")) {
+				if (!dojo.cookie('logged_in')) {
 					location.replace('login.html'); // exit and go to main login page
 				}
-				pion.login.doLoginDialog({success_callback: login_success_callback});
+				pion.login.doLoginDialog({success_callback: pion.editionSetup});
 			} else {
 				console.error('HTTP status code: ', ioArgs.xhr.status);
 			}
 			return response;
+			*/
 		}
 	});
+}
+
+pion.checkKeyService = function() {
+	pion.about.checkKeyStatusDfd()
+	.addCallback(function(license_key_type) {
+		pion.editionSetup(license_key_type);
+	})
+	.addErrback(function(e) {
+		if (e.message == 'Not logged in.') {
+			if (!dojo.cookie("logged_in")) {
+				location.replace('login.html'); // exit and go to main login page
+			}
+			pion.login.doLoginDialog({
+				suppress_default_key_status_check: true,
+				success_callback: pion.checkKeyService
+			});
+		} else {
+			pion.handleXhrGetError();
+		}
+	});
+}
+
+var init = function() {
+	file_protocol = (window.location.protocol == "file:");
+	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
+
+	pion.checkKeyService();
+
 	/*
 	// This block seems obsolete.
 	if (!file_protocol) {
@@ -335,4 +855,3 @@ dijit.Dialog.prototype.show = function() {
 		setTimeout(dojo.hitch(dijit,"focus",this._firstFocusItem), 50);
 	}
 }
-

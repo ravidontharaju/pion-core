@@ -1,5 +1,6 @@
 dojo.provide("pion.about");
 dojo.require("dijit.Dialog");
+dojo.require("dojox.xml.parser");
 
 pion.about.ops_temporarily_suppressed = false;
 
@@ -33,6 +34,7 @@ dojo.declare("pion.about.LicenseKeyDialog",
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
+							pion.key_service_running = true;
 							if (dojo.isIE) {
 								var key_status = response.getElementsByTagName('Status')[0].childNodes[0].nodeValue;
 							} else {
@@ -234,4 +236,40 @@ pion.about.checkKeyStatus = function(kw_args) {
 			return response;
 		}
 	});
+}
+
+pion.about.checkKeyStatusDfd = function() {
+	var dfd = new dojo.Deferred();
+	dojo.xhrGet({
+		url: '/key/status',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			pion.key_service_running = true;
+			var key_status_node = response.getElementsByTagName('Status')[0];
+			var key_status = dojo.isIE? key_status_node.childNodes[0].nodeValue : key_status_node.textContent;
+			var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
+			if (dojo.indexOf(products, 'Pion Replay') != -1) {
+				dfd.callback('replay');
+			} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+				dfd.callback('enterprise');
+			} else {
+				dfd.callback('none');
+			}
+			return response;
+		},
+		error: function(response, ioArgs) {
+			if (ioArgs.xhr.status == 404) {
+				pion.key_service_running = false;
+				dfd.callback('none');
+			} else if (ioArgs.xhr.status == 401) {
+				dfd.errback(new Error('Not logged in.'));
+			} else {
+				dfd.errback(new Error('Key Service error: ioArgs.xhr.status = ' + ioArgs.xhr.status));
+			}
+			return response;
+		}
+	});
+	return dfd;
 }

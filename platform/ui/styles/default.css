@@ -24,6 +24,60 @@ body {
 }
 
 
+#wizard {
+	position: absolute;
+	width: 600px;
+	height: 425px;
+}
+
+#wizard.hidden {
+	display: none;
+}
+
+.wizard_menu {
+	float: right;
+	margin: 0 20px 0 0;
+	padding: 0;
+}
+
+.wizard_header {
+	float: left;
+	font-size: 16px;
+	font-weight: bold;
+	height: 40px;
+}
+
+#wizard a {
+	color: yellow;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+#wizard a.header {
+	color: red;
+}
+
+#wizard input.port_input {
+	width: 75px;
+}
+
+#wizard .warning_box {
+	border: solid #999999 1px;
+}
+
+#review_setup input {
+	width: 95%;
+}
+/*
+#wizard div.hidden {
+	display: none;
+}
+*/
+div.hidden {
+	display: none;
+}
+
+
 #counterBackground {
 	position:absolute;
 	top: 121px;

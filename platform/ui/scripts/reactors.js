@@ -121,7 +121,7 @@ pion.reactors.init = function() {
 		dojo.forEach(reactors_in_ui_dir, function(reactor) {
 			var reactor_name = reactor.plugin;
 			// Skip plugins that can't be found on any of the configured plugin paths.
-			if (dojo.indexOf(pion.plugins.loaded_plugins, reactor_name) != -1) {
+			if (dojo.indexOf(pion.plugins.available_plugins, reactor_name) != -1) {
 				var prototype = pion.plugins.getPluginPrototype('plugins.reactors', reactor_name, '/plugins/reactors/' + reactor.category);
 				pion.reactors.categories[reactor_name] = reactor.category;
 				var icon = reactor.category + '/' + reactor_name + '/icon.png';
@@ -134,7 +134,7 @@ pion.reactors.init = function() {
 		return d;
 	}
 
-	pion.plugins.initLoadedPluginList()
+	pion.plugins.initAvailablePluginList()
 		.addCallback(pion.reactors.getAllReactorsInUIDirectory)
 		.addCallback(initUsableReactorPlugins)
 		.addCallback(pion.reactors._initConfiguredReactors);

@@ -17,6 +17,7 @@
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
 		@import "dojo-release/dojox/grid/resources/Grid.css";
 		@import "dojo-release/dojox/grid/resources/tundraGrid.css";
+		@import "dojo-release/dojox/widget/Wizard/Wizard.css";
 		@import "styles/default.css";
 	</style>
 
@@ -41,6 +42,7 @@
 		@import "dojo-src/dijit/themes/tundra/tundra.css";
 		@import "dojo-src/dojox/grid/resources/Grid.css";
 		@import "dojo-src/dojox/grid/resources/tundraGrid.css";
+		@import "dojo-release/dojox/widget/Wizard/Wizard.css";
 		@import "styles/default.css";
 	</style>
 	<script type="text/javascript" src="dojo-src/dojo/dojo.js"
@@ -55,6 +57,7 @@
 		@import "dojo-release/dijit/themes/tundra/tundra.css";
 		@import "dojo-release/dojox/grid/resources/Grid.css";
 		@import "dojo-release/dojox/grid/resources/tundraGrid.css";
+		@import "dojo-release/dojox/widget/Wizard/Wizard.css";
 		@import "styles/default.css";
 	</style>
 	<script type="text/javascript" src="dojo-release/dojo/dojo.js"
@@ -64,6 +67,359 @@
 	-->
 </head>
 <body class="tundra">
+	<div id="wizard" dojoType="pion.widgets.Wizard" class="hidden" hideDisabled="true">
+		<div dojoType="dojox.widget.WizardPane" passFunction="pion.checkEdition">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation?</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com/pion-web-analytics/documentation.php" target="_blank">What else?</a>
+				</p>
+			</div>
+			<div style="clear: both"></div>
+			<h1>Welcome to Pion</h1>
+			<h3>Please Select an Edition</h3>
+			<a href="http://www.atomiclabs.com" target="_blank">Click here for a detailed features matrix</a>
+			<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form" />
+			<p class="next_button" style="display: none">Next Step: License Agreement (???) >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.prepareLicensePane">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation?</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com/pion-web-analytics/documentation.php" target="_blank">What else?</a>
+				</p>
+			</div>
+			<div style="clear: both"></div>
+			<h1>Warning</h1>
+			<div id=wizard_warning>
+				A diagnostic of your system revealed the following, which may prevent Pion ${Edition} from performing reliably:
+				<ul>
+					<li>Insufficent RAM (${RecommendedRAM} GB recommended)</li>
+					<li>Insufficient Disk Space (${RecommendedDiskSpace} GB recommended)</li>
+				</ul>
+				Your System May Not Support Minimum Requirements for Pion ${Edition}
+			</div>
+			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="next_button" style="display: none">Continue to License Agreement Anyway >></p>
+			<a href="http://www.atomiclabs.com" target="_blank">Cancel Setup for Now</a>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.checkLicenseAccepted">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation?</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com/pion-web-analytics/documentation.php" target="_blank">What else?</a>
+				</p>
+			</div>
+			<div id=atomic_enterprise_license dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
+				href="licenses/atomic_enterprise.html">
+			</div>
+			<div id=gpl_affero_license dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
+				href="licenses/gpl_affero.html">
+			</div>
+			<div>
+				<input id='license_accept_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes123" value="accept" /> I agree to the license.
+			</div>
+			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="next_button" style="display: none">Continue (???) to the Setup Wizard >></p>
+			<p class="next_button_core" style="display: none">Exit Setup Wizard</p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="host_pane" passFunction="pion.widgets.Wizard.checkHosts">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Setup Your Web Site</h1>
+			<h2>Add your site domain(s) (optional)</h2>
+			<p> 
+				The Pion wizard makes it easy to setup your first web site to be tracked with Pion.  Additional web sites can be setup 
+				in Pion later through the advanced configuration. 
+			</p>
+			<h3>Enter the suffixes for your site (i.e. yoursite.com)</h3>
+			<h4>Separate multiple suffixes with commas</h4>
+			<input dojoType="dijit.form.TextBox" id="host_suffixes" style="width: 80%;" />
+			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Configure Cookies >></p>
+ 		</div>
+		<div dojoType="dojox.widget.WizardPane" id="cookie_pane" passFunction="pion.widgets.Wizard.checkCookies">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Setup Your Web Site</h1>
+			<h2>Configure your site's cookies (optional)</h2>
+			<p> 
+				Cookies are used by your web site to keep track of visitors as the move across your web site.
+				Persistant cookies keep track of individuals across multiple visits to your site.
+			</p>
+			<h3>Enter one cookie per row (i.e. php_cookie)</h3>
+			<input dojoType="dijit.form.TextBox" id="cookie_1" style="width: 50%;" />
+			<input id='is_visitor_cookie' dojoType="dijit.form.CheckBox" type="checkBox" /> Persistent
+			<p> 
+Add Another (NOT IMPLEMENTED YET)
+			</p>
+			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Connect To Your Web Analytics >></p>
+ 		</div>
+		<div dojoType="dojox.widget.WizardPane" id="analytics_provider_pane" passFunction="pion.widgets.Wizard.checkAnalyticsProvider">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Connect to Your Web Analytics Provider</h1>
+			<h2>Please select your provider (optional)</h2>
+			<div id="select_analytics_provider_form" dojoType="dijit.form.Form">
+				<input type="radio" name="analytics_provider" value="Omniture" dojoType="dijit.form.RadioButton" /><label>${omniture_label}</label>
+				<input type="radio" name="analytics_provider" value="Webtrends" dojoType="dijit.form.RadioButton" /><label>${webtrends_label}</label>
+				<input type="radio" name="analytics_provider" value="Google" dojoType="dijit.form.RadioButton" /><label>${google_label}</label>
+				<input type="radio" name="analytics_provider" value="Unica" dojoType="dijit.form.RadioButton" /><label>${unica_label}</label>
+			</div>
+			<p class="next_button" style="display: none">Next Step: Enter Your Account Information >></p>
+			<br>
+Skip Web Analytics Provider for Now (NOT IMPLEMENTED YET)
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="omniture_pane" passFunction="pion.widgets.Wizard.checkOmnitureConfig">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Connect to Your Web Analytics Provider ???</h1>
+			<h2>Please enter your Omniture account information (required)</h2>
+			Omniture Host: 
+			<input dojoType="dijit.form.TextBox" id="omniture_host" style="width: 50%;" />
+			e.g. example.112.2o7.net
+			<br>
+			Report Suite: 
+			<p class="prev_button" style="display: none" returnPane="analytics_provider_pane"><< Go Back</p>
+			<input dojoType="dijit.form.TextBox" id="omniture_report_suite" style="width: 50%;" />
+			<p class="next_button" style="display: none">Next Step: Select Capture Devices >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="webtrends_pane" passFunction="pion.widgets.Wizard.checkWebtrendsConfig">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Connect to Your Web Analytics Provider ???</h1>
+			<h2>Please enter your Webtrends account information (required)</h2>
+			<p class="prev_button" style="display: none" returnPane="analytics_provider_pane"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Select Capture Devices >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="google_pane" passFunction="pion.widgets.Wizard.checkGoogleConfig">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Connect to Your Web Analytics Provider ???</h1>
+			<h2>Please enter your Google account information (required)</h2>
+			Account ID: 
+			<input dojoType="dijit.form.TextBox" id="google_account_id" style="width: 50%;" />
+			e.g. UA-123456-0
+			<p class="prev_button" style="display: none" returnPane="analytics_provider_pane"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Select Capture Devices >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="unica_pane" passFunction="pion.widgets.Wizard.checkUnicaConfig">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Connect to Your Web Analytics Provider ???</h1>
+			<h2>Please enter your Unica account information (required)</h2>
+			<p class="prev_button" style="display: none" returnPane="analytics_provider_pane"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Select Capture Devices >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="capture_devices_pane" passFunction="pion.widgets.Wizard.checkCaptureDevices">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Select Capture Devices</h1>
+			<h2>Please select all of the devices that will feed data to Pion</h2>
+			<div id="device_list" dojoType="dijit.form.Form">
+			</div>
+			<p class="prev_button" style="display: none" returnPane="analytics_provider_pane"><< Go Back</p>
+			<p class="next_button" style="display: none">Next Step: Configure Ports >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="port_configuration_pane" passFunction="pion.widgets.Wizard.checkPorts">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Configure Ports</h1>
+			<h2>Please enter your port numbers</h2>
+The prepopulated ports of 80 (non-encrypted) and 443 (encrypted) are the standard defaults for most systems.
+If your port numbers are different, or if you have additional ports, you can add, edit and remove them here, using commas to separate multiple ports.
+			<div id="port_list" dojoType="dijit.form.Form">
+				<label>Unencrypted Ports</label>
+				<input dojoType="dijit.form.TextBox" name="unencrypted_ports" value="80" />
+				<br>
+				<label>Encrypted Ports</label>
+				<input dojoType="dijit.form.TextBox" name="encrypted_ports" value="443" />
+			</div>
+			<p class="next_button" style="display: none">Next Step: Setup SSL Keys >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="ssl_key_pane" passFunction="pion.widgets.Wizard.checkSSLKeys">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Setup SSL Keys</h1>
+			<h2>Please enter one key at a time</h2>
+SSL keys are used by the web server to encrypt and decrypt secure traffic. More guide copy ensues..
+			<div id="ssl_key_setup" dojoType="dijit.form.Form">
+				<label>Descriptive Name</label>
+				<input dojoType="dijit.form.TextBox" name="name" />
+				<br>
+				<label>Password</label>
+				<input dojoType="dijit.form.TextBox" name="password" disabled="true" value="unimplemented"/>
+				<br>
+				<label>SSL Key</label>
+				<textarea id="ssl_key_input" cols="65" rows="8"></textarea>
+			</div>
+			
+			<button dojoType=dijit.form.Button onClick="pion.widgets.Wizard.saveKey">Save</button>
+			<p class="next_button" style="display: none">Next Step: I'm Done Adding Keys >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="setup_replay" passFunction="pion.widgets.Wizard.checkReplaySetup">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Setup Pion Replay</h1>
+			<h2>Please Enter Disk Allocation</h2>
+The more disk space you can allocate, the more user sessions Pion Replay can store for viewing.
+A disk allocation between xGB and xxxGB is normally recomended.
+			<div id="replay_setup" dojoType="dijit.form.Form">
+				<label>Maximum disk usage (in GB):</label>
+				<input dojoType="dijit.form.TextBox" name="max_disk_usage" value="100" />
+			</div>
+			<p class="next_button" style="display: none">Next Step: Review and Save >></p>
+		</div>
+		<div dojoType="dojox.widget.WizardPane" id="review_setup" doneFunction="pion.wizardDone">
+			<div class="wizard_header">
+				Setup Wizard 
+			</div>
+			<div class="wizard_menu">
+				<p>
+					<a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+				</p>
+			</div>
+			<h1>Setup Wizard Complete</h1>
+			<h2>The following Pion Reactor (???) is ready to be created:</h2>
+			<div id="setup_review_form" dojoType="dijit.form.Form">
+				<table width="100%">
+					<tr>
+						<td align="right" width="110px"><label>Edition:</label></td>
+						<td dojoType="dijit.form.TextBox" name="edition" />
+					</tr><tr>
+						<td align="right"><label>Web Site:</label></td>
+						<td dojoType="dijit.form.TextBox" name="web_site" />
+					</tr><tr>
+						<td align="right"><label>Web Analytics:</label></td>
+						<td dojoType="dijit.form.TextBox" name="web_analytics" />
+					</tr><tr>
+						<td align="right"><label>Cookies:</label></td>
+						<td dojoType="dijit.form.TextBox" name="cookies" />
+					</tr><tr>
+						<td align="right"><label>Capture Devices:</label></td>
+						<td dojoType="dijit.form.TextBox" name="devices" />
+					</tr><tr>
+						<td align="right"><label>Ports:</label></td>
+						<td dojoType="dijit.form.TextBox" name="ports" />
+					</tr><tr>
+						<td align="right"><label>SSL Keys:</label></td>
+						<td dojoType="dijit.form.TextBox" name="ssl_keys" />
+					</tr><tr>
+						<td align="right"><label>Replay Allocation:</label></td>
+						<td dojoType="dijit.form.TextBox" name="replay_alloc" />
+					</tr>
+				</table>
+			</div>
+			<div class="warning_box">
+				<h3>Warning</h3>
+				<p>Saving this configuration will overwrite any existing configurations in the workspace</p>
+			</div>
+			<p class="done_button" style="display: none">Final Step: Save Configuration</p>
+		</div>
+	</div>
 	<div id="outer" style="visibility: hidden">
 		<div id="topBar">
 			<!-- start header -->

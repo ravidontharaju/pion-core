@@ -21701,4 +21701,99 @@ _14de.push(word);
 return _14de.join("");
 }});
 }
+if(!dojo._hasResource["dojox.widget.Wizard"]){
+dojo._hasResource["dojox.widget.Wizard"]=true;
+dojo.provide("dojox.widget.Wizard");
+dojo.declare("dojox.widget.Wizard",[dijit.layout.StackContainer,dijit._Templated],{widgetsInTemplate:true,templateString:"<div class=\"dojoxWizard\" dojoAttachPoint=\"wizardNode\">\r\n    <div class=\"dojoxWizardContainer\" dojoAttachPoint=\"containerNode\"></div>\r\n    <div class=\"dojoxWizardButtons\" dojoAttachPoint=\"wizardNav\">\r\n        <button dojoType=\"dijit.form.Button\" dojoAttachPoint=\"previousButton\">${previousButtonLabel}</button>\r\n        <button dojoType=\"dijit.form.Button\" dojoAttachPoint=\"nextButton\">${nextButtonLabel}</button>\r\n        <button dojoType=\"dijit.form.Button\" dojoAttachPoint=\"doneButton\" style=\"display:none\">${doneButtonLabel}</button>\r\n        <button dojoType=\"dijit.form.Button\" dojoAttachPoint=\"cancelButton\">${cancelButtonLabel}</button>\r\n    </div>\r\n</div>\r\n",nextButtonLabel:"",previousButtonLabel:"",cancelButtonLabel:"",doneButtonLabel:"",cancelFunction:null,hideDisabled:false,postMixInProperties:function(){
+this.inherited(arguments);
+var _14e4=dojo.mixin({cancel:dojo.i18n.getLocalization("dijit","common",this.lang).buttonCancel},dojo.i18n.getLocalization("dojox.widget","Wizard",this.lang));
+var prop;
+for(prop in _14e4){
+if(!this[prop+"ButtonLabel"]){
+this[prop+"ButtonLabel"]=_14e4[prop];
+}
+}
+},startup:function(){
+if(this._started){
+return;
+}
+this.inherited(arguments);
+this.connect(this.nextButton,"onClick","_forward");
+this.connect(this.previousButton,"onClick","back");
+if(this.cancelFunction){
+if(dojo.isString(this.cancelFunction)){
+this.cancelFunction=dojo.getObject(this.cancelFunction);
+}
+this.connect(this.cancelButton,"onClick",this.cancelFunction);
+}else{
+this.cancelButton.domNode.style.display="none";
+}
+this.connect(this.doneButton,"onClick","done");
+this._subscription=dojo.subscribe(this.id+"-selectChild",dojo.hitch(this,"_checkButtons"));
+this._checkButtons();
+this._started=true;
+},_checkButtons:function(){
+var sw=this.selectedChildWidget;
+var _14e7=sw.isLastChild;
+this.nextButton.attr("disabled",_14e7);
+this._setButtonClass(this.nextButton);
+if(sw.doneFunction){
+this.doneButton.domNode.style.display="";
+if(_14e7){
+this.nextButton.domNode.style.display="none";
+}
+}else{
+this.doneButton.domNode.style.display="none";
+}
+this.previousButton.attr("disabled",!this.selectedChildWidget.canGoBack);
+this._setButtonClass(this.previousButton);
+},_setButtonClass:function(_14e8){
+_14e8.domNode.style.display=(this.hideDisabled&&_14e8.disabled)?"none":"";
+},_forward:function(){
+if(this.selectedChildWidget._checkPass()){
+this.forward();
+}
+},done:function(){
+this.selectedChildWidget.done();
+},destroy:function(){
+dojo.unsubscribe(this._subscription);
+this.inherited(arguments);
+}});
+dojo.declare("dojox.widget.WizardPane",dijit.layout.ContentPane,{canGoBack:true,passFunction:null,doneFunction:null,startup:function(){
+this.inherited(arguments);
+if(this.isFirstChild){
+this.canGoBack=false;
+}
+if(dojo.isString(this.passFunction)){
+this.passFunction=dojo.getObject(this.passFunction);
+}
+if(dojo.isString(this.doneFunction)&&this.doneFunction){
+this.doneFunction=dojo.getObject(this.doneFunction);
+}
+},_onShow:function(){
+if(this.isFirstChild){
+this.canGoBack=false;
+}
+this.inherited(arguments);
+},_checkPass:function(){
+var r=true;
+if(this.passFunction&&dojo.isFunction(this.passFunction)){
+var _14ea=this.passFunction();
+switch(typeof _14ea){
+case "boolean":
+r=_14ea;
+break;
+case "string":
+alert(_14ea);
+r=false;
+break;
+}
+}
+return r;
+},done:function(){
+if(this.doneFunction&&dojo.isFunction(this.doneFunction)){
+this.doneFunction();
+}
+}});
+}
 dojo.i18n._preloadLocalizations("dojo.nls.dojo-for-pion",["ROOT","en","en-gb","en-us","xx"]);

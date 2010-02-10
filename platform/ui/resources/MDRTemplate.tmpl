@@ -1,0 +1,128 @@
+<Plugin>MultiDatabaseReactor</Plugin>
+<Name>Replay Storage</Name>
+<Comment>Stores clickstream traffic used by Pion Replay</Comment>
+<Partitions>500</Partitions>
+<Sessions>0</Sessions>
+<Duration>0</Duration>
+<PageCacheRotate>100</PageCacheRotate>
+<MaxDiskUsage>${MaxDiskUsage}</MaxDiskUsage>
+<SessionTimeout>1850</SessionTimeout>
+<PruneInterval>5</PruneInterval>
+<SessionTerm>urn:vocab:clickstream#session-id</SessionTerm>
+<Timestamp>urn:vocab:clickstream#epoch-time</Timestamp>
+<TableDef term="urn:vocab:clickstream#session-event" active="true">
+<Database>e364c6aa-19c0-11de-a84f-001cc02bd66b</Database>
+	<Table>sessions</Table>
+	<QueueSize>1000</QueueSize>
+	<QueueTimeout>5</QueueTimeout>
+	<Field term="urn:vocab:clickstream#epoch-time" index="true">epoch_time</Field>
+	<Field term="urn:vocab:clickstream#session-id" index="true">session_id</Field>
+	<Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
+	<Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
+	<Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
+	<Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
+	<Field term="urn:vocab:clickstream#host">host</Field>
+	<Field term="urn:vocab:clickstream#referer">referrer</Field>
+	<Field term="urn:vocab:clickstream#useragent">user_agent</Field>
+	<Field term="urn:vocab:clickstream#session-group">session_group</Field>
+	<Field term="urn:vocab:clickstream#cookie-id">cookie_id</Field>
+	<Field term="urn:vocab:clickstream#session-pages">total_pages</Field>
+	<Field term="urn:vocab:clickstream#session-hits">total_requests</Field>
+	<Field term="urn:vocab:clickstream#session-dwell">session_dwell</Field>
+	<Field term="urn:vocab:clickstream#session-length">session_length</Field>
+</TableDef>
+<TableDef term="urn:vocab:clickstream#page-event" active="true">
+	<Database>bf9713e0-19c0-11de-8c93-001cc02bd66b</Database>
+	<Table>pages</Table>
+	<QueueSize>10000</QueueSize>
+	<QueueTimeout>5</QueueTimeout>
+	<Field term="urn:vocab:clickstream#epoch-time" index="true">epoch_time</Field>
+	<Field term="urn:vocab:clickstream#session-id" index="true">session_id</Field>
+	<Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
+	<Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
+	<Field term="urn:vocab:clickstream#s-port">server_port</Field>
+	<Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
+	<Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
+	<Field term="urn:vocab:clickstream#status">status</Field>
+	<Field term="urn:vocab:clickstream#uri-stem">uri_stem</Field>
+	<Field term="urn:vocab:clickstream#uri-query">uri_query</Field>
+	<Field term="urn:vocab:clickstream#host">host</Field>
+	<Field term="urn:vocab:clickstream#referer">referrer</Field>
+	<Field term="urn:vocab:clickstream#useragent">user_agent</Field>
+	<Field term="urn:vocab:clickstream#session-group">session_group</Field>
+	<Field term="urn:vocab:clickstream#page-number">page_num</Field>
+	<Field term="urn:vocab:clickstream#page-load-redirect">page_load_redirect</Field>
+	<Field term="urn:vocab:clickstream#page-load-base">page_load_base</Field>
+	<Field term="urn:vocab:clickstream#page-load-content">page_load_content</Field>
+	<Field term="urn:vocab:clickstream#page-load">page_load</Field>
+	<Field term="urn:vocab:clickstream#page-hits">page_hits</Field>
+	<Field term="urn:vocab:clickstream#page-dwell">page_dwell</Field>
+	<Field term="urn:vocab:clickstream#page-title">page_title</Field>
+	<Field term="urn:vocab:clickstream#content-id">content_id</Field>
+</TableDef>
+<TableDef term="urn:vocab:clickstream#http-event" active="true">
+	<Database>aace93fc-19c0-11de-9293-001cc02bd66b</Database>
+	<Table>requests</Table>
+	<QueueSize>10000</QueueSize>
+	<QueueTimeout>5</QueueTimeout>
+	<Field term="urn:vocab:clickstream#epoch-time" index="true">epoch_time</Field>
+	<Field term="urn:vocab:clickstream#session-id" index="true">session_id</Field>
+	<Field term="urn:vocab:clickstream#c-ip">client_ip</Field>
+	<Field term="urn:vocab:clickstream#s-ip">server_ip</Field>
+	<Field term="urn:vocab:clickstream#c-port">client_port</Field>
+	<Field term="urn:vocab:clickstream#s-port">server_port</Field>
+	<Field term="urn:vocab:clickstream#bytes">bytes</Field>
+	<Field term="urn:vocab:clickstream#cs-bytes">cs_bytes</Field>
+	<Field term="urn:vocab:clickstream#sc-bytes">sc_bytes</Field>
+	<Field term="urn:vocab:clickstream#time-taken">time_taken</Field>
+	<Field term="urn:vocab:clickstream#cs-send-time">cs_send_time</Field>
+	<Field term="urn:vocab:clickstream#sc-ack-time">sc_ack_time</Field>
+	<Field term="urn:vocab:clickstream#sc-reply-time">sc_reply_time</Field>
+	<Field term="urn:vocab:clickstream#sc-send-time">sc_send_time</Field>
+	<Field term="urn:vocab:clickstream#cp-rtt">cp_rtt</Field>
+	<Field term="urn:vocab:clickstream#status">status</Field>
+	<Field term="urn:vocab:clickstream#method">method</Field>
+	<Field term="urn:vocab:clickstream#uri-stem">uri_stem</Field>
+	<Field term="urn:vocab:clickstream#uri-query">uri_query</Field>
+	<Field term="urn:vocab:clickstream#host">host</Field>
+	<Field term="urn:vocab:clickstream#referer">referrer</Field>
+	<Field term="urn:vocab:clickstream#useragent">user_agent</Field>
+	<Field term="urn:vocab:clickstream#cookie">cookie</Field>
+	<Field term="urn:vocab:clickstream#set-cookie">set_cookie</Field>
+	<Field term="urn:vocab:clickstream#content-type">content_type</Field>
+	<Field term="urn:vocab:clickstream#session-group">session_group</Field>
+	<Field term="urn:vocab:clickstream#page-number">page_num</Field>
+	<Field term="urn:vocab:clickstream#request-number">request_num</Field>
+	<Field term="urn:vocab:clickstream#content-id">content_id</Field>
+</TableDef>
+<TableDef term="urn:vocab:clickstream#http-event" active="true">
+	<Database>f364c6aa-19c0-11de-a84f-001cc02bd66b</Database>
+	<Table>content</Table>
+	<KeyCacheMaxAge>60</KeyCacheMaxAge>
+	<KeyCacheAgeTerm>urn:vocab:clickstream#epoch-time</KeyCacheAgeTerm>
+	<MatchAllComparisons>true</MatchAllComparisons>
+	<Comparison>
+		<Term>urn:vocab:clickstream#status</Term>
+		<Type>equals</Type>
+		<Value>200</Value>
+		<MatchAllValues>false</MatchAllValues>
+	</Comparison>
+	<Comparison>
+		<Term>urn:vocab:clickstream#content-type</Term>
+		<Type>starts-with</Type>
+		<Value>text/html</Value>
+		<MatchAllValues>false</MatchAllValues>
+	</Comparison>
+	<Comparison>
+		<Term>urn:vocab:clickstream#new-page</Term>
+		<Type>equals</Type>
+		<Value>1</Value>
+		<MatchAllValues>false</MatchAllValues>
+	</Comparison>
+	<QueueSize>1000</QueueSize>
+	<QueueTimeout>5</QueueTimeout>
+	<IgnoreInsert>true</IgnoreInsert>
+	<Field term="urn:vocab:clickstream#content-id" index="unique">content_id</Field>
+	<Field term="urn:vocab:clickstream#content-type">content_type</Field>
+	<Field term="urn:vocab:clickstream#sc-content">sc_content</Field>
+</TableDef>

@@ -159,6 +159,7 @@ pion-dojo.js:
 ./../../release/dojo-release/dojox/dtl/filter/htmlstrings.js
 ./../../release/dojo-release/dojox/string/sprintf.js
 ./../../release/dojo-release/dojox/dtl/filter/strings.js
+./../../release/dojo-release/dojox/widget/Wizard.js
 ./../../release/dojo-release/pion/_base/error.js
 ./../../release/dojo-release/pion/_base/format.js
 ./../../release/dojo-release/pion/_base/load.js
@@ -199,4 +200,7 @@ pion-dojo.js:
 ./../../release/dojo-release/plugins/services/Service.js
 ./../../release/dojo-release/pion/services.js
 ./../../release/dojo-release/pion/about.js
+./../../release/dojo-release/pion/widgets/Wizard.js
+./../../release/dojo-release/pion/widgets/LicenseKey.js
+./../../release/dojo-release/pion/widgets/EditionSelector.js
 ./../../release/dojo-release/pion/pion.js

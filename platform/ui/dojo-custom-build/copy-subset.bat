@@ -18,8 +18,7 @@ copy /y %releaseDir%\dijit\themes\a11y             ..\dojo-release\dijit\themes\
 copy /y %releaseDir%\dojox\gfx                     ..\dojo-release\dojox\gfx
 xcopy /y /s %releaseDir%\dojox\grid\resources      ..\dojo-release\dojox\grid\resources
 copy /y %releaseDir%\dojox\data\QueryReadStore.js  ..\dojo-release\dojox\data\QueryReadStore.js
-
-xcopy /y /s %releaseDir%\util\doh                  ..\dojo-release\util\doh
+copy /y %releaseDir%\dojox\widget\Wizard\Wizard.css ..\dojo-release\dojox\widget\Wizard\Wizard.css
 
 rem The remaining files are currently only needed for ReplayService and AggregateReactor.
 copy /y %releaseDir%\dojox\html\_base.js                      ..\dojo-release\dojox\html\_base.js

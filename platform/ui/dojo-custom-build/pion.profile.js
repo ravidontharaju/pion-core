@@ -34,6 +34,7 @@ dependencies = {
 			"dojox.xml.DomParser",
 			"dojox.dtl",
 			"dojox.dtl.filter.strings",
+			"dojox.widget.Wizard",
 			"pion.pion",
 		]
 		}

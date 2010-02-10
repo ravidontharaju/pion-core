@@ -51,7 +51,7 @@ pion.protocols.init = function() {
 		plugin_data_store_items = [];
 		dojo.forEach(protocols_in_ui_dir, function(protocol) {
 			// Skip plugins that can't be found on any of the configured plugin paths.
-			if (dojo.indexOf(pion.plugins.loaded_plugins, protocol) != -1) {
+			if (dojo.indexOf(pion.plugins.available_plugins, protocol) != -1) {
 				var prototype = pion.plugins.getPluginPrototype('plugins.protocols', protocol, '/plugins/protocols');
 				plugin_data_store_items.push({plugin: protocol, label: prototype.label});
 			}
@@ -75,7 +75,7 @@ pion.protocols.init = function() {
 		});
 	}
 
-	pion.plugins.initLoadedPluginList()
+	pion.plugins.initAvailablePluginList()
 		.addCallback(pion.protocols.getAllProtocolsInUIDirectory)
 		.addCallback(initUsableProtocolPlugins)
 		.addCallback(initConfiguredProtocols);

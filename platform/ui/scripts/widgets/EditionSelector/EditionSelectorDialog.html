@@ -1,0 +1,20 @@
+<div class="dijitDialog edition_selector_dialog" style="width: 600px">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Please Select an Edition</span>
+	</div>
+	<div dojoAttachPoint='containerNode'>
+		<form dojoAttachPoint="form" dojoType="dijit.form.Form">
+			<input type="radio" name="edition" value="Core" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: coreEditionSelected" /><label>Pion Core</label>
+			${pion_core_description}
+			<input type="radio" name="edition" value="Lite" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: liteEditionSelected" /><label>Pion Lite</label>
+			${pion_lite_description}
+			<input type="radio" name="edition" value="Enterprise" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: enterpriseEditionSelected" /><label>Pion Enterprise</label>
+			${pion_enterprise_description}
+			<input type="radio" name="edition" value="Replay" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: replayEditionSelected" /><label>Pion Replay</label>
+			${pion_replay_description}
+		</form>
+	</div>
+	<div class="save_cancel_delete">
+		<button dojoType=dijit.form.Button class="save" type="submit" dojoAttachPoint="submit_edition_button" disabled="true">Submit</button>
+	</div>
+</div>

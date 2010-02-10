@@ -1,8 +1,8 @@
 dojo.provide("pion.plugins");
 
-pion.plugins.initLoadedPluginList = function() {
+pion.plugins.initAvailablePluginList = function() {
 	var d = new dojo.Deferred();
-	if (pion.plugins.loaded_plugins) {
+	if (pion.plugins.available_plugins) {
 		d.callback();
 	} else {
 		dojo.xhrGet({
@@ -11,10 +11,10 @@ pion.plugins.initLoadedPluginList = function() {
 			timeout: 5000,
 			load: function(response, ioArgs) {
 				// Get list of all plugins found on any of the configured plugin paths.
-				pion.plugins.loaded_plugins = [];
+				pion.plugins.available_plugins = [];
 				var plugin_elements = response.getElementsByTagName('Plugin');
 				dojo.forEach(plugin_elements, function(n) {
-					pion.plugins.loaded_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
+					pion.plugins.available_plugins.push(dojo.isIE? n.childNodes[0].nodeValue : n.textContent);
 				});
 				d.callback();
 				return response;
