@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(checkTopLevelPlatformServiceWithoutServerSpecified) {
 		m_service_manager->openConfigFile();
 	} catch (PluginConfig<PlatformService>::PluginException& e) {
 		exception_caught = true;
-		BOOST_CHECK_EQUAL(e.what(), "Service configuration file includes a Service without a Server identifier: query-service");
+		BOOST_CHECK_EQUAL(e.what(), "Service configuration includes a Service without a Server identifier: query-service");
 	}
 	BOOST_CHECK(exception_caught);
 }
