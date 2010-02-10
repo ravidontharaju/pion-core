@@ -1,14 +1,14 @@
-PION COMMUNITY EDITION
+PION CORE README
 
-Copyright (C) 2007-2009 Atomic Labs, Inc.
+Copyright (C) 2007-2010 Atomic Labs, Inc.
 
 Home page:  http://www.pion.org
 
-Pion Community Edition is published under the GNU Affero General Public License.
-See LICENSE.txt for licensing information.  Alternative commercial licenses
-are also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
+Pion Core is published under the GNU Affero General Public License. See
+LICENSE.txt for licensing information.  Alternative commercial licenses are
+also available through Atomic Labs, Inc. (see http://www.atomiclabs.com).
 
-Pion Community Edition's source code can be downloaded from our website at:
+Pion Core's source code can be downloaded from our website at:
 http://www.pion.org/projects/pion-platform/download
 
 This binary distribution may include several third party libraries which are

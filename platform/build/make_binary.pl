@@ -1,7 +1,7 @@
 #!/usr/bin/perl
-# ----------------------------------------------
-# pion-platform binary distribution build script
-# ----------------------------------------------
+# ------------------------------------------
+# pion-core binary distribution build script
+# ------------------------------------------
 
 use File::Spec;
 use File::Path;
@@ -24,7 +24,7 @@ $VERSION = $ARGV[0];
 $PLATFORM = $ARGV[1];
 $NOZIP = $ARGV[2];
 $BIN_DIR = "bin";
-$PACKAGE_NAME = "pion-community-" . $VERSION;
+$PACKAGE_NAME = "pion-core-" . $VERSION;
 $PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
 $TARBALL_NAME = $PACKAGE_NAME . "-" . $PLATFORM;
 $CONFIG_DIR = File::Spec->catdir( ($PACKAGE_DIR, "config") );
@@ -230,7 +230,7 @@ if ($PLATFORM =~ /^win32/i) {
 		$OSX_PACKAGE_DIR = "$BIN_DIR/osx/$PACKAGE_NAME";
 		rmtree($OSX_PACKAGE_DIR);
 		mkpath($OSX_PACKAGE_DIR);
-		system("platypus -V $VERSION -a 'Pion Community Edition' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
+		system("platypus -V $VERSION -a 'Pion Core' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
 
 		# Platypus' icon support is broken; copy file into .app package
 		copy("platform/build/appIcon.icns", "$OSX_PACKAGE_DIR/Pion.app/Contents/Resources");
