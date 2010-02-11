@@ -22,7 +22,7 @@ pion.widgets.Wizard.prepareLicensePane = function() {
 	// so that the user has to click on it to proceed.
 	dijit.byId('license_accept_checkbox').attr('checked', false);
 
-	if (pion.edition == 'Core' || pion.edition == 'Lite') {
+	if (pion.edition == 'Core') {
 		dojo.byId('atomic_enterprise_license').style.display = 'none';
 		dojo.byId('gpl_affero_license').style.display = 'block';
 	} else {
@@ -206,16 +206,14 @@ pion.widgets.Wizard.checkReplaySetup = function() {
 }
 
 pion.widgets.Wizard.prepareSetupReview = function() {
-	dijit.byId('setup_review_form').attr('value', {
-		edition: 'Pion ' + pion.edition,
-		web_site: pion.wizard.host_suffixes.join(', '),
-		web_analytics: pion.wizard.analytics_provider_label,
-		cookies: dojo.map(pion.wizard.cookies, function(item) {return item.name;}).join(', '),
-		devices: pion.wizard.devices.join(', '),
-		ports: pion.wizard.ports.join(', '),
-		ssl_keys: 'this is a placeholder',
-		replay_alloc: pion.wizard.max_disk_usage
-	});
+	dojo.byId('setup_review_form_edition').innerHTML = 'Pion ' + pion.edition;
+	dojo.byId('setup_review_form_web_site').innerHTML = pion.wizard.host_suffixes.join(', ');
+	dojo.byId('setup_review_form_web_analytics').innerHTML = pion.wizard.analytics_provider_label;
+	dojo.byId('setup_review_form_cookies').innerHTML = dojo.map(pion.wizard.cookies, function(item) {return item.name;}).join(', ');
+	dojo.byId('setup_review_form_devices').innerHTML = pion.wizard.devices.join(', ');
+	dojo.byId('setup_review_form_ports').innerHTML = pion.wizard.ports.join(', ');
+	dojo.byId('setup_review_form_ssl_keys').innerHTML = 'this is a placeholder';
+	dojo.byId('setup_review_form_replay_alloc').innerHTML = pion.wizard.max_disk_usage;
 }
 
 pion.widgets.Wizard.wizardDone = function() {

@@ -6,6 +6,7 @@ dojo.require("dijit.layout.StackContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.TextBox");
+dojo.require("dojox.dtl.filter.strings");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 dojo.require("pion._base");
 dojo.require("pion.reactors");
@@ -158,8 +159,9 @@ pion.addReactorsFromWizard = function(wizard_config) {
 	var num_reactors_added = 0;
 	var _this = this;
 	wizard_config.reactor_ids = {};
+	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_name + '</Workspace>';
 	dojo.forEach(wizard_config.reactors, function(reactor) {
-		var post_data = '<PionConfig><Reactor>' + reactor.config + '</Reactor></PionConfig>';  
+		var post_data = post_data_header + reactor.config + '</Reactor></PionConfig>';  
 		dojo.rawXhrPost({
 			url: '/config/reactors',
 			contentType: "text/xml",
@@ -258,7 +260,6 @@ pion.wizardDone = function(exit_early) {
 
 	var sniffer_config =
 								'<Plugin>SnifferReactor</Plugin>'
-								+ '<Workspace>Clickstream ???</Workspace>'
 								+ '<X>50</X>'
 								+ '<Y>100</Y>'
 								+ '<Name>Capture Traffic</Name>'
@@ -276,7 +277,6 @@ pion.wizardDone = function(exit_early) {
 
 	var clickstream_config =
 		'<Plugin>ClickstreamReactor</Plugin>' + 
-		'<Workspace>Clickstream ???</Workspace>' +
 		'<X>250</X>' +
 		'<Y>200</Y>' +
 		'<Name>Sessionize Traffic</Name>' +
@@ -330,7 +330,6 @@ pion.wizardDone = function(exit_early) {
 	if (pion.wizard.analytics_provider == 'Google') {
 		var analytics_config =
 			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
-			'<Workspace>Clickstream ???</Workspace>' +
 			'<X>250</X>' +
 			'<Y>300</Y>' +
 			'<Name>Google Analytics</Name>' +
@@ -340,7 +339,6 @@ pion.wizardDone = function(exit_early) {
 	} else if (pion.wizard.analytics_provider == 'Omniture') {
 		var analytics_config =
 			'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
-			'<Workspace>Clickstream ???</Workspace>' +
 			'<X>250</X>' +
 			'<Y>300</Y>' +
 			'<Name>Omniture Analytics</Name>' +
@@ -365,7 +363,6 @@ pion.wizardDone = function(exit_early) {
 	if (pion.edition == 'Replay') {
 		var chr_config = 
 			'<Plugin>ContentHashReactor</Plugin>' + 
-			'<Workspace>Clickstream ???</Workspace>' + 
 			'<X>250</X>' + 
 			'<Y>100</Y>' + 
 			'<Name>Detect Page Content</Name>' + 
@@ -387,7 +384,6 @@ pion.wizardDone = function(exit_early) {
 
 		// The remainder will be added in pion.applyTemplatesIfNeeded().
 		var mdr_config = 
-			'<Workspace>Clickstream ???</Workspace>' + 
 			'<X>450</X>' + 
 			'<Y>200</Y>';
 
@@ -413,14 +409,20 @@ pion.wizardDone = function(exit_early) {
 		];
 	}
 
-	// TODO: Is there any use for this?
-	var replay_config = '';
-
 	if (analytics_config) {
 		reactors.push({label: 'analytics', config: analytics_config});
 		connections.push({from: 'clickstream', to: 'analytics'});
 	}
-	wizard_config = {reactors: reactors, connections: connections, replay_config: replay_config};
+	wizard_config = {reactors: reactors, connections: connections, workspace_name: 'Clickstream'};
+	if (pion.wizard.host_suffixes.length > 0) {
+		// This is the same algorithm as used to compute session_group_name, but it could be different.
+		var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
+		var num_pieces = pieces_of_first_host_suffix.length;
+		var prefix = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
+
+		wizard_config.workspace_name = dojox.dtl.filter.strings.capfirst(prefix) + ' Clickstream';
+	}
+
 	pion.applyTemplatesIfNeeded(wizard_config)
 	.addCallback(pion.addReactorsFromWizard)
 	.addCallback(pion.addConnectionsFromWizard)
@@ -433,19 +435,28 @@ pion.checkEdition = function() {
 	pion.edition = form.attr('value').edition;
 	if (pion.edition) {
 		dojo.cookie('pion_edition', pion.edition);
-		var template = dojo.byId('wizard_warning').innerHTML;
-		dojo.byId('wizard_warning').innerHTML = dojo.string.substitute(
-			template,
-			{
-				Edition: pion.edition,
-				RecommendedRAM: 99, 
-				RecommendedDiskSpace: 99
-			}
-		);
+		pion.widgets.Wizard.prepareLicensePane();
 		return true;
 	} else {
 		return "Please select an edition.";
 	}
+
+
+	//if (pion.edition) {
+	//	dojo.cookie('pion_edition', pion.edition);
+	//	var template = dojo.byId('wizard_warning').innerHTML;
+	//	dojo.byId('wizard_warning').innerHTML = dojo.string.substitute(
+	//		template,
+	//		{
+	//			Edition: pion.edition,
+	//			RecommendedRAM: 99, 
+	//			RecommendedDiskSpace: 99
+	//		}
+	//	);
+	//	return true;
+	//} else {
+	//	return "Please select an edition.";
+	//}
 }
 
 pion.setup_success_callback = function() {
@@ -539,8 +550,11 @@ pion.editionSetup = function(license_key_type) {
 					);
 				});
 
-				dijit.byId('select_edition_form').license_key_type = license_key_type;
-				if (license_key_type == 'enterprise') {
+				// Pre-select an edition if a pion_edition cookie is found, or failing that, a license key.
+				if (dojo.cookie('pion_edition')) {
+					pion.edition = dojo.cookie('pion_edition');
+					dijit.byId('select_edition_form').attr('value', {edition: pion.edition});
+				} else if (license_key_type == 'enterprise') {
 					dijit.byId('select_edition_form').attr('value', {edition: 'Enterprise'});
 				} else if (license_key_type == 'replay') {
 					dijit.byId('select_edition_form').attr('value', {edition: 'Replay'});
@@ -597,10 +611,11 @@ pion.editionSetup = function(license_key_type) {
 											var check_box_div = document.createElement('div');
 											device_list_div.appendChild(check_box_div);
 											new dijit.form.CheckBox({name: 'device_check_boxes', value: device_name}, check_box_div);
-											var device_label = dojo.create('label', {innerHTML: device_name});
-											device_list_div.appendChild(device_label);
 											var description_span = dojo.create('span', {innerHTML: description});
 											device_list_div.appendChild(description_span);
+											device_list_div.appendChild(dojo.create('br'));
+											var device_label = dojo.create('label', {innerHTML: device_name});
+											device_list_div.appendChild(device_label);
 											device_list_div.appendChild(dojo.create('br'));
 										},
 										onComplete: function() {

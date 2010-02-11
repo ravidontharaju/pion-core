@@ -27426,7 +27426,7 @@ pion.wizardDone(true);
 };
 pion.widgets.Wizard.prepareLicensePane=function(){
 dijit.byId("license_accept_checkbox").attr("checked",false);
-if(pion.edition=="Core"||pion.edition=="Lite"){
+if(pion.edition=="Core"){
 dojo.byId("atomic_enterprise_license").style.display="none";
 dojo.byId("gpl_affero_license").style.display="block";
 }else{
@@ -27576,9 +27576,16 @@ pion.wizard.max_disk_usage=_19f1.max_disk_usage;
 pion.widgets.Wizard.prepareSetupReview();
 };
 pion.widgets.Wizard.prepareSetupReview=function(){
-dijit.byId("setup_review_form").attr("value",{edition:"Pion "+pion.edition,web_site:pion.wizard.host_suffixes.join(", "),web_analytics:pion.wizard.analytics_provider_label,cookies:dojo.map(pion.wizard.cookies,function(item){
+dojo.byId("setup_review_form_edition").innerHTML="Pion "+pion.edition;
+dojo.byId("setup_review_form_web_site").innerHTML=pion.wizard.host_suffixes.join(", ");
+dojo.byId("setup_review_form_web_analytics").innerHTML=pion.wizard.analytics_provider_label;
+dojo.byId("setup_review_form_cookies").innerHTML=dojo.map(pion.wizard.cookies,function(item){
 return item.name;
-}).join(", "),devices:pion.wizard.devices.join(", "),ports:pion.wizard.ports.join(", "),ssl_keys:"this is a placeholder",replay_alloc:pion.wizard.max_disk_usage});
+}).join(", ");
+dojo.byId("setup_review_form_devices").innerHTML=pion.wizard.devices.join(", ");
+dojo.byId("setup_review_form_ports").innerHTML=pion.wizard.ports.join(", ");
+dojo.byId("setup_review_form_ssl_keys").innerHTML="this is a placeholder";
+dojo.byId("setup_review_form_replay_alloc").innerHTML=pion.wizard.max_disk_usage;
 };
 pion.widgets.Wizard.wizardDone=function(){
 };
@@ -27586,7 +27593,7 @@ pion.widgets.Wizard.wizardDone=function(){
 if(!dojo._hasResource["pion.widgets.LicenseKey"]){
 dojo._hasResource["pion.widgets.LicenseKey"]=true;
 dojo.provide("pion.widgets.LicenseKey");
-dojo.declare("pion.widgets.LicenseKeyDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog license_key_dialog\" style=\"width: 600px\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">${title}</span>\r\n\t</div>\r\n\t<form dojoAttachPoint=\"form\" dojoType=\"dijit.form.Form\">\r\n\t\t<p><span id=\"license_key_type\" dojoAttachPoint=\"license_key_type\"></span></p>\r\n\t\t<div class=\"dijitDialogPaneContent\">\r\n\t\t\t<textarea dojoAttachPoint=\"license_key_text_area\" style=\"width: 100%\" rows=\"8\" dojoAttachEvent=\"oninput: enableSubmit, onkeydown: enableSubmit\"></textarea>\r\n\t\t</div>\r\n\t\t<p><big><strong>\r\n\t\t\t<span id=\"result_of_submitting_key_2\" dojoAttachPoint=\"result_of_submitting_key_2\"></span>\r\n\t\t</strong></big></p>\r\n\t\t<div dojoAttachPoint=\"license_section\">\r\n\t\t\t<div dojoType=\"dijit.layout.ContentPane\" style=\"width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; \"\r\n\t\t\t\thref=\"licenses/atomic_enterprise.html\">\r\n\t\t\t</div>\r\n\t\t\t<p>\r\n\t\t\t\t<input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"checkboxes\" value=\"accept\" /> I agree to the license.\r\n\t\t\t</p>\r\n\t\t</div>\r\n\t</form>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick: submitKey\"\r\n\t\t\t\tdojoAttachPoint=\"apply_button\" disabled=\"true\">Submit</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick: onCancel\">Cancel</button>\r\n\t</div>\r\n</div>\r\n",widgetsInTemplate:true,postMixInProperties:function(){
+dojo.declare("pion.widgets.LicenseKeyDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog license_key_dialog\" style=\"width: 600px\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" tabindex=\"0\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">${title}</span>\r\n\t</div>\r\n\t<form dojoAttachPoint=\"form\" dojoType=\"dijit.form.Form\">\r\n\t\t<div class=\"dijitDialogPaneContent\">\r\n\t\t\t<textarea dojoAttachPoint=\"license_key_text_area\" style=\"width: 100%\" rows=\"8\" dojoAttachEvent=\"oninput: enableSubmit, onkeydown: enableSubmit\"></textarea>\r\n\t\t</div>\r\n\t\t<p><big><strong>\r\n\t\t\t<span id=\"result_of_submitting_key_2\" dojoAttachPoint=\"result_of_submitting_key_2\"></span>\r\n\t\t</strong></big></p>\r\n\t\t<div dojoAttachPoint=\"license_section\">\r\n\t\t\t<div dojoType=\"dijit.layout.ContentPane\" style=\"width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; \"\r\n\t\t\t\thref=\"licenses/atomic_enterprise.html\">\r\n\t\t\t</div>\r\n\t\t\t<p>\r\n\t\t\t\t<input dojoType=\"dijit.form.CheckBox\" type=\"checkBox\" name=\"checkboxes\" value=\"accept\" /> I agree to the license.\r\n\t\t\t</p>\r\n\t\t</div>\r\n\t</form>\r\n\t<div class=\"save_cancel_delete\">\r\n\t\t<button dojoType=dijit.form.Button class=\"save\" dojoAttachEvent=\"onClick: submitKey\"\r\n\t\t\t\tdojoAttachPoint=\"apply_button\" disabled=\"true\">Submit</button>\r\n\t\t<button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick: onCancel\">Cancel</button>\r\n\t</div>\r\n</div>\r\n",widgetsInTemplate:true,postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -27649,6 +27656,7 @@ dojo.mixin(this,_19fc);
 },postCreate:function(){
 this.inherited("postCreate",arguments);
 dojo.connect(this,"hide",this,"destroyRecursive");
+this.attr("value",{edition:""});
 },coreEditionSelected:function(){
 },liteEditionSelected:function(){
 },replayEditionSelected:function(){
@@ -27834,106 +27842,112 @@ return dfd;
 var _1a2a=0;
 var _this=this;
 _1a28.reactor_ids={};
-dojo.forEach(_1a28.reactors,function(_1a2c){
-var _1a2d="<PionConfig><Reactor>"+_1a2c.config+"</Reactor></PionConfig>";
-dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a2d,load:function(_1a2e){
-var node=_1a2e.getElementsByTagName("Reactor")[0];
-_1a28.reactor_ids[_1a2c.label]=node.getAttribute("id");
+var _1a2c="<PionConfig><Reactor><Workspace>"+_1a28.workspace_name+"</Workspace>";
+dojo.forEach(_1a28.reactors,function(_1a2d){
+var _1a2e=_1a2c+_1a2d.config+"</Reactor></PionConfig>";
+dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a2e,load:function(_1a2f){
+var node=_1a2f.getElementsByTagName("Reactor")[0];
+_1a28.reactor_ids[_1a2d.label]=node.getAttribute("id");
 if(++_1a2a==_1a28.reactors.length){
 dfd.callback(_1a28);
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a2d})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a2e})});
 });
 return dfd;
 };
-pion.addConnectionsFromWizard=function(_1a30){
+pion.addConnectionsFromWizard=function(_1a31){
 var dfd=new dojo.Deferred();
-if(_1a30.connections.length==0){
-dfd.callback(_1a30);
+if(_1a31.connections.length==0){
+dfd.callback(_1a31);
 }
-var _1a32=0;
+var _1a33=0;
 var _this=this;
-dojo.forEach(_1a30.connections,function(_1a34){
-var _1a35="<PionConfig><Connection><Type>reactor</Type>"+"<From>"+_1a30.reactor_ids[_1a34.from]+"</From>"+"<To>"+_1a30.reactor_ids[_1a34.to]+"</To>"+"</Connection></PionConfig>";
-dojo.rawXhrPost({url:"/config/connections",contentType:"text/xml",handleAs:"xml",postData:_1a35,load:function(_1a36){
-if(++_1a32==_1a30.connections.length){
-dfd.callback(_1a30);
+dojo.forEach(_1a31.connections,function(_1a35){
+var _1a36="<PionConfig><Connection><Type>reactor</Type>"+"<From>"+_1a31.reactor_ids[_1a35.from]+"</From>"+"<To>"+_1a31.reactor_ids[_1a35.to]+"</To>"+"</Connection></PionConfig>";
+dojo.rawXhrPost({url:"/config/connections",contentType:"text/xml",handleAs:"xml",postData:_1a36,load:function(_1a37){
+if(++_1a33==_1a31.connections.length){
+dfd.callback(_1a31);
 }
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a35})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a36})});
 });
 return dfd;
 };
-pion.addReplayIfNeeded=function(_1a37){
+pion.addReplayIfNeeded=function(_1a38){
 var dfd=new dojo.Deferred();
 if(pion.edition!="Replay"){
-dfd.callback(_1a37);
+dfd.callback(_1a38);
 return dfd;
 }
-var _1a39="<Name>Replay Query Service</Name>"+"<Comment>Pion Replay query service</Comment>"+"<Plugin>ReplayService</Plugin>"+"<Resource>/replay</Resource>"+"<Server>main-server</Server>"+"<Namespace id=\"0\">"+"<Comment>Default Instance</Comment>"+"<MultiDatabaseOutputReactor>"+_1a37.reactor_ids["mdr"]+"</MultiDatabaseOutputReactor>"+"</Namespace>";
-var _1a3a="<PionConfig><PlatformService>"+_1a39+"</PlatformService></PionConfig>";
-dojo.rawXhrPost({url:"/config/services",contentType:"text/xml",handleAs:"xml",postData:_1a3a,load:function(_1a3b){
-var node=_1a3b.getElementsByTagName("PlatformService")[0];
-dfd.callback(_1a37);
-return _1a3b;
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a3a})});
+var _1a3a="<Name>Replay Query Service</Name>"+"<Comment>Pion Replay query service</Comment>"+"<Plugin>ReplayService</Plugin>"+"<Resource>/replay</Resource>"+"<Server>main-server</Server>"+"<Namespace id=\"0\">"+"<Comment>Default Instance</Comment>"+"<MultiDatabaseOutputReactor>"+_1a38.reactor_ids["mdr"]+"</MultiDatabaseOutputReactor>"+"</Namespace>";
+var _1a3b="<PionConfig><PlatformService>"+_1a3a+"</PlatformService></PionConfig>";
+dojo.rawXhrPost({url:"/config/services",contentType:"text/xml",handleAs:"xml",postData:_1a3b,load:function(_1a3c){
+var node=_1a3c.getElementsByTagName("PlatformService")[0];
+dfd.callback(_1a38);
+return _1a3c;
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a3b})});
 return dfd;
 };
-pion.wizardDone=function(_1a3d){
+pion.wizardDone=function(_1a3e){
 dojo.addClass("wizard","hidden");
 dojo.byId("outer").style.visibility="visible";
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
-if(_1a3d){
+if(_1a3e){
 pion.setup_success_callback();
 return;
 }
-var _1a3e="<Plugin>SnifferReactor</Plugin>"+"<Workspace>Clickstream ???</Workspace>"+"<X>50</X>"+"<Y>100</Y>"+"<Name>Capture Traffic</Name>"+"<Comment>Captures raw network traffic to generate HTTP request events</Comment>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"<ProcessingThreads>3</ProcessingThreads>"+"<MaxPacketQueueSize>100000</MaxPacketQueueSize>"+"<QueueEventDelivery>true</QueueEventDelivery>";
-dojo.forEach(pion.wizard.devices,function(_1a3f){
-var _1a40=dojo.map(pion.wizard.ports,function(item){
+var _1a3f="<Plugin>SnifferReactor</Plugin>"+"<X>50</X>"+"<Y>100</Y>"+"<Name>Capture Traffic</Name>"+"<Comment>Captures raw network traffic to generate HTTP request events</Comment>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"<ProcessingThreads>3</ProcessingThreads>"+"<MaxPacketQueueSize>100000</MaxPacketQueueSize>"+"<QueueEventDelivery>true</QueueEventDelivery>";
+dojo.forEach(pion.wizard.devices,function(_1a40){
+var _1a41=dojo.map(pion.wizard.ports,function(item){
 return "tcp port "+item;
 });
-_1a3e+="<Capture><Interface>"+_1a3f+"</Interface><Filter>";
-_1a3e+=_1a40.join(" or ");
-_1a3e+="</Filter></Capture>";
+_1a3f+="<Capture><Interface>"+_1a40+"</Interface><Filter>";
+_1a3f+=_1a41.join(" or ");
+_1a3f+="</Filter></Capture>";
 });
-var _1a42="<Plugin>ClickstreamReactor</Plugin>"+"<Workspace>Clickstream ???</Workspace>"+"<X>250</X>"+"<Y>200</Y>"+"<Name>Sessionize Traffic</Name>"+"<Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>"+"<SessionTimeout>1800</SessionTimeout>"+"<PageTimeout>10</PageTimeout>"+"<MaxOpenPages>5</MaxOpenPages>"+"<MaxOpenEvents>100</MaxOpenEvents>"+"<IgnoreRobotTraffic>true</IgnoreRobotTraffic>"+"<UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>"+"<AnonPersistence>false</AnonPersistence>"+"<CookiePersistence>true</CookiePersistence>"+"<SessionGroup id=\"default\">"+"<Name>Default Group</Name>"+"<Cookie type=\"s\">__utma</Cookie>"+"<Cookie type=\"v\">__utmz</Cookie>"+"<Cookie type=\"v\">s_vi</Cookie>"+"</SessionGroup>";
+var _1a43="<Plugin>ClickstreamReactor</Plugin>"+"<X>250</X>"+"<Y>200</Y>"+"<Name>Sessionize Traffic</Name>"+"<Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>"+"<SessionTimeout>1800</SessionTimeout>"+"<PageTimeout>10</PageTimeout>"+"<MaxOpenPages>5</MaxOpenPages>"+"<MaxOpenEvents>100</MaxOpenEvents>"+"<IgnoreRobotTraffic>true</IgnoreRobotTraffic>"+"<UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>"+"<AnonPersistence>false</AnonPersistence>"+"<CookiePersistence>true</CookiePersistence>"+"<SessionGroup id=\"default\">"+"<Name>Default Group</Name>"+"<Cookie type=\"s\">__utma</Cookie>"+"<Cookie type=\"v\">__utmz</Cookie>"+"<Cookie type=\"v\">s_vi</Cookie>"+"</SessionGroup>";
 if(pion.wizard.host_suffixes.length>0){
-var _1a43=pion.wizard.host_suffixes[0].split(".");
-var _1a44=_1a43.length;
-var _1a45=_1a43[_1a44==1?0:_1a44-2];
-_1a42+="<SessionGroup id=\""+_1a45+"\">"+"<Name>"+_1a45+"</Name>";
+var _1a44=pion.wizard.host_suffixes[0].split(".");
+var _1a45=_1a44.length;
+var _1a46=_1a44[_1a45==1?0:_1a45-2];
+_1a43+="<SessionGroup id=\""+_1a46+"\">"+"<Name>"+_1a46+"</Name>";
 dojo.forEach(pion.wizard.host_suffixes,function(host){
-_1a42+="<Host>"+dojo.trim(host)+"</Host>";
+_1a43+="<Host>"+dojo.trim(host)+"</Host>";
 });
-dojo.forEach(pion.wizard.cookies,function(_1a47){
-_1a42+="<Cookie type=\""+(_1a47.is_visitor_cookie?"v":"s")+"\">"+_1a47.name+"</Cookie>";
+dojo.forEach(pion.wizard.cookies,function(_1a48){
+_1a43+="<Cookie type=\""+(_1a48.is_visitor_cookie?"v":"s")+"\">"+_1a48.name+"</Cookie>";
 });
-_1a42+="</SessionGroup>";
+_1a43+="</SessionGroup>";
 }
-_1a42+="<PageObjects>"+"<MatchAllComparisons>false</MatchAllComparisons>"+"<Comparison>"+"<Term>urn:vocab:clickstream#uri-stem</Term>"+"<Type>regex</Type>"+"<Value>.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"</PageObjects>";
+_1a43+="<PageObjects>"+"<MatchAllComparisons>false</MatchAllComparisons>"+"<Comparison>"+"<Term>urn:vocab:clickstream#uri-stem</Term>"+"<Type>regex</Type>"+"<Value>.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"</PageObjects>";
 if(pion.wizard.analytics_provider=="Google"){
-var _1a48="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<Workspace>Clickstream ???</Workspace>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+var _1a49="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 if(pion.wizard.analytics_provider=="Omniture"){
-var _1a48="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<Workspace>Clickstream ???</Workspace>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
+var _1a49="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
 }
 }
 if(pion.edition=="Replay"){
-var _1a49="<Plugin>ContentHashReactor</Plugin>"+"<Workspace>Clickstream ???</Workspace>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>starts-with</Type>"+"<Value>text/html</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
-var _1a4a="<Workspace>Clickstream ???</Workspace>"+"<X>450</X>"+"<Y>200</Y>";
-var _1a4b=[{label:"sniffer",config:_1a3e},{label:"chr",config:_1a49},{label:"clickstream",config:_1a42},{label:"mdr",config:_1a4a}];
-var _1a4c=[{from:"sniffer",to:"chr"},{from:"chr",to:"clickstream"},{from:"clickstream",to:"mdr"}];
+var _1a4a="<Plugin>ContentHashReactor</Plugin>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>starts-with</Type>"+"<Value>text/html</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
+var _1a4b="<X>450</X>"+"<Y>200</Y>";
+var _1a4c=[{label:"sniffer",config:_1a3f},{label:"chr",config:_1a4a},{label:"clickstream",config:_1a43},{label:"mdr",config:_1a4b}];
+var _1a4d=[{from:"sniffer",to:"chr"},{from:"chr",to:"clickstream"},{from:"clickstream",to:"mdr"}];
 }else{
-var _1a4b=[{label:"sniffer",config:_1a3e},{label:"clickstream",config:_1a42}];
-var _1a4c=[{from:"sniffer",to:"clickstream"}];
+var _1a4c=[{label:"sniffer",config:_1a3f},{label:"clickstream",config:_1a43}];
+var _1a4d=[{from:"sniffer",to:"clickstream"}];
 }
-var _1a4d="";
-if(_1a48){
-_1a4b.push({label:"analytics",config:_1a48});
-_1a4c.push({from:"clickstream",to:"analytics"});
+if(_1a49){
+_1a4c.push({label:"analytics",config:_1a49});
+_1a4d.push({from:"clickstream",to:"analytics"});
 }
-wizard_config={reactors:_1a4b,connections:_1a4c,replay_config:_1a4d};
+wizard_config={reactors:_1a4c,connections:_1a4d,workspace_name:"Clickstream"};
+if(pion.wizard.host_suffixes.length>0){
+var _1a44=pion.wizard.host_suffixes[0].split(".");
+var _1a45=_1a44.length;
+var _1a4e=_1a44[_1a45==1?0:_1a45-2];
+wizard_config.workspace_name=dojox.dtl.filter.strings.capfirst(_1a4e)+" Clickstream";
+}
 pion.applyTemplatesIfNeeded(wizard_config).addCallback(pion.addReactorsFromWizard).addCallback(pion.addConnectionsFromWizard).addCallback(pion.addReplayIfNeeded).addCallback(pion.setup_success_callback);
 };
 pion.checkEdition=function(){
@@ -27941,8 +27955,7 @@ var form=dijit.byId("select_edition_form");
 pion.edition=form.attr("value").edition;
 if(pion.edition){
 dojo.cookie("pion_edition",pion.edition);
-var _1a4f=dojo.byId("wizard_warning").innerHTML;
-dojo.byId("wizard_warning").innerHTML=dojo.string.substitute(_1a4f,{Edition:pion.edition,RecommendedRAM:99,RecommendedDiskSpace:99});
+pion.widgets.Wizard.prepareLicensePane();
 return true;
 }else{
 return "Please select an edition.";
@@ -27996,12 +28009,16 @@ pion.wizard.max_disk_usage="NA";
 dojo.forEach(dojo.query("label",dojo.byId("select_analytics_provider_form")),function(node){
 node.innerHTML=dojo.string.substitute(node.innerHTML,{omniture_label:pion.wizard_nlsStrings.omniture_label,webtrends_label:pion.wizard_nlsStrings.webtrends_label,google_label:pion.wizard_nlsStrings.google_label,unica_label:pion.wizard_nlsStrings.unica_label});
 });
-dijit.byId("select_edition_form").license_key_type=_1a50;
+if(dojo.cookie("pion_edition")){
+pion.edition=dojo.cookie("pion_edition");
+dijit.byId("select_edition_form").attr("value",{edition:pion.edition});
+}else{
 if(_1a50=="enterprise"){
 dijit.byId("select_edition_form").attr("value",{edition:"Enterprise"});
 }else{
 if(_1a50=="replay"){
 dijit.byId("select_edition_form").attr("value",{edition:"Replay"});
+}
 }
 }
 var _1a57=_1a55.selectedChildWidget;
@@ -28039,9 +28056,10 @@ var _1a67=_1a63.getValue(item,"Description");
 var _1a68=document.createElement("div");
 _1a64.appendChild(_1a68);
 new dijit.form.CheckBox({name:"device_check_boxes",value:_1a66},_1a68);
-var _1a69=dojo.create("label",{innerHTML:_1a66});
+var _1a69=dojo.create("span",{innerHTML:_1a67});
 _1a64.appendChild(_1a69);
-var _1a6a=dojo.create("span",{innerHTML:_1a67});
+_1a64.appendChild(dojo.create("br"));
+var _1a6a=dojo.create("label",{innerHTML:_1a66});
 _1a64.appendChild(_1a6a);
 _1a64.appendChild(dojo.create("br"));
 },onComplete:function(){

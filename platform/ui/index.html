@@ -84,8 +84,9 @@
 			<h3>Please Select an Edition</h3>
 			<a href="http://www.atomiclabs.com" target="_blank">Click here for a detailed features matrix</a>
 			<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form" />
-			<p class="next_button" style="display: none">Next Step: License Agreement (???) >></p>
+			<p class="next_button" style="display: none">Next Step: License Agreement >></p>
 		</div>
+<!--
 		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.prepareLicensePane">
 			<div class="wizard_header">
 				Setup Wizard 
@@ -111,6 +112,7 @@
 			<p class="next_button" style="display: none">Continue to License Agreement Anyway >></p>
 			<a href="http://www.atomiclabs.com" target="_blank">Cancel Setup for Now</a>
 		</div>
+-->
 		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.checkLicenseAccepted">
 			<div class="wizard_header">
 				Setup Wizard 
@@ -133,7 +135,7 @@
 			</div>
 			<p class="prev_button" style="display: none"><< Go Back</p>
 			<p class="next_button" style="display: none">Continue (???) to the Setup Wizard >></p>
-			<p class="next_button_core" style="display: none">Exit Setup Wizard</p>
+			<p class="next_button_core" style="display: none">Complete Setup Wizard</p>
 		</div>
 		<div dojoType="dojox.widget.WizardPane" id="host_pane" passFunction="pion.widgets.Wizard.checkHosts">
 			<div class="wizard_header">
@@ -388,28 +390,28 @@ A disk allocation between xGB and xxxGB is normally recomended.
 				<table width="100%">
 					<tr>
 						<td align="right" width="110px"><label>Edition:</label></td>
-						<td dojoType="dijit.form.TextBox" name="edition" />
+						<td id="setup_review_form_edition" />
 					</tr><tr>
 						<td align="right"><label>Web Site:</label></td>
-						<td dojoType="dijit.form.TextBox" name="web_site" />
+						<td id="setup_review_form_web_site" />
 					</tr><tr>
 						<td align="right"><label>Web Analytics:</label></td>
-						<td dojoType="dijit.form.TextBox" name="web_analytics" />
+						<td id="setup_review_form_web_analytics" />
 					</tr><tr>
 						<td align="right"><label>Cookies:</label></td>
-						<td dojoType="dijit.form.TextBox" name="cookies" />
+						<td id="setup_review_form_cookies" />
 					</tr><tr>
 						<td align="right"><label>Capture Devices:</label></td>
-						<td dojoType="dijit.form.TextBox" name="devices" />
+						<td id="setup_review_form_devices" />
 					</tr><tr>
 						<td align="right"><label>Ports:</label></td>
-						<td dojoType="dijit.form.TextBox" name="ports" />
+						<td id="setup_review_form_ports" />
 					</tr><tr>
 						<td align="right"><label>SSL Keys:</label></td>
-						<td dojoType="dijit.form.TextBox" name="ssl_keys" />
+						<td id="setup_review_form_ssl_keys" />
 					</tr><tr>
 						<td align="right"><label>Replay Allocation:</label></td>
-						<td dojoType="dijit.form.TextBox" name="replay_alloc" />
+						<td id="setup_review_form_replay_alloc" />
 					</tr>
 				</table>
 			</div>

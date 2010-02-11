@@ -11,12 +11,13 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
-	        var nlsStrings = dojo.i18n.getLocalization("pion", "wizard");
+			var nlsStrings = dojo.i18n.getLocalization("pion", "wizard");
 			dojo.mixin(this, nlsStrings);
 		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			dojo.connect(this, "hide", this, "destroyRecursive");
+			this.attr('value', {edition: ''});
 		},
 		coreEditionSelected: function() {
 		},
