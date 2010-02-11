@@ -101,7 +101,7 @@ pion.initTabs = function() {
 				main_stack.selectChild(tabs[0]);
 				configPageSelected(tabs[0]);
 			} else {
-				//TODO: Show some kind of explanation for the lack of tabs?
+				alert('There are no access rights defined for this user account.  You may need to reset your users.xml file.');
 			}
 
 			// Don't be tempted to move this earlier to avoid calling configPageSelected() above:

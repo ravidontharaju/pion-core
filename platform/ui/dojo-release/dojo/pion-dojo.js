@@ -27807,6 +27807,7 @@ if(tabs.length>0){
 _1a1b.selectChild(tabs[0]);
 configPageSelected(tabs[0]);
 }else{
+alert("There are no access rights defined for this user account.  You may need to reset your users.xml file.");
 }
 dojo.subscribe("main_stack_container-selectChild",configPageSelected);
 return _1a19;
