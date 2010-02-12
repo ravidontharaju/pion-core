@@ -27921,12 +27921,20 @@ _1a43+="<Cookie type=\""+(_1a48.is_visitor_cookie?"v":"s")+"\">"+_1a48.name+"</C
 _1a43+="</SessionGroup>";
 }
 _1a43+="<PageObjects>"+"<MatchAllComparisons>false</MatchAllComparisons>"+"<Comparison>"+"<Term>urn:vocab:clickstream#uri-stem</Term>"+"<Type>regex</Type>"+"<Value>.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"</PageObjects>";
-if(pion.wizard.analytics_provider=="Google"){
-var _1a49="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
-}else{
 if(pion.wizard.analytics_provider=="Omniture"){
 var _1a49="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
+if(pion.wizard.analytics_provider=="Webtrends"){
+var _1a49="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>WebTrends Analytics</Name>"+"<AccountId>"+pion.wizard.webtrends_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+}else{
+if(pion.wizard.analytics_provider=="Google"){
+var _1a49="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+}else{
+if(pion.wizard.analytics_provider=="Unica"){
+var _1a49="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+}else{
+}
+}
 }
 }
 if(pion.edition=="Replay"){

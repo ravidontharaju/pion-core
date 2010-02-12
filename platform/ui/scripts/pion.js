@@ -327,16 +327,7 @@ pion.wizardDone = function(exit_early) {
 				'<MatchAllValues>false</MatchAllValues>' +
 			'</Comparison>' +
 		'</PageObjects>';
-	if (pion.wizard.analytics_provider == 'Google') {
-		var analytics_config =
-			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
-			'<X>250</X>' +
-			'<Y>300</Y>' +
-			'<Name>Google Analytics</Name>' +
-			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
-			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>';
-	} else if (pion.wizard.analytics_provider == 'Omniture') {
+	if (pion.wizard.analytics_provider == 'Omniture') {
 		var analytics_config =
 			'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
 			'<X>250</X>' +
@@ -356,6 +347,33 @@ pion.wizardDone = function(exit_early) {
 			'<Query name="pageURL">[computed]</Query>' +
 			'<Query name="timestamp">[computed]</Query>' +
 			'<Query name="reportSuiteID">[computed]</Query>';
+	} else if (pion.wizard.analytics_provider == 'Webtrends') {
+		var analytics_config =
+			'<Plugin>WebTrendsAnalyticsReactor</Plugin>' + 
+			'<X>250</X>' +
+			'<Y>300</Y>' +
+			'<Name>WebTrends Analytics</Name>' +
+			'<AccountId>' + pion.wizard.webtrends_account_id + '</AccountId>' +
+			'<NumConnections>32</NumConnections>' +
+			'<EncryptConnections>false</EncryptConnections>';
+	} else if (pion.wizard.analytics_provider == 'Google') {
+		var analytics_config =
+			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
+			'<X>250</X>' +
+			'<Y>300</Y>' +
+			'<Name>Google Analytics</Name>' +
+			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
+			'<NumConnections>32</NumConnections>' +
+			'<EncryptConnections>false</EncryptConnections>';
+	} else if (pion.wizard.analytics_provider == 'Unica') {
+		var analytics_config =
+			'<Plugin>UnicaAnalyticsReactor</Plugin>' + 
+			'<X>250</X>' +
+			'<Y>300</Y>' +
+			'<Name>Unica OnDemand</Name>' +
+			'<AccountId>' + pion.wizard.unica_account_id + '</AccountId>' +
+			'<NumConnections>32</NumConnections>' +
+			'<EncryptConnections>false</EncryptConnections>';
 	} else {
 		// TODO:
 	}
