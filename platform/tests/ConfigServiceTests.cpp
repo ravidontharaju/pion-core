@@ -655,6 +655,13 @@ BOOST_AUTO_TEST_CASE(checkRemoveService) {
 
 	// make sure that it was removed
 	BOOST_CHECK(! m_platform_cfg.getServiceManager().hasPlugin("query-service"));
+
+	// Send a request to /query and confirm that it now returns 404.
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_GET);
+	request.setResource("/query");
+	HTTPResponsePtr response_ptr(sendRequest(request));
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_NOT_FOUND);
 }
 
 // TODO: Currently, nested PlatformServices can't be removed.

@@ -475,6 +475,11 @@ std::string ServiceManager::addPlatformService(const xmlNodePtr config_ptr)
 void ServiceManager::removePlatformService(const std::string& service_id) {
 	// convert PluginNotFound exceptions into PlatformServiceNotFound exceptions
 	try {
+		PlatformService* service_ptr = m_plugins.get(service_id);
+		if (service_ptr == NULL)
+			throw PluginManager<PlatformService>::PluginNotFoundException(service_id);
+		pion::net::HTTPServerPtr server_ptr = m_servers[service_ptr->getServerId()];
+		server_ptr->removeResource(service_ptr->getResource());
 		PluginConfig<PlatformService>::removePlugin(service_id);
 	} catch (PluginManager<PlatformService>::PluginNotFoundException&) {
 		throw PlatformServiceNotFoundException(service_id);
