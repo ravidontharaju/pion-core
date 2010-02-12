@@ -28007,6 +28007,15 @@ dojo.removeClass("wizard","hidden");
 pion.wizard.cookies=[];
 pion.wizard.devices=[];
 pion.wizard.max_disk_usage="NA";
+pion.services.config_store.fetch({onItem:function(item){
+var _1a57=pion.services.config_store.getValue(item,"Plugin");
+if(_1a57=="ReplayService"){
+var id=pion.services.config_store.getValue(item,"@id");
+dojo.xhrDelete({url:"/config/services/"+id,handleAs:"xml",timeout:5000,load:function(_1a59,_1a5a){
+return _1a59;
+},error:pion.getXhrErrorHandler(dojo.xhrDelete)});
+}
+},onError:pion.handleFetchError});
 dojo.forEach(dojo.query("label",dojo.byId("select_analytics_provider_form")),function(node){
 node.innerHTML=dojo.string.substitute(node.innerHTML,{omniture_label:pion.wizard_nlsStrings.omniture_label,webtrends_label:pion.wizard_nlsStrings.webtrends_label,google_label:pion.wizard_nlsStrings.google_label,unica_label:pion.wizard_nlsStrings.unica_label});
 });
@@ -28022,8 +28031,8 @@ dijit.byId("select_edition_form").attr("value",{edition:"Replay"});
 }
 }
 }
-var _1a57=_1a55.selectedChildWidget;
-dojo.forEach(dojo.query(".next_button",_1a57.domNode),function(node){
+var _1a5c=_1a55.selectedChildWidget;
+dojo.forEach(dojo.query(".next_button",_1a5c.domNode),function(node){
 _1a55.nextButton.attr("label",node.innerHTML);
 });
 dojo.subscribe("wizard-selectChild",function(page){
@@ -28036,8 +28045,8 @@ page.returnPane=node.getAttribute("returnPane");
 dojo.forEach(dojo.query(".next_button",page.domNode),function(node){
 _1a55.nextButton.attr("label",node.innerHTML);
 });
-var _1a5c=".next_button_"+pion.edition.toLowerCase();
-dojo.forEach(dojo.query(_1a5c,page.domNode),function(node){
+var _1a61=".next_button_"+pion.edition.toLowerCase();
+dojo.forEach(dojo.query(_1a61,page.domNode),function(node){
 _1a55.nextButton.attr("label",node.innerHTML);
 });
 dojo.forEach(dojo.query(".done_button",page.domNode),function(node){
@@ -28045,42 +28054,42 @@ _1a55.doneButton.attr("label",node.innerHTML);
 });
 if(page.id=="capture_devices_pane"){
 if(!page.device_list_initialized){
-var _1a5f="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
-dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a5f,load:function(_1a60){
-var node=_1a60.getElementsByTagName("Reactor")[0];
+var _1a64="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
+dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a64,load:function(_1a65){
+var node=_1a65.getElementsByTagName("Reactor")[0];
 var id=node.getAttribute("id");
-var _1a63=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
-var _1a64=dojo.byId("device_list");
-_1a63.fetch({query:{tagName:"Interface"},onItem:function(item){
-var _1a66=_1a63.getValue(item,"Name");
-var _1a67=_1a63.getValue(item,"Description");
-var _1a68=document.createElement("div");
-_1a64.appendChild(_1a68);
-new dijit.form.CheckBox({name:"device_check_boxes",value:_1a66},_1a68);
-var _1a69=dojo.create("span",{innerHTML:_1a67});
-_1a64.appendChild(_1a69);
-_1a64.appendChild(dojo.create("br"));
-var _1a6a=dojo.create("label",{innerHTML:_1a66});
-_1a64.appendChild(_1a6a);
-_1a64.appendChild(dojo.create("br"));
+var _1a68=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
+var _1a69=dojo.byId("device_list");
+_1a68.fetch({query:{tagName:"Interface"},onItem:function(item){
+var _1a6b=_1a68.getValue(item,"Name");
+var _1a6c=_1a68.getValue(item,"Description");
+var _1a6d=document.createElement("div");
+_1a69.appendChild(_1a6d);
+new dijit.form.CheckBox({name:"device_check_boxes",value:_1a6b},_1a6d);
+var _1a6e=dojo.create("span",{innerHTML:_1a6c});
+_1a69.appendChild(_1a6e);
+_1a69.appendChild(dojo.create("br"));
+var _1a6f=dojo.create("label",{innerHTML:_1a6b});
+_1a69.appendChild(_1a6f);
+_1a69.appendChild(dojo.create("br"));
 },onComplete:function(){
-dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1a6b,_1a6c){
-return _1a6b;
+dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1a70,_1a71){
+return _1a70;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 page.device_list_initialized=true;
 }});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a5f})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a64})});
 }
 }
 });
 }
-},error:function(_1a6d,_1a6e){
+},error:function(_1a72,_1a73){
 pion.handleXhrGetError();
 }});
 };
 pion.checkKeyService=function(){
-pion.about.checkKeyStatusDfd().addCallback(function(_1a6f){
-pion.editionSetup(_1a6f);
+pion.about.checkKeyStatusDfd().addCallback(function(_1a74){
+pion.editionSetup(_1a74);
 }).addErrback(function(e){
 if(e.message=="Not logged in."){
 if(!dojo.cookie("logged_in")){
@@ -28172,28 +28181,28 @@ page.onSelect();
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_1a73,_1a74){
-var _1a75;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1a78,_1a79){
+var _1a7a;
 if(value!==undefined){
-_1a75=this.filter(value);
-if(_1a75!==null&&((typeof _1a75!="number")||!isNaN(_1a75))){
-if(_1a74===undefined||!_1a74.toString){
-_1a74=this.format(_1a75,this.constraints);
+_1a7a=this.filter(value);
+if(_1a7a!==null&&((typeof _1a7a!="number")||!isNaN(_1a7a))){
+if(_1a79===undefined||!_1a79.toString){
+_1a79=this.format(_1a7a,this.constraints);
 }
 }else{
-_1a74="";
+_1a79="";
 }
 }
-if(_1a74!=null&&_1a74!=undefined){
-this.textbox.value=_1a74;
+if(_1a79!=null&&_1a79!=undefined){
+this.textbox.value=_1a79;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_1a75,_1a73);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1a7a,_1a78);
 };
 dijit.Dialog.prototype._size=function(){
 var mb=dojo.marginBox(this.domNode);
-var _1a77=dijit.getViewport();
-if(mb.w>=_1a77.w||mb.h>=_1a77.h){
-dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1a77.h*0.9))+"px",overflow:"auto",position:"relative"});
+var _1a7c=dijit.getViewport();
+if(mb.w>=_1a7c.w||mb.h>=_1a7c.h){
+dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1a7c.h*0.9))+"px",overflow:"auto",position:"relative"});
 }
 };
 dijit.DialogUnderlay.prototype.postCreate=function(){

@@ -527,6 +527,26 @@ pion.editionSetup = function(license_key_type) {
 				pion.wizard.devices = [];
 				pion.wizard.max_disk_usage = 'NA';
 
+				// Since there are no reactors configured, any ReplayService that is configured is useless, so delete it.
+				pion.services.config_store.fetch({
+					onItem: function(item) {
+						var plugin = pion.services.config_store.getValue(item, 'Plugin');
+						if (plugin == 'ReplayService') {
+							var id = pion.services.config_store.getValue(item, '@id');
+							dojo.xhrDelete({
+								url: '/config/services/' + id,
+								handleAs: 'xml',
+								timeout: 5000,
+								load: function(response, ioArgs) {
+									return response;
+								},
+								error: pion.getXhrErrorHandler(dojo.xhrDelete)
+							});
+						}
+					},
+					onError: pion.handleFetchError
+				});
+
 				// This doesn't work: for some reason, it makes the radio buttons unselectable.
 				//var template = dojo.byId('select_analytics_provider_form').innerHTML;
 				//dojo.byId('select_analytics_provider_form').innerHTML = dojo.string.substitute(
