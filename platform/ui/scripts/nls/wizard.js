@@ -8,5 +8,5 @@
 	"omniture_label": "Omniture",
 	"webtrends_label": "Webtrends",
 	"google_label": "Google Analytics", 
-	"unica_label": "Unica OnDemand",
+	"unica_label": "Unica OnDemand"
  })
