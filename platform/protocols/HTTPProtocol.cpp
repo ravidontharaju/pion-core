@@ -284,6 +284,8 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
+	retval->m_request_parser.setSaveRawHeaders(m_request_parser.getSaveRawHeaders());
+	retval->m_response_parser.setSaveRawHeaders(m_response_parser.getSaveRawHeaders());
 
 	retval->m_extraction_rules = m_extraction_rules;
 
