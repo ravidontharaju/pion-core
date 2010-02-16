@@ -247,6 +247,19 @@ pion.addReplayIfNeeded = function(wizard_config) {
 	return dfd;
 }
 
+pion.startSniffer = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	dojo.xhrPut({
+		url: '/config/reactors/' + wizard_config.reactor_ids['sniffer'] + '/start',
+		load: function(response) {
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.xhrPut)
+	});
+	return dfd;
+}
+
 pion.wizardDone = function(exit_early) {
 	dojo.addClass('wizard', 'hidden');
 	dojo.byId('outer').style.visibility = 'visible';
@@ -326,7 +339,10 @@ pion.wizardDone = function(exit_early) {
 				'<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>' +
 				'<MatchAllValues>false</MatchAllValues>' +
 			'</Comparison>' +
-		'</PageObjects>';
+		'</PageObjects>' +
+		'<StickyPageField>urn:vocab:clickstream#cs-headers</StickyPageField>' +
+		'<StickyPageField>urn:vocab:clickstream#sc-headers</StickyPageField>' +
+		'<StickyPageField>urn:vocab:clickstream#cs-content</StickyPageField>';
 	if (pion.wizard.analytics_provider == 'Omniture') {
 		var analytics_config =
 			'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
@@ -445,6 +461,7 @@ pion.wizardDone = function(exit_early) {
 	.addCallback(pion.addReactorsFromWizard)
 	.addCallback(pion.addConnectionsFromWizard)
 	.addCallback(pion.addReplayIfNeeded)
+	.addCallback(pion.startSniffer)
 	.addCallback(pion.setup_success_callback);
 }
 

@@ -46,6 +46,8 @@
 		<Comment>HTTP Protocol parser</Comment>
 		<Plugin>HTTPProtocol</Plugin>
 		<EventType>urn:vocab:clickstream#http-event</EventType>
+		<RawRequestHeaders>true</RawRequestHeaders>
+		<RawResponseHeaders>true</RawResponseHeaders>
 		<Extract term="urn:vocab:clickstream#host">
 			<Source>cs-header</Source>
 			<Name>Host</Name>
