@@ -103,11 +103,15 @@ public:
 	void bindZBlob(unsigned int param, const char *value, size_t size, bool copy_value = true)
 	{
 		std::string temp;
-		boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
-		out.push(boost::iostreams::zlib_compressor());
-		out.push(boost::iostreams::back_inserter(temp));
-		std::string data(value, size);
-		boost::iostreams::copy(boost::make_iterator_range(data), out);
+		if (size == 0 || value == NULL || *value == '\0') {
+			temp.clear();
+		} else {
+			boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+			out.push(boost::iostreams::zlib_compressor());
+			out.push(boost::iostreams::back_inserter(temp));
+			std::string data(value, size);
+			boost::iostreams::copy(boost::make_iterator_range(data), out);
+		}
 		bindBlob(param, temp.data(), temp.size());
 	}
 
@@ -115,10 +119,14 @@ public:
 	{
 		std::string temp;
 		fetchBlob(param, temp);
-		boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
-		in.push(boost::iostreams::zlib_decompressor());
-		in.push(boost::make_iterator_range(temp));
-		boost::iostreams::copy(in, boost::iostreams::back_inserter(value));
+		if (temp.size() == 0) {
+			value = temp;
+		} else {
+			boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+			in.push(boost::iostreams::zlib_decompressor());
+			in.push(boost::make_iterator_range(temp));
+			boost::iostreams::copy(in, boost::iostreams::back_inserter(value));
+		}
 	}
 
 
