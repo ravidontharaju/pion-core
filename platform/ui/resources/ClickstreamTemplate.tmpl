@@ -1,0 +1,36 @@
+<Plugin>ClickstreamReactor</Plugin>
+<Name>Sessionize Traffic</Name>
+<Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>
+<SessionTimeout>1800</SessionTimeout>
+<PageTimeout>10</PageTimeout>
+<MaxOpenPages>5</MaxOpenPages>
+<MaxOpenEvents>100</MaxOpenEvents>
+<IgnoreRobotTraffic>true</IgnoreRobotTraffic>
+<UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>
+<AnonPersistence>false</AnonPersistence>
+<CookiePersistence>true</CookiePersistence>
+<SessionGroup id="default">
+	<Name>Default Group</Name>
+	<Cookie type="s">__utma</Cookie>
+	<Cookie type="v">__utmz</Cookie>
+	<Cookie type="v">s_vi</Cookie>
+</SessionGroup>
+${SessionGroupConfig}
+<PageObjects>
+	<MatchAllComparisons>false</MatchAllComparisons>
+	<Comparison>
+		<Term>urn:vocab:clickstream#uri-stem</Term>
+		<Type>regex</Type>
+		<Value>(?i)\.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>
+		<MatchAllValues>false</MatchAllValues>
+	</Comparison>
+	<Comparison>
+		<Term>urn:vocab:clickstream#content-type</Term>
+		<Type>regex</Type>
+		<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>
+		<MatchAllValues>false</MatchAllValues>
+	</Comparison>
+</PageObjects>
+<StickyPageField>urn:vocab:clickstream#cs-headers</StickyPageField>
+<StickyPageField>urn:vocab:clickstream#sc-headers</StickyPageField>
+<StickyPageField>urn:vocab:clickstream#cs-content</StickyPageField>

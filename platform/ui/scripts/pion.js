@@ -120,29 +120,32 @@ pion.initTabs = function() {
 pion.applyTemplatesIfNeeded = function(wizard_config) {
 	var dfd = new dojo.Deferred();
 	
-	if (pion.edition != 'Replay') {
+	if (wizard_config.templates.length == 0) {
 		dfd.callback(wizard_config);
 		return dfd;
 	}
 
 	var labels = dojo.map(wizard_config.reactors, function(item) {return item.label});
-	var mdr_index = dojo.indexOf(labels, 'mdr');
-	dojo.xhrGet({
-		url: '/resources/MDRTemplate.tmpl',
-		handleAs: 'text',
-		timeout: 20000,
-		load: function(response, ioArgs) {
-			wizard_config.reactors[mdr_index].config += dojo.string.substitute(
-				response,
-				{
-					MaxDiskUsage: pion.wizard.max_disk_usage
+	var num_templates_applied = 0;
+	var _this = this;
+	dojo.forEach(wizard_config.templates, function(template) {
+		var index = dojo.indexOf(labels, template.label);
+		dojo.xhrGet({
+			url: template.url,
+			handleAs: 'text',
+			timeout: 20000,
+			load: function(response) {
+				wizard_config.reactors[index].config += dojo.string.substitute(
+					response,
+					template.substitutions
+				);
+				if (++num_templates_applied == wizard_config.templates.length) {
+					dfd.callback(wizard_config);
 				}
-			);
-			dfd.callback(wizard_config);
-
-			return response;
-		},
-		error: pion.handleXhrGetError
+				return response;
+			},
+			error: pion.handleXhrGetError
+		});
 	});
 
 	return dfd;
@@ -271,6 +274,8 @@ pion.wizardDone = function(exit_early) {
 		return;
 	}
 
+	var templates = [];
+
 	var sniffer_config =
 								'<Plugin>SnifferReactor</Plugin>'
 								+ '<X>50</X>'
@@ -288,61 +293,35 @@ pion.wizardDone = function(exit_early) {
 		sniffer_config += '</Filter></Capture>';
 	});
 
-	var clickstream_config =
-		'<Plugin>ClickstreamReactor</Plugin>' + 
-		'<X>250</X>' +
-		'<Y>200</Y>' +
-		'<Name>Sessionize Traffic</Name>' +
-		'<Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>' +
-		'<SessionTimeout>1800</SessionTimeout>' +
-		'<PageTimeout>10</PageTimeout>' +
-		'<MaxOpenPages>5</MaxOpenPages>' +
-		'<MaxOpenEvents>100</MaxOpenEvents>' +
-		'<IgnoreRobotTraffic>true</IgnoreRobotTraffic>' +
-		'<UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>' +
-		'<AnonPersistence>false</AnonPersistence>' +
-		'<CookiePersistence>true</CookiePersistence>' +
-		'<SessionGroup id="default">' +
-			'<Name>Default Group</Name>' +
-			'<Cookie type="s">__utma</Cookie>' +
-			'<Cookie type="v">__utmz</Cookie>' +
-			'<Cookie type="v">s_vi</Cookie>' +
-		'</SessionGroup>';
+	// The remainder will be added in pion.applyTemplatesIfNeeded().
+	var clickstream_config = 
+		'<X>250</X>' + 
+		'<Y>200</Y>';
+
+	session_group_config = '';
 	if (pion.wizard.host_suffixes.length > 0) {
 		var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
 		var num_pieces = pieces_of_first_host_suffix.length;
 		var session_group_name = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
-		clickstream_config +=
+		session_group_config +=
 			'<SessionGroup id="' + session_group_name + '">' +
 				'<Name>' + session_group_name + '</Name>';
 		dojo.forEach(pion.wizard.host_suffixes, function(host) {
-			clickstream_config += '<Host>' + dojo.trim(host) + '</Host>';
+			session_group_config += '<Host>' + dojo.trim(host) + '</Host>';
 		});
 		dojo.forEach(pion.wizard.cookies, function(cookie) {
-			clickstream_config += '<Cookie type="' + (cookie.is_visitor_cookie? 'v' : 's') + '">' + cookie.name + '</Cookie>';
+			session_group_config += '<Cookie type="' + (cookie.is_visitor_cookie? 'v' : 's') + '">' + cookie.name + '</Cookie>';
 		});
-		clickstream_config +=
+		session_group_config +=
 			'</SessionGroup>';
 	}
-	clickstream_config +=
-		'<PageObjects>' +
-			'<MatchAllComparisons>false</MatchAllComparisons>' +
-			'<Comparison>' +
-				'<Term>urn:vocab:clickstream#uri-stem</Term>' +
-				'<Type>regex</Type>' +
-				'<Value>\.(gif|jpg|jpeg|png|ico|css|js|swf)$</Value>' +
-				'<MatchAllValues>false</MatchAllValues>' +
-			'</Comparison>' +
-			'<Comparison>' +
-				'<Term>urn:vocab:clickstream#content-type</Term>' +
-				'<Type>regex</Type>' +
-				'<Value>(image/|application/|text/css|text/plain|javascript|xml|json)</Value>' +
-				'<MatchAllValues>false</MatchAllValues>' +
-			'</Comparison>' +
-		'</PageObjects>' +
-		'<StickyPageField>urn:vocab:clickstream#cs-headers</StickyPageField>' +
-		'<StickyPageField>urn:vocab:clickstream#sc-headers</StickyPageField>' +
-		'<StickyPageField>urn:vocab:clickstream#cs-content</StickyPageField>';
+
+	templates.push({
+		label: 'clickstream',
+		url: '/resources/ClickstreamTemplate.tmpl',
+		substitutions: {SessionGroupConfig: session_group_config}
+	});
+
 	if (pion.wizard.analytics_provider == 'Omniture') {
 		var analytics_config =
 			'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
@@ -421,6 +400,12 @@ pion.wizardDone = function(exit_early) {
 			'<X>450</X>' + 
 			'<Y>200</Y>';
 
+		templates.push({
+			label: 'mdr',
+			url: '/resources/MDRTemplate.tmpl',
+			substitutions: {MaxDiskUsage: pion.wizard.max_disk_usage}
+		});
+
 		var reactors = [
 			{label: 'sniffer', config: sniffer_config},
 			{label: 'chr', config: chr_config},
@@ -447,7 +432,13 @@ pion.wizardDone = function(exit_early) {
 		reactors.push({label: 'analytics', config: analytics_config});
 		connections.push({from: 'clickstream', to: 'analytics'});
 	}
-	wizard_config = {reactors: reactors, connections: connections, workspace_name: 'Clickstream'};
+	wizard_config = {
+		templates: templates,
+		reactors: reactors,
+		connections: connections,
+		workspace_name: 'Clickstream'
+	};
+
 	if (pion.wizard.host_suffixes.length > 0) {
 		// This is the same algorithm as used to compute session_group_name, but it could be different.
 		var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
