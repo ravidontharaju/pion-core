@@ -204,10 +204,11 @@ Add Another (NOT IMPLEMENTED YET)
 				<input type="radio" name="analytics_provider" value="Webtrends" dojoType="dijit.form.RadioButton" /><label>${webtrends_label}</label>
 				<input type="radio" name="analytics_provider" value="Google" dojoType="dijit.form.RadioButton" /><label>${google_label}</label>
 				<input type="radio" name="analytics_provider" value="Unica" dojoType="dijit.form.RadioButton" /><label>${unica_label}</label>
+				<input type="radio" name="analytics_provider" value="none" dojoType="dijit.form.RadioButton" /><label>${no_analytics_provider}</label>
 			</div>
-			<p class="next_button" style="display: none">Next Step: Enter Your Account Information >></p>
 			<br>
-Skip Web Analytics Provider for Now (NOT IMPLEMENTED YET)
+			<button dojoType=dijit.form.Button onClick="pion.widgets.Wizard.skipAnalyticsProvider">Skip Web Analytics Provider for Now</button>
+			<p class="next_button" style="display: none">Next Step: Enter Your Account Information >></p>
 		</div>
 		<div dojoType="dojox.widget.WizardPane" id="omniture_pane" passFunction="pion.widgets.Wizard.checkOmnitureConfig">
 			<div class="wizard_header">

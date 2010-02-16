@@ -112,6 +112,13 @@ pion.widgets.Wizard.checkAnalyticsProvider = function() {
 	return false;
 }
 
+pion.widgets.Wizard.skipAnalyticsProvider = function() {
+	pion.wizard.analytics_provider = '';
+	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
+	pion.wizard.analytics_provider_label = 'None';
+	return false;
+}
+
 pion.widgets.Wizard.checkOmnitureConfig = function() {
 	pion.wizard.omniture_host = dojo.trim(dijit.byId('omniture_host').attr('value'));
 	pion.wizard.omniture_report_suite = dojo.trim(dijit.byId('omniture_report_suite').attr('value'));

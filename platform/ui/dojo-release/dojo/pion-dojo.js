@@ -27501,6 +27501,12 @@ break;
 }
 return false;
 };
+pion.widgets.Wizard.skipAnalyticsProvider=function(){
+pion.wizard.analytics_provider="";
+pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
+pion.wizard.analytics_provider_label="None";
+return false;
+};
 pion.widgets.Wizard.checkOmnitureConfig=function(){
 pion.wizard.omniture_host=dojo.trim(dijit.byId("omniture_host").attr("value"));
 pion.wizard.omniture_report_suite=dojo.trim(dijit.byId("omniture_report_suite").attr("value"));
@@ -28025,7 +28031,7 @@ return _1a59;
 }
 },onError:pion.handleFetchError});
 dojo.forEach(dojo.query("label",dojo.byId("select_analytics_provider_form")),function(node){
-node.innerHTML=dojo.string.substitute(node.innerHTML,{omniture_label:pion.wizard_nlsStrings.omniture_label,webtrends_label:pion.wizard_nlsStrings.webtrends_label,google_label:pion.wizard_nlsStrings.google_label,unica_label:pion.wizard_nlsStrings.unica_label});
+node.innerHTML=dojo.string.substitute(node.innerHTML,pion.wizard_nlsStrings);
 });
 if(dojo.cookie("pion_edition")){
 pion.edition=dojo.cookie("pion_edition");
