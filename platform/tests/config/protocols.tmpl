@@ -31,7 +31,7 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>
-			<Match>(?i)&lt;TITLE&gt;(.*?)&lt;/TITLE&gt;</Match>
+			<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
 			<ContentType>(?i)^text/html</ContentType>
 			<MaxSize>10240</MaxSize>
@@ -68,7 +68,7 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#page-title">
 			<Source>sc-content</Source>
-			<Match>(?i)&lt;TITLE&gt;(.*?)&lt;/TITLE&gt;</Match>
+			<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
 			<ContentType>(?i)^text/html</ContentType>
 			<MaxSize>10240</MaxSize>
@@ -80,8 +80,9 @@
 		</Extract>
 		<Extract term="urn:vocab:clickstream#sc-content">
 			<Source>sc-content</Source>
-			<ContentType>(?i)(^text/|application/.*\+xml)</ContentType>
+			<ContentType>(?i)(^text/|json|application/.*\+xml)</ContentType>
 			<MaxSize>524288</MaxSize>
 		</Extract>
 	</Protocol>
 </PionConfig>
+
