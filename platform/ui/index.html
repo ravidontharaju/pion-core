@@ -326,11 +326,8 @@
 The prepopulated ports of 80 (non-encrypted) and 443 (encrypted) are the standard defaults for most systems.
 If your port numbers are different, or if you have additional ports, you can add, edit and remove them here, using commas to separate multiple ports.
 			<div id="port_list" dojoType="dijit.form.Form">
-				<label>Unencrypted Ports</label>
-				<input dojoType="dijit.form.TextBox" name="unencrypted_ports" value="80" />
-				<br>
-				<label>Encrypted Ports</label>
-				<input dojoType="dijit.form.TextBox" name="encrypted_ports" value="443" />
+				<label>Ports: </label>
+				<input dojoType="dijit.form.TextBox" name="ports" value="80, 443" style="width: 80%;" />
 			</div>
 			<p class="next_button" style="display: none">Next Step: Setup SSL Keys >></p>
 		</div>

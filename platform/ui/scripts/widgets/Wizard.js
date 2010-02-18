@@ -76,19 +76,13 @@ pion.widgets.Wizard.checkHosts = function() {
 
 pion.widgets.Wizard.checkCookies = function() {
 	pion.wizard.cookies = [];
-	var raw_visitor_cookies = dijit.byId('visitor_cookies').attr('value').split(',');
-	dojo.forEach(raw_visitor_cookies, function(cookie) {
-		cookie = dojo.trim(cookie);
-		if (cookie != '') {
-			pion.wizard.cookies.push({name: cookie, is_visitor_cookie: true});
-		}
+	var visitor_cookies = pion.widgets.Wizard.getArrayFromCSVString(dijit.byId('visitor_cookies').attr('value'));
+	dojo.forEach(visitor_cookies, function(cookie) {
+		pion.wizard.cookies.push({name: cookie, is_visitor_cookie: true});
 	});
-	var raw_session_cookies = dijit.byId('session_cookies').attr('value').split(',');
-	dojo.forEach(raw_session_cookies, function(cookie) {
-		cookie = dojo.trim(cookie);
-		if (cookie != '') {
-			pion.wizard.cookies.push({name: cookie, is_visitor_cookie: false});
-		}
+	var session_cookies = pion.widgets.Wizard.getArrayFromCSVString(dijit.byId('session_cookies').attr('value'));
+	dojo.forEach(session_cookies, function(cookie) {
+		pion.wizard.cookies.push({name: cookie, is_visitor_cookie: false});
 	});
 	return true;
 }
@@ -157,27 +151,16 @@ pion.widgets.Wizard.checkUnicaConfig = function() {
 
 pion.widgets.Wizard.checkCaptureDevices = function() {
 	pion.wizard.devices = dijit.byId('device_list').attr('value').device_check_boxes;
+	if (pion.wizard.devices.length == 0)
+		return 'You must select at least one device.';
 	return true;
 }
 
 pion.widgets.Wizard.checkPorts = function() {
 	var form_values = dijit.byId('port_list').attr('value');
-
-	pion.wizard.unencrypted_ports = pion.widgets.Wizard.getArrayFromCSVString(form_values.unencrypted_ports);
-	pion.wizard.encrypted_ports = pion.widgets.Wizard.getArrayFromCSVString(form_values.encrypted_ports);
-	pion.wizard.ports = pion.wizard.unencrypted_ports.concat(pion.wizard.encrypted_ports);
-
-	if (pion.wizard.encrypted_ports.length == 0) {
-		if (pion.edition == 'Replay')
-			pion.wizard.selectChild(dijit.byId('setup_replay'));
-		else {
-			pion.widgets.Wizard.prepareSetupReview();
-			pion.wizard.selectChild(dijit.byId('review_setup'));
-		}
-		return false;
-	}
-
-	// If there are any encrypted ports, then we just go to the next pane (to configure the SSL keys).
+	pion.wizard.ports = pion.widgets.Wizard.getArrayFromCSVString(form_values.ports);
+	if (pion.wizard.ports.length == 0)
+		return 'You must enter at least one port.';
 	return true;
 }
 

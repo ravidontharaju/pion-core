@@ -27471,19 +27471,13 @@ return true;
 };
 pion.widgets.Wizard.checkCookies=function(){
 pion.wizard.cookies=[];
-var _19ea=dijit.byId("visitor_cookies").attr("value").split(",");
+var _19ea=pion.widgets.Wizard.getArrayFromCSVString(dijit.byId("visitor_cookies").attr("value"));
 dojo.forEach(_19ea,function(_19eb){
-_19eb=dojo.trim(_19eb);
-if(_19eb!=""){
 pion.wizard.cookies.push({name:_19eb,is_visitor_cookie:true});
-}
 });
-var _19ec=dijit.byId("session_cookies").attr("value").split(",");
+var _19ec=pion.widgets.Wizard.getArrayFromCSVString(dijit.byId("session_cookies").attr("value"));
 dojo.forEach(_19ec,function(_19ed){
-_19ed=dojo.trim(_19ed);
-if(_19ed!=""){
 pion.wizard.cookies.push({name:_19ed,is_visitor_cookie:false});
-}
 });
 return true;
 };
@@ -27548,21 +27542,16 @@ return false;
 };
 pion.widgets.Wizard.checkCaptureDevices=function(){
 pion.wizard.devices=dijit.byId("device_list").attr("value").device_check_boxes;
+if(pion.wizard.devices.length==0){
+return "You must select at least one device.";
+}
 return true;
 };
 pion.widgets.Wizard.checkPorts=function(){
 var _19ee=dijit.byId("port_list").attr("value");
-pion.wizard.unencrypted_ports=pion.widgets.Wizard.getArrayFromCSVString(_19ee.unencrypted_ports);
-pion.wizard.encrypted_ports=pion.widgets.Wizard.getArrayFromCSVString(_19ee.encrypted_ports);
-pion.wizard.ports=pion.wizard.unencrypted_ports.concat(pion.wizard.encrypted_ports);
-if(pion.wizard.encrypted_ports.length==0){
-if(pion.edition=="Replay"){
-pion.wizard.selectChild(dijit.byId("setup_replay"));
-}else{
-pion.widgets.Wizard.prepareSetupReview();
-pion.wizard.selectChild(dijit.byId("review_setup"));
-}
-return false;
+pion.wizard.ports=pion.widgets.Wizard.getArrayFromCSVString(_19ee.ports);
+if(pion.wizard.ports.length==0){
+return "You must enter at least one port.";
 }
 return true;
 };
