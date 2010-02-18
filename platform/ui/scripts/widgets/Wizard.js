@@ -199,6 +199,63 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 	dojo.byId('setup_review_form_replay_alloc').innerHTML = pion.wizard.max_disk_usage;
 }
 
-pion.widgets.Wizard.wizardDone = function() {
+pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
+	var num_reactors_deleted = 0;
+	dojo.forEach(reactors, function(reactor) {
+		var id = reactor.getAttribute('id');
+		dojo.xhrDelete({
+			url: '/config/reactors/' + id,
+			handleAs: 'xml',
+			timeout: 5000,
+			load: function(response, ioArgs) {
+				if (++num_reactors_deleted == reactors.length) {
+					// Reload.  Since there are now no Reactors configured, the wizard will start.
+					location.replace('/');
+				}
+				return response;
+			},
+			error: pion.getXhrErrorHandler(dojo.xhrDelete)
+		});
+	});
+}
+
+pion.widgets.Wizard.restart = function() {
+	dojo.xhrGet({
+		url: '/config/reactors',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var reactors = response.getElementsByTagName('Reactor');
+			if (reactors.length == 0) {
+				// Reload.  Since there are no Reactors configured, the wizard will start.
+				location.replace('/');
+			} else {
+				pion.services.getConfiguredServices().addCallback(function(kw_args) {
+					var replay_configured = (dojo.indexOf(kw_args.configured_services, 'ReplayService') != -1);
+					var message = 'Warning: You currently have '
+								+ (reactors.length == 1? 'one Reactor ' : reactors.length + ' Reactors ')
+								+ (replay_configured? 'and a Replay Service ' : '')
+								+ 'configured.  If you continue, '
+								+ (reactors.length == 1 && ! replay_configured? 'it ' : 'they ')
+								+ 'will be deleted, and the Wizard will guide you through '
+								+ 'creating a new configuration from scratch.  If you want to edit the configuration of a '
+								+ 'particular Reactor, you can do so by double clicking on it in the Reactors '
+								+ 'tab, or by editing reactors.xml.  '
+								+ (replay_configured? 'The Replay Service can be edited by editing services.xml.  ' : '')
+								+ 'Do you want to delete your current Reactors '
+								+ (replay_configured? 'and Replay Service ' : '')
+								+ 'and continue to the Wizard?';
+					pion.doDeleteConfirmationDialog(message, pion.widgets.Wizard.deleteAllReactorsAndReload, reactors);
+				});
+			}
+		},
+		error: function(response, ioArgs) {
+			pion.handleXhrGetError();
+		}
+	});
+}
+
+pion.widgets.Wizard.apply = function() {
 	// TODO: move pion.wizardDone() here?
 }
