@@ -175,14 +175,17 @@
 			<h2>Configure your site's cookies (optional)</h2>
 			<p> 
 				Cookies are used by your web site to keep track of visitors as the move across your web site.
-				Persistant cookies keep track of individuals across multiple visits to your site.
+				Persistent cookies keep track of individuals across multiple visits to your site.
 			</p>
-			<h3>Enter one cookie per row (i.e. php_cookie)</h3>
-			<input dojoType="dijit.form.TextBox" id="cookie_1" style="width: 50%;" />
-			<input id='is_visitor_cookie' dojoType="dijit.form.CheckBox" type="checkBox" /> Persistent
-			<p> 
-Add Another (NOT IMPLEMENTED YET)
-			</p>
+			<h3>Enter the cookies for your site (i.e. php_cookie)</h3>
+			<h4>Separate multiple cookies with commas</h4>
+			<label>Persistent cookies: </label>
+			<br/>
+			<input dojoType="dijit.form.TextBox" id="visitor_cookies" style="width: 90%;" />
+			<br/>
+			<label>??? Session cookies?  Other cookies?: </label>
+			<br/>
+			<input dojoType="dijit.form.TextBox" id="session_cookies" style="width: 90%;" />
 			<p class="prev_button" style="display: none"><< Go Back</p>
 			<p class="next_button" style="display: none">Next Step: Connect To Your Web Analytics >></p>
  		</div>

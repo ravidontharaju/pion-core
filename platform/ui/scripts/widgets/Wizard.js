@@ -75,12 +75,21 @@ pion.widgets.Wizard.checkHosts = function() {
 }
 
 pion.widgets.Wizard.checkCookies = function() {
-	// TODO: allow more than one cookie.
-	var cookie_1 = dijit.byId('cookie_1').attr('value');
-	var is_visitor_cookie = dijit.byId('is_visitor_cookie').attr('checked');
-	pion.wizard.cookies = [
-		{name: cookie_1, is_visitor_cookie: is_visitor_cookie}
-	];
+	pion.wizard.cookies = [];
+	var raw_visitor_cookies = dijit.byId('visitor_cookies').attr('value').split(',');
+	dojo.forEach(raw_visitor_cookies, function(cookie) {
+		cookie = dojo.trim(cookie);
+		if (cookie != '') {
+			pion.wizard.cookies.push({name: cookie, is_visitor_cookie: true});
+		}
+	});
+	var raw_session_cookies = dijit.byId('session_cookies').attr('value').split(',');
+	dojo.forEach(raw_session_cookies, function(cookie) {
+		cookie = dojo.trim(cookie);
+		if (cookie != '') {
+			pion.wizard.cookies.push({name: cookie, is_visitor_cookie: false});
+		}
+	});
 	return true;
 }
 
