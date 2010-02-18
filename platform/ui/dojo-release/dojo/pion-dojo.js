@@ -27516,22 +27516,37 @@ return false;
 pion.widgets.Wizard.checkOmnitureConfig=function(){
 pion.wizard.omniture_host=dojo.trim(dijit.byId("omniture_host").attr("value"));
 pion.wizard.omniture_report_suite=dojo.trim(dijit.byId("omniture_report_suite").attr("value"));
-if("OK"){
-pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
+if(pion.wizard.omniture_host==""){
+return "You must specify a Host.";
 }
+if(pion.wizard.omniture_report_suite==""){
+return "You must specify a Report Suite.";
+}
+pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkWebtrendsConfig=function(){
-if("OK"){
-pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
+pion.wizard.webtrends_account_id=dojo.trim(dijit.byId("webtrends_account_id").attr("value"));
+pion.wizard.webtrends_host=dojo.trim(dijit.byId("webtrends_host").attr("value"));
+if(pion.wizard.webtrends_account_id==""){
+return "You must specify an Account ID.";
 }
+if(pion.wizard.webtrends_host==""){
+return "You must specify a Host.";
+}
+pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkGoogleConfig=function(){
-pion.wizard.google_account_id=dijit.byId("google_account_id").attr("value");
-if("OK"){
-pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
+pion.wizard.google_account_id=dojo.trim(dijit.byId("google_account_id").attr("value"));
+pion.wizard.google_host=dojo.trim(dijit.byId("google_host").attr("value"));
+if(pion.wizard.google_account_id==""){
+return "You must specify an Account ID.";
 }
+if(pion.wizard.google_host==""){
+return "You must specify a Host.";
+}
+pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkUnicaConfig=function(){
@@ -28031,10 +28046,10 @@ if(pion.wizard.analytics_provider=="Omniture"){
 var _1a6e="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
 if(pion.wizard.analytics_provider=="Webtrends"){
-var _1a6e="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>WebTrends Analytics</Name>"+"<AccountId>"+pion.wizard.webtrends_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+var _1a6e="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>WebTrends Analytics</Name>"+"<DCSID>"+pion.wizard.webtrends_account_id+"</DCSID>"+"<Hostname>"+pion.wizard.webtrends_host+"</Hostname>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 if(pion.wizard.analytics_provider=="Google"){
-var _1a6e="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+var _1a6e="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<Host>"+pion.wizard.google_host+"</Host>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 if(pion.wizard.analytics_provider=="Unica"){
 var _1a6e="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";

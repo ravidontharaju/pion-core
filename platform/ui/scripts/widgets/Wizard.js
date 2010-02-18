@@ -125,21 +125,33 @@ pion.widgets.Wizard.skipAnalyticsProvider = function() {
 pion.widgets.Wizard.checkOmnitureConfig = function() {
 	pion.wizard.omniture_host = dojo.trim(dijit.byId('omniture_host').attr('value'));
 	pion.wizard.omniture_report_suite = dojo.trim(dijit.byId('omniture_report_suite').attr('value'));
-	if ("OK")
-		pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
+	if (pion.wizard.omniture_host == '')
+		return 'You must specify a Host.';
+	if (pion.wizard.omniture_report_suite == '')
+		return 'You must specify a Report Suite.';
+	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
 
 pion.widgets.Wizard.checkWebtrendsConfig = function() {
-	if ("OK")
-		pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
+	pion.wizard.webtrends_account_id = dojo.trim(dijit.byId('webtrends_account_id').attr('value'));
+	pion.wizard.webtrends_host = dojo.trim(dijit.byId('webtrends_host').attr('value'));
+	if (pion.wizard.webtrends_account_id == '')
+		return 'You must specify an Account ID.';
+	if (pion.wizard.webtrends_host == '')
+		return 'You must specify a Host.';
+	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
 
 pion.widgets.Wizard.checkGoogleConfig = function() {
-	pion.wizard.google_account_id = dijit.byId('google_account_id').attr('value');
-	if ("OK")
-		pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
+	pion.wizard.google_account_id = dojo.trim(dijit.byId('google_account_id').attr('value'));
+	pion.wizard.google_host = dojo.trim(dijit.byId('google_host').attr('value'));
+	if (pion.wizard.google_account_id == '')
+		return 'You must specify an Account ID.';
+	if (pion.wizard.google_host == '')
+		return 'You must specify a Host.';
+	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
 

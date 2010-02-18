@@ -349,7 +349,8 @@ pion.wizardDone = function(exit_early) {
 			'<X>250</X>' +
 			'<Y>300</Y>' +
 			'<Name>WebTrends Analytics</Name>' +
-			'<AccountId>' + pion.wizard.webtrends_account_id + '</AccountId>' +
+			'<DCSID>' + pion.wizard.webtrends_account_id + '</DCSID>' +
+			'<Hostname>' + pion.wizard.webtrends_host + '</Hostname>' +
 			'<NumConnections>32</NumConnections>' +
 			'<EncryptConnections>false</EncryptConnections>';
 	} else if (pion.wizard.analytics_provider == 'Google') {
@@ -359,6 +360,7 @@ pion.wizardDone = function(exit_early) {
 			'<Y>300</Y>' +
 			'<Name>Google Analytics</Name>' +
 			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
+			'<Host>' + pion.wizard.google_host + '</Host>' +
 			'<NumConnections>32</NumConnections>' +
 			'<EncryptConnections>false</EncryptConnections>';
 	} else if (pion.wizard.analytics_provider == 'Unica') {
