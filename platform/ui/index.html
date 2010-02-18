@@ -345,18 +345,7 @@ If your port numbers are different, or if you have additional ports, you can add
 			<h1>Setup SSL Keys</h1>
 			<h2>Please enter one key at a time</h2>
 SSL keys are used by the web server to encrypt and decrypt secure traffic. More guide copy ensues..
-			<div id="ssl_key_setup" dojoType="dijit.form.Form">
-				<label>Descriptive Name</label>
-				<input dojoType="dijit.form.TextBox" name="name" />
-				<br>
-				<label>Password</label>
-				<input dojoType="dijit.form.TextBox" name="password" disabled="true" value="unimplemented"/>
-				<br>
-				<label>SSL Key</label>
-				<textarea id="ssl_key_input" cols="65" rows="8"></textarea>
-			</div>
-			
-			<button dojoType=dijit.form.Button onClick="pion.widgets.Wizard.saveKey">Save</button>
+			<div dojoType=pion.widgets.KeyStoreEditor></div>
 			<p class="next_button" style="display: none">Next Step: I'm Done Adding Keys >></p>
 		</div>
 		<div dojoType="dojox.widget.WizardPane" id="setup_replay" passFunction="pion.widgets.Wizard.checkReplaySetup">

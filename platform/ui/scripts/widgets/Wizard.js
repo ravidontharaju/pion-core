@@ -172,30 +172,6 @@ pion.widgets.Wizard.checkPorts = function() {
 	return true;
 }
 
-pion.widgets.Wizard.saveKey = function() {
-	var form_values = dijit.byId('ssl_key_setup').attr('value');
-	var ssl_key_input = dojo.byId('ssl_key_input');
-	var post_data = '<PionConfig><Key>';
-	post_data += pion.makeXmlLeafElement('Name', form_values.name);
-	post_data += pion.makeXmlLeafElement('PEM', ssl_key_input.value);
-	post_data += '</Key></PionConfig>';
-
-	// Clear the fields.
-	dijit.byId('ssl_key_setup').attr('value', {name: ''});
-	ssl_key_input.value = '';
-
-	dojo.rawXhrPost({
-		url: '/keystore',
-		contentType: "text/xml",
-		handleAs: "xml",
-		postData: post_data,
-		load: function(response) {
-			return response;
-		},
-		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
-	});
-}
-
 pion.widgets.Wizard.checkSSLKeys = function() {
 	if (pion.edition == 'Replay') {
 		return true;

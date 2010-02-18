@@ -26,8 +26,8 @@ body {
 
 #wizard {
 	position: absolute;
-	width: 600px;
-	height: 425px;
+	width: 650px;
+	height: 450px;
 }
 
 #wizard.hidden {
@@ -1136,6 +1136,15 @@ I don't think this is being used anywhere.
 	padding: 5px;
 	background-color: #e6e6e6;
 	font-weight:bold;
+}
+
+.tundra button.open_keystore_editor {
+	border: 2px dotted yellow;
+	background-color: red;
+}
+
+.tundra .key_store_editor {
+	border: 2px dotted green;
 }
 
 .termSelectorContainer thead tr th, .termSelectorContainer thead tr td, .termSelectorContainer tbody tr td, .termSelectorContainer tfoot tr td {

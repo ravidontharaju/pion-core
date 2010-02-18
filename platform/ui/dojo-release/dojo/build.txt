@@ -203,4 +203,5 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/widgets/Wizard.js
 ./../../release/dojo-release/pion/widgets/LicenseKey.js
 ./../../release/dojo-release/pion/widgets/EditionSelector.js
+./../../release/dojo-release/pion/widgets/KeyStoreEditor.js
 ./../../release/dojo-release/pion/pion.js
