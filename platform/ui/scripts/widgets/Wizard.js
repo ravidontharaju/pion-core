@@ -162,6 +162,8 @@ pion.widgets.Wizard.checkUnicaConfig = function() {
 }
 
 pion.widgets.Wizard.checkCaptureDevices = function() {
+	if (! pion.wizard.device_found)
+		return 'Error: no capture devices found.';
 	pion.wizard.devices = dijit.byId('device_list').attr('value').device_check_boxes;
 	if (pion.wizard.devices.length == 0)
 		return 'You must select at least one device.';

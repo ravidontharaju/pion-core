@@ -27556,6 +27556,9 @@ pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkCaptureDevices=function(){
+if(!pion.wizard.device_found){
+return "Error: no capture devices found.";
+}
 pion.wizard.devices=dijit.byId("device_list").attr("value").device_check_boxes;
 if(pion.wizard.devices.length==0){
 return "You must select at least one device.";
@@ -28202,10 +28205,14 @@ _1a8e.appendChild(dojo.create("br"));
 var _1a94=dojo.create("label",{innerHTML:_1a90});
 _1a8e.appendChild(_1a94);
 _1a8e.appendChild(dojo.create("br"));
+pion.wizard.device_found=true;
 },onComplete:function(){
 dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1a95,_1a96){
 return _1a95;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
+if(!pion.wizard.device_found){
+_1a8e.innerHTML="Error: no capture devices found.  Pion must be run as the root/administrator user.";
+}
 page.device_list_initialized=true;
 }});
 },error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a89})});

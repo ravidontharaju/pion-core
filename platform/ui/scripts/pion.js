@@ -652,6 +652,7 @@ pion.editionSetup = function(license_key_type) {
 											var device_label = dojo.create('label', {innerHTML: device_name});
 											device_list_div.appendChild(device_label);
 											device_list_div.appendChild(dojo.create('br'));
+											pion.wizard.device_found = true;
 										},
 										onComplete: function() {
 											// Delete the dummy SnifferReactor.
@@ -664,6 +665,9 @@ pion.editionSetup = function(license_key_type) {
 												},
 												error: pion.getXhrErrorHandler(dojo.xhrDelete)
 											});
+											if (! pion.wizard.device_found) {
+												device_list_div.innerHTML = 'Error: no capture devices found.  Pion must be run as the root/administrator user.';
+											}
 											page.device_list_initialized = true;
 										}
 									});
