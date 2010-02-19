@@ -68,7 +68,9 @@ pion.widgets.Wizard.checkHosts = function() {
 	// If the user didn't specify any hosts, skip over the cookie pane.
 	// TODO: Does it make sense to have cookies without hosts?  What about hosts without cookies?
 	if (pion.wizard.host_suffixes.length == 0) {
-		dijit.byId('wizard').selectChild(dijit.byId('analytics_provider_pane'));
+		var analytics_provider_pane = dijit.byId('analytics_provider_pane');
+		analytics_provider_pane.returnPane = 'host_pane';
+		dijit.byId('wizard').selectChild(analytics_provider_pane);
 		return false;
 	} else
 		return true;

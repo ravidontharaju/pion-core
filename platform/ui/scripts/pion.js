@@ -464,7 +464,7 @@ pion.checkEdition = function() {
 	var form = dijit.byId('select_edition_form');
 	pion.edition = form.attr('value').edition;
 	if (pion.edition) {
-		dojo.cookie('pion_edition', pion.edition);
+		dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
 		pion.widgets.Wizard.prepareLicensePane();
 		return true;
 	} else {
@@ -608,10 +608,16 @@ pion.editionSetup = function(license_key_type) {
 						if (node.getAttribute('returnPane'))
 							page.returnPane = node.getAttribute('returnPane');
 					});
+					var edition_specific_query = '.prev_button_' + pion.edition.toLowerCase();
+					dojo.forEach(dojo.query(edition_specific_query, page.domNode), function(node) {
+						wizard.previousButton.attr('label', node.innerHTML);
+						if (node.getAttribute('returnPane'))
+							page.returnPane = node.getAttribute('returnPane');
+					});
 					dojo.forEach(dojo.query('.next_button', page.domNode), function(node) {
 						wizard.nextButton.attr('label', node.innerHTML);
 					});
-					var edition_specific_query = '.next_button_' + pion.edition.toLowerCase();
+					edition_specific_query = '.next_button_' + pion.edition.toLowerCase();
 					dojo.forEach(dojo.query(edition_specific_query, page.domNode), function(node) {
 						wizard.nextButton.attr('label', node.innerHTML);
 					});
