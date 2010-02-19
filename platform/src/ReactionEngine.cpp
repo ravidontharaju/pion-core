@@ -223,6 +223,8 @@ std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
 
 void ReactionEngine::removeReactor(const std::string& reactor_id)
 {
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
 	Reactor *reactor_ptr = m_plugins.get(reactor_id);
 	if (reactor_ptr == NULL)
 		throw ReactorNotFoundException(reactor_id);
@@ -233,7 +235,6 @@ void ReactionEngine::removeReactor(const std::string& reactor_id)
 	}
 
 	// disconnect any Reactor connections involving the Reactor being removed
-	boost::mutex::scoped_lock engine_lock(m_mutex);
 	ReactorConnectionList::iterator reactor_i = m_reactor_connections.begin();
 	while (reactor_i != m_reactor_connections.end()) {
 		ReactorConnectionList::iterator current_i = reactor_i++;
