@@ -25325,13 +25325,7 @@ var _17ef=nodes[0].getAttribute("reactor_type");
 pion.reactors.showReactorInitDialog(_17ef);
 };
 pion.reactors.showReactorInitDialog=function(_17f0){
-if(pion.key_service_running&&plugins.reactors[_17f0].edition=="Enterprise"){
-pion.about.checkKeyStatus({success_callback:function(){
 pion.reactors._showReactorInitDialog(_17f0);
-}});
-}else{
-pion.reactors._showReactorInitDialog(_17f0);
-}
 };
 pion.reactors._showReactorInitDialog=function(_17f1){
 var _17f2="plugins.reactors."+_17f1+"InitDialog";
@@ -25422,13 +25416,7 @@ pion.reactors.createConnection(_1809,_180a,id);
 },error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_180b})});
 };
 pion.reactors.showReactorConfigDialog=function(_180f){
-if(pion.key_service_running&&plugins.reactors[_180f.config.Plugin].edition=="Enterprise"){
-pion.about.checkKeyStatus({success_callback:function(){
 pion.reactors._showReactorConfigDialog(_180f);
-}});
-}else{
-pion.reactors._showReactorConfigDialog(_180f);
-}
 };
 pion.reactors._showReactorConfigDialog=function(_1810){
 var _1811="plugins.reactors."+_1810.config.Plugin+"Dialog";
