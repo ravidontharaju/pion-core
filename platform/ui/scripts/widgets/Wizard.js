@@ -156,8 +156,13 @@ pion.widgets.Wizard.checkGoogleConfig = function() {
 }
 
 pion.widgets.Wizard.checkUnicaConfig = function() {
-	if ("OK")
-		pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
+	pion.wizard.unica_account_id = dojo.trim(dijit.byId('unica_account_id').attr('value'));
+	pion.wizard.unica_host = dojo.trim(dijit.byId('unica_host').attr('value'));
+	if (pion.wizard.unica_account_id == '')
+		return 'You must specify a Site.';
+	if (pion.wizard.unica_host == '')
+		return 'You must specify a Host.';
+	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
 

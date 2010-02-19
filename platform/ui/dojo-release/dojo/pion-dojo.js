@@ -27538,9 +27538,15 @@ pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkUnicaConfig=function(){
-if("OK"){
-pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
+pion.wizard.unica_account_id=dojo.trim(dijit.byId("unica_account_id").attr("value"));
+pion.wizard.unica_host=dojo.trim(dijit.byId("unica_host").attr("value"));
+if(pion.wizard.unica_account_id==""){
+return "You must specify a Site.";
 }
+if(pion.wizard.unica_host==""){
+return "You must specify a Host.";
+}
+pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
 pion.widgets.Wizard.checkCaptureDevices=function(){
@@ -28043,7 +28049,7 @@ if(pion.wizard.analytics_provider=="Google"){
 var _1a6e="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<Host>"+pion.wizard.google_host+"</Host>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 if(pion.wizard.analytics_provider=="Unica"){
-var _1a6e="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+var _1a6e="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<HttpHost>"+pion.wizard.unica_host+"</HttpHost>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 }
 }

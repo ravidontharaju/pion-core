@@ -369,6 +369,7 @@ pion.wizardDone = function(exit_early) {
 			'<X>250</X>' +
 			'<Y>300</Y>' +
 			'<Name>Unica OnDemand</Name>' +
+			'<HttpHost>' + pion.wizard.unica_host + '</HttpHost>' +
 			'<AccountId>' + pion.wizard.unica_account_id + '</AccountId>' +
 			'<NumConnections>32</NumConnections>' +
 			'<EncryptConnections>false</EncryptConnections>';
