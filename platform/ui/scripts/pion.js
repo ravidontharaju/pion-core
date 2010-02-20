@@ -348,7 +348,7 @@ pion.wizardDone = function(exit_early) {
 			'<Plugin>WebTrendsAnalyticsReactor</Plugin>' + 
 			'<X>250</X>' +
 			'<Y>300</Y>' +
-			'<Name>WebTrends Analytics</Name>' +
+			'<Name>Webtrends Analytics</Name>' +
 			'<DCSID>' + pion.wizard.webtrends_account_id + '</DCSID>' +
 			'<Hostname>' + pion.wizard.webtrends_host + '</Hostname>' +
 			'<NumConnections>32</NumConnections>' +
@@ -460,11 +460,23 @@ pion.wizardDone = function(exit_early) {
 	.addCallback(pion.setup_success_callback);
 }
 
+pion.updateLogo = function(edition) {
+	var edition_class = edition.toLowerCase();
+	var logo_div = dojo.byId('logo');
+	dojo.query('p.logo', logo_div).forEach(function(n) {
+		if (dojo.hasClass(n, edition_class))
+			dojo.removeClass(n, 'hidden');
+		else
+			dojo.addClass(n, 'hidden');
+	});
+}
+
 pion.checkEdition = function() {
 	var form = dijit.byId('select_edition_form');
 	pion.edition = form.attr('value').edition;
 	if (pion.edition) {
 		dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
+		pion.updateLogo(pion.edition);
 		pion.widgets.Wizard.prepareLicensePane();
 		return true;
 	} else {
@@ -729,6 +741,10 @@ pion.checkKeyService = function() {
 var init = function() {
 	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
+
+	if (dojo.cookie('pion_edition')) {
+		pion.updateLogo(dojo.cookie('pion_edition'));
+	}
 
 	pion.checkKeyService();
 

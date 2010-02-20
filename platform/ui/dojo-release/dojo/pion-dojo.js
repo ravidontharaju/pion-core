@@ -27781,6 +27781,7 @@ this.submit_edition_button.attr("disabled",false);
 },execute:function(_1a1c){
 pion.edition=_1a1c.edition;
 dojo.cookie("pion_edition",pion.edition,{expires:5000});
+pion.updateLogo(pion.edition);
 dojo.byId("wizard").style.display="none";
 dojo.byId("outer").style.visibility="visible";
 dojo.byId("current_user_menu_section").style.visibility="visible";
@@ -28045,7 +28046,7 @@ if(pion.wizard.analytics_provider=="Omniture"){
 var _1a6f="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
 if(pion.wizard.analytics_provider=="Webtrends"){
-var _1a6f="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>WebTrends Analytics</Name>"+"<DCSID>"+pion.wizard.webtrends_account_id+"</DCSID>"+"<Hostname>"+pion.wizard.webtrends_host+"</Hostname>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
+var _1a6f="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Webtrends Analytics</Name>"+"<DCSID>"+pion.wizard.webtrends_account_id+"</DCSID>"+"<Hostname>"+pion.wizard.webtrends_host+"</Hostname>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
 }else{
 if(pion.wizard.analytics_provider=="Google"){
 var _1a6f="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<Host>"+pion.wizard.google_host+"</Host>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>";
@@ -28080,11 +28081,23 @@ wizard_config.workspace_name=dojox.dtl.filter.strings.capfirst(_1a74)+" Clickstr
 }
 pion.applyTemplatesIfNeeded(wizard_config).addCallback(pion.addReactorsFromWizard).addCallback(pion.addConnectionsFromWizard).addCallback(pion.addReplayIfNeeded).addCallback(pion.startSniffer).addCallback(pion.setup_success_callback);
 };
+pion.updateLogo=function(_1a75){
+var _1a76=_1a75.toLowerCase();
+var _1a77=dojo.byId("logo");
+dojo.query("p.logo",_1a77).forEach(function(n){
+if(dojo.hasClass(n,_1a76)){
+dojo.removeClass(n,"hidden");
+}else{
+dojo.addClass(n,"hidden");
+}
+});
+};
 pion.checkEdition=function(){
 var form=dijit.byId("select_edition_form");
 pion.edition=form.attr("value").edition;
 if(pion.edition){
 dojo.cookie("pion_edition",pion.edition,{expires:5000});
+pion.updateLogo(pion.edition);
 pion.widgets.Wizard.prepareLicensePane();
 return true;
 }else{
@@ -28095,7 +28108,7 @@ pion.setup_success_callback=function(){
 pion.terms.init();
 pion.services.init();
 };
-pion.editionSetup=function(_1a76){
+pion.editionSetup=function(_1a7a){
 pion.wizard=dijit.byId("wizard");
 pion.wizard.back=function(){
 if(pion.wizard.selectedChildWidget.returnPane){
@@ -28105,11 +28118,11 @@ this.selectChild(this._adjacent(false));
 }
 };
 pion.wizard_nlsStrings=dojo.i18n.getLocalization("pion","wizard");
-dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1a77,_1a78){
+dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1a7b,_1a7c){
 dojo.cookie("logged_in","true",{expires:1});
-var _1a79=_1a77.getElementsByTagName("Reactor");
-if(_1a79.length){
-if(_1a76=="enterprise"||_1a76=="replay"){
+var _1a7d=_1a7b.getElementsByTagName("Reactor");
+if(_1a7d.length){
+if(_1a7a=="enterprise"||_1a7a=="replay"){
 dojo.byId("wizard").style.display="none";
 dojo.byId("outer").style.visibility="visible";
 dojo.byId("current_user_menu_section").style.visibility="visible";
@@ -28126,22 +28139,22 @@ dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();
 }else{
-var _1a7a=new pion.widgets.EditionSelectorDialog;
-_1a7a.show();
+var _1a7e=new pion.widgets.EditionSelectorDialog;
+_1a7e.show();
 }
 }
 }else{
-var _1a7b=dijit.byId("wizard");
+var _1a7f=dijit.byId("wizard");
 dojo.removeClass("wizard","hidden");
 pion.wizard.cookies=[];
 pion.wizard.devices=[];
 pion.wizard.max_disk_usage="NA";
 pion.services.config_store.fetch({onItem:function(item){
-var _1a7d=pion.services.config_store.getValue(item,"Plugin");
-if(_1a7d=="ReplayService"){
+var _1a81=pion.services.config_store.getValue(item,"Plugin");
+if(_1a81=="ReplayService"){
 var id=pion.services.config_store.getValue(item,"@id");
-dojo.xhrDelete({url:"/config/services/"+id,handleAs:"xml",timeout:5000,load:function(_1a7f,_1a80){
-return _1a7f;
+dojo.xhrDelete({url:"/config/services/"+id,handleAs:"xml",timeout:5000,load:function(_1a83,_1a84){
+return _1a83;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 }
 },onError:pion.handleFetchError});
@@ -28152,84 +28165,84 @@ if(dojo.cookie("pion_edition")){
 pion.edition=dojo.cookie("pion_edition");
 dijit.byId("select_edition_form").attr("value",{edition:pion.edition});
 }else{
-if(_1a76=="enterprise"){
+if(_1a7a=="enterprise"){
 dijit.byId("select_edition_form").attr("value",{edition:"Enterprise"});
 }else{
-if(_1a76=="replay"){
+if(_1a7a=="replay"){
 dijit.byId("select_edition_form").attr("value",{edition:"Replay"});
 }
 }
 }
-var _1a82=_1a7b.selectedChildWidget;
-dojo.forEach(dojo.query(".next_button",_1a82.domNode),function(node){
-_1a7b.nextButton.attr("label",node.innerHTML);
+var _1a86=_1a7f.selectedChildWidget;
+dojo.forEach(dojo.query(".next_button",_1a86.domNode),function(node){
+_1a7f.nextButton.attr("label",node.innerHTML);
 });
 dojo.subscribe("wizard-selectChild",function(page){
 dojo.forEach(dojo.query(".prev_button",page.domNode),function(node){
-_1a7b.previousButton.attr("label",node.innerHTML);
+_1a7f.previousButton.attr("label",node.innerHTML);
 if(node.getAttribute("returnPane")){
 page.returnPane=node.getAttribute("returnPane");
 }
 });
-var _1a86=".prev_button_"+pion.edition.toLowerCase();
-dojo.forEach(dojo.query(_1a86,page.domNode),function(node){
-_1a7b.previousButton.attr("label",node.innerHTML);
+var _1a8a=".prev_button_"+pion.edition.toLowerCase();
+dojo.forEach(dojo.query(_1a8a,page.domNode),function(node){
+_1a7f.previousButton.attr("label",node.innerHTML);
 if(node.getAttribute("returnPane")){
 page.returnPane=node.getAttribute("returnPane");
 }
 });
 dojo.forEach(dojo.query(".next_button",page.domNode),function(node){
-_1a7b.nextButton.attr("label",node.innerHTML);
+_1a7f.nextButton.attr("label",node.innerHTML);
 });
-_1a86=".next_button_"+pion.edition.toLowerCase();
-dojo.forEach(dojo.query(_1a86,page.domNode),function(node){
-_1a7b.nextButton.attr("label",node.innerHTML);
+_1a8a=".next_button_"+pion.edition.toLowerCase();
+dojo.forEach(dojo.query(_1a8a,page.domNode),function(node){
+_1a7f.nextButton.attr("label",node.innerHTML);
 });
 dojo.forEach(dojo.query(".done_button",page.domNode),function(node){
-_1a7b.doneButton.attr("label",node.innerHTML);
+_1a7f.doneButton.attr("label",node.innerHTML);
 });
 if(page.id=="capture_devices_pane"){
 if(!page.device_list_initialized){
-var _1a8b="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
-dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a8b,load:function(_1a8c){
-var node=_1a8c.getElementsByTagName("Reactor")[0];
+var _1a8f="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
+dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1a8f,load:function(_1a90){
+var node=_1a90.getElementsByTagName("Reactor")[0];
 var id=node.getAttribute("id");
-var _1a8f=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
-var _1a90=dojo.byId("device_list");
-_1a8f.fetch({query:{tagName:"Interface"},onItem:function(item){
-var _1a92=_1a8f.getValue(item,"Name");
-var _1a93=_1a8f.getValue(item,"Description");
-var _1a94=document.createElement("div");
-_1a90.appendChild(_1a94);
-new dijit.form.CheckBox({name:"device_check_boxes",value:_1a92},_1a94);
-var _1a95=dojo.create("span",{innerHTML:_1a93});
-_1a90.appendChild(_1a95);
-_1a90.appendChild(dojo.create("br"));
-var _1a96=dojo.create("label",{innerHTML:_1a92});
-_1a90.appendChild(_1a96);
-_1a90.appendChild(dojo.create("br"));
+var _1a93=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
+var _1a94=dojo.byId("device_list");
+_1a93.fetch({query:{tagName:"Interface"},onItem:function(item){
+var _1a96=_1a93.getValue(item,"Name");
+var _1a97=_1a93.getValue(item,"Description");
+var _1a98=document.createElement("div");
+_1a94.appendChild(_1a98);
+new dijit.form.CheckBox({name:"device_check_boxes",value:_1a96},_1a98);
+var _1a99=dojo.create("span",{innerHTML:_1a97});
+_1a94.appendChild(_1a99);
+_1a94.appendChild(dojo.create("br"));
+var _1a9a=dojo.create("label",{innerHTML:_1a96});
+_1a94.appendChild(_1a9a);
+_1a94.appendChild(dojo.create("br"));
 pion.wizard.device_found=true;
 },onComplete:function(){
-dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1a97,_1a98){
-return _1a97;
+dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1a9b,_1a9c){
+return _1a9b;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 if(!pion.wizard.device_found){
-_1a90.innerHTML="Error: no capture devices found.  Pion must be run as the root/administrator user.";
+_1a94.innerHTML="Error: no capture devices found.  Pion must be run as the root/administrator user.";
 }
 page.device_list_initialized=true;
 }});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a8b})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1a8f})});
 }
 }
 });
 }
-},error:function(_1a99,_1a9a){
+},error:function(_1a9d,_1a9e){
 pion.handleXhrGetError();
 }});
 };
 pion.checkKeyService=function(){
-pion.about.checkKeyStatusDfd().addCallback(function(_1a9b){
-pion.editionSetup(_1a9b);
+pion.about.checkKeyStatusDfd().addCallback(function(_1a9f){
+pion.editionSetup(_1a9f);
 }).addErrback(function(e){
 if(e.message=="Not logged in."){
 if(!dojo.cookie("logged_in")){
@@ -28244,6 +28257,9 @@ pion.handleXhrGetError();
 var init=function(){
 file_protocol=(window.location.protocol=="file:");
 firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexOf("Firefox")>=0;
+if(dojo.cookie("pion_edition")){
+pion.updateLogo(dojo.cookie("pion_edition"));
+}
 pion.checkKeyService();
 };
 dojo.addOnLoad(init);
@@ -28321,28 +28337,28 @@ page.onSelect();
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_1a9f,_1aa0){
-var _1aa1;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1aa3,_1aa4){
+var _1aa5;
 if(value!==undefined){
-_1aa1=this.filter(value);
-if(_1aa1!==null&&((typeof _1aa1!="number")||!isNaN(_1aa1))){
-if(_1aa0===undefined||!_1aa0.toString){
-_1aa0=this.format(_1aa1,this.constraints);
+_1aa5=this.filter(value);
+if(_1aa5!==null&&((typeof _1aa5!="number")||!isNaN(_1aa5))){
+if(_1aa4===undefined||!_1aa4.toString){
+_1aa4=this.format(_1aa5,this.constraints);
 }
 }else{
-_1aa0="";
+_1aa4="";
 }
 }
-if(_1aa0!=null&&_1aa0!=undefined){
-this.textbox.value=_1aa0;
+if(_1aa4!=null&&_1aa4!=undefined){
+this.textbox.value=_1aa4;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_1aa1,_1a9f);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1aa5,_1aa3);
 };
 dijit.Dialog.prototype._size=function(){
 var mb=dojo.marginBox(this.domNode);
-var _1aa3=dijit.getViewport();
-if(mb.w>=_1aa3.w||mb.h>=_1aa3.h){
-dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1aa3.h*0.9))+"px",overflow:"auto",position:"relative"});
+var _1aa7=dijit.getViewport();
+if(mb.w>=_1aa7.w||mb.h>=_1aa7.h){
+dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1aa7.h*0.9))+"px",overflow:"auto",position:"relative"});
 }
 };
 dijit.DialogUnderlay.prototype.postCreate=function(){
