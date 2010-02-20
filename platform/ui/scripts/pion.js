@@ -136,10 +136,16 @@ pion.applyTemplatesIfNeeded = function(wizard_config) {
 			handleAs: 'text',
 			timeout: 20000,
 			load: function(response) {
-				wizard_config.reactors[index].config += dojo.string.substitute(
+				var transformed_template = dojo.string.substitute(
 					response,
 					template.substitutions
 				);
+
+				// This strips out EOL characters that can wreak havoc later when attempting to update a config.
+				// These can come both from the template file and from dojo.string.substitute().
+				var trimmed_XML = transformed_template.replace(/>\s*/g, '>');
+
+				wizard_config.reactors[index].config += trimmed_XML;
 				if (++num_templates_applied == wizard_config.templates.length) {
 					dfd.callback(wizard_config);
 				}
