@@ -366,7 +366,6 @@ pion.wizardDone = function(exit_early) {
 			'<Y>300</Y>' +
 			'<Name>Google Analytics</Name>' +
 			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
-			'<Host>' + pion.wizard.google_host + '</Host>' +
 			'<NumConnections>32</NumConnections>' +
 			'<EncryptConnections>false</EncryptConnections>';
 	} else if (pion.wizard.analytics_provider == 'Unica') {

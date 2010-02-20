@@ -148,11 +148,8 @@ pion.widgets.Wizard.checkWebtrendsConfig = function() {
 
 pion.widgets.Wizard.checkGoogleConfig = function() {
 	pion.wizard.google_account_id = dojo.trim(dijit.byId('google_account_id').attr('value'));
-	pion.wizard.google_host = dojo.trim(dijit.byId('google_host').attr('value'));
 	if (pion.wizard.google_account_id == '')
 		return 'You must specify an Account ID.';
-	if (pion.wizard.google_host == '')
-		return 'You must specify a Host.';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
