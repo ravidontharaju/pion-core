@@ -120,34 +120,30 @@ dojo.declare("pion.about.LicenseKeyDialog",
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
-							if (dojo.isIE) {
-								var license_name = response.getElementsByTagName('Name')[0].xml;
-								var license_email = response.getElementsByTagName('Email')[0].xml;
-								var version_tags = response.getElementsByTagName('Version');
-								var license_version = version_tags.length > 0? version_tags[0].xml : "";
-								var expiration_tags = response.getElementsByTagName('Expiration');
-								var license_expiration = expiration_tags.length > 0? expiration_tags[0].xml : "";
-							} else {
-								var license_name = response.getElementsByTagName('Name')[0].textContent;
-								var license_email = response.getElementsByTagName('Email')[0].textContent;
-								var version_tags = response.getElementsByTagName('Version');
-								var license_version = version_tags.length > 0? version_tags[0].textContent : "";
-								var expiration_tags = response.getElementsByTagName('Expiration');
-								var license_expiration = expiration_tags.length > 0? expiration_tags[0].textContent : "";
-							}
+							var getContent = function(p) { return dojox.xml.parser.textContent(p) };
+							var license_name = dojox.xml.parser.textContent(response.getElementsByTagName('Name')[0]);
+							var license_email = dojox.xml.parser.textContent(response.getElementsByTagName('Email')[0]);
+							var license_versions = dojo.map(response.getElementsByTagName('Version'), getContent);
+							var license_products = dojo.map(response.getElementsByTagName('Product'), getContent);
+							var license_expirations = dojo.map(response.getElementsByTagName('Expiration'), getContent);
 
 							// update license information in table
 							_this.license_name.innerHTML = license_name;
 							_this.license_email.innerHTML = license_email;
-							if (license_version == "") {
+							if (license_versions.length == 0) {
 								_this.license_version.innerHTML = "All versions";
 							} else {
-								_this.license_version.innerHTML = license_version;
+								_this.license_version.innerHTML = license_versions[0];
 							}
-							if (license_expiration == "") {
+							if (license_products.length == 0) {
+								_this.license_products.innerHTML = "None";
+							} else {
+								_this.license_products.innerHTML = license_products.join(', ');
+							}
+							if (license_expirations.length == 0) {
 								_this.license_expiration.innerHTML = "None";
 							} else {
-								_this.license_expiration.innerHTML = license_expiration;
+								_this.license_expiration.innerHTML = license_expirations[0];
 							}
 
 							// show enterprise license block
@@ -227,6 +223,7 @@ pion.about.checkKeyStatus = function(kw_args) {
 				// If kw_args.success_callback is defined, it will not be called, and even if the user somehow succeeds in
 				// sending a request to do something that requires a license key, they will get an error from the server.
 				pion.key_service_running = false;
+				pion.updateLogo('core');
 				if (kw_args.always_callback) {
 					kw_args.always_callback();
 				}
@@ -250,11 +247,18 @@ pion.about.checkKeyStatusDfd = function() {
 			var key_status_node = response.getElementsByTagName('Status')[0];
 			var key_status = dojo.isIE? key_status_node.childNodes[0].nodeValue : key_status_node.textContent;
 			var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
-			if (dojo.indexOf(products, 'Pion Replay') != -1) {
+
+			if (key_status == 'invalid') {
+				pion.updateLogo('lite');
+				dfd.callback('invalid');
+			} else if (dojo.indexOf(products, 'Pion Replay') != -1) {
+				pion.updateLogo('replay');
 				dfd.callback('replay');
 			} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+				pion.updateLogo('enterprise');
 				dfd.callback('enterprise');
 			} else {
+				pion.updateLogo('lite');
 				dfd.callback('none');
 			}
 			return response;
@@ -262,6 +266,7 @@ pion.about.checkKeyStatusDfd = function() {
 		error: function(response, ioArgs) {
 			if (ioArgs.xhr.status == 404) {
 				pion.key_service_running = false;
+				pion.updateLogo('core');
 				dfd.callback('none');
 			} else if (ioArgs.xhr.status == 401) {
 				dfd.errback(new Error('Not logged in.'));

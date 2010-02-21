@@ -135,9 +135,8 @@ dojo.declare("pion.widgets.EditionSelectorDialog",
 			// TODO: Implement coreEditionSelected() and liteEditionSelected(), so that at this point, the user must have 
 			// accepted the appropriate license agreement no matter which edition was selected.
 			dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
-			pion.updateLogo(pion.edition);
 
-			dojo.byId('wizard').style.display = 'none';
+			dojo.addClass('wizard', 'hidden');
 			dojo.byId('outer').style.visibility = 'visible';
 			dojo.byId('current_user_menu_section').style.visibility = 'visible';
 			dojo.byId('current_user').innerHTML = dojo.cookie('user');

@@ -219,7 +219,10 @@ pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 			timeout: 5000,
 			load: function(response, ioArgs) {
 				if (++num_reactors_deleted == reactors.length) {
-					// Reload.  Since there are now no Reactors configured, the wizard will start.
+					// Delete the pion_edition cookie.
+					dojo.cookie('pion_edition', '', {expires: -1});
+
+					// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
 					location.replace('/');
 				}
 				return response;
@@ -238,7 +241,10 @@ pion.widgets.Wizard.restart = function() {
 		load: function(response, ioArgs) {
 			var reactors = response.getElementsByTagName('Reactor');
 			if (reactors.length == 0) {
-				// Reload.  Since there are no Reactors configured, the wizard will start.
+				// Delete the pion_edition cookie.
+				dojo.cookie('pion_edition', '', {expires: -1});
+
+				// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
 				location.replace('/');
 			} else {
 				pion.services.getConfiguredServices().addCallback(function(kw_args) {

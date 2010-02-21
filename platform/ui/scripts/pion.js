@@ -465,11 +465,10 @@ pion.wizardDone = function(exit_early) {
 	.addCallback(pion.setup_success_callback);
 }
 
-pion.updateLogo = function(edition) {
-	var edition_class = edition.toLowerCase();
+pion.updateLogo = function(logo_type) {
 	var logo_div = dojo.byId('logo');
 	dojo.query('p.logo', logo_div).forEach(function(n) {
-		if (dojo.hasClass(n, edition_class))
+		if (dojo.hasClass(n, logo_type))
 			dojo.removeClass(n, 'hidden');
 		else
 			dojo.addClass(n, 'hidden');
@@ -481,7 +480,6 @@ pion.checkEdition = function() {
 	pion.edition = form.attr('value').edition;
 	if (pion.edition) {
 		dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
-		pion.updateLogo(pion.edition);
 		pion.widgets.Wizard.prepareLicensePane();
 		return true;
 	} else {
@@ -534,39 +532,21 @@ pion.editionSetup = function(license_key_type) {
 			// The user must be logged in since the request succeeded.
 			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
 
-// TODO:
-// The 'pion_edition' cookie should never be saved unless the user accepts the corresponding license.
-// So, presence of the 'pion_edition' cookie is evidence that the user did accept the corresponding license.
-// However, the presence of a valid license is *not* such evidence, since they could have created the file 'license.key' themselves.
-// So, if a license key is found, do we still need to check for the 'pion_edition' cookie, and prompt for license agreement if it's missing?
-// (Note that this will also give us the opportunity to create the cookie.)
-
 			var reactors = response.getElementsByTagName('Reactor');
-			if (reactors.length) {
-				if (license_key_type == 'enterprise' || license_key_type == 'replay') {
+			if (reactors.length > 0 || dojo.cookie('pion_edition')) {
+				if (license_key_type == 'invalid') {
+					var dialog = new pion.widgets.EditionSelectorDialog;
+					dialog.show();
+				} else {
 					// After pion.initTabs() is called, the Reactors tab will be selected, unless
 					// a Replay service is configured, in which case the Replay tab will be selected.
-					dojo.byId('wizard').style.display = 'none';
 					dojo.byId('outer').style.visibility = 'visible';
 					dojo.byId('current_user_menu_section').style.visibility = 'visible';
 					dojo.byId('current_user').innerHTML = dojo.cookie('user');
 					pion.setup_success_callback();
-				} else { // license_key_type == 'none'
-					if (dojo.cookie('pion_edition')) {
-						pion.edition = dojo.cookie('pion_edition');
-					}
-					if (pion.edition == 'Core' || pion.edition == 'Lite') {
-						dojo.byId('wizard').style.display = 'none';
-						dojo.byId('outer').style.visibility = 'visible';
-						dojo.byId('current_user_menu_section').style.visibility = 'visible';
-						dojo.byId('current_user').innerHTML = dojo.cookie('user');
-						pion.setup_success_callback();
-					} else {
-						var dialog = new pion.widgets.EditionSelectorDialog;
-						dialog.show();
-					}
 				}
 			} else {
+				// No reactors configured and no pion_edition cookie found, so do wizard.
 				var wizard = dijit.byId('wizard');
 				dojo.removeClass('wizard', 'hidden');
 
@@ -746,10 +726,6 @@ pion.checkKeyService = function() {
 var init = function() {
 	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
-
-	if (dojo.cookie('pion_edition')) {
-		pion.updateLogo(dojo.cookie('pion_edition'));
-	}
 
 	pion.checkKeyService();
 

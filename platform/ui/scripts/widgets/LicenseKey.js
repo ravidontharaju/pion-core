@@ -48,14 +48,23 @@ dojo.declare("pion.widgets.LicenseKeyDialog",
 				putData: key,
 				load: function(response){
 					pion.key_service_running = true;
+					var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
+
 					if (_this.requested_product) {
-						var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
 						if (dojo.indexOf(products, _this.requested_product) == -1) {
 							_this.result_of_submitting_key_2.innerHTML = 'Error: Key not valid for ' + _this.requested_product + '.';
 
 							// Return without callback, because dialog will stay open.
 							return response;
 						}
+					}
+
+					if (dojo.indexOf(products, 'Pion Replay') != -1) {
+						pion.updateLogo('replay');
+					} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+						pion.updateLogo('enterprise');
+					} else {
+						pion.updateLogo('lite');
 					}
 
 					if (_this.callback) {
