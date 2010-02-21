@@ -35,26 +35,67 @@ body {
 }
 
 .wizard_menu {
-	float: right;
-	margin: 0 20px 0 0;
-	padding: 0;
+	text-align: right;
+	padding: 0 20px 0 0;
+	width: 630px;
+	margin: 0px;
+}
+
+h1.wizard_welcome {
+	font-size: 30px;
+	font-weight: bold;
+	color: #0099ff;
 }
 
 .wizard_header {
 	float: left;
 	font-size: 16px;
 	font-weight: bold;
-	height: 40px;
+	padding: 20px;
+	width: 610px;
+}
+
+.wizard_welcome_header {
+	float: left;
+	font-size: 16px;
+	font-weight: bold;
+	padding-left: 20px;
+	width: 420px;
+	float: left;
+	margin: 0px;
+}
+
+.wizard_welcome_hat {
+	float: left;
+	padding-right: 20px;
+	padding-top: 30px;
+	width: 150px;
+	float: left;
+}
+
+.wizard_header_logo {
+	float: left;
+	padding-left: 20px;
+	width: 135px;
+}
+
+.wizard_header_title {
+	float: left;
+	font-size: 16px;
+	font-weight: bold;
+	padding: 20px;
+	width: 455px;
+}
+
+.wizard_content {
+	margin-left: 20px;
+	margin-right: 20px;
 }
 
 #wizard a {
-	color: yellow;
-	font-size: 16px;
-	font-weight: bold;
-}
-
-#wizard a.header {
-	color: red;
+	color: #0099ff;
+	font-size: 12px;
+	text-decoration: underline;
 }
 
 #wizard input.port_input {
@@ -63,6 +104,8 @@ body {
 
 #wizard .warning_box {
 	border: solid #999999 1px;
+	padding: 20px;
+	margin-top: 20px;
 }
 
 #review_setup input {

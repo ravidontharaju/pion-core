@@ -1,12 +1,27 @@
-<div dojoAttachPoint='containerNode'>
+<div dojoAttachPoint='containerNode' style="margin-left: 20px;">
 	<form dojoAttachPoint="form" dojoType="dijit.form.Form">
-		<input type="radio" name="edition" value="Core" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: coreEditionSelected" /><label>Pion Core</label>
-		${pion_core_description}
-		<input type="radio" name="edition" value="Lite" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: liteEditionSelected" /><label>Pion Lite</label>
-		${pion_lite_description}
-		<input type="radio" name="edition" value="Enterprise" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: enterpriseEditionSelected" /><label>Pion Enterprise</label>
-		${pion_enterprise_description}
-		<input type="radio" name="edition" value="Replay" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: replayEditionSelected" /><label>Pion Replay</label>
-		${pion_replay_description}
+		<table width="630" style="font-size: 11px;">
+			<tr>
+				<td width="50%">
+					<input type="radio" name="edition" value="Lite" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: liteEditionSelected" /><label>Pion Lite</label><br />
+					${pion_lite_description}
+				</td><td rowspan="2" width="30">
+					<img src="../images/spacer.png" width="30" height="1">
+				</td><td width="50%">
+					<input type="radio" name="edition" value="Enterprise" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: enterpriseEditionSelected" /><label>Pion Enterprise</label><br />
+					${pion_enterprise_description}
+				</td>
+			</tr><tr>
+				<td width="50%">
+					<input type="radio" name="edition" value="Replay" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: replayEditionSelected" /><label>Pion Replay</label><br />
+					${pion_replay_description}
+				</td><td width="50%">
+					<input type="radio" name="edition" value="Core" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: coreEditionSelected" /><label>Pion Core</label><br />
+					${pion_core_description}
+				</td>
+			</tr>
+		</table>
+		<br />
+		<a href="http://www.atomiclabs.com" target="_blank" style="font-size: 11px;">Click here for a detailed features matrix</a>
 	</form>
 </div>

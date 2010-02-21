@@ -229,15 +229,16 @@ pion.databases.init = function() {
 		dialog.execute = function(dialogFields) {
 			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
 			this.execute_already_called = true;
-			if (pion.key_service_running &&
-				plugins.databases[dialogFields.Plugin] &&
-				plugins.databases[dialogFields.Plugin].edition == 'Enterprise') {
-				pion.about.checkKeyStatus({success_callback: function() {
-					_initNewDatabase(dialogFields.Plugin);
-				}});
-			} else {
-				_initNewDatabase(dialogFields.Plugin);
-			}
+			//if (pion.key_service_running &&
+			//	plugins.databases[dialogFields.Plugin] &&
+			//	plugins.databases[dialogFields.Plugin].edition == 'Enterprise') {
+			//	pion.about.checkKeyStatus({success_callback: function() {
+			//		_initNewDatabase(dialogFields.Plugin);
+			//	}});
+			//} else {
+			//	_initNewDatabase(dialogFields.Plugin);
+			//}
+			_initNewDatabase(dialogFields.Plugin);
 		}
 	}
 
