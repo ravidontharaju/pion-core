@@ -214,16 +214,16 @@
 			<h1>Setup Your Web Site</h1>
 			<h2>Configure your site's cookies (optional)</h2>
 			<p> 
-				Cookies are used by your web site to keep track of visitors as the move across your web site.
+				Cookies are used by your web site to keep track of visitors as they move across your web site.
 				Persistent cookies keep track of individuals across multiple visits to your site.
 			</p>
-			<h3>Enter the cookies for your site (i.e. php_cookie)</h3>
+			<h3>Enter the names of the cookies used by your site (i.e. php_cookie or JSESSIONID)</h3>
 			<h4>Separate multiple cookies with commas</h4>
-			<label>Persistent cookies: </label>
+			<label>Persistent cookies (these do not expire when browser exits): </label>
 			<br/>
 			<input dojoType="dijit.form.TextBox" id="visitor_cookies" style="width: 90%;" />
 			<br/>
-			<label>??? Session cookies?  Other cookies?: </label>
+			<label>Session cookies (these do expire when the browser exits): </label>
 			<br/>
 			<input dojoType="dijit.form.TextBox" id="session_cookies" style="width: 90%;" />
 			</div>			
@@ -263,7 +263,9 @@
 				<input type="radio" name="analytics_provider" value="Unica" dojoType="dijit.form.RadioButton" /><label>${unica_label}</label>
 				<input type="radio" name="analytics_provider" value="none" dojoType="dijit.form.RadioButton" /><label>${no_analytics_provider}</label>
 				<br />
+				<!--
 				<button dojoType=dijit.form.Button onClick="pion.widgets.Wizard.skipAnalyticsProvider">Skip Web Analytics Provider for Now</button>
+				-->
 			</div>
 			</div>
 			
@@ -431,7 +433,7 @@
 			
 			<div class="wizard_content">
 			<h1>Select Capture Devices</h1>
-			<h2>Please select all of the devices that will feed data to Pion</h2>
+			<h2>Please select all of the network devices you would like Pion to use to capture web traffic</h2>
 			<div id="device_list" dojoType="dijit.form.Form">
 			</div>
 			</div>
@@ -460,7 +462,7 @@
 			<!--end divs for top menu and header-->
 			<div class="wizard_content">
 			<h1>Configure Ports</h1>
-			<h2>Please enter your port numbers</h2>
+			<h2>Please enter the port numbers used by your web servers</h2>
 			The prepopulated ports of 80 (non-encrypted) and 443 (encrypted) are the standard defaults for most systems.
 			If your port numbers are different, or if you have additional ports, you can add, edit and remove them here, using commas to separate multiple ports.
 			<div id="port_list" dojoType="dijit.form.Form">
@@ -494,7 +496,7 @@
 			<div class="wizard_content">
 			<h1>Setup SSL Keys</h1>
 			<h2>Please enter one key at a time</h2>
-			SSL keys are used by the web server to encrypt and decrypt secure traffic. More guide copy ensues..
+			SSL keys are used by the web server to encrypt and decrypt secure traffic.  Pion protects your keys in an encrypted database.
 			<div dojoType=pion.widgets.KeyStoreEditor>
 			</div>
 			</div>
