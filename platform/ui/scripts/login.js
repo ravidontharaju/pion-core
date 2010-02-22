@@ -107,12 +107,17 @@ pion.login.doLoginDialog = function(kw_args) {
 					//dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
 					pion.login.ops_temporarily_suppressed = false;
 				}
-				if (kw_args.suppress_default_key_status_check) {
-					if (kw_args.success_callback)
-						kw_args.success_callback();
-				} else {
-					pion.about.checkKeyStatus({always_callback: kw_args.success_callback});
-				}
+
+				// TODO: Should there still be a check here, just for the case of an invalid key?
+				if (kw_args.success_callback)
+					kw_args.success_callback();
+				//if (kw_args.suppress_default_key_status_check) {
+				//	if (kw_args.success_callback)
+				//		kw_args.success_callback();
+				//} else {
+				//	pion.about.checkKeyStatus({always_callback: kw_args.success_callback});
+				//}
+
 				return response;
 			},
 			error: function(response, ioArgs) {

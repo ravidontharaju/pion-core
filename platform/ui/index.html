@@ -8,6 +8,17 @@
 	<title>Pion&trade;, Rule Your Data</title>
 
 	<script type="text/javascript" src="ejschart/EJSChart.js"></script>
+	
+	<script language="javascript" type="text/javascript">
+<!--
+function popitup(url) {
+	newwindow=window.open(url,'Pion Features Matrix','height=500,width=800');
+	if (window.focus) {newwindow.focus()}
+	return false;
+}
+
+// -->
+</script>
 
 	<!-- Use this block to use a built version of the UI.  -->
 	<!-- A built version is much faster to start up, but very hard to debug.  -->
@@ -75,7 +86,7 @@
 			
 			<div class="wizard_menu">
 				<p>
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -86,9 +97,8 @@
 			<div class="wizard_welcome_hat">
 				<img src="../images/wizard-hat.png">
 			</div>
-			
-			<h3 style="margin-left: 20px;">Please Select an Edition</h3>
-			<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form"></form>
+				<h3 style="margin-left: 20px;">Please Select an Edition:</h3>
+				<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form"></form>
 			<p class="next_button" style="display: none">Next Step: License Agreement >></p>
 		</div>
 		<!--End Edition Selection-->
@@ -125,7 +135,7 @@
 			
 			<div class="wizard_menu">
 				<p>
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -136,11 +146,11 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
-			
-			<div id=atomic_enterprise_license dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
+						
+			<div id=atomic_enterprise_license dojoType="dijit.layout.ContentPane" style="width:580px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:260px; overflow:auto; "
 				href="licenses/atomic_enterprise.html">
 			</div>
-			<div id=gpl_affero_license dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
+			<div id=gpl_affero_license dojoType="dijit.layout.ContentPane" style="width:580px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:260px; overflow:auto; "
 				href="licenses/gpl_affero.html">
 			</div>
 			<div style="padding: 20px;">
@@ -159,7 +169,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -170,6 +180,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -197,7 +208,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -208,6 +219,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -240,7 +252,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -251,6 +263,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -280,7 +293,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -291,6 +304,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -315,7 +329,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -326,6 +340,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 
 			<div class="wizard_content">
@@ -349,7 +364,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -360,6 +375,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -384,7 +400,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -395,6 +411,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -418,7 +435,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -429,6 +446,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -448,7 +466,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -459,6 +477,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			<div class="wizard_content">
 			<h1>Configure Ports</h1>
@@ -480,7 +499,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -491,11 +510,11 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
 			<h1>Setup SSL Keys</h1>
-			<h2>Please enter one key at a time</h2>
 			SSL keys are used by the web server to encrypt and decrypt secure traffic.  Pion protects your keys in an encrypted database.
 			<div dojoType=pion.widgets.KeyStoreEditor>
 			</div>
@@ -509,7 +528,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -520,6 +539,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -542,7 +562,7 @@
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
 					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.atomiclabs.com" target="_blank">Technical Documentation</a>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 				</p>
 			</div>
 			
@@ -553,6 +573,7 @@
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
+			<div style="clear: both;">&nbsp;</div>
 			<!--end divs for top menu and header-->
 			
 			<div class="wizard_content">
@@ -561,30 +582,31 @@
 			<div id="setup_review_form" dojoType="dijit.form.Form">
 				<table width="100%">
 					<tr>
-						<td align="right" width="110px"><label>Edition:</label></td>
-						<td id="setup_review_form_edition" />
-						<td align="right"><label>Web Site:</label></td>
+						<td width="110"><label>Edition:</label></td>
+						<td width="200" id="setup_review_form_edition" />
+						<td><label>Web Site:</label></td>
 						<td id="setup_review_form_web_site" />
 					</tr><tr>
-						<td align="right"><label>Web Analytics:</label></td>
-						<td id="setup_review_form_web_analytics" />
-						<td align="right"><label>Cookies:</label></td>
+						<td width="110"><label>Web Analytics:</label></td>
+						<td width="200" id="setup_review_form_web_analytics" />
+						<td><label>Cookies:</label></td>
 						<td id="setup_review_form_cookies" />
 					</tr><tr>
-						<td align="right"><label>Capture Devices:</label></td>
+						<td><label>Capture Devices:</label></td>
 						<td id="setup_review_form_devices" />
-						<td align="right"><label>Ports:</label></td>
+						<td><label>Ports:</label></td>
 						<td id="setup_review_form_ports" />
 					</tr><tr>
-						<td align="right"><label>SSL Keys:</label></td>
+						<td><label>SSL Keys:</label></td>
 						<td id="setup_review_form_ssl_keys" />
-						<td align="right"><label>Replay Allocation:</label></td>
+						<td><label>Replay Allocation:</label></td>
 						<td id="setup_review_form_replay_alloc" />
 					</tr>
 				</table>
 			</div>
 			<div class="warning_box">
-				<h3>Warning</h3>
+			<img src="images/wizard-alert.png" align="left" width="66" height="60" hspace="10" alt="Alert">
+				<h3 style="font-size: 16px; margin: 0px;">Warning</h3>
 				<p>Saving this configuration will overwrite any existing configurations in the workspace</p>
 			</div>
 			</div>
@@ -594,8 +616,8 @@
 			<p class="done_button" style="display: none">Final Step: Save Configuration</p>
 		</div>
 		<!--End Confirmation Screen-->
-		
 	</div>
+	
 	<div id="outer" style="visibility: hidden">
 		<div id="topBar">
 			<!-- start header -->
@@ -640,8 +662,8 @@
 
 			</div>
 			<!-- end header -->
-
 		</div>
+
 		<div id="main_stack_container" dojoType="dijit.layout.StackContainer" style="width: 100%; height: 100%">
 			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" gutters="false" design="sidebar" title="Reactors" style="width: 95%;">
 				<!-- start left sidebar -->
@@ -859,3 +881,4 @@
 	</div>
 </body>
 </html>
+

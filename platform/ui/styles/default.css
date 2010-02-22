@@ -51,7 +51,7 @@ h1.wizard_welcome {
 	float: left;
 	font-size: 16px;
 	font-weight: bold;
-	padding: 20px;
+	padding-left: 20px;
 	width: 610px;
 }
 
@@ -60,15 +60,14 @@ h1.wizard_welcome {
 	font-size: 16px;
 	font-weight: bold;
 	padding-left: 20px;
+	margin-top: -20px;
 	width: 420px;
 	float: left;
-	margin: 0px;
 }
 
 .wizard_welcome_hat {
 	float: left;
 	padding-right: 20px;
-	padding-top: 30px;
 	width: 150px;
 	float: left;
 }
@@ -77,19 +76,20 @@ h1.wizard_welcome {
 	float: left;
 	padding-left: 20px;
 	width: 135px;
+	margin-top: -20px;
 }
 
 .wizard_header_title {
 	float: left;
 	font-size: 16px;
 	font-weight: bold;
-	padding: 20px;
 	width: 455px;
 }
 
 .wizard_content {
 	margin-left: 20px;
 	margin-right: 20px;
+	margin-top: -20px;
 }
 
 #wizard a {
@@ -104,7 +104,7 @@ h1.wizard_welcome {
 
 #wizard .warning_box {
 	border: solid #999999 1px;
-	padding: 20px;
+	padding: 10px;
 	margin-top: 20px;
 }
 
@@ -122,6 +122,26 @@ div.hidden {
 
 p.hidden {
 	display: none;
+}
+
+	/* Features Matrix */
+
+.features_list {
+	border-left: 1px solid #cccccc; 
+	border-right: 1px solid #cccccc; 
+	border-top: 1px solid #cccccc;
+	width: 170px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.features_columns {
+	border-right: 1px solid #cccccc; 
+	border-top: 1px solid #cccccc;
+	text-align: center;
+	width: 125px;
+	font-size: 11px;
+	font-weight: bold;
 }
 
 
@@ -1209,7 +1229,7 @@ I don't think this is being used anywhere.
 }
 
 .tundra .key_store_editor {
-	border: 2px dotted green;
+	border: none;
 }
 
 .termSelectorContainer thead tr th, .termSelectorContainer thead tr td, .termSelectorContainer tbody tr td, .termSelectorContainer tfoot tr td {

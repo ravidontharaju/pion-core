@@ -1,3 +1,3 @@
 ({
-	"pion_core_description": "The open source edition of the powerful stream computing engine that drives Pion. Pion Core is free and open to the development community."
+	"pion_core_description": "Open source development edition for building custom Pion extensions",
  })
