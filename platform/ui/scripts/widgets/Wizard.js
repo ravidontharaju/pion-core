@@ -189,14 +189,18 @@ pion.widgets.Wizard.checkSSLKeys = function() {
 			var key_name = pion.widgets.key_store.getValue(item, 'Name');
 			pion.wizard.ssl_keys.push(key_name);
 		},
+		onComplete: function() {
+			if (pion.edition != 'Replay') {
+				pion.widgets.Wizard.prepareSetupReview();
+				pion.wizard.selectChild(dijit.byId('review_setup'));
+			}
+		},
 		onError: pion.handleFetchError
 	});
 	if (pion.edition == 'Replay') {
-		return true;
+		return true; // Proceed to next pane.
 	} else {
-		pion.widgets.Wizard.prepareSetupReview();
-		pion.wizard.selectChild(dijit.byId('review_setup'));
-		return false;
+		return false; // Don't proceed now, but in onComplete(), will go to final pane. 
 	}
 }
 

@@ -27558,12 +27558,15 @@ pion.wizard.ssl_keys=[];
 pion.widgets.key_store.fetch({onItem:function(item){
 var _19f2=pion.widgets.key_store.getValue(item,"Name");
 pion.wizard.ssl_keys.push(_19f2);
+},onComplete:function(){
+if(pion.edition!='Replay'){
+pion.widgets.Wizard.prepareSetupReview();
+pion.wizard.selectChild(dijit.byId('review_setup'));
+}
 },onError:pion.handleFetchError});
 if(pion.edition=="Replay"){
 return true;
 }else{
-pion.widgets.Wizard.prepareSetupReview();
-pion.wizard.selectChild(dijit.byId("review_setup"));
 return false;
 }
 };
