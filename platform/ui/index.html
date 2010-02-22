@@ -270,13 +270,23 @@ function popitup(url) {
 			<h1>Connect to Your Web Analytics Provider</h1>
 			<h2>Please select your provider (optional)</h2>
 			<div id="select_analytics_provider_form" dojoType="dijit.form.Form">
-				<input type="radio" name="analytics_provider" value="Omniture" dojoType="dijit.form.RadioButton" /><label>${omniture_label}</label>
-				<input type="radio" name="analytics_provider" value="Webtrends" dojoType="dijit.form.RadioButton" /><label>${webtrends_label}</label>
+				<p>
 				<input type="radio" name="analytics_provider" value="Google" dojoType="dijit.form.RadioButton" /><label>${google_label}</label>
+				</p>
+				<p>
+				<input type="radio" name="analytics_provider" value="Omniture" dojoType="dijit.form.RadioButton" /><label>${omniture_label}</label>
+				</p>
+				<p>
 				<input type="radio" name="analytics_provider" value="Unica" dojoType="dijit.form.RadioButton" /><label>${unica_label}</label>
-				<input type="radio" name="analytics_provider" value="none" dojoType="dijit.form.RadioButton" /><label>${no_analytics_provider}</label>
-				<br />
+				</p>
+				<p>
+				<input type="radio" name="analytics_provider" value="Webtrends" dojoType="dijit.form.RadioButton" /><label>${webtrends_label}</label>
+				</p>
+				<p>
+				<input type="radio" name="analytics_provider" value="none" dojoType="dijit.form.RadioButton" checked /><label>${no_analytics_provider}</label>
+				</p>
 				<!--
+				<br />
 				<button dojoType=dijit.form.Button onClick="pion.widgets.Wizard.skipAnalyticsProvider">Skip Web Analytics Provider for Now</button>
 				-->
 			</div>
@@ -543,7 +553,7 @@ function popitup(url) {
 			<h1>Setup Pion Replay</h1>
 			<h2>Please Enter Disk Allocation</h2>
 			The more disk space you can allocate, the more user sessions Pion Replay can store for viewing.
-			A disk allocation between xGB and xxxGB is normally recomended.
+			A disk allocation of at least 25 GB is normally recommended.
 			<div id="replay_setup" dojoType="dijit.form.Form">
 				<label>Maximum disk usage (in GB):</label>
 				<input dojoType="dijit.form.TextBox" name="max_disk_usage" value="100" />
