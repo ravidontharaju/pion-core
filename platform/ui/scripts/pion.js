@@ -355,8 +355,8 @@ pion.wizardDone = function(exit_early) {
 			'<X>250</X>' +
 			'<Y>300</Y>' +
 			'<Name>Webtrends Analytics</Name>' +
-			'<DCSID>' + pion.wizard.webtrends_account_id + '</DCSID>' +
-			'<Hostname>' + pion.wizard.webtrends_host + '</Hostname>' +
+			'<AccountId>' + pion.wizard.webtrends_account_id + '</AccountId>' +
+			'<HttpHost>' + pion.wizard.webtrends_host + '</HttpHost>' +
 			'<NumConnections>32</NumConnections>' +
 			'<EncryptConnections>false</EncryptConnections>';
 	} else if (pion.wizard.analytics_provider == 'Google') {
