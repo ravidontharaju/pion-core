@@ -1,3 +1,3 @@
 ({
-	"pion_lite_description": "Free tagless data capture for out-of-the-box cloud-based web analytics",
+	"sample_string": "This is an English language string, customized for the U.S."
  })

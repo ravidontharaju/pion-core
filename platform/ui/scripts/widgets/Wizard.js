@@ -183,6 +183,14 @@ pion.widgets.Wizard.checkPorts = function() {
 }
 
 pion.widgets.Wizard.checkSSLKeys = function() {
+	pion.wizard.ssl_keys = [];
+	pion.widgets.key_store.fetch({
+		onItem: function(item) {
+			var key_name = pion.widgets.key_store.getValue(item, 'Name');
+			pion.wizard.ssl_keys.push(key_name);
+		},
+		onError: pion.handleFetchError
+	});
 	if (pion.edition == 'Replay') {
 		return true;
 	} else {
@@ -205,7 +213,7 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 	dojo.byId('setup_review_form_cookies').innerHTML = dojo.map(pion.wizard.cookies, function(item) {return item.name;}).join(', ');
 	dojo.byId('setup_review_form_devices').innerHTML = pion.wizard.devices.join(', ');
 	dojo.byId('setup_review_form_ports').innerHTML = pion.wizard.ports.join(', ');
-	dojo.byId('setup_review_form_ssl_keys').innerHTML = 'this is a placeholder';
+	dojo.byId('setup_review_form_ssl_keys').innerHTML = pion.wizard.ssl_keys.join(', ');
 	dojo.byId('setup_review_form_replay_alloc').innerHTML = pion.wizard.max_disk_usage;
 }
 

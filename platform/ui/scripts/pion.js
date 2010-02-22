@@ -646,15 +646,19 @@ pion.editionSetup = function(license_key_type) {
 										onItem: function(item) {
 											var device_name = interface_xml_store.getValue(item, 'Name');
 											var description = interface_xml_store.getValue(item, 'Description');
+											if (! description)
+												description = '';
 
 											var check_box_div = document.createElement('div');
 											device_list_div.appendChild(check_box_div);
 											new dijit.form.CheckBox({name: 'device_check_boxes', value: device_name}, check_box_div);
-											var description_span = dojo.create('span', {innerHTML: description});
-											device_list_div.appendChild(description_span);
-											device_list_div.appendChild(dojo.create('br'));
-											var device_label = dojo.create('label', {innerHTML: device_name});
+											var device_label = dojo.create('span', {innerHTML: device_name});
+											dojo.addClass(device_label, 'device_name');
 											device_list_div.appendChild(device_label);
+											device_list_div.appendChild(dojo.create('br'));
+											var description_div = dojo.create('div', {innerHTML: description});
+											dojo.addClass(description_div, 'device_description');
+											device_list_div.appendChild(description_div);
 											device_list_div.appendChild(dojo.create('br'));
 											pion.wizard.device_found = true;
 										},
