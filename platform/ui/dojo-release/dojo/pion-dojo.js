@@ -27383,11 +27383,7 @@ pion.key_service_running=false;
 pion.updateLogo("core");
 dfd.callback("none");
 }else{
-if(_19e1.xhr.status==401){
-dfd.errback(new Error("Not logged in."));
-}else{
-dfd.errback(new Error("Key Service error: ioArgs.xhr.status = "+_19e1.xhr.status));
-}
+pion.handleXhrGetError(_19e0,_19e1);
 }
 return _19e0;
 }});
@@ -28229,15 +28225,6 @@ pion.handleXhrGetError();
 pion.checkKeyService=function(){
 pion.about.checkKeyStatusDfd().addCallback(function(_1aa1){
 pion.editionSetup(_1aa1);
-}).addErrback(function(e){
-if(e.message=="Not logged in."){
-if(!dojo.cookie("logged_in")){
-location.replace("login.html");
-}
-pion.login.doLoginDialog({suppress_default_key_status_check:true,success_callback:pion.checkKeyService});
-}else{
-pion.handleXhrGetError();
-}
 });
 };
 var init=function(){
@@ -28320,28 +28307,28 @@ page.onSelect();
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_1aa5,_1aa6){
-var _1aa7;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1aa4,_1aa5){
+var _1aa6;
 if(value!==undefined){
-_1aa7=this.filter(value);
-if(_1aa7!==null&&((typeof _1aa7!="number")||!isNaN(_1aa7))){
-if(_1aa6===undefined||!_1aa6.toString){
-_1aa6=this.format(_1aa7,this.constraints);
+_1aa6=this.filter(value);
+if(_1aa6!==null&&((typeof _1aa6!="number")||!isNaN(_1aa6))){
+if(_1aa5===undefined||!_1aa5.toString){
+_1aa5=this.format(_1aa6,this.constraints);
 }
 }else{
-_1aa6="";
+_1aa5="";
 }
 }
-if(_1aa6!=null&&_1aa6!=undefined){
-this.textbox.value=_1aa6;
+if(_1aa5!=null&&_1aa5!=undefined){
+this.textbox.value=_1aa5;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_1aa7,_1aa5);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1aa6,_1aa4);
 };
 dijit.Dialog.prototype._size=function(){
 var mb=dojo.marginBox(this.domNode);
-var _1aa9=dijit.getViewport();
-if(mb.w>=_1aa9.w||mb.h>=_1aa9.h){
-dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1aa9.h*0.9))+"px",overflow:"auto",position:"relative"});
+var _1aa8=dijit.getViewport();
+if(mb.w>=_1aa8.w||mb.h>=_1aa8.h){
+dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1aa8.h*0.9))+"px",overflow:"auto",position:"relative"});
 }
 };
 dijit.DialogUnderlay.prototype.postCreate=function(){

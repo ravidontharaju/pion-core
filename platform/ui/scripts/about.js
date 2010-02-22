@@ -268,10 +268,8 @@ pion.about.checkKeyStatusDfd = function() {
 				pion.key_service_running = false;
 				pion.updateLogo('core');
 				dfd.callback('none');
-			} else if (ioArgs.xhr.status == 401) {
-				dfd.errback(new Error('Not logged in.'));
 			} else {
-				dfd.errback(new Error('Key Service error: ioArgs.xhr.status = ' + ioArgs.xhr.status));
+				pion.handleXhrGetError(response, ioArgs);
 			}
 			return response;
 		}

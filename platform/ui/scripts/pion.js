@@ -708,19 +708,6 @@ pion.checkKeyService = function() {
 	.addCallback(function(license_key_type) {
 		pion.editionSetup(license_key_type);
 	})
-	.addErrback(function(e) {
-		if (e.message == 'Not logged in.') {
-			if (!dojo.cookie("logged_in")) {
-				location.replace('login.html'); // exit and go to main login page
-			}
-			pion.login.doLoginDialog({
-				suppress_default_key_status_check: true,
-				success_callback: pion.checkKeyService
-			});
-		} else {
-			pion.handleXhrGetError();
-		}
-	});
 }
 
 var init = function() {
