@@ -1,42 +1,48 @@
 body {
-	margin: 0;
 	padding: 0;
-	background: url(../images/bg-splash.png) repeat-x;
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 12px;
 	color: #333333;
+	text-align: center;
+	margin-top: 100px;
 }
 
 
 td {
-	color: #ffffff;
+	color: #000000;
 	font-size: 12px;
 }
 
 
-th { color: #ffffff;
+a:link { 
+	color: #00acff;
+}
+	
+a:visited { 
+	color: #00acff;
+}
+
+
+th { color: #000000;
 	font-size: 14px;
 	text-align: left;
 }
 
-.content {
-	
-	width: 100%;
-	margin-top: 206px;
+.loginBox {
+	margin:0px auto;
+	width: 500px;
+	border-top: 3px solid #00acff;
+	border-bottom: 1px dotted #00acff;
+	padding-top: 25px;
 }
 
-
 .leftCol {
-	width: 530px;
 	float: left;
-	background-color: #000000;
+	width: 200px;
 }
 
 .rightCol {
-	width: 50%;
-	background-color: #000000;
-	padding-top: 15px;
-	
+	float: left;	
 }
 	
 /* Footer styles */
@@ -45,8 +51,8 @@ th { color: #ffffff;
 	height: 30px;
 }
 
-#footer p {
-	text-align: left;
+p {
+	text-align: right;
 	font-size: smaller;
 	color: #666666;
 	margin-left: 20px;

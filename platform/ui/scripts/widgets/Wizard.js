@@ -17,6 +17,46 @@ pion.widgets.Wizard.exitEarly = function() {
 	pion.wizardDone(true);
 }
 
+pion.widgets.Wizard.checkLicenseKey = function() {
+	var requested_product = 'Pion ' + pion.edition;
+	var key = dojo.byId('license_key_text_area').value;
+	if (key == '') {
+		return 'You must enter a valid license key to use ' + requested_product + '.';
+	}
+
+	dojo.rawXhrPut({
+		url: '/key',
+		contentType: "text/plain",
+		handleAs: "xml",
+		putData: key,
+		load: function(response) {
+			pion.key_service_running = true;
+			var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
+			if (dojo.indexOf(products, requested_product) == -1) {
+				dojo.byId('result_of_submitting_key').innerHTML = 'Error: Key not valid for ' + requested_product + '.';
+			} else {
+				if (dojo.indexOf(products, 'Pion Replay') != -1) {
+					pion.updateLogo('replay');
+				} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+					pion.updateLogo('enterprise');
+				} else {
+					pion.updateLogo('lite');
+				}
+				dojo.byId('license_key_text_area').value = '';
+				pion.widgets.Wizard.prepareLicensePane();
+				dijit.byId('wizard').selectChild(dijit.byId('license_acceptance_pane'));
+			}
+			return response;
+		},
+		error: function(response, ioArgs) {
+			dojo.byId('result_of_submitting_key').innerHTML = 'Error: Key not accepted.';
+			return response;
+		}
+	});
+
+	return false;
+}
+
 pion.widgets.Wizard.prepareLicensePane = function() {
 	// When coming from the previous pane, always uncheck the check box,
 	// so that the user has to click on it to proceed.

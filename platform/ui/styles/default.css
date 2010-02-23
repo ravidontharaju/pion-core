@@ -25,9 +25,15 @@ body {
 
 
 #wizard {
-	position: absolute;
 	width: 650px;
 	height: 450px;
+	margin-left: auto;
+	margin-right: auto;
+	border-top: 3px solid #00acff;
+	border-bottom: 1px dotted #00acff;
+	border-left: 0px;
+	border-right: 0px;
+	margin-top: 100px;
 }
 
 #wizard.hidden {
@@ -96,6 +102,55 @@ h1.wizard_welcome {
 	color: #0099ff;
 	font-size: 12px;
 	text-decoration: underline;
+}
+
+.tundra .edition_button button {
+	width: 180px;
+	height: 38px;
+}
+
+.tundra .edition_button.lite button {
+	background: #ffffff url("../images/logo-pion-lite-small.png") no-repeat;
+}
+
+.tundra .edition_button.lite.dijitButtonHover button {
+	background: #ffffff url("../images/logo-pion-lite-small-on.png") no-repeat;
+}
+
+.tundra .edition_button.enterprise button {
+	background: #ffffff url("../images/logo-pion-enterprise-small.png") no-repeat;
+}
+
+.tundra .edition_button.enterprise.dijitButtonHover button {
+	background: #ffffff url("../images/logo-pion-enterprise-small-on.png") no-repeat;
+}
+
+.tundra .edition_button.core button {
+	background: #ffffff url("../images/logo-pion-core-small.png") no-repeat;
+}
+
+.tundra .edition_button.core.dijitButtonHover button {
+	background: #ffffff url("../images/logo-pion-core-small-on.png") no-repeat;
+}
+
+.tundra .edition_button.replay button {
+	background: #ffffff url("../images/logo-pion-replay-small.png") no-repeat;
+}
+
+.tundra .edition_button.replay.dijitButtonHover button {
+	background: #ffffff url("../images/logo-pion-replay-small-on.png") no-repeat;
+}
+
+.device_description {
+	margin-left: 20px;
+}
+
+.wizard_key_link {
+	font-size: 11px; 
+	padding: 3px; 
+	border: 1px dotted #cccccc; 
+	margin-right: 25px; 
+	margin-top: 5px;
 }
 
 #wizard input.port_input {
@@ -365,7 +420,7 @@ label.disabled {
 	/* Is there some other way to do this so that the tabs don't either wrap  */
 	/* around or extend beyond the right edge of "topBar" (that works on both */
 	/* FF and IE) when another tab is added?                                  */
-	width: 760px;
+	width: 860px;
 	float: right;
 	clear: both;
 	position: relative;

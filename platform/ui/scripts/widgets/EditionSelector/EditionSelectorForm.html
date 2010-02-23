@@ -3,33 +3,33 @@
 		<table width="600" style="font-size: 12px;">
 			<tr>
 				<td width="50%">
-					<input type="radio" name="edition" value="Lite" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: liteEditionSelected" /><label><img src="images/logo-pion-lite-small.png" width="174" height="32" alt="Pion Lite"></label><br />
+					<button dojoType="dijit.form.Button" class="edition_button lite" dojoAttachEvent="onClick: liteEditionSelected"></button>
+					<br />
 					${pion_lite_description}
 				</td><td width="70">
 					<img src="images/spacer.png" width="70" height="1">
 				</td><td width="50%">
-					<input type="radio" name="edition" value="Enterprise" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: enterpriseEditionSelected" /><label><img src="images/logo-pion-enterprise-small.png" width="174" height="32" alt="Pion Enterprise"></label><br />
-					${pion_enterprise_description} <span style="color: orange;">*</span>
-				</td>
-			</tr><tr>
-				<td colspan="3" height="15">
-					<img src="images/spacer.png" width="1" height="15">
+					<button dojoType="dijit.form.Button" class="edition_button enterprise" dojoAttachEvent="onClick: enterpriseEditionSelected"></button>
+					<br />
+					${pion_enterprise_description} <img src="/images/key.png">
 				</td>
 			</tr><tr>
 				<td width="50%">
-					<input type="radio" name="edition" value="Core" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: coreEditionSelected" /><label><img src="images/logo-pion-core-small.png" width="174" height="32" alt="Pion Core"></label><br />
+					<button dojoType="dijit.form.Button" class="edition_button core" dojoAttachEvent="onClick: coreEditionSelected"></button>
+					<br />
 					${pion_core_description}
 				</td><td width="70">
 					<img src="images/spacer.png" width="70" height="1">
 				</td><td width="50%">
-					<input type="radio" name="edition" value="Replay" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: replayEditionSelected" /><label><img src="images/logo-pion-replay-small.png" width="174" height="32" alt="Pion Replay"></label><br />
-					${pion_replay_description} <span style="color: orange;">*</span>
+					<button dojoType="dijit.form.Button" class="edition_button replay" dojoAttachEvent="onClick: replayEditionSelected"></button>
+					<br />
+					${pion_replay_description} <img src="/images/key.png">
 				</td>
 			</tr>
 		</table>
-		<br />
-		<a href="features-matrix.html" onclick="return popitup('features-matrix.html')">Features matrix (pop up)</a></span>
-		<br />
-		<span style="font-size: 11px;"><span style="color: orange;">*</span> Requires trial or commercial license key from Atomic Labs. <a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="font-size: 11px;">Click here to obtain a new license key</a></span>
+
+		<p style="font-size: 11px;"><a href="features-matrix.html" onclick="return popitup('features-matrix.html')">Compare features (pop up)</a></p>
+
+		<p class="wizard_key_link"><img src="/images/key.png"> Requires trial or commercial license key from Atomic Labs. <a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="font-size: 11px;">Click here to obtain a new license key</a></p>
 	</form>
 </div>

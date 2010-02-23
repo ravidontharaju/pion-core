@@ -7,27 +7,34 @@
 			<table width="630" style="font-size: 11px;">
 				<tr>
 					<td width="50%">
-						<input type="radio" name="edition" value="Lite" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: liteEditionSelected" /><label>Pion Lite</label><br />
+						<button dojoType="dijit.form.Button" class="edition_button lite" dojoAttachEvent="onClick: liteEditionSelected"></button>
+						<br />
 						${pion_lite_description}
-					</td><td rowspan="2" width="30">
-						<img src="../images/spacer.png" width="30" height="1">
+					</td><td width="70">
+						<img src="images/spacer.png" width="70" height="1">
 					</td><td width="50%">
-						<input type="radio" name="edition" value="Enterprise" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: enterpriseEditionSelected" /><label>Pion Enterprise</label><br />
-						${pion_enterprise_description}
+						<button dojoType="dijit.form.Button" class="edition_button enterprise" dojoAttachEvent="onClick: enterpriseEditionSelected"></button>
+						<br />
+						${pion_enterprise_description} <span style="color: orange;">*</span>
+					</td>
+				</tr><tr>
+					<td colspan="3" height="15">
+						<img src="images/spacer.png" width="1" height="15">
 					</td>
 				</tr><tr>
 					<td width="50%">
-						<input type="radio" name="edition" value="Replay" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: replayEditionSelected" /><label>Pion Replay</label><br />
-						${pion_replay_description}
-					</td><td width="50%">
-						<input type="radio" name="edition" value="Core" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: coreEditionSelected" /><label>Pion Core</label><br />
+						<button dojoType="dijit.form.Button" class="edition_button core" dojoAttachEvent="onClick: coreEditionSelected"></button>
+						<br />
 						${pion_core_description}
+					</td><td width="70">
+						<img src="images/spacer.png" width="70" height="1">
+					</td><td width="50%">
+						<button dojoType="dijit.form.Button" class="edition_button replay" dojoAttachEvent="onClick: replayEditionSelected"></button>
+						<br />
+						${pion_replay_description} <span style="color: orange;">*</span>
 					</td>
 				</tr>
 			</table>
 		</form>
-	</div>
-	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" type="submit" dojoAttachPoint="submit_edition_button" disabled="true">Submit</button>
 	</div>
 </div>

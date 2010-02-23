@@ -82,7 +82,7 @@ function popitup(url) {
 	<div id="wizard" dojoType="pion.widgets.Wizard" class="hidden" hideDisabled="true" style="background: #ffffff;">
 
 		<!--Start Edition Selection-->
-		<div dojoType="dojox.widget.WizardPane" passFunction="pion.checkEdition" style="background: #ffffff;">
+		<div dojoType="dojox.widget.WizardPane" id="select_edition_pane" passFunction="pion.checkEdition" style="background: #ffffff;">
 			
 			<div class="wizard_menu">
 				<p>
@@ -99,9 +99,45 @@ function popitup(url) {
 			</div>
 				<h3 style="margin-left: 20px;">Please Select an Edition:</h3>
 				<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form"></form>
-			<p class="next_button" style="display: none">Next Step: License Agreement >></p>
+			<p class="next_button" style="display: none"></p>
 		</div>
 		<!--End Edition Selection-->
+
+		<!--Start License Key-->
+		<div dojoType="dojox.widget.WizardPane" id="license_key_pane" passFunction="pion.widgets.Wizard.checkLicenseKey" style="background: #ffffff;">
+
+			<div class="wizard_menu">
+				<p>
+					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
+				</p>
+			</div>
+			
+			<div class="wizard_header_logo">
+				<img src="../images/logo-pion-wizard.png">
+			</div>
+			
+			<div class="wizard_header_title">
+				Easy Setup Wizard
+			</div>
+			<div style="clear: both;">&nbsp;</div>
+			<!--end divs for top menu and header-->
+
+			<div class="wizard_content">
+				<h1>Enter License Key</h1>
+				<h2>Please cut and paste your license key into the box below.</h2>
+				<p>
+				If you don't have a license key, you can obtain one from
+				<a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" style="color:#0033CC; text-decoration:underline">atomiclabs.com</a>.
+				</p>
+				<textarea id="license_key_text_area" style="width: 100%" rows="8"></textarea>
+				<p><big><strong>
+					<span id="result_of_submitting_key"></span>
+				</strong></big></p>
+			</div>
+			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="next_button" style="display: none">Continue to License Agreement >></p>
+		</div>
+		<!--End License Key-->
 
 <!--
 		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.prepareLicensePane">
@@ -131,7 +167,7 @@ function popitup(url) {
 		</div>
 -->
 		<!--Start License Acceptance-->
-		<div dojoType="dojox.widget.WizardPane" passFunction="pion.widgets.Wizard.checkLicenseAccepted">
+		<div dojoType="dojox.widget.WizardPane" id="license_acceptance_pane" passFunction="pion.widgets.Wizard.checkLicenseAccepted">
 			
 			<div class="wizard_menu">
 				<p>
@@ -146,7 +182,7 @@ function popitup(url) {
 			<div class="wizard_header_title">
 				Easy Setup Wizard
 			</div>
-						
+
 			<div id=atomic_enterprise_license dojoType="dijit.layout.ContentPane" style="width:580px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:260px; overflow:auto; "
 				href="licenses/atomic_enterprise.html">
 			</div>
@@ -156,7 +192,7 @@ function popitup(url) {
 			<div style="padding: 20px;" align="right">
 				<input id='license_accept_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes123" value="accept" /> I agree to the license.
 			</div>
-			<p class="prev_button" style="display: none"><< Go Back</p>
+			<p class="prev_button" style="display: none" returnPane="select_edition_pane"><< Go Back</p>
 			<p class="next_button" style="display: none">Continue Setup Your Web Site >></p>
 			<p class="next_button_core" style="display: none">Complete Setup Wizard</p>
 		</div>
@@ -458,7 +494,7 @@ function popitup(url) {
 			
 			<div class="wizard_content">
 			<h1>Select Capture Devices</h1>
-			<h2>Please select all of the network devices you would like Pion to use to capture web traffic</h2>
+			<h2>Please select all network devices you would like Pion to use to capture web traffic</h2>
 			<div id="device_list" dojoType="dijit.form.Form">
 			</div>
 			</div>
@@ -586,7 +622,7 @@ function popitup(url) {
 			<div class="wizard_content">
 			<h1>Setup Wizard Complete</h1>
 			<h2>The following configuration is ready to be created:</h2>
-			<div id="setup_review_form" dojoType="dijit.form.Form">
+			<div id="setup_review_form" dojoType="dijit.form.Form" style="height: 110px; overflow: scroll; border: 1px solid #cccccc;">
 				<table width="100%">
 					<tr>
 						<td width="110"><label>Edition:</label></td>
@@ -614,7 +650,7 @@ function popitup(url) {
 			<div class="warning_box">
 			<img src="images/wizard-alert.png" align="left" width="66" height="60" hspace="10" alt="Alert">
 				<h3 style="font-size: 16px; margin: 0px;">Warning</h3>
-				<p>Saving this configuration will overwrite any existing configurations in the workspace</p>
+				<p>Saving this configuration will overwrite any existing configurations in the workspace!</p>
 			</div>
 			</div>
 			<p class="prev_button_lite" style="display: none" returnPane="ssl_key_pane"><< Go Back</p>
