@@ -32,6 +32,7 @@ $PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
 $LIBS_DIR = ($PLATFORM =~ /^win32/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
+$ICU_LIB_GLOB = "{data,i18n,uc}";
 $DLL_FULL_DIR = "release_dll_full";
 
 # platform-specific variables
@@ -57,7 +58,10 @@ if ($PLATFORM =~ /^win32/i) {
 	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0.3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.1." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
-	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "*-mt-1_{35,36,37}." . $SHARED_LIB_SUFFIX);
+	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "." . $SHARED_LIB_SUFFIX);
+	@ICU_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libicu" . $ICU_LIB_GLOB . ".42." . $SHARED_LIB_SUFFIX);
+	# hack for OSX because it links with two copies of the same file
+	push @ICU_LIBS, $SYSTEM_LIB_DIR . "/libicudata.42.1." . $SHARED_LIB_SUFFIX;
 } else {
 	$SHARED_LIB_SUFFIX = "so";
 	$PLUGIN_LIB_SUFFIX = "so";
@@ -118,6 +122,9 @@ if ($PLATFORM =~ /^win32/i) {
 copy($LOGGING_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
 foreach (@BOOST_LIBS) {
+	copy($_, $LIBS_DIR);
+}
+foreach (@ICU_LIBS) {
 	copy($_, $LIBS_DIR);
 }
 
