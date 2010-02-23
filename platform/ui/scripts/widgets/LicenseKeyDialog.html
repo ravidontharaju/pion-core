@@ -2,25 +2,27 @@
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">${title}</span>
 	</div>
-	<form dojoAttachPoint="form" dojoType="dijit.form.Form">
-		<div class="dijitDialogPaneContent">
-			<textarea dojoAttachPoint="license_key_text_area" style="width: 100%" rows="8" dojoAttachEvent="oninput: enableSubmit, onkeydown: enableSubmit"></textarea>
-		</div>
-		<p><big><strong>
-			<span id="result_of_submitting_key_2" dojoAttachPoint="result_of_submitting_key_2"></span>
-		</strong></big></p>
-		<div dojoAttachPoint="license_section">
-			<div dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
-				href="licenses/atomic_enterprise.html">
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<form dojoAttachPoint="form" dojoType="dijit.form.Form">
+			<div>
+				<textarea dojoAttachPoint="license_key_text_area" style="width: 100%" rows="8" dojoAttachEvent="oninput: enableSubmit, onkeydown: enableSubmit"></textarea>
 			</div>
-			<p>
-				<input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="accept" /> I agree to the license.
-			</p>
+			<p><big><strong>
+				<span id="result_of_submitting_key_2" dojoAttachPoint="result_of_submitting_key_2"></span>
+			</strong></big></p>
+			<div dojoAttachPoint="license_section">
+				<div dojoType="dijit.layout.ContentPane" style="width:400px; border:1px solid #b7b7b7; background:#fff; padding:8px; margin:0 auto; height:200px; overflow:auto; "
+					href="licenses/atomic_enterprise.html">
+				</div>
+				<p>
+					<input dojoType="dijit.form.CheckBox" type="checkBox" name="checkboxes" value="accept" /> I agree to the license.
+				</p>
+			</div>
+		</form>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: submitKey"
+					dojoAttachPoint="apply_button" disabled="true">Submit</button>
+			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
 		</div>
-	</form>
-	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: submitKey"
-				dojoAttachPoint="apply_button" disabled="true">Submit</button>
-		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
 	</div>
 </div>
