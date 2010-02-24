@@ -864,7 +864,13 @@ The following are also available, if the need arises.
 	margin:20px;
 }
 
+.pion_server_error_dialog {
+	width: 500px;
+}
 
+.pion_server_error_dialog .dijitButtonNode button {
+	background-color: red;
+}
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */
 

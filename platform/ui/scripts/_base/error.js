@@ -1,4 +1,34 @@
 dojo.provide("pion._base.error");
+dojo.require("dijit.Dialog");
+
+dojo.declare("pion._base.error.ServerErrorDialog",
+	[ dijit.Dialog ],
+	{
+		templatePath: dojo.moduleUrl("pion", "widgets/ServerErrorDialog.html"),
+		widgetsInTemplate: true,
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+			var _this = this;
+			dojo.query('p.message_text_area', this.domNode).forEach(function(n) {
+				n.innerHTML = _this.response_text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			});
+		},
+		openKB: function() {
+			// TODO: This won't get the full description when the description itself has a colon in it.
+			// But extracting the text up to the last colon won't work either, because some error
+			// parameters, such as term ids, have colons in them.
+			var error_description = this.response_text.split(':')[0];
+
+			var encoded_quoted_message = encodeURIComponent('"' + error_description + '"');
+			window.open('http://pion.org/search/node/' + encoded_quoted_message + '%20type%3Akb');
+			this.onCancel();
+		}
+	}
+);
 
 pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 	console.error('In pion.handleXhrError: response = ', response, ', ioArgs.args = ', ioArgs.args);
@@ -18,8 +48,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 		return;
 	} else {
 		if (ioArgs.xhr.status == 500) {
-			var dialog = new dijit.Dialog({title: 'Pion Server Error'});
-			dialog.attr('content', response.responseText.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+			var dialog = new pion._base.error.ServerErrorDialog({response_text: response.responseText});
 			dialog.show();
 		}
 		if (finalErrorHandler) {
