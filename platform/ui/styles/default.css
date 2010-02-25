@@ -992,7 +992,7 @@ The following are also available, if the need arises.
 
 .tundra .export .dijitButtonNode, 
 .tundra button.export {
-	background: #ffffff url("../images/button-export-off.png") repeat-x;
+	background: #ffffff url("../images/button-export-off.png") no-repeat;
 	border: solid #999999 1px;
 	color: #366dba;
 	font-weight: bold;
@@ -1006,11 +1006,11 @@ The following are also available, if the need arises.
 
 .tundra .export.dijitButtonHover .dijitButtonNode, 
 .tundra button.export:hover {
-	background: #ffffff url("../images/button-export-on.png") repeat-x;
+	background: #ffffff url("../images/button-export-on.png") no-repeat;
 }
 
 .tundra button.disabled.export {
-	background: #ffffff url("../images/button-export-off.png") repeat-x;
+	background: #ffffff url("../images/button-export-off.png") no-repeat;
 	font-weight: 100;
 }
 
