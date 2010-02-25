@@ -61,6 +61,7 @@ pion.login.login_pending = false;
 
 pion.login.onLoginSuccess = function() {
 	dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
+	pion.last_logged_in_user = dojo.cookie('user');
 	dojo.byId('current_user_menu_section').style.visibility = 'visible';
 	dojo.byId('current_user').innerHTML = dojo.cookie('user');
 }
@@ -98,6 +99,11 @@ pion.login.doLoginDialog = function(kw_args) {
 			handleAs: 'xml',
 			//timeout: 5000,
 			load: function(response, ioArgs) {
+				// If the user who just logged in is not the previously logged in user, reload.
+				if (dialogFields.Username != pion.last_logged_in_user) {
+					location.replace('/');
+				}
+
 				pion.login.login_pending = false;
 				pion.login.onLoginSuccess();
 				console.debug('login response: ioArgs.xhr = ', ioArgs.xhr);

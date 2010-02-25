@@ -109,6 +109,11 @@ pion.initTabs = function() {
 			// selectChild(page) won't trigger configPageSelected(page) if page was already selected.
 			dojo.subscribe("main_stack_container-selectChild", configPageSelected);
 
+			// Show the wizard link only if the user has access to the reactors tab.
+			if (dojo.indexOf(permitted_resources, '/config/reactors') != -1) {
+				dojo.byId('wizard_menu_section').style.visibility = 'visible';
+			}
+
 			return response;
 		}
 	});
@@ -531,6 +536,7 @@ pion.editionSetup = function(license_key_type) {
 		load: function(response, ioArgs) {
 			// The user must be logged in since the request succeeded.
 			dojo.cookie("logged_in", "true", {expires: 1}); // 1 day
+			pion.last_logged_in_user = dojo.cookie('user');
 
 			var reactors = response.getElementsByTagName('Reactor');
 			if (reactors.length > 0 || dojo.cookie('pion_edition')) {

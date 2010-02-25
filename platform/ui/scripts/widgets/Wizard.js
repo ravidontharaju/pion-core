@@ -318,9 +318,7 @@ pion.widgets.Wizard.restart = function() {
 				});
 			}
 		},
-		error: function(response, ioArgs) {
-			pion.handleXhrGetError();
-		}
+		error: pion.handleXhrGetError
 	});
 }
 

@@ -672,28 +672,30 @@ function popitup(url) {
 				<p class="logo hidden replay"><img src="images/logo-pion-replay.png" width="263" height="46" alt="Pion Replay" /></p>
 				<!-- start secondary menu -->
 				<div id="secondaryMenu">
-				<p>
-					<span id="current_user_menu_section" style="visibility: hidden">
-						<span class="class="username_in_header">Welcome,</span>
-						<span id="current_user" class="username_in_header">
-							nobody
+					<p>
+						<span id="current_user_menu_section" style="visibility: hidden">
+							<span class="username_in_header">Welcome,</span>
+							<span id="current_user" class="username_in_header">
+								nobody
+							</span>
+							&nbsp;&nbsp;|&nbsp;&nbsp;
 						</span>
+						<span id="wizard_menu_section" style="visibility: hidden">
+							<a class="header" href="#" onclick="pion.widgets.Wizard.restart()">Wizard</a>
+							&nbsp;&nbsp;|&nbsp;&nbsp;
+						</span>
+						<a class="header" href="http://www.pion.org" target="_blank">Help</a>
 						&nbsp;&nbsp;|&nbsp;&nbsp;
-					</span>
-					<a class="header" href="#" onclick="pion.widgets.Wizard.restart()">Wizard</a>
-					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="http://www.pion.org" target="_blank">Help</a>
-					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="#" onclick="pion.about.doDialog()">About</a>
-					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<a class="header" href="/login.html" onclick="pion.login.logout()">Logout</a>
+						<a class="header" href="#" onclick="pion.about.doDialog()">About</a>
+						&nbsp;&nbsp;|&nbsp;&nbsp;
+						<a class="header" href="/login.html" onclick="pion.login.logout()">Logout</a>
 
-					<!-- use the 'expire' button to simulate a session timing out -->
-					<!--
-					&nbsp;&nbsp;|&nbsp;&nbsp;
-					<button dojoType=dijit.form.Button onClick="pion.login.expire">expire</button>
-					-->
-				</p>
+						<!-- use the 'expire' button to simulate a session timing out -->
+						<!--
+						&nbsp;&nbsp;|&nbsp;&nbsp;
+						<button dojoType=dijit.form.Button onClick="pion.login.expire">expire</button>
+						-->
+					</p>
 				</div>
 				<!-- end secondary menu -->
 				<img src="images/0.gif" alt="" id="fixed" />
