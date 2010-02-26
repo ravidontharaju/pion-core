@@ -27994,7 +27994,7 @@ configPageSelected(tabs[0]);
 alert("There are no access rights defined for this user account.  You may need to reset your users.xml file.");
 }
 dojo.subscribe("main_stack_container-selectChild",configPageSelected);
-if(dojo.indexOf(_1a4b,"/config/reactors")!=-1){
+if(dojo.indexOf(_1a4b,"/config/reactors")!=-1&&pion.key_service_running){
 dojo.byId("wizard_menu_section").style.visibility="visible";
 }
 return _1a48;
@@ -28204,6 +28204,12 @@ dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:500
 dojo.cookie("logged_in","true",{expires:1});
 pion.last_logged_in_user=dojo.cookie("user");
 var _1a8d=_1a8b.getElementsByTagName("Reactor");
+if(!pion.key_service_running){
+dojo.byId("outer").style.visibility="visible";
+dojo.byId("current_user_menu_section").style.visibility="visible";
+dojo.byId("current_user").innerHTML=dojo.cookie("user");
+pion.setup_success_callback();
+}else{
 if(_1a8d.length>0||dojo.cookie("pion_edition")){
 if(_1a8a=="invalid"){
 var _1a8e=new pion.widgets.EditionSelectorDialog;
@@ -28311,6 +28317,7 @@ page.device_list_initialized=true;
 }
 }
 });
+}
 }
 },error:function(_1aad,_1aae){
 pion.handleXhrGetError();

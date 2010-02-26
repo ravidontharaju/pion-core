@@ -109,8 +109,9 @@ pion.initTabs = function() {
 			// selectChild(page) won't trigger configPageSelected(page) if page was already selected.
 			dojo.subscribe("main_stack_container-selectChild", configPageSelected);
 
-			// Show the wizard link only if the user has access to the reactors tab.
-			if (dojo.indexOf(permitted_resources, '/config/reactors') != -1) {
+			// Show the wizard link only if the user has access to the reactors tab and KeyService is running.
+			// (If there's no KeyService running, then we assume Pion Core is installed, in which case the wizard is not useful.)
+			if (dojo.indexOf(permitted_resources, '/config/reactors') != -1 && pion.key_service_running) {
 				dojo.byId('wizard_menu_section').style.visibility = 'visible';
 			}
 
@@ -539,7 +540,18 @@ pion.editionSetup = function(license_key_type) {
 			pion.last_logged_in_user = dojo.cookie('user');
 
 			var reactors = response.getElementsByTagName('Reactor');
-			if (reactors.length > 0 || dojo.cookie('pion_edition')) {
+			if (! pion.key_service_running) {
+				// If there's no KeyService running, then we assume Pion Core is installed, in which case
+				// the wizard is not useful, so we go directly to the Reactors tab.
+
+				dojo.byId('outer').style.visibility = 'visible';
+				dojo.byId('current_user_menu_section').style.visibility = 'visible';
+				dojo.byId('current_user').innerHTML = dojo.cookie('user');
+				pion.setup_success_callback();
+			} else if (reactors.length > 0 || dojo.cookie('pion_edition')) {
+				// The user has gone through the wizard before and/or has a pre-existing configuration.
+				// They can still choose to run the wizard from the menu bar link.
+
 				if (license_key_type == 'invalid') {
 					var dialog = new pion.widgets.EditionSelectorDialog;
 					dialog.show();
@@ -552,7 +564,8 @@ pion.editionSetup = function(license_key_type) {
 					pion.setup_success_callback();
 				}
 			} else {
-				// No reactors configured and no pion_edition cookie found, so do wizard.
+				// KeyService running, no reactors configured and no pion_edition cookie found, so do wizard.
+
 				var wizard = dijit.byId('wizard');
 				dojo.removeClass('wizard', 'hidden');
 
