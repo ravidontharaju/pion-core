@@ -55,9 +55,9 @@ pion.reactors.init = function() {
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
 	dojo.connect(ops_toggle_button.domNode, 'click', function() {
 		if (ops_toggle_button.checked) {
-			dojo.addClass(dojo.byId('counterBackground'), 'hidden');
+			dojo.addClass(dojo.byId('counterBackground'), 'mostly_hidden');
 		} else {
-			dojo.removeClass(dojo.byId('counterBackground'), 'hidden');
+			dojo.removeClass(dojo.byId('counterBackground'), 'mostly_hidden');
 		}
 	});
 

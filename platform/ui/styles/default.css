@@ -214,7 +214,7 @@ p.hidden {
 	opacity:0.8;
 }
 
-#counterBackground.hidden {
+#counterBackground.mostly_hidden {
 	width: 15px;
 }
 
@@ -228,7 +228,7 @@ p.hidden {
 	float: left;
 }
 
-.hidden .counterTitle {
+.mostly_hidden .counterTitle {
 	display: none;
 }
 
@@ -244,7 +244,7 @@ p.hidden {
 	line-height: 1.4;
 }
 
-.hidden .counterNumbersRight {
+.mostly_hidden .counterNumbersRight {
 	display: none;
 }
 
@@ -261,7 +261,7 @@ p.hidden {
 	line-height: 1.4;
 }
 
-.hidden .counterNumbersLeft {
+.mostly_hidden .counterNumbersLeft {
 	display: none;
 }
 
@@ -281,7 +281,7 @@ p.hidden {
 	background: url("../images/reactor-counter-toggle.png");
 }
 
-.hidden #ops_toggle_button {
+.mostly_hidden #ops_toggle_button {
 	background: url("../images/reactor-counter-toggle-in.png");
 }
 

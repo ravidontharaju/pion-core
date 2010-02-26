@@ -24919,9 +24919,9 @@ dijit.byId("main_stack_container").resize({h:pion.reactors.getHeight()});
 var _177d=dijit.byId("ops_toggle_button");
 dojo.connect(_177d.domNode,"click",function(){
 if(_177d.checked){
-dojo.addClass(dojo.byId("counterBackground"),"hidden");
+dojo.addClass(dojo.byId("counterBackground"),"mostly_hidden");
 }else{
-dojo.removeClass(dojo.byId("counterBackground"),"hidden");
+dojo.removeClass(dojo.byId("counterBackground"),"mostly_hidden");
 }
 });
 var _177e=function(item,hint){
