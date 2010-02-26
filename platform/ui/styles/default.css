@@ -869,7 +869,12 @@ The following are also available, if the need arises.
 }
 
 .pion_server_error_dialog .dijitButtonNode button {
-	background-color: red;
+	border: solid #999999 1px;
+	color: #366dba;
+	font-weight: bold;
+	width: auto;
+	height: 25px;
+	margin-right: 10px;
 }
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */
