@@ -163,6 +163,11 @@ h1.wizard_welcome {
 	margin-top: 20px;
 }
 
+#wizard .device_list {
+	height: 225px;
+	overflow: auto;
+}
+
 #review_setup input {
 	width: 95%;
 }
