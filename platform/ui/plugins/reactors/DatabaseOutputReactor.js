@@ -363,8 +363,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			var field_mapping_grid = new dojox.grid.DataGrid({
 				store: this.reactor.field_mapping_store,
 				structure: plugins.reactors.DatabaseOutputReactorDialog.grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.field_mapping_grid_node.appendChild(field_mapping_grid.domNode);
 			field_mapping_grid.startup();

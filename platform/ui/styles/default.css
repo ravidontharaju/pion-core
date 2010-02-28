@@ -1231,6 +1231,30 @@ I don't think this is being used anywhere.
 	border: 1px solid #6096b6;
 }
 
+.field_mapping_grid {
+	height: 200px;
+}
+
+.transformation_grid {
+	height: 200px;
+}
+
+.lookup_grid {
+	height: 400px;
+}
+
+.rule_grid {
+	height: 500px;
+}
+
+.regex_grid {
+	height: 500px;
+}
+
+.query_grid {
+	height: 200px;
+}
+
 .tundra .dojoxGrid {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;

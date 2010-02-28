@@ -236,8 +236,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.transformation_grid = new dojox.grid.DataGrid({
 				store: this.reactor.transformation_store,
 				structure: this.transformation_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 
 			this.transformation_grid.term_column_index = 0;
@@ -469,8 +468,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			this.lookup_grid = new dojox.grid.DataGrid({
 				store: this.lookup_store,
 				structure: this.lookup_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.lookup_grid_node.appendChild(this.lookup_grid.domNode);
 			this.lookup_grid.startup();
@@ -676,8 +674,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			this.rule_grid = new dojox.grid.DataGrid({
 				store: this.rule_store,
 				structure: this.rule_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.rule_grid._prev_term_type_category = this.rule_grid.structure[0].rows[1].widgetProps.query.category;
 			this.rule_grid.term_column_index = 0;
@@ -832,8 +829,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 			this.regex_grid = new dojox.grid.DataGrid({
 				store: this.regex_store,
 				structure: this.regex_grid_layout,
-				singleClickEdit: true,
-				autoHeight: true
+				singleClickEdit: true
 			}, document.createElement('div'));
 			this.regex_grid_node.appendChild(this.regex_grid.domNode);
 			this.regex_grid.startup();
