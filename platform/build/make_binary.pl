@@ -171,11 +171,14 @@ copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ),
 
 # copy the configuration files
 my %templates = ("PION_PLUGINS_DIRECTORY" => "../plugins",
-	"PION_DATA_DIRECTORY" => "./",
+	"PION_DATA_DIRECTORY" => "../data",
 	"PION_UI_DIRECTORY" => "./ui",
 	"PION_LOG_CONFIG" => "logconfig.txt");
 copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
 	File::Spec->catdir( ($PACKAGE_DIR, "config") ), %templates);
+
+# make an empty data directory
+mkdir(File::Spec->catdir( ($PACKAGE_DIR, "data") ));
 
 # copy other misc files
 copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
