@@ -1,3 +1,21 @@
+Version 3.0.1 (2010-03-01)
+==========================
+
+* Full design refresh of the Pion UI for 3.0 release (855)
+* Pion Community Edition has been renamed to Pion Core (803)
+* Pion now supports user access controls for the various UI tabs (741)
+* Pion web services can now be updated dynamically via config API (834)
+* Fixed various UI problems occurring only in Internet Explorer (856)
+* Error messages in UI now display links to Pion Knowledge Base (813)
+* Fixed errors caused when storing NULL or empty fields to databases (852)
+* Added scrollbars for Reactor configuration grids that can be very long (849)
+* Added named signal/slots support to Pion Core Reactor API (751)
+* Added ability to dynamically remove resources from HTTPServers (834)
+* Added support to HTTPParser for saving the raw HTTP headers (842)
+* HTTPParser now uses a default status code of 0 instead of 200 (817)
+* Removed build numbers from Unix library names (861)
+
+
 Version 2.2.12 (2010-02-16)
 ===========================
 
