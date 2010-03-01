@@ -9,7 +9,7 @@
     <ROW Property="Manufacturer" Value="Atomic Labs" ValueLocId="*"/>
     <ROW Property="ProductCode" Value="1033:{8C9712B1-631F-46F9-8E1C-F9E845FD6128} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
-    <ROW Property="ProductName" Value="Pion Community Edition" ValueLocId="*"/>
+    <ROW Property="ProductName" Value="Pion Core" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION"/>
     <ROW Property="UpgradeCode" Value="{23FD622B-018A-4972-A04D-E27EDB88D034}"/>
@@ -117,7 +117,7 @@
     <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
-    <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion (Community Edition)" ServiceType="16" StartType="2" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
+    <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion Core" ServiceType="16" StartType="2" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
     <ROW Shortcut="Start_Pion" Directory_="SHORTCUTDIR" Name="StartP~1|Start Pion" Component_="pion.exe" Target="[SystemFolder]net.exe" Arguments="start pion" Description="Start Pion Windows Service" Hotkey="0" IconIndex="0" ShowCmd="1"/>
