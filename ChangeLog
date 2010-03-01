@@ -1,3 +1,12 @@
+Version 3.0.1 (2010-03-01)
+==========================
+
+* Added ability to dynamically remove resources from HTTPServers (834)
+* Added support to HTTPParser for saving the raw HTTP headers (842)
+* HTTPParser now uses a default status code of 0 instead of 200 (817)
+* Removed build numbers from Unix library names (861)
+
+
 Version 2.2.12 (2010-02-16)
 ===========================
 
