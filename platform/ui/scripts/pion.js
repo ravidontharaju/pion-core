@@ -296,7 +296,7 @@ pion.wizardDone = function(exit_early) {
 								+ '<Name>Capture Traffic</Name>'
 								+ '<Comment>Captures raw network traffic to generate HTTP request events</Comment>'
 								+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
-								+ '<ProcessingThreads>3</ProcessingThreads>'
+								+ '<ProcessingThreads>1</ProcessingThreads>'
 								+ '<MaxPacketQueueSize>100000</MaxPacketQueueSize>'
 								+ '<QueueEventDelivery>true</QueueEventDelivery>';
 	dojo.forEach(pion.wizard.devices, function(device) {
