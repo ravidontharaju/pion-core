@@ -102,7 +102,8 @@ dojo.declare("pion.about.LicenseKeyDialog",
 			console.debug('pion_version = ', pion_version, ', pion_edition = ', pion_edition, ', key_status = ', key_status);
 
 			// build and set "full edition" string
-			full_edition_str = "Pion " + pion_edition + " Edition";
+			//full_edition_str = "Pion " + pion_edition + " Edition";
+			full_edition_str = (pion_edition == 'Community'? 'Pion Core' : 'Pion');
 
 			// build and set "full version" (edition + version) string
 			full_version_str = full_edition_str + " v" + pion_version;
