@@ -190,8 +190,14 @@ if ($PLATFORM =~ /^win32/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "README.bin"),
 		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
 }
-copy(File::Spec->catfile( ("platform", "doc"), "pion-manual.pdf"),
-	File::Spec->catfile($PACKAGE_DIR, "pion-manual.pdf"));
+copy(File::Spec->catfile( ("platform", "doc"), "pion-reactor-config.pdf"),
+	File::Spec->catfile($PACKAGE_DIR, "pion-reactor-config.pdf"));
+copy(File::Spec->catfile( ("platform", "doc"), "pion-setup-wizard.pdf"),
+	File::Spec->catfile($PACKAGE_DIR, "pion-setup-wizard.pdf"));
+copy(File::Spec->catfile( ("platform", "doc"), "pion-replay-guide.pdf"),
+	File::Spec->catfile($PACKAGE_DIR, "pion-replay-guide.pdf"));
+copy(File::Spec->catfile( ("platform", "doc"), "pion-overview.pdf"),
+	File::Spec->catfile($PACKAGE_DIR, "pion-overview.pdf"));
 
 # copy the pget and pmon python scripts
 copy(File::Spec->catfile( ("platform", "build"), "pget.py"),
