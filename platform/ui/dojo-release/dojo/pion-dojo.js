@@ -22162,7 +22162,9 @@ var _this=this;
 this.run_button=new dijit.form.ToggleButton();
 var _153a=this.run_button.domNode;
 dojo.connect(_153a,"click",function(){
-dojo.xhrPut({url:"/config/reactors/"+_this.config["@id"]+(_this.run_button.checked?"/start":"/stop"),error:pion.getXhrErrorHandler(dojo.xhrPut)});
+dojo.xhrPut({url:"/config/reactors/"+_this.config["@id"]+(_this.run_button.checked?"/start":"/stop"),load:function(){
+_this.config.Running=_this.run_button.checked;
+},error:pion.getXhrErrorHandler(dojo.xhrPut)});
 });
 this.domNode.appendChild(_153a);
 this.ops_per_sec=document.createElement("span");
@@ -22375,6 +22377,9 @@ this.reactor.config[_156a]=_156b;
 }
 if(this._insertCustomData){
 this._insertCustomData(_1568);
+}
+if("Running" in this.reactor.config){
+this.put_data+="<Running>"+this.reactor.config.Running+"</Running>";
 }
 this.put_data+="</Reactor></PionConfig>";
 console.debug("put_data: ",this.put_data);

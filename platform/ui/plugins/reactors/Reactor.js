@@ -30,6 +30,9 @@ dojo.declare("plugins.reactors.Reactor",
 			dojo.connect(button_node, 'click', function() {
 				dojo.xhrPut({
 					url: '/config/reactors/' + _this.config['@id'] + (_this.run_button.checked? '/start' : '/stop'),
+					load: function() {
+						_this.config.Running = _this.run_button.checked;
+					},
 					error: pion.getXhrErrorHandler(dojo.xhrPut)
 				});
 			});
@@ -371,6 +374,8 @@ dojo.declare("plugins.reactors.ReactorDialog",
 				// dialogFields.options can and should be undefined for Reactors without dialog options.
 				this._insertCustomData(dialogFields);
 			}
+			if ('Running' in this.reactor.config)
+				this.put_data += '<Running>' + this.reactor.config.Running + '</Running>';
 			this.put_data += '</Reactor></PionConfig>';
 			console.debug('put_data: ', this.put_data);
 
