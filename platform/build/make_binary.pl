@@ -246,7 +246,7 @@ if ($PLATFORM =~ /^win32/i) {
 		$OSX_PACKAGE_DIR = "$BIN_DIR/osx/$PACKAGE_NAME";
 		rmtree($OSX_PACKAGE_DIR);
 		mkpath($OSX_PACKAGE_DIR);
-		system("platypus -V $VERSION -a 'Pion Core' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
+		system("platypus -V $VERSION -a 'Pion Core' -u 'Atomic Labs, Inc.' -t shell -o TextWindow -i platform/build/pion-icon.png -f $PACKAGE_DIR/config -f $PACKAGE_DIR/libs -f $PACKAGE_DIR/pion -f $PACKAGE_DIR/plugins -f $PACKAGE_DIR/ui -f $PACKAGE_DIR/data -I org.pion.Pion platform/build/start_osx.sh $OSX_PACKAGE_DIR/Pion");
 
 		# Platypus' icon support is broken; copy file into .app package
 		copy("platform/build/appIcon.icns", "$OSX_PACKAGE_DIR/Pion.app/Contents/Resources");
