@@ -317,6 +317,13 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 	var line = surface.createPolyline().setStroke("black");
 
 	var removeConnection = function() {
+		// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+		if (pion.license_state == 'lite' && (start_reactor.requires_license || end_reactor.requires_license)) {
+			var offending_reactor_label = start_reactor.requires_license? start_reactor.class_info.label : end_reactor.class_info.label;
+			pion.reactors.doConnectionChangeNotAllowedDialog(offending_reactor_label);
+			return;
+		}
+
 		dojo.xhrDelete({
 			url: '/config/connections/' + connection_id,
 			handleAs: 'xml',
@@ -742,6 +749,13 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 	// Disconnect the click handlers on all moveable's.
 	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
+	// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't add the connection.
+	if (pion.license_state == 'lite' && (source_reactor.requires_license || sink_reactor.requires_license)) {
+		var offending_reactor_label = source_reactor.requires_license? source_reactor.class_info.label : sink_reactor.class_info.label;
+		pion.reactors.doConnectionChangeNotAllowedDialog(offending_reactor_label);
+		return;
+	}
+
 	var post_data = '<PionConfig><Connection><Type>reactor</Type>'
 				  + '<From>' + source_reactor.config['@id'] + '</From>'
 				  + '<To>' + sink_reactor.config['@id'] + '</To>'
@@ -759,6 +773,16 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 		},
 		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 	});
+}
+
+pion.reactors.doConnectionChangeNotAllowedDialog = function(offending_reactor_label) {
+	var dialog = new dijit.Dialog({title: 'Action Not Allowed'});
+	var content = 'You must have a commercial license to modify the connections of a ' + offending_reactor_label + '.<br/>'
+				+ '<a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="color:#0033CC; text-decoration:underline">'
+				+ 'Click here to obtain a free trial license.</a>'
+	dialog.attr('content', content);
+	dialog.show();
+	return;
 }
 
 pion.reactors.showReactorConfigDialog = function(reactor) {
@@ -827,6 +851,12 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	reactor_inputs_grid.startup();
 	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
+			// If in Lite mode and this reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+			if (pion.license_state == 'lite' && reactor.requires_license) {
+				pion.reactors.doConnectionChangeNotAllowedDialog(reactor.class_info.label);
+				return;
+			}
+
 			var item = this.getItem(e.rowIndex);
 			if (this.store.hasAttribute(item, 'DeleteButton')) {
 				this.store.deleteItem(item);
@@ -894,6 +924,12 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	reactor_outputs_grid.startup();
 	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
+			// If in Lite mode and this reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+			if (pion.license_state == 'lite' && reactor.requires_license) {
+				pion.reactors.doConnectionChangeNotAllowedDialog(reactor.class_info.label);
+				return;
+			}
+
 			var item = this.getItem(e.rowIndex);
 			if (this.store.hasAttribute(item, 'DeleteButton')) {
 				this.store.deleteItem(item);

@@ -15,6 +15,8 @@ dojo.declare("plugins.reactors.Reactor",
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];
 			this.prev_events_in = 0;
+			this.class_info = plugins.reactors[this.config.Plugin];
+			this.requires_license = 'edition' in this.class_info && this.class_info.edition == 'Enterprise';
 			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
 			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
 
