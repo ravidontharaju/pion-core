@@ -471,6 +471,13 @@ pion.wizardDone = function(exit_early) {
 	.addCallback(pion.setup_success_callback);
 }
 
+// Allowed values of license_state are core, lite, enterprise and replay, but note that it's not 
+// necessarily the same as the value in dojo.cookie('pion_edition'), even when that cookie exists.
+pion.updateLicenseState = function(license_state) {
+	pion.license_state = license_state;
+	pion.updateLogo(license_state);
+}
+
 pion.updateLogo = function(logo_type) {
 	var logo_div = dojo.byId('logo');
 	dojo.query('p.logo', logo_div).forEach(function(n) {

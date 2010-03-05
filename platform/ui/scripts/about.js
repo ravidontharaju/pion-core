@@ -224,7 +224,7 @@ pion.about.checkKeyStatus = function(kw_args) {
 				// If kw_args.success_callback is defined, it will not be called, and even if the user somehow succeeds in
 				// sending a request to do something that requires a license key, they will get an error from the server.
 				pion.key_service_running = false;
-				pion.updateLogo('core');
+				pion.updateLicenseState('core');
 				if (kw_args.always_callback) {
 					kw_args.always_callback();
 				}
@@ -250,16 +250,16 @@ pion.about.checkKeyStatusDfd = function() {
 			var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
 
 			if (key_status == 'invalid') {
-				pion.updateLogo('lite');
+				pion.updateLicenseState('lite');
 				dfd.callback('invalid');
 			} else if (dojo.indexOf(products, 'Pion Replay') != -1) {
-				pion.updateLogo('replay');
+				pion.updateLicenseState('replay');
 				dfd.callback('replay');
 			} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
-				pion.updateLogo('enterprise');
+				pion.updateLicenseState('enterprise');
 				dfd.callback('enterprise');
 			} else {
-				pion.updateLogo('lite');
+				pion.updateLicenseState('lite');
 				dfd.callback('none');
 			}
 			return response;
@@ -267,7 +267,7 @@ pion.about.checkKeyStatusDfd = function() {
 		error: function(response, ioArgs) {
 			if (ioArgs.xhr.status == 404) {
 				pion.key_service_running = false;
-				pion.updateLogo('core');
+				pion.updateLicenseState('core');
 				dfd.callback('none');
 			} else {
 				pion.handleXhrGetError(response, ioArgs);

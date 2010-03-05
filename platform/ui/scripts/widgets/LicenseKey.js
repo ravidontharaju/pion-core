@@ -60,11 +60,11 @@ dojo.declare("pion.widgets.LicenseKeyDialog",
 					}
 
 					if (dojo.indexOf(products, 'Pion Replay') != -1) {
-						pion.updateLogo('replay');
+						pion.updateLicenseState('replay');
 					} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
-						pion.updateLogo('enterprise');
+						pion.updateLicenseState('enterprise');
 					} else {
-						pion.updateLogo('lite');
+						pion.updateLicenseState('lite');
 					}
 
 					if (_this.callback) {
