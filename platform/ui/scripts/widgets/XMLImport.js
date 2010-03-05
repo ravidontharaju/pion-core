@@ -189,6 +189,7 @@ dojo.declare("pion.widgets.XMLImportDialog",
 								dijit.byId('main_stack_container').selectChild(dijit.byId("system_config"));
 
 								console.debug('this.uuid_replacements = ', this.uuid_replacements);
+								pion.reactors.updateRunButtons();
 								_this.processConnections();
 							}
 						},

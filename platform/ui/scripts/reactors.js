@@ -207,6 +207,32 @@ pion.reactors.init = function() {
 	}
 }
 
+pion.reactors.updateRunButtons = function() {
+	if (dijit.byId('ops_toggle_button').checked) { // Else the buttons are already getting updated every second.
+		dojo.xhrGet({
+			url: '/config/reactors/stats',
+			preventCache: true,
+			handleAs: 'xml',
+			timeout: 1000,
+			load: function(response, ioArgs) {
+				var reactors = response.getElementsByTagName('Reactor');
+				dojo.forEach(reactors, function(n) {
+					var id = n.getAttribute('id');
+					var reactor = pion.reactors.reactors_by_id[id];
+					if (reactor) {
+						var is_running_node = n.getElementsByTagName('Running')[0];
+						var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
+						var is_running = (is_running_string == 'true');
+						reactor.run_button.attr('checked', is_running);
+					}
+				});
+				return response;
+			},
+			error: pion.handleXhrGetError
+		});
+	}
+}
+
 pion.reactors._initConfiguredReactors = function() {
 	if (file_protocol) {
 		addWorkspace();
@@ -234,6 +260,7 @@ pion.reactors._initConfiguredReactors = function() {
 			},
 			onComplete: function(items, request) {
 				console.debug('done fetching Reactors');
+				pion.reactors.updateRunButtons();
 				reactor_config_store.fetch({
 					query: {tagName: 'Connection'},
 					onItem: function(item, request) {

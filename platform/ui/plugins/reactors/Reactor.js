@@ -33,7 +33,9 @@ dojo.declare("plugins.reactors.Reactor",
 					load: function() {
 						_this.config.Running = _this.run_button.checked;
 					},
-					error: pion.getXhrErrorHandler(dojo.xhrPut)
+					error: function(response, ioArgs) {
+						pion.handleXhrError(response, ioArgs, dojo.xhrPut, pion.reactors.updateRunButtons);
+					}
 				});
 			});
 			this.domNode.appendChild(button_node);
@@ -291,7 +293,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			}
 			this.post_data += '</Reactor></PionConfig>';
 			console.debug('post_data: ', this.post_data);
-	
+
 			var _this = this;
 			dojo.rawXhrPost({
 				url: '/config/reactors',
@@ -317,6 +319,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
 
 					var reactor = pion.reactors.createReactor(config, reactor_node);
+					pion.reactors.updateRunButtons();
 					pion.reactors.reactors_by_id[config['@id']] = reactor;
 					reactor.workspace = workspace_box;
 					workspace_box.reactors.push(reactor);
