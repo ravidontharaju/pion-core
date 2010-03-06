@@ -25027,6 +25027,7 @@ var _17a9=n.getElementsByTagName("Running")[0];
 var _17aa=dojo.isIE?_17a9.xml.match(/.*>(\w*)<.*/)[1]:_17a9.textContent;
 var _17ab=(_17aa=="true");
 _17a5.run_button.attr("checked",_17ab);
+_17a5.config.Running=_17ab;
 }
 });
 delta=_17a1-_179b;
@@ -25050,6 +25051,7 @@ var _17b2=n.getElementsByTagName("Running")[0];
 var _17b3=dojo.isIE?_17b2.xml.match(/.*>(\w*)<.*/)[1]:_17b2.textContent;
 var _17b4=(_17b3=="true");
 _17b1.run_button.attr("checked",_17b4);
+_17b1.config.Running=_17b4;
 }
 });
 return _17ac;
