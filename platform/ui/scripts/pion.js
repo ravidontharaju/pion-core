@@ -346,6 +346,7 @@ pion.wizardDone = function(exit_early) {
 			'<AccountId>' + pion.wizard.omniture_report_suite + '</AccountId>' +
 			'<EncryptConnections>false</EncryptConnections>' +
 			'<SendTimestamp>true</SendTimestamp>' +
+			'<StripClientIP>false</StripClientIP>' +
 			'<Query name="ipaddress">urn:vocab:clickstream#c-ip</Query>' +
 			'<Query name="userAgent">urn:vocab:clickstream#useragent</Query>' +
 			'<Query name="pageName">urn:vocab:clickstream#page-title</Query>' +
@@ -364,7 +365,8 @@ pion.wizardDone = function(exit_early) {
 			'<AccountId>' + pion.wizard.webtrends_account_id + '</AccountId>' +
 			'<HttpHost>' + pion.wizard.webtrends_host + '</HttpHost>' +
 			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>';
+			'<EncryptConnections>false</EncryptConnections>' +
+			'<StripClientIP>false</StripClientIP>';
 	} else if (pion.wizard.analytics_provider == 'Google') {
 		var analytics_config =
 			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
@@ -373,7 +375,8 @@ pion.wizardDone = function(exit_early) {
 			'<Name>Google Analytics</Name>' +
 			'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
 			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>';
+			'<EncryptConnections>false</EncryptConnections>' +
+			'<StripClientIP>false</StripClientIP>';
 	} else if (pion.wizard.analytics_provider == 'Unica') {
 		var analytics_config =
 			'<Plugin>UnicaAnalyticsReactor</Plugin>' + 
@@ -383,7 +386,8 @@ pion.wizardDone = function(exit_early) {
 			'<HttpHost>' + pion.wizard.unica_host + '</HttpHost>' +
 			'<AccountId>' + pion.wizard.unica_account_id + '</AccountId>' +
 			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>';
+			'<EncryptConnections>false</EncryptConnections>' +
+			'<StripClientIP>false</StripClientIP>';
 	} else {
 		// TODO:
 	}
