@@ -320,40 +320,36 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 
 	var removeConnection = function() {
 		// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't delete the connection.
-		if (pion.license_state == 'lite' && (start_reactor.requires_license || end_reactor.requires_license)) {
-			var offending_reactor_label = start_reactor.requires_license? start_reactor.class_info.label : end_reactor.class_info.label;
-			pion.reactors.doConnectionChangeNotAllowedDialog(offending_reactor_label);
-			return;
-		}
+		pion.reactors.doConnectionChangeIfAllowed(start_reactor, end_reactor, function() {
+			dojo.xhrDelete({
+				url: '/config/connections/' + connection_id,
+				handleAs: 'xml',
+				timeout: 5000,
+				load: function(response, ioArgs) {
+					// Find index of end_reactor in outputs of start_reactor.
+					for (var i1 = 0; i1 < start_reactor.reactor_outputs.length; ++i1) {
+						if (start_reactor.reactor_outputs[i1].id == connection_id) break;
+					}
 
-		dojo.xhrDelete({
-			url: '/config/connections/' + connection_id,
-			handleAs: 'xml',
-			timeout: 5000,
-			load: function(response, ioArgs) {
-				// Find index of end_reactor in outputs of start_reactor.
-				for (var i1 = 0; i1 < start_reactor.reactor_outputs.length; ++i1) {
-					if (start_reactor.reactor_outputs[i1].id == connection_id) break;
-				}
+					// Find index of start_reactor in inputs of end_reactor.
+					for (var i2 = 0; i2 < end_reactor.reactor_inputs.length; ++i2) {
+						if (end_reactor.reactor_inputs[i2].id == connection_id) break;
+					}
 
-				// Find index of start_reactor in inputs of end_reactor.
-				for (var i2 = 0; i2 < end_reactor.reactor_inputs.length; ++i2) {
-					if (end_reactor.reactor_inputs[i2].id == connection_id) break;
-				}
+					// Get the connection line.  (Same as end_reactor.reactor_inputs[i2].line.)
+					var line = start_reactor.reactor_outputs[i1].line;
 
-				// Get the connection line.  (Same as end_reactor.reactor_inputs[i2].line.)
-				var line = start_reactor.reactor_outputs[i1].line;
+					// Remove the divs associated with the line and tell the line to erase itself.
+					pion.reactors.removeLine(line);
 
-				// Remove the divs associated with the line and tell the line to erase itself.
-				pion.reactors.removeLine(line);
+					// Remove end_reactor from outputs of start_reactor and vice versa.
+					start_reactor.reactor_outputs.splice(i1, 1);
+					end_reactor.reactor_inputs.splice(i2, 1);
 
-				// Remove end_reactor from outputs of start_reactor and vice versa.
-				start_reactor.reactor_outputs.splice(i1, 1);
-				end_reactor.reactor_inputs.splice(i2, 1);
-
-				return response;
-			},
-			error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					return response;
+				},
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
+			});
 		});
 	}
 
@@ -369,7 +365,7 @@ pion.reactors.createConnection = function(start_reactor, end_reactor, connection
 		line.div2.className = 'normal';
 	};
 	pion.reactors.workspace_box.node.appendChild(line.div1);
-	
+
 	line.div2 = document.createElement('div');
 	line.div2.style.position = 'absolute';
 	line.div2.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
@@ -458,7 +454,7 @@ function addWorkspace(name) {
 	var menu = new dijit.Menu({targetNodeIds: [workspace_pane.controlButton.domNode, new_workspace.node]});
 	menu.addChild(new dijit.MenuItem({ label: "Edit workspace configuration", onClick: function(){showWorkspaceConfigDialog(workspace_pane);} }));
 	menu.addChild(new dijit.MenuItem({ label: "Delete workspace", onClick: function(){deleteWorkspaceIfConfirmed(workspace_pane);} }));
-	
+
 	new_workspace.node.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 	workspace_pane.controlButton.domNode.ondblclick = function(){showWorkspaceConfigDialog(workspace_pane);}
 /*
@@ -685,7 +681,7 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 
 	// If target is not a reactor, return.  This happens when dropping reactors on the workspace, and seems to be a dnd bug. 
 	if (!target.node.getAttribute('reactor_type')) return;
-	
+
 	// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
 	// after a connector node was added to the reactor.  If this is that time, delete the connector node.
 	// Note that this sometimes happens after tracking has started, i.e. when isTracking == true.
@@ -752,39 +748,47 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
 	// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't add the connection.
-	if (pion.license_state == 'lite' && (source_reactor.requires_license || sink_reactor.requires_license)) {
-		var offending_reactor_label = source_reactor.requires_license? source_reactor.class_info.label : sink_reactor.class_info.label;
-		pion.reactors.doConnectionChangeNotAllowedDialog(offending_reactor_label);
-		return;
-	}
-
-	var post_data = '<PionConfig><Connection><Type>reactor</Type>'
-				  + '<From>' + source_reactor.config['@id'] + '</From>'
-				  + '<To>' + sink_reactor.config['@id'] + '</To>'
-				  + '</Connection></PionConfig>';
-	dojo.rawXhrPost({
-		url: '/config/connections',
-		contentType: "text/xml",
-		handleAs: "xml",
-		postData: post_data,
-		load: function(response){
-			var node = response.getElementsByTagName('Connection')[0];
-			var id = node.getAttribute('id');
-			console.debug('connection id (from server): ', id);
-			pion.reactors.createConnection(source_reactor, sink_reactor, id);
-		},
-		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	pion.reactors.doConnectionChangeIfAllowed(source_reactor, sink_reactor, function() {
+		var post_data = '<PionConfig><Connection><Type>reactor</Type>'
+					  + '<From>' + source_reactor.config['@id'] + '</From>'
+					  + '<To>' + sink_reactor.config['@id'] + '</To>'
+					  + '</Connection></PionConfig>';
+		dojo.rawXhrPost({
+			url: '/config/connections',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response){
+				var node = response.getElementsByTagName('Connection')[0];
+				var id = node.getAttribute('id');
+				console.debug('connection id (from server): ', id);
+				pion.reactors.createConnection(source_reactor, sink_reactor, id);
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
 	});
 }
 
-pion.reactors.doConnectionChangeNotAllowedDialog = function(offending_reactor_label) {
-	var dialog = new dijit.Dialog({title: 'Action Not Allowed'});
-	var content = 'You must have a commercial license to modify the connections of a ' + offending_reactor_label + '.<br/>'
-				+ '<a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="color:#0033CC; text-decoration:underline">'
-				+ 'Click here to obtain a free trial license.</a>'
-	dialog.attr('content', content);
-	dialog.show();
-	return;
+pion.reactors.doConnectionChangeIfAllowed = function(source_reactor, sink_reactor, callback) {
+	if (pion.license_state == 'lite' && (source_reactor.requires_license || sink_reactor.requires_license)) {
+		// Check key status, in case someone recently copied a key to the config directory. 
+		pion.about.checkKeyStatusDfd()
+		.addCallback(function() {
+			if (pion.license_state == 'lite') {
+				var offending_reactor_label = source_reactor.requires_license? source_reactor.class_info.label : sink_reactor.class_info.label;
+				var dialog = new dijit.Dialog({title: 'Action Not Allowed'});
+				var content = 'You must have a commercial license to modify the connections of a ' + offending_reactor_label + '.<br/>'
+							+ '<a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="color:#0033CC; text-decoration:underline">'
+							+ 'Click here to obtain a free trial license.</a>'
+				dialog.attr('content', content);
+				dialog.show();
+			} else {
+				callback();
+			}
+		});
+	} else {
+		callback();
+	}
 }
 
 pion.reactors.showReactorConfigDialog = function(reactor) {
@@ -853,37 +857,35 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	reactor_inputs_grid.startup();
 	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
-			// If in Lite mode and this reactor is an Enterprise Reactor, display an error message and don't delete the connection.
-			if (pion.license_state == 'lite' && reactor.requires_license) {
-				pion.reactors.doConnectionChangeNotAllowedDialog(reactor.class_info.label);
-				return;
-			}
+			// If in Lite mode and this reactor or the selected incoming reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+			var reactor_input = reactor.reactor_inputs[e.rowIndex];
+			var incoming_reactor = reactor_input.source;
+			var _this = this;
+			pion.reactors.doConnectionChangeIfAllowed(incoming_reactor, reactor, function() {
+				var item = _this.getItem(e.rowIndex);
+				if (_this.store.hasAttribute(item, 'DeleteButton')) {
+					_this.store.deleteItem(item);
+					dojo.xhrDelete({
+						url: '/config/connections/' + reactor_input.id,
+						handleAs: 'xml',
+						timeout: 5000,
+						load: function(response, ioArgs) {
+							pion.reactors.removeLine(reactor_input.line);
+							reactor.reactor_inputs.splice(e.rowIndex, 1);
 
-			var item = this.getItem(e.rowIndex);
-			if (this.store.hasAttribute(item, 'DeleteButton')) {
-				this.store.deleteItem(item);
-				var reactor_input = reactor.reactor_inputs[e.rowIndex];
-				dojo.xhrDelete({
-					url: '/config/connections/' + reactor_input.id,
-					handleAs: 'xml',
-					timeout: 5000,
-					load: function(response, ioArgs) {
-						var incoming_reactor = reactor_input.source;
-						pion.reactors.removeLine(reactor_input.line);
-						reactor.reactor_inputs.splice(e.rowIndex, 1);
-
-						// remove reactor from the outputs of incoming_reactor
-						for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-							if (incoming_reactor.reactor_outputs[j].sink == reactor) {
-								incoming_reactor.reactor_outputs.splice(j, 1);
-								break;
+							// remove reactor from the outputs of incoming_reactor
+							for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+								if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+									incoming_reactor.reactor_outputs.splice(j, 1);
+									break;
+								}
 							}
-						}
-						return response;
-					},
-					error: pion.getXhrErrorHandler(dojo.xhrDelete)
-				});
-			}
+							return response;
+						},
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					});
+				}
+			});
 		}
 	});
 
@@ -926,37 +928,35 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	reactor_outputs_grid.startup();
 	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
-			// If in Lite mode and this reactor is an Enterprise Reactor, display an error message and don't delete the connection.
-			if (pion.license_state == 'lite' && reactor.requires_license) {
-				pion.reactors.doConnectionChangeNotAllowedDialog(reactor.class_info.label);
-				return;
-			}
+			// If in Lite mode and this reactor or the selected outgoing reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+			var reactor_output = reactor.reactor_outputs[e.rowIndex];
+			var outgoing_reactor = reactor_output.sink;
+			var _this = this;
+			pion.reactors.doConnectionChangeIfAllowed(reactor, outgoing_reactor, function() {
+				var item = _this.getItem(e.rowIndex);
+				if (_this.store.hasAttribute(item, 'DeleteButton')) {
+					_this.store.deleteItem(item);
+					dojo.xhrDelete({
+						url: '/config/connections/' + reactor_output.id,
+						handleAs: 'xml',
+						timeout: 5000,
+						load: function(response, ioArgs) {
+							pion.reactors.removeLine(reactor_output.line);
+							reactor.reactor_outputs.splice(e.rowIndex, 1);
 
-			var item = this.getItem(e.rowIndex);
-			if (this.store.hasAttribute(item, 'DeleteButton')) {
-				this.store.deleteItem(item);
-				var reactor_output = reactor.reactor_outputs[e.rowIndex];
-				dojo.xhrDelete({
-					url: '/config/connections/' + reactor_output.id,
-					handleAs: 'xml',
-					timeout: 5000,
-					load: function(response, ioArgs) {
-						var outgoing_reactor = reactor_output.sink;
-						pion.reactors.removeLine(reactor_output.line);
-						reactor.reactor_outputs.splice(e.rowIndex, 1);
-
-						// remove reactor from the inputs of outgoing_reactor
-						for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-							if (outgoing_reactor.reactor_inputs[j].source == reactor) {
-								outgoing_reactor.reactor_inputs.splice(j, 1);
-								break;
+							// remove reactor from the inputs of outgoing_reactor
+							for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+								if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+									outgoing_reactor.reactor_inputs.splice(j, 1);
+									break;
+								}
 							}
-						}
-						return response;
-					},
-					error: pion.getXhrErrorHandler(dojo.xhrDelete)
-				});
-			}
+							return response;
+						},
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					});
+				}
+			});
 		}
 	});
 
@@ -1020,7 +1020,7 @@ function deleteReactor(reactor) {
 			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
 				var incoming_reactor = reactor.reactor_inputs[i].source;
 				pion.reactors.removeLine(reactor.reactor_inputs[i].line);
-				
+
 				// remove reactor from the outputs of incoming_reactor
 				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
 					if (incoming_reactor.reactor_outputs[j].sink == reactor) {
@@ -1094,7 +1094,7 @@ function expandWorkspaceIfNeeded() {
 
 	// keeps scroll bars from appearing unnecessarily in IE
 	new_width -= 2;
-	
+
 	new_height -= 6; // We need some decrement even when there's no horizontal scroll bar, to avoid a vertical scroll bar.
 					 // This is enough for Firefox on both Windows XP and Mac OS X, and for IE.
 

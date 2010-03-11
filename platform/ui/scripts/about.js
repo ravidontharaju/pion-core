@@ -27,29 +27,18 @@ dojo.declare("pion.about.LicenseKeyDialog",
 					} else {
 						var pion_version = response.getElementsByTagName('Version')[0].textContent;
 					}
-					var pion_edition = "Unknown";
-					dojo.xhrGet({
-						url: '/key/status',
-						preventCache: true,
-						handleAs: 'xml',
-						timeout: 5000,
-						load: function(response, ioArgs) {
-							pion.key_service_running = true;
-							if (dojo.isIE) {
-								var key_status = response.getElementsByTagName('Status')[0].childNodes[0].nodeValue;
-							} else {
-								var key_status = response.getElementsByTagName('Status')[0].textContent;
-							}
-							pion_edition = "Enterprise";
-							_this.doLicenseStuff(pion_version, pion_edition, key_status);
-							return response;
-						},
-						error: function(response, ioArgs) {
-							if (ioArgs.xhr.status == 404) {
-								pion_edition = "Community";
-								_this.doLicenseStuff(pion_version, pion_edition, '404');
-							}
-							return response;
+
+					pion.about.checkKeyStatusDfd()
+					.addCallback(function(license_key_type) {
+						if (! pion.key_service_running) {
+							_this.doLicenseStuff(pion_version, 'Pion Core');
+						} else if (license_key_type == 'invalid') {
+							_this.doLicenseStuff(pion_version, 'Pion', 'invalid');
+						} else if (license_key_type == 'none') {
+							_this.doLicenseStuff(pion_version, 'Pion', 'none');
+						} else {
+							// I.e. license_key_type is 'replay' or 'enterprise'.
+							_this.doLicenseStuff(pion_version, 'Pion', 'valid');
 						}
 					});
 					return response;
@@ -94,23 +83,12 @@ dojo.declare("pion.about.LicenseKeyDialog",
 			});
 		},
 		doLicenseStuff: function(pion_version, pion_edition, key_status) {
-
-			///// FOR TESTING!
-			//key_status = "invalid";
-			//key_status = "empty";
-
-			console.debug('pion_version = ', pion_version, ', pion_edition = ', pion_edition, ', key_status = ', key_status);
-
-			// build and set "full edition" string
-			//full_edition_str = "Pion " + pion_edition + " Edition";
-			full_edition_str = (pion_edition == 'Community'? 'Pion Core' : 'Pion');
-
 			// build and set "full version" (edition + version) string
-			full_version_str = full_edition_str + " v" + pion_version;
+			full_version_str = pion_edition + " v" + pion_version;
 			this.full_version.innerHTML = full_version_str;
 			
 			// set license section content based upon edition
-			if (pion_edition == "Community") {
+			if (pion_edition == 'Pion Core') {
 				this.community_license.style.display = "block";
 			} else {
 				if (key_status == "valid") {
