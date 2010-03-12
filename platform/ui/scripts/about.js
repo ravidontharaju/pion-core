@@ -82,6 +82,12 @@ dojo.declare("pion.about.LicenseKeyDialog",
 				}
 			});
 		},
+		doLicenseKeyDialog: function() {
+			this.hide();
+			var title = 'Please enter the replacement license key';
+			var dialog = new pion.widgets.LicenseKeyDialog({title: title});
+			dialog.show();
+		},
 		doLicenseStuff: function(pion_version, pion_edition, key_status) {
 			// build and set "full version" (edition + version) string
 			full_version_str = pion_edition + " v" + pion_version;
