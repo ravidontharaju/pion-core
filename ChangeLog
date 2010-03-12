@@ -1,3 +1,11 @@
+Version 3.0.3 (2010-03-12)
+==========================
+
+* Mac OS X application package was missing required data directory (866)
+* HTTPTypes::url_encode() crashes when input string has negative char (877)
+* TCPConnection::write() was not passing error_code by reference (878)
+
+
 Version 3.0.1 (2010-03-01)
 ==========================
 
