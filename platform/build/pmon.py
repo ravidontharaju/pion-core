@@ -31,9 +31,6 @@ KEY_METRICS = {
 	'MultiDatabaseReactor' : {
 		'EventsQueued' : 7500,	                # events queued for db inserts
 		'KeyCacheSize' : 100000,                # recent index keys cached
-		'CurrentTotalSessions' : 100000,        # events queued for db inserts
-		'CurrentActiveSessions' : 100000,       # recent index keys cached
-		'PreviousActiveSessions' : 100000,      # recent index keys cached
 		},
 	'ClickstreamReactor' : {
 		'SessionCookies' : 100000,              # cookie id's mapped to sessions
