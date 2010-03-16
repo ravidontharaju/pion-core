@@ -25,11 +25,11 @@ KEY_METRICS = {
 		'OpenSessions' : 100000,                # open visitor sessions
 		},
 	'DatabaseOutputReactor' : {
-		'EventsQueued' : 7500,                  # events queued for db inserts
+		'EventsQueued' : 25000,                 # events queued for db inserts
 		'KeyCacheSize' : 100000,                # recent index keys cached
 		},
 	'MultiDatabaseReactor' : {
-		'EventsQueued' : 7500,	                # events queued for db inserts
+		'EventsQueued' : 25000,	                # events queued for db inserts
 		'KeyCacheSize' : 100000,                # recent index keys cached
 		},
 	'ClickstreamReactor' : {
