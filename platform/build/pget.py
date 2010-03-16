@@ -3,7 +3,7 @@
 # pion cookie authentication HTTP query wrapper
 # ---------------------------------------------
 
-import sys, httplib, socket, optparse, re, xml.dom.minidom
+import sys, httplib, socket, optparse, re, xml.dom.minidom, getpass
 
 
 class Reactor:
@@ -194,7 +194,7 @@ def add_key(con, options):
 			print 'error: file does not contain a PEM-encoded private key:', key_file
 			key_pem = ''
 	# prompt for optional password
-	key_password = raw_input('Password (if set): ')
+	key_password = getpass.getpass('Password (if set): ')
 	# build XML document to represent the new key
 	xml_doc = xml.dom.minidom.getDOMImplementation().createDocument(None, 'PionConfig', None)
 	key_tag = xml_doc.createElement('Key');
