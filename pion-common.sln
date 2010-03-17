@@ -1,6 +1,5 @@
-
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-common", "common\src\pion-common.vcproj", "{EB961393-6495-4DD0-BF17-3ECA01C0BF00}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PionCommonUnitTests", "common\tests\PionCommonUnitTests.vcproj", "{2CC83526-B419-45E1-A692-6DEA0CD56292}"
