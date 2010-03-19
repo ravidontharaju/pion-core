@@ -1037,7 +1037,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
-				case Voacbulary::TYPE_ZBLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringExactMatch comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
