@@ -1037,6 +1037,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Voacbulary::TYPE_ZBLOB:
 				{
 					CompareStringExactMatch comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1057,6 +1058,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringContains comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1077,6 +1079,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringStartsWith comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1097,6 +1100,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringEndsWith comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1117,6 +1121,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringOrderedBefore comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1137,6 +1142,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringOrderedAfter comparison_func(m_str_value);
 					result = checkComparison(comparison_func, values_range);
@@ -1157,6 +1163,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_LONG_STRING:
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
+				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringRegex comparison_func(m_regex);
 					result = checkComparison(comparison_func, values_range);
