@@ -31,21 +31,28 @@ pion.widgets.Wizard.checkLicenseKey = function() {
 		putData: key,
 		load: function(response) {
 			pion.key_service_running = true;
-			var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
-			if (dojo.indexOf(products, requested_product) == -1) {
-				dojo.byId('result_of_submitting_key').innerHTML = 'Error: Key not valid for ' + requested_product + '.';
-			} else {
-				if (dojo.indexOf(products, 'Pion Replay') != -1) {
-					pion.updateLicenseState('replay');
-				} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
-					pion.updateLicenseState('enterprise');
+			pion.about.checkKeyStatusDfd()
+			.addCallback(function(license_key_type) {
+				if (license_key_type == 'invalid') {
+					dojo.byId('result_of_submitting_key').innerHTML = 'Invalid license key (may have expired).';
 				} else {
-					pion.updateLicenseState('lite');
+					var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
+					if (dojo.indexOf(products, requested_product) == -1) {
+						dojo.byId('result_of_submitting_key').innerHTML = 'Error: Key not valid for ' + requested_product + '.';
+					} else {
+						if (dojo.indexOf(products, 'Pion Replay') != -1) {
+							pion.updateLicenseState('replay');
+						} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+							pion.updateLicenseState('enterprise');
+						} else {
+							pion.updateLicenseState('lite');
+						}
+						dojo.byId('license_key_text_area').value = '';
+						pion.widgets.Wizard.prepareLicensePane();
+						dijit.byId('wizard').selectChild(dijit.byId('license_acceptance_pane'));
+					}
 				}
-				dojo.byId('license_key_text_area').value = '';
-				pion.widgets.Wizard.prepareLicensePane();
-				dijit.byId('wizard').selectChild(dijit.byId('license_acceptance_pane'));
-			}
+			});
 			return response;
 		},
 		error: function(response, ioArgs) {

@@ -48,29 +48,38 @@ dojo.declare("pion.widgets.LicenseKeyDialog",
 				putData: key,
 				load: function(response){
 					pion.key_service_running = true;
-					var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
-
-					if (_this.requested_product) {
-						if (dojo.indexOf(products, _this.requested_product) == -1) {
-							_this.result_of_submitting_key_2.innerHTML = 'Error: Key not valid for ' + _this.requested_product + '.';
+					pion.about.checkKeyStatusDfd()
+					.addCallback(function(license_key_type) {
+						if (license_key_type == 'invalid') {
+							_this.result_of_submitting_key_2.innerHTML = 'Invalid license key (may have expired).';
 
 							// Return without callback, because dialog will stay open.
-							return response;
+						} else {
+							var products = dojo.map(response.getElementsByTagName('Product'), function(p) { return dojox.xml.parser.textContent(p) });
+
+							if (_this.requested_product) {
+								if (dojo.indexOf(products, _this.requested_product) == -1) {
+									_this.result_of_submitting_key_2.innerHTML = 'Error: Key not valid for ' + _this.requested_product + '.';
+
+									// Return without callback, because dialog will stay open.
+									return response;
+								}
+							}
+
+							if (dojo.indexOf(products, 'Pion Replay') != -1) {
+								pion.updateLicenseState('replay');
+							} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
+								pion.updateLicenseState('enterprise');
+							} else {
+								pion.updateLicenseState('lite');
+							}
+
+							if (_this.callback) {
+								_this.callback(true);
+							}
+							_this.hide();
 						}
-					}
-
-					if (dojo.indexOf(products, 'Pion Replay') != -1) {
-						pion.updateLicenseState('replay');
-					} else if (dojo.indexOf(products, 'Pion Enterprise') != -1) {
-						pion.updateLicenseState('enterprise');
-					} else {
-						pion.updateLicenseState('lite');
-					}
-
-					if (_this.callback) {
-						_this.callback(true);
-					}
-					_this.hide();
+					})
 					return response;
 				},
 				error: function(response, ioArgs) {
