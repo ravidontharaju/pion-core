@@ -18,7 +18,6 @@ dojo.declare("pion.widgets.XMLImportDialog",
 		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
-			dojo.connect(this, "hide", this, "destroyRecursive");
 			this.uuid_replacements = {};
 		},
 		enableApply: function() {

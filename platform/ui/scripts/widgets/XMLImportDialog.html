@@ -2,35 +2,37 @@
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Import XML Configuration</span>
 	</div>
-	<div style="padding: 10px">
-		Enter XML configurations for one or more Reactors, Connections, Codecs or Databases below.
-		The set of components and their references to other components must be complete.
-		For example, if you include the following Reactor configuration: 
-		<pre>
-	&lt;Reactor id="11111111-2222-3333-4444-555555555555"&gt;
-		...
-		&lt;Codec&gt;22222222-3333-4444-5555-666666666666&lt;/Codec&gt;
-		...
-	&lt;/Reactor&gt;
-		</pre>
-		then you must also include the following Codec configuration:
-		<pre>
-	&lt;Codec id="22222222-3333-4444-5555-666666666666"&gt;
-		...
-	&lt;/Codec&gt;
-		</pre>
-		A configuration need not specify its own UUID if no other included configuration needs to refer to it.
-		New UUIDs will be assigned for all included components, with all specified relationships preserved.
-	</div>
-	<div class="dijitDialogPaneContent">
-		<textarea dojoAttachPoint="XML_text_area" style="width: 100%" rows="8" dojoAttachEvent="oninput: enableApply, onkeydown: enableApply"></textarea>
-	</div>
-	<div class="dijitDialogPaneContent">
-		<textarea dojoAttachPoint="result_text_area" style="width: 100%" rows="8" disabled="true" wrap="off"></textarea>
-	</div>
-	<div class="save_cancel_delete">
-		<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: applyXML"
-				dojoAttachPoint="apply_button" disabled="true">Apply</button>
-		<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: hide">Exit</button>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<div style="padding: 10px">
+			Enter XML configurations for one or more Reactors, Connections, Codecs or Databases below.
+			The set of components and their references to other components must be complete.
+			For example, if you include the following Reactor configuration: 
+			<pre>
+		&lt;Reactor id="11111111-2222-3333-4444-555555555555"&gt;
+			...
+			&lt;Codec&gt;22222222-3333-4444-5555-666666666666&lt;/Codec&gt;
+			...
+		&lt;/Reactor&gt;
+			</pre>
+			then you must also include the following Codec configuration:
+			<pre>
+		&lt;Codec id="22222222-3333-4444-5555-666666666666"&gt;
+			...
+		&lt;/Codec&gt;
+			</pre>
+			A configuration need not specify its own UUID if no other included configuration needs to refer to it.
+			New UUIDs will be assigned for all included components, with all specified relationships preserved.
+		</div>
+		<div class="dijitDialogPaneContent">
+			<textarea dojoAttachPoint="XML_text_area" style="width: 100%" rows="8" dojoAttachEvent="oninput: enableApply, onkeydown: enableApply"></textarea>
+		</div>
+		<div class="dijitDialogPaneContent">
+			<textarea dojoAttachPoint="result_text_area" style="width: 100%" rows="8" disabled="true" wrap="off"></textarea>
+		</div>
+		<div class="save_cancel_delete">
+			<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: applyXML"
+					dojoAttachPoint="apply_button" disabled="true">Apply</button>
+			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Exit</button>
+		</div>
 	</div>
 </div>
