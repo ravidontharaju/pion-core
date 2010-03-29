@@ -224,7 +224,7 @@ void TransformReactor::process(const EventPtr& e)
 		// Likely Boost.regex throw
 		if (getReactionEngine().getDebugMode())		// Are we in debug mode?
 			stop();									// Yes: stop the reactor
-		throw;										// Continue throw to log error
+		throw TransformFailureException(getId());	// Continue throw to log error
 	}
 
 	deliverEvent(new_e);			// Deliver the modified event

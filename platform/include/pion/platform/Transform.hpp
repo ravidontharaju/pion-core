@@ -54,7 +54,14 @@ public:
 	class RegexFailure : public PionException {
 	public:
 		RegexFailure(const std::string& what)
-			: PionException("Transformation failed: ", what) {}
+			: PionException("Regex replace failed: ", what) {}
+	};
+
+	/// exception thrown if AssignValue catches an exception
+	class ValueAssignmentException : public PionException {
+	public:
+		ValueAssignmentException(const std::string& value)
+			: PionException("AssignValue failed for value: ", value) {}
 	};
 
 //	mutable PionLogger			m_logger;
@@ -136,50 +143,54 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	if (value.empty())		// New shortcut -- if empty value, don't assign
 	  return true;
 
-	switch (term.term_type) {
-		case Vocabulary::TYPE_NULL:
-		case Vocabulary::TYPE_OBJECT:
-			return false;				// No assignment -- not assignable type...
-			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
-			e->setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value));
-			break;
-		case Vocabulary::TYPE_INT64:
-			e->setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value));
-			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
-			e->setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value));
-			break;
-		case Vocabulary::TYPE_UINT64:
-			e->setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
-			break;
-		case Vocabulary::TYPE_FLOAT:
-			e->setFloat(term.term_ref, boost::lexical_cast<float>(value));
-			break;
-		case Vocabulary::TYPE_DOUBLE:
-			e->setDouble(term.term_ref, boost::lexical_cast<double>(value));
-			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
-			e->setLongDouble(term.term_ref, boost::lexical_cast<long double>(value));
-			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
-		case Vocabulary::TYPE_BLOB:
-		case Vocabulary::TYPE_ZBLOB:
-			e->setString(term.term_ref, value);
-			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
-			// FIXME: This needs a time_facet...
-			e->setDateTime(term.term_ref, boost::lexical_cast<PionDateTime>(value));
-			break;
+	try {
+		switch (term.term_type) {
+			case Vocabulary::TYPE_NULL:
+			case Vocabulary::TYPE_OBJECT:
+				return false;				// No assignment -- not assignable type...
+				break;
+			case Vocabulary::TYPE_INT8:
+			case Vocabulary::TYPE_INT16:
+			case Vocabulary::TYPE_INT32:
+				e->setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value));
+				break;
+			case Vocabulary::TYPE_INT64:
+				e->setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value));
+				break;
+			case Vocabulary::TYPE_UINT8:
+			case Vocabulary::TYPE_UINT16:
+			case Vocabulary::TYPE_UINT32:
+				e->setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value));
+				break;
+			case Vocabulary::TYPE_UINT64:
+				e->setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
+				break;
+			case Vocabulary::TYPE_FLOAT:
+				e->setFloat(term.term_ref, boost::lexical_cast<float>(value));
+				break;
+			case Vocabulary::TYPE_DOUBLE:
+				e->setDouble(term.term_ref, boost::lexical_cast<double>(value));
+				break;
+			case Vocabulary::TYPE_LONG_DOUBLE:
+				e->setLongDouble(term.term_ref, boost::lexical_cast<long double>(value));
+				break;
+			case Vocabulary::TYPE_SHORT_STRING:
+			case Vocabulary::TYPE_STRING:
+			case Vocabulary::TYPE_LONG_STRING:
+			case Vocabulary::TYPE_CHAR:
+			case Vocabulary::TYPE_BLOB:
+			case Vocabulary::TYPE_ZBLOB:
+				e->setString(term.term_ref, value);
+				break;
+			case Vocabulary::TYPE_DATE_TIME:
+			case Vocabulary::TYPE_DATE:
+			case Vocabulary::TYPE_TIME:
+				// FIXME: This needs a time_facet...
+				e->setDateTime(term.term_ref, boost::lexical_cast<PionDateTime>(value));
+				break;
+		}
+	} catch (...) {
+		throw Transform::ValueAssignmentException(value);
 	}
 	return true;
 }

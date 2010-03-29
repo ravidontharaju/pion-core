@@ -90,6 +90,13 @@ public:
 			: PionException("TransformReactor configuration is missing the set term identifier: ", reactor_id) {}
 	};
 
+	/// exception thrown if an exception is caught from transform()
+	class TransformFailureException : public PionException {
+	public:
+		TransformFailureException(const std::string& reactor_id)
+			: PionException("Transformation failed: ", reactor_id) {}
+	};
+
 	/// constructs a new TransformReactor object
 	TransformReactor(void) :
 		Reactor(TYPE_PROCESSING),
