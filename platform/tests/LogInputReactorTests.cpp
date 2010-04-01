@@ -701,6 +701,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
 	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE + num_lines_in_new_input_log_file, 2);
 
+	// Wait 1.5 seconds, to give the LogInputReactor a chance to update the history cache.
+	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
+	PionScheduler::sleep(0, 1500000000);
+
 	// Confirm that the history cache exists and has the expected two log files and no others.
 	history_cache.clear();
 	history_cache.open(history_cache_filename.c_str());
