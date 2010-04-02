@@ -1,3 +1,14 @@
+Version 3.0.5 (2010-04-02)
+==========================
+
+* String comparisons did not work on zblob type terms (888)
+* Wizard does not reject expired license keys (893)
+* FissionReactor - CopyAllTerms option (903)
+* Import XML locks UI if window is too short (892)
+* reactors.xml does not have line feeds atfer wizard completes (896)
+* Windows - run Pion as application instead of service (898)
+
+
 Version 3.0.3 (2010-03-12)
 ==========================
 
