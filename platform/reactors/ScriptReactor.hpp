@@ -204,6 +204,8 @@ private:
 		using boost::iostreams::file_descriptor::close;
 		using boost::iostreams::file_descriptor::handle;
 		explicit winpipe_handle_source(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+		winpipe_handle_source(const winpipe_handle_source& w) :
+			boost::iostreams::file_descriptor(static_cast<const boost::iostreams::file_descriptor&>(w)) { }
 	};
 
 	struct winpipe_handle_sink : private boost::iostreams::file_descriptor {
@@ -218,6 +220,8 @@ private:
 		using boost::iostreams::file_descriptor::close;
 		using boost::iostreams::file_descriptor::handle;
 		explicit winpipe_handle_sink(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+		winpipe_handle_sink(const winpipe_handle_sink& w) :
+			boost::iostreams::file_descriptor(static_cast<const boost::iostreams::file_descriptor&>(w)) { }
 	};
 
 	/// data types for iostreams streambufs that use Windows pipe file-handles
