@@ -87,7 +87,8 @@ public:
 
 	/// constructs a new FissionReactor object
 	FissionReactor(void)
-		: Reactor(TYPE_PROCESSING), m_input_event_type(""), m_input_event_term("")
+		: Reactor(TYPE_PROCESSING), m_copy_all_terms(false),
+		m_input_event_type(""), m_input_event_term("")
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -137,6 +138,9 @@ private:
 	/// name of the CopyTerm element for Pion XML config files
 	static const std::string			COPY_TERM_ELEMENT_NAME;
 
+	/// name of the CopyAllTerms element for Pion XML config files
+	static const std::string			COPY_ALL_TERMS_ELEMENT_NAME;
+
 	/// name of the InputEventType element for Pion XML config files
 	static const std::string			INPUT_EVENT_TYPE_ELEMENT_NAME;
 
@@ -146,6 +150,9 @@ private:
 	/// name of the Codec element for Pion XML config files
 	static const std::string			CODEC_ELEMENT_NAME;
 
+
+	/// if true, copy all terms from the original event into derived events
+	bool								m_copy_all_terms;
 
 	/// terms from the original event that should be copied into derived events
 	TermVector							m_copy_terms;

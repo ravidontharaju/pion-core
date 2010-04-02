@@ -33,6 +33,7 @@ namespace plugins {		// begin namespace plugins
 // static members of FissionReactor
 	
 const std::string			FissionReactor::COPY_TERM_ELEMENT_NAME = "CopyTerm";
+const std::string			FissionReactor::COPY_ALL_TERMS_ELEMENT_NAME = "CopyAllTerms";
 const std::string			FissionReactor::INPUT_EVENT_TYPE_ELEMENT_NAME = "InputEventType";
 const std::string			FissionReactor::INPUT_EVENT_TERM_ELEMENT_NAME = "InputEventTerm";
 const std::string			FissionReactor::CODEC_ELEMENT_NAME = "Codec";
@@ -107,6 +108,16 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);	
 	PION_ASSERT(m_codec_ptr);
 	codec_lock.unlock();
+
+	// check if we should copy all terms from original event
+	m_copy_all_terms = false;
+	std::string copy_all_terms_str;
+	if (ConfigManager::getConfigOption(COPY_ALL_TERMS_ELEMENT_NAME,
+									   copy_all_terms_str, config_ptr))
+	{
+		if (copy_all_terms_str == "true")
+			m_copy_all_terms = true;
+	}
 
 	// get list of terms to copy from original event
 	m_copy_terms.clear();
@@ -188,7 +199,11 @@ void FissionReactor::process(const EventPtr& e)
 					break;
 
 				// copy terms from original event ?
-				if (! m_copy_terms.empty() ) {
+				if (m_copy_all_terms) {
+					// copy all terms from original event
+					*new_ptr += *e;
+				} else if (! m_copy_terms.empty() ) {
+					// copy some terms from original event
 					for (TermVector::const_iterator term_it = m_copy_terms.begin();
 						term_it != m_copy_terms.end(); ++term_it)
 					{
