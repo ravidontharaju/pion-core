@@ -38,8 +38,6 @@ or IE7) and point it to the following URL:
 http://localhost:8888
 
 This will open the Pion user interface to the "Reactors configuration" page.
-For an intro to Pion's user interface, please see the online tour at:
-http://www.pion.org/projects/pion-platform/tour
 
 To stop Pion, type Ctrl-C if it is running in the foreground, or
 "killall pion" if it is running in the background.

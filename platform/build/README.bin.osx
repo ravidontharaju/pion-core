@@ -30,8 +30,6 @@ Once the server is running, open your (Firefox or Safari) web browser and
 point it to the following URL:  http://localhost:8888
 
 This will open the Pion user interface to the "Reactors configuration" page.
-For an intro to Pion's user interface, please see the online tour at:
-http://www.pion.org/projects/pion-platform/tour
 
 This release has the following limitations:
 
