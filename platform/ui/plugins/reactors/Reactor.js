@@ -77,7 +77,8 @@ dojo.declare("plugins.reactors.Reactor",
 			// Add a context menu for the new reactor.
 			var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
-			menu.addChild(new dijit.MenuItem({ label: "Show XML", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Show config", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Show stats", onClick: function(){_this.showQueryResult();} }));
 			menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 
 			dojo.connect(this.domNode, 'dblclick', function(event) {
