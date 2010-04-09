@@ -178,6 +178,7 @@ pion.widgets.Wizard.checkOmnitureConfig = function() {
 		return 'You must specify a Host.';
 	if (pion.wizard.omniture_report_suite == '')
 		return 'You must specify a Report Suite.';
+	pion.wizard.strip_client_ip = dijit.byId('omniture_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
@@ -189,6 +190,7 @@ pion.widgets.Wizard.checkWebtrendsConfig = function() {
 		return 'You must specify an Account ID.';
 	if (pion.wizard.webtrends_host == '')
 		return 'You must specify a Host.';
+	pion.wizard.strip_client_ip = dijit.byId('webtrends_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
@@ -197,6 +199,7 @@ pion.widgets.Wizard.checkGoogleConfig = function() {
 	pion.wizard.google_account_id = dojo.trim(dijit.byId('google_account_id').attr('value'));
 	if (pion.wizard.google_account_id == '')
 		return 'You must specify an Account ID.';
+	pion.wizard.strip_client_ip = dijit.byId('google_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }
@@ -208,6 +211,7 @@ pion.widgets.Wizard.checkUnicaConfig = function() {
 		return 'You must specify a Site.';
 	if (pion.wizard.unica_host == '')
 		return 'You must specify a Host.';
+	pion.wizard.strip_client_ip = dijit.byId('unica_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
 }

@@ -27644,6 +27644,7 @@ return "You must specify a Host.";
 if(pion.wizard.omniture_report_suite==""){
 return "You must specify a Report Suite.";
 }
+pion.wizard.strip_client_ip = dijit.byId("omniture_strip_cip_checkbox").attr("checked")?"true":"false";
 pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
@@ -27656,6 +27657,7 @@ return "You must specify an Account ID.";
 if(pion.wizard.webtrends_host==""){
 return "You must specify a Host.";
 }
+pion.wizard.strip_client_ip = dijit.byId("webtrends_strip_cip_checkbox").attr("checked")?"true":"false";
 pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
@@ -27664,6 +27666,7 @@ pion.wizard.google_account_id=dojo.trim(dijit.byId("google_account_id").attr("va
 if(pion.wizard.google_account_id==""){
 return "You must specify an Account ID.";
 }
+pion.wizard.strip_client_ip = dijit.byId("google_strip_cip_checkbox").attr("checked")?"true":"false";
 pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
@@ -27676,6 +27679,7 @@ return "You must specify a Site.";
 if(pion.wizard.unica_host==""){
 return "You must specify a Host.";
 }
+pion.wizard.strip_client_ip = dijit.byId("unica_strip_cip_checkbox").attr("checked")?"true":"false";
 pion.wizard.selectChild(dijit.byId("capture_devices_pane"));
 return false;
 };
@@ -28203,16 +28207,16 @@ session_group_config+="</SessionGroup>";
 }
 _1a87.push({label:"clickstream",url:"/resources/ClickstreamTemplate.tmpl",substitutions:{SessionGroupConfig:session_group_config}});
 if(pion.wizard.analytics_provider=="Omniture"){
-var _1a92="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<StripClientIP>false</StripClientIP>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
+var _1a92="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
 if(pion.wizard.analytics_provider=="Webtrends"){
-var _1a92="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Webtrends Analytics</Name>"+"<AccountId>"+pion.wizard.webtrends_account_id+"</AccountId>"+"<HttpHost>"+pion.wizard.webtrends_host+"</HttpHost>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>false</StripClientIP>";
+var _1a92="<Plugin>WebTrendsAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Webtrends Analytics</Name>"+"<AccountId>"+pion.wizard.webtrends_account_id+"</AccountId>"+"<HttpHost>"+pion.wizard.webtrends_host+"</HttpHost>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>";
 }else{
 if(pion.wizard.analytics_provider=="Google"){
-var _1a92="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>false</StripClientIP>";
+var _1a92="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>";
 }else{
 if(pion.wizard.analytics_provider=="Unica"){
-var _1a92="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<HttpHost>"+pion.wizard.unica_host+"</HttpHost>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>false</StripClientIP>";
+var _1a92="<Plugin>UnicaAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Unica OnDemand</Name>"+"<HttpHost>"+pion.wizard.unica_host+"</HttpHost>"+"<AccountId>"+pion.wizard.unica_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>";
 }else{
 }
 }
