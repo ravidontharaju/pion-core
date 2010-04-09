@@ -208,7 +208,7 @@ p.hidden {
 #counterBackground {
 	position:absolute;
 	top: 121px;
-	left: 221px;
+	left: 239px;
 	z-index: 3;
 	background: #4a4a4a;
 	width: 350px;
@@ -588,14 +588,11 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 /* Sidebar */
 
 #side {
-	width: 172px;
+	width: 189px;
 	float: left;
 	margin: 0 auto 0 20px;
 	padding: 10px 0 0 0;
 }
-
-
-
 
 .sidebarInstructions {
 	line-height: 150%;
@@ -626,6 +623,10 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	padding-left: 5px;
 	margin: 0px;
 	border-bottom: 0px;
+}
+
+#sidebarMain {
+	overflow: hidden;
 }
 
 #sidebarMain .collectionHeader {
