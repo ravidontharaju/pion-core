@@ -362,6 +362,8 @@ function popitup(url) {
 			<br>
 			Report Suite: 
 			<input dojoType="dijit.form.TextBox" id="omniture_report_suite" style="width: 50%;" />
+			<br/>
+			<input id='omniture_strip_cip_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" value="StripClientIP" /> Remove client IP addresses
 			<p><em>Please note:</em> If you are an existing Omniture customer, please create a <em>new</em>
 				report suite to use with Pion.  Your traffic may be double-counted when using both
 				Pion and Omniture's page tags to populate the same report suite.</p>
@@ -400,6 +402,8 @@ function popitup(url) {
 			<br/>
 			Host: 
 			<input dojoType="dijit.form.TextBox" id="webtrends_host" style="width: 50%;" />
+			<br/>
+			<input id='webtrends_strip_cip_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" value="StripClientIP" /> Remove client IP addresses
 			<p><em>Please note:</em> If you are an existing Webtrends customer, please create a <em>new</em>
 				report suite to use with Pion.  Your traffic may be double-counted when using both
 				Pion and Webtrend's page tags to populate the same report suite.</p>
@@ -433,9 +437,11 @@ function popitup(url) {
 			<div class="wizard_content">
 			<h1>Connect to Your Web Analytics Provider</h1>
 			<h2>Please enter your Google account information (required)</h2>
-			Account ID: 
+			Web Property ID: 
 			<input dojoType="dijit.form.TextBox" id="google_account_id" style="width: 50%;" />
 			e.g. UA-123456-0
+			<br/>
+			<input id='google_strip_cip_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" value="StripClientIP" /> Remove client IP addresses
 			<p><em>Please note:</em> If you are an existing Google Analytics customer, please create a <em>new</em>
 				report suite to use with Pion.  Your traffic may be double-counted when using both
 				Pion and Google's page tags to populate the same report suite.</p>
@@ -475,6 +481,8 @@ function popitup(url) {
 			Unica Host: 
 			<input dojoType="dijit.form.TextBox" id="unica_host" style="width: 50%;" />
 			e.g. http://myaccount.unica.com/
+			<br/>
+			<input id='unica_strip_cip_checkbox' dojoType="dijit.form.CheckBox" type="checkBox" value="StripClientIP" /> Remove client IP addresses
 			<p><em>Please note:</em> If you are an existing Unica customer, please create a <em>new</em>
 				report suite to use with Pion.  Your traffic may be double-counted when using both
 				Pion and Unica's page tags to populate the same report suite.</p>
