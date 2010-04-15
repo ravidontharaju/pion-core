@@ -28028,22 +28028,24 @@ var user_config_page_initialized=false;
 var system_config_page_initialized=false;
 var file_protocol=false;
 var firefox_on_mac;
+dojo.declare("pion.DeleteConfirmationDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog delete_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Delete Confirmation</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><img src=\"images/pion-alert.png\" width=\"66\" height=\"60\" alt=\"Alert\" class=\"alert\"\r\n\t\t><div id=\"are_you_sure\" class=\"warning_text\"></div\r\n\t\t><div class=\"save_cancel_delete\"\r\n\t\t\t><button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick: onCancel\">Cancel</button\r\n\t\t\t><button dojoType=dijit.form.Button class=\"delete\" dojoAttachPoint=\"delete_button\">Delete</button\r\n\t\t></div\r\n\t></div>\r\n</div>\r\n",postMixInProperties:function(){
+this.inherited("postMixInProperties",arguments);
+if(this.templatePath){
+this.templateString="";
+}
+},widgetsInTemplate:true});
 pion.doDeleteConfirmationDialog=function(_1a51,_1a52,_1a53){
 var _1a54=pion.delete_confirmation_dialog;
 if(!_1a54){
-_1a54=new dijit.Dialog({title:"Delete Confirmation",content:"<div id=\"are_you_sure\"></div>"+"<button id=\"cancel_delete\" dojoType=\"dijit.form.Button\" class=\"cancel\">Cancel</button>"+"<button id=\"confirm_delete\" dojoType=dijit.form.Button class=\"delete\">Delete</button>"});
-dojo.byId("cancel_delete").onclick=function(){
-_1a54.onCancel();
-};
+_1a54=new pion.DeleteConfirmationDialog();
 pion.delete_confirmation_dialog=_1a54;
 }
 dojo.byId("are_you_sure").innerHTML=_1a51;
-dojo.byId("confirm_delete").onclick=function(){
+_1a54.delete_button.onClick=function(){
 _1a54.onCancel();
 _1a52(_1a53);
 };
 _1a54.show();
-setTimeout("dijit.byId('cancel_delete').focus()",500);
 };
 pion.initOptionalValue=function(store,item,_1a57,_1a58,_1a59){
 if(store.hasAttribute(item,_1a58)){

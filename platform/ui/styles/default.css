@@ -1116,6 +1116,26 @@ I don't think this is being used anywhere.
 	/*border: 1px dashed #666666 !important;*/
 }
 
+/***************************************************************************************************************************/
+/* Before changing any of these .delete_dialog rules, make sure the results look right on both FF and IE for at least the  */
+/* following four cases: deleting a connection, deleting a reactor, deleting a workspace and re-running the wizard.        */
+
+.delete_dialog img.alert {
+	float: left;
+	padding-right: 20px;
+	padding-bottom: 10px;
+}
+
+.delete_dialog .warning_text {
+	padding-top: 10px;
+	padding-bottom: 10px;	
+}
+
+.delete_dialog .save_cancel_delete {
+	width: 270px; /* This ensures that the dialog is wide enough that the buttons won't wrap around due to the alert icon. */
+}
+/***************************************************************************************************************************/
+
 
 /* Styles affecting all Config Panes */
 /* TODO: Add new class config_pane and refactor all the rules common to 
