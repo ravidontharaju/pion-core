@@ -137,28 +137,67 @@ pion.applyTemplatesIfNeeded = function(wizard_config) {
 	var _this = this;
 	dojo.forEach(wizard_config.templates, function(template) {
 		var index = dojo.indexOf(labels, template.label);
-		dojo.xhrGet({
-			url: template.url,
-			handleAs: 'text',
-			timeout: 20000,
-			load: function(response) {
-				var transformed_template = dojo.string.substitute(
-					response,
-					template.substitutions
-				);
 
-				// This strips out EOL characters that can wreak havoc later when attempting to update a config.
-				// These can come both from the template file and from dojo.string.substitute().
-				var trimmed_XML = transformed_template.replace(/>\s*/g, '>');
+		if (template.is_json) {
+			dojo.xhrGet({
+				url: '/resources/' + template.plugin + '.json',
+				handleAs: 'json',
+				timeout: 20000,
+				load: function(response) {
+					var xml_config = '<Plugin>' + template.plugin + '</Plugin>';
+					dojo.forEach(response.required_input, function(name) {
+						xml_config += '<' + name + '>' + template.substitutions[name] + '</' + name + '>';
+					});
+					for (var name in response.option_defaults) {
+						if (dojo.indexOf(response.required_input, name) == -1) {
+							xml_config += '<' + name + '>' + response.option_defaults[name] + '</' + name + '>';
+						}
+					}
+					for (var name in response.value_defaults) {
+						if (dojo.indexOf(response.required_input, name) == -1) {
+							xml_config += '<' + name + '>' + response.value_defaults[name] + '</' + name + '>';
+						}
+					}
+					for (var tag in response.multivalued_defaults) {
+						var identifier = response.multivalued_defaults[tag].identifier;
+						var data = response.multivalued_defaults[tag].data;
+						for (var key in data) {
+							xml_config += '<' + tag + ' ' + identifier + '="' + key + '">' + data[key] + '</' + tag + '>';
+						}
+					}
 
-				wizard_config.reactors[index].config += trimmed_XML;
-				if (++num_templates_applied == wizard_config.templates.length) {
-					dfd.callback(wizard_config);
-				}
-				return response;
-			},
-			error: pion.handleXhrGetError
-		});
+					wizard_config.reactors[index].config += xml_config;
+					if (++num_templates_applied == wizard_config.templates.length) {
+						dfd.callback(wizard_config);
+					}
+					return response;
+				},
+				error: pion.handleXhrGetError
+			});
+		} else {
+			dojo.xhrGet({
+				url: template.url,
+				handleAs: 'text',
+				timeout: 20000,
+				load: function(response) {
+					var transformed_template = dojo.string.substitute(
+						response,
+						template.substitutions
+					);
+
+					// This strips out EOL characters that can wreak havoc later when attempting to update a config.
+					// These can come both from the template file and from dojo.string.substitute().
+					var trimmed_XML = transformed_template.replace(/>\s*/g, '>');
+
+					wizard_config.reactors[index].config += trimmed_XML;
+					if (++num_templates_applied == wizard_config.templates.length) {
+						dfd.callback(wizard_config);
+					}
+					return response;
+				},
+				error: pion.handleXhrGetError
+			});
+		}
 	});
 
 	return dfd;
@@ -357,16 +396,21 @@ pion.wizardDone = function(exit_early) {
 			'<Query name="timestamp">[computed]</Query>' +
 			'<Query name="reportSuiteID">[computed]</Query>';
 	} else if (pion.wizard.analytics_provider == 'Webtrends') {
-		var analytics_config =
-			'<Plugin>WebTrendsAnalyticsReactor</Plugin>' + 
-			'<X>250</X>' +
-			'<Y>300</Y>' +
-			'<Name>Webtrends Analytics</Name>' +
-			'<AccountId>' + pion.wizard.webtrends_account_id + '</AccountId>' +
-			'<HttpHost>' + pion.wizard.webtrends_host + '</HttpHost>' +
-			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>' +
-			'<StripClientIP>' + pion.wizard.strip_client_ip + '</StripClientIP>';
+		// The remainder will be added in pion.applyTemplatesIfNeeded().
+		var analytics_config = 
+			'<X>250</X>' + 
+			'<Y>300</Y>';
+
+		templates.push({
+			label: 'analytics',
+			is_json: true,
+			plugin: 'WebTrendsAnalyticsReactor',
+			substitutions: {
+				AccountId: pion.wizard.webtrends_account_id,
+				HttpHost: pion.wizard.webtrends_host,
+				StripClientIP: pion.wizard.strip_client_ip
+			}
+		});
 	} else if (pion.wizard.analytics_provider == 'Google') {
 		var analytics_config =
 			'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
@@ -378,16 +422,21 @@ pion.wizardDone = function(exit_early) {
 			'<EncryptConnections>false</EncryptConnections>' +
 			'<StripClientIP>' + pion.wizard.strip_client_ip + '</StripClientIP>';
 	} else if (pion.wizard.analytics_provider == 'Unica') {
-		var analytics_config =
-			'<Plugin>UnicaAnalyticsReactor</Plugin>' + 
-			'<X>250</X>' +
-			'<Y>300</Y>' +
-			'<Name>Unica OnDemand</Name>' +
-			'<HttpHost>' + pion.wizard.unica_host + '</HttpHost>' +
-			'<AccountId>' + pion.wizard.unica_account_id + '</AccountId>' +
-			'<NumConnections>32</NumConnections>' +
-			'<EncryptConnections>false</EncryptConnections>' +
-			'<StripClientIP>' + pion.wizard.strip_client_ip + '</StripClientIP>';
+		// The remainder will be added in pion.applyTemplatesIfNeeded().
+		var analytics_config = 
+			'<X>250</X>' + 
+			'<Y>300</Y>';
+
+		templates.push({
+			label: 'analytics',
+			is_json: true,
+			plugin: 'UnicaAnalyticsReactor',
+			substitutions: {
+				AccountId: pion.wizard.unica_account_id,
+				HttpHost: pion.wizard.unica_host,
+				StripClientIP: pion.wizard.strip_client_ip
+			}
+		});
 	} else {
 		// TODO:
 	}
