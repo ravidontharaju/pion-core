@@ -1,0 +1,51 @@
+{
+	required_input: [
+		'AccountId',
+		'HttpHost',
+		'StripClientIP'
+	],
+	option_defaults: {
+		EncryptConnections: false,
+		StripClientIP: false
+	},
+	value_defaults: {
+		Name: 'Unica OnDemand',
+		HttpHost: 'myaccount.unica.com',
+		NumConnections: 32
+	},
+	multivalued_defaults: {
+		Query: {
+			identifier: 'name',
+			data: {
+				site: '[computed]',
+				js: '[computed]',
+				jv: '[computed]',
+				lc: '[computed]',
+				ts: '[computed]',
+				rf: 'urn:vocab:clickstream#referer',
+				rs: '[computed]',
+				ln: '[computed]',
+				tz: '[computed]',
+				quri: 'urn:vocab:clickstream#uri-stem',
+				query: 'urn:vocab:clickstream#uri-query',
+				cookie: 'urn:vocab:clickstream#cookie',
+				setcookie: 'urn:vocab:clickstream#set-cookie',
+				pagename: 'urn:vocab:clickstream#page-title',
+				server: 'urn:vocab:clickstream#s-ip',
+				clip: '[computed]'
+			}
+		}
+	},
+	computable_queries: [
+		'site',
+		'js',
+		'jv',
+		'lc',
+		'ts',
+		'rs',
+		'ln',
+		'tz',
+		'clip'
+	]
+}
+ 

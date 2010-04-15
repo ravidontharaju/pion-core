@@ -1,0 +1,35 @@
+{
+	required_input: [
+		'AccountId',
+		'HttpHost',
+		'StripClientIP'
+	],
+	option_defaults: {
+		EncryptConnections: false,
+		StripClientIP: false
+	},
+	value_defaults: {
+		Name: 'Webtrends Analytics',
+		NumConnections: 32
+	},
+	multivalued_defaults: {
+		Query: {
+			identifier: 'name',
+			data: {
+				dcsuri: 'urn:vocab:clickstream#uri-stem',
+				dcsqry: 'urn:vocab:clickstream#uri-query',
+				dcscip: '[computed]',
+				dcssip: 'urn:vocab:clickstream#s-ip',
+				dcsbyt: 'urn:vocab:clickstream#useragent',
+				dcsref: 'urn:vocab:clickstream#referer',
+				'WT.ti': 'urn:vocab:clickstream#page-title',
+				'WT.co_f': 'urn:vocab:clickstream#visitor-id',
+				'WT.vtid': 'urn:vocab:clickstream#visitor-id',
+				'WT.vtvs': 'urn:vocab:clickstream#epoch-time'
+			}
+		}
+	},
+	computable_queries: [
+		'dcscip'
+	]
+}
