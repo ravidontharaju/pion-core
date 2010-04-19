@@ -91,6 +91,7 @@ class TransformReactor      { public: static std::string name() { return "Transf
 class LogInputReactor       { public: static std::string name() { return "LogInputReactor"; } };
 class LogOutputReactor      { public: static std::string name() { return "LogOutputReactor"; } };
 class DatabaseOutputReactor { public: static std::string name() { return "DatabaseOutputReactor"; } };
+class ScriptReactor         { public: static std::string name() { return "ScriptReactor"; } };
 #ifdef PION_HAVE_PYTHON
 class PythonReactor         { public: static std::string name() { return "PythonReactor"; } };
 #endif // PION_HAVE_PYTHON
@@ -101,6 +102,7 @@ typedef boost::mpl::list<
 	, LogInputReactor
 	, LogOutputReactor
 	, DatabaseOutputReactor
+	, ScriptReactor
 #ifdef PION_HAVE_PYTHON
 	, PythonReactor
 #endif // PION_HAVE_PYTHON
