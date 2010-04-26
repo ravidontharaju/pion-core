@@ -20,7 +20,7 @@
 				dcsqry: 'urn:vocab:clickstream#uri-query',
 				dcscip: '[computed]',
 				dcssip: 'urn:vocab:clickstream#s-ip',
-				dcsbyt: 'urn:vocab:clickstream#useragent',
+				dcsbyt: 'urn:vocab:clickstream#cs-bytes',
 				dcsref: 'urn:vocab:clickstream#referer',
 				'WT.ti': 'urn:vocab:clickstream#page-title',
 				'WT.co_f': 'urn:vocab:clickstream#visitor-id',
