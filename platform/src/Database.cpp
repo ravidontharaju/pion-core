@@ -33,12 +33,8 @@ const std::string			Database::INSERT_IGNORE_QUERY_ID = "urn:sql:insert-ignore-ev
 const std::string			Database::BEGIN_QUERY_ID = "urn:sql:begin-transaction";
 const std::string			Database::COMMIT_QUERY_ID = "urn:sql:commit-transaction";
 
-const std::string			Database::TEMPLATE_FILE = "dbengines.xml";
-const std::string			Database::ROOT_ELEMENT_NAME = "DatabaseTemplates";
-const std::string			Database::TEMPLATE_ELEMENT_NAME = "Template";
 const std::string			Database::MAP_ELEMENT_NAME = "TypeMap";
 const std::string			Database::PAIR_ELEMENT_NAME = "Pair";
-const std::string			Database::ENGINE_ELEMENT_NAME = "Engine";
 
 const std::string			Database::CLIENT_ELEMENT_NAME = "Client";
 const std::string			Database::BEGIN_ELEMENT_NAME = "BeginInsert";
@@ -175,11 +171,6 @@ void Database::readConfig(const xmlNodePtr config_ptr, std::string engine_str)
 	// Assume embedded configuration...
 	xmlNodePtr config_detail_ptr = config_ptr;
 
-	// Get ptr to ConfigManager, in order to extract base path to XML
-	DatabaseManager& dbm = getDatabaseManager();
-	std::string templateFile = dbm.resolveRelativePath(TEMPLATE_FILE);
-//	templateFile = TEMPLATE_FILE;
-
 	// If client name is not supplied, use engine name as client name
 	// compatibility for SQLite == SQLite
 	if (m_database_engine.empty())
@@ -189,23 +180,8 @@ void Database::readConfig(const xmlNodePtr config_ptr, std::string engine_str)
 
 	xmlDocPtr template_doc_ptr = NULL;
 	if (! ConfigManager::getConfigOption(CLIENT_ELEMENT_NAME, m_database_client, config_ptr)) {
-		// Client element not found, so we need to get it from the template file.
-		xmlNodePtr template_ptr;
-		if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
-			throw ReadConfigException(templateFile);
-
-		template_ptr = template_ptr->children;
-		std::string		engine_name_str;
-		while (template_ptr) {
-			if ((config_detail_ptr = ConfigManager::findConfigNodeByName(TEMPLATE_ELEMENT_NAME,
-				template_ptr)) != NULL)
-				if (ConfigManager::getConfigOption(ENGINE_ELEMENT_NAME, engine_name_str, config_detail_ptr->children) &&
-					engine_name_str == m_database_engine) {
-					config_detail_ptr = config_detail_ptr->children;
-					break;
-				}
-			template_ptr = template_ptr->next;
-		}
+		if ((template_doc_ptr = getDatabaseManager().getDatabaseEngineConfig(m_database_engine, config_detail_ptr)) == NULL)
+			throw ReadConfigException(getId());
 	}
 	readConfigDetails(config_detail_ptr);
 

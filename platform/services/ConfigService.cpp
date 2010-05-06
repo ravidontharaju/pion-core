@@ -1045,6 +1045,12 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 		ConfigManager::writeEndPionConfigXML(ss);
 
+	} else if (branches.front() == "dbengines") {
+
+		// Send configuration of all database engines.
+
+		getConfig().getDatabaseManager().writeDatabaseEnginesXML(ss);
+
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
