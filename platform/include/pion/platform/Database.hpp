@@ -348,13 +348,8 @@ protected:
 	/// unique identifier used to represent the "commit transaction" query
 	static const std::string				COMMIT_QUERY_ID;
 
-	static const std::string				TEMPLATE_FILE;
-	static const std::string				ROOT_ELEMENT_NAME;
-	static const std::string				TEMPLATE_ELEMENT_NAME;
 	static const std::string				MAP_ELEMENT_NAME;
 	static const std::string				PAIR_ELEMENT_NAME;
-
-	static const std::string				ENGINE_ELEMENT_NAME;
 
 	static const std::string				CLIENT_ELEMENT_NAME;
 	static const std::string				BEGIN_ELEMENT_NAME;

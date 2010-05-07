@@ -103,8 +103,23 @@ public:
 	static xmlNodePtr createDatabaseConfig(const char *buf, std::size_t len) {
 		return ConfigManager::createResourceConfig(DATABASE_ELEMENT_NAME, buf, len);
 	}
-	
-	
+
+	/**
+	 * writes the entire database engines configuration tree to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 */
+	void writeDatabaseEnginesXML(std::ostream& out);
+
+	/**
+	 * gets the configuration for the specified database engine
+	 *
+	 * @param database_engine the name of the database engine
+	 * @param config_detail_ptr XML configuration for the database engine
+	 */
+	xmlDocPtr getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr);
+
+
 protected:
 	
 	/**
@@ -143,6 +158,14 @@ private:
 
 	/// name of the database element for Pion XML config files
 	static const std::string		DATABASE_ELEMENT_NAME;
+
+	/// name of the database engines config file
+	static const std::string		TEMPLATE_FILE;
+
+	/// element names used in database engines config file
+	static const std::string		DBENGINES_ROOT_ELEMENT_NAME;
+	static const std::string		TEMPLATE_ELEMENT_NAME;
+	static const std::string		ENGINE_ELEMENT_NAME;
 
 	/// the default type of database to use if one is not otherwise specified
 	static const std::string		DEFAULT_DATABASE_TYPE;
