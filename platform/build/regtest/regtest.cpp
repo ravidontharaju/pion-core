@@ -7,7 +7,7 @@
 using namespace std;
 using namespace boost;
 
-static string xml_encode(const string& str)
+static string xml_encode(const string& str, bool quot)
 {
 	string result;
 	for (string::size_type pos = 0; pos < str.size(); ++pos) {
@@ -21,10 +21,11 @@ static string xml_encode(const string& str)
 			case '>':
 				result += "&gt;";
 				break;
-/*
 			case '\"':
-				result += "&quot;";
+				if (quot) result += "&quot;";
+				else result += str[pos];
 				break;
+/*
 			case '\'':
 				result += "&apos;";
 				break;
@@ -85,18 +86,19 @@ int main(int argc, char *argv[])
 	}
 
 	for (int rj = 0; rj < ri; rj++) {
+		char rtype = rspecs[rj][0];
 		string regexp = rspecs[rj].substr(1);
 		if (rj > 0) cout << string(40, '=') << endl;
-		cout << rspecs[rj][0] << "REGEX[" << rj << "]: " << regexp << endl;
-		cout << "XMLREG[" << rj << "]: " << xml_encode(regexp) << endl;
+		cout << rtype << "REGEX[" << rj << "]: " << regexp << endl;
+		cout << "XMLREG[" << rj << "]: " << xml_encode(regexp, rtype == 'S') << endl;
 		cout << "FORMAT[" << rj << "]: " << rfrmts[rj] << endl;
-		cout << "XMLFMT[" << rj << "]: " << xml_encode(rfrmts[rj]) << endl;
+		cout << "XMLFMT[" << rj << "]: " << xml_encode(rfrmts[rj], false) << endl;
 		cout << "RESULT[" << rj << "]: ";
 		try {
 			regex rx(regexp);
 			cout << "Valid Regex" << endl;
 			for (int dj = 0; dj < di; dj++) {
-				if (rspecs[rj][0] == 'P') {
+				if (rtype == 'P') {
 					match_results<string::const_iterator> mr;
 					if (regex_search(dlines[dj], mr, rx))
 						dlines[dj] = mr.format(rfrmts[rj], boost::format_all);
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
 					if (!res.empty())
 						dlines[dj] = res;
 					else // EMPTY RESULT
-						if (rspecs[rj][0] == 'R') dlines[dj] = res;
+						if (rtype == 'R') dlines[dj] = res;
 				}
 				cout << dlines[dj] << endl;
 			}
