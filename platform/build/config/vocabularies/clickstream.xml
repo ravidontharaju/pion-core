@@ -220,6 +220,10 @@
 			<Type>string</Type>
 			<Comment>The Set-Cookie HTTP response header</Comment>
 		</Term>
+		<Term id="urn:vocab:clickstream#cs-content-type">
+			<Type>string</Type>
+			<Comment>The Content-Type HTTP request header</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#content-type">
 			<Type>string</Type>
 			<Comment>The Content-Type HTTP response header</Comment>
@@ -372,45 +376,45 @@
 			<Type>uint32</Type>
 			<Comment>Number of seconds between the first and last session requests</Comment>
 		</Term>
-        <Term id="urn:vocab:clickstream#sitename">
-            <Type>shortstring</Type>
-            <Comment>The Internet service name and instance number that was running on the client</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#computername">
-            <Type>shortstring</Type>
-            <Comment>The name of the server on which the log file entry was generated</Comment>
-        </Term>
+		<Term id="urn:vocab:clickstream#sitename">
+			<Type>shortstring</Type>
+			<Comment>The Internet service name and instance number that was running on the client</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#computername">
+			<Type>shortstring</Type>
+			<Comment>The name of the server on which the log file entry was generated</Comment>
+		</Term>
 		<Term id="urn:vocab:clickstream#substatus">
 			<Type>uint16</Type>
 			<Comment>The HTTP substatus error code</Comment>
 		</Term>
-        <Term id="urn:vocab:clickstream#win32status">
-            <Type>shortstring</Type>
-            <Comment>The Windows status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#cs-version">
-            <Type>shortstring</Type>
-            <Comment>The protocol version that the client used</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#compressed">
-            <Type>uint8</Type>
-            <Comment>ContentStorage compressed</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#request-status">
-            <Type>uint8</Type>
-            <Comment>HTTP request status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#response-status">
-            <Type>uint8</Type>
-            <Comment>HTTP response status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#tcp-status">
-            <Type>uint8</Type>
-            <Comment>TCP handshake status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#visitor-status">
-            <Type>shortstring</Type>
-            <Comment>New visitor: how determined? c=Cookie, v=visitorDB, a=anonDB</Comment>
-        </Term>
+		<Term id="urn:vocab:clickstream#win32status">
+			<Type>shortstring</Type>
+			<Comment>The Windows status code</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#cs-version">
+			<Type>shortstring</Type>
+			<Comment>The protocol version that the client used</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#compressed">
+			<Type>uint8</Type>
+			<Comment>ContentStorage compressed</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#request-status">
+			<Type>uint8</Type>
+			<Comment>HTTP request status code</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#response-status">
+			<Type>uint8</Type>
+			<Comment>HTTP response status code</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#tcp-status">
+			<Type>uint8</Type>
+			<Comment>TCP handshake status code</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#visitor-status">
+			<Type>shortstring</Type>
+			<Comment>New visitor: how determined? c=Cookie, v=visitorDB, a=anonDB</Comment>
+		</Term>
 	</Vocabulary>
 </PionConfig>

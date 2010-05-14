@@ -113,6 +113,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuuc.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -235,6 +236,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuuc.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>

@@ -32,6 +32,8 @@
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/algorithm/string.hpp>
+#include <unicode/utypes.h>
+#include <unicode/ucnv.h>
 #include <pion/platform/ConfigManager.hpp>
 #include "HTTPProtocol.hpp"
 
@@ -424,13 +426,13 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	(*event_ptr_ref).setUInt(m_request_status_term_ref, m_request.getStatus());
 	(*event_ptr_ref).setUInt(m_response_status_term_ref, m_response.getStatus());
 
-	// used to cache decoded payload content
-	size_t decoded_request_length;
-	size_t decoded_response_length;
-	boost::shared_array<char> decoded_request_content;
-	boost::shared_array<char> decoded_response_content;
-	boost::logic::tribool decoded_request_flag(boost::indeterminate);
-	boost::logic::tribool decoded_response_flag(boost::indeterminate);
+	// used to cache "final" payload content, i.e. after decoding (if needed) and conversion to UTF-8 (if needed) 
+	size_t final_request_length;
+	size_t final_response_length;
+	boost::shared_array<char> final_request_content;
+	boost::shared_array<char> final_response_content;
+	boost::logic::tribool decoded_and_converted_request_flag(boost::indeterminate);
+	boost::logic::tribool decoded_and_converted_response_flag(boost::indeterminate);
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -465,22 +467,22 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
 				break;
 			case EXTRACT_CS_CONTENT:
-				// extract decoded HTTP payload content from request
-				rule.processDecodedContent(event_ptr_ref, m_request, decoded_request_flag,
-					decoded_request_content, decoded_request_length);
+				// extract decoded and converted HTTP payload content from request
+				rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
+					final_request_content, final_request_length, m_logger);
 				break;
 			case EXTRACT_SC_CONTENT:
-				// extract decoded HTTP payload content from response
-				rule.processDecodedContent(event_ptr_ref, m_response, decoded_response_flag,
-					decoded_response_content, decoded_response_length);
+				// extract decoded and converted HTTP payload content from response
+				rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
+					final_response_content, final_response_length, m_logger);
 				break;
 			case EXTRACT_CS_RAW_CONTENT:
 				// extract raw HTTP payload content from request
-				rule.processContent(event_ptr_ref, m_request);
+				rule.processRawContent(event_ptr_ref, m_request);
 				break;
 			case EXTRACT_SC_RAW_CONTENT:
 				// extract raw HTTP payload content from response
-				rule.processContent(event_ptr_ref, m_response);
+				rule.processRawContent(event_ptr_ref, m_response);
 				break;
 		}
 	}
@@ -833,12 +835,12 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 
 
 // class HTTPProtocol::ExtractionRule
-
 bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& http_msg, 
-	boost::shared_array<char>& decoded_content, size_t& decoded_content_length) const
+	boost::shared_array<char>& decoded_content, size_t& decoded_content_length,
+	std::string& content_encoding) const
 {
 	// check if content is encoded
-	const std::string& content_encoding(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING));
+	content_encoding = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING);
 	if (content_encoding.empty()) {
 		return false;
 	}
@@ -876,7 +878,7 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
 		http_msg.getContentLength()) );
 
-	// write encoded content to stream
+	// write decoded content to stream
 	DecoderSink decoder_sink;
 
 	// NOTE: iostreams::copy() does not work as of 1.37.0 b/c it creates a copy
@@ -916,6 +918,56 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 
 	// content was decoded
 	return true;
+}
+
+bool HTTPProtocol::ExtractionRule::tryDecodingAndConverting(
+	const pion::net::HTTPMessage& http_msg,
+	const std::string& charset,
+	boost::shared_array<char>& final_content,
+	size_t& final_content_length,
+	PionLogger& logger) const
+{
+	const char* source;
+	int32_t source_length;
+
+	// Do decoding first, but into an intermediate buffer rather than final_content.
+	boost::shared_array<char> decoded_content;
+	size_t decoded_content_length = 0;
+	std::string content_encoding;
+	bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding);
+	if (decoded_flag) {
+		source = decoded_content.get();
+		source_length = decoded_content_length;
+	} else {
+		if (! content_encoding.empty()) {
+			PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
+			return false;
+		} else {
+			source = http_msg.getContent();
+			source_length = http_msg.getContentLength();
+		}
+	}
+
+	UErrorCode status = U_ZERO_ERROR;
+	UConverter* conv = ucnv_open(charset.c_str(), &status);
+	if (U_FAILURE(status)) {
+		PION_LOG_ERROR(logger, "Unable to find converter for charset: " << charset);
+		return false;
+	} 
+
+	// Here we set the target length to 0 so we can find out how many bytes we need to allocate.
+	int32_t target_capacity = ucnv_toAlgorithmic(UCNV_UTF8, conv, NULL, 0, source, source_length, &status);
+	// Expect status == U_BUFFER_OVERFLOW_ERROR
+
+	// Now allocate the memory and do the conversion for real.
+	final_content_length = target_capacity + 1;
+	final_content.reset(new char[target_capacity + 1]);	// add 1 in case length == 0 + null termination
+	final_content.get()[target_capacity] = '\0';		// null terminate buffer since it may be re-used
+	status = U_ZERO_ERROR;
+	ucnv_toAlgorithmic(UCNV_UTF8, conv, final_content.get(), final_content_length, source, source_length, &status);
+
+	ucnv_close(conv);
+	return (status == U_ZERO_ERROR);
 }
 
 

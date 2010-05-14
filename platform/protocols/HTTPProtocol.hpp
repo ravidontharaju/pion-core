@@ -26,12 +26,13 @@
 #include <boost/shared_array.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/logic/tribool.hpp>
+#include <boost/regex.hpp>
+#include <unicode/ucnv.h>
 #include <pion/PionException.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/net/HTTPParser.hpp>
 #include <pion/net/HTTPRequest.hpp>
 #include <pion/net/HTTPResponse.hpp>
-#include <boost/regex.hpp>
 
 namespace pion {	// begin namespace pion
 namespace plugins {		// begin namespace plugins
@@ -100,7 +101,8 @@ public:
 
 
 	/// constructs HTTPProtocol object
-	HTTPProtocol() : m_request_parser(true), m_response_parser(false), 
+	HTTPProtocol() : m_logger(PION_GET_LOGGER("pion.HTTPProtocol")),
+		m_request_parser(true), m_response_parser(false), 
 		m_request_start_time(boost::date_time::not_a_date_time),
 		m_request_end_time(boost::date_time::not_a_date_time),
 		m_request_ack_time(boost::date_time::not_a_date_time),
@@ -119,7 +121,7 @@ public:
 
 	/// resets the Protocol to its initial state
 	virtual void reset(void);
-	
+
 	/**
 	 * called to close the protocol parsing.  An event may be returned
 	 * if there is data remaining (i.e. if closed prematurely)
@@ -173,7 +175,7 @@ public:
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
-	
+
 	/**
 	 * parses an X-Forwarded-For HTTP header, and extracts from it an IP
 	 * address that best matches the client's public IP address (if any are found)
@@ -196,7 +198,7 @@ private:
 		: public boost::iostreams::sink
 	{
 	public:
-	
+
 		/// default constructor
 		DecoderSink(void) : m_bytes(0) {}
 
@@ -210,18 +212,18 @@ private:
 			}
 			return n;
 		}
-		
+
 		/// returns the container populated with decoded HTTP payload content
 		inline const DecoderContainer& getContainer(void) const { return m_data; }
-		
+
 		/// returns total number of bytes in decoded HTTP payload content
 		inline std::streamsize getBytes(void) const { return m_bytes; }
-		
+
 	private:
-	
+
 		/// container that is populated with decoded HTTP payload content
 		DecoderContainer	m_data;
-		
+
 		/// total number of bytes in decoded HTTP payload content
 		std::streamsize		m_bytes;
 	};
@@ -242,7 +244,7 @@ private:
 
 	/// data type used to determine whether or not payload content should be saved
 	struct ExtractionRule {
-	
+
 		/**
 		 * constructs a new content extraction rule
 		 *
@@ -251,7 +253,7 @@ private:
 		ExtractionRule(const std::string& term_id) :
 			m_term(term_id)
 		{}
-	
+
 		/**
 		 * processes content extraction for given content
 		 *
@@ -262,16 +264,16 @@ private:
 		template <typename RangePair>
 		inline void process(pion::platform::EventPtr& event_ptr_ref,
 			RangePair range, bool url_decode) const;
-	
+
 		/**
-		 * processes content extraction for HTTPMessage payload content
+		 * extract the Term value from a buffer which contains the final result of 
+		 * applying any needed processing to the HTTPMessage payload content
 		 *
 		 * @param event_ptr_ref pointer to the Event being generated
-		 * @param content_type type of content from Content-Type HTTP header
 		 * @param content_ptr pointer to a blob of payload content data
 		 * @param content_length length of the payload content data blob
 		 */
-		inline void processContentNoCheck(pion::platform::EventPtr& event_ptr_ref,
+		inline void setTermValueFromFinalContent(pion::platform::EventPtr& event_ptr_ref,
 			const char *content_ptr, const size_t content_length) const;
 
 		/**
@@ -280,24 +282,26 @@ private:
 		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param http_msg the message object to extract payload content from
 		 */
-		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
+		inline void processRawContent(pion::platform::EventPtr& event_ptr_ref,
 			const pion::net::HTTPMessage& http_msg) const;
 
 		/**
 		 * processes content extraction for HTTPMessage payload content
-		 * (decodes content if it is encoded)
+		 * (decodes content if it is encoded, converts to UTF-8 if appropriate)
 		 *
 		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param http_msg the message object to extract payload content from
-		 * @param decoded_flag has the payload content been decoded ?
-		 * @param decoded_content cached value of decoded payload content
-		 * @param decoded_content_length length of the cached decoded payload content
+		 * @param decoded_and_converted_flag has the payload content been decoded (if needed) and converted (if needed)?
+		 * @param final_content cached value of decoded and converted payload content
+		 * @param final_content_length length of the cached decoded and converted payload content
+		 * @param logger PionLogger instance to use
 		 */
-		inline void processDecodedContent(pion::platform::EventPtr& event_ptr_ref,
+		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
 			const pion::net::HTTPMessage& http_msg,
-			boost::logic::tribool& decoded_flag,
-			boost::shared_array<char>& decoded_content,
-			size_t& decoded_content_length) const;
+			boost::logic::tribool& decoded_and_converted_flag,
+			boost::shared_array<char>& final_content,
+			size_t& final_content_length,
+			PionLogger& logger) const;
 
 		/**
 		 * attempts to decode payload content for HTTPMessage
@@ -305,12 +309,31 @@ private:
 		 * @param http_msg the message object to extract payload content from
 		 * @param decoded_content cached value of decoded payload content
 		 * @param decoded_content_length length of the cached decoded payload content
+		 * @param content_encoding value of Content-Encoding header (if any)
 		 *
 		 * @return bool true if content was decoded, false if not
 		 */
 		bool tryDecoding(const pion::net::HTTPMessage& http_msg,
 			boost::shared_array<char>& decoded_content,
-			size_t& decoded_content_length) const;
+			size_t& decoded_content_length,
+			std::string& content_encoding) const;
+
+		/**
+		 * attempts to decode and convert payload content for HTTPMessage
+		 *
+		 * @param http_msg the message object to extract payload content from
+		 * @param charset the value of charset from Content-Type header (if any)
+		 * @param decoded_content cached value of decoded payload content
+		 * @param decoded_content_length length of the cached decoded payload content
+		 * @param logger PionLogger instance to use
+		 *
+		 * @return bool true if content was decoded and converted, false if not
+		 */
+		bool tryDecodingAndConverting(const pion::net::HTTPMessage& http_msg,
+			const std::string& charset,
+			boost::shared_array<char>& final_content,
+			size_t& final_content_length, 
+			PionLogger& logger) const;
 
 		/// vocabulary term for the event field where the content is stored
 		pion::platform::Vocabulary::Term	m_term;
@@ -333,14 +356,14 @@ private:
 		/// maximum size (in bytes) of content to save (0 = do not save)
 		boost::uint32_t						m_max_size;
 	};
-	
+
 	/// data type for a smart pointer to an extraction rule
 	typedef boost::shared_ptr<ExtractionRule>	ExtractionRulePtr;
-	
+
 	/// data type for a collection of extraction rules
 	typedef std::vector<ExtractionRulePtr>		ExtractionRuleVector;
-	
-	
+
+
 	/**
 	 * generates a new Event using the existing HTTP request and 
 	 * response objects 
@@ -348,20 +371,23 @@ private:
 	 * @param event_ptr_ref pointer assigned to the new Event
 	 */
 	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
-	
-	
-    /// parser used for HTTP request
+
+
+	/// primary logging interface used by this class
+	PionLogger					m_logger;
+
+	/// parser used for HTTP request
 	pion::net::HTTPParser		m_request_parser;
 
-    /// parser used for HTTP response
-    pion::net::HTTPParser		m_response_parser;
+	/// parser used for HTTP response
+	pion::net::HTTPParser		m_response_parser;
 
-    /// HTTP request being parsed
-    pion::net::HTTPRequest		m_request;
+	/// HTTP request being parsed
+	pion::net::HTTPRequest		m_request;
 
-    /// HTTP response being parsed
-    pion::net::HTTPResponse		m_response;
-	
+	/// HTTP response being parsed
+	pion::net::HTTPResponse		m_response;
+
 	/// timestamp for the beginning of the HTTP request (first packet)
 	pion::PionDateTime			m_request_start_time;
 
@@ -395,7 +421,7 @@ private:
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
 
-	
+
 	/// name of the MaxRequestContentLength element for Pion XML config files
 	static const std::string	MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME;
 
@@ -464,66 +490,66 @@ private:
 	static const std::string	EXTRACT_SC_RAW_CONTENT_STRING;
 
 	/// urn:vocab:clickstream#cs-data-packets
-    static const std::string	VOCAB_CLICKSTREAM_CS_DATA_PACKETS;
-    pion::platform::Vocabulary::TermRef	m_cs_data_packets_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_CS_DATA_PACKETS;
+	pion::platform::Vocabulary::TermRef	m_cs_data_packets_term_ref; 
 
 	/// urn:vocab:clickstream#sc-data-packets
-    static const std::string	VOCAB_CLICKSTREAM_SC_DATA_PACKETS;
-    pion::platform::Vocabulary::TermRef	m_sc_data_packets_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_SC_DATA_PACKETS;
+	pion::platform::Vocabulary::TermRef	m_sc_data_packets_term_ref; 
 
 	/// urn:vocab:clickstream#cs-missing-packets
-    static const std::string	VOCAB_CLICKSTREAM_CS_MISSING_PACKETS;
-    pion::platform::Vocabulary::TermRef	m_cs_missing_packets_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_CS_MISSING_PACKETS;
+	pion::platform::Vocabulary::TermRef	m_cs_missing_packets_term_ref; 
 
 	/// urn:vocab:clickstream#sc-missing-packets
-    static const std::string	VOCAB_CLICKSTREAM_SC_MISSING_PACKETS;
-    pion::platform::Vocabulary::TermRef	m_sc_missing_packets_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_SC_MISSING_PACKETS;
+	pion::platform::Vocabulary::TermRef	m_sc_missing_packets_term_ref; 
 
 	/// urn:vocab:clickstream#cs-headers
-    static const std::string	VOCAB_CLICKSTREAM_CS_HEADERS;
-    pion::platform::Vocabulary::TermRef	m_cs_headers_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_CS_HEADERS;
+	pion::platform::Vocabulary::TermRef	m_cs_headers_term_ref; 
 
-    /// urn:vocab:clickstream#sc-headers
-    static const std::string	VOCAB_CLICKSTREAM_SC_HEADERS;
-    pion::platform::Vocabulary::TermRef	m_sc_headers_term_ref; 
+	/// urn:vocab:clickstream#sc-headers
+	static const std::string	VOCAB_CLICKSTREAM_SC_HEADERS;
+	pion::platform::Vocabulary::TermRef	m_sc_headers_term_ref; 
 
 	/// urn:vocab:clickstream#cs-bytes
-    static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
-    pion::platform::Vocabulary::TermRef	m_cs_bytes_term_ref; 
+	static const std::string	VOCAB_CLICKSTREAM_CS_BYTES;
+	pion::platform::Vocabulary::TermRef	m_cs_bytes_term_ref; 
 
-    /// urn:vocab:clickstream#sc-bytes
-    static const std::string	VOCAB_CLICKSTREAM_SC_BYTES;
-    pion::platform::Vocabulary::TermRef	m_sc_bytes_term_ref; 
+	/// urn:vocab:clickstream#sc-bytes
+	static const std::string	VOCAB_CLICKSTREAM_SC_BYTES;
+	pion::platform::Vocabulary::TermRef	m_sc_bytes_term_ref; 
 
-    /// urn:vocab:clickstream#bytes
-    static const std::string	VOCAB_CLICKSTREAM_BYTES;
-    pion::platform::Vocabulary::TermRef	m_bytes_term_ref; 
+	/// urn:vocab:clickstream#bytes
+	static const std::string	VOCAB_CLICKSTREAM_BYTES;
+	pion::platform::Vocabulary::TermRef	m_bytes_term_ref; 
 
-    /// urn:vocab:clickstream#status
-    static const std::string	VOCAB_CLICKSTREAM_STATUS;
-    pion::platform::Vocabulary::TermRef	m_status_term_ref; 
+	/// urn:vocab:clickstream#status
+	static const std::string	VOCAB_CLICKSTREAM_STATUS;
+	pion::platform::Vocabulary::TermRef	m_status_term_ref; 
 
-    /// urn:vocab:clickstream#comment
-    static const std::string	VOCAB_CLICKSTREAM_COMMENT;
-    pion::platform::Vocabulary::TermRef	m_comment_term_ref; 
+	/// urn:vocab:clickstream#comment
+	static const std::string	VOCAB_CLICKSTREAM_COMMENT;
+	pion::platform::Vocabulary::TermRef	m_comment_term_ref; 
 
-    /// urn:vocab:clickstream#method
-    static const std::string	VOCAB_CLICKSTREAM_METHOD;
-    pion::platform::Vocabulary::TermRef	m_method_term_ref; 
+	/// urn:vocab:clickstream#method
+	static const std::string	VOCAB_CLICKSTREAM_METHOD;
+	pion::platform::Vocabulary::TermRef	m_method_term_ref; 
 
-    /// urn:vocab:clickstream#uri
-    static const std::string	VOCAB_CLICKSTREAM_URI;
-    pion::platform::Vocabulary::TermRef	m_uri_term_ref; 
+	/// urn:vocab:clickstream#uri
+	static const std::string	VOCAB_CLICKSTREAM_URI;
+	pion::platform::Vocabulary::TermRef	m_uri_term_ref; 
 
-    /// urn:vocab:clickstream#uri-stem
-    static const std::string	VOCAB_CLICKSTREAM_URI_STEM;
-    pion::platform::Vocabulary::TermRef	m_uri_stem_term_ref; 
+	/// urn:vocab:clickstream#uri-stem
+	static const std::string	VOCAB_CLICKSTREAM_URI_STEM;
+	pion::platform::Vocabulary::TermRef	m_uri_stem_term_ref; 
 
-    /// urn:vocab:clickstream#uri-query
-    static const std::string	VOCAB_CLICKSTREAM_URI_QUERY;
-    pion::platform::Vocabulary::TermRef	m_uri_query_term_ref; 
+	/// urn:vocab:clickstream#uri-query
+	static const std::string	VOCAB_CLICKSTREAM_URI_QUERY;
+	pion::platform::Vocabulary::TermRef	m_uri_query_term_ref; 
 
-    /// urn:vocab:clickstream#request
+	/// urn:vocab:clickstream#request
 	static const std::string	VOCAB_CLICKSTREAM_REQUEST;
 	pion::platform::Vocabulary::TermRef	m_request_term_ref; 
 
@@ -534,38 +560,38 @@ private:
 	/// urn:vocab:clickstream#date
 	static const std::string	VOCAB_CLICKSTREAM_DATE;
 	pion::platform::Vocabulary::TermRef	m_date_term_ref;
-	
-    /// urn:vocab:clickstream#time
-    static const std::string	VOCAB_CLICKSTREAM_TIME;
-    pion::platform::Vocabulary::TermRef	m_time_term_ref;
 
-    /// urn:vocab:clickstream#date-time
-    static const std::string	VOCAB_CLICKSTREAM_DATE_TIME;
-    pion::platform::Vocabulary::TermRef	m_date_time_term_ref;
+	/// urn:vocab:clickstream#time
+	static const std::string	VOCAB_CLICKSTREAM_TIME;
+	pion::platform::Vocabulary::TermRef	m_time_term_ref;
 
-    /// urn:vocab:clickstream#epoch-time
-    static const std::string	VOCAB_CLICKSTREAM_EPOCH_TIME;
-    pion::platform::Vocabulary::TermRef	m_epoch_time_term_ref;
+	/// urn:vocab:clickstream#date-time
+	static const std::string	VOCAB_CLICKSTREAM_DATE_TIME;
+	pion::platform::Vocabulary::TermRef	m_date_time_term_ref;
 
-    /// urn:vocab:clickstream#clf-date
-    static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
-    pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
+	/// urn:vocab:clickstream#epoch-time
+	static const std::string	VOCAB_CLICKSTREAM_EPOCH_TIME;
+	pion::platform::Vocabulary::TermRef	m_epoch_time_term_ref;
 
-    /// urn:vocab:clickstream#request-start-time
-    static const std::string	VOCAB_CLICKSTREAM_REQUEST_START_TIME;
-    pion::platform::Vocabulary::TermRef	m_request_start_time_term_ref;
+	/// urn:vocab:clickstream#clf-date
+	static const std::string	VOCAB_CLICKSTREAM_CLF_DATE;
+	pion::platform::Vocabulary::TermRef	m_clf_date_term_ref;
 
-    /// urn:vocab:clickstream#request-end-time
-    static const std::string	VOCAB_CLICKSTREAM_REQUEST_END_TIME;
-    pion::platform::Vocabulary::TermRef	m_request_end_time_term_ref;
+	/// urn:vocab:clickstream#request-start-time
+	static const std::string	VOCAB_CLICKSTREAM_REQUEST_START_TIME;
+	pion::platform::Vocabulary::TermRef	m_request_start_time_term_ref;
 
-    /// urn:vocab:clickstream#response-start-time
-    static const std::string	VOCAB_CLICKSTREAM_RESPONSE_START_TIME;
-    pion::platform::Vocabulary::TermRef	m_response_start_time_term_ref;
+	/// urn:vocab:clickstream#request-end-time
+	static const std::string	VOCAB_CLICKSTREAM_REQUEST_END_TIME;
+	pion::platform::Vocabulary::TermRef	m_request_end_time_term_ref;
 
-    /// urn:vocab:clickstream#response-end-time
-    static const std::string	VOCAB_CLICKSTREAM_RESPONSE_END_TIME;
-    pion::platform::Vocabulary::TermRef	m_response_end_time_term_ref;
+	/// urn:vocab:clickstream#response-start-time
+	static const std::string	VOCAB_CLICKSTREAM_RESPONSE_START_TIME;
+	pion::platform::Vocabulary::TermRef	m_response_start_time_term_ref;
+
+	/// urn:vocab:clickstream#response-end-time
+	static const std::string	VOCAB_CLICKSTREAM_RESPONSE_END_TIME;
+	pion::platform::Vocabulary::TermRef	m_response_end_time_term_ref;
 
 	/// urn:vocab:clickstream#cs-send-time
 	static const std::string	VOCAB_CLICKSTREAM_CS_SEND_TIME;
@@ -660,8 +686,8 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 		++range.first;
 	}
 }
-	
-inline void HTTPProtocol::ExtractionRule::processContentNoCheck(pion::platform::EventPtr& event_ptr_ref,
+
+inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::platform::EventPtr& event_ptr_ref,
 	const char *content_ptr, const size_t content_length) const
 {
 	boost::match_results<const char*> mr;
@@ -683,7 +709,7 @@ inline void HTTPProtocol::ExtractionRule::processContentNoCheck(pion::platform::
 	}
 }
 
-inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
+inline void HTTPProtocol::ExtractionRule::processRawContent(pion::platform::EventPtr& event_ptr_ref,
 	const pion::net::HTTPMessage& http_msg) const
 {
 	if (m_max_size > 0
@@ -691,29 +717,48 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 		&& ( m_type_regex.empty()
 			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
 	{
-		processContentNoCheck(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+		setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
 	}
 }
 
-inline void HTTPProtocol::ExtractionRule::processDecodedContent(pion::platform::EventPtr& event_ptr_ref,
-	const pion::net::HTTPMessage& http_msg, boost::logic::tribool& decoded_flag,
-	boost::shared_array<char>& decoded_content, size_t& decoded_content_length) const
+inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
+	const pion::net::HTTPMessage& http_msg, boost::logic::tribool& decoded_and_converted_flag,
+	boost::shared_array<char>& final_content, size_t& final_content_length, PionLogger& logger) const
 {
-	if (m_max_size > 0
-		&& http_msg.getContentLength() > 0
-		&& ( m_type_regex.empty()
-			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
-	{
-		// try decoding the content if we haven't already done so
-		if (boost::indeterminate(decoded_flag))
-			decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length);
-	
-		if (decoded_flag && decoded_content.get() != NULL) {
-			// we already have decoded content -> use it
-			processContentNoCheck(event_ptr_ref, decoded_content.get(), decoded_content_length);
-		} else {
-			// no encoding used or unable to decode -> use raw payload content
-			processContentNoCheck(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
+		const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
+		if (m_type_regex.empty() || boost::regex_search(content_type, m_type_regex)) {
+			// Try decoding and converting the content if we haven't already done so.
+			if (boost::indeterminate(decoded_and_converted_flag)) {
+				bool do_conversion = false;
+				boost::match_results<std::string::const_iterator> mr;
+				boost::regex rx("charset=(.*)$");
+				std::string charset;
+				if (boost::regex_search(content_type, mr, rx)) {
+					charset = mr[1];
+					if (ucnv_compareNames(charset.c_str(), "utf-8") != 0) {
+						do_conversion = true;
+					}
+				}
+				if (do_conversion) {
+					decoded_and_converted_flag = tryDecodingAndConverting(http_msg, charset, final_content, final_content_length, logger);
+				} else {
+					std::string content_encoding;
+					decoded_and_converted_flag = tryDecoding(http_msg, final_content, final_content_length, content_encoding);
+
+					if (! decoded_and_converted_flag && ! content_encoding.empty())
+						PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
+				}
+			}
+
+			if (decoded_and_converted_flag && final_content.get() != NULL) {
+				// we already have decoded and converted content -> use it
+				setTermValueFromFinalContent(event_ptr_ref, final_content.get(), final_content_length);
+			} else {
+				// Either no Content-Encoding header was found and no charset was specified, or decoding or conversion failed.
+				// -> use raw payload content
+				setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+			}
 		}
 	}
 }
@@ -733,7 +778,7 @@ inline bool HTTPProtocol::parseForwardedFor(const std::string& header, std::stri
 	// sanity check
 	if (header.empty())
 		return false;
-	
+
 	// local variables re-used by while loop
 	boost::match_results<std::string::const_iterator> m;
 	std::string::const_iterator start_it = header.begin();
@@ -751,7 +796,7 @@ inline bool HTTPProtocol::parseForwardedFor(const std::string& header, std::stri
 		// update search starting position
 		start_it = m[0].second;
 	}
-	
+
 	// no matches found
 	return false;
 }
