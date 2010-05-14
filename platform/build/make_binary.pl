@@ -48,9 +48,12 @@ if ($PLATFORM =~ /^win32/i) {
 	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
 	$OPENSSLA_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "libeay32." . $SHARED_LIB_SUFFIX);
 	$OPENSSLB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "ssleay32." . $SHARED_LIB_SUFFIX);
+	$ICUUC_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-4.4.1", "bin"), "icuuc44." . $SHARED_LIB_SUFFIX);
+	$ICUIN_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-4.4.1", "bin"), "icuin44." . $SHARED_LIB_SUFFIX);
+	$ICUDT_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-4.4.1", "bin"), "icudt44." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
-	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.37.0", "lib") );
-	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc80-mt-1_37." . $SHARED_LIB_SUFFIX);
+	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.42.0", "lib") );
+	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
 	$PLUGIN_LIB_SUFFIX = "so";
@@ -118,6 +121,9 @@ if ($PLATFORM =~ /^win32/i) {
 	copy($BZIP_LIB, $LIBS_DIR);
 	copy($OPENSSLA_LIB, $LIBS_DIR);
 	copy($OPENSSLB_LIB, $LIBS_DIR);
+	copy($ICUUC_LIB, $LIBS_DIR);
+	copy($ICUIN_LIB, $LIBS_DIR);
+	copy($ICUDT_LIB, $LIBS_DIR);
 }
 copy($LOGGING_LIB, $LIBS_DIR);
 copy($YAJL_LIB, $LIBS_DIR);
@@ -166,8 +172,7 @@ if ($PLATFORM =~ /^win32/i) {
 print "Copying misc other Pion files..\n";
 
 # copy the user interface files into "ui"
-copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ),
-	File::Spec->catdir( ($PACKAGE_DIR, "ui") ));
+copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ), $UI_DIR);
 
 # copy the configuration files
 my %templates = ("PION_PLUGINS_DIRECTORY" => "../plugins",

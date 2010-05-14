@@ -6,10 +6,12 @@ NOTE: currently, the Debug_static and Release_static configurations are not supp
 Make sure the following are on your path (with appropriate changes if you 
 installed anything in other than the suggested location):
 
-C:\Boost\Lib
+C:\boost-1.42.0\lib
 C:\iconv-1.9.2\bin
 C:\libxml2-2.6.30\bin
 C:\zlib-1.2.3\bin
+C:\bzip2-1.0.5\bin
+C:\icu-4.4.1\bin
 
 and for the PION_FULL configurations,
 
