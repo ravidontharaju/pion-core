@@ -289,9 +289,11 @@ public:
 	 * @param query string to modify, contains the original pseudo-SQL
 	 * @param field_map fieldMap to use for substitutions of COLUMNS/PARAMS
 	 * @param table_name name of table to use to substitute TABLE
+	 * @param columns_override is the optional columns list override (for custom indexes)
 	 * @return std::string returns modified query
 	 */
-	std::string& stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map, const std::string& table_name);
+	std::string& stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map,
+									const std::string& table_name, const std::string& columns_override = "");
 
 	/// Database Isolation Levels
 	enum IsolationLevel_t {
@@ -322,6 +324,14 @@ protected:
 		m_update_stat_attr = d.m_update_stat_attr;
 		m_select_stat = d.m_select_stat;
 		m_select_stat_attr = d.m_select_stat_attr;
+		m_drop_index = d.m_drop_index;
+		m_drop_index_attr = d.m_drop_index_attr;
+		m_create_index_normal = d.m_create_index_normal;
+		m_create_index_normal_attr = d.m_create_index_normal_attr;
+		m_create_index_unique = d.m_create_index_unique;
+		m_create_index_unique_attr = d.m_create_index_unique_attr;
+		m_create_index_custom = d.m_create_index_custom;
+		m_create_index_custom_attr = d.m_create_index_custom_attr;
 		m_isolation_level = d.m_isolation_level;
 		// Query_map will be overridden
 //		m_query_map = d.m_query_map;
@@ -362,6 +372,11 @@ protected:
 	static const std::string				CREATE_STAT_ELEMENT_NAME;
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
 	static const std::string				SELECT_STAT_ELEMENT_NAME;
+
+	static const std::string				DROP_INDEX_ELEMENT_NAME;
+	static const std::string				CREATE_INDEX_NORMAL_ELEMENT_NAME;
+	static const std::string				CREATE_INDEX_UNIQUE_ELEMENT_NAME;
+	static const std::string				CREATE_INDEX_CUSTOM_ELEMENT_NAME;
 
 	static const std::string				IGNORE_ATTRIBUTE_NAME;
 
@@ -410,6 +425,18 @@ protected:
 
 	std::string								m_select_stat;
 	boost::regex							m_select_stat_attr;
+
+	std::string								m_drop_index;
+	boost::regex							m_drop_index_attr;
+
+	std::string								m_create_index_normal;
+	boost::regex							m_create_index_normal_attr;
+
+	std::string								m_create_index_unique;
+	boost::regex							m_create_index_unique_attr;
+
+	std::string								m_create_index_custom;
+	boost::regex							m_create_index_custom_attr;
 
 	std::string								m_insert_ignore;
 	boost::regex							m_insert_ignore_attr;

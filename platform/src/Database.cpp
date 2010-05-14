@@ -48,6 +48,11 @@ const std::string			Database::CREATE_STAT_ELEMENT_NAME = "CreateStat";
 const std::string			Database::UPDATE_STAT_ELEMENT_NAME = "UpdateStat";
 const std::string			Database::SELECT_STAT_ELEMENT_NAME = "SelectStat";
 
+const std::string			Database::DROP_INDEX_ELEMENT_NAME = "DropIndex";
+const std::string			Database::CREATE_INDEX_NORMAL_ELEMENT_NAME = "CreateIndexNormal";
+const std::string			Database::CREATE_INDEX_UNIQUE_ELEMENT_NAME = "CreateIndexUnique";
+const std::string			Database::CREATE_INDEX_CUSTOM_ELEMENT_NAME = "CreateIndexCustom";
+
 const std::string			Database::IGNORE_ATTRIBUTE_NAME = "ignore";
 
 const std::string			Database::INSERT_IGNORE_ELEMENT_NAME = "InsertIgnore";
@@ -102,6 +107,26 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 		throw DatabaseConfigMissing(SELECT_STAT_ELEMENT_NAME);
 
 	m_select_stat_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(SELECT_STAT_ELEMENT_NAME, config_ptr)));
+
+	if (! ConfigManager::getConfigOption(DROP_INDEX_ELEMENT_NAME, m_drop_index, config_ptr))
+		throw DatabaseConfigMissing(DROP_INDEX_ELEMENT_NAME);
+
+	m_drop_index_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(DROP_INDEX_ELEMENT_NAME, config_ptr)));
+
+	if (! ConfigManager::getConfigOption(CREATE_INDEX_NORMAL_ELEMENT_NAME, m_create_index_normal, config_ptr))
+		throw DatabaseConfigMissing(CREATE_INDEX_NORMAL_ELEMENT_NAME);
+
+	m_create_index_normal_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(CREATE_INDEX_NORMAL_ELEMENT_NAME, config_ptr)));
+
+	if (! ConfigManager::getConfigOption(CREATE_INDEX_UNIQUE_ELEMENT_NAME, m_create_index_unique, config_ptr))
+		throw DatabaseConfigMissing(CREATE_INDEX_UNIQUE_ELEMENT_NAME);
+
+	m_create_index_unique_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(CREATE_INDEX_UNIQUE_ELEMENT_NAME, config_ptr)));
+
+	if (! ConfigManager::getConfigOption(CREATE_INDEX_CUSTOM_ELEMENT_NAME, m_create_index_custom, config_ptr))
+		throw DatabaseConfigMissing(CREATE_INDEX_CUSTOM_ELEMENT_NAME);
+
+	m_create_index_custom_attr = getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(CREATE_INDEX_CUSTOM_ELEMENT_NAME, config_ptr)));
 
 	if (! ConfigManager::getConfigOption(INSERT_IGNORE_ELEMENT_NAME, m_insert_ignore, config_ptr))
 		throw DatabaseConfigMissing(INSERT_IGNORE_ELEMENT_NAME);
@@ -198,18 +223,20 @@ void Database::stringReplace(std::string& src, const char* search, const std::st
 }
 
 /// Since stringSubstitutes is only used at setup, its speed is not critical...
-std::string& Database::stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map, const std::string& table_name)
+std::string& Database::stringSubstitutes(std::string& query, const pion::platform::Query::FieldMap& field_map, const std::string& table_name, const std::string& columns_override)
 {
 	// Substitute any table name instances in query
 	stringReplace(query, ":TABLE", table_name);
 
-	std::string fields, columns, questions, params;
+	std::string col, fields, columns, questions, params;
 	for (unsigned int p = 0; p < field_map.size(); p++) {
 		fields += field_map[p].first + ' ' +
 					m_sql_affinity[field_map[p].second.term_type];
 // Now using m_sql_affinity[] table instead of a lookup function
 //					getSQLAPIAffinity(field_it->second.second.term_type);
 		columns += field_map[p].first;
+        if (p == 0)
+			col = field_map[p].first;
 		questions += '?';
 		params += ':' + boost::lexical_cast<std::string>(p+1);	// Params are 1-based
 		if (p+1 < field_map.size()) {			// Add commas, but not after last
@@ -220,7 +247,8 @@ std::string& Database::stringSubstitutes(std::string& query, const pion::platfor
 		}
 	}
 	stringReplace(query, ":FIELDS", fields);		// Sub any field name sequences
-	stringReplace(query, ":COLUMNS", columns);		// Sub column instances
+	stringReplace(query, ":COLUMNS", columns_override.empty() ? columns : columns_override);	// Sub column instances
+	stringReplace(query, ":COLUMN", col);			// Sub single col instances
 	stringReplace(query, ":QUESTIONS", questions);	// Sub question mark sequences
 	stringReplace(query, ":PARAMS", params);		// :1,:2,:3, etc...
 	return query;
