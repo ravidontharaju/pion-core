@@ -319,21 +319,26 @@ private:
 			std::string& content_encoding) const;
 
 		/**
-		 * attempts to decode and convert payload content for HTTPMessage
+		 * attempts to convert payload content for HTTPMessage to UTF-8, if needed
 		 *
+		 * @param charset the charset that the content is currently encoded with
 		 * @param http_msg the message object to extract payload content from
-		 * @param charset the value of charset from Content-Type header (if any)
-		 * @param decoded_content cached value of decoded payload content
-		 * @param decoded_content_length length of the cached decoded payload content
+		 * @param decoded_content pointer to payload content, with any needed decoding already done
+		 * @param decoded_content_length length of decoded_content
+		 * @param final_content cached value of payload content encoded with UTF-8
+		 * @param final_content_length length of final_content
 		 * @param logger PionLogger instance to use
 		 *
 		 * @return bool true if content was decoded and converted, false if not
 		 */
-		bool tryDecodingAndConverting(const pion::net::HTTPMessage& http_msg,
+		bool tryConvertingToUtf8(
 			const std::string& charset,
+			const char* source,
+			size_t source_length,
 			boost::shared_array<char>& final_content,
-			size_t& final_content_length, 
+			size_t& final_content_length,
 			PionLogger& logger) const;
+
 
 		/// vocabulary term for the event field where the content is stored
 		pion::platform::Vocabulary::Term	m_term;
@@ -730,24 +735,68 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 		if (m_type_regex.empty() || boost::regex_search(content_type, m_type_regex)) {
 			// Try decoding and converting the content if we haven't already done so.
 			if (boost::indeterminate(decoded_and_converted_flag)) {
-				bool do_conversion = false;
-				boost::match_results<std::string::const_iterator> mr;
-				boost::regex rx("charset=(.*)$");
-				std::string charset;
-				if (boost::regex_search(content_type, mr, rx)) {
-					charset = mr[1];
-					if (ucnv_compareNames(charset.c_str(), "utf-8") != 0) {
-						do_conversion = true;
-					}
-				}
-				if (do_conversion) {
-					decoded_and_converted_flag = tryDecodingAndConverting(http_msg, charset, final_content, final_content_length, logger);
-				} else {
-					std::string content_encoding;
-					decoded_and_converted_flag = tryDecoding(http_msg, final_content, final_content_length, content_encoding);
+				// See http://www.w3.org/International/tutorials/tutorial-char-enc/#Slide0400 for
+				// documentation of the precedence rules for charset declarations.
 
-					if (! decoded_and_converted_flag && ! content_encoding.empty())
-						PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
+				boost::shared_array<char> decoded_content;
+				std::string content_encoding;
+				size_t decoded_content_length;
+				bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding);
+				if (decoded_flag || content_encoding.empty()) {
+					// Get the charset, if present, from the Content-Type header.
+					boost::match_results<std::string::const_iterator> mr;
+					boost::regex rx(";\\s*charset=([^;]+)");
+					std::string charset;
+					if (boost::regex_search(content_type, mr, rx)) {
+						charset = mr[1];
+					}
+
+					if (charset.empty()) {
+						// No charset in the Content-Type header, so need to look for meta tags in the content.
+
+						boost::regex rx_meta_1("<meta charset=([^\\s/>]*)");
+						boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)");
+						boost::match_results<const char*> mr2;
+						const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
+						size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
+						size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
+						if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
+							charset = mr2[1];
+						} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
+							charset = mr2[1];
+						}
+					} else {
+						// A charset was found in the Content-Type header, so we don't need to look for meta tags,
+						// since the former takes precedence over the latter.
+					}
+					bool do_conversion = (! charset.empty() && ucnv_compareNames(charset.c_str(), "utf-8") != 0);
+
+					if (content_encoding.empty()) {
+						// No decoding needed, so do conversion, if required, directly on http_msg.getContent().
+
+						if (do_conversion) {
+							decoded_and_converted_flag = tryConvertingToUtf8(charset, http_msg.getContent(), http_msg.getContentLength(), 
+																			 final_content, final_content_length, logger);
+						} else {
+							// No decoding or converting needed.  Can use http_msg.getContent() directly below.
+							decoded_and_converted_flag = false;
+						}
+					} else {
+						// Decoded content is in decoded_content.
+
+						if (do_conversion) {
+							decoded_and_converted_flag = tryConvertingToUtf8(charset, decoded_content.get(), decoded_content_length,
+																			 final_content, final_content_length, logger);
+						} else {
+							// 
+							final_content.swap(decoded_content);
+							final_content_length = decoded_content_length;
+							decoded_and_converted_flag = true;
+						}
+					}
+				} else {
+					PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
+					decoded_and_converted_flag = false;
 				}
 			}
 

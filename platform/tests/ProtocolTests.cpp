@@ -334,6 +334,27 @@ public:
 		return encoded_content;
 	}
 
+	void generateEvent(const std::string& content_type_header, const std::string& content, const std::string& content_encoding = "") {
+		// Process a minimal request.
+		m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+		BOOST_REQUIRE(boost::indeterminate(m_rc));
+
+		// Simulate a response with the given content and Content-Type header.
+		std::ostringstream oss;
+		oss << "HTTP/1.1 200 " << CRLF
+			<< content_type_header << CRLF;
+		if (! content_encoding.empty())
+			oss << "Content-Encoding: " << content_encoding << CRLF;
+		oss	<< "Content-Length: " << content.size() << CRLF << CRLF
+			<< content;
+		std::string response = oss.str();
+
+		// Process the response and check that an Event was generated.
+		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+		BOOST_REQUIRE(m_rc == true);
+		BOOST_REQUIRE(m_e.get());
+	}
+
 	std::string m_minimal_request;
 	boost::tribool m_rc;
 	EventPtr m_e;
@@ -682,6 +703,131 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
 	// Check that the resulting Event has a cs-content Term containing the UTF-8 encoding of the query.
 	std::string utf8_encoded_query = std::string("Pet=") + UTF8_ENCODED_TEST_STRING_1;
 	BOOST_CHECK_EQUAL(utf8_encoded_query, m_e->getString(m_cs_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta http-equiv tag.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetSelfClosing) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a self closing meta http-equiv tag.
+	// Note that while some references say that meta tags should not be self closing, in the wild, many are.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\" />" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaCharset) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta charset tag.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta charset=euc-jp\">" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaCharsetSelfClosing) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a self closing meta charset tag.
+	// Note that while some references say that meta tags should not be self closing, in the wild, many are.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta charset=euc-jp\" />" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetWithGzip) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta charset tag.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified and send gzipped content.
+	generateEvent("Content-Type: text/html", gzipEncode(oss.str()), "gzip");
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkHttpHeaderCharsetHasPrecedenceOverMetaCharset) {
+	// Make the content for an http response with an EUC-JP encoded title and the WRONG charset in a meta charset tag.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta charset=utf-16\">" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with EUC-JP specified.
+	generateEvent("Content-Type: text/html; charset=euc-jp", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkContentTypeHeaderWithMultipleParameters) {
+	// Make the content for an http response with an EUC-JP encoded title.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with EUC-JP specified and another parameter after that.
+	// TODO: This is not a realistic header.  I want to replace this with something better,
+	// but since this test was inspired by an actual case where the charset was set to
+	// "utf-8; type=feed" in HTTPProtocol, I'm leaving it in for now.
+	generateEvent("Content-Type: text/html; charset=euc-jp; type=feed", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeWithMultipleParameters) {
+	// Make the content for an http response with an EUC-JP encoded title.
+	// TODO: See comment in checkContentTypeHeaderWithMultipleParameters.
+	std::ostringstream oss;
+	oss << "<html><head>" << CRLF
+		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp; type=feed\">" << CRLF
+		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
+		<< "</head><body>blah blah</body></html>" << CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", oss.str());
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -920,34 +920,14 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	return true;
 }
 
-bool HTTPProtocol::ExtractionRule::tryDecodingAndConverting(
-	const pion::net::HTTPMessage& http_msg,
+bool HTTPProtocol::ExtractionRule::tryConvertingToUtf8(
 	const std::string& charset,
+	const char* source,
+	size_t source_length,
 	boost::shared_array<char>& final_content,
 	size_t& final_content_length,
 	PionLogger& logger) const
 {
-	const char* source;
-	int32_t source_length;
-
-	// Do decoding first, but into an intermediate buffer rather than final_content.
-	boost::shared_array<char> decoded_content;
-	size_t decoded_content_length = 0;
-	std::string content_encoding;
-	bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding);
-	if (decoded_flag) {
-		source = decoded_content.get();
-		source_length = decoded_content_length;
-	} else {
-		if (! content_encoding.empty()) {
-			PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
-			return false;
-		} else {
-			source = http_msg.getContent();
-			source_length = http_msg.getContentLength();
-		}
-	}
-
 	UErrorCode status = U_ZERO_ERROR;
 	UConverter* conv = ucnv_open(charset.c_str(), &status);
 	if (U_FAILURE(status)) {
