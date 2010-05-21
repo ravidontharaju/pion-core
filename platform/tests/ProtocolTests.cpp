@@ -279,23 +279,48 @@ private:
 // U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
 // U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
 
-static const char UTF8_ENCODED_TEST_STRING_1[] = {
-		0x63,								// 'c'
-		0x61,								// 'a'
-		0x74,								// 't'
-		(char)0xE7, (char)0x8C,	(char)0xAB,	// UTF-8 encoding of U+732B
-		(char)0xEF, (char)0xBC,	(char)0xAF,	// UTF-8 encoding of U+FF2F
-		(char)0xEF, (char)0xBC,	(char)0xAB,	// UTF-8 encoding of U+FF2B
-		0x00 };
+static const char UTF8_ENCODED_TEST_CHAR_ARRAY_1[] = {
+		0x63,									// 'c'
+		0x61,									// 'a'
+		0x74,									// 't'
+		(char)0xE7, (char)0x8C,	(char)0xAB,		// UTF-8 encoding of U+732B
+		(char)0xEF, (char)0xBC,	(char)0xAF,		// UTF-8 encoding of U+FF2F
+		(char)0xEF, (char)0xBC,	(char)0xAB};	// UTF-8 encoding of U+FF2B
+
+static const std::string UTF8_ENCODED_TEST_STRING_1(UTF8_ENCODED_TEST_CHAR_ARRAY_1, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY_1));
+
+static const char UTF16_ENCODED_TEST_CHAR_ARRAY_1[] = {
+		(char)0xFF, (char)0xFE,	// BOM (byte order marker)
+		0x63, 0x00,				// 'c'
+		0x61, 0x00,				// 'a'
+		0x74, 0x00,				// 't'
+		0x2B, 0x73,				// U+732B (simplified Chinese character for "cat")
+		0x2F, (char)0xFF,		// U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
+		0x2B, (char)0xFF};		// U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
+
+static const std::string UTF16_ENCODED_TEST_STRING_1(UTF16_ENCODED_TEST_CHAR_ARRAY_1, sizeof(UTF16_ENCODED_TEST_CHAR_ARRAY_1));
 
 // See http://demo.icu-project.org/icu-bin/convexp?conv=ibm-33722_P12A_P12A-2004_U2 for EUC-JP tables.
-static const char EUC_JP_ENCODED_TEST_STRING_1[] = {
+static const char EUC_JP_ENCODED_TEST_CHAR_ARRAY_1[] = {
+	0x63,						// 'c'
+	0x61,						// 'a'
+	0x74,						// 't'
+	(char)0xC7, (char)0xAD,		// EUC-JP encoding of U+732B (simplified Chinese character for "cat")
+	(char)0xA3, (char)0xCF,		// EUC-JP encoding of U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
+	(char)0xA3, (char)0xCB};	// EUC-JP encoding of U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
+
+static const std::string EUC_JP_ENCODED_TEST_STRING_1(EUC_JP_ENCODED_TEST_CHAR_ARRAY_1, sizeof(EUC_JP_ENCODED_TEST_CHAR_ARRAY_1));
+
+// See http://demo.icu-project.org/icu-bin/convexp?conv=ibm-943_P15A-2003 for Shift_JIS tables.
+static const char SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1[] = {
 	0x63,				// 'c'
 	0x61,				// 'a'
 	0x74,				// 't'
-	(char)0xC7, 0xAD,	// EUC-JP encoding of U+732B (simplified Chinese character for "cat")
-	(char)0xA3, 0xCF,	// EUC-JP encoding of U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
-	(char)0xA3, 0xCB};	// EUC-JP encoding of U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
+	(char)0x94, 0x4C,	// Shift_JIS encoding of U+732B (simplified Chinese character for "cat")
+	(char)0x82, 0x6E,	// Shift_JIS encoding of U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
+	(char)0x82, 0x6A};	// Shift_JIS encoding of U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
+
+static const std::string SHIFT_JIS_ENCODED_TEST_STRING_1(SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1, sizeof(SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1));
 
 
 /// fixture class used for testing Protocol "HTTP (full content)"
@@ -317,7 +342,7 @@ public:
 	~HTTPFullContentProtocol_F() {
 	}
 
-	std::string gzipEncode(std::string content) {
+	std::string gzipEncode(const std::string& content) {
 		std::istringstream src(content);
 		std::string encoded_content;
 		boost::iostreams::copy(
@@ -383,7 +408,7 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
 	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
 
-	std::string orig_sc_content = "0123456789";
+	const std::string orig_sc_content = "0123456789";
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + orig_sc_content;
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
@@ -395,7 +420,7 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
 	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
 
-	std::string orig_sc_content = "<title>My Home Page</title>some content";
+	const std::string orig_sc_content = "<title>My Home Page</title>some content";
 	std::ostringstream oss;
 	oss << "HTTP/1.1 200 " << CRLF
 		<< "Content-Type: text/html" << CRLF
@@ -413,8 +438,8 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
 	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
 
-	std::string orig_content = "0123456789";
-	std::string gzipped_content = gzipEncode(orig_content);
+	const std::string orig_content = "0123456789";
+	const std::string gzipped_content = gzipEncode(orig_content);
 
 	std::ostringstream oss;
 	oss << "HTTP/1.1 200 " << CRLF
@@ -434,13 +459,13 @@ BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingEventContainsOriginalContent
 	BOOST_CHECK(boost::indeterminate(m_rc));
 
 	// Simulate a response with content encoded with unknown compression algorithm "smash".
-	char smashed_content[] = "d8kkdsj8722m";
+	const std::string smashed_content = "d8kkdsj8722m";
 	std::ostringstream oss;
 	oss << "HTTP/1.1 200 " << CRLF
 		<< "Content-Type: text/html" << CRLF
 		<< "Content-Encoding: smash" << CRLF
-		<< "Content-Length: " << sizeof(smashed_content) << CRLF << CRLF;
-	oss.write(smashed_content, sizeof(smashed_content));
+		<< "Content-Length: " << smashed_content.length() << CRLF << CRLF
+		<< smashed_content;
 	std::string response = oss.str();
 
 	// Process the response and check that the resulting Event has an sc-content Term containing the still smashed content.
@@ -458,8 +483,8 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
 	std::ostringstream oss0;
 	char c;
 	while (log_file.get(c)) oss0.put(c);
-	std::string orig_content = oss0.str();
-	std::string gzipped_content = gzipEncode(orig_content);
+	const std::string orig_content = oss0.str();
+	const std::string gzipped_content = gzipEncode(orig_content);
 
 	std::ostringstream oss;
 	oss << "HTTP/1.1 200 " << CRLF
@@ -474,26 +499,14 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
 	BOOST_CHECK_EQUAL(orig_content, m_e->getString(m_sc_content_term_ref));
 }
 
-BOOST_AUTO_TEST_CASE(checkWithUtf8CompatCharsetEventContainsContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
-
-	std::string orig_sc_content = "0123456789";
-	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html; charset=ISO-8859-1" + CRLF + "Content-Length: 10" + CRLF + CRLF + orig_sc_content;
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
-
-	BOOST_CHECK_EQUAL(orig_sc_content, m_e->getString(m_sc_content_term_ref));
-}
-
 BOOST_AUTO_TEST_CASE(checkRequestWithContent) {
-	std::string orig_cs_content = "Color=Red";
+	const std::string orig_cs_content = "Color=Red";
 	std::string request = "POST / HTTP/1.1" + CRLF + "Content-Type: application/x-www-form-urlencoded" + CRLF 
 						+ "Content-Length: 9" + CRLF + CRLF + orig_cs_content;
 	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
 
-	std::string orig_sc_content = "0123456789";
+	const std::string orig_sc_content = "0123456789";
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + orig_sc_content;
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
@@ -502,196 +515,138 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContent) {
 	BOOST_CHECK_EQUAL(orig_sc_content, m_e->getString(m_sc_content_term_ref));
 }
 
+BOOST_AUTO_TEST_CASE(checkWithUtf8CharsetEventContainsOriginalContentTerm) {
+	// Send a Content-Type header with charset=utf-8.
+	generateEvent("Content-Type: text/html; charset=utf-8", UTF8_ENCODED_TEST_STRING_1);
+
+	// Check that the sc_content Term in the Event was unchanged.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkWithUtf8CompatCharsetEventContainsOriginalContentTerm) {
+	// ISO-8859-1 encoded content: should be the same in UTF-8.
+	const std::string ISO_8859_1_encoded_content = "0123456789";
+
+	// Send a Content-Type header with charset=ISO-8859-1.
+	generateEvent("Content-Type: text/html; charset=ISO-8859-1", ISO_8859_1_encoded_content);
+
+	// Check that the sc_content Term in the Event was unchanged.
+	BOOST_CHECK_EQUAL(ISO_8859_1_encoded_content, m_e->getString(m_sc_content_term_ref));
+}
+
 BOOST_AUTO_TEST_CASE(checkWithUtf16CharsetEventContainsUtf8ContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Send a Content-Type header with the charset specified.
+	generateEvent("Content-Type: text/html; charset=utf-16", UTF16_ENCODED_TEST_STRING_1);
 
-	const char UTF16_ENCODED_TEST_STRING_1[] = {
-		0xFF, 0xFE,			// BOM (byte order marker)
-		0x63, 0x00,			// 'c'
-		0x61, 0x00,			// 'a'
-		0x74, 0x00,			// 't'
-		0x2B, 0x73,			// U+732B (simplified Chinese character for "cat")
-		0x2F, (char)0xFF,	// U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
-		0x2B, (char)0xFF};	// U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
-
-	// Simulate a response with content set to test string 1 using UTF-16 encoding.
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=utf-16" << CRLF
-		<< "Content-Length: " << sizeof(UTF16_ENCODED_TEST_STRING_1) << CRLF << CRLF;
-	oss.write(UTF16_ENCODED_TEST_STRING_1, sizeof(UTF16_ENCODED_TEST_STRING_1));
-	std::string response = oss.str();
-
-	// Process the response and check that the resulting Event has an sc-content Term containing the UTF-8 encoding of test string 1.
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+	// Check that the sc_content Term in the Event was converted from UTF-16 to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingAndUtf16CharsetEventContainsOriginalContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// content encoded with unknown compression algorithm "smash"
+	const std::string smashed_utf16_content = "cmq437ghqnuv5qoigu";
 
-	// Simulate a response with content encoded with unknown compression algorithm "smash".
-	char smashed_utf16_content[] = "cmq437ghqnuv5qoigu";
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=utf-16" << CRLF
-		<< "Content-Encoding: smash" << CRLF
-		<< "Content-Length: " << sizeof(smashed_utf16_content) << CRLF << CRLF;
-	oss.write(smashed_utf16_content, sizeof(smashed_utf16_content));
-	std::string response = oss.str();
+	// Send a Content-Type header with charset=utf-16 and a Content-Encoding header with value "smash".
+	generateEvent("Content-Type: text/html; charset=utf-16", smashed_utf16_content, "smash");
 
-	// Process the response and check that the resulting Event has an sc-content Term containing the still smashed content.
+	// Check that the resulting Event has an sc-content Term containing the still smashed content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
 	BOOST_CHECK_EQUAL(smashed_utf16_content, m_e->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithShiftJISCharsetEventContainsUtf8ContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Send a Content-Type header with the charset specified.
+	generateEvent("Content-Type: text/html; charset=Shift_JIS", SHIFT_JIS_ENCODED_TEST_STRING_1);
 
-	// See http://demo.icu-project.org/icu-bin/convexp?conv=ibm-943_P15A-2003 for Shift_JIS tables.
-	const char SHIFT_JIS_ENCODED_TEST_STRING_1[] = {
-		0x63,				// 'c'
-		0x61,				// 'a'
-		0x74,				// 't'
-		(char)0x94, 0x4C,	// Shift_JIS encoding of U+732B (simplified Chinese character for "cat")
-		(char)0x82, 0x6E,	// Shift_JIS encoding of U+FF2F (FULLWIDTH LATIN CAPITAL LETTER O)
-		(char)0x82, 0x6A};	// Shift_JIS encoding of U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
-
-	// Simulate a response with content set to test string 1 using Shift_JIS encoding.
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=Shift_JIS" << CRLF
-		<< "Content-Length: " << sizeof(SHIFT_JIS_ENCODED_TEST_STRING_1) << CRLF << CRLF;
-	oss.write(SHIFT_JIS_ENCODED_TEST_STRING_1, sizeof(SHIFT_JIS_ENCODED_TEST_STRING_1));
-	std::string response = oss.str();
-
-	// Process the response and check that the resulting Event has an sc-content Term containing the UTF-8 encoding of test string 1.
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+	// Check that the sc_content Term in the Event was converted from Shift_JIS to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsUtf8ContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Send a Content-Type header with the charset specified.
+	generateEvent("Content-Type: text/html; charset=EUC-JP", EUC_JP_ENCODED_TEST_STRING_1);
 
-	// Simulate a response with content set to test string 1 using EUC-JP encoding.
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=euc-jp" << CRLF
-		<< "Content-Length: " << sizeof(EUC_JP_ENCODED_TEST_STRING_1) << CRLF << CRLF;
-	oss.write(EUC_JP_ENCODED_TEST_STRING_1, sizeof(EUC_JP_ENCODED_TEST_STRING_1));
-	std::string response = oss.str();
-
-	// Process the response and check that the resulting Event has an sc-content Term containing the UTF-8 encoding of test string 1.
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+	// Check that the sc_content Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8ContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Send a Content-Type header with the charset specified and send gzipped content.
+	generateEvent("Content-Type: text/html; charset=eUc-jP", gzipEncode(EUC_JP_ENCODED_TEST_STRING_1), "gzip");
 
-	std::string gzipped_content = gzipEncode(EUC_JP_ENCODED_TEST_STRING_1);
+	// Check that the sc_content Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+}
 
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=euc-jp" << CRLF
-		<< "Content-Encoding: gzip" << CRLF
-		<< "Content-Length: " << gzipped_content.length() << CRLF << CRLF
-		<< gzipped_content;
-	std::string response = oss.str();
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndUtf16CharsetEventContainsUtf8ContentTerm) {
+	// Send a Content-Type header with the charset specified and send gzipped content.
+	generateEvent("Content-Type: text/html; charset=UTF-16", gzipEncode(UTF16_ENCODED_TEST_STRING_1), "gzip");
 
+	// Check that the sc_content Term in the Event was converted from UTF-16 to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownCharsetEventContainsOriginalContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Test string 1 encoded with the unknown Betelgeuse-III encoding.
+	const std::string BETELGEUSE_III_ENCODED_TEST_STRING_1 = "Take me to your leader.";
 
-	// Simulate a response with content set to test string 1 using Betelgeuse-III encoding.
-	char betelgeuse_iii_encoded_content[] = "Take me to your leader.";
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=Betelgeuse-III" << CRLF
-		<< "Content-Length: " << sizeof(betelgeuse_iii_encoded_content) << CRLF << CRLF;
-	oss.write(betelgeuse_iii_encoded_content, sizeof(betelgeuse_iii_encoded_content));
-	std::string response = oss.str();
+	// Send a Content-Type header with charset=Betelgeuse-III.
+	generateEvent("Content-Type: text/html; charset=Betelgeuse-III", BETELGEUSE_III_ENCODED_TEST_STRING_1);
 
-	// Process the response and check that the resulting Event has an sc-content Term containing the Betelgeuse-III encoding of test string 1.
+	// Check that the resulting Event has an sc-content Term containing the original Betelgeuse-III encoded content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
-	BOOST_CHECK_EQUAL(betelgeuse_iii_encoded_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
 }
 
+/*
+// TODO: Currently, this test fails, because HTTPProtocol::ExtractionRule::processContent() is all-or-nothing:
+// if either decoding or conversion fails, it uses the original content.  It would probably be better if it used
+// the decoded (i.e. uncompressed) content when decoding succeeds and conversion fails, but that would require
+// substantial refactoring of processContent().
+
+BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndUnknownCharsetEventContainsOriginalUncompressedContentTerm) {
+	// Test string 1 encoded with the unknown Betelgeuse-III encoding.
+	const std::string BETELGEUSE_III_ENCODED_TEST_STRING_1 = "Take me to your leader.";
+
+	// Send a Content-Type header with charset=Betelgeuse-III and send gzipped content.
+	generateEvent("Content-Type: text/html; charset=Betelgeuse-III", gzipEncode(BETELGEUSE_III_ENCODED_TEST_STRING_1), "gzip");
+
+	// Check that the resulting Event has an sc-content Term containing the original Betelgeuse-III encoded content.
+	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
+	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+}
+*/
+
 BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsUtf8PageTitle) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	// Make EUC-JP encoded content containing a <title> equal to test string 1.
+	// This works because the EUC-JP encoding of US-ASCII characters is the same as US-ASCII.
+	const std::string content_with_title = "<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>some more content";
 
-	// Simulate a response with EUC-JP encoded content containing a <title> equal to test string 1.
-	int content_length = strlen("<title>") + sizeof(EUC_JP_ENCODED_TEST_STRING_1) + strlen("</title>more content");
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=euc-jp" << CRLF
-		<< "Content-Length: " << content_length << CRLF << CRLF
-		<< "<title>";
-	oss.write(EUC_JP_ENCODED_TEST_STRING_1, sizeof(EUC_JP_ENCODED_TEST_STRING_1));
-	oss << "</title>more content";
-	std::string response = oss.str();
+	// Send a Content-Type header with charset=euc-jp.
+	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
 
-	// Process the response and check that the resulting Event has a page-title Term containing the UTF-8 encoding of test string 1.
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8PageTitle) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(boost::indeterminate(m_rc));
+	const std::string content_with_title = "<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>some more content";
 
-	std::ostringstream content_with_title;
-	content_with_title << "<title>";
-	content_with_title.write(EUC_JP_ENCODED_TEST_STRING_1, sizeof(EUC_JP_ENCODED_TEST_STRING_1));
-	content_with_title << "</title>some more content";
-	std::string gzipped_content_with_title = gzipEncode(content_with_title.str());
+	// Send a Content-Type header with charset=euc-jp and send gzipped content.
+	generateEvent("Content-Type: text/html; charset=euc-jp", gzipEncode(content_with_title), "gzip");
 
-	std::ostringstream oss;
-	oss << "HTTP/1.1 200 " << CRLF
-		<< "Content-Type: text/html; charset=euc-jp" << CRLF
-		<< "Content-Encoding: gzip" << CRLF
-		<< "Content-Length: " << gzipped_content_with_title.length() << CRLF << CRLF
-		<< gzipped_content_with_title;
-	std::string response = oss.str();
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
-
-	// Process the response and check that the resulting Event has a page-title Term containing the UTF-8 encoding of test string 1.
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-	BOOST_CHECK(m_rc == true);
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
-	std::ostringstream euc_jp_encoded_query;
-	euc_jp_encoded_query << "Pet=";
-	euc_jp_encoded_query.write(EUC_JP_ENCODED_TEST_STRING_1, sizeof(EUC_JP_ENCODED_TEST_STRING_1));
-	std::string encoded_content = euc_jp_encoded_query.str();
+	const std::string euc_jp_encoded_query = "Pet=" + EUC_JP_ENCODED_TEST_STRING_1;
 
 	std::ostringstream oss;
 	oss << "POST / HTTP/1.1" << CRLF
 		<< "Content-Type: application/x-www-form-urlencoded; charset=euc-jp" << CRLF
-		<< "Content-Length: " << encoded_content.length() << CRLF << CRLF
-		<< encoded_content;
+		<< "Content-Length: " << euc_jp_encoded_query.length() << CRLF << CRLF
+		<< euc_jp_encoded_query;
 	std::string request = oss.str();
 	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
@@ -701,20 +656,20 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
 	BOOST_CHECK(m_rc == true);
 
 	// Check that the resulting Event has a cs-content Term containing the UTF-8 encoding of the query.
-	std::string utf8_encoded_query = std::string("Pet=") + UTF8_ENCODED_TEST_STRING_1;
+	const std::string utf8_encoded_query = "Pet=" + UTF8_ENCODED_TEST_STRING_1;
 	BOOST_CHECK_EQUAL(utf8_encoded_query, m_e->getString(m_cs_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
 	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta http-equiv tag.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified.
-	generateEvent("Content-Type: text/html", oss.str());
+	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -723,14 +678,14 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetSelfClosing) {
 	// Make the content for an http response with an EUC-JP encoded title and with the charset in a self closing meta http-equiv tag.
 	// Note that while some references say that meta tags should not be self closing, in the wild, many are.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\" />" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\" />" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified.
-	generateEvent("Content-Type: text/html", oss.str());
+	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -738,14 +693,14 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetSelfClosing) {
 
 BOOST_AUTO_TEST_CASE(checkMetaCharset) {
 	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta charset tag.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta charset=euc-jp\">" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified.
-	generateEvent("Content-Type: text/html", oss.str());
+	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -754,14 +709,14 @@ BOOST_AUTO_TEST_CASE(checkMetaCharset) {
 BOOST_AUTO_TEST_CASE(checkMetaCharsetSelfClosing) {
 	// Make the content for an http response with an EUC-JP encoded title and with the charset in a self closing meta charset tag.
 	// Note that while some references say that meta tags should not be self closing, in the wild, many are.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta charset=euc-jp\" />" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta charset=euc-jp\" />" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified.
-	generateEvent("Content-Type: text/html", oss.str());
+	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -769,14 +724,14 @@ BOOST_AUTO_TEST_CASE(checkMetaCharsetSelfClosing) {
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetWithGzip) {
 	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta charset tag.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified and send gzipped content.
-	generateEvent("Content-Type: text/html", gzipEncode(oss.str()), "gzip");
+	generateEvent("Content-Type: text/html", gzipEncode(content), "gzip");
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -784,14 +739,14 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetWithGzip) {
 
 BOOST_AUTO_TEST_CASE(checkHttpHeaderCharsetHasPrecedenceOverMetaCharset) {
 	// Make the content for an http response with an EUC-JP encoded title and the WRONG charset in a meta charset tag.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta charset=utf-16\">" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta charset=utf-16\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with EUC-JP specified.
-	generateEvent("Content-Type: text/html; charset=euc-jp", oss.str());
+	generateEvent("Content-Type: text/html; charset=euc-jp", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -799,16 +754,16 @@ BOOST_AUTO_TEST_CASE(checkHttpHeaderCharsetHasPrecedenceOverMetaCharset) {
 
 BOOST_AUTO_TEST_CASE(checkContentTypeHeaderWithMultipleParameters) {
 	// Make the content for an http response with an EUC-JP encoded title.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with EUC-JP specified and another parameter after that.
 	// TODO: This is not a realistic header.  I want to replace this with something better,
 	// but since this test was inspired by an actual case where the charset was set to
 	// "utf-8; type=feed" in HTTPProtocol, I'm leaving it in for now.
-	generateEvent("Content-Type: text/html; charset=euc-jp; type=feed", oss.str());
+	generateEvent("Content-Type: text/html; charset=euc-jp; type=feed", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
@@ -817,14 +772,14 @@ BOOST_AUTO_TEST_CASE(checkContentTypeHeaderWithMultipleParameters) {
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeWithMultipleParameters) {
 	// Make the content for an http response with an EUC-JP encoded title.
 	// TODO: See comment in checkContentTypeHeaderWithMultipleParameters.
-	std::ostringstream oss;
-	oss << "<html><head>" << CRLF
-		<< "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp; type=feed\">" << CRLF
-		<< "<title>" << EUC_JP_ENCODED_TEST_STRING_1 << "</title>" << CRLF
-		<< "</head><body>blah blah</body></html>" << CRLF;
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp; type=feed\">" + CRLF + 
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
 
 	// Send a Content-Type header with no charset specified.
-	generateEvent("Content-Type: text/html", oss.str());
+	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
