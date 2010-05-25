@@ -617,7 +617,7 @@ pion.editionSetup = function(license_key_type) {
 				// The user has gone through the wizard before and/or has a pre-existing configuration.
 				// They can still choose to run the wizard from the menu bar link.
 
-				if (license_key_type == 'invalid') {
+				if (license_key_type == 'invalid' && dojo.cookie('pion_edition') != 'Core' && dojo.cookie('pion_edition') != 'Lite') {
 					var dialog = new pion.widgets.EditionSelectorDialog;
 					dialog.show();
 				} else {

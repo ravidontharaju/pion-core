@@ -28330,7 +28330,7 @@ dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();
 }else{
 if(_1aa8.length>0||dojo.cookie("pion_edition")){
-if(_1aa5=="invalid"){
+if(_1aa5=="invalid"&&dojo.cookie("pion_edition")!="Core"&&dojo.cookie("pion_edition")!="Lite"){
 var _1aa9=new pion.widgets.EditionSelectorDialog;
 _1aa9.show();
 }else{
