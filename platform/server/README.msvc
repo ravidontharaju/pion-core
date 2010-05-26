@@ -16,7 +16,7 @@ C:\icu-4.4.1\bin
 and for the PION_FULL configurations,
 
 C:\log4cplus-1.0.3\bin
-C:\yajl-0.4.0\bin
+C:\yajl-1.0.9\bin
 
 
 To run pion.exe from the command line, run it from the project directory with 

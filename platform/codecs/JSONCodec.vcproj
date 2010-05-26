@@ -37,7 +37,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\yajl-1.0.5\include"
+				AdditionalIncludeDirectories="C:\yajl-1.0.9\include"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -51,7 +51,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="C:\yajl-1.0.5\bin"
+				AdditionalLibraryDirectories="C:\yajl-1.0.9\bin"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -100,7 +100,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\yajl-1.0.5\include"
+				AdditionalIncludeDirectories="C:\yajl-1.0.9\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -115,7 +115,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="C:\yajl-1.0.5\bin"
+				AdditionalLibraryDirectories="C:\yajl-1.0.9\bin"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -164,7 +164,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\yajl-1.0.5\include"
+				AdditionalIncludeDirectories="C:\yajl-1.0.9\include"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="C:\yajl-1.0.5\bin"
+				AdditionalLibraryDirectories="C:\yajl-1.0.9\bin"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -227,7 +227,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\yajl-1.0.5\include"
+				AdditionalIncludeDirectories="C:\yajl-1.0.9\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -242,7 +242,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="C:\yajl-1.0.5\bin"
+				AdditionalLibraryDirectories="C:\yajl-1.0.9\bin"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
