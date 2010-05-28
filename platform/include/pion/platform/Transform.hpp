@@ -21,6 +21,7 @@
 #define __PION_TRANSFORM_HEADER__
 
 #include <boost/regex.hpp>
+#include <boost/regex/icu.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <pion/PionConfig.hpp>
@@ -685,7 +686,10 @@ class PION_PLATFORM_API TransformRegex
 	std::vector<std::string>					m_format;
 
 	/// regex's
-	std::vector<boost::regex>					m_regex;
+	std::vector<boost::u32regex>				m_regex;
+
+	/// the strings the regex's were created from (as read from the configuration) 
+	std::vector<std::string>					m_regex_str;
 
 	/// Is still regex still alive?
 	std::vector<bool>							m_running;
@@ -727,13 +731,14 @@ public:
 			}
 			val = reinterpret_cast<char*>(xml_char_ptr);
 			xmlFree(xml_char_ptr);
-			boost::regex reg;
+			boost::u32regex reg;
 			try {
-				reg = val;
+				reg = boost::make_u32regex(val);
 			} catch (...) {
 				throw MissingTransformField("Invalid regular expression in TransformationRegex");
 			}
 			m_regex.push_back(reg);
+			m_regex_str.push_back(val);
 			m_running.push_back(true);
 			RegexNode = RegexNode->next;
 		}
@@ -766,12 +771,12 @@ public:
 				if (m_running[i]) {
 					std::string res;
 					try {
-						res = boost::regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
+						res = boost::u32regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
 					} catch (...) {
 						// This rule won't be running again...
 						m_running[i] = false;
 						// Throw on this, to get an error message logged
-						throw RegexFailure("str=" + str + ", regex=" + m_regex[i].str());
+						throw RegexFailure("str=" + str + ", regex=" + m_regex_str[i]);
 					}
 					if (!res.empty())
 						str = res;

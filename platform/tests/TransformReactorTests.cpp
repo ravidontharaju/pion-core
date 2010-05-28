@@ -1,11 +1,20 @@
-// ---------------------------------------------------------------------------
-// PionEnterpriseUnitTests: unit tests for Pion Enterprise Edition components
-// ---------------------------------------------------------------------------
-// Copyright (C) 2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// ------------------------------------------------------------------------
+// Pion is a development platform for building Reactors that process Events
+// ------------------------------------------------------------------------
+// Copyright (C) 2007-2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
-// The contents of this file are PROPRIETARY and CONFIDENTIAL TRADE SECRETS
-// of Atomic Labs, Inc.  DO NOT REDISTRIBUTE anything from here without the
-// prior written permission of an executive manager.
+// Pion is free software: you can redistribute it and/or modify it under the
+// terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// Pion is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for
+// more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #include <string>
@@ -230,6 +239,178 @@ BOOST_AUTO_TEST_CASE(checkTransformStockPriceLogFile) {
 	// Stop the LogOutputReactor and confirm that the log file it wrote has the expected contents.
 	m_reaction_engine->stopReactor(log_writer_id);
 	BOOST_CHECK(PionUnitTest::check_files_match(LOG_OUTPUT_FILE, STOCK_PRICE_LOG_EXPECTED_FILE));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+class TransformReactorEventValidator_F : public ReactionEngineReadyToAddReactors_F {
+public:
+	TransformReactorEventValidator_F() {
+		m_num_events_validated = 0;
+		m_page_event_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-event");
+		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
+	}
+
+	typedef std::map<Vocabulary::TermRef, std::string> ExpectedTerms;
+
+	void MockEventHandler(EventPtr& e, const ExpectedTerms& expected_terms) {
+		if (m_num_events_validated > 0)
+			return;
+
+		BOOST_REQUIRE(! e->empty());
+		for (ExpectedTerms::const_iterator i = expected_terms.begin(); i != expected_terms.end(); ++i)
+			BOOST_CHECK_EQUAL(e->getString(i->first), i->second);
+
+		++m_num_events_validated;
+	}
+
+	void sendEventAndValidateOutput(EventPtr e, const std::string& transformer_id) {
+		// Add an Event handler to check that the output of the TransformReactor is as expected.
+		Reactor::EventHandler eventValidator = boost::bind(&TransformReactorEventValidator_F::MockEventHandler, this, _1, m_expected_terms);
+		m_reaction_engine->addTempConnectionOut(transformer_id, PionId().to_string(), "blah", eventValidator);
+
+		// Start the ReactionEngine and send the input Event to the TransformReactor.
+		m_reaction_engine->start();
+		m_reaction_engine->send(transformer_id, e);
+
+		// Check that the TransformReactor output an Event and that the Event was validated.
+		PionPlatformUnitTest::checkReactorEventsOut(*m_reaction_engine, transformer_id, 1);
+		BOOST_CHECK_EQUAL(m_num_events_validated, 1);
+	}
+
+	EventFactory		m_event_factory;
+	int					m_num_events_validated;
+	Vocabulary::TermRef	m_page_event_ref;
+	Vocabulary::TermRef	m_sc_content_term_ref;
+	ExpectedTerms		m_expected_terms;
+};
+
+BOOST_FIXTURE_TEST_SUITE(TransformReactorEventValidator_S, TransformReactorEventValidator_F)
+
+BOOST_AUTO_TEST_CASE(checkBasicRegex) {
+	// Add a TransformReactor that does a regular expression transformation.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
+			"<Regex exp=\"x=(\\S+)\">$1</Regex>"
+			"<Type>Regex</Type>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "some content x=hello blah blah");
+	m_expected_terms[m_sc_content_term_ref] = "hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingHexadecimalEscapeCodes) {
+	// Add a TransformReactor that does a regular expression transformation that includes a non-US-ASCII character.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
+			"<Regex exp=\"\xCE\xB1=(\\S+)\">$1</Regex>"
+			"<Type>Regex</Type>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	char UTF8_ENCODED_TEST_CHAR_ARRAY[] = {
+		(char)0xCE, (char)0xB1,				// UTF-8 encoding of U+03B1 (GREEK SMALL LETTER ALPHA)
+		0x3D,								// '='
+		0x31,								// '1'
+		0x20,								// space
+		(char)0xCE, (char)0xB2,				// UTF-8 encoding of U+03B2 (GREEK SMALL LETTER BETA)
+		0x3D,								// '='
+		0x32};								// '2'
+	const std::string UTF8_ENCODED_TEST_STRING(UTF8_ENCODED_TEST_CHAR_ARRAY, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY));
+	e->setString(m_sc_content_term_ref, UTF8_ENCODED_TEST_STRING);
+	m_expected_terms[m_sc_content_term_ref] = "1";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+// This test is the same as checkUtf8RegexUsingHexadecimalEscapeCodes, except that the non-US-ASCII
+// character 'alpha' appears directly in the regular expression.  (This may not be apparent if you are
+// not viewing this test code with UTF-8 encoding, but note that reactors.xml is always UTF-8 encoded.)
+BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingEmbeddedUtf8) {
+	// Add a TransformReactor that does a regular expression transformation that includes a non-US-ASCII character.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
+			"<Regex exp=\"α=(\\S+)\">$1</Regex>"
+			"<Type>Regex</Type>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	char UTF8_ENCODED_TEST_CHAR_ARRAY[] = {
+		(char)0xCE, (char)0xB1,				// UTF-8 encoding of U+03B1 (GREEK SMALL LETTER ALPHA)
+		0x3D,								// '='
+		0x31,								// '1'
+		0x20,								// space
+		(char)0xCE, (char)0xB2,				// UTF-8 encoding of U+03B2 (GREEK SMALL LETTER BETA)
+		0x3D,								// '='
+		0x32};								// '2'
+	const std::string UTF8_ENCODED_TEST_STRING(UTF8_ENCODED_TEST_CHAR_ARRAY, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY));
+	e->setString(m_sc_content_term_ref, UTF8_ENCODED_TEST_STRING);
+	m_expected_terms[m_sc_content_term_ref] = "1";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
+	// Add a TransformReactor that does case insensitive regular expression transformations using non-US-ASCII characters.
+
+	// A couple of arbitrary Terms of string type.
+	std::string string_term_1 = "urn:vocab:atom#icon";
+	std::string string_term_2 = "urn:vocab:atom#logo";
+	Vocabulary::TermRef	string_term_1_ref = m_vocab_mgr.getVocabulary().findTerm(string_term_1);
+	Vocabulary::TermRef	string_term_2_ref = m_vocab_mgr.getVocabulary().findTerm(string_term_2);
+
+	// TODO: Put this in a config file (tr-reactor-i18n.xml?) for testing regex rules with non-US-ASCII characters.
+	// Note that the first line of our config files is always: <?xml version="1.0" encoding="UTF-8"?>
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>" + string_term_1 + "</Term>"
+			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
+			"<Regex exp=\"(?i)Äiti\">found it with uppercase</Regex>"
+			"<Type>Regex</Type>"
+		"</Transformation>"
+		"<Transformation>"
+			"<Term>" + string_term_2 + "</Term>"
+			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
+			"<Regex exp=\"(?i)äiti\">found it with lowercase</Regex>"
+			"<Type>Regex</Type>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	//char utf8_content[] = {
+	//	(char)0xC3, (char)0x84,	// UTF-8 encoding of U+00C4 (LATIN CAPITAL LETTER A WITH DIAERESIS)
+	//	0x69,					// 'i'
+	//	0x74,					// 't'
+	//	0x69,					// 'i'
+	//	0x00 };
+	char utf8_content[] = "Äiti was here";
+	e->setString(m_sc_content_term_ref, utf8_content);
+	m_expected_terms[string_term_1_ref] = "found it with uppercase";
+	m_expected_terms[string_term_2_ref] = "found it with lowercase";
+
+	sendEventAndValidateOutput(e, transformer_id);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
