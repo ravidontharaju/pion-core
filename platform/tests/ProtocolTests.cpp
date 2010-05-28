@@ -785,6 +785,21 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeWithMultipleParameters) {
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
 }
 
+BOOST_AUTO_TEST_CASE(checkUppercaseMetaHttpEquiv) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a META HTTP-EQUIV tag.
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<META HTTP-EQUIV=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", content);
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
