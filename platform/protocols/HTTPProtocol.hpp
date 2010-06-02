@@ -250,8 +250,8 @@ private:
 		 *
 		 * @param term_id unique identifier for the event term
 		 */
-		ExtractionRule(const std::string& term_id) :
-			m_term(term_id)
+		ExtractionRule(const std::string& term_id, const HTTPProtocol& parent_protocol) :
+			m_term(term_id), m_parent_protocol(parent_protocol)
 		{}
 
 		/**
@@ -340,6 +340,9 @@ private:
 			PionLogger& logger) const;
 
 
+		/// the protocol this rule belongs to
+		const HTTPProtocol&					m_parent_protocol;
+
 		/// vocabulary term for the event field where the content is stored
 		pion::platform::Vocabulary::Term	m_term;
 
@@ -426,6 +429,11 @@ private:
 	/// collection of rules used to extract content
 	ExtractionRuleVector		m_extraction_rules;
 
+	/// whether to enable converting content to UTF-8
+	bool						m_allow_utf8_conversion;
+
+	/// whether to enable searching the content for meta tags containing charset declarations
+	bool						m_allow_searching_content_for_charset;
 
 	/// name of the MaxRequestContentLength element for Pion XML config files
 	static const std::string	MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME;
@@ -438,6 +446,12 @@ private:
 
 	/// name of the RawResponseHeaders element for Pion XML config files
 	static const std::string	RAW_RESPONSE_HEADERS_ELEMENT_NAME;
+
+	/// name of the AllowUtf8Conversion element for Pion XML config files
+	static const std::string	ALLOW_UTF8_CONVERSION_ELEMENT_NAME;
+
+	/// name of the AllowSearchingContentForCharset element for Pion XML config files
+	static const std::string	ALLOW_SEARCHING_CONTENT_FOR_CHARSET_ELEMENT_NAME;
 
 	/// name of the ContentType element for Pion XML config files
 	static const std::string	CONTENT_TYPE_ELEMENT_NAME;
@@ -743,33 +757,38 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 				size_t decoded_content_length;
 				bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding);
 				if (decoded_flag || content_encoding.empty()) {
-					// Get the charset, if present, from the Content-Type header.
-					boost::match_results<std::string::const_iterator> mr;
-					boost::regex rx(";\\s*charset=([^;]+)");
+					bool do_conversion = false;
 					std::string charset;
-					if (boost::regex_search(content_type, mr, rx)) {
-						charset = mr[1];
-					}
-
-					if (charset.empty()) {
-						// No charset in the Content-Type header, so need to look for meta tags in the content.
-
-						boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
-						boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
-						boost::match_results<const char*> mr2;
-						const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
-						size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
-						size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
-						if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
-							charset = mr2[1];
-						} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
-							charset = mr2[1];
+					if (m_parent_protocol.m_allow_utf8_conversion) {
+						// Get the charset, if present, from the Content-Type header.
+						boost::match_results<std::string::const_iterator> mr;
+						boost::regex rx(";\\s*charset=([^;]+)");
+						if (boost::regex_search(content_type, mr, rx)) {
+							charset = mr[1];
 						}
-					} else {
-						// A charset was found in the Content-Type header, so we don't need to look for meta tags,
-						// since the former takes precedence over the latter.
+
+						if (m_parent_protocol.m_allow_searching_content_for_charset) {
+							if (charset.empty()) {
+								// No charset in the Content-Type header, so need to look for meta tags in the content.
+
+								boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
+								boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
+								boost::match_results<const char*> mr2;
+								const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
+								size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
+								size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
+								if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
+									charset = mr2[1];
+								} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
+									charset = mr2[1];
+								}
+							} else {
+								// A charset was found in the Content-Type header, so we don't need to look for meta tags,
+								// since the former takes precedence over the latter.
+							}
+						}
+						do_conversion = (! charset.empty() && ucnv_compareNames(charset.c_str(), "utf-8") != 0);
 					}
-					bool do_conversion = (! charset.empty() && ucnv_compareNames(charset.c_str(), "utf-8") != 0);
 
 					if (content_encoding.empty()) {
 						// No decoding needed, so do conversion, if required, directly on http_msg.getContent().

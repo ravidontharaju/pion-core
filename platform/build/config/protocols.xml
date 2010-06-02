@@ -5,6 +5,7 @@
 		<Comment>HTTP Protocol parser</Comment>
 		<Plugin>HTTPProtocol</Plugin>
 		<EventType>urn:vocab:clickstream#http-event</EventType>
+		<AllowUtf8Conversion>false</AllowUtf8Conversion>
 		<Extract term="urn:vocab:clickstream#host">
 			<Source>cs-header</Source>
 			<Name>Host</Name>

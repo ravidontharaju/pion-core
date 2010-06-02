@@ -196,13 +196,47 @@ public:
 		// open the default Protocol configuration file used for testing
 		setConfigFile(PROTOCOLS_CONFIG_FILE);
 		openConfigFile();
+
+		m_minimal_request = "GET / HTTP/1.1" + CRLF + "Host: X" + CRLF + CRLF;
+
+		// We're not testing timestamps here, so use anything that works.
+		m_t0 = boost::posix_time::ptime();
+
+		m_page_title_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-title");
 	}
 
 	~StandardProtocolFactory_F() {
 	}
 
+	void generateEvent(const std::string& content_type_header, const std::string& content, const std::string& content_encoding = "") {
+		// Process a minimal request.
+		m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+		BOOST_REQUIRE(boost::indeterminate(m_rc));
+
+		// Simulate a response with the given content and Content-Type header.
+		std::ostringstream oss;
+		oss << "HTTP/1.1 200 " << CRLF
+			<< content_type_header << CRLF;
+		if (! content_encoding.empty())
+			oss << "Content-Encoding: " << content_encoding << CRLF;
+		oss	<< "Content-Length: " << content.size() << CRLF << CRLF
+			<< content;
+		std::string response = oss.str();
+
+		// Process the response and check that an Event was generated.
+		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+		BOOST_REQUIRE(m_rc == true);
+		BOOST_REQUIRE(m_e.get());
+	}
+
 	static VocabularyManager m_vocab_mgr;
 	static bool m_config_loaded;
+	std::string m_minimal_request;
+	boost::tribool m_rc;
+	EventPtr m_e;
+	pion::platform::ProtocolPtr m_protocol_ptr;
+	boost::posix_time::ptime m_t0;
+	pion::platform::Vocabulary::TermRef	m_page_title_term_ref;
 };
 
 VocabularyManager StandardProtocolFactory_F::m_vocab_mgr;
@@ -329,14 +363,8 @@ public:
 	HTTPFullContentProtocol_F() : StandardProtocolFactory_F() {
 		m_protocol_ptr = getProtocol("593f044a-ac60-11dd-aba3-001cc02bd66b");
 
-		m_minimal_request = "GET / HTTP/1.1" + CRLF + "Host: X" + CRLF + CRLF;
-
-		// We're not testing timestamps here, so use anything that works.
-		m_t0 = boost::posix_time::ptime();
-
 		m_cs_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#cs-content");
 		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
-		m_page_title_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-title");
 	}
 
 	~HTTPFullContentProtocol_F() {
@@ -359,35 +387,8 @@ public:
 		return encoded_content;
 	}
 
-	void generateEvent(const std::string& content_type_header, const std::string& content, const std::string& content_encoding = "") {
-		// Process a minimal request.
-		m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
-		BOOST_REQUIRE(boost::indeterminate(m_rc));
-
-		// Simulate a response with the given content and Content-Type header.
-		std::ostringstream oss;
-		oss << "HTTP/1.1 200 " << CRLF
-			<< content_type_header << CRLF;
-		if (! content_encoding.empty())
-			oss << "Content-Encoding: " << content_encoding << CRLF;
-		oss	<< "Content-Length: " << content.size() << CRLF << CRLF
-			<< content;
-		std::string response = oss.str();
-
-		// Process the response and check that an Event was generated.
-		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
-		BOOST_REQUIRE(m_rc == true);
-		BOOST_REQUIRE(m_e.get());
-	}
-
-	std::string m_minimal_request;
-	boost::tribool m_rc;
-	EventPtr m_e;
-	pion::platform::ProtocolPtr m_protocol_ptr;
-	boost::posix_time::ptime m_t0;
 	pion::platform::Vocabulary::TermRef	m_cs_content_term_ref;
 	pion::platform::Vocabulary::TermRef	m_sc_content_term_ref;
-	pion::platform::Vocabulary::TermRef	m_page_title_term_ref;
 };
 
 BOOST_FIXTURE_TEST_SUITE(HTTPFullContentProtocol_S, HTTPFullContentProtocol_F)
@@ -798,6 +799,154 @@ BOOST_AUTO_TEST_CASE(checkUppercaseMetaHttpEquiv) {
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture class used for testing Protocol "HTTP (no content)"
+class HTTPNoContentProtocol_F : public StandardProtocolFactory_F  {
+public:
+	HTTPNoContentProtocol_F() : StandardProtocolFactory_F() {
+		m_protocol_ptr = getProtocol("37A7DC3E-EE7E-4420-B0DD-CADE20DEF840");
+	}
+
+	~HTTPNoContentProtocol_F() {
+	}
+};
+
+BOOST_FIXTURE_TEST_SUITE(HTTPNoContentProtocol_S, HTTPNoContentProtocol_F)
+
+// Contrast with HTTPFullContentProtocol_S::checkWithEucJpCharsetEventContainsUtf8PageTitle().
+// Conversion should not occur due to <AllowUtf8Conversion>false</AllowUtf8Conversion> in config.
+BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsEucJpPageTitle) {
+	// Make EUC-JP encoded content containing a <title> equal to test string 1.
+	// This works because the EUC-JP encoding of US-ASCII characters is the same as US-ASCII.
+	const std::string content_with_title = "<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>some more content";
+
+	// Send a Content-Type header with charset=euc-jp.
+	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
+
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+// Contrast with HTTPFullContentProtocol_S::checkMetaHttpEquivContentTypeCharset().
+// Conversion should not occur due to <AllowUtf8Conversion>false</AllowUtf8Conversion> in config.
+BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta http-equiv tag.
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", content);
+
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+/// fixture class used for testing one-off HTTPProtocol configurations
+class HTTPCustomProtocol_F : public StandardProtocolFactory_F  {
+public:
+	HTTPCustomProtocol_F() : StandardProtocolFactory_F(), m_config_ptr(NULL) {
+		m_config_str_head = 
+			"<PionConfig><Protocol>"
+			"	<Plugin>HTTPProtocol</Plugin>"
+			"	<EventType>urn:vocab:clickstream#http-event</EventType>";
+
+		m_config_str_tail = 
+			"	<Extract term=\"urn:vocab:clickstream#page-title\">"
+			"		<Source>sc-content</Source>"
+			"		<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>"
+			"		<Format>$1</Format>"
+			"	</Extract>"
+			"</Protocol></PionConfig>";
+	}
+
+	~HTTPCustomProtocol_F() {
+		xmlFreeNodeList(m_config_ptr);
+	}
+
+	ProtocolPtr createProtocol(const std::string& config_str) {
+		m_config_ptr = ConfigManager::createResourceConfig("Protocol", config_str.c_str(), config_str.size());
+		std::string id = addProtocol(m_config_ptr);
+		BOOST_REQUIRE(! id.empty());
+		return getProtocol(id);
+	}
+
+	std::string m_config_str_head;
+	std::string m_config_str_tail;
+	xmlNodePtr m_config_ptr;
+};
+
+BOOST_FIXTURE_TEST_SUITE(HTTPCustomProtocol_S, HTTPCustomProtocol_F)
+
+BOOST_AUTO_TEST_CASE(checkMetaTagIgnoredWhenAllowSearchingIsFalse) {
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<AllowUtf8Conversion>true</AllowUtf8Conversion>"
+		"	<AllowSearchingContentForCharset>false</AllowSearchingContentForCharset>"
+		+ m_config_str_tail);
+
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta http-equiv tag.
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", content);
+
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkContentTypeHeaderNotIgnoredWhenAllowSearchingIsFalse) {
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<AllowUtf8Conversion>true</AllowUtf8Conversion>"
+		"	<AllowSearchingContentForCharset>false</AllowSearchingContentForCharset>"
+		+ m_config_str_tail);
+
+	// Make EUC-JP encoded content containing a <title> equal to test string 1.
+	// This works because the EUC-JP encoding of US-ASCII characters is the same as US-ASCII.
+	const std::string content_with_title = "<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>some more content";
+
+	// Send a Content-Type header with charset=euc-jp.
+	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
+
+	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+}
+
+// Check that if AllowUtf8Conversion is false, a meta tag charset does not trigger conversion
+// to UTF-8 even if AllowSearchingContentForCharset is true.
+BOOST_AUTO_TEST_CASE(checkAllowSearchingIgnoredWhenAllowUtf8ConversionIsFalse) {
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<AllowUtf8Conversion>false</AllowUtf8Conversion>"
+		"	<AllowSearchingContentForCharset>true</AllowSearchingContentForCharset>"
+		+ m_config_str_tail);
+
+	// Make the content for an http response with an EUC-JP encoded title and with the charset in a meta http-equiv tag.
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=euc-jp\">" + CRLF +
+		"<title>" + EUC_JP_ENCODED_TEST_STRING_1 + "</title>" + CRLF +
+		"</head><body>blah blah</body></html>" + CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/html", content);
+
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

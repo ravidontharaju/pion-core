@@ -50,6 +50,8 @@ const std::string HTTPProtocol::MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME = "MaxRe
 const std::string HTTPProtocol::MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME = "MaxResponseContentLength";
 const std::string HTTPProtocol::RAW_REQUEST_HEADERS_ELEMENT_NAME = "RawRequestHeaders";
 const std::string HTTPProtocol::RAW_RESPONSE_HEADERS_ELEMENT_NAME = "RawResponseHeaders";
+const std::string HTTPProtocol::ALLOW_UTF8_CONVERSION_ELEMENT_NAME = "AllowUtf8Conversion";
+const std::string HTTPProtocol::ALLOW_SEARCHING_CONTENT_FOR_CHARSET_ELEMENT_NAME = "AllowSearchingContentForCharset";
 const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
 const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
 const std::string HTTPProtocol::EXTRACT_ELEMENT_NAME = "Extract";
@@ -530,6 +532,19 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		m_response_parser.setSaveRawHeaders(false);
 	}
 
+	// parse AllowUtf8Conversion config parameter
+	m_allow_utf8_conversion = true;
+	std::string bool_str;
+	if (ConfigManager::getConfigOption(ALLOW_UTF8_CONVERSION_ELEMENT_NAME, bool_str, config_ptr)) {
+		m_allow_utf8_conversion = (bool_str == "true");
+	}
+
+	// parse AllowSearchingContentForCharset config parameter
+	m_allow_searching_content_for_charset = m_allow_utf8_conversion;
+	if (ConfigManager::getConfigOption(ALLOW_SEARCHING_CONTENT_FOR_CHARSET_ELEMENT_NAME, bool_str, config_ptr)) {
+		m_allow_searching_content_for_charset = (bool_str == "true");
+	}
+
 	// parse content extraction rules
 	xmlNodePtr extract_node = config_ptr;
 	m_extraction_rules.clear();
@@ -545,7 +560,7 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		xmlFree(xml_char_ptr);
 
 		// create a new rule configuration object
-		ExtractionRulePtr rule_ptr(new ExtractionRule(term_id));
+		ExtractionRulePtr rule_ptr(new ExtractionRule(term_id, *this));
 
 		// make sure that the Term is valid, copy info to rule
 		const Vocabulary::TermRef term_ref = v.findTerm(term_id);
