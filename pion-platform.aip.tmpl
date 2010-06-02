@@ -99,6 +99,7 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_DATA_SETTER" Type="51" Source="save_config" Target="[APPDIR]"/>
     <ROW Action="AI_DATA_SETTER_1" Type="51" Source="AI_DEL_EMPTY_SHORTCUTDIR" Target="[SHORTCUTDIR]"/>
+    <ROW Action="AI_DATA_SETTER_2" Type="51" Source="CustomActionData" Target="pion.exe"/>
     <ROW Action="AI_DELETE_SHORTCUTS" Type="1" Source="aicustact.dll" Target="DeleteShortcuts"/>
     <ROW Action="AI_DEL_EMPTY_SHORTCUTDIR" Type="3073" Source="aicustact.dll" Target="DeleteEmptyDirectory"/>
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
@@ -106,6 +107,7 @@
     <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
     <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
     <ROW Action="AI_ViewReadme" Type="1" Source="aicustact.dll" Target="[#postinstall.html]"/>
+    <ROW Action="DetectProcess" Type="1" Source="aicustact.dll" Target="DetectProcess"/>
     <ROW Action="PropertySource" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="PropertySource_1" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
     <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
@@ -127,12 +129,17 @@
     <ROW Action="AI_DELETE_SHORTCUTS" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="1401"/>
     <ROW Action="AI_DEL_EMPTY_SHORTCUTDIR" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="6402" AdditionalSeq="AI_DATA_SETTER_1"/>
     <ROW Action="AI_DATA_SETTER_1" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="6401"/>
+    <ROW Action="DetectProcess" Sequence="52" AdditionalSeq="AI_DATA_SETTER_2"/>
+    <ROW Action="AI_DATA_SETTER_2" Sequence="51"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
     <ROW Action="PropertySource" Condition="OLDPRODUCTS" Sequence="101"/>
+    <ROW Action="DetectProcess" Sequence="52" AdditionalSeq="AI_DATA_SETTER_2"/>
+    <ROW Action="AI_DATA_SETTER_2" Sequence="51"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
+    <ROW Condition="NOT AI_PROCESS_STATE = &quot;Running&quot;" Description="Pion is currently running on this computer. Please stop all instances of Pion including Pion Windows Service and try again."/>
     <ROW Condition="NOT UPGRADE_ENTERPRISE_EDITION" Description="Pion Enterprise Edition installation detected. Community Edition cannot be installed. Installation will abort now."/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiMergeModsComponent">
