@@ -33,10 +33,6 @@ pion.system.getHeight = function() {
 pion.system.init = function() {
 	dijit.byId('main_stack_container').resize({h: pion.system.getHeight()});
 
-	if (file_protocol) {
-		// Can't do much in this case....
-		return;
-	}
 	dojo.xhrGet({
 		url: '/config',
 		handleAs: 'xml',

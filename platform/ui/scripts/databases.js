@@ -77,16 +77,12 @@ pion.databases.init = function() {
 	}
 
 	var initConfiguredDatabases = function() {
-		if (file_protocol) {
-			pion.databases._adjustAccordionSize();
-		} else {
-			pion.databases.config_store.fetch({
-				onComplete: function (items, request) {
-					pion.databases.config_accordion.createPanesFromAllItems(items, pion.databases.config_store);
-				},
-				onError: pion.handleFetchError
-			});
-		}
+		pion.databases.config_store.fetch({
+			onComplete: function (items, request) {
+				pion.databases.config_accordion.createPanesFromAllItems(items, pion.databases.config_store);
+			},
+			onError: pion.handleFetchError
+		});
 	}
 
 	pion.plugins.initAvailablePluginList()

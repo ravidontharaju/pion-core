@@ -33,7 +33,6 @@ var database_config_page_initialized = false;
 var protocol_config_page_initialized = false;
 var user_config_page_initialized = false;
 var system_config_page_initialized = false;
-var file_protocol = false;
 var firefox_on_mac;
 
 dojo.declare("pion.DeleteConfirmationDialog",
@@ -799,21 +798,9 @@ pion.checkKeyService = function() {
 }
 
 var init = function() {
-	file_protocol = (window.location.protocol == "file:");
 	firefox_on_mac = navigator.userAgent.indexOf('Mac') >= 0 && navigator.userAgent.indexOf('Firefox') >= 0;
 
 	pion.checkKeyService();
-
-	/*
-	// This block seems obsolete.
-	if (!file_protocol) {
-		// do a fetch just to check if the datastore is available
-		pion.terms.store.fetch({onError: function(errorData, request){
-			alert('dojo.data error: url = ' + request.store._url + '\nIs pion running?');
-			console.debug('window.location.protocol = ', window.location.protocol);
-		}});
-	}
-	*/
 }
 
 dojo.addOnLoad(init);

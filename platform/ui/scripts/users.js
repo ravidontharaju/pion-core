@@ -119,11 +119,7 @@ pion.users.init = function() {
 		pion.users.config_accordion.createPanesFromAllItems(items, pion.users.config_store);
 	}
 
-	if (file_protocol) {
-		dijit.byId('user_config_accordion').removeChild(selected_user_pane);
-	} else {
-		pion.users.config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
-	}
+	pion.users.config_store.fetch({ onComplete: onComplete, onError: pion.handleFetchError });
 
 	function addNewUser() {
 		var dialog = new pion.widgets.UserInitDialog();

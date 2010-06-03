@@ -24277,13 +24277,9 @@ d.callback();
 return d;
 };
 var _16f1=function(){
-if(file_protocol){
-pion.databases._adjustAccordionSize();
-}else{
 pion.databases.config_store.fetch({onComplete:function(items,_16f3){
 pion.databases.config_accordion.createPanesFromAllItems(items,pion.databases.config_store);
 },onError:pion.handleFetchError});
-}
 };
 pion.plugins.initAvailablePluginList().addCallback(pion.databases.getAllDatabasesInUIDirectory).addCallback(_16ec).addCallback(_16f1);
 pion.databases._replaceAccordionPane=function(_16f4){
@@ -25004,7 +25000,6 @@ pion.reactors.reselectCurrentWorkspace();
 new_workspace_tab_clicked=false;
 }
 });
-if(!file_protocol){
 var _179a=0;
 var _179b=0;
 setInterval(function(){
@@ -25043,7 +25038,6 @@ return _179c;
 },error:pion.handleXhrGetError});
 }
 },1000);
-}
 };
 pion.reactors.updateRunButtons=function(){
 if(dijit.byId("ops_toggle_button").checked){
@@ -25065,12 +25059,6 @@ return _17ac;
 }
 };
 pion.reactors._initConfiguredReactors=function(){
-if(file_protocol){
-addWorkspace();
-pion.reactors.workspace_box=workspace_boxes[0];
-surface=pion.reactors.workspace_box.my_surface;
-dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
-}else{
 reactor_config_store=new dojox.data.XmlStore({url:"/config/reactors"});
 pion.reactors.config_store=reactor_config_store;
 reactor_config_store.fetch({query:{tagName:"Reactor"},onItem:function(item,_17b6){
@@ -25106,7 +25094,6 @@ dijit.byId("main_stack_container").layout();
 },onError:pion.handleFetchError});
 },onError:pion.handleFetchError});
 pion.reactors.connection_store=new dojox.data.XmlStore({url:"/config/connections"});
-}
 };
 pion.reactors.createReactorInConfiguredWorkspace=function(_17c3){
 pion.reactors.workspace_box=workspaces_by_name[_17c3.Workspace];
@@ -26889,11 +26876,7 @@ dijit.byId("user_config_accordion").selectChild(_1965);
 function _1966(items,_1968){
 pion.users.config_accordion.createPanesFromAllItems(items,pion.users.config_store);
 };
-if(file_protocol){
-dijit.byId("user_config_accordion").removeChild(selected_user_pane);
-}else{
 pion.users.config_store.fetch({onComplete:_1966,onError:pion.handleFetchError});
-}
 function _1969(){
 var _196a=new pion.widgets.UserInitDialog();
 setTimeout(function(){
@@ -27125,9 +27108,6 @@ return 800;
 };
 pion.system.init=function(){
 dijit.byId("main_stack_container").resize({h:pion.system.getHeight()});
-if(file_protocol){
-return;
-}
 dojo.xhrGet({url:"/config",handleAs:"xml",timeout:5000,load:function(_19a9,_19aa){
 console.debug("in load()");
 if(dojo.isIE){
@@ -28061,7 +28041,6 @@ var database_config_page_initialized=false;
 var protocol_config_page_initialized=false;
 var user_config_page_initialized=false;
 var system_config_page_initialized=false;
-var file_protocol=false;
 var firefox_on_mac;
 dojo.declare("pion.DeleteConfirmationDialog",[dijit.Dialog],{templateString:"<div class=\"dijitDialog delete_dialog\">\r\n\t<div dojoAttachPoint=\"titleBar\" class=\"dijitDialogTitleBar\" waiRole=\"dialog\">\r\n\t\t<span dojoAttachPoint=\"titleNode\" class=\"dijitDialogTitle\">Delete Confirmation</span>\r\n\t</div>\r\n\t<div dojoAttachPoint=\"containerNode\" class=\"dijitDialogPaneContent\"\r\n\t\t><img src=\"images/pion-alert.png\" width=\"66\" height=\"60\" alt=\"Alert\" class=\"alert\"\r\n\t\t><div id=\"are_you_sure\" class=\"warning_text\"></div\r\n\t\t><div class=\"save_cancel_delete\"\r\n\t\t\t><button dojoType=dijit.form.Button class=\"cancel\" dojoAttachEvent=\"onClick: onCancel\">Cancel</button\r\n\t\t\t><button dojoType=dijit.form.Button class=\"delete\" dojoAttachPoint=\"delete_button\">Delete</button\r\n\t\t></div\r\n\t></div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
@@ -28483,7 +28462,6 @@ pion.editionSetup(_1ace);
 });
 };
 var init=function(){
-file_protocol=(window.location.protocol=="file:");
 firefox_on_mac=navigator.userAgent.indexOf("Mac")>=0&&navigator.userAgent.indexOf("Firefox")>=0;
 pion.checkKeyService();
 };

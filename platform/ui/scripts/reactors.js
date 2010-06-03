@@ -158,54 +158,52 @@ pion.reactors.init = function() {
 						}
 					});
 
-	if (!file_protocol) {
-		var prev_global_ops = 0;
-		var prev_events_in_for_workspace = 0;
-		setInterval(function() {
-			if (!ops_toggle_button.checked && pion.current_page == 'Reactors') {
-				dojo.xhrGet({
-					url: '/config/reactors/stats',
-					preventCache: true,
-					handleAs: 'xml',
-					timeout: 1000,
-					load: function(response, ioArgs) {
-						var node = response.getElementsByTagName('TotalOps')[0];
-						var global_ops = parseInt(dojo.isIE? node.xml.match(/.*>(\d*)<.*/)[1] : node.textContent);
-						var delta = global_ops - prev_global_ops;
-						dojo.byId('global_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
-						prev_global_ops = global_ops;
-						var events_in_for_workspace = 0;
-						var reactors = response.getElementsByTagName('Reactor');
-						dojo.forEach(reactors, function(n) {
-							var id = n.getAttribute('id');
-							var reactor = pion.reactors.reactors_by_id[id];
-							if (reactor) {
-								if (reactor.workspace == pion.reactors.workspace_box) {
-									var events_in_node = n.getElementsByTagName('EventsIn')[0];
-									var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
-									var events_in = parseInt(events_in_str);
-									reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
-									reactor.prev_events_in = events_in;
-									events_in_for_workspace += events_in;
-								}
-								var is_running_node = n.getElementsByTagName('Running')[0];
-								var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
-								var is_running = (is_running_string == 'true');
-								//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-								reactor.run_button.attr('checked', is_running);
-								reactor.config.Running = is_running;
+	var prev_global_ops = 0;
+	var prev_events_in_for_workspace = 0;
+	setInterval(function() {
+		if (!ops_toggle_button.checked && pion.current_page == 'Reactors') {
+			dojo.xhrGet({
+				url: '/config/reactors/stats',
+				preventCache: true,
+				handleAs: 'xml',
+				timeout: 1000,
+				load: function(response, ioArgs) {
+					var node = response.getElementsByTagName('TotalOps')[0];
+					var global_ops = parseInt(dojo.isIE? node.xml.match(/.*>(\d*)<.*/)[1] : node.textContent);
+					var delta = global_ops - prev_global_ops;
+					dojo.byId('global_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
+					prev_global_ops = global_ops;
+					var events_in_for_workspace = 0;
+					var reactors = response.getElementsByTagName('Reactor');
+					dojo.forEach(reactors, function(n) {
+						var id = n.getAttribute('id');
+						var reactor = pion.reactors.reactors_by_id[id];
+						if (reactor) {
+							if (reactor.workspace == pion.reactors.workspace_box) {
+								var events_in_node = n.getElementsByTagName('EventsIn')[0];
+								var events_in_str = dojo.isIE? events_in_node.xml.match(/.*>(\d*)<.*/)[1] : events_in_node.textContent;
+								var events_in = parseInt(events_in_str);
+								reactor.ops_per_sec.innerHTML = events_in - reactor.prev_events_in;
+								reactor.prev_events_in = events_in;
+								events_in_for_workspace += events_in;
 							}
-						});
-						delta = events_in_for_workspace - prev_events_in_for_workspace;
-						dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
-						prev_events_in_for_workspace = events_in_for_workspace;
-						return response;
-					},
-					error: pion.handleXhrGetError
-				});
-			}
-		}, 1000);
-	}
+							var is_running_node = n.getElementsByTagName('Running')[0];
+							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
+							var is_running = (is_running_string == 'true');
+							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
+							reactor.run_button.attr('checked', is_running);
+							reactor.config.Running = is_running;
+						}
+					});
+					delta = events_in_for_workspace - prev_events_in_for_workspace;
+					dojo.byId('workspace_ops').innerHTML = delta > 0? delta : 0; // Avoids negative value when server is restarted.
+					prev_events_in_for_workspace = events_in_for_workspace;
+					return response;
+				},
+				error: pion.handleXhrGetError
+			});
+		}
+	}, 1000);
 }
 
 pion.reactors.updateRunButtons = function() {
@@ -236,66 +234,59 @@ pion.reactors.updateRunButtons = function() {
 }
 
 pion.reactors._initConfiguredReactors = function() {
-	if (file_protocol) {
-		addWorkspace();
-		pion.reactors.workspace_box = workspace_boxes[0];
-		surface = pion.reactors.workspace_box.my_surface;
-		dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
-	} else {
-		reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
-		pion.reactors.config_store = reactor_config_store;
-		reactor_config_store.fetch({
-			query: {tagName: 'Reactor'},
-			onItem: function(item, request) {
-				console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
+	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
+	pion.reactors.config_store = reactor_config_store;
+	reactor_config_store.fetch({
+		query: {tagName: 'Reactor'},
+		onItem: function(item, request) {
+			console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
 
-				var config = {};
-				var attributes = reactor_config_store.getAttributes(item);
-				for (var i = 0; i < attributes.length; ++i) {
-					if (attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
-						config[attributes[i]] = reactor_config_store.getValue(item, attributes[i]).toString();
-					}
+			var config = {};
+			var attributes = reactor_config_store.getAttributes(item);
+			for (var i = 0; i < attributes.length; ++i) {
+				if (attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
+					config[attributes[i]] = reactor_config_store.getValue(item, attributes[i]).toString();
 				}
-				//console.dir(config);
+			}
+			//console.dir(config);
 
-				pion.reactors.createReactorInConfiguredWorkspace(config);
-			},
-			onComplete: function(items, request) {
-				console.debug('done fetching Reactors');
-				pion.reactors.updateRunButtons();
-				reactor_config_store.fetch({
-					query: {tagName: 'Connection'},
-					onItem: function(item, request) {
-						var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
-						var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
+			pion.reactors.createReactorInConfiguredWorkspace(config);
+		},
+		onComplete: function(items, request) {
+			console.debug('done fetching Reactors');
+			pion.reactors.updateRunButtons();
+			reactor_config_store.fetch({
+				query: {tagName: 'Connection'},
+				onItem: function(item, request) {
+					var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
+					var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
 
-						// TODO: handle the case where start_reactor.workspace != end_reactor.workspace
-						pion.reactors.workspace_box = start_reactor.workspace;
-						surface = pion.reactors.workspace_box.my_surface;
-						dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+					// TODO: handle the case where start_reactor.workspace != end_reactor.workspace
+					pion.reactors.workspace_box = start_reactor.workspace;
+					surface = pion.reactors.workspace_box.my_surface;
+					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
 
-						var connection_id = reactor_config_store.getValue(item, '@id').toString();
-						pion.reactors.createConnection(start_reactor, end_reactor, connection_id);
-					},
-					onComplete: function(items, request) {
-						console.debug('done fetching Connections');
-						if (workspace_boxes.length == 0) {
-							addWorkspace();
-						}
-						pion.reactors.workspace_box = workspace_boxes[0];
-						surface = pion.reactors.workspace_box.my_surface;
-						dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+					var connection_id = reactor_config_store.getValue(item, '@id').toString();
+					pion.reactors.createConnection(start_reactor, end_reactor, connection_id);
+				},
+				onComplete: function(items, request) {
+					console.debug('done fetching Connections');
+					if (workspace_boxes.length == 0) {
+						addWorkspace();
+					}
+					pion.reactors.workspace_box = workspace_boxes[0];
+					surface = pion.reactors.workspace_box.my_surface;
+					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
 
-						// Now that all workspaces have been added, call layout() in case there are enough to require more than one row of tabs.
-						dijit.byId('main_stack_container').layout();
-					},
-					onError: pion.handleFetchError
-				});
-			},
-			onError: pion.handleFetchError
-		});
-		pion.reactors.connection_store = new dojox.data.XmlStore({url: '/config/connections'});
-	}
+					// Now that all workspaces have been added, call layout() in case there are enough to require more than one row of tabs.
+					dijit.byId('main_stack_container').layout();
+				},
+				onError: pion.handleFetchError
+			});
+		},
+		onError: pion.handleFetchError
+	});
+	pion.reactors.connection_store = new dojox.data.XmlStore({url: '/config/connections'});
 }
 
 pion.reactors.createReactorInConfiguredWorkspace = function(config) {
