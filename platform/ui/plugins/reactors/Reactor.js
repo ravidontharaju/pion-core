@@ -359,29 +359,23 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = pion.escapeXml(dialogFields.Name);
 
-			this.put_data = '<PionConfig><Reactor>'
-							+ pion.makeXmlLeafElement('Plugin', this.reactor.config.Plugin)
-							+ pion.makeXmlLeafElement('Workspace', this.reactor.config.Workspace)
-							+ '<X>' + this.reactor.config.X + '</X><Y>' + this.reactor.config.Y + '</Y>';
-			for (var tag in dialogFields) {
-				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
-					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
-					this.put_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
-				}
-			}
+			// dialogFields.options can and should be undefined for Reactors without dialog options, e.g. LogOutputReactor.
 			if ('options' in dialogFields && plugins.reactors[this.reactor.config.Plugin].option_defaults) {
 				for (var option in plugins.reactors[this.reactor.config.Plugin].option_defaults) {
 					var option_val = (dojo.indexOf(dialogFields.options, option) != -1); // 'true' iff corresponding checkbox was checked
-					this.put_data += '<' + option + '>' + option_val + '</' + option + '>';
 					this.reactor.config[option] = option_val;
 				}
 			}
+
+			this.put_data = '<PionConfig><Reactor>';
+			for (var tag in this.reactor.config) {
+				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
+					this.put_data += pion.makeXmlLeafElement(tag, this.reactor.config[tag]);
+				}
+			}
 			if (this._insertCustomData) {
-				// dialogFields.options can and should be undefined for Reactors without dialog options.
 				this._insertCustomData(dialogFields);
 			}
-			if ('Running' in this.reactor.config)
-				this.put_data += '<Running>' + this.reactor.config.Running + '</Running>';
 			this.put_data += '</Reactor></PionConfig>';
 			console.debug('put_data: ', this.put_data);
 

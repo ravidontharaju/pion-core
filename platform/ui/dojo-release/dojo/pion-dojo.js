@@ -22369,25 +22369,20 @@ return;
 this.execute_already_called=true;
 dojo.mixin(this.reactor.config,_156a);
 this.reactor.name_div.innerHTML=pion.escapeXml(_156a.Name);
-this.put_data="<PionConfig><Reactor>"+pion.makeXmlLeafElement("Plugin",this.reactor.config.Plugin)+pion.makeXmlLeafElement("Workspace",this.reactor.config.Workspace)+"<X>"+this.reactor.config.X+"</X><Y>"+this.reactor.config.Y+"</Y>";
-for(var tag in _156a){
-if(dojo.indexOf(this.reactor.special_config_elements,tag)==-1){
-console.debug("dialogFields[",tag,"] = ",_156a[tag]);
-this.put_data+=pion.makeXmlLeafElement(tag,_156a[tag]);
-}
-}
 if("options" in _156a&&plugins.reactors[this.reactor.config.Plugin].option_defaults){
-for(var _156c in plugins.reactors[this.reactor.config.Plugin].option_defaults){
-var _156d=(dojo.indexOf(_156a.options,_156c)!=-1);
-this.put_data+="<"+_156c+">"+_156d+"</"+_156c+">";
-this.reactor.config[_156c]=_156d;
+for(var _156b in plugins.reactors[this.reactor.config.Plugin].option_defaults){
+var _156c=(dojo.indexOf(_156a.options,_156b)!=-1);
+this.reactor.config[_156b]=_156c;
+}
+}
+this.put_data="<PionConfig><Reactor>";
+for(var tag in this.reactor.config){
+if(dojo.indexOf(this.reactor.special_config_elements,tag)==-1){
+this.put_data+=pion.makeXmlLeafElement(tag,this.reactor.config[tag]);
 }
 }
 if(this._insertCustomData){
 this._insertCustomData(_156a);
-}
-if("Running" in this.reactor.config){
-this.put_data+="<Running>"+this.reactor.config.Running+"</Running>";
 }
 this.put_data+="</Reactor></PionConfig>";
 console.debug("put_data: ",this.put_data);
