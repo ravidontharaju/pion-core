@@ -8,7 +8,6 @@ dojo.declare("plugins.reactors.PythonReactor",
 		postCreate: function() {
 			this.config.Plugin = 'PythonReactor';
 			this.inherited("postCreate", arguments);
-			//this._initOptions(this.config, plugins.reactors.PythonReactor.option_defaults);
 			this.special_config_elements.push('PythonSource');
 			var _this = this;
 			var r_store = pion.reactors.config_store;

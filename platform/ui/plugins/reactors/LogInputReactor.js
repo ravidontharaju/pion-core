@@ -5,14 +5,9 @@ dojo.require("pion.widgets.SimpleSelect");
 dojo.declare("plugins.reactors.LogInputReactor",
 	[ plugins.reactors.Reactor ],
 	{
-		postCreate: function(){
+		postCreate: function() {
 			this.config.Plugin = 'LogInputReactor';
-			//console.debug('LogInputReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments); 
-			this._updateCustomData();
-		},
-		_updateCustomData: function() {
-			this._initOptions(this.config, plugins.reactors.LogInputReactor.option_defaults);
 		}
 	}
 );
@@ -28,9 +23,7 @@ dojo.declare("plugins.reactors.LogInputReactorInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
-			this.plugin = 'LogInputReactor';
-			console.debug('plugins.reactors.LogInputReactorInitDialog.postCreate');
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		}
 	}

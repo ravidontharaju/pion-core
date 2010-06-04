@@ -642,16 +642,7 @@ pion.reactors._showReactorInitDialog = function(reactor_type) {
 	console.debug("dialog_class_name: ", dialog_class_name);
 	var dialog_class = dojo.getObject(dialog_class_name);
 	if (dialog_class) {
-		var dialog = new dialog_class();
-		if (plugins.reactors[reactor_type].option_defaults) {
-			var options = [];
-			for (var option in plugins.reactors[reactor_type].option_defaults) {
-				// Add true options to list of checkboxes to check.
-				if (plugins.reactors[reactor_type].option_defaults[option])
-					options.push(option);
-			}
-			dialog.attr('value', {options: options});
-		}
+		var dialog = new dialog_class({plugin: reactor_type});
 	} else {
 		var dialog = new plugins.reactors.ReactorInitDialog({title: plugins.reactors[reactor_type].label + ' Initialization', plugin: reactor_type});
 	}

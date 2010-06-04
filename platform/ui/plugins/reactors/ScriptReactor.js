@@ -8,10 +8,6 @@ dojo.declare("plugins.reactors.ScriptReactor",
 		postCreate: function(){
 			this.config.Plugin = 'ScriptReactor';
 			this.inherited("postCreate", arguments); 
-			this._updateCustomData();
-		},
-		_updateCustomData: function() {
-			this._initOptions(this.config, plugins.reactors.ScriptReactor.option_defaults);
 		}
 	}
 );
@@ -27,9 +23,7 @@ dojo.declare("plugins.reactors.ScriptReactorInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
-			this.plugin = 'ScriptReactor';
-			console.debug('plugins.reactors.ScriptReactorInitDialog.postCreate');
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		}
 	}

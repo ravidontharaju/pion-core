@@ -5,9 +5,8 @@ dojo.require("plugins.reactors.Reactor");
 dojo.declare("plugins.reactors.LogOutputReactor",
 	[ plugins.reactors.Reactor ],
 	{
-		postCreate: function(){
+		postCreate: function() {
 			this.config.Plugin = 'LogOutputReactor';
-			//console.debug('LogOutputReactor.postCreate: ', this.domNode);
 			this.inherited("postCreate", arguments); 
 		}
 	}
@@ -24,8 +23,7 @@ dojo.declare("plugins.reactors.LogOutputReactorInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
-			this.plugin = 'LogOutputReactor';
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		}
 	}

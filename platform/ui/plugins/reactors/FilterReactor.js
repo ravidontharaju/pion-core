@@ -12,7 +12,6 @@ dojo.declare("plugins.reactors.FilterReactor",
 		postCreate: function() {
 			this.config.Plugin = 'FilterReactor';
 			this.inherited("postCreate", arguments);
-			this._initOptions(this.config, plugins.reactors.FilterReactor.option_defaults);
 			this.special_config_elements.push('Comparison');
 			this.comparison_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }

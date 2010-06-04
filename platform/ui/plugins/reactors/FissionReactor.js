@@ -12,7 +12,6 @@ dojo.declare("plugins.reactors.FissionReactor",
 		postCreate: function() {
 			this.config.Plugin = 'FissionReactor';
 			this.inherited("postCreate", arguments); 
-			this._initOptions(this.config, plugins.reactors.FissionReactor.option_defaults);
 			this.special_config_elements.push('CopyTerm');
 			this.copy_term_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -102,8 +101,6 @@ dojo.declare("plugins.reactors.FissionReactorInitDialog",
 		},
 		widgetsInTemplate: true,
 		postCreate: function() {
-			this.plugin = 'FissionReactor';
-			console.debug('plugins.reactors.FissionReactorInitDialog.postCreate');
 			this.inherited("postCreate", arguments);
 		}
 	}
@@ -120,7 +117,6 @@ dojo.declare("plugins.reactors.FissionReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
-			this.reactor._initOptions(this.reactor.config, plugins.reactors.FissionReactor.option_defaults);
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingCopyTermStore', function() {
 				_this._updateCustomPutDataFromCopyTermStore();

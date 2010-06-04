@@ -13,7 +13,6 @@ dojo.declare("plugins.reactors.TransformReactor",
 		postCreate: function() {
 			this.config.Plugin = 'TransformReactor';
 			this.inherited("postCreate", arguments);
-			this._initOptions(this.config, plugins.reactors.TransformReactor.option_defaults);
 			this.special_config_elements.push('Transformation');
 
 			// Create and populate a datastore for the Tranformation grid.
@@ -197,7 +196,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
  		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			this.attr('value', {CopyOriginal: 'if-not-defined', OutgoingEvent: 'Same as input event'});
-			this.reactor._initOptions(this.reactor.config, plugins.reactors.TransformReactor.option_defaults);
 			var _this = this;
 			pion.terms.store.fetch({
 				query: {Type: 'object'},

@@ -14,7 +14,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 		postCreate: function(){
 			this.config.Plugin = 'DatabaseOutputReactor';
 			this.inherited("postCreate", arguments);
-			this._initOptions(this.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
 			this.special_config_elements.push('Comparison', 'Field');
 			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -231,8 +230,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
-			this.plugin = 'DatabaseOutputReactor';
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
@@ -301,7 +299,6 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
-			this.reactor._initOptions(this.reactor.config, plugins.reactors.DatabaseOutputReactor.option_defaults);
 			var _this = this;
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();

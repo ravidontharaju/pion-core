@@ -8,14 +8,17 @@ dojo.declare("plugins.reactors.Reactor",
 	[dijit._Widget],
 	// [dijit._Widget, dijit._Templated], // TODO: make a template
 	{
-		postCreate: function(){
+		postCreate: function() {
 			this.inherited("postCreate", arguments); 
-			//console.debug('Reactor.postCreate: ', this.domNode);
 			this.special_config_elements = ['@id', 'options'];
 			this.reactor_inputs = [];
 			this.reactor_outputs = [];
 			this.prev_events_in = 0;
 			this.class_info = plugins.reactors[this.config.Plugin];
+			if ('init_defaults' in this.class_info)
+				this.class_info.init_defaults();
+			if ('option_defaults' in this.class_info)
+				this._initOptions(this.config, this.class_info.option_defaults);
 			this.requires_license = 'edition' in this.class_info && this.class_info.edition == 'Enterprise';
 			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
 			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
@@ -260,6 +263,21 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited('postCreate', arguments);
+			this.class_info = plugins.reactors[this.plugin];
+			if ('init_defaults' in this.class_info)
+				this.class_info.init_defaults();
+			if ('option_defaults' in this.class_info) {
+				var options = [];
+				for (var option in this.class_info.option_defaults) {
+					// Add true options to list of checkboxes to check.
+					if (this.class_info.option_defaults[option])
+						options.push(option);
+				}
+				this.attr('value', {options: options});
+			}
+		},
 		tryConfig: function() {
 			var dialogFields = this.attr('value');
 			console.debug(dialogFields);
@@ -347,9 +365,10 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
-		postCreate: function(){
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
-			var _this = this;
+			if ('option_defaults' in this.reactor.class_info)
+				this.reactor._initOptions(this.reactor.config, this.reactor.class_info.option_defaults);
 		},
 		reactor: '',
 		execute: function(dialogFields) {
