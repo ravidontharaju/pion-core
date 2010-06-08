@@ -863,7 +863,7 @@ public:
 		m_config_str_tail = 
 			"	<Extract term=\"urn:vocab:clickstream#page-title\">"
 			"		<Source>sc-content</Source>"
-			"		<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>"
+			"		<Match>(?i)&lt;TITLE&gt;\\s*(.*?)\\s*&lt;/TITLE&gt;</Match>"
 			"		<Format>$1</Format>"
 			"	</Extract>"
 			"</Protocol></PionConfig>";
