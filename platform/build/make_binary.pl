@@ -173,6 +173,7 @@ print "Copying misc other Pion files..\n";
 
 # copy the user interface files into "ui"
 copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "ui") ), $UI_DIR);
+rmtree(File::Spec->catdir( ($UI_DIR, "dojo-release", "util") ));
 
 # copy the configuration files
 my %templates = ("PION_PLUGINS_DIRECTORY" => "../plugins",
