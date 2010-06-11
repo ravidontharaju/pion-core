@@ -8,6 +8,14 @@ dojo.declare("pion.widgets.Wizard",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		},
+		start: function() {
+			dojo.removeClass('wizard', 'hidden');
+			document.body.appendChild(device_list_standby.domNode);
+			device_list_standby.show();
+			pion.wizard.cookies = [];
+			pion.wizard.devices = [];
+			pion.wizard.max_disk_usage = 'NA';
+		},
 		placeholder: function() {
 		}
 	}

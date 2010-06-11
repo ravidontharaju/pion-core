@@ -35,6 +35,7 @@ dependencies = {
 			"dojox.dtl",
 			"dojox.dtl.filter.strings",
 			"dojox.widget.Wizard",
+			"dojox.widget.Standby",
 			"pion.pion",
 		]
 		}

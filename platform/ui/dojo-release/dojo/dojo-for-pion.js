@@ -21796,4 +21796,132 @@ this.doneFunction();
 }
 }});
 }
+if(!dojo._hasResource["dojox.widget.Standby"]){
+dojo._hasResource["dojox.widget.Standby"]=true;
+dojo.provide("dojox.widget.Standby");
+dojo.experimental("dojox.widget.Standby");
+dojo.declare("dojox.widget.Standby",[dijit._Widget,dijit._Templated],{templateString:"<div>\r\n\t<div class=\"standbyUnderlayNode\" dojoAttachPoint=\"_underlayNode\">\r\n\t</div>\r\n\t<img src=\"${image}\" class=\"standbyImageNode\" dojoAttachPoint=\"_imageNode\">\r\n</div>\r\n\r\n",_underlayNode:null,_imageNode:null,image:dojo.moduleUrl("dojox","widget/Standby/images/loading.gif").toString(),imageText:"Please Wait...",_displayed:false,_resizeCheck:null,target:"",color:"#C0C0C0",startup:function(args){
+if(typeof this.target==="string"){
+var w=dijit.byId(this.target);
+if(w){
+this.target=w.domNode;
+}else{
+this.target=dojo.byId(this.target);
+}
+}
+dojo.style(this._underlayNode,"display","none");
+dojo.style(this._imageNode,"display","none");
+dojo.style(this._underlayNode,"backgroundColor",this.color);
+dojo.attr(this._imageNode,"src",this.image);
+dojo.attr(this._imageNode,"alt",this.imageText);
+this.connect(this._underlayNode,"onclick","_ignore");
+if(this.domNode.parentNode&&this.domNode.parentNode!=dojo.body()){
+dojo.body().appendChild(this.domNode);
+}
+},show:function(){
+if(!this._displayed){
+this._displayed=true;
+this._size();
+this._fadeIn();
+}
+},hide:function(){
+if(this._displayed){
+this._size();
+this._fadeOut();
+this._displayed=false;
+if(this._resizeCheck!==null){
+clearInterval(this._resizeCheck);
+this._resizeCheck=null;
+}
+}
+},_size:function(){
+if(this._displayed){
+var _14ed=dojo.style(this._imageNode,"display");
+dojo.style(this._imageNode,"display","block");
+var box=dojo.coords(this.target);
+var img=dojo.marginBox(this._imageNode);
+dojo.style(this._imageNode,"display",_14ed);
+dojo.style(this._imageNode,"zIndex","10000");
+var sVal=dojo._docScroll();
+if(!sVal){
+sVal={x:0,y:0};
+}
+var _14f1=dojo.style(this.target,"marginLeft");
+if(dojo.isWebKit&&_14f1){
+_14f1=_14f1*2;
+}
+if(_14f1){
+box.w=box.w-_14f1;
+}
+if(!dojo.isWebKit){
+var _14f2=dojo.style(this.target,"marginRight");
+if(_14f2){
+box.w=box.w-_14f2;
+}
+}
+var _14f3=dojo.style(this.target,"marginTop");
+if(_14f3){
+box.h=box.h-_14f3;
+}
+var _14f4=dojo.style(this.target,"marginBottom");
+if(_14f4){
+box.h=box.h-_14f4;
+}
+if(box.h>0&&box.w>0){
+dojo.style(this._underlayNode,"width",box.w+"px");
+dojo.style(this._underlayNode,"height",box.h+"px");
+dojo.style(this._underlayNode,"top",(box.y+sVal.y)+"px");
+dojo.style(this._underlayNode,"left",(box.x+sVal.x)+"px");
+var _14f5=function(list,scope){
+dojo.forEach(list,function(style){
+dojo.style(this._underlayNode,style,dojo.style(this.target,style));
+},scope);
+};
+var _14f9=["borderRadius","borderTopLeftRadius","borderTopRightRadius","borderBottomLeftRadius","borderBottomRightRadius"];
+_14f5(_14f9,this);
+if(!dojo.isIE){
+_14f9=["MozBorderRadius","MozBorderRadiusTopleft","MozBorderRadiusTopright","MozBorderRadiusBottomleft","MozBorderRadiusBottomright","WebkitBorderRadius","WebkitBorderTopLeftRadius","WebkitBorderTopRightRadius","WebkitBorderBottomLeftRadius","WebkitBorderBottomRightRadius"];
+_14f5(_14f9,this);
+}
+var _14fa=(box.h/2)-(img.h/2);
+var _14fb=(box.w/2)-(img.w/2);
+dojo.style(this._imageNode,"top",(_14fa+box.y+sVal.y)+"px");
+dojo.style(this._imageNode,"left",(_14fb+box.x+sVal.x)+"px");
+dojo.style(this._underlayNode,"display","block");
+dojo.style(this._imageNode,"display","block");
+}else{
+dojo.style(this._underlayNode,"display","none");
+dojo.style(this._imageNode,"display","none");
+}
+if(this._resizeCheck===null){
+var self=this;
+this._resizeCheck=setInterval(function(){
+self._size();
+},100);
+}
+}
+},_fadeIn:function(){
+var _14fd=dojo.animateProperty({node:this._underlayNode,properties:{opacity:{start:0,end:0.75}}});
+var _14fe=dojo.animateProperty({node:this._imageNode,properties:{opacity:{start:0,end:1}}});
+var anim=dojo.fx.combine([_14fd,_14fe]);
+anim.play();
+},_fadeOut:function(){
+var self=this;
+var _1501=dojo.animateProperty({node:this._underlayNode,properties:{opacity:{start:0.75,end:0}},onEnd:function(){
+dojo.style(self._underlayNode,"display","none");
+}});
+var _1502=dojo.animateProperty({node:this._imageNode,properties:{opacity:{start:1,end:0}},onEnd:function(){
+dojo.style(self._imageNode,"display","none");
+}});
+var anim=dojo.fx.combine([_1501,_1502]);
+anim.play();
+},_ignore:function(event){
+if(event){
+event.preventDefault();
+event.stopPropagation();
+}
+},uninitialize:function(){
+this.hide();
+}});
+}
 dojo.i18n._preloadLocalizations("dojo.nls.dojo-for-pion",["ROOT","en","en-gb","en-us","xx"]);

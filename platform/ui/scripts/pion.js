@@ -7,6 +7,7 @@ dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojox.dtl.filter.strings");
+dojo.require("dojox.widget.Standby");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
 dojo.require("pion._base");
 dojo.require("pion.reactors");
@@ -631,11 +632,7 @@ pion.editionSetup = function(license_key_type) {
 				// KeyService running, no reactors configured and no pion_edition cookie found, so do wizard.
 
 				var wizard = dijit.byId('wizard');
-				dojo.removeClass('wizard', 'hidden');
-
-				pion.wizard.cookies = [];
-				pion.wizard.devices = [];
-				pion.wizard.max_disk_usage = 'NA';
+				wizard.start();
 
 				// Since there are no reactors configured, any ReplayService that is configured is useless, so delete it.
 				pion.services.config_store.fetch({
@@ -683,6 +680,7 @@ pion.editionSetup = function(license_key_type) {
 				});
 
 				dojo.subscribe('wizard-selectChild', function(page) {
+					// Update the labels of the navigation buttons for the selected page.
 					dojo.forEach(dojo.query('.prev_button', page.domNode), function(node) {
 						wizard.previousButton.attr('label', node.innerHTML);
 						if (node.getAttribute('returnPane'))
@@ -746,6 +744,8 @@ pion.editionSetup = function(license_key_type) {
 											pion.wizard.device_found = true;
 										},
 										onComplete: function() {
+											device_list_standby.hide();
+
 											// Delete the dummy SnifferReactor.
 											dojo.xhrDelete({
 												url: '/config/reactors/' + id,
