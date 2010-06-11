@@ -85,7 +85,7 @@ function popitup(url) {
 	<div id="wizard" dojoType="pion.widgets.Wizard" class="hidden" hideDisabled="true" style="background: #ffffff;">
 
 		<!--Start Edition Selection-->
-		<div dojoType="dojox.widget.WizardPane" id="select_edition_pane" passFunction="pion.checkEdition" style="background: #ffffff;">
+		<div dojoType="dojox.widget.WizardPane" id="select_edition_pane" style="background: #ffffff;">
 			
 			<div class="wizard_menu">
 				<p>
@@ -596,7 +596,7 @@ function popitup(url) {
 		</div>
 		
 		<!--Start Replay Configuration-->
-		<div dojoType="dojox.widget.WizardPane" id="setup_replay" passFunction="pion.widgets.Wizard.checkReplaySetup">
+		<div dojoType="dojox.widget.WizardPane" id="replay_setup_pane" passFunction="pion.widgets.Wizard.checkReplaySetup">
 			<!--start divs for top menu and header-->
 			<div class="wizard_menu">
 				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
@@ -680,7 +680,7 @@ function popitup(url) {
 			</div>
 			<p class="prev_button_lite" style="display: none" returnPane="ssl_key_pane"><< Go Back</p>
 			<p class="prev_button_enterprise" style="display: none" returnPane="ssl_key_pane"><< Go Back</p>
-			<p class="prev_button_replay" style="display: none" returnPane="setup_replay"><< Go Back</p>
+			<p class="prev_button_replay" style="display: none" returnPane="replay_setup_pane"><< Go Back</p>
 			<p class="done_button" style="display: none">Final Step: Save Configuration</p>
 		</div>
 		<!--End Confirmation Screen-->

@@ -1,5 +1,6 @@
 dojo.provide("pion.widgets.Wizard");
 dojo.require("dojox.widget.Wizard");
+dojo.require("dojo.cookie");
 
 dojo.declare("pion.widgets.Wizard",
 	[ dojox.widget.Wizard ],
@@ -56,7 +57,6 @@ pion.widgets.Wizard.checkLicenseKey = function() {
 							pion.updateLicenseState('lite');
 						}
 						dojo.byId('license_key_text_area').value = '';
-						pion.widgets.Wizard.prepareLicensePane();
 						dijit.byId('wizard').selectChild(dijit.byId('license_acceptance_pane'));
 					}
 				}
@@ -101,6 +101,15 @@ pion.widgets.Wizard.checkLicenseAccepted = function() {
 		return pion.wizard_nlsStrings.license_checkbox_not_checked_message;
 }
 
+pion.widgets.Wizard.prepareHostPane = function() {
+	if (! pion.widgets.Wizard.host_pane_initialized) {
+		if (dojo.cookie('host_suffixes')) {
+			dijit.byId('host_suffixes').attr('value', dojo.cookie('host_suffixes'));
+		}
+		pion.widgets.Wizard.host_pane_initialized = true;
+	}
+}
+
 pion.widgets.Wizard.getArrayFromCSVString = function(csv_str) {
 	var raw_pieces = csv_str.split(',');
 
@@ -131,6 +140,18 @@ pion.widgets.Wizard.checkHosts = function() {
 		return true;
 }
 
+pion.widgets.Wizard.prepareCookiePane = function() {
+	if (! pion.widgets.Wizard.cookie_pane_initialized) {
+		if (dojo.cookie('visitor_cookies')) {
+			dijit.byId('visitor_cookies').attr('value', dojo.cookie('visitor_cookies'));
+		}
+		if (dojo.cookie('session_cookies')) {
+			dijit.byId('session_cookies').attr('value', dojo.cookie('session_cookies'));
+		}
+		pion.widgets.Wizard.cookie_pane_initialized = true;
+	}
+}
+
 pion.widgets.Wizard.checkCookies = function() {
 	pion.wizard.cookies = [];
 	var visitor_cookies = pion.widgets.Wizard.getArrayFromCSVString(dijit.byId('visitor_cookies').attr('value'));
@@ -142,6 +163,15 @@ pion.widgets.Wizard.checkCookies = function() {
 		pion.wizard.cookies.push({name: cookie, is_visitor_cookie: false});
 	});
 	return true;
+}
+
+pion.widgets.Wizard.prepareAnalyticsProviderPane = function() {
+	if (! pion.widgets.Wizard.analytics_provider_pane_initialized) {
+		if (dojo.cookie('analytics_provider')) {
+			dijit.byId('select_analytics_provider_form').attr('value', {analytics_provider: dojo.cookie('analytics_provider')});
+		}
+		pion.widgets.Wizard.analytics_provider_pane_initialized = true;
+	}
 }
 
 pion.widgets.Wizard.checkAnalyticsProvider = function() {
@@ -179,6 +209,21 @@ pion.widgets.Wizard.skipAnalyticsProvider = function() {
 	return false;
 }
 
+pion.widgets.Wizard.prepareOmniturePane = function() {
+	if (! pion.widgets.Wizard.omniture_pane_initialized) {
+		if (dojo.cookie('omniture_host')) {
+			dijit.byId('omniture_host').attr('value', dojo.cookie('omniture_host'));
+		}
+		if (dojo.cookie('omniture_report_suite')) {
+			dijit.byId('omniture_report_suite').attr('value', dojo.cookie('omniture_report_suite'));
+		}
+		if (dojo.cookie('strip_client_ip')) {
+			dijit.byId('omniture_strip_cip_checkbox').attr('checked', dojo.cookie('strip_client_ip') == 'true');
+		}
+		pion.widgets.Wizard.omniture_pane_initialized = true;
+	}
+}
+
 pion.widgets.Wizard.checkOmnitureConfig = function() {
 	pion.wizard.omniture_host = dojo.trim(dijit.byId('omniture_host').attr('value'));
 	pion.wizard.omniture_report_suite = dojo.trim(dijit.byId('omniture_report_suite').attr('value'));
@@ -189,6 +234,21 @@ pion.widgets.Wizard.checkOmnitureConfig = function() {
 	pion.wizard.strip_client_ip = dijit.byId('omniture_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
+}
+
+pion.widgets.Wizard.prepareWebtrendsPane = function() {
+	if (! pion.widgets.Wizard.webtrends_pane_initialized) {
+		if (dojo.cookie('webtrends_account_id')) {
+			dijit.byId('webtrends_account_id').attr('value', dojo.cookie('webtrends_account_id'));
+		}
+		if (dojo.cookie('webtrends_host')) {
+			dijit.byId('webtrends_host').attr('value', dojo.cookie('webtrends_host'));
+		}
+		if (dojo.cookie('strip_client_ip')) {
+			dijit.byId('webtrends_strip_cip_checkbox').attr('checked', dojo.cookie('strip_client_ip') == 'true');
+		}
+		pion.widgets.Wizard.webtrends_pane_initialized = true;
+	}
 }
 
 pion.widgets.Wizard.checkWebtrendsConfig = function() {
@@ -203,6 +263,18 @@ pion.widgets.Wizard.checkWebtrendsConfig = function() {
 	return false;
 }
 
+pion.widgets.Wizard.prepareGooglePane = function() {
+	if (! pion.widgets.Wizard.google_pane_initialized) {
+		if (dojo.cookie('google_account_id')) {
+			dijit.byId('google_account_id').attr('value', dojo.cookie('google_account_id'));
+		}
+		if (dojo.cookie('strip_client_ip')) {
+			dijit.byId('google_strip_cip_checkbox').attr('checked', dojo.cookie('strip_client_ip') == 'true');
+		}
+		pion.widgets.Wizard.google_pane_initialized = true;
+	}
+}
+
 pion.widgets.Wizard.checkGoogleConfig = function() {
 	pion.wizard.google_account_id = dojo.trim(dijit.byId('google_account_id').attr('value'));
 	if (pion.wizard.google_account_id == '')
@@ -210,6 +282,21 @@ pion.widgets.Wizard.checkGoogleConfig = function() {
 	pion.wizard.strip_client_ip = dijit.byId('google_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
+}
+
+pion.widgets.Wizard.prepareUnicaPane = function() {
+	if (! pion.widgets.Wizard.unica_pane_initialized) {
+		if (dojo.cookie('unica_account_id')) {
+			dijit.byId('unica_account_id').attr('value', dojo.cookie('unica_account_id'));
+		}
+		if (dojo.cookie('unica_host')) {
+			dijit.byId('unica_host').attr('value', dojo.cookie('unica_host'));
+		}
+		if (dojo.cookie('strip_client_ip')) {
+			dijit.byId('unica_strip_cip_checkbox').attr('checked', dojo.cookie('strip_client_ip') == 'true');
+		}
+		pion.widgets.Wizard.unica_pane_initialized = true;
+	}
 }
 
 pion.widgets.Wizard.checkUnicaConfig = function() {
@@ -222,6 +309,73 @@ pion.widgets.Wizard.checkUnicaConfig = function() {
 	pion.wizard.strip_client_ip = dijit.byId('unica_strip_cip_checkbox').attr('checked')? 'true' : 'false';
 	pion.wizard.selectChild(dijit.byId('capture_devices_pane'));
 	return false;
+}
+
+pion.widgets.Wizard.prepareCaptureDevicesPane = function() {
+	if (! pion.widgets.Wizard.capture_devices_pane_initialized) {
+		// Create a temporary dummy SnifferReactor.
+		var post_data = '<PionConfig><Reactor>'
+			+ '<Plugin>SnifferReactor</Plugin>'
+			+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
+			+ '</Reactor></PionConfig>';  
+		dojo.rawXhrPost({
+			url: '/config/reactors',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				var node = response.getElementsByTagName('Reactor')[0];
+				var id = node.getAttribute('id');
+
+				// Create an XML data store with all available interfaces, then use them to populate the Capture Devices pane.
+				var interface_xml_store = new dojox.data.XmlStore({url: '/query/reactors/' + id + '/interfaces'});
+				var device_list_div = dojo.byId('device_list');
+				var selected_interfaces = dojo.cookie('selected_interfaces')? dojo.cookie('selected_interfaces').split(',') : [];
+				interface_xml_store.fetch({
+					query: {tagName: 'Interface'},
+					onItem: function(item) {
+						var device_name = interface_xml_store.getValue(item, 'Name');
+						var description = interface_xml_store.getValue(item, 'Description');
+						if (! description)
+							description = '';
+
+						var check_box_div = document.createElement('div');
+						device_list_div.appendChild(check_box_div);
+						var was_included = (dojo.indexOf(selected_interfaces, device_name) != -1);
+						new dijit.form.CheckBox({name: 'device_check_boxes', value: device_name, checked: was_included}, check_box_div);
+						var device_label = dojo.create('span', {innerHTML: device_name});
+						dojo.addClass(device_label, 'device_name');
+						device_list_div.appendChild(device_label);
+						device_list_div.appendChild(dojo.create('br'));
+						var description_div = dojo.create('div', {innerHTML: description});
+						dojo.addClass(description_div, 'device_description');
+						device_list_div.appendChild(description_div);
+						device_list_div.appendChild(dojo.create('br'));
+						pion.wizard.device_found = true;
+					},
+					onComplete: function() {
+						device_list_standby.hide();
+
+						// Delete the dummy SnifferReactor.
+						dojo.xhrDelete({
+							url: '/config/reactors/' + id,
+							handleAs: 'xml',
+							timeout: 5000,
+							load: function(response, ioArgs) {
+								return response;
+							},
+							error: pion.getXhrErrorHandler(dojo.xhrDelete)
+						});
+						if (! pion.wizard.device_found) {
+							device_list_div.innerHTML = 'Error: no capture devices found.  Pion must be run as the root/administrator user.';
+						}
+						pion.widgets.Wizard.capture_devices_pane_initialized = true;
+					}
+				});
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
+	}
 }
 
 pion.widgets.Wizard.checkCaptureDevices = function() {
@@ -263,6 +417,15 @@ pion.widgets.Wizard.checkSSLKeys = function() {
 	}
 }
 
+pion.widgets.Wizard.prepareReplaySetupPane = function() {
+	if (! pion.widgets.Wizard.replay_setup_pane_initialized) {
+		if (dojo.cookie('max_disk_usage')) {
+			dijit.byId('replay_setup').attr('value', {max_disk_usage: dojo.cookie('max_disk_usage')});
+		}
+		pion.widgets.Wizard.replay_setup_pane_initialized = true;
+	}
+}
+
 pion.widgets.Wizard.checkReplaySetup = function() {
 	var form_values = dijit.byId('replay_setup').attr('value');
 	pion.wizard.max_disk_usage = form_values.max_disk_usage;
@@ -282,7 +445,79 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 
 pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 	var num_reactors_deleted = 0;
+	var getContent = function(p) { return dojox.xml.parser.textContent(p) };
+
+	// Will be overwritten in the switch below if there is a wizard created Analytics Reactor configured.
+	dojo.cookie('analytics_provider', 'none', {expires: 5000}); // 5000 days
+
 	dojo.forEach(reactors, function(reactor) {
+		// If this Reactor was created by the Wizard, before deleting it, use cookies to save various 
+		// configuration values that can be used to pre-populate the Wizard.
+		var sources = dojo.map(reactor.getElementsByTagName('Source'), getContent);
+		if (sources.length && sources[0] == 'Wizard') {
+			var plugin = dojox.xml.parser.textContent(reactor.getElementsByTagName('Plugin')[0]);
+			switch (plugin) {
+				case 'ClickstreamReactor':
+					var host_suffixes = [];
+					var session_cookies = [];
+					var visitor_cookies = [];
+
+					// Get the index of the first non-default session group, if one exists.
+					var session_groups = reactor.getElementsByTagName('SessionGroup');
+					for (i = 0; i < session_groups.length && session_groups[i].getAttribute('id') == 'default'; ++i);
+
+					// Get the hosts and cookies from the first non-default session group, if one exists.
+					if (i < session_groups.length) {
+						var first_non_default_session_group = session_groups[i];
+						host_suffixes = dojo.map(first_non_default_session_group.getElementsByTagName('Host'), getContent);
+						dojo.forEach(first_non_default_session_group.getElementsByTagName('Cookie'), function(cookie) {
+							var type = cookie.getAttribute('type');
+							if (type) {
+								if (type.indexOf('s') != -1)
+									session_cookies.push(getContent(cookie));
+								if (type.indexOf('v') != -1)
+									visitor_cookies.push(getContent(cookie));
+							}
+						});
+					}
+
+					dojo.cookie('host_suffixes', host_suffixes.join(', '), {expires: 5000}); // 5000 days
+					dojo.cookie('session_cookies', session_cookies.join(', '), {expires: 5000}); // 5000 days
+					dojo.cookie('visitor_cookies', visitor_cookies.join(', '), {expires: 5000}); // 5000 days
+					break;
+				case 'OmnitureAnalyticsReactor':
+					dojo.cookie('analytics_provider', 'Omniture', {expires: 5000}); // 5000 days
+					dojo.cookie('omniture_host', getContent(reactor.getElementsByTagName('HttpHost')[0]));
+					dojo.cookie('omniture_report_suite', getContent(reactor.getElementsByTagName('AccountId')[0]));
+					dojo.cookie('strip_client_ip', getContent(reactor.getElementsByTagName('StripClientIP')[0]));
+					break;
+				case 'WebTrendsAnalyticsReactor':
+					dojo.cookie('analytics_provider', 'Webtrends', {expires: 5000}); // 5000 days
+					dojo.cookie('webtrends_account_id', getContent(reactor.getElementsByTagName('AccountId')[0]));
+					dojo.cookie('webtrends_host', getContent(reactor.getElementsByTagName('HttpHost')[0]));
+					dojo.cookie('strip_client_ip', getContent(reactor.getElementsByTagName('StripClientIP')[0]));
+					break;
+				case 'GoogleAnalyticsReactor':
+					dojo.cookie('analytics_provider', 'Google', {expires: 5000}); // 5000 days
+					dojo.cookie('google_account_id', getContent(reactor.getElementsByTagName('AccountId')[0]));
+					dojo.cookie('strip_client_ip', getContent(reactor.getElementsByTagName('StripClientIP')[0]));
+					break;
+				case 'UnicaAnalyticsReactor':
+					dojo.cookie('analytics_provider', 'Unica', {expires: 5000}); // 5000 days
+					dojo.cookie('unica_account_id', getContent(reactor.getElementsByTagName('AccountId')[0]));
+					dojo.cookie('unica_host', getContent(reactor.getElementsByTagName('HttpHost')[0]));
+					dojo.cookie('strip_client_ip', getContent(reactor.getElementsByTagName('StripClientIP')[0]));
+					break;
+				case 'SnifferReactor':
+					var selected_interfaces = dojo.map(reactor.getElementsByTagName('Interface'), getContent);
+					dojo.cookie('selected_interfaces', selected_interfaces.join(','), {expires: 5000}); // 5000 days
+					break;
+				case 'MultiDatabaseReactor':
+					dojo.cookie('max_disk_usage', getContent(reactor.getElementsByTagName('MaxDiskUsage')[0]));
+					break;
+			}
+		}
+
 		var id = reactor.getAttribute('id');
 		dojo.xhrDelete({
 			url: '/config/reactors/' + id,

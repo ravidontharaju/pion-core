@@ -1,5 +1,6 @@
 dojo.registerModulePath("pion", "/scripts");
 dojo.registerModulePath("plugins", "/plugins");
+dojo.require("dojo.cookie");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.StackContainer");
@@ -219,7 +220,8 @@ pion.addReactorsFromWizard = function(wizard_config) {
 	var num_reactors_added = 0;
 	var _this = this;
 	wizard_config.reactor_ids = {};
-	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_name + '</Workspace>';
+	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_name
+						 + '</Workspace><Source>Wizard</Source>';
 	dojo.forEach(wizard_config.reactors, function(reactor) {
 		var post_data = post_data_header + reactor.config + '</Reactor></PionConfig>';  
 		dojo.rawXhrPost({
@@ -546,35 +548,6 @@ pion.updateLogo = function(logo_type) {
 	});
 }
 
-pion.checkEdition = function() {
-	var form = dijit.byId('select_edition_form');
-	pion.edition = form.attr('value').edition;
-	if (pion.edition) {
-		dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
-		pion.widgets.Wizard.prepareLicensePane();
-		return true;
-	} else {
-		return "Please select an edition.";
-	}
-
-
-	//if (pion.edition) {
-	//	dojo.cookie('pion_edition', pion.edition);
-	//	var template = dojo.byId('wizard_warning').innerHTML;
-	//	dojo.byId('wizard_warning').innerHTML = dojo.string.substitute(
-	//		template,
-	//		{
-	//			Edition: pion.edition,
-	//			RecommendedRAM: 99, 
-	//			RecommendedDiskSpace: 99
-	//		}
-	//	);
-	//	return true;
-	//} else {
-	//	return "Please select an edition.";
-	//}
-}
-
 pion.setup_success_callback = function() {
 	pion.terms.init();
 	pion.services.init();
@@ -703,69 +676,38 @@ pion.editionSetup = function(license_key_type) {
 						wizard.doneButton.attr('label', node.innerHTML);
 					});
 
-					if (page.id == 'capture_devices_pane') {
-						if (! page.device_list_initialized) {
-							// Create a temporary dummy SnifferReactor.
-							var post_data = '<PionConfig><Reactor>'
-								+ '<Plugin>SnifferReactor</Plugin>'
-								+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
-								+ '</Reactor></PionConfig>';  
-							dojo.rawXhrPost({
-								url: '/config/reactors',
-								contentType: "text/xml",
-								handleAs: "xml",
-								postData: post_data,
-								load: function(response) {
-									var node = response.getElementsByTagName('Reactor')[0];
-									var id = node.getAttribute('id');
-
-									// Create an XML data store with all available interfaces, then use them to populate the Capture Devices pane.
-									var interface_xml_store = new dojox.data.XmlStore({url: '/query/reactors/' + id + '/interfaces'});
-									var device_list_div = dojo.byId('device_list');
-									interface_xml_store.fetch({
-										query: {tagName: 'Interface'},
-										onItem: function(item) {
-											var device_name = interface_xml_store.getValue(item, 'Name');
-											var description = interface_xml_store.getValue(item, 'Description');
-											if (! description)
-												description = '';
-
-											var check_box_div = document.createElement('div');
-											device_list_div.appendChild(check_box_div);
-											new dijit.form.CheckBox({name: 'device_check_boxes', value: device_name}, check_box_div);
-											var device_label = dojo.create('span', {innerHTML: device_name});
-											dojo.addClass(device_label, 'device_name');
-											device_list_div.appendChild(device_label);
-											device_list_div.appendChild(dojo.create('br'));
-											var description_div = dojo.create('div', {innerHTML: description});
-											dojo.addClass(description_div, 'device_description');
-											device_list_div.appendChild(description_div);
-											device_list_div.appendChild(dojo.create('br'));
-											pion.wizard.device_found = true;
-										},
-										onComplete: function() {
-											device_list_standby.hide();
-
-											// Delete the dummy SnifferReactor.
-											dojo.xhrDelete({
-												url: '/config/reactors/' + id,
-												handleAs: 'xml',
-												timeout: 5000,
-												load: function(response, ioArgs) {
-													return response;
-												},
-												error: pion.getXhrErrorHandler(dojo.xhrDelete)
-											});
-											if (! pion.wizard.device_found) {
-												device_list_div.innerHTML = 'Error: no capture devices found.  Pion must be run as the root/administrator user.';
-											}
-											page.device_list_initialized = true;
-										}
-									});
-								},
-								error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
-							});
-						}
+					// Do any other initialization needed for the selected page.
+					switch (page.id) {
+						case 'license_acceptance_pane':
+							pion.widgets.Wizard.prepareLicensePane();
+							break;
+						case 'host_pane':
+							pion.widgets.Wizard.prepareHostPane();
+							break;
+						case 'cookie_pane':
+							pion.widgets.Wizard.prepareCookiePane();
+							break;
+						case 'analytics_provider_pane':
+							pion.widgets.Wizard.prepareAnalyticsProviderPane();
+							break;
+						case 'omniture_pane':
+							pion.widgets.Wizard.prepareOmniturePane();
+							break;
+						case 'webtrends_pane':
+							pion.widgets.Wizard.prepareWebtrendsPane();
+							break;
+						case 'google_pane':
+							pion.widgets.Wizard.prepareGooglePane();
+							break;
+						case 'unica_pane':
+							pion.widgets.Wizard.prepareUnicaPane();
+							break;
+						case 'capture_devices_pane':
+							pion.widgets.Wizard.prepareCaptureDevicesPane();
+							break;
+						case 'replay_setup_pane':
+							pion.widgets.Wizard.prepareReplaySetupPane();
+							break;
 					}
 				});
 			}

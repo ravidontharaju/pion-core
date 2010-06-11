@@ -22,13 +22,11 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 		coreEditionSelected: function() {
 			pion.edition = 'Core';
 			dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
-			pion.widgets.Wizard.prepareLicensePane();
 			pion.wizard.selectChild(dijit.byId('license_acceptance_pane'));
 		},
 		liteEditionSelected: function() {
 			pion.edition = 'Lite';
 			dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
-			pion.widgets.Wizard.prepareLicensePane();
 			pion.wizard.selectChild(dijit.byId('license_acceptance_pane'));
 		},
 		replayEditionSelected: function() {
@@ -46,7 +44,6 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 				if (license_key_type != 'replay') {
 					pion.wizard.selectChild(dijit.byId('license_key_pane'));
 				} else {
-					pion.widgets.Wizard.prepareLicensePane();
 					pion.wizard.selectChild(dijit.byId('license_acceptance_pane'));
 				}
 			});
@@ -66,7 +63,6 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 				if (license_key_type != 'replay' && license_key_type != 'enterprise') {
 					pion.wizard.selectChild(dijit.byId('license_key_pane'));
 				} else {
-					pion.widgets.Wizard.prepareLicensePane();
 					pion.wizard.selectChild(dijit.byId('license_acceptance_pane'));
 				}
 			});
