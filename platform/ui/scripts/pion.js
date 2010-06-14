@@ -103,6 +103,8 @@ pion.initTabs = function() {
 				}
 			}
 
+			init_services_standby.hide();
+
 			var tabs = main_stack.getChildren();
 			if (tabs.length > 0) {
 				main_stack.selectChild(tabs[0]);

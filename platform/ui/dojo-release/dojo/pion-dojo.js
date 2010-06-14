@@ -27354,6 +27354,7 @@ dojo.provide("pion.services");
 pion.services.config_store=new dojox.data.XmlStore({url:"/config/services"});
 pion.services.labels_by_tab_id={};
 pion.services.init=function(){
+init_services_standby.show();
 pion.services.getAllServicesInUIDirectory=function(){
 var d=new dojo.Deferred();
 var store=new dojox.data.XmlStore({url:"/config/services/plugins"});
@@ -28402,6 +28403,7 @@ if(dojo.indexOf(_1a97,pion.resources_by_tab_id[_1a99])==-1){
 _1a96.removeChild(dijit.byId(_1a99));
 }
 }
+init_services_standby.hide();
 var tabs=_1a96.getChildren();
 if(tabs.length>0){
 _1a96.selectChild(tabs[0]);
