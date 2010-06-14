@@ -3,6 +3,12 @@ dojo.require("dijit.Dialog");
 dojo.require("dijit.form.Form");
 dojo.requireLocalization("pion", "wizard");
 
+function popitup(url) {
+	newwindow = window.open(url, 'Pion Features Matrix', 'height=500, width=800');
+	if (window.focus) { newwindow.focus() }
+	return false;
+}
+
 dojo.declare("pion.widgets.EditionSelectorForm",
 	[ dijit.form.Form ],
 	{
