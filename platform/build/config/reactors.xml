@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PionConfig xmlns="http://purl.org/pion/config" pion_version="3.0.11">
+<PionConfig xmlns="http://purl.org/pion/config" pion_version="3.0.12">
   <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
     <Name>Event Router</Name>
     <Comment>Does nothing but routes events</Comment>
