@@ -265,7 +265,8 @@ std::string ConfigManager::xml_encode(const std::string& str)
 	std::string result;
 	result.reserve(str.size() + 20);	// Assume ~5 characters converted (length increases)
 	const unsigned char *ptr = reinterpret_cast<const unsigned char*>(str.c_str());
-	while (*ptr) {
+	const unsigned char *end_ptr = ptr + str.size();
+	while (ptr < end_ptr) {
 		// check byte ranges for valid UTF-8
 		// see http://en.wikipedia.org/wiki/UTF-8
 		// also, see http://www.w3.org/TR/REC-xml/#charsets
