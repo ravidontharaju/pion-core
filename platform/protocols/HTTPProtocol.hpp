@@ -251,7 +251,7 @@ private:
 		 * @param term_id unique identifier for the event term
 		 */
 		ExtractionRule(const std::string& term_id, const HTTPProtocol& parent_protocol) :
-			m_term(term_id), m_parent_protocol(parent_protocol)
+			m_parent_protocol(parent_protocol), m_term(term_id)
 		{}
 
 		/**
