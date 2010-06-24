@@ -769,18 +769,20 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 
 						if (m_parent_protocol.m_allow_searching_content_for_charset) {
 							if (charset.empty()) {
-								// No charset in the Content-Type header, so need to look for meta tags in the content.
+								if (content_type.compare(0, 9, "text/html") == 0) {
+									// No charset in the Content-Type header and this is HTML, so need to look for meta tags in the content.
 
-								boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
-								boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
-								boost::match_results<const char*> mr2;
-								const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
-								size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
-								size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
-								if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
-									charset = mr2[1];
-								} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
-									charset = mr2[1];
+									boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
+									boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
+									boost::match_results<const char*> mr2;
+									const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
+									size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
+									size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
+									if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
+										charset = mr2[1];
+									} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
+										charset = mr2[1];
+									}
 								}
 							} else {
 								// A charset was found in the Content-Type header, so we don't need to look for meta tags,
