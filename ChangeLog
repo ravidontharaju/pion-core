@@ -1,4 +1,10 @@
 
+Version 3.0.13 (2010-06-25)
+===========================
+
+* Add a UTF8 validator so browsers would not crash when handed binary/other charset data (945)
+
+
 Version 3.0.11 (2010-06-11)
 ===========================
 
