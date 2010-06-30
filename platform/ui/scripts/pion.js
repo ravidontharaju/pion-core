@@ -467,8 +467,8 @@ pion.wizardDone = function(exit_early) {
 			'</Comparison>' + 
 			'<Comparison>' + 
 				'<Term>urn:vocab:clickstream#content-type</Term>' + 
-				'<Type>starts-with</Type>' + 
-				'<Value>text/html</Value>' + 
+				'<Type>regex</Type>' + 
+				'<Value>^(text/html|application/xhtml|text/vnd.wap.wml)</Value>' + 
 				'<MatchAllValues>false</MatchAllValues>' + 
 			'</Comparison>';
 
