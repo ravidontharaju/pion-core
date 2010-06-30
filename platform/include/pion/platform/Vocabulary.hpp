@@ -78,7 +78,7 @@ public:
 	/// data type for vocabulary terms
 	struct Term {
 		/// default constructor
-		Term(const std::string uri)
+		Term(const std::string uri = "")
 			: term_id(uri), term_ref(UNDEFINED_TERM_REF),
 			term_type(TYPE_NULL), term_size(0)
 			{}
