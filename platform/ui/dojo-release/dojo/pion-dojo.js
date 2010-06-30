@@ -28256,7 +28256,7 @@ _1a8f.push({label:"analytics",is_json:true,plugin:"UnicaAnalyticsReactor",substi
 }
 }
 if(pion.edition=="Replay"){
-var _1a9b="<Plugin>ContentHashReactor</Plugin>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>starts-with</Type>"+"<Value>text/html</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
+var _1a9b="<Plugin>ContentHashReactor</Plugin>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>^(text/html|application/xhtml)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
 var _1a9c="<X>450</X>"+"<Y>200</Y>";
 _1a8f.push({label:"mdr",url:"/resources/MDRTemplate.tmpl",substitutions:{MaxDiskUsage:pion.wizard.max_disk_usage}});
 var _1a9d=[{label:"sniffer",config:_1a90},{label:"chr",config:_1a9b},{label:"clickstream",config:_1a94},{label:"mdr",config:_1a9c}];

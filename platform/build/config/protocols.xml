@@ -37,7 +37,7 @@
 			<Source>sc-content</Source>
 			<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
-			<ContentType>(?i)^text/html</ContentType>
+			<ContentType>(?i)^(text/html|application/xhtml)</ContentType>
 			<MaxSize>10240</MaxSize>
 		</Extract>
 	</Protocol>
@@ -80,7 +80,7 @@
 			<Source>sc-content</Source>
 			<Match>(?i)&lt;TITLE&gt;\s*(.*?)\s*&lt;/TITLE&gt;</Match>
 			<Format>$1</Format>
-			<ContentType>(?i)^text/html</ContentType>
+			<ContentType>(?i)^(text/html|application/xhtml)</ContentType>
 			<MaxSize>10240</MaxSize>
 		</Extract>
 		<Extract term="urn:vocab:clickstream#cs-content">
