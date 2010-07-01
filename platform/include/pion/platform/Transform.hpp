@@ -186,8 +186,11 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 			case Vocabulary::TYPE_DATE_TIME:
 			case Vocabulary::TYPE_DATE:
 			case Vocabulary::TYPE_TIME:
-				// FIXME: This needs a time_facet...
-				e->setDateTime(term.term_ref, boost::lexical_cast<PionDateTime>(value));
+				{
+					pion::PionTimeFacet f(term.term_format);
+					const pion::PionDateTime pdt(f.fromString(value));
+					e->setDateTime(term.term_ref, pdt);
+				}
 				break;
 		}
 	} catch (...) {
