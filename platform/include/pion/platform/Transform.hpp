@@ -145,122 +145,11 @@ inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::st
 	  return true;
 
 	try {
-		switch (term.term_type) {
-			case Vocabulary::TYPE_NULL:
-			case Vocabulary::TYPE_OBJECT:
-				return false;				// No assignment -- not assignable type...
-				break;
-			case Vocabulary::TYPE_INT8:
-			case Vocabulary::TYPE_INT16:
-			case Vocabulary::TYPE_INT32:
-				e->setInt(term.term_ref, boost::lexical_cast<boost::int32_t>(value));
-				break;
-			case Vocabulary::TYPE_INT64:
-				e->setBigInt(term.term_ref, boost::lexical_cast<boost::int64_t>(value));
-				break;
-			case Vocabulary::TYPE_UINT8:
-			case Vocabulary::TYPE_UINT16:
-			case Vocabulary::TYPE_UINT32:
-				e->setUInt(term.term_ref, boost::lexical_cast<boost::uint32_t>(value));
-				break;
-			case Vocabulary::TYPE_UINT64:
-				e->setUBigInt(term.term_ref, boost::lexical_cast<boost::uint64_t>(value));
-				break;
-			case Vocabulary::TYPE_FLOAT:
-				e->setFloat(term.term_ref, boost::lexical_cast<float>(value));
-				break;
-			case Vocabulary::TYPE_DOUBLE:
-				e->setDouble(term.term_ref, boost::lexical_cast<double>(value));
-				break;
-			case Vocabulary::TYPE_LONG_DOUBLE:
-				e->setLongDouble(term.term_ref, boost::lexical_cast<long double>(value));
-				break;
-			case Vocabulary::TYPE_SHORT_STRING:
-			case Vocabulary::TYPE_STRING:
-			case Vocabulary::TYPE_LONG_STRING:
-			case Vocabulary::TYPE_CHAR:
-			case Vocabulary::TYPE_BLOB:
-			case Vocabulary::TYPE_ZBLOB:
-				e->setString(term.term_ref, value);
-				break;
-			case Vocabulary::TYPE_DATE_TIME:
-			case Vocabulary::TYPE_DATE:
-			case Vocabulary::TYPE_TIME:
-				{
-					pion::PionTimeFacet f(term.term_format);
-					const pion::PionDateTime pdt(f.fromString(value));
-					e->setDateTime(term.term_ref, pdt);
-				}
-				break;
-		}
+		e->set(term, value);
 	} catch (...) {
 		throw Transform::ValueAssignmentException(value);
 	}
 	return true;
-}
-
-	/**
-	 * getStringValue obtains a string value from event, using iterator ec, with term term
-	 *
-	 * @param s the string to retrieve the value into
-	 * @param term the term (for type identification) on how to treat/cast the value
-	 * @param ec Event::ConstIterator, to point to the specific value (one term may have multiple values)
-	 *
-	 * @return std::string returns s
-	 */
-inline std::string& getStringValue(std::string& s, const Vocabulary::Term& term, const Event::ConstIterator ec)
-{
-	std::ostringstream ss;
-	switch (term.term_type) {
-		case Vocabulary::TYPE_NULL:
-		case Vocabulary::TYPE_OBJECT:
-			// not serializable
-			ss.clear();
-			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
-			ss << boost::get<const boost::int32_t&>(ec->value);
-			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-		case Vocabulary::TYPE_UINT32:
-			ss << boost::get<const boost::uint32_t&>(ec->value);
-			break;
-		case Vocabulary::TYPE_INT64:
-			ss << boost::get<const boost::int64_t&>(ec->value);
-			break;
-		case Vocabulary::TYPE_UINT64:
-			ss << boost::get<const boost::uint64_t&>(ec->value);
-			break;
-		case Vocabulary::TYPE_FLOAT:
-			ss << boost::get<const float&>(ec->value);
-			break;
-		case Vocabulary::TYPE_DOUBLE:
-			ss << boost::get<const double&>(ec->value);
-			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
-			ss << boost::get<const long double&>(ec->value);
-			break;
-		case Vocabulary::TYPE_DATE_TIME:
-		case Vocabulary::TYPE_DATE:
-		case Vocabulary::TYPE_TIME:
-			{
-				pion::PionTimeFacet f(term.term_format);
-				ss << f.toString(boost::get<const PionDateTime&>(ec->value));
-				break;
-			}
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
-		case Vocabulary::TYPE_BLOB:
-		case Vocabulary::TYPE_ZBLOB:
-			ss << boost::get<const Event::BlobType&>(ec->value).get();
-			break;
-	}
-	s = ss.str();
-	return s;
 }
 
 /// TransformAssignValue -- Transformation based on assigning a value to a Term
@@ -352,7 +241,7 @@ public:
 		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			std::string str;
-			AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_src_term_ref], ec));
+			AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_v[m_src_term_ref]));
 		}
 		return AnyCopied;	// true, if any were copied...
 	}
@@ -490,14 +379,15 @@ public:
 		while (ec != values_range.second) {
 			// Get the source term
 			std::string str;
-			getStringValue(str, m_v[m_lookup_term_ref], ec);
+			s->write(str, ec->value, m_v[m_lookup_term_ref]);
 			// If regex defined, do the regular expression, replacing the key value
 			if (! m_match.empty()) {
 				try {
 					str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
 				} catch (...) {
 					// Get the source string again
-					getStringValue(str, m_v[m_lookup_term_ref], ec);
+					str.clear();
+					s->write(str, ec->value, m_v[m_lookup_term_ref]);
 					// Not running anymore
 					m_running = false;
 					// Throw on this, to get an error message logged
@@ -515,7 +405,7 @@ public:
 					case DEF_SRCTERM:	// Re-get the original value, assign it
 						{
 							std::string str;
-							AnyCopied |= AssignValue(d, m_term, getStringValue(str, m_v[m_lookup_term_ref], ec));
+							AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_v[m_lookup_term_ref]));
 						}
 						break;
 					case DEF_OUTPUT:	// Assign the regex output value
@@ -652,7 +542,7 @@ public:
 											// For Regex... get the precompiled from Comparison
 											// For Format... use the set_value
 											std::string str;
-											str = boost::regex_replace(getStringValue(str, m_comparison[i]->getTerm(), ec), m_comparison[i]->getRegex(),
+											str = boost::regex_replace(s->write(str, ec->value, m_comparison[i]->getTerm()), m_comparison[i]->getRegex(),
 																		m_set_value[i], boost::format_all | boost::format_no_copy);
 											// Assign the result
 											AnyAssigned |= AssignValue(d, m_term, str);
@@ -665,7 +555,7 @@ public:
 									// This rule won't be running again...
 									m_running[i] = false;
 									// Throw on this, to get an error message logged
-									throw RegexFailure("str=" + getStringValue(str, m_comparison[i]->getTerm(), ec) + ", regex=" + m_comparison[i]->getRegex().str());
+									throw RegexFailure("str=" + s->write(str, ec->value, m_comparison[i]->getTerm()) + ", regex=" + m_comparison[i]->getRegex().str());
 								}
 						}
 						break;
@@ -768,7 +658,7 @@ public:
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			// Take the original value from source term set
 			std::string str;
-			getStringValue(str, m_v[m_src_term_ref], ec);
+			s->write(str, ec->value, m_v[m_src_term_ref]);
 			// Run through all regexp's
 			for (unsigned int i = 0; i < m_regex.size(); i++)
 				if (m_running[i]) {
