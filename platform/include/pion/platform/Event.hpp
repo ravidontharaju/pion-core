@@ -908,7 +908,7 @@ public:
 	 * @param term_type data type for the term
 	 * @param value new value assigned to the term
 	 */
-	inline bool set(const Vocabulary::Term& t, const std::string& value)
+	inline void set(const Vocabulary::Term& t, const std::string& value)
 	{
 		switch (t.term_type) {
 		case Vocabulary::TYPE_NULL:
@@ -945,7 +945,7 @@ public:
 		case Vocabulary::TYPE_DATE:
 		case Vocabulary::TYPE_TIME:
 			{
-			const pion::PionTimeFacet f(t.term_format);
+			pion::PionTimeFacet f(t.term_format);
 			const pion::PionDateTime pdt(f.fromString(value));
 			setDateTime(t.term_ref, pdt);
 			break;
@@ -956,7 +956,7 @@ public:
 		case Vocabulary::TYPE_CHAR:
 		case Vocabulary::TYPE_BLOB:
 		case Vocabulary::TYPE_ZBLOB:
-			setString(value);
+			setString(t.term_ref, value);
 			break;
 		}
 	}
@@ -1028,7 +1028,7 @@ public:
 	 * @param value the ParameterValue to write
 	 * @param t the Vocabulary Term associated with the ParameterValue
 	 */
-	static inline bool write(std::string& str, const ParameterValue& value,
+	static inline std::string& write(std::string& str, const ParameterValue& value,
 		const Vocabulary::Term& t)
 	{
 		switch (t.term_type) {
@@ -1079,6 +1079,7 @@ public:
 			break;
 			}
 		}
+		return str;
 	}
 	
 	/// can be used to construct a new BLOB object based upon an existing std::string
