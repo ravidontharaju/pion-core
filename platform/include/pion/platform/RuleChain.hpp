@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Event.hpp>
@@ -76,19 +77,19 @@ public:
 	virtual ~RuleChain() {}
 
 	/**
-	 * sets configuration parameters for this Reactor
+	 * sets configuration parameters for this RuleChain
 	 *
-	 * @param v the Vocabulary that this Reactor will use to describe Terms
-	 * @param config_ptr pointer to a list of XML nodes containing Reactor
+	 * @param v the Vocabulary that this RuleChain will use to describe Terms
+	 * @param config_ptr pointer to a list of XML nodes containing RuleChain
 	 *                   configuration parameters
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 	
 	/**
-	 * this updates the Vocabulary information used by this Reactor; it should
+	 * this updates the Vocabulary information used by this RuleChain; it should
 	 * be called whenever the global Vocabulary is updated
 	 *
-	 * @param v the Vocabulary that this Reactor will use to describe Terms
+	 * @param v the Vocabulary that this RuleChain will use to describe Terms
 	 */
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 

@@ -21,6 +21,9 @@
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Comparison.hpp>
+#include <pion/platform/RuleChain.hpp>
+#include <pion/PionUnitTestDefs.hpp>
+#include <pion/platform/PionPlatformUnitTest.hpp>
 #include <boost/test/unit_test.hpp>
 
 using namespace pion;
@@ -456,6 +459,135 @@ BOOST_AUTO_TEST_CASE(checkConfigureDateTimeComparisonsUsingStrings) {
 	BOOST_CHECK(ct.evaluate(*event_ptr));
 	ct.configure(Comparison::TYPE_SAME_TIME, "12:22:01");
 	BOOST_CHECK(! ct.evaluate(*event_ptr));
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleChainWithMatchAllComparisonsFalse) {
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>false</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-string</Term>"
+			"<Type>contains</Type>"
+			"<Value>Atom</Value>"
+		"</Comparison>");
+
+	RuleChain r;
+	r.setConfig(m_vocabulary, config_ptr);
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setInt(m_plain_int_term.term_ref, 5);
+	e1->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setInt(m_plain_int_term.term_ref, 15);
+	e2->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setInt(m_plain_int_term.term_ref, 5);
+	e3->setString(m_string_term.term_ref, "Pion");
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setInt(m_plain_int_term.term_ref, 15);
+	e4->setString(m_string_term.term_ref, "Pion");
+
+	BOOST_CHECK(r(e1));
+	BOOST_CHECK(r(e2));
+	BOOST_CHECK(r(e3));
+	BOOST_CHECK(! r(e4));
+
+	// Now test some Events where at least one of the Terms being tested is undefined.
+	EventPtr e5(m_event_factory.create(m_object_term.term_ref));
+	e5->setInt(m_plain_int_term.term_ref, 5);
+	EventPtr e6(m_event_factory.create(m_object_term.term_ref));
+	e6->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e7(m_event_factory.create(m_object_term.term_ref));
+
+	BOOST_CHECK(r(e5));
+	BOOST_CHECK(r(e6));
+	BOOST_CHECK(! r(e7));
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleChainWithMatchAllComparisonsTrue) {
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>true</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-string</Term>"
+			"<Type>contains</Type>"
+			"<Value>Atom</Value>"
+		"</Comparison>");
+
+	RuleChain r;
+	r.setConfig(m_vocabulary, config_ptr);
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setInt(m_plain_int_term.term_ref, 5);
+	e1->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setInt(m_plain_int_term.term_ref, 15);
+	e2->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setInt(m_plain_int_term.term_ref, 5);
+	e3->setString(m_string_term.term_ref, "Pion");
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setInt(m_plain_int_term.term_ref, 15);
+	e4->setString(m_string_term.term_ref, "Pion");
+
+	BOOST_CHECK(r(e1));
+	BOOST_CHECK(! r(e2));
+	BOOST_CHECK(! r(e3));
+	BOOST_CHECK(! r(e4));
+
+	// Now test some Events where at least one of the Terms being tested is undefined.
+	EventPtr e5(m_event_factory.create(m_object_term.term_ref));
+	e5->setInt(m_plain_int_term.term_ref, 5);
+	EventPtr e6(m_event_factory.create(m_object_term.term_ref));
+	e6->setString(m_string_term.term_ref, "Atomic");
+	EventPtr e7(m_event_factory.create(m_object_term.term_ref));
+
+	BOOST_CHECK(! r(e5));
+	BOOST_CHECK(! r(e6));
+	BOOST_CHECK(! r(e7));
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleChainWithIsNotDefinedComparison) {
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>true</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-string</Term>"
+			"<Type>is-not-defined</Type>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+
+	RuleChain r;
+	r.setConfig(m_vocabulary, config_ptr);
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, "Atomic");
+	e1->setInt(m_plain_int_term.term_ref, 5);
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, "Atomic");
+	e2->setInt(m_plain_int_term.term_ref, 15);
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setInt(m_plain_int_term.term_ref, 5);
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setInt(m_plain_int_term.term_ref, 15);
+	EventPtr e5(m_event_factory.create(m_object_term.term_ref));
+
+	BOOST_CHECK(! r(e1));
+	BOOST_CHECK(! r(e2));
+	BOOST_CHECK(r(e3));
+	BOOST_CHECK(! r(e4));
+	BOOST_CHECK(! r(e5));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
