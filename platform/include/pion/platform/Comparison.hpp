@@ -89,6 +89,7 @@ public:
 		TYPE_LATER_TIME,
 		TYPE_SAME_OR_EARLIER_TIME,
 		TYPE_SAME_OR_LATER_TIME,
+		END_OF_COMPARISON_TYPES
 	};
 
 	/// exception thrown if the Comparison type is not recognized
@@ -244,37 +245,10 @@ public:
 	 */
 	static std::string getComparisonTypeAsString(const ComparisonType comparison_type);
 
-	/// returns true for generic comparison types
-	static inline bool isGenericType(ComparisonType t) {
-		return (t >= TYPE_FALSE && t <= TYPE_IS_NOT_DEFINED);
-	}
+	/// returns true for comparison types which require a value, i.e. which have arity > 1
+	static bool requiresValue(ComparisonType t);
 
-	/// returns true for numeric comparison types
-	static inline bool isNumericType(ComparisonType t) {
-		return (t >= TYPE_EQUALS && t <= TYPE_LESS_OR_EQUAL);
-	}
-
-	/// returns true for string comparison types
-	static inline bool isStringType(ComparisonType t) {
-		return (t >= TYPE_EXACT_MATCH && t <= TYPE_NOT_REGEX);
-	}
-
-	/// returns true for date_time comparison types
-	static inline bool isDateTimeType(ComparisonType t) {
-		// includes date (only) and time (only) comparisons
-		return (t >= TYPE_SAME_DATE_TIME && t <= TYPE_SAME_OR_LATER_TIME);
-	}
-
-	/// returns true for date comparison types
-	static inline bool isDateType(ComparisonType t) {
-		return (t >= TYPE_SAME_DATE && t <= TYPE_SAME_OR_LATER_DATE);
-	}
-
-	/// returns true for time comparison types
-	static inline bool isTimeType(ComparisonType t) {
-		return (t >= TYPE_SAME_TIME && t <= TYPE_SAME_OR_LATER_TIME);
-	}
-
+	static void writeComparisonsXML(std::ostream& out);
 
 private:
 

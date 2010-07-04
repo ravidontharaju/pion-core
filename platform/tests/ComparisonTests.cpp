@@ -660,3 +660,25 @@ BOOST_AUTO_TEST_CASE(checkRuleChainWithEventTypeComparison) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+class Comparison_F : public Comparison {
+public:
+	Comparison_F() : Comparison(Vocabulary::Term()) {};
+};
+
+BOOST_FIXTURE_TEST_SUITE(Comparison_S, Comparison_F)
+
+BOOST_AUTO_TEST_CASE(checkConsistencyOfComparisonTable) {
+	for (ComparisonType t = TYPE_FALSE; t < END_OF_COMPARISON_TYPES; t = ComparisonType(t+1))
+		BOOST_CHECK_EQUAL(t, parseComparisonType(getComparisonTypeAsString(t)));
+}
+
+BOOST_AUTO_TEST_CASE(checkRequiresValue) {
+	BOOST_CHECK(! requiresValue(TYPE_FALSE));
+	BOOST_CHECK(! requiresValue(TYPE_IS_NOT_DEFINED));
+	BOOST_CHECK(requiresValue(TYPE_EQUALS));
+	BOOST_CHECK(requiresValue(TYPE_SAME_OR_LATER_TIME));
+}
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -141,6 +141,18 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
 			this.comparison_grid.startup();
 			this.comparison_grid.connect(this.comparison_grid, 'onCellClick', _this._handleCellClick);
+			this.comparison_grid.canEdit = function(cell, row_index) {
+				switch (cell.field) {
+					// Disable editing of 'Value' cell if 'Type' cell is set to a comparison with arity 1.
+					case 'Value':
+						var item = this.getItem(row_index);
+						var type = this.store.getValue(item, 'Type').toString();
+						return pion.reactors.arity_by_comparison_name[type] > 1;
+
+					default:
+						return true;
+				}
+			}
 
 			// Arrange for destroyRecursive() to get called when the dialog is closed.
 			// This will, among other things, disconnect all the connections made via _Widget.connect().

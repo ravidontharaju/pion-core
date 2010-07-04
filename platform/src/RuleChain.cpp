@@ -77,9 +77,9 @@ void RuleChain::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// note: parseComparisonType will throw if it is invalid
 		const Comparison::ComparisonType comparison_type = Comparison::parseComparisonType(type_str);
 
-		// get the value parameter (only if type is not generic)
+		// get the value parameter (only if type has arity > 1)
 		std::string value_str;
-		if (! Comparison::isGenericType(comparison_type)) {
+		if (Comparison::requiresValue(comparison_type)) {
 			if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, value_str,
 												 comparison_node->children))
 				throw EmptyValueException();

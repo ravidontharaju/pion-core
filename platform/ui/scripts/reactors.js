@@ -40,8 +40,9 @@ var reactor_config_store;
 pion.reactors.workspace_box = null;
 pion.reactors.reactors_by_id = {};
 pion.reactors.config_store = null;
-pion.reactors.comparison_type_store = new dojo.data.ItemFileReadStore({url: '/resources/comparisonTypes.json'});
-pion.reactors.generic_comparison_types = [];
+pion.reactors.comparison_type_store = new dojo.data.ItemFileWriteStore({data: { identifier: 'name', items: [] }});
+pion.reactors.comparison_type_xml_store = new dojox.data.XmlStore({url: '/config/comparisons'});
+pion.reactors.arity_by_comparison_name = {};
 pion.reactors.categories = {};
 
 pion.reactors.getHeight = function() {
@@ -90,11 +91,20 @@ pion.reactors.init = function() {
 		dojo.addClass(button.domNode, button.contentWidget['class'] + 'Header');
 	});
 
-	var store = pion.reactors.comparison_type_store;
-	store.fetch({
-		query: {category: 'generic'},
+	// Copy all items in pion.reactors.comparison_type_xml_store to pion.reactors.comparison_type_store.
+	// We can't use pion.reactors.comparison_type_xml_store directly due to http://trac.dojotoolkit.org/ticket/9216.
+	var json_store = pion.reactors.comparison_type_store;
+	var xml_store = pion.reactors.comparison_type_xml_store;
+	xml_store.fetch({
 		onItem: function(item) {
-			pion.reactors.generic_comparison_types.push(store.getValue(item, 'name'));
+			var comparison_item = {
+				name: xml_store.getValue(item, '@id').toString(),
+				arity: parseInt(xml_store.getValue(item, 'Arity'))
+			};
+			pion.reactors.arity_by_comparison_name[comparison_item.name] = comparison_item.arity;
+			var xml_elements = xml_store.getValues(item, 'Category');
+			comparison_item.category = dojo.map(xml_elements, function(e) { return e.toString(); });
+			json_store.newItem(comparison_item);
 		}
 	});
 

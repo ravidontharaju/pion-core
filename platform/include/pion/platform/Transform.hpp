@@ -477,7 +477,7 @@ public:
 
 			//	<Value>escape(test-value)</Value>
 			std::string value_str;
-			if (!Comparison::isGenericType(ctype))
+			if (Comparison::requiresValue(ctype))
 				if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, value_str, RuleNode->children))
 					throw MissingTransformField("Missing Value in TransformationAssignRules");
 

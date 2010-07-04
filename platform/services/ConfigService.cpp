@@ -21,6 +21,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
+#include <pion/platform/Comparison.hpp>
 #include "PlatformConfig.hpp"
 #include "ConfigService.hpp"
 
@@ -237,6 +238,24 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		}
 		//
 		// END TERMS CONFIG
+		//
+	} else if (branches.front() == "comparisons") {
+		//
+		// BEGIN COMPARISONS CONFIG
+		//
+		if (branches.size() == 1) {
+			
+			// returns a list of all Comparisons
+			ConfigManager::writeBeginPionConfigXML(ss);
+			Comparison::writeComparisonsXML(ss);
+			ConfigManager::writeEndPionConfigXML(ss);
+			
+		} else {
+			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			return;
+		}
+		//
+		// END COMPARISONS CONFIG
 		//
 	} else if (branches.front() == "codecs") {
 		//

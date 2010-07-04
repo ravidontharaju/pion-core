@@ -18,11 +18,77 @@
 //
 
 #include <boost/lexical_cast.hpp>
+#include <boost/static_assert.hpp>
 #include <pion/platform/Comparison.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
+
+
+struct comparison_info {
+	Comparison::ComparisonType	type;		// must equal the index, i.e. comparison_table[i].type == i
+	const char*					name;		// Comparison term in UI
+	boost::uint8_t				arity;		// how many arguments
+	bool						is_generic;					// is the comparison applicable to any type of Term
+	bool						applies_to_numeric_terms;	// is the comparison applicable to Terms of category numeric
+	bool						applies_to_string_terms;	// is the comparison applicable to Terms of category string
+	bool						applies_to_date_time_terms;	// is the comparison applicable to Terms of category date_time
+	bool						applies_to_date_terms;		// is the comparison applicable to Terms of category date
+	bool						applies_to_time_terms;		// is the comparison applicable to Terms of category time
+};
+
+const comparison_info comparison_table[] = {
+	{ Comparison::TYPE_FALSE,                     "false",                     1, true, true, true, true, true, true },
+	{ Comparison::TYPE_TRUE,                      "true",                      1, true, true, true, true, true, true },
+	{ Comparison::TYPE_IS_DEFINED,                "is-defined",                1, true, true, true, true, true, true },
+	{ Comparison::TYPE_IS_NOT_DEFINED,            "is-not-defined",            1, true, true, true, true, true, true },
+
+	{ Comparison::TYPE_EQUALS,                    "equals",                    2, false, true, false, false, false, false },
+	{ Comparison::TYPE_NOT_EQUALS,                "not-equals",                2, false, true, false, false, false, false },
+	{ Comparison::TYPE_GREATER_THAN,              "greater-than",              2, false, true, false, false, false, false },
+	{ Comparison::TYPE_LESS_THAN,                 "less-than",                 2, false, true, false, false, false, false },
+	{ Comparison::TYPE_GREATER_OR_EQUAL,          "greater-or-equal",          2, false, true, false, false, false, false },
+	{ Comparison::TYPE_LESS_OR_EQUAL,             "less-or-equal",             2, false, true, false, false, false, false },
+
+	{ Comparison::TYPE_EXACT_MATCH,               "exact-match",               2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_EXACT_MATCH,           "not-exact-match",           2, false, false, true, false, false, false },
+	{ Comparison::TYPE_CONTAINS,                  "contains",                  2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_CONTAINS,              "not-contains",              2, false, false, true, false, false, false },
+	{ Comparison::TYPE_STARTS_WITH,               "starts-with",               2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_STARTS_WITH,           "not-starts-with",           2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ENDS_WITH,                 "ends-with",                 2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ENDS_WITH,             "not-ends-with",             2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ORDERED_BEFORE,            "ordered-before",            2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ORDERED_BEFORE,        "not-ordered-before",        2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ORDERED_AFTER,             "ordered-after",             2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ORDERED_AFTER,         "not-ordered-after",         2, false, false, true, false, false, false },
+	{ Comparison::TYPE_REGEX,                     "regex",                     2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_REGEX,                 "not-regex",                 2, false, false, true, false, false, false },
+
+	{ Comparison::TYPE_SAME_DATE_TIME,            "same-date-time",            2, false, false, false, true, false, false },
+	{ Comparison::TYPE_NOT_SAME_DATE_TIME,        "not-same-date-time",        2, false, false, false, true, false, false },
+	{ Comparison::TYPE_EARLIER_DATE_TIME,         "earlier-date-time",         2, false, false, false, true, false, false },
+	{ Comparison::TYPE_LATER_DATE_TIME,           "later-date-time",           2, false, false, false, true, false, false },
+	{ Comparison::TYPE_SAME_OR_EARLIER_DATE_TIME, "same-or-earlier-date-time", 2, false, false, false, true, false, false },
+	{ Comparison::TYPE_SAME_OR_LATER_DATE_TIME,   "same-or-later-date-time",   2, false, false, false, true, false, false },
+
+	{ Comparison::TYPE_SAME_DATE,                 "same-date",                 2, false, false, false, true, true, false },
+	{ Comparison::TYPE_NOT_SAME_DATE,             "not-same-date",             2, false, false, false, true, true, false },
+	{ Comparison::TYPE_EARLIER_DATE,              "earlier-date",              2, false, false, false, true, true, false },
+	{ Comparison::TYPE_LATER_DATE,                "later-date",                2, false, false, false, true, true, false },
+	{ Comparison::TYPE_SAME_OR_EARLIER_DATE,      "same-or-earlier-date",      2, false, false, false, true, true, false },
+	{ Comparison::TYPE_SAME_OR_LATER_DATE,        "same-or-later-date",        2, false, false, false, true, true, false },
+
+	{ Comparison::TYPE_SAME_TIME,                 "same-time",                 2, false, false, false, true, false, true },
+	{ Comparison::TYPE_NOT_SAME_TIME,             "not-same-time",             2, false, false, false, true, false, true },
+	{ Comparison::TYPE_EARLIER_TIME,              "earlier-time",              2, false, false, false, true, false, true },
+	{ Comparison::TYPE_LATER_TIME,                "later-time",                2, false, false, false, true, false, true },
+	{ Comparison::TYPE_SAME_OR_EARLIER_TIME,      "same-or-earlier-time",      2, false, false, false, true, false, true },
+	{ Comparison::TYPE_SAME_OR_LATER_TIME,        "same-or-later-time",        2, false, false, false, true, false, true }
+};
+
+BOOST_STATIC_ASSERT(Comparison::END_OF_COMPARISON_TYPES == sizeof(comparison_table) / sizeof(comparison_table[0]));
 
 
 // Comparison member functions
@@ -31,7 +97,7 @@ bool Comparison::checkForValidType(const ComparisonType type) const
 {
 	bool result = false;
 	
-	if (isGenericType(type)) {
+	if (comparison_table[type].is_generic) {
 		// generic comparisons are always valid
 		result = true;
 	} else {
@@ -51,7 +117,7 @@ bool Comparison::checkForValidType(const ComparisonType type) const
 			case Vocabulary::TYPE_FLOAT:
 			case Vocabulary::TYPE_DOUBLE:
 			case Vocabulary::TYPE_LONG_DOUBLE:
-				result = isNumericType(type);
+				result = comparison_table[type].applies_to_numeric_terms;
 				break;
 			case Vocabulary::TYPE_SHORT_STRING:
 			case Vocabulary::TYPE_STRING:
@@ -59,16 +125,16 @@ bool Comparison::checkForValidType(const ComparisonType type) const
 			case Vocabulary::TYPE_CHAR:
 			case Vocabulary::TYPE_BLOB:
 			case Vocabulary::TYPE_ZBLOB:
-				result = isStringType(type);
+				result = comparison_table[type].applies_to_string_terms;
 				break;
 			case Vocabulary::TYPE_DATE_TIME:
-				result = isDateTimeType(type);
+				result = comparison_table[type].applies_to_date_time_terms;
 				break;
 			case Vocabulary::TYPE_DATE:
-				result = isDateType(type);
+				result = comparison_table[type].applies_to_date_terms;
 				break;
 			case Vocabulary::TYPE_TIME:
-				result = isTimeType(type);
+				result = comparison_table[type].applies_to_time_terms;
 				break;
 		}
 	}
@@ -85,9 +151,9 @@ void Comparison::configure(const ComparisonType type,
 	
 	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
 		m_regex = value;
-	} else if (isStringType(type)) {
+	} else if (comparison_table[type].applies_to_string_terms) {
 		m_str_value = value;
-	} else if (! isGenericType(type)) {		// note: generic type just ignores the value
+	} else if (requiresValue(type)) {		// note: comparisons of arity 1 just ignore the value
 		try {
 			// convert string to be the same type as the term
 			switch(m_term.term_type) {
@@ -148,7 +214,7 @@ void Comparison::configure(const ComparisonType type)
 {
 	if (! checkForValidType(type))
 		throw InvalidTypeForTermException();
-	if (! isGenericType(type))
+	if (requiresValue(type))
 		throw InvalidValueForTypeException();
 	
 	m_type = type;
@@ -167,231 +233,44 @@ Comparison::ComparisonType Comparison::parseComparisonType(std::string str)
 	// convert to lowercase
 	for (std::string::iterator i=str.begin(); i!=str.end(); ++i)
 		if (isupper(*i)) *i = tolower(*i);
-	
-	// parse str
-	
-	if (str == "false")
-		return TYPE_FALSE;
-	else if (str == "true")
-		return TYPE_TRUE;
-	else if (str == "is-defined")
-		return TYPE_IS_DEFINED;
-	else if (str == "is-not-defined")
-		return TYPE_IS_NOT_DEFINED;
-	else if (str == "equals")
-		return TYPE_EQUALS;
-	else if (str == "not-equals")
-		return TYPE_NOT_EQUALS;
-	else if (str == "greater-than")
-		return TYPE_GREATER_THAN;
-	else if (str == "less-than")
-		return TYPE_LESS_THAN;
-	else if (str == "greater-or-equal")
-		return TYPE_GREATER_OR_EQUAL;
-	else if (str == "less-or-equal")
-		return TYPE_LESS_OR_EQUAL;
-	else if (str == "exact-match")
-		return TYPE_EXACT_MATCH;
-	else if (str == "not-exact-match")
-		return TYPE_NOT_EXACT_MATCH;
-	else if (str == "contains")
-		return TYPE_CONTAINS;
-	else if (str == "not-contains")
-		return TYPE_NOT_CONTAINS;
-	else if (str == "starts-with")
-		return TYPE_STARTS_WITH;
-	else if (str == "not-starts-with")
-		return TYPE_NOT_STARTS_WITH;
-	else if (str == "ends-with")
-		return TYPE_ENDS_WITH;
-	else if (str == "not-ends-with")
-		return TYPE_NOT_ENDS_WITH;
-	else if (str == "ordered-before")
-		return TYPE_ORDERED_BEFORE;
-	else if (str == "not-ordered-before")
-		return TYPE_NOT_ORDERED_BEFORE;
-	else if (str == "ordered-after")
-		return TYPE_ORDERED_AFTER;
-	else if (str == "not-ordered-after")
-		return TYPE_NOT_ORDERED_AFTER;
-	else if (str == "regex")
-		return TYPE_REGEX;
-	else if (str == "not-regex")
-		return TYPE_NOT_REGEX;
-	else if (str == "same-date-time")
-		return TYPE_SAME_DATE_TIME;
-	else if (str == "not-same-date-time")
-		return TYPE_NOT_SAME_DATE_TIME;
-	else if (str == "earlier-date-time")
-		return TYPE_EARLIER_DATE_TIME;
-	else if (str == "later-date-time")
-		return TYPE_LATER_DATE_TIME;
-	if (str == "same-or-earlier-date-time")
-		return TYPE_SAME_OR_EARLIER_DATE_TIME;
-	if (str == "same-or-later-date-time")
-		return TYPE_SAME_OR_LATER_DATE_TIME;
-	if (str == "same-date")
-		return TYPE_SAME_DATE;
-	if (str == "not-same-date")
-		return TYPE_NOT_SAME_DATE;
-	if (str == "earlier-date")
-		return TYPE_EARLIER_DATE;
-	if (str == "later-date")
-		return TYPE_LATER_DATE;
-	if (str == "same-or-earlier-date")
-		return TYPE_SAME_OR_EARLIER_DATE;
-	if (str == "same-or-later-date")
-		return TYPE_SAME_OR_LATER_DATE;
-	if (str == "same-time")
-		return TYPE_SAME_TIME;
-	if (str == "not-same-time")
-		return TYPE_NOT_SAME_TIME;
-	if (str == "earlier-time")
-		return TYPE_EARLIER_TIME;
-	if (str == "later-time")
-		return TYPE_LATER_TIME;
-	if (str == "same-or-earlier-time")
-		return TYPE_SAME_OR_EARLIER_TIME;
-	if (str == "same-or-later-time")
-		return TYPE_SAME_OR_LATER_TIME;
-	
+
+	// Search for a matching entry in comparison_table and return the corresponding type.
+	for (int j = 0; j < sizeof(comparison_table) / sizeof(comparison_table[0]); ++j)
+		if (str == comparison_table[j].name)
+			return comparison_table[j].type;
+
 	throw UnknownComparisonTypeException(str);
 }
 	
 std::string Comparison::getComparisonTypeAsString(const ComparisonType comparison_type)
 {
-	std::string str;
-	switch(comparison_type) {
-		case TYPE_FALSE:
-			str = "false";
-			break;
-		case TYPE_TRUE:
-			str = "true";
-			break;
-		case TYPE_IS_DEFINED:
-			str = "is-defined";
-			break;
-		case TYPE_IS_NOT_DEFINED:
-			str = "is-not-defined";
-			break;
-		case TYPE_EQUALS:
-			str = "equals";
-			break;
-		case TYPE_NOT_EQUALS:
-			str = "not-equals";
-			break;
-		case TYPE_GREATER_THAN:
-			str = "greater-than";
-			break;
-		case TYPE_LESS_THAN:
-			str = "less-than";
-			break;
-		case TYPE_GREATER_OR_EQUAL:
-			str = "greater-or-equal";
-			break;
-		case TYPE_LESS_OR_EQUAL:
-			str = "less-or-equal";
-			break;
-		case TYPE_EXACT_MATCH:
-			str = "exact-match";
-			break;
-		case TYPE_NOT_EXACT_MATCH:
-			str = "not-exact-match";
-			break;
-		case TYPE_CONTAINS:
-			str = "contains";
-			break;
-		case TYPE_NOT_CONTAINS:
-			str = "not-contains";
-			break;
-		case TYPE_STARTS_WITH:
-			str = "starts-with";
-			break;
-		case TYPE_NOT_STARTS_WITH:
-			str = "not-starts-with";
-			break;
-		case TYPE_ENDS_WITH:
-			str = "ends-with";
-			break;
-		case TYPE_NOT_ENDS_WITH:
-			str = "not-ends-with";
-			break;
-		case TYPE_ORDERED_BEFORE:
-			str = "ordered-before";
-			break;
-		case TYPE_NOT_ORDERED_BEFORE:
-			str = "not-ordered-before";
-			break;
-		case TYPE_ORDERED_AFTER:
-			str = "ordered-after";
-			break;
-		case TYPE_NOT_ORDERED_AFTER:
-			str = "not-ordered-after";
-			break;
-		case TYPE_REGEX:
-			str = "regex";
-			break;
-		case TYPE_NOT_REGEX:
-			str = "not-regex";
-			break;
-		case TYPE_SAME_DATE_TIME:
-			str = "same-date-time";
-			break;
-		case TYPE_NOT_SAME_DATE_TIME:
-			str = "not-same-date-time";
-			break;
-		case TYPE_EARLIER_DATE_TIME:
-			str = "earlier-date-time";
-			break;
-		case TYPE_LATER_DATE_TIME:
-			str = "later-date-time";
-			break;
-		case TYPE_SAME_OR_EARLIER_DATE_TIME:
-			str = "same-or-earlier-date-time";
-			break;
-		case TYPE_SAME_OR_LATER_DATE_TIME:
-			str = "same-or-later-date-time";
-			break;
-		case TYPE_SAME_DATE:
-			str = "same-date";
-			break;
-		case TYPE_NOT_SAME_DATE:
-			str = "not-same-date";
-			break;
-		case TYPE_EARLIER_DATE:
-			str = "earlier-date";
-			break;
-		case TYPE_LATER_DATE:
-			str = "later-date";
-			break;
-		case TYPE_SAME_OR_EARLIER_DATE:
-			str = "same-or-earlier-date";
-			break;
-		case TYPE_SAME_OR_LATER_DATE:
-			str = "same-or-later-date";
-			break;
-		case TYPE_SAME_TIME:
-			str = "same-time";
-			break;
-		case TYPE_NOT_SAME_TIME:
-			str = "not-same-time";
-			break;
-		case TYPE_EARLIER_TIME:
-			str = "earlier-time";
-			break;
-		case TYPE_LATER_TIME:
-			str = "later-time";
-			break;
-		case TYPE_SAME_OR_EARLIER_TIME:
-			str = "same-or-earlier-time";
-			break;
-		case TYPE_SAME_OR_LATER_TIME:
-			str = "same-or-later-time";
-			break;
-	}
-	return str;
+	return comparison_table[comparison_type].name;
 }
-	
-	
+
+bool Comparison::requiresValue(ComparisonType t) {
+	return comparison_table[t].arity > 1;
+}
+
+void Comparison::writeComparisonsXML(std::ostream& out) {
+	for (int i = 0; i < sizeof(comparison_table) / sizeof(comparison_table[0]); ++i) {
+		out << "<Comparison id=\"" << comparison_table[i].name << "\"><Arity>"
+			<< (unsigned)comparison_table[i].arity << "</Arity>";
+		if (comparison_table[i].is_generic)
+			out << "<Category>generic</Category>";
+		if (comparison_table[i].applies_to_numeric_terms)
+			out << "<Category>numeric</Category>";
+		if (comparison_table[i].applies_to_string_terms)
+			out << "<Category>string</Category>";
+		if (comparison_table[i].applies_to_date_time_terms)
+			out << "<Category>date_time</Category>";
+		if (comparison_table[i].applies_to_date_terms)
+			out << "<Category>date</Category>";
+		if (comparison_table[i].applies_to_time_terms)
+			out << "<Category>time</Category>";
+		out << "</Comparison>" << std::endl;
+	}
+}
+
+
 }	// end namespace platform
 }	// end namespace pion
