@@ -590,4 +590,73 @@ BOOST_AUTO_TEST_CASE(checkRuleChainWithIsNotDefinedComparison) {
 	BOOST_CHECK(! r(e5));
 }
 
+BOOST_AUTO_TEST_CASE(checkRuleChainWithEventTypeComparison) {
+	xmlNodePtr config_ptr_1 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>true</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-object</Term>"
+			"<Type>is-not-defined</Type>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+	xmlNodePtr config_ptr_2 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>false</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-object</Term>"
+			"<Type>is-not-defined</Type>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+	xmlNodePtr config_ptr_3 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>true</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-object</Term>"
+			"<Type>is-defined</Type>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+	xmlNodePtr config_ptr_4 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>false</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-object</Term>"
+			"<Type>is-defined</Type>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+
+	RuleChain r;
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setInt(m_plain_int_term.term_ref, 5);
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setInt(m_plain_int_term.term_ref, 15);
+
+	r.setConfig(m_vocabulary, config_ptr_1);
+	BOOST_CHECK(! r(e1));
+	BOOST_CHECK(! r(e2));
+
+	r.setConfig(m_vocabulary, config_ptr_2);
+	BOOST_CHECK(r(e1));
+	BOOST_CHECK(! r(e2));
+
+	r.setConfig(m_vocabulary, config_ptr_3);
+	BOOST_CHECK(r(e1));
+	BOOST_CHECK(! r(e2));
+
+	r.setConfig(m_vocabulary, config_ptr_4);
+	BOOST_CHECK(r(e1));
+	BOOST_CHECK(r(e2));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
