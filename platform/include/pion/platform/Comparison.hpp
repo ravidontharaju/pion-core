@@ -1288,20 +1288,13 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 // it was necessary to put some convoluted special-case logic here...
 inline bool Comparison::evaluate(const Event& e) const
 {
-	/// get a range of iterators representing all the values for the Term
-	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
 	if (m_type == TYPE_IS_DEFINED || m_type == TYPE_IS_NOT_DEFINED) {
 		// If object type matches looked for type, return true -- refactored out of evaluateRange
-		if (m_type == TYPE_IS_DEFINED && e.getType() == m_term.term_ref) return true;
-		// Evaluate the range
-		bool result = Comparison::evaluateRange(values_range);
-		// If object type does not matched looked for type, and object is not found in event, then not found
-		if (m_type == TYPE_IS_NOT_DEFINED)
-			return (result && e.getType() != m_term.term_ref);
-		// Return match by range
-		return result;
-	} else
-		return Comparison::evaluateRange(values_range);
+		if (e.getType() == m_term.term_ref) return m_type == TYPE_IS_DEFINED;
+	}
+	/// get a range of iterators representing all the values for the Term
+	Event::ValuesRange values_range = e.equal_range(m_term.term_ref);
+	return Comparison::evaluateRange(values_range);
 }
 
 
