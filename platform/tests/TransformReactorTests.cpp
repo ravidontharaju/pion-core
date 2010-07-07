@@ -308,6 +308,199 @@ BOOST_AUTO_TEST_CASE(checkBasicRegex) {
 	sendEventAndValidateOutput(e, transformer_id);
 }
 
+BOOST_AUTO_TEST_CASE(checkRulesTransformation) {
+	// Add a TransformReactor that does a Rule based Transformation.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>exact-match</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 1: content is hello</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>starts-with</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 2: content starts with hello</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>contains</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 3: content contains hello</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+	m_expected_terms[m_sc_content_term_ref] = "Rule 2: content starts with hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkRulesTransformationWithUndefinedTerm) {
+	// Add a TransformReactor that does a Rule based Transformation with Rules based on two different Terms.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#visitor-id</Term>"
+				"<Type>starts-with</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 1: visitor-id Term starts with hello</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>starts-with</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 2: sc-content Term starts with hello</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event with the visitor-id Term undefined and the sc-content Term set to a value 
+	// such that the second Rule should match.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+	m_expected_terms[m_sc_content_term_ref] = "Rule 2: sc-content Term starts with hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleTypeIsDefined) {
+	// Add a TransformReactor that does Rule based Transformations of type is-defined.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#visitor-id</Term>"
+				"<Type>is-defined</Type>"
+				"<SetValue>Rule 1: visitor-id Term is defined</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>is-defined</Type>"
+				"<SetValue>Rule 2: sc-content Term is defined</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+
+	m_expected_terms[m_sc_content_term_ref] = "Rule 2: sc-content Term is defined";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefined) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>is-not-defined</Type>"
+				"<SetValue>Rule 1: sc-content Term is not defined</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#visitor-id</Term>"
+				"<Type>is-not-defined</Type>"
+				"<SetValue>Rule 2: visitor-id Term is not defined</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+
+	m_expected_terms[m_sc_content_term_ref] = "Rule 2: visitor-id Term is not defined";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleTypeIsDefinedWithEventType) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#page-event</Term>"
+				"<Type>is-defined</Type>"
+				"<SetValue>Rule 1: page-event Term is defined</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>starts-with</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 2: content starts with hello</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+
+	m_expected_terms[m_sc_content_term_ref] = "Rule 1: page-event Term is defined";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefinedWithEventType) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#page-event</Term>"
+				"<Type>is-not-defined</Type>"
+				"<SetValue>Rule 1: page-event Term is not defined</SetValue>"
+			"</Rule>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>starts-with</Type>"
+				"<Value>hello</Value>"
+				"<SetValue>Rule 2: content starts with hello</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello, world");
+
+	m_expected_terms[m_sc_content_term_ref] = "Rule 2: content starts with hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
 BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingHexadecimalEscapeCodes) {
 	// Add a TransformReactor that does a regular expression transformation that includes a non-US-ASCII character.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(

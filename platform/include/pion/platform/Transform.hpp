@@ -515,19 +515,22 @@ public:
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyAssigned = false;
-		// Loop through all TESTs, break out if any term successfull on any test and short_circuit
+		// Loop through all TESTs, break out if any term successful on any test and short_circuit
 		for (unsigned int i = 0; i < m_comparison.size(); i++)
 			if (m_running[i]) {
 				switch (m_comparison[i]->getType()) {
-					// We'll take out the two cases, where there might not be values to iterate through, and just test for existence
+					// We'll take out the cases where there might not be values to iterate through, and handle them individually.
 					case Comparison::TYPE_IS_DEFINED:
-						if (s->isDefined(m_comparison[i]->getTerm().term_ref))
-					case Comparison::TYPE_TRUE:			// Sort of jumps into the middle
+						if (s->getType() == m_comparison[i]->getTerm().term_ref || s->isDefined(m_comparison[i]->getTerm().term_ref))
 							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						break;
+					case Comparison::TYPE_TRUE:
+						AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
+						break;
 					case Comparison::TYPE_FALSE:
 						break;
 					case Comparison::TYPE_IS_NOT_DEFINED:
-						if (! s->isDefined(m_comparison[i]->getTerm().term_ref))
+						if (! (s->getType() == m_comparison[i]->getTerm().term_ref || s->isDefined(m_comparison[i]->getTerm().term_ref)))
 							AnyAssigned |= AssignValue(d, m_term, m_set_value[i]);
 						break;
 					default:
