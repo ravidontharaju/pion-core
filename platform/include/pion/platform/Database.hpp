@@ -338,6 +338,8 @@ protected:
 		m_sql_affinity = d.m_sql_affinity;
 		m_pre_sql = d.m_pre_sql;
 		m_pre_sql_attr = d.m_pre_sql_attr;
+		m_options = d.m_options;
+		m_options_values = d.m_options_values;
 		m_insert_ignore = d.m_insert_ignore;
 		m_drop_table = d.m_drop_table;
 		m_drop_table_attr = d.m_drop_table_attr;
@@ -368,6 +370,7 @@ protected:
 	static const std::string				INSERT_LOG_ELEMENT_NAME;
 	static const std::string				ISOLATION_ELEMENT_NAME;
 	static const std::string				PRESQL_ELEMENT_NAME;
+	static const std::string				OPTION_ELEMENT_NAME;
 
 	static const std::string				CREATE_STAT_ELEMENT_NAME;
 	static const std::string				UPDATE_STAT_ELEMENT_NAME;
@@ -379,6 +382,7 @@ protected:
 	static const std::string				CREATE_INDEX_CUSTOM_ELEMENT_NAME;
 
 	static const std::string				IGNORE_ATTRIBUTE_NAME;
+	static const std::string				OPTION_ATTRIBUTE_NAME;
 
 	static const std::string				INSERT_IGNORE_ELEMENT_NAME;
 	static const std::string				DROP_TABLE_ELEMENT_NAME;
@@ -458,6 +462,12 @@ protected:
 
 	/// Optional "ignore" attributes for PreSQL statements
 	std::vector<boost::regex>				m_pre_sql_attr;
+
+	/// SQLAPI Options to be executed before connecting
+	std::vector<std::string>				m_options;
+
+	/// SQLAPI Options values to be executed before connecting
+	std::vector<std::string>				m_options_values;
 
 	/// primary logging interface used by this class
 	PionLogger								m_logger;

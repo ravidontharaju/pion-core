@@ -43,6 +43,7 @@ const std::string			Database::CREATE_LOG_ELEMENT_NAME = "CreateLog";
 const std::string			Database::INSERT_LOG_ELEMENT_NAME = "InsertLog";
 const std::string			Database::ISOLATION_ELEMENT_NAME = "IsolationLevel";
 const std::string			Database::PRESQL_ELEMENT_NAME = "PreSQL";
+const std::string			Database::OPTION_ELEMENT_NAME = "Option";
 
 const std::string			Database::CREATE_STAT_ELEMENT_NAME = "CreateStat";
 const std::string			Database::UPDATE_STAT_ELEMENT_NAME = "UpdateStat";
@@ -54,6 +55,7 @@ const std::string			Database::CREATE_INDEX_UNIQUE_ELEMENT_NAME = "CreateIndexUni
 const std::string			Database::CREATE_INDEX_CUSTOM_ELEMENT_NAME = "CreateIndexCustom";
 
 const std::string			Database::IGNORE_ATTRIBUTE_NAME = "ignore";
+const std::string			Database::OPTION_ATTRIBUTE_NAME = "option";
 
 const std::string			Database::INSERT_IGNORE_ELEMENT_NAME = "InsertIgnore";
 const std::string			Database::DROP_TABLE_ELEMENT_NAME = "DropTable";
@@ -186,6 +188,19 @@ void Database::readConfigDetails(const xmlNodePtr config_ptr)
 			m_pre_sql.push_back(presql_str);
 			m_pre_sql_attr.push_back(getRegex(ConfigManager::getAttribute(IGNORE_ATTRIBUTE_NAME, presql_node)));
 			presql_node = presql_node->next;
+		}
+	}
+
+	// Optional Option section -- fill in the m_options array
+	m_options.clear();
+	m_options_values.clear();
+	xmlNodePtr option_node;
+	if ((option_node = ConfigManager::findConfigNodeByName(OPTION_ELEMENT_NAME, config_ptr)) != NULL) {
+		std::string option_value_str;
+		while (ConfigManager::getConfigOption(OPTION_ELEMENT_NAME, option_value_str, option_node)) {
+			m_options_values.push_back(option_value_str);
+			m_options.push_back(ConfigManager::getAttribute(OPTION_ATTRIBUTE_NAME, option_node));
+			option_node = option_node->next;
 		}
 	}
 }
