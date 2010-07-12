@@ -20,6 +20,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/static_assert.hpp>
 #include <pion/platform/Comparison.hpp>
+#include <unicode/coll.h>
+#include <unicode/ustring.h>
+#include <unicode/stsearch.h>
 
 
 namespace pion {		// begin namespace pion
@@ -66,6 +69,19 @@ const comparison_info comparison_table[] = {
 	{ Comparison::TYPE_REGEX,                     "regex",                     2, false, false, true, false, false, false },
 	{ Comparison::TYPE_NOT_REGEX,                 "not-regex",                 2, false, false, true, false, false, false },
 
+	{ Comparison::TYPE_EXACT_MATCH_PRIMARY,       "exact-match-primary",       2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_EXACT_MATCH_PRIMARY,   "not-exact-match-primary",   2, false, false, true, false, false, false },
+	{ Comparison::TYPE_CONTAINS_PRIMARY,          "contains-primary",          2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_CONTAINS_PRIMARY,      "not-contains-primary",      2, false, false, true, false, false, false },
+	{ Comparison::TYPE_STARTS_WITH_PRIMARY,       "starts-with-primary",       2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_STARTS_WITH_PRIMARY,   "not-starts-with-primary",   2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ENDS_WITH_PRIMARY,         "ends-with-primary",         2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ENDS_WITH_PRIMARY,     "not-ends-with-primary",     2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ORDERED_BEFORE_PRIMARY,    "ordered-before-primary",    2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ORDERED_BEFORE_PRIMARY,"not-ordered-before-primary",2, false, false, true, false, false, false },
+	{ Comparison::TYPE_ORDERED_AFTER_PRIMARY,     "ordered-after-primary",     2, false, false, true, false, false, false },
+	{ Comparison::TYPE_NOT_ORDERED_AFTER_PRIMARY, "not-ordered-after-primary", 2, false, false, true, false, false, false },
+
 	{ Comparison::TYPE_SAME_DATE_TIME,            "same-date-time",            2, false, false, false, true, false, false },
 	{ Comparison::TYPE_NOT_SAME_DATE_TIME,        "not-same-date-time",        2, false, false, false, true, false, false },
 	{ Comparison::TYPE_EARLIER_DATE_TIME,         "earlier-date-time",         2, false, false, false, true, false, false },
@@ -88,7 +104,7 @@ const comparison_info comparison_table[] = {
 	{ Comparison::TYPE_SAME_OR_LATER_TIME,        "same-or-later-time",        2, false, false, false, true, false, true }
 };
 
-BOOST_STATIC_ASSERT(Comparison::END_OF_COMPARISON_TYPES == sizeof(comparison_table) / sizeof(comparison_table[0]));
+BOOST_STATIC_ASSERT(sizeof(comparison_table) / sizeof(comparison_table[0]) - 1 == Comparison::LAST_COMPARISON_TYPE);
 
 
 // Comparison member functions
@@ -148,11 +164,75 @@ void Comparison::configure(const ComparisonType type,
 {
 	if (! checkForValidType(type))
 		throw InvalidTypeForTermException();
-	
+
+	if (! value.empty()) {
+		// Test value to make sure it's a valid UTF-8 string.
+		UErrorCode errorCode = U_ZERO_ERROR;
+		u_strFromUTF8(NULL, 0, NULL, value.c_str(), -1, &errorCode);
+		if (errorCode == U_INVALID_CHAR_FOUND)
+			throw InvalidComparisonException();
+		if (errorCode != U_BUFFER_OVERFLOW_ERROR) // U_BUFFER_OVERFLOW_ERROR is expected since destCapacity = 0
+			throw InvalidComparisonException();
+
+		// TODO: Make more specific exceptions, e.g. InvalidCharInUtf8StringException & Utf8StringException.
+	}
+
 	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
-		m_regex = value;
+		m_regex = boost::make_u32regex(value);
+		m_regex_str = value;
 	} else if (comparison_table[type].applies_to_string_terms) {
 		m_str_value = value;
+
+		switch (type) {
+			case TYPE_EXACT_MATCH:
+			case TYPE_NOT_EXACT_MATCH:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_str_value));
+				break;
+			case TYPE_EXACT_MATCH_PRIMARY:
+			case TYPE_NOT_EXACT_MATCH_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_str_value, UCOL_PRIMARY));
+				break;
+			case TYPE_CONTAINS:
+			case TYPE_NOT_CONTAINS:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_str_value));
+				break;
+			case TYPE_CONTAINS_PRIMARY:
+			case TYPE_NOT_CONTAINS_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_str_value, UCOL_PRIMARY));
+				break;
+			case TYPE_STARTS_WITH:
+			case TYPE_NOT_STARTS_WITH:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_str_value));
+				break;
+			case TYPE_STARTS_WITH_PRIMARY:
+			case TYPE_NOT_STARTS_WITH_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_str_value, UCOL_PRIMARY));
+				break;
+			case TYPE_ENDS_WITH:
+			case TYPE_NOT_ENDS_WITH:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_str_value));
+				break;
+			case TYPE_ENDS_WITH_PRIMARY:
+			case TYPE_NOT_ENDS_WITH_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_str_value, UCOL_PRIMARY));
+				break;
+			case TYPE_ORDERED_BEFORE:
+			case TYPE_NOT_ORDERED_BEFORE:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_str_value));
+				break;
+			case TYPE_ORDERED_BEFORE_PRIMARY:
+			case TYPE_NOT_ORDERED_BEFORE_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_str_value, UCOL_PRIMARY));
+				break;
+			case TYPE_ORDERED_AFTER:
+			case TYPE_NOT_ORDERED_AFTER:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_str_value));
+				break;
+			case TYPE_ORDERED_AFTER_PRIMARY:
+			case TYPE_NOT_ORDERED_AFTER_PRIMARY:
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_str_value, UCOL_PRIMARY));
+				break;
+		}
 	} else if (requiresValue(type)) {		// note: comparisons of arity 1 just ignore the value
 		try {
 			// convert string to be the same type as the term
@@ -241,7 +321,7 @@ Comparison::ComparisonType Comparison::parseComparisonType(std::string str)
 
 	throw UnknownComparisonTypeException(str);
 }
-	
+
 std::string Comparison::getComparisonTypeAsString(const ComparisonType comparison_type)
 {
 	return comparison_table[comparison_type].name;
@@ -271,6 +351,39 @@ void Comparison::writeComparisonsXML(std::ostream& out) {
 	}
 }
 
+Comparison::ComparisonFunctor::ComparisonFunctor(const std::string& value, UColAttributeValue attr) : m_value(value) {
+	UErrorCode errorCode = U_ZERO_ERROR;
+	m_collator = boost::shared_ptr<Collator>(Collator::createInstance(errorCode));
+	// TODO: check errorCode.
+	////if (U_FAILURE(errorCode))
+	////	do something
 
+	if (attr != UCOL_DEFAULT)
+		m_collator->setAttribute(UCOL_STRENGTH, attr, errorCode);
+		// TODO: check errorCode.
+}
+
+Comparison::CompareStringExactMatch::CompareStringExactMatch(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+}
+
+Comparison::CompareStringContains::CompareStringContains(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+	m_pattern = UnicodeString::fromUTF8(value.c_str());
+}
+
+Comparison::CompareStringStartsWith::CompareStringStartsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+	m_pattern = UnicodeString::fromUTF8(value.c_str());
+}
+
+Comparison::CompareStringEndsWith::CompareStringEndsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+	m_pattern = UnicodeString::fromUTF8(value.c_str());
+}
+
+Comparison::CompareStringOrderedBefore::CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+}
+
+Comparison::CompareStringOrderedAfter::CompareStringOrderedAfter(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+}
+
+	
 }	// end namespace platform
 }	// end namespace pion

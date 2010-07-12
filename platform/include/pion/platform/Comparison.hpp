@@ -21,6 +21,7 @@
 #define __PION_COMPARISON_HEADER__
 
 #include <boost/regex.hpp>
+#include <boost/regex/icu.hpp>
 #include <boost/logic/tribool.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -29,6 +30,7 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
+#include <unicode/stsearch.h>
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
@@ -68,6 +70,19 @@ public:
 		TYPE_NOT_ORDERED_AFTER,
 		TYPE_REGEX,
 		TYPE_NOT_REGEX,
+		// string operations using UCOL_PRIMARY
+		TYPE_EXACT_MATCH_PRIMARY,
+		TYPE_NOT_EXACT_MATCH_PRIMARY,
+		TYPE_CONTAINS_PRIMARY,
+		TYPE_NOT_CONTAINS_PRIMARY,
+		TYPE_STARTS_WITH_PRIMARY,
+		TYPE_NOT_STARTS_WITH_PRIMARY,
+		TYPE_ENDS_WITH_PRIMARY,
+		TYPE_NOT_ENDS_WITH_PRIMARY,
+		TYPE_ORDERED_BEFORE_PRIMARY,
+		TYPE_NOT_ORDERED_BEFORE_PRIMARY,
+		TYPE_ORDERED_AFTER_PRIMARY,
+		TYPE_NOT_ORDERED_AFTER_PRIMARY,
 		// date_time operations
 		TYPE_SAME_DATE_TIME,
 		TYPE_NOT_SAME_DATE_TIME,
@@ -89,7 +104,8 @@ public:
 		TYPE_LATER_TIME,
 		TYPE_SAME_OR_EARLIER_TIME,
 		TYPE_SAME_OR_LATER_TIME,
-		END_OF_COMPARISON_TYPES
+		// Update LAST_COMPARISON_TYPE if adding types after TYPE_SAME_OR_LATER_TIME.
+		LAST_COMPARISON_TYPE = TYPE_SAME_OR_LATER_TIME
 	};
 
 	/// exception thrown if the Comparison type is not recognized
@@ -140,9 +156,8 @@ public:
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
 		m_str_value(c.m_str_value), m_regex(c.m_regex),
-		m_match_all_values(c.m_match_all_values)
+		m_match_all_values(c.m_match_all_values), m_comparison_func(c.m_comparison_func)
 	{}
-
 
 	/**
 	 * evaluates the result of the Comparison
@@ -227,7 +242,10 @@ public:
 	inline bool getMatchAllValues(void) const { return m_match_all_values; }
 
 	/// returns the compiled (or empty) regular expression
-	inline const boost::regex& getRegex(void) const { return m_regex; }
+	inline const boost::u32regex& getRegex(void) const { return m_regex; }
+
+	/// returns the original string that the regular expression was constructed from
+	inline const std::string& getRegexStr(void) const { return m_regex_str; }
 
 	/**
 	 * parses Comparison type from a string
@@ -312,95 +330,171 @@ private:
 		const T&	m_value;
 	};
 
-	/// helper class used to determine if one string matches another
-	class CompareStringExactMatch {
+	class ComparisonFunctor {
 	public:
-		CompareStringExactMatch(const std::string& value) : m_value(value) {}
+		ComparisonFunctor(const std::string& value, UColAttributeValue attr);
+		virtual ~ComparisonFunctor() {}
+
+		virtual inline bool operator()(const Event::ParameterValue& event_value) const = 0;
+
+	protected:
+		std::string						m_value;
+		boost::shared_ptr<Collator>		m_collator;
+	};
+
+	/// helper class used to determine if one string matches another
+	class CompareStringExactMatch : public ComparisonFunctor {
+	public:
+		CompareStringExactMatch(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringExactMatch() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return m_value == boost::get<const Event::BlobType&>(event_value).get();
+			UErrorCode errorCode = U_ZERO_ERROR;
+			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
+															  m_value.c_str(), errorCode);
+			// TODO: check errorCode.
+			return (result == UCOL_EQUAL);
 		}
-	private:
-		const std::string&	m_value;
 	};
 
 	/// helper class used to determine if one string contains another
-	class CompareStringContains {
+	class CompareStringContains : public ComparisonFunctor {
 	public:
-		CompareStringContains(const std::string& value) : m_value(value) {}
+		CompareStringContains(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringContains() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::algorithm::contains(
-				boost::get<const Event::BlobType&>(event_value).get(),
-				m_value.c_str());
+			UErrorCode errorCode = U_ZERO_ERROR;
+
+			// TODO: It would be nice to create a code unit iterator here instead of a UnicodeString, as in 
+			// CompareStringStartsWith and CompareStringEndsWith, to avoid having to convert the entire blob upfront.
+			// Unfortunately, the only type of iterator a StringSearch will take is a CharacterIterator,
+			// whereas the only type of code unit iterator ICU provides that can wrap UTF-8 data is UCharIterator.
+			// The ICU documentation states that it is possible to create a CharacterIterator subclass for UTF-8 strings,
+			// but suggests that it's not trivial.  See http://userguide.icu-project.org/strings/utf-8.
+			UnicodeString text = UnicodeString::fromUTF8(boost::get<const Event::BlobType&>(event_value).get());
+
+			StringSearch ss(m_pattern, text, (RuleBasedCollator*)(m_collator.get()), NULL, errorCode);
+			// TODO: check errorCode.
+
+			int pos = ss.first(errorCode);
+			// TODO: check errorCode.
+
+			return (pos != USEARCH_DONE);
 		}
+
 	private:
-		const std::string&	m_value;
+		UnicodeString					m_pattern;
 	};
 
 	/// helper class used to determine if one string starts with another
-	class CompareStringStartsWith {
+	class CompareStringStartsWith : public ComparisonFunctor {
 	public:
-		CompareStringStartsWith(const std::string& value) : m_value(value) {}
+		CompareStringStartsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringStartsWith() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::algorithm::starts_with(
-				boost::get<const Event::BlobType&>(event_value).get(),
-				m_value.c_str());
+			// Create a code unit iterator from the Event value.
+			const Event::BlobType& ss = boost::get<const Event::BlobType&>(event_value);
+			UCharIterator text_iter;
+			uiter_setUTF8(&text_iter, ss.get(), ss.size());
+
+			// Make a UnicodeString by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
+			UnicodeString text_prefix;
+			for (int i = 0; i < m_pattern.length(); ++i) {
+				UChar32 c = text_iter.next(&text_iter);
+				if (c == U_SENTINEL)
+					return false; // If the iteration failed, the text is too short to start with the pattern, so return false.
+				text_prefix += c;
+			}
+
+			// Compare the pattern to the text prefix just obtained (which has the same number of code units).
+			UErrorCode errorCode = U_ZERO_ERROR;
+			UCollationResult result = m_collator->compare(text_prefix, m_pattern, errorCode);
+			// TODO: check errorCode.
+
+			return (result == UCOL_EQUAL);
 		}
+
 	private:
-		const std::string&	m_value;
+		UnicodeString					m_pattern;
 	};
 
 	/// helper class used to determine if one string ends with another
-	class CompareStringEndsWith {
+	class CompareStringEndsWith : public ComparisonFunctor {
 	public:
-		CompareStringEndsWith(const std::string& value) : m_value(value) {}
+		CompareStringEndsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringEndsWith() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			return boost::algorithm::ends_with(
-				boost::get<const Event::BlobType&>(event_value).get(),
-				m_value.c_str());
+			// Create a code unit iterator from the Event value.
+			const Event::BlobType& ss = boost::get<const Event::BlobType&>(event_value);
+			UCharIterator text_iter;
+			uiter_setUTF8(&text_iter, ss.get(), ss.size());
+
+			// Try to iterate back N code units from the end, where N = m_pattern.length() is the number of code units in the pattern.
+			int32_t p = text_iter.move(&text_iter, -m_pattern.length(), UITER_LIMIT);
+
+			// If the iteration failed, the text is too short to end with the pattern, so return false.
+			if (p == U_SENTINEL)
+				return false;
+
+			// Compare the last N code units of the text with all N code units of the pattern.
+			UCharIterator pattern_iter;
+			uiter_setString(&pattern_iter, m_pattern.getBuffer(), m_pattern.length());
+			UErrorCode errorCode = U_ZERO_ERROR;
+			UCollationResult result = m_collator->compare(text_iter, pattern_iter, errorCode);
+			// TODO: check errorCode.
+
+			return (result == UCOL_EQUAL);
 		}
+
 	private:
-		const std::string&	m_value;
+		UnicodeString					m_pattern;
 	};
 
 	/// helper class used to determine if one string is ordered before another
-	class CompareStringOrderedBefore {
+	class CompareStringOrderedBefore : public ComparisonFunctor {
 	public:
-		CompareStringOrderedBefore(const std::string& value) : m_value(value) {}
+		CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringOrderedBefore() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			boost::algorithm::is_less p;
-			return boost::algorithm::lexicographical_compare(
-				boost::get<const Event::BlobType&>(event_value).get(),
-				m_value.c_str(), p);
+			UErrorCode errorCode = U_ZERO_ERROR;
+			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
+															  m_value.c_str(), errorCode);
+			// TODO: check errorCode.
+			return (result == UCOL_LESS);
 		}
-	private:
-		const std::string&	m_value;
 	};
 
 	/// helper class used to determine if one string is ordered after another
-	class CompareStringOrderedAfter {
+	class CompareStringOrderedAfter : public ComparisonFunctor {
 	public:
-		CompareStringOrderedAfter(const std::string& value) : m_value(value) {}
+		CompareStringOrderedAfter(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		~CompareStringOrderedAfter() {}
+
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			boost::algorithm::is_less p;
-			return boost::algorithm::lexicographical_compare(m_value.c_str(),
-				boost::get<const Event::BlobType&>(event_value).get(), p);
+			UErrorCode errorCode = U_ZERO_ERROR;
+			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
+															  m_value.c_str(), errorCode);
+			// TODO: check errorCode.
+			return (result == UCOL_GREATER);
 		}
-	private:
-		const std::string&	m_value;
 	};
 
 	/// helper class used to determine if a string matches a regular expression
 	class CompareStringRegex {
 	public:
-		CompareStringRegex(const boost::regex& value) : m_regex(value) {}
+		CompareStringRegex(const boost::u32regex& value) : m_regex(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			// note: regex_match must match the ENTIRE string; use regex_search
 			// instead to match any part of the string
-			return boost::regex_search(
+			return boost::u32regex_search(
 				boost::get<const Event::BlobType&>(event_value).get(), m_regex);
 		}
 	private:
-		const boost::regex&	m_regex;
+		const boost::u32regex&	m_regex;
 	};
 
 	/// helper class used to determine if two date_time values are equivalent
@@ -590,7 +684,7 @@ private:
 	 */
 	template <typename ComparisonFunction>
 	inline bool checkComparison(const ComparisonFunction& comparison_func,
-									const Event::ValuesRange& values_range) const;
+								const Event::ValuesRange& values_range) const;
 
 	/// identifies the Vocabulary Term to examine
 	Vocabulary::Term			m_term;
@@ -604,8 +698,14 @@ private:
 	/// the string that the Vocabulary Term is compared to (if string comparison type)
 	std::string					m_str_value;
 
+	boost::shared_ptr<ComparisonFunctor>
+								m_comparison_func;
+
 	/// the regex that the Vocabulary Term is compared to (if regex comparison type)
-	boost::regex				m_regex;
+	boost::u32regex				m_regex;
+
+	/// the original string that the regex was constructed from
+	std::string					m_regex_str;
 
 	/// true if all values for the Vocabulary Term must match
 	bool						m_match_all_values;
@@ -720,6 +820,7 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) const
 {
 	bool result = false;
+	bool negate_result = false;
 
 	switch (m_type) {
 		case TYPE_FALSE:
@@ -1003,113 +1104,31 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 			}
 			break;
 
-		case TYPE_EXACT_MATCH:
 		case TYPE_NOT_EXACT_MATCH:
-			switch (m_term.term_type) {
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_BLOB:
-				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringExactMatch comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
-					break;
-				}
-				default:
-					throw InvalidComparisonException();
-			}
-			if (m_type == TYPE_NOT_EXACT_MATCH)
-				result = !result;
-			break;
-
-		case TYPE_CONTAINS:
+		case TYPE_NOT_EXACT_MATCH_PRIMARY:
 		case TYPE_NOT_CONTAINS:
-			switch (m_term.term_type) {
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_BLOB:
-				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringContains comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
-					break;
-				}
-				default:
-					throw InvalidComparisonException();
-			}
-			if (m_type == TYPE_NOT_CONTAINS)
-				result = !result;
-			break;
-
-		case TYPE_STARTS_WITH:
+		case TYPE_NOT_CONTAINS_PRIMARY:
 		case TYPE_NOT_STARTS_WITH:
-			switch (m_term.term_type) {
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_BLOB:
-				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringStartsWith comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
-					break;
-				}
-				default:
-					throw InvalidComparisonException();
-			}
-			if (m_type == TYPE_NOT_STARTS_WITH)
-				result = !result;
-			break;
-
-		case TYPE_ENDS_WITH:
+		case TYPE_NOT_STARTS_WITH_PRIMARY:
 		case TYPE_NOT_ENDS_WITH:
-			switch (m_term.term_type) {
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_BLOB:
-				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringEndsWith comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
-					break;
-				}
-				default:
-					throw InvalidComparisonException();
-			}
-			if (m_type == TYPE_NOT_ENDS_WITH)
-				result = !result;
-			break;
-
-		case TYPE_ORDERED_BEFORE:
+		case TYPE_NOT_ENDS_WITH_PRIMARY:
 		case TYPE_NOT_ORDERED_BEFORE:
-			switch (m_term.term_type) {
-				case Vocabulary::TYPE_SHORT_STRING:
-				case Vocabulary::TYPE_STRING:
-				case Vocabulary::TYPE_LONG_STRING:
-				case Vocabulary::TYPE_CHAR:
-				case Vocabulary::TYPE_BLOB:
-				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringOrderedBefore comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
-					break;
-				}
-				default:
-					throw InvalidComparisonException();
-			}
-			if (m_type == TYPE_NOT_ORDERED_BEFORE)
-				result = !result;
-			break;
-
-		case TYPE_ORDERED_AFTER:
+		case TYPE_NOT_ORDERED_BEFORE_PRIMARY:
 		case TYPE_NOT_ORDERED_AFTER:
+		case TYPE_NOT_ORDERED_AFTER_PRIMARY:
+			negate_result = true;
+		case TYPE_EXACT_MATCH:
+		case TYPE_EXACT_MATCH_PRIMARY:
+		case TYPE_CONTAINS:
+		case TYPE_CONTAINS_PRIMARY:
+		case TYPE_STARTS_WITH:
+		case TYPE_STARTS_WITH_PRIMARY:
+		case TYPE_ENDS_WITH:
+		case TYPE_ENDS_WITH_PRIMARY:
+		case TYPE_ORDERED_BEFORE:
+		case TYPE_ORDERED_BEFORE_PRIMARY:
+		case TYPE_ORDERED_AFTER:
+		case TYPE_ORDERED_AFTER_PRIMARY:
 			switch (m_term.term_type) {
 				case Vocabulary::TYPE_SHORT_STRING:
 				case Vocabulary::TYPE_STRING:
@@ -1117,15 +1136,12 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_CHAR:
 				case Vocabulary::TYPE_BLOB:
 				case Vocabulary::TYPE_ZBLOB:
-				{
-					CompareStringOrderedAfter comparison_func(m_str_value);
-					result = checkComparison(comparison_func, values_range);
+					result = checkComparison(*m_comparison_func, values_range);
 					break;
-				}
 				default:
 					throw InvalidComparisonException();
 			}
-			if (m_type == TYPE_NOT_ORDERED_AFTER)
+			if (negate_result)
 				result = !result;
 			break;
 

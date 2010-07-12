@@ -15,7 +15,7 @@ PionPlatformUnitTests_SOURCES = PionPlatformUnitTests.cpp \
 	ServiceManagerTests.cpp UserManagerTests.cpp \
 	VocabularyConfigTests.cpp VocabularyTests.cpp ProtocolTests.cpp \
 	LogInputReactorTests.cpp TransformReactorTests.cpp \
-	QueryServiceTests.cpp
+	QueryServiceTests.cpp FilterReactorTests.cpp
 PionPlatformUnitTests_LDADD = ../../sqlite/libpion-sqlite.la ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @BOOST_TEST_LIB@ @PION_PLATFORM_LIBS@
 PionPlatformUnitTests_DEPENDENCIES = ../../sqlite/libpion-sqlite.la ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 

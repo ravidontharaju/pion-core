@@ -307,6 +307,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FilterReactorTests.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LogInputReactorTests.cpp"
 				>
 			</File>

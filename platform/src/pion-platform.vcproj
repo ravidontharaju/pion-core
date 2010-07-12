@@ -51,6 +51,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuucd.lib icuind.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -111,6 +112,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuucd.lib icuind.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -171,6 +173,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuuc.lib icuin.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -231,6 +234,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="icuuc.lib icuin.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>

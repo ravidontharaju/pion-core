@@ -545,7 +545,7 @@ public:
 											// For Regex... get the precompiled from Comparison
 											// For Format... use the set_value
 											std::string str;
-											str = boost::regex_replace(s->write(str, ec->value, m_comparison[i]->getTerm()), m_comparison[i]->getRegex(),
+											str = boost::u32regex_replace(s->write(str, ec->value, m_comparison[i]->getTerm()), m_comparison[i]->getRegex(),
 																		m_set_value[i], boost::format_all | boost::format_no_copy);
 											// Assign the result
 											AnyAssigned |= AssignValue(d, m_term, str);
@@ -558,7 +558,7 @@ public:
 									// This rule won't be running again...
 									m_running[i] = false;
 									// Throw on this, to get an error message logged
-									throw RegexFailure("str=" + s->write(str, ec->value, m_comparison[i]->getTerm()) + ", regex=" + m_comparison[i]->getRegex().str());
+									throw RegexFailure("str=" + s->write(str, ec->value, m_comparison[i]->getTerm()) + ", regex=" + m_comparison[i]->getRegexStr());
 								}
 						}
 						break;

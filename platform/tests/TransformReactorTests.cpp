@@ -288,7 +288,7 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(TransformReactorEventValidator_S, TransformReactorEventValidator_F)
 
-BOOST_AUTO_TEST_CASE(checkBasicRegex) {
+BOOST_AUTO_TEST_CASE(checkBasicRegexTransformation) {
 	// Add a TransformReactor that does a regular expression transformation.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
@@ -602,6 +602,58 @@ BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
 	e->setString(m_sc_content_term_ref, utf8_content);
 	m_expected_terms[string_term_1_ref] = "found it with uppercase";
 	m_expected_terms[string_term_2_ref] = "found it with lowercase";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkBasicRulesTransformation) {
+	// Add a TransformReactor that does a Rules transformation.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>regex</Type>"
+				"<Value>x=(\\S+)</Value>"
+				"<SetValue>$1</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "some content x=hello blah blah");
+	m_expected_terms[m_sc_content_term_ref] = "hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+// This test uses a regex that matches exactly one "word" character, and tests it against a UTF-8 string
+// where the character we'd like to match consists of two bytes.
+BOOST_AUTO_TEST_CASE(checkCharBasedRulesRegexAgainstNonAsciiChar) {
+	// Add a TransformReactor that does a Rules transformation.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>Rules</Type>"
+			"<StopOnFirstMatch>true</StopOnFirstMatch>"
+			"<Rule>"
+				"<Term>urn:vocab:clickstream#sc-content</Term>"
+				"<Type>regex</Type>"
+				"<Value>x=(\\w);</Value>"
+				"<SetValue>$1</SetValue>"
+			"</Rule>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "x=α;");
+	m_expected_terms[m_sc_content_term_ref] = "α";
 
 	sendEventAndValidateOutput(e, transformer_id);
 }

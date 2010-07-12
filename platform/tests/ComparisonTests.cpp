@@ -67,6 +67,30 @@ public:
 	}
 	~ComparisonTests_F() {
 	}
+	void checkStringComparisonTrue(EventPtr e, Comparison::ComparisonType type, const std::string& configured_string) {
+		Comparison c(m_string_term);
+		c.configure(type, configured_string);
+		BOOST_CHECK(c.evaluate(*e));
+	}
+	void checkStringComparisonTrue(const std::string& value_for_string_term, Comparison::ComparisonType type, const std::string& configured_string) {
+		EventPtr e(m_event_factory.create(m_object_term.term_ref));
+		e->setString(m_string_term.term_ref, value_for_string_term);
+		Comparison c(m_string_term);
+		c.configure(type, configured_string);
+		BOOST_CHECK(c.evaluate(*e));
+	}
+	void checkStringComparisonFalse(EventPtr e, Comparison::ComparisonType type, const std::string& configured_string) {
+		Comparison c(m_string_term);
+		c.configure(type, configured_string);
+		BOOST_CHECK(! c.evaluate(*e));
+	}
+	void checkStringComparisonFalse(const std::string& value_for_string_term, Comparison::ComparisonType type, const std::string& configured_string) {
+		EventPtr e(m_event_factory.create(m_object_term.term_ref));
+		e->setString(m_string_term.term_ref, value_for_string_term);
+		Comparison c(m_string_term);
+		c.configure(type, configured_string);
+		BOOST_CHECK(! c.evaluate(*e));
+	}
 
 	EventFactory		m_event_factory;
 	Vocabulary			m_vocabulary;
@@ -261,6 +285,419 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	event_ptr->setString(m_string_term.term_ref, "GET /favicon.ico HTTP/1.1");
 	c.configure(Comparison::TYPE_REGEX, "\\.(png|gif|jpg|jpeg|ico)");
 	BOOST_CHECK(c.evaluate(*event_ptr));
+}
+
+BOOST_AUTO_TEST_CASE(checkUtf8StringComparisons) {
+	EventPtr e(m_event_factory.create(m_object_term.term_ref));
+	e->setString(m_string_term.term_ref, "Äiti was here");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_EXACT_MATCH, "Äiti was here");
+	checkStringComparisonFalse(e, Comparison::TYPE_EXACT_MATCH, "Äiti");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_EXACT_MATCH, "Äiti");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_EXACT_MATCH, "Äiti was here");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_EXACT_MATCH_PRIMARY, "Aiti was here");
+	checkStringComparisonFalse(e, Comparison::TYPE_EXACT_MATCH_PRIMARY, "Äiti");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_EXACT_MATCH_PRIMARY, "Äiti");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_EXACT_MATCH_PRIMARY, "Aiti was here");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_CONTAINS, "here");
+	checkStringComparisonFalse(e, Comparison::TYPE_CONTAINS, "hére");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_CONTAINS, "hére");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_CONTAINS, "here");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_CONTAINS_PRIMARY, "hére");
+	checkStringComparisonFalse(e, Comparison::TYPE_CONTAINS_PRIMARY, "wasp");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_CONTAINS_PRIMARY, "wasp");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_CONTAINS_PRIMARY, "hére");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_STARTS_WITH, "Ä");
+	checkStringComparisonFalse(e, Comparison::TYPE_STARTS_WITH, "A");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_STARTS_WITH, "Aiti");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_STARTS_WITH, "Äiti");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_STARTS_WITH_PRIMARY, "a");
+	checkStringComparisonFalse(e, Comparison::TYPE_STARTS_WITH_PRIMARY, "iti");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_STARTS_WITH_PRIMARY, "AA");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_STARTS_WITH_PRIMARY, "Aiti");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_ENDS_WITH, "e");
+	checkStringComparisonFalse(e, Comparison::TYPE_ENDS_WITH, "é");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_ENDS_WITH, "hére");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_ENDS_WITH, "here");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_REGEX, "^Ä.t.*e$");
+	checkStringComparisonFalse(e, Comparison::TYPE_REGEX, "Bat");
+
+	checkStringComparisonTrue(e, Comparison::TYPE_NOT_REGEX, "AA+");
+	checkStringComparisonFalse(e, Comparison::TYPE_NOT_REGEX, "Ä.*e");
+}
+
+BOOST_AUTO_TEST_CASE(checkCompareStringStartsWith) {
+	Comparison c1(m_string_term);
+	c1.configure(Comparison::TYPE_STARTS_WITH, "äb");
+	Comparison c2(m_string_term);
+	c2.configure(Comparison::TYPE_STARTS_WITH_PRIMARY, "AB");
+	Comparison c3(m_string_term);
+	c3.configure(Comparison::TYPE_NOT_STARTS_WITH, "ab");
+	Comparison c4(m_string_term);
+	c4.configure(Comparison::TYPE_NOT_STARTS_WITH_PRIMARY, "ab");
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, "");
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, "ä");
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setString(m_string_term.term_ref, "äb");
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setString(m_string_term.term_ref, "äbc");
+	EventPtr e5(m_event_factory.create(m_object_term.term_ref));         // It's important to have one long string here, because CompareStringStartsWith 
+	e5->setString(m_string_term.term_ref, "äbcdefghijklmnopqrstuvwxyz"); // may only convert part of the input from UTF-8 to UTF-16, for efficiency reasons.
+	EventPtr e6(m_event_factory.create(m_object_term.term_ref));
+	e6->setString(m_string_term.term_ref, "ab");
+	EventPtr e7(m_event_factory.create(m_object_term.term_ref));
+	e7->setString(m_string_term.term_ref, "äz");
+
+	BOOST_CHECK(! c1.evaluate(*e1));
+	BOOST_CHECK(! c1.evaluate(*e2));
+	BOOST_CHECK(c1.evaluate(*e3));
+	BOOST_CHECK(c1.evaluate(*e4));
+	BOOST_CHECK(c1.evaluate(*e5));
+	BOOST_CHECK(! c1.evaluate(*e6));
+	BOOST_CHECK(! c1.evaluate(*e7));
+
+	BOOST_CHECK(! c2.evaluate(*e1));
+	BOOST_CHECK(! c2.evaluate(*e2));
+	BOOST_CHECK(c2.evaluate(*e3));
+	BOOST_CHECK(c2.evaluate(*e4));
+	BOOST_CHECK(c2.evaluate(*e5));
+	BOOST_CHECK(c2.evaluate(*e6));
+	BOOST_CHECK(! c2.evaluate(*e7));
+
+	BOOST_CHECK(c3.evaluate(*e1));
+	BOOST_CHECK(c3.evaluate(*e2));
+	BOOST_CHECK(c3.evaluate(*e3));
+	BOOST_CHECK(c3.evaluate(*e4));
+	BOOST_CHECK(c3.evaluate(*e5));
+	BOOST_CHECK(! c3.evaluate(*e6));
+	BOOST_CHECK(c3.evaluate(*e7));
+
+	BOOST_CHECK(c4.evaluate(*e1));
+	BOOST_CHECK(c4.evaluate(*e2));
+	BOOST_CHECK(! c4.evaluate(*e3));
+	BOOST_CHECK(! c4.evaluate(*e4));
+	BOOST_CHECK(! c4.evaluate(*e5));
+	BOOST_CHECK(! c4.evaluate(*e6));
+	BOOST_CHECK(c4.evaluate(*e7));
+}
+
+BOOST_AUTO_TEST_CASE(checkCompareStringEndsWith) {
+	Comparison c1(m_string_term);
+	c1.configure(Comparison::TYPE_ENDS_WITH, "ÿz");
+	Comparison c2(m_string_term);
+	c2.configure(Comparison::TYPE_ENDS_WITH_PRIMARY, "YZ");
+	Comparison c3(m_string_term);
+	c3.configure(Comparison::TYPE_NOT_ENDS_WITH, "yz");
+	Comparison c4(m_string_term);
+	c4.configure(Comparison::TYPE_NOT_ENDS_WITH_PRIMARY, "yz");
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, "");
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, "z");
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setString(m_string_term.term_ref, "ÿz");
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setString(m_string_term.term_ref, "xÿz");
+	EventPtr e5(m_event_factory.create(m_object_term.term_ref));         // It's important to have one long string here, because CompareStringStartsWith 
+	e5->setString(m_string_term.term_ref, "äbcdefghijklmnopqrstuvwxÿz"); // may only convert part of the input from UTF-8 to UTF-16, for efficiency reasons.
+	EventPtr e6(m_event_factory.create(m_object_term.term_ref));
+	e6->setString(m_string_term.term_ref, "yz");
+	EventPtr e7(m_event_factory.create(m_object_term.term_ref));
+	e7->setString(m_string_term.term_ref, "ÿq");
+
+	BOOST_CHECK(! c1.evaluate(*e1));
+	BOOST_CHECK(! c1.evaluate(*e2));
+	BOOST_CHECK(c1.evaluate(*e3));
+	BOOST_CHECK(c1.evaluate(*e4));
+	BOOST_CHECK(c1.evaluate(*e5));
+	BOOST_CHECK(! c1.evaluate(*e6));
+	BOOST_CHECK(! c1.evaluate(*e7));
+
+	BOOST_CHECK(! c2.evaluate(*e1));
+	BOOST_CHECK(! c2.evaluate(*e2));
+	BOOST_CHECK(c2.evaluate(*e3));
+	BOOST_CHECK(c2.evaluate(*e4));
+	BOOST_CHECK(c2.evaluate(*e5));
+	BOOST_CHECK(c2.evaluate(*e6));
+	BOOST_CHECK(! c2.evaluate(*e7));
+
+	BOOST_CHECK(c3.evaluate(*e1));
+	BOOST_CHECK(c3.evaluate(*e2));
+	BOOST_CHECK(c3.evaluate(*e3));
+	BOOST_CHECK(c3.evaluate(*e4));
+	BOOST_CHECK(c3.evaluate(*e5));
+	BOOST_CHECK(! c3.evaluate(*e6));
+	BOOST_CHECK(c3.evaluate(*e7));
+
+	BOOST_CHECK(c4.evaluate(*e1));
+	BOOST_CHECK(c4.evaluate(*e2));
+	BOOST_CHECK(! c4.evaluate(*e3));
+	BOOST_CHECK(! c4.evaluate(*e4));
+	BOOST_CHECK(! c4.evaluate(*e5));
+	BOOST_CHECK(! c4.evaluate(*e6));
+	BOOST_CHECK(c4.evaluate(*e7));
+}
+
+/*
+ICU implements the Unicode Collation Algorithm, which is a multi-level sort.
+
+   1. If there are any differences in base letters, that determines the result
+   2. Otherwise, if there are any differences in accents, that determines the results
+   3. Otherwise, if there are any differences in case, that determines the results
+   4. Otherwise, if there are any differences in punctuation, that determines the results
+
+See http://www.unicode.org/reports/tr10/ for more information.
+*/
+BOOST_AUTO_TEST_CASE(checkDefaultOrderComparisonsWithBaseLetterDifferences) {
+	checkStringComparisonTrue("ä1", Comparison::TYPE_ORDERED_BEFORE, "a2");
+	checkStringComparisonTrue("a1", Comparison::TYPE_ORDERED_BEFORE, "ä2");
+	checkStringComparisonTrue("A1", Comparison::TYPE_ORDERED_BEFORE, "a2");
+	checkStringComparisonTrue("a1", Comparison::TYPE_ORDERED_BEFORE, "A2");
+
+	checkStringComparisonFalse("ä1", Comparison::TYPE_ORDERED_AFTER, "a2");
+	checkStringComparisonFalse("a1", Comparison::TYPE_ORDERED_AFTER, "ä2");
+	checkStringComparisonFalse("A1", Comparison::TYPE_ORDERED_AFTER, "a2");
+	checkStringComparisonFalse("a1", Comparison::TYPE_ORDERED_AFTER, "A2");
+
+	checkStringComparisonFalse("a2", Comparison::TYPE_ORDERED_BEFORE, "ä1");
+	checkStringComparisonFalse("ä2", Comparison::TYPE_ORDERED_BEFORE, "a1");
+	checkStringComparisonFalse("a2", Comparison::TYPE_ORDERED_BEFORE, "A1");
+	checkStringComparisonFalse("A2", Comparison::TYPE_ORDERED_BEFORE, "a1");
+
+	checkStringComparisonTrue("a2", Comparison::TYPE_ORDERED_AFTER, "ä1");
+	checkStringComparisonTrue("ä2", Comparison::TYPE_ORDERED_AFTER, "a1");
+	checkStringComparisonTrue("a2", Comparison::TYPE_ORDERED_AFTER, "A1");
+	checkStringComparisonTrue("A2", Comparison::TYPE_ORDERED_AFTER, "a1");
+}
+
+BOOST_AUTO_TEST_CASE(checkDefaultOrderComparisonsWithAccentDifferences) {
+	checkStringComparisonTrue("a", Comparison::TYPE_ORDERED_BEFORE, "Ä");
+	checkStringComparisonTrue("A", Comparison::TYPE_ORDERED_BEFORE, "ä");
+
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER, "Ä");
+	checkStringComparisonFalse("A", Comparison::TYPE_ORDERED_AFTER, "ä");
+
+	checkStringComparisonFalse("Ä", Comparison::TYPE_ORDERED_BEFORE, "a");
+	checkStringComparisonFalse("ä", Comparison::TYPE_ORDERED_BEFORE, "A");
+
+	checkStringComparisonTrue("Ä", Comparison::TYPE_ORDERED_AFTER, "a");
+	checkStringComparisonTrue("ä", Comparison::TYPE_ORDERED_AFTER, "A");
+}
+
+BOOST_AUTO_TEST_CASE(checkDefaultOrderComparisonsWithCaseDifferences) {
+	checkStringComparisonTrue("a", Comparison::TYPE_ORDERED_BEFORE, "A");
+	checkStringComparisonTrue("ä", Comparison::TYPE_ORDERED_BEFORE, "Ä");
+
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER, "A");
+	checkStringComparisonFalse("ä", Comparison::TYPE_ORDERED_AFTER, "Ä");
+
+	checkStringComparisonFalse("A", Comparison::TYPE_ORDERED_BEFORE, "a");
+	checkStringComparisonFalse("Ä", Comparison::TYPE_ORDERED_BEFORE, "ä");
+
+	checkStringComparisonTrue("A", Comparison::TYPE_ORDERED_AFTER, "a");
+	checkStringComparisonTrue("Ä", Comparison::TYPE_ORDERED_AFTER, "ä");
+}
+
+/*
+Note that the Unicode Collation Algorithm has the behavior that increasing the collation strength might 
+cause two strings that were equal to become ordered, but it can't cause the order of two strings to reverse.
+See http://www.unicode.org/reports/tr10/ for more information.
+*/
+BOOST_AUTO_TEST_CASE(checkPrimaryVsDefaultOrderComparisons) {
+	checkStringComparisonTrue("a", Comparison::TYPE_ORDERED_BEFORE, "Ä");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_BEFORE_PRIMARY, "Ä");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER, "Ä");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER_PRIMARY, "Ä");
+
+	checkStringComparisonTrue("A", Comparison::TYPE_ORDERED_BEFORE, "ä");
+	checkStringComparisonFalse("A", Comparison::TYPE_ORDERED_BEFORE_PRIMARY, "ä");
+	checkStringComparisonFalse("A", Comparison::TYPE_ORDERED_AFTER, "ä");
+	checkStringComparisonFalse("A", Comparison::TYPE_ORDERED_AFTER_PRIMARY, "ä");
+
+	checkStringComparisonTrue("a", Comparison::TYPE_ORDERED_BEFORE, "A");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_BEFORE_PRIMARY, "A");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER, "A");
+	checkStringComparisonFalse("a", Comparison::TYPE_ORDERED_AFTER_PRIMARY, "A");
+}
+
+BOOST_AUTO_TEST_CASE(checkOrderComparisonsBetweenStringsDifferingOnlyInAccents) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setString(m_string_term.term_ref, "Atômic");
+	Comparison c(m_string_term);
+
+	// test default ordering (collator strength = UCOL_TERTIARY)
+	c.configure(Comparison::TYPE_ORDERED_BEFORE, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_EXACT_MATCH, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_ORDERED_AFTER, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	// same as previous block, but with collator strength = UCOL_PRIMARY
+	c.configure(Comparison::TYPE_ORDERED_BEFORE_PRIMARY, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_EXACT_MATCH_PRIMARY, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_ORDERED_AFTER_PRIMARY, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
+	// the negations of the Comparisons in the previous two blocks
+	c.configure(Comparison::TYPE_NOT_ORDERED_BEFORE, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_NOT_EXACT_MATCH, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_NOT_ORDERED_AFTER, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_NOT_ORDERED_BEFORE_PRIMARY, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_NOT_EXACT_MATCH_PRIMARY, "Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+	c.configure(Comparison::TYPE_NOT_ORDERED_AFTER_PRIMARY, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+}
+
+BOOST_AUTO_TEST_CASE(checkComparisonsWithValidUtf8FourByteSequences) {
+	const char UTF8_ENCODED_TEST_CHAR_ARRAY[] = {
+		(char)0xF0, (char)0x90, (char)0x82, (char)0x88,		// UTF-8 encoding of U+10088 (LINEAR B IDEOGRAM B107F SHE-GOAT)
+		(char)0xE2, (char)0x82, (char)0xA8,					// UTF-8 encoding of U+2260 (NOT EQUAL TO)
+		(char)0xF0, (char)0x90, (char)0x82, (char)0x89};	// UTF-8 encoding of U+10089 (LINEAR B IDEOGRAM B107M HE-GOAT)
+	const std::string UTF8_ENCODED_TEST_STRING(UTF8_ENCODED_TEST_CHAR_ARRAY, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY));
+	const char UTF8_ENCODED_TEST_CHAR_ARRAY_2[] = {
+		(char)0xF0, (char)0x90, (char)0x82, (char)0x89,		// UTF-8 encoding of U+10089 (LINEAR B IDEOGRAM B107M HE-GOAT)
+		(char)0xE2, (char)0x89, (char)0x88,					// UTF-8 encoding of U+2248 (ALMOST EQUAL TO)
+		(char)0xF0, (char)0x90, (char)0x82, (char)0x88};	// UTF-8 encoding of U+10088 (LINEAR B IDEOGRAM B107F SHE-GOAT)
+	const std::string UTF8_ENCODED_TEST_STRING_2(UTF8_ENCODED_TEST_CHAR_ARRAY_2, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY_2));
+
+	Comparison c1(m_string_term);
+	c1.configure(Comparison::TYPE_CONTAINS, "\xE2\x82\xA8"); // NOT EQUAL TO
+	Comparison c1p(m_string_term);
+	c1p.configure(Comparison::TYPE_CONTAINS_PRIMARY, "\xE2\x82\xA8"); // NOT EQUAL TO
+	Comparison c2(m_string_term);
+	c2.configure(Comparison::TYPE_STARTS_WITH, "\xF0\x90\x82\x88"); // SHE-GOAT
+	Comparison c2p(m_string_term);
+	c2p.configure(Comparison::TYPE_STARTS_WITH_PRIMARY, "\xF0\x90\x82\x88"); // SHE-GOAT
+	Comparison c3(m_string_term);
+	c3.configure(Comparison::TYPE_ENDS_WITH, "\xF0\x90\x82\x89"); // HE-GOAT
+	Comparison c3p(m_string_term);
+	c3p.configure(Comparison::TYPE_ENDS_WITH_PRIMARY, "\xF0\x90\x82\x89"); // HE-GOAT
+
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, UTF8_ENCODED_TEST_STRING);
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, UTF8_ENCODED_TEST_STRING_2);
+
+	BOOST_CHECK(c1.evaluate(*e1));
+	BOOST_CHECK(! c1.evaluate(*e2));
+	BOOST_CHECK(c1p.evaluate(*e1));
+	BOOST_CHECK(! c1p.evaluate(*e2));
+	BOOST_CHECK(c2.evaluate(*e1));
+	BOOST_CHECK(! c2.evaluate(*e2));
+	BOOST_CHECK(c2p.evaluate(*e1));
+	BOOST_CHECK(! c2p.evaluate(*e2));
+	BOOST_CHECK(c3.evaluate(*e1));
+	BOOST_CHECK(! c3.evaluate(*e2));
+	BOOST_CHECK(c3p.evaluate(*e1));
+	BOOST_CHECK(! c3p.evaluate(*e2));
+}
+
+BOOST_AUTO_TEST_CASE(checkConjoinedLetter) {
+	EventPtr event_ptr(m_event_factory.create(m_object_term.term_ref));
+	event_ptr->setString(m_string_term.term_ref, "Caesar");
+	Comparison c(m_string_term);
+
+	c.configure(Comparison::TYPE_EXACT_MATCH, "Cæsar");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_EXACT_MATCH_PRIMARY, "Cæsar");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_CONTAINS, "æ");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_CONTAINS_PRIMARY, "æ");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+}
+
+BOOST_AUTO_TEST_CASE(checkCombiningDiacriticalMarks) {
+	std::string primary_string = "bad";
+
+	// test string where a character has a combining diacritical mark
+	char UTF8_ENCODED_TEST_CHAR_ARRAY[] = {
+		0x62,								// 'b'
+		0x61,								// 'a'
+		(char)0xCC, (char)0x80,				// UTF-8 encoding of U+0300 (COMBINING GRAVE ACCENT)
+		0x64};								// 'd'
+	const std::string UTF8_ENCODED_TEST_STRING(UTF8_ENCODED_TEST_CHAR_ARRAY, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY));
+
+	// test string where a character has two combining diacritical marks
+	char UTF8_ENCODED_TEST_CHAR_ARRAY_2[] = {
+		0x62,								// 'b'
+		0x61,								// 'a'
+		(char)0xCC, (char)0x80,				// UTF-8 encoding of U+0300 (COMBINING GRAVE ACCENT)
+		(char)0xCC, (char)0xA5,				// UTF-8 encoding of U+0325 (COMBINING RING BELOW)
+		0x64};								// 'd'
+	const std::string UTF8_ENCODED_TEST_STRING_2(UTF8_ENCODED_TEST_CHAR_ARRAY_2, sizeof(UTF8_ENCODED_TEST_CHAR_ARRAY_2));
+
+	checkStringComparisonTrue(primary_string, Comparison::TYPE_ORDERED_BEFORE, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonTrue(primary_string, Comparison::TYPE_ORDERED_BEFORE, UTF8_ENCODED_TEST_STRING_2);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_BEFORE_PRIMARY, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_BEFORE_PRIMARY, UTF8_ENCODED_TEST_STRING_2);
+
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_EXACT_MATCH, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_EXACT_MATCH, UTF8_ENCODED_TEST_STRING_2);
+	checkStringComparisonTrue(primary_string, Comparison::TYPE_EXACT_MATCH_PRIMARY, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonTrue(primary_string, Comparison::TYPE_EXACT_MATCH_PRIMARY, UTF8_ENCODED_TEST_STRING_2);
+
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_AFTER, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_AFTER, UTF8_ENCODED_TEST_STRING_2);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_AFTER_PRIMARY, UTF8_ENCODED_TEST_STRING);
+	checkStringComparisonFalse(primary_string, Comparison::TYPE_ORDERED_AFTER_PRIMARY, UTF8_ENCODED_TEST_STRING_2);
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigureComparisonWithInvalidUtf8String) {
+	Comparison c(m_string_term);
+
+	// C3 is the first byte of Ä in UTF-8 encoding
+	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_STARTS_WITH, "\xC3"), Comparison::InvalidComparisonException);
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigureComparisonWithEmptyString) {
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, "abc");
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, "");
+
+	Comparison c(m_string_term);
+
+	c.configure(Comparison::TYPE_EXACT_MATCH, "");
+	BOOST_CHECK(! c.evaluate(*e1));
+	BOOST_CHECK(c.evaluate(*e2));
+
+	c.configure(Comparison::TYPE_STARTS_WITH, "");
+	BOOST_CHECK(c.evaluate(*e1));
+	BOOST_CHECK(c.evaluate(*e2));
+
+	c.configure(Comparison::TYPE_ORDERED_BEFORE, "");
+	BOOST_CHECK(! c.evaluate(*e1));
+	BOOST_CHECK(! c.evaluate(*e2));
 }
 
 BOOST_AUTO_TEST_CASE(checkComparisonCopyWorksForRegex) {
@@ -670,7 +1107,7 @@ public:
 BOOST_FIXTURE_TEST_SUITE(Comparison_S, Comparison_F)
 
 BOOST_AUTO_TEST_CASE(checkConsistencyOfComparisonTable) {
-	for (ComparisonType t = TYPE_FALSE; t < END_OF_COMPARISON_TYPES; t = ComparisonType(t+1))
+	for (ComparisonType t = TYPE_FALSE; t <= LAST_COMPARISON_TYPE; t = ComparisonType(t+1))
 		BOOST_CHECK_EQUAL(t, parseComparisonType(getComparisonTypeAsString(t)));
 }
 
