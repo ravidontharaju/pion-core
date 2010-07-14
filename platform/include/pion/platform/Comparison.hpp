@@ -30,6 +30,8 @@
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
+#include <unicode/uiter.h>
+#include <unicode/ustring.h>
 #include <unicode/stsearch.h>
 
 namespace pion {		// begin namespace pion
@@ -333,13 +335,14 @@ private:
 	class ComparisonFunctor {
 	public:
 		ComparisonFunctor(const std::string& value, UColAttributeValue attr);
-		virtual ~ComparisonFunctor() {}
+		virtual ~ComparisonFunctor();
 
 		virtual inline bool operator()(const Event::ParameterValue& event_value) const = 0;
 
 	protected:
-		std::string						m_value;
-		boost::shared_ptr<Collator>		m_collator;
+		int32_t			m_pattern_buf_len;
+		UChar*			m_pattern_buf;
+		UCollator*		m_collator;
 	};
 
 	/// helper class used to determine if one string matches another
@@ -349,9 +352,12 @@ private:
 		~CompareStringExactMatch() {}
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
+			UCharIterator text_iter, pattern_iter;
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+			uiter_setUTF8(&text_iter, blob.get(), blob.size());
+			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
-															  m_value.c_str(), errorCode);
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
 			// TODO: check errorCode.
 			return (result == UCOL_EQUAL);
 		}
@@ -364,60 +370,55 @@ private:
 		~CompareStringContains() {}
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
+			//// TODO: It would be nice to create a code unit iterator here instead of a UnicodeString, as in 
+			//// CompareStringStartsWith and CompareStringEndsWith, to avoid having to convert the entire blob upfront.
+			//// Unfortunately, the only type of iterator a StringSearch will take is a CharacterIterator,
+			//// whereas the only type of code unit iterator ICU provides that can wrap UTF-8 data is UCharIterator.
+			//// The ICU documentation states that it is possible to create a CharacterIterator subclass for UTF-8 strings,
+			//// but suggests that it's not trivial.  See http://userguide.icu-project.org/strings/utf-8.
+			//UnicodeString text = UnicodeString::fromUTF8(boost::get<const Event::BlobType&>(event_value).get());
+
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+			int32_t text_buf_len;
 			UErrorCode errorCode = U_ZERO_ERROR;
-
-			// TODO: It would be nice to create a code unit iterator here instead of a UnicodeString, as in 
-			// CompareStringStartsWith and CompareStringEndsWith, to avoid having to convert the entire blob upfront.
-			// Unfortunately, the only type of iterator a StringSearch will take is a CharacterIterator,
-			// whereas the only type of code unit iterator ICU provides that can wrap UTF-8 data is UCharIterator.
-			// The ICU documentation states that it is possible to create a CharacterIterator subclass for UTF-8 strings,
-			// but suggests that it's not trivial.  See http://userguide.icu-project.org/strings/utf-8.
-			UnicodeString text = UnicodeString::fromUTF8(boost::get<const Event::BlobType&>(event_value).get());
-
-			StringSearch ss(m_pattern, text, (RuleBasedCollator*)(m_collator.get()), NULL, errorCode);
+			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &errorCode);
+			errorCode = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
+			UChar* text_buf = new UChar[text_buf_len];
+			u_strFromUTF8(text_buf, text_buf_len, NULL, blob.get(), blob.size(), &errorCode);
+			// Use u_strFromUTF8Lenient instead?
+			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf, text_buf_len, m_collator, NULL, &errorCode);
+			int pos = usearch_first(ss, &errorCode);
 			// TODO: check errorCode.
-
-			int pos = ss.first(errorCode);
-			// TODO: check errorCode.
-
+			delete [] text_buf;
 			return (pos != USEARCH_DONE);
 		}
-
-	private:
-		UnicodeString					m_pattern;
 	};
 
 	/// helper class used to determine if one string starts with another
 	class CompareStringStartsWith : public ComparisonFunctor {
 	public:
 		CompareStringStartsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
-		~CompareStringStartsWith() {}
+		~CompareStringStartsWith();
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			// Create a code unit iterator from the Event value.
-			const Event::BlobType& ss = boost::get<const Event::BlobType&>(event_value);
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			UCharIterator text_iter;
-			uiter_setUTF8(&text_iter, ss.get(), ss.size());
+			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
-			// Make a UnicodeString by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
-			UnicodeString text_prefix;
-			for (int i = 0; i < m_pattern.length(); ++i) {
+			// Populate m_text_prefix_buf by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
+			for (int i = 0; i < m_pattern_buf_len; ++i) {
 				UChar32 c = text_iter.next(&text_iter);
 				if (c == U_SENTINEL)
 					return false; // If the iteration failed, the text is too short to start with the pattern, so return false.
-				text_prefix += c;
+				m_text_prefix_buf[i] = c;
 			}
-
-			// Compare the pattern to the text prefix just obtained (which has the same number of code units).
-			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = m_collator->compare(text_prefix, m_pattern, errorCode);
-			// TODO: check errorCode.
-
+			UCollationResult result = ucol_strcoll(m_collator, m_text_prefix_buf, m_pattern_buf_len, m_pattern_buf, m_pattern_buf_len);
 			return (result == UCOL_EQUAL);
 		}
 
 	private:
-		UnicodeString					m_pattern;
+		UChar*							m_text_prefix_buf;
 	};
 
 	/// helper class used to determine if one string ends with another
@@ -428,29 +429,25 @@ private:
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
 			// Create a code unit iterator from the Event value.
-			const Event::BlobType& ss = boost::get<const Event::BlobType&>(event_value);
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			UCharIterator text_iter;
-			uiter_setUTF8(&text_iter, ss.get(), ss.size());
+			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
-			// Try to iterate back N code units from the end, where N = m_pattern.length() is the number of code units in the pattern.
-			int32_t p = text_iter.move(&text_iter, -m_pattern.length(), UITER_LIMIT);
+			// Try to iterate back m_pattern_buf_len code units from the end (where m_pattern_buf_len is the number of code units in the pattern).
+			int32_t p = text_iter.move(&text_iter, -m_pattern_buf_len, UITER_LIMIT);
 
 			// If the iteration failed, the text is too short to end with the pattern, so return false.
 			if (p == U_SENTINEL)
 				return false;
 
-			// Compare the last N code units of the text with all N code units of the pattern.
+			// Compare the last m_pattern_buf_len code units of the text with all m_pattern_buf_len code units of the pattern.
 			UCharIterator pattern_iter;
-			uiter_setString(&pattern_iter, m_pattern.getBuffer(), m_pattern.length());
+			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = m_collator->compare(text_iter, pattern_iter, errorCode);
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
 			// TODO: check errorCode.
-
 			return (result == UCOL_EQUAL);
 		}
-
-	private:
-		UnicodeString					m_pattern;
 	};
 
 	/// helper class used to determine if one string is ordered before another
@@ -460,9 +457,12 @@ private:
 		~CompareStringOrderedBefore() {}
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
+			UCharIterator text_iter, pattern_iter;
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+			uiter_setUTF8(&text_iter, blob.get(), blob.size());
+			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
-															  m_value.c_str(), errorCode);
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
 			// TODO: check errorCode.
 			return (result == UCOL_LESS);
 		}
@@ -475,9 +475,12 @@ private:
 		~CompareStringOrderedAfter() {}
 
 		inline bool operator()(const Event::ParameterValue& event_value) const {
+			UCharIterator text_iter, pattern_iter;
+			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+			uiter_setUTF8(&text_iter, blob.get(), blob.size());
+			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = m_collator->compareUTF8(boost::get<const Event::BlobType&>(event_value).get(),
-															  m_value.c_str(), errorCode);
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
 			// TODO: check errorCode.
 			return (result == UCOL_GREATER);
 		}

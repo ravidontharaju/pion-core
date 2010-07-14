@@ -351,31 +351,43 @@ void Comparison::writeComparisonsXML(std::ostream& out) {
 	}
 }
 
-Comparison::ComparisonFunctor::ComparisonFunctor(const std::string& value, UColAttributeValue attr) : m_value(value) {
+Comparison::ComparisonFunctor::ComparisonFunctor(const std::string& value, UColAttributeValue attr) : m_pattern_buf(NULL) {
 	UErrorCode errorCode = U_ZERO_ERROR;
-	m_collator = boost::shared_ptr<Collator>(Collator::createInstance(errorCode));
+	m_collator = ucol_open(NULL, &errorCode);
 	// TODO: check errorCode.
 	////if (U_FAILURE(errorCode))
 	////	do something
 
 	if (attr != UCOL_DEFAULT)
-		m_collator->setAttribute(UCOL_STRENGTH, attr, errorCode);
+		ucol_setAttribute(m_collator, UCOL_STRENGTH, attr, &errorCode);
 		// TODO: check errorCode.
+
+	u_strFromUTF8(NULL, 0, &m_pattern_buf_len, value.c_str(), -1, &errorCode);
+	errorCode = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
+	m_pattern_buf = new UChar[m_pattern_buf_len];
+	u_strFromUTF8(m_pattern_buf, m_pattern_buf_len, NULL, value.c_str(), -1, &errorCode);
+}
+
+Comparison::ComparisonFunctor::~ComparisonFunctor() {
+	delete [] m_pattern_buf;
+	ucol_close(m_collator);
 }
 
 Comparison::CompareStringExactMatch::CompareStringExactMatch(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
 }
 
 Comparison::CompareStringContains::CompareStringContains(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
-	m_pattern = UnicodeString::fromUTF8(value.c_str());
 }
 
 Comparison::CompareStringStartsWith::CompareStringStartsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
-	m_pattern = UnicodeString::fromUTF8(value.c_str());
+	m_text_prefix_buf = new UChar[m_pattern_buf_len];
+}
+
+Comparison::CompareStringStartsWith::~CompareStringStartsWith() {
+	delete [] m_text_prefix_buf;
 }
 
 Comparison::CompareStringEndsWith::CompareStringEndsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
-	m_pattern = UnicodeString::fromUTF8(value.c_str());
 }
 
 Comparison::CompareStringOrderedBefore::CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
