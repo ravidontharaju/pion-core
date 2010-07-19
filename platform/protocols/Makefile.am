@@ -9,7 +9,7 @@ pion_plugins_LTLIBRARIES = HTTPProtocol.la
 
 HTTPProtocol_la_SOURCES = HTTPProtocol.hpp HTTPProtocol.cpp
 HTTPProtocol_la_LDFLAGS = -no-undefined -module -avoid-version
-HTTPProtocol_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@ -licui18n -licuuc
+HTTPProtocol_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 HTTPProtocol_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
 EXTRA_DIST = *.vcproj
