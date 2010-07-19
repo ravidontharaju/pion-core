@@ -18,7 +18,7 @@ FilterReactor_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
 
 TransformReactor_la_SOURCES = TransformReactor.hpp TransformReactor.cpp
 TransformReactor_la_LDFLAGS = -no-undefined -module -avoid-version
-TransformReactor_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@ -licuuc -licui18n
+TransformReactor_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 TransformReactor_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
 
 LogInputReactor_la_SOURCES = LogInputReactor.hpp LogInputReactor.cpp
