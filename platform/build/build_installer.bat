@@ -1,4 +1,4 @@
-@echo off
+@echo on
 SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3.1"
 SET AI_EXE="advinst.exe"
 SET INSTALL_PRJ="pion-platform.aip"
