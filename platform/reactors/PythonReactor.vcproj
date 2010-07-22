@@ -37,7 +37,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Python26\include"
+				AdditionalIncludeDirectories="$(PYTHON_HOME)\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -51,7 +51,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalLibraryDirectories="C:\Python26\libs"
+				AdditionalLibraryDirectories="$(PYTHON_HOME)\libs"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -100,7 +100,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Python26\include"
+				AdditionalIncludeDirectories="$(PYTHON_HOME)\include"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -114,7 +114,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalLibraryDirectories="C:\Python26\libs"
+				AdditionalLibraryDirectories="$(PYTHON_HOME)\libs"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
