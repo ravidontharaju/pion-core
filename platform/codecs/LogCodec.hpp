@@ -437,7 +437,7 @@ inline void LogCodec::mapFieldToTerm(const std::string& field, const pion::platf
 			throw PionException("Duplicate Field Term");
 	}
 
-	if (m_field_map[field])
+	if (m_field_map.find(field) != m_field_map.end())
 		throw PionException("Duplicate Field Name");
 
 	// prepare a new Logfield object
