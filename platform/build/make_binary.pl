@@ -276,8 +276,13 @@ if ($PLATFORM =~ /^win32/i) {
 
 if ($PLATFORM =~ /^win32/i) {
 	print "Creating Pion installation package..\n";
-	$INSTALLER_SCRIPT=File::Spec->catfile( ("platform", "build"), "build_installer.bat");
-	system("$INSTALLER_SCRIPT $PACKAGE_DIR $VERSION");
+	#$INSTALLER_SCRIPT=File::Spec->catfile( ("platform", "build"), "build_installer.bat");
+	#$INSTALLER_SCRIPT=File::Spec::Win32->catfile( ("platform", "build"), "build_installer.bat");
+	$INSTALLER_SCRIPT="platform\\\\build\\\\build_installer.bat";
+	$WIN_PACKAGE_DIR="bin\\\\" . $PACKAGE_NAME;
+	$CMD = "cmd /c $INSTALLER_SCRIPT $WIN_PACKAGE_DIR $VERSION";
+	print "About to call: $CMD\n";
+	system($CMD);
 	move("pion-platform.msi", File::Spec->catfile( ($BIN_DIR, "$TARBALL_NAME.msi") ));
 }
 
