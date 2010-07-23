@@ -1,5 +1,10 @@
 @echo on
-SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3.1"
+
+REM %ProgramFiles% is not defined when this file is run by make_binary.pl on ws03-vc9-32.
+REM SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3.1"
+
+SET AI_DIR="C:\Program Files\Caphyon\Advanced Installer 7.3.1"
+
 SET AI_EXE="advinst.exe"
 SET INSTALL_PRJ="pion-platform.aip"
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
