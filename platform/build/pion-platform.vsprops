@@ -11,6 +11,5 @@
 	<Tool
 		Name="VCLinkerTool"
 		AdditionalDependencies="libxml2.lib rpcrt4.lib"
-		AdditionalLibraryDirectories="&quot;$(LIBXML_HOME)\lib&quot;;&quot;$(ZLIB_HOME)\lib&quot;;&quot;$(BZIP2_HOME)\lib&quot;"
 	/>
 </VisualStudioPropertySheet>

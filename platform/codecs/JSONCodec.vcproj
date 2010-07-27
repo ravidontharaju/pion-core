@@ -18,7 +18,7 @@
 			Name="Debug_DLL|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\common\build\third_party_libs_win32.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -37,7 +37,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(YAJL_HOME)\include&quot;"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -51,7 +50,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="&quot;$(YAJL_HOME)\bin&quot;"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -81,7 +79,7 @@
 			Name="Debug_DLL_full|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\common\build\third_party_libs_win32.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -100,7 +98,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(YAJL_HOME)\include&quot;"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -115,7 +112,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="&quot;$(YAJL_HOME)\bin&quot;"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -145,7 +141,7 @@
 			Name="Release_DLL|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\common\build\third_party_libs_win32.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -164,7 +160,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(YAJL_HOME)\include&quot;"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -178,7 +173,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="&quot;$(YAJL_HOME)\bin&quot;"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
@@ -208,7 +202,7 @@
 			Name="Release_DLL_full|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_DLL_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\common\build\third_party_libs_win32.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -227,7 +221,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(YAJL_HOME)\include&quot;"
 				PreprocessorDefinitions="PION_FULL"
 			/>
 			<Tool
@@ -242,7 +235,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="yajl.lib"
-				AdditionalLibraryDirectories="&quot;$(YAJL_HOME)\bin&quot;"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
