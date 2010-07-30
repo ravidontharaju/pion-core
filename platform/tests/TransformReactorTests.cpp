@@ -16,6 +16,7 @@
 #include <pion/PionUnitTestDefs.hpp>
 #include <pion/platform/PionPlatformUnitTest.hpp>
 #include <pion/platform/Event.hpp>
+#include <pion/platform/Transform.hpp>
 #include "../server/PlatformConfig.hpp"
 
 using namespace std;
@@ -182,7 +183,7 @@ BOOST_AUTO_TEST_CASE(checkTransformCLFLogFile) {
 
 	// Read in events from a CLF log file.
 	CodecPtr clf_codec_ptr = m_codec_factory.getCodec("3f49f2da-bfe3-11dc-8875-0016cb926e68");
-	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+	PionPlatformUnitTest::feedFileToReactor(
 		*m_reaction_engine, transformer_id, *clf_codec_ptr, CLF_LOG_FILE);
 
 	// Make sure the LogOutputReactor has finished writing the expected number of records.
@@ -221,7 +222,7 @@ BOOST_AUTO_TEST_CASE(checkTransformStockPriceLogFile) {
 
 	// Read in events from a log of stock prices.
 	CodecPtr stock_codec_ptr = m_codec_factory.getCodec("90eb7478-1629-11dd-81cb-0019e3f89cd2");
-	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
+	PionPlatformUnitTest::feedFileToReactor(
 		*m_reaction_engine, transformer_id, *stock_codec_ptr, STOCK_PRICE_LOG_FILE);
 
 	// Make sure the LogOutputReactor has finished writing the expected number of records.
@@ -470,6 +471,125 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefinedWithEventType) {
 	m_expected_terms[m_sc_content_term_ref] = "Rule 2: content starts with hello";
 
 	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+// HideCreditCard unit tests
+
+BOOST_AUTO_TEST_CASE(checkHideCreditCardInStrings) {
+	std::string original;
+	std::string sanitized;
+
+	original = "This does not have a 4349753849753894753049 credit card number!";
+	sanitized = original;
+	BOOST_CHECK(! HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(original, sanitized);
+	
+	original = "This does not have a 1234-5678-9012-4123 credit card number!";
+	sanitized = original;
+	BOOST_CHECK(! HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(original, sanitized);
+	
+	original = "This does have a 4444-5555-6666-7777 credit card number!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "This does have a XXXXXXXXXXXXXXXXXXX credit card number!");
+
+	original = "This has one 4444 5555 6666 7777 too!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "This has one XXXXXXXXXXXXXXXXXXX too!");
+
+	original = "This has two numbers 4444 5555 6666 7777 and another 4444-5555-6666-7777!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "This has two numbers XXXXXXXXXXXXXXXXXXX and another XXXXXXXXXXXXXXXXXXX!");
+
+	original = "number=4444555566667777&another=4444+5555+6666+7777&testing=querydata";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "number=XXXXXXXXXXXXXXXX&another=XXXXXXXXXXXXXXXXXXX&testing=querydata");
+
+	original = "Testing number at end 4444-5555-6666-7777";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "Testing number at end XXXXXXXXXXXXXXXXXXX");
+
+	original = "4444-5555-6666-7777 Testing number at beginning";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "XXXXXXXXXXXXXXXXXXX Testing number at beginning");
+
+	original = "Test with other word boundaries.  ccnum:44 44-5555 66-66 7777!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "Test with other word boundaries.  ccnum:XXXXXXXXXXXXXXXXXXXXX!");
+
+	original = "Here is number 444-4-55 55-66 66-7777 with dashes and spaces!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "Here is number XXXXXXXXXXXXXXXXXXXXXX with dashes and spaces!");
+
+	original = "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!";
+	sanitized = original;
+	BOOST_CHECK(HideCreditCardNumbers(sanitized.begin(), sanitized.end()));
+	BOOST_CHECK_EQUAL(sanitized, "Multiple\r\n lines XXXXXXXXXXXXXXXXXXX credit card\r\nnumber!");
+}
+
+class CreditCardInEventTests_F {
+public:
+	CreditCardInEventTests_F() {}
+	virtual ~CreditCardInEventTests_F() {}
+
+	EventFactory		m_event_factory;
+};
+
+BOOST_FIXTURE_TEST_SUITE(CreditCardInEventTests_S, CreditCardInEventTests_F)
+
+BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithOnlyNumericFields) {
+	EventPtr event_ptr(m_event_factory.create(0));
+	event_ptr->setUInt(0, 1UL);
+	event_ptr->setUInt(1, 10UL);
+	BOOST_CHECK(! HideCreditCardNumbers(*event_ptr));	// should return false but not throw
+	BOOST_CHECK_THROW(HideCreditCardNumbers(*event_ptr, 0), boost::bad_get);	// should throw (not string type)
+}
+
+BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithNumericAndStringFields) {
+	EventPtr event_ptr(m_event_factory.create(0));
+	event_ptr->setUInt(0, 1UL);
+	event_ptr->setString(1, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
+	BOOST_CHECK(HideCreditCardNumbers(*event_ptr));
+	BOOST_CHECK(! HideCreditCardNumbers(*event_ptr));	// should be no more to hide
+	std::string expected_result("Multiple\r\n lines XXXXXXXXXXXXXXXXXXX credit card\r\nnumber!");
+	BOOST_CHECK_EQUAL(expected_result, event_ptr->getString(1));
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(0), 1UL);
+}
+
+BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithMultipleStringFields) {
+	EventPtr event_ptr(m_event_factory.create(0));
+	event_ptr->setString(0, "Here is number 444-4-55 55-66 66-7777 with dashes and spaces!");
+	event_ptr->setString(1, "Test with other word boundaries.  ccnum:44 44-5555 66-66 7777!");
+	event_ptr->setString(1, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
+	BOOST_CHECK(HideCreditCardNumbers(*event_ptr));
+
+	Event::ConstIterator it = event_ptr->begin();
+	BOOST_REQUIRE(it != event_ptr->end());
+	std::string expected_result("Here is number XXXXXXXXXXXXXXXXXXXXXX with dashes and spaces!");
+	BOOST_CHECK_EQUAL(expected_result, boost::get<const Event::BlobType&>(it->value).get());
+	
+	BOOST_REQUIRE(++it != event_ptr->end());
+	expected_result = "Test with other word boundaries.  ccnum:XXXXXXXXXXXXXXXXXXXXX!";
+	BOOST_CHECK_EQUAL(expected_result, boost::get<const Event::BlobType&>(it->value).get());
+
+	BOOST_REQUIRE(++it != event_ptr->end());
+	expected_result = "Multiple\r\n lines XXXXXXXXXXXXXXXXXXX credit card\r\nnumber!";
+	BOOST_CHECK_EQUAL(expected_result, boost::get<const Event::BlobType&>(it->value).get());
+	
+	BOOST_CHECK(++it == event_ptr->end());	// should be no more parameters
+
+	BOOST_CHECK(! HideCreditCardNumbers(*event_ptr));	// should be no more to hide
 }
 
 BOOST_AUTO_TEST_SUITE_END()
