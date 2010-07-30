@@ -20,6 +20,8 @@
 #ifndef __PION_TRANSFORM_HEADER__
 #define __PION_TRANSFORM_HEADER__
 
+#include <cctype>
+#include <cstring>
 #include <boost/regex.hpp>
 #include <boost/regex/icu.hpp>
 #include <boost/algorithm/string/compare.hpp>
@@ -684,8 +686,133 @@ public:
 };
 
 
+/**
+ * Finds credit card numbers in a sequence of characters and replaces them with X's
+ *
+ * Note: this algorithm should work for any ASCII or UTF-8 sequence but will not
+ * work for other types of character encodings.  Using Boost's ICU regex
+ * algorithms is not required because doing so does not affect the results for
+ * ASCII and UTF-8 encodings.
+ *
+ * @param first iterator pointing to the beginning of the character sequence
+ * @param last iterator pointing to the end of the character sequence
+ *
+ * @return true if at least one match was found
+ */
+template <class IteratorType>
+inline bool HideCreditCardNumbers(IteratorType first, IteratorType last)
+{
+	// static regular expressions used to find and verify credit card numbers
+	// from http://www.regular-expressions.info/creditcard.html
+	static const boost::regex FIND_CC_NUMBER_RX("\\b(\\d[+ -]*?){13,16}\\b");
+	static const boost::regex VERIFY_CC_NUMBER_RX("(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})");
+
+	// buffer used to store credit card digits for verification
+	static const unsigned int CC_NUM_SIZE = 16;
+	char cc_num_str[CC_NUM_SIZE+1];
+	
+	// variable used to store regex match information
+	boost::match_results<IteratorType> results;
+	
+	// keeps track of whether or not we found a match
+	bool found_match = false;
+
+	// loop through the string looking for each possible match
+	while (boost::regex_search(first, last, results, FIND_CC_NUMBER_RX)) {
+
+		// keeps track of how many cc number digits extracted
+		unsigned int cc_digits = 0;
+		
+		// build cc_num_str from matching range while stripping out any spaces or dashes
+		for (IteratorType tmp_it = results[0].first; tmp_it != results[0].second; ++tmp_it) {
+			if (isdigit(*tmp_it)) {
+				cc_num_str[cc_digits++] = *tmp_it;
+			}
+		}
+		cc_num_str[cc_digits] = '\0';
+		
+		// verify that the resulting digits are a valid credit card number
+		// (this helps greatly reduce false positive matches)
+		if (boost::regex_match(cc_num_str, VERIFY_CC_NUMBER_RX)) {
+			// basic verification succeeded -> replace match string with X's
+			for (IteratorType tmp_it = results[0].first; tmp_it != results[0].second; ++tmp_it) {
+				*tmp_it = 'X';
+			}
+			found_match = true;
+		}
+		
+		// zero-out string used for cc number verification
+		memset(cc_num_str, '\0', CC_NUM_SIZE);
+
+		// start searching for more cc numbers after end of current match
+		// (no need to re-check earlier bytes)
+		first = results[0].second;
+	}
+	
+	return found_match;
 }
+
+
+/**
+ * Finds credit card numbers within Event fields and replaces them with X's
+ *
+ * Warning: will throw exception if Term is not BlobType
+ *
+ * @param e reference to the Event to process
+ * @param term_ref reference to the Term to process
+ *
+ * @return true if at least one match was found
+ */
+inline bool HideCreditCardNumbers(Event& e, const Vocabulary::TermRef& term_ref)
+{
+	// keeps track of whether or not we found a match
+	bool found_match = false;
+
+	// get range of matching parameters within the event & iterate
+	Event::ValuesRange values_range = e.equal_range(term_ref);
+	for (Event::ConstIterator it = values_range.first; it != values_range.second; it++) {
+		const Event::BlobType& b(boost::get<const Event::BlobType&>(it->value));
+		char *first = const_cast<char*>(b.get());
+		char *last = first + b.size();
+		if (HideCreditCardNumbers(first, last)) {
+			found_match = true;
+		}
+	}
+
+	return found_match;
 }
+
+
+/**
+ * Finds credit card numbers within all BlobType Event fields and replaces them with X's
+ *
+ * @param e reference to the Event to process
+ *
+ * @return true if at least one match was found
+ */
+inline bool HideCreditCardNumbers(Event& e)
+{
+	// keeps track of whether or not we found a match
+	bool found_match = false;
+
+	// get range of matching parameters within the event & iterate
+	for (Event::ConstIterator it = e.begin(); it != e.end(); it++) {
+		if (boost::get<const Event::BlobType&>(& it->value)) {		// make sure it's BlobType
+			const Event::BlobType& b(boost::get<const Event::BlobType&>(it->value));
+			char *first = const_cast<char*>(b.get());
+			char *last = first + b.size();
+			if (HideCreditCardNumbers(first, last)) {
+				found_match = true;
+			}
+		}
+	}
+
+	return found_match;
+}
+
+
+}	// end namespace platform
+}	// end namespace pion
 
 
 #endif
