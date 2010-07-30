@@ -337,7 +337,8 @@ pion.wizardDone = function(exit_early) {
 								+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
 								+ '<ProcessingThreads>1</ProcessingThreads>'
 								+ '<MaxPacketQueueSize>100000</MaxPacketQueueSize>'
-								+ '<QueueEventDelivery>true</QueueEventDelivery>';
+								+ '<QueueEventDelivery>true</QueueEventDelivery>'
+								+ '<HideCreditCardNumbers>false</HideCreditCardNumbers>';
 	dojo.forEach(pion.wizard.devices, function(device) {
 		var tcp_ports = dojo.map(pion.wizard.ports, function(item) {return 'tcp port ' + item});
 		sniffer_config += '<Capture><Interface>' + device + '</Interface><Filter>';
