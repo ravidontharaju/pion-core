@@ -161,8 +161,14 @@ public:
 
 		// Check that the expected number of Events were output by the FilterReactor and validated.
 		int num_events_expected = m_expected_event_ids.size();
-		PionPlatformUnitTest::checkReactorEventsOut(*m_reaction_engine, reactor_id, num_events_expected);
-		BOOST_CHECK_EQUAL(m_num_events_validated, num_events_expected);
+
+		// wait up to one second for the number to exceed the expected value
+		const int num_checks_allowed = 10 * 1;	// one second
+		for (int i = 0; i < num_checks_allowed; ++i) {
+			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
+			if (m_num_events_validated >= num_events_expected) break;
+		}
+		BOOST_CHECK_EQUAL( m_num_events_validated, num_events_expected );
 	}
 
 	EventFactory		m_event_factory;
