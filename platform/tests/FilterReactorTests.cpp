@@ -21,6 +21,7 @@
 #include <set>
 #include <list>
 #include <pion/PionConfig.hpp>
+#include <boost/detail/atomic_count.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionId.hpp>
@@ -111,6 +112,7 @@ BOOST_AUTO_TEST_CASE(checkFilterCLFLogFile) {
 	CodecPtr clf_codec_ptr = m_codec_factory.getCodec("3f49f2da-bfe3-11dc-8875-0016cb926e68");
 	boost::uint64_t events_read = PionPlatformUnitTest::feedFileToReactor(
 		*m_reaction_engine, reactor_id, *clf_codec_ptr, CLF_LOG_FILE);
+	BOOST_CHECK_EQUAL(events_read, 16UL);
 
 	// Check that exactly 7 events passed the filter.
 	PionPlatformUnitTest::checkReactorEventsOut(*m_reaction_engine, log_writer_id, static_cast<boost::uint64_t>(7));
@@ -121,8 +123,9 @@ BOOST_AUTO_TEST_SUITE_END()
 
 class FilterReactorEventValidator_F : public ReactionEngineReadyToAddReactors2_F {
 public:
-	FilterReactorEventValidator_F() {
-		m_num_events_validated = 0;
+	FilterReactorEventValidator_F()
+		: m_curr_event_id(0), m_num_events_validated(0)
+	{
 		m_page_event_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-event");
 		m_page_number_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-number");
 		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
@@ -146,6 +149,7 @@ public:
 		// Check that the ID of the Event is in the set of expected event IDs.
 		BOOST_CHECK(expected_event_ids.count(e->getUInt(m_page_number_ref)));
 
+		// must be atomic because multiple threads hit this at once
 		++m_num_events_validated;
 	}
 
@@ -161,14 +165,8 @@ public:
 
 		// Check that the expected number of Events were output by the FilterReactor and validated.
 		int num_events_expected = m_expected_event_ids.size();
-
-		// wait up to one second for the number to exceed the expected value
-		const int num_checks_allowed = 10 * 1;	// one second
-		for (int i = 0; i < num_checks_allowed; ++i) {
-			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
-			if (m_num_events_validated >= num_events_expected) break;
-		}
-		BOOST_CHECK_EQUAL( m_num_events_validated, num_events_expected );
+		PionPlatformUnitTest::checkReactorEventsOut(*m_reaction_engine, reactor_id, num_events_expected);
+		BOOST_CHECK_EQUAL(m_num_events_validated, num_events_expected);
 	}
 
 	EventFactory		m_event_factory;
@@ -177,7 +175,7 @@ public:
 	Vocabulary::TermRef	m_sc_content_term_ref;
 	int					m_curr_event_id;
 	std::list<EventPtr> m_events;
-	int					m_num_events_validated;
+	boost::detail::atomic_count		m_num_events_validated;
 	ExpectedEventIds	m_expected_event_ids;
 };
 
