@@ -17,6 +17,10 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/detail/atomic_count.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
@@ -1116,6 +1120,78 @@ BOOST_AUTO_TEST_CASE(checkRequiresValue) {
 	BOOST_CHECK(! requiresValue(TYPE_IS_NOT_DEFINED));
 	BOOST_CHECK(requiresValue(TYPE_EQUALS));
 	BOOST_CHECK(requiresValue(TYPE_SAME_OR_LATER_TIME));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+// tests to verify thread safety of Comparison class
+class ComparisonThreadSafetyTests_F
+	: public ComparisonTests_F
+{
+public:
+	ComparisonThreadSafetyTests_F()
+		: ComparisonTests_F(), m_num_matches(0),
+		m_comparison(ComparisonTests_F::m_string_term)
+	{}
+
+	virtual ~ComparisonThreadSafetyTests_F() {}
+
+	void checkValue(std::string str) {
+		EventFactory event_factory;
+		EventPtr event_ptr(event_factory.create(m_object_term.term_ref));
+		event_ptr->setString(m_string_term.term_ref, str);
+		for (int n = 0 ; n < 100; ++n) {
+			if (m_comparison.evaluate(*event_ptr))
+				++m_num_matches;
+		}
+	}
+	
+	void addValueToCheck(const std::string& str) {
+		ThreadPtr thread_ptr(new boost::thread(boost::bind(
+			&ComparisonThreadSafetyTests_F::checkValue, this, str)));
+		m_threads.push_back(thread_ptr);
+	}
+	
+	void waitForThreads(void) {
+		for (ThreadPool::iterator it=m_threads.begin(); it != m_threads.end(); ++it) {
+			(*it)->join();
+		}
+	}
+
+	typedef boost::shared_ptr<boost::thread>	ThreadPtr;
+	typedef std::vector<ThreadPtr>				ThreadPool;
+	
+	boost::detail::atomic_count		m_num_matches;
+	Comparison						m_comparison;
+	ThreadPool						m_threads;
+};
+
+BOOST_FIXTURE_TEST_SUITE(ComparisonThreadSafetyTests_S, ComparisonThreadSafetyTests_F)
+
+BOOST_AUTO_TEST_CASE(checkStartsWithThreadSafety) {
+	m_comparison.configure(Comparison::TYPE_STARTS_WITH, "66.249");
+
+	addValueToCheck("66.249.71.144");
+	addValueToCheck("210.146.46.3");
+	addValueToCheck("74.6.22.189");
+	addValueToCheck("208.80.193.32");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.145");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("213.136.52.113");
+	addValueToCheck("208.111.154.95");
+	
+	waitForThreads();
+
+	BOOST_CHECK_EQUAL(m_num_matches, 700);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
