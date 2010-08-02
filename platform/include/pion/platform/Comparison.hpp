@@ -157,8 +157,8 @@ public:
 	/// standard copy constructor
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
-		m_str_value(c.m_str_value), m_regex(c.m_regex),
-		m_match_all_values(c.m_match_all_values), m_comparison_func(c.m_comparison_func)
+		m_str_value(c.m_str_value), m_comparison_func(c.m_comparison_func), 
+		m_regex(c.m_regex), m_match_all_values(c.m_match_all_values)
 	{}
 
 	/**
@@ -337,7 +337,7 @@ private:
 		ComparisonFunctor(const std::string& value, UColAttributeValue attr);
 		virtual ~ComparisonFunctor();
 
-		virtual inline bool operator()(const Event::ParameterValue& event_value) const = 0;
+		virtual bool operator()(const Event::ParameterValue& event_value) const = 0;
 
 	protected:
 		int32_t			m_pattern_buf_len;
@@ -351,7 +351,7 @@ private:
 		CompareStringExactMatch(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringExactMatch() {}
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
@@ -369,7 +369,7 @@ private:
 		CompareStringContains(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringContains() {}
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			//// TODO: It would be nice to create a code unit iterator here instead of a UnicodeString, as in 
 			//// CompareStringStartsWith and CompareStringEndsWith, to avoid having to convert the entire blob upfront.
 			//// Unfortunately, the only type of iterator a StringSearch will take is a CharacterIterator,
@@ -400,7 +400,7 @@ private:
 		CompareStringStartsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringStartsWith();
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			// Create a code unit iterator from the Event value.
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			UCharIterator text_iter;
@@ -427,7 +427,7 @@ private:
 		CompareStringEndsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringEndsWith() {}
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			// Create a code unit iterator from the Event value.
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			UCharIterator text_iter;
@@ -456,7 +456,7 @@ private:
 		CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringOrderedBefore() {}
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
@@ -474,7 +474,7 @@ private:
 		CompareStringOrderedAfter(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringOrderedAfter() {}
 
-		inline bool operator()(const Event::ParameterValue& event_value) const {
+		virtual bool operator()(const Event::ParameterValue& event_value) const {
 			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());

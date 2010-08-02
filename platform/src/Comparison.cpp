@@ -232,6 +232,40 @@ void Comparison::configure(const ComparisonType type,
 			case TYPE_NOT_ORDERED_AFTER_PRIMARY:
 				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_str_value, UCOL_PRIMARY));
 				break;
+			case TYPE_FALSE:
+			case TYPE_TRUE:
+			case TYPE_IS_DEFINED:
+			case TYPE_IS_NOT_DEFINED:
+			case TYPE_REGEX:
+			case TYPE_NOT_REGEX:
+				// these do not use m_comparison_func
+				break;
+			case TYPE_EQUALS:
+			case TYPE_NOT_EQUALS:
+			case TYPE_GREATER_THAN:
+			case TYPE_LESS_THAN:
+			case TYPE_GREATER_OR_EQUAL:
+			case TYPE_LESS_OR_EQUAL:
+			case TYPE_SAME_DATE_TIME:
+			case TYPE_NOT_SAME_DATE_TIME:
+			case TYPE_EARLIER_DATE_TIME:
+			case TYPE_LATER_DATE_TIME:
+			case TYPE_SAME_OR_EARLIER_DATE_TIME:
+			case TYPE_SAME_OR_LATER_DATE_TIME:
+			case TYPE_SAME_DATE:
+			case TYPE_NOT_SAME_DATE:
+			case TYPE_EARLIER_DATE:
+			case TYPE_LATER_DATE:
+			case TYPE_SAME_OR_EARLIER_DATE:
+			case TYPE_SAME_OR_LATER_DATE:
+			case TYPE_SAME_TIME:
+			case TYPE_NOT_SAME_TIME:
+			case TYPE_EARLIER_TIME:
+			case TYPE_LATER_TIME:
+			case TYPE_SAME_OR_EARLIER_TIME:
+			case TYPE_SAME_OR_LATER_TIME:
+				// these do not apply to string terms -> should never happen
+				throw InvalidComparisonException();
 		}
 	} else if (requiresValue(type)) {		// note: comparisons of arity 1 just ignore the value
 		try {
@@ -315,7 +349,7 @@ Comparison::ComparisonType Comparison::parseComparisonType(std::string str)
 		if (isupper(*i)) *i = tolower(*i);
 
 	// Search for a matching entry in comparison_table and return the corresponding type.
-	for (int j = 0; j < sizeof(comparison_table) / sizeof(comparison_table[0]); ++j)
+	for (size_t j = 0; j < sizeof(comparison_table) / sizeof(comparison_table[0]); ++j)
 		if (str == comparison_table[j].name)
 			return comparison_table[j].type;
 
@@ -332,7 +366,7 @@ bool Comparison::requiresValue(ComparisonType t) {
 }
 
 void Comparison::writeComparisonsXML(std::ostream& out) {
-	for (int i = 0; i < sizeof(comparison_table) / sizeof(comparison_table[0]); ++i) {
+	for (size_t i = 0; i < sizeof(comparison_table) / sizeof(comparison_table[0]); ++i) {
 		out << "<Comparison id=\"" << comparison_table[i].name << "\"><Arity>"
 			<< (unsigned)comparison_table[i].arity << "</Arity>";
 		if (comparison_table[i].is_generic)
