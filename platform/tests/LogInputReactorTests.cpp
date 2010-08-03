@@ -199,6 +199,60 @@ public:
 		boost::filesystem::copy_file(LOG_FILE_DIR + fname_of_file_to_copy + file_ext,
 									 LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + file_ext);
 	}
+	void getLogsConsumed(const std::string& reactor_id, std::vector<std::string>& logs_consumed) {
+		Reactor::QueryBranches branches;
+		Reactor::QueryParams params;
+		std::ostringstream ss;
+		
+		logs_consumed.clear();
+		m_reaction_engine->query(reactor_id, ss, branches, params);
+		const std::string response_str(ss.str());
+		std::string::const_iterator start = response_str.begin();
+		std::string::const_iterator end = response_str.end();
+
+		boost::regex rx("<ConsumedLog>([^<]+?)</ConsumedLog>");
+		boost::match_results<std::string::const_iterator> rx_matches;
+		while (boost::regex_search(start, end, rx_matches, rx)) {
+			BOOST_REQUIRE_EQUAL(rx_matches.size(), 2U);
+			logs_consumed.push_back(std::string(rx_matches[1].first, rx_matches[1].second));
+			start = rx_matches[1].second;
+		}
+	}
+	bool waitToConsumeLogs(const std::string& reactor_id,
+		std::vector<std::string>& logs_expected,
+		const boost::uint32_t wait_seconds = 1)
+	{
+		const int num_checks_allowed = 10 * wait_seconds;
+		std::vector<std::string> logs_consumed;
+		int i = 0;
+		while (true) {
+			getLogsConsumed(reactor_id, logs_consumed);
+			bool consumed_all_logs = true;
+			for (std::vector<std::string>::iterator name_it = logs_expected.begin();
+				name_it != logs_expected.end(); ++name_it)
+			{
+				bool consumed_log = false;
+				for (std::vector<std::string>::iterator it = logs_consumed.begin();
+					it != logs_consumed.end(); ++it)
+				{
+					if (it->find(*name_it) != std::string::npos) {
+						consumed_log = true;
+						break;
+					}
+				}
+				if (!consumed_log) {
+					consumed_all_logs = false;
+					break;
+				}
+			}
+			if (consumed_all_logs) return true;
+			if (++i > num_checks_allowed) break;
+			pion::PionScheduler::sleep(0, 100000000); // 0.1 seconds
+		}
+
+		return false;
+	}
+	
 
 	VocabularyManager	m_vocab_mgr;
 	CodecFactory		m_codec_factory;
@@ -270,8 +324,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(testEmptyLogFile) {
 	// Start the LogInputReactor.
 	F::m_reaction_engine->startReactor(F::m_log_reader_id);
 
-	// Give the LogInputReactor time to consume any phantom events it might erroneously find.
-	PionScheduler::sleep(0, 1000000000); // 1 second
+	// Wait until we've finished consuming the log
+	std::vector<std::string> logs_expected;
+	logs_expected.push_back("comb-log-empty");
+	BOOST_REQUIRE(this->waitToConsumeLogs(F::m_log_reader_id, logs_expected));
 
 	// Confirm that the number of input events and output events is zero.
 	BOOST_CHECK_EQUAL(F::m_reaction_engine->getEventsIn(F::m_log_reader_id), static_cast<boost::uint64_t>(0));
@@ -677,13 +733,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	// Wait up to one second for the LogInputReactor to finish consuming the default log file.
 	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE);
 
+	// Wait until we've finished consuming the log
+	std::vector<std::string> logs_expected;
+	logs_expected.push_back("combined");
+	BOOST_REQUIRE(this->waitToConsumeLogs(F::m_log_reader_id, logs_expected));
+
 	// Confirm that the history cache exists and has the default log file and no others.
 	std::string history_cache_filename = CONFIG_FILE_DIR + F::m_log_reader_id + ".cache";
-	if (! boost::filesystem::exists(history_cache_filename)) {
-		// Wait another second for the cache file to appear.
-		PionScheduler::sleep(0, 1000000000);
-		BOOST_REQUIRE(boost::filesystem::exists(history_cache_filename));
-	}
+	BOOST_REQUIRE(boost::filesystem::exists(history_cache_filename));
 	std::ifstream history_cache(history_cache_filename.c_str());
 	BOOST_REQUIRE(history_cache);
 	std::string default_log_file = std::string("combined") + F::m_file_ext;
@@ -701,9 +758,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
 	PionPlatformUnitTest::checkReactorEventsIn(*F::m_reaction_engine, F::m_log_reader_id, NUM_LINES_IN_DEFAULT_LOG_FILE + num_lines_in_new_input_log_file, 2);
 
-	// Wait 1.5 seconds, to give the LogInputReactor a chance to update the history cache.
-	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
-	PionScheduler::sleep(0, 1500000000);
+	// Wait until we've finished consuming the log
+	logs_expected.push_back("combined-new");
+	BOOST_REQUIRE(this->waitToConsumeLogs(F::m_log_reader_id, logs_expected));
 
 	// Confirm that the history cache exists and has the expected two log files and no others.
 	history_cache.clear();
@@ -718,6 +775,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	// Delete the new log file.
 	boost::filesystem::remove(LOG_FILE_DIR + NEW_INPUT_LOG_FNAME + F::m_file_ext);
 
+/*
+ * this makes tests too slow
+ *
 	// Wait 1.5 seconds, to give the LogInputReactor a chance to update the history cache.
 	// (DEFAULT_FREQUENCY, the time to wait until checking for new log files, is 1 second.)
 	PionScheduler::sleep(0, 1500000000);
@@ -730,6 +790,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkHistoryCacheUpdating) {
 	BOOST_CHECK(strcmp(F::m_buf, default_log_file.c_str()) == 0);
 	BOOST_CHECK(! history_cache.getline(F::m_buf, BUF_SIZE));
 	history_cache.close();
+*/
 }
 
 BOOST_AUTO_TEST_SUITE_END()
