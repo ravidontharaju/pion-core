@@ -406,19 +406,23 @@ private:
 			UCharIterator text_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
-			// Populate m_text_prefix_buf by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
-			for (int i = 0; i < m_pattern_buf_len; ++i) {
+			// Populate a buffer by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
+			UChar* text_prefix_buf = new UChar[m_pattern_buf_len];
+			int i;
+			for (i = 0; i < m_pattern_buf_len; ++i) {
 				UChar32 c = text_iter.next(&text_iter);
-				if (c == U_SENTINEL)
-					return false; // If the iteration failed, the text is too short to start with the pattern, so return false.
-				m_text_prefix_buf[i] = c;
+				if (c == U_SENTINEL) {
+					// If the iteration failed, the text is too short to start with the pattern, so return false.
+					delete [] text_prefix_buf;
+					return false;
+				}
+				text_prefix_buf[i] = c;
 			}
-			UCollationResult result = ucol_strcoll(m_collator, m_text_prefix_buf, m_pattern_buf_len, m_pattern_buf, m_pattern_buf_len);
+
+			UCollationResult result = ucol_strcoll(m_collator, text_prefix_buf, m_pattern_buf_len, m_pattern_buf, m_pattern_buf_len);
+			delete [] text_prefix_buf;
 			return (result == UCOL_EQUAL);
 		}
-
-	private:
-		UChar*							m_text_prefix_buf;
 	};
 
 	/// helper class used to determine if one string ends with another

@@ -414,11 +414,9 @@ Comparison::CompareStringContains::CompareStringContains(const std::string& valu
 }
 
 Comparison::CompareStringStartsWith::CompareStringStartsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
-	m_text_prefix_buf = new UChar[m_pattern_buf_len];
 }
 
 Comparison::CompareStringStartsWith::~CompareStringStartsWith() {
-	delete [] m_text_prefix_buf;
 }
 
 Comparison::CompareStringEndsWith::CompareStringEndsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
