@@ -124,9 +124,7 @@ public:
 	virtual void updateVocabulary(const pion::platform::Vocabulary& v);
 	
 	/**
-	 * processes an Event by comparing its data to the configured RuleChain.
-	 * Only Events which pass all Comparisons in the RuleChain will be
-	 * delivered to the output connections.
+	 * Processes an Event using a Python function.
 	 *
 	 * @param e pointer to the Event to process
 	 */
@@ -249,9 +247,6 @@ protected:
 	
 private:
 	
-	/// name of the "virtual" module that Python source code is imported into
-	static const std::string		PYTHON_MODULE_NAME;
-
 	/// name of the start function in Python source code
 	static const std::string		START_FUNCTION_NAME;
 

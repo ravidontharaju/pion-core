@@ -341,7 +341,6 @@ static PyMethodDef PionPythonCallbackMethods[] = {
 
 // static members of PythonReactor
 	
-const string			PythonReactor::PYTHON_MODULE_NAME = "pion";
 const string			PythonReactor::START_FUNCTION_NAME = "start";
 const string			PythonReactor::STOP_FUNCTION_NAME = "stop";
 const string			PythonReactor::PROCESS_FUNCTION_NAME = "process";
@@ -1063,8 +1062,9 @@ void PythonReactor::initPythonModule(void)
 	if (m_byte_code) {
 		PION_LOG_DEBUG(m_logger, "Initializing Python module");
 
+		std::string modname = "pion." + getId();
 		// note: Python API calls for "char*" but never will modify it (API design bug work-around)
-		m_module = PyImport_ExecCodeModule(const_cast<char*>(PYTHON_MODULE_NAME.c_str()), m_byte_code);
+		m_module = PyImport_ExecCodeModule(const_cast<char*>(modname.c_str()), m_byte_code);
 		if (m_module == NULL) {
 			Py_DECREF(m_byte_code);
 			m_byte_code = NULL;
