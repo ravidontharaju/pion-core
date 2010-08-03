@@ -247,9 +247,6 @@ protected:
 	
 private:
 	
-	/// name of the "virtual" module that Python source code is imported into
-	static const std::string		PYTHON_MODULE_NAME;
-
 	/// name of the start function in Python source code
 	static const std::string		START_FUNCTION_NAME;
 
