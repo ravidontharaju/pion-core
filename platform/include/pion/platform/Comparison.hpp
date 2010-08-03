@@ -20,6 +20,7 @@
 #ifndef __PION_COMPARISON_HEADER__
 #define __PION_COMPARISON_HEADER__
 
+#include <boost/scoped_array.hpp>
 #include <boost/regex.hpp>
 #include <boost/regex/icu.hpp>
 #include <boost/logic/tribool.hpp>
@@ -383,13 +384,12 @@ private:
 			UErrorCode errorCode = U_ZERO_ERROR;
 			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &errorCode);
 			errorCode = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
-			UChar* text_buf = new UChar[text_buf_len];
-			u_strFromUTF8(text_buf, text_buf_len, NULL, blob.get(), blob.size(), &errorCode);
+			boost::scoped_array<UChar> text_buf(new UChar[text_buf_len]);
+			u_strFromUTF8(text_buf.get(), text_buf_len, NULL, blob.get(), blob.size(), &errorCode);
 			// Use u_strFromUTF8Lenient instead?
-			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf, text_buf_len, m_collator, NULL, &errorCode);
+			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf.get(), text_buf_len, m_collator, NULL, &errorCode);
 			int pos = usearch_first(ss, &errorCode);
 			// TODO: check errorCode.
-			delete [] text_buf;
 			return (pos != USEARCH_DONE);
 		}
 	};
@@ -407,20 +407,18 @@ private:
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
 			// Populate a buffer by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
-			UChar* text_prefix_buf = new UChar[m_pattern_buf_len];
+			boost::scoped_array<UChar> text_prefix_buf(new UChar[m_pattern_buf_len]);
 			int i;
 			for (i = 0; i < m_pattern_buf_len; ++i) {
 				UChar32 c = text_iter.next(&text_iter);
 				if (c == U_SENTINEL) {
 					// If the iteration failed, the text is too short to start with the pattern, so return false.
-					delete [] text_prefix_buf;
 					return false;
 				}
 				text_prefix_buf[i] = c;
 			}
 
-			UCollationResult result = ucol_strcoll(m_collator, text_prefix_buf, m_pattern_buf_len, m_pattern_buf, m_pattern_buf_len);
-			delete [] text_prefix_buf;
+			UCollationResult result = ucol_strcoll(m_collator, text_prefix_buf.get(), m_pattern_buf_len, m_pattern_buf, m_pattern_buf_len);
 			return (result == UCOL_EQUAL);
 		}
 	};
