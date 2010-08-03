@@ -212,7 +212,13 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	
 	c.configure(Comparison::TYPE_CONTAINS, "tack");
 	BOOST_CHECK(! c.evaluate(*event_ptr));
-	
+
+	c.configure(Comparison::TYPE_CONTAINS, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_CONTAINS, "-Atomic-");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_CONTAINS, "tack");
 	BOOST_CHECK(c.evaluate(*event_ptr));
 	
@@ -224,7 +230,13 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	
 	c.configure(Comparison::TYPE_STARTS_WITH, "Add");
 	BOOST_CHECK(! c.evaluate(*event_ptr));
-	
+
+	c.configure(Comparison::TYPE_STARTS_WITH, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_STARTS_WITH, "Atomic7");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_STARTS_WITH, "Add");
 	BOOST_CHECK(c.evaluate(*event_ptr));
 
@@ -239,7 +251,13 @@ BOOST_AUTO_TEST_CASE(checkStringComparisons) {
 	
 	c.configure(Comparison::TYPE_ENDS_WITH, "mack");
 	BOOST_CHECK(! c.evaluate(*event_ptr));
-	
+
+	c.configure(Comparison::TYPE_ENDS_WITH, "Atomic");
+	BOOST_CHECK(c.evaluate(*event_ptr));
+
+	c.configure(Comparison::TYPE_ENDS_WITH, "pre-Atomic");
+	BOOST_CHECK(! c.evaluate(*event_ptr));
+
 	c.configure(Comparison::TYPE_NOT_ENDS_WITH, "Bic");
 	BOOST_CHECK(c.evaluate(*event_ptr));
 
@@ -1152,7 +1170,7 @@ public:
 			&ComparisonThreadSafetyTests_F::checkValue, this, str)));
 		m_threads.push_back(thread_ptr);
 	}
-	
+
 	void waitForThreads(void) {
 		for (ThreadPool::iterator it=m_threads.begin(); it != m_threads.end(); ++it) {
 			(*it)->join();
@@ -1188,7 +1206,57 @@ BOOST_AUTO_TEST_CASE(checkStartsWithThreadSafety) {
 	addValueToCheck("74.6.22.153");
 	addValueToCheck("213.136.52.113");
 	addValueToCheck("208.111.154.95");
-	
+
+	waitForThreads();
+
+	BOOST_CHECK_EQUAL(m_num_matches, 700);
+}
+
+BOOST_AUTO_TEST_CASE(checkEndsWithThreadSafety) {
+	m_comparison.configure(Comparison::TYPE_ENDS_WITH, "71.146");
+
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("210.146.46.3");
+	addValueToCheck("74.6.22.189");
+	addValueToCheck("208.80.193.32");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.145");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("213.136.52.113");
+	addValueToCheck("208.111.154.95");
+
+	waitForThreads();
+
+	BOOST_CHECK_EQUAL(m_num_matches, 600);
+}
+
+BOOST_AUTO_TEST_CASE(checkContainsThreadSafety) {
+	m_comparison.configure(Comparison::TYPE_CONTAINS, "249.71");
+
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("210.146.46.3");
+	addValueToCheck("74.6.22.189");
+	addValueToCheck("208.80.193.32");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("65.98.89.43");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("66.249.71.145");
+	addValueToCheck("66.249.71.146");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("74.6.22.153");
+	addValueToCheck("213.136.52.113");
+	addValueToCheck("208.111.154.95");
+
 	waitForThreads();
 
 	BOOST_CHECK_EQUAL(m_num_matches, 700);
