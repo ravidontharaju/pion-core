@@ -42,8 +42,10 @@
 #include <pion/platform/Vocabulary.hpp>
 
 
+#ifndef _WIN64
 /// uncomment the following to use pool allocators for Event memory management
 #define PION_EVENT_USE_POOL_ALLOCATORS
+#endif
 
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
 	#include <boost/thread/tss.hpp>

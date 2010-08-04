@@ -31,6 +31,7 @@
 #include <pion/PionBlob.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/PionLockedQueue.hpp>
+#include <pion/PionPoolAllocator.hpp>
 #include <pion/platform/Event.hpp>
 
 #if 0
