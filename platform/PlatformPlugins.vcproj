@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -59,7 +59,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -126,7 +126,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -149,7 +149,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -172,7 +172,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -195,7 +195,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

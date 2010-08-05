@@ -19,8 +19,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_DLL|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -165,8 +165,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -238,8 +238,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -311,8 +311,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -385,8 +385,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_DLL_full|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -459,8 +459,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool
@@ -533,8 +533,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release_DLL_full|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
+			IntermediateDirectory="$(SolutionDir)IntermediateOutput\$(ProjectName)\$(ConfigurationName)_$(PlatformName)"
 			ConfigurationType="2"
 			>
 			<Tool

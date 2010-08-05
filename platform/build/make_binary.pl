@@ -33,7 +33,6 @@ $LIBS_DIR = ($PLATFORM =~ /^win32/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACK
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
 $ICU_LIB_GLOB = "{data,i18n,uc}";
-$DLL_FULL_DIR = "release_dll_full";
 
 # platform-specific variables
 if ($PLATFORM =~ /^win32/i) {
@@ -41,19 +40,36 @@ if ($PLATFORM =~ /^win32/i) {
 	$PLUGIN_LIB_SUFFIX = "dll";
 	#$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || File::Spec->rootdir();
 	$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || "C:/";
-	$LOGGING_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "log4cplus-1.0.3", "bin"), "log4cplus." . $SHARED_LIB_SUFFIX);
-	$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-1.0.9", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
-	$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
-	$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin"), "libxml2." . $SHARED_LIB_SUFFIX);
-	$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
-	$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
-	$OPENSSLA_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "libeay32." . $SHARED_LIB_SUFFIX);
-	$OPENSSLB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "ssleay32." . $SHARED_LIB_SUFFIX);
-	$ICUUC_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icuuc36." . $SHARED_LIB_SUFFIX);
-	$ICUIN_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icuin36." . $SHARED_LIB_SUFFIX);
-	$ICUDT_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icudt36." . $SHARED_LIB_SUFFIX);
+	if ($PLATFORM =~ /^win32_x64/i) {
+		$DLL_FULL_DIR = "release_dll_full_x64";
+		$LOGGING_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "log4cplus-1.0.3", "bin", "x64"), "log4cplus." . $SHARED_LIB_SUFFIX);
+		$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-1.0.9", "bin", "x64"), "yajl." . $SHARED_LIB_SUFFIX);
+		$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin", "x64"), "iconv." . $SHARED_LIB_SUFFIX);
+		$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin", "x64"), "libxml2." . $SHARED_LIB_SUFFIX);
+		$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin", "x64"), "zlib1." . $SHARED_LIB_SUFFIX);
+		$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin", "x64"), "bzip2." . $SHARED_LIB_SUFFIX);
+		$OPENSSLA_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin", "x64"), "libeay32." . $SHARED_LIB_SUFFIX);
+		$OPENSSLB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin", "x64"), "ssleay32." . $SHARED_LIB_SUFFIX);
+		$ICUUC_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "x64", "lib"), "icuuc36." . $SHARED_LIB_SUFFIX);
+		$ICUIN_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "x64", "lib"), "icuin36." . $SHARED_LIB_SUFFIX);
+		$ICUDT_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "x64", "lib"), "icudt36." . $SHARED_LIB_SUFFIX);
+		$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.42.0", "lib", "x64") );
+	} else {
+		$DLL_FULL_DIR = "release_dll_full_win32";
+		$LOGGING_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "log4cplus-1.0.3", "bin"), "log4cplus." . $SHARED_LIB_SUFFIX);
+		$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-1.0.9", "bin"), "yajl." . $SHARED_LIB_SUFFIX);
+		$ICONV_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "iconv-1.9.2", "bin"), "iconv." . $SHARED_LIB_SUFFIX);
+		$LIBXML_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "libxml2-2.6.30", "bin"), "libxml2." . $SHARED_LIB_SUFFIX);
+		$ZLIB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "zlib-1.2.3", "bin"), "zlib1." . $SHARED_LIB_SUFFIX);
+		$BZIP_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "bzip2-1.0.5", "bin"), "bzip2." . $SHARED_LIB_SUFFIX);
+		$OPENSSLA_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "libeay32." . $SHARED_LIB_SUFFIX);
+		$OPENSSLB_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "openssl-0.9.8l", "bin"), "ssleay32." . $SHARED_LIB_SUFFIX);
+		$ICUUC_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icuuc36." . $SHARED_LIB_SUFFIX);
+		$ICUIN_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icuin36." . $SHARED_LIB_SUFFIX);
+		$ICUDT_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "icu-3.6", "bin"), "icudt36." . $SHARED_LIB_SUFFIX);
+		$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.42.0", "lib") );
+	}
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
-	$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.42.0", "lib") );
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
