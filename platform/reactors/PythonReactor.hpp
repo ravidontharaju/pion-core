@@ -197,6 +197,12 @@ protected:
 	/// initialize the Python module using the compiled byte code
 	void initPythonModule(void);
 	
+	/// calls the user-defined Python start() function
+	void callPythonStart(void);
+	
+	/// calls the user-defined Python stop() function
+	void callPythonStop(void);
+	
 	/// reads the Python source code from the file pointed to by m_source_file
 	std::string getSourceCodeFromFile(void);
 
