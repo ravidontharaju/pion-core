@@ -20,6 +20,7 @@
 #ifndef __PION_EVENT_HEADER__
 #define __PION_EVENT_HEADER__
 
+#include <list>
 #include <vector>
 #include <boost/bind.hpp>
 #ifdef _MSC_VER
@@ -42,10 +43,8 @@
 #include <pion/platform/Vocabulary.hpp>
 
 
-#ifndef _WIN64
 /// uncomment the following to use pool allocators for Event memory management
 #define PION_EVENT_USE_POOL_ALLOCATORS
-#endif
 
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
 	#include <boost/thread/tss.hpp>
@@ -1428,21 +1427,24 @@ private:
 		
 		/// non-virtual destructor
 		~EventAllocatorFactory() {
-			// disabling release of memory for EventAllocators for now...
-			// this seems to cause crashes during shutdown for gcc-optimizized
-			// builds.   I suspect it has something to do with the order of
-			// static variable destruction during shutdown, but could be another
-			// problem being masked out...  -Mike
-#if 0
-//#ifdef PION_EVENT_USE_POOL_ALLOCATORS
-			// lock the EventAllocator tracker
-			boost::unique_lock<boost::mutex> tracker_lock(m_instance_ptr->m_tracker_mutex);
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+			// lock access to the Event allocators
+			boost::unique_lock<boost::mutex> alloc_lock(m_alloc_mutex);
 			// destruct all the EventAllocators that have been generated
-			for (std::vector<EventAllocator*>::iterator i = m_alloc_tracker.begin();
-				 i != m_alloc_tracker.end(); ++i)
+			for (std::list<EventAllocator*>::iterator i = m_active_allocs.begin();
+				 i != m_active_allocs.end(); ++i)
 			{
 				delete *i;
 			}
+			for (std::list<EventAllocator*>::iterator i = m_inactive_allocs.begin();
+				 i != m_inactive_allocs.end(); ++i)
+			{
+				delete *i;
+			}
+			// release thread-specific storage for the last thread remaining,
+			// the current thread, which is performing static global cleanup
+			// (this is the only time this destructor would ever be called)
+			m_thread_alloc.release();
 #endif
 		}
 		
@@ -1457,12 +1459,22 @@ private:
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
 			alloc_ptr = m_instance_ptr->m_thread_alloc.get();
 			if (alloc_ptr == NULL) {
-				// create and store a new thread-specific allocator
-				alloc_ptr = new EventAllocator();
+				// no allocator found for this thread
+				boost::unique_lock<boost::mutex> alloc_lock(m_instance_ptr->m_alloc_mutex);
+				if (m_instance_ptr->m_inactive_allocs.empty()) {
+					// no inactive allocators we can reuse -> create a new one
+					alloc_ptr = new EventAllocator();
+				} else {
+					// recycle an inactive allocator that already exists
+					alloc_ptr = m_instance_ptr->m_inactive_allocs.front();
+					m_instance_ptr->m_inactive_allocs.pop_front();
+					// release unused memory
+					alloc_ptr->release_memory();
+				}
+				// add the allocator to the active EventAllocator
+				m_instance_ptr->m_active_allocs.push_back(alloc_ptr);
+				// store the new thread-specific allocator
 				m_instance_ptr->m_thread_alloc.reset(alloc_ptr);
-				// add the allocator to the EventAllocator tracker
-				boost::unique_lock<boost::mutex> tracker_lock(m_instance_ptr->m_tracker_mutex);
-				m_instance_ptr->m_alloc_tracker.push_back(alloc_ptr);
 			}
 #else
 			alloc_ptr = & m_instance_ptr->m_single_alloc;
@@ -1485,11 +1497,23 @@ private:
 		
 		/// used by thread_specific_ptr to release allocators when threads exit
 		static void releaseAllocator(EventAllocator *ptr) {
-			// do nothing since other threads may still need to dealloate Events!
-			// instead, all EventAllocators will be deallocated within
-			// the EventAllocatorFactory destructor so that they are not
-			// detected as "leaks"
-			//delete ptr;
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+			// do not free the EventAllocator since other threads may still need to dealloate Events!
+			boost::unique_lock<boost::mutex> alloc_lock(m_instance_ptr->m_alloc_mutex);
+			// remove allocator from active list
+			for (std::list<EventAllocator*>::iterator i = m_instance_ptr->m_active_allocs.begin();
+				 i != m_instance_ptr->m_active_allocs.end(); ++i)
+			{
+				if (ptr == *i) {
+					m_instance_ptr->m_active_allocs.erase(i);
+					break;
+				}
+			}
+			// release unused memory
+			ptr->release_memory();
+			// add allocator to the inactive list
+			m_instance_ptr->m_inactive_allocs.push_back(ptr);
+#endif
 		}
 		
 		
@@ -1497,12 +1521,14 @@ private:
 		/// points to a thread-specific allocator used to create and destroy Events
 		boost::thread_specific_ptr<EventAllocator>		m_thread_alloc;
 		
-		/// used to keep track of all of the EventAllocators so that they can
-		/// be deallocated within EventAllocatorFactory's destructor
-		std::vector<EventAllocator*>					m_alloc_tracker;
+		/// used to keep track of all of the active EventAllocators
+		std::list<EventAllocator*>						m_active_allocs;
 		
-		/// used to protect access to the m_alloc_tracker container
-		boost::mutex									m_tracker_mutex;
+		/// used to keep track of all of the inactive EventAllocators
+		std::list<EventAllocator*>						m_inactive_allocs;
+		
+		/// used to protect access to the EventAllocator containers
+		boost::mutex									m_alloc_mutex;
 #else
 		/// use a single EventAllocator instance if not using memory pools
 		EventAllocator									m_single_alloc;

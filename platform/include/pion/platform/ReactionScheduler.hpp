@@ -129,7 +129,8 @@ protected:
 	
 	/// creates and returns a new queue info object for Reaction consumer threads
 	ThreadInfoPtr getThreadInfo(void) {
-		ThreadInfoPtr info_ptr(new ReactionQueue::ConsumerThread);
+		// configure consumer thread to wakeup every second
+		ThreadInfoPtr info_ptr(new ReactionQueue::ConsumerThread(boost::posix_time::seconds(1)));
 		boost::mutex::scoped_lock thread_info_lock(m_thread_info_mutex);
 		m_thread_info.push_back(info_ptr);
 		return info_ptr;
@@ -147,13 +148,30 @@ protected:
 
 	/// processes work in the reaction queue while running
 	void processReactionQueue(void) {
-		Reaction r;
+		// retrieve reference to the thread's Event allocator
+		EventFactory event_factory;
+		EventAllocator& event_alloc(event_factory.getAllocator());
+
+		// initialize consumer thread object
 		ThreadInfoPtr info_ptr(getThreadInfo());
+		
+		// used to pop work off the queue
+		Reaction r;
+
 		while (m_is_running) {
 			try {
 				while (m_is_running) {
-					if (m_reaction_queue.pop(r, *info_ptr) && m_is_running)
+					if (m_reaction_queue.pop(r, *info_ptr) && m_is_running) {
+						// got new work for the queue
 						r();
+					} else {
+						// thread slept for 1 seconds with no new work
+						// release any ununsed memory in Event allocator
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+						PION_LOG_DEBUG(m_logger, "Releasing unused memory for idle ReactionEngine thread");
+						event_alloc.release_memory();
+#endif
+					}
 				}
 			} catch (std::exception& e) {
 				PION_LOG_ERROR(m_logger, e.what());
