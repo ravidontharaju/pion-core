@@ -457,6 +457,11 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// make sure the thread has been initialized and acquire the GIL lock
 	PythonLock py_lock;
 
+	// call the user-defined stop() function before freeing objects
+	// to stop any user-defined threads that may still be running
+	if (isRunning())
+		callPythonStop();
+
 	// create Reactor object to be passed to Python functions
 	Py_XDECREF(m_reactor_ptr);
 	m_reactor_ptr = (PyObject*) Reactor_create(getId().c_str(), getName().c_str(), this);
@@ -466,9 +471,11 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// pre-compile the python source code to check for errors early
 	compilePythonSource();
 	
-	// if running, re-initialize the Python module
-	if (isRunning())
+	// if running, re-initialize the Python module and call user-defined start()
+	if (isRunning()) {
 		initPythonModule();
+		callPythonStart();
+	}
 }
 
 void PythonReactor::updateVocabulary(const Vocabulary& v)
@@ -477,7 +484,7 @@ void PythonReactor::updateVocabulary(const Vocabulary& v)
 	Reactor::updateVocabulary(v);
 	m_vocab_ptr = &v;
 }
-	
+
 void PythonReactor::start(void)
 {
 	ConfigWriteLock cfg_lock(*this);
@@ -499,26 +506,8 @@ void PythonReactor::start(void)
 
 		// initialize Python module code and start the reactor
 		initPythonModule();
+		callPythonStart();
 		m_is_running = true;
-
-		if (m_start_func) {
-			// execute the Python module's start() function
-			PION_LOG_DEBUG(m_logger, "Calling Python start() function");
-			PyObject *python_args = PyTuple_New(1);
-			if (! python_args)
-				throw InternalPythonException(getId());
-			Py_INCREF(m_reactor_ptr);
-			PyTuple_SetItem(python_args, 0, m_reactor_ptr);
-			PyObject *retval = PyObject_CallObject(m_start_func, python_args);
-			Py_DECREF(python_args);
-		
-			// check for uncaught runtime exceptions
-			if (retval == NULL && PyErr_Occurred()) {
-				throw PythonRuntimeException(getPythonError());
-			}
-		
-			Py_XDECREF(retval);
-		}
 	}
 }
 
@@ -531,25 +520,9 @@ void PythonReactor::stop(void)
 		// make sure the thread has been initialized and acquire the GIL lock
 		PythonLock py_lock;
 
-		if (m_stop_func) {
-			// execute the Python module's stop() function
-			PION_LOG_DEBUG(m_logger, "Calling Python stop() function");
-			PyObject *python_args = PyTuple_New(1);
-			if (! python_args)
-				throw InternalPythonException(getId());
-			Py_INCREF(m_reactor_ptr);
-			PyTuple_SetItem(python_args, 0, m_reactor_ptr);
-			PyObject *retval = PyObject_CallObject(m_stop_func, python_args);
-			Py_DECREF(python_args);
+		// call user-defined stop() function
+		callPythonStop();
 		
-			// check for uncaught runtime exceptions
-			if (retval == NULL && PyErr_Occurred()) {
-				throw PythonRuntimeException(getPythonError());
-			}
-		
-			Py_XDECREF(retval);
-		}
-
 		// release function pointers and imported source code module
 		Py_XDECREF(m_start_func);
 		Py_XDECREF(m_stop_func);
@@ -613,9 +586,9 @@ void PythonReactor::process(const EventPtr& e)
 
 void PythonReactor::deliverToConnections(PyObject *event_ptr)
 {
-	// we must acquire read lock to be safe, since python code may call this
-	// from it's own independent threads
-	ConfigReadLock cfg_lock(*this);
+	// getting a ConfigReadLock here introduces a deadlock condition, but
+	// no need to acquire a ConfigReadLock because all python threads will
+	// be stopped before any changes are ever made
 	PION_LOG_DEBUG(m_logger, "Delivering python event to connections");
 	// don't let exceptions thrown downstream propogate up
 	try {
@@ -1079,6 +1052,52 @@ void PythonReactor::initPythonModule(void)
 
 		// find process() function in Python module
 		m_process_func = findPythonFunction(m_module, PROCESS_FUNCTION_NAME);
+	}
+}
+
+void PythonReactor::callPythonStart(void)
+{
+	// assumes ConfigWriteLock and PythonLock
+	if (m_start_func) {
+		// execute the Python module's start() function
+		PION_LOG_DEBUG(m_logger, "Calling Python start() function");
+		PyObject *python_args = PyTuple_New(1);
+		if (! python_args)
+			throw InternalPythonException(getId());
+		Py_INCREF(m_reactor_ptr);
+		PyTuple_SetItem(python_args, 0, m_reactor_ptr);
+		PyObject *retval = PyObject_CallObject(m_start_func, python_args);
+		Py_DECREF(python_args);
+	
+		// check for uncaught runtime exceptions
+		if (retval == NULL && PyErr_Occurred()) {
+			throw PythonRuntimeException(getPythonError());
+		}
+	
+		Py_XDECREF(retval);
+	}
+}
+
+void PythonReactor::callPythonStop(void)
+{
+	// assumes ConfigWriteLock and PythonLock
+	if (m_stop_func) {
+		// execute the Python module's stop() function
+		PION_LOG_DEBUG(m_logger, "Calling Python stop() function");
+		PyObject *python_args = PyTuple_New(1);
+		if (! python_args)
+			throw InternalPythonException(getId());
+		Py_INCREF(m_reactor_ptr);
+		PyTuple_SetItem(python_args, 0, m_reactor_ptr);
+		PyObject *retval = PyObject_CallObject(m_stop_func, python_args);
+		Py_DECREF(python_args);
+	
+		// check for uncaught runtime exceptions
+		if (retval == NULL && PyErr_Occurred()) {
+			throw PythonRuntimeException(getPythonError());
+		}
+	
+		Py_XDECREF(retval);
 	}
 }
 
