@@ -1,4 +1,12 @@
 
+Version 3.0.15 (2010-08-10)
+===========================
+
+* PythonReactor -- deadlock condition fixed (962, 961)
+* TransformReactor -- Rules do not support event-type term comparisons (919)
+* TransformReactor should allow assignments across DateTime types (951)
+
+
 Version 3.0.13 (2010-06-25)
 ===========================
 
