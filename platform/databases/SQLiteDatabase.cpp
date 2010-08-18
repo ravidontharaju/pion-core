@@ -49,10 +49,7 @@ void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		throw EmptyFilenameException(getId());
 
 	// resolve paths relative to the platform DataDirectory
-	boost::filesystem::path path_to_file(boost::filesystem::system_complete(getDatabaseManager().getDataDirectory()));
-	path_to_file /= m_database_name;
-	path_to_file.normalize();
-	m_database_name = path_to_file.file_string();
+	m_database_name = getDatabaseManager().resolveRelativeDataPath(m_database_name);
 }
 
 DatabasePtr SQLiteDatabase::clone(void) const

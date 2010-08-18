@@ -63,7 +63,7 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		throw EmptyFilenameException(getId());
 	
 	// resolve paths relative to the ReactionEngine's config file location
-	m_log_filename = getReactionEngine().resolveRelativePath(m_log_filename);
+	m_log_filename = getReactionEngine().resolveRelativeDataPath(m_log_filename);
 
 	// if running, open the new output log
 	if (was_running) {

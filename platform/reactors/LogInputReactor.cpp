@@ -81,7 +81,7 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 		throw EmptyDirectoryException(getId());
 	
 	// resolve paths relative to the ReactionEngine's config file location
-	m_log_directory = getReactionEngine().resolveRelativePath(m_log_directory);
+	m_log_directory = getReactionEngine().resolveRelativeDataPath(m_log_directory);
 
 	// make sure that the directory exists
 	if (! boost::filesystem::exists(m_log_directory) )
