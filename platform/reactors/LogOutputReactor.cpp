@@ -45,6 +45,13 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::setConfig(v, config_ptr);
 	
+	// if running, close the current output log & stop (and save status)
+	bool was_running = m_is_running;
+	if (m_is_running) {
+		closeLogFileNoLock();
+		m_is_running = false;
+	}
+
 	// get the Codec that the Reactor should use
 	if (! ConfigManager::getConfigOption(CODEC_ELEMENT_NAME, m_codec_id, config_ptr))
 		throw EmptyCodecException(getId());
@@ -57,6 +64,12 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	
 	// resolve paths relative to the ReactionEngine's config file location
 	m_log_filename = getReactionEngine().resolveRelativePath(m_log_filename);
+
+	// if running, open the new output log
+	if (was_running) {
+		openLogFileNoLock();
+		m_is_running = true;
+	}
 }
 	
 void LogOutputReactor::updateVocabulary(const Vocabulary& v)
