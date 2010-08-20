@@ -59,3 +59,5 @@ log4cplus.logger.pion.platform=WARN
 log4cplus.logger.pion.server=WARN
 log4cplus.logger.pion.plugins=WARN
 log4cplus.logger.pion.enterprise=WARN
+log4cplus.logger.pion.SnifferReactor=ERROR
+
