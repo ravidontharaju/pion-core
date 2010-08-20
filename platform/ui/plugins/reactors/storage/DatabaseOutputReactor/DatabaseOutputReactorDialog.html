@@ -87,15 +87,8 @@
 
 			<br />
 
-			<!--start connections-->
-			<div class="s_reactor_grid_blocks">
-				<h2>Connections</h2>
-				<h3>Input Connections</h3>
-				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node" style="width: 618px"></div>
-				<h3>Output Connections</h3>
-				<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node" style="width: 618px"></div>
+			<div dojoType=plugins.reactors.ReactorConnections class="s_reactor_grid_blocks" dojoAttachPoint="reactor_connections">
 			</div>
-			<!--end connections-->
 
 			<!--start buttons-->
 			<div class="save_cancel_delete">

@@ -845,7 +845,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		singleClickEdit: true,
 		autoHeight: true
 	}, document.createElement('div'));
-	dialog.reactor_inputs_grid_node.appendChild(reactor_inputs_grid.domNode);
+	dialog.reactor_connections.reactor_inputs_grid_node.appendChild(reactor_inputs_grid.domNode);
 	reactor_inputs_grid.startup();
 	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
@@ -916,7 +916,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		singleClickEdit: true,
 		autoHeight: true
 	}, document.createElement('div'));
-	dialog.reactor_outputs_grid_node.appendChild(reactor_outputs_grid.domNode);
+	dialog.reactor_connections.reactor_outputs_grid_node.appendChild(reactor_outputs_grid.domNode);
 	reactor_outputs_grid.startup();
 	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {

@@ -1250,6 +1250,11 @@ I don't think this is being used anywhere.
 	padding: 0px;
 	margin: 5px;
 	border: 1px solid #6096b6;
+	width: 618px;
+}
+
+.wide .reactor_dialog_grid {
+	width: 718px;
 }
 
 .field_mapping_grid {

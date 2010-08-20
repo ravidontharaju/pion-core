@@ -415,3 +415,18 @@ dojo.declare("plugins.reactors.ReactorDialog",
 		}
 	}
 );
+
+dojo.declare("plugins.reactors.ReactorConnections",
+	[dijit._Widget, dijit._Templated],
+	{
+		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorConnections.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+		}
+	}
+);
