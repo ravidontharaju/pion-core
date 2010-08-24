@@ -179,6 +179,20 @@ public:
 		return term_ref;
 	}
 
+   /**
+	* returns the Term, identified with the TermRef
+	*
+	* @param term_ref term_ref of the Term to be found
+	* @return const Term& the full term
+	*/
+	inline const Term& findTerm(const TermRef& term_ref) const {
+		// Not locking, since we're accessing a linear vector anyway
+		// Also, the lock wouldn't protect the data past the return anyway
+		if (term_ref > m_num_terms)
+			return *m_ref_map[UNDEFINED_TERM_REF];
+		return *m_ref_map[term_ref];
+	}
+
 	/**
 	 * adds a new Term if it has not yet been defined
 	 *

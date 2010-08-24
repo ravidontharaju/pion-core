@@ -42,6 +42,12 @@
 			<Plugin>FeedService</Plugin>
 			<Resource>/feed</Resource>
 		</PlatformService>
+		<PlatformService id="monitor-service">
+			<Name>Event Data Monitoring Service</Name>
+			<Comment>Pion platform event data monitoring service</Comment>
+			<Plugin>MonitorService</Plugin>
+			<Resource>/monitor</Resource>
+		</PlatformService>
 		<WebService id="log-service">
 			<Name>Log Service</Name>
 			<Comment>Sends recent log entries</Comment>

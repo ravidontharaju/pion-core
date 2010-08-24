@@ -41,6 +41,7 @@
 #include <pion/PionBlob.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/ConfigManager.hpp>		// To get the ConfigManager::xml_encode() for serialization
 
 
 /// uncomment the following to use pool allocators for Event memory management
@@ -307,6 +308,18 @@ public:
 				new_param_ptr, m_item_compare);
 		}
 		return *this;
+	}
+	
+	inline void SerializeXML(const Vocabulary& v, std::ostringstream& xml) const {
+		std::string tmp;		// tmp storage for values
+		for (ParameterNode *node_ptr = tree_algo::begin_node(&m_param_tree);
+			node_ptr != tree_algo::end_node(&m_param_tree);
+			node_ptr = tree_algo::next_node(node_ptr))
+		{
+			xml << "<Term id=\"" << v.findTerm(node_ptr->term_ref).term_id << "\">"
+				<< ConfigManager::xml_encode(write(tmp, node_ptr->value, v.findTerm(node_ptr->term_ref)))
+				<< "</Term>";
+		}
 	}
 	
 	/**
