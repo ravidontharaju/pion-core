@@ -202,7 +202,7 @@ public:
 		// We're not testing timestamps here, so use anything that works.
 		m_t0 = boost::posix_time::ptime();
 
-		m_page_title_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-title");
+		m_page_title_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#page-title");
 	}
 
 	~StandardProtocolFactory_F() {
@@ -363,8 +363,8 @@ public:
 	HTTPFullContentProtocol_F() : StandardProtocolFactory_F() {
 		m_protocol_ptr = getProtocol("593f044a-ac60-11dd-aba3-001cc02bd66b");
 
-		m_cs_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#cs-content");
-		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
+		m_cs_content_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#cs-content");
+		m_sc_content_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#sc-content");
 	}
 
 	~HTTPFullContentProtocol_F() {

@@ -66,7 +66,7 @@ public:
 	};
 
 	/// constructs a new Protocol object
-	Protocol(void) : m_event_type(Vocabulary::UNDEFINED_TERM_REF) {}
+	Protocol(void) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Protocol() {}
@@ -137,7 +137,7 @@ public:
 	virtual void updateVocabulary(const Vocabulary& v);
 	
 	/// returns the type of Event that is used by this Protocol
-	inline Event::EventType getEventType(void) const { return m_event_type; }
+	inline Event::EventType getEventType(void) const { return m_event_term.term_ref; }
 
 	
 protected:
@@ -145,7 +145,7 @@ protected:
 	/// protected copy function (use clone() instead)
 	inline void copyProtocol(const Protocol& c) {
 		copyPlugin(c);
-		m_event_type = c.m_event_type;
+		m_event_term = c.m_event_term;
 	}
 
 	/// used to efficiently generate new Events
@@ -159,7 +159,7 @@ private:
 
 	
 	/// the type of Events used by this Protocol (TermRef maps to Terms of type OBJECT)
-	Event::EventType				m_event_type;
+	Vocabulary::Term				m_event_term;
 };
 
 

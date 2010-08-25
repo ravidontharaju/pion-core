@@ -47,12 +47,13 @@ void Protocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		throw EmptyEventException(getId());
 
 	// find the Term reference number for the event type
-	m_event_type = v.findTerm(protocol_event_str);
-	if (m_event_type == Vocabulary::UNDEFINED_TERM_REF)
+	Vocabulary::TermRef event_type = v.findTerm(protocol_event_str);
+	if (event_type == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(protocol_event_str);
-
+	m_event_term = v[event_type];
+	
 	// make sure that it is an object type Term
-	if (v[m_event_type].term_type != Vocabulary::TYPE_OBJECT)
+	if (m_event_term.term_type != Vocabulary::TYPE_OBJECT)
 		throw NotAnObjectException(protocol_event_str);
 }
 	

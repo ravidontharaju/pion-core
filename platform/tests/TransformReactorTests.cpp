@@ -249,8 +249,8 @@ class TransformReactorEventValidator_F : public ReactionEngineReadyToAddReactors
 public:
 	TransformReactorEventValidator_F() {
 		m_num_events_validated = 0;
-		m_page_event_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-event");
-		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
+		m_page_event_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#page-event");
+		m_sc_content_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#sc-content");
 	}
 
 	typedef std::map<Vocabulary::TermRef, std::string> ExpectedTerms;
@@ -382,6 +382,7 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsDefined) {
 	// Add a TransformReactor that does Rule based Transformations of type is-defined.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -569,8 +570,8 @@ BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
 	// A couple of arbitrary Terms of string type.
 	std::string string_term_1 = "urn:vocab:atom#icon";
 	std::string string_term_2 = "urn:vocab:atom#logo";
-	Vocabulary::TermRef	string_term_1_ref = m_vocab_mgr.getVocabulary().findTerm(string_term_1);
-	Vocabulary::TermRef	string_term_2_ref = m_vocab_mgr.getVocabulary().findTerm(string_term_2);
+	Vocabulary::TermRef	string_term_1_ref = m_vocab_mgr.getVocabulary()->findTerm(string_term_1);
+	Vocabulary::TermRef	string_term_2_ref = m_vocab_mgr.getVocabulary()->findTerm(string_term_2);
 
 	// TODO: Put this in a config file (tr-reactor-i18n.xml?) for testing regex rules with non-US-ASCII characters.
 	// Note that the first line of our config files is always: <?xml version="1.0" encoding="UTF-8"?>

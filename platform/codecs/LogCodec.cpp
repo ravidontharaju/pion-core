@@ -431,8 +431,8 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 
 	/// copy Term data over from the updated Vocabulary
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
-		/// we can assume for now that Term reference values will never change
-		(*i)->log_term = v[(*i)->log_term.term_ref];
+		// refresh term 
+		v.refreshTerm((*i)->log_term);
 
 		// for date/time types, update log_time_facet
 		switch ((*i)->log_term.term_type) {
@@ -444,10 +444,6 @@ void LogCodec::updateVocabulary(const Vocabulary& v)
 			default:
 				break; // do nothing
 		}
-
-		// check if the Term has been removed (i.e. replaced by the "null" term)
-		if ((*i)->log_term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
-			throw TermNoLongerDefinedException((*i)->log_term.term_id);
 	}
 }
 

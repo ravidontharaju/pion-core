@@ -134,10 +134,17 @@ public:
 
 	/// this updates the Vocabularies used by all plug-ins
 	inline void updateVocabulary(void) {
+		VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
 		m_plugins.run(boost::bind(&PluginType::updateVocabulary, _1,
-								  boost::cref(m_vocabulary)));
+								  boost::cref(*vocab_ptr)));
 	}
 
+	/// returns a copy of the universal Vocabulary
+	inline VocabularyPtr getVocabulary(void) const { return m_vocab_mgr.getVocabulary(); }
+
+	/// returns a reference to the global VocabularyManager
+	inline const VocabularyManager& getVocabularyManager(void) const { return m_vocab_mgr; }
+	
 	
 protected:
 
@@ -152,7 +159,7 @@ protected:
 				 const std::string& config_file,
 				 const std::string& plugin_element)
 		: ConfigManager(config_file),
-		m_vocabulary(vocab_mgr.getVocabulary()),
+		m_vocab_mgr(vocab_mgr),
 		m_plugin_element(plugin_element)
 	{
 		m_vocab_connection = vocab_mgr.registerForUpdates(boost::bind(&PluginConfig::updateVocabulary, this));
@@ -213,8 +220,8 @@ protected:
 								 const xmlNodePtr config_ptr) = 0;
 	
 	
-	/// references the Vocabulary used by plug-ins to describe Terms
-	const Vocabulary&				m_vocabulary;
+	/// references the VocabularyManager used by plug-ins to describe Terms
+	const VocabularyManager&		m_vocab_mgr;
 
 	/// name of the plug-in element for Pion XML config files
 	const std::string				m_plugin_element;
@@ -283,10 +290,12 @@ inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_
 	if (! configIsOpen())
 		throw ConfigNotOpenException(getConfigFile());
 	
+	VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
+
 	// update it within memory and the configuration file
 	boost::mutex::scoped_lock plugins_lock(m_mutex);
 	m_plugins.run(plugin_id, boost::bind(&PluginType::setConfig, _1,
-										 boost::cref(m_vocabulary), config_ptr));
+										 boost::cref(*vocab_ptr), config_ptr));
 	ConfigManager::setPluginConfig(m_plugin_element, plugin_id, config_ptr);
 	
 	// unlock class mutex to prevent deadlock

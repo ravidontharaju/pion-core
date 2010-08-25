@@ -64,13 +64,6 @@ public:
 			: PionException("Codec configuration defines a non-object event type: ", event_type) {}
 	};
 
-	/// exception thrown by updateVocabulary if a Term in use by the Codec is no longer defined
-	class TermNoLongerDefinedException : public PionException {
-	public:
-		TermNoLongerDefinedException(const std::string& term_id)
-			: PionException("A needed Term is no longer defined in the Vocabulary: ", term_id) {}
-	};
-
 	/// exception thrown if a Codec tries to read into an Event of a type different from what it's configured for
 	class WrongEventTypeException : public PionException {
 	public:
@@ -79,7 +72,7 @@ public:
 	};
 
 	/// constructs a new Codec object
-	Codec(void) : m_event_type(Vocabulary::UNDEFINED_TERM_REF) {}
+	Codec(void) {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Codec() {}
@@ -152,7 +145,7 @@ public:
 	}
 	
 	/// returns the type of Event that is used by this Codec
-	inline Event::EventType getEventType(void) const { return m_event_type; }
+	inline Event::EventType getEventType(void) const { return m_event_term.term_ref; }
 
 	
 protected:
@@ -160,7 +153,7 @@ protected:
 	/// protected copy function (use clone() instead)
 	inline void copyCodec(const Codec& c) {
 		copyPlugin(c);
-		m_event_type = c.m_event_type;
+		m_event_term = c.m_event_term;
 	}
 
 	
@@ -171,7 +164,7 @@ private:
 
 	
 	/// the type of Events used by this Codec (TermRef maps to Terms of type OBJECT)
-	Event::EventType				m_event_type;
+	Vocabulary::Term				m_event_term;
 };
 
 

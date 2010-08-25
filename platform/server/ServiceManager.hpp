@@ -191,9 +191,6 @@ public:
 	/// sets the number of threads used all of the HTTP servers & services
 	inline void setNumThreads(const boost::uint32_t n) { m_scheduler.setNumThreads(n); }
 		
-	/// this notifies all the service plug-ins that the Vocabulary was updated
-	void updateVocabulary(void);
-	
 	/// this notifies all the service plug-ins that the Codecs were updated
 	void updateCodecs(void);
 
@@ -257,8 +254,10 @@ protected:
 			new_plugin_ptr->setId(plugin_id);
 			new_plugin_ptr->setServiceManager(*this);
 			new_plugin_ptr->setPlatformConfig(m_platform_config);
-			if (config_ptr != NULL)
-				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+			if (config_ptr != NULL) {
+				pion::platform::VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
+				new_plugin_ptr->setConfig(*vocab_ptr, config_ptr);
+			}
 
 			pion::net::HTTPServerPtr server_ptr = m_servers[new_plugin_ptr->getServerId()];
 			server_ptr->addResource(new_plugin_ptr->getResource(), boost::ref(*new_plugin_ptr));

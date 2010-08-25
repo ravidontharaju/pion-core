@@ -21,6 +21,7 @@
 #define __PION_MONITORSERVICE_HEADER__
 
 #include <string>
+#include <iosfwd>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/circular_buffer.hpp>
@@ -106,6 +107,7 @@ class MonitorWriter
 	: public MonitorHandler,
 	public boost::enable_shared_from_this<MonitorWriter>
 {
+private:
 
 	/// Circular buffer to capture scrolling window of events
 	boost::circular_buffer<pion::platform::EventPtr> m_event_buffer;
@@ -116,7 +118,8 @@ class MonitorWriter
 	/// Scroll or Capture/Stop
 	bool								m_scroll;
 
-	const platform::Vocabulary &		m_v;
+	/// copy of the universal Term Vocabular
+	platform::VocabularyPtr				m_vocab_ptr;
 
 public:
 	
@@ -130,7 +133,7 @@ public:
 	 * @param size size of circular buffer to use for capture
 	 * @param scroll boolean, whether to use scroll or capture&stop
 	 */
-	MonitorWriter(pion::platform::ReactionEngine &reaction_engine, const platform::Vocabulary& v,
+	MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
 			   const std::string& reactor_id, unsigned size, bool scroll);
 	
 	/**
@@ -144,8 +147,19 @@ public:
 	/// starts the MonitorWriter
 	virtual void start(void);
 
-	std::string getStatus(void);
+	/**
+	 * serializes event Terms to an XML output stream
+	 * (for use by Event::for_each)
+	 *
+	 * @param tref ParameterNode TermRef
+	 * @param value ParameterNode ParameterValue
+	 * @param xml output stream
+	 */
+	void SerializeXML(pion::platform::Vocabulary::TermRef tref,
+		const pion::platform::Event::ParameterValue& value,
+		std::ostream& xml) const;
 
+	std::string getStatus(void);
 };
 
 /// data type used for MonitorWriter smart pointers

@@ -51,15 +51,15 @@ bool MonitorHandler::sendResponse(void)
 	// build some XML response content for the request
 	std::stringstream ss;
 	m_reaction_engine.writeConnectionsXML(ss, getConnectionId());
-	
+	return true;
 }
 	
 // MonitorWriter member functions
 
-MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, const platform::Vocabulary& v,
+MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
 					   const std::string& reactor_id, unsigned size, bool scroll)
 	: MonitorHandler(reaction_engine, reactor_id),
-	m_event_buffer(size), m_size(size), m_scroll(scroll), m_v(v)
+	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr)
 {}
 	
 MonitorWriter::~MonitorWriter()
@@ -123,6 +123,18 @@ void MonitorWriter::start(void)
 				  << " (" << getConnectionId() << ')');
 }
 
+void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
+	const pion::platform::Event::ParameterValue& value, std::ostream& xml) const
+{
+	if (tref > m_vocab_ptr->size())		// sanity check
+		tref = Vocabulary::UNDEFINED_TERM_REF;
+	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
+	std::string tmp;		// tmp storage for values
+	xml << "<Term id=\"" << t.term_id << "\">"
+		<< ConfigManager::xml_encode(Event::write(tmp, value, t))
+		<< "</Term>";
+}
+
 std::string MonitorWriter::getStatus(void)
 {
 	// traverse through all events in buffer
@@ -130,7 +142,8 @@ std::string MonitorWriter::getStatus(void)
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
 		xml << "<Event>";
-		(*i)->SerializeXML(m_v, xml);
+		(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
+			this, _1, _2, boost::ref(xml)));
 		xml << "</Event>";
 	}
 	xml << "</Events>";
@@ -175,8 +188,9 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 											  boost::bind(&TCPConnection::finish, tcp_conn)));
 			response_writer->write(response);
 		} else if (verb == "start") {
+			VocabularyPtr vocab_ptr(getConfig().getReactionEngine().getVocabulary());
 			// create a MonitorWriter object that will be used to send Events
-			m_writer_ptr.reset(new MonitorWriter(getConfig().getReactionEngine(), getConfig().getVocabularyManager().getVocabulary(), reactor_id, 1000, true));
+			m_writer_ptr.reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true));
 			m_writer_ptr->start();
 		} else if (verb == "stop") {
 		} else if (verb == "delete") {

@@ -359,7 +359,7 @@ PythonReactor::PythonReactor(void)
 	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
 	m_byte_code(NULL), m_module(NULL),
 	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL),
-	m_reactor_ptr(NULL), m_vocab_ptr(NULL)
+	m_reactor_ptr(NULL)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
@@ -452,7 +452,7 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	}
 	
 	// get copy of vocabulary used to map terms to python and back
-	m_vocab_ptr = &v;
+	m_vocab_ptr.reset(new Vocabulary(v));
 
 	// make sure the thread has been initialized and acquire the GIL lock
 	PythonLock py_lock;
@@ -482,7 +482,7 @@ void PythonReactor::updateVocabulary(const Vocabulary& v)
 {
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
-	m_vocab_ptr = &v;
+	m_vocab_ptr.reset(new Vocabulary(v));
 }
 
 void PythonReactor::start(void)

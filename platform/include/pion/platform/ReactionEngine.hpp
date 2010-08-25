@@ -546,8 +546,10 @@ private:
 			reactor_ptr->setProtocolFactory(m_protocol_factory);
 			reactor_ptr->setDatabaseManager(m_database_mgr);
 			reactor_ptr->setReactionEngine(*this);
-			if (config_ptr != NULL)
-				reactor_ptr->setConfig(m_vocabulary, config_ptr);
+			if (config_ptr != NULL) {
+				VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
+				reactor_ptr->setConfig(*vocab_ptr, config_ptr);
+			}
 			try {
 				reactor_ptr->startOutRunning(config_ptr, true);
 			} catch (std::exception& e) {

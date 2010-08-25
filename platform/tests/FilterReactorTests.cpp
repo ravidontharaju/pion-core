@@ -126,9 +126,10 @@ public:
 	FilterReactorEventValidator_F()
 		: m_curr_event_id(0), m_num_events_validated(0)
 	{
-		m_page_event_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-event");
-		m_page_number_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#page-number");
-		m_sc_content_term_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#sc-content");
+		VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
+		m_page_event_ref = vocab_ptr->findTerm("urn:vocab:clickstream#page-event");
+		m_page_number_ref = vocab_ptr->findTerm("urn:vocab:clickstream#page-number");
+		m_sc_content_term_ref = vocab_ptr->findTerm("urn:vocab:clickstream#sc-content");
 	}
 
 	typedef std::set<unsigned> ExpectedEventIds;

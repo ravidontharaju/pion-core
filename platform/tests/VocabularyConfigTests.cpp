@@ -281,8 +281,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 	// make sure Term is gone
 	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:vocab:test#null-term"), Vocabulary::UNDEFINED_TERM_REF);
 	
-	// make sure that the TermRef is still valid (should point to the undefined Term)
-	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_ref, Vocabulary::UNDEFINED_TERM_REF);
+	// make sure that the TermRef is still valid
+	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_id, "urn:vocab:test#null-term");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigFileAfterRemovingTerm) {
@@ -435,8 +435,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkRemoveTerm) {
 	BOOST_CHECK_EQUAL(F::getVocabulary().findTerm("urn:vocab:test#null-term"), Vocabulary::UNDEFINED_TERM_REF);
 	
 	// make sure that the TermRef is still valid (should point to the undefined Term)
-	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_ref, Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_ref, Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK_EQUAL(F::m_vocabulary[1].term_id, "urn:vocab:test#null-term");
+	BOOST_CHECK_EQUAL(F::getVocabulary()[1].term_id, "urn:vocab:test#null-term");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateExistingTerm) {
@@ -455,6 +455,22 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateExistingTerm) {
 	BOOST_CHECK_EQUAL(F::getVocabulary()[term_ref].term_comment, updated_term.term_comment);	
 
 	//What if updated_term is actually a new term?
+}
+
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularyCopyConstruction) {
+	Vocabulary new_vocab(F::getVocabulary());
+
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), new_vocab.size());
+
+	for (size_t n = 0; n <= new_vocab.size(); ++n) {
+		BOOST_CHECK_NE( &(F::getVocabulary()[n]), &(new_vocab[n]) );
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_id, new_vocab[n].term_id);
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_ref, new_vocab[n].term_ref);
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_comment, new_vocab[n].term_comment);
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_type, new_vocab[n].term_type);
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_size, new_vocab[n].term_size);
+		BOOST_CHECK_EQUAL(F::getVocabulary()[n].term_format, new_vocab[n].term_format);
+	}
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -732,7 +748,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeEqualsZero) {
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(0));
+	BOOST_CHECK_EQUAL(F::getVocabulary()->size(), static_cast<size_t>(0));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -767,7 +783,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetVocabulary) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularySizeIsCorrect) {
 	// there should be 45 terms defined in the (three) config files
 	// instead of comparing ==78, using >=83 for now
-	BOOST_CHECK_GE(F::getVocabulary().size(), static_cast<size_t>(83));
+	BOOST_CHECK_GE(F::getVocabulary()->size(), static_cast<size_t>(83));
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkOptionValues) {
@@ -794,14 +810,14 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkCommentAccessors) {
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkTermIds) {
 	// check term_id values
-	const Vocabulary& universal_vocab = F::getVocabulary();
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#null-term") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#plain-old-int") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#big-int") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#fixed-text") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test#simple-object") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test_b#b-null-term") != Vocabulary::UNDEFINED_TERM_REF);
-	BOOST_CHECK(universal_vocab.findTerm("urn:vocab:test_b#b-int") != Vocabulary::UNDEFINED_TERM_REF);
+	VocabularyPtr universal_vocab = F::getVocabulary();
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test#null-term") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test#plain-old-int") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test#big-int") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test#fixed-text") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test#simple-object") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test_b#b-null-term") != Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK(universal_vocab->findTerm("urn:vocab:test_b#b-int") != Vocabulary::UNDEFINED_TERM_REF);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

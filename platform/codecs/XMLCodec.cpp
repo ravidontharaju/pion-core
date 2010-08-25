@@ -511,8 +511,8 @@ void XMLCodec::updateVocabulary(const Vocabulary& v)
 
 	/// Copy Term data over from the updated Vocabulary.
 	for (CurrentFormat::iterator i = m_format.begin(); i != m_format.end(); ++i) {
-		/// We can assume for now that Term reference values will never change.
-		(*i)->term = v[(*i)->term.term_ref];
+		// refresh term 
+		v.refreshTerm((*i)->term);
 
 		// For date/time types, update time_facet.
 		switch ((*i)->term.term_type) {
@@ -524,10 +524,6 @@ void XMLCodec::updateVocabulary(const Vocabulary& v)
 			default:
 				break; // do nothing
 		}
-
-		// Check if the Term has been removed (i.e. replaced by the "null" term).
-		if ((*i)->term.term_ref == Vocabulary::UNDEFINED_TERM_REF)
-			throw TermNoLongerDefinedException((*i)->term.term_id);
 	}
 }
 	

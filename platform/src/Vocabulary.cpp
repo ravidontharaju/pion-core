@@ -35,20 +35,20 @@ Vocabulary::Vocabulary(void)
 	: m_num_terms(0)
 {
 	// add an initial "null" term to the vocabulary
-	m_ref_map.push_back(new Term(""));
+	m_ref_map.push_back(TermPtr(new Term()));
 }
 
-Vocabulary::~Vocabulary()
+Vocabulary::Vocabulary(const Vocabulary& v)
+	: m_num_terms(0)
 {
-	// delete all Term objects held within the class' data structures
-	for (size_t n = 1; n <= m_num_terms; ++n) {
-		if (m_ref_map[n] != m_ref_map[UNDEFINED_TERM_REF])
-			delete m_ref_map[n];
-	}
-	delete m_ref_map[UNDEFINED_TERM_REF];
+	// add an initial "null" term to the vocabulary
+	m_ref_map.push_back(TermPtr(new Term()));
+
+	// copy over all terms
+	operator+=(v);
 }
 
-Vocabulary::TermRef Vocabulary::addTermNoLock(const Term& t)
+Vocabulary::TermRef Vocabulary::addTerm(const Term& t)
 {
 	// make sure that the uri is not empty
 	if (t.term_id.empty()) throw EmptyTermIdException();
@@ -58,7 +58,7 @@ Vocabulary::TermRef Vocabulary::addTermNoLock(const Term& t)
 		throw DuplicateTermException(t.term_id);
 	
 	// create a new Term
-	Term *term_ptr = new Term(t.term_id);
+	TermPtr term_ptr(new Term(t.term_id));
 	term_ptr->term_ref = ++m_num_terms;
 	term_ptr->term_type = t.term_type;
 	term_ptr->term_comment = t.term_comment;
@@ -77,10 +77,24 @@ Vocabulary::TermRef Vocabulary::addTermNoLock(const Term& t)
 	return term_ptr->term_ref;
 }
 
-Vocabulary::TermRef Vocabulary::addTerm(const Term& t)
+void Vocabulary::removeTerm(const std::string& term_id)
 {
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-	return addTermNoLock(t);
+	// make sure the term_id is not empty
+	if (term_id.empty())
+		throw TermNotFoundException(term_id);
+	
+	// find the Term to remove
+	TermStringMap::iterator uri_iterator = m_uri_map.find(term_id);
+	if (uri_iterator == m_uri_map.end())
+		throw TermNotFoundException(term_id);
+
+	// change the TermRef so it doesn't get copied into other vocabularies
+	uri_iterator->second->term_ref = UNDEFINED_TERM_REF;
+	
+	// remove the Term from the URI map
+	m_uri_map.erase(uri_iterator);
+	
+	// leave the TermRef reference in-tact for any existing events
 }
 
 void Vocabulary::updateTerm(const Term& t)
@@ -90,55 +104,52 @@ void Vocabulary::updateTerm(const Term& t)
 		throw TermNotFoundException(t.term_id);
 
 	// find the Term to update
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-	TermStringMap::const_iterator i = m_uri_map.find(t.term_id);
-	if (i == m_uri_map.end())
+	TermStringMap::const_iterator uri_iterator = m_uri_map.find(t.term_id);
+	if (uri_iterator == m_uri_map.end())
 		throw TermNotFoundException(t.term_id);
-	Term *term_ptr = i->second;
+	Term& term_ref = *(uri_iterator->second);
 	
-	// update the values in memory
-	term_ptr->term_comment = t.term_comment;
-	term_ptr->term_type = t.term_type;
-	term_ptr->term_size = t.term_size;
-	term_ptr->term_format = t.term_format;
+	if (term_ref.term_type == t.term_type) {
+		// same data type:
+		// ok to just update the values in memory
+		// since existing events should still be valid
+		term_ref.term_comment = t.term_comment;
+		term_ref.term_size = t.term_size;
+		term_ref.term_format = t.term_format;
+	} else {
+		// don't change existing term so that existing events
+		// with references always stay in-tact
+
+		// remove the Term from the URI map
+		m_uri_map.erase(uri_iterator);
+
+		// add a new Term
+		addTerm(t);
+	}
 }
 	
-void Vocabulary::removeTerm(const std::string& term_id)
+void Vocabulary::refreshTerm(Term& t) const
 {
-	// make sure the term_id is not empty
-	if (term_id.empty())
-		throw TermNotFoundException(term_id);
-	
-	// find the Term to remove
-	boost::mutex::scoped_lock vocabulary_lock(m_mutex);
-	TermStringMap::iterator uri_iterator = m_uri_map.find(term_id);
-	if (uri_iterator == m_uri_map.end())
-		throw TermNotFoundException(term_id);
-	Term *term_ptr = uri_iterator->second;
-	
-	// remove the Term from the URI map
-	m_uri_map.erase(uri_iterator);
-	
-	// remove the Term's object and point it to the undefined term
-	m_ref_map[term_ptr->term_ref] = m_ref_map[UNDEFINED_TERM_REF];
-	delete term_ptr;
+	// find Term in updated Vocabulary
+	TermRef term_ref = findTerm(t.term_id);
+
+	// check if the Term has been removed
+	if (term_ref == UNDEFINED_TERM_REF)
+		throw TermNoLongerDefinedException(t.term_id);
+
+	// refresh term values
+	t = *m_ref_map[term_ref];
 }
 
 const Vocabulary& Vocabulary::operator+=(const Vocabulary& v)
 {
-	// lock both vocabularies
-	boost::mutex::scoped_lock local_lock(m_mutex);
-	boost::mutex::scoped_lock remote_lock(v.m_mutex);
-
 	// copy over term object pointers
 	for (TermRef n = 1; n <= v.m_num_terms; ++n) {
-		if (v.m_ref_map[n] != v.m_ref_map[UNDEFINED_TERM_REF]) {
-			addTermNoLock(*(v.m_ref_map[n]));
+		if (v.m_ref_map[n]->term_ref != UNDEFINED_TERM_REF) {
+			try { addTerm(*(v.m_ref_map[n])); }
+			catch (...) {}
 		}
 	}
-	local_lock.unlock();
-	remote_lock.unlock();
-	
 	return *this;
 }
 	

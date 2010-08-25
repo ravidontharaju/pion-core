@@ -301,8 +301,8 @@ private:
 	/// pointer to a Python Reactor class object that represents this reactor
 	PyObject *						m_reactor_ptr;
 	
-	/// copy of system vocabulary used for mapping terms to python and back
-	const pion::platform::Vocabulary *	m_vocab_ptr;
+	/// copy of universal vocabulary used for mapping terms to python and back
+	pion::platform::VocabularyPtr	m_vocab_ptr;
 
 	/// pointer to the global Python interpreter object
 	static PyInterpreterState *		m_interp_ptr;

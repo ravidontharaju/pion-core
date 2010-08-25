@@ -124,8 +124,10 @@ protected:
 			Codec *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
 			new_plugin_ptr->setId(plugin_id);
 			new_plugin_ptr->setCodecFactory(*this);
-			if (config_ptr != NULL)
-				new_plugin_ptr->setConfig(m_vocabulary, config_ptr);
+			if (config_ptr != NULL) {
+				VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
+				new_plugin_ptr->setConfig(*vocab_ptr, config_ptr);
+			}
 		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;
 		} catch (std::exception& e) {

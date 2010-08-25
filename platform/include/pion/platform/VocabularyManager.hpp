@@ -355,11 +355,14 @@ public:
 		return (m_vocabulary.findTerm(term_id) != Vocabulary::UNDEFINED_TERM_REF);
 	}
 	
-	/// returns a const reference to the universal Vocabulary
-	inline const Vocabulary& getVocabulary(void) const { return m_vocabulary; }
+	/// returns a copy of the universal Vocabulary
+	inline VocabularyPtr getVocabulary(void) const {
+		boost::mutex::scoped_lock manager_lock(m_mutex);
+		return VocabularyPtr(new Vocabulary(m_vocabulary));
+	}
 
 	/// returns the path where new vocabulary config files are created
-	inline const std::string& getVocabularyPath(void) const { return m_vocab_path; }
+	inline std::string getVocabularyPath(void) const { return m_vocab_path; }
 
 	
 private:

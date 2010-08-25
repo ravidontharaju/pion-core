@@ -172,9 +172,9 @@ BOOST_AUTO_TEST_CASE(checkVocabularyRemoveTerm) {
 	BOOST_CHECK_EQUAL(findTerm(m_null_term.term_id),
 					  Vocabulary::UNDEFINED_TERM_REF);
 	
-	// make sure that the TermRef is still valid (should point to the undefined Term)
-	BOOST_CHECK_EQUAL((*this)[m_null_term.term_ref].term_ref,
-					  Vocabulary::UNDEFINED_TERM_REF);
+	// make sure that the TermRef is still valid
+	BOOST_CHECK_EQUAL((*this)[m_null_term.term_ref].term_id,
+					  m_null_term.term_id);
 }
 
 BOOST_AUTO_TEST_CASE(checkVocabularyUpdateExistingTerm) {

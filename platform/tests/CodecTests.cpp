@@ -285,7 +285,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
-	Event::EventType some_type = vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+	VocabularyPtr vocab_ptr(vocab_mgr.getVocabulary());
+	Event::EventType some_type = vocab_ptr->findTerm("urn:vocab:clickstream#useragent");
 
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(some_type));
@@ -303,12 +304,13 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfig) {
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
+	VocabularyPtr vocab_ptr(vocab_mgr.getVocabulary());
 
 	// Confirm that setConfig() returns.
-	BOOST_CHECK_NO_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr));
+	BOOST_CHECK_NO_THROW(F::p->setConfig(*vocab_ptr, F::m_config_ptr));
 
 	// Check that Codec::getEventType() returns the EventType specified in the configuration.
-	Event::EventType event_type_ref = vocab_mgr.getVocabulary().findTerm(event_type_1);
+	Event::EventType event_type_ref = vocab_ptr->findTerm(event_type_1);
 	BOOST_CHECK_EQUAL(F::p->getEventType(), event_type_ref);
 }
 
@@ -322,9 +324,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithTh
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
+	VocabularyPtr vocab_ptr(vocab_mgr.getVocabulary());
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(*vocab_ptr, F::m_config_ptr), PionException);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDifferentNames) {
@@ -337,9 +340,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldTermsWithDi
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
+	VocabularyPtr vocab_ptr(vocab_mgr.getVocabulary());
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(*vocab_ptr, F::m_config_ptr), PionException);
 }
 
 // This is definitely ambiguous for a JSONCodec.  (It can't distinguish between big-int and plain-old-int.)
@@ -354,9 +358,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSetConfigWithRepeatedFieldNames) {
 	VocabularyManager vocab_mgr;
 	vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 	vocab_mgr.openConfigFile();
+	VocabularyPtr vocab_ptr(vocab_mgr.getVocabulary());
 
 	// Confirm that setConfig() throws an exception.
-	BOOST_CHECK_THROW(F::p->setConfig(vocab_mgr.getVocabulary(), F::m_config_ptr), PionException);
+	BOOST_CHECK_THROW(F::p->setConfig(*vocab_ptr, F::m_config_ptr), PionException);
 }
 
 // This is just one basic test of Codec::clone(), which is primarily being tested via fixtures
@@ -380,7 +385,9 @@ static const std::string FIELD_NAME_1 = "bytes";
 template<const char* plugin_type, LINEAGE lineage>
 class ConfiguredCodecPtr_F : public CodecPtr_F<plugin_type, lineage> {
 public:
-	ConfiguredCodecPtr_F() : m_vocab_mgr(), m_factory(NULL) {
+	ConfiguredCodecPtr_F()
+		: m_vocab_mgr(), m_vocab_ptr(m_vocab_mgr.getVocabulary()), m_factory(NULL)
+	{
 		initFixture("<PionConfig><Codec>"
 						"<Plugin>" + std::string(plugin_type) + "</Plugin>"
 						"<Name>" + NAME_1 + "</Name>"
@@ -406,6 +413,7 @@ protected:
 	}
 
 	VocabularyManager m_vocab_mgr;
+	VocabularyPtr	m_vocab_ptr;
 
 private:
 	void initFixture(const std::string& config_str) {
@@ -420,6 +428,7 @@ private:
 		// Initialize the VocabularyManager.
 		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
+		m_vocab_ptr = m_vocab_mgr.getVocabulary();
 	}
 
 	void initCodecFactory() {
@@ -437,7 +446,7 @@ protected:
 			std::string codec_id = m_factory->addCodec(this->m_config_ptr);
 			this->p = m_factory->getCodec(codec_id);
 		} else {
-			this->m_original_codec_ptr->setConfig(m_vocab_mgr.getVocabulary(), this->m_config_ptr);
+			this->m_original_codec_ptr->setConfig(*m_vocab_ptr, this->m_config_ptr);
 			this->p = (lineage == CREATED? this->m_original_codec_ptr : this->m_original_codec_ptr->clone());
 		}
 	}
@@ -489,7 +498,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetComment) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
-	Event::EventType expected_event_type_ref = F::m_vocab_mgr.getVocabulary().findTerm(EVENT_TYPE_1);
+	Event::EventType expected_event_type_ref = F::m_vocab_ptr->findTerm(EVENT_TYPE_1);
 	BOOST_CHECK_EQUAL(F::p->getEventType(), expected_event_type_ref);
 }
 
@@ -528,7 +537,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfUndefinedType) {
 
 // See comment for previous test, checkReadWithEventOfUndefinedType.
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadWithEventOfWrongType) {
-	Event::EventType other_type = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+	Event::EventType other_type = F::m_vocab_ptr->findTerm("urn:vocab:clickstream#useragent");
 	BOOST_REQUIRE(other_type != F::p->getEventType());
 	EventFactory event_factory;
 	EventPtr ep(event_factory.create(other_type));
@@ -547,7 +556,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkWriteOutputsSomething) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_ptr->findTerm(FIELD_TERM_1);
 	event_ptr->setUBigInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
@@ -562,7 +571,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteAfterFinish) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_ptr->findTerm(FIELD_TERM_1);
 	event_ptr->setUBigInt(bytes_ref, 42);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
@@ -596,7 +605,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingEmptyEvent) {
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWriteWithMultipleValuesForATerm) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef bytes_ref = F::m_vocab_mgr.getVocabulary().findTerm(FIELD_TERM_1);
+	Vocabulary::TermRef bytes_ref = F::m_vocab_ptr->findTerm(FIELD_TERM_1);
 	event_ptr->setUBigInt(bytes_ref, 42);
 	event_ptr->setUBigInt(bytes_ref, 82);
 	std::ostringstream out;
@@ -624,6 +633,7 @@ public:
 		this->m_vocab_mgr.addTerm("urn:vocab:test",
 								  "urn:vocab:test#float-term-1",
 								  ConfigManager::createResourceConfig("Term", config_str.c_str(), config_str.size()));
+		this->m_vocab_ptr = this->m_vocab_mgr.getVocabulary();
 
 		// Reconfigure the Codec, with a different event type and a field using the new term.
 		parseConfig("<PionConfig><Codec>"
@@ -632,7 +642,7 @@ public:
 						"<Field term=\"urn:vocab:test#float-term-1\">B</Field>"
 					"</Codec></PionConfig>",
 					this->m_config_ptr);
-		this->p->setConfig(this->m_vocab_mgr.getVocabulary(), this->m_config_ptr);
+		this->p->setConfig(*this->m_vocab_ptr, this->m_config_ptr);
 	}
 	virtual ~ReconfiguredCodecPtr_F() {
 	}
@@ -657,16 +667,16 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ReconfiguredCodecPtr_S, ReconfiguredCodec
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkGetEventType) {
 	// Confirm that we get the new event type.
-	Event::EventType expected_event_type_ref = F::m_vocab_mgr.getVocabulary().findTerm(EVENT_TYPE_2);
+	Event::EventType expected_event_type_ref = F::m_vocab_ptr->findTerm(EVENT_TYPE_2);
 	BOOST_CHECK_EQUAL(F::p->getEventType(), expected_event_type_ref);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef term_ref_A = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:test#plain-old-int");
+	Vocabulary::TermRef term_ref_A = F::m_vocab_ptr->findTerm("urn:vocab:test#plain-old-int");
 	event_ptr->setInt(term_ref_A, 42);
-	Vocabulary::TermRef term_ref_B = F::m_vocab_mgr.getVocabulary().findTerm("urn:vocab:test#float-term-1");
+	Vocabulary::TermRef term_ref_B = F::m_vocab_ptr->findTerm("urn:vocab:test#float-term-1");
 	event_ptr->setFloat(term_ref_B, 1.23F);
 	std::ostringstream out;
 	BOOST_CHECK_NO_THROW(F::p->write(out, *event_ptr));
@@ -715,14 +725,12 @@ public:
 		"</Codec></PionConfig>") {
 
 		m_event_ptr = event_factory.create(this->p->getEventType());
-		m_vocab = &this->m_vocab_mgr.getVocabulary();
 	}
 	~CodecPtrWithVariousFieldTerms_F() {
 	}
 
 	EventFactory event_factory;
 	EventPtr m_event_ptr;
-	const Vocabulary* m_vocab;
 };
 
 typedef boost::mpl::list<
@@ -745,18 +753,20 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(ConfiguredCodecPtrNoFactory_S, Configured
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermRemoved) {
 	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
 	F::m_vocab_mgr.removeTerm("urn:vocab:test", FIELD_TERM_INT_16);
-	BOOST_CHECK_THROW(F::p->updateVocabulary(*F::m_vocab), Codec::TermNoLongerDefinedException);
+	VocabularyPtr vocab_ptr(F::m_vocab_mgr.getVocabulary());
+	BOOST_CHECK_EQUAL(vocab_ptr->findTerm(FIELD_TERM_INT_16), Vocabulary::UNDEFINED_TERM_REF);
+	BOOST_CHECK_THROW(F::p->updateVocabulary(*vocab_ptr), Vocabulary::TermNoLongerDefinedException);
 }
 
 // See comment for checkUpdateVocabularyWithOneTermRemoved().
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithOneTermChanged) {
-	Vocabulary::TermRef term_ref = F::m_vocab->findTerm(FIELD_TERM_INT_16);
-	Vocabulary::Term modified_term = (*F::m_vocab)[term_ref];
+	Vocabulary::TermRef term_ref = F::m_vocab_ptr->findTerm(FIELD_TERM_INT_16);
+	Vocabulary::Term modified_term = (*F::m_vocab_ptr)[term_ref];
 	modified_term.term_comment = "A modified comment";
 	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
 	F::m_vocab_mgr.updateTerm("urn:vocab:test", modified_term);
 
-	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab));
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab_mgr.getVocabulary()));
 }
 
 // See comment for checkUpdateVocabularyWithOneTermRemoved().
@@ -764,7 +774,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithDateFormatChanged
 	// Create an Event with some known value for the date field.
 	EventFactory event_factory;
 	EventPtr event_ptr(event_factory.create(F::p->getEventType()));
-	Vocabulary::TermRef date_ref = F::m_vocab->findTerm(FIELD_TERM_DATE);
+	Vocabulary::TermRef date_ref = F::m_vocab_ptr->findTerm(FIELD_TERM_DATE);
 	event_ptr->setDateTime(date_ref, PionDateTime(boost::gregorian::date(2008, 1, 10)));
 
 	// Output the Event and confirm that the date appears in the expected format.
@@ -774,11 +784,11 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkUpdateVocabularyWithDateFormatChanged
 	BOOST_CHECK(boost::regex_search(out_str, boost::regex("2008-01-10")));
 
 	// Update the date format.
-	Vocabulary::Term modified_term = (*F::m_vocab)[date_ref];
+	Vocabulary::Term modified_term = (*F::m_vocab_ptr)[date_ref];
 	modified_term.term_format = "%m/%d/%y";
 	F::m_vocab_mgr.setLocked("urn:vocab:test", false);
 	F::m_vocab_mgr.updateTerm("urn:vocab:test", modified_term);
-	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab));
+	BOOST_CHECK_NO_THROW(F::p->updateVocabulary(*F::m_vocab_mgr.getVocabulary()));
 
 	// Output the Event again and check that the date appears in the new format.
 	std::ostringstream out2;
@@ -809,8 +819,8 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -850,9 +860,9 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
-	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab_ptr->findTerm(FIELD_TERM_DATE)),
 					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
 }
 
@@ -875,8 +885,8 @@ BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
@@ -886,7 +896,7 @@ BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab_ptr->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
 }
 
 BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
@@ -902,8 +912,8 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 
 	// read and verify the first event
 	BOOST_CHECK(p->read(in, *m_event_ptr));
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 
 	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
 	Event::ConstIterator it = m_event_ptr->begin();
@@ -915,8 +925,8 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 
 	// read and verify the second event
 	BOOST_CHECK(p->read(in, *m_event_ptr));
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
 
 	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
 	it = m_event_ptr->begin();
@@ -939,7 +949,7 @@ BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
 	// Check that both input values are present in the event for the multiple-valued term.
-	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab->findTerm(FIELD_TERM_INT_16);
+	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab_ptr->findTerm(FIELD_TERM_INT_16);
 	Event::ValuesRange range = m_event_ptr->equal_range(multiple_valued_term_ref);
 	Event::ConstIterator i = range.first;
 	BOOST_REQUIRE(i != range.second);
@@ -949,13 +959,13 @@ BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
 	BOOST_REQUIRE(++i == range.second);
 
 	// Finally, check the value of the non-multiple valued term.
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 	// initialize the event
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
 
 	// Write a string with the expected output.
 	// Due to YAJL limitations, 64-bit integers are output as quoted strings.
@@ -975,8 +985,8 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 	// This time, the terms are not set in the order in which they appear in the configuration.
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
 
 	// The terms should still be output in the order in which they appear in the configuration.
 	std::ostringstream oss;
@@ -995,8 +1005,8 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 	// initialize the event
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
 
 	// This time there should be a ']' at the end, to indicate that there are no more events.
 	std::ostringstream oss;
@@ -1017,9 +1027,9 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 
 BOOST_AUTO_TEST_CASE(checkWriteWithMultipleValuesForATerm) {
 	// Initialize the event, setting a value twice for one of the terms.
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 105);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), 12345);
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 205);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), 105);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), 12345);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), 205);
 
 	// Output the event.
 	std::ostringstream out;
@@ -1087,9 +1097,9 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
-	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab_ptr->findTerm(FIELD_TERM_DATE)),
 					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
 }
 
@@ -1107,8 +1117,8 @@ BOOST_AUTO_TEST_CASE(checkReadOneEventWithTermOrderChanged) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
@@ -1120,7 +1130,7 @@ BOOST_AUTO_TEST_CASE(checkReadWithLeadingWhiteSpace) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(m_vocab_ptr->findTerm(FIELD_TERM_INT_16)), E1_FIELD_VALUE_INT_16);
 }
 
 BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
@@ -1136,8 +1146,8 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 
 	// read and verify the first event
 	BOOST_CHECK(p->read(in, *m_event_ptr));
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), E1_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 
 	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
 	Event::ConstIterator it = m_event_ptr->begin();
@@ -1149,8 +1159,8 @@ BOOST_AUTO_TEST_CASE(checkReadTwoEvents) {
 
 	// read and verify the second event
 	BOOST_CHECK(p->read(in, *m_event_ptr));
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), E2_FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E2_FIELD_VALUE_UINT_64);
 
 	// iterate through the event to confirm that the values are in the configured order, and that there are no other values
 	it = m_event_ptr->begin();
@@ -1174,7 +1184,7 @@ BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
 	// Check that both input values are present in the event for the multiple-valued term.
-	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab->findTerm(FIELD_TERM_INT_16);
+	Vocabulary::TermRef	multiple_valued_term_ref = m_vocab_ptr->findTerm(FIELD_TERM_INT_16);
 	Event::ValuesRange range = m_event_ptr->equal_range(multiple_valued_term_ref);
 	Event::ConstIterator i = range.first;
 	BOOST_REQUIRE(i != range.second);
@@ -1184,13 +1194,13 @@ BOOST_AUTO_TEST_CASE(checkReadWithMultipleValuesForATerm) {
 	BOOST_REQUIRE(++i == range.second);
 
 	// Finally, check the value of the non-multiple valued term.
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), E1_FIELD_VALUE_UINT_64);
 }
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 	// initialize the event
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
 
 	// Make a string with the expected output.
 	std::ostringstream oss;
@@ -1210,8 +1220,8 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEvent) {
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 	// This time, the terms are not set in the order in which they appear in the configuration.
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
 
 	// The terms should still be output in the order in which they appear in the configuration.
 	std::ostringstream oss;
@@ -1231,8 +1241,8 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventWithTermOrderChanged) {
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 	// initialize the event
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
 
 	// This time there should be an 'Events' end-tag, to indicate that there are no more events.
 	std::ostringstream oss;
@@ -1254,9 +1264,9 @@ BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 
 BOOST_AUTO_TEST_CASE(checkWriteWithMultipleValuesForATerm) {
 	// Initialize the event, setting a value twice for one of the terms.
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 105);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), 12345);
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), 205);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), 105);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), 12345);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), 205);
 
 	// Output the event.
 	std::ostringstream out;
@@ -1309,14 +1319,12 @@ public:
 		"</Codec></PionConfig>")
 	{
 		m_event_ptr = event_factory.create(this->p->getEventType());
-		m_vocab = &this->m_vocab_mgr.getVocabulary();
 	}
 	~XMLCodecWithNonDefaultEventTags_F() {
 	}
 
 	EventFactory event_factory;
 	EventPtr m_event_ptr;
-	const Vocabulary* m_vocab;
 };
 
 BOOST_FIXTURE_TEST_SUITE(XMLCodecWithNonDefaultEventTags_S, XMLCodecWithNonDefaultEventTags_F)
@@ -1346,16 +1354,16 @@ BOOST_AUTO_TEST_CASE(checkReadOneEvent) {
 
 	BOOST_CHECK(p->read(in, *m_event_ptr));
 
-	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
-	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
-	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab->findTerm(FIELD_TERM_DATE)),
+	BOOST_CHECK_EQUAL(m_event_ptr->getInt(     m_vocab_ptr->findTerm(FIELD_TERM_INT_16 )), FIELD_VALUE_INT_16);
+	BOOST_CHECK_EQUAL(m_event_ptr->getUBigInt( m_vocab_ptr->findTerm(FIELD_TERM_UINT_64)), FIELD_VALUE_UINT_64);
+	BOOST_CHECK_EQUAL(m_event_ptr->getDateTime(m_vocab_ptr->findTerm(FIELD_TERM_DATE)),
 					  PionDateTime(boost::gregorian::date(YEAR, MONTH, DAY)));
 }
 
 BOOST_AUTO_TEST_CASE(checkWriteOneEventAndFinish) {
 	// initialize the event
-	m_event_ptr->setInt(    m_vocab->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
-	m_event_ptr->setUBigInt(m_vocab->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
+	m_event_ptr->setInt(    m_vocab_ptr->findTerm(FIELD_TERM_INT_16 ), E1_FIELD_VALUE_INT_16);
+	m_event_ptr->setUBigInt(m_vocab_ptr->findTerm(FIELD_TERM_UINT_64), E1_FIELD_VALUE_UINT_64);
 
 	// Specify the expected usage of the non-default tags.
 	std::ostringstream oss;
@@ -1440,14 +1448,12 @@ public:
 
 		m_event_ptr_in = this->m_event_factory.create(this->p->getEventType());
 		m_event_ptr_out = this->m_event_factory.create(this->p->getEventType());
-		m_vocab = &this->m_vocab_mgr.getVocabulary();
 	}
 	virtual ~CodecPtrWithFieldsOfAllTypes_F() {
 		this->m_vocab_mgr.removeVocabulary("urn:vocab:v1");
 		cleanup_backup_files();
 	}
 
-	const Vocabulary* m_vocab;
 	EventFactory m_event_factory;
 	EventPtr m_event_ptr_in;
 	EventPtr m_event_ptr_out;
@@ -1482,6 +1488,8 @@ private:
 		addTerm("time-term-1", "<Type format=\"%H:%M:%S\">time</Type>");
 		addTerm("char-term-1", "<Type size=\"10\">char</Type>");
 		addTerm("object-term-1", "<Type>object</Type>");
+
+		this->m_vocab_ptr = this->m_vocab_mgr.getVocabulary();
 	}
 
 	void addTerm(const std::string& term_name, const std::string& inner_term_config) {
@@ -1511,27 +1519,27 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(CodecPtrWithFieldsOfAllTypes_S, CodecPtrW
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	// Set one value for every Term in urn:vocab:v1, except the null Term and the object Term.
 	// TODO: object Terms aren't supported for LogCodecs, but could they be for some Codecs?
-	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1"),       -8);
-	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1"),       8);
-	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1"),      -16);
-	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1"),      16);
-	F::m_event_ptr_in->setInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1"),      -32);
-	F::m_event_ptr_in->setUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1"),      32);
-	F::m_event_ptr_in->setBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1"),      -64);
-	F::m_event_ptr_in->setUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1"),      64);
-	F::m_event_ptr_in->setFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1"),       1.01234e-30F);
-	F::m_event_ptr_in->setDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1"),      1.0123456789012345e-300);
-	F::m_event_ptr_in->setLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1"),  1.0123456789012345e+300L);
-	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "abc");
-	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "123");
-	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "XYZ");
+	F::m_event_ptr_in->setInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int8-term-1"),       -8);
+	F::m_event_ptr_in->setUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint8-term-1"),       8);
+	F::m_event_ptr_in->setInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int16-term-1"),      -16);
+	F::m_event_ptr_in->setUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint16-term-1"),      16);
+	F::m_event_ptr_in->setInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int32-term-1"),      -32);
+	F::m_event_ptr_in->setUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint32-term-1"),      32);
+	F::m_event_ptr_in->setBigInt(    F::m_vocab_ptr->findTerm("urn:vocab:v1#int64-term-1"),      -64);
+	F::m_event_ptr_in->setUBigInt(   F::m_vocab_ptr->findTerm("urn:vocab:v1#uint64-term-1"),      64);
+	F::m_event_ptr_in->setFloat(     F::m_vocab_ptr->findTerm("urn:vocab:v1#float-term-1"),       1.01234e-30F);
+	F::m_event_ptr_in->setDouble(    F::m_vocab_ptr->findTerm("urn:vocab:v1#double-term-1"),      1.0123456789012345e-300);
+	F::m_event_ptr_in->setLongDouble(F::m_vocab_ptr->findTerm("urn:vocab:v1#longdouble-term-1"),  1.0123456789012345e+300L);
+	F::m_event_ptr_in->setString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#shortstring-term-1"), "abc");
+	F::m_event_ptr_in->setString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#string-term-1"),      "123");
+	F::m_event_ptr_in->setString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#longstring-term-1"),  "XYZ");
 	PionDateTime date_time = PionTimeFacet("%Y-%m-%d %H:%M:%S").fromString("2008-06-17 10:22:01");
-	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1"),    date_time);
+	F::m_event_ptr_in->setDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#datetime-term-1"),    date_time);
 	PionDateTime date = PionTimeFacet("%Y-%m-%d").fromString("2008-06-17");
-	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1"),        date);
+	F::m_event_ptr_in->setDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#date-term-1"),        date);
 	PionDateTime time = PionTimeFacet("%H:%M:%S").fromString("10:22:01");
-	F::m_event_ptr_in->setDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1"),        time);
-	F::m_event_ptr_in->setString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "0123456789");
+	F::m_event_ptr_in->setDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#time-term-1"),        time);
+	F::m_event_ptr_in->setString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1"),        "0123456789");
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
@@ -1541,25 +1549,25 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWrite) {
 	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the reconstituted Event is the same as the original Event.
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int8-term-1")),       -8);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint8-term-1")),       8U);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int16-term-1")),      -16);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint16-term-1")),      16U);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab->findTerm("urn:vocab:v1#int32-term-1")),      -32);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab->findTerm("urn:vocab:v1#uint32-term-1")),      32U);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getBigInt(    F::m_vocab->findTerm("urn:vocab:v1#int64-term-1")),      -64);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUBigInt(   F::m_vocab->findTerm("urn:vocab:v1#uint64-term-1")),      64U);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getFloat(     F::m_vocab->findTerm("urn:vocab:v1#float-term-1")),       1.01234e-30F);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDouble(    F::m_vocab->findTerm("urn:vocab:v1#double-term-1")),      1.0123456789012345e-300);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getLongDouble(F::m_vocab->findTerm("urn:vocab:v1#longdouble-term-1")),  1.0123456789012345e+300L);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "abc");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "123");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "XYZ");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#datetime-term-1")),    date_time);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#date-term-1")),        date);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int8-term-1")),       -8);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint8-term-1")),       8U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int16-term-1")),      -16);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint16-term-1")),      16U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getInt(       F::m_vocab_ptr->findTerm("urn:vocab:v1#int32-term-1")),      -32);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUInt(      F::m_vocab_ptr->findTerm("urn:vocab:v1#uint32-term-1")),      32U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getBigInt(    F::m_vocab_ptr->findTerm("urn:vocab:v1#int64-term-1")),      -64);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getUBigInt(   F::m_vocab_ptr->findTerm("urn:vocab:v1#uint64-term-1")),      64U);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getFloat(     F::m_vocab_ptr->findTerm("urn:vocab:v1#float-term-1")),       1.01234e-30F);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDouble(    F::m_vocab_ptr->findTerm("urn:vocab:v1#double-term-1")),      1.0123456789012345e-300);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getLongDouble(F::m_vocab_ptr->findTerm("urn:vocab:v1#longdouble-term-1")),  1.0123456789012345e+300L);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#shortstring-term-1")), "abc");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#string-term-1")),      "123");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#longstring-term-1")),  "XYZ");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#datetime-term-1")),    date_time);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#date-term-1")),        date);
 	// Can't use BOOST_CHECK_EQUAL, because it uses operator<< on its inputs, which crashes for PionDateTimes without a date.
-	BOOST_CHECK(      F::m_event_ptr_out->getDateTime(  F::m_vocab->findTerm("urn:vocab:v1#time-term-1")) ==      time);
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "0123456789");
+	BOOST_CHECK(      F::m_event_ptr_out->getDateTime(  F::m_vocab_ptr->findTerm("urn:vocab:v1#time-term-1")) ==      time);
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(    F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")),        "0123456789");
 	BOOST_CHECK(*F::m_event_ptr_in == *F::m_event_ptr_out);
 }
 
@@ -1567,8 +1575,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingPartialDateTimes) 
 	// Pass in a complete date time to a term that only handles dates and a term that only handles times.
 	PionTimeFacet time_facet("%Y-%m-%d %H:%M:%S");
 	PionDateTime date_time = time_facet.fromString("2008-06-17 10:22:01");
-	F::m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"), date_time);
-	F::m_event_ptr_in->setDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"), date_time);
+	F::m_event_ptr_in->setDateTime(F::m_vocab_ptr->findTerm("urn:vocab:v1#date-term-1"), date_time);
+	F::m_event_ptr_in->setDateTime(F::m_vocab_ptr->findTerm("urn:vocab:v1#time-term-1"), date_time);
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
@@ -1577,19 +1585,19 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingPartialDateTimes) 
 	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the date part of the reconstituted date Term value is the same as the date part of the input.
-	PionDateTime date_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#date-term-1"));
+	PionDateTime date_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab_ptr->findTerm("urn:vocab:v1#date-term-1"));
 	BOOST_CHECK_EQUAL(date_term_value.date(), date_time.date());
 
 	// Check that the time part of the reconstituted time Term value is the same as the time part of the input.
-	PionDateTime time_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab->findTerm("urn:vocab:v1#time-term-1"));
+	PionDateTime time_term_value = F::m_event_ptr_out->getDateTime(F::m_vocab_ptr->findTerm("urn:vocab:v1#time-term-1"));
 	BOOST_CHECK_EQUAL(time_term_value.time_of_day(), date_time.time_of_day());
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingComplexStrings) {
-	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1"), "  word1  word2  ");
-	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1"),      "\"quoted string\"");
-	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1"),  "a \"quoted\" substring");
-	F::m_event_ptr_in->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"),        "one \" here");
+	F::m_event_ptr_in->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#shortstring-term-1"), "  word1  word2  ");
+	F::m_event_ptr_in->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#string-term-1"),      "\"quoted string\"");
+	F::m_event_ptr_in->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#longstring-term-1"),  "a \"quoted\" substring");
+	F::m_event_ptr_in->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1"),        "one \" here");
 
 	// Write out the Event and read the output into a new Event.
 	std::ostringstream out;
@@ -1598,10 +1606,10 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkReadOutputOfWritingComplexStrings) {
 	BOOST_CHECK(F::p->read(in, *F::m_event_ptr_out));
 
 	// Check that the reconstituted Event is the same as the original Event.
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
-	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#shortstring-term-1")), "  word1  word2  ");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#string-term-1")),      "\"quoted string\"");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#longstring-term-1")),  "a \"quoted\" substring");
+	BOOST_CHECK_EQUAL(F::m_event_ptr_out->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")),        "one \" here");
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkFixedLengthCharTerm) {
@@ -1614,9 +1622,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkFixedLengthCharTerm) {
 	EventPtr event_ptr_1 = F::m_event_factory.create(this->p->getEventType());
 	EventPtr event_ptr_2 = F::m_event_factory.create(this->p->getEventType());
 	EventPtr event_ptr_3 = F::m_event_factory.create(this->p->getEventType());
-	event_ptr_1->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), undersized);
-	event_ptr_2->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), just_right);
-	event_ptr_3->setString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1"), oversized);
+	event_ptr_1->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1"), undersized);
+	event_ptr_2->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1"), just_right);
+	event_ptr_3->setString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1"), oversized);
 	std::ostringstream out;
 	F::p->write(out, *event_ptr_1);
 	F::p->write(out, *event_ptr_2);
@@ -1632,9 +1640,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkFixedLengthCharTerm) {
 	BOOST_CHECK(F::p->read(in, *event_ptr_out_3));
 
 	// Check that the value of the fixed-length Term is correct in all cases.
-	BOOST_CHECK_EQUAL(event_ptr_out_1->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), undersized);
-	BOOST_CHECK_EQUAL(event_ptr_out_2->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), just_right);
-	BOOST_CHECK_EQUAL(event_ptr_out_3->getString(F::m_vocab->findTerm("urn:vocab:v1#char-term-1")), oversized.substr(0, 10));
+	BOOST_CHECK_EQUAL(event_ptr_out_1->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")), undersized);
+	BOOST_CHECK_EQUAL(event_ptr_out_2->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")), just_right);
+	BOOST_CHECK_EQUAL(event_ptr_out_3->getString(F::m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")), oversized.substr(0, 10));
 
 	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
 }
@@ -1654,7 +1662,7 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 	BOOST_CHECK(p->read(in, *this->m_event_ptr_out));
 
 	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
-	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")), "more than ");
 
 	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
 }
@@ -1675,7 +1683,7 @@ BOOST_AUTO_TEST_CASE(checkReadOverLongString) {
 	BOOST_CHECK(p->read(in, *this->m_event_ptr_out));
 
 	// Check that the reconstituted char Term value is just the first 10 characters of the input string.
-	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab->findTerm("urn:vocab:v1#char-term-1")), "more than ");
+	BOOST_CHECK_EQUAL(this->m_event_ptr_out->getString(m_vocab_ptr->findTerm("urn:vocab:v1#char-term-1")), "more than ");
 
 	// TODO: test a string longer than 255 bytes with "urn:vocab:v1#shortstring-term-1", etc.
 }
@@ -2040,32 +2048,34 @@ public:
 
 		m_date_codec = getCodec(m_justdate_id);
 		BOOST_CHECK(m_date_codec);
+		
+		m_vocab_ptr = m_vocab_mgr.getVocabulary();
 
-		m_remotehost_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#c-ip");
+		m_remotehost_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#c-ip");
 		BOOST_REQUIRE(m_remotehost_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_rfc931_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#rfc931");
+		m_rfc931_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#rfc931");
 		BOOST_REQUIRE(m_rfc931_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_authuser_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#authuser");
+		m_authuser_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#authuser");
 		BOOST_REQUIRE(m_authuser_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_date_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#clf-date");
+		m_date_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#clf-date");
 		BOOST_REQUIRE(m_date_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_request_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#request");
+		m_request_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#request");
 		BOOST_REQUIRE(m_request_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_status_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#status");
+		m_status_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#status");
 		BOOST_REQUIRE(m_status_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_bytes_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#bytes");
+		m_bytes_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#bytes");
 		BOOST_REQUIRE(m_bytes_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_referer_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#referer");
+		m_referer_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#referer");
 		BOOST_REQUIRE(m_referer_ref != Vocabulary::UNDEFINED_TERM_REF);
 
-		m_useragent_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#useragent");
+		m_useragent_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#useragent");
 		BOOST_REQUIRE(m_useragent_ref != Vocabulary::UNDEFINED_TERM_REF);
 	}
 	~CodecFactoryLogFormatTests_F() {}
@@ -2088,6 +2098,7 @@ public:
 	Vocabulary::TermRef	m_bytes_ref;
 	Vocabulary::TermRef	m_referer_ref;
 	Vocabulary::TermRef	m_useragent_ref;
+	VocabularyPtr		m_vocab_ptr;
 
 	static VocabularyManager m_vocab_mgr;
 	static bool	m_config_loaded;
@@ -2106,7 +2117,7 @@ BOOST_AUTO_TEST_CASE(checkGetCodec) {
 }
 
 BOOST_AUTO_TEST_CASE(checkCommonCodecEventTypes) {
-	const Event::EventType event_type_ref = m_vocab_mgr.getVocabulary().findTerm("urn:vocab:clickstream#http-event");
+	const Event::EventType event_type_ref = m_vocab_ptr->findTerm("urn:vocab:clickstream#http-event");
 	BOOST_CHECK_EQUAL(m_common_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_combined_codec->getEventType(), event_type_ref);
 	BOOST_CHECK_EQUAL(m_extended_codec->getEventType(), event_type_ref);

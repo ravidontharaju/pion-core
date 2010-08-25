@@ -43,9 +43,6 @@ public:
 	/// identifies the Vocabulary Term that is being tested (for regex)
 	Vocabulary::Term			m_term;
 
-	/// a copy to Vocabulary pointer, for parsing TransformXXX entries
-	const Vocabulary&			m_v;
-
 	/// invalid/missing type of transformation
 	class MissingTransformField : public PionException {
 	public:
@@ -79,7 +76,7 @@ public:
 	 * @param set_term the term that will be set (if not InPlace)
 	 */
 	Transform(const Vocabulary& v, const Vocabulary::Term& term)
-		: 	m_term(term), m_v(v) //, m_logger(PION_GET_LOGGER("pion.Transform"))
+		: 	m_term(term) //, m_logger(PION_GET_LOGGER("pion.Transform"))
 	{
 	}
 
@@ -206,7 +203,7 @@ class PION_PLATFORM_API TransformAssignTerm
 	: public Transform
 {
 	/// identifies the Vocabulary Term that is being copied from
-	Vocabulary::TermRef			m_src_term_ref;
+	Vocabulary::Term			m_src_term;
 
 public:
 
@@ -218,15 +215,16 @@ public:
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
 	TransformAssignTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term), m_src_term_ref(Vocabulary::UNDEFINED_TERM_REF)
+		: Transform(v, term)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing Source-Term in TransformationAssignTerm");
-		m_src_term_ref = v.findTerm(term_id);
-		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid Source-Term in TransformationAssignTerm");
+		m_src_term = v[term_ref];
 	}
 
 	/**
@@ -240,10 +238,10 @@ public:
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
 		bool AnyCopied = false;
-		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			std::string str;
-			AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_v[m_src_term_ref]));
+			AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_src_term));
 		}
 		return AnyCopied;	// true, if any were copied...
 	}
@@ -257,7 +255,7 @@ class PION_PLATFORM_API TransformLookup
 	typedef PION_HASH_MAP<std::string, std::string, PION_HASH_STRING>	KVP;
 
 	/// Term to pull out of the source event
-	Vocabulary::TermRef			m_lookup_term_ref;
+	Vocabulary::Term			m_lookup_term;
 
 	/// [optional] regular expression to apply to Lookup Term
 	boost::regex				m_match;
@@ -294,9 +292,10 @@ public:
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(LOOKUP_TERM_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing LookupTerm in TransformationAssignLookup");
-		m_lookup_term_ref = v.findTerm(term_id);
-		if (m_lookup_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid LookupTerm in TransformationAssignLookup");
+		m_lookup_term = v[term_ref];
 		//[opt]		<Match>escape(regexp)</Match>
 		std::string val;
 		if (ConfigManager::getConfigOptionEmptyOk(LOOKUP_MATCH_ELEMENT_NAME, val, config_ptr)) {
@@ -374,14 +373,14 @@ public:
 	{
 		if (!m_running)
 			return false;
-		Event::ValuesRange values_range = s->equal_range(m_lookup_term_ref);
+		Event::ValuesRange values_range = s->equal_range(m_lookup_term.term_ref);
 		Event::ConstIterator ec = values_range.first;
 		// if ec == values_range.second ... source term was not found...
 		bool AnyCopied = false;
 		while (ec != values_range.second) {
 			// Get the source term
 			std::string str;
-			s->write(str, ec->value, m_v[m_lookup_term_ref]);
+			s->write(str, ec->value, m_lookup_term);
 			// If regex defined, do the regular expression, replacing the key value
 			if (! m_match.empty()) {
 				try {
@@ -389,7 +388,7 @@ public:
 				} catch (...) {
 					// Get the source string again
 					str.clear();
-					s->write(str, ec->value, m_v[m_lookup_term_ref]);
+					s->write(str, ec->value, m_lookup_term);
 					// Not running anymore
 					m_running = false;
 					// Throw on this, to get an error message logged
@@ -407,7 +406,7 @@ public:
 					case DEF_SRCTERM:	// Re-get the original value, assign it
 						{
 							std::string str;
-							AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_v[m_lookup_term_ref]));
+							AnyCopied |= AssignValue(d, m_term, s->write(str, ec->value, m_lookup_term));
 						}
 						break;
 					case DEF_OUTPUT:	// Assign the regex output value
@@ -578,7 +577,7 @@ class PION_PLATFORM_API TransformRegex
 	: public Transform
 {
 	/// identifies the Vocabulary Term that is being copied from
-	Vocabulary::TermRef							m_src_term_ref;
+	Vocabulary::Term							m_src_term;
 
 	/// set format for regex's
 	std::vector<std::string>					m_format;
@@ -608,9 +607,10 @@ public:
 		std::string term_id;
 		if (! ConfigManager::getConfigOption(SOURCE_TERM_ELEMENT_NAME, term_id, config_ptr))
 			throw MissingTransformField("Missing SourceTerm in TransformationRegex");
-		m_src_term_ref = v.findTerm(term_id);
-		if (m_src_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
 			throw MissingTransformField("Invalid SourceTerm in TransformationRegex");
+		m_src_term = v[term_ref];
 		xmlNodePtr RegexNode = config_ptr;
 		while ( (RegexNode = ConfigManager::findConfigNodeByName(REGEXP_ELEMENT_NAME, RegexNode)) != NULL) {
 			// get the FORMAT (element content)
@@ -659,11 +659,11 @@ public:
 	{
 		bool AnyAssigned = false;
 		// Iterate through all values from source term
-		Event::ValuesRange values_range = s->equal_range(m_src_term_ref);
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
 		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
 			// Take the original value from source term set
 			std::string str;
-			s->write(str, ec->value, m_v[m_src_term_ref]);
+			s->write(str, ec->value, m_src_term);
 			// Run through all regexp's
 			for (unsigned int i = 0; i < m_regex.size(); i++)
 				if (m_running[i]) {

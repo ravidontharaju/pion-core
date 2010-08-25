@@ -149,8 +149,8 @@ void FissionReactor::updateVocabulary(const Vocabulary& v)
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 
-	m_input_event_type = v[m_input_event_type.term_ref];
-	m_input_event_term = v[m_input_event_term.term_ref];
+	v.refreshTerm(m_input_event_type);
+	v.refreshTerm(m_input_event_term);
 
 	boost::mutex::scoped_lock codec_lock(m_codec_mutex);
 	if (m_codec_ptr)

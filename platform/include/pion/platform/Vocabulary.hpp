@@ -22,10 +22,7 @@
 
 #include <string>
 #include <vector>
-#include <boost/any.hpp>
-#include <boost/cstdint.hpp>
-#include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/shared_ptr.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
@@ -39,7 +36,6 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// Vocabulary: maps URI identifiers and numeric references to Term information
 ///
 class PION_PLATFORM_API Vocabulary
-	: private boost::noncopyable
 {
 public:
 
@@ -72,14 +68,19 @@ public:
 		TYPE_CHAR,				///< fixed-length string of size term_size
 		TYPE_BLOB,				///< BLOB; like longstring, but may contain NULLs
 		TYPE_ZBLOB,				///< ZBLOB; like BLOB except, that it gets compressed in/out a DB
-		TYPE_OBJECT				///< object may contain other terms (boost::any)
+		TYPE_OBJECT				///< object is currently reserved for Event Types
 	};
 	
 	/// data type for vocabulary terms
 	struct Term {
 		/// default constructor
-		Term(const std::string uri = "")
-			: term_id(uri), term_ref(UNDEFINED_TERM_REF),
+		Term(void)
+			: term_ref(UNDEFINED_TERM_REF),
+			term_type(TYPE_NULL), term_size(0)
+			{}
+		/// construct term with identifier
+		Term(const std::string& id)
+			: term_id(id), term_ref(UNDEFINED_TERM_REF),
 			term_type(TYPE_NULL), term_size(0)
 			{}
 		/// copy constructor
@@ -112,6 +113,9 @@ public:
 		std::string				term_format;
 	};
 	
+	/// data type for a pointer to a Term object
+	typedef boost::shared_ptr<Term>		TermPtr;
+	
 	/// exception thrown if you try to add a term with an empty identifier
 	class EmptyTermIdException : public std::exception {
 	public:
@@ -141,16 +145,25 @@ public:
 			: PionException("Unable to find Term identifier: ", term_id) {}
 	};
 
+	/// exception thrown by refreshTerm() if a Term in use is no longer defined
+	class TermNoLongerDefinedException : public PionException {
+	public:
+		TermNoLongerDefinedException(const std::string& term_id)
+			: PionException("Term was removed from Vocabulary while still in-use: ", term_id) {}
+	};
+
 	
+	/// public destructor: not virtual, should not be extended
+	~Vocabulary() {}
+		
 	/// constructs a new Vocabulary instance
 	Vocabulary(void);
 	
-	/// public destructor: not virtual, should not be extended
-	~Vocabulary();
-		
-	/// returns the number of Terms that are defined within the Vocabulary
-	inline size_t size(void) const { return m_num_terms; }
+	/// (copy) constructs a new Vocabulary instance
+	Vocabulary(const Vocabulary& v);
 	
+	/// returns the number of Terms that are defined within the Vocabulary
+	inline size_t size(void) const { return m_num_terms; }	
 	
 	/**
 	 * returns a reference to the definition for a particular Term
@@ -159,7 +172,6 @@ public:
 	 * @return const Term& reference to the Term's definition
 	 */
 	inline const Term& operator[](const TermRef& term_ref) const {
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 		PION_ASSERT(term_ref <= m_num_terms);
 		return *(m_ref_map[term_ref]);
 	}
@@ -172,25 +184,20 @@ public:
 	 */
 	inline TermRef findTerm(const std::string& term_id) const {
 		TermRef term_ref = UNDEFINED_TERM_REF;
-		boost::mutex::scoped_lock vocabulary_lock(m_mutex);
 		TermStringMap::const_iterator i = m_uri_map.find(term_id);
 		if (i != m_uri_map.end())
 			term_ref = i->second->term_ref;
 		return term_ref;
 	}
 
-   /**
-	* returns the Term, identified with the TermRef
-	*
-	* @param term_ref term_ref of the Term to be found
-	* @return const Term& the full term
-	*/
+	/**
+	 * returns the Term, identified with the TermRef
+	 *
+	 * @param term_ref term_ref of the Term to be found
+	 * @return const Term& the full term
+	 */
 	inline const Term& findTerm(const TermRef& term_ref) const {
-		// Not locking, since we're accessing a linear vector anyway
-		// Also, the lock wouldn't protect the data past the return anyway
-		if (term_ref > m_num_terms)
-			return *m_ref_map[UNDEFINED_TERM_REF];
-		return *m_ref_map[term_ref];
+		return *m_ref_map[(term_ref > m_num_terms ? UNDEFINED_TERM_REF : term_ref)];
 	}
 
 	/**
@@ -202,6 +209,13 @@ public:
 	TermRef addTerm(const Term& t);
 	
 	/**
+	 * removes a Term from the Vocabulary (use with caution!!!)
+	 *
+	 * @param term_id unique identifier for the Term to remove
+	 */
+	void removeTerm(const std::string& term_id);
+	
+	/**
 	 * update the settings for a Term
 	 *
 	 * @param t the Term to update (t.term_id is used to find the Term to change)
@@ -209,11 +223,11 @@ public:
 	void updateTerm(const Term& t);
 
 	/**
-	 * removes a Term from the Vocabulary (use with caution!!!)
+	 * refresh a Term copy after Vocabulary was updated
 	 *
-	 * @param term_id unique identifier for the Term to remove
+	 * @param t the Term to refresh (t.term_id is used to find the updated Term)
 	 */
-	void removeTerm(const std::string& term_id);
+	void refreshTerm(Term& t) const;
 	
 	/**
 	 * Incorporates all the data from another Vocabulary into this one
@@ -243,20 +257,15 @@ public:
 	
 private:
 
-	/**
-	 * adds a new Term if it has not yet been defined (without locking)
-	 *
-	 * @param t the Term to identify or define
-	 * @return const TermRef& the reference number assigned to the new Term
-	 */
-	TermRef addTermNoLock(const Term& t);
-	
+	/// Vocabulary assignment is not allowed: use operator+=() instead
+	Vocabulary& operator=(const Vocabulary& v);
+
 
 	/// data type that maps strings to Term definition objects
-	typedef PION_HASH_MAP<std::string, Term*, PION_HASH_STRING >	TermStringMap;
+	typedef PION_HASH_MAP<std::string, TermPtr, PION_HASH_STRING >	TermStringMap;
 	
 	/// data type that maps Term reference numbers to Term definition objects
-	typedef std::vector<Term*>					TermRefMap;
+	typedef std::vector<TermPtr>					TermRefMap;
 	
 	
 	/// used to map Term reference numbers to Term definition objects
@@ -267,10 +276,11 @@ private:
 	
 	/// number of Terms that are defined within the Vocabulary
 	TermRef							m_num_terms;
-
-	/// mutex to make class thread-safe
-	mutable boost::mutex			m_mutex;	
 };
+
+
+/// data type for a pointer to a Vocabulary object
+typedef boost::shared_ptr<Vocabulary>	VocabularyPtr;
 
 
 }	// end namespace platform

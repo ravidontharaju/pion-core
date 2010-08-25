@@ -41,7 +41,6 @@
 #include <pion/PionBlob.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
-#include <pion/platform/ConfigManager.hpp>		// To get the ConfigManager::xml_encode() for serialization
 
 
 /// uncomment the following to use pool allocators for Event memory management
@@ -292,6 +291,20 @@ public:
 	}
 
 	/**
+	 * triggers function object for each parameter in the Event
+	 *
+	 * @param f callback function triggered for each parameter
+	 */
+	inline void for_each(boost::function2<void, Vocabulary::TermRef, const ParameterValue&> f) const {
+		for (ParameterNode *node_ptr = tree_algo::begin_node(&m_param_tree);
+			node_ptr != tree_algo::end_node(&m_param_tree);
+			node_ptr = tree_algo::next_node(node_ptr))
+		{
+			f(node_ptr->term_ref, node_ptr->value);
+		}
+	}
+
+	/**
 	 * adds all the terms from another Event into this one
 	 *
 	 * @param e the event to copy terms from
@@ -309,19 +322,7 @@ public:
 		}
 		return *this;
 	}
-	
-	inline void SerializeXML(const Vocabulary& v, std::ostringstream& xml) const {
-		std::string tmp;		// tmp storage for values
-		for (ParameterNode *node_ptr = tree_algo::begin_node(&m_param_tree);
-			node_ptr != tree_algo::end_node(&m_param_tree);
-			node_ptr = tree_algo::next_node(node_ptr))
-		{
-			xml << "<Term id=\"" << v.findTerm(node_ptr->term_ref).term_id << "\">"
-				<< ConfigManager::xml_encode(write(tmp, node_ptr->value, v.findTerm(node_ptr->term_ref)))
-				<< "</Term>";
-		}
-	}
-	
+
 	/**
 	 * copies all values for a particular term from one event into this one
 	 *

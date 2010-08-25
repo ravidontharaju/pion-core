@@ -338,8 +338,7 @@ void Comparison::configure(const ComparisonType type)
 	
 void Comparison::updateVocabulary(const Vocabulary& v)
 {
-	// assume that Term references never change
-	m_term = v[m_term.term_ref];
+	v.refreshTerm(m_term);
 }
 
 Comparison::ComparisonType Comparison::parseComparisonType(std::string str)

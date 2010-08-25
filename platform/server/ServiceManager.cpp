@@ -64,7 +64,6 @@ ServiceManager::ServiceManager(const VocabularyManager& vocab_mgr, PlatformConfi
 	setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
 	m_scheduler.setLogger(PION_GET_LOGGER("pion.server.ServiceManager"));
 	m_scheduler.setNumThreads(DEFAULT_NUM_THREADS);
-	platform_config.getVocabularyManager().registerForUpdates(boost::bind(&ServiceManager::updateVocabulary, this));
 	platform_config.getCodecFactory().registerForUpdates(boost::bind(&ServiceManager::updateCodecs, this));
 	platform_config.getDatabaseManager().registerForUpdates(boost::bind(&ServiceManager::updateDatabases, this));
 	platform_config.getReactionEngine().registerForUpdates(boost::bind(&ServiceManager::updateReactors, this));
@@ -239,11 +238,12 @@ void ServiceManager::openConfigFile(void)
 			// from memory before they are caught
 			PlatformService *service_ptr;
 			try {
+				pion::platform::VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
 				service_ptr = m_plugins.load(service_id, plugin_type);
 				service_ptr->setId(service_id);
 				service_ptr->setPlatformConfig(m_platform_config);
 				service_ptr->setServerId(server_id);
-				service_ptr->setConfig(m_vocabulary, service_node->children);
+				service_ptr->setConfig(*vocab_ptr, service_node->children);
 				service_ptr->setServiceManager(*this);
 			} catch (std::exception& e) {
 				throw WebServiceException(service_id, e.what());
@@ -419,12 +419,6 @@ void ServiceManager::writeServersXML(std::ostream& out) const
 	}
 
 	ConfigManager::writeEndPionConfigXML(out);
-}
-
-void ServiceManager::updateVocabulary(void)
-{
-	m_plugins.run(boost::bind(&PlatformService::updateVocabulary, _1,
-							  boost::cref(m_platform_config.getVocabularyManager().getVocabulary())));
 }
 
 void ServiceManager::updateCodecs(void)
