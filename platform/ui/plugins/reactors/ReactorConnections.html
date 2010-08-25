@@ -1,7 +1,31 @@
 <div>
-	<h2>Connections</h2>
-	<h3>Input Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
-	<h3>Output Connections</h3>
-	<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
+	<div class="reactor_grid_block">
+		<h2 style="float: left">
+			Input Connections
+		</h2>
+		<div style="float: right">
+			<button dojoType="dijit.form.DropDownButton" class="add_new_row above_grid">
+				<span>ADD NEW INPUT CONNECTION</span>
+				<div dojoType="dijit.Menu" dojoAttachPoint="add_input_reactor_menu"></div>
+			</button>
+		</div>
+		<div style="clear: both"></div>
+	
+		<div class="reactor_dialog_grid" dojoAttachPoint="reactor_inputs_grid_node"></div>
+	</div>
+	<br />
+	<div class="reactor_grid_block">
+		<h2 style="float: left">
+			Output Connections
+		</h2>
+		<div style="float: right">
+			<button dojoType="dijit.form.DropDownButton" class="add_new_row above_grid">
+				<span>ADD NEW OUTPUT CONNECTION</span>
+				<div dojoType="dijit.Menu" dojoAttachPoint="add_output_reactor_menu"></div>
+			</button>
+		</div>
+		<div style="clear: both"></div>
+	
+		<div class="reactor_dialog_grid" dojoAttachPoint="reactor_outputs_grid_node"></div>
+	</div>
 </div>

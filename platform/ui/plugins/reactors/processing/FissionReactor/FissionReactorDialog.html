@@ -5,7 +5,7 @@
 			<span dojoAttachPoint="closeText" class="closeText">x</span>
 		</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent processing">
 		<!--start div to set padding for top half of dialog-->
 		<div class="reactor_dialog_top">
 
@@ -60,7 +60,7 @@
 		<div class="reactor_dialog_bottom">
 
 			<!--start copy terms-->
-			<div class="p_reactor_grid_blocks">
+			<div class="reactor_grid_block">
 				<h2>Terms to copy (optional)</h2>
 				<h4>For each input event, these terms will be copied to every resulting output event.</h4>
 				<div class="reactor_dialog_grid" dojoAttachPoint="copy_term_grid_node" style="width: 618px"></div>
@@ -68,16 +68,10 @@
 			</div>
 			<!--end copy terms-->
 
-			<br />
-
-			<div dojoType=plugins.reactors.ReactorConnections class="p_reactor_grid_blocks" dojoAttachPoint="reactor_connections">
-			</div>
-
 			<!--start buttons--> 
 			<div class="save_cancel_delete">
 				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
 			</div>
 			<!--end buttons--> 
 

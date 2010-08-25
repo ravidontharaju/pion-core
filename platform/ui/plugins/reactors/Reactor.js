@@ -80,7 +80,8 @@ dojo.declare("plugins.reactors.Reactor",
 			// Add a context menu for the new reactor.
 			var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
-			menu.addChild(new dijit.MenuItem({ label: "Show config", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Edit reactor connections", onClick: function(){pion.reactors.showReactorConnectionsDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Show configuration", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Show stats", onClick: function(){_this.showQueryResult();} }));
 			menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 
@@ -416,6 +417,28 @@ dojo.declare("plugins.reactors.ReactorDialog",
 	}
 );
 
+dojo.declare("plugins.reactors.ReactorConnectionsDialog",
+	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
+	{
+		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorConnectionsDialog.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.templatePath) this.templateString = "";
+		},
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+
+			// Won't work: this.reactor.reactor_connections not defined yet.
+			//this.reactor_connections.makeMenuOfInputs(reactor);
+			//this.reactor_connections.makeMenuOfOutputs(reactor);
+		},
+		reactor: '',
+		execute: function(dialogFields) {
+		}
+	}
+);
+
 dojo.declare("plugins.reactors.ReactorConnections",
 	[dijit._Widget, dijit._Templated],
 	{
@@ -427,6 +450,84 @@ dojo.declare("plugins.reactors.ReactorConnections",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+		},
+		makeMenuOfInputs: function(sink_reactor) {
+			var subMenus = {};
+			for (var workspace_name in pion.reactors.workspaces_by_name) {
+				subMenus[workspace_name] = new dijit.Menu({parentMenu: this.add_input_reactor_menu});
+				this.add_input_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[workspace_name]}));
+			}
+			var existing_inputs = [];
+			for (var i = 0; i < sink_reactor.reactor_inputs.length; ++i) {
+				var reactor_input = sink_reactor.reactor_inputs[i];
+				var is_cross_workspace = 'cross_workspace_connection' in reactor_input;
+				existing_inputs.push(is_cross_workspace? reactor_input.source.external_reactor : reactor_input.source);
+			}
+			for (var uuid in pion.reactors.reactors_by_id) {
+				var source_reactor = pion.reactors.reactors_by_id[uuid];
+				var menu_item = new dijit.MenuItem({label: source_reactor.config.Name});
+				if (source_reactor == sink_reactor || dojo.indexOf(existing_inputs, source_reactor) != -1)
+					menu_item.attr('disabled', true);
+				else
+					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'input'));
+				var workspace_name = source_reactor.workspace.my_content_pane.title;
+				subMenus[workspace_name].addChild(menu_item);
+			}
+		},
+		makeMenuOfOutputs: function(source_reactor) {
+			var subMenus = {};
+			for (var workspace_name in pion.reactors.workspaces_by_name) {
+				subMenus[workspace_name] = new dijit.Menu({parentMenu: this.add_output_reactor_menu});
+				this.add_output_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[workspace_name]}));
+			}
+			var existing_outputs = [];
+			for (var i = 0; i < source_reactor.reactor_outputs.length; ++i) {
+				var reactor_output = source_reactor.reactor_outputs[i];
+				var is_cross_workspace = 'cross_workspace_connection' in reactor_output;
+				existing_outputs.push(is_cross_workspace? reactor_output.sink.external_reactor : reactor_output.sink);
+			}
+			for (var uuid in pion.reactors.reactors_by_id) {
+				var sink_reactor = pion.reactors.reactors_by_id[uuid];
+				var menu_item = new dijit.MenuItem({label: sink_reactor.config.Name});
+				if (source_reactor == sink_reactor || dojo.indexOf(existing_outputs, sink_reactor) != -1)
+					menu_item.attr('disabled', true);
+				else
+					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'output'));
+				var workspace_name = sink_reactor.workspace.my_content_pane.title;
+				subMenus[workspace_name].addChild(menu_item);
+			}
+		},
+		makeCallback: function(source_reactor, sink_reactor, connection_type) {
+			var _this = this;
+			return function() {
+				var this_menu_item = this;
+				pion.reactors.doConnectionChangeIfAllowed(source_reactor, sink_reactor, function() {
+					var post_data = '<PionConfig><Connection><Type>reactor</Type>'
+								  + '<From>' + source_reactor.config['@id'] + '</From>'
+								  + '<To>' + sink_reactor.config['@id'] + '</To>'
+								  + '</Connection></PionConfig>';
+					dojo.rawXhrPost({
+						url: '/config/connections',
+						contentType: "text/xml",
+						handleAs: "xml",
+						postData: post_data,
+						load: function(response){
+							var node = response.getElementsByTagName('Connection')[0];
+							var id = node.getAttribute('id');
+							pion.reactors.createConnection(source_reactor, sink_reactor, id);
+							if (connection_type == 'input') {
+								pion.reactors.addInputConnectionItem(_this.reactor_inputs_store, id);
+							} else {
+								pion.reactors.addOutputConnectionItem(_this.reactor_outputs_store, id);
+							}
+
+							// Disable the menu item that was selected, since it's now an existing connection.
+							this_menu_item.attr('disabled', true);
+						},
+						error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+					});
+				});
+			}
 		}
 	}
 );

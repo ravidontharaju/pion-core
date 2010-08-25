@@ -1,6 +1,7 @@
 dojo.provide("pion.reactors");
 dojo.require("pion.login");
 dojo.require("pion.plugins");
+dojo.require("pion.widgets.CrossWorkspaceConnection");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.dnd.move");
@@ -34,16 +35,18 @@ var latest_event = null;
 var workspace_boxes = [];
 var surface = null;
 var new_workspace_tab_clicked = false;
-var workspaces_by_name = {};
 var reactor_config_store;
 
 pion.reactors.workspace_box = null;
+pion.reactors.workspaces_by_name = {};
 pion.reactors.reactors_by_id = {};
+pion.reactors.connections_by_id = {};
 pion.reactors.config_store = null;
 pion.reactors.comparison_type_store = new dojo.data.ItemFileWriteStore({data: { identifier: 'name', items: [] }});
 pion.reactors.comparison_type_xml_store = new dojox.data.XmlStore({url: '/config/comparisons'});
 pion.reactors.arity_by_comparison_name = {};
 pion.reactors.categories = {};
+pion.reactors.isTracking = false;
 
 pion.reactors.getHeight = function() {
 	// TODO: replace 150 with some computed value
@@ -271,7 +274,6 @@ pion.reactors._initConfiguredReactors = function() {
 					var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
 					var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
 
-					// TODO: handle the case where start_reactor.workspace != end_reactor.workspace
 					pion.reactors.workspace_box = start_reactor.workspace;
 					surface = pion.reactors.workspace_box.my_surface;
 					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
@@ -300,7 +302,7 @@ pion.reactors._initConfiguredReactors = function() {
 }
 
 pion.reactors.createReactorInConfiguredWorkspace = function(config) {
-	pion.reactors.workspace_box = workspaces_by_name[config.Workspace];
+	pion.reactors.workspace_box = pion.reactors.workspaces_by_name[config.Workspace];
 	if (!pion.reactors.workspace_box) {
 		addWorkspace(config.Workspace);
 	}
@@ -313,77 +315,82 @@ pion.reactors.createReactorInConfiguredWorkspace = function(config) {
 	pion.reactors.reactors_by_id[config['@id']] = reactor;
 	reactor.workspace = workspace_box;
 	workspace_box.reactors.push(reactor);
-	console.debug('X, Y = ', config.X, ', ', config.Y);
 }
 
 pion.reactors.createConnection = function(start_reactor, end_reactor, connection_id) {
-	var line = surface.createPolyline().setStroke("black");
+	pion.reactors.connections_by_id[connection_id] = {source_reactor: start_reactor, sink_reactor: end_reactor};
+	if (start_reactor.workspace != end_reactor.workspace) {
+		var cwc = new pion.widgets.CrossWorkspaceConnection({source_reactor: start_reactor, sink_reactor: end_reactor, connection_id: connection_id});
+		start_reactor.reactor_outputs.push({sink: cwc.sink, line: cwc.sink.line, id: connection_id, cross_workspace_connection: cwc});
+		end_reactor.reactor_inputs.push({source: cwc.source, line: cwc.source.line, id: connection_id, cross_workspace_connection: cwc});
+	} else {
+		var line = surface.createPolyline().setStroke("black");
 
-	var removeConnection = function() {
-		// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't delete the connection.
-		pion.reactors.doConnectionChangeIfAllowed(start_reactor, end_reactor, function() {
-			dojo.xhrDelete({
-				url: '/config/connections/' + connection_id,
-				handleAs: 'xml',
-				timeout: 5000,
-				load: function(response, ioArgs) {
-					// Find index of end_reactor in outputs of start_reactor.
-					for (var i1 = 0; i1 < start_reactor.reactor_outputs.length; ++i1) {
-						if (start_reactor.reactor_outputs[i1].id == connection_id) break;
-					}
+		var removeConnection = function() {
+			// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't delete the connection.
+			pion.reactors.doConnectionChangeIfAllowed(start_reactor, end_reactor, function() {
+				dojo.xhrDelete({
+					url: '/config/connections/' + connection_id,
+					handleAs: 'xml',
+					timeout: 5000,
+					load: function(response, ioArgs) {
+						// Find index of end_reactor in outputs of start_reactor.
+						for (var i1 = 0; i1 < start_reactor.reactor_outputs.length; ++i1) {
+							if (start_reactor.reactor_outputs[i1].id == connection_id) break;
+						}
 
-					// Find index of start_reactor in inputs of end_reactor.
-					for (var i2 = 0; i2 < end_reactor.reactor_inputs.length; ++i2) {
-						if (end_reactor.reactor_inputs[i2].id == connection_id) break;
-					}
+						// Find index of start_reactor in inputs of end_reactor.
+						for (var i2 = 0; i2 < end_reactor.reactor_inputs.length; ++i2) {
+							if (end_reactor.reactor_inputs[i2].id == connection_id) break;
+						}
 
-					// Get the connection line.  (Same as end_reactor.reactor_inputs[i2].line.)
-					var line = start_reactor.reactor_outputs[i1].line;
+						// Get the connection line.  (Same as end_reactor.reactor_inputs[i2].line.)
+						var line = start_reactor.reactor_outputs[i1].line;
 
-					// Remove the divs associated with the line and tell the line to erase itself.
-					pion.reactors.removeLine(line);
+						// Remove the divs associated with the line and tell the line to erase itself.
+						pion.reactors.removeLine(line);
 
-					// Remove end_reactor from outputs of start_reactor and vice versa.
-					start_reactor.reactor_outputs.splice(i1, 1);
-					end_reactor.reactor_inputs.splice(i2, 1);
+						// Remove end_reactor from outputs of start_reactor and vice versa.
+						start_reactor.reactor_outputs.splice(i1, 1);
+						end_reactor.reactor_inputs.splice(i2, 1);
 
-					return response;
-				},
-				error: pion.getXhrErrorHandler(dojo.xhrDelete)
+						return response;
+					},
+					error: pion.getXhrErrorHandler(dojo.xhrDelete)
+				});
 			});
-		});
+		}
+
+		line.div1 = document.createElement('div');
+		line.div1.style.position = 'absolute';
+		line.div1.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
+		line.div1.onmouseover = function() {
+			line.div1.className = 'glowing_horiz';
+			line.div2.className = 'glowing_vert';
+		};
+		line.div1.onmouseout = function() {
+			line.div1.className = 'normal';
+			line.div2.className = 'normal';
+		};
+		pion.reactors.workspace_box.node.appendChild(line.div1);
+
+		line.div2 = document.createElement('div');
+		line.div2.style.position = 'absolute';
+		line.div2.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
+		line.div2.onmouseover = function() {
+			line.div1.className = 'glowing_horiz';
+			line.div2.className = 'glowing_vert';
+		};
+		line.div2.onmouseout = function() {
+			line.div1.className = 'normal';
+			line.div2.className = 'normal';
+		};
+		pion.reactors.workspace_box.node.appendChild(line.div2);
+
+		pion.reactors.updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
+		start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
+		end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
 	}
-
-	line.div1 = document.createElement('div');
-	line.div1.style.position = 'absolute';
-	line.div1.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
-	line.div1.onmouseover = function() {
-		line.div1.className = 'glowing_horiz';
-		line.div2.className = 'glowing_vert';
-	};
-	line.div1.onmouseout = function() {
-		line.div1.className = 'normal';
-		line.div2.className = 'normal';
-	};
-	pion.reactors.workspace_box.node.appendChild(line.div1);
-
-	line.div2 = document.createElement('div');
-	line.div2.style.position = 'absolute';
-	line.div2.onclick = function() { pion.doDeleteConfirmationDialog("Delete this connection?", removeConnection); }
-	line.div2.onmouseover = function() {
-		line.div1.className = 'glowing_horiz';
-		line.div2.className = 'glowing_vert';
-	};
-	line.div2.onmouseout = function() {
-		line.div1.className = 'normal';
-		line.div2.className = 'normal';
-	};
-	pion.reactors.workspace_box.node.appendChild(line.div2);
-
-	pion.reactors.updateConnectionLine(line, start_reactor.domNode, end_reactor.domNode);
-
-	start_reactor.reactor_outputs.push({sink: end_reactor, line: line, id: connection_id});
-	end_reactor.reactor_inputs.push({source: start_reactor, line: line, id: connection_id});
 }
 
 pion.reactors.removeLine = function(line) {
@@ -432,7 +439,7 @@ function addWorkspace(name) {
 	new_workspace.my_content_pane = workspace_pane;
 	new_workspace.onEmpty = function(workspace_pane){};
 	workspace_pane.my_workspace_box = new_workspace;
-	workspaces_by_name[title] = new_workspace;
+	pion.reactors.workspaces_by_name[title] = new_workspace;
 	workspace_boxes[i] = new_workspace;
 
 	// Need to do this now so that the dimensions of new_workspace are calculated.
@@ -449,7 +456,6 @@ function addWorkspace(name) {
 	console.debug('surface_box = ', surface_box);
 	new_workspace.my_surface = dojox.gfx.createSurface(new_workspace.node, surface_box.w, surface_box.h);
 	new_workspace.reactors = [];
-	new_workspace.isTracking = false;
 
 	// Add a context menu, for both the workspace content pane and the tab button.
 	var menu = new dijit.Menu({targetNodeIds: [workspace_pane.controlButton.domNode, new_workspace.node]});
@@ -668,8 +674,6 @@ pion.reactors._showReactorInitDialog = function(reactor_type) {
 
 pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 	var workspace_box = pion.reactors.workspace_box;
-	console.debug('handleDropOnReactor called, target.node.getAttribute("reactor_type") = ', target.node.getAttribute("reactor_type"));
-	//console.debug("target.targetState = ", target.targetState, ", isTracking = ", workspace_box.isTracking, ', target.node.lastChild = ', target.node.lastChild);
 
 	// If target is not a reactor, return.  This happens when dropping reactors on the workspace, and seems to be a dnd bug. 
 	if (!target.node.getAttribute('reactor_type')) return;
@@ -682,11 +686,7 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 	});
 
 	// If we're already tracking a connector for this target, we're done.
-	if (workspace_box.isTracking) return;
-
-	//debugger;
-	console.debug('nodes[0].getAttribute("dndType") = ', nodes[0].getAttribute("dndType"));
-	console.debug('nodes[0].getAttribute("reactor_type") = ', nodes[0].getAttribute("reactor_type"));
+	if (pion.reactors.isTracking) return;
 
 	if (nodes[0].getAttribute("dndType") != "connector") {
 		// This should not be reached, since reactor targets are only supposed to accept connectors.
@@ -694,28 +694,32 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 		return;
 	}
 
-	workspace_box.isTracking = true;
+	pion.reactors.isTracking = true;
 	var x1 = target.node.offsetLeft + target.node.offsetWidth;
 	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
-	console.debug("x1 = ", x1, ", y1 = ", y1);
-	workspace_box.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
+	pion.reactors.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
 	var xOffset = dojo.byId("reactor_config_content").offsetLeft;
 	var yOffset = dojo.byId("reactor_config_content").offsetTop;
 	yOffset += dojo.byId("main_stack_container").offsetTop;
-	console.debug("xOffset = ", xOffset, ", yOffset = ", yOffset);
-	mouseConnection = dojo.connect(workspace_box.node, 'onmousemove', 
+	var starting_pane = pion.reactors.workspace_box.my_content_pane;
+
+	pion.reactors.mouse_connection = dojo.connect(dijit.byId('mainTabContainer').node, 'onmousemove', 
 		function(event) {
 			var x2 = event.clientX - xOffset;
 			var y2 = event.clientY - yOffset;
-			workspace_box.trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])
-		});
-	console.debug("created mouseConnection");
+			if (pion.reactors.workspace_box.my_content_pane != starting_pane)
+				// We're in a different workspace than the one the connection started in.
+				pion.reactors.trackLine.setShape([{x: 0, y: 100}, {x: x2, y: 100}, {x: x2, y: y2}])
+			else
+				pion.reactors.trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])
+		}
+	);
+	pion.reactors.mouse_connection.starting_pane = starting_pane;
 
 	// the startpoint of the connection will be the widget at target.node, i.e. the reactor the connector was dropped on
 	wrapperWithStartpoint = function(event) {
-		dojo.disconnect(mouseConnection);
-		console.debug("disconnected mouseConnection");
-		workspace_box.trackLine.removeShape();
+		dojo.disconnect(pion.reactors.mouse_connection);
+		pion.reactors.trackLine.removeShape();
 		handleSelectionOfConnectorEndpoint(event, target.node);
 	}
 
@@ -725,7 +729,7 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 }
 
 function handleSelectionOfConnectorEndpoint(event, source_target) {
-	pion.reactors.workspace_box.isTracking = false;
+	pion.reactors.isTracking = false;
 	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
 	var source_reactor = dijit.byNode(source_target);
 	console.debug('source_reactor = ', source_reactor);
@@ -734,7 +738,9 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 		// This will happen, e.g., when clicking on the name div of the reactor.
 		sink_reactor = dijit.byNode(event.target.parentNode);
 	}
-	console.debug('sink_reactor = ', sink_reactor);
+
+	if (source_reactor.workspace != sink_reactor.workspace)
+		dijit.byId("mainTabContainer").selectChild(source_reactor.workspace.my_content_pane);
 
 	// Disconnect the click handlers on all moveable's.
 	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
@@ -803,15 +809,33 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	}
 	dialog.attr('value', reactor.config);
 
+	//// The following use forEach to allow either zero or multiple matches.
+	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
+		dojo.connect(n, 'click', dialog, 'onCancel')
+	});
+	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
+		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
+	});
+
+	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
+	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+
+	// Need a delay here for the dialog to have time to figure out how big it should be,
+	// based on how many items end up being loaded into any grids it contains.
+	setTimeout(function() { dialog.show(); }, 1000);
+}
+
+pion.reactors.showReactorConnectionsDialog = function(reactor) {
+	var dialog = new plugins.reactors.ReactorConnectionsDialog({reactor: reactor, title: 'Connections for Reactor <i>' + reactor.config.Name + '</i>'});
+
+	var category = pion.reactors.categories[reactor.config.Plugin];
+	dojo.addClass(dialog.reactor_connections.domNode, category);
+
 	var reactor_inputs_store = new dojo.data.ItemFileWriteStore({
 		data: { identifier: 'ID', items: [] }
 	});
 	dojo.forEach(reactor.reactor_inputs, function(reactor_input) {
-		reactor_inputs_store.newItem({
-			ID: reactor_input.id,
-			Source: reactor_input.source.config.Name,
-			DeleteButton: 'yes'
-		});
+		pion.reactors.addInputConnectionItem(reactor_inputs_store, reactor_input.id);
 	});
 	pion.reactors.connection_store.fetch({
 		query: {'To': reactor.config['@id'], 'Type': 'input'},
@@ -846,12 +870,14 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		autoHeight: true
 	}, document.createElement('div'));
 	dialog.reactor_connections.reactor_inputs_grid_node.appendChild(reactor_inputs_grid.domNode);
+	dialog.reactor_connections.reactor_inputs_store = reactor_inputs_store;
 	reactor_inputs_grid.startup();
 	reactor_inputs_grid.connect(reactor_inputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
 			// If in Lite mode and this reactor or the selected incoming reactor is an Enterprise Reactor, display an error message and don't delete the connection.
 			var reactor_input = reactor.reactor_inputs[e.rowIndex];
-			var incoming_reactor = reactor_input.source;
+			var is_cross_workspace = 'cross_workspace_connection' in reactor_input;
+			var incoming_reactor = is_cross_workspace? reactor_input.source.external_reactor : reactor_input.source;
 			var _this = this;
 			pion.reactors.doConnectionChangeIfAllowed(incoming_reactor, reactor, function() {
 				var item = _this.getItem(e.rowIndex);
@@ -862,16 +888,22 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
-							pion.reactors.removeLine(reactor_input.line);
 							reactor.reactor_inputs.splice(e.rowIndex, 1);
 
-							// remove reactor from the outputs of incoming_reactor
+							// remove connection from outputs of incoming_reactor
 							for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-								if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+								if (incoming_reactor.reactor_outputs[j].id == reactor_input.id) {
 									incoming_reactor.reactor_outputs.splice(j, 1);
 									break;
 								}
 							}
+
+							if (is_cross_workspace) {
+								reactor_input.cross_workspace_connection.destroy();
+							} else {
+								pion.reactors.removeLine(reactor_input.line);
+							}
+
 							return response;
 						},
 						error: pion.getXhrErrorHandler(dojo.xhrDelete)
@@ -885,11 +917,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		data: { identifier: 'ID', items: [] }
 	});
 	dojo.forEach(reactor.reactor_outputs, function(reactor_output) {
-		reactor_outputs_store.newItem({
-			ID: reactor_output.id,
-			Sink: reactor_output.sink.config.Name,
-			DeleteButton: 'yes'
-		});
+		pion.reactors.addOutputConnectionItem(reactor_outputs_store, reactor_output.id);
 	});
 	pion.reactors.connection_store.fetch({
 		query: {'From': reactor.config['@id'], 'Type': 'output'},
@@ -917,12 +945,14 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		autoHeight: true
 	}, document.createElement('div'));
 	dialog.reactor_connections.reactor_outputs_grid_node.appendChild(reactor_outputs_grid.domNode);
+	dialog.reactor_connections.reactor_outputs_store = reactor_outputs_store;
 	reactor_outputs_grid.startup();
 	reactor_outputs_grid.connect(reactor_outputs_grid, 'onCellClick', function(e) {
 		if (e.cell.name == 'Delete') {
 			// If in Lite mode and this reactor or the selected outgoing reactor is an Enterprise Reactor, display an error message and don't delete the connection.
 			var reactor_output = reactor.reactor_outputs[e.rowIndex];
-			var outgoing_reactor = reactor_output.sink;
+			var is_cross_workspace = 'cross_workspace_connection' in reactor_output;
+			var outgoing_reactor = is_cross_workspace? reactor_output.sink.external_reactor : reactor_output.sink;
 			var _this = this;
 			pion.reactors.doConnectionChangeIfAllowed(reactor, outgoing_reactor, function() {
 				var item = _this.getItem(e.rowIndex);
@@ -933,16 +963,22 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 						handleAs: 'xml',
 						timeout: 5000,
 						load: function(response, ioArgs) {
-							pion.reactors.removeLine(reactor_output.line);
 							reactor.reactor_outputs.splice(e.rowIndex, 1);
 
-							// remove reactor from the inputs of outgoing_reactor
+							// remove connection from inputs of outgoing_reactor
 							for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-								if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+								if (outgoing_reactor.reactor_inputs[j].id == reactor_output.id) {
 									outgoing_reactor.reactor_inputs.splice(j, 1);
 									break;
 								}
 							}
+
+							if (is_cross_workspace) {
+								reactor_output.cross_workspace_connection.destroy();
+							} else {
+								pion.reactors.removeLine(reactor_output.line);
+							}
+
 							return response;
 						},
 						error: pion.getXhrErrorHandler(dojo.xhrDelete)
@@ -952,23 +988,38 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		}
 	});
 
-	// The following use forEach to allow either zero or multiple matches.
-	dojo.query(".dijitButton.delete", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', function() { dialog.onCancel(); pion.reactors.deleteReactorIfConfirmed(reactor); })
-	});
-	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel')
-	});
-	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
-		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
-	});
+	dialog.reactor_connections.makeMenuOfInputs(reactor);
+	dialog.reactor_connections.makeMenuOfOutputs(reactor);
 
-	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
+	dialog.show();
+}
+	
+pion.reactors.addInputConnectionItem = function(reactor_inputs_store, connection_id) {
+	var connection = pion.reactors.connections_by_id[connection_id];
+	if (connection.source_reactor.workspace == connection.sink_reactor.workspace) {
+		var source_reactor_name = connection.source_reactor.config.Name;
+	} else {
+		var source_reactor_name = '[' + connection.source_reactor.workspace.my_content_pane.title + '] ' + connection.source_reactor.config.Name;
+	}
+	reactor_inputs_store.newItem({
+		ID: connection_id,
+		Source: source_reactor_name,
+		DeleteButton: 'yes'
+	});
+}
 
-	// Need a delay here for the dialog to have time to figure out how big it should be,
-	// based on how many items end up being loaded into any grids it contains.
-	setTimeout(function() { dialog.show(); }, 1000);
+pion.reactors.addOutputConnectionItem = function(reactor_outputs_store, connection_id) {
+	var connection = pion.reactors.connections_by_id[connection_id];
+	if (connection.source_reactor.workspace == connection.sink_reactor.workspace) {
+		var sink_reactor_name = connection.sink_reactor.config.Name;
+	} else {
+		var sink_reactor_name = '[' + connection.sink_reactor.workspace.my_content_pane.title + '] ' + connection.sink_reactor.config.Name;
+	}
+	reactor_outputs_store.newItem({
+		ID: connection_id,
+		Sink: sink_reactor_name,
+		DeleteButton: 'yes'
+	});
 }
 
 pion.reactors.showXMLDialog = function(reactor) {
@@ -998,8 +1049,6 @@ pion.reactors.deleteReactorIfConfirmed = function(reactor) {
 }
 
 function deleteReactor(reactor) {
-	console.debug('deleting ', reactor.config.Name);
-
 	dojo.xhrDelete({
 		url: '/config/reactors/' + reactor.config['@id'],
 		handleAs: 'xml',
@@ -1007,33 +1056,47 @@ function deleteReactor(reactor) {
 		load: function(response, ioArgs) {
 			console.debug('xhrDelete for url = /config/reactors/', reactor.config['@id'], '; HTTP status code: ', ioArgs.xhr.status);
 
-			// Remove the reactor from the outputs of incoming reactors and the inputs of
-			// incoming reactors, and remove the lines connecting them.
-			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-				var incoming_reactor = reactor.reactor_inputs[i].source;
-				pion.reactors.removeLine(reactor.reactor_inputs[i].line);
+			// This needs to happen before any cross workspace connections are destroyed.
+			delete pion.reactors.reactors_by_id[reactor.config['@id']];
 
-				// remove reactor from the outputs of incoming_reactor
+			// Remove connections between this reactor and incoming and outgoing reactors.
+			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+				var reactor_input = reactor.reactor_inputs[i];
+				var is_cross_workspace = 'cross_workspace_connection' in reactor_input;
+				var incoming_reactor = is_cross_workspace? reactor_input.source.external_reactor : reactor_input.source;
+
+				// Remove connection from outputs of incoming_reactor.
 				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-					if (incoming_reactor.reactor_outputs[j].sink == reactor) {
+					if (incoming_reactor.reactor_outputs[j].id == reactor_input.id) {
 						incoming_reactor.reactor_outputs.splice(j, 1);
 					}
 				}
+				if (is_cross_workspace) {
+					reactor_input.cross_workspace_connection.destroy();
+				} else {
+					pion.reactors.removeLine(reactor_input.line);
+				}
 			}
 			for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-				var outgoing_reactor = reactor.reactor_outputs[i].sink;
-				pion.reactors.removeLine(reactor.reactor_outputs[i].line);
+				var reactor_output = reactor.reactor_outputs[i];
+				var is_cross_workspace = 'cross_workspace_connection' in reactor_output;
+				var outgoing_reactor = is_cross_workspace? reactor_output.sink.external_reactor : reactor_output.sink;
 
-				// remove reactor from the inputs of outgoing_reactor
+				// Remove connection from inputs of outgoing_reactor.
 				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-					if (outgoing_reactor.reactor_inputs[j].source == reactor) {
+					if (outgoing_reactor.reactor_inputs[j].id == reactor_output.id) {
 						outgoing_reactor.reactor_inputs.splice(j, 1);
 					}
+				}
+				if (is_cross_workspace) {
+					reactor_output.cross_workspace_connection.destroy();
+				} else {
+					pion.reactors.removeLine(reactor_output.line);
 				}
 			}
 
 			// Remove the reactor's node from the DOM tree, and finally, remove the reactor
-			// itself from the list of reactors.
+			// itself from the list of reactors in the workspace.
 			var workspace_box = pion.reactors.workspace_box;
 			workspace_box.node.removeChild(reactor.domNode);
 			for (var j = 0; j < workspace_box.reactors.length; ++j) {
@@ -1065,6 +1128,12 @@ function selected(page) {
 	console.debug("selected " + page.title + ", page.id = " + page.id);
 	pion.reactors.workspace_box = page.my_workspace_box;
 	surface = pion.reactors.workspace_box.my_surface;
+	if (pion.reactors.isTracking) {
+		pion.reactors.trackLine.removeShape();
+		var x1 = 0
+		var y1 = 100;
+		pion.reactors.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
+	}
 
 	// in case the window was resized since the workspace was last selected
 	expandWorkspaceIfNeeded();
@@ -1118,10 +1187,15 @@ function expandWorkspaceIfNeeded() {
 function handleKeyPress(e) {
 	var workspace_box = pion.reactors.workspace_box;
 	if (e.keyCode == dojo.keys.ESCAPE) {
-		if (workspace_box.isTracking) {
-			dojo.disconnect(mouseConnection);
-			workspace_box.trackLine.removeShape();
-			workspace_box.isTracking = false;
+		if (pion.reactors.isTracking) {
+			var starting_pane = pion.reactors.mouse_connection.starting_pane;
+			dojo.disconnect(pion.reactors.mouse_connection);
+			pion.reactors.trackLine.removeShape();
+			pion.reactors.isTracking = false;
+
+			// If needed, reselect the workspace tab that was originally selected.
+			if (workspace_box.my_content_pane != starting_pane)
+				dijit.byId("mainTabContainer").selectChild(starting_pane);
 		}
 	}
 }
@@ -1213,7 +1287,7 @@ function deleteWorkspace(workspace_pane) {
 
 function _deleteEmptyWorkspace(workspace_pane) {
 	console.debug('deleting ', workspace_pane.title);
-	delete workspaces_by_name[workspace_pane.title];
+	delete pion.reactors.workspaces_by_name[workspace_pane.title];
 	for (var j = 0; j < workspace_boxes.length; ++j) {
 		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
 			workspace_boxes.splice(j, 1);

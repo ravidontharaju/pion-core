@@ -167,6 +167,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/_base.js
 ./../../release/dojo-release/pion/login.js
 ./../../release/dojo-release/pion/plugins.js
+./../../release/dojo-release/pion/widgets/CrossWorkspaceConnection.js
 ./../../release/dojo-release/plugins/reactors/Reactor.js
 ./../../release/dojo-release/pion/widgets/SimpleSelect.js
 ./../../release/dojo-release/plugins/reactors/LogInputReactor.js

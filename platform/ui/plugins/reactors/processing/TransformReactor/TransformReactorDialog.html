@@ -5,7 +5,7 @@
 			<span dojoAttachPoint="closeText" class="closeText">x</span>
 		</span>
 		</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent processing">
 		<!--start div to set padding for top half of dialog-->
 		 <div class="reactor_dialog_top">
 
@@ -57,23 +57,17 @@
 		<div class="reactor_dialog_bottom">
 
 			<!--start transformations-->
-			<div class="p_reactor_grid_blocks">
+			<div class="reactor_grid_block">
 				<h2>Transformations</h2>
 				<div class="transformation_grid reactor_dialog_grid" dojoAttachPoint="transformation_grid_node" style="width: 618px"></div>
 				<button dojoAttachPoint="add_new_transformation_button" dojoType=dijit.form.Button dojoAttachEvent="onClick:_handleAddNewTransformation" class="add_new_row">ADD NEW TRANSFORMATION</button>
 			</div>
 			<!--end transformations-->
 
-			<br />
-
-			<div dojoType=plugins.reactors.ReactorConnections class="p_reactor_grid_blocks" dojoAttachPoint="reactor_connections">
-			</div>
-
 			<!--start buttons-->
 			<div class="save_cancel_delete">
 				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
 			</div>
 			<!--end buttons--> 
 

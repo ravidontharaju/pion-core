@@ -1,21 +1,25 @@
-<div class="dijitDialog vocabulary_dialog">
+<div class="dijitDialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Composite Regular Expression Configuration</span>
 		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
 			<span dojoAttachPoint="closeText" class="closeText">x</span>
 		</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
-		<label>Source Term:</label>
-		<input dojoType="pion.widgets.TermTextBox" name="SourceTerm" style="width: 400px" />
-		<div class="p_reactor_grid_blocks">
-			<h2>Regular Expressions</h2>
-			<div class="regex_grid reactor_dialog_grid" dojoAttachPoint="regex_grid_node" style="width: 718px"></div>
-			<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewRegex" class="add_new_row">ADD NEW REGEX</button>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent processing">
+		<div class="reactor_dialog_top">
+			<label>Source Term:</label>
+			<input dojoType="pion.widgets.TermTextBox" name="SourceTerm" style="width: 400px" />
 		</div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+		<div class="reactor_dialog_bottom">
+			<div class="reactor_grid_block">
+				<h2>Regular Expressions</h2>
+				<div class="regex_grid reactor_dialog_grid" dojoAttachPoint="regex_grid_node" style="width: 718px"></div>
+				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewRegex" class="add_new_row">ADD NEW REGEX</button>
+			</div>
+			<div class="save_cancel_delete">
+				<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
+				<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+			</div>
 		</div>
 	</div>
 </div>

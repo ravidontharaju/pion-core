@@ -472,7 +472,7 @@ label.disabled {
 
 #menu button:hover {
 	background: #ffffff;
-1	background: url(../images/button-off-bg.png) repeat;
+	background: url(../images/button-off-bg.png) repeat;
 	border-right: 1px solid #CCCCCC;
 	border-left: 1px solid #CCCCCC;
 	border-top: 1px solid #CCCCCC;
@@ -704,30 +704,43 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 
 /* for reactor dialog pop up windows>*/
 
-.reactor_dialog_top{
+.reactor_dialog_top {
 	padding: 10px 10px 0 10px;
 }
 
-.reactor_dialog_bottom{
+.reactor_dialog_bottom {
 	padding: 10px 10px 0 10px;
 }
 
-.c_reactor_grid_blocks {
-	background-color:#fddfdf; 
-	padding: 0 5px 5px 5px; 
-	border:1px solid #ff6666;
+.reactor_connections_dialog {
+	padding: 10px;
 }
 
-.p_reactor_grid_blocks {
-	background-color:#d8ecf8; 
+.reactor_grid_block {
 	padding: 0 5px 5px 5px; 
-	border:1px solid #6096b6;
+	border: 1px solid #6096b6;
 }
 
-.s_reactor_grid_blocks {
-	background-color:#f0f9d1; 
-	padding: 0 5px 5px 5px; 
-	border:1px solid #7e9943;
+.reactor_grid_block h2 {
+	font-size: 16px;
+}
+
+.reactor_grid_block h3 {
+	font-size: 14px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.collection .reactor_grid_block {
+	background-color: #fddfdf; 
+}
+
+.processing .reactor_grid_block {
+	background-color: #d8ecf8; 
+}
+
+.storage .reactor_grid_block {
+	background-color: #f0f9d1; 
 }
 
 .reactor_name {
@@ -791,6 +804,25 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 .reactor {
 	background-color: #ffffff;
 	background: url(../images/bg-moveable-reactor.png) repeat-x;
+}
+
+.reactor_proxy {
+	border: 1px solid #666666;
+	cursor: pointer;
+	width: 28px;
+	height: 28px;
+}
+
+.reactor_proxy.collection {
+	background-color: #fddfdf; 
+}
+
+.reactor_proxy.processing {
+	background-color: #d8ecf8; 
+}
+
+.reactor_proxy.storage {
+	background-color: #f0f9d1; 
 }
 
 /*
@@ -1101,6 +1133,10 @@ I don't think this is being used anywhere.
 	text-align: left;
 	padding-left: 25px;
 	padding-right: 2px;
+}
+
+.tundra .add_new_row.above_grid .dijitButtonNode {
+	margin-top: 10px;
 }
 
 .tundra .add_new_row.dijitButtonHover .dijitButtonNode {

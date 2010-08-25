@@ -1,49 +1,53 @@
-<div class="dijitDialog vocabulary_dialog">
+<div class="dijitDialog">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Lookup Configuration</span>
 		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
 			<span dojoAttachPoint="closeText" class="closeText">x</span>
 		</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent"
-		><table
-			><tr
-				><td><label>Lookup Term:</label></td
-				><td><input dojoType="pion.widgets.TermTextBox" name="LookupTerm" style="width: 100%;" /></td
-			></tr><tr
-				><td><label>Regular expression:</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Match" style="width: 100%;" dojoAttachEvent="onChange: _regexChanged" /></td
-			></tr><tr
-				><td><label>Format:</label></td
-				><td><input dojoAttachPoint="format_text_box" dojoType="dijit.form.TextBox" name="Format" style="width: 100%;" disabled="true" /></td
-			></tr><tr
-				><td><label>Default</label></td
-				><td
-					><input type="radio" name="DefaultAction" value="leave-undefined" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>leave undefined </label
-					><input type="radio" name="DefaultAction" value="src-term" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use lookup term </label
-					><input dojoAttachPoint="output_radio_button" disabled="true"
-							type="radio" name="DefaultAction" value="output" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use regex replaced value </label
-					><input type="radio" name="DefaultAction" value="fixedvalue" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use fixed value:</label
-					><input dojoAttachPoint="default_value" dojoType="dijit.form.TextBox" name="DefaultValue" style="width: 200px; visibility: hidden" disabled="true" /
-				></td
-			></tr
-		></table
-		><div class="p_reactor_grid_blocks">
-			<h2>Key Value Pairs</h2>
-			<div class="lookup_grid reactor_dialog_grid" dojoAttachPoint="lookup_grid_node" style="width: 718px"></div>
-			<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewLookup" class="add_new_row">ADD NEW PAIR</button>
-			<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportXmlKeyValuePairs">
-				Import XML</button>
-			<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportXmlKeyValuePairs" dojoAttachPoint="export_xml_button" disabled="true">
-				Export XML</button>
-			<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportCsvKeyValuePairs">
-				Import CSV</button>
-			<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportCsvKeyValuePairs" dojoAttachPoint="export_csv_button" disabled="true">
-				Export CSV</button>
-		</div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
-			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent processing"
+		><div class="reactor_dialog_top"
+			><table
+				><tr
+					><td><label>Lookup Term:</label></td
+					><td><input dojoType="pion.widgets.TermTextBox" name="LookupTerm" style="width: 100%;" /></td
+				></tr><tr
+					><td><label>Regular expression:</label></td
+					><td><input dojoType="dijit.form.TextBox" name="Match" style="width: 100%;" dojoAttachEvent="onChange: _regexChanged" /></td
+				></tr><tr
+					><td><label>Format:</label></td
+					><td><input dojoAttachPoint="format_text_box" dojoType="dijit.form.TextBox" name="Format" style="width: 100%;" disabled="true" /></td
+				></tr><tr
+					><td><label>Default</label></td
+					><td
+						><input type="radio" name="DefaultAction" value="leave-undefined" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>leave undefined </label
+						><input type="radio" name="DefaultAction" value="src-term" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use lookup term </label
+						><input dojoAttachPoint="output_radio_button" disabled="true"
+								type="radio" name="DefaultAction" value="output" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use regex replaced value </label
+						><input type="radio" name="DefaultAction" value="fixedvalue" dojoType="dijit.form.RadioButton" dojoAttachEvent="onClick: _onDefaultActionChanged" /><label>use fixed value:</label
+						><input dojoAttachPoint="default_value" dojoType="dijit.form.TextBox" name="DefaultValue" style="width: 200px; visibility: hidden" disabled="true" /
+					></td
+				></tr
+			></table
+		></div
+		><div class="reactor_dialog_bottom"
+			><div class="reactor_grid_block">
+				<h2>Key Value Pairs</h2>
+				<div class="lookup_grid reactor_dialog_grid" dojoAttachPoint="lookup_grid_node" style="width: 718px"></div>
+				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewLookup" class="add_new_row">ADD NEW PAIR</button>
+				<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportXmlKeyValuePairs">
+					Import XML</button>
+				<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportXmlKeyValuePairs" dojoAttachPoint="export_xml_button" disabled="true">
+					Export XML</button>
+				<button dojoType=dijit.form.Button class="import" dojoAttachEvent="onClick: _onImportCsvKeyValuePairs">
+					Import CSV</button>
+				<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportCsvKeyValuePairs" dojoAttachPoint="export_csv_button" disabled="true">
+					Export CSV</button>
+			</div>
+			<div class="save_cancel_delete">
+				<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
+				<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
+			</div>
 		</div>
 	</div>
 </div>

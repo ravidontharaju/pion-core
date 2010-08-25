@@ -5,7 +5,7 @@
 			<span dojoAttachPoint="closeText" class="closeText">x</span>
 		</span>
 	</div>
-	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent collection">
 		<!--start div to set padding for top half of dialog-->
 		<div class="reactor_dialog_top">
 
@@ -72,14 +72,10 @@
 		<!--start div to set padding for bottom half of dialog-->
 		<div class="reactor_dialog_bottom">
 
-			<div dojoType=plugins.reactors.ReactorConnections class="c_reactor_grid_blocks" dojoAttachPoint="reactor_connections">
-			</div>
-
 			<!--start buttons--> 
 			<div class="save_cancel_delete">
 				<button dojoType=dijit.form.Button class="save" type="submit">Save</button>
 				<button dojoType=dijit.form.Button class="cancel">Cancel</button>
-				<button dojoType=dijit.form.Button class="delete">Delete Reactor</button>
 			</div>
 			<!--end buttons--> 
 
