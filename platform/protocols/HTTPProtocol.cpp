@@ -144,7 +144,7 @@ bool HTTPProtocol::close(EventPtr& event_ptr_ref)
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  boost::posix_time::ptime data_timestamp,
 									  boost::posix_time::ptime ack_timestamp,
-									  EventPtr& event_ptr_ref)
+									  EventContainer& events)
 {
 	boost::tribool rc;
 
@@ -220,7 +220,9 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 				rc = boost::indeterminate;
 			} else {
 				// response is finished -> generate a new event
-				generateEvent(event_ptr_ref);
+				EventPtr event_ptr;
+				generateEvent(event_ptr);
+				events.push_back(event_ptr);
 			}
 		}
 	}

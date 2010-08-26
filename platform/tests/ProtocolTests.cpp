@@ -226,14 +226,15 @@ public:
 		// Process the response and check that an Event was generated.
 		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 		BOOST_REQUIRE(m_rc == true);
-		BOOST_REQUIRE(m_e.get());
+		BOOST_REQUIRE(!m_e.empty());
+		BOOST_REQUIRE(m_e.back().get());
 	}
 
 	static VocabularyManager m_vocab_mgr;
 	static bool m_config_loaded;
 	std::string m_minimal_request;
 	boost::tribool m_rc;
-	EventPtr m_e;
+	EventContainer m_e;
 	pion::platform::ProtocolPtr m_protocol_ptr;
 	boost::posix_time::ptime m_t0;
 	pion::platform::Vocabulary::TermRef	m_page_title_term_ref;
@@ -397,12 +398,13 @@ BOOST_AUTO_TEST_CASE(checkReadNextRequestAndResponse) {
 	bool is_request;
 	m_rc = m_protocol_ptr->readNext(is_request = true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(boost::indeterminate(m_rc));
-	BOOST_CHECK(m_e.get() == NULL);
+	BOOST_CHECK(m_e.empty());
 
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + "0123456789";
 	m_rc = m_protocol_ptr->readNext(is_request = false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
-	BOOST_CHECK(m_e.get());
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
 }
 
 BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
@@ -414,7 +416,9 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
 
-	BOOST_CHECK_EQUAL(orig_sc_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL(orig_sc_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
@@ -431,8 +435,10 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
 
-	BOOST_CHECK_EQUAL("My Home Page", m_e->getString(m_page_title_term_ref));
-	BOOST_CHECK_EQUAL(orig_sc_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL("My Home Page", m_e.back()->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(orig_sc_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
@@ -452,7 +458,9 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
 
-	BOOST_CHECK_EQUAL(orig_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL(orig_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingEventContainsOriginalContentTerm) {
@@ -473,7 +481,9 @@ BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingEventContainsOriginalContent
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
-	BOOST_CHECK_EQUAL(smashed_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL(smashed_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
@@ -497,7 +507,9 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
 
-	BOOST_CHECK_EQUAL(orig_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL(orig_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkRequestWithContent) {
@@ -512,8 +524,10 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContent) {
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
 
-	BOOST_CHECK_EQUAL(orig_cs_content, m_e->getString(m_cs_content_term_ref));
-	BOOST_CHECK_EQUAL(orig_sc_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
+	BOOST_CHECK_EQUAL(orig_cs_content, m_e.back()->getString(m_cs_content_term_ref));
+	BOOST_CHECK_EQUAL(orig_sc_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUtf8CharsetEventContainsOriginalContentTerm) {
@@ -521,7 +535,7 @@ BOOST_AUTO_TEST_CASE(checkWithUtf8CharsetEventContainsOriginalContentTerm) {
 	generateEvent("Content-Type: text/html; charset=utf-8", UTF8_ENCODED_TEST_STRING_1);
 
 	// Check that the sc_content Term in the Event was unchanged.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUtf8CompatCharsetEventContainsOriginalContentTerm) {
@@ -532,7 +546,7 @@ BOOST_AUTO_TEST_CASE(checkWithUtf8CompatCharsetEventContainsOriginalContentTerm)
 	generateEvent("Content-Type: text/html; charset=ISO-8859-1", ISO_8859_1_encoded_content);
 
 	// Check that the sc_content Term in the Event was unchanged.
-	BOOST_CHECK_EQUAL(ISO_8859_1_encoded_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(ISO_8859_1_encoded_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUtf16CharsetEventContainsUtf8ContentTerm) {
@@ -540,7 +554,7 @@ BOOST_AUTO_TEST_CASE(checkWithUtf16CharsetEventContainsUtf8ContentTerm) {
 	generateEvent("Content-Type: text/html; charset=utf-16", UTF16_ENCODED_TEST_STRING_1);
 
 	// Check that the sc_content Term in the Event was converted from UTF-16 to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingAndUtf16CharsetEventContainsOriginalContentTerm) {
@@ -552,7 +566,7 @@ BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingAndUtf16CharsetEventContains
 
 	// Check that the resulting Event has an sc-content Term containing the still smashed content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	BOOST_CHECK_EQUAL(smashed_utf16_content, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(smashed_utf16_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithShiftJISCharsetEventContainsUtf8ContentTerm) {
@@ -560,7 +574,7 @@ BOOST_AUTO_TEST_CASE(checkWithShiftJISCharsetEventContainsUtf8ContentTerm) {
 	generateEvent("Content-Type: text/html; charset=Shift_JIS", SHIFT_JIS_ENCODED_TEST_STRING_1);
 
 	// Check that the sc_content Term in the Event was converted from Shift_JIS to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsUtf8ContentTerm) {
@@ -568,7 +582,7 @@ BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsUtf8ContentTerm) {
 	generateEvent("Content-Type: text/html; charset=EUC-JP", EUC_JP_ENCODED_TEST_STRING_1);
 
 	// Check that the sc_content Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8ContentTerm) {
@@ -576,7 +590,7 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8Con
 	generateEvent("Content-Type: text/html; charset=eUc-jP", gzipEncode(EUC_JP_ENCODED_TEST_STRING_1), "gzip");
 
 	// Check that the sc_content Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndUtf16CharsetEventContainsUtf8ContentTerm) {
@@ -584,7 +598,7 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndUtf16CharsetEventContainsUtf8Con
 	generateEvent("Content-Type: text/html; charset=UTF-16", gzipEncode(UTF16_ENCODED_TEST_STRING_1), "gzip");
 
 	// Check that the sc_content Term in the Event was converted from UTF-16 to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownCharsetEventContainsOriginalContentTerm) {
@@ -596,7 +610,7 @@ BOOST_AUTO_TEST_CASE(checkWithUnknownCharsetEventContainsOriginalContentTerm) {
 
 	// Check that the resulting Event has an sc-content Term containing the original Betelgeuse-III encoded content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 /*
@@ -614,7 +628,7 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndUnknownCharsetEventContainsOrigi
 
 	// Check that the resulting Event has an sc-content Term containing the original Betelgeuse-III encoded content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e->getString(m_sc_content_term_ref));
+	BOOST_CHECK_EQUAL(BETELGEUSE_III_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
 }
 */
 
@@ -627,7 +641,7 @@ BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsUtf8PageTitle) {
 	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8PageTitle) {
@@ -637,7 +651,7 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingAndEucJpCharsetEventContainsUtf8Pag
 	generateEvent("Content-Type: text/html; charset=euc-jp", gzipEncode(content_with_title), "gzip");
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
@@ -655,10 +669,12 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
 	std::string response = "HTTP/1.1 204 " + CRLF + CRLF;
 	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
 	BOOST_CHECK(m_rc == true);
+	BOOST_REQUIRE(!m_e.empty());
+	BOOST_REQUIRE(m_e.back().get());
 
 	// Check that the resulting Event has a cs-content Term containing the UTF-8 encoding of the query.
 	const std::string utf8_encoded_query = "Pet=" + UTF8_ENCODED_TEST_STRING_1;
-	BOOST_CHECK_EQUAL(utf8_encoded_query, m_e->getString(m_cs_content_term_ref));
+	BOOST_CHECK_EQUAL(utf8_encoded_query, m_e.back()->getString(m_cs_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
@@ -673,7 +689,7 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetSelfClosing) {
@@ -689,7 +705,7 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetSelfClosing) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaCharset) {
@@ -704,7 +720,7 @@ BOOST_AUTO_TEST_CASE(checkMetaCharset) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaCharsetSelfClosing) {
@@ -720,7 +736,7 @@ BOOST_AUTO_TEST_CASE(checkMetaCharsetSelfClosing) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetWithGzip) {
@@ -735,7 +751,7 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharsetWithGzip) {
 	generateEvent("Content-Type: text/html", gzipEncode(content), "gzip");
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkHttpHeaderCharsetHasPrecedenceOverMetaCharset) {
@@ -750,7 +766,7 @@ BOOST_AUTO_TEST_CASE(checkHttpHeaderCharsetHasPrecedenceOverMetaCharset) {
 	generateEvent("Content-Type: text/html; charset=euc-jp", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkContentTypeHeaderWithMultipleParameters) {
@@ -767,7 +783,7 @@ BOOST_AUTO_TEST_CASE(checkContentTypeHeaderWithMultipleParameters) {
 	generateEvent("Content-Type: text/html; charset=euc-jp; type=feed", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeWithMultipleParameters) {
@@ -783,7 +799,7 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeWithMultipleParameters) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkUppercaseMetaHttpEquiv) {
@@ -798,7 +814,7 @@ BOOST_AUTO_TEST_CASE(checkUppercaseMetaHttpEquiv) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -828,7 +844,7 @@ BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsEucJpPageTitle) {
 	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
 
 	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 // Contrast with HTTPFullContentProtocol_S::checkMetaHttpEquivContentTypeCharset().
@@ -845,7 +861,7 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -905,7 +921,7 @@ BOOST_AUTO_TEST_CASE(checkMetaTagIgnoredWhenAllowSearchingIsFalse) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkContentTypeHeaderNotIgnoredWhenAllowSearchingIsFalse) {
@@ -923,7 +939,7 @@ BOOST_AUTO_TEST_CASE(checkContentTypeHeaderNotIgnoredWhenAllowSearchingIsFalse) 
 	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
 
 	// Check that the title Term in the Event was converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 // Check that if AllowUtf8Conversion is false, a meta tag charset does not trigger conversion
@@ -946,7 +962,7 @@ BOOST_AUTO_TEST_CASE(checkAllowSearchingIgnoredWhenAllowUtf8ConversionIsFalse) {
 	generateEvent("Content-Type: text/html", content);
 
 	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e->getString(m_page_title_term_ref));
+	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

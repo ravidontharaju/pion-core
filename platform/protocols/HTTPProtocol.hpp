@@ -146,7 +146,7 @@ public:
 	 */
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len,
 			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
-			pion::platform::EventPtr& event_ptr );
+			pion::platform::EventContainer& events);
 
 	/**
 	 * called when parsing previously failed.  should return true if the current packet
