@@ -104,7 +104,7 @@ void Vocabulary::updateTerm(const Term& t)
 		throw TermNotFoundException(t.term_id);
 
 	// find the Term to update
-	TermStringMap::const_iterator uri_iterator = m_uri_map.find(t.term_id);
+	TermStringMap::iterator uri_iterator = m_uri_map.find(t.term_id);
 	if (uri_iterator == m_uri_map.end())
 		throw TermNotFoundException(t.term_id);
 	Term& term_ref = *(uri_iterator->second);
