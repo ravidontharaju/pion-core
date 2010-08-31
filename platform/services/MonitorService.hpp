@@ -26,6 +26,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/unordered_map.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/net/TCPStream.hpp>
@@ -121,7 +122,21 @@ private:
 	/// copy of the universal Term Vocabular
 	platform::VocabularyPtr				m_vocab_ptr;
 
+	/// Age (either created, or last accessed) for expiration
+	unsigned							m_age;
+	
+	/// At what length to truncate strings
+	unsigned							m_truncate;
+
+	/// Is the MonitorWriter still collecting events?
+	bool								m_stopped;
+
+	/// Reference to ReactionEngine, so it can disconnect
+	pion::platform::ReactionEngine &	m_reaction_engine;
+
 public:
+	
+	typedef boost::unordered_map<pion::platform::Vocabulary::TermRef, unsigned> TermCol;
 	
 	/// virtual destructor
 	virtual ~MonitorWriter();
@@ -146,6 +161,12 @@ public:
 	
 	/// starts the MonitorWriter
 	virtual void start(void);
+	
+	void stop(void) {
+		m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
+										   &m_reaction_engine, getConnectionId()));
+		m_stopped = true;
+	}
 
 	/**
 	 * serializes event Terms to an XML output stream
@@ -157,7 +178,7 @@ public:
 	 */
 	void SerializeXML(pion::platform::Vocabulary::TermRef tref,
 		const pion::platform::Event::ParameterValue& value,
-		std::ostream& xml) const;
+		std::ostream& xml, TermCol& cols) const;
 
 	std::string getStatus(void);
 };
@@ -173,12 +194,14 @@ typedef boost::shared_ptr<MonitorWriter>	MonitorWriterPtr;
 class MonitorService
 	: public pion::server::PlatformService
 {
-	MonitorWriterPtr	m_writer_ptr;
+	/// A vector of currently active MonitorWriters
+	std::vector<MonitorWriterPtr>	m_writers;
 
 public:
 	
 	/// constructs a new MonitorService object
 	MonitorService(void)
+		: m_writers(10)		// a default of ten simultaneous monitors allowed
 	{
 	}
 	

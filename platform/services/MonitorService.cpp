@@ -22,7 +22,6 @@
 #include <pion/PionId.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
-//#include <boost/intrusive/rbtree_algorithms.hpp>
 #include "pion/platform/Event.hpp"
 #include "PlatformConfig.hpp"
 #include "MonitorService.hpp"
@@ -35,6 +34,7 @@ using namespace pion::platform;
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
+const std::string dtd = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 // MonitorHandler member functions
 	
@@ -59,13 +59,15 @@ bool MonitorHandler::sendResponse(void)
 MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
 					   const std::string& reactor_id, unsigned size, bool scroll)
 	: MonitorHandler(reaction_engine, reactor_id),
-	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr)
+	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr), m_truncate(100), m_stopped(false),
+	m_reaction_engine(reaction_engine)
 {}
 	
 MonitorWriter::~MonitorWriter()
 {
 	PION_LOG_INFO(m_logger, "Closing output feed to " << getConnectionInfo()
 				  << " (" << getConnectionId() << ')');
+	stop();
 }
 	
 void MonitorWriter::writeEvent(EventPtr& e)
@@ -82,8 +84,7 @@ void MonitorWriter::writeEvent(EventPtr& e)
 		PION_LOG_DEBUG(m_logger, "Lost connection to " << getConnectionInfo()
 					  << " (" << getConnectionId() << ')');
 		// connection was lost -> tell ReactionEngine to remove the connection
-		m_reaction_engine.post(boost::bind(&ReactionEngine::removeTempConnection,
-										   &m_reaction_engine, getConnectionId()));
+		stop();
 	} else {
 		try {
 			// Add latest event to end of circular buffer
@@ -91,14 +92,12 @@ void MonitorWriter::writeEvent(EventPtr& e)
 
 			// If we're not scrolling, and buffer is full, then disconnect from the feed
 			if (!m_scroll && m_event_buffer.full())
-				m_reaction_engine.post(boost::bind(&ReactionEngine::removeTempConnection,
-											   &m_reaction_engine, getConnectionId()));
+				stop();
 		} catch (std::exception& ex) {
 			// stop sending Events if we encounter an exception
 			PION_LOG_WARN(m_logger, "Error sending event to " << getConnectionInfo()
 						  << " (" << getConnectionId() << "):" << ex.what());
-			m_reaction_engine.post(boost::bind(&ReactionEngine::removeTempConnection,
-											   &m_reaction_engine, getConnectionId()));
+			stop();
 		}
 	}
 }
@@ -124,30 +123,50 @@ void MonitorWriter::start(void)
 }
 
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
-	const pion::platform::Event::ParameterValue& value, std::ostream& xml) const
+	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols) const
 {
 	if (tref > m_vocab_ptr->size())		// sanity check
 		tref = Vocabulary::UNDEFINED_TERM_REF;
 	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
-	std::string tmp;		// tmp storage for values
-	xml << "<Term id=\"" << t.term_id << "\">"
-		<< ConfigManager::xml_encode(Event::write(tmp, value, t))
-		<< "</Term>";
+	// Have we seen this tref (column) yet?
+	TermCol::iterator i = cols.find(tref);
+	if (i == cols.end()) {
+		cols[tref] = cols.size();
+		i = cols.find(tref);
+	}
+	// Don't serialize the non-serializable
+	if (t.term_type == Vocabulary::TYPE_NULL || t.term_type == Vocabulary::TYPE_OBJECT)
+		xml << "<Term id=\"C" << i->second << "\"\\>";
+	else {
+		std::string tmp;		// tmp storage for values
+		xml << "<Term id=\"C" << i->second << "\">"
+			<< ConfigManager::xml_encode(Event::write(tmp, value, t).substr(0, m_truncate))
+			<< "</Term>";
+	}
 }
 
 std::string MonitorWriter::getStatus(void)
 {
+	// Map for termref -> Cnn index, we'll use it for building the guide
+	TermCol col_map;
+
 	// traverse through all events in buffer
 	std::ostringstream xml("<Events>");
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
 		xml << "<Event>";
 		(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
-			this, _1, _2, boost::ref(xml)));
+			this, _1, _2, boost::ref(xml), boost::ref(col_map)));
 		xml << "</Event>";
 	}
 	xml << "</Events>";
-	return xml.str();
+	std::ostringstream prefix("<Columns>");
+	for (TermCol::const_iterator i = col_map.begin(); i != col_map.end(); i++) {
+		const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
+		prefix << "<Column id=\"C" << i->second << "\">" << t.term_id << "</Column>";
+	}
+	prefix << "</Columns>";
+	return "<Status>" + prefix.str() + xml.str() + "</Status>";
 }
 
 
@@ -178,22 +197,50 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 	// check the request method to determine if we should read or write Events
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
+		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
+										  boost::bind(&TCPConnection::finish, tcp_conn)));
+
 		// request made to receive a stream of Events
 		if (verb == "status") {
 			// use local array to identify the reactor_id
 			// possibly a secondary id, for multiple instances per reactor_id
 			// get the status for this capture...
-			std::string response = m_writer_ptr->getStatus();
-			HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
-											  boost::bind(&TCPConnection::finish, tcp_conn)));
-			response_writer->write(response);
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			if (slot < m_writers.size() && m_writers[slot]) {
+				std::string response = m_writers[slot]->getStatus();
+				response_writer->write(dtd + response);
+			} else {
+				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
+			}
 		} else if (verb == "start") {
+			unsigned slot;
+			// Try to find an empty slot
+			for (slot = 0; slot < m_writers.size(); slot++)
+				if (!m_writers[slot]) break;
+			// If no empty slots, clear oldest
+			if (slot == m_writers.size()) {
+				// FIXME: find oldest, and wipe out
+				slot = 0;
+			}
 			VocabularyPtr vocab_ptr(getConfig().getReactionEngine().getVocabulary());
 			// create a MonitorWriter object that will be used to send Events
-			m_writer_ptr.reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true));
-			m_writer_ptr->start();
+			m_writers[slot].reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true));
+			m_writers[slot]->start();
+			HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
+										  boost::bind(&TCPConnection::finish, tcp_conn)));
+			std::ostringstream xml;
+			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
+			response_writer->write(xml);
 		} else if (verb == "stop") {
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			if (slot < m_writers.size() && m_writers[slot])
+				m_writers[slot]->stop();
 		} else if (verb == "delete") {
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			if (slot < m_writers.size() && m_writers[slot]) {
+				m_writers[slot]->stop();
+				m_writers[slot].reset();
+			}
 		}
 		
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT
