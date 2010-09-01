@@ -78,12 +78,7 @@ void MonitorWriter::writeEvent(EventPtr& e)
 	boost::mutex::scoped_lock send_lock(m_mutex);
 	if (e.get() == NULL) {
 		// Reactor is being removed -> close the connection
-//		m_tcp_stream.close();
 		// note that the ReactionEngine will remove the connection for us
-	} else if (false) { // (!m_tcp_stream || !m_tcp_conn->is_open()) {
-		PION_LOG_DEBUG(m_logger, "Lost connection to " << getConnectionInfo()
-					  << " (" << getConnectionId() << ')');
-		// connection was lost -> tell ReactionEngine to remove the connection
 		stop();
 	} else {
 		try {
@@ -151,7 +146,7 @@ std::string MonitorWriter::getStatus(void)
 	TermCol col_map;
 
 	// traverse through all events in buffer
-	std::ostringstream xml("<Events>");
+	std::ostringstream xml;
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
 		xml << "<Event>";
@@ -159,14 +154,13 @@ std::string MonitorWriter::getStatus(void)
 			this, _1, _2, boost::ref(xml), boost::ref(col_map)));
 		xml << "</Event>";
 	}
-	xml << "</Events>";
-	std::ostringstream prefix("<Columns>");
+	std::ostringstream prefix;
 	for (TermCol::const_iterator i = col_map.begin(); i != col_map.end(); i++) {
 		const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
 		prefix << "<Column id=\"C" << i->second << "\">" << t.term_id << "</Column>";
 	}
-	prefix << "</Columns>";
-	return "<Status>" + prefix.str() + xml.str() + "</Status>";
+	const std::string running(m_stopped ? "Stopped" : "Collecting");
+	return "<Status><Running>" + running + "</Running><Columns>" + prefix.str() + "</Columns><Events>" + xml.str() + "</Events></Status>";
 }
 
 
@@ -184,15 +178,8 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		return;
 	}
 	
-	// get the reactor_id from the first path branch
-	const std::string reactor_id(branches[0]);
-	if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
-		return;
-	}
-	
 	// get the start/stop verb
-	const std::string verb(branches[1]);
+	const std::string verb(branches[0]);
 	
 	// check the request method to determine if we should read or write Events
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
@@ -205,7 +192,7 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			// use local array to identify the reactor_id
 			// possibly a secondary id, for multiple instances per reactor_id
 			// get the status for this capture...
-			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
 			if (slot < m_writers.size() && m_writers[slot]) {
 				std::string response = m_writers[slot]->getStatus();
 				response_writer->write(dtd + response);
@@ -213,6 +200,13 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
 			}
 		} else if (verb == "start") {
+	// get the reactor_id from the first path branch
+			const std::string reactor_id(branches[1]);
+			if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
+				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				return;
+			}
+
 			unsigned slot;
 			// Try to find an empty slot
 			for (slot = 0; slot < m_writers.size(); slot++)
@@ -232,17 +226,19 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
 			response_writer->write(xml);
 		} else if (verb == "stop") {
-			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
 			if (slot < m_writers.size() && m_writers[slot])
 				m_writers[slot]->stop();
 		} else if (verb == "delete") {
-			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[0]);
+			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
 			if (slot < m_writers.size() && m_writers[slot]) {
 				m_writers[slot]->stop();
 				m_writers[slot].reset();
 			}
 		}
 		
+		response_writer->send();
+
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT
 			   || request->getMethod() == HTTPTypes::REQUEST_METHOD_POST)
 	{
