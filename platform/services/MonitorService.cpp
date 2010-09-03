@@ -133,14 +133,14 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	}
 	// Don't serialize the non-serializable
 	if (t.term_type == Vocabulary::TYPE_NULL)
-		xml << "<Term id=\"C" << i->second << "\"\\>";
+		xml << "<C" << i->second << "\\>";
 	if (t.term_type == Vocabulary::TYPE_OBJECT)
-		xml << "<Term id=\"C" << i->second << "\">" << t.term_id << "</Term>";
+		xml << "<C" << i->second << '>' << t.term_id.substr(10) << "</C" << i->second << '>';
 	else {
 		std::string tmp;		// tmp storage for values
-		xml << "<Term id=\"C" << i->second << "\">"
+		xml << "<C" << i->second << '>'
 			<< ConfigManager::xml_encode(Event::write(tmp, value, t).substr(0, m_truncate))
-			<< "</Term>";
+			<< "</C" << i->second << '>';
 	}
 }
 
@@ -153,18 +153,25 @@ std::string MonitorWriter::getStatus(void)
 	std::ostringstream xml;
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
-		xml << "<Event>";
+		const Vocabulary::Term& et((*m_vocab_ptr)[(*i)->getType()]);	// term corresponding with Event parameter
+		xml << "<Event><C0>" << et.term_id.substr(10) << "</C0>";
 		(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
 			this, _1, _2, boost::ref(xml), boost::ref(col_map)));
 		xml << "</Event>";
 	}
 	std::ostringstream prefix;
-	for (TermCol::const_iterator i = col_map.begin(); i != col_map.end(); i++) {
-		const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
-		prefix << "<Column id=\"C" << i->second << "\">" << t.term_id << "</Column>";
-	}
+	prefix << "<C0>Event Type</C0>";
+	for (TermCol::const_iterator i = col_map.begin(); i != col_map.end(); i++)
+		if (i->second == Vocabulary::UNDEFINED_TERM_REF)
+			prefix << "<C" << i->second << ">type</C" << i->second << '>';
+		else {
+			const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
+			// urn:vocab:clicstream
+			// 01234567890
+			prefix << "<C" << i->second << '>' << t.term_id.substr(10) << "</C" << i->second << '>';
+		}
 	const std::string running(m_stopped ? "Stopped" : "Collecting");
-	return "<Status><Running>" + running + "</Running><Columns>" + prefix.str() + "</Columns><Events>" + xml.str() + "</Events></Status>";
+	return "<Status><Running>" + running + "</Running><ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
 }
 
 
