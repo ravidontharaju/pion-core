@@ -124,14 +124,18 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 		tref = Vocabulary::UNDEFINED_TERM_REF;
 	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
 	// Have we seen this tref (column) yet?
+	if (t.term_type == Vocabulary::TYPE_OBJECT)
+		tref = Vocabulary::UNDEFINED_TERM_REF;			// Mask OBJECT to undef
 	TermCol::iterator i = cols.find(tref);
 	if (i == cols.end()) {
 		cols[tref] = cols.size();
 		i = cols.find(tref);
 	}
 	// Don't serialize the non-serializable
-	if (t.term_type == Vocabulary::TYPE_NULL || t.term_type == Vocabulary::TYPE_OBJECT)
+	if (t.term_type == Vocabulary::TYPE_NULL)
 		xml << "<Term id=\"C" << i->second << "\"\\>";
+	if (t.term_type == Vocabulary::TYPE_OBJECT)
+		xml << "<Term id=\"C" << i->second << "\">" << t.term_id << "</Term>";
 	else {
 		std::string tmp;		// tmp storage for values
 		xml << "<Term id=\"C" << i->second << "\">"
