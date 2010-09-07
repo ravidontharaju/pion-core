@@ -35,6 +35,7 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 const std::string dtd = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+const unsigned URN_VOCAB = 10;	// length("urn:vocab:") clicstream
 
 // MonitorHandler member functions
 	
@@ -46,6 +47,7 @@ MonitorHandler::MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
 	m_reactor_id(reactor_id)
 {}
 
+/*
 bool MonitorHandler::sendResponse(void)
 {
 	// build some XML response content for the request
@@ -53,6 +55,7 @@ bool MonitorHandler::sendResponse(void)
 	m_reaction_engine.writeConnectionsXML(ss, getConnectionId());
 	return true;
 }
+*/
 	
 // MonitorWriter member functions
 
@@ -97,8 +100,10 @@ void MonitorWriter::writeEvent(EventPtr& e)
 	}
 }
 	
-void MonitorWriter::start(void)
+void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 {
+	setQP(qp);	// Configure settings based on query parameters
+
 	// lock the mutex to ensure that the HTTP response is sent first
 	boost::mutex::scoped_lock send_lock(m_mutex);
 
@@ -109,10 +114,6 @@ void MonitorWriter::start(void)
 										   getConnectionInfo(),
 										   event_handler);
 
-	// send the HTTP response after the connection is successfully created
-	if (! sendResponse())
-		return;
-	
 	PION_LOG_INFO(m_logger, "Opened new output feed to " << getConnectionInfo()
 				  << " (" << getConnectionId() << ')');
 }
@@ -135,7 +136,7 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	if (t.term_type == Vocabulary::TYPE_NULL)
 		xml << "<C" << i->second << "\\>";
 	if (t.term_type == Vocabulary::TYPE_OBJECT)
-		xml << "<C" << i->second << '>' << t.term_id.substr(10) << "</C" << i->second << '>';
+		xml << "<C" << i->second << '>' << t.term_id.substr(URN_VOCAB) << "</C" << i->second << '>';
 	else {
 		std::string tmp;		// tmp storage for values
 		xml << "<C" << i->second << '>'
@@ -144,8 +145,10 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	}
 }
 
-std::string MonitorWriter::getStatus(void)
+std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 {
+	setQP(qp);	// Configure settings based on query parameters
+
 	// Map for termref -> Cnn index, we'll use it for building the guide
 	TermCol col_map;
 
@@ -154,7 +157,7 @@ std::string MonitorWriter::getStatus(void)
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
 		const Vocabulary::Term& et((*m_vocab_ptr)[(*i)->getType()]);	// term corresponding with Event parameter
-		xml << "<Event><C0>" << et.term_id.substr(10) << "</C0>";
+		xml << "<Event><C0>" << et.term_id.substr(URN_VOCAB) << "</C0>";
 		(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
 			this, _1, _2, boost::ref(xml), boost::ref(col_map)));
 		xml << "</Event>";
@@ -168,10 +171,30 @@ std::string MonitorWriter::getStatus(void)
 			const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
 			// urn:vocab:clicstream
 			// 01234567890
-			prefix << "<C" << i->second << '>' << t.term_id.substr(10) << "</C" << i->second << '>';
+			prefix << "<C" << i->second << '>' << t.term_id.substr(URN_VOCAB) << "</C" << i->second << '>';
 		}
-	const std::string running(m_stopped ? "Stopped" : "Collecting");
-	return "<Status><Running>" + running + "</Running><ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
+    std::ostringstream preamble;
+	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
+			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
+			<< "</Capacity><Truncating>" << m_truncate << "</Truncating>";
+	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
+}
+
+void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
+{
+    HTTPTypes::QueryParams::const_iterator qpi = qp.find("events");
+    if (qpi != qp.end()) {
+        unsigned events = boost::lexical_cast<boost::uint32_t>(qpi->second);
+		if (events != m_size) {
+			boost::mutex::scoped_lock send_lock(m_mutex);
+			// Remove (if necessary) first events, change capacity to match new
+			m_event_buffer.rset_capacity(m_size = events);
+		}
+	}
+
+    qpi = qp.find("truncate");
+    if (qpi != qp.end())
+		m_truncate = boost::lexical_cast<boost::uint32_t>(qpi->second);
 }
 
 
@@ -198,6 +221,9 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
 										  boost::bind(&TCPConnection::finish, tcp_conn)));
 
+		// Process QueryParameters in start & status
+		const HTTPTypes::QueryParams qp = request->getQueryParams();
+
 		// request made to receive a stream of Events
 		if (verb == "status") {
 			// use local array to identify the reactor_id
@@ -205,13 +231,13 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			// get the status for this capture...
 			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
 			if (slot < m_writers.size() && m_writers[slot]) {
-				std::string response = m_writers[slot]->getStatus();
+				std::string response = m_writers[slot]->getStatus(qp);
 				response_writer->write(dtd + response);
 			} else {
 				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
 			}
 		} else if (verb == "start") {
-	// get the reactor_id from the first path branch
+			// get the reactor_id from the first path branch
 			const std::string reactor_id(branches[1]);
 			if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
@@ -230,12 +256,10 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			VocabularyPtr vocab_ptr(getConfig().getReactionEngine().getVocabulary());
 			// create a MonitorWriter object that will be used to send Events
 			m_writers[slot].reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true));
-			m_writers[slot]->start();
-			HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
-										  boost::bind(&TCPConnection::finish, tcp_conn)));
+			m_writers[slot]->start(qp);
 			std::ostringstream xml;
 			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
-			response_writer->write(xml);
+			response_writer->write(xml.str());
 		} else if (verb == "stop") {
 			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
 			if (slot < m_writers.size() && m_writers[slot])

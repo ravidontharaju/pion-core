@@ -27,6 +27,7 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
+#include <pion/net/HTTPTypes.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/net/TCPStream.hpp>
@@ -59,15 +60,12 @@ public:
 	MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
 				const std::string& reactor_id);
 	
-	/// starts the MonitorHandler
-	virtual void start(void) = 0;
-	
 	/**
 	 * sends an HTTP response over the TCP connection
 	 *
 	 * @return true if the response was sent successfully, or false if not
 	 */
-	bool sendResponse(void);
+//	bool sendResponse(void);
 	
 	/// returns the unique identifier for this particular connection
 	inline const std::string& getConnectionId(void) const { return m_connection_id; }
@@ -158,9 +156,11 @@ public:
 	 * @param e the Event to send over the TCPConnection
 	 */
 	void writeEvent(pion::platform::EventPtr& e);
+
+	void setQP(const pion::net::HTTPTypes::QueryParams& qp);
 	
 	/// starts the MonitorWriter
-	virtual void start(void);
+	virtual void start(const pion::net::HTTPTypes::QueryParams& qp);
 	
 	void stop(void) {
 		m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
@@ -180,7 +180,7 @@ public:
 		const pion::platform::Event::ParameterValue& value,
 		std::ostream& xml, TermCol& cols) const;
 
-	std::string getStatus(void);
+	std::string getStatus(const pion::net::HTTPTypes::QueryParams& qp);
 };
 
 /// data type used for MonitorWriter smart pointers
