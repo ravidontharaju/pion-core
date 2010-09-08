@@ -248,6 +248,12 @@ pion.reactors.updateRunButtons = function() {
 
 pion.reactors._initConfiguredReactors = function() {
 	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
+	reactor_config_store._getFetchUrl = function(request) {
+		if (request && request.query && '@id' in request.query)
+			return this.url + '/' + request.query['@id'];
+		else
+			return this.url;
+	}
 	pion.reactors.config_store = reactor_config_store;
 	reactor_config_store.fetch({
 		query: {tagName: 'Reactor'},
