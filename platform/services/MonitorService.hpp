@@ -50,7 +50,7 @@ public:
 
 	/// virtual destructor
 	virtual ~MonitorHandler() { }
-	
+
 	/**
 	 * constructs a new MonitorHandler object
 	 *
@@ -59,44 +59,36 @@ public:
 	 */
 	MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
 				const std::string& reactor_id);
-	
-	/**
-	 * sends an HTTP response over the TCP connection
-	 *
-	 * @return true if the response was sent successfully, or false if not
-	 */
-//	bool sendResponse(void);
-	
+
 	/// returns the unique identifier for this particular connection
 	inline const std::string& getConnectionId(void) const { return m_connection_id; }
-	
+
 	/// returns information describing this particular connection
 	inline const std::string& getConnectionInfo(void) const { return m_connection_info; }
-	
+
 	/// returns the unique identifier for the Reactor that this handler interacts with
 	inline const std::string& getReactorId(void) const { return m_reactor_id; }
 
-	
 protected:
-	
+
 	/// reference to ReactionEngine used to send Events to Reactors
 	pion::platform::ReactionEngine &	m_reaction_engine;
-	
+
 	/// primary logging interface used by this class
 	PionLogger							m_logger;	
 
 	/// unique identifier for this particular connection (generated when constructed)
 	const std::string					m_connection_id;
-	
+
 	/// information describing this particular connection (generated when constructed)
 	const std::string					m_connection_info;
-	
+
 	/// unique identifier for the Reactor that this handler interacts with
 	const std::string					m_reactor_id;
-	
+
 	/// mutex used to protect the MonitorHandler's data
-	mutable boost::mutex				m_mutex;	
-};			
+	mutable boost::mutex				m_mutex;
+};
 
 	
 ///
@@ -132,6 +124,9 @@ private:
 	/// Reference to ReactionEngine, so it can disconnect
 	pion::platform::ReactionEngine &	m_reaction_engine;
 
+	/// Suppressed termref's
+	std::set<pion::platform::Vocabulary::TermRef>		m_suppressed_terms;
+
 public:
 	
 	typedef boost::unordered_map<pion::platform::Vocabulary::TermRef, unsigned> TermCol;
@@ -157,11 +152,13 @@ public:
 	 */
 	void writeEvent(pion::platform::EventPtr& e);
 
+	/// "set method" for MonitorWriters parameters from query parameters
 	void setQP(const pion::net::HTTPTypes::QueryParams& qp);
 	
 	/// starts the MonitorWriter
 	virtual void start(const pion::net::HTTPTypes::QueryParams& qp);
-	
+
+	/// stop MonitorWriter from collecting more data
 	void stop(void) {
 		m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
 										   &m_reaction_engine, getConnectionId()));

@@ -35,7 +35,8 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 const std::string dtd = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-const unsigned URN_VOCAB = 10;	// length("urn:vocab:") clicstream
+const std::string urnvocab("urn:vocab:");		// shorthand notation
+const unsigned URN_VOCAB = urnvocab.length();	// length("urn:vocab:") clicstream
 
 // MonitorHandler member functions
 	
@@ -47,16 +48,7 @@ MonitorHandler::MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
 	m_reactor_id(reactor_id)
 {}
 
-/*
-bool MonitorHandler::sendResponse(void)
-{
-	// build some XML response content for the request
-	std::stringstream ss;
-	m_reaction_engine.writeConnectionsXML(ss, getConnectionId());
-	return true;
-}
-*/
-	
+
 // MonitorWriter member functions
 
 MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
@@ -71,6 +63,7 @@ MonitorWriter::~MonitorWriter()
 	PION_LOG_INFO(m_logger, "Closing output feed to " << getConnectionInfo()
 				  << " (" << getConnectionId() << ')');
 	stop();
+	m_event_buffer.clear();
 }
 	
 void MonitorWriter::writeEvent(EventPtr& e)
@@ -121,6 +114,9 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols) const
 {
+	// Don't add suppressed terms
+	if (m_suppressed_terms.find(tref) != m_suppressed_terms.end())
+		return;
 	if (tref > m_vocab_ptr->size())		// sanity check
 		tref = Vocabulary::UNDEFINED_TERM_REF;
 	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
@@ -169,19 +165,20 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 			prefix << "<C" << i->second << ">type</C" << i->second << '>';
 		else {
 			const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
-			// urn:vocab:clicstream
-			// 01234567890
 			prefix << "<C" << i->second << '>' << t.term_id.substr(URN_VOCAB) << "</C" << i->second << '>';
 		}
     std::ostringstream preamble;
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
 			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
-			<< "</Capacity><Truncating>" << m_truncate << "</Truncating>";
+			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false") << "</Scroll>";
 	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
 }
 
 void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 {
+	if (qp.empty())
+		return;
+
     HTTPTypes::QueryParams::const_iterator qpi = qp.find("events");
     if (qpi != qp.end()) {
         unsigned events = boost::lexical_cast<boost::uint32_t>(qpi->second);
@@ -195,6 +192,30 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
     qpi = qp.find("truncate");
     if (qpi != qp.end())
 		m_truncate = boost::lexical_cast<boost::uint32_t>(qpi->second);
+
+    qpi = qp.find("scroll");
+    if (qpi != qp.end())
+		m_scroll = qpi->second == "true";
+
+	qpi = qp.find("hide");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		boost::char_separator<char> sep(",");
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+			m_suppressed_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
+	}
+
+	qpi = qp.find("unhide");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		boost::char_separator<char> sep(",");
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+			m_suppressed_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
+	}
 }
 
 
