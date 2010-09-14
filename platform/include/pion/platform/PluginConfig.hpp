@@ -177,17 +177,6 @@ protected:
 								const xmlNodePtr config_ptr);
 
 	/**
-	 * Sets the configuration parameters that specify location in the UI for a managed plug-in.
-	 * Currently only useful for Reactors, because only Reactors have location parameters.
-	 *
-	 * @param plugin_id unique identifier associated with the plug-in
-	 * @param config_ptr pointer to a list of XML nodes containing the plug-in's complete 
-	 *                   configuration, with no changes other than in the location parameters
-	 */
-	inline void setLocationConfig(const std::string& plugin_id,
-								  const xmlNodePtr config_ptr);
-
-	/**
 	 * adds a new plug-in object
 	 *
 	 * @param config_ptr pointer to a list of XML nodes containing plug-in
@@ -305,29 +294,6 @@ inline void PluginConfig<PluginType>::setPluginConfig(const std::string& plugin_
 	PION_LOG_DEBUG(m_logger, "Updated " << m_plugin_element << " configuration (" << plugin_id << ')');
 	boost::mutex::scoped_lock signal_lock(m_signal_mutex);
 	m_signal_plugins_updated();
-}
-
-template <typename PluginType>
-inline void PluginConfig<PluginType>::setLocationConfig(const std::string& plugin_id,
-														const xmlNodePtr config_ptr)
-{
-	// make sure that the plug-in configuration file is open
-	if (! configIsOpen())
-		throw ConfigNotOpenException(getConfigFile());
-
-	// Update the location specific settings in the Plugin.
-	// (Note that PluginType::setLocation() is currently a no-op for anything but a Reactor.)
-	boost::mutex::scoped_lock plugins_lock(m_mutex);
-	m_plugins.run(plugin_id, boost::bind(&PluginType::setLocation, _1, config_ptr));
-
-	// Replace the configuration within memory and in the configuration file.
-	ConfigManager::setPluginConfig(m_plugin_element, plugin_id, config_ptr);
-
-	// unlock class mutex to prevent deadlock
-	plugins_lock.unlock();
-
-	// Signalling the update isn't needed for UI location changes, so just log the update.
-	PION_LOG_DEBUG(m_logger, "Updated " << m_plugin_element << " UI location (" << plugin_id << ')');
 }
 
 template <typename PluginType>

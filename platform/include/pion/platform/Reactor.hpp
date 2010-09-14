@@ -53,6 +53,12 @@ public:
 	/// name of the run status element for Pion XML config files
 	static const std::string		RUNNING_ELEMENT_NAME;
 
+	/// name of the X Coordinate element for Pion XML config files
+	static const std::string		X_COORDINATE_ELEMENT_NAME;
+
+	/// name of the Y Coordinate element for Pion XML config files
+	static const std::string		Y_COORDINATE_ELEMENT_NAME;
+
 
 	/// data type for a function that receives Events
 	typedef boost::function1<void, EventPtr>	EventHandler;

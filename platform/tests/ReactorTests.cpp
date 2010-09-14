@@ -313,6 +313,156 @@ BOOST_AUTO_TEST_CASE(checkAddReactorSimpleConfig) {
 	BOOST_CHECK(! reactor_id.empty());
 }
 
+BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithoutPreExistingCoords) {
+	// Create a Reactor without X or Y coordinates.
+	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+	);
+	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
+	xmlFreeNodeList(orig_config);
+
+	// Update the Reactor's UI location.
+	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+		"<X>75</X>"
+		"<Y>50</Y>"
+	);
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(reactor_id, new_config));
+	xmlFreeNodeList(new_config);
+
+	// Get the configuration from the ReactionEngine and check that the location parameters are present.
+	xmlNodePtr retrieved_config = m_reaction_engine.getPluginConfig(reactor_id);
+	std::string config_option_str;
+	ConfigManager::getConfigOption("X", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "75");
+	ConfigManager::getConfigOption("Y", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "50");
+	xmlFreeNodeList(retrieved_config);
+}
+
+BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithPreExistingCoords) {
+	// Create a Reactor with X and Y coordinates.
+	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+		"<X>40</X>"
+		"<Y>90</Y>"
+	);
+	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
+	xmlFreeNodeList(orig_config);
+
+	// Update the Reactor's UI location.
+	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+		"<X>75</X>"
+		"<Y>50</Y>"
+	);
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(reactor_id, new_config));
+	xmlFreeNodeList(new_config);
+
+	// Get the configuration from the ReactionEngine and check that the location parameters have changed.
+	xmlNodePtr retrieved_config = m_reaction_engine.getPluginConfig(reactor_id);
+	std::string config_option_str;
+	ConfigManager::getConfigOption("X", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "75");
+	ConfigManager::getConfigOption("Y", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "50");
+	xmlFreeNodeList(retrieved_config);
+}
+
+BOOST_AUTO_TEST_CASE(checkSetReactorLocationIgnoresNonLocationChanges) {
+	// Create a Reactor with X and Y coordinates.
+	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+		"<X>40</X>"
+		"<Y>90</Y>"
+	);
+	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
+	xmlFreeNodeList(orig_config);
+
+	// Call setReactorLocation() with a config that also has a new name.
+	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Extra Spiffy Filter Reactor</Name>"
+		"<X>75</X>"
+		"<Y>50</Y>"
+	);
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(reactor_id, new_config));
+	xmlFreeNodeList(new_config);
+
+	// Get the configuration from the ReactionEngine and check that the location parameters have changed but the name hasn't.
+	xmlNodePtr retrieved_config = m_reaction_engine.getPluginConfig(reactor_id);
+	std::string config_option_str;
+	ConfigManager::getConfigOption("X", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "75");
+	ConfigManager::getConfigOption("Y", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "50");
+	ConfigManager::getConfigOption("Name", config_option_str, retrieved_config->children);
+	BOOST_CHECK_EQUAL(config_option_str, "Filter Reactor 1");
+	xmlFreeNodeList(retrieved_config);
+}
+
+BOOST_AUTO_TEST_CASE(checkSetReactorLocationDoesntCallSetConfig) {
+	// Create a LogOutputReactor (because LogOutputReactor::setConfig() actually does some verification.)
+	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>LogOutputReactor</Plugin>"
+		"<Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>"
+		"<Filename>../logs/new.log</Filename>"
+	);
+	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
+	xmlFreeNodeList(orig_config);
+
+	// Create a configuration that should cause LogOutputReactor::setConfig() to throw (due to missing elements).
+	xmlNodePtr bad_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>LogOutputReactor</Plugin>"
+		"<X>75</X>"
+		"<Y>50</Y>"
+	);
+
+	// Confirm that setReactorConfig() throws an exception.
+	BOOST_CHECK_THROW(m_reaction_engine.setReactorConfig(reactor_id, bad_config), PionException);
+
+	// Check that setReactorLocation() doesn't throw an exception.
+	// (The point of this test is to confirm that LogOutputReactor::setConfig()
+	// is not getting called, since the whole point of setReactorLocation() is to bypass
+	// potentially expensive calls to Reactor specific implementations of setConfig().)
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(reactor_id, bad_config));
+
+	xmlFreeNodeList(bad_config);
+}
+
+BOOST_AUTO_TEST_CASE(checkSetReactorLocationUpdatesConfigFile) {
+	// Create a Reactor without X or Y coordinates.
+	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+	);
+	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
+	xmlFreeNodeList(orig_config);
+
+	// Update the Reactor's UI location.
+	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>FilterReactor</Plugin>"
+		"<Name>Filter Reactor 1</Name>"
+		"<X>125</X>"
+		"<Y>150</Y>"
+	);
+	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(reactor_id, new_config));
+	xmlFreeNodeList(new_config);
+
+	// Check that the new coordinates were saved in the Reactors config file.
+	std::ifstream in(REACTORS_CONFIG_FILE.c_str());
+	std::string file_contents;
+	char c;
+	while (in.get(c)) file_contents += c;
+	BOOST_CHECK(file_contents.find("<X>125</X>") != std::string::npos);
+	BOOST_CHECK(file_contents.find("<Y>150</Y>") != std::string::npos);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -407,80 +557,6 @@ BOOST_AUTO_TEST_CASE(checkSetReactorWorkspace) {
 	
 	// check config file
 	// ...
-}
-
-BOOST_AUTO_TEST_CASE(checkSetReactorCoordinates) {
-	// get the current configuration for the Reactor
-	xmlNodePtr reactor_config = m_reaction_engine.getPluginConfig(m_ie_filter_id);
-	BOOST_REQUIRE(reactor_config);
-	
-	// add coordinate nodes
-	xmlNodePtr x_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("X"));
-	xmlNodeSetContent(x_node,  reinterpret_cast<const xmlChar*>("75"));
-	xmlAddNextSibling(reactor_config->last, x_node);
-	xmlNodePtr y_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Y"));
-	xmlNodeSetContent(y_node,  reinterpret_cast<const xmlChar*>("50"));
-	xmlAddNextSibling(reactor_config->last, y_node);
-	
-	// update the Reactor's config
-	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorConfig(m_ie_filter_id,
-														    reactor_config->children));
-	xmlFreeNodeList(reactor_config);
-	
-	// check config file
-	// ...
-}
-
-BOOST_AUTO_TEST_CASE(checkSetReactorLocation) {
-	// Get the current configuration for the LogOutputReactor.
-	xmlNodePtr reactor_config = m_reaction_engine.getPluginConfig(m_log_writer_id);
-	BOOST_REQUIRE(reactor_config);
-
-	// Add UI location nodes.
-	xmlNodePtr x_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("X"));
-	xmlNodeSetContent(x_node,  reinterpret_cast<const xmlChar*>("75"));
-	xmlAddNextSibling(reactor_config->last, x_node);
-	xmlNodePtr y_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Y"));
-	xmlNodeSetContent(y_node,  reinterpret_cast<const xmlChar*>("50"));
-	xmlAddNextSibling(reactor_config->last, y_node);
-	xmlNodePtr workspace_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Workspace"));
-	xmlNodeSetContent(workspace_node,  reinterpret_cast<const xmlChar*>("Newly Renamed Workspace"));
-	xmlAddNextSibling(reactor_config->last, workspace_node);
-
-	// Update the Reactor's UI location.
-	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(m_log_writer_id, reactor_config->children));
-
-	// Get the configuration again and check that the location parameters have changed.
-	xmlNodePtr reactor_config_2 = m_reaction_engine.getPluginConfig(m_log_writer_id);
-	std::string config_option_str;
-	ConfigManager::getConfigOption("X", config_option_str, reactor_config_2->children);
-	BOOST_CHECK_EQUAL(config_option_str, "75");
-	ConfigManager::getConfigOption("Y", config_option_str, reactor_config_2->children);
-	BOOST_CHECK_EQUAL(config_option_str, "50");
-	ConfigManager::getConfigOption("Workspace", config_option_str, reactor_config_2->children);
-	BOOST_CHECK_EQUAL(config_option_str, "Newly Renamed Workspace");
-
-	// Remove the Codec node, which is required for LogOutputReactors.
-	xmlNodePtr codec_node = ConfigManager::findConfigNodeByName("Codec", reactor_config->children);
-	BOOST_REQUIRE(codec_node);
-	xmlUnlinkNode(codec_node);
-	xmlFreeNodeList(codec_node);
-
-	// Check that setReactorConfig() throws an exception (due to the incomplete configuration).
-	BOOST_CHECK_THROW(m_reaction_engine.setReactorConfig(m_log_writer_id, reactor_config->children),
-					  PionException);
-
-	// Check that setReactorLocation() doesn't throw an exception.
-	// (Note that this is still an error, because the bad configuration will be saved.
-	// The point of this check is to confirm that LogOutputReactor::setConfig()
-	// is not getting called, since the whole point of setReactorLocation() is to bypass
-	// potentially expensive calls to Reactor specific implementations of setConfig().)
-	BOOST_CHECK_NO_THROW(m_reaction_engine.setReactorLocation(m_log_writer_id, reactor_config->children));
-
-	xmlFreeNodeList(reactor_config);
-	xmlFreeNodeList(reactor_config_2);
-
-	// TODO: check config file
 }
 
 BOOST_AUTO_TEST_CASE(checkReactorOfTypeCollectionIsNotRunning) {

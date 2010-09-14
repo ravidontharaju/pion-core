@@ -33,8 +33,10 @@ const std::string			Reactor::RUNNING_ELEMENT_NAME = "Running";
 const std::string			Reactor::EVENTS_IN_ELEMENT_NAME = "EventsIn";
 const std::string			Reactor::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
 const std::string			Reactor::ID_ATTRIBUTE_NAME = "id";
-	
-	
+const std::string			Reactor::X_COORDINATE_ELEMENT_NAME = "X";
+const std::string			Reactor::Y_COORDINATE_ELEMENT_NAME = "Y";
+
+
 // Reactor member functions
 
 void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)

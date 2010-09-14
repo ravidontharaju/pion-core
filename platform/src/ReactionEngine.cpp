@@ -208,12 +208,33 @@ void ReactionEngine::setReactorConfig(const std::string& reactor_id,
 void ReactionEngine::setReactorLocation(const std::string& reactor_id,
 										const xmlNodePtr config_ptr)
 {
-	// convert PluginNotFound exceptions into ReactorNotFound exceptions
-	try {
-		PluginConfig<Reactor>::setLocationConfig(reactor_id, config_ptr);
-	} catch (PluginManager<Reactor>::PluginNotFoundException&) {
-		throw ReactorNotFoundException(reactor_id);
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find the Reactor node of the configuration with the specified ID.
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = ConfigManager::findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string node_id;
+		getNodeId(reactor_node, node_id);
+		if (node_id == reactor_id)
+			break;
+		reactor_node = reactor_node->next;
 	}
+	if (reactor_node == NULL)
+		throw ReactorNotFoundException(reactor_id);
+
+	// Update the X and Y coordinates using the values in config_ptr (if found).
+	std::string x_coord;
+	if (ConfigManager::getConfigOption(Reactor::X_COORDINATE_ELEMENT_NAME, x_coord, config_ptr))
+		if (! ConfigManager::updateConfigOption(Reactor::X_COORDINATE_ELEMENT_NAME, x_coord, reactor_node))
+			throw UpdateConfigOptionException(reactor_id);
+	std::string y_coord;
+	if (ConfigManager::getConfigOption(Reactor::Y_COORDINATE_ELEMENT_NAME, y_coord, config_ptr))
+		if (! ConfigManager::updateConfigOption(Reactor::Y_COORDINATE_ELEMENT_NAME, y_coord, reactor_node))
+			throw UpdateConfigOptionException(reactor_id);
+
+	saveConfigFile();
 }
 
 std::string ReactionEngine::addReactor(const xmlNodePtr config_ptr)
