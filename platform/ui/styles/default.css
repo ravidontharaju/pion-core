@@ -807,10 +807,9 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 .reactor_proxy {
-	border: 1px solid #666666;
 	cursor: pointer;
-	width: 28px;
-	height: 28px;
+	width: 30px;
+	height: 30px;
 }
 
 .reactor_proxy.collection {

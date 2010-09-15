@@ -234,6 +234,29 @@ void ReactionEngine::setReactorLocation(const std::string& reactor_id,
 		if (! ConfigManager::updateConfigOption(Reactor::Y_COORDINATE_ELEMENT_NAME, y_coord, reactor_node))
 			throw UpdateConfigOptionException(reactor_id);
 
+	// Update any proxy coordinates found in config_ptr.
+	const std::string prefix_1 = "Proxy_X_";
+	const std::string prefix_2 = "Proxy_Y_";
+	const xmlChar* xmlchar_prefix_1_ptr = reinterpret_cast<const xmlChar*>(prefix_1.c_str());
+	const xmlChar* xmlchar_prefix_2_ptr = reinterpret_cast<const xmlChar*>(prefix_2.c_str());
+	for (xmlNodePtr cur_node = config_ptr; cur_node != NULL; cur_node = cur_node->next) {
+		if (cur_node->type == XML_ELEMENT_NODE) {
+			if (xmlStrncmp(cur_node->name, xmlchar_prefix_1_ptr, prefix_1.length()) == 0
+				|| xmlStrncmp(cur_node->name, xmlchar_prefix_2_ptr, prefix_2.length()) == 0)
+			{
+				// The current element tag starts with "Proxy_X_" or "Proxy_Y_", so update reactor_node using its content.
+				xmlChar* new_coord_ptr = xmlNodeGetContent(cur_node);
+				if (new_coord_ptr != NULL) {
+					if (! ConfigManager::updateConfigOption(reinterpret_cast<const char*>(cur_node->name),
+															reinterpret_cast<const char*>(new_coord_ptr),
+															reactor_node))
+						throw UpdateConfigOptionException(reactor_id);
+					xmlFree(new_coord_ptr);
+				}
+			}
+		}
+	}
+
 	saveConfigFile();
 }
 

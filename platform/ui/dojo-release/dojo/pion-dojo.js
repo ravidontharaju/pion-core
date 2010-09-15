@@ -22334,6 +22334,7 @@ this.initCoords();
 this.domNode.style.left=this.config.X+"px";
 this.domNode.style.top=this.config.Y+"px";
 this.domNode.style.position="absolute";
+this.domNode.style.background="url(../plugins/reactors/"+_1559+"/"+this.external_reactor.config.Plugin+"/proxy.png) repeat-x";
 this.domNode.style.zIndex=300;
 var line=this.local_workspace.my_surface.createPolyline().setStroke("black");
 line.div1=document.createElement("div");
