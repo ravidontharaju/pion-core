@@ -1138,24 +1138,33 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					ServiceManager::createPlatformServiceConfig(request->getContent(),
 																request->getContentLength());
 
-				std::string service_id;
-				// add the new PlatformService to the ServiceManager
-				try {
-					service_id = getServiceManager().addPlatformService(service_config_ptr);
-				} catch (std::exception&) {
+				// Check whether the User has permission to create the specified PlatformService.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getServiceManager(), service_config_ptr)) {
+					// add the new PlatformService to the ServiceManager
+					std::string service_id;
+					try {
+						service_id = getServiceManager().addPlatformService(service_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(service_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(service_config_ptr);
-					throw;
+
+					// send a 201 (created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new PlatformService's configuration
+					if (! getServiceManager().writeConfigXML(ss, service_id))
+						throw ServiceManager::PlatformServiceNotFoundException(service_id);
+
+				} else {
+					xmlFreeNodeList(service_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(service_config_ptr);
-
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-
-				// respond with the new PlatformService's configuration
-				if (! getServiceManager().writeConfigXML(ss, service_id))
-					throw ServiceManager::PlatformServiceNotFoundException(service_id);
-
 			} else {
 				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
@@ -1196,12 +1205,18 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing PlatformService
 
-				getServiceManager().removePlatformService(branches[1]);
+				// Check whether the User has permission to remove the specified PlatformService.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getServiceManager(), branches[1])) {
+					getServiceManager().removePlatformService(branches[1]);
 
-				// send a 204 (No Content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
 				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
