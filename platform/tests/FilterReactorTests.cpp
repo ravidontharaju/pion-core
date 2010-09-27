@@ -89,6 +89,7 @@ BOOST_FIXTURE_TEST_SUITE(ReactionEngineReadyToAddReactors2_S, ReactionEngineRead
 BOOST_AUTO_TEST_CASE(checkFilterCLFLogFile) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#c-ip</Term>"
 			"<Type>starts-with</Type>"
@@ -100,6 +101,7 @@ BOOST_AUTO_TEST_CASE(checkFilterCLFLogFile) {
 	config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>CLF Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Filename>../" + LOG_OUTPUT_FILE + "</Filename>");
 	std::string log_writer_id = m_reaction_engine->addReactor(config_ptr);
@@ -185,6 +187,7 @@ BOOST_FIXTURE_TEST_SUITE(FilterReactorEventValidator_S, FilterReactorEventValida
 BOOST_AUTO_TEST_CASE(checkComparisonOfTypeContains) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>contains</Type>"
@@ -207,6 +210,7 @@ BOOST_AUTO_TEST_CASE(checkComparisonOfTypeContains) {
 BOOST_AUTO_TEST_CASE(checkComparisonOfTypeNotStartsWith) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>not-starts-with</Type>"
@@ -227,6 +231,7 @@ BOOST_AUTO_TEST_CASE(checkComparisonOfTypeNotStartsWith) {
 BOOST_AUTO_TEST_CASE(checkComparisonsOfTypeOrderedBefore) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>ordered-before</Type>"
@@ -246,6 +251,7 @@ BOOST_AUTO_TEST_CASE(checkComparisonOfTypeContainsPrimary) {
 	// Add a FilterReactor with a Comparison with Type = contains-primary.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>contains-primary</Type>"
@@ -266,6 +272,7 @@ BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingHexadecimalEscapeCodes) {
 	// Add a FilterReactor that does a regular expression Comparison that includes a non-US-ASCII character.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>regex</Type>"
@@ -304,6 +311,7 @@ BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingEmbeddedUtf8) {
 	// Add a FilterReactor that does a regular expression Comparison that includes a non-US-ASCII character.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>regex</Type>"
@@ -322,6 +330,7 @@ BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
 	// Add a FilterReactor that does case insensitive regular expression Comparisons using non-US-ASCII characters.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>regex</Type>"
@@ -342,6 +351,7 @@ BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
 BOOST_AUTO_TEST_CASE(checkCharBasedRulesRegexAgainstNonAsciiChar) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Comparison>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>regex</Type>"

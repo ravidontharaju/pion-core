@@ -53,18 +53,30 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 
 	xml += "\r\n";
 */
-	/*
-	 *	branches[0]	== reactors
-	 *	branches[1] == UUID
-	 *	branches[2] == aggregate/example/info
-	 */
 
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 		if (!branches.empty() && branches.front() == "reactors") {
+			/*
+			 *	branches[0]	== reactors
+			 *	branches[1] == UUID
+			 *	branches[2] == aggregate/example/info
+			 */
+
 			if (branches.size() >= 2) {
-				if (getConfig().getReactionEngine().hasPlugin(branches.at(1))) {
+				const std::string reactor_id(branches.at(1));
+				if (getConfig().getReactionEngine().hasPlugin(reactor_id)) {
+
+					// Check whether the User has permission for this Reactor.
+					bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
+					if (! reactor_allowed) {
+						// Send a 403 (Forbidden) response.
+						std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
+						HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+						return;
+					}
+
 					getConfig().getReactionEngine().query(
-						branches.at(1), ss, branches,
+						reactor_id, ss, branches,
 						request->getQueryParams());
 				} else {
 					HTTPServer::handleNotFoundRequest(request, tcp_conn);
@@ -74,6 +86,8 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 				// send detailed statistics for all Reactors
 				getConfig().getReactionEngine().writeStatsXML(ss, "", true);
 			}
+		} else if (! branches.empty() && branches.front() == "permissions") {
+			getConfig().getUserManagerPtr()->writePermissionsXML(ss, request->getUser()->getUsername());
 		} else {
 			throw UnknownQueryException();
 		}

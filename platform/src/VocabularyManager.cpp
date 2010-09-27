@@ -25,13 +25,14 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of VocabularyManager
-	
+
 const std::string			VocabularyManager::DEFAULT_CONFIG_FILE = "vocabularies.xml";
 const std::string			VocabularyManager::DEFAULT_VOCABULARY_PATH = ".";
 const std::string			VocabularyManager::VOCABULARY_PATH_ELEMENT_NAME = "VocabularyPath";
 const std::string			VocabularyManager::VOCABULARY_CONFIG_ELEMENT_NAME = "VocabularyConfig";
-	
-		
+const std::string			VocabularyManager::VOCABULARIES_PERMISSION_TYPE = "Vocabularies";
+
+
 // VocabularyManager member functions
 
 VocabularyManager::VocabularyManager(void)

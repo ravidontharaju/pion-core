@@ -364,7 +364,9 @@ public:
 	/// returns the path where new vocabulary config files are created
 	inline std::string getVocabularyPath(void) const { return m_vocab_path; }
 
-	
+	/// returns the type attribute used for an XML Permission node pertaining to Vocabularies
+	std::string getPermissionType(void) const { return VOCABULARIES_PERMISSION_TYPE; }
+
 private:
 
 	/**
@@ -403,11 +405,13 @@ private:
 	
 	/// name of the vocabulary path element for Pion XML config files
 	static const std::string			VOCABULARY_PATH_ELEMENT_NAME;
-	
+
 	/// name of the vocabulary config element for Pion XML config files
 	static const std::string			VOCABULARY_CONFIG_ELEMENT_NAME;
 
-	
+	/// type identifier for Vocabularies permission type
+	static const std::string			VOCABULARIES_PERMISSION_TYPE;
+
 	/// the path where new vocabulary config files are created
 	std::string							m_vocab_path;
 	

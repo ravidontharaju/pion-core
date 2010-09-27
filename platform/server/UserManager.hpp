@@ -28,6 +28,7 @@
 #include <pion/PionException.hpp>
 #include <pion/net/PionUser.hpp>
 #include <pion/platform/ConfigManager.hpp>
+#include "PlatformService.hpp"
 
 
 namespace pion {		// begin namespace pion
@@ -134,6 +135,14 @@ public:
 	bool writeConfigXML(std::ostream& out, const std::string& user_id) const;
 
 	/**
+	 * writes the Permission configuration data for a particular User (as XML)
+	 *
+	 * @param out the ostream to write the configuration tree into
+	 * @param user_id unique identifier associated with the User
+	 */
+	bool writePermissionsXML(std::ostream& out, const std::string& user_id) const;
+
+	/**
 	 * uses a memory buffer to generate XML configuration data for a User
 	 *
 	 * @param user_id will get the unique identifier associated with the User
@@ -171,6 +180,80 @@ public:
 	 */
 	virtual bool removeUser(const std::string& user_id);
 
+	/**
+	 * determines whether a User has permission to create a new configuration node
+	 *
+	 * @param user_from_request pointer to an existing User element node, as extracted from a request
+	 * @param config_manager the plugin manager corresponding to the type of the configuration
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if the User has  
+	 *                   permission for any configuration handled by the config manager
+	 *
+	 * @return true if the User has permission
+	 */
+	bool creationAllowed(
+		const pion::net::PionUserPtr& user_from_request, 
+		const pion::platform::ConfigManager& config_manager,
+		const xmlNodePtr& config_ptr) const;
+
+	/**
+	 * determines whether a User has permission to update a configuration node
+	 *
+	 * @param user_from_request pointer to an existing User element node, as extracted from a request
+	 * @param config_manager the plugin manager corresponding to the type of the configuration
+	 * @param id unique identifier associated with an existing configuration node
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if the User has  
+	 *                   permission for any configuration handled by the config manager
+	 *
+	 * @return true if the User has permission
+	 */
+	bool updateAllowed(
+		const pion::net::PionUserPtr& user_from_request, 
+		const pion::platform::ConfigManager& config_manager,
+		const std::string& id,
+		const xmlNodePtr& config_ptr) const;
+
+	/**
+	 * determines whether a User has permission to remove a configuration node or set of configuration nodes
+	 *
+	 * @param user_from_request pointer to an existing User element node, as extracted from a request
+	 * @param config_manager the plugin manager corresponding to the type of the configuration
+	 * @param id unique identifier associated with an existing configuration node or set of configuration nodes
+	 *
+	 * @return true if the User has permission
+	 */
+	bool removalAllowed(
+		const pion::net::PionUserPtr& user_from_request, 
+		const pion::platform::ConfigManager& config_manager,
+		const std::string& id) const;
+
+	/**
+	 * determines whether a User has permission to use a plugin
+	 *
+	 * @param user_from_request pointer to an existing User element node, as extracted from a request
+	 * @param config_manager the plugin manager corresponding to the plugin
+	 * @param plugin_id unique identifier associated with an existing plugin
+	 *
+	 * @return true if the User has permission
+	 */
+	bool accessAllowed(
+		const pion::net::PionUserPtr& user_from_request, 
+		const pion::platform::ConfigManager& config_manager,
+		const std::string& plugin_id) const;
+
+	/**
+	 * determines whether a User has permission to use a PlatformService
+	 *
+	 * @param user_from_request pointer to an existing User element node, as extracted from a request
+	 * @param service the PlatformService
+	 * @param id optional unique identifier specifying a subset of the PlatformService
+	 *
+	 * @return true if the User has permission
+	 */
+	bool accessAllowed(
+		const pion::net::PionUserPtr& user_from_request, 
+		const PlatformService& service,
+		const std::string& id = "") const;
+
 
 private:
 
@@ -200,7 +283,26 @@ private:
 	 */
 	bool setUserConfig(xmlNodePtr user_node_ptr, xmlNodePtr config_ptr);
 
-	
+	/**
+	 * returns true if the User has administrator permission
+	 *
+	 * @param user_ptr pointer to PionUser record of a request
+	 *
+	 * @return true if the User has administrator permission
+	 */
+	bool isAdmin(const pion::net::PionUserPtr user_ptr) const;
+
+	/**
+	 * searches in the specified User's configuration for a Permission node whose "type" attribute has the specified value
+	 *
+	 * @param user_ptr pointer to PionUser record of a request
+	 * @param permission_type the value that the "type" attribute should have
+	 *
+	 * @return xmlNodePtr pointer to an XML document node if found, otherwise NULL
+	 */
+	xmlNodePtr getPermissionNode(pion::net::PionUserPtr user_ptr, const std::string& permission_type) const;
+
+
 private:
 
 	/// default name of the User config file
@@ -212,8 +314,17 @@ private:
 	/// name of the PASSWORD element for Pion XML config files
 	static const std::string			PASSWORD_ELEMENT_NAME;
 
+	/// name of the User Permission element for Pion XML config files
+	static const std::string			USER_PERMISSION_ELEMENT_NAME;
+
+	/// name of the permission type attribute for Pion XML config files
+	static const std::string			PERMISSION_TYPE_ATTRIBUTE_NAME;
+
+	/// type identifier for Administrator permission type
+	static const std::string			ADMIN_PERMISSION_TYPE;
+
 	/// mutex to make class thread-safe
-	mutable boost::mutex				m_mutex;	
+	mutable boost::mutex				m_mutex;
 };
 
 /// data type for a UserManager pointer

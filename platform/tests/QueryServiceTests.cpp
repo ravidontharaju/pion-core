@@ -368,6 +368,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryForCurrentlyGrowingLogFile) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Perpetual CLF Log Reader</Name>"
 		"<Plugin>LogInputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Directory>../logs</Directory>"
 		"<Filename>combined\\.log</Filename>"
@@ -439,6 +440,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithJsonCodec) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>JSON Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>9446b74a-71e4-426c-b965-ae55260375af</Codec>"
 		"<Filename>../logs/new.json</Filename>");
 	std::string xml_log_output_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
@@ -485,6 +487,7 @@ BOOST_AUTO_TEST_CASE(testRotateQueryWithXmlCodec) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>XML Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>f7bb0fd8-3fe0-4227-accb-aaba2440a638</Codec>"
 		"<Filename>../logs/new.xml</Filename>");
 	std::string xml_log_output_reactor_id = m_platform_cfg.getReactionEngine().addReactor(config_ptr);
@@ -571,6 +574,7 @@ BOOST_AUTO_TEST_CASE(testRapidFireRotateQueries) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Perpetual CLF Log Reader</Name>"
 		"<Plugin>LogInputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Directory>../logs</Directory>"
 		"<Filename>combined\\.log</Filename>"

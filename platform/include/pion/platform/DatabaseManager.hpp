@@ -119,6 +119,9 @@ public:
 	 */
 	xmlDocPtr getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr);
 
+	/// returns the type attribute used for an XML Permission node pertaining to Databases
+	std::string getPermissionType(void) const { return DATABASES_PERMISSION_TYPE; }
+
 
 protected:
 	
@@ -160,6 +163,9 @@ private:
 
 	/// name of the database element for Pion XML config files
 	static const std::string		DATABASE_ELEMENT_NAME;
+
+	/// type identifier for Databases permission type
+	static const std::string		DATABASES_PERMISSION_TYPE;
 
 	/// name of the database engines config file
 	static const std::string		TEMPLATE_FILE;

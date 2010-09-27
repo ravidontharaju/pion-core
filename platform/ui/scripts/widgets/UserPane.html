@@ -19,17 +19,18 @@
 					></tr
 				></table
 			></div
-			><div style="float: right; margin-top: -15px"
-				><label>Visible Configuration Tabs</label><br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="reactor_config" />Reactors<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="vocab_config" />Vocabularies<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="codec_config" />Codecs<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="database_config" />Databases<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="protocol_config" />Protocols<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="user_config" dojoAttachEvent="onClick: _warnIfDisablingSelf" />Users<br /
-				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="system_config" />System<br /
+			><div style="float: right" dojoAttachPoint="service_permissions"
 			></div
-			><div style="float: right; margin-right: 50px" dojoAttachPoint="visible_service_tabs"
+			><div style="float: right; margin-right: 50px"
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Admin" dojoAttachPoint="admin_check_box" /><label>Administrator</label><br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Reactors" dojoAttachPoint="reactors_check_box" /><label>Reactors</label><br /
+				><div class="single_indent" dojoAttachPoint="reactors_unrestricted"
+					><input dojoType="dijit.form.CheckBox" name="workspace_check_box_group" value="Unrestricted" dojoAttachPoint="reactors_unrestricted_check_box" /><label>Unrestricted</label><br /
+				></div 
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Vocabularies" dojoAttachPoint="vocabularies_check_box" /><label>Vocabularies</label><br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Codecs" dojoAttachPoint="codecs_check_box" /><label>Codecs</label><br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Databases" dojoAttachPoint="databases_check_box" /><label>Databases</label><br /
+				><input dojoType="dijit.form.CheckBox" name="tab_check_boxes" value="Protocols" dojoAttachPoint="protocols_check_box" /><label>Protocols</label><br /
 			></div
 			><div style="clear: both"></div
 		></div

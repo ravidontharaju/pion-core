@@ -46,7 +46,9 @@ public:
 		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2"),
 		m_date_codec_id("dba9eac2-d8bb-11dc-bebe-001cc02bd66b"),
 		m_embedded_db_id("e75d88f0-e7df-11dc-a76c-0016cb926e68"),
-		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int")
+		m_vocab_a_id("urn:vocab:test"), m_big_int_id("urn:vocab:test#big-int"),
+		m_workspace_1("2f4a8d0d-6655-45c1-9464-e75efe87ace2"),
+		m_workspace_2("601a0682-9e95-4b35-8626-d43c49d15989")
 	{
 		// get everything setup first
 		cleanup_platform_config_files();
@@ -359,6 +361,8 @@ public:
 	const std::string	m_embedded_db_id;
 	const std::string	m_vocab_a_id;
 	const std::string	m_big_int_id;
+	const std::string	m_workspace_1;
+	const std::string	m_workspace_2;
 };
 
 BOOST_FIXTURE_TEST_SUITE(ConfigServiceTestInterface_S, ConfigServiceTestInterface_F)
@@ -399,9 +403,22 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceStartThenStopLogReaderReactor) {
 	BOOST_CHECK(! checkIfReactorIsRunning(m_log_reader_id, *response_ptr));
 }
 
+BOOST_AUTO_TEST_CASE(checkGetReactorsConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/reactors");
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Reactor", "id", m_do_nothing_id, node_ptr->children));
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Reactor", "id", m_log_reader_id, node_ptr->children));
+}
+
+BOOST_AUTO_TEST_CASE(checkGetReactorConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/reactors/" + m_do_nothing_id);
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Reactor", "id", m_do_nothing_id, node_ptr->children));
+	BOOST_CHECK(! ConfigManager::findConfigNodeByAttr("Reactor", "id", m_log_reader_id, node_ptr->children));
+}
+
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewReactor) {
 	std::string reactor_config_str = "<PionConfig><Reactor>"
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>" + m_workspace_1 + "</Workspace>"
 		"</Reactor></PionConfig>";
 	
 	// make a request to add a new Reactor
@@ -416,6 +433,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateLogWriterReactorConfig) {
 		"<Name>Updated ELF Log Writer</Name>"
 		"<Comment>Writes a new log file using ELF (Updated)</Comment>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>" + m_workspace_1 + "</Workspace>"
 		"<Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>"
 		"<Filename>../logs/new.log</Filename>"
 		"</Reactor></PionConfig>";
@@ -473,6 +491,107 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveConnection) {
 					  ReactionEngine::ConnectionNotFoundException);
 }
 
+BOOST_AUTO_TEST_CASE(checkGetReactorsConfigWithWorkspaceID) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/reactors/" + m_workspace_2);
+
+	// Check that it returned the two Reactors in Workspace 2.
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Reactor", "id", m_log_reader_id, node_ptr->children));
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Reactor", "id", m_log_writer_id, node_ptr->children));
+
+	// Check one Reactor in Workspace 1 to make sure that it didn't return all Reactors.
+	BOOST_CHECK(! ConfigManager::findConfigNodeByAttr("Reactor", "id", m_do_nothing_id, node_ptr->children));
+
+	// Check a Reactor Connection with both Reactors in Workspace 2.
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Connection", "id", "f086fa52-e306-11dc-af6e-0016cb926e68", node_ptr->children));
+
+	// Check a Reactor Connection with only one Reactor in Workspace 2.
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Connection", "id", "876b0c5e-caf8-11dd-ab01-0019d185f6fc", node_ptr->children));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveReactorsWithWorkspaceID) {
+	checkDeleteResource("/config/reactors/" + m_workspace_2);
+
+	// check that the Reactors in Workspace 2 were removed
+	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasPlugin(m_log_reader_id));
+	BOOST_CHECK(! m_platform_cfg.getReactionEngine().hasPlugin(m_log_writer_id));
+
+	// Check one Reactor in Workspace 1 to make sure that it wasn't removed.
+	BOOST_CHECK(m_platform_cfg.getReactionEngine().hasPlugin(m_do_nothing_id));
+}
+
+BOOST_AUTO_TEST_CASE(checkGetWorkspacesConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/workspaces");
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Workspace", "id", m_workspace_1, node_ptr->children));
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Workspace", "id", m_workspace_2, node_ptr->children));
+}
+
+BOOST_AUTO_TEST_CASE(checkGetWorkspaceConfig) {
+	xmlNodePtr node_ptr = checkGetConfig("/config/workspaces/" + m_workspace_1);
+	BOOST_CHECK(ConfigManager::findConfigNodeByAttr("Workspace", "id", m_workspace_1, node_ptr->children));
+	BOOST_CHECK(! ConfigManager::findConfigNodeByAttr("Workspace", "id", m_workspace_2, node_ptr->children));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewWorkspace) {
+	std::string config_str = "<PionConfig><Workspace>"
+		"<Name>Another Workspace</Name>"
+		"</Workspace></PionConfig>";
+
+	// make a request to add a new Workspace
+	std::string workspace_id = checkAddResource("/config/workspaces", "Workspace", config_str);
+
+	// make sure that the Workspace was created
+	BOOST_CHECK(! workspace_id.empty());
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateWorkspaceConfig) {
+	std::string config_str = "<PionConfig><Workspace>"
+		"<Name>Workspace Alpha</Name>"
+		"</Workspace></PionConfig>";
+
+	// make a request to update the "Workspace 1" Workspace
+	checkUpdateResource("/config/workspaces/2f4a8d0d-6655-45c1-9464-e75efe87ace2", "Workspace",
+						config_str, "Name", "Workspace Alpha");
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveEmptyWorkspace) {
+	// Create a Workspace (which will be empty).
+	std::string config_str = "<PionConfig><Workspace>"
+		"<Name>Workspace 3</Name>"
+		"</Workspace></PionConfig>";
+	std::string workspace_id = checkAddResource("/config/workspaces", "Workspace", config_str);
+
+	// Make a request to remove the new Workspace.
+	checkDeleteResource("/config/workspaces/" + workspace_id);
+
+	// Make sure that the Workspace was removed.
+	xmlNodePtr node_ptr = checkGetConfig("/config/workspaces");
+	BOOST_CHECK(! ConfigManager::findConfigNodeByAttr("Workspace", "id", workspace_id, node_ptr->children));
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveNonEmptyWorkspace) {
+	// Make a request to remove Workspace 2 (which is not empty).
+	HTTPRequest request;
+	request.setMethod(HTTPTypes::REQUEST_METHOD_DELETE);
+	request.setResource("/config/workspaces/" + m_workspace_2);
+	HTTPResponsePtr response_ptr(sendRequest(request));
+
+	// Check for the expected error code and message.
+	BOOST_CHECK_EQUAL(response_ptr->getStatusCode(), HTTPTypes::RESPONSE_CODE_SERVER_ERROR);
+	BOOST_CHECK_EQUAL(response_ptr->getContent(), "The Workspace specified for removal was not empty: " + m_workspace_2);
+}
+
+BOOST_AUTO_TEST_CASE(checkConfigServiceEmptyThenRemoveWorkspace) {
+	// First, remove the Reactors in Workspace 2.
+	checkDeleteResource("/config/reactors/" + m_workspace_2);
+
+	// Make a request to remove Workspace 2, which should now be empty.
+	checkDeleteResource("/config/workspaces/" + m_workspace_2);
+
+	// Confirm that the Workspace was removed.
+	xmlNodePtr node_ptr = checkGetConfig("/config/workspaces");
+	BOOST_CHECK(! ConfigManager::findConfigNodeByAttr("Workspace", "id", m_workspace_2, node_ptr->children));
+}
+
 BOOST_AUTO_TEST_CASE(checkConfigServiceAddNewCodec) {
 	std::string codec_config_str = "<PionConfig><Codec>"
 		"<Plugin>LogCodec</Plugin>"
@@ -494,8 +613,8 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceUpdateDateCodecConfig) {
 		"<EventType>urn:vocab:clickstream#http-event</EventType>"
 		"<Field term=\"urn:vocab:clickstream#clf-date\" start=\"[\" end=\"]\">date</Field>"
 		"</Codec></PionConfig>";
-	
-	// make a request to update the "log writer" Reactor
+
+	// make a request to update the "just the date" codec
 	checkUpdateResource("/config/codecs/" + m_date_codec_id, "Codec",
 						codec_config_str, "Name", "Updated Date");
 }
@@ -504,7 +623,7 @@ BOOST_AUTO_TEST_CASE(checkConfigServiceRemoveDateCodec) {
 	// make a request to remove the "just the date" codec
 	checkDeleteResource("/config/codecs/" + m_date_codec_id);
 
-	// make sure that the Reactor was removed
+	// make sure that the Codec was removed
 	BOOST_CHECK(! m_platform_cfg.getCodecFactory().hasPlugin(m_date_codec_id));
 }
 

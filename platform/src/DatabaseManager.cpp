@@ -27,6 +27,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of DatabaseManager
 const std::string		DatabaseManager::DEFAULT_CONFIG_FILE = "databases.xml";
 const std::string		DatabaseManager::DATABASE_ELEMENT_NAME = "Database";
+const std::string		DatabaseManager::DATABASES_PERMISSION_TYPE = "Databases";
 const std::string		DatabaseManager::DEFAULT_DATABASE_TYPE = "sqlite";
 const std::string		DatabaseManager::TEMPLATE_FILE = "dbengines.xml";
 const std::string		DatabaseManager::DBENGINES_ROOT_ELEMENT_NAME = "DatabaseTemplates";

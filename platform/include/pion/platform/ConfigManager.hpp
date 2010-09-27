@@ -508,8 +508,71 @@ public:
 	 * @return std::string resolved, absolute path to the file
 	 */
 	std::string resolveRelativeDataPath(const std::string& orig_path);
-	
-	
+
+	/**
+	 * determines whether a User has permission to create a new configuration node
+	 *
+	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if the User has  
+	 *                   permission for any configuration handled by this manager
+	 *
+	 * @return true if the User has permission
+	 */
+	virtual bool creationAllowed(xmlNodePtr permission_config_ptr, xmlNodePtr config_ptr) const {
+		// By default, permission is granted solely based on whether a Permission node of the appropriate type was found.
+		return permission_config_ptr != NULL;
+	}
+
+	/**
+	 * determines whether a User has permission to update a configuration node
+	 *
+	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
+	 * @param id unique identifier associated with an existing configuration node
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if the User has  
+	 *                   permission for any configuration handled by this manager
+	 *
+	 * @return true if the User has permission
+	 */
+	virtual bool updateAllowed(xmlNodePtr permission_config_ptr, const std::string& id, xmlNodePtr config_ptr) const {
+		// By default, permission is granted solely based on whether a Permission node of the appropriate type was found.
+		return permission_config_ptr != NULL;
+	}
+
+	/**
+	 * determines whether a User has permission to remove a configuration node or set of configuration nodes
+	 *
+	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
+	 * @param id unique identifier associated with an existing configuration node or set of configuration nodes
+	 *
+	 * @return true if the User has permission
+	 */
+	virtual bool removalAllowed(xmlNodePtr permission_config_ptr, const std::string& id) const {
+		// By default, permission is granted solely based on whether a Permission node of the appropriate type was found.
+		return permission_config_ptr != NULL;
+	}
+
+	/**
+	 * determines whether a User has permission to use a plugin
+	 *
+	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
+	 * @param plugin_id unique identifier associated with an existing plugin
+	 *
+	 * @return true if the User has permission
+	 */
+	virtual bool accessAllowed(xmlNodePtr permission_config_ptr, const std::string& plugin_id) const {
+		// By default, permission is granted solely based on whether a Permission node of the appropriate type was found.
+		return permission_config_ptr != NULL;
+	}
+
+	/// returns the type attribute used for an XML Permission node pertaining to the type of plugin being managed
+	virtual std::string getPermissionType(void) const { 
+		// Returning an empty string means that UserManager::getPermissionNode() will always return NULL.
+		// So, if this method is not overridden for a particular ConfigManager, then permission for that
+		// ConfigManager will only be granted if the User has "Admin" permission.
+		return "";
+	}
+
+
 protected:
 	
 	/**

@@ -62,7 +62,21 @@ public:
 		ConnectionNotFoundException(const std::string& connection_id)
 			: PionException("No connections found for identifier: ", connection_id) {}
 	};
-	
+
+	/// exception thrown if we are unable to find a Workspace with the specified identifier
+	class WorkspaceNotFoundException : public PionException {
+	public:
+		WorkspaceNotFoundException(const std::string& workspace_id)
+			: PionException("No Workspace found for identifier: ", workspace_id) {}
+	};
+
+	/// exception thrown when an attempt is made to remove a Workspace with Reactors in it
+	class RemoveNonEmptyWorkspaceException : public PionException {
+	public:
+		RemoveNonEmptyWorkspaceException(const std::string& workspace_id)
+			: PionException("The Workspace specified for removal was not empty: ", workspace_id) {}
+	};
+
 	/// exception thrown if the config file contains a Reactor connection with a missing identifier
 	class EmptyConnectionIdException : public PionException {
 	public:
@@ -104,7 +118,7 @@ public:
 		RemoveConnectionConfigException(const std::string& connection)
 			: PionException("Unable to remove a Connection from the Reactor configuration file: ", connection) {}
 	};
-	
+
 	/// exception thrown if the configuration info for a new connection is invalid
 	class BadConnectionConfigException : public std::exception {
 	public:
@@ -112,7 +126,29 @@ public:
 			return "New Reactor connection configuration is invalid";
 		}
 	};
-	
+
+	/// exception thrown if the configuration info for a new Workspace is invalid
+	class BadWorkspaceConfigException : public std::exception {
+	public:
+		virtual const char* what() const throw() {
+			return "New Reactor Workspace configuration is invalid";
+		}
+	};
+
+	/// exception thrown if there is an error adding a Workspace element to the config file
+	class AddWorkspaceConfigException : public PionException {
+	public:
+		AddWorkspaceConfigException()
+			: PionException("Unable to add a Workspace to the Reactor configuration file") {}
+	};
+
+	/// exception thrown if there is an error modifying a Workspace node
+	class SetWorkspaceConfigException : public PionException {
+	public:
+		SetWorkspaceConfigException()
+			: PionException("Error setting the configuration for a Workspace") {}
+	};
+
 	/// exception thrown if there is an error updating a configuration option
 	class UpdateConfigOptionException : public PionException {
 	public:
@@ -273,12 +309,11 @@ public:
 	/**
 	 * connects the output of one Reactor to the input of another Reactor
 	 *
-	 * @param content_buf pointer to buffer containing XML config for the connection
-	 * @param content_length size of the content buffer, in bytes
+	 * @param config_ptr pointer to a list of XML nodes including <From> and <To>
 	 *
 	 * @return std::string unique identifier associated with the new Reactor connection
 	 */
-	std::string addReactorConnection(const char *content_buf, std::size_t content_length);
+	std::string addReactorConnection(const xmlNodePtr config_ptr);
 	
 	/**
 	 * removes an existing connection between Reactors
@@ -294,7 +329,40 @@ public:
 	 * @param connection_id unique identifier associated with the Reactor connection
 	 */
 	void removeReactorConnection(const std::string& connection_id);
-	
+
+	/**
+	 * adds a Reactor Workspace
+	 *
+	 * @param content_buf pointer to buffer containing XML config for the Workspace
+	 * @param content_length size of the content buffer, in bytes
+	 *
+	 * @return std::string unique identifier associated with the new Reactor Workspace
+	 */
+	std::string addWorkspace(const char* content_buf, std::size_t content_length);
+
+	/**
+	 * removes an empty Reactor Workspace
+	 *
+	 * @param workspace_id unique identifier associated with the Workspace
+	 */
+	void removeWorkspace(const std::string& workspace_id);
+
+	/**
+	 * removes all the Reactors in a Workspace
+	 *
+	 * @param workspace_id unique identifier associated with the Workspace
+	 */
+	void removeReactorsFromWorkspace(const std::string& workspace_id);
+
+	/**
+	 * sets configuration parameters for a Workspace
+	 *
+	 * @param workspace_id unique identifier associated with the Workspace
+	 * @param content_buf pointer to buffer containing XML config for the Workspace
+	 * @param content_length size of the content buffer, in bytes
+	 */
+	void setWorkspaceConfig(const std::string& workspace_id, const char* content_buf, std::size_t content_length);
+
 	/**
 	 * writes Reactor statistics to an output stream (as XML)
 	 *
@@ -309,10 +377,10 @@ public:
 	 * writes info for particular connections to an output stream (as XML)
 	 *
 	 * @param out the ostream to write the connection info into
-	 * @param connection_id include only the connection that matches this unique
-	 *                      identifier, or include all connections if empty
+	 * @param only_id include only connections where either the connection ID or the ID of one of its endpoints 
+	 *                matches this unique identifier, or include all connections if empty
 	 */
-	void writeConnectionsXML(std::ostream& out, const std::string& connection_id) const;
+	void writeConnectionsXML(std::ostream& out, const std::string& only_id) const;
 
 	/**
 	 * writes connection info for all Reactors to an output stream (as XML)
@@ -323,7 +391,87 @@ public:
 		std::string empty_only_id;
 		writeConnectionsXML(out, empty_only_id);
 	}
-	
+
+	/**
+	 * writes info for a particular Reactor Workspace to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Workspace info into
+	 * @param workspace_id the unique of the Workspace requested
+	 *
+	 * @return bool whether the Workspace was found
+	 */
+	bool writeWorkspaceXML(std::ostream& out, const std::string& workspace_id) const;
+
+	/**
+	 * writes Workspace info for all Reactor Workspaces to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Workspaces info into
+	 */
+	void writeWorkspacesXML(std::ostream& out) const;
+
+	/**
+	 * writes all info in the entire configuration that pertains to a particular Reactor Workspace to an output stream (as XML)
+	 *
+	 * @param out the ostream to write the Workspace info into
+	 * @param workspace_id the unique of the Workspace requested
+	 *
+	 * @return bool whether the Workspace was found
+	 */
+	bool writeWorkspaceLimitedConfigXML(std::ostream& out, const std::string& workspace_id) const;
+
+	/**
+	 * checks to see if a Workspace with the specified ID exists
+	 *
+	 * @param workspace_id unique identifier associated with a Workspace
+	 *
+	 * @return bool whether the Workspace was found
+	 */
+	bool hasWorkspace(const std::string& workspace_id) const;
+
+	/**
+	 * determines whether a User has permission to create a Reactor, Connection or Workspace
+	 *
+	 * @param permission_config_ptr the Permission node of type "Reactors" from the User's configuration
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if the User has unrestricted Reactor permission
+	 *
+	 * @return true if the User has permission
+	 */
+	bool creationAllowed(xmlNodePtr permission_config_ptr, xmlNodePtr config_ptr) const;
+
+	/**
+	 * determines whether a User has permission to update a Reactor or Workspace
+	 *
+	 * @param permission_config_ptr the Permission node of type "Reactors" from the User's configuration
+	 * @param id unique identifier associated with an existing Reactor or Workspace
+	 * @param config_ptr pointer to the new configuration; if null, returns true only if any configuration would be allowed
+	 *
+	 * @return true if the User has permission
+	 */
+	bool updateAllowed(xmlNodePtr permission_config_ptr, const std::string& id, xmlNodePtr config_ptr) const;
+
+	/**
+	 * determines whether a User has permission to remove a Reactor, Connection or Workspace
+	 *
+	 * @param permission_config_ptr the Permission node of type "Reactors" from the User's configuration
+	 * @param id unique identifier associated with an existing Reactor, Connection or Workspace
+	 *
+	 * @return true if the User has permission
+	 */
+	bool removalAllowed(xmlNodePtr permission_config_ptr, const std::string& id) const;
+
+	/**
+	 * determines whether a User has permission to use a Reactor
+	 *
+	 * @param permission_config_ptr the Permission node of type "Reactors" from the User's configuration
+	 * @param reactor_id unique identifier associated with an existing Reactor
+	 *
+	 * @return true if the User has permission
+	 */
+	bool accessAllowed(xmlNodePtr permission_config_ptr, const std::string& reactor_id) const;
+
+	/// returns the type attribute used for an XML Permission node pertaining to Reactors
+	std::string getPermissionType(void) const { return REACTORS_PERMISSION_TYPE; }
+
 	/**
 	 * uses a memory buffer to generate XML configuration data for a Reactor
 	 *
@@ -335,7 +483,19 @@ public:
 	static xmlNodePtr createReactorConfig(const char *buf, std::size_t len) {
 		return ConfigManager::createResourceConfig(Reactor::REACTOR_ELEMENT_NAME, buf, len);
 	}
-	
+
+	/**
+	 * uses a memory buffer to generate XML configuration data for a Reactor connection
+	 *
+	 * @param buf pointer to a memory buffer containing configuration data
+	 * @param len number of bytes available in the memory buffer
+	 *
+	 * @return xmlNodePtr XML configuration list for the Reactor connection
+	 */
+	static xmlNodePtr createConnectionConfig(const char *buf, std::size_t len) {
+		return ConfigManager::createResourceConfig(CONNECTION_ELEMENT_NAME, buf, len);
+	}
+
 	/**
 	 * schedules an Event to be processed by a Reactor
 	 *
@@ -457,7 +617,7 @@ public:
 	/// returns true if the ReactionEngine is running
 	inline bool isRunning(void) const { return m_is_running; }	
 
-	
+
 private:
 	
 	/// data type used to keep track of temporary reactor connections (i.e. feeds)
@@ -609,7 +769,10 @@ private:
 	
 	/// stops all Event processing (without locking)
 	void stopNoLock(void);
-	
+
+	/// sets configuration parameters for a Workspace
+	void setWorkspaceConfig(xmlNodePtr workspace_node_ptr, const char* content_buf, std::size_t content_length);
+
 	
 	/// default number of worker threads in the thread pool
 	static const boost::uint32_t	DEFAULT_NUM_THREADS;
@@ -634,7 +797,7 @@ private:
 	
 	/// name of the events queued element for Pion XML statistics
 	static const std::string		EVENTS_QUEUED_ELEMENT_NAME;
-	
+
 	/// type identifier for internal reactor connections
 	static const std::string		CONNECTION_TYPE_REACTOR;
 
@@ -643,8 +806,16 @@ private:
 
 	/// type identifier for temporary output connections
 	static const std::string		CONNECTION_TYPE_OUTPUT;
-	
-	
+
+	/// type identifier for Reactors permission type
+	static const std::string		REACTORS_PERMISSION_TYPE;
+
+	/// name of the Unrestricted element in Pion XML config file Permission nodes of type "Reactors"
+	static const std::string		UNRESTRICTED_ELEMENT_NAME;
+
+	/// name of the Workspace element in Pion XML config file Permission nodes of type "Reactors"
+	static const std::string		WORKSPACE_QUALIFIER_ELEMENT_NAME;
+
 	/// used to schedule the delivery of events to Reactors for processing
 	ReactionScheduler				m_scheduler;
 

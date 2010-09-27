@@ -28,7 +28,9 @@ namespace server {		// begin namespace server (Pion Server)
 const std::string			UserManager::DEFAULT_CONFIG_FILE = "users.xml";
 const std::string			UserManager::USER_ELEMENT_NAME = "User";
 const std::string			UserManager::PASSWORD_ELEMENT_NAME = "Password";
-
+const std::string			UserManager::USER_PERMISSION_ELEMENT_NAME = "Permission";
+const std::string			UserManager::PERMISSION_TYPE_ATTRIBUTE_NAME = "type";
+const std::string			UserManager::ADMIN_PERMISSION_TYPE = "Admin";
 
 // UserManager member functions
 
@@ -244,6 +246,37 @@ std::string UserManager::addUser(const std::string& user_id, xmlNodePtr config_p
 	return user_id;
 }
 
+bool UserManager::writePermissionsXML(std::ostream& out, const std::string& user_id) const
+{
+	// find the User node in users.xml
+	boost::mutex::scoped_lock users_lock(m_mutex);
+	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME,
+		ID_ATTRIBUTE_NAME,
+		user_id,
+		m_config_node_ptr->children);
+
+	if (user_node == NULL)
+		return false;	// not found
+
+	// found it
+
+	ConfigManager::writeBeginPionConfigXML(out);
+	out << '<' << USER_ELEMENT_NAME << ' ' << ID_ATTRIBUTE_NAME
+		<< "=\"" << user_id << "\">" << std::endl;
+
+	// find and output all <Permission> nodes for the user
+	xmlNodePtr permission_node = user_node->children;
+	while ((permission_node = ConfigManager::findConfigNodeByName(USER_PERMISSION_ELEMENT_NAME, permission_node)) != NULL) {
+		ConfigManager::writeConfigXML(out, permission_node, false);
+		permission_node = permission_node->next;
+	}
+
+	out << "</" << USER_ELEMENT_NAME << '>' << std::endl;
+	ConfigManager::writeEndPionConfigXML(out);
+
+	return true;
+}
+
 void UserManager::setUserConfig(const std::string& user_id, xmlNodePtr config_ptr)
 {
 	// Sanity check
@@ -294,6 +327,46 @@ bool UserManager::removeUser(const std::string& user_id)
 	return ret;
 }
 
+bool UserManager::isAdmin(const pion::net::PionUserPtr user_ptr) const
+{
+	// Make sure that the User configuration file is open.
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find the configuration node for the User. 
+	boost::mutex::scoped_lock users_lock(m_mutex);
+	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME, ID_ATTRIBUTE_NAME, user_ptr->getUsername(), m_config_node_ptr->children);
+
+	if (user_node == NULL)
+		return false;	// User not found.
+
+	// Look for <Permission type="Admin" /> inside User node. 
+	xmlNodePtr perm_node = findConfigNodeByAttr(USER_PERMISSION_ELEMENT_NAME, PERMISSION_TYPE_ATTRIBUTE_NAME, 
+												ADMIN_PERMISSION_TYPE, user_node->children);
+
+	return (perm_node != NULL);
+}
+
+xmlNodePtr UserManager::getPermissionNode(pion::net::PionUserPtr user_ptr, const std::string& permission_type) const
+{
+	// Make sure that the User configuration file is open.
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find the configuration node for the User. 
+	boost::mutex::scoped_lock users_lock(m_mutex);
+	xmlNodePtr user_node = findConfigNodeByAttr(USER_ELEMENT_NAME, ID_ATTRIBUTE_NAME, user_ptr->getUsername(), m_config_node_ptr->children);
+
+	if (user_node == NULL)
+		throw UserNotFoundException(user_ptr->getUsername());
+
+	if (permission_type.empty())
+		return NULL;
+
+	// Return the specified Permission node (or NULL, if not found).
+	return findConfigNodeByAttr(USER_PERMISSION_ELEMENT_NAME, PERMISSION_TYPE_ATTRIBUTE_NAME, permission_type, user_node->children);
+}
+
 xmlNodePtr UserManager::createUserConfig(std::string& user_id,
 	const char *buf, std::size_t len) 
 {
@@ -335,6 +408,108 @@ xmlNodePtr UserManager::createUserConfig(std::string& user_id,
 	// return the copied configuration info
 	return node_ptr;
 }
+
+bool UserManager::creationAllowed(
+	const pion::net::PionUserPtr& user_from_request, 
+	const pion::platform::ConfigManager& config_manager,
+	const xmlNodePtr& config_ptr) const
+{
+	if (user_from_request) {
+		if (isAdmin(user_from_request)) {
+			// All actions are permitted for this User.
+			return true;
+		} else {
+			xmlNodePtr permission_config_ptr = getPermissionNode(user_from_request, config_manager.getPermissionType());
+			return config_manager.creationAllowed(permission_config_ptr, config_ptr);
+		}
+	} else {
+		// No User was associated with the request, which means that no authentication was needed for the
+		// request, so all actions are permitted.
+		return true;
+	}
+}
+
+bool UserManager::updateAllowed(
+	const pion::net::PionUserPtr& user_from_request, 
+	const pion::platform::ConfigManager& config_manager,
+	const std::string& id,
+	const xmlNodePtr& config_ptr) const
+{
+	if (user_from_request) {
+		if (isAdmin(user_from_request)) {
+			// All actions are permitted for this User.
+			return true;
+		} else {
+			xmlNodePtr permission_config_ptr = getPermissionNode(user_from_request, config_manager.getPermissionType());
+			return config_manager.updateAllowed(permission_config_ptr, id, config_ptr);
+		}
+	} else {
+		// No User was associated with the request, which means that no authentication was needed for the
+		// request, so all actions are permitted.
+		return true;
+	}
+}
+
+bool UserManager::removalAllowed(
+	const pion::net::PionUserPtr& user_from_request, 
+	const pion::platform::ConfigManager& config_manager,
+	const std::string& id) const
+{
+	if (user_from_request) {
+		if (isAdmin(user_from_request)) {
+			// All actions are permitted for this User.
+			return true;
+		} else {
+			xmlNodePtr permission_config_ptr = getPermissionNode(user_from_request, config_manager.getPermissionType());
+			return config_manager.removalAllowed(permission_config_ptr, id);
+		}
+	} else {
+		// No User was associated with the request, which means that no authentication was needed for the
+		// request, so all actions are permitted.
+		return true;
+	}
+}
+
+bool UserManager::accessAllowed(
+	const pion::net::PionUserPtr& user_from_request, 
+	const pion::platform::ConfigManager& config_manager,
+	const std::string& plugin_id) const
+{
+	if (user_from_request) {
+		if (isAdmin(user_from_request)) {
+			// All actions are permitted for this User.
+			return true;
+		} else {
+			xmlNodePtr permission_config_ptr = getPermissionNode(user_from_request, config_manager.getPermissionType());
+			return config_manager.accessAllowed(permission_config_ptr, plugin_id);
+		}
+	} else {
+		// No User was associated with the request, which means that no authentication was needed for the
+		// request, so all actions are permitted.
+		return true;
+	}
+}
+
+bool UserManager::accessAllowed(
+	const pion::net::PionUserPtr& user_from_request, 
+	const PlatformService& service,
+	const std::string& id) const
+{
+	if (user_from_request) {
+		if (isAdmin(user_from_request)) {
+			// All actions are permitted for this User.
+			return true;
+		} else {
+			xmlNodePtr permission_config_ptr = getPermissionNode(user_from_request, service.getPermissionType());
+			return service.accessAllowed(permission_config_ptr, id);
+		}
+	} else {
+		// No User was associated with the request, which means that no authentication was needed for the
+		// request, so all actions are permitted.
+		return true;
+	}
+}
+
 
 }	// end namespace server
 }	// end namespace pion

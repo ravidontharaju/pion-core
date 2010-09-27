@@ -238,7 +238,16 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
-	
+
+	// Check whether the User has permission for this Reactor.
+	bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
+	if (! reactor_allowed) {
+		// Send a 403 (Forbidden) response.
+		std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
+		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+		return;
+	}
+
 	// get the codec_id from the second path branch
 	const std::string codec_id(branches[1]);
 	CodecPtr codec_ptr(getConfig().getCodecFactory().getCodec(codec_id));

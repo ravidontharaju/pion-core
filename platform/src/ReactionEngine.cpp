@@ -29,7 +29,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of ReactionEngine
-	
+
 const boost::uint32_t	ReactionEngine::DEFAULT_NUM_THREADS = 4;
 const std::string		ReactionEngine::DEFAULT_CONFIG_FILE = "reactors.xml";
 const std::string		ReactionEngine::CONNECTION_ELEMENT_NAME = "Connection";
@@ -41,6 +41,9 @@ const std::string		ReactionEngine::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
 const std::string		ReactionEngine::CONNECTION_TYPE_REACTOR = "reactor";
 const std::string		ReactionEngine::CONNECTION_TYPE_INPUT = "input";
 const std::string		ReactionEngine::CONNECTION_TYPE_OUTPUT = "output";
+const std::string		ReactionEngine::REACTORS_PERMISSION_TYPE = "Reactors";
+const std::string		ReactionEngine::UNRESTRICTED_ELEMENT_NAME = "Unrestricted";
+const std::string		ReactionEngine::WORKSPACE_QUALIFIER_ELEMENT_NAME = "Workspace";
 
 
 // ReactionEngine member functions
@@ -519,16 +522,8 @@ std::string ReactionEngine::addReactorConnection(const std::string& from_id,
 	return connection_id;
 }
 
-std::string ReactionEngine::addReactorConnection(const char *content_buf,
-												 std::size_t content_length)
+std::string ReactionEngine::addReactorConnection(const xmlNodePtr config_ptr)
 {
-	// extract the XML config info from the content buffer
-	xmlNodePtr config_ptr = ConfigManager::createResourceConfig(CONNECTION_ELEMENT_NAME,
-																content_buf,
-																content_length);
-	if (config_ptr == NULL)
-		throw BadConnectionConfigException();
-	
 	// get the "From" value
 	std::string from_id;
 	if (! ConfigManager::getConfigOption(FROM_ELEMENT_NAME, from_id, config_ptr))
@@ -666,6 +661,164 @@ void ReactionEngine::removeConnectionConfigNoLock(const std::string& from_id,
 	saveConfigFile();
 }
 
+std::string ReactionEngine::addWorkspace(const char* content_buf, std::size_t content_length)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// generate a unique identifier to represent the Workspace
+	const std::string workspace_id(ConfigManager::createUUID());
+
+	// create a new node for the Workspace and add it to the XML config document
+	xmlNodePtr workspace_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(Reactor::WORKSPACE_ELEMENT_NAME.c_str()));
+	if (workspace_node == NULL)
+		throw AddWorkspaceConfigException();
+	if ((workspace_node = xmlAddChild(m_config_node_ptr, workspace_node)) == NULL) {
+		xmlFreeNode(workspace_node);
+		throw AddWorkspaceConfigException();
+	}
+
+	// add the "id" attribute
+	if (xmlNewProp(workspace_node,
+				   reinterpret_cast<const xmlChar*>(ID_ATTRIBUTE_NAME.c_str()),
+				   reinterpret_cast<const xmlChar*>(workspace_id.c_str())) == NULL)
+		throw AddWorkspaceConfigException();
+
+	setWorkspaceConfig(workspace_node, content_buf, content_length);
+
+	// save the new XML config file
+	saveConfigFile();
+
+	PION_LOG_DEBUG(m_logger, "Added Reactor Workspace: " << workspace_id);
+
+	return workspace_id;
+}
+
+void ReactionEngine::removeReactorsFromWorkspace(const std::string& workspace_id)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	if (! hasWorkspace(workspace_id))
+		throw WorkspaceNotFoundException(workspace_id);
+
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
+	// Make a list of IDs of all the Reactors in the Workspace.
+	std::vector<std::string> reactors_in_workspace;
+
+	// Step through each Reactor config node.
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string workspace_str;
+		if (ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_str, reactor_node->children)) {
+			if (workspace_str == workspace_id) {
+				std::string reactor_id;
+				if (! getNodeId(reactor_node, reactor_id))
+					throw EmptyPluginIdException(getConfigFile());
+				reactors_in_workspace.push_back(reactor_id);
+			}
+		}
+
+		// look for more reactor config nodes
+		reactor_node = reactor_node->next;
+	}
+
+	// Remove all the Reactors that were found.
+	engine_lock.unlock();
+	std::for_each(reactors_in_workspace.begin(), reactors_in_workspace.end(), boost::bind(&ReactionEngine::removeReactor, this, _1));
+}
+
+void ReactionEngine::removeWorkspace(const std::string& workspace_id)
+{
+	// make sure that the plug-in configuration file is open
+	if (! configIsOpen())
+		throw ConfigNotOpenException(getConfigFile());
+
+	// Find existing Workspace configuration.
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	xmlNodePtr workspace_node = findConfigNodeByAttr(Reactor::WORKSPACE_ELEMENT_NAME,
+													 ID_ATTRIBUTE_NAME,
+													 workspace_id,
+													 m_config_node_ptr->children);
+
+	if (workspace_node == NULL)
+		throw WorkspaceNotFoundException(workspace_id);
+
+	// Determine whether the Workspace is empty by stepping through the Reactor config nodes and checking the Workspace IDs.
+	bool empty = true;
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string workspace_str;
+		if (ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_str, reactor_node->children)) {
+			if (workspace_str == workspace_id) {
+				empty = false;
+				break;
+			}
+		}
+
+		// look for more reactor config nodes
+		reactor_node = reactor_node->next;
+	}
+
+	if (! empty)
+		throw RemoveNonEmptyWorkspaceException(workspace_id);
+
+	// remove the connection from the XML tree
+	xmlUnlinkNode(workspace_node);
+	xmlFreeNode(workspace_node);
+
+	// save the new XML config file
+	saveConfigFile();
+
+	PION_LOG_DEBUG(m_logger, "Removed Reactor Workspace: " << workspace_id);
+}
+
+void ReactionEngine::setWorkspaceConfig(const std::string& workspace_id, const char* content_buf, std::size_t content_length)
+{
+	// Find existing Workspace configuration.
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	xmlNodePtr workspace_node = findConfigNodeByAttr(Reactor::WORKSPACE_ELEMENT_NAME,
+													 ID_ATTRIBUTE_NAME,
+													 workspace_id,
+													 m_config_node_ptr->children);
+
+	if (workspace_node == NULL)
+		throw WorkspaceNotFoundException(workspace_id);
+
+	// update the configuration in the XML tree
+	setWorkspaceConfig(workspace_node, content_buf, content_length);
+
+	// save the new XML config file
+	saveConfigFile();
+}
+
+void ReactionEngine::setWorkspaceConfig(xmlNodePtr workspace_node, const char* content_buf, std::size_t content_length)
+{
+	// extract the XML config info from the content buffer
+	xmlNodePtr config_ptr = ConfigManager::createResourceConfig(Reactor::WORKSPACE_ELEMENT_NAME,
+																content_buf,
+																content_length);
+	if (config_ptr == NULL)
+		throw BadWorkspaceConfigException();
+
+	// try to get the "Name" value, and if found, update the "Name" element in the Workspace node
+	std::string name;
+	if (ConfigManager::getConfigOption(ConfigManager::NAME_ELEMENT_NAME, name, config_ptr)) {
+		if (! ConfigManager::updateConfigOption(ConfigManager::NAME_ELEMENT_NAME, name, workspace_node))
+			throw SetWorkspaceConfigException();
+	}
+
+	// try to get the "Comment" value, and if found, update the "Comment" element in the Workspace node
+	std::string comment;
+	if (ConfigManager::getConfigOption(ConfigManager::COMMENT_ELEMENT_NAME, comment, config_ptr)) {
+		if (! ConfigManager::updateConfigOption(ConfigManager::COMMENT_ELEMENT_NAME, comment, workspace_node))
+			throw SetWorkspaceConfigException();
+	}
+}
+
 void ReactionEngine::stopNoLock(void)
 {
 	if (m_is_running) {
@@ -747,7 +900,7 @@ void ReactionEngine::writeStatsXML(std::ostream& out, const std::string& only_id
 	
 	writeEndPionStatsXML(out);
 }
-	
+
 void ReactionEngine::writeConnectionsXML(std::ostream& out,
 										 const std::string& only_id) const
 {
@@ -808,7 +961,281 @@ void ReactionEngine::writeConnectionsXML(std::ostream& out,
 	
 	ConfigManager::writeEndPionConfigXML(out);
 }
-	
-	
+
+bool ReactionEngine::writeWorkspaceXML(std::ostream& out,
+									   const std::string& workspace_id) const
+{
+	// find the Workspace element with the specified ID in the XML config document
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	xmlNodePtr workspace_node = findConfigNodeByAttr(Reactor::WORKSPACE_ELEMENT_NAME,
+													 ID_ATTRIBUTE_NAME,
+													 workspace_id,
+													 m_config_node_ptr->children);
+	if (workspace_node == NULL)
+		return false;
+
+	// found it
+	ConfigManager::writeBeginPionConfigXML(out);
+	ConfigManager::writeConfigXML(out, workspace_node, false);
+	ConfigManager::writeEndPionConfigXML(out);
+
+	return true;
+}
+
+void ReactionEngine::writeWorkspacesXML(std::ostream& out) const
+{
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	ConfigManager::writeBeginPionConfigXML(out);
+
+	// step through Workspace configurations
+	xmlNodePtr workspace_node = m_config_node_ptr->children;
+	while ( (workspace_node = ConfigManager::findConfigNodeByName(Reactor::WORKSPACE_ELEMENT_NAME, workspace_node)) != NULL) {
+		ConfigManager::writeConfigXML(out, workspace_node, false);
+		workspace_node = workspace_node->next;
+	}
+
+	ConfigManager::writeEndPionConfigXML(out);
+}
+
+bool ReactionEngine::hasWorkspace(const std::string& workspace_id) const
+{
+	xmlNodePtr workspace_node = findConfigNodeByAttr(Reactor::WORKSPACE_ELEMENT_NAME,
+													 ID_ATTRIBUTE_NAME,
+													 workspace_id,
+													 m_config_node_ptr->children);
+	return workspace_node != NULL;
+}
+
+bool ReactionEngine::writeWorkspaceLimitedConfigXML(std::ostream& out, const std::string& workspace_id) const {
+	// find the Workspace element with the specified ID in the XML config document
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+	xmlNodePtr workspace_node = findConfigNodeByAttr(Reactor::WORKSPACE_ELEMENT_NAME,
+													 ID_ATTRIBUTE_NAME,
+													 workspace_id,
+													 m_config_node_ptr->children);
+	if (workspace_node == NULL)
+		return false;
+
+	ConfigManager::writeBeginPionConfigXML(out);
+
+	// step through each Reactor config node
+	xmlNodePtr reactor_node = m_config_node_ptr->children;
+	while ( (reactor_node = findConfigNodeByName(Reactor::REACTOR_ELEMENT_NAME, reactor_node)) != NULL) {
+		std::string workspace_str;
+		if (ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_str, reactor_node->children)) {
+			if (workspace_str == workspace_id)
+				ConfigManager::writeConfigXML(out, reactor_node);
+		}
+
+		// look for more reactor config nodes
+		reactor_node = reactor_node->next;
+	}
+
+	// Step through each Connection config node, and if it has either a source Reactor or sink Reactor
+	// in the specified Workspace, output the configuration.
+	xmlNodePtr connection_node = m_config_node_ptr->children;
+	while ( (connection_node = findConfigNodeByName(CONNECTION_ELEMENT_NAME, connection_node)) != NULL) {
+		std::string source_reactor_id;
+		if (ConfigManager::getConfigOption(FROM_ELEMENT_NAME, source_reactor_id, connection_node->children)) {
+			const Reactor* source_reactor_ptr = m_plugins.get(source_reactor_id);
+			if (source_reactor_ptr == NULL)
+				throw ReactorNotFoundException(source_reactor_id);
+
+			if (source_reactor_ptr->getWorkspace() == workspace_id) {
+				ConfigManager::writeConfigXML(out, connection_node);
+			} else {
+				std::string sink_reactor_id;
+				if (ConfigManager::getConfigOption(TO_ELEMENT_NAME, sink_reactor_id, connection_node->children)) {
+					const Reactor* sink_reactor_ptr = m_plugins.get(sink_reactor_id);
+					if (sink_reactor_ptr == NULL)
+						throw ReactorNotFoundException(sink_reactor_id);
+
+					if (sink_reactor_ptr->getWorkspace() == workspace_id)
+						ConfigManager::writeConfigXML(out, connection_node);
+				}
+			}
+		}
+
+		// look for more Connection config nodes
+		connection_node = connection_node->next;
+	}
+
+	ConfigManager::writeEndPionConfigXML(out);
+
+	return true;
+}
+
+bool ReactionEngine::creationAllowed(xmlNodePtr permission_config_ptr, xmlNodePtr config_ptr) const
+{
+	if (permission_config_ptr == NULL)
+		return false;
+
+	if (ConfigManager::findConfigNodeByContent(UNRESTRICTED_ELEMENT_NAME, "true", permission_config_ptr->children))
+		return true;	// The User has full privileges for Reactors.
+
+	if (config_ptr == NULL)
+		return false;	// Since the User is restricted, the actual configuration is needed to determine permission.
+
+	// Handle according to whether config_ptr is for a Reactor, Connection or Workspace.
+	// Since we only have the children of the configuration node, we'll check for distinguishing child nodes.
+	if (findConfigNodeByName(PLUGIN_ELEMENT_NAME, config_ptr) != NULL) {
+		// config_ptr is for a Reactor
+
+		std::string workspace_id;
+		if (! ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_id, config_ptr))
+			throw Reactor::MissingWorkspaceException();
+		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME, workspace_id, permission_config_ptr->children))
+			return true;	// The User has permission to create Reactors in the specified Workspace.
+	} else if (findConfigNodeByName(FROM_ELEMENT_NAME, config_ptr) != NULL) {
+		// config_ptr is for a Connection
+
+		std::string source_reactor_id;
+		if (! ConfigManager::getConfigOption(FROM_ELEMENT_NAME, source_reactor_id, config_ptr))
+			throw BadConnectionConfigException();
+		std::string sink_reactor_id;
+		if (! ConfigManager::getConfigOption(TO_ELEMENT_NAME, sink_reactor_id, config_ptr))
+			throw BadConnectionConfigException();
+
+		const Reactor* source_reactor_ptr = m_plugins.get(source_reactor_id);
+		if (source_reactor_ptr == NULL)
+			throw ReactorNotFoundException(source_reactor_id);
+		const Reactor* sink_reactor_ptr = m_plugins.get(sink_reactor_id);
+		if (sink_reactor_ptr == NULL)
+			throw ReactorNotFoundException(sink_reactor_id);
+
+		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME,
+												   source_reactor_ptr->getWorkspace(),
+												   permission_config_ptr->children) 
+			&& ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME,
+													  sink_reactor_ptr->getWorkspace(),
+													  permission_config_ptr->children)) {
+			return true;	// The User has permission to modify both Reactors, so a Connection between them is allowed.
+		}
+
+	} else {
+		// config_ptr is for a Workspace
+
+		return false;	// Creating a new Workspace requires full privileges for Reactors.
+	}
+
+	return false;
+}
+
+bool ReactionEngine::updateAllowed(xmlNodePtr permission_config_ptr, const std::string& id, xmlNodePtr config_ptr) const
+{
+	if (permission_config_ptr == NULL)
+		return false;
+
+	if (ConfigManager::findConfigNodeByContent(UNRESTRICTED_ELEMENT_NAME, "true", permission_config_ptr->children))
+		return true;	// The User has full privileges for Reactors.
+
+	if (hasPlugin(id)) {
+		// id is a Reactor ID, so we need to check the Workspace IDs of both the current and requested configurations.
+
+		if (config_ptr == NULL)
+			return false;	// Since the User is restricted, the actual configuration is needed to determine permission.
+
+		const Reactor* reactor_ptr = m_plugins.get(id);
+		if (reactor_ptr == NULL)
+			throw ReactorNotFoundException(id);
+
+		// Does the User have permission for the Workspace that the specified Reactor is currently in?
+		if (ConfigManager::findConfigNodeByContent(ReactionEngine::WORKSPACE_QUALIFIER_ELEMENT_NAME, reactor_ptr->getWorkspace(), permission_config_ptr->children)) {
+			// Does the User have permission for the Workspace specified in the new Reactor configuration?
+			std::string workspace_id;
+			if (! ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_id, config_ptr))
+				throw Reactor::MissingWorkspaceException();
+			if (ConfigManager::findConfigNodeByContent(ReactionEngine::WORKSPACE_QUALIFIER_ELEMENT_NAME, workspace_id, permission_config_ptr->children))
+				return true;
+		}
+	} else if (hasWorkspace(id)) {
+		// id is a Workspace ID, so we just need to check whether the user has permission for this Workspace
+
+		if (ConfigManager::findConfigNodeByContent(ReactionEngine::WORKSPACE_QUALIFIER_ELEMENT_NAME, id, permission_config_ptr->children))
+			return true;
+	}
+
+	return false;
+}
+
+bool ReactionEngine::removalAllowed(xmlNodePtr permission_config_ptr, const std::string& id) const
+{
+	if (permission_config_ptr == NULL)
+		return false;
+
+	if (ConfigManager::findConfigNodeByContent(UNRESTRICTED_ELEMENT_NAME, "true", permission_config_ptr->children))
+		return true;	// The User has full privileges for Reactors.
+
+	// Handle according to whether id is for a Reactor, Connection or Workspace.
+	if (hasPlugin(id)) {
+		// id is for a Reactor.
+
+		std::string workspace_id = m_plugins.get(id)->getWorkspace();
+		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME, workspace_id, permission_config_ptr->children))
+			return true;	// The User has permission for the Workspace of the specified Reactor.
+	} else if (hasWorkspace(id)) {
+		// id is for a Workspace.
+
+		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME, id, permission_config_ptr->children))
+			return true;	// The User has permission for the specified Workspace.
+	} else {
+		// Check if id is for a Connection.
+
+		ReactorConnectionList::const_iterator i = m_reactor_connections.begin();
+		while (i != m_reactor_connections.end()) {
+			if (i->m_connection_id == id)
+				break;
+			++i;
+		}
+		if (i == m_reactor_connections.end())
+			return false;	// The id is not for a Reactor, Connection or Workspace, so don't grant permission.
+
+		// id is for a Connection.
+
+		const Reactor* source_reactor_ptr = m_plugins.get(i->m_from_id);
+		if (source_reactor_ptr == NULL)
+			throw ReactorNotFoundException(i->m_from_id);
+		const Reactor* sink_reactor_ptr = m_plugins.get(i->m_to_id);
+		if (sink_reactor_ptr == NULL)
+			throw ReactorNotFoundException(i->m_to_id);
+
+		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME,
+												   source_reactor_ptr->getWorkspace(),
+												   permission_config_ptr->children) 
+			&& ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME,
+													  sink_reactor_ptr->getWorkspace(),
+													  permission_config_ptr->children)) {
+			return true;	// The User has permission to modify both Reactors, so removing a Connection between them is allowed.
+		}
+	}
+
+	return false;
+}
+
+bool ReactionEngine::accessAllowed(xmlNodePtr permission_config_ptr, const std::string& reactor_id) const
+{
+	if (permission_config_ptr == NULL)
+		return false;
+
+	if (reactor_id.empty())
+		return true;
+
+	if (ConfigManager::findConfigNodeByContent(UNRESTRICTED_ELEMENT_NAME, "true", permission_config_ptr->children))
+		return true;	// The User has full privileges for Reactors.
+
+	// Get the Workspace of the specified Reactor.
+	const Reactor* reactor_ptr = m_plugins.get(reactor_id);
+	if (reactor_ptr == NULL)
+		throw ReactorNotFoundException(reactor_id);
+	std::string workspace_id = reactor_ptr->getWorkspace();
+
+	// Does the User have permission for the Workspace?
+	if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME, workspace_id, permission_config_ptr->children))
+		return true;
+
+	return false;
+}
+
+
 }	// end namespace platform
 }	// end namespace pion

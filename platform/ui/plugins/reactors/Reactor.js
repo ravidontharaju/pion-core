@@ -203,36 +203,6 @@ dojo.declare("plugins.reactors.Reactor",
 				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
 			});
 		},
-		changeWorkspace: function(new_workspace_name) {
-			if (this.config.Workspace == new_workspace_name) {
-				return;
-			}
-			this.config.Workspace = new_workspace_name;
-
-			this.put_data = '<PionConfig><Reactor>';
-			for (var tag in this.config) {
-				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
-					console.debug('this.config[', tag, '] = ', this.config[tag]);
-					this.put_data += pion.makeXmlLeafElement(tag, this.config[tag]);
-				}
-			}
-			if (this._insertCustomData) {
-				this._insertCustomData();
-			}
-			this.put_data += '</Reactor></PionConfig>';
-			console.debug('put_data: ', this.put_data);
-
-			dojo.rawXhrPut({
-				url: '/config/reactors/' + this.config['@id'] + '/move',
-				contentType: "text/xml",
-				handleAs: "xml",
-				putData: this.put_data,
-				load: function(response){
-					console.debug('response: ', response);
-				},
-				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: this.put_data})
-			});
-		},
 		getOptionalBool: function(store, item, attribute) {
 			// Read.js stipulates that if an attribute is not present, getValue() should return undefined,
 			// but XmlStore.getValue() returns null (and XmlStore.hasAttribute() incorrectly returns true).
@@ -289,7 +259,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 			var Y = Math.floor(pion.reactors.last_y - dc.y);
 			this.post_data = '<PionConfig><Reactor>'
 							+ pion.makeXmlLeafElement('Plugin', this.plugin)
-							+ pion.makeXmlLeafElement('Workspace', workspace_box.my_content_pane.title)
+							+ pion.makeXmlLeafElement('Workspace', workspace_box.my_content_pane.uuid)
 							+ '<X>' + X + '</X><Y>' + Y + '</Y>';
 			for (var tag in dialogFields) {
 				if (tag != 'options') {
@@ -453,9 +423,10 @@ dojo.declare("plugins.reactors.ReactorConnections",
 		},
 		makeMenuOfInputs: function(sink_reactor) {
 			var subMenus = {};
-			for (var workspace_name in pion.reactors.workspaces_by_name) {
-				subMenus[workspace_name] = new dijit.Menu({parentMenu: this.add_input_reactor_menu});
-				this.add_input_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[workspace_name]}));
+			for (var uuid in pion.reactors.workspaces_by_id) {
+				var workspace_name = pion.reactors.workspaces_by_id[uuid].config.Name;
+				subMenus[uuid] = new dijit.Menu({parentMenu: this.add_input_reactor_menu});
+				this.add_input_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[uuid]}));
 			}
 			var existing_inputs = [];
 			for (var i = 0; i < sink_reactor.reactor_inputs.length; ++i) {
@@ -470,15 +441,16 @@ dojo.declare("plugins.reactors.ReactorConnections",
 					menu_item.attr('disabled', true);
 				else
 					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'input'));
-				var workspace_name = source_reactor.workspace.my_content_pane.title;
-				subMenus[workspace_name].addChild(menu_item);
+				var workspace_id = source_reactor.workspace.my_content_pane.uuid;
+				subMenus[workspace_id].addChild(menu_item);
 			}
 		},
 		makeMenuOfOutputs: function(source_reactor) {
 			var subMenus = {};
-			for (var workspace_name in pion.reactors.workspaces_by_name) {
-				subMenus[workspace_name] = new dijit.Menu({parentMenu: this.add_output_reactor_menu});
-				this.add_output_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[workspace_name]}));
+			for (var uuid in pion.reactors.workspaces_by_id) {
+				var workspace_name = pion.reactors.workspaces_by_id[uuid].config.Name;
+				subMenus[uuid] = new dijit.Menu({parentMenu: this.add_output_reactor_menu});
+				this.add_output_reactor_menu.addChild(new dijit.PopupMenuItem({label: workspace_name, popup: subMenus[uuid]}));
 			}
 			var existing_outputs = [];
 			for (var i = 0; i < source_reactor.reactor_outputs.length; ++i) {
@@ -493,8 +465,8 @@ dojo.declare("plugins.reactors.ReactorConnections",
 					menu_item.attr('disabled', true);
 				else
 					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'output'));
-				var workspace_name = sink_reactor.workspace.my_content_pane.title;
-				subMenus[workspace_name].addChild(menu_item);
+				var workspace_id = sink_reactor.workspace.my_content_pane.uuid;
+				subMenus[workspace_id].addChild(menu_item);
 			}
 		},
 		makeCallback: function(source_reactor, sink_reactor, connection_type) {

@@ -34,11 +34,10 @@ var minimum_workspace_height = 2000;
 var latest_event = null;
 var workspace_boxes = [];
 var surface = null;
-var new_workspace_tab_clicked = false;
 var reactor_config_store;
 
 pion.reactors.workspace_box = null;
-pion.reactors.workspaces_by_name = {};
+pion.reactors.workspaces_by_id = {};
 pion.reactors.reactors_by_id = {};
 pion.reactors.connections_by_id = {};
 pion.reactors.config_store = null;
@@ -150,6 +149,7 @@ pion.reactors.init = function() {
 	pion.plugins.initAvailablePluginList()
 		.addCallback(pion.reactors.getAllReactorsInUIDirectory)
 		.addCallback(initUsableReactorPlugins)
+		.addCallback(pion.reactors._initConfiguredWorkspaces)
 		.addCallback(pion.reactors._initConfiguredReactors);
 
 	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
@@ -157,19 +157,6 @@ pion.reactors.init = function() {
 
 	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
 	dojo.connect(document, 'onkeypress', handleKeyPress);
-
-	// This is a workaround for something that may or may not be a bug in dojo, but is definitely not the behavior
-	// we want.  The problem is that the tab that's clicked will always look as if it's selected, even if clicking it
-	// triggers another tab to actually be selected, as is the case with the 'add new workspace' tab.
-	dojo.connect(dijit.byId("mainTabContainer").tablist, 'onButtonClick', 
-					function() {
-						if (new_workspace_tab_clicked) {
-							pion.reactors.reselectCurrentWorkspace();
-
-							// Reset this since the workaround is only needed when the 'add new workspace' tab is clicked. 
-							new_workspace_tab_clicked = false;
-						}
-					});
 
 	var prev_global_ops = 0;
 	var prev_events_in_for_workspace = 0;
@@ -246,6 +233,61 @@ pion.reactors.updateRunButtons = function() {
 	}
 }
 
+pion.reactors._initConfiguredWorkspaces = function() {
+	var dfd = new dojo.Deferred();
+
+	var reactors_restricted = false;
+	if (! ('Admin' in pion.permissions_object)) {
+		// If we are here, 'Reactors' must be in pion.permissions_object.
+		var reactors_permission_node = pion.permissions_object.Reactors;
+
+		if (reactors_permission_node.getElementsByTagName('Unrestricted').length == 0) {
+			reactors_restricted = true;
+			var workspace_nodes = reactors_permission_node.getElementsByTagName('Workspace');
+		}
+	}
+
+	pion.reactors.workspace_store = new dojox.data.XmlStore({url: '/config/workspaces'});
+	var store = pion.reactors.workspace_store;
+	var found_one = false;
+	store.fetch({
+		onItem: function(item, request) {
+			found_one = true;
+			var config = {};
+			dojo.forEach(store.getAttributes(item), function(attr) {
+				if (attr != 'tagName' && attr != 'childNodes') {
+					config[attr] = store.getValue(item, attr).toString();
+				}
+			});
+			if (reactors_restricted) {
+				var match_found = dojo.some(workspace_nodes, function(node) {
+					return dojox.xml.parser.textContent(node) == config['@id'];
+				});
+			}
+			if (! reactors_restricted || match_found)
+				addWorkspace(config);
+		},
+		onComplete: function(items, request) {
+			if (! found_one) {
+				var message = 'No Workspaces were found.  The Reactors configuration file on the server may need to be converted to a newer format.'
+				var dialog = new pion._base.error.ServerErrorDialog({response_text: message});
+				dialog.show();
+			}
+
+			if (reactors_restricted)
+				dijit.byId('mainTabContainer').removeChild(dijit.byId('new_workspace_tab'));
+
+			if (workspace_boxes.length == 0)
+				dijit.byId('main_stack_container').removeChild(dijit.byId('reactor_config'));
+
+			dfd.callback();
+		},
+		onError: pion.handleFetchError
+	});
+
+	return dfd;
+}
+
 pion.reactors._initConfiguredReactors = function() {
 	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
 	reactor_config_store._getFetchUrl = function(request) {
@@ -280,6 +322,10 @@ pion.reactors._initConfiguredReactors = function() {
 					var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
 					var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
 
+					// TODO: need to handle the case where only one is defined - a proxy should be created.
+					if (! start_reactor || ! end_reactor)
+						return;
+
 					pion.reactors.workspace_box = start_reactor.workspace;
 					surface = pion.reactors.workspace_box.my_surface;
 					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
@@ -289,9 +335,6 @@ pion.reactors._initConfiguredReactors = function() {
 				},
 				onComplete: function(items, request) {
 					console.debug('done fetching Connections');
-					if (workspace_boxes.length == 0) {
-						addWorkspace();
-					}
 					pion.reactors.workspace_box = workspace_boxes[0];
 					surface = pion.reactors.workspace_box.my_surface;
 					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
@@ -308,10 +351,13 @@ pion.reactors._initConfiguredReactors = function() {
 }
 
 pion.reactors.createReactorInConfiguredWorkspace = function(config) {
-	pion.reactors.workspace_box = pion.reactors.workspaces_by_name[config.Workspace];
-	if (!pion.reactors.workspace_box) {
-		addWorkspace(config.Workspace);
+	if (! (config.Workspace in pion.reactors.workspaces_by_id)) {
+		//	var message = 'A Reactor with an unknown Workspace was received from the server.  It will not be available in the UI.'
+		//	var dialog = new pion._base.error.ServerErrorDialog({response_text: message});
+		//	dialog.show();
+		return;
 	}
+	pion.reactors.workspace_box = pion.reactors.workspaces_by_id[config.Workspace];
 	var workspace_box = pion.reactors.workspace_box;
 	dijit.byId("mainTabContainer").selectChild(workspace_box.my_content_pane);
 
@@ -406,23 +452,18 @@ pion.reactors.removeLine = function(line) {
 }
 
 pion.reactors.reselectCurrentWorkspace = function() {
-	// Without this, the following call to selectChild() won't do anything, since the current workspace is already selected.
-	dijit.byId("mainTabContainer").selectedChildWidget = undefined;
-
-	dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+	if (pion.reactors.workspace_box) {
+		// Without this, the following call to selectChild() won't do anything, since the current workspace is already selected.
+		dijit.byId("mainTabContainer").selectedChildWidget = undefined;
+	
+		dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
+	}
 }
 
-function addWorkspace(name) {
+function addWorkspace(config) {
 	var i = workspace_boxes.length;
-	if (name) {
-		var title = name;
-	} else {
-		var title = 'Workspace ' + (i + 1);
-		for (var j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
-			title = 'Workspace ' + j;
-		};
-	}
-	var workspace_pane = new dijit.layout.ContentPane({ "class": "workspacePane", title: title, style: "overflow: auto" });
+	var workspace_pane = new dijit.layout.ContentPane({ "class": "workspacePane", title: config.Name, style: "overflow: auto" });
+	workspace_pane.uuid = config['@id'];
 	var tab_container = dijit.byId("mainTabContainer");
 	var margin_box = dojo.marginBox(tab_container.domNode);
 	console.debug('margin_box = dojo.marginBox(tab_container.domNode) = ', margin_box);
@@ -442,10 +483,10 @@ function addWorkspace(name) {
 	dojo.addClass(new_workspace.node, "workspaceTarget");
 	dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ pion.reactors.handleDropOnWorkspace(source, nodes, copy, new_workspace); });
 	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
+	new_workspace.config = config;
 	new_workspace.my_content_pane = workspace_pane;
-	new_workspace.onEmpty = function(workspace_pane){};
 	workspace_pane.my_workspace_box = new_workspace;
-	pion.reactors.workspaces_by_name[title] = new_workspace;
+	pion.reactors.workspaces_by_id[config['@id']] = new_workspace;
 	workspace_boxes[i] = new_workspace;
 
 	// Need to do this now so that the dimensions of new_workspace are calculated.
@@ -1061,77 +1102,92 @@ function deleteReactor(reactor) {
 		timeout: 5000,
 		load: function(response, ioArgs) {
 			console.debug('xhrDelete for url = /config/reactors/', reactor.config['@id'], '; HTTP status code: ', ioArgs.xhr.status);
-
-			// This needs to happen before any cross workspace connections are destroyed.
-			delete pion.reactors.reactors_by_id[reactor.config['@id']];
-
-			// Remove connections between this reactor and incoming and outgoing reactors.
-			for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
-				var reactor_input = reactor.reactor_inputs[i];
-				var is_cross_workspace = 'cross_workspace_connection' in reactor_input;
-				var incoming_reactor = is_cross_workspace? reactor_input.source.external_reactor : reactor_input.source;
-
-				// Remove connection from outputs of incoming_reactor.
-				for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
-					if (incoming_reactor.reactor_outputs[j].id == reactor_input.id) {
-						incoming_reactor.reactor_outputs.splice(j, 1);
-					}
-				}
-				if (is_cross_workspace) {
-					reactor_input.cross_workspace_connection.destroy();
-				} else {
-					pion.reactors.removeLine(reactor_input.line);
-				}
-			}
-			for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
-				var reactor_output = reactor.reactor_outputs[i];
-				var is_cross_workspace = 'cross_workspace_connection' in reactor_output;
-				var outgoing_reactor = is_cross_workspace? reactor_output.sink.external_reactor : reactor_output.sink;
-
-				// Remove connection from inputs of outgoing_reactor.
-				for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
-					if (outgoing_reactor.reactor_inputs[j].id == reactor_output.id) {
-						outgoing_reactor.reactor_inputs.splice(j, 1);
-					}
-				}
-				if (is_cross_workspace) {
-					reactor_output.cross_workspace_connection.destroy();
-				} else {
-					pion.reactors.removeLine(reactor_output.line);
-				}
-			}
-
-			// Remove the reactor's node from the DOM tree, and finally, remove the reactor
-			// itself from the list of reactors in the workspace.
-			var workspace_box = pion.reactors.workspace_box;
-			workspace_box.node.removeChild(reactor.domNode);
-			for (var j = 0; j < workspace_box.reactors.length; ++j) {
-				if (workspace_box.reactors[j] == reactor) {
-					workspace_box.reactors.splice(j, 1);
-				}
-			}
-			if (workspace_box.reactors.length == 0) {
-				workspace_box.onEmpty(workspace_box.my_content_pane);
-			}
-
+			deleteReactorFromUI(reactor);
 			return response;
 		},
 		error: pion.getXhrErrorHandler(dojo.xhrDelete)
 	});
 }
 
+function deleteReactorFromUI(reactor) {
+	// This needs to happen before any cross workspace connections are destroyed.
+	delete pion.reactors.reactors_by_id[reactor.config['@id']];
+
+	// Remove connections between this reactor and incoming and outgoing reactors.
+	for (var i = 0; i < reactor.reactor_inputs.length; ++i) {
+		var reactor_input = reactor.reactor_inputs[i];
+		var is_cross_workspace = 'cross_workspace_connection' in reactor_input;
+		var incoming_reactor = is_cross_workspace? reactor_input.source.external_reactor : reactor_input.source;
+
+		// Remove connection from outputs of incoming_reactor.
+		for (var j = 0; j < incoming_reactor.reactor_outputs.length; ++j) {
+			if (incoming_reactor.reactor_outputs[j].id == reactor_input.id) {
+				incoming_reactor.reactor_outputs.splice(j, 1);
+			}
+		}
+		if (is_cross_workspace) {
+			reactor_input.cross_workspace_connection.destroy();
+		} else {
+			pion.reactors.removeLine(reactor_input.line);
+		}
+	}
+	for (var i = 0; i < reactor.reactor_outputs.length; ++i) {
+		var reactor_output = reactor.reactor_outputs[i];
+		var is_cross_workspace = 'cross_workspace_connection' in reactor_output;
+		var outgoing_reactor = is_cross_workspace? reactor_output.sink.external_reactor : reactor_output.sink;
+
+		// Remove connection from inputs of outgoing_reactor.
+		for (var j = 0; j < outgoing_reactor.reactor_inputs.length; ++j) {
+			if (outgoing_reactor.reactor_inputs[j].id == reactor_output.id) {
+				outgoing_reactor.reactor_inputs.splice(j, 1);
+			}
+		}
+		if (is_cross_workspace) {
+			reactor_output.cross_workspace_connection.destroy();
+		} else {
+			pion.reactors.removeLine(reactor_output.line);
+		}
+	}
+
+	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
+	// itself from the list of reactors in the workspace.
+	var workspace_box = pion.reactors.workspace_box;
+	workspace_box.node.removeChild(reactor.domNode);
+	for (var j = 0; j < workspace_box.reactors.length; ++j) {
+		if (workspace_box.reactors[j] == reactor) {
+			workspace_box.reactors.splice(j, 1);
+		}
+	}
+}
+
 function selected(page) {
 	if (page.title == "Add new workspace") {
-		console.debug("'Add new workspace' tab was selected");
-		if (new_workspace_tab_clicked) {
-			console.debug('redundant call');
-			return;
+		var i = workspace_boxes.length;
+		var title = 'Workspace ' + (i + 1);
+		for (var j = i + 2; isDuplicateWorkspaceName(null, title); ++j) {
+			title = 'Workspace ' + j;
+		};
+		var post_data = '<PionConfig><Workspace><Name>' + title + '</Name></Workspace></PionConfig>';
+		dojo.rawXhrPost({
+			url: '/config/workspaces',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				var workspace_node = response.getElementsByTagName('Workspace')[0];
+				var config = { '@id': workspace_node.getAttribute('id') };
+				dojo.forEach(workspace_node.childNodes, function(node) {
+					if (node.firstChild) {
+						config[node.tagName] = node.firstChild.nodeValue;
 		}
-		new_workspace_tab_clicked = true;
-		addWorkspace();
+				});
+				addWorkspace(config);
+				return response;
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
 		return;
 	}
-	console.debug("selected " + page.title + ", page.id = " + page.id);
 	pion.reactors.workspace_box = page.my_workspace_box;
 	surface = pion.reactors.workspace_box.my_surface;
 	if (pion.reactors.isTracking) {
@@ -1207,30 +1263,16 @@ function handleKeyPress(e) {
 }
 
 function showWorkspaceConfigDialog(workspace_pane) {
-	var dialog = pion.reactors.workspace_dialog;
-	if (!dialog) {
-		dialog = new pion.reactors.WorkspaceDialog({title: "Workspace Configuration"});
+	dialog = new pion.reactors.WorkspaceDialog({title: "Workspace Configuration", workspace_pane: workspace_pane});
 		dialog.workspace_name.isValid = function(isFocused) {
 			if (!this.validator(this.textbox.value, this.constraints)) {
 				this.invalidMessage = "Invalid Workspace name";
 				console.debug('validationTextBox.isValid returned false');
 				return false;
 			}
-			if (isDuplicateWorkspaceName(workspace_pane, this.textbox.value)) {
-				this.invalidMessage = "A Workspace with this name already exists";
-				console.debug('In validationTextBox.isValid, isDuplicateWorkspaceName returned true');
-				return false;
-			}
-			console.debug('validationTextBox.isValid returned true');
 			return true;
 		};
 		dialog.save_button.onClick = function() { return dialog.isValid(); };
-
-		// Save for future use.
-		pion.reactors.workspace_dialog = dialog;
-	}
-	dialog.attr('value', {name: workspace_pane.title, comment: workspace_pane.comment});
-	dialog.workspace_pane = workspace_pane;
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
@@ -1246,31 +1288,36 @@ function showWorkspaceConfigDialog(workspace_pane) {
 }
 
 function updateWorkspaceConfig(dialogFields, workspace_pane) {
-	var new_workspace_name = dialogFields.name;
-	if (new_workspace_name != workspace_pane.title) {
+	var new_workspace_name = dialogFields.Name;
+	var put_data = '<PionConfig><Workspace><Name>' + new_workspace_name + '</Name>';
+	if (dialogFields.Comment)
+		put_data += '<Comment>' + dialogFields.Comment + '</Comment>';
+	put_data += '</Workspace></PionConfig>';
+	dojo.rawXhrPut({
+		url: '/config/workspaces/' + workspace_pane.uuid,
+		contentType: "text/xml",
+		handleAs: "xml",
+		putData: put_data,
+		load: function(response){
 		workspace_pane.title = new_workspace_name;
 		dojo.byId(workspace_pane.controlButton.id).innerHTML = new_workspace_name;
-		dojo.forEach(workspace_pane.my_workspace_box.reactors, function(reactor) {
-			reactor.changeWorkspace(new_workspace_name);
+			pion.reactors.workspaces_by_id[workspace_pane.uuid].config = dialogFields;
+		},
+		error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
 		});
 	}
-	workspace_pane.comment = dialogFields.comment;
-}
 
 // Returns true if there is another workspace with the given name.
 function isDuplicateWorkspaceName(workspace_pane, name) {
-	for (var i = 0; i < workspace_boxes.length; ++i) {
-		if (workspace_boxes[i].my_content_pane != workspace_pane && workspace_boxes[i].my_content_pane.title == name) {
-			 return true;
-		}
-	}
-	return false;
+	return dojo.some(workspace_boxes, function(box) {
+		return box.my_content_pane != workspace_pane && box.my_content_pane.title == name;
+	});
 }
 
 function deleteWorkspaceIfConfirmed(workspace_pane) {
 	// If workspace is empty, don't bother with a confirmation dialog.
 	if (workspace_pane.my_workspace_box.reactors.length == 0) {
-		_deleteEmptyWorkspace(workspace_pane);
+		pion.reactors.deleteEmptyWorkspace(workspace_pane);
 		return;
 	}
 
@@ -1279,21 +1326,41 @@ function deleteWorkspaceIfConfirmed(workspace_pane) {
 }
 
 function deleteWorkspace(workspace_pane) {
+	// First, delete all the reactors in the workspace.
+	dojo.xhrDelete({
+		url: '/config/reactors/' + workspace_pane.uuid,
+		handleAs: 'xml',
+		timeout: 20000,
+		load: function(response, ioArgs) {
+			pion.reactors.deleteEmptyWorkspace(workspace_pane);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.xhrDelete)
+	});
+}
+
+pion.reactors.deleteEmptyWorkspace = function(workspace_pane) {
+	dojo.xhrDelete({
+		url: '/config/workspaces/' + workspace_pane.uuid,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			deleteWorkspaceFromUI(workspace_pane);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.xhrDelete)
+	});
+}
+
+function deleteWorkspaceFromUI(workspace_pane) {
 	var copy_of_reactor_array = [];
 	for (var i = 0; i < workspace_pane.my_workspace_box.reactors.length; ++i) {
 		copy_of_reactor_array[i] = workspace_pane.my_workspace_box.reactors[i];
 	}
 	for (i = 0; i < copy_of_reactor_array.length; ++i) {
-		deleteReactor(copy_of_reactor_array[i]);
+		deleteReactorFromUI(copy_of_reactor_array[i]);
 	}
-
-	// Wait until all the reactors have been deleted, then remove the workspace.
-	dojo.connect(workspace_pane.my_workspace_box, 'onEmpty', _deleteEmptyWorkspace);
-}
-
-function _deleteEmptyWorkspace(workspace_pane) {
-	console.debug('deleting ', workspace_pane.title);
-	delete pion.reactors.workspaces_by_name[workspace_pane.title];
+	delete pion.reactors.workspaces_by_id[workspace_pane.uuid];
 	for (var j = 0; j < workspace_boxes.length; ++j) {
 		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
 			workspace_boxes.splice(j, 1);
@@ -1312,6 +1379,24 @@ dojo.declare("pion.reactors.WorkspaceDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
+		postCreate: function(){
+			this.inherited("postCreate", arguments);
+			var _this = this;
+			var store = pion.reactors.workspace_store;
+			store.fetch({
+				query: {'@id': this.workspace_pane.uuid},
+				onItem: function(item) {
+					var config = {};
+					dojo.forEach(store.getAttributes(item), function(attr) {
+						if (attr != 'tagName' && attr != 'childNodes') {
+							config[attr] = store.getValue(item, attr).toString();
+						}
+					});
+					_this.attr('value', config);
+				},
+				onError: pion.handleFetchError
+			});
+		},
 		_handleDelete: function() {
 			this.onCancel();
 			deleteWorkspaceIfConfirmed(this.workspace_pane);

@@ -27,6 +27,7 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 // static members of CodecFactory
 const std::string			CodecFactory::DEFAULT_CONFIG_FILE = "codecs.xml";
 const std::string			CodecFactory::CODEC_ELEMENT_NAME = "Codec";
+const std::string			CodecFactory::CODECS_PERMISSION_TYPE = "Codecs";
 
 
 // CodecFactory member functions

@@ -213,6 +213,13 @@ public:
 	 */
 	virtual void operator()(pion::net::HTTPRequestPtr& request,
 							pion::net::TCPConnectionPtr& tcp_conn);
+
+	/// returns the type attribute used for an XML Permission node pertaining to MonitorService
+	std::string getPermissionType(void) const { return MONITOR_SERVICE_PERMISSION_TYPE; }
+
+private:
+
+	static const std::string			MONITOR_SERVICE_PERMISSION_TYPE;
 };
 
 	

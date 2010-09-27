@@ -117,6 +117,7 @@ public:
 		config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 			"<Name>DLF Log Writer</Name>"
 			"<Plugin>LogOutputReactor</Plugin>"
+			"<Workspace>1</Workspace>"
 			"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 			"<Filename>../logs/new.log</Filename>");
 		m_log_writer_id = m_reaction_engine->addReactor(config_ptr);
@@ -148,7 +149,7 @@ public:
 										 const std::string& directory = "",
 										 const std::string& filename = "")
 	{
-		std::string inner_config_str = "<Plugin>LogInputReactor</Plugin><Name>";
+		std::string inner_config_str = "<Plugin>LogInputReactor</Plugin><Workspace>1</Workspace><Name>";
 		inner_config_str += !name.empty()?      name :      "Log Reader";
 		inner_config_str += "</Name><Codec>";
 		inner_config_str += !codec.empty()?     codec :     codec_id;

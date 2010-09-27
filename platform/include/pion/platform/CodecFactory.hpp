@@ -102,7 +102,10 @@ public:
 	static xmlNodePtr createCodecConfig(const char *buf, std::size_t len) {
 		return ConfigManager::createResourceConfig(CODEC_ELEMENT_NAME, buf, len);
 	}
-	
+
+	/// returns the type attribute used for an XML Permission node pertaining to Codecs
+	std::string getPermissionType(void) const { return CODECS_PERMISSION_TYPE; }
+
 protected:
 	
 	/**
@@ -143,6 +146,9 @@ private:
 
 	/// name of the codec element for Pion XML config files
 	static const std::string		CODEC_ELEMENT_NAME;
+
+	/// type identifier for Codecs permission type
+	static const std::string		CODECS_PERMISSION_TYPE;
 };
 
 

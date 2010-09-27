@@ -38,6 +38,8 @@ const std::string dtd = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const std::string urnvocab("urn:vocab:");		// shorthand notation
 const unsigned URN_VOCAB = urnvocab.length();	// length("urn:vocab:") clicstream
 
+const std::string			MonitorService::MONITOR_SERVICE_PERMISSION_TYPE = "MonitorService";
+
 // MonitorHandler member functions
 	
 MonitorHandler::MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
@@ -232,7 +234,15 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
-	
+
+	bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
+	if (! allowed) {
+		// Send a 403 (Forbidden) response.
+		std::string error_msg = "User doesn't have permission for Monitor Service.";
+		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+		return;
+	}
+
 	// get the start/stop verb
 	const std::string verb(branches[0]);
 	
@@ -246,22 +256,20 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		const HTTPTypes::QueryParams qp = request->getQueryParams();
 
 		// request made to receive a stream of Events
-		if (verb == "status") {
-			// use local array to identify the reactor_id
-			// possibly a secondary id, for multiple instances per reactor_id
-			// get the status for this capture...
-			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
-			if (slot < m_writers.size() && m_writers[slot]) {
-				std::string response = m_writers[slot]->getStatus(qp);
-				response_writer->write(dtd + response);
-			} else {
-				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
-			}
-		} else if (verb == "start") {
+		if (verb == "start") {
 			// get the reactor_id from the first path branch
 			const std::string reactor_id(branches[1]);
 			if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
 				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				return;
+			}
+
+			// Check whether the User has permission for this Reactor.
+			bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
+			if (! reactor_allowed) {
+				// Send a 403 (Forbidden) response.
+				std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
+				HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
 				return;
 			}
 
@@ -281,25 +289,43 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			std::ostringstream xml;
 			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
 			response_writer->write(xml.str());
-		} else if (verb == "stop") {
+		} else {
+			// use local array to identify the reactor_id
+			// possibly a secondary id, for multiple instances per reactor_id
 			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
-			if (slot < m_writers.size() && m_writers[slot])
-				m_writers[slot]->stop();
-		} else if (verb == "delete") {
-			unsigned slot = boost::lexical_cast<boost::uint32_t>(branches[1]);
+
 			if (slot < m_writers.size() && m_writers[slot]) {
-				m_writers[slot]->stop();
-				m_writers[slot].reset();
+				// Check whether the User has permission for this Reactor.
+				const std::string reactor_id = m_writers[slot]->getReactorId();
+				bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
+				if (! reactor_allowed) {
+					// Send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
+					HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
+				}
+
+				if (verb == "status") {
+					// get the status for this capture...
+					std::string response = m_writers[slot]->getStatus(qp);
+					response_writer->write(dtd + response);
+				} else if (verb == "stop") {
+					m_writers[slot]->stop();
+				} else if (verb == "delete") {
+					m_writers[slot]->stop();
+					m_writers[slot].reset();
+				}
+			} else {
+				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
 			}
 		}
-		
+
 		response_writer->send();
 
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT
 			   || request->getMethod() == HTTPTypes::REQUEST_METHOD_POST)
 	{
-
-		// Error message? Not supported...
+		HTTPServer::handleMethodNotAllowed(request, tcp_conn);
 
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_HEAD) {
 		

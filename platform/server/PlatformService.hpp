@@ -126,6 +126,22 @@ public:
 	 */
 	virtual void updateReactors(PlatformConfig& platform_cfg) {}
 
+	/**
+	 * determines whether a User has permission to use a PlatformService
+	 *
+	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
+	 * @param id unique identifier specifying a subset of the PlatformService; can be empty
+	 *
+	 * @return true if the User has permission
+	 */
+	virtual bool accessAllowed(xmlNodePtr permission_config_ptr, const std::string& id) const {
+		// By default, permission is granted solely based on whether a Permission node of the appropriate type was found.
+		return permission_config_ptr != NULL;
+	}
+
+	/// returns the type attribute used for an XML Permission node pertaining to the type of Service being managed
+	virtual std::string getPermissionType(void) const { return ""; }
+
 	
 protected:
 	

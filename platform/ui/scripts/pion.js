@@ -71,64 +71,71 @@ pion.initOptionalValue = function(store, item, new_item_object, tag_name, option
 	}
 }
 
-// Contains ids of all the children of 'main_stack_container' in index.html.
-pion.resources_by_tab_id = {
-	reactor_config:  '/config/reactors',
-	vocab_config:    '/config/vocabularies',
-	codec_config:    '/config/codecs',
-	database_config: '/config/databases',
-	protocol_config: '/config/protocols',
-	user_config:     '/config/users',
-	system_config:   '/config'
-};
-
-// This is called by pion.services.init(), since the latter may (indirectly) add to pion.resources_by_tab_id.
-pion.initTabs = function() {
+pion.getPermissions = function() {
+	var dfd = new dojo.Deferred();
 	dojo.xhrGet({
-		url: '/config/users/' + dojo.cookie('user'),
+		url: '/query/permissions',
 		preventCache: true,
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
-			var main_stack = dijit.byId('main_stack_container');
-			var permitted_resources = dojo.map(response.getElementsByTagName('Permit'), function(resource) {
-				return dojo.isIE? resource.childNodes[0].nodeValue : resource.textContent;
+			var permission_nodes = response.getElementsByTagName('Permission');
+			pion.permissions_object = {};
+			dojo.forEach(permission_nodes, function(node) {
+				var type = node.getAttribute('type');
+				pion.permissions_object[type] = node;
 			});
-
-			// TODO: it would be a lot nicer to add only the permitted tabs, instead of creating
-			// all of them and then deleting the ones not found on the list of permitted tabs.
-			for (var tab_id in pion.resources_by_tab_id) {
-				if (dojo.indexOf(permitted_resources, pion.resources_by_tab_id[tab_id]) == -1) {
-					main_stack.removeChild(dijit.byId(tab_id));
-				}
-			}
-
-			init_services_standby.hide();
-
-			var tabs = main_stack.getChildren();
-			if (tabs.length > 0) {
-				main_stack.selectChild(tabs[0]);
-				configPageSelected(tabs[0]);
-			} else {
-				alert('There are no access rights defined for this user account.  You may need to reset your users.xml file.');
-			}
-
-			// Don't be tempted to move this earlier to avoid calling configPageSelected() above:
-			// selectChild(page) won't trigger configPageSelected(page) if page was already selected.
-			dojo.subscribe("main_stack_container-selectChild", configPageSelected);
-
-			// Show the wizard link only if the user has access to the reactors tab and KeyService is running.
-			// (If there's no KeyService running, then we assume Pion Core is installed, in which case the wizard is not useful.)
-			if (dojo.indexOf(permitted_resources, '/config/reactors') != -1 && pion.key_service_running) {
-				dojo.byId('wizard_menu_section').style.visibility = 'visible';
-			}
-
+			dfd.callback();
 			return response;
-		}
+		},
+		error: pion.handleXhrGetError
 	});
-	pion.tab_ids_by_resource = {};
-	for (var tab_id in pion.resources_by_tab_id) {
-		pion.tab_ids_by_resource[pion.resources_by_tab_id[tab_id]] = tab_id;
+	return dfd;
+}
+
+// Contains ids of all the children of 'main_stack_container' in index.html.
+pion.permission_types_by_tab_id = {
+	reactor_config:  'Reactors',
+	vocab_config:    'Vocabularies',
+	codec_config:    'Codecs',
+	database_config: 'Databases',
+	protocol_config: 'Protocols',
+	user_config:     'Admin',
+	system_config:   'Admin'
+};
+
+// This is called by pion.services.init()
+pion.initTabs = function() {
+	var main_stack = dijit.byId('main_stack_container');
+
+	// TODO: it would be a lot nicer to add only the permitted tabs, instead of creating
+	// all of them and then deleting the ones not found on the list of permitted tabs.
+	if (! ('Admin' in pion.permissions_object)) {
+		for (var tab_id in pion.permission_types_by_tab_id) {
+			if (! (pion.permission_types_by_tab_id[tab_id] in pion.permissions_object)) {
+				main_stack.removeChild(dijit.byId(tab_id));
+			}
+		}
+	}
+
+	init_services_standby.hide();
+
+	var tabs = main_stack.getChildren();
+	if (tabs.length > 0) {
+		main_stack.selectChild(tabs[0]);
+		configPageSelected(tabs[0]);
+	} else {
+		alert('There are no access rights defined for this user account.  You may need to update your users.xml file.');
+	}
+
+	// Don't be tempted to move this earlier to avoid calling configPageSelected() above:
+	// selectChild(page) won't trigger configPageSelected(page) if page was already selected.
+	dojo.subscribe("main_stack_container-selectChild", configPageSelected);
+
+	// Show the wizard link only if the user has 'Admin' permission and KeyService is running.
+	// (If there's no KeyService running, then we assume Pion Core is installed, in which case the wizard is not useful.)
+	if ('Admin' in pion.permissions_object && pion.key_service_running) {
+		dojo.byId('wizard_menu_section').style.visibility = 'visible';
 	}
 }
 
@@ -211,6 +218,29 @@ pion.applyTemplatesIfNeeded = function(wizard_config) {
 	return dfd;
 }
 
+pion.addWorkspaceFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+
+	var _this = this;
+	var post_data = '<PionConfig><Workspace><Name>' + wizard_config.workspace_name
+						 + '</Name></Workspace></PionConfig>';
+	dojo.rawXhrPost({
+		url: '/config/workspaces',
+		contentType: "text/xml",
+		handleAs: "xml",
+		postData: post_data,
+		load: function(response) {
+			var node = response.getElementsByTagName('Workspace')[0];
+			wizard_config.workspace_id = node.getAttribute('id');
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	});
+
+	return dfd;
+}
+
 pion.addReactorsFromWizard = function(wizard_config) {
 	var dfd = new dojo.Deferred();
 	
@@ -222,7 +252,7 @@ pion.addReactorsFromWizard = function(wizard_config) {
 	var num_reactors_added = 0;
 	var _this = this;
 	wizard_config.reactor_ids = {};
-	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_name
+	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_id
 						 + '</Workspace><Source>Wizard</Source>';
 	dojo.forEach(wizard_config.reactors, function(reactor) {
 		var post_data = post_data_header + reactor.config + '</Reactor></PionConfig>';  
@@ -527,6 +557,7 @@ pion.wizardDone = function(exit_early) {
 	}
 
 	pion.applyTemplatesIfNeeded(wizard_config)
+	.addCallback(pion.addWorkspaceFromWizard)
 	.addCallback(pion.addReactorsFromWizard)
 	.addCallback(pion.addConnectionsFromWizard)
 	.addCallback(pion.addReplayIfNeeded)

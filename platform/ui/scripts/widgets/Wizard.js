@@ -316,6 +316,7 @@ pion.widgets.Wizard.prepareCaptureDevicesPane = function() {
 		// Create a temporary dummy SnifferReactor.
 		var post_data = '<PionConfig><Reactor>'
 			+ '<Plugin>SnifferReactor</Plugin>'
+			+ '<Workspace>dummy</Workspace>'
 			+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
 			+ '</Reactor></PionConfig>';  
 		dojo.rawXhrPost({
@@ -525,16 +526,49 @@ pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 			timeout: 5000,
 			load: function(response, ioArgs) {
 				if (++num_reactors_deleted == reactors.length) {
-					// Delete the pion_edition cookie.
-					dojo.cookie('pion_edition', '', {expires: -1});
-
-					// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
-					location.replace('/');
+					pion.widgets.Wizard.deleteAllWorkspacesAndReload();
 				}
 				return response;
 			},
 			error: pion.getXhrErrorHandler(dojo.xhrDelete)
 		});
+	});
+}
+
+pion.widgets.Wizard.deleteAllWorkspacesAndReload = function() {
+	// Delete the pion_edition cookie.
+	dojo.cookie('pion_edition', '', {expires: -1});
+
+	dojo.xhrGet({
+		url: '/config/workspaces',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var workspaces = response.getElementsByTagName('Workspace');
+			if (workspaces.length == 0) {
+				// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
+				location.replace('/');
+			} else {
+				num_workspaces_deleted = 0;
+				dojo.forEach(workspaces, function(workspace) {
+					var id = workspace.getAttribute('id');
+					dojo.xhrDelete({
+						url: '/config/workspaces/' + id,
+						handleAs: 'xml',
+						timeout: 5000,
+						load: function(response, ioArgs) {
+							if (++num_workspaces_deleted == workspaces.length) {
+								// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
+								location.replace('/');
+							}
+						},
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					});
+				});
+			}
+		},
+		error: pion.handleXhrGetError
 	});
 }
 
@@ -547,14 +581,12 @@ pion.widgets.Wizard.restart = function() {
 		load: function(response, ioArgs) {
 			var reactors = response.getElementsByTagName('Reactor');
 			if (reactors.length == 0) {
-				// Delete the pion_edition cookie.
-				dojo.cookie('pion_edition', '', {expires: -1});
-
-				// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
-				location.replace('/');
+				pion.widgets.Wizard.deleteAllWorkspacesAndReload();
 			} else {
 				pion.services.getConfiguredServices().addCallback(function(kw_args) {
-					var replay_configured = (dojo.indexOf(kw_args.configured_services, 'ReplayService') != -1);
+					var replay_configured = dojo.some(kw_args.configured_services, function(service) {
+						return service.plugin == 'ReplayService';
+					});
 					var message = 'Warning: You currently have '
 								+ (reactors.length == 1? 'one Reactor ' : reactors.length + ' Reactors ')
 								+ (replay_configured? 'and a Replay Service ' : '')

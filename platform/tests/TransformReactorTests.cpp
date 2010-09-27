@@ -162,6 +162,7 @@ BOOST_AUTO_TEST_CASE(checkTransformCLFLogFile) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Float Transformer</Name>"
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#referer</Term>"
 			"<Type>Lookup</Type>"
@@ -182,6 +183,7 @@ BOOST_AUTO_TEST_CASE(checkTransformCLFLogFile) {
 	config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>CLF Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>"
 		"<Filename>../" + LOG_OUTPUT_FILE + "</Filename>");
 	std::string log_writer_id = m_reaction_engine->addReactor(config_ptr);
@@ -209,6 +211,7 @@ BOOST_AUTO_TEST_CASE(checkTransformStockPriceLogFile) {
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Float Transformer</Name>"
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:stocks#price</Term>"
 			"<SourceTerm>urn:vocab:stocks#price</SourceTerm>"
@@ -221,6 +224,7 @@ BOOST_AUTO_TEST_CASE(checkTransformStockPriceLogFile) {
 	config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Name>Stock Price Log Writer</Name>"
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>90eb7478-1629-11dd-81cb-0019e3f89cd2</Codec>"
 		"<Filename>../" + LOG_OUTPUT_FILE + "</Filename>");
 	std::string log_writer_id = m_reaction_engine->addReactor(config_ptr);
@@ -293,6 +297,7 @@ BOOST_AUTO_TEST_CASE(checkBasicRegexTransformation) {
 	// Add a TransformReactor that does a regular expression transformation.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
@@ -313,6 +318,7 @@ BOOST_AUTO_TEST_CASE(checkRulesTransformation) {
 	// Add a TransformReactor that does a Rule based Transformation.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -350,6 +356,7 @@ BOOST_AUTO_TEST_CASE(checkRulesTransformationWithUndefinedTerm) {
 	// Add a TransformReactor that does a Rule based Transformation with Rules based on two different Terms.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -382,7 +389,7 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsDefined) {
 	// Add a TransformReactor that does Rule based Transformations of type is-defined.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
-
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -413,6 +420,7 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefined) {
 	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -444,6 +452,7 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsDefinedWithEventType) {
 	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -476,6 +485,7 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefinedWithEventType) {
 	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -507,6 +517,7 @@ BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingHexadecimalEscapeCodes) {
 	// Add a TransformReactor that does a regular expression transformation that includes a non-US-ASCII character.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
@@ -539,6 +550,7 @@ BOOST_AUTO_TEST_CASE(checkUtf8RegexUsingEmbeddedUtf8) {
 	// Add a TransformReactor that does a regular expression transformation that includes a non-US-ASCII character.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
@@ -577,6 +589,7 @@ BOOST_AUTO_TEST_CASE(checkCaseInsensitiveUtf8Regex) {
 	// Note that the first line of our config files is always: <?xml version="1.0" encoding="UTF-8"?>
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>" + string_term_1 + "</Term>"
 			"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"
@@ -612,6 +625,7 @@ BOOST_AUTO_TEST_CASE(checkBasicRulesTransformation) {
 	// Add a TransformReactor that does a Rules transformation.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"
@@ -639,6 +653,7 @@ BOOST_AUTO_TEST_CASE(checkCharBasedRulesRegexAgainstNonAsciiChar) {
 	// Add a TransformReactor that does a Rules transformation.
 	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Transformation>"
 			"<Term>urn:vocab:clickstream#sc-content</Term>"
 			"<Type>Rules</Type>"

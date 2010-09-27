@@ -33,6 +33,7 @@ const std::string			Reactor::RUNNING_ELEMENT_NAME = "Running";
 const std::string			Reactor::EVENTS_IN_ELEMENT_NAME = "EventsIn";
 const std::string			Reactor::EVENTS_OUT_ELEMENT_NAME = "EventsOut";
 const std::string			Reactor::ID_ATTRIBUTE_NAME = "id";
+const std::string			Reactor::WORKSPACE_ELEMENT_NAME = "Workspace";
 const std::string			Reactor::X_COORDINATE_ELEMENT_NAME = "X";
 const std::string			Reactor::Y_COORDINATE_ELEMENT_NAME = "Y";
 
@@ -43,6 +44,13 @@ void Reactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 {
 	ConfigWriteLock cfg_lock(*this);
 	PlatformPlugin::setConfig(v, config_ptr);
+
+	// get the Workspace ID
+	std::string workspace_str;
+	if (! ConfigManager::getConfigOption(WORKSPACE_ELEMENT_NAME, workspace_str, config_ptr))
+		throw MissingWorkspaceException(getId());
+
+	m_workspace_id = workspace_str;
 }
 
 void Reactor::updateVocabulary(const Vocabulary& v)

@@ -43,6 +43,9 @@ pion.services.init = function() {
 		return d;
 	}
 
+	// All loaded services which require permission.
+	pion.services.restrictable_services = [];
+
 	// Expected properties of kw_args:
 	// services_in_ui_dir: all Services for which a UI was found in the UI directory 
 	//                     (as specified in services.xml, in PlatformService "config-service").
@@ -58,6 +61,14 @@ pion.services.init = function() {
 		var conditional_prototypes = [];
 		dojo.forEach(loadable_services, function(service) {
 			var prototype = pion.plugins.getPluginPrototype('plugins.services', service.plugin, '/plugins/services');
+			if ('requiresPermission' in prototype && prototype.requiresPermission(service)) {
+				// Does the user have any permission at all for this Service?  If not, skip it.
+				if (! (service.plugin in pion.permissions_object || 'Admin' in pion.permissions_object))
+					return;
+
+				// TODO: Confirm that permission_layout in service?
+				pion.services.restrictable_services.push(service);
+			}
 			if ('isUsable' in prototype) {
 				prototype.resource = service.resource;
 				conditional_prototypes.push(prototype);
@@ -95,6 +106,7 @@ pion.services.init = function() {
 	}
 
 	pion.plugins.initAvailablePluginList()
+		.addCallback(pion.getPermissions)
 		.addCallback(pion.services.getAllServicesInUIDirectory)
 		.addCallback(pion.services.getConfiguredServices)
 		.addCallback(initUsableServicePlugins)

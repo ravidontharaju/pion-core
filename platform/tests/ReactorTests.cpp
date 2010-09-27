@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE(checkRemoveConnectionForMissingReactor) {
 }
 
 BOOST_AUTO_TEST_CASE(checkAddReactorMinimalConfig) {
-	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin></Reactor></PionConfig>";
+	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin><Workspace>1</Workspace></Reactor></PionConfig>";
 	xmlNodePtr config_ptr = ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
 	std::string reactor_id = m_reaction_engine.addReactor(config_ptr);
 	xmlFreeNodeList(config_ptr);
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(checkAddReactorMinimalConfig) {
 }
 
 BOOST_AUTO_TEST_CASE(checkAddReactorSimpleConfig) {
-	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin><Name>Filter Reactor 1</Name></Reactor></PionConfig>";
+	std::string config_str = "<PionConfig><Reactor><Plugin>FilterReactor</Plugin><Workspace>1</Workspace><Name>Filter Reactor 1</Name></Reactor></PionConfig>";
 	xmlNodePtr config_ptr = ConfigManager::createResourceConfig("Reactor", config_str.c_str(), config_str.size());
 	std::string reactor_id = m_reaction_engine.addReactor(config_ptr);
 	xmlFreeNodeList(config_ptr);
@@ -317,6 +317,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithoutPreExistingCoords) {
 	// Create a Reactor without X or Y coordinates.
 	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 	);
 	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
@@ -325,6 +326,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithoutPreExistingCoords) {
 	// Update the Reactor's UI location.
 	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 		"<X>75</X>"
 		"<Y>50</Y>"
@@ -346,6 +348,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithPreExistingCoords) {
 	// Create a Reactor with X and Y coordinates.
 	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 		"<X>40</X>"
 		"<Y>90</Y>"
@@ -356,6 +359,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationWithPreExistingCoords) {
 	// Update the Reactor's UI location.
 	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 		"<X>75</X>"
 		"<Y>50</Y>"
@@ -377,6 +381,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationIgnoresNonLocationChanges) {
 	// Create a Reactor with X and Y coordinates.
 	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 		"<X>40</X>"
 		"<Y>90</Y>"
@@ -387,6 +392,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationIgnoresNonLocationChanges) {
 	// Call setReactorLocation() with a config that also has a new name.
 	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Extra Spiffy Filter Reactor</Name>"
 		"<X>75</X>"
 		"<Y>50</Y>"
@@ -410,6 +416,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationDoesntCallSetConfig) {
 	// Create a LogOutputReactor (because LogOutputReactor::setConfig() actually does some verification.)
 	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Codec>23f68d5a-bfec-11dc-81a7-0016cb926e68</Codec>"
 		"<Filename>../logs/new.log</Filename>"
 	);
@@ -419,6 +426,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationDoesntCallSetConfig) {
 	// Create a configuration that should cause LogOutputReactor::setConfig() to throw (due to missing elements).
 	xmlNodePtr bad_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>LogOutputReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<X>75</X>"
 		"<Y>50</Y>"
 	);
@@ -439,6 +447,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationUpdatesConfigFile) {
 	// Create a Reactor without X or Y coordinates.
 	xmlNodePtr orig_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 	);
 	std::string reactor_id = m_reaction_engine.addReactor(orig_config);
@@ -447,6 +456,7 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationUpdatesConfigFile) {
 	// Update the Reactor's UI location.
 	xmlNodePtr new_config = PionPlatformUnitTest::makeReactorConfigFromString(
 		"<Plugin>FilterReactor</Plugin>"
+		"<Workspace>1</Workspace>"
 		"<Name>Filter Reactor 1</Name>"
 		"<X>125</X>"
 		"<Y>150</Y>"
@@ -463,6 +473,12 @@ BOOST_AUTO_TEST_CASE(checkSetReactorLocationUpdatesConfigFile) {
 	BOOST_CHECK(file_contents.find("<Y>150</Y>") != std::string::npos);
 }
 
+BOOST_AUTO_TEST_CASE(checkAddWorkspace) {
+	std::string config_str = "<PionConfig><Workspace><Name>My First Workspace</Name></Workspace></PionConfig>";
+	std::string workspace_id = m_reaction_engine.addWorkspace(config_str.c_str(), config_str.size());
+	BOOST_CHECK(! workspace_id.empty());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -473,6 +489,9 @@ class ReactionEngineConnectionTests_F
 public:
 	ReactionEngineConnectionTests_F() {
 		xmlNodePtr config_ptr(ConfigManager::createPluginConfig("FilterReactor"));
+		xmlNodePtr node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Workspace"));
+		xmlNodeSetContent(node, reinterpret_cast<const xmlChar*>("1"));
+		xmlAddNextSibling(config_ptr, node);
 
 		filter_one_id = m_reaction_engine.addReactor(config_ptr);
 		BOOST_REQUIRE(! filter_one_id.empty());
@@ -892,11 +911,13 @@ BOOST_AUTO_TEST_CASE(checkReactorStatusInConfigFileIsUsed) {
 		<< "  <Reactor id=\"" << m_filter_id << "\">\n"
 		<< "    <Name>Do Nothing</Name>\n"
 		<< "    <Plugin>FilterReactor</Plugin>\n"
+		<< "    <Workspace>1</Workspace>\n"
 		<< "    <Running>false</Running>\n"
 		<< "  </Reactor>\n"
 		<< "  <Reactor id=\"" << m_log_reader_id << "\">\n"
 		<< "    <Name>CLF Log Reader</Name>\n"
 		<< "    <Plugin>LogInputReactor</Plugin>\n"
+		<< "    <Workspace>1</Workspace>\n"
 		<< "    <Codec>3f49f2da-bfe3-11dc-8875-0016cb926e68</Codec>\n"
 		<< "    <Directory>../logs</Directory>\n"
 		<< "    <Filename>combined.*\\.log</Filename>\n"

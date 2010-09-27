@@ -53,6 +53,9 @@ public:
 	/// name of the run status element for Pion XML config files
 	static const std::string		RUNNING_ELEMENT_NAME;
 
+	/// name of the Workspace element for Pion XML config files
+	static const std::string		WORKSPACE_ELEMENT_NAME;
+
 	/// name of the X Coordinate element for Pion XML config files
 	static const std::string		X_COORDINATE_ELEMENT_NAME;
 
@@ -102,7 +105,15 @@ public:
 		UnknownSignalException(const std::string& reactor_id, const std::string& signal_id)
 			: PionException("Unknown signal for Reactor " + reactor_id + ": ", signal_id) {}
 	};
-	
+
+	/// exception thrown if a Reactor configuration does not have a Workspace element (or it is empty)
+	class MissingWorkspaceException : public PionException {
+	public:
+		MissingWorkspaceException(const std::string& reactor_id)
+			: PionException("Reactor configuration missing required Workspace parameter: ", reactor_id) {}
+		MissingWorkspaceException(void)
+			: PionException("Reactor configuration missing required Workspace parameter") {}
+	};
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~Reactor() {}
@@ -258,7 +269,7 @@ public:
 
 	/// returns the total number of Events received by this Reactor
 	inline boost::uint32_t getEventsIn(void) const { return m_events_in; }
-		
+
 	/// returns the total number of Events delivered by this Reactor
 	inline boost::uint32_t getEventsOut(void) const { return m_events_out; }
 
@@ -267,8 +278,10 @@ public:
 	
 	/// returns the type of Reactor (collection, processing, storage)
 	inline ReactorType getType(void) const { return m_type; }
-	
-		
+
+	/// returns the ID of the Workspace the Reactor belongs to
+	inline std::string getWorkspace(void) const { return m_workspace_id; }
+
 protected:
 
 	/// pointer to a named signal object - signature is (reactor_id, signal_name, void *)
@@ -560,7 +573,7 @@ private:
 	/// name of the unique identifier attribute for Pion XML config files
 	static const std::string		ID_ATTRIBUTE_NAME;
 
-	
+
 	/// the type of Reactor (collection, processing or storage)
 	const ReactorType				m_type;
 	
@@ -569,7 +582,9 @@ private:
 	
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;
-	
+
+	std::string						m_workspace_id;
+
 	/// the total number of Events received by this Reactor
 	/// note that this counter is likely to "wrap-around" and start back at zero
 	boost::detail::atomic_count		m_events_in;

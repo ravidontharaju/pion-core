@@ -159,10 +159,13 @@ public:
 
 	/// returns a reference to the global DatabaseManager
 	inline pion::platform::DatabaseManager& getDatabaseManager(void) { return m_database_mgr; }
-	
+
 	/// returns a reference to the global ReactionEngine
 	inline pion::platform::ReactionEngine& getReactionEngine(void) { return m_reaction_engine; }
-	
+
+	/// returns a const reference to the global ReactionEngine
+	inline const pion::platform::ReactionEngine& getReactionEngine(void) const { return m_reaction_engine; }
+
 	/// returns a reference to the global ServiceManager
 	inline ServiceManager& getServiceManager(void) { return m_service_mgr; }
 

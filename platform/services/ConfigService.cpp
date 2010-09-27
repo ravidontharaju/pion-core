@@ -44,7 +44,7 @@ void ConfigService::setConfig(const pion::platform::Vocabulary& v,
 							  const xmlNodePtr config_ptr)
 {
 	pion::server::PlatformService::setConfig(v, config_ptr);
-	
+
 	// get the UI directory
 	if (! ConfigManager::getConfigOption(UI_DIRECTORY_ELEMENT_NAME, m_ui_directory, config_ptr))
 		throw MissingUIDirectoryException();
@@ -55,7 +55,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// split out the path branches from the HTTP request
 	PathBranches branches;
 	splitPathBranches(branches, request->getResource());
-	
+
 	// use a response in case we want to change any of the headers/etc.
 	// while processing the request
 	HTTPResponsePtr response_ptr(new HTTPResponse(*request));
@@ -64,81 +64,106 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	// since HTTPResponseWriter does not yet have a stream wrapper available
 	std::stringstream ss;
 
+	PlatformConfig& cfg = getConfig();
+
 	if (branches.empty()) {
 
 		// send platform configuration info
-		getConfig().writeConfigXML(ss);
-		
+		cfg.writeConfigXML(ss);
+
 	} else if (branches.front() == "vocabularies") {
 		//
 		// BEGIN VOCABULARIES CONFIG
 		//
 		if (branches.size() == 1) {
-			
+
 			// returns a list of all Vocabularies
-			getConfig().getVocabularyManager().writeConfigXML(ss);
-			
+			cfg.getVocabularyManager().writeConfigXML(ss);
+
 		} else if (branches.size() == 2) {
 			// branches[1] == vocabulary_id
 			const std::string vocab_id(branches[1]);
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Vocabulary's configuration
-				
-				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
+
+				if (! cfg.getVocabularyManager().writeConfigXML(ss, vocab_id))
 					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Vocabulary
-				getConfig().getVocabularyManager().addVocabulary(vocab_id,
-																 request->getContent(),
-																 request->getContentLength());
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Vocabulary's configuration
-				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
-					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
-				
+
+				// Check whether the User has permission to create the specified Vocabulary.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getVocabularyManager(), NULL)) {
+					cfg.getVocabularyManager().addVocabulary(vocab_id,
+															 request->getContent(),
+															 request->getContentLength());
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Vocabulary's configuration
+					if (! cfg.getVocabularyManager().writeConfigXML(ss, vocab_id))
+						throw VocabularyManager::VocabularyNotFoundException(vocab_id);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
 				// update existing Vocabulary's configuration
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr vocab_config_ptr =
 					VocabularyConfig::createVocabularyConfig(request->getContent(),
 															 request->getContentLength());
-				
-				try {
-					// push the new config into the VocabularyManager
-					getConfig().getVocabularyManager().setVocabularyConfig(vocab_id, vocab_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to make the specified modification to the specified Vocabulary.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getVocabularyManager(), vocab_id, vocab_config_ptr)) {
+					try {
+						// push the new config into the VocabularyManager
+						cfg.getVocabularyManager().setVocabularyConfig(vocab_id, vocab_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(vocab_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(vocab_config_ptr);
-					throw;
+
+					// respond with the Vocabulary's updated configuration
+					if (! cfg.getVocabularyManager().writeConfigXML(ss, vocab_id))
+						throw VocabularyManager::VocabularyNotFoundException(vocab_id);
+				} else {
+					xmlFreeNodeList(vocab_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(vocab_config_ptr);
-				
-				// respond with the Vocabulary's updated configuration
-				if (! getConfig().getVocabularyManager().writeConfigXML(ss, vocab_id))
-					throw VocabularyManager::VocabularyNotFoundException(vocab_id);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Vocabulary
-				
-				getConfig().getVocabularyManager().removeVocabulary(vocab_id);
-				
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-				
+
+				// Check whether the User has permission to remove the specified Vocabulary.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getVocabularyManager(), vocab_id)) {
+					cfg.getVocabularyManager().removeVocabulary(vocab_id);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -151,87 +176,109 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		// BEGIN TERMS CONFIG
 		//
 		if (branches.size() == 1) {
-			
-			// returns a list of all Terms
-			getConfig().getVocabularyManager().writeTermConfigXML(ss);
-			
+
+			// return a list of all Terms
+			cfg.getVocabularyManager().writeTermConfigXML(ss);
+
 		} else if (branches.size() == 2) {
 			// branches[1] == term_id
 			const std::string term_id(branches[1]);
 			const std::string vocab_id(term_id.substr(0, term_id.find_last_of('#')));
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Vocabulary Term's configuration
-				
-				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
+
+				if (! cfg.getVocabularyManager().writeTermConfigXML(ss, term_id))
 					throw Vocabulary::TermNotFoundException(term_id);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Vocabulary Term
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr term_config_ptr =
 					VocabularyConfig::createTermConfig(request->getContent(),
 													   request->getContentLength());
-				
-				// add the new Vocabulary Term to the VocabularyManager
-				try {
-					getConfig().getVocabularyManager().addTerm(vocab_id, term_id,
-															   term_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to create the specified Vocabulary Term.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getVocabularyManager(), term_config_ptr)) {
+
+					// add the new Vocabulary Term to the VocabularyManager
+					try {
+						cfg.getVocabularyManager().addTerm(vocab_id, term_id, term_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(term_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(term_config_ptr);
-					throw;
+
+					// send a 201 (created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Vocabulary Term's configuration
+					if (! cfg.getVocabularyManager().writeTermConfigXML(ss, term_id))
+						throw Vocabulary::TermNotFoundException(term_id);
+
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(term_config_ptr);
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Vocabulary Term's configuration
-				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
-					throw Vocabulary::TermNotFoundException(term_id);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
-				// update existing Vocabulary's configuration
-				
+				// update existing Vocabulary Term's configuration
+
 				// convert request content into XML configuration info
 				xmlNodePtr term_config_ptr =
 					VocabularyConfig::createTermConfig(request->getContent(),
 													   request->getContentLength());
-				
-				// get the Vocabulary name and comment from the XML config
-				
-				try {
-					// push the new config into the VocabularyManager
-					getConfig().getVocabularyManager().updateTerm(vocab_id, term_id,
-																  term_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to make the specified modification to the specified Vocabulary Term.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getVocabularyManager(), term_id, term_config_ptr)) {
+					try {
+						// push the new config into the VocabularyManager
+						cfg.getVocabularyManager().updateTerm(vocab_id, term_id, term_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(term_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(term_config_ptr);
-					throw;
+
+					// respond with the Vocabulary Term's updated configuration
+					if (! cfg.getVocabularyManager().writeTermConfigXML(ss, term_id))
+						throw Vocabulary::TermNotFoundException(term_id);
+
+				} else {
+					xmlFreeNodeList(term_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(term_config_ptr);
-				
-				// respond with the Vocabulary Term's updated configuration
-				if (! getConfig().getVocabularyManager().writeTermConfigXML(ss, term_id))
-					throw Vocabulary::TermNotFoundException(term_id);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Vocabulary Term
-				
-				getConfig().getVocabularyManager().removeTerm(vocab_id, term_id);
-				
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-				
+
+				// Check whether the User has permission to remove the specified Vocabulary Term.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getVocabularyManager(), term_id)) {
+					cfg.getVocabularyManager().removeTerm(vocab_id, term_id);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -244,12 +291,12 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		// BEGIN COMPARISONS CONFIG
 		//
 		if (branches.size() == 1) {
-			
+
 			// returns a list of all Comparisons
 			ConfigManager::writeBeginPionConfigXML(ss);
 			Comparison::writeComparisonsXML(ss);
 			ConfigManager::writeEndPionConfigXML(ss);
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -263,88 +310,114 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-				
+
 				// retrieve configuration for all Codecs
-				getConfig().getCodecFactory().writeConfigXML(ss);
-				
+				cfg.getCodecFactory().writeConfigXML(ss);
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Codec
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr codec_config_ptr =
 					CodecFactory::createCodecConfig(request->getContent(),
 													request->getContentLength());
-				
-				std::string codec_id;
-				// add the new Codec to the CodecFactory
-				try {
-					codec_id = getConfig().getCodecFactory().addCodec(codec_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to create the specified Codec.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getCodecFactory(), codec_config_ptr)) {
+					// add the new Codec to the CodecFactory
+					std::string codec_id;
+					try {
+						codec_id = cfg.getCodecFactory().addCodec(codec_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(codec_config_ptr);
+						throw;
+					}
+
 					xmlFreeNodeList(codec_config_ptr);
-					throw;
+
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Codec's configuration
+					if (! cfg.getCodecFactory().writeConfigXML(ss, codec_id))
+						throw CodecFactory::CodecNotFoundException(codec_id);
+				} else {
+					xmlFreeNodeList(codec_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(codec_config_ptr);
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Codec's configuration
-				if (! getConfig().getCodecFactory().writeConfigXML(ss, codec_id))
-					throw CodecFactory::CodecNotFoundException(codec_id);
-				
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else if (branches.size() == 2) {
 			// branches[1] == codec_id
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Codec's configuration
-				
-				if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1]))
+
+				if (! cfg.getCodecFactory().writeConfigXML(ss, branches[1]))
 					throw CodecFactory::CodecNotFoundException(branches[1]);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
 				// update existing Codec's configuration
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr codec_config_ptr =
 					CodecFactory::createCodecConfig(request->getContent(),
 													request->getContentLength());
-				
-				try {
-					// push the new config into the CodecFactory
-					getConfig().getCodecFactory().setCodecConfig(branches[1], codec_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to make the specified modification to the specified Codec.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getCodecFactory(), branches[1], codec_config_ptr)) {
+					try {
+						// push the new config into the CodecFactory
+						cfg.getCodecFactory().setCodecConfig(branches[1], codec_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(codec_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(codec_config_ptr);
-					throw;
+
+					// respond with the Codec's updated configuration
+					if (! cfg.getCodecFactory().writeConfigXML(ss, branches[1]))
+						throw CodecFactory::CodecNotFoundException(branches[1]);
+				} else {
+					xmlFreeNodeList(codec_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(codec_config_ptr);
-				
-				// respond with the Codec's updated configuration
-				if (! getConfig().getCodecFactory().writeConfigXML(ss, branches[1]))
-					throw CodecFactory::CodecNotFoundException(branches[1]);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Codec
-				
-				getConfig().getCodecFactory().removeCodec(branches[1]);
-				
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-				
+
+				// Check whether the User has permission to remove the specified Codec.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getCodecFactory(), branches[1])) {
+					cfg.getCodecFactory().removeCodec(branches[1]);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -358,43 +431,52 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-				
+
 				// retrieve configuration for all Databases
-				getConfig().getDatabaseManager().writeConfigXML(ss);
-				
+				cfg.getDatabaseManager().writeConfigXML(ss);
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Database
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr database_config_ptr =
 					DatabaseManager::createDatabaseConfig(request->getContent(),
 														  request->getContentLength());
-				
-				std::string database_id;
-				// add the new Database to the DatabaseManager
-				try {
-					database_id = getConfig().getDatabaseManager().addDatabase(database_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to create the specified Database.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getDatabaseManager(), database_config_ptr)) {
+					// add the new Database to the DatabaseManager
+					std::string database_id;
+					try {
+						database_id = cfg.getDatabaseManager().addDatabase(database_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(database_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(database_config_ptr);
-					throw;
+
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Database's configuration
+					if (! cfg.getDatabaseManager().writeConfigXML(ss, database_id))
+						throw DatabaseManager::DatabaseNotFoundException(database_id);
+				} else {
+					xmlFreeNodeList(database_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(database_config_ptr);
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Database's configuration
-				if (! getConfig().getDatabaseManager().writeConfigXML(ss, database_id))
-					throw DatabaseManager::DatabaseNotFoundException(database_id);
-				
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else if (branches[1] == "plugins") {
 
 			// Send a list of all Databases found in the UI directory
@@ -419,49 +501,65 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 		} else if (branches.size() == 2) {
 			// branches[1] == database_id
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Database's configuration
-				
-				if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1]))
+
+				if (! cfg.getDatabaseManager().writeConfigXML(ss, branches[1]))
 					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
 				// update existing Database's configuration
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr database_config_ptr =
 					DatabaseManager::createDatabaseConfig(request->getContent(),
 														  request->getContentLength());
-				
-				try {
-					// push the new config into the DatabaseManager
-					getConfig().getDatabaseManager().setDatabaseConfig(branches[1], database_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to make the specified modification to the specified Database.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getDatabaseManager(), branches[1], database_config_ptr)) {
+					try {
+						// push the new config into the DatabaseManager
+						cfg.getDatabaseManager().setDatabaseConfig(branches[1], database_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(database_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(database_config_ptr);
-					throw;
+
+					// respond with the Database's updated configuration
+					if (! cfg.getDatabaseManager().writeConfigXML(ss, branches[1]))
+						throw DatabaseManager::DatabaseNotFoundException(branches[1]);
+
+				} else {
+					xmlFreeNodeList(database_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(database_config_ptr);
-				
-				// respond with the Database's updated configuration
-				if (! getConfig().getDatabaseManager().writeConfigXML(ss, branches[1]))
-					throw DatabaseManager::DatabaseNotFoundException(branches[1]);
-				
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Database
-				
-				getConfig().getDatabaseManager().removeDatabase(branches[1]);
-				
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-				
+
+				// Check whether the User has permission to remove the specified Database.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getDatabaseManager(), branches[1])) {
+					cfg.getDatabaseManager().removeDatabase(branches[1]);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -475,43 +573,52 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-				
+
 				// retrieve configuration for all Protocols
-				getConfig().getProtocolFactory().writeConfigXML(ss);
-				
+				cfg.getProtocolFactory().writeConfigXML(ss);
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Protocol
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr protocol_config_ptr =
 					ProtocolFactory::createProtocolConfig(request->getContent(),
 														  request->getContentLength());
-				
-				std::string protocol_id;
-				// add the new Protocol to the ProtocolFactory
-				try {
-					protocol_id = getConfig().getProtocolFactory().addProtocol(protocol_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to create the specified Protocol.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getProtocolFactory(), protocol_config_ptr)) {
+					// add the new Protocol to the ProtocolFactory
+					std::string protocol_id;
+					try {
+						protocol_id = cfg.getProtocolFactory().addProtocol(protocol_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(protocol_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(protocol_config_ptr);
-					throw;
+
+					// send a 201 (created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Protocol's configuration
+					if (! cfg.getProtocolFactory().writeConfigXML(ss, protocol_id))
+						throw ProtocolFactory::ProtocolNotFoundException(protocol_id);
+
+				} else {
+					xmlFreeNodeList(protocol_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(protocol_config_ptr);
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Protocol's configuration
-				if (! getConfig().getProtocolFactory().writeConfigXML(ss, protocol_id))
-					throw ProtocolFactory::ProtocolNotFoundException(protocol_id);
-				
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else if (branches[1] == "plugins") {
 
 			// Send a list of all Protocols found in the UI directory
@@ -536,49 +643,63 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 		} else if (branches.size() == 2) {
 			// branches[1] == protocol_id
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Protocol's configuration
-				
-				if (! getConfig().getProtocolFactory().writeConfigXML(ss, branches[1]))
+
+				if (! cfg.getProtocolFactory().writeConfigXML(ss, branches[1]))
 					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
 				// update existing Protocol's configuration
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr protocol_config_ptr =
 					ProtocolFactory::createProtocolConfig(request->getContent(),
 														  request->getContentLength());
-				
-				try {
-					// push the new config into the ProtocolFactory
-					getConfig().getProtocolFactory().setProtocolConfig(branches[1], protocol_config_ptr);
-				} catch (std::exception&) {
+
+				// Check whether the User has permission to make the specified modification to the specified Protocol.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getProtocolFactory(), branches[1], protocol_config_ptr)) {
+					try {
+						// push the new config into the ProtocolFactory
+						cfg.getProtocolFactory().setProtocolConfig(branches[1], protocol_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(protocol_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(protocol_config_ptr);
-					throw;
+
+					// respond with the Protocol's updated configuration
+					if (! cfg.getProtocolFactory().writeConfigXML(ss, branches[1]))
+						throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
+				} else {
+					xmlFreeNodeList(protocol_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(protocol_config_ptr);
-				
-				// respond with the Protocol's updated configuration
-				if (! getConfig().getProtocolFactory().writeConfigXML(ss, branches[1]))
-					throw ProtocolFactory::ProtocolNotFoundException(branches[1]);
-				
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Protocol
-				
-				getConfig().getProtocolFactory().removeProtocol(branches[1]);
-				
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-				
+
+				// Check whether the User has permission to remove the specified Protocol.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getProtocolFactory(), branches[1])) {
+					cfg.getProtocolFactory().removeProtocol(branches[1]);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			HTTPServer::handleNotFoundRequest(request, tcp_conn);
 			return;
@@ -594,46 +715,55 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
 				// retrieve configuration for all Reactors
-				getConfig().getReactionEngine().writeConfigXML(ss);
+				cfg.getReactionEngine().writeConfigXML(ss);
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// add (create) a new Reactor
-				
+
 				// convert request content into XML configuration info
 				xmlNodePtr reactor_config_ptr =
 					ReactionEngine::createReactorConfig(request->getContent(),
 														request->getContentLength());
-				
-				std::string reactor_id;
-				// add the new Reactor to the ReactionEngine
-				try {
-					reactor_id = getConfig().getReactionEngine().addReactor(reactor_config_ptr);
-				} catch (std::exception&) {
-					xmlFreeNodeList(reactor_config_ptr);
-					throw;
-				}
-				xmlFreeNodeList(reactor_config_ptr);
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new Reactor's configuration
-				if (! getConfig().getReactionEngine().writeConfigXML(ss, reactor_id))
-					throw ReactionEngine::ReactorNotFoundException(reactor_id);
 
+				// Check whether the User has permission to create the specified Reactor.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getReactionEngine(), reactor_config_ptr)) {
+					// add the new Reactor to the ReactionEngine
+					std::string reactor_id;
+					try {
+						reactor_id = cfg.getReactionEngine().addReactor(reactor_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(reactor_config_ptr);
+						throw;
+					}
+					xmlFreeNodeList(reactor_config_ptr);
+
+					// send a 201 (created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Reactor's configuration
+					if (! cfg.getReactionEngine().writeConfigXML(ss, reactor_id))
+						throw ReactionEngine::ReactorNotFoundException(reactor_id);
+
+				} else {
+					xmlFreeNodeList(reactor_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
 
 		} else if (branches[1] == "stats") {
-			
+
 			// send statistics for all Reactors
-			getConfig().getReactionEngine().writeStatsXML(ss);
-			
+			cfg.getReactionEngine().writeStatsXML(ss);
+
 		} else if (branches[1] == "plugins") {
 
 			// Send a list of all Reactors found in the UI directory
@@ -667,69 +797,91 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			ConfigManager::writeEndPionConfigXML(ss);
 
 		} else if (branches.size() == 2) {
-			// branches[1] == reactor_id
-			
+			// branches[1] == reactor_id (or possibly workspace_id, for GET or DELETE)
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Reactor's configuration
 
-				if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
-					throw ReactionEngine::ReactorNotFoundException(branches[1]);
-				
+				if (! cfg.getReactionEngine().writeConfigXML(ss, branches[1])) {
+					// No Reactor found with that ID, so maybe it's a Workspace ID.
+					if (! cfg.getReactionEngine().writeWorkspaceLimitedConfigXML(ss, branches[1]))
+						throw ReactionEngine::ReactorNotFoundException(branches[1]);
+				}
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
 				// update existing Reactor's configuration
 
-												
 				// convert request content into XML configuration info
 				xmlNodePtr reactor_config_ptr =
 					ReactionEngine::createReactorConfig(request->getContent(),
 														request->getContentLength());
 
-				try {
-					// push the new config into the ReactionEngine
-					getConfig().getReactionEngine().setReactorConfig(branches[1], reactor_config_ptr);
-				} catch (std::exception&) {
+				// Check whether the User has permission to make the specified modification to the specified Reactor.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getReactionEngine(), branches[1], reactor_config_ptr)) {
+					try {
+						// push the new config into the ReactionEngine
+						cfg.getReactionEngine().setReactorConfig(branches[1], reactor_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(reactor_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(reactor_config_ptr);
-					throw;
+
+					// respond with the Reactor's updated configuration
+					if (! cfg.getReactionEngine().writeConfigXML(ss, branches[1]))
+						throw ReactionEngine::ReactorNotFoundException(branches[1]);
+				} else {
+					xmlFreeNodeList(reactor_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(reactor_config_ptr);
-				
-				// respond with the Reactor's updated configuration
-				if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
-					throw ReactionEngine::ReactorNotFoundException(branches[1]);
-				
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
-				// delete an existing Reactor
+				// delete an existing Reactor (or Reactors)
 
-				getConfig().getReactionEngine().removeReactor(branches[1]);
+				// Check whether the User has permission to remove the specified Reactor(s).
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getReactionEngine(), branches[1])) {
+					if (cfg.getReactionEngine().hasPlugin(branches[1])) {
+						cfg.getReactionEngine().removeReactor(branches[1]);
+					} else if (cfg.getReactionEngine().hasWorkspace(branches[1])) {
+						cfg.getReactionEngine().removeReactorsFromWorkspace(branches[1]);
+					} else
+						throw ReactionEngine::ReactorNotFoundException(branches[1]);
 
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
-
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else if (branches.size() == 3) {
 			// branches[1] == reactor_id
 
 			if (branches[2] == "start") {
-				
+
 				// start a Reactor
-				getConfig().getReactionEngine().startReactor(branches[1]);
+				cfg.getReactionEngine().startReactor(branches[1]);
 
 				// respond by sending all the Reactor stats
-				getConfig().getReactionEngine().writeStatsXML(ss);
-				
+				cfg.getReactionEngine().writeStatsXML(ss);
+
 			} else if (branches[2] == "stop") {
-				
+
 				// stop a Reactor
-				getConfig().getReactionEngine().stopReactor(branches[1]);
+				cfg.getReactionEngine().stopReactor(branches[1]);
 
 				// respond by sending all the Reactor stats
-				getConfig().getReactionEngine().writeStatsXML(ss);
+				cfg.getReactionEngine().writeStatsXML(ss);
 
 			} else if (branches[2] == "move") {
 				if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
@@ -742,7 +894,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 					try {
 						// push the new config settings into the ReactionEngine
-						getConfig().getReactionEngine().setReactorLocation(branches[1], reactor_config_ptr);
+						cfg.getReactionEngine().setReactorLocation(branches[1], reactor_config_ptr);
 					} catch (std::exception&) {
 						xmlFreeNodeList(reactor_config_ptr);
 						throw;
@@ -750,10 +902,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					xmlFreeNodeList(reactor_config_ptr);
 
 					// respond with the Reactor's updated configuration
-					if (! getConfig().getReactionEngine().writeConfigXML(ss, branches[1]))
+					if (! cfg.getReactionEngine().writeConfigXML(ss, branches[1]))
 						throw ReactionEngine::ReactorNotFoundException(branches[1]);
 				} else {
-					// send a 405 (method not allowed) response
+					// send a 405 (Method Not Allowed) response
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 				}
@@ -774,54 +926,162 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		//
 		if (branches.size() == 1) {
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-				
+
 				// retrieve configuration for all Reactor connections
-				getConfig().getReactionEngine().writeConnectionsXML(ss);
-				
+				cfg.getReactionEngine().writeConnectionsXML(ss);
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
-				
+
 				// create a new Reactor connection
-				std::string connection_id = getConfig().getReactionEngine().addReactorConnection(request->getContent(),
-																								 request->getContentLength());
-				
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-				
-				// respond with the new connection's configuration
-				getConfig().getReactionEngine().writeConnectionsXML(ss, connection_id);
-				
+
+				// convert request content into XML configuration info
+				xmlNodePtr connection_config_ptr = 
+					ReactionEngine::createConnectionConfig(request->getContent(), request->getContentLength());
+
+				// Check whether the User has permission to create the specified Reactor connection.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getReactionEngine(), connection_config_ptr)) {
+					// create a new Reactor connection
+					std::string connection_id = cfg.getReactionEngine().addReactorConnection(connection_config_ptr);
+
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new connection's configuration
+					cfg.getReactionEngine().writeConnectionsXML(ss, connection_id);
+
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
-			
+
 		} else {
 			// branches[1] == connection_id
-			
+
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
-				
+
 				// retrieve configuration for specific Reactor connections
-				getConfig().getReactionEngine().writeConnectionsXML(ss, branches[1]);
-				
+				cfg.getReactionEngine().writeConnectionsXML(ss, branches[1]);
+
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 
 				// remove an existing Reactor connection
-				getConfig().getReactionEngine().removeReactorConnection(branches[1]);
 
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				// Check whether the User has permission to remove the specified connection.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getReactionEngine(), branches[1])) {
+					cfg.getReactionEngine().removeReactorConnection(branches[1]);
 
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
 		}
 		//
 		// END CONNECTIONS CONFIG
+		//
+	} else if (branches.front() == "workspaces") {
+		//
+		// BEGIN WORKSPACES CONFIG
+		//
+		if (branches.size() == 1) {
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for all Reactor Workspaces
+				cfg.getReactionEngine().writeWorkspacesXML(ss);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
+
+				// add (create) a new Reactor Workspace
+
+				// Check whether the User has permission to create a Reactor Workspace.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), cfg.getReactionEngine(), NULL)) {
+					// create a new Reactor Workspace
+					std::string workspace_id = cfg.getReactionEngine().addWorkspace(request->getContent(),
+																					request->getContentLength());
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new Reactor Workspace's configuration
+					cfg.getReactionEngine().writeWorkspaceXML(ss, workspace_id);
+
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+			} else {
+				// send a 405 (Method Not Allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+
+		} else {
+			// branches[1] == workspace_id
+
+			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+
+				// retrieve configuration for the specified Reactor Workspace
+				cfg.getReactionEngine().writeWorkspaceXML(ss, branches[1]);
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
+				// update existing Reactor Workspace's configuration
+
+				// Check whether the User has permission to modify the specified Workspace.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), cfg.getReactionEngine(), branches[1], NULL)) {
+					// push the new config into the ReactionEngine
+					cfg.getReactionEngine().setWorkspaceConfig(branches[1], request->getContent(),
+															   request->getContentLength());
+
+					// respond with the Workspace's updated configuration
+					cfg.getReactionEngine().writeWorkspaceXML(ss, branches[1]);
+
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
+			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+
+				// remove an existing empty Reactor Workspace
+
+				// Check whether the User has permission to remove the specified Workspace.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getReactionEngine(), branches[1])) {
+					cfg.getReactionEngine().removeWorkspace(branches[1]);
+
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
+
+			} else {
+				// send a 405 (Method Not Allowed) response
+				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
+				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+			}
+		}
+		//
+		// END WORKSPACES CONFIG
 		//
 	} else if (branches.front() == "servers") {
 		//
@@ -831,10 +1091,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
 				// retrieve configuration for all Servers
-				getConfig().getServiceManager().writeServersXML(ss);
+				cfg.getServiceManager().writeServersXML(ss);
 
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -843,11 +1103,11 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 				// retrieve an existing Server's configuration
-				if (! getConfig().getServiceManager().writeServerXML(ss, branches[1]))
+				if (! cfg.getServiceManager().writeServerXML(ss, branches[1]))
 					throw PionPlugin::PluginNotFoundException(branches[1]);
 
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -897,7 +1157,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					throw ServiceManager::PlatformServiceNotFoundException(service_id);
 
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -938,12 +1198,12 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 				getServiceManager().removePlatformService(branches[1]);
 
-				// send a 204 (no content) response
+				// send a 204 (No Content) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -963,7 +1223,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
 				// retrieve configuration for all Users
-				getConfig().getUserManagerPtr()->writeConfigXML(ss);
+				cfg.getUserManagerPtr()->writeConfigXML(ss);
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
 
@@ -971,31 +1231,37 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 				// convert request content into XML configuration info
 				std::string user_id;
-				xmlNodePtr user_config_ptr =
-					UserManager::createUserConfig(
-					user_id,
-					request->getContent(),
-					request->getContentLength());
+				xmlNodePtr user_config_ptr = UserManager::createUserConfig(user_id,
+																		   request->getContent(),
+																		   request->getContentLength());
 
-				// add the new User to the UserManager
-				try {
-					user_id = getConfig().getUserManagerPtr()->addUser(user_id,user_config_ptr);
-				} catch (std::exception&) {
+				// Check whether the User has permission to create new Users.
+				if (cfg.getUserManagerPtr()->creationAllowed(request->getUser(), *cfg.getUserManagerPtr(), NULL)) {
+					// add the new User to the UserManager
+					try {
+						user_id = cfg.getUserManagerPtr()->addUser(user_id, user_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(user_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(user_config_ptr);
-					throw;
+
+					// send a 201 (Created) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
+
+					// respond with the new User's configuration
+					if (! cfg.getUserManagerPtr()->writeConfigXML(ss, user_id))
+						throw UserManager::UserNotFoundException(user_id);
+				} else {
+					xmlFreeNodeList(user_config_ptr);
+
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(user_config_ptr);
-
-				// send a 201 (created) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_CREATED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
-
-				// respond with the new User's configuration
-				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, user_id))
-					throw UserManager::UserNotFoundException(user_id);
-
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -1006,43 +1272,55 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
 				// retrieve configuration for specific User
-				getConfig().getUserManagerPtr()->writeConfigXML(ss, branches[1]);
+				cfg.getUserManagerPtr()->writeConfigXML(ss, branches[1]);
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
-				// update existing user
+				// update existing User's configuration
 
 				// convert request content into XML configuration info
-				std::string user_id;
-				xmlNodePtr user_config_ptr =
-					UserManager::createUserConfig(
-					user_id,
-					request->getContent(),
-					request->getContentLength());
+				std::string user_id; // should be assigned empty string on the next line, ignored in any case
+				xmlNodePtr user_config_ptr = UserManager::createUserConfig(user_id,
+																		   request->getContent(),
+																		   request->getContentLength());
 
-				// add the new User to the UserManager
-				try {
-					getConfig().getUserManagerPtr()->setUserConfig(branches[1], user_config_ptr);
-				} catch (std::exception&) {
+				// Check whether the User has permission to modify the specified User.
+				if (cfg.getUserManagerPtr()->updateAllowed(request->getUser(), *cfg.getUserManagerPtr(), branches[1], NULL)) {
+					// push the new config into the UserManager
+					try {
+						cfg.getUserManagerPtr()->setUserConfig(branches[1], user_config_ptr);
+					} catch (std::exception&) {
+						xmlFreeNodeList(user_config_ptr);
+						throw;
+					}
 					xmlFreeNodeList(user_config_ptr);
-					throw;
+
+					// respond with the new User's configuration
+					if (! cfg.getUserManagerPtr()->writeConfigXML(ss, branches[1]))
+						throw UserManager::UserNotFoundException(branches[1]);
+
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
 				}
-				xmlFreeNodeList(user_config_ptr);
-
-				// respond with the new Users's configuration
-				if (! getConfig().getUserManagerPtr()->writeConfigXML(ss, branches[1]))
-					throw UserManager::UserNotFoundException(branches[1]);
-
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 
 				// remove an existing User
-				getConfig().getUserManagerPtr()->removeUser(branches[1]);
 
-				// send a 204 (no content) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				// Check whether the User has permission to remove the specified User.
+				if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), *cfg.getUserManagerPtr(), branches[1])) {
+					cfg.getUserManagerPtr()->removeUser(branches[1]);
 
+					// send a 204 (No Content) response
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+				} else {
+					// Send a 403 (Forbidden) response.
+					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
+					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+				}
 			} else {
-				// send a 405 (method not allowed) response
+				// send a 405 (Method Not Allowed) response
 				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
 				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
 			}
@@ -1051,7 +1329,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		// END USERS CONFIG
 		//
 	} else if (branches.front() == "plugins") {
-		
+
 		// Send a list of all Plugins found in the Plugin directories.
 
 		ConfigManager::writeBeginPionConfigXML(ss);
@@ -1068,7 +1346,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 		// Send configuration of all database engines.
 
-		getConfig().getDatabaseManager().writeDatabaseEnginesXML(ss);
+		cfg.getDatabaseManager().writeDatabaseEnginesXML(ss);
 
 	} else {
 		HTTPServer::handleNotFoundRequest(request, tcp_conn);
@@ -1084,7 +1362,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 	writer->write(ss.str());
 	writer->send();
 }
-	
+
 }	// end namespace plugins
 }	// end namespace pion
 

@@ -1238,6 +1238,9 @@ I don't think this is being used anywhere.
 	background: url("../images/bg-accordion-pane.png");
 }
 
+.tundra .user_pane .single_indent {
+	padding-left: 15px;
+}
 
 /* for drag-and-drop items in the System configuration page*/
 

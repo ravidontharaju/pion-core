@@ -120,8 +120,10 @@ public:
 class DCReactionEngine : public ReactionEngine, public PluginConfigFixture {
 public:
 	DCReactionEngine(void) : ReactionEngine(g_vocab_mgr, g_codec_factory, g_protocol_factory, g_database_mgr),
-							 PluginConfigFixture("FilterReactor")
-	{
+							 PluginConfigFixture("FilterReactor") {
+		xmlNodePtr node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>("Workspace"));
+		xmlNodeSetContent(node, reinterpret_cast<const xmlChar*>("1"));
+		xmlAddNextSibling(m_config_ptr, node);
 	}
 
 	void setupSimpleConfigFile(const std::string& config_file_path) {
@@ -132,6 +134,7 @@ public:
 			<< "\t\t<Name>Do Nothing</Name>\n"
 			<< "\t\t<Comment>Filter that does nothing</Comment>\n"
 			<< "\t\t<Plugin>FilterReactor</Plugin>\n"
+			<< "\t\t<Workspace>1</Workspace>\n"
 			<< "\t</Reactor>\n"
 			<< "</PionConfig>\n";
 	};
