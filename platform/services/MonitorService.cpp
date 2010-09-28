@@ -127,7 +127,7 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 		tref = Vocabulary::UNDEFINED_TERM_REF;			// Mask OBJECT to undef
 	TermCol::iterator i = cols.find(tref);
 	if (i == cols.end()) {
-		cols[tref] = cols.size();
+		cols[tref] = cols.size() + 1;
 		i = cols.find(tref);
 	}
 	// Don't serialize the non-serializable
