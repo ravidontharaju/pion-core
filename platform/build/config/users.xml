@@ -2,13 +2,6 @@
 <PionConfig xmlns="http://purl.org/pion/config" pion_version="3.1.0">
 	<User id="pion">
 		<Password>5f493757a8d897bf46f73413f54e8e6afb1d6186</Password>
-		<Permit>/config/reactors</Permit>
-		<Permit>/config/vocabularies</Permit>
-		<Permit>/config/codecs</Permit>
-		<Permit>/config/databases</Permit>
-		<Permit>/config/protocols</Permit>
-		<Permit>/config/users</Permit>
-		<Permit>/config</Permit>
-		<Permit>/replay</Permit>
+		<Permission type="Admin" />
 	</User>
 </PionConfig>
