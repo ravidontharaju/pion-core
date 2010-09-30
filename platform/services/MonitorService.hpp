@@ -98,10 +98,14 @@ class MonitorWriter
 	: public MonitorHandler,
 	public boost::enable_shared_from_this<MonitorWriter>
 {
+	typedef std::set<pion::platform::Vocabulary::TermRef>	TermRefSet;
+
+	typedef	boost::circular_buffer<pion::platform::EventPtr> EventBuffer;
+
 private:
 
 	/// Circular buffer to capture scrolling window of events
-	boost::circular_buffer<pion::platform::EventPtr> m_event_buffer;
+	EventBuffer							m_event_buffer;
 
 	/// Size of scroll buffer
 	unsigned							m_size;
@@ -125,16 +129,22 @@ private:
 	bool								m_hide_all;
 
 	/// Which terms to show in opt-in mode
-	std::set<pion::platform::Vocabulary::TermRef>		m_show_terms;
+	TermRefSet							m_show_terms;
 
 	/// Reference to ReactionEngine, so it can disconnect
 	pion::platform::ReactionEngine &	m_reaction_engine;
 
 	/// Suppressed termref's
-	std::set<pion::platform::Vocabulary::TermRef>		m_suppressed_terms;
+	TermRefSet							m_suppressed_terms;
 
 	/// All terms seen (ever)
-	std::set<pion::platform::Vocabulary::TermRef>		m_terms_seen;
+	TermRefSet							m_terms_seen;
+
+	/// All event types seen (ever)
+	TermRefSet							m_events_seen;
+
+	/// Events that are filtered
+	TermRefSet							m_filtered_events;
 
 public:
 	

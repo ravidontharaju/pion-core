@@ -165,11 +165,16 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 	std::ostringstream xml;
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
-		const Vocabulary::Term& et((*m_vocab_ptr)[(*i)->getType()]);	// term corresponding with Event parameter
-		xml << "<Event><C0>" << et.term_id.substr(URN_VOCAB) << "</C0>";
-		(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
-			this, _1, _2, boost::ref(xml), boost::ref(col_map)));
-		xml << "</Event>";
+		const Vocabulary::TermRef tref = (*i)->getType();
+		m_events_seen.insert(tref);
+		// if this event type is NOT found in filtered_events, then add it to the stream
+		if (m_filtered_events.find(tref) == m_filtered_events.end()) {
+			const Vocabulary::Term& et((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
+			xml << "<Event><C0>" << et.term_id.substr(URN_VOCAB) << "</C0>";
+			(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
+				this, _1, _2, boost::ref(xml), boost::ref(col_map)));
+			xml << "</Event>";
+		}
 	}
 	std::ostringstream prefix;
 	prefix << "<C0>Event Type</C0>";
@@ -182,20 +187,29 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 		}
 
 	std::ostringstream seen;
-	for (std::set<pion::platform::Vocabulary::TermRef>::const_iterator i = m_terms_seen.begin(); i != m_terms_seen.end(); i++)
+	seen << "<TermsSeen>";
+	for (TermRefSet::const_iterator i = m_terms_seen.begin(); i != m_terms_seen.end(); i++)
 		if (*i != Vocabulary::UNDEFINED_TERM_REF) {
 			const Vocabulary::Term& t((*m_vocab_ptr)[*i]);
 			if (i != m_terms_seen.begin())
 				seen << ',';
 			seen << t.term_id.substr(URN_VOCAB);
 		}
-
+	seen << "</TermsSeen><EventsSeen>";
+	for (TermRefSet::const_iterator i = m_events_seen.begin(); i != m_events_seen.end(); i++)
+		if (*i != Vocabulary::UNDEFINED_TERM_REF) {
+			const Vocabulary::Term& t((*m_vocab_ptr)[*i]);
+			if (i != m_events_seen.begin())
+				seen << ',';
+			seen << t.term_id.substr(URN_VOCAB);
+		}
+	seen << "</EventsSeen>";
 
     std::ostringstream preamble;
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
 			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
 			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false")
-			<< "</Scroll><TermsSeen>" << seen << "</TermsSeen>";
+			<< "</Scroll>" << seen.str();
 	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
 }
 
@@ -226,11 +240,12 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 	if (qpi != qp.end())
 		m_hide_all = (qpi->second == "in");
 
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	boost::char_separator<char> sep(",");
+
 	qpi = qp.find("show");
 	if (qpi != qp.end()) {
 		std::string str(HTTPTypes::url_decode(qpi->second));
-		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-		boost::char_separator<char> sep(",");
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_show_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -239,8 +254,6 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 	qpi = qp.find("unshow");
 	if (qpi != qp.end()) {
 		std::string str(HTTPTypes::url_decode(qpi->second));
-		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-		boost::char_separator<char> sep(",");
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_show_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -249,8 +262,6 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 	qpi = qp.find("hide");
 	if (qpi != qp.end()) {
 		std::string str(HTTPTypes::url_decode(qpi->second));
-		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-		boost::char_separator<char> sep(",");
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_suppressed_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -259,11 +270,32 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 	qpi = qp.find("unhide");
 	if (qpi != qp.end()) {
 		std::string str(HTTPTypes::url_decode(qpi->second));
-		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-		boost::char_separator<char> sep(",");
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_suppressed_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
+	}
+
+	qpi = qp.find("filter");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+			boost::mutex::scoped_lock send_lock(m_mutex);
+			const Vocabulary::TermRef tref = m_vocab_ptr->findTerm(urnvocab + *tok_iter);
+			m_filtered_events.insert(tref);	// Add event type to filtered events
+			// Remove all events of the filtered type from the buffer
+			for (EventBuffer::iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); ++i)
+				if ((*i)->getType() == tref)
+					i = m_event_buffer.erase(i);
+		}
+	}
+
+	qpi = qp.find("unfilter");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+			m_filtered_events.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
 	}
 }
 
