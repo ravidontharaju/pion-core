@@ -156,6 +156,8 @@ public:
 	/**
 	 * constructs a new MonitorWriter object
 	 *
+	 * @param reaction_engine reference to reaction engine
+	 * @param vptr pointer to vocabulary
 	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
 	 * @param size size of circular buffer to use for capture
 	 * @param scroll boolean, whether to use scroll or capture&stop
@@ -167,7 +169,7 @@ public:
 	 * sends an Event over the TCP connection and cleans up if the
 	 * connection has closed since we last sent data
 	 *
-	 * @param e the Event to send over the TCPConnection
+	 * @param e the Event to possibly (filter) add to the circular buffer
 	 */
 	void writeEvent(pion::platform::EventPtr& e);
 

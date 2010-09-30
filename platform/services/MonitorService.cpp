@@ -160,6 +160,7 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 	// Map for termref -> Cnn index, we'll use it for building the guide
 	TermCol col_map;
+    std::ostringstream preamble;
 
 	// traverse through all events in buffer
 	std::ostringstream xml;
@@ -174,6 +175,10 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 			(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
 				this, _1, _2, boost::ref(xml), boost::ref(col_map)));
 			xml << "</Event>";
+			if (xml.tellp() > 1000000) {	// FIXME: Max limit of 1MB (for now)
+				preamble << "<Truncated>" << xml.tellp() << "</Truncated>";
+				break;
+ 			}
 		}
 	}
 	std::ostringstream prefix;
@@ -205,7 +210,6 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 		}
 	seen << "</EventsSeen>";
 
-    std::ostringstream preamble;
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
 			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
 			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false")
@@ -241,7 +245,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 		m_hide_all = (qpi->second == "in");
 
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-	boost::char_separator<char> sep(",");
+	static const boost::char_separator<char> sep(",");
 
 	qpi = qp.find("show");
 	if (qpi != qp.end()) {
@@ -280,13 +284,16 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 		std::string str(HTTPTypes::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
-			boost::mutex::scoped_lock send_lock(m_mutex);
 			const Vocabulary::TermRef tref = m_vocab_ptr->findTerm(urnvocab + *tok_iter);
 			m_filtered_events.insert(tref);	// Add event type to filtered events
 			// Remove all events of the filtered type from the buffer
-			for (EventBuffer::iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); ++i)
+			boost::mutex::scoped_lock send_lock(m_mutex);
+			EventBuffer::iterator i = m_event_buffer.begin();
+			while (i != m_event_buffer.end())
 				if ((*i)->getType() == tref)
-					i = m_event_buffer.erase(i);
+					i = m_event_buffer.erase(i);	// erase returns NEXT elemeent, or end()
+				else
+					++i;
 		}
 	}
 
