@@ -114,8 +114,14 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 }
 
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
-	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols) const
+	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols)
 {
+	if (tref > m_vocab_ptr->size())		// sanity check
+		tref = Vocabulary::UNDEFINED_TERM_REF;
+
+	// Add to set of seen terms
+	m_terms_seen.insert(tref);
+
 	// If we're in opt-in mode, check that term is in selected set
 	if (m_hide_all) {
 		if (m_show_terms.find(tref) == m_show_terms.end())
@@ -125,8 +131,7 @@ void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 		if (m_suppressed_terms.find(tref) != m_suppressed_terms.end())
 			return;
 	}
-	if (tref > m_vocab_ptr->size())		// sanity check
-		tref = Vocabulary::UNDEFINED_TERM_REF;
+
 	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
 	// Have we seen this tref (column) yet?
 	if (t.term_type == Vocabulary::TYPE_OBJECT)
@@ -175,10 +180,22 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 			const Vocabulary::Term& t((*m_vocab_ptr)[i->first]);
 			prefix << "<C" << i->second << '>' << t.term_id.substr(URN_VOCAB) << "</C" << i->second << '>';
 		}
+
+	std::ostringstream seen;
+	for (std::set<pion::platform::Vocabulary::TermRef>::const_iterator i = m_terms_seen.begin(); i != m_terms_seen.end(); i++)
+		if (*i != Vocabulary::UNDEFINED_TERM_REF) {
+			const Vocabulary::Term& t((*m_vocab_ptr)[*i]);
+			if (i != m_terms_seen.begin())
+				seen << ',';
+			seen << t.term_id.substr(URN_VOCAB);
+		}
+
+
     std::ostringstream preamble;
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
 			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
-			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false") << "</Scroll>";
+			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false")
+			<< "</Scroll><TermsSeen>" << seen << "</TermsSeen>";
 	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
 }
 

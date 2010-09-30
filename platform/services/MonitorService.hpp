@@ -133,6 +133,9 @@ private:
 	/// Suppressed termref's
 	std::set<pion::platform::Vocabulary::TermRef>		m_suppressed_terms;
 
+	/// All terms seen (ever)
+	std::set<pion::platform::Vocabulary::TermRef>		m_terms_seen;
+
 public:
 	
 	typedef boost::unordered_map<pion::platform::Vocabulary::TermRef, unsigned> TermCol;
@@ -181,7 +184,7 @@ public:
 	 */
 	void SerializeXML(pion::platform::Vocabulary::TermRef tref,
 		const pion::platform::Event::ParameterValue& value,
-		std::ostream& xml, TermCol& cols) const;
+		std::ostream& xml, TermCol& cols);
 
 	std::string getStatus(const pion::net::HTTPTypes::QueryParams& qp);
 };
