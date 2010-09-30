@@ -57,7 +57,7 @@ MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, pl
 					   const std::string& reactor_id, unsigned size, bool scroll)
 	: MonitorHandler(reaction_engine, reactor_id),
 	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr), m_truncate(100), m_stopped(false),
-	m_reaction_engine(reaction_engine)
+	m_hide_all(false), m_reaction_engine(reaction_engine)
 {}
 	
 MonitorWriter::~MonitorWriter()
@@ -116,9 +116,15 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols) const
 {
-	// Don't add suppressed terms
-	if (m_suppressed_terms.find(tref) != m_suppressed_terms.end())
-		return;
+	// If we're in opt-in mode, check that term is in selected set
+	if (m_hide_all) {
+		if (m_show_terms.find(tref) == m_show_terms.end())
+			return;
+	} else {
+		// Don't add suppressed terms
+		if (m_suppressed_terms.find(tref) != m_suppressed_terms.end())
+			return;
+	}
 	if (tref > m_vocab_ptr->size())		// sanity check
 		tref = Vocabulary::UNDEFINED_TERM_REF;
 	const Vocabulary::Term& t((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
@@ -198,6 +204,30 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
     qpi = qp.find("scroll");
     if (qpi != qp.end())
 		m_scroll = qpi->second == "true";
+
+	qpi = qp.find("opt");
+	if (qpi != qp.end())
+		m_hide_all = (qpi->second == "in");
+
+	qpi = qp.find("show");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		boost::char_separator<char> sep(",");
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+			m_show_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
+	}
+
+	qpi = qp.find("unshow");
+	if (qpi != qp.end()) {
+		std::string str(HTTPTypes::url_decode(qpi->second));
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		boost::char_separator<char> sep(",");
+		tokenizer tokens(str, sep);
+		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+			m_show_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
+	}
 
 	qpi = qp.find("hide");
 	if (qpi != qp.end()) {

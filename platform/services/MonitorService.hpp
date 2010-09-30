@@ -121,6 +121,12 @@ private:
 	/// Is the MonitorWriter still collecting events?
 	bool								m_stopped;
 
+	/// HideAll is an opt-in mode
+	bool								m_hide_all;
+
+	/// Which terms to show in opt-in mode
+	std::set<pion::platform::Vocabulary::TermRef>		m_show_terms;
+
 	/// Reference to ReactionEngine, so it can disconnect
 	pion::platform::ReactionEngine &	m_reaction_engine;
 
