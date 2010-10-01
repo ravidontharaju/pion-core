@@ -146,8 +146,12 @@ private:
 	/// Events that are filtered
 	TermRefSet							m_filtered_events;
 
+	/// Counters for visual changes (to help UI)
+	boost::uint32_t						m_event_counter;
+	boost::uint32_t						m_change_counter;
+
 public:
-	
+
 	typedef boost::unordered_map<pion::platform::Vocabulary::TermRef, unsigned> TermCol;
 	
 	/// virtual destructor

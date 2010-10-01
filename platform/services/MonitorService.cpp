@@ -57,7 +57,7 @@ MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, pl
 					   const std::string& reactor_id, unsigned size, bool scroll)
 	: MonitorHandler(reaction_engine, reactor_id),
 	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr), m_truncate(100), m_stopped(false),
-	m_hide_all(false), m_reaction_engine(reaction_engine)
+	m_hide_all(false), m_reaction_engine(reaction_engine), m_event_counter(0), m_change_counter(0)
 {}
 	
 MonitorWriter::~MonitorWriter()
@@ -80,12 +80,18 @@ void MonitorWriter::writeEvent(EventPtr& e)
 		stop();
 	} else {
 		try {
-			// Add latest event to end of circular buffer
-			m_event_buffer.push_back(e);
+			const Vocabulary::TermRef tref = e->getType();
+			m_events_seen.insert(tref);
+			// if this event type is NOT found in filtered_events, then add it to the stream
+			if (m_filtered_events.find(tref) == m_filtered_events.end()) {
+				// Add latest event to end of circular buffer
+				m_event_buffer.push_back(e);
+				++m_event_counter;
 
-			// If we're not scrolling, and buffer is full, then disconnect from the feed
-			if (!m_scroll && m_event_buffer.full())
-				stop();
+				// If we're not scrolling, and buffer is full, then disconnect from the feed
+				if (!m_scroll && m_event_buffer.full())
+					stop();
+			}
 		} catch (std::exception& ex) {
 			// stop sending Events if we encounter an exception
 			PION_LOG_WARN(m_logger, "Error sending event to " << getConnectionInfo()
@@ -167,7 +173,6 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 		// traverse through all terms in event
 		const Vocabulary::TermRef tref = (*i)->getType();
-		m_events_seen.insert(tref);
 		// if this event type is NOT found in filtered_events, then add it to the stream
 		if (m_filtered_events.find(tref) == m_filtered_events.end()) {
 			const Vocabulary::Term& et((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
@@ -211,7 +216,8 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 	seen << "</EventsSeen>";
 
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
-			<< "</Running><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
+			<< "</Running><EventCounter>" << m_event_counter << "</EventCounter><ChangeCounter>" << m_change_counter
+			<< "</ChangeCounter><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
 			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false")
 			<< "</Scroll>" << seen.str();
 	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
@@ -221,6 +227,9 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 {
 	if (qp.empty())
 		return;
+
+	// We'll assume that any QP's will inflict a change
+	++m_change_counter;
 
     HTTPTypes::QueryParams::const_iterator qpi = qp.find("events");
     if (qpi != qp.end()) {
