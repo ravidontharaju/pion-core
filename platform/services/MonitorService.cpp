@@ -166,6 +166,10 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 	// Map for termref -> Cnn index, we'll use it for building the guide
 	TermCol col_map;
+	if (m_hide_all)	// In opt-in mode, show all show_terms columns
+		for (TermRefSet::const_iterator i = m_show_terms.begin(); i != m_show_terms.end(); ++i)
+			col_map[*i] = col_map.size() + 1;
+
     std::ostringstream preamble;
 
 	// traverse through all events in buffer
