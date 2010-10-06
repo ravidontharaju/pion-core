@@ -19,6 +19,7 @@
 
 // NOTE: According to API docs, Python.h must be #include'd FIRST
 #include <Python.h>
+#include <cstring>
 #include "structmember.h"
 #include "datetime.h"
 #include <sstream>
@@ -1020,6 +1021,20 @@ void PythonReactor::compilePythonSource(void)
 	resetPythonSymbols();
 
 	if (! m_source.empty()) {
+		// append Pion modules to sys.path if not already there
+		const char * const py_path_ptr = Py_GetPath();
+		std::string py_path_str(getReactionEngine().resolveRelativePath("pymodules"));
+		if (py_path_ptr == NULL || strstr(py_path_ptr, py_path_str.c_str()) == NULL) {
+			if (py_path_ptr && *py_path_ptr != '\0') {
+				#ifdef _MSC_VER
+					py_path_str += ';';
+				#else
+					py_path_str += ':';
+				#endif
+				py_path_str += py_path_ptr;
+			}
+			PySys_SetPath(const_cast<char*>(py_path_str.c_str()));
+		}
 		// compile source code into byte code
 		PION_LOG_DEBUG(m_logger, "Compiling Python source code");
 		m_byte_code = Py_CompileString(m_source.c_str(), m_source_file.c_str(), Py_file_input);
