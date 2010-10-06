@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PionConfig xmlns="http://purl.org/pion/config" pion_version="3.1.0">
+  <Workspace id="2994b32b-1bb9-4811-9517-78c30087dfe9">
+    <Name>Web Log Processing</Name>
+  </Workspace>
+  <Workspace id="a0027339-d480-4036-8cbc-29384e62337f">
+    <Name>News Feeds</Name>
+  </Workspace>
   <Reactor id="0cc21558-cf84-11dc-a9e0-0019e3f89cd2">
     <Name>Event Router</Name>
     <Comment>Does nothing but routes events</Comment>
     <Plugin>FilterReactor</Plugin>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>200</X>
     <Y>200</Y>
   </Reactor>
@@ -12,7 +18,7 @@
     <Name>Clickstream DataStore</Name>
     <Comment>Stores clickstream events into a SQLite database</Comment>
     <Plugin>DatabaseOutputReactor</Plugin>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>250</X>
     <Y>300</Y>
     <Database>aace93fc-19c0-11de-9293-001cc02bd66b</Database>
@@ -44,7 +50,7 @@
     <Plugin>FilterReactor</Plugin>
     <Name>File Not Found</Name>
     <Comment>Finds requests for files that were not found (404 status code)</Comment>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>450</X>
     <Y>150</Y>
     <Comparison>
@@ -57,7 +63,7 @@
     <Plugin>LogOutputReactor</Plugin>
     <Name>Not Found Log</Name>
     <Comment>Generates a new log file containing requests for files not found</Comment>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>450</X>
     <Y>50</Y>
     <Codec>3467da4c-52b6-11dd-9f66-001cc02bd66b</Codec>
@@ -69,7 +75,7 @@
     <Name>Home Page Requests</Name>
     <Comment>Finds requests for the home page</Comment>
     <Plugin>FilterReactor</Plugin>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>450</X>
     <Y>250</Y>
     <Comparison>
@@ -82,7 +88,7 @@
     <Plugin>LogOutputReactor</Plugin>
     <Name>Home Page Log</Name>
     <Comment>Generates a new log file containing home page requests</Comment>
-    <Workspace>Web Log Processing</Workspace>
+    <Workspace>2994b32b-1bb9-4811-9517-78c30087dfe9</Workspace>
     <X>450</X>
     <Y>350</Y>
     <Codec>3467da4c-52b6-11dd-9f66-001cc02bd66b</Codec>
@@ -117,7 +123,7 @@
   </Connection>
   <Reactor id="e68db792-13cb-11de-ac58-001cc02bd66b">
     <Plugin>FilterReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>190</X>
     <Y>70</Y>
     <Name>RSS Requests</Name>
@@ -137,7 +143,7 @@
   </Reactor>
   <Reactor id="5afcf08e-13cc-11de-b78a-001cc02bd66b">
     <Plugin>FissionReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>390</X>
     <Y>190</Y>
     <Name>Extract Atom Feeds</Name>
@@ -159,7 +165,7 @@
   </Reactor>
   <Reactor id="76a08e2c-13cc-11de-b9cd-001cc02bd66b">
     <Plugin>FissionReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>390</X>
     <Y>270</Y>
     <Name>Extract Atom Entries</Name>
@@ -181,7 +187,7 @@
   </Reactor>
   <Reactor id="9705dd8e-13cc-11de-850b-001cc02bd66b">
     <Plugin>LogOutputReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>570</X>
     <Y>190</Y>
     <Name>Atom Feeds Log</Name>
@@ -191,7 +197,7 @@
   </Reactor>
   <Reactor id="bb268aba-13cc-11de-abaf-001cc02bd66b">
     <Plugin>LogOutputReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>570</X>
     <Y>270</Y>
     <Name>Atom Entries Log</Name>
@@ -201,7 +207,7 @@
   </Reactor>
   <Reactor id="f33ea950-13cc-11de-8d36-001cc02bd66b">
     <Plugin>FilterReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>190</X>
     <Y>230</Y>
     <Name>Atom Requests</Name>
@@ -221,7 +227,7 @@
   </Reactor>
   <Reactor id="fd69757c-0e8b-11de-8031-0019d185f6fc">
     <Plugin>FissionReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>390</X>
     <Y>110</Y>
     <Name>Extract RSS Channels</Name>
@@ -244,7 +250,7 @@
     <Plugin>LogOutputReactor</Plugin>
     <Name>RSS Channels Log</Name>
     <Comment>Stores RSS channel events into a log file</Comment>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>570</X>
     <Y>110</Y>
     <Codec>a5b7533e-0e8c-11de-b992-0019d185f6fc</Codec>
@@ -252,7 +258,7 @@
   </Reactor>
   <Reactor id="5f5ba5b6-1021-11de-b1a4-0019d185f6fc">
     <Plugin>FissionReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>390</X>
     <Y>30</Y>
     <Name>Extract RSS Items</Name>
@@ -273,7 +279,7 @@
   </Reactor>
   <Reactor id="5ff1bf10-1021-11de-bfa7-0019d185f6fc">
     <Plugin>LogOutputReactor</Plugin>
-    <Workspace>News Feeds</Workspace>
+    <Workspace>a0027339-d480-4036-8cbc-29384e62337f</Workspace>
     <X>570</X>
     <Y>30</Y>
     <Name>RSS Items Log</Name>
