@@ -338,6 +338,11 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 					var row = { field: col_tags[key], name: name, id: 'urn:vocab:' + key, styles: '', width: 12 };
 					this.event_grid_layout.rows.push(row);
 				}
+				this.event_grid_layout.rows.sort(function(a, b) {
+					if (a.name == 'Event Type')
+						return -1;
+					return a.id < b.id? -1 : 1;
+				});
 				this.event_grid.attr("structure", this.event_grid_layout);
 			}
 
