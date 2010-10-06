@@ -334,13 +334,13 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		return;
 	}
 
-	bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
-	if (! allowed) {
-		// Send a 403 (Forbidden) response.
-		std::string error_msg = "User doesn't have permission for Monitor Service.";
-		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
-		return;
-	}
+	//bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
+	//if (! allowed) {
+	//	// Send a 403 (Forbidden) response.
+	//	std::string error_msg = "User doesn't have permission for Monitor Service.";
+	//	HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+	//	return;
+	//}
 
 	// get the start/stop verb
 	const std::string verb(branches[0]);

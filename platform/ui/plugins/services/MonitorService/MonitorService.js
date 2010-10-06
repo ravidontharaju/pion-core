@@ -69,10 +69,10 @@ dojo.declare("plugins.services.MonitorService",
 
 plugins.services.MonitorService.label = 'Monitor';
 
-plugins.services.MonitorService.requiresPermission = function(service) {
-	service.permission_layout = {};
-	return true;
-}
+//plugins.services.MonitorService.requiresPermission = function(service) {
+//	service.permission_layout = {};
+//	return true;
+//}
 
 dojo.declare("plugins.services.MonitorServiceFloatingPane",
 	[ dojox.layout.FloatingPane ],
