@@ -367,6 +367,8 @@ PythonReactor::PythonReactor(void)
 		PION_LOG_DEBUG(m_logger, "Initializing Python interpreter");
 		// initialize the thread specific state pointers
 		m_state_ptr = new boost::thread_specific_ptr<PyThreadState>(&PythonReactor::releaseThreadState);
+		// enable optimizations
+        Py_OptimizeFlag = 2;
 		// initialize python interpreter
 		Py_Initialize();
 		// setup pion module: Reactor data types and callback functions
