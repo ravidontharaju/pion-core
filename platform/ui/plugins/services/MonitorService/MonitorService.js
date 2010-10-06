@@ -130,11 +130,15 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			dojo.connect(this.event_grid, "onHeaderCellMouseOut", hideTooltip);
 
 			this.update_interval = 5;
-			this.settings_form.attr('value', {update_interval: this.update_interval});
-			this.startPolling();
+			this.event_buffer_size = 15;
+			this.settings_form.attr('value', {
+				update_interval: this.update_interval,
+				event_buffer_size: this.event_buffer_size
+			});
+			this.startPolling({events: this.event_buffer_size});
 		},
-		startPolling: function() {
-			this.poll();
+		startPolling: function(initial_query_params) {
+			this.poll(initial_query_params);
 
 			// TODO: this helped in some situations where the grid got screwed up.
 			// (Note that pausing and resuming is required to reach this point.)
@@ -146,15 +150,15 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				_this.poll();
 			}, this.update_interval * 1000);
 		},
-		poll: function() {
+		poll: function(initial_query_params) {
+			var query_object = initial_query_params? initial_query_params : {};
+
 			if (this.no_events_seen) {
-				this.event_grid.filter();
+				this.event_grid.filter(query_object);
 				return;
 			}
 
 			var _this = this;
-
-			var query_object = {};
 
 			// set query.filter and query.unfilter, based on changes in the Event Types selected
 			var event_type_check_box_group_value = this.event_type_form.attr('value').event_type_check_box_group;
@@ -228,11 +232,8 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				this.no_status_response_seen = false;
 				var truncating_node = data.getElementsByTagName('Truncating')[0];
 				this.truncation_length = dojox.xml.parser.textContent(truncating_node);
-				var capacity_node = data.getElementsByTagName('Capacity')[0];
-				this.event_buffer_size = dojox.xml.parser.textContent(capacity_node);
 				this.settings_form.attr('value', {
-					truncation_length: this.truncation_length,
-					event_buffer_size: this.event_buffer_size
+					truncation_length: this.truncation_length
 				});
 			}
 
@@ -245,9 +246,8 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 
 				// Add show Event Type checkbox, with special behavior since Events will always contain <C0>
 				this.event_type_check_box.onClick = function(e) {
-					// TODO: What should this do?  Currently, the checkbox is checked and disabled.
+					_this.event_grid.layout.setColumnVisibility(0, e.target.checked);
 				}
-				this.column_form.attr('value', {column_check_box_group: ['EventType']});
 
 				this.event_type_object = {};
 				this.event_type_check_box_group_value = [];
@@ -279,9 +279,20 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			});
 
 			var terms_seen_node = data.getElementsByTagName('TermsSeen')[0];
-			var terms_seen = dojox.xml.parser.textContent(terms_seen_node).split(',');
-			dojo.forEach(terms_seen, function(term) {
-				if (! (term in _this.column_object)) {
+			var terms_seen_string = dojox.xml.parser.textContent(terms_seen_node);
+			if (terms_seen_string != this.prev_terms_seen_string) {
+				this.prev_terms_seen_string = terms_seen_string;
+
+				// Remove all term checkboxes.
+				while (this.column_form.domNode.firstChild) {
+					this.column_form.domNode.removeChild(this.column_form.domNode.firstChild);
+				}
+
+				// Sort the new list of terms and add checkboxes for them.
+				var terms_seen = terms_seen_string.split(',');
+				terms_seen.sort();
+				this.column_object = {EventType: this.event_type_check_box};
+				dojo.forEach(terms_seen, function(term) {
 					var check_box_div = document.createElement('div');
 					_this.column_form.domNode.appendChild(check_box_div);
 					_this.column_object[term] = new dijit.form.CheckBox({
@@ -291,8 +302,11 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 					var label_div = dojo.create('label', {innerHTML: term});
 					_this.column_form.domNode.appendChild(label_div);
 					_this.column_form.domNode.appendChild(dojo.create('br'));
-				}
-			});
+				});
+
+				// Restore the checkmarks.
+				this.column_form.attr('value', {column_check_box_group: this.prev_column_check_box_group_value});
+			}
 
 			var col_tags = {};
 			var col_set = data.getElementsByTagName('ColSet')[0];
