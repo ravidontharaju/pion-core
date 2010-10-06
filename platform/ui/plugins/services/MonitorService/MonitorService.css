@@ -1,0 +1,39 @@
+.dojoxFloatingPane.monitor_service {
+	height: 900px;
+	width: 980px;
+}
+
+.dojoxFloatingPane.monitor_service .left_sidebar {
+	width: 225px;
+}
+
+.dojoxFloatingPane.monitor_service .event_grid_pane {
+	background: #e0edfb;
+}
+
+.tundra .monitor_settings .dijitToggleButton .dijitButtonNode {
+	width: 16px;
+	height: 16px;
+	background-color: transparent;
+	background: url(../../../images/control-play.png) no-repeat;
+	margin-left: 20px;
+	margin-right: 20px;
+	border: 0px;
+}
+
+.tundra .monitor_settings .dijitToggleButtonChecked .dijitButtonNode {
+	width: 16px;
+	height: 16px;
+	background-color: #ffffff;
+	background: url(../../../images/control-stop.png) no-repeat;
+	margin-left: 20px;
+	border: 0px;
+}
+
+.tundra .monitor_service .dojoxGridCell {
+	white-space: nowrap;
+}
+
+.tundra .monitor_service .dojoxGridCell.dojoxGridCellOver {
+	white-space: normal;
+}

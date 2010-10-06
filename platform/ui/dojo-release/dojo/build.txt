@@ -112,6 +112,7 @@ pion-dojo.js:
 ./../../release/dojo-release/dojox/xml/parser.js
 ./../../release/dojo-release/dojox/data/dom.js
 ./../../release/dojo-release/dojox/data/XmlStore.js
+./../../release/dojo-release/dojox/data/QueryReadStore.js
 ./../../release/dojo-release/dojox/gfx/matrix.js
 ./../../release/dojo-release/dojox/gfx/_base.js
 ./../../release/dojo-release/dojox/gfx.js
@@ -151,6 +152,10 @@ pion-dojo.js:
 ./../../release/dojo-release/dijit/_editor/plugins/EnterKeyHandling.js
 ./../../release/dojo-release/dijit/Editor.js
 ./../../release/dojo-release/dojox/grid/cells/dijit.js
+./../../release/dojo-release/dojox/html/_base.js
+./../../release/dojo-release/dojox/layout/ContentPane.js
+./../../release/dojo-release/dojox/layout/ResizeHandle.js
+./../../release/dojo-release/dojox/layout/FloatingPane.js
 ./../../release/dojo-release/dojox/xml/DomParser.js
 ./../../release/dojo-release/dojox/string/Builder.js
 ./../../release/dojo-release/dojox/string/tokenize.js

@@ -1,14 +1,14 @@
 dojo.provide("plugins.services.Service");
-dojo.require("pion.services");
-dojo.require("dijit.layout.BorderContainer");
 
 dojo.declare("plugins.services.Service",
-	[ dijit.layout.BorderContainer, dijit._Templated ],
+	null,
 	{
-		postCreate: function() {
-			this.inherited("postCreate", arguments);
-			dijit.byId('main_stack_container').addChild(this, 0);
-			pion.services.labels_by_tab_id[this.id] = this.title;
+		constructor: function(kwargs) {
+			dojo.mixin(this, kwargs);
+			if (! this.title)
+				console.error('No title specified for Service.');
+			if (! this.resource)
+				console.error('No resource specified for Service ' + this.title);
 		},
 		onSelect: function() {
 			dijit.byId('main_stack_container').resize({h: this.height});

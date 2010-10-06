@@ -411,9 +411,15 @@ dojo.declare("pion.util.XMLQueryReadStore",
 					}
 				}
 			}
+
+			// For MonitorService we want doClientPaging = true, because we don't want start and count parameters in the query.
+			// However, we don't want queries to be cached.  So, until such time as we have a situation where we do want query
+			// cacheing, we'll override it with DO_NO_CACHEING.
+			var DO_NO_CACHEING = true;
+
 			// Compare the last query and the current query by simply json-encoding them,
 			// so we dont have to do any deep object compare ... is there some dojo.areObjectsEqual()???
-			if(this.doClientPaging && this._lastServerQuery!==null &&
+			if (! DO_NO_CACHEING && this.doClientPaging && this._lastServerQuery!==null &&
 				dojo.toJson(serverQuery)==dojo.toJson(this._lastServerQuery)
 				){
 				this._numRows = (this._numRows === -1) ? this._items.length : this._numRows;

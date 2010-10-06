@@ -5,8 +5,6 @@ dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services', rootItem: 'PlatformService'});
 
-pion.services.labels_by_tab_id = {};
-
 pion.services.init = function() {
 	init_services_standby.show();
 	pion.services.getAllServicesInUIDirectory = function() {

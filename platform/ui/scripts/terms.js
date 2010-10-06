@@ -36,12 +36,16 @@ pion.terms.initTermTypeLookups = function() {
 
 pion.terms.buildMapOfCategoriesByTerm = function() {
 	pion.terms.categories_by_id = {};
+	pion.terms.term_comments_by_id = {};
 	pion.terms.store.fetch({
 		onItem: function(item) {
 			var type = pion.terms.store.getValue(item, 'Type').toString();
 			var id   = pion.terms.store.getIdentity(item);
 			//console.debug('type = ', type, ', id = ', id);
 			pion.terms.categories_by_id[id] = pion.terms.categories_by_type[type];
+			if (pion.terms.store.hasAttribute(item, 'Comment')) {
+				pion.terms.term_comments_by_id[id] = pion.terms.store.getValue(item, 'Comment');
+			}
 		},
 		onError: pion.handleFetchError
 	});

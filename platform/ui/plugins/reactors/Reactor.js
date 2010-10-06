@@ -78,7 +78,8 @@ dojo.declare("plugins.reactors.Reactor",
 			this.domNode.style.zIndex = 300;
 
 			// Add a context menu for the new reactor.
-			var menu = new dijit.Menu({targetNodeIds: [this.domNode]});
+			this.context_menu = new dijit.Menu({targetNodeIds: [this.domNode]});
+			var menu = this.context_menu;
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor connections", onClick: function(){pion.reactors.showReactorConnectionsDialog(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Show configuration", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
@@ -120,6 +121,8 @@ dojo.declare("plugins.reactors.Reactor",
 			});
 			*/
 			dojo.connect(m5, "onMoveStop", this, this.handleMoveStop);
+
+			dojo.publish("AddReactor", [this]);
 		},
 		_initOptions: function(config, option_defaults) {
 			var store = pion.reactors.config_store;
