@@ -174,20 +174,25 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 	// traverse through all events in buffer
 	std::ostringstream xml;
-	for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
-		// traverse through all terms in event
-		const Vocabulary::TermRef tref = (*i)->getType();
-		// if this event type is NOT found in filtered_events, then add it to the stream
-		if (m_filtered_events.find(tref) == m_filtered_events.end()) {
-			const Vocabulary::Term& et((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
-			xml << "<Event><C0>" << et.term_id.substr(URN_VOCAB) << "</C0>";
-			(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
-				this, _1, _2, boost::ref(xml), boost::ref(col_map)));
-			xml << "</Event>";
-			if (xml.tellp() > 1000000) {	// FIXME: Max limit of 1MB (for now)
-				preamble << "<Truncated>" << xml.tellp() << "</Truncated>";
-				break;
- 			}
+	unsigned size;
+	{
+		boost::mutex::scoped_lock send_lock(m_mutex);
+		size = m_event_buffer.size();
+		for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
+			// traverse through all terms in event
+			const Vocabulary::TermRef tref = (*i)->getType();
+			// if this event type is NOT found in filtered_events, then add it to the stream
+			if (m_filtered_events.find(tref) == m_filtered_events.end()) {
+				const Vocabulary::Term& et((*m_vocab_ptr)[tref]);	// term corresponding with Event parameter
+				xml << "<Event><C0>" << et.term_id.substr(URN_VOCAB) << "</C0>";
+				(*i)->for_each(boost::bind(&MonitorWriter::SerializeXML,
+					this, _1, _2, boost::ref(xml), boost::ref(col_map)));
+				xml << "</Event>";
+				if (xml.tellp() > 1000000) {	// FIXME: Max limit of 1MB (for now)
+					preamble << "<Truncated>" << xml.tellp() << "</Truncated>";
+					break;
+ 				}
+			}
 		}
 	}
 	std::ostringstream prefix;
@@ -221,7 +226,7 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 	preamble << "<Monitoring>" << m_reactor_id << "</Monitoring><Running>" << (m_stopped ? "Stopped" : "Collecting")
 			<< "</Running><EventCounter>" << m_event_counter << "</EventCounter><ChangeCounter>" << m_change_counter
-			<< "</ChangeCounter><Collected>" << m_event_buffer.size() << "</Collected><Capacity>" << m_event_buffer.capacity()
+			<< "</ChangeCounter><Collected>" << size << "</Collected><Capacity>" << m_event_buffer.capacity()
 			<< "</Capacity><Truncating>" << m_truncate << "</Truncating><Scroll>" << (m_scroll ? "true" : "false")
 			<< "</Scroll>" << seen.str();
 	return "<Status>" + preamble.str() + "<ColSet>" + prefix.str() + "</ColSet><Events>" + xml.str() + "</Events></Status>";
