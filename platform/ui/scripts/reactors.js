@@ -2,6 +2,7 @@ dojo.provide("pion.reactors");
 dojo.require("pion.login");
 dojo.require("pion.plugins");
 dojo.require("pion.widgets.CrossWorkspaceConnection");
+dojo.require("pion.widgets.LicenseKey");
 dojo.require("plugins.reactors.Reactor");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dojo.dnd.move");
@@ -814,6 +815,14 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 	});
 }
 
+pion.reactors.doLicenseKeyDialog = function() {
+	pion.reactors.action_not_allowed_dialog.hide();
+	var title = 'Please enter your license key';
+	var dialog = new pion.widgets.LicenseKeyDialog({title: title});
+	dialog.show();
+	return false;
+}
+
 pion.reactors.doConnectionChangeIfAllowed = function(source_reactor, sink_reactor, callback) {
 	if (pion.license_state == 'lite' && (source_reactor.requires_license || sink_reactor.requires_license)) {
 		// Check key status, in case someone recently copied a key to the config directory. 
@@ -821,12 +830,14 @@ pion.reactors.doConnectionChangeIfAllowed = function(source_reactor, sink_reacto
 		.addCallback(function() {
 			if (pion.license_state == 'lite') {
 				var offending_reactor_label = source_reactor.requires_license? source_reactor.class_info.label : sink_reactor.class_info.label;
-				var dialog = new dijit.Dialog({title: 'Action Not Allowed'});
+				pion.reactors.action_not_allowed_dialog = new dijit.Dialog({title: 'Action Not Allowed'});
 				var content = 'You must have a commercial license to modify the connections of a ' + offending_reactor_label + '.<br/>'
-							+ '<a href="http://www.atomiclabs.com/pion-web-analytics/trial-license.php" target="_blank" style="color:#0033CC; text-decoration:underline">'
-							+ 'Click here to obtain a free trial license.</a>'
-				dialog.attr('content', content);
-				dialog.show();
+							+ '<a href="http://www.atomiclabs.com/pion/trial-license.php" target="_blank" class="link">'
+							+ 'Click here to obtain a free trial license.</a><br />'
+							+ 'If you already have a commercial license but have not yet installed the key, you can do so '
+							+ '<a href="#" onclick="pion.reactors.doLicenseKeyDialog();" class="link">here.</a>';
+				pion.reactors.action_not_allowed_dialog.attr('content', content);
+				pion.reactors.action_not_allowed_dialog.show();
 			} else {
 				callback();
 			}

@@ -173,6 +173,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/login.js
 ./../../release/dojo-release/pion/plugins.js
 ./../../release/dojo-release/pion/widgets/CrossWorkspaceConnection.js
+./../../release/dojo-release/pion/widgets/LicenseKey.js
 ./../../release/dojo-release/plugins/reactors/Reactor.js
 ./../../release/dojo-release/pion/widgets/SimpleSelect.js
 ./../../release/dojo-release/plugins/reactors/LogInputReactor.js
@@ -208,7 +209,6 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/services.js
 ./../../release/dojo-release/pion/about.js
 ./../../release/dojo-release/pion/widgets/Wizard.js
-./../../release/dojo-release/pion/widgets/LicenseKey.js
 ./../../release/dojo-release/pion/widgets/EditionSelector.js
 ./../../release/dojo-release/pion/widgets/KeyStoreEditor.js
 ./../../release/dojo-release/pion/pion.js

@@ -1434,3 +1434,8 @@ div.normal {
 	background: url("../images/0.gif");
 	z-index: 100;
 }
+
+a.link {
+	color:#0033CC;
+	text-decoration: underline;
+}
