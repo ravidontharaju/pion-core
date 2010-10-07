@@ -26975,7 +26975,7 @@ _19b6.cross_workspace_connection.destroy();
 pion.reactors.removeLine(_19b6.line);
 }
 }
-var _19b8=pion.reactors.workspace_box;
+var _19b8=_19b0.workspace;
 _19b8.node.removeChild(_19b0.domNode);
 for(var j=0;j<_19b8.reactors.length;++j){
 if(_19b8.reactors[j]==_19b0){

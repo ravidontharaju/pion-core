@@ -1151,7 +1151,7 @@ function deleteReactorFromUI(reactor) {
 
 	// Remove the reactor's node from the DOM tree, and finally, remove the reactor
 	// itself from the list of reactors in the workspace.
-	var workspace_box = pion.reactors.workspace_box;
+	var workspace_box = reactor.workspace;
 	workspace_box.node.removeChild(reactor.domNode);
 	for (var j = 0; j < workspace_box.reactors.length; ++j) {
 		if (workspace_box.reactors[j] == reactor) {
