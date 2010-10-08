@@ -344,6 +344,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 					return a.id < b.id? -1 : 1;
 				});
 				this.event_grid.attr("structure", this.event_grid_layout);
+				this.event_grid.layout.setColumnVisibility(0, this.event_type_check_box.checked);
 			}
 
 			var event_counter_node = data.getElementsByTagName('EventCounter')[0];
