@@ -241,6 +241,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MonitorService", "platform\
 		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLLogService", "platform\services\XMLLogService.vcproj", "{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D} = {7C1D6603-DAC2-4ABB-8C11-F8FCB990A88D}
+		{7B7BAB75-014F-44A2-9207-027E499ADDE7} = {7B7BAB75-014F-44A2-9207-027E499ADDE7}
+		{EB961393-6495-4DD0-BF17-3ECA01C0BF00} = {EB961393-6495-4DD0-BF17-3ECA01C0BF00}
+		{61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62} = {61F4B4D5-3608-4264-9F4B-B0DA3E3FDF62}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_DLL_full|Win32 = Debug_DLL_full|Win32
@@ -1159,6 +1167,28 @@ Global
 		{7B876DFC-8717-4973-8C66-3965E0174435}.Release_static|Win32.ActiveCfg = Release_DLL_full|x64
 		{7B876DFC-8717-4973-8C66-3965E0174435}.Release_static|x64.ActiveCfg = Release_DLL_full|x64
 		{7B876DFC-8717-4973-8C66-3965E0174435}.Release_static|x64.Build.0 = Release_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL_full|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL_full|Win32.Build.0 = Debug_DLL_full|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL_full|x64.ActiveCfg = Debug_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL_full|x64.Build.0 = Debug_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL|x64.ActiveCfg = Debug_DLL|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_DLL|x64.Build.0 = Debug_DLL|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_static|Win32.ActiveCfg = Debug_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_static|x64.ActiveCfg = Debug_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Debug_static|x64.Build.0 = Debug_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL_full|Win32.ActiveCfg = Release_DLL_full|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL_full|Win32.Build.0 = Release_DLL_full|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL_full|x64.ActiveCfg = Release_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL_full|x64.Build.0 = Release_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL|Win32.ActiveCfg = Release_DLL|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL|x64.ActiveCfg = Release_DLL|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_DLL|x64.Build.0 = Release_DLL|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_static|Win32.ActiveCfg = Release_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_static|x64.ActiveCfg = Release_DLL_full|x64
+		{2B0BB76C-BDAE-4DF4-AD83-19DCD060A3A4}.Release_static|x64.Build.0 = Release_DLL_full|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
