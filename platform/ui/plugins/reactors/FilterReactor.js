@@ -38,30 +38,25 @@ dojo.declare("plugins.reactors.FilterReactor",
 		_populateComparisonStore: function() {
 			var _this = this;
 			var store = pion.reactors.config_store;
-			store.fetch({
-				query: {'@id': this.config['@id']},
-				onItem: function(item) {
-					var comparisons = store.getValues(item, 'Comparison');
-					for (var i = 0; i < comparisons.length; ++i) {
-						var comparison_item = {
-							ID: _this.comparison_store.next_id++,
-							Term: store.getValue(comparisons[i], 'Term'),
-							Type: store.getValue(comparisons[i], 'Type'),
-							MatchAllValues: plugins.reactors.FilterReactor.getBool(store, comparisons[i], 'MatchAllValues')
-						}
-						if (store.hasAttribute(comparisons[i], 'Value'))
-							comparison_item.Value = store.getValue(comparisons[i], 'Value');
-						_this.comparison_store.newItem(comparison_item);
+			this.getConfigItem().addCallback(function(config_item) {
+				var comparisons = store.getValues(config_item, 'Comparison');
+				for (var i = 0; i < comparisons.length; ++i) {
+					var comparison_item = {
+						ID: _this.comparison_store.next_id++,
+						Term: store.getValue(comparisons[i], 'Term'),
+						Type: store.getValue(comparisons[i], 'Type'),
+						MatchAllValues: plugins.reactors.FilterReactor.getBool(store, comparisons[i], 'MatchAllValues')
 					}
-				},
-				onComplete: function() {
-					// At this point, _this.comparison_store reflects the Reactor's current configuration,
-					// so update _this.custom_put_data_from_config.
-					_this.updateNamedCustomPutData('custom_put_data_from_config');
+					if (store.hasAttribute(comparisons[i], 'Value'))
+						comparison_item.Value = store.getValue(comparisons[i], 'Value');
+					_this.comparison_store.newItem(comparison_item);
+				}
 
-					_this.onDonePopulatingComparisonStore();
-				},
-				onError: pion.handleFetchError
+				// At this point, _this.comparison_store reflects the Reactor's current configuration,
+				// so update _this.custom_put_data_from_config.
+				_this.updateNamedCustomPutData('custom_put_data_from_config');
+
+				_this.onDonePopulatingComparisonStore();
 			});
 		},
 		// _updateCustomData() is called after a successful PUT request.

@@ -124,28 +124,48 @@ dojo.declare("plugins.reactors.Reactor",
 
 			dojo.publish("AddReactor", [this]);
 		},
+		getConfigItem: function() {
+			var dfd = new dojo.Deferred();
+			if (this.config_item) {
+				dfd.callback(this.config_item);
+			} else {
+				if (! this.pending_fetch_dfd) {
+					this.pending_fetch_dfd = new dojo.Deferred();
+					var store = pion.reactors.config_store;
+					var _this = this;
+					store.fetch({
+						query: {'@id': this.config['@id']},
+						onComplete: function(items) {
+							if (items.length == 0)
+								throw new Error("No configuration was found for the specified Reactor: " + _this.config['@id']);
+							_this.config_item = items[0];
+							_this.pending_fetch_dfd.callback(_this.config_item);
+							delete _this.pending_fetch_dfd;
+						},
+						onError: pion.handleFetchError
+					});
+				}
+				this.pending_fetch_dfd.addCallback(function(config_item) {dfd.callback(config_item)});
+			}
+			return dfd;
+		},
 		_initOptions: function(config, option_defaults) {
 			var store = pion.reactors.config_store;
-			var _this = this;
-			store.fetch({
-				query: {'@id': config['@id']},
-				onItem: function(item) {
-					config.options = []; // used by pion.reactors.showReactorConfigDialog for checkboxes
+			this.getConfigItem().addCallback(function(config_item) {
+				config.options = []; // used by pion.reactors.showReactorConfigDialog for checkboxes
 
-					for (var option in option_defaults) {
-						// Set option to default value.
-						config[option] = option_defaults[option];
+				for (var option in option_defaults) {
+					// Set option to default value.
+					config[option] = option_defaults[option];
 
-						// Override default if option present in the configuration.
-						if (store.hasAttribute(item, option))
-							config[option] = (store.getValue(item, option).toString() == 'true');
+					// Override default if option present in the configuration.
+					if (store.hasAttribute(config_item, option))
+						config[option] = (store.getValue(config_item, option).toString() == 'true');
 
-						// Add true options to list of checkboxes to check.
-						if (config[option])
-							config.options.push(option);
-					}
-				},
-				onError: pion.handleFetchError
+					// Add true options to list of checkboxes to check.
+					if (config[option])
+						config.options.push(option);
+				}
 			});
 		},
 		showQueryResult: function() {
@@ -341,6 +361,10 @@ dojo.declare("plugins.reactors.ReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+
+			// Invalidate this.reactor.config_item, so that the next call to getConfigItem() will query the server.
+			delete this.reactor.config_item;
+
 			if ('option_defaults' in this.reactor.class_info)
 				this.reactor._initOptions(this.reactor.config, this.reactor.class_info.option_defaults);
 		},

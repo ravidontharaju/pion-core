@@ -58,63 +58,57 @@ dojo.declare("plugins.reactors.TransformReactor",
 		_populateTransformationStore: function() {
 			var _this = this;
 			var store = pion.reactors.config_store;
-			store.fetch({
-				query: {'@id': this.config['@id']},
-				onItem: function(item) {
-					dojo.forEach(store.getValues(item, 'Transformation'), function(t_item) {
-						var new_t_item_object = {
-							ID: _this.transformation_store.next_id++,
-							Term: store.getValue(t_item, 'Term'),
-							Type: store.getValue(t_item, 'Type')
-						}
-						if (new_t_item_object.Type == 'Lookup') {
-							new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Lookup</button>';
-							new_t_item_object.LookupTerm = store.getValue(t_item, 'LookupTerm');
-							pion.initOptionalValue(store, t_item, new_t_item_object, 'Match');
-							pion.initOptionalValue(store, t_item, new_t_item_object, 'Format');
-							pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultAction', 'leave-undefined');
-							pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultValue');
-							new_t_item_object.Lookup = dojo.map(store.getValues(t_item, 'Lookup'), function(lookup) {
-								var lookup_object = {
-									Key: store.getValue(lookup, '@key').toString(),
-									Value: store.getValue(lookup, 'text()').toString()
-								};
-								return lookup_object;
-							});
-						} else if (new_t_item_object.Type == 'Rules') {
-							new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Rules</button>';
-							new_t_item_object.StopOnFirstMatch = plugins.reactors.TransformReactor.getBool(store, t_item, 'StopOnFirstMatch');
-							new_t_item_object.Rule = dojo.map(store.getValues(t_item, 'Rule'), function(rule) {
-								var rule_object = {
-									Term: store.getValue(rule, 'Term').toString(),
-									Type: store.getValue(rule, 'Type').toString(),
-									SetValue: store.getValue(rule, 'SetValue').toString()
-								};
-								if (store.hasAttribute(rule, 'Value'))
-									rule_object.Value = store.getValue(rule, 'Value').toString();
-								return rule_object;
-							});
-						} else if (new_t_item_object.Type == 'Regex') {
-							new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Regex</button>';
-							new_t_item_object.SourceTerm = store.getValue(t_item, 'SourceTerm');
-							new_t_item_object.Regex = dojo.map(store.getValues(t_item, 'Regex'), function(regex) {
-								var regex_object = {
-									Format: store.getValue(regex, 'text()').toString(),
-									Exp: store.getValue(regex, '@exp').toString()
-								};
-								return regex_object;
-							});
-						} else {
-							new_t_item_object.Value = store.getValue(t_item, 'Value');
-						}
-						_this.transformation_store.newItem(new_t_item_object);
-					});
-				},
-				onComplete: function() {
-					_this.transformation_store_is_ready = true;
-					_this.onDonePopulatingTransformationStore();
-				},
-				onError: pion.handleFetchError
+			this.getConfigItem().addCallback(function(config_item) {
+				dojo.forEach(store.getValues(config_item, 'Transformation'), function(t_item) {
+					var new_t_item_object = {
+						ID: _this.transformation_store.next_id++,
+						Term: store.getValue(t_item, 'Term'),
+						Type: store.getValue(t_item, 'Type')
+					}
+					if (new_t_item_object.Type == 'Lookup') {
+						new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Lookup</button>';
+						new_t_item_object.LookupTerm = store.getValue(t_item, 'LookupTerm');
+						pion.initOptionalValue(store, t_item, new_t_item_object, 'Match');
+						pion.initOptionalValue(store, t_item, new_t_item_object, 'Format');
+						pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultAction', 'leave-undefined');
+						pion.initOptionalValue(store, t_item, new_t_item_object, 'DefaultValue');
+						new_t_item_object.Lookup = dojo.map(store.getValues(t_item, 'Lookup'), function(lookup) {
+							var lookup_object = {
+								Key: store.getValue(lookup, '@key').toString(),
+								Value: store.getValue(lookup, 'text()').toString()
+							};
+							return lookup_object;
+						});
+					} else if (new_t_item_object.Type == 'Rules') {
+						new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Rules</button>';
+						new_t_item_object.StopOnFirstMatch = plugins.reactors.TransformReactor.getBool(store, t_item, 'StopOnFirstMatch');
+						new_t_item_object.Rule = dojo.map(store.getValues(t_item, 'Rule'), function(rule) {
+							var rule_object = {
+								Term: store.getValue(rule, 'Term').toString(),
+								Type: store.getValue(rule, 'Type').toString(),
+								SetValue: store.getValue(rule, 'SetValue').toString()
+							};
+							if (store.hasAttribute(rule, 'Value'))
+								rule_object.Value = store.getValue(rule, 'Value').toString();
+							return rule_object;
+						});
+					} else if (new_t_item_object.Type == 'Regex') {
+						new_t_item_object.Value = '<button dojoType=dijit.form.Button class="edit">edit Regex</button>';
+						new_t_item_object.SourceTerm = store.getValue(t_item, 'SourceTerm');
+						new_t_item_object.Regex = dojo.map(store.getValues(t_item, 'Regex'), function(regex) {
+							var regex_object = {
+								Format: store.getValue(regex, 'text()').toString(),
+								Exp: store.getValue(regex, '@exp').toString()
+							};
+							return regex_object;
+						});
+					} else {
+						new_t_item_object.Value = store.getValue(t_item, 'Value');
+					}
+					_this.transformation_store.newItem(new_t_item_object);
+				});
+				_this.transformation_store_is_ready = true;
+				_this.onDonePopulatingTransformationStore();
 			});
 		},
 		onDonePopulatingTransformationStore: function() {
