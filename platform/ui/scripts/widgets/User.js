@@ -34,13 +34,13 @@ dojo.declare("pion.widgets.UserPane",
 			}
 			this._initReactorsCheckBoxes();
 			this._initServicesCheckBoxes();
+			dojo.query('input', this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 		},
 		_onAdminCheckBoxChanged: function(checked) {
 			this.config.tab_check_boxes = checked? ['Admin', 'Vocabularies', 'Codecs', 'Databases', 'Protocols'] : [];
 
-			this._onMainReactorCheckBoxChanged(checked);
-			this.reactors_check_box.attr('disabled', checked);
-			this.reactors_unrestricted_check_box.attr('disabled', true);
+			this._onReactorsUnrestrictedCheckBoxChanged(checked);
+			this.reactors_unrestricted_check_box.attr('disabled', checked);
 
 			this.vocabularies_check_box.attr('disabled', checked);
 			this.codecs_check_box.attr('disabled', checked);
@@ -49,19 +49,37 @@ dojo.declare("pion.widgets.UserPane",
 
 			var _this = this;
 			dojo.forEach(pion.services.restrictable_services, function(service) {
-				_this._onMainServiceCheckBoxChanged(checked, service);
 				var main_check_box = _this[service.plugin + '_main_check_box'];
 				var unrestricted_check_box = _this[service.plugin + '_unrestricted_check_box'];
-				main_check_box.attr('disabled', checked);
-				if (unrestricted_check_box)
-					unrestricted_check_box.attr('disabled', true);
+				if (main_check_box) {
+					_this._onMainServiceCheckBoxChanged(checked, service);
+					main_check_box.attr('disabled', checked);
+
+					// disable all option check boxes for this service (since either admin is checked or main checkbox is unchecked)
+					if (unrestricted_check_box)
+						unrestricted_check_box.attr('disabled', true);
+					var option_obj = _this[service.plugin + '_option_obj'];
+					for (key in option_obj) {
+						dojo.forEach(option_obj[key].check_boxes, function(check_box) {
+							check_box.attr('disabled', true);
+						});
+					}
+				} else if (unrestricted_check_box) {
+					_this._onServiceUnrestrictedCheckBoxChanged(checked, service);
+					unrestricted_check_box.attr('disabled', checked);
+				} else {
+					// if checked=true, check and disable all option check boxes for this service, else uncheck and enable them.
+					var option_obj = _this[service.plugin + '_option_obj'];
+					for (key in option_obj) {
+						dojo.forEach(option_obj[key].check_boxes, function(check_box) {
+							check_box.attr('disabled', checked);
+						});
+						_this.config[service.plugin + '_' + key + '_check_boxes'] = checked? option_obj[key].values : [];
+					}
+				}
 			});
 		},
 		_initReactorsCheckBoxes: function() {
-			this.reactors_check_box.onClick = function(e) {
-				_this._onMainReactorCheckBoxChanged(e.target.checked);
-				_this.form.attr('value', _this.config);
-			}
 			this.reactors_unrestricted_check_box.onClick = function(e) {
 				_this._onReactorsUnrestrictedCheckBoxChanged(e.target.checked);
 				_this.form.attr('value', _this.config);
@@ -99,14 +117,6 @@ dojo.declare("pion.widgets.UserPane",
 			else
 				this.config[check_box_group] = dojo.filter(this.config[check_box_group], function(v) { return v != value; });
 		},
-		_onMainReactorCheckBoxChanged: function(checked) {
-			this._setCheckBoxInConfig('tab_check_boxes', 'Reactors', checked);
-			this._onReactorsUnrestrictedCheckBoxChanged(checked);
-			this.reactors_unrestricted_check_box.attr('disabled', ! checked);
-			dojo.forEach(this.workspace_check_boxes, function(check_box) {
-				check_box.attr('disabled', true);
-			});
-		},
 		_onReactorsUnrestrictedCheckBoxChanged: function(checked) {
 			this.config.workspace_check_box_group = checked? ['Unrestricted'] : [];
 			dojo.forEach(this.workspace_check_boxes, function(check_box) {
@@ -116,17 +126,29 @@ dojo.declare("pion.widgets.UserPane",
 		_initServicesCheckBoxes: function() {
 			var _this = this;
 			dojo.forEach(pion.services.restrictable_services, function(service) {
+				service.permission_subtypes = [];
+				for (key in service.permission_layout) {
+					if (key != 'Unrestricted' && key != 'top_level_checkbox' && key != 'top_level_label')
+						service.permission_subtypes.push(key);
+				}
 				var check_box_group = service.plugin + '_check_boxes';
 				_this.special_config_elements.push(check_box_group);
 				var check_box_div = document.createElement('div');
 				_this.service_permissions.appendChild(check_box_div);
-				var main_check_box = new dijit.form.CheckBox({name: check_box_group, value: service.plugin}, check_box_div);
-				main_check_box.onClick = function(e) {
-					_this._onMainServiceCheckBoxChanged(e.target.checked, service);
-					_this.form.attr('value', _this.config);
+
+				if ('top_level_checkbox' in service.permission_layout) {
+					var main_check_box = new dijit.form.CheckBox({name: check_box_group, value: service.plugin}, check_box_div);
+					main_check_box.onClick = function(e) {
+						_this._onMainServiceCheckBoxChanged(e.target.checked, service);
+						_this.form.attr('value', _this.config);
+					}
+					_this[service.plugin + '_main_check_box'] = main_check_box;
+					var label_div = dojo.create('label', {innerHTML: service.permission_layout.top_level_checkbox});
+				} else {
+					var label = service.permission_layout.top_level_label? service.permission_layout.top_level_label : service.plugin;
+					var label_div = dojo.create('label', {innerHTML: label});
+					dojo.addClass(label_div, 'group_label');
 				}
-				_this[service.plugin + '_main_check_box'] = main_check_box;
-				var label_div = dojo.create('label', {innerHTML: service.plugin});
 				_this.service_permissions.appendChild(label_div);
 				_this.service_permissions.appendChild(dojo.create('br'));
 
@@ -148,29 +170,27 @@ dojo.declare("pion.widgets.UserPane",
 				}
 
 				var option_obj = {};
-				for (key in service.permission_layout) {
-					if (key != 'Unrestricted') {
-						option_obj[key] = { check_boxes: [], values: [] };
-						var check_box_group = service.plugin + '_' + key + '_check_boxes';
-						_this.special_config_elements.push(check_box_group);
-						dojo.forEach(service.permission_layout[key], function(option) {
-							var check_box_div = document.createElement('div');
-							var wrapper_div = document.createElement('div');
-							dojo.addClass(wrapper_div, 'single_indent');
-							_this.service_permissions.appendChild(wrapper_div);
-							wrapper_div.appendChild(check_box_div);
-							option_obj[key].values.push(option.value);
-							option_obj[key].check_boxes.push(new dijit.form.CheckBox({
-								name: check_box_group,
-								value: option.value,
-								onClick: function() { _this.config = _this.form.attr('value'); }
-							}, check_box_div));
-							var label_div = dojo.create('label', {innerHTML: option.label});
-							wrapper_div.appendChild(label_div);
-							wrapper_div.appendChild(dojo.create('br'));
-						});
-					}
-				}
+				dojo.forEach(service.permission_subtypes, function(key) {
+					option_obj[key] = { check_boxes: [], values: [] };
+					var check_box_group = service.plugin + '_' + key + '_check_boxes';
+					_this.special_config_elements.push(check_box_group);
+					dojo.forEach(service.permission_layout[key], function(option) {
+						var check_box_div = document.createElement('div');
+						var wrapper_div = document.createElement('div');
+						dojo.addClass(wrapper_div, 'single_indent');
+						_this.service_permissions.appendChild(wrapper_div);
+						wrapper_div.appendChild(check_box_div);
+						option_obj[key].values.push(option.value);
+						option_obj[key].check_boxes.push(new dijit.form.CheckBox({
+							name: check_box_group,
+							value: option.value,
+							onClick: function() { _this.config = _this.form.attr('value'); }
+						}, check_box_div));
+						var label_div = dojo.create('label', {innerHTML: option.label});
+						wrapper_div.appendChild(label_div);
+						wrapper_div.appendChild(dojo.create('br'));
+					});
+				});
 				_this[service.plugin + '_option_obj'] = option_obj;
 			});
 		},
@@ -201,6 +221,8 @@ dojo.declare("pion.widgets.UserPane",
 		},
 		_onServiceUnrestrictedCheckBoxChanged: function(checked, service) {
 			var check_box_group = service.plugin + '_check_boxes';
+			if (! (check_box_group in this.config))
+				this.config[check_box_group] = [];
 			this._setCheckBoxInConfig(check_box_group, 'Unrestricted', checked);
 
 			// Uncheck all option check boxes for this service.
@@ -239,15 +261,12 @@ dojo.declare("pion.widgets.UserPane",
 					if (store.hasAttribute(p_item, '@type')) {
 						var permission_type = store.getValue(p_item, '@type');
 						if (permission_type == 'Reactors') {
-							_this._onMainReactorCheckBoxChanged(true);
 							if (store.hasAttribute(p_item, 'Unrestricted') && store.getValue(p_item, 'Unrestricted') == 'true') {
 								_this._onReactorsUnrestrictedCheckBoxChanged(true);
 							} else {
 								_this._onReactorsUnrestrictedCheckBoxChanged(false);
-								if (store.hasAttribute(p_item, 'Workspace')) {
-									var values = store.getValues(p_item, 'Workspace');
-									_this.config.workspace_check_box_group = dojo.map(values, function(v) {return v.toString();});
-								}
+								var values = store.getValues(p_item, 'Workspace'); // Note that this could be empty, if reactors.xml was edited by hand.
+								_this.config.workspace_check_box_group = dojo.map(values, function(v) {return v.toString();});
 							}
 						} else if (dojo.indexOf(['Vocabularies', 'Codecs', 'Databases', 'Protocols'], permission_type) != -1) {
 							_this.config.tab_check_boxes.push(permission_type);
@@ -258,7 +277,9 @@ dojo.declare("pion.widgets.UserPane",
 								// Unknown Permission type: ignore it.
 							} else {
 								service = matches[0];
-								_this._onMainServiceCheckBoxChanged(true, service);
+								if ('top_level_checkbox' in service.permission_layout) {
+									_this._onMainServiceCheckBoxChanged(true, service);
+								}
 								var unrestricted = false;
 								if (store.hasAttribute(p_item, 'Unrestricted')) {
 									unrestricted = store.getValue(p_item, 'Unrestricted') == 'true';
@@ -267,14 +288,10 @@ dojo.declare("pion.widgets.UserPane",
 									_this._onServiceUnrestrictedCheckBoxChanged(unrestricted, service);
 								}
 								if (! unrestricted) {
-									var attributes = store.getAttributes(p_item);
-									var ignore = ['tagName', '@type', 'childNodes', 'Unrestricted']; // <Unrestricted> element is ignored when it has a value other than 'true'.
-									dojo.forEach(attributes, function(attribute) {
-										if (dojo.indexOf(ignore, attribute) == -1) {
-											var values = store.getValues(p_item, attribute);
-											check_box_group = service.plugin + '_' + attribute + '_check_boxes';
-											_this.config[check_box_group] = dojo.map(values, function(v) {return v.toString();});
-										}
+									dojo.forEach(service.permission_subtypes, function(key) {
+										var values = store.getValues(p_item, key);
+										check_box_group = service.plugin + '_' + key + '_check_boxes';
+										_this.config[check_box_group] = dojo.map(values, function(v) {return v.toString();});
 									});
 								}
 							}
@@ -302,37 +319,39 @@ dojo.declare("pion.widgets.UserPane",
 				put_data += '<Permission type="Admin" />';
 			} else {
 				dojo.forEach(config.tab_check_boxes, function(tab_id) {
-					if (tab_id == 'Reactors') {
-						put_data += '<Permission type="' + tab_id + '">';
-						if (dojo.indexOf(config.workspace_check_box_group, 'Unrestricted') != -1) {
-							put_data += '<Unrestricted>true</Unrestricted>';
-						} else {
-							dojo.forEach(config.workspace_check_box_group, function(workspace_id) {
-								put_data += '<Workspace>' + workspace_id + '</Workspace>';
-							});
-						}
-						put_data += '</Permission>';
-					} else {
-						put_data += '<Permission type="' + tab_id + '" />';
-					}
+					put_data += '<Permission type="' + tab_id + '" />';
 				});
+				if (config.workspace_check_box_group.length > 0) {
+					put_data += '<Permission type="Reactors">';
+					if (dojo.indexOf(config.workspace_check_box_group, 'Unrestricted') != -1) {
+						put_data += '<Unrestricted>true</Unrestricted>';
+					} else {
+						dojo.forEach(config.workspace_check_box_group, function(workspace_id) {
+							put_data += '<Workspace>' + workspace_id + '</Workspace>';
+						});
+					}
+					put_data += '</Permission>';
+				}
 				dojo.forEach(pion.services.restrictable_services, function(service) {
 					var check_box_group = service.plugin + '_check_boxes';
-					var check_box_array = config[check_box_group];
-					if (dojo.indexOf(check_box_array, service.plugin) != -1) {
+					var check_box_array = config[check_box_group] || [];
+					var service_has_something_selected = (check_box_array.length > 0) || dojo.some(service.permission_subtypes, function(key) {
+						var subtype_check_box_group = service.plugin + '_' + key + '_check_boxes';
+						var subtype_check_box_array = config[subtype_check_box_group] || [];
+						return subtype_check_box_array.length > 0;
+					});
+					if (service_has_something_selected) {
 						put_data += '<Permission type="' + service.plugin + '">';
 						if (dojo.indexOf(check_box_array, 'Unrestricted') != -1) {
 							put_data += '<Unrestricted>true</Unrestricted>';
 						} else {
-							for (key in service.permission_layout) {
-								if (key != 'Unrestricted') {
-									check_box_group = service.plugin + '_' + key + '_check_boxes';
-									check_box_array = config[check_box_group];
-									dojo.forEach(check_box_array, function(option_value) {
-										put_data += '<' + key + '>' + option_value + '</' + key + '>';
-									});
-								}
-							}
+							dojo.forEach(service.permission_subtypes, function(key) {
+								var subtype_check_box_group = service.plugin + '_' + key + '_check_boxes';
+								var subtype_check_box_array = config[subtype_check_box_group] || [];
+								dojo.forEach(subtype_check_box_array, function(option_value) {
+									put_data += '<' + key + '>' + option_value + '</' + key + '>';
+								});
+							});
 						}
 						put_data += '</Permission>';
 					}

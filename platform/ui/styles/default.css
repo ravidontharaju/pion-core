@@ -498,7 +498,7 @@ label.disabled {
 }
 
 .dijitStackController {
-	width: 200px;
+ 	width: 200px;
 }
 
 
@@ -1240,6 +1240,11 @@ I don't think this is being used anywhere.
 
 .tundra .user_pane .single_indent {
 	padding-left: 15px;
+}
+
+.tundra .group_label {
+	font-weight: 100;
+	font-style: italic;
 }
 
 /* for drag-and-drop items in the System configuration page*/
