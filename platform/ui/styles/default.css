@@ -1444,3 +1444,11 @@ a.link {
 	color:#0033CC;
 	text-decoration: underline;
 }
+
+/*
+This overrides a rule in FloatingPane.css that specifies a non-existent image.
+See http://bugs.dojotoolkit.org/ticket/11811.
+*/
+.dojoxDockRestoreButton {
+	background: url('../images/arrowUp.png') no-repeat center center !important;
+}
