@@ -308,6 +308,9 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				this.column_form.attr('value', {column_check_box_group: this.prev_column_check_box_group_value});
 			}
 
+			// Done changing the sidebar, so update the layout.
+			this.left_sidebar.resize();
+
 			var col_tags = {};
 			var col_set = data.getElementsByTagName('ColSet')[0];
 			dojo.forEach(col_set.childNodes, function(node) {
