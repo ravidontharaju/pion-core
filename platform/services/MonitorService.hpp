@@ -227,8 +227,13 @@ public:
 	{
 	}
 	
-	/// virtual destructor
-	virtual ~MonitorService() {}
+	/// virtual destructor -- stop all the running captures
+	virtual ~MonitorService()
+	{
+		for (unsigned i = 0; i < m_writers.size(); i++)
+			if (m_writers[i])
+				m_writers[i]->stop();
+	}
 	
 	/**
 	 * attempts to handle a new HTTP request
