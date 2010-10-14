@@ -21,7 +21,7 @@
 						<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
 					</div>
 				</div>
-				<div dojoType="dijit.layout.ContentPane" region="left" class="left_sidebar" splitter="true">
+				<div dojoType="dijit.layout.BorderContainer" region="left" class="left_sidebar" splitter="true">
 					<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="event_type_block" region="top" style="visibility: hidden">
 						<h3>Event Types</h3>
 						<div dojoAttachPoint="event_type_form" dojoType="dijit.form.Form">
@@ -29,7 +29,7 @@
 					</div>
 					<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="column_block" region="center" style="visibility: hidden">
 						<h3>Columns</h3>
-						<input dojoType="dijit.form.CheckBox" value="EventType" checked="true" dojoAttachPoint="event_type_check_box" /><label>Event Type</label><br /
+						<input dojoType="dijit.form.CheckBox" value="EventType" checked="true" dojoAttachPoint="event_type_check_box" /><label>Event Type</label><br />
 						<div dojoAttachPoint="column_form" dojoType="dijit.form.Form">
 						</div>
 					</div>
@@ -37,7 +37,7 @@
 				<div dojoType="dijit.layout.ContentPane" region="center" class="event_grid_pane">
 					<div dojoAttachPoint="events_div" style="visibility: hidden">
 						<h3>Events</h3>
-						<div dojoAttachPoint="event_grid_node" />
+								<div dojoAttachPoint="event_grid_node" />
 					</div>
 				</div>
 			</div>
