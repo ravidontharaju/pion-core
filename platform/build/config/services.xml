@@ -60,6 +60,12 @@
 			<Plugin>QueryService</Plugin>
 			<Resource>/query</Resource>
 		</PlatformService>
+		<PlatformService id="xml-log-service">
+			<Name>XML Log Service</Name>
+			<Comment>Recent Log entries in XML</Comment>
+			<Plugin>XMLLogService</Plugin>
+			<Resource>/xmllog</Resource>
+		</PlatformService>
 	</Server>
 	<Server id="hello-server">
 		<Port>8081</Port>
