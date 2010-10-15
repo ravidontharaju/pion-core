@@ -65,6 +65,13 @@ void XMLLogServiceAppender::writeLogEvents(pion::net::HTTPResponseWriterPtr& wri
 	writer << xml.str();
 }
 
+void XMLLogServiceAppender::acknowledgeEvent(std::string id)
+{
+	LOG_QUEUE::const_iterator it = m_log_event_queue.find(id);
+	if (it != m_log_event_queue.end())
+		m_log_event_queue.erase(it);
+}
+
 
 // XMLLogService member functions
 
@@ -84,12 +91,47 @@ XMLLogService::~XMLLogService()
 /// handles requests for XMLLogService
 void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
 {
-	// Set Content-type to "text/plain" (plain ascii text)
+	bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
+	if (! allowed) {
+		// Send a 403 (Forbidden) response.
+		std::string error_msg = "User doesn't have permission for XMLLogService.";
+		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+		return;
+	}
+
+	// Set Content-type to "text/xml"
 	HTTPResponseWriterPtr writer(HTTPResponseWriter::create(tcp_conn, *request,
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
-	getLogAppender().writeLogEvents(writer);
-	writer->send();
+
+	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+		getLogAppender().writeLogEvents(writer);
+		writer->send();
+	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
+		const HTTPTypes::QueryParams qp = request->getQueryParams();
+		if (qp.empty()) {
+			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
+			HTTPServer::handleBadRequest(request, tcp_conn);
+			return;
+		}
+		HTTPTypes::QueryParams::const_iterator qpi = qp.find("ack");
+		if (qpi != qp.end()) {
+			// Erase the event with the specified id from the queue (if found).
+			getLogAppender().acknowledgeEvent(qpi->second);
+		} else {
+			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
+			HTTPServer::handleBadRequest(request, tcp_conn);
+			return;
+		}
+
+		// send a 204 (No Content) response
+		writer->getResponse().setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
+		writer->getResponse().setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
+		writer->send();
+	} else {
+		// send a 405 (Method Not Allowed) response
+		HTTPServer::handleMethodNotAllowed(request, tcp_conn);
+	}
 }
 
 

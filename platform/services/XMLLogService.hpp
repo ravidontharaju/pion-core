@@ -49,6 +49,9 @@ public:
 	/// writes the events cached in memory to a response stream
 	void writeLogEvents(pion::net::HTTPResponseWriterPtr& writer);
 
+	/// deletes the event with the specified ID from the queue
+	void acknowledgeEvent(std::string id);
+
 private:
 	/// default maximum number of events cached in memory
 	static const unsigned int				DEFAULT_MAX_EVENTS;
