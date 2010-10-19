@@ -91,7 +91,7 @@ pion.vocabularies.addNewVocabulary = function() {
 			postData: post_data,
 			load: function(response) {
 				if (vocab_config_page_initialized) {
-					pion.vocabularies.createNewPaneFromStore(full_id, pion.current_page == "Vocabularies");
+					pion.vocabularies.createNewPaneFromStore(full_id, pion.current_page.id == 'vocab_config');
 				}
 			},
 			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})

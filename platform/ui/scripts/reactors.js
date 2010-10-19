@@ -162,7 +162,7 @@ pion.reactors.init = function() {
 	var prev_global_ops = 0;
 	var prev_events_in_for_workspace = 0;
 	setInterval(function() {
-		if (!ops_toggle_button.checked && pion.current_page == 'Reactors') {
+		if (!ops_toggle_button.checked && pion.current_page.id == 'reactor_config') {
 			dojo.xhrGet({
 				url: '/config/reactors/stats',
 				preventCache: true,

@@ -5,6 +5,21 @@ dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services', rootItem: 'PlatformService'});
 
+pion.services.createService = function(prototype) {
+	var kw_args = {title: prototype.label, resource: prototype.resource};
+
+	// If the Service about to be created is a widget, then we would like to specify kw_args.id, which will then be used as the widget ID.
+	// So far, the only Services we have that are widgets are ones like ReplayService that are added as tabs of the main stack container.
+	// (MonitorService, although it creates widgets, is not itself a widget.)
+	// So, for now, it's enough to just check for the existence of a class member called tab_id, and use it if found.
+	if ('tab_id' in prototype)
+		kw_args.id = prototype.tab_id;
+
+	new prototype(kw_args);
+
+	console.debug('UI for service "', prototype.label, '" has been added.');
+}
+
 pion.services.init = function() {
 	init_services_standby.show();
 	pion.services.getAllServicesInUIDirectory = function() {
@@ -67,12 +82,11 @@ pion.services.init = function() {
 				// TODO: Confirm that permission_layout in service?
 				pion.services.restrictable_services.push(service);
 			}
+			prototype.resource = service.resource;
 			if ('isUsable' in prototype) {
-				prototype.resource = service.resource;
 				conditional_prototypes.push(prototype);
 			} else {
-				new prototype({title: prototype.label, id: prototype.tab_id, resource: service.resource});
-				console.debug('UI for service "', prototype.label, '" has been added.');
+				pion.services.createService(prototype);
 			}
 		});
 		var num_pending_prototypes = conditional_prototypes.length;
@@ -83,8 +97,7 @@ pion.services.init = function() {
 				prototype.isUsable(prototype.resource)
 				.addCallback(function(is_usable) {
 					if (is_usable) {
-						new prototype({title: prototype.label, id: prototype.tab_id, resource: prototype.resource});
-						console.debug('UI for service "', prototype.label, '" has been added.');
+						pion.services.createService(prototype);
 					} else {
 						console.debug('UI for service "', prototype.label, '" has NOT been added: isUsable() returned false.');
 					}

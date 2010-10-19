@@ -11,7 +11,7 @@ dojo.declare("plugins.services.Service",
 				console.error('No resource specified for Service ' + this.title);
 		},
 		onSelect: function() {
-			dijit.byId('main_stack_container').resize({h: this.height});
+			dijit.byId('main_stack_container').resize({h: this.getHeight()});
 			if (! this.initialized) {
 				this.initialized = true;
 

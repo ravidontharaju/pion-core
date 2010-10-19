@@ -782,9 +782,8 @@ var init = function() {
 dojo.addOnLoad(init);
 
 function configPageSelected(page) {
-	console.debug('Selected ' + page.title + ' configuration page');
-	pion.current_page = page.title;
-	if (page.title == "Reactors") {
+	pion.current_page = page;
+	if (page.id == 'reactor_config') {
 		if (reactor_config_page_initialized) {
 			pion.reactors.reselectCurrentWorkspace(); // In case current workspace was created via another page.
 			dijit.byId('main_stack_container').resize({h: pion.reactors.getHeight()});
@@ -792,14 +791,14 @@ function configPageSelected(page) {
 			pion.reactors.init();
 			reactor_config_page_initialized = true;
 		}
-	} else if (page.title == "Vocabularies") {
+	} else if (page.id == 'vocab_config') {
 		if (vocab_config_page_initialized) {
 			dijit.byId('main_stack_container').resize({h: pion.vocabularies.getHeight()});
 		} else {
 			pion.vocabularies.init();
 			vocab_config_page_initialized = true;
 		}
-	} else if (page.title == "Codecs") {
+	} else if (page.id == 'codec_config') {
 		if (codec_config_page_initialized) {
 			pion.codecs._adjustAccordionSize(); // In case Codecs were added via another page.
 			dijit.byId('main_stack_container').resize({h: pion.codecs.getHeight()});
@@ -807,7 +806,7 @@ function configPageSelected(page) {
 			pion.codecs.init();
 			codec_config_page_initialized = true;
 		}
-	} else if (page.title == "Databases") {
+	} else if (page.id == 'database_config') {
 		if (database_config_page_initialized) {
 			pion.databases._adjustAccordionSize(); // In case Databases were added via another page.
 			dijit.byId('main_stack_container').resize({h: pion.databases.getHeight()});
@@ -815,7 +814,7 @@ function configPageSelected(page) {
 			pion.databases.init();
 			database_config_page_initialized = true;
 		}
-	} else if (page.title == "Protocols") {
+	} else if (page.id == 'protocol_config') {
 		if (protocol_config_page_initialized) {
 			pion.protocols._adjustAccordionSize(); // In case Protocols were added via another page.
 			dijit.byId('main_stack_container').resize({h: pion.protocols.getHeight()});
@@ -823,14 +822,14 @@ function configPageSelected(page) {
 			pion.protocols.init();
 			protocol_config_page_initialized = true;
 		}
-	} else if (page.title == "Users") {
+	} else if (page.id == 'user_config') {
 		if (user_config_page_initialized) {
 			dijit.byId('main_stack_container').resize({h: pion.users.getHeight()});
 		} else {
 			pion.users.init();
 			user_config_page_initialized = true;
 		}
-	} else if (page.title == "System") {
+	} else if (page.id == 'system_config') {
 		if (system_config_page_initialized) {
 			dijit.byId('main_stack_container').resize({h: pion.system.getHeight()});
 		} else {
