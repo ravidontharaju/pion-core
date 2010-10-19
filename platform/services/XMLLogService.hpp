@@ -100,10 +100,16 @@ public:
 
 	/// returns the log appender used by XMLLogService
 	inline XMLLogServiceAppender& getLogAppender(void) { return *m_log_appender_ptr; }
-	
+
+	/// returns the type attribute used for an XML Permission node pertaining to XMLLogService
+	std::string getPermissionType(void) const { return XML_LOG_SERVICE_PERMISSION_TYPE; }
+
 private:
 	/// map of file extensions to MIME types
 	XMLLogServiceAppender *	m_log_appender_ptr;
+
+	/// type identifier for XMLLogService permission type
+	static const std::string			XML_LOG_SERVICE_PERMISSION_TYPE;
 };
 
 	

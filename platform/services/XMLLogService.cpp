@@ -73,6 +73,10 @@ void XMLLogServiceAppender::acknowledgeEvent(std::string id)
 }
 
 
+// static members of XMLLogService
+
+const std::string	XMLLogService::XML_LOG_SERVICE_PERMISSION_TYPE = "XMLLogService";
+
 // XMLLogService member functions
 
 XMLLogService::XMLLogService(void)
