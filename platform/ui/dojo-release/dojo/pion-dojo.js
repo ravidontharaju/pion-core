@@ -22985,6 +22985,9 @@ return "<button dojoType=dijit.form.Button><img src=\"images/icon-edit.png\" alt
 pion.makeInsertAboveButton=function(){
 return "<button dojoType=dijit.form.Button class=\"insert_row\"><img src=\"images/arrowUp.png\" alt=\"INSERT ABOVE\" border=\"0\" /></button>";
 };
+pion.makeSearchButton=function(){
+return "<button dojoType=dijit.form.Button class=\"search\"></button>";
+};
 }
 if(!dojo._hasResource["pion._base.load"]){
 dojo._hasResource["pion._base.load"]=true;

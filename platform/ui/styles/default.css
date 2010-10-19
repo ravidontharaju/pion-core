@@ -425,7 +425,7 @@ label.disabled {
 	/* Is there some other way to do this so that the tabs don't either wrap  */
 	/* around or extend beyond the right edge of "topBar" (that works on both */
 	/* FF and IE) when another tab is added?                                  */
-	width: 860px;
+	width: 900px;
 	float: right;
 	clear: both;
 	position: relative;

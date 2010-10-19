@@ -1,0 +1,45 @@
+#menu .alert span {
+	color: red;
+}
+
+#menu .alert.flash_on span {
+	color: red;
+}
+
+#menu .alert.flash_off span {
+	color: black;
+}
+
+.log_service {
+	margin-left: 20px;
+	background: #ffffff;
+}
+
+.log_service .grid_node {
+	height: 600px;
+	width: 100%;
+}
+
+.log_service .log_grid_block {
+	background: #a0c5ec;
+	padding: 10px;
+	margin-top: 20px;
+	margin-right: 20px;
+	width: 95%;
+}
+
+.log_service button.search {
+	background-image: url('../../../images/icon-search.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	border: outset #CCCCCC 3px;
+	width: auto;
+	height: 22px;
+	padding-left: 20px;
+}
+
+.log_service button.search:hover {
+	background-image: url('../../../images/icon-search-hover.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+}

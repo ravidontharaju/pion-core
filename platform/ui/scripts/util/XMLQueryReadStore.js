@@ -19,6 +19,12 @@ dojo.declare("pion.util.XMLQueryReadStore",
 // Copied from dojox.data.XmlStore
 /* dojo.data.api.Read */
 
+		constructor: function(/* object */ args) {
+			if (args) {
+				this._attributeMap = (args.attributeMap || args.attributemap);
+			}
+		},
+
 		getValue: function(/* item */ item, /* attribute || attribute-name-string */ attribute, /* value? */ defaultValue){
 			//	summary:
 			//		Return an attribute value

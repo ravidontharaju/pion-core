@@ -119,3 +119,7 @@ pion.makeEditButton = function() {
 pion.makeInsertAboveButton = function() {
 	return '<button dojoType=dijit.form.Button class="insert_row"><img src="images/arrowUp.png" alt="INSERT ABOVE" border="0" /></button>';
 }
+
+pion.makeSearchButton = function() {
+	return '<button dojoType=dijit.form.Button class="search"></button>';
+}
