@@ -43,7 +43,7 @@ void XMLLogServiceAppender::append(const log4cplus::spi::InternalLoggingEvent& e
 	val = "<LogLevel>" + ConfigManager::xml_encode(m_log_level_manager.toString(event.getLogLevel()))
 		+ "</LogLevel><Timestamp>" + ConfigManager::xml_encode(boost::lexical_cast<std::string>(event.getTimestamp().sec()))
 		+ "</Timestamp><LoggerName>" + ConfigManager::xml_encode(event.getLoggerName())
-		+ "</LoggerName><Message>" + ConfigManager::xml_encode(event.getMessage())
+		+ "</LoggerName><Message>" + ConfigManager::xml_encode(event.getMessage().substr(0, 100))	// FIXME: 100 char truncate configurable
 		+ "</Message>";
 	boost::mutex::scoped_lock log_lock(m_log_mutex);
 	// FIXME: severity:second must be unique, or it fails to insert...
