@@ -67,7 +67,7 @@ void XMLLogServiceAppender::writeLogEvents(pion::net::HTTPResponseWriterPtr& wri
 
 void XMLLogServiceAppender::acknowledgeEvent(std::string id)
 {
-	LOG_QUEUE::const_iterator it = m_log_event_queue.find(id);
+	LOG_QUEUE::iterator it = m_log_event_queue.find(id);
 	if (it != m_log_event_queue.end())
 		m_log_event_queue.erase(it);
 }
