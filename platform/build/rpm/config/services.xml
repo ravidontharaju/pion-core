@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PionConfig xmlns="http://purl.org/pion/config">
+<PionConfig xmlns="http://purl.org/pion/config" pion_version="3.1.0">
 	<Server id="main-server">
 		<Port>8888</Port>
 		<!-- <SSLKey>sslkey.pem</SSLKey> -->
@@ -16,6 +16,7 @@
 		<Permit>/resources</Permit>
 		<Permit>/scripts</Permit>
 		<Permit>/styles</Permit>
+		<Permit>/licenses</Permit>
 		<Login>/login</Login>
 		<Logout>/logout</Logout>
 		<WebService id="ui-service">
@@ -41,12 +42,24 @@
 			<Plugin>FeedService</Plugin>
 			<Resource>/feed</Resource>
 		</PlatformService>
-		<WebService id="log-service">
-			<Name>Log Service</Name>
-			<Comment>Sends recent log entries</Comment>
-			<Plugin>LogService</Plugin>
-			<Resource>/log</Resource>
-		</WebService>
+		<PlatformService id="monitor-service">
+			<Name>Event Data Monitoring Service</Name>
+			<Comment>Pion platform event data monitoring service</Comment>
+			<Plugin>MonitorService</Plugin>
+			<Resource>/monitor</Resource>
+		</PlatformService>
+		<PlatformService id="query-service">
+			<Name>Query Service</Name>
+			<Comment>Accesses Reactors for queries</Comment>
+			<Plugin>QueryService</Plugin>
+			<Resource>/query</Resource>
+		</PlatformService>
+		<PlatformService id="xml-log-service">
+			<Name>XML Log Service</Name>
+			<Comment>Recent Log entries in XML</Comment>
+			<Plugin>XMLLogService</Plugin>
+			<Resource>/xmllog</Resource>
+		</PlatformService>
 	</Server>
 	<Server id="hello-server">
 		<Port>8081</Port>

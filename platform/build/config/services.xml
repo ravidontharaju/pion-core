@@ -48,12 +48,6 @@
 			<Plugin>MonitorService</Plugin>
 			<Resource>/monitor</Resource>
 		</PlatformService>
-		<WebService id="log-service">
-			<Name>Log Service</Name>
-			<Comment>Sends recent log entries</Comment>
-			<Plugin>LogService</Plugin>
-			<Resource>/log</Resource>
-		</WebService>
 		<PlatformService id="query-service">
 			<Name>Query Service</Name>
 			<Comment>Accesses Reactors for queries</Comment>
