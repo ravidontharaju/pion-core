@@ -7,8 +7,16 @@
 	width: 225px;
 }
 
-.dojoxFloatingPane.monitor_service .event_grid_pane {
-	background: #e0edfb;
+.dojoxFloatingPane.monitor_service.collection .event_grid_pane {
+	background: #fddfdf; 
+}
+
+.dojoxFloatingPane.monitor_service.processing .event_grid_pane {
+	background: #d8ecf8; 
+}
+
+.dojoxFloatingPane.monitor_service.storage .event_grid_pane {
+	background: #f0f9d1; 
 }
 
 .tundra .monitor_settings .dijitToggleButton .dijitButtonNode {

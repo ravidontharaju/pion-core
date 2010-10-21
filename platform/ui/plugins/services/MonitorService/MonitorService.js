@@ -3,6 +3,7 @@ dojo.require("plugins.services.Service");
 dojo.require("pion._base");
 dojo.require("pion.util.XMLQueryReadStore");
 dojo.require("pion.terms");
+dojo.require("pion.reactors");
 dojo.require("dijit.Tooltip");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.CheckBox");
@@ -41,19 +42,19 @@ dojo.declare("plugins.services.MonitorService",
 				load: function(response, ioArgs) {
 					var slot_node = response.getElementsByTagName('MonitorService')[0];
 					var slot = dojox.xml.parser.textContent(slot_node);
-					_this.makeFloatingPane(slot, reactor.config.Name);
+					_this.makeFloatingPane(slot, reactor);
 					return response;
 				},
 				error: pion.handleXhrGetError
 			});
 		},
-		makeFloatingPane: function(slot, reactor_name) {
+		makeFloatingPane: function(slot, reactor) {
 			var node = document.createElement('div');
 			dojo.body().appendChild(node);
 			var floating_pane = new plugins.services.MonitorServiceFloatingPane({
 				resource: this.resource,
 				slot: slot,
-				title: 'Events for Reactor <i>' + reactor_name + '</i>',
+				title: 'Events for Reactor <i>' + reactor.config.Name + '</i>',
 				dockable: true,
 				maxable: false,
 				closable: true,
@@ -61,6 +62,8 @@ dojo.declare("plugins.services.MonitorService",
 			}, node);
 			floating_pane.domNode.style.top = '30px';
 			floating_pane.domNode.style.left = '30px';
+			var category = pion.reactors.categories[reactor.config.Plugin];
+			dojo.addClass(floating_pane.domNode, category);
 			floating_pane.startup();
 			floating_pane.bringToTop();
 		}
