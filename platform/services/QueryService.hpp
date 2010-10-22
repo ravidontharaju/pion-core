@@ -44,7 +44,7 @@ public:
 	};
 
 
-	QueryService(void) {}
+	QueryService(void) : PlatformService("pion.QueryService") {}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~QueryService() {}

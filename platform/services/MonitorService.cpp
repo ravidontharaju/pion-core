@@ -45,7 +45,7 @@ const std::string			MonitorService::MONITOR_SERVICE_PERMISSION_TYPE = "MonitorSe
 MonitorHandler::MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
 						 const std::string& reactor_id)
 	: m_reaction_engine(reaction_engine),
-	m_logger(PION_GET_LOGGER("pion.server.MonitorHandler")),
+	m_logger(PION_GET_LOGGER("pion.MonitorService.MonitorHandler")),
 	m_connection_id(PionId().to_string()),
 	m_reactor_id(reactor_id)
 {}
@@ -335,15 +335,16 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 	
 	// make sure that there are two extra path branches in the request
 	if (branches.size() < 2) {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		// Log an error and send a 404 (Not Found) response.
+		handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 
 	//bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
 	//if (! allowed) {
-	//	// Send a 403 (Forbidden) response.
+	//	// Log an error and send a 403 (Forbidden) response.
 	//	std::string error_msg = "User doesn't have permission for Monitor Service.";
-	//	HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+	//	handleForbiddenRequest(request, tcp_conn, error_msg);
 	//	return;
 	//}
 
@@ -364,16 +365,17 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			// get the reactor_id from the first path branch
 			const std::string reactor_id(branches[1]);
 			if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				// Log an error and send a 404 (Not Found) response.
+				handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
 
 			// Check whether the User has permission for this Reactor.
 			bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
 			if (! reactor_allowed) {
-				// Send a 403 (Forbidden) response.
+				// Log an error and send a 403 (Forbidden) response.
 				std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
-				HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+				handleForbiddenRequest(request, tcp_conn, error_msg);
 				return;
 			}
 
@@ -403,9 +405,9 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 				const std::string reactor_id = m_writers[slot]->getReactorId();
 				bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
 				if (! reactor_allowed) {
-					// Send a 403 (Forbidden) response.
+					// Log an error and send a 403 (Forbidden) response.
 					std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
-					HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+					handleForbiddenRequest(request, tcp_conn, error_msg);
 					return;
 				}
 
@@ -426,17 +428,16 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 		response_writer->send();
 
-	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT
-			   || request->getMethod() == HTTPTypes::REQUEST_METHOD_POST)
-	{
-		HTTPServer::handleMethodNotAllowed(request, tcp_conn);
-
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_HEAD) {
 		
 		// request is just checking if the reactor is valid -> return OK
 		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
 											  boost::bind(&TCPConnection::finish, tcp_conn)));
 		response_writer->send();
+
+	} else {
+		// Log an error and send a 405 (Method Not Allowed) response.
+		handleMethodNotAllowed(request, tcp_conn, "GET, HEAD");
 	}	
 }
 

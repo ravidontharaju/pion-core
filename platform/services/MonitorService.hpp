@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -223,7 +223,7 @@ public:
 	
 	/// constructs a new MonitorService object
 	MonitorService(void)
-		: m_writers(10)		// a default of ten simultaneous monitors allowed
+		: PlatformService("pion.MonitorService"), m_writers(10)		// a default of ten simultaneous monitors allowed
 	{
 	}
 	

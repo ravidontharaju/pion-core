@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // pion-net: a C++ framework for building lightweight HTTP interfaces
 // ------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
 // See http://www.boost.org/LICENSE_1_0.txt
@@ -80,7 +80,7 @@ const std::string	XMLLogService::XML_LOG_SERVICE_PERMISSION_TYPE = "XMLLogServic
 // XMLLogService member functions
 
 XMLLogService::XMLLogService(void)
-	: m_log_appender_ptr(new XMLLogServiceAppender())
+	: PlatformService("pion.XMLLogService"), m_log_appender_ptr(new XMLLogServiceAppender())
 {
 	m_log_appender_ptr->setName("XMLLogServiceAppender");
 	log4cplus::Logger::getRoot().addAppender(m_log_appender_ptr);
@@ -97,9 +97,8 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 {
 	bool allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), *this);
 	if (! allowed) {
-		// Send a 403 (Forbidden) response.
-		std::string error_msg = "User doesn't have permission for XMLLogService.";
-		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+		// Log an error and send a 403 (Forbidden) response.
+		handleForbiddenRequest(request, tcp_conn, "User doesn't have permission for XMLLogService.");
 		return;
 	}
 
@@ -115,7 +114,8 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		const HTTPTypes::QueryParams qp = request->getQueryParams();
 		if (qp.empty()) {
 			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
-			HTTPServer::handleBadRequest(request, tcp_conn);
+			std::string error_msg = "Query parameter \"ack\" is required for method DELETE on " + request->getResource() + ".";
+			handleBadRequest(request, tcp_conn, error_msg);
 			return;
 		}
 		HTTPTypes::QueryParams::const_iterator qpi = qp.find("ack");
@@ -124,7 +124,8 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			getLogAppender().acknowledgeEvent(qpi->second);
 		} else {
 			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
-			HTTPServer::handleBadRequest(request, tcp_conn);
+			std::string error_msg = "Query parameter \"ack\" is required for method DELETE on " + request->getResource() + ".";
+			handleBadRequest(request, tcp_conn, error_msg);
 			return;
 		}
 
@@ -133,8 +134,8 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		writer->getResponse().setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 		writer->send();
 	} else {
-		// send a 405 (Method Not Allowed) response
-		HTTPServer::handleMethodNotAllowed(request, tcp_conn);
+		// Log an error and send a 405 (Method Not Allowed) response.
+		handleMethodNotAllowed(request, tcp_conn, "GET, DELETE");
 	}
 }
 

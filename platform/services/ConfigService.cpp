@@ -107,9 +107,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					if (! cfg.getVocabularyManager().writeConfigXML(ss, vocab_id))
 						throw VocabularyManager::VocabularyNotFoundException(vocab_id);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Vocabulary.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
@@ -137,9 +138,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(vocab_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Vocabulary " + vocab_id + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -153,19 +155,21 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Vocabulary " + vocab_id + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST, PUT, DELETE");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -221,9 +225,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 						throw Vocabulary::TermNotFoundException(term_id);
 
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Vocabulary Term.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_PUT) {
@@ -252,9 +257,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(term_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Vocabulary Term " + term_id + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -268,19 +274,21 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Vocabulary Term " + term_id + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST, PUT, DELETE");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -298,7 +306,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 			ConfigManager::writeEndPionConfigXML(ss);
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -346,15 +355,16 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(codec_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Codec.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else if (branches.size() == 2) {
@@ -391,9 +401,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(codec_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Codec " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -407,19 +418,21 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Codec " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, PUT, DELETE");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -466,15 +479,16 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(database_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Database.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else if (branches[1] == "plugins") {
@@ -534,9 +548,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(database_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Database " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Database
@@ -549,19 +564,21 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Database " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn);
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -609,14 +626,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(protocol_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Protocol.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else if (branches[1] == "plugins") {
@@ -675,9 +693,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(protocol_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Protocol " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 				// delete an existing Protocol
@@ -690,18 +709,20 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Protocol " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, PUT, DELETE");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -749,14 +770,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(reactor_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create the specified Reactor.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else if (branches[1] == "stats") {
@@ -833,9 +855,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(reactor_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Reactor " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -854,14 +877,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Reactors with the specified ID or Workspace ID: " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, PUT, DELETE");
+				return;
 			}
 
 		} else if (branches.size() == 3) {
@@ -905,16 +929,18 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					if (! cfg.getReactionEngine().writeConfigXML(ss, branches[1]))
 						throw ReactionEngine::ReactorNotFoundException(branches[1]);
 				} else {
-					// send a 405 (Method Not Allowed) response
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+					// Log an error and send a 405 (Method Not Allowed) response.
+					handleMethodNotAllowed(request, tcp_conn, "PUT");
+					return;
 				}
 			} else {
-				HTTPServer::handleNotFoundRequest(request, tcp_conn);
+				// Log an error and send a 404 (Not Found) response.
+				handleNotFoundRequest(request, tcp_conn);
 				return;
 			}
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -951,14 +977,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					cfg.getReactionEngine().writeConnectionsXML(ss, connection_id);
 
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create the specified Reactor connection.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else {
@@ -981,14 +1008,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete connection " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, DELETE");
+				return;
 			}
 		}
 		//
@@ -1021,14 +1049,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					cfg.getReactionEngine().writeWorkspaceXML(ss, workspace_id);
 
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a Reactor Workspace.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else {
@@ -1052,9 +1081,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					cfg.getReactionEngine().writeWorkspaceXML(ss, branches[1]);
 
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify Workspace " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -1069,15 +1099,16 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete Workspace " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, PUT, DELETE");
+				return;
 			}
 		}
 		//
@@ -1094,9 +1125,9 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				cfg.getServiceManager().writeServersXML(ss);
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET");
+				return;
 			}
 		} else if (branches.size() == 2) {
 			// branches[1] == server_id
@@ -1107,13 +1138,14 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					throw PionPlugin::PluginNotFoundException(branches[1]);
 
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -1161,14 +1193,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(service_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create the specified PlatformService.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else if (branches[1] == "plugins") {
@@ -1213,18 +1246,20 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete PlatformService " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, DELETE");
+				return;
 			}
 
 		} else {
-			HTTPServer::handleNotFoundRequest(request, tcp_conn);
+			// Log an error and send a 404 (Not Found) response.
+			handleNotFoundRequest(request, tcp_conn);
 			return;
 		}
 		//
@@ -1271,14 +1306,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				} else {
 					xmlFreeNodeList(user_config_ptr);
 
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to create a User.";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, POST");
+				return;
 			}
 
 		} else {
@@ -1314,9 +1350,10 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 						throw UserManager::UserNotFoundException(branches[1]);
 
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to modify User " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
 
@@ -1330,14 +1367,15 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);
 					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_NO_CONTENT);
 				} else {
-					// Send a 403 (Forbidden) response.
-					response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_FORBIDDEN);
-					response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_FORBIDDEN);
+					// Log an error and send a 403 (Forbidden) response.
+					std::string error_msg = "User doesn't have permission to delete User " + branches[1] + ".";
+					handleForbiddenRequest(request, tcp_conn, error_msg);
+					return;
 				}
 			} else {
-				// send a 405 (Method Not Allowed) response
-				response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-				response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
+				// Log an error and send a 405 (Method Not Allowed) response.
+				handleMethodNotAllowed(request, tcp_conn, "GET, PUT, DELETE");
+				return;
 			}
 		}
 		//
@@ -1364,7 +1402,8 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		cfg.getDatabaseManager().writeDatabaseEnginesXML(ss);
 
 	} else {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		// Log an error and send a 404 (Not Found) response.
+		handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 

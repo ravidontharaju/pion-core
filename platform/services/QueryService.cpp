@@ -69,9 +69,9 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 					// Check whether the User has permission for this Reactor.
 					bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
 					if (! reactor_allowed) {
-						// Send a 403 (Forbidden) response.
+						// Log an error and send a 403 (Forbidden) response.
 						std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
-						HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+						handleForbiddenRequest(request, tcp_conn, error_msg);
 						return;
 					}
 
@@ -79,7 +79,8 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 						reactor_id, ss, branches,
 						request->getQueryParams());
 				} else {
-					HTTPServer::handleNotFoundRequest(request, tcp_conn);
+					// Log an error and send a 404 (Not Found) response.
+					handleNotFoundRequest(request, tcp_conn);
 					return;
 				}
 			} else {
@@ -92,10 +93,9 @@ void QueryService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_con
 			throw UnknownQueryException();
 		}
 	} else {
-		// send a 405 (method not allowed) response
-		response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_METHOD_NOT_ALLOWED);
-		response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_METHOD_NOT_ALLOWED);
-		response_ptr->addHeader("Allow", "GET");
+		// Log an error and send a 405 (Method Not Allowed) response.
+		handleMethodNotAllowed(request, tcp_conn, "GET");
+		return;
 	}
 
 	// Set Content-type to "text/xml"

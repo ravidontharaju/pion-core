@@ -24,18 +24,21 @@
 #include <libxml/tree.h>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/net/WebService.hpp>
+#include <pion/net/HTTPRequest.hpp>
+#include <pion/net/HTTPServer.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
 namespace server {		// begin namespace server (Pion Server)
 
-	
+
 // forward declarations to avoid header dependencies
 class PlatformConfig;
-	
-	
+
+
 ///
 /// PlatformService: Pion Platform WebService that supports XML configuration
 ///
@@ -66,10 +69,10 @@ public:
 			: PionException("Service configuration does not define a resource: ", service_id) {}
 	};
 
-	
+
 	/// constructs a new PlatformService object
-	PlatformService(void) : m_config_ptr(NULL) {}
-	
+	PlatformService(const std::string& logger) : m_logger(PION_GET_LOGGER(logger)), m_config_ptr(NULL) {}
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~PlatformService() {}
 	
@@ -171,10 +174,37 @@ protected:
 			throw MissingConfigException(getId());
 		return *m_config_ptr;
 	}
-	
-	
+
+	// logs an error and sends a 400 (Bad Request) response
+	void handleBadRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
+		PION_LOG_ERROR(m_logger, error_msg);
+		pion::net::HTTPServer::handleBadRequest(request, tcp_conn);
+	}
+
+	// logs an error and sends a 403 (Forbidden) response
+	void handleForbiddenRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
+		PION_LOG_ERROR(m_logger, error_msg << " (user: " << request->getUser()->getUsername() << ")");
+		pion::net::HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+	}
+
+	// logs an error and sends a 404 (Not Found) response
+	void handleNotFoundRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn) {
+		PION_LOG_ERROR(m_logger, "The requested URL was not found: " << request->getResource());
+		pion::net::HTTPServer::handleNotFoundRequest(request, tcp_conn);
+	}
+
+	// logs an error and sends a 405 (Method Not Allowed) response
+	void handleMethodNotAllowed(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& allowed_methods = "") {
+		std::string error_msg = "Method " + request->getMethod() + " not allowed for requested URL: " + request->getResource();
+		PION_LOG_ERROR(m_logger, error_msg);
+		pion::net::HTTPServer::handleMethodNotAllowed(request, tcp_conn, allowed_methods);
+	}
+
+	/// primary logging interface used by a concrete instantiation of this class
+	PionLogger			m_logger;
+
 private:
-	
+
 	/// pointer to the Platform configuration manager
 	PlatformConfig		*m_config_ptr;
 

@@ -210,7 +210,7 @@ class FeedService
 public:
 	
 	/// constructs a new FeedService object
-	FeedService(void) {}
+	FeedService(void) : PlatformService("pion.FeedService") {}
 	
 	/// virtual destructor
 	virtual ~FeedService() {}

@@ -40,7 +40,7 @@ FeedHandler::FeedHandler(pion::platform::ReactionEngine &reaction_engine,
 						 const std::string& reactor_id, pion::platform::CodecPtr& codec_ptr,
 						 pion::net::TCPConnectionPtr& tcp_conn)
 	: m_reaction_engine(reaction_engine),
-	m_logger(PION_GET_LOGGER("pion.server.FeedHandler")),
+	m_logger(PION_GET_LOGGER("pion.FeedService.FeedHandler")),
 	m_connection_id(PionId().to_string()),
 	m_connection_info(createConnectionInfo(tcp_conn)),
 	m_reactor_id(reactor_id), m_codec_ptr(codec_ptr),
@@ -228,23 +228,25 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	
 	// make sure that there are two extra path branches in the request
 	if (branches.size() != 2) {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		// Log an error and send a 404 (Not Found) response.
+		handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 	
 	// get the reactor_id from the first path branche
 	const std::string reactor_id(branches[0]);
 	if (reactor_id.empty() || !getConfig().getReactionEngine().hasPlugin(reactor_id)) {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		// Log an error and send a 404 (Not Found) response.
+		handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 
 	// Check whether the User has permission for this Reactor.
 	bool reactor_allowed = getConfig().getUserManagerPtr()->accessAllowed(request->getUser(), getConfig().getReactionEngine(), reactor_id);
 	if (! reactor_allowed) {
-		// Send a 403 (Forbidden) response.
+		// Log an error and send a 403 (Forbidden) response.
 		std::string error_msg = "User doesn't have permission for Reactor " + reactor_id + ".";
-		HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
+		handleForbiddenRequest(request, tcp_conn, error_msg);
 		return;
 	}
 
@@ -252,7 +254,8 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 	const std::string codec_id(branches[1]);
 	CodecPtr codec_ptr(getConfig().getCodecFactory().getCodec(codec_id));
 	if (codec_id.empty() || !codec_ptr) {
-		HTTPServer::handleNotFoundRequest(request, tcp_conn);
+		// Log an error and send a 404 (Not Found) response.
+		handleNotFoundRequest(request, tcp_conn);
 		return;
 	}
 	
@@ -286,6 +289,11 @@ void FeedService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn
 		HTTPResponseWriterPtr response_writer(HTTPResponseWriter::create(tcp_conn, *request,
 											  boost::bind(&TCPConnection::finish, tcp_conn)));
 		response_writer->send();
+
+	} else {
+		// Log an error and send a 405 (Method Not Allowed) response.
+		handleMethodNotAllowed(request, tcp_conn, "GET, POST, PUT, HEAD");
+		return;
 	}	
 }
 

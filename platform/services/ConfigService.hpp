@@ -45,7 +45,7 @@ public:
 
 
 	/// constructs a new ConfigService object
-	ConfigService(void) {}
+	ConfigService(void) : PlatformService("pion.ConfigService") {}
 	
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ConfigService() {}
