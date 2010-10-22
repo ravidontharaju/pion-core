@@ -42,35 +42,16 @@ namespace plugins {		// begin namespace plugins
 
 
 ///
-/// MonitorHandler: base helper class for sending and receiving Events
+/// MonitorWriter: helper class, capturing packets, storing them into an array, streaming into XML
 ///
-class MonitorHandler
+class MonitorWriter
+	: public boost::enable_shared_from_this<MonitorWriter>
 {
-public:
+	typedef std::set<pion::platform::Vocabulary::TermRef>	TermRefSet;
 
-	/// virtual destructor
-	virtual ~MonitorHandler() { }
+	typedef	boost::circular_buffer<pion::platform::EventPtr> EventBuffer;
 
-	/**
-	 * constructs a new MonitorHandler object
-	 *
-	 * @param reaction_engine reference to the ReactionEngine
-	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
-	 */
-	MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
-				const std::string& reactor_id);
-
-	/// returns the unique identifier for this particular connection
-	inline const std::string& getConnectionId(void) const { return m_connection_id; }
-
-	/// returns information describing this particular connection
-	inline const std::string& getConnectionInfo(void) const { return m_connection_info; }
-
-	/// returns the unique identifier for the Reactor that this handler interacts with
-	inline const std::string& getReactorId(void) const { return m_reactor_id; }
-
-protected:
-
+private:
 	/// reference to ReactionEngine used to send Events to Reactors
 	pion::platform::ReactionEngine &	m_reaction_engine;
 
@@ -80,29 +61,11 @@ protected:
 	/// unique identifier for this particular connection (generated when constructed)
 	const std::string					m_connection_id;
 
-	/// information describing this particular connection (generated when constructed)
-	const std::string					m_connection_info;
-
 	/// unique identifier for the Reactor that this handler interacts with
 	const std::string					m_reactor_id;
 
 	/// mutex used to protect the MonitorHandler's data
 	mutable boost::mutex				m_mutex;
-};
-
-	
-///
-/// MonitorWriter: helper class, capturing packets, storing them into an array, streaming into XML
-///
-class MonitorWriter
-	: public MonitorHandler,
-	public boost::enable_shared_from_this<MonitorWriter>
-{
-	typedef std::set<pion::platform::Vocabulary::TermRef>	TermRefSet;
-
-	typedef	boost::circular_buffer<pion::platform::EventPtr> EventBuffer;
-
-private:
 
 	/// Circular buffer to capture scrolling window of events
 	EventBuffer							m_event_buffer;
@@ -131,9 +94,6 @@ private:
 	/// Which terms to show in opt-in mode
 	TermRefSet							m_show_terms;
 
-	/// Reference to ReactionEngine, so it can disconnect
-	pion::platform::ReactionEngine &	m_reaction_engine;
-
 	/// Suppressed termref's
 	TermRefSet							m_suppressed_terms;
 
@@ -154,8 +114,13 @@ public:
 
 	typedef boost::unordered_map<pion::platform::Vocabulary::TermRef, unsigned> TermCol;
 	
-	/// virtual destructor
-	virtual ~MonitorWriter();
+	/// destructor
+	~MonitorWriter()
+	{
+		PION_LOG_INFO(m_logger, "Closing output feed to " << getConnectionId());
+		stop();
+		m_event_buffer.clear();
+	}
 
 	/**
 	 * constructs a new MonitorWriter object
@@ -165,9 +130,14 @@ public:
 	 * @param reactor_id unique identifier for the Reactor that this handler interacts with
 	 * @param size size of circular buffer to use for capture
 	 * @param scroll boolean, whether to use scroll or capture&stop
+	 * @param logger PionLogger to use for logging messages
 	 */
 	MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
-			   const std::string& reactor_id, unsigned size, bool scroll);
+			   const std::string& reactor_id, unsigned size, bool scroll, PionLogger logger)
+		: m_reaction_engine(reaction_engine), m_logger(logger), m_connection_id(PionId().to_string()), m_reactor_id(reactor_id),
+		m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr), m_truncate(100), m_stopped(false),
+		m_hide_all(false), m_event_counter(0), m_change_counter(0)
+	{ }
 	
 	/**
 	 * sends an Event over the TCP connection and cleans up if the
@@ -181,11 +151,12 @@ public:
 	void setQP(const pion::net::HTTPTypes::QueryParams& qp);
 	
 	/// starts the MonitorWriter
-	virtual void start(const pion::net::HTTPTypes::QueryParams& qp);
+	void start(const pion::net::HTTPTypes::QueryParams& qp);
 
 	/// stop MonitorWriter from collecting more data
 	void stop(void) {
-		m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
+		if (m_stopped == false)
+			m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
 										   &m_reaction_engine, getConnectionId()));
 		m_stopped = true;
 	}
@@ -202,6 +173,13 @@ public:
 		const pion::platform::Event::ParameterValue& value,
 		std::ostream& xml, TermCol& cols);
 
+	/// returns the unique identifier for this particular connection
+	inline const std::string& getConnectionId(void) const { return m_connection_id; }
+
+	/// returns the unique identifier for the Reactor that this handler interacts with
+	inline const std::string& getReactorId(void) const { return m_reactor_id; }
+
+	/// parse all (possible,optional) query parameters and set flags appropriately
 	std::string getStatus(const pion::net::HTTPTypes::QueryParams& qp);
 };
 
@@ -216,23 +194,37 @@ typedef boost::shared_ptr<MonitorWriter>	MonitorWriterPtr;
 class MonitorService
 	: public pion::server::PlatformService
 {
+	/// primary logging interface used by this class
+	PionLogger							m_logger;	
+
 	/// A vector of currently active MonitorWriters
-	std::vector<MonitorWriterPtr>	m_writers;
+	std::vector<MonitorWriterPtr>		m_writers;
 
 public:
 	
 	/// constructs a new MonitorService object
 	MonitorService(void)
-		: PlatformService("pion.MonitorService"), m_writers(10)		// a default of ten simultaneous monitors allowed
+		: PlatformService("pion.MonitorService"),
+		m_logger(PION_GET_LOGGER("pion.MonitorService")),
+		m_writers(10)		// a default of ten simultaneous monitors allowed
 	{
 	}
 	
 	/// virtual destructor -- stop all the running captures
 	virtual ~MonitorService()
 	{
+		stop();
 		for (unsigned i = 0; i < m_writers.size(); i++)
-			if (m_writers[i])
+			if (m_writers[i] != NULL) {
+				PION_LOG_INFO(m_logger, "Stopping MonitorWriter #" << i);
 				m_writers[i]->stop();
+				PION_LOG_INFO(m_logger, "Reseting MonitorWriter #" << i);
+				m_writers[i].reset();
+				PION_LOG_INFO(m_logger, "Stopped MonitorWriter #" << i);
+			}
+		PION_LOG_INFO(m_logger, "Done with destructing MonitorService");
+		m_writers.clear();
+		PION_LOG_INFO(m_logger, "Done2 with destructing MonitorService");
 	}
 	
 	/**

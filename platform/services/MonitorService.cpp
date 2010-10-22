@@ -40,38 +40,10 @@ const unsigned URN_VOCAB = urnvocab.length();	// length("urn:vocab:") clicstream
 
 const std::string			MonitorService::MONITOR_SERVICE_PERMISSION_TYPE = "MonitorService";
 
-// MonitorHandler member functions
-	
-MonitorHandler::MonitorHandler(pion::platform::ReactionEngine &reaction_engine,
-						 const std::string& reactor_id)
-	: m_reaction_engine(reaction_engine),
-	m_logger(PION_GET_LOGGER("pion.MonitorService.MonitorHandler")),
-	m_connection_id(PionId().to_string()),
-	m_reactor_id(reactor_id)
-{}
 
-
-// MonitorWriter member functions
-
-MonitorWriter::MonitorWriter(pion::platform::ReactionEngine &reaction_engine, platform::VocabularyPtr& vptr,
-					   const std::string& reactor_id, unsigned size, bool scroll)
-	: MonitorHandler(reaction_engine, reactor_id),
-	m_event_buffer(size), m_size(size), m_scroll(scroll), m_vocab_ptr(vptr), m_truncate(100), m_stopped(false),
-	m_hide_all(false), m_reaction_engine(reaction_engine), m_event_counter(0), m_change_counter(0)
-{}
-	
-MonitorWriter::~MonitorWriter()
-{
-	PION_LOG_INFO(m_logger, "Closing output feed to " << getConnectionInfo()
-				  << " (" << getConnectionId() << ')');
-	stop();
-	m_event_buffer.clear();
-}
-	
 void MonitorWriter::writeEvent(EventPtr& e)
 {
-	PION_LOG_DEBUG(m_logger, "Sending event to " << getConnectionInfo()
-				   << " (" << getConnectionId() << ')');
+	PION_LOG_DEBUG(m_logger, "Sending event to " << getConnectionId());
 	// lock the mutex to ensure that only one Event is sent at a time
 	boost::mutex::scoped_lock send_lock(m_mutex);
 	if (e.get() == NULL) {
@@ -83,7 +55,7 @@ void MonitorWriter::writeEvent(EventPtr& e)
 			const Vocabulary::TermRef tref = e->getType();
 			m_events_seen.insert(tref);
 			// if this event type is NOT found in filtered_events, then add it to the stream
-			if (m_filtered_events.find(tref) == m_filtered_events.end()) {
+			if (m_filtered_events.find(tref) == m_filtered_events.end() && m_stopped == false) {
 				// Add latest event to end of circular buffer
 				m_event_buffer.push_back(e);
 				++m_event_counter;
@@ -94,8 +66,7 @@ void MonitorWriter::writeEvent(EventPtr& e)
 			}
 		} catch (std::exception& ex) {
 			// stop sending Events if we encounter an exception
-			PION_LOG_WARN(m_logger, "Error sending event to " << getConnectionInfo()
-						  << " (" << getConnectionId() << "):" << ex.what());
+			PION_LOG_WARN(m_logger, "Error sending event to " << getConnectionId() << ":" << ex.what());
 			stop();
 		}
 	}
@@ -112,11 +83,9 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 	Reactor::EventHandler event_handler(boost::bind(&MonitorWriter::writeEvent,
 													shared_from_this(), _1));
 	m_reaction_engine.addTempConnectionOut(getReactorId(), getConnectionId(),
-										   getConnectionInfo(),
-										   event_handler);
+										   "MonitorService", event_handler);
 
-	PION_LOG_INFO(m_logger, "Opened new output feed to " << getConnectionInfo()
-				  << " (" << getConnectionId() << ')');
+	PION_LOG_INFO(m_logger, "Opened new output feed to " << getConnectionId());
 }
 
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
@@ -390,7 +359,7 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			}
 			VocabularyPtr vocab_ptr(getConfig().getReactionEngine().getVocabulary());
 			// create a MonitorWriter object that will be used to send Events
-			m_writers[slot].reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true));
+			m_writers[slot].reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true, m_logger));
 			m_writers[slot]->start(qp);
 			std::ostringstream xml;
 			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
@@ -417,9 +386,15 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 					response_writer->write(dtd + response);
 				} else if (verb == "stop") {
 					m_writers[slot]->stop();
+					std::ostringstream xml;
+					xml << dtd << "<MonitorService action=\"stopped\">" << slot << "</MonitorService>";
+					response_writer->write(xml.str());
 				} else if (verb == "delete") {
 					m_writers[slot]->stop();
 					m_writers[slot].reset();
+					std::ostringstream xml;
+					xml << dtd << "<MonitorService action=\"deleted\">" << slot << "</MonitorService>";
+					response_writer->write(xml.str());
 				}
 			} else {
 				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
