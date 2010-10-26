@@ -49,7 +49,7 @@ void MonitorWriter::writeEvent(EventPtr& e)
 	if (e.get() == NULL) {
 		// Reactor is being removed -> close the connection
 		// note that the ReactionEngine will remove the connection for us
-		stop();
+		stop(false);
 	} else {
 		try {
 			const Vocabulary::TermRef tref = e->getType();

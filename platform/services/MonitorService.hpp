@@ -153,11 +153,10 @@ public:
 	/// starts the MonitorWriter
 	void start(const pion::net::HTTPTypes::QueryParams& qp);
 
-	/// stop MonitorWriter from collecting more data
-	void stop(void) {
-		if (m_stopped == false)
-			m_reaction_engine.post(boost::bind(&pion::platform::ReactionEngine::removeTempConnection,
-										   &m_reaction_engine, getConnectionId()));
+	/// stop MonitorWriter from collecting more data; don't remove connection if Stop == false
+	void stop(bool Stop = true) {
+		if (m_stopped == false && Stop == true)
+			m_reaction_engine.removeTempConnection(getConnectionId());
 		m_stopped = true;
 	}
 
@@ -213,18 +212,10 @@ public:
 	/// virtual destructor -- stop all the running captures
 	virtual ~MonitorService()
 	{
-		stop();
 		for (unsigned i = 0; i < m_writers.size(); i++)
-			if (m_writers[i] != NULL) {
-				PION_LOG_INFO(m_logger, "Stopping MonitorWriter #" << i);
+			if (m_writers[i] != NULL)
 				m_writers[i]->stop();
-				PION_LOG_INFO(m_logger, "Reseting MonitorWriter #" << i);
-				m_writers[i].reset();
-				PION_LOG_INFO(m_logger, "Stopped MonitorWriter #" << i);
-			}
-		PION_LOG_INFO(m_logger, "Done with destructing MonitorService");
 		m_writers.clear();
-		PION_LOG_INFO(m_logger, "Done2 with destructing MonitorService");
 	}
 	
 	/**
