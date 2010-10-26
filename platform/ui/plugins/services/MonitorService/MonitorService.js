@@ -139,6 +139,15 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				event_buffer_size: this.event_buffer_size
 			});
 			this.startPolling({events: this.event_buffer_size});
+
+			// Send a ping once a minute, so MonitorService won't delete the slot even if updating is off.
+			var _this = this;
+			this.ping_handle = window.setInterval(function() {
+				dojo.xhrGet({
+					url: _this.resource + '/ping/' + _this.slot,
+					error: pion.handleXhrGetError
+				});
+			}, 60000);
 		},
 		startPolling: function(initial_query_params) {
 			this.poll(initial_query_params);
@@ -222,6 +231,12 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			// function gets called with an event argument, and FloatingPane.hide() thinks any argument it gets is a callback function.
 			this.hide();
 			window.clearInterval(this.interval_handle);
+			window.clearInterval(this.ping_handle);
+
+			dojo.xhrGet({
+				url: this.resource + '/delete/' + this.slot,
+				error: pion.handleXhrGetError
+			});
 		},
 		togglePolling: function(e) {
 			if (e.target.checked) {
