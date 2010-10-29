@@ -53,11 +53,5 @@ log4cplus.appender.logfile.layout.ConversionPattern=%D %-5p [%t] (%F:%L) %c - %m
 ## Log level settings
 ##
 ## Set the default logging settings
-log4cplus.logger.pion=INFO
-log4cplus.logger.pion.net=WARN
-log4cplus.logger.pion.platform=WARN
-log4cplus.logger.pion.server=WARN
-log4cplus.logger.pion.plugins=WARN
-log4cplus.logger.pion.enterprise=WARN
-log4cplus.logger.pion.SnifferReactor=ERROR
-
+log4cplus.logger.pion=WARN
+log4cplus.logger.pion.main=INFO
