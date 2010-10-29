@@ -244,6 +244,37 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			} else {
 				window.clearInterval(this.interval_handle);
 			}
+			this.hideTooltip(e);
+		},
+		showTooltip: function(e) {
+			// Make sure we have the right target.  Partly, this is needed for IE, because the target of the event
+			// it passes in is the child of the target of the event it passes to togglePolling().
+			// However, even in Firefox and Chrome, depending on how you jiggle the mouse, events
+			// are sometimes passed in with other targets, and this causes those spurious events to be ignored.
+			if ('checked' in e.target)
+				var target = e.target;
+			else if ('checked' in e.target.parentNode)
+				var target = e.target.parentNode;
+			else
+				return;
+
+			if (target.checked) {
+				dijit.showTooltip('pause', target);
+			} else {
+				dijit.showTooltip('resume', target);
+			}
+		},
+		hideTooltip: function(e) {
+			// See comment in showTooltip().
+			if ('checked' in e.target)
+				var target = e.target;
+			else if ('checked' in e.target.parentNode)
+				var target = e.target.parentNode;
+			else
+				return;
+
+			dijit.hideTooltip(target);
+			dijit._masterTT._onDeck = null;
 		},
 		updateLayout: function(data) {
 			if (this.no_status_response_seen) {

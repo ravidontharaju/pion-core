@@ -12,12 +12,13 @@
 				<div dojoType="dijit.layout.ContentPane" region="top" class="monitor_settings">
 					<div dojoAttachPoint="settings_form" dojoType="dijit.form.Form">
 						<div dojoAttachPoint="events_message">Waiting for Events...</div>
-						<button dojoType=dijit.form.ToggleButton dojoAttachEvent="onClick: togglePolling" checked="true"></button>
-						Update interval (seconds):
+						<button dojoAttachEvent="onClick: togglePolling, onMouseOver: showTooltip, onMouseOut: hideTooltip"
+								dojoType=dijit.form.ToggleButton checked="true"></button>
+						<label>Update interval (seconds):</label>
 						<input dojoType="dijit.form.TextBox" name="update_interval" style="width: 25px" dojoAttachEvent="onChange: changeUpdateInterval" />
-						Truncation length:
+						<label>Truncation length:</label>
 						<input dojoType="dijit.form.TextBox" name="truncation_length" style="width: 25px" />
-						Event buffer size:
+						<label>Event buffer size:</label>
 						<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
 					</div>
 				</div>

@@ -22,20 +22,13 @@
 .tundra .monitor_settings .dijitToggleButton .dijitButtonNode {
 	width: 16px;
 	height: 16px;
-	background-color: transparent;
-	background: url(../../../images/control-play.png) no-repeat;
-	margin-left: 20px;
-	margin-right: 20px;
+	background: url(../../../images/control-play-large.png) no-repeat;
+	margin-right: 10px;
 	border: 0px;
 }
 
 .tundra .monitor_settings .dijitToggleButtonChecked .dijitButtonNode {
-	width: 16px;
-	height: 16px;
-	background-color: #ffffff;
-	background: url(../../../images/control-stop.png) no-repeat;
-	margin-left: 20px;
-	border: 0px;
+	background: url(../../../images/control-stop-large.png) no-repeat;
 }
 
 .tundra .monitor_service .dojoxGridCell {
