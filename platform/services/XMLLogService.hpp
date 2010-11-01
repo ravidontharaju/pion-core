@@ -56,7 +56,7 @@ private:
 	/// default maximum number of events cached in memory
 	static const unsigned int				DEFAULT_MAX_EVENTS;
 	
-	/// maxiumum number of events cached in memory
+	/// maximum number of events cached in memory
 	unsigned int							m_max_events;
 	
 	/// number of events currently cached in memory
@@ -72,14 +72,15 @@ private:
 	/// mutex to make class thread-safe
 	boost::mutex							m_log_mutex;
 
-	public:
-		// member functions inherited from the Appender interface class
-		virtual void close() {}
-	protected:
-		virtual void append(const log4cplus::spi::InternalLoggingEvent& event);
-	private:
-		/// this is used to convert numeric log levels into strings
-		log4cplus::LogLevelManager		m_log_level_manager;
+public:
+	// member functions inherited from the Appender interface class
+	virtual void close() {}
+protected:
+	virtual void append(const log4cplus::spi::InternalLoggingEvent& event);
+
+private:
+	/// this is used to convert numeric log levels into strings
+	log4cplus::LogLevelManager		m_log_level_manager;
 };
 
 

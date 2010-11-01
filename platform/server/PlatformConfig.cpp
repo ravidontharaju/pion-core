@@ -19,6 +19,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionPlugin.hpp>
+#include <pion/PionLogger.hpp>
 #include "PlatformConfig.hpp"
 #ifndef _MSC_VER
 	#include <fstream>
@@ -189,6 +190,13 @@ void PlatformConfig::openConfigFile(void)
 	} else {
 		m_log_config_file.erase();
 	}
+	#endif
+
+	#if defined(PION_USE_LOG4CPLUS)
+	// Start caching log events, so that even log events occurring during configuration will be available.
+	CircularBufferAppender* appender = new CircularBufferAppender;
+	appender->setName("CircularBufferAppender");
+	log4cplus::Logger::getRoot().addAppender(appender);
 	#endif
 
 	// get group to run Pion as

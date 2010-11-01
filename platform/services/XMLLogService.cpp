@@ -14,6 +14,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <pion/net/HTTPResponseWriter.hpp>
+#include <pion/PionLogger.hpp>
 
 using namespace pion;
 using namespace pion::net;
@@ -32,7 +33,15 @@ const unsigned int		XMLLogServiceAppender::DEFAULT_MAX_EVENTS = 100;
 
 XMLLogServiceAppender::XMLLogServiceAppender(void)
 	: m_max_events(DEFAULT_MAX_EVENTS), m_num_events(0)
-	{}
+{
+	// Append any log events that have already occurred.
+	log4cplus::SharedAppenderPtr cba_ptr = log4cplus::Logger::getRoot().getAppender("CircularBufferAppender");
+	const CircularBufferAppender& cba = dynamic_cast<const CircularBufferAppender&>(*cba_ptr.get());
+	const CircularBufferAppender::LogEventBuffer& events = cba.getLogIterator();
+	for (CircularBufferAppender::LogEventBuffer::const_iterator i = events.begin(); i != events.end(); ++i) {
+		append(*i);
+	}
+}
 
 
 void XMLLogServiceAppender::append(const log4cplus::spi::InternalLoggingEvent& event)
