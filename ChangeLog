@@ -1,4 +1,11 @@
 
+Version 3.0.19 (2010-11-01)
+===========================
+
+* PythonReactor -- compile with optimizations (980)
+* HTTPProtocol might calculate invalid request/response times (987)
+
+
 Version 3.0.17 (2010-10-05)
 ===========================
 
