@@ -306,9 +306,20 @@ dojo.declare("pion.widgets.UserPane",
 			setTimeout(function() { dojo.removeClass(node, 'unsaved_changes'); }, 500);
 		},
 		save: function() {
-			dojo.removeClass(this.domNode, 'unsaved_changes');
 			var config = this.form.attr('value');
 
+			if (this.uuid == pion.last_logged_in_user && dojo.indexOf(config.tab_check_boxes, 'Admin') == -1) {
+				pion.doDeleteConfirmationDialog('You are about to delete your own permission to make further changes to your own configuration.  Proceed?',
+												dojo.hitch(this, this.doSave));
+			} else if (config.tab_check_boxes.length == 0) {
+				pion.doDeleteConfirmationDialog('You are about to delete all permissions for user "' + this.uuid + '".  Proceed?',
+												dojo.hitch(this, this.doSave));
+			} else
+				this.doSave();
+		},
+		doSave: function() {
+			dojo.removeClass(this.domNode, 'unsaved_changes');
+			var config = this.form.attr('value');
 			var put_data = '<PionConfig><User>';
 			for (var tag in config) {
 				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
@@ -365,7 +376,10 @@ dojo.declare("pion.widgets.UserPane",
 				handleAs: "xml",
 				putData: put_data,
 				load: function(response){
-					console.debug('response: ', response);
+					// If the user just removed their own Admin permission, reload.
+					if (_this.uuid == pion.last_logged_in_user && dojo.indexOf(config.tab_check_boxes, 'Admin') == -1) {
+						location.replace('/');
+					}
 
 					// Yes, this is redundant, but unfortunately, 'response' is not an item.
 					pion.users.config_store.fetch({
@@ -410,12 +424,6 @@ dojo.declare("pion.widgets.UserPane",
 		markAsChanged: function() {
 			console.debug('markAsChanged');
 			dojo.addClass(this.domNode, 'unsaved_changes');
-		},
-		// TODO: Add a callback for all checkboxes, to issue a warning in the case that the box is being unchecked and will result in all boxes being unchecked.
-		_warnIfDisablingSelf: function(e) {
-			// TODO: If unchecking 'Users', and the selected user is the currently logged in user,
-			// warn that they will not be able to access any user settings, including their own,
-			// through the UI, and ask for confirmation.
 		},
 		user: ''
 	}

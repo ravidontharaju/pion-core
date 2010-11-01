@@ -28460,65 +28460,78 @@ setTimeout(function(){
 dojo.removeClass(node,"unsaved_changes");
 },500);
 },save:function(){
-dojo.removeClass(this.domNode,"unsaved_changes");
 var _1b10=this.form.attr("value");
-var _1b11="<PionConfig><User>";
-for(var tag in _1b10){
+if(this.uuid==pion.last_logged_in_user&&dojo.indexOf(_1b10.tab_check_boxes,"Admin")==-1){
+pion.doDeleteConfirmationDialog("You are about to delete your own permission to make further changes to your own configuration.  Proceed?",dojo.hitch(this,this.doSave));
+}else{
+if(_1b10.tab_check_boxes.length==0){
+pion.doDeleteConfirmationDialog("You are about to delete all permissions for user \""+this.uuid+"\".  Proceed?",dojo.hitch(this,this.doSave));
+}else{
+this.doSave();
+}
+}
+},doSave:function(){
+dojo.removeClass(this.domNode,"unsaved_changes");
+var _1b11=this.form.attr("value");
+var _1b12="<PionConfig><User>";
+for(var tag in _1b11){
 if(dojo.indexOf(this.special_config_elements,tag)==-1){
-_1b11+=pion.makeXmlLeafElement(tag,_1b10[tag]);
+_1b12+=pion.makeXmlLeafElement(tag,_1b11[tag]);
 }
 }
-if(dojo.indexOf(_1b10.tab_check_boxes,"Admin")!=-1){
-_1b11+="<Permission type=\"Admin\" />";
+if(dojo.indexOf(_1b11.tab_check_boxes,"Admin")!=-1){
+_1b12+="<Permission type=\"Admin\" />";
 }else{
-dojo.forEach(_1b10.tab_check_boxes,function(_1b13){
-_1b11+="<Permission type=\""+_1b13+"\" />";
+dojo.forEach(_1b11.tab_check_boxes,function(_1b14){
+_1b12+="<Permission type=\""+_1b14+"\" />";
 });
-if(_1b10.workspace_check_box_group.length>0){
-_1b11+="<Permission type=\"Reactors\">";
-if(dojo.indexOf(_1b10.workspace_check_box_group,"Unrestricted")!=-1){
-_1b11+="<Unrestricted>true</Unrestricted>";
+if(_1b11.workspace_check_box_group.length>0){
+_1b12+="<Permission type=\"Reactors\">";
+if(dojo.indexOf(_1b11.workspace_check_box_group,"Unrestricted")!=-1){
+_1b12+="<Unrestricted>true</Unrestricted>";
 }else{
-dojo.forEach(_1b10.workspace_check_box_group,function(_1b14){
-_1b11+="<Workspace>"+_1b14+"</Workspace>";
+dojo.forEach(_1b11.workspace_check_box_group,function(_1b15){
+_1b12+="<Workspace>"+_1b15+"</Workspace>";
 });
 }
-_1b11+="</Permission>";
+_1b12+="</Permission>";
 }
-dojo.forEach(pion.services.restrictable_services,function(_1b15){
-var _1b16=_1b15.plugin+"_check_boxes";
-var _1b17=_1b10[_1b16]||[];
-var _1b18=(_1b17.length>0)||dojo.some(_1b15.permission_subtypes,function(key){
-var _1b1a=_1b15.plugin+"_"+key+"_check_boxes";
-var _1b1b=_1b10[_1b1a]||[];
-return _1b1b.length>0;
+dojo.forEach(pion.services.restrictable_services,function(_1b16){
+var _1b17=_1b16.plugin+"_check_boxes";
+var _1b18=_1b11[_1b17]||[];
+var _1b19=(_1b18.length>0)||dojo.some(_1b16.permission_subtypes,function(key){
+var _1b1b=_1b16.plugin+"_"+key+"_check_boxes";
+var _1b1c=_1b11[_1b1b]||[];
+return _1b1c.length>0;
 });
-if(_1b18){
-_1b11+="<Permission type=\""+_1b15.plugin+"\">";
-if(dojo.indexOf(_1b17,"Unrestricted")!=-1){
-_1b11+="<Unrestricted>true</Unrestricted>";
+if(_1b19){
+_1b12+="<Permission type=\""+_1b16.plugin+"\">";
+if(dojo.indexOf(_1b18,"Unrestricted")!=-1){
+_1b12+="<Unrestricted>true</Unrestricted>";
 }else{
-dojo.forEach(_1b15.permission_subtypes,function(key){
-var _1b1d=_1b15.plugin+"_"+key+"_check_boxes";
-var _1b1e=_1b10[_1b1d]||[];
-dojo.forEach(_1b1e,function(_1b1f){
-_1b11+="<"+key+">"+_1b1f+"</"+key+">";
+dojo.forEach(_1b16.permission_subtypes,function(key){
+var _1b1e=_1b16.plugin+"_"+key+"_check_boxes";
+var _1b1f=_1b11[_1b1e]||[];
+dojo.forEach(_1b1f,function(_1b20){
+_1b12+="<"+key+">"+_1b20+"</"+key+">";
 });
 });
 }
-_1b11+="</Permission>";
+_1b12+="</Permission>";
 }
 });
 }
-_1b11+="</User></PionConfig>";
+_1b12+="</User></PionConfig>";
 _this=this;
-dojo.rawXhrPut({url:"/config/users/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b11,load:function(_1b20){
-console.debug("response: ",_1b20);
+dojo.rawXhrPut({url:"/config/users/"+this.uuid,contentType:"text/xml",handleAs:"xml",putData:_1b12,load:function(_1b21){
+if(_this.uuid==pion.last_logged_in_user&&dojo.indexOf(_1b11.tab_check_boxes,"Admin")==-1){
+location.replace("/");
+}
 pion.users.config_store.fetch({query:{"@id":_this.uuid},onItem:function(item){
 _this.config_item=item;
 _this.populateFromConfigItem(item);
 },onError:pion.handleFetchError});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b11})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPut,{putData:_1b12})});
 },cancel:function(){
 dojo.removeClass(this.domNode,"unsaved_changes");
 this.populateFromConfigItem(this.config_item);
@@ -28526,17 +28539,16 @@ this.populateFromConfigItem(this.config_item);
 dojo.removeClass(this.domNode,"unsaved_changes");
 console.debug("delete2: selected user is ",this.title);
 _this=this;
-dojo.xhrDelete({url:"/config/users/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1b22,_1b23){
-console.debug("xhrDelete for url = /config/users/"+this.uuid,"; HTTP status code: ",_1b23.xhr.status);
+dojo.xhrDelete({url:"/config/users/"+this.uuid,handleAs:"xml",timeout:5000,load:function(_1b23,_1b24){
+console.debug("xhrDelete for url = /config/users/"+this.uuid,"; HTTP status code: ",_1b24.xhr.status);
 dijit.byId("user_config_accordion").forward();
 dijit.byId("user_config_accordion").removeChild(_this);
 pion.users._adjustAccordionSize();
-return _1b22;
+return _1b23;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 },markAsChanged:function(){
 console.debug("markAsChanged");
 dojo.addClass(this.domNode,"unsaved_changes");
-},_warnIfDisablingSelf:function(e){
 },user:""});
 }
 if(!dojo._hasResource["pion.users"]){
