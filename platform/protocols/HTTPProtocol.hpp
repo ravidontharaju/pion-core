@@ -316,7 +316,8 @@ private:
 		bool tryDecoding(const pion::net::HTTPMessage& http_msg,
 			boost::shared_array<char>& decoded_content,
 			size_t& decoded_content_length,
-			std::string& content_encoding) const;
+			std::string& content_encoding,
+			PionLogger& logger) const;
 
 		/**
 		 * attempts to convert payload content for HTTPMessage to UTF-8, if needed
@@ -755,7 +756,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 				boost::shared_array<char> decoded_content;
 				std::string content_encoding;
 				size_t decoded_content_length;
-				bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding);
+				bool decoded_flag = tryDecoding(http_msg, decoded_content, decoded_content_length, content_encoding, logger);
 				if (decoded_flag || content_encoding.empty()) {
 					bool do_conversion = false;
 					std::string charset;

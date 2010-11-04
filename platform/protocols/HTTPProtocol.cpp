@@ -854,7 +854,7 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 // class HTTPProtocol::ExtractionRule
 bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& http_msg, 
 	boost::shared_array<char>& decoded_content, size_t& decoded_content_length,
-	std::string& content_encoding) const
+	std::string& content_encoding, PionLogger& logger) const
 {
 	// check if content is encoded
 	content_encoding = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING);
@@ -911,7 +911,7 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	} catch (std::exception& e) {
 		// NOTE: content decoding errors throw exceptions!
 		// these should not cause the event to be lost!
-		//std::cerr << "error: " << content_encoding << " decoding failed after " << decoder_sink.getBytes() << " bytes: " << e.what() << std::endl;
+		PION_LOG_WARN(logger, "Content decoding failed after " << decoder_sink.getBytes() << " bytes for " << content_encoding << " content (" << (http_msg.isChunked() ? "with" : "without") << " chunking)");
 	}
 	
 	// initialize decoded content cache to hold results
