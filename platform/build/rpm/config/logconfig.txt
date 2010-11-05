@@ -38,7 +38,7 @@ log4cplus.appender.logfile.File=/var/log/pion/pion.log
 log4cplus.appender.logfile.DatePattern='.'yyyy-MM-dd
 ##
 ## The maximum size of log files before they are rotated
-log4cplus.appender.logfile.MaxFileSize=100KB
+log4cplus.appender.logfile.MaxFileSize=10MB
 ##
 ## The number of backup log files to keep
 log4cplus.appender.logfile.MaxBackupIndex=10
