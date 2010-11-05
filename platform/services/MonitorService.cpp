@@ -38,6 +38,7 @@ const std::string dtd = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const std::string urnvocab("urn:vocab:");		// shorthand notation
 const unsigned URN_VOCAB = urnvocab.length();	// length("urn:vocab:") clicstream
 
+const unsigned				MonitorService::WRITERS = 10;
 const std::string			MonitorService::MONITOR_SERVICE_PERMISSION_TYPE = "MonitorService";
 
 
@@ -49,9 +50,14 @@ void MonitorWriter::writeEvent(EventPtr& e)
 	if (e.get() == NULL) {
 		// Reactor is being removed -> close the connection
 		// note that the ReactionEngine will remove the connection for us
+		// keep the data, in case user wants to still watch it
 		stop(false);
+	} else if (m_age + boost::posix_time::seconds(120) < boost::posix_time::second_clock::local_time()) {
+		// It's been over two minutes since last call -- detach & clear events
+		stop(true, true);
 	} else {
 		try {
+
 			const Vocabulary::TermRef tref = e->getType();
 			m_events_seen.insert(tref);
 			// if this event type is NOT found in filtered_events, then add it to the stream
@@ -203,6 +209,8 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 {
+	setAge();
+
 	if (qp.empty())
 		return;
 
@@ -348,15 +356,20 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 				return;
 			}
 
-			unsigned slot;
-			// Try to find an empty slot
-			for (slot = 0; slot < m_writers.size(); slot++)
-				if (!m_writers[slot]) break;
-			// If no empty slots, clear oldest
-			if (slot == m_writers.size()) {
-				// FIXME: find oldest, and wipe out
-				slot = 0;
+			unsigned slot, oldest;
+			boost::posix_time::ptime oldest_age = boost::date_time::not_a_date_time;
+			// Try to find an empty slot, also find the oldest
+			for (oldest = slot = 0; slot < m_writers.size(); slot++) {
+				if (!m_writers[slot]) break;	// If you find an empty one...
+				if (m_writers[slot]->getAge() == boost::date_time::not_a_date_time) break;	// ...or a dead one
+				if (oldest_age == boost::date_time::not_a_date_time || m_writers[slot]->getAge() < oldest_age) {
+					oldest = slot;
+					oldest_age = m_writers[slot]->getAge();
+				}
 			}
+			// If no empty slots, clear oldest
+			if (slot == m_writers.size())
+				slot = oldest;
 			VocabularyPtr vocab_ptr(getConfig().getReactionEngine().getVocabulary());
 			// create a MonitorWriter object that will be used to send Events
 			m_writers[slot].reset(new MonitorWriter(getConfig().getReactionEngine(), vocab_ptr, reactor_id, 1000, true, m_logger));
@@ -395,6 +408,11 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 					std::ostringstream xml;
 					xml << dtd << "<MonitorService action=\"deleted\">" << slot << "</MonitorService>";
 					response_writer->write(xml.str());
+				} else if (verb == "ping") {
+					std::ostringstream xml;
+					xml << dtd << "<MonitorService action=\"ping\">" << slot << "</MonitorService>";
+					response_writer->write(xml.str());
+					m_writers[slot]->setAge();
 				}
 			} else {
 				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
@@ -415,6 +433,7 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 		handleMethodNotAllowed(request, tcp_conn, "GET, HEAD");
 	}	
 }
+
 
 }	// end namespace plugins
 }	// end namespace pion
