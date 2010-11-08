@@ -176,25 +176,25 @@ protected:
 	}
 
 	// logs an error and sends a 400 (Bad Request) response
-	void handleBadRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
+	virtual void handleBadRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
 		PION_LOG_ERROR(m_logger, error_msg);
 		pion::net::HTTPServer::handleBadRequest(request, tcp_conn);
 	}
 
 	// logs an error and sends a 403 (Forbidden) response
-	void handleForbiddenRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
+	virtual void handleForbiddenRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg) {
 		PION_LOG_ERROR(m_logger, error_msg << " (user: " << request->getUser()->getUsername() << ")");
 		pion::net::HTTPServer::handleForbiddenRequest(request, tcp_conn, error_msg);
 	}
 
 	// logs an error and sends a 404 (Not Found) response
-	void handleNotFoundRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn) {
+	virtual void handleNotFoundRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn) {
 		PION_LOG_ERROR(m_logger, "The requested URL was not found: " << request->getResource());
 		pion::net::HTTPServer::handleNotFoundRequest(request, tcp_conn);
 	}
 
 	// logs an error and sends a 405 (Method Not Allowed) response
-	void handleMethodNotAllowed(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& allowed_methods = "") {
+	virtual void handleMethodNotAllowed(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& allowed_methods) {
 		std::string error_msg = "Method " + request->getMethod() + " not allowed for requested URL: " + request->getResource();
 		PION_LOG_ERROR(m_logger, error_msg);
 		pion::net::HTTPServer::handleMethodNotAllowed(request, tcp_conn, allowed_methods);

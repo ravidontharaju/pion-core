@@ -754,6 +754,7 @@ BOOST_AUTO_TEST_CASE(checkServiceWorksAfterBeingAdded) {
 		"<Resource>/new-config</Resource>"
 		"<Server>main-server</Server>"
 		"<UIDirectory>../../platform/ui</UIDirectory>"
+		"<ConfigChangeLog>./config/config.log</ConfigChangeLog>"
 		"</PlatformService></PionConfig>";
 	
 	// Make a request to add another ConfigService.

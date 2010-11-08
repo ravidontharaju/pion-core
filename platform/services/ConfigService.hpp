@@ -20,6 +20,7 @@
 #ifndef __PION_CONFIGSERVICE_HEADER__
 #define __PION_CONFIGSERVICE_HEADER__
 
+#include <log4cplus/fileappender.h>
 #include <pion/PionConfig.hpp>
 #include "PlatformService.hpp"
 
@@ -43,10 +44,17 @@ public:
 			: PionException("The ConfigService configuration is missing a UIDirectory parameter") {}
 	};
 
+	/// exception thrown if the ConfigService configuration does not define a file path for logging configuration changes
+	class MissingConfigChangeLogException : public PionException {
+	public:
+		MissingConfigChangeLogException()
+			: PionException("The ConfigService configuration is missing a ConfigChangeLog parameter") {}
+	};
+
 
 	/// constructs a new ConfigService object
-	ConfigService(void) : PlatformService("pion.ConfigService") {}
-	
+	ConfigService(void) : PlatformService("pion.ConfigService"), m_config_logger(PION_GET_LOGGER("pion.config")) {}
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ConfigService() {}
 
@@ -69,13 +77,54 @@ public:
 	virtual void operator()(pion::net::HTTPRequestPtr& request,
 							pion::net::TCPConnectionPtr& tcp_conn);
 
+protected:
+
+	// Handles logging and sends a 400 (Bad Request) response.
+	virtual void handleBadRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg);
+
+	// Handles logging and sends a 403 (Forbidden) response.
+	virtual void handleForbiddenRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& error_msg);
+
+	// Handles logging and sends a 404 (Not Found) response.
+	virtual void handleNotFoundRequest(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn);
+
+	// Handles logging and sends a 405 (Method Not Allowed) response.
+	virtual void handleMethodNotAllowed(pion::net::HTTPRequestPtr& request, pion::net::TCPConnectionPtr& tcp_conn, const std::string& allowed_methods);
+
+	// Logs the request if it resulted in or might have been intended to result in a configuration change.
+	void logRequestIfPotentialConfigChange(pion::net::HTTPRequestPtr& request, unsigned int status);
+
 private:
+
+	class ConfigChangeAppender : public log4cplus::RollingFileAppender
+	{
+		public:
+			ConfigChangeAppender(const std::string& filepath) : RollingFileAppender(filepath) {}
+
+			virtual ~ConfigChangeAppender() {};
+
+		protected:
+			virtual void append(const log4cplus::spi::InternalLoggingEvent& event) {
+				if (event.getLoggerName() == "pion.config")
+					RollingFileAppender::append(event);
+			}
+	};
+
+
+	/// interface used for logging configuration changes
+	PionLogger						m_config_logger;
 
 	/// name of the UI directory element for Pion XML config files
 	static const std::string		UI_DIRECTORY_ELEMENT_NAME;
 
+	/// name of the configuration change log element for Pion XML config files
+	static const std::string		CONFIG_CHANGE_LOG_ELEMENT_NAME;
+
 	/// directory containing the UI files
 	std::string						m_ui_directory;
+
+	/// file path of the configuration change log
+	std::string						m_config_change_log_path;
 };
 
 	
