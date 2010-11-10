@@ -112,6 +112,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				rowsPerPage: 1000,
 
 				onFetchError: pion.handleFetchError,
+				selectable: true,
 				autoWidth: true,
 				autoHeight: true
 			}, document.createElement('div'));
