@@ -418,6 +418,61 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			this.events_div.style.visibility = 'visible';
 
 			return data;
+		},
+		_onExportSelectedRows: function() {
+			var items = this.event_grid.selection.getSelected();
+			if (items.length == 0) {
+				var dialog = new dijit.Dialog({title: 'Warning'});
+				dialog.attr('content', 'No Events selected.');
+				dialog.show();
+			} else {
+				var dialog = new dijit.Dialog({title: 'Exported Events', style: 'width: 600px'});
+				var _this = this;
+				var rb1 = new dijit.form.RadioButton({
+					checked: 'checked',
+					onClick: function() { _this._showSelectedEventsInCsvFormat(items, textarea); }
+				});
+				dialog.containerNode.appendChild(rb1.domNode);
+				dialog.containerNode.appendChild(dojo.create('label', {innerHTML: 'CSV format'}));
+				dialog.containerNode.appendChild(dojo.create('br'));
+				var rb2 = new dijit.form.RadioButton({
+					onClick: function() { _this._showSelectedEventsUnformatted(items, textarea); }
+				});
+				dialog.containerNode.appendChild(rb2.domNode);
+				dialog.containerNode.appendChild(dojo.create('label', {innerHTML: 'unformatted'}));
+				dialog.containerNode.appendChild(dojo.create('br'));
+				var textarea = new dijit.form.Textarea({
+					cols: "105"
+				});
+				this._showSelectedEventsInCsvFormat(items, textarea);
+				dialog.containerNode.appendChild(textarea.domNode);
+				dialog.show();
+			}
+		},
+		_showSelectedEventsInCsvFormat: function(items, textarea) {
+			var first_row = dojo.map(this.event_grid.layout.cells, function(cell) {return cell.name;});
+			var content = first_row.join(',') + '\n';
+			var _this = this;
+			dojo.forEach(items, function(item, i){
+				var result = [];
+				dojo.forEach(_this.event_grid.layout.cells, function(cell) {
+					var cell_text = cell.format(i, item).toString();
+					result.push('"' + cell_text.replace(/"/g, "\"\"") + '"');
+				});
+				content += result.join(',') + '\n';
+			});
+			textarea.attr('value', content);
+		},
+		_showSelectedEventsUnformatted: function(items, textarea) {
+			var content = '';
+			var _this = this;
+			dojo.forEach(items, function(item, i){
+				var result = dojo.map(_this.event_grid.layout.cells, function(cell) {
+					return cell.format(i, item);
+				});
+				content += result.join(' ') + '\n';
+			});
+			textarea.attr('value', content);
 		}
 	}
 );

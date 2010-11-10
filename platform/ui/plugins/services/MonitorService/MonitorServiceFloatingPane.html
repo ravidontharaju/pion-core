@@ -20,6 +20,8 @@
 						<input dojoType="dijit.form.TextBox" name="truncation_length" style="width: 25px" />
 						<label>Event buffer size:</label>
 						<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
+						<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportSelectedRows">
+								Export selected Events</button>
 					</div>
 				</div>
 				<div dojoType="dijit.layout.BorderContainer" dojoAttachPoint="left_sidebar" region="left" class="left_sidebar" splitter="true">
