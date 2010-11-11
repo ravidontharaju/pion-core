@@ -4,7 +4,7 @@ dojo.provide("pion._base.format");
 // TODO: find a way to calculate them using dojo.
 pion.grid_cell_padding = 8;
 pion.scrollbar_width = 20;
-pion.datetime_cell_width = 100;
+pion.datetime_cell_width = 125; //Wide enough for Firefox, IE7 and Chrome on Windows.
 
 // Substitutes entity references for characters that have special meaning in XML.
 pion.escapeXml = function(value) {
@@ -74,6 +74,7 @@ pion.utcDatetimeCellFormatter = function(t) {
 	var date = d.getUTCDate();
 	var hour = d.getUTCHours();
 	var min = d.getUTCMinutes();
+	var sec = d.getUTCSeconds();
 
 	if (month < 10)
 		month = '0' + month;
@@ -83,9 +84,11 @@ pion.utcDatetimeCellFormatter = function(t) {
 		hour = '0' + hour;
 	if (min < 10)
 		min = '0' + min;
+	if (sec < 10)
+		sec = '0' + sec;
 
 	//return t + ' (' + d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
-	return d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
+	return d.getUTCFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec;
 }
 
 pion.localDatetimeCellFormatter = function(t) {
@@ -94,6 +97,7 @@ pion.localDatetimeCellFormatter = function(t) {
 	var date = d.getDate();
 	var hour = d.getHours();
 	var min = d.getMinutes();
+	var sec = d.getSeconds();
 
 	if (month < 10)
 		month = '0' + month;
@@ -103,9 +107,11 @@ pion.localDatetimeCellFormatter = function(t) {
 		hour = '0' + hour;
 	if (min < 10)
 		min = '0' + min;
+	if (sec < 10)
+		sec = '0' + sec;
 
 	//return t + ' (' + d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
-	return d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min;
+	return d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec;
 }
 
 pion.makeDeleteButton = function() {
