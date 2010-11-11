@@ -5,13 +5,26 @@ dojo.provide("pion._base.format");
 pion.grid_cell_padding = 8;
 pion.scrollbar_width = 20;
 pion.datetime_cell_width = 125; //Wide enough for Firefox, IE7 and Chrome on Windows.
+pion.time_cell_width = 65; //Wide enough for Firefox, IE7 and Chrome on Windows.
 
 // Substitutes entity references for characters that have special meaning in XML.
+// TODO: use dojox.html.entities.encode() once we upgrade to Dojo 1.4. 
 pion.escapeXml = function(value) {
 	if (value === false || value === 0) {
 		return value.toString();
 	} else if (value) {
 		return value.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+	} else {
+		return '';
+	}
+}
+
+// TODO: use dojox.html.entities.decode() once we upgrade to Dojo 1.4. 
+pion.unescapeXml = function(value) {
+	if (value === false || value === 0) {
+		return value.toString();
+	} else if (value) {
+		return value.toString().replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 	} else {
 		return '';
 	}
@@ -112,6 +125,38 @@ pion.localDatetimeCellFormatter = function(t) {
 
 	//return t + ' (' + d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ')';
 	return d.getFullYear() + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec;
+}
+
+pion.utcTimeCellFormatter = function(t) {
+	var d = new Date(t * 1000);
+	var hour = d.getUTCHours();
+	var min = d.getUTCMinutes();
+	var sec = d.getUTCSeconds();
+
+	if (hour < 10)
+		hour = '0' + hour;
+	if (min < 10)
+		min = '0' + min;
+	if (sec < 10)
+		sec = '0' + sec;
+
+	return hour + ':' + min + ':' + sec;
+}
+
+pion.localTimeCellFormatter = function(t) {
+	var d = new Date(t * 1000);
+	var hour = d.getHours();
+	var min = d.getMinutes();
+	var sec = d.getSeconds();
+
+	if (hour < 10)
+		hour = '0' + hour;
+	if (min < 10)
+		min = '0' + min;
+	if (sec < 10)
+		sec = '0' + sec;
+
+	return hour + ':' + min + ':' + sec;
 }
 
 pion.makeDeleteButton = function() {
