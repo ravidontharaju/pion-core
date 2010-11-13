@@ -35,7 +35,6 @@
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
 			<UIDirectory>/usr/share/pion/ui/</UIDirectory>
-			<ConfigChangeLog>/var/log/pion/config.log</ConfigChangeLog>
 		</PlatformService>
 		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>

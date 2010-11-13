@@ -35,7 +35,6 @@
 			<Plugin>ConfigService</Plugin>
 			<Resource>/config</Resource>
 			<UIDirectory>@PION_UI_DIRECTORY@</UIDirectory>
-			<ConfigChangeLog>@PION_CONFIG_CHANGE_LOG@</ConfigChangeLog>
 		</PlatformService>
 		<PlatformService id="feed-service">
 			<Name>Data Feed Service</Name>

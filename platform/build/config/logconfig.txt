@@ -3,17 +3,6 @@
 # ---------------------------------------------------------
 
 ##
-## root logger configuration; syntax is LOG_LEVEL, <APPENDER>+
-##
-## Use this to log only to the console
-log4cplus.rootLogger=WARN, stdout
-##
-## Use this to log only to log files
-#log4cplus.rootLogger=WARN, logfile
-## Use this to log both to log files and the console
-#log4cplus.rootLogger=WARN, stdout, logfile
-
-##
 ## stdout console appender configuration
 ##
 log4cplus.appender.stdout=log4cplus::ConsoleAppender
@@ -50,8 +39,49 @@ log4cplus.appender.logfile.MaxBackupIndex=10
 log4cplus.appender.logfile.layout.ConversionPattern=%D %-5p [%t] (%F:%L) %c - %m%n
 
 ##
+## Pion config log file configuration
+##
+log4cplus.appender.configlog=log4cplus::RollingFileAppender
+log4cplus.appender.configlog.layout=log4cplus::PatternLayout
+##
+## The name and location for the log file
+log4cplus.appender.configlog.File=./config.log
+##
+## The frequency at which log files will be rotated
+log4cplus.appender.configlog.DatePattern='.'yyyy-MM-dd
+##
+## The maximum size of log files before they are rotated
+log4cplus.appender.configlog.MaxFileSize=10MB
+##
+## The number of backup log files to keep
+log4cplus.appender.configlog.MaxBackupIndex=10
+##
+## This is the default pattern used for the log file
+log4cplus.appender.configlog.layout.ConversionPattern=%D %m%n
+
+##
+## misc logger configuration; syntax is LOG_LEVEL, <APPENDER>+
+##
+## Disable rootLogger (redundant with pion/config)
+log4cplus.rootLogger=FATAL
+##
+## Use configlog appender for the "config" logger (REMOVE TO DISABLE)
+log4cplus.logger.config=INFO, configlog
+
+##
+## pion logger configuration; syntax is LOG_LEVEL, <APPENDER>+
+##
+## Use this to log only to the console
+log4cplus.logger.pion=WARN, stdout
+##
+## Use this to log only to log files
+#log4cplus.logger.pion=WARN, logfile
+##
+## Use this to log both to log files and the console
+#log4cplus.logger.pion=WARN, stdout, logfile
+
+##
 ## Log level settings
 ##
-## Set the default logging settings
-log4cplus.logger.pion=WARN
+## This enables startup/shutdown messages to be logged
 log4cplus.logger.pion.main=INFO

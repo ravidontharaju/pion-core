@@ -196,8 +196,7 @@ rmtree(File::Spec->catdir( ($UI_DIR, "dojo-release", "util") ));
 my %templates = ("PION_PLUGINS_DIRECTORY" => "../plugins",
 	"PION_DATA_DIRECTORY" => "../data",
 	"PION_UI_DIRECTORY" => "./ui",
-	"PION_LOG_CONFIG" => "logconfig.txt",
-	"PION_CONFIG_CHANGE_LOG" => "./config/config.log");
+	"PION_LOG_CONFIG" => "logconfig.txt");
 copyDirWithoutDotFiles(File::Spec->catdir( ("platform", "build", "config") ),
 	File::Spec->catdir( ($PACKAGE_DIR, "config") ), %templates);
 

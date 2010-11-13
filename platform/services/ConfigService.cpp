@@ -36,7 +36,6 @@ namespace plugins {		// begin namespace plugins
 
 // static members of ConfigService
 const std::string		ConfigService::UI_DIRECTORY_ELEMENT_NAME = "UIDirectory";
-const std::string		ConfigService::CONFIG_CHANGE_LOG_ELEMENT_NAME = "ConfigChangeLog";
 
 
 // ConfigService member functions
@@ -49,16 +48,6 @@ void ConfigService::setConfig(const pion::platform::Vocabulary& v,
 	// get the UI directory
 	if (! ConfigManager::getConfigOption(UI_DIRECTORY_ELEMENT_NAME, m_ui_directory, config_ptr))
 		throw MissingUIDirectoryException();
-
-	// get the file path of the configuration change log
-	if (! ConfigManager::getConfigOption(CONFIG_CHANGE_LOG_ELEMENT_NAME, m_config_change_log_path, config_ptr))
-		throw MissingConfigChangeLogException();
-
-	// initialize the configuration change log
-	ConfigChangeAppender* appender = new ConfigChangeAppender(m_config_change_log_path);
-	log4cplus::tstring pattern = LOG4CPLUS_TEXT("%D %m%n");
-	appender->setLayout( std::auto_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)) );
-	log4cplus::Logger::getRoot().addAppender(appender);
 }
 
 void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_conn)
@@ -1462,9 +1451,10 @@ void ConfigService::logRequestIfPotentialConfigChange(HTTPRequestPtr& request, u
 	// In ConfigService, all GET requests that are handled leave the configuration unchanged.
 	if (request->getMethod() != HTTPTypes::REQUEST_METHOD_GET) {
 		std::string content(request->getContent(), request->getContentLength()); // Could be empty.
+		std::string user(request->getUser() ? request->getUser()->getUsername() : "NONE");
 		PION_LOG_INFO(m_config_logger, request->getMethod() 
 										<< ' ' << status
-										<< ' ' << request->getUser()->getUsername() 
+										<< ' ' << user
 										<< ' ' << request->getResource() << ' ' << content);
 	}
 }

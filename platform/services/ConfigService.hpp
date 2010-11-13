@@ -20,7 +20,6 @@
 #ifndef __PION_CONFIGSERVICE_HEADER__
 #define __PION_CONFIGSERVICE_HEADER__
 
-#include <log4cplus/fileappender.h>
 #include <pion/PionConfig.hpp>
 #include "PlatformService.hpp"
 
@@ -44,16 +43,9 @@ public:
 			: PionException("The ConfigService configuration is missing a UIDirectory parameter") {}
 	};
 
-	/// exception thrown if the ConfigService configuration does not define a file path for logging configuration changes
-	class MissingConfigChangeLogException : public PionException {
-	public:
-		MissingConfigChangeLogException()
-			: PionException("The ConfigService configuration is missing a ConfigChangeLog parameter") {}
-	};
-
 
 	/// constructs a new ConfigService object
-	ConfigService(void) : PlatformService("pion.ConfigService"), m_config_logger(PION_GET_LOGGER("pion.config")) {}
+	ConfigService(void) : PlatformService("pion.ConfigService"), m_config_logger(PION_GET_LOGGER("config")) {}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~ConfigService() {}
@@ -96,35 +88,14 @@ protected:
 
 private:
 
-	class ConfigChangeAppender : public log4cplus::RollingFileAppender
-	{
-		public:
-			ConfigChangeAppender(const std::string& filepath) : RollingFileAppender(filepath) {}
-
-			virtual ~ConfigChangeAppender() {};
-
-		protected:
-			virtual void append(const log4cplus::spi::InternalLoggingEvent& event) {
-				if (event.getLoggerName() == "pion.config")
-					RollingFileAppender::append(event);
-			}
-	};
-
-
 	/// interface used for logging configuration changes
 	PionLogger						m_config_logger;
 
 	/// name of the UI directory element for Pion XML config files
 	static const std::string		UI_DIRECTORY_ELEMENT_NAME;
 
-	/// name of the configuration change log element for Pion XML config files
-	static const std::string		CONFIG_CHANGE_LOG_ELEMENT_NAME;
-
 	/// directory containing the UI files
 	std::string						m_ui_directory;
-
-	/// file path of the configuration change log
-	std::string						m_config_change_log_path;
 };
 
 	
