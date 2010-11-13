@@ -52,9 +52,14 @@ struct PionPlatformUnitTestsConfig {
 				verbose = true;
 			}
 		}
-		if (!verbose) {
+
+		pion::PionLogger config_log_ptr = PION_GET_LOGGER("config");
+		if (verbose) {
+			PION_LOG_SETLEVEL_INFO(config_log_ptr);
+		} else {
 			xmlSetGenericErrorFunc(NULL, PionUnitTest::doNothing);
 			std::cout << "Use '-v' to enable logging from libxml2.\n";
+			PION_LOG_SETLEVEL_ERROR(config_log_ptr);
 		}
 
 		pion::PionPlugin::resetPluginDirectories();
