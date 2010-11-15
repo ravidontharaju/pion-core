@@ -233,6 +233,17 @@ chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);
 
+# copy python26.dll for windows	builds
+if ($PLATFORM =~ /^win32/i) {
+	if ($PLATFORM =~ /^win32_x64/i) {
+		copy(File::Spec->catfile( ("platform", "build", "3rdparty", "x64"), "python26.dll"),
+			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
+	} else {
+		copy(File::Spec->catfile( ("platform", "build", "3rdparty"), "python26.dll"),
+			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
+	}
+}
+
 # platform-specific finishing touches
 print "Creating binary tarballs..\n";
 
