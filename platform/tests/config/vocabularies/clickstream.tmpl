@@ -396,18 +396,18 @@
             <Type>uint8</Type>
             <Comment>ContentStorage compressed</Comment>
         </Term>
-        <Term id="urn:vocab:clickstream#request-status">
-            <Type>uint8</Type>
-            <Comment>HTTP request status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#response-status">
-            <Type>uint8</Type>
-            <Comment>HTTP response status code</Comment>
-        </Term>
-        <Term id="urn:vocab:clickstream#tcp-status">
-            <Type>uint8</Type>
-            <Comment>TCP handshake status code</Comment>
-        </Term>
+		<Term id="urn:vocab:clickstream#request-status">
+			<Type>uint8</Type>
+			<Comment>HTTP request status (0=NONE, 1=TRUNCATED, 2=PARTIAL, 3=OK)</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#response-status">
+			<Type>uint8</Type>
+			<Comment>HTTP response status (0=NONE, 1=TRUNCATED, 2=PARTIAL, 3=OK)</Comment>
+		</Term>
+		<Term id="urn:vocab:clickstream#tcp-status">
+			<Type>uint8</Type>
+			<Comment>TCP handshake status (0=OK, 1=RESET, 2=IGNORED)</Comment>
+		</Term>
         <Term id="urn:vocab:clickstream#visitor-status">
             <Type>shortstring</Type>
             <Comment>New visitor: how determined? c=Cookie, v=visitorDB, a=anonDB</Comment>
