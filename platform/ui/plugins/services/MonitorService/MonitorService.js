@@ -2,13 +2,13 @@ dojo.provide("plugins.services.MonitorService");
 dojo.require("plugins.services.Service");
 dojo.require("pion._base");
 dojo.require("pion.util.XMLQueryReadStore");
+dojo.require("pion.util.ParentConstrainedFloatingPane");
 dojo.require("pion.terms");
 dojo.require("pion.reactors");
 dojo.require("dijit.Tooltip");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dojox.grid.DataGrid");
-dojo.require("dojox.layout.FloatingPane");
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dojox.xml.parser");
@@ -78,7 +78,7 @@ plugins.services.MonitorService.label = 'Monitor';
 //}
 
 dojo.declare("plugins.services.MonitorServiceFloatingPane",
-	[ dojox.layout.FloatingPane ],
+	[ pion.util.ParentConstrainedFloatingPane ],
 	{
 		templatePath: dojo.moduleUrl("plugins.services", "MonitorService/MonitorServiceFloatingPane.html"),
 		widgetsInTemplate: true,
