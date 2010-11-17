@@ -10,7 +10,9 @@
 	},
 	value_defaults: {
 		Name: 'Webtrends Analytics',
-		NumConnections: 32
+		NumConnections: 32,
+		NumRetries: 1,
+		DebugLogLevel: 0
 	},
 	multivalued_defaults: {
 		Query: {

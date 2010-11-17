@@ -11,7 +11,9 @@
 	value_defaults: {
 		Name: 'Unica OnDemand',
 		HttpHost: 'myaccount.unica.com',
-		NumConnections: 32
+		NumConnections: 32,
+		NumRetries: 1,
+		DebugLogLevel: 0
 	},
 	multivalued_defaults: {
 		Query: {
