@@ -500,6 +500,15 @@ public:
 		return resolveRelativePath(getConfigFile(), orig_path);
 	}
 	
+	/**
+	 * resolves paths relative to the data directory
+	 *
+	 * @param orig_path the original path (may be relative or absolute)
+	 *
+	 * @return std::string resolved, absolute path to the file
+	 */
+	std::string resolveRelativeDataPath(const std::string& orig_path);
+
 	
 protected:
 	

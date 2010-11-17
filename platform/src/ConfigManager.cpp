@@ -419,6 +419,18 @@ std::string ConfigManager::resolveRelativePath(const std::string& base_path_to_f
 	return new_path.file_string();
 }
 
+std::string ConfigManager::resolveRelativeDataPath(const std::string& orig_path)
+{
+	// return the original if it is not relative
+	if (boost::filesystem::path(orig_path).is_complete())
+		return orig_path;
+	
+	boost::filesystem::path new_path(boost::filesystem::system_complete(getDataDirectory()));
+	new_path /= orig_path;
+	new_path.normalize();
+	return new_path.file_string();
+}
+
 bool ConfigManager::getNodeId(xmlNodePtr config_node, std::string& node_id)
 {
 	node_id = "";
