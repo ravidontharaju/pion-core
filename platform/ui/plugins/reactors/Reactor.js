@@ -271,6 +271,8 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 				}
 				this.attr('value', {options: options});
 			}
+			if ('value_defaults' in this.class_info)
+				this.attr('value', this.class_info.value_defaults);
 		},
 		tryConfig: function() {
 			var dialogFields = this.attr('value');
@@ -367,6 +369,8 @@ dojo.declare("plugins.reactors.ReactorDialog",
 
 			if ('option_defaults' in this.reactor.class_info)
 				this.reactor._initOptions(this.reactor.config, this.reactor.class_info.option_defaults);
+			if ('value_defaults' in this.reactor.class_info)
+				this.attr('value', this.reactor.class_info.value_defaults);
 		},
 		reactor: '',
 		execute: function(dialogFields) {

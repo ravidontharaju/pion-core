@@ -23638,6 +23638,9 @@ _168f.push(_1690);
 }
 this.attr("value",{options:_168f});
 }
+if("value_defaults" in this.class_info){
+this.attr("value",this.class_info.value_defaults);
+}
 },tryConfig:function(){
 var _1691=this.attr("value");
 console.debug(_1691);
@@ -23701,6 +23704,9 @@ this.inherited("postCreate",arguments);
 delete this.reactor.config_item;
 if("option_defaults" in this.reactor.class_info){
 this.reactor._initOptions(this.reactor.config,this.reactor.class_info.option_defaults);
+}
+if("value_defaults" in this.reactor.class_info){
+this.attr("value",this.reactor.class_info.value_defaults);
 }
 },reactor:"",execute:function(_16a2){
 if(this.execute_already_called){
