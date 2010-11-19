@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/iostreams/concepts.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/logic/tribool.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Protocol.hpp>
@@ -191,6 +192,9 @@ private:
 	/// container type for decoded HTTP payload content
 	typedef std::vector< std::pair<boost::shared_array<char>,size_t> >	DecoderContainer;
 
+	/// data type for a filtering stream buffer
+	typedef boost::iostreams::filtering_streambuf<boost::iostreams::input>	FilteringStreambuf;
+
 	/// Boost.iostreams sink used to receive decoded HTTP payload content
 	class DecoderSink
 		: public boost::iostreams::sink
@@ -216,6 +220,9 @@ private:
 		
 		/// returns total number of bytes in decoded HTTP payload content
 		inline std::streamsize getBytes(void) const { return m_bytes; }
+
+		/// resets the sink to it's original empty state
+		inline void clear(void) { m_data.clear(); m_bytes = 0; }
 		
 	private:
 	
@@ -298,6 +305,16 @@ private:
 			boost::logic::tribool& decoded_flag,
 			boost::shared_array<char>& decoded_content,
 			size_t& decoded_content_length) const;
+
+		/**
+		 * copies decoded content from a decoder into a decoder sink
+		 *
+		 * @param decoder used to decode the input stream
+		 * @param decoder_sink used to store the output stream
+		 *
+		 * @return bool true if decoded content was copied, false if not
+		 */
+		bool writeToSink(FilteringStreambuf& decoder, DecoderSink& decoder_sink) const;
 
 		/**
 		 * attempts to decode payload content for HTTPMessage
