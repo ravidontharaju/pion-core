@@ -28,7 +28,6 @@
 #include <iostream>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/algorithm/string.hpp>
@@ -842,16 +841,38 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_C_IP);
 
 	m_request_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REQUEST_STATUS);
-	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+	if (m_request_status_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_REQUEST_STATUS);
 
 	m_response_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
-	if (m_c_ip_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+	if (m_response_status_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
 }
 
 
 // class HTTPProtocol::ExtractionRule
+
+bool HTTPProtocol::ExtractionRule::writeToSink(FilteringStreambuf& decoder,
+	DecoderSink& decoder_sink) const
+{
+	// NOTE: iostreams::copy() does not work as of 1.37.0 b/c it creates a copy
+	// of decoder_sink instead of using a reference to decoder_sink (UGH!)
+	//size_t len = boost::iostreams::copy(decoder, decoder_sink);
+	char buf[4096];
+	std::streamsize num_read;
+	try {
+		while ((num_read=decoder.sgetn(buf, 4096)) == 4096)
+			decoder_sink.write(buf, 4096);
+		if (num_read > 0)
+			decoder_sink.write(buf, num_read);
+	} catch (std::exception& e) {
+		// NOTE: content decoding errors throw exceptions!
+		// these should not cause the event to be lost!
+		return false;
+	}
+	return true;
+}
+
 bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& http_msg, 
 	boost::shared_array<char>& decoded_content, size_t& decoded_content_length,
 	std::string& content_encoding, PionLogger& logger) const
@@ -864,11 +885,17 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 		
 	// attempt to decode content
 	boost::iostreams::filtering_streambuf<boost::iostreams::input> decoder;
+	DecoderSink decoder_sink;
 	
 	if (content_encoding == "gzip" || content_encoding == "x-gzip") {
 
 		// payload has gzip (LZ77) encoding
 		decoder.push(boost::iostreams::gzip_decompressor());
+		decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
+			http_msg.getContentLength()) );
+		if (!writeToSink(decoder, decoder_sink)) {
+			PION_LOG_WARN(logger, "Content decoding failed after " << decoder_sink.getBytes() << " bytes for " << content_encoding << " content (" << (http_msg.isChunked() ? "with" : "without") << " chunking)");
+		}
 
 	} else if (content_encoding == "deflate") {
 
@@ -877,49 +904,42 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 		// need to set "noheader" because the filter defaults to using a header
 		deflate_param.noheader = true;
 		decoder.push(boost::iostreams::zlib_decompressor(deflate_param));
+		decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
+			http_msg.getContentLength()) );
+		if (!writeToSink(decoder, decoder_sink)) {
+			// if deflate fails with no header, try it again with header enabled
+			decoder.reset();
+			decoder_sink.clear();
+			deflate_param.noheader = false;
+			decoder.push(boost::iostreams::zlib_decompressor(deflate_param));
+			decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
+				http_msg.getContentLength()) );
+			if (!writeToSink(decoder, decoder_sink)) {
+				PION_LOG_WARN(logger, "Content decoding failed after " << decoder_sink.getBytes() << " bytes for " << content_encoding << " content (" << (http_msg.isChunked() ? "with" : "without") << " chunking)");
+			}
+		}
 
 	} else if (content_encoding == "compress" || content_encoding == "x-compress") {
 
 		// payload has compress (LZW) encoding
 		// CAN'T HANDLE
+		PION_LOG_WARN(logger, "Unsupported Content-Encoding: " << content_encoding);
 		return false;
 	
 	} else {
 
 		// unrecognized content encoding
 		// CAN'T HANDLE
+		PION_LOG_WARN(logger, "Unrecognized Content-Encoding: " << content_encoding);
 		return false;
 	}
 
-	// for input filters, the source should be pushed last
-	decoder.push( boost::iostreams::basic_array_source<char>(http_msg.getContent(),
-		http_msg.getContentLength()) );
-
-	// write decoded content to stream
-	DecoderSink decoder_sink;
-
-	// NOTE: iostreams::copy() does not work as of 1.37.0 b/c it creates a copy
-	// of decoder_sink instead of using a reference to decoder_sink (UGH!)
-	//size_t len = boost::iostreams::copy(decoder, decoder_sink);
-	try {
-		char buf[4096];
-		std::streamsize num_read;
-		while ((num_read=decoder.sgetn(buf, 4096)) == 4096)
-			decoder_sink.write(buf, 4096);
-		if (num_read > 0) 
-			decoder_sink.write(buf, num_read);
-	} catch (std::exception& e) {
-		// NOTE: content decoding errors throw exceptions!
-		// these should not cause the event to be lost!
-		PION_LOG_WARN(logger, "Content decoding failed after " << decoder_sink.getBytes() << " bytes for " << content_encoding << " content (" << (http_msg.isChunked() ? "with" : "without") << " chunking)");
-	}
-	
 	// initialize decoded content cache to hold results
 	decoded_content_length = decoder_sink.getBytes();
 	decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
 	decoded_content.get()[decoded_content_length] = '\0';		// null terminate buffer since it may be re-used
 
-	if (decoded_content_length > 0) {	
+	if (decoded_content_length > 0) {
 		// copy results into decoded content cache (a contiguous array)
 		char *decoded_ptr = decoded_content.get();
 		const DecoderContainer& container = decoder_sink.getContainer();
