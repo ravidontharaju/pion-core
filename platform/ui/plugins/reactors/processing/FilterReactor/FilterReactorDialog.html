@@ -9,21 +9,10 @@
 		<!--start div to set padding for top half of dialog-->
 		<div class="reactor_dialog_top">
 
-			<!--start reactor header info-->
-			<div class="reactor_name">
-				<img src="/plugins/reactors/processing/FilterReactor/dialog-icon.png" width="17" height="17" border="0" />
-				&nbsp; Filter Reactor
+			<div dojoType=plugins.reactors.ReactorBoilerplate
+				 label="Filter Reactor" name="FilterReactor" category="Processing"
+				 description="Include or exclude events based on user-defined criteria.">
 			</div>
-			<div class="reactor_cat">
-				<strong>Name:</strong> FilterReactor
-				&nbsp;&nbsp;&nbsp;
-				<strong>Category:</strong> Processing
-			</div>
-
-			<div style="clear:both;"></div>
-
-			<p>Include or exclude events based on user-defined criteria.</p>
-			<!--end reactor header info-->
 
 			<!--start reactor settings-->
 			<table cellpadding="0" cellspacing="5" border="0"

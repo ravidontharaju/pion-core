@@ -418,6 +418,26 @@ dojo.declare("plugins.reactors.ReactorDialog",
 	}
 );
 
+dojo.declare("plugins.reactors.ReactorBoilerplate",
+	[dijit._Widget, dijit._Templated],
+	{
+		label: '???',
+		name: '???',
+		category: '???',
+		description: '???',
+		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorBoilerplate.html"),
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			this.icon = '/plugins/reactors/' + this.category.toLowerCase() + '/' + this.name + '/dialog-icon.png';
+			if (this.templatePath) this.templateString = "";
+		},
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+		}
+	}
+);
+
 dojo.declare("plugins.reactors.ReactorConnectionsDialog",
 	[ dijit.Dialog ], // inherit from this class, which in turn mixes in _Templated and _Layout
 	{

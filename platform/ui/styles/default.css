@@ -754,6 +754,9 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	font-size: 11px;
 }
 
+.reactor_cat a {
+	font-size: 14px;
+}
 
 /* for moveable items, e.g. reactors in a workspace */
 

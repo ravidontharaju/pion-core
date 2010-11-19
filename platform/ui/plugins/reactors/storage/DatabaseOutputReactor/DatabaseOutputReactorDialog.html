@@ -9,21 +9,10 @@
 		<!--start div to set padding for top half of dialog-->
 		 <div class="reactor_dialog_top">
 
-			<!--start reactor header info-->
-			<div class="reactor_name">
-				<img src="/plugins/reactors/storage/DatabaseOutputReactor/dialog-icon.png" width="17" height="17" border="0" />
-				&nbsp; Database Output Reactor
+			<div dojoType=plugins.reactors.ReactorBoilerplate
+				 label="Database Output Reactor" name="DatabaseOutputReactor" category="Storage"
+				 description="Send real-time data into a database or data warehouse.">
 			</div>
-			<div class="reactor_cat">
-				<strong>Name:</strong> DatabaseOutputReactor
-				&nbsp;&nbsp;&nbsp;
-				<strong>Category:</strong> Storage
-			</div>
-
-			<div style="clear:both;"></div>
-
-			<p>Send real-time data into a database or data warehouse.</p>
-			<!--end reactor header info-->
 
 			<!--start reactor settings-->
 			 <table
