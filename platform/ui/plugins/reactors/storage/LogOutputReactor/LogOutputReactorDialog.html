@@ -9,21 +9,10 @@
 		<!--start div to set padding for top half of dialog-->
 		<div class="reactor_dialog_top">
 
-			<!--start reactor header info-->
-			<div class="reactor_name">
-				<img src="/plugins/reactors/storage/LogOutputReactor/dialog-icon.png" width="17" height="17" border="0" />
-				&nbsp; Log Output Reactor
+			<div dojoType=plugins.reactors.ReactorBoilerplate
+				 label="Log Output Reactor" name="LogOutputReactor" category="Storage"
+				 description="Write real-time data out to a structured file.">
 			</div>
-			<div class="reactor_cat">
-				<strong>Name:</strong> LogOutputReactor
-				&nbsp;&nbsp;&nbsp;
-				<strong>Category:</strong> Storage
-			</div>
-
-			<div style="clear:both;"></div>
-
-			<p>Write real-time data out to a structured file.</p>
-			<!--end reactor header info-->
 
 			<!--start reactor settings-->
 			<table
