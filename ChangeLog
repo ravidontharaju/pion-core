@@ -1,4 +1,40 @@
 
+Version 3.0.19 (2010-11-01)
+===========================
+
+* PythonReactor -- compile with optimizations (980)
+* HTTPProtocol might calculate invalid request/response times (987)
+
+
+Version 3.0.17 (2010-10-05)
+===========================
+
+* LogOutputReactor - changes require restart (966)
+
+
+Version 3.0.15 (2010-08-10)
+===========================
+
+* PythonReactor -- deadlock condition fixed (962, 961)
+* TransformReactor -- Rules do not support event-type term comparisons (919)
+* TransformReactor should allow assignments across DateTime types (951)
+
+
+Version 3.0.13 (2010-06-25)
+===========================
+
+* Add a UTF8 validator so browsers would not crash when handed binary/other charset data (945)
+
+
+Version 3.0.11 (2010-06-11)
+===========================
+
+* Pion wizard should initialize the cookie fields with default values (936)
+* If an edition cookie with value 'Lite' or 'Core' is found, the EditionSelectorDialog should never appear (937)
+* UI to use dbengines.xml instead of databases.json (927)
+* Pion UI wizard link to be visible on a per-user basis (933)
+
+
 Version 3.0.9 (2010-04-30)
 ==========================
 
