@@ -86,9 +86,13 @@ public:
 	 * if there is data remaining (i.e. if closed prematurely)
 	 *
 	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
+	 * @param client_reset will be true if the client reset the connection
+	 * @param server_reset will be true if the server reset the connection
+	 *
 	 * @return true if the request or response parsing was finished prematurely
 	 */
-	virtual bool close(pion::platform::EventPtr& event_ptr_ref) = 0;
+	virtual bool close(pion::platform::EventPtr& event_ptr_ref,
+		bool client_reset, bool server_reset) = 0;
 
 	/**
 	 * parses the next portion of the network data

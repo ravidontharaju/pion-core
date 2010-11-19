@@ -107,6 +107,8 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_AUTHUSER="urn:vocab:clickstrea
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_C_IP="urn:vocab:clickstream#c-ip";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_STATUS="urn:vocab:clickstream#request-status";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_RESPONSE_STATUS="urn:vocab:clickstream#response-status";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFUSED="urn:vocab:clickstream#refused";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CANCELED="urn:vocab:clickstream#canceled";
 
 
 // HTTPProtocol member functions
@@ -126,7 +128,7 @@ void HTTPProtocol::reset(void)
 		= m_sc_missing_packets = 0;
 }
 
-bool HTTPProtocol::close(EventPtr& event_ptr_ref)
+bool HTTPProtocol::close(EventPtr& event_ptr_ref, bool client_reset, bool server_reset)
 {
 	if (! m_request.isValid())
 		m_request_parser.finish(m_request);
@@ -134,10 +136,22 @@ bool HTTPProtocol::close(EventPtr& event_ptr_ref)
 	if (! m_response.isValid())
 		m_response_parser.finish(m_response);
 
-	if (m_request_parser.getTotalBytesRead() > 0)
+	bool result = (m_request.isValid() && m_response.isValid());
+	
+	if (m_request_parser.getTotalBytesRead() > 0) {
 		generateEvent(event_ptr_ref);
+		if (! result) {
+			if (client_reset) {
+				(*event_ptr_ref).setUInt(m_canceled_term_ref, 1U);
+				result = true;
+			} else if (server_reset) {
+				(*event_ptr_ref).setUInt(m_refused_term_ref, 1U);
+				result = true;
+			}
+		}
+	}
 
-	return (m_request.isValid() && m_response.isValid());
+	return result;
 }
 
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
@@ -286,6 +300,8 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_c_ip_term_ref = m_c_ip_term_ref;
 	retval->m_request_status_term_ref = m_request_status_term_ref;
 	retval->m_response_status_term_ref = m_response_status_term_ref;
+	retval->m_refused_term_ref = m_refused_term_ref;
+	retval->m_canceled_term_ref = m_canceled_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -847,6 +863,14 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_response_status_term_ref = v.findTerm(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
 	if (m_response_status_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_RESPONSE_STATUS);
+
+	m_refused_term_ref = v.findTerm(VOCAB_CLICKSTREAM_REFUSED);
+	if (m_refused_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_REFUSED);
+
+	m_canceled_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CANCELED);
+	if (m_canceled_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CANCELED);
 }
 
 

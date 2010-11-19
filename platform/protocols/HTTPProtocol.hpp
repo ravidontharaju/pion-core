@@ -128,9 +128,13 @@ public:
 	 * if there is data remaining (i.e. if closed prematurely)
 	 *
 	 * @param event_ptr_ref refererence to an event object returned if the call resulted in event generation
+	 * @param client_reset will be true if the client reset the connection
+	 * @param server_reset will be true if the server reset the connection
+	 *
 	 * @return true if the request or response parsing was finished prematurely
 	 */
-	virtual bool close(pion::platform::EventPtr& event_ptr_ref);
+	virtual bool close(pion::platform::EventPtr& event_ptr_ref,
+		bool client_reset, bool server_reset);
 
 	/**
 	 * parses the next portion of the network data
@@ -669,6 +673,14 @@ private:
 	/// urn:vocab:clickstream#response-status
 	static const std::string	VOCAB_CLICKSTREAM_RESPONSE_STATUS;
 	pion::platform::Vocabulary::TermRef	m_response_status_term_ref;
+
+	/// urn:vocab:clickstream#refused
+	static const std::string	VOCAB_CLICKSTREAM_REFUSED;
+	pion::platform::Vocabulary::TermRef	m_refused_term_ref;
+
+	/// urn:vocab:clickstream#canceled
+	static const std::string	VOCAB_CLICKSTREAM_CANCELED;
+	pion::platform::Vocabulary::TermRef	m_canceled_term_ref;
 
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
