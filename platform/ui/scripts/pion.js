@@ -25,7 +25,6 @@ dojo.require("pion.about");
 dojo.require("pion.widgets.Wizard");
 dojo.require("pion.widgets.LicenseKey");
 dojo.require("pion.widgets.EditionSelector");
-dojo.require("pion.widgets.KeyStoreEditor");
 dojo.requireLocalization("pion", "wizard");
 
 var reactor_config_page_initialized = false;

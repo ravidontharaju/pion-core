@@ -1,6 +1,7 @@
 dojo.provide("pion.widgets.Wizard");
 dojo.require("dojox.widget.Wizard");
 dojo.require("dojo.cookie");
+dojo.require("pion.widgets.KeyStoreEditor");
 
 dojo.declare("pion.widgets.Wizard",
 	[ dojox.widget.Wizard ],
@@ -16,6 +17,8 @@ dojo.declare("pion.widgets.Wizard",
 			pion.wizard.cookies = [];
 			pion.wizard.devices = [];
 			pion.wizard.max_disk_usage = 'NA';
+
+			new pion.widgets.KeyStoreEditor({}, 'key_store_editor');
 		},
 		placeholder: function() {
 		}
