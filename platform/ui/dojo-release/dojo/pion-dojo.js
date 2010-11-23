@@ -22817,7 +22817,7 @@ _15ec(_15eb.args);
 });
 }else{
 if(!dojo.cookie("logged_in")){
-location.replace("login.html");
+location.replace("login.html"+window.location.search);
 }
 pion.login.doLoginDialog({success_callback:function(){
 _15ec(_15eb.args);
@@ -22855,7 +22855,7 @@ _15f8.store.fetch(_15f8);
 });
 }else{
 if(!dojo.cookie("logged_in")){
-location.replace("login.html");
+location.replace("login.html"+window.location.search);
 }
 pion.login.doLoginDialog({success_callback:function(){
 _15f8.store.fetch(_15f8);
@@ -23131,7 +23131,7 @@ this.execute_already_called=true;
 document.cookie="user="+encodeURIComponent(_1630.Username);
 dojo.xhrGet({url:"/login?user="+_1630.Username+"&pass="+_1630.Password,preventCache:true,handleAs:"xml",load:function(_1631,_1632){
 if(_1630.Username!=pion.last_logged_in_user){
-location.replace("/");
+location.replace("/"+window.location.search);
 }
 pion.login.login_pending=false;
 pion.login.onLoginSuccess();

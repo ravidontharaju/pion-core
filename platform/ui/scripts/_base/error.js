@@ -39,7 +39,7 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 		} else {
 			// if user logged out, exit and go to main login page
 			if (!dojo.cookie("logged_in")) {
-				location.replace('login.html');
+				location.replace('login.html' + window.location.search);
 			}
 
 			// make user log in, then redo the request
@@ -79,7 +79,7 @@ pion.handleFetchError = function(errorData, request) {
 		} else {
 			// if user logged out, exit and go to main login page
 			if (!dojo.cookie("logged_in")) {
-				location.replace('login.html');
+				location.replace('login.html' + window.location.search);
 			}
 
 			// make user log in, then redo the request
