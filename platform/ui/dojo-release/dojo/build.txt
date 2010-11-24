@@ -208,7 +208,7 @@ pion-dojo.js:
 ./../../release/dojo-release/plugins/services/Service.js
 ./../../release/dojo-release/pion/services.js
 ./../../release/dojo-release/pion/about.js
+./../../release/dojo-release/pion/widgets/KeyStoreEditor.js
 ./../../release/dojo-release/pion/widgets/Wizard.js
 ./../../release/dojo-release/pion/widgets/EditionSelector.js
-./../../release/dojo-release/pion/widgets/KeyStoreEditor.js
 ./../../release/dojo-release/pion/pion.js
