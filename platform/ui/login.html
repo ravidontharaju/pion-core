@@ -5,8 +5,13 @@
 <script language="javascript">AC_FL_RunContent = 0;</script>
 <script src="scripts/AC_RunActiveContent.js" language="javascript"></script>
 <link href="styles/splash.css" rel="stylesheet" type="text/css" media="screen" />
+<script language="javascript">
+	function init_hidden_url() {
+		document.getElementById('hidden_url').value = '/' + window.location.search;
+	}
+</script>
 </head>
-<body bgcolor="#ffffff">
+<body bgcolor="#ffffff" onload="init_hidden_url()">
 
 
 	<div class="loginBox">
@@ -15,7 +20,7 @@
 	</div>
 	<div class="rigthCol">
 		<form method="POST" action="/login">
-			<input type="hidden" name="url" value="/">
+			<input id="hidden_url" type="hidden" name="url" value="/">
 			<table cellpadding="5" cellspacing="5" border="0">
 				<tr>
 					<td align="right" nowrap>Username</td>
