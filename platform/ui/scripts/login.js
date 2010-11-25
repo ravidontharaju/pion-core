@@ -101,7 +101,7 @@ pion.login.doLoginDialog = function(kw_args) {
 			load: function(response, ioArgs) {
 				// If the user who just logged in is not the previously logged in user, reload.
 				if (dialogFields.Username != pion.last_logged_in_user) {
-					location.replace('/');
+					location.replace('/' + window.location.search);
 				}
 
 				pion.login.login_pending = false;
