@@ -303,15 +303,20 @@ if ($PLATFORM =~ /^win32/i) {
 }
 
 if ($PLATFORM =~ /^win32/i) {
+	if ($PLATFORM =~ /^win32_x64/i) {
+		$INSTALLER_PRJ_FILE = "pion-platform-64.aip";
+		$INSTALLER_OUT_FILE = "pion-platform-64.msi";
+	} else {
+		$INSTALLER_PRJ_FILE = "pion.aip";
+		$INSTALLER_OUT_FILE = "pion-platform.msi"
+	}
 	print "Creating Pion installation package..\n";
-	#$INSTALLER_SCRIPT=File::Spec->catfile( ("platform", "build"), "build_installer.bat");
-	#$INSTALLER_SCRIPT=File::Spec::Win32->catfile( ("platform", "build"), "build_installer.bat");
 	$INSTALLER_SCRIPT="platform\\\\build\\\\build_installer.bat";
 	$WIN_PACKAGE_DIR="bin\\\\" . $PACKAGE_NAME;
-	$CMD = "cmd /c $INSTALLER_SCRIPT $WIN_PACKAGE_DIR $VERSION";
+	$CMD = "cmd /c $INSTALLER_SCRIPT $WIN_PACKAGE_DIR $VERSION $INSTALLER_PRJ_FILE";
 	print "About to call: $CMD\n";
 	system($CMD);
-	move("pion-platform.msi", File::Spec->catfile( ($BIN_DIR, "$TARBALL_NAME.msi") ));
+	move($INSTALLER_OUT_FILE, File::Spec->catfile( ($BIN_DIR, "$TARBALL_NAME.msi") ));
 }
 
 print "* Done creating binary packages.\n";

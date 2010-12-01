@@ -6,7 +6,7 @@ REM SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3.1"
 SET AI_DIR="C:\Program Files\Caphyon\Advanced Installer 7.7\bin\x86"
 
 SET AI_EXE="advinst.exe"
-SET INSTALL_PRJ="pion-platform.aip"
+SET INSTALL_PRJ=%3
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
 SET AI_DIR="C:\Program Files (x86)\Caphyon\Advanced Installer 7.7\bin\x86"
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
