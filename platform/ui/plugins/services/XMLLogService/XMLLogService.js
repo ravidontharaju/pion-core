@@ -90,6 +90,7 @@ dojo.declare("plugins.services.XMLLogService",
 			this.log_grid = new dojox.grid.DataGrid({
 				store: this.log_xml_store,
 				structure: this.log_grid_layout,
+				singleClickEdit: true, // Without this, the column alignment tends to get screwed up.
 				rowsPerPage: 20
 			}, document.createElement('div'));
 			while (this.log_grid_node.firstChild) {

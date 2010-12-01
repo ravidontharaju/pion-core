@@ -10,7 +10,7 @@ dojo.require("plugins.databases.SQLiteDatabase");
 
 pion.databases.getHeight = function() {
 	// set by _adjustAccordionSize
-	return pion.databases.height;
+	return pion.databases.database_config_height;
 }
 
 pion.databases.config_store = new dojox.data.XmlStore({url: '/config/databases'});
@@ -30,10 +30,8 @@ pion.databases._adjustAccordionSize = function() {
 		accordion_height += pane._buttonWidget.getTitleHeight();
 	});
 	config_accordion.resize({h: accordion_height});
-
-	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
-	pion.databases.height = accordion_height + 160;
-	dijit.byId('main_stack_container').resize({h: pion.databases.height});
+	pion.databases.database_config_height = dojo.byId('database_config_end').offsetTop;
+	dijit.byId('main_stack_container').resize({h: pion.databases.database_config_height});
 }
 
 pion.databases.init = function() {
@@ -96,10 +94,10 @@ pion.databases.init = function() {
 		var pane_class = dojo.getObject(pane_class_name);
 		if (pane_class) {
 			console.debug('found class ', pane_class_name);
-			var new_pane = new pane_class({title: old_pane.title});
+			var new_pane = new pane_class({title: old_pane.title, plugin_type: plugin});
 		} else {
 			console.debug('class ', pane_class_name, ' not found; using plugins.databases.DatabasePane instead.');
-			var new_pane = new plugins.databases.DatabasePane({title: old_pane.title});
+			var new_pane = new plugins.databases.DatabasePane({title: old_pane.title, plugin_type: plugin});
 		}
 		new_pane.uuid = old_pane.uuid;
 		new_pane.config_item = old_pane.config_item;

@@ -5,7 +5,7 @@ dojo.require("dojox.data.XmlStore");
 
 pion.users.getHeight = function() {
 	// set by _adjustAccordionSize
-	return pion.users.height;
+	return pion.users.user_config_height;
 }
 
 pion.users.config_store = new dojox.data.XmlStore({url: '/config/users'});
@@ -176,9 +176,9 @@ pion.users._adjustAccordionSize = function() {
 	});
 	config_accordion.resize({h: accordion_height});
 
-	// TODO: replace 160 with some computed value
-	// I tried dojo.byId('user_config_header').offsetHeight + dojo.byId('user_config_controls').offsetHeight,
-	// but it's not enough, maybe because of padding.
-	pion.users.height = accordion_height + 160;
-	dijit.byId('main_stack_container').resize({h: pion.users.height});
+	// Node 'user_config_end' has the following properties: its offsetParent is node 'user_config' and it 
+	// has 0 height and margins.  Thus, its offsetTop is equal to the exact height needed by node 'user_config'.
+	pion.users.user_config_height = dojo.byId('user_config_end').offsetTop;
+
+	dijit.byId('main_stack_container').resize({h: pion.users.user_config_height});
 }

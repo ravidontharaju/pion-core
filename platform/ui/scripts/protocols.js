@@ -10,7 +10,7 @@ dojo.require("plugins.protocols.HTTPProtocol");
 
 pion.protocols.getHeight = function() {
 	// set by _adjustAccordionSize
-	return pion.protocols.height;
+	return pion.protocols.protocol_config_height;
 }
 
 pion.protocols.config_store = new dojox.data.XmlStore({url: '/config/protocols'});
@@ -86,10 +86,10 @@ pion.protocols.init = function() {
 		var pane_class = dojo.getObject(pane_class_name);
 		if (pane_class) {
 			console.debug('found class ', pane_class_name);
-			var new_pane = new pane_class({title: old_pane.title});
+			var new_pane = new pane_class({title: old_pane.title, plugin_type: plugin});
 		} else {
 			console.debug('class ', pane_class_name, ' not found; using plugins.protocols.ProtocolPane instead.');
-			var new_pane = new plugins.protocols.ProtocolPane({title: old_pane.title});
+			var new_pane = new plugins.protocols.ProtocolPane({title: old_pane.title, plugin_type: plugin});
 		}
 		new_pane.uuid = old_pane.uuid;
 		new_pane.config_item = old_pane.config_item;
@@ -254,7 +254,9 @@ pion.protocols._adjustAccordionSize = function() {
 	});
 	config_accordion.resize({h: accordion_height});
 
-	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
-	pion.protocols.height = accordion_height + 160;
-	dijit.byId('main_stack_container').resize({h: pion.protocols.height});
+	// Node 'protocol_config_end' has the following properties: its offsetParent is node 'protocol_config' and it 
+	// has 0 height and margins.  Thus, its offsetTop is equal to the exact height needed by node 'protocol_config'.
+	pion.protocols.protocol_config_height = dojo.byId('protocol_config_end').offsetTop;
+
+	dijit.byId('main_stack_container').resize({h: pion.protocols.protocol_config_height});
 }

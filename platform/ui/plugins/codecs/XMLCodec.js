@@ -20,8 +20,7 @@ dojo.declare("plugins.codecs.XMLCodecPane",
 			this.form.attr('value', {EventTag: 'Event', EventContainerTag: 'Events'});
 		},
  		getHeight: function() {
-			// TODO: replace 540 with some computed value
-			return 540;
+			return this.pane_end.offsetTop;
 		}
 	}
 );

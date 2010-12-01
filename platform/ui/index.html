@@ -713,6 +713,7 @@
 				</div>
 				<!-- end secondary menu -->
 				<img src="images/0.gif" alt="" id="fixed" />
+				<div style="clear: both"></div>
 				<!-- start main menu -->
 				<div id="menu">
 					<span dojoType="dijit.layout.StackController" containerId="main_stack_container" id="main_stack_controller"></span>
@@ -761,8 +762,8 @@
 					</div>
 				</div>
 				<!-- end left sidebar -->
-				<div id="workspace_config_header" class="config_header" dojoType="dijit.layout.ContentPane" region="top">
-					<h1 style="font-size: 2.5em;">Reactors Configuration</h1>
+				<div id="workspace_config_header" dojoType="dijit.layout.ContentPane" region="top">
+					<div dojoType="pion.widgets.MainStackContentHeader" title="Reactor Configuration" help="plugins/reactors"></div>
 					<h4>
 						1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
 						2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
@@ -790,10 +791,8 @@
 				<!-- end tabbed workspaces -->
 			</div>
 			<div id="vocab_config" dojoType="dijit.layout.ContentPane" title="Vocabularies" style="width: 95%;">
-				<div id="vocab_config_header" class="config_header">
-					<h1>Vocabulary Configuration</h1>
-				</div>
-				<div id="vocab_config_content" class="config_content">
+				<div dojoType="pion.widgets.MainStackContentHeader" title="Vocabulary Configuration" help="docs" help_text="placeholder"></div>
+				<div class="config_content">
 					<div id="vocab_config_accordion" dojoType="pion.widgets.ConfigAccordion">
 						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
@@ -801,12 +800,11 @@
 						<button id="add_new_vocab_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW VOCABULARY</button>
 					</div>
 				</div>
+				<div id="vocab_config_end"></div>
 			</div>
 			<div id="codec_config" dojoType="dijit.layout.ContentPane" title="Codecs" style="width: 95%;">
-				<div id="codec_config_header" class="config_header">
-					<h1>Codec Configuration</h1>
-				</div>
-				<div id="codec_config_content" class="config_content">
+				<div dojoType="pion.widgets.MainStackContentHeader" title="Codec Configuration" help="plugins/codecs"></div>
+				<div class="config_content">
 					<div id="codec_config_accordion" dojoType="pion.widgets.ConfigAccordion">
 						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
@@ -814,12 +812,11 @@
 						<button id="add_new_codec_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW CODEC</button>
 					</div>
 				</div>
+				<div id="codec_config_end" class="zero_height_end_marker"></div>
 			</div>
 			<div id="database_config" dojoType="dijit.layout.ContentPane" title="Databases" style="width: 95%;">
-				<div id="database_config_header" class="config_header">
-					<h1>Database Configuration</h1>
-				</div>
-				<div id="database_config_content" class="config_content">
+				<div dojoType="pion.widgets.MainStackContentHeader" title="Database Configuration" help="plugins/databases"></div>
+				<div class="config_content">
 					<div id="database_config_accordion" dojoType="pion.widgets.ConfigAccordion">
 						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
@@ -827,12 +824,11 @@
 						<button id="add_new_database_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW DATABASE</button>
 					</div>
 				</div>
+				<div id="database_config_end" class="zero_height_end_marker"></div>
 			</div>
 			<div id="protocol_config" dojoType="dijit.layout.ContentPane" title="Protocols" style="width: 95%;">
-				<div id="protocol_config_header" class="config_header">
-					<h1>Protocol Configuration</h1>
-				</div>
-				<div id="protocol_config_content" class="config_content">
+				<div dojoType="pion.widgets.MainStackContentHeader" title="Protocol Configuration" help="plugins/protocols"></div>
+				<div class="config_content">
 					<div id="protocol_config_accordion" dojoType="pion.widgets.ConfigAccordion">
 						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
@@ -840,14 +836,13 @@
 						<button id="add_new_protocol_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW PROTOCOL</button>
 					</div>
 				</div>
+				<div id="protocol_config_end" class="zero_height_end_marker"></div>
 			</div>
 
 			<!--Start Users-->
 			<div id="user_config" dojoType="dijit.layout.ContentPane" title="Users" style="width: 95%;">
-				<div id="user_config_header" class="config_header">
-					<h1>Users Configuration</h1>
-				</div>
-				<div id="user_config_content" class="config_content">
+				<div dojoType="pion.widgets.MainStackContentHeader" title="Users Configuration" help="docs" help_text="placeholder"></div>
+				<div class="config_content">
 					<div id="user_config_accordion" dojoType="pion.widgets.ConfigAccordion">
 						<div dojoType="dijit.layout.ContentPane"></div>
 					</div>
@@ -855,77 +850,79 @@
 						<button id="add_new_user_button" dojoType=dijit.form.Button class="add_new_pane">ADD A NEW USER</button>
 					</div>
 				</div>
+				<div id="user_config_end" class="zero_height_end_marker"></div>
 			</div>
 			<!--End Users-->
 
 			<!--Start System-->
-			<div id="system_config" dojoType="dijit.layout.BorderContainer" gutters="false" title="System"
-				style="width: 95%; height: 300px; padding: 10px;">
-				<div id="system_config_header" class="config_header" dojoType="dijit.layout.ContentPane" region="top">
-					<h1>System Configuration</h1>
-				</div>
-				<div dojoType="dijit.layout.ContentPane" region="left" style="width: 50%; padding: 10px;" splitter="true" minSize="100">
-					<h2>Configuration Files</h2>
-					<hr />
-					<table cellpadding="5" border="0" class="pathsTable" width="100%">
-						<tr>
-							<td align="right" width="80px"><label>Platform</label></td>
-							<td id="platform_conf_file">your/path/here/PlatformConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Reactors</label></td>
-							<td id="reactor_conf_file">your/path/here/ReactorsConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Vocabularies</label></td>
-							<td id="vocab_conf_file">your/path/here/VocabulariesConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Codecs</label></td>
-							<td id="codec_conf_file">your/path/here/CodecsConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Databases</label></td>
-							<td id="database_conf_file">your/path/here/DatabasesConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Protocols</label></td>
-							<td id="protocol_conf_file">your/path/here/ProtocolsConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Users</label></td>
-							<td id="user_conf_file">your/path/here/UsersConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Services</label></td>
-							<td id="service_conf_file">your/path/here/ServicesConfigFile.xml</td>
-						</tr><tr>
-							<td align="right"><label>Logging</label></td>
-							<td id="log_conf_file">your/path/here/logconfig.txt</td>
-						</tr>
-					</table>
-					<br />
-					<button dojoType=dijit.form.Button class="content_button" onClick="pion.system.importXMLConfiguration">Import XML Configuration</button>
-					<br />
-					<h2>Configuration Paths</h2>
-					<hr />
-					<table cellpadding="5" border="0" class="pathsTable" width="100%">
-						<tr>
-							<td align="right" width="80px"><label>Vocabularies</label></td>
-							<td id="vocab_path">your/path/here/VocabularyPath</td>
-						</tr><tr>
-							<td align="right" width="80px"><label>Data Directory</label></td>
-							<td id="data_directory">your/path/here/DataDirectory</td>
-						</tr>
-					</table>
-					<br />
-					<h2>Plugin Paths</h2>
-					<hr />
-					<table id="plugin_paths" cellpadding="5" border="0" class="pathsTable" width="100%">
-						<tr>
-							<td align="right" width="80px"><label>Plugin 1</label></td>
-							<td>your/path/here/PluginPath</td>
-						</tr>
-					</table>
-				</div>
-				<div dojoType="dijit.layout.ContentPane" region="center" style="padding: 10px;" minSize="100">
-					<h2>Services</h2>
-					<hr/>
-					<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->
-					<div id="server_tree"></div>
+			<div id="system_config" dojoType="dijit.layout.ContentPane" title="System" style="width: 95%; height: 300px">
+				<div dojoType="dijit.layout.BorderContainer" gutters="false">
+					<div dojoType="dijit.layout.ContentPane" region="top">
+						<div dojoType="pion.widgets.MainStackContentHeader" title="System Configuration" help="docs" help_text="placeholder"></div>
+					</div>
+					<div dojoType="dijit.layout.ContentPane" region="left" style="width: 50%; padding: 10px;" splitter="true" minSize="100">
+						<div dojoType="pion.widgets.MainStackContentHeader" class="nested" title="Configuration Files"></div>
+						<hr />
+						<table cellpadding="5" border="0" class="pathsTable" width="100%">
+							<tr>
+								<td align="right" width="80px"><label>Platform</label></td>
+								<td id="platform_conf_file">your/path/here/PlatformConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Reactors</label></td>
+								<td id="reactor_conf_file">your/path/here/ReactorsConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Vocabularies</label></td>
+								<td id="vocab_conf_file">your/path/here/VocabulariesConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Codecs</label></td>
+								<td id="codec_conf_file">your/path/here/CodecsConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Databases</label></td>
+								<td id="database_conf_file">your/path/here/DatabasesConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Protocols</label></td>
+								<td id="protocol_conf_file">your/path/here/ProtocolsConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Users</label></td>
+								<td id="user_conf_file">your/path/here/UsersConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Services</label></td>
+								<td id="service_conf_file">your/path/here/ServicesConfigFile.xml</td>
+							</tr><tr>
+								<td align="right"><label>Logging</label></td>
+								<td id="log_conf_file">your/path/here/logconfig.txt</td>
+							</tr>
+						</table>
+						<br />
+						<button dojoType=dijit.form.Button class="content_button" onClick="pion.system.importXMLConfiguration">Import XML Configuration</button>
+						<br />
+						<h2>Configuration Paths</h2>
+						<hr />
+						<table cellpadding="5" border="0" class="pathsTable" width="100%">
+							<tr>
+								<td align="right" width="80px"><label>Vocabularies</label></td>
+								<td id="vocab_path">your/path/here/VocabularyPath</td>
+							</tr><tr>
+								<td align="right" width="80px"><label>Data Directory</label></td>
+								<td id="data_directory">your/path/here/DataDirectory</td>
+							</tr>
+						</table>
+						<br />
+						<h2>Plugin Paths</h2>
+						<hr />
+						<table id="plugin_paths" cellpadding="5" border="0" class="pathsTable" width="100%">
+							<tr>
+								<td align="right" width="80px"><label>Plugin 1</label></td>
+								<td>your/path/here/PluginPath</td>
+							</tr>
+						</table>
+					</div>
+					<div dojoType="dijit.layout.ContentPane" region="center" style="padding: 10px;" minSize="100">
+						<div dojoType="pion.widgets.MainStackContentHeader" class="nested" title="Services" help="plugins/services"></div>
+						<hr/>
+						<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->
+						<div id="server_tree"></div>
+					</div>
 				</div>
 			</div>
 			<!--End System-->
@@ -939,6 +936,7 @@
 				<p>&copy; 2007-2010 <a href="http://www.atomiclabs.com" target="_blank" class="header">Atomic Labs, Inc.</a> All rights reserved.</p>
 			</div>
 		</div>
+		<div id="outer_end" class="zero_height_end_marker"></div>
 	</div>
 </body>
 </html>

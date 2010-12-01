@@ -44,3 +44,14 @@ dojo.declare("pion.widgets.ConfigAccordion",
 	}
 );
 
+dojo.declare("pion.widgets.ConfigAccordionPluginType",
+	[dijit._Widget, dijit._Templated],
+	{
+		plugin_type: '???',
+		templateString: '<div class="plugin_type"><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" /><a class="header" href="http://pion.org/plugins/${plugin_type}" target="_blank">Help</a></div>',
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+		}
+	}
+);

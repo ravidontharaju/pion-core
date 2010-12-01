@@ -236,9 +236,7 @@ dojo.declare("pion.widgets.UserPane",
 			}
 		},
 		getHeight: function() {
-			// TODO: replace with something less hacky
-			var minimum_height = dojo.isIE? 225 : 200;
-			return minimum_height + this.workspace_check_boxes.length * 18;
+			return this.pane_end.offsetTop;
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.users.config_store;

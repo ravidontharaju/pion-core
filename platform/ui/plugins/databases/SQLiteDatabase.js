@@ -11,8 +11,7 @@ dojo.declare("plugins.databases.SQLiteDatabasePane",
 			this.inherited("postCreate", arguments);
 		},
 		getHeight: function() {
-			// TODO: replace 200 with some computed value
-			return 200;
+			return this.pane_end.offsetTop;
 		}
 	}
 );

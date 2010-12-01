@@ -27,7 +27,22 @@ dojo.declare("childlessChildrenFirstStore", dojo.data.ItemFileWriteStore, {
 });
 
 pion.system.getHeight = function() {
-	return 800;
+	// The current height of main_stack_container, which we will adjust to get a new height.
+	var main_stack_container_height = dojo.byId('main_stack_container').clientHeight;
+
+	// Where the bottom of the used space is currently.
+	var current_total_height = dojo.byId('outer_end').offsetTop;
+
+	// The maximum value that the used space could have without needing a scrollbar.
+	var total_available_height = dojo.byId('outer').clientHeight;
+
+	// How much main_stack_container_height could be increased without needing a scrollbar.
+	var extra_available_height = total_available_height - current_total_height;
+	if (dojo.isIE)
+		extra_available_height -= 15;
+
+	// Return the maximum height that main_stack_container could have without needing a scrollbar.
+	return main_stack_container_height + extra_available_height;
 }
 
 pion.system.init = function() {

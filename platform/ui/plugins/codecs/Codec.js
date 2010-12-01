@@ -83,8 +83,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			}];
 		},
 		getHeight: function() {
-			// TODO: replace 475 with some computed value
-			return 475;
+			return this.pane_end.offsetTop;
 		},
 		populateFromConfigItem: function(item) {
 			this.populateWithDefaults();

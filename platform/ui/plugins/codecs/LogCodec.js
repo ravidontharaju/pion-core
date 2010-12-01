@@ -64,8 +64,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			}];
 		},
  		getHeight: function() {
-			// TODO: replace 620 with some computed value
-			return 620;
+			return this.pane_end.offsetTop;
 		},
 		_addCustomConfigValues: function(config, item) {
 			var store = pion.codecs.config_store;
