@@ -20,8 +20,7 @@ dojo.declare("plugins.protocols.HTTPProtocolPane",
 			this.form.attr('value', {MaxRequestContentLength: 1048576, MaxResponseContentLength: 1048576});
 		},
 		getHeight: function() {
-			// TODO: replace 565 with some computed value
-			return 565;
+			return this.pane_end.offsetTop;
 		},
 		_addCustomConfigValues: function(config, item) {
 			var store = pion.protocols.config_store;

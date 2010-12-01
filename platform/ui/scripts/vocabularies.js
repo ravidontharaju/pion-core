@@ -15,7 +15,7 @@ pion.vocabularies.vocabularies_by_id = {};
 
 pion.vocabularies.getHeight = function() {
 	// set by _adjustAccordionSize
-	return pion.vocabularies.height;
+	return pion.vocabularies.vocab_config_height;
 }
 
 pion.vocabularies._adjustAccordionSize = function() {
@@ -25,10 +25,8 @@ pion.vocabularies._adjustAccordionSize = function() {
 		accordion_height += pane._buttonWidget.getTitleHeight();
 	});
 	config_accordion.resize({h: accordion_height});
-
-	// TODO: replace 160 with some computed value  (see pion.users._adjustAccordionSize)
-	pion.vocabularies.height = accordion_height + 160;
-	dijit.byId('main_stack_container').resize({h: pion.vocabularies.height});
+	pion.vocabularies.vocab_config_height = dojo.byId('vocab_config_end').offsetTop;
+	dijit.byId('main_stack_container').resize({h: pion.vocabularies.vocab_config_height});
 }
 
 pion.vocabularies.isDuplicateVocabularyId = function(id) {

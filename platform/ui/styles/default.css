@@ -184,7 +184,7 @@ p.hidden {
 	display: none;
 }
 
-	/* Features Matrix */
+/* Features Matrix */
 
 .features_list {
 	border-left: 1px solid #cccccc; 
@@ -421,13 +421,7 @@ label.disabled {
 #menu {
 	margin: 0;
 	padding: 0;
-	/* It seems like a hack to have to explicitly specify the width here.     */
-	/* Is there some other way to do this so that the tabs don't either wrap  */
-	/* around or extend beyond the right edge of "topBar" (that works on both */
-	/* FF and IE) when another tab is added?                                  */
-	width: 900px;
 	float: right;
-	clear: both;
 	position: relative;
 	text-align: right;
 	right: 10px;
@@ -497,6 +491,14 @@ label.disabled {
 	float:right;
 }
 
+#main_stack_container .dijitContentPane {
+	overflow: hidden; /* Prevents superfluous scrollbars in IE7. */
+}
+
+#system_config .dijitContentPane {
+	overflow: auto; /* Special case inside main_stack_container where we want scrollbars. */
+}
+
 .dijitStackController {
  	width: 200px;
 }
@@ -542,7 +544,35 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 
 .config_header {
 	height: 70px;
-	margin: 0 0 0 30px;
+	margin: 0 30px 0 30px;
+}
+
+.config_header a {
+	font-size: 1.5em;
+}
+
+.nested h1 {
+	font-size: 1.6em;
+	font-weight: normal;
+	margin-top: 0;
+}
+
+.nested.config_header {
+	height: 30px;
+	margin: 0;
+}
+
+/*
+ This class is meant to be used on an empty node at the end of an enclosing node which is its offsetParent,
+ so that the offsetTop of the node is equal to the exact height needed by the parent node.
+*/
+.zero_height_end_marker {
+	height: 0 !important;
+	margin-bottom: 0 !important;
+
+/* for visualization *
+	border: 1px solid red !important;
+/**/
 }
 
 /* Workspace Header */
@@ -552,11 +582,15 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	margin: 0 0 0 30px;
 }
 
+#workspace_config_header .config_header {
+	margin-left: 0;
+}
+
 
 /* Content */
 
 .config_content {
-	padding: 0 0 20px 0;
+	padding: 0;
 	margin: 10px 30px 0 30px;
 	line-height: 150%;
 	font-size: 12px;
@@ -1186,6 +1220,11 @@ I don't think this is being used anywhere.
 	width: 250px;
 }
 
+.tundra .config_content .plugin_type input {
+	width: 75%;
+	margin-right: 20px;
+}
+
 
 /* Vocab Config Styles */
 
@@ -1446,6 +1485,11 @@ div.normal {
 a.link {
 	color:#0033CC;
 	text-decoration: underline;
+}
+
+/* This overrides dijit/themes/tundra/form/Common.css, because #eee is practically invisible. */
+.dj_webkit .tundra .dijitTextBoxDisabled {
+	color: #999;
 }
 
 /*

@@ -13,7 +13,7 @@
 				><td rowspan="3">&nbsp;</td
 			></tr><tr
 				><td><label>Plugin&nbsp;Type</label></td
-				><td><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" style="width: 100%;"/></td
+				><td><div dojoType=pion.widgets.ConfigAccordionPluginType plugin_type=${plugin_type}></div></td
 			></tr><tr
 				><td><label>Filename</label></td
 				><td><input dojoType="dijit.form.TextBox" name="Filename" style="width: 100%;"/></td
@@ -26,4 +26,5 @@
 			><button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick: delete2">Delete Database</button
 		></div
 	></form
+	><div dojoAttachPoint="pane_end" class="zero_height_end_marker"></div
 ></div>

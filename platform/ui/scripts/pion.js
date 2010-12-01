@@ -840,6 +840,33 @@ function configPageSelected(page) {
 	}
 }
 
+dojo.declare("pion.widgets.MainStackContentHeader",
+	[dijit._Widget, dijit._Templated],
+	{
+		title: '???',
+		help: '',
+		help_text: 'help',
+		//templateString: '<div class="config_header"><h1>${title}</h1><a class="header" href="http://pion.org/${help}" target="_blank">Help</a></div>',
+		templateString:
+			'<div class="config_header">' + 
+				'<table width="100%"><tr>' +
+					'<td style="width: 100%"><h1>${title}</h1></td>' +
+					'<td style="width: 0px"><a class="header" href="http://pion.org/${help}" target="_blank">${help_text}</a></td>' +
+				'</tr></table>' +
+			'</div>',
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			if (this.help.length == 0)
+				this.help_text = '';
+			if (this.templatePath) this.templateString = "";
+		},
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+		}
+	}
+);
+
 // Override dijit.form.TextBox.prototype._setValueAttr(), because with the current version (1.2.1),
 // dijit.form.FilteringSelect doesn't work right with dojox.data.XmlStore.
 dijit.form.TextBox.prototype._setValueAttr = function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){

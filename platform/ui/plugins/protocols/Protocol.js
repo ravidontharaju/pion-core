@@ -94,8 +94,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		populateWithDefaults: function() {
 		},
 		getHeight: function() {
-			// TODO: replace 530 with some computed value
-			return 530;
+			return this.pane_end.offsetTop;
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.protocols.config_store;

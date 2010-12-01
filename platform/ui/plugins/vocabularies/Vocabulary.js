@@ -340,8 +340,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			dojo.query("textarea", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });
 		},
 		getHeight: function() {
-			// TODO: replace with some computed value
-			return 450;
+			return this.pane_end.offsetTop;
 		},
 		initGrid: function() {
 			var _this = this;

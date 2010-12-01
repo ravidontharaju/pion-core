@@ -44,8 +44,7 @@ dojo.declare("plugins.databases.DatabasePane",
 			this.inherited("postCreate", arguments);
 		},
 		getHeight: function() {
-			// TODO: replace 200 with some computed value based on DatabasePane.html
-			return 200;
+			return this.pane_end.offsetTop;
 		},
 		populateFromConfigItem: function(item) {
 			var store = pion.databases.config_store;
