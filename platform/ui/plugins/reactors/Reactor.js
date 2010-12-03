@@ -425,9 +425,13 @@ dojo.declare("plugins.reactors.ReactorBoilerplate",
 		name: '???',
 		category: '???',
 		description: '???',
+		help_label: '',
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorBoilerplate.html"),
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
+			dojo.mixin(this, dojo.i18n.getLocalization("pion", "general"));
+			if (this.help_label.length == 0)
+				this.help_label = this.default_reactor_help_label;
 			this.icon = '/plugins/reactors/' + this.category.toLowerCase() + '/' + this.name + '/dialog-icon.png';
 			if (this.templatePath) this.templateString = "";
 		},

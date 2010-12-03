@@ -22,10 +22,9 @@
 .log_service .log_grid_block {
 	background: #a0c5ec;
 	padding: 10px;
-	margin-left: 20px;
-	margin-top: 20px;
-	margin-right: 20px;
-	width: 95%;
+	margin-left: 30px;
+	margin-top: 10px;
+	margin-right: 30px;
 }
 
 .log_service button.search {

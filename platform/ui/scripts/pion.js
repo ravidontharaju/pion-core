@@ -26,6 +26,7 @@ dojo.require("pion.widgets.Wizard");
 dojo.require("pion.widgets.LicenseKey");
 dojo.require("pion.widgets.EditionSelector");
 dojo.requireLocalization("pion", "wizard");
+dojo.requireLocalization("pion", "general");
 
 var reactor_config_page_initialized = false;
 var vocab_config_page_initialized = false;
@@ -845,22 +846,54 @@ dojo.declare("pion.widgets.MainStackContentHeader",
 	{
 		title: '???',
 		help: '',
-		help_text: 'help',
-		//templateString: '<div class="config_header"><h1>${title}</h1><a class="header" href="http://pion.org/${help}" target="_blank">Help</a></div>',
+		help_label: '',
 		templateString:
 			'<div class="config_header">' + 
-				'<table width="100%"><tr>' +
-					'<td style="width: 100%"><h1>${title}</h1></td>' +
-					'<td style="width: 0px"><a class="header" href="http://pion.org/${help}" target="_blank">${help_text}</a></td>' +
-				'</tr></table>' +
+				'<div class="title">${title}</div>' +
+				'<a class="header help" href="http://pion.org/${help}" target="_blank">${help_label}</a>' +
+				'<div class="bottom" />' +
 			'</div>',
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
+			dojo.mixin(this, dojo.i18n.getLocalization("pion", "general"));
 			if (this.help.length == 0)
-				this.help_text = '';
+				this.help_label = '';
+			else if (this.help_label.length == 0) {
+				// Can't use dojo.hasClass(this.domNode, 'nested'), because this.domNode isn't assigned yet.
+				if ((' ' + this['class'] + ' ').indexOf(' nested ') >= 0)
+					this.help_label = this.default_nested_header_help_label;
+				else
+					this.help_label = this.default_header_help_label;
+			}
 			if (this.templatePath) this.templateString = "";
 		},
-		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited("postCreate", arguments);
+		}
+	}
+);
+
+dojo.declare("pion.widgets.ReactorGridHeader",
+	[dijit._Widget, dijit._Templated],
+	{
+		title: '???',
+		help: '',
+		help_label: '',
+		templateString:
+			'<div class="reactor_grid_header">' + 
+				'<div class="title">${title}</div>' +
+				'<a class="header help" href="http://pion.org/${help}" target="_blank">${help_label}</a>' +
+				'<div class="bottom" />' +
+			'</div>',
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			dojo.mixin(this, dojo.i18n.getLocalization("pion", "general"));
+			if (this.help.length == 0)
+				this.help_label = '';
+			else if (this.help_label.length == 0)
+				this.help_label = this.default_grid_header_help_label;
+			if (this.templatePath) this.templateString = "";
+		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		}

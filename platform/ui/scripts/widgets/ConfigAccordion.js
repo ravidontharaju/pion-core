@@ -1,6 +1,7 @@
 dojo.provide("pion.widgets.ConfigAccordion");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.AccordionContainer");
+dojo.requireLocalization("pion", "general");
 
 dojo.declare("pion.widgets.ConfigAccordion",
 	[ dijit.layout.AccordionContainer ],
@@ -48,8 +49,20 @@ dojo.declare("pion.widgets.ConfigAccordionPluginType",
 	[dijit._Widget, dijit._Templated],
 	{
 		plugin_type: '???',
-		templateString: '<div class="plugin_type"><input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" /><a class="header" href="http://pion.org/plugins/${plugin_type}" target="_blank">Help</a></div>',
+		help_label: '',
+		templateString:
+			'<div class="plugin_type">' +
+				'<input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" />' + 
+				'<a class="header" href="http://pion.org/plugins/${plugin_type}" target="_blank">${help_label}</a>' +
+			'</div>',
 		widgetsInTemplate: true,
+		postMixInProperties: function() {
+			this.inherited('postMixInProperties', arguments);
+			dojo.mixin(this, dojo.i18n.getLocalization("pion", "general"));
+			if (this.help_label.length == 0)
+				this.help_label = this.default_small_help_label;
+			if (this.templatePath) this.templateString = "";
+		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 		}
