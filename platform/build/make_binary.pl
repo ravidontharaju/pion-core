@@ -222,13 +222,16 @@ copy(File::Spec->catfile( ("platform", "doc"), "pion-replay-guide.pdf"),
 copy(File::Spec->catfile( ("platform", "doc"), "pion-overview.pdf"),
 	File::Spec->catfile($PACKAGE_DIR, "pion-overview.pdf"));
 
-# copy the pget and pmon python scripts
+# copy python scripts
 copy(File::Spec->catfile( ("platform", "build"), "pget.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pget.py"));
 copy(File::Spec->catfile( ("platform", "build"), "pmon.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
+copy(File::Spec->catfile( ("platform", "build"), "pupgrade.py"),
+	File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
 chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py")) if (! ($PLATFORM =~ /^win32/i));
 chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^win32/i));
+chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py")) if (! ($PLATFORM =~ /^win32/i));
 
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);

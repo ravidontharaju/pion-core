@@ -4,7 +4,8 @@
 # --------------------------------------
 
 # Import libraries used by this script
-import sys, os, re, shutil, optparse, xml.dom.minidom, uuid
+import sys, os, re, shutil, optparse, uuid
+from lxml import etree
 
 # Base class used for configuration upgrade logic
 class UpgradeRule(object):
@@ -12,16 +13,16 @@ class UpgradeRule(object):
 	def __init__(self, version, regex):
 		self.version = version
 		self.regex = regex
-	def start(self, config):
-		"""this is always called before process and regardless of TEST"""
+	def start(self, pion_config):
+		"""this is always called before process"""
 		if (not QUIET):
-			print 'upgrading from ' + config.version + ' to ' + self.version
-	def process(self, config):
-		"""override this function to define upgrade logic - not called if TEST"""
+			print 'upgrading from ' + pion_config.version + ' to ' + self.version
+	def process(self, pion_config):
+		"""override this function to define upgrade logic"""
 		pass
-	def finish(self, config):
-		"""this is always called after process and regardless of TEST"""
-		config.set_version(self.version)
+	def finish(self, pion_config):
+		"""this is always called after process"""
+		pion_config.set_version(self.version)
 
 
 # Global list of configuration upgrade rules
@@ -41,59 +42,156 @@ class Upgrade30xTo31x(UpgradeRule):
 	"""Upgrade from 3.0.x to 3.1.x"""
 	def __init__(self, version, regex):
 		UpgradeRule.__init__(self, version, regex)
-	def update_users(self, user_cfg):
-		users = user_cfg.doc.getElementsByTagName('User')
-		for u in users:
-			# get existing data
-			if (VERBOSE): print 'Updating User configuration: ' + u.getAttribute('id')
-			user_pw = u.getElementsByTagName('Password')[0].firstChild.data
-			# remove all children
-			while u.hasChildNodes():
-				u.removeChild(u.firstChild)
-			# add child back in for password
-			u.appendChild(user_cfg.doc.createTextNode('\n\t\t'))
-			password = user_cfg.doc.createElement('Password')
-			password.appendChild(user_cfg.doc.createTextNode(user_pw))
-			u.appendChild(password)
-			# set Administrator permission
-			u.appendChild(user_cfg.doc.createTextNode('\n\t\t'))
-			permission = user_cfg.doc.createElement('Permission')
-			permission.setAttribute('type', 'Admin')
-			u.appendChild(permission)
-			u.appendChild(user_cfg.doc.createTextNode('\n\t'))
-		if (not QUIET): print 'WARNING: All users have be upgraded to Administrators.'
-		if (not QUIET): print 'WARNING: Please use the web interface to update user permissions.'
-	def update_reactors(self, reactor_cfg):
-		root = reactor_cfg.doc.getElementsByTagName(reactor_cfg.root)[0]
-		reactor_nodes = reactor_cfg.doc.getElementsByTagName('Reactor')
-		workspace_nodes = reactor_cfg.doc.getElementsByTagName('Workspace')
+	def update_users(self, cfg):
+		for u in cfg.root.iter('{%s}User' % PION_NS):
+			if (VERBOSE): print 'Updating User configuration: ' + u.get('id')
+			# iterate elements, get permissions and remove Permit nodes
+			permissions = list()
+			for n in u.getchildren():
+				if (n.tag == ('{%s}Permit' % PION_NS)):
+					permissions.append(n.text)
+					u.remove(n)
+			# set new permissions
+			if ('/config' in permissions or '/config/users' in permissions):
+				# user is administrator
+				etree.SubElement(u, '{%s}Permission' % PION_NS).set('type', 'Admin')
+			else:
+				if ('/config/vocabularies' in permissions):
+					etree.SubElement(u, '{%s}Permission' % PION_NS).set('type', 'Vocabularies')
+				if ('/config/codecs' in permissions):
+					etree.SubElement(u, '{%s}Permission' % PION_NS).set('type', 'Codecs')
+				if ('/config/databases' in permissions):
+					etree.SubElement(u, '{%s}Permission' % PION_NS).set('type', 'Databases')
+				if ('/config/protocols' in permissions):
+					etree.SubElement(u, '{%s}Permission' % PION_NS).set('type', 'Protocols')
+				if ('/config/reactors' in permissions):
+					p = etree.SubElement(u, '{%s}Permission' % PION_NS)
+					p.set('type', 'Reactors')
+					etree.SubElement(p, '{%s}Unrestricted' % PION_NS).text = 'true'
+				if ('/replay' in permissions):
+					p = etree.SubElement(u, '{%s}Permission' % PION_NS)
+					p.set('type', 'ReplayService')
+					etree.SubElement(p, '{%s}Unrestricted' % PION_NS).text = 'true'
+		if (not QUIET and not TEST): print 'WARNING: Please use the web interface to review user permissions.'
+	def add_new_workspace(self, cfg, workspace_id, workspace_name):
+		# create a workspace node
+		new_node = etree.Element('{%s}Workspace' % PION_NS)
+		new_node.set('id', workspace_id)
+		etree.SubElement(new_node, '{%s}Name' % PION_NS).text = workspace_name
+		# add workspace node to doc tree
+		cfg.root.insert(0, new_node)
+	def update_reactors(self, cfg):
+		reactor_nodes = list(cfg.root.iter('{%s}Reactor' % PION_NS))
+		if (not reactor_nodes):
+			# empty reactors.xml -> create default workspace
+			self.add_new_workspace(cfg, str(uuid.uuid4()), 'Default')
+			return
+		# look for MDR reactors
+		for r in reactor_nodes:
+			plugin = r.findtext('{%s}Plugin' % PION_NS)
+			if (plugin == 'MultiDatabaseReactor'):
+				for tabledef in r.iter('{%s}TableDef' % PION_NS):
+					table = tabledef.findtext('{%s}Table' % PION_NS)
+					if (table == 'requests'):
+						field = etree.SubElement(tabledef, '{%s}Field' % PION_NS)
+						field.set('term', 'urn:vocab:clickstream#cs-content-type')
+						field.text = 'cs_content_type'
+						field = etree.SubElement(tabledef, '{%s}Field' % PION_NS)
+						field.set('term', 'urn:vocab:clickstream#cs-content')
+						field.text = 'cs_content'
+		# look for all Workspace references
 		workspaces = dict()
+		workspace_nodes = list(cfg.root.iter('{%s}Workspace' % PION_NS))
 		for w in reversed(workspace_nodes):
 			# get name, check if we already have seen this workspace
-			workspace_name = w.firstChild.data
+			workspace_name = w.text
 			workspace_id = workspaces.get(workspace_name, None)
 			if (not workspace_id):
 				# generate a random id, and update map
 				workspace_id = str(uuid.uuid4())
 				workspaces[workspace_name] = workspace_id
-				# create a workspace node
-				new_node = reactor_cfg.doc.createElement('Workspace')
-				new_node.setAttribute('id', workspace_id)
-				name_node = reactor_cfg.doc.createElement('Name')
-				name_node.appendChild(reactor_cfg.doc.createTextNode(workspace_name))
-				new_node.appendChild(reactor_cfg.doc.createTextNode('\n    '))
-				new_node.appendChild(name_node)
-				new_node.appendChild(reactor_cfg.doc.createTextNode('\n  '))
-				# add workspace node to doc tree
-				root.insertBefore(new_node, root.firstChild)
-				root.insertBefore(reactor_cfg.doc.createTextNode('\n  '), root.firstChild)
+				# create a workspace node in XML doc
+				self.add_new_workspace(cfg, workspace_id, workspace_name)
 			# replace descriptive name with id
-			while w.hasChildNodes():
-				w.removeChild(w.firstChild)
-			w.appendChild(reactor_cfg.doc.createTextNode(workspace_id))
-	def process(self, config):
-		self.update_users(config['UserConfig'])
-		self.update_reactors(config['ReactorConfig'])
+			w.text = workspace_id
+	def add_new_service(self, server_node, type, id, name, comment, plugin, resource):
+		n = etree.SubElement(server_node, '{%s}%s' % (PION_NS,type))
+		n.set('id', id)
+		etree.SubElement(n, '{%s}Name' % PION_NS).text = name
+		etree.SubElement(n, '{%s}Comment' % PION_NS).text = comment
+		etree.SubElement(n, '{%s}Plugin' % PION_NS).text = plugin
+		etree.SubElement(n, '{%s}Resource' % PION_NS).text = resource
+	def update_services(self, cfg):
+		# remove entry for "log-service"
+		server_node = None
+		for n in cfg.root.iter('{%s}WebService' % PION_NS):
+			if (n.get('id') == 'log-service'):
+				server_node = n.getparent()
+				server_node.remove(n)
+		# add new service entries
+		self.add_new_service(server_node, 'PlatformService',
+			'monitor-service', 'Event Data Monitoring Service',
+			'Pion platform event data monitoring service',
+			'MonitorService', '/monitor')
+		self.add_new_service(server_node, 'PlatformService',
+			'xml-log-service', 'XML Log Service',
+			'Recent Log entries in XML',
+			'XMLLogService', '/xmllog')
+	def update_protocols(self, cfg):
+		# look for HTTPProtocol configs
+		for n in cfg.root.iter('{%s}Protocol' % PION_NS):
+			plugin = n.findtext('{%s}Plugin' % PION_NS)
+			if (plugin == 'HTTPProtocol'):
+				# find extraction rule for content-type
+				for idx in range(0, len(n)):
+					if (n[idx].tag=='{%s}Extract' % PION_NS and n[idx].get('term') == 'urn:vocab:clickstream#content-type'):
+						break
+				if (idx < len(n)):
+					# insert cs-content-type before content-type
+					extract = etree.Element('{%s}Extract' % PION_NS)
+					extract.set('term', 'urn:vocab:clickstream#cs-content-type')
+					etree.SubElement(extract, '{%s}Source' % PION_NS).text = 'cs-header'
+					etree.SubElement(extract, '{%s}Name' % PION_NS).text = 'Content-Type'
+					n.insert(idx, extract)
+	def update_vocabs(self, cfg):
+		# update vocabularies.xml
+		v = etree.SubElement(cfg.root, '{%s}VocabularyConfig' % PION_NS)
+		v.set('id', 'urn:vocab:omniture')
+		v.text = 'vocabularies/omniture.xml'
+	def insert_term(self, v, idx, id, type, comment):
+		t = etree.Element('{%s}Term' % PION_NS)
+		t.set('id', id)
+		etree.SubElement(t, '{%s}Type' % PION_NS).text = type
+		etree.SubElement(t, '{%s}Comment' % PION_NS).text = comment
+		v.insert(idx, t)
+	def replace_comment(self, term, comment):
+		n = term.find('{%s}Comment' % PION_NS)
+		if (n is not None):
+			n.text = comment
+		else:
+			etree.SubElement(term, '{%s}Comment' % PION_NS).text = comment
+	def update_clickstream(self, cfg):
+		# update clickstream.xml
+		for v in cfg.root.iter('{%s}Vocabulary' % PION_NS):
+			for t in v.iter('{%s}Term' % PION_NS):
+				if (t.get('id') == 'urn:vocab:clickstream#content-type'):
+					self.insert_term(v, v.index(t), 'urn:vocab:clickstream#cs-content-type', 'string', 'The Content-Type HTTP request header')
+				elif (t.get('id') == 'urn:vocab:clickstream#new-page'):
+					self.insert_term(v, v.index(t), 'urn:vocab:clickstream#refused', 'uint32', 'Number of HTTP requests that were refused by the server')
+					self.insert_term(v, v.index(t), 'urn:vocab:clickstream#canceled', 'uint32', 'Number of HTTP responses that were canceled early by the client')
+				elif (t.get('id') == 'urn:vocab:clickstream#request-status'):
+					self.replace_comment(t, 'HTTP request status (0=NONE, 1=TRUNCATED, 2=PARTIAL, 3=OK)')
+				elif (t.get('id') == 'urn:vocab:clickstream#response-status'):
+					self.replace_comment(t, 'HTTP response status (0=NONE, 1=TRUNCATED, 2=PARTIAL, 3=OK)')
+				elif (t.get('id') == 'urn:vocab:clickstream#tcp-status'):
+					self.replace_comment(t, 'TCP handshake status (0=OK, 1=RESET, 2=IGNORED)')
+	def process(self, pion_config):
+		self.update_users(pion_config['UserConfig'])
+		self.update_reactors(pion_config['ReactorConfig'])
+		self.update_services(pion_config['ServiceConfig'])
+		self.update_protocols(pion_config['ProtocolConfig'])
+		self.update_vocabs(pion_config['VocabularyConfig'])
+		self.update_clickstream(pion_config.vocab['urn:vocab:clickstream'])
 
 RULES.append(Upgrade30xTo31x('3.1.2', '^3\.0\..*$'))
 
@@ -103,27 +201,41 @@ RULES.append(Upgrade30xTo31x('3.1.2', '^3\.0\..*$'))
 # CONFIGURATION UPGRADE RULES GO ABOVE #
 ########################################
 
+# global variables for Pion's XML namespaces
+PION_NS = 'http://purl.org/pion/config'
+NS_MAP = { None: PION_NS }
 
 # misc global variables for logging
 VERBOSE = False
 QUIET = False
 TEST = False
 
+class XMLParseError(Exception):
+	"""Class used to indicate an XML parsing error"""
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
+
 class XMLConfig(object):
 	"""Class used to hold XML configuration data"""
-	def __init__(self, file, name, root = None):
+	def __init__(self, file, name, rootname = None):
 		self.name = name
-		if (root):
-			self.root = root
-		else:
-			self.root = name
 		self.file = file
 		if (VERBOSE): print self.name + ': parsing XML configuration file: ' + self.file
-		self.doc = xml.dom.minidom.parse(self.file)
-		self.version = self.doc.getElementsByTagName(self.root)[0].getAttribute('pion_version')
+		parser = etree.XMLParser(remove_blank_text=True)
+		self.tree = etree.parse(self.file, parser)
+		if (not rootname):
+			rootname = name
+		self.root = self.tree.getroot()
+		if (self.root.tag != ('{%s}%s' % (PION_NS,rootname)) ):
+			raise XMLParseError('Root element mismatch (' + self.root.tag + '!=' + ('{%s}%s' % (PION_NS,rootname)) + ' in ' + self.file)
+		self.version = self.root.get('pion_version')
+		if (not self.version):
+			raise XMLParseError('No version found in ' + self.file)
 	def get(self, name):
 		"""returns the value of an XML element"""
-		return self.doc.getElementsByTagName(name)[0].firstChild.data
+		return self.tree.find('{%s}%s' % (PION_NS,name)).text
 	def backup(self, path):
 		"""creates a backup of the configuration file"""
 		if (VERBOSE): print self.name + ': backing up ' + self.file + ' to ' + path
@@ -132,13 +244,11 @@ class XMLConfig(object):
 		"""saves updated configuration file"""
 		if (VERBOSE): print self.name + ': saving ' + self.file
 		if (not TEST):
-			f = open(self.file, 'w')
-			f.write(self.doc.toxml("utf-8"))
-			f.close()
+			self.tree.write(self.file, pretty_print=True, encoding='UTF-8', xml_declaration='True')
 	def set_version(self, version):
 		"""updates the configuration file version"""
 		self.version = version
-		self.doc.getElementsByTagName(self.root)[0].setAttribute('pion_version', self.version)
+		self.root.set('pion_version', self.version)
 
 class PionConfig(dict):
 	"""Class used to hold all Pion configuration data"""
@@ -151,14 +261,21 @@ class PionConfig(dict):
 		self.parse(platform_cfg.get('CodecConfig'), 'CodecConfig', 'PionConfig')
 		self.parse(platform_cfg.get('DatabaseConfig'), 'DatabaseConfig', 'PionConfig')
 		self.parse(platform_cfg.get('ReactorConfig'), 'ReactorConfig', 'PionConfig')
-		self.parse( platform_cfg.get('ServiceConfig'), 'ServiceConfig', 'PionConfig')
+		self.parse(platform_cfg.get('ServiceConfig'), 'ServiceConfig', 'PionConfig')
 		self.parse(platform_cfg.get('ProtocolConfig'), 'ProtocolConfig', 'PionConfig')
 		self.parse(platform_cfg.get('UserConfig'), 'UserConfig', 'PionConfig')
-		self.parse(platform_cfg.get('VocabularyConfig'), 'VocabularyConfig', 'PionConfig')
+		vocab_cfg = self.parse(platform_cfg.get('VocabularyConfig'), 'VocabularyConfig', 'PionConfig')
+		# parse vocabulary configuration files
+		self.vocab = dict()
+		for v in vocab_cfg.root.iter('{%s}VocabularyConfig' % PION_NS):
+			vocab_id = v.get('id')
+			vocab_file = os.path.join(os.path.dirname(vocab_cfg.file), v.text)
+			self.vocab[vocab_id] = XMLConfig(vocab_file, vocab_id, 'PionConfig')
 		# these use different root elements
 		self.parse('robots.xml', 'RobotConfig')
 		self.parse('SearchEngines.xml', 'SearchEngineConfig')
 		self.parse('ReplayQueries.xml', 'ReplayTemplates')
+		self.parse('dbengines.xml', 'DatabaseTemplates')
 		# other config options -> not XML files
 		self.logconfig_file = os.path.join(self.config_path, platform_cfg.get('LogConfig'))
 		self.plugin_path = os.path.join(self.config_path, platform_cfg.get('PluginPath'))
@@ -168,9 +285,9 @@ class PionConfig(dict):
 			print 'path to plugin files: ' + self.plugin_path
 			print 'data directory: ' + self.data_dir
 			print 'current version: ' + self.version
-	def parse(self, file, name, root = None):
+	def parse(self, file, name, rootname = None):
 		"""parses a standard Pion XML configuration file"""
-		cfg = XMLConfig(os.path.join(self.config_path, file), name, root)
+		cfg = XMLConfig(os.path.join(self.config_path, file), name, rootname)
 		self[name] = cfg
 		return cfg
 	def backup(self, backup_path):
@@ -180,20 +297,37 @@ class PionConfig(dict):
 			os.makedirs(backup_path)
 		for name, cfg in self.items():
 			cfg.backup(backup_path)
+		# backup vocabulary configuration files
+		vocab_path = os.path.join(backup_path, 'vocabularies')
+		if (not TEST and not os.path.exists(vocab_path)):
+			os.makedirs(vocab_path)
+		for name, cfg in self.vocab.items():
+			cfg.backup(vocab_path)
 	def save(self):
 		"""saves updated configuration file"""
 		if (not QUIET): print 'saving configuration files'
 		for name, cfg in self.items():
+			cfg.save()
+		for name, cfg in self.vocab.items():
 			cfg.save()
 	def set_version(self, version):
 		"""updates the configuration file version"""
 		self.version = version
 		for name, cfg in self.items():
 			cfg.set_version(self.version)
+		for name, cfg in self.vocab.items():
+			cfg.set_version(self.version)
 	def update_paths(self, new_path):
 		"""updates paths for all configuration files"""
+		vocab_path = os.path.join(new_path, 'vocabularies')
+		if (not TEST and not os.path.exists(new_path)):
+			os.makedirs(new_path)
+		if (not TEST and not os.path.exists(vocab_path)):
+			os.makedirs(vocab_path)
 		for name, cfg in self.items():
 			cfg.file = os.path.join(new_path, os.path.basename(cfg.file))
+		for name, cfg in self.vocab.items():
+			cfg.file = os.path.join(vocab_path, os.path.basename(cfg.file))
 	
 
 def parse_args():
@@ -237,16 +371,13 @@ def main():
 		# process a rule only if version patches pattern
 		if (re.search(r.regex, config.version)):
 			r.start(config)
-			if (not TEST):
-				r.process(config)
+			r.process(config)
 			r.finish(config)
 			upgraded = True
 	if (upgraded):
 		# config was updated
 		if (options.output):
 			# save config to new output directory
-			if (not TEST and not os.path.exists(options.output)):
-				os.makedirs(options.output)
 			config.update_paths(options.output)
 		else:
 			# make backup and overwrite config
