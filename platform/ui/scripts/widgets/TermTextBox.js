@@ -1,15 +1,41 @@
 dojo.provide("pion.widgets.TermTextBox");
 dojo.require("pion.widgets.TermSelector");
+dojo.require("dijit.form.ValidationTextBox");
 dojo.require("dojox.grid.cells.dijit");
 
 dojo.declare("pion.widgets._TermTextBox",
-	dijit.form.TextBox,
+	dijit.form.ValidationTextBox,
 	{
 		popupClass: "", // default is no popup = text only
 		postMixInProperties: function() {
 			this.inherited(arguments);
 			if (!this.value || this.value.toString() == '') {
 				this.value = null;
+			}
+		},
+		validator: function(/*anything*/value, /*dijit.form.ValidationTextBox.__Constraints*/constraints) {
+			// overrides dijit.form.ValidationTextBox.validator()
+
+			if (value in pion.terms.categories_by_id) {
+				if ('category' in this.query) {
+					if (pion.terms.categories_by_id[value] == this.query.category)
+						return true;
+					else {
+						this.invalidMessage = 'term must have a ' + this.query.category + ' type';
+						return false;
+					}
+				} else if ('type' in this.query) {
+					if (pion.terms.types_by_id[value] == this.query.type)
+						return true;
+					else {
+						this.invalidMessage = "term must have type '" + this.query.type + "'";
+						return false;
+					}
+				} else
+					return true;
+			} else {
+				this.invalidMessage = 'unknown term';
+				return false;
 			}
 		},
 		_onFocus: function(/*Event*/ evt) {

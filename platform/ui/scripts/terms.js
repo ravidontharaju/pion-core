@@ -35,6 +35,7 @@ pion.terms.initTermTypeLookups = function() {
 }
 
 pion.terms.buildMapOfCategoriesByTerm = function() {
+	pion.terms.types_by_id = {};
 	pion.terms.categories_by_id = {};
 	pion.terms.term_comments_by_id = {};
 	pion.terms.store.fetch({
@@ -42,6 +43,7 @@ pion.terms.buildMapOfCategoriesByTerm = function() {
 			var type = pion.terms.store.getValue(item, 'Type').toString();
 			var id   = pion.terms.store.getIdentity(item);
 			//console.debug('type = ', type, ', id = ', id);
+			pion.terms.types_by_id[id] = pion.terms.type_descriptions_by_name[type];
 			pion.terms.categories_by_id[id] = pion.terms.categories_by_type[type];
 			if (pion.terms.store.hasAttribute(item, 'Comment')) {
 				pion.terms.term_comments_by_id[id] = pion.terms.store.getValue(item, 'Comment');
