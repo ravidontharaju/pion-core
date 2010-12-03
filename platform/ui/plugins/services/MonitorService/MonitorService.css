@@ -19,6 +19,11 @@
 	background: #f0f9d1; 
 }
 
+.tundra .monitor_service h3 {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
 .tundra .monitor_settings .dijitToggleButton .dijitButtonNode {
 	width: 16px;
 	height: 16px;

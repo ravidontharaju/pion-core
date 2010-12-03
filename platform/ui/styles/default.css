@@ -543,23 +543,36 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 
 
 .config_header {
-	height: 70px;
-	margin: 0 30px 0 30px;
+	height: 50px;
+	margin: 20px 30px 0 30px;
+}
+
+.config_header .title {
+	font-size: 2.5em;
+	font-weight: bold;
+	float: left;
 }
 
 .config_header a {
 	font-size: 1.5em;
 }
 
-.nested h1 {
-	font-size: 1.6em;
-	font-weight: normal;
-	margin-top: 0;
+.config_header .help {
+	float: right;
+}
+
+.config_header .bottom {
+	clear: both;
 }
 
 .nested.config_header {
 	height: 30px;
 	margin: 0;
+}
+
+.nested.config_header .title {
+	font-size: 1.6em;
+	font-weight: normal;
 }
 
 /*
@@ -751,18 +764,31 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 .reactor_grid_block {
-	padding: 0 5px 5px 5px; 
+	padding: 5px 10px 5px 10px; 
 	border: 1px solid #6096b6;
 }
 
+.reactor_grid_header .title {
+	float: left;
+}
+
+.reactor_grid_header .help {
+	float: right;
+}
+
+.reactor_grid_header .bottom {
+	clear: both;
+}
+
+.reactor_grid_header .title,
 .reactor_grid_block h2 {
 	font-size: 16px;
 }
 
-.reactor_grid_block h3 {
-	font-size: 14px;
-	margin-top: 5px;
-	margin-bottom: 5px;
+.reactor_grid_header,
+.reactor_grid_block h2 {
+	margin-top: 0;
+	margin-bottom: 10px;
 }
 
 .collection .reactor_grid_block {
@@ -1333,7 +1359,7 @@ I don't think this is being used anywhere.
 
 .reactor_dialog_grid {
 	padding: 0px;
-	margin: 5px;
+	margin: 5px 0 5px;
 	border: 1px solid #6096b6;
 	width: 618px;
 }
