@@ -201,7 +201,13 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 		if (request) {
 			// update response to "know" about the request (this influences parsing)
 			m_response.updateRequestInfo(m_request);
-			 // wait until the response is parsed before generating an event
+			if (m_request.getVersionMajor() == 0U) {
+				// no version specified in request -> assume entire response is payload content
+				m_response.setStatusCode(0U);
+				m_response.setStatusMessage("");
+				m_response_parser.skipHeaderParsing(m_response);
+			}
+			// wait until the response is parsed before generating an event
 			rc = boost::indeterminate;
 		} else {
 			// finished parsing response
