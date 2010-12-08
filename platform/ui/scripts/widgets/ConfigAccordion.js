@@ -53,7 +53,7 @@ dojo.declare("pion.widgets.ConfigAccordionPluginType",
 		templateString:
 			'<div class="plugin_type">' +
 				'<input dojoType="dijit.form.TextBox" name="Plugin" disabled="true" />' + 
-				'<a class="header" href="http://pion.org/plugins/${plugin_type}" target="_blank">${help_label}</a>' +
+				'<a class="help" href="http://pion.org/plugins/${plugin_type}" target="_blank">${help_label}</a>' +
 			'</div>',
 		widgetsInTemplate: true,
 		postMixInProperties: function() {

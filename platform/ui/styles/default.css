@@ -323,6 +323,14 @@ a.header {
 	color: #0099ff;
 }
 
+a.help {
+	color: red;
+}
+
+a.header.help {
+	color: red;
+}
+
 .username_in_header {
 	color: #000000;
 	font-weight: bold;
