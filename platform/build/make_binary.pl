@@ -310,7 +310,7 @@ if ($PLATFORM =~ /^win32/i) {
 		$INSTALLER_PRJ_FILE = "pion-platform-64.aip";
 		$INSTALLER_OUT_FILE = "pion-platform-64.msi";
 	} else {
-		$INSTALLER_PRJ_FILE = "pion.aip";
+		$INSTALLER_PRJ_FILE = "pion-platform.aip";
 		$INSTALLER_OUT_FILE = "pion-platform.msi"
 	}
 	print "Creating Pion installation package..\n";
