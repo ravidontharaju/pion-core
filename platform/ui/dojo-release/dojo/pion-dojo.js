@@ -28222,33 +28222,34 @@ _1a90+=_1a92.join(" or ");
 _1a90+="</Filter></Capture>";
 });
 var _1a94="<X>250</X>"+"<Y>200</Y>";
-session_group_config="";
+var _1a95="";
+var _1a96=(pion.wizard.host_suffixes.length>0);
 if(pion.wizard.host_suffixes.length>0){
-var _1a95=pion.wizard.host_suffixes[0].split(".");
-var _1a96=_1a95.length;
-var _1a97=_1a95[_1a96==1?0:_1a96-2];
-session_group_config+="<SessionGroup id=\""+_1a97+"\">"+"<Name>"+_1a97+"</Name>";
+var _1a97=pion.wizard.host_suffixes[0].split(".");
+var _1a98=_1a97.length;
+var _1a99=_1a97[_1a98==1?0:_1a98-2];
+_1a95+="<SessionGroup id=\""+_1a99+"\">"+"<Name>"+_1a99+"</Name>";
 dojo.forEach(pion.wizard.host_suffixes,function(host){
-session_group_config+="<Host>"+dojo.trim(host)+"</Host>";
+_1a95+="<Host>"+dojo.trim(host)+"</Host>";
 });
-dojo.forEach(pion.wizard.cookies,function(_1a99){
-session_group_config+="<Cookie type=\""+(_1a99.is_visitor_cookie?"v":"s")+"\">"+_1a99.name+"</Cookie>";
+dojo.forEach(pion.wizard.cookies,function(_1a9b){
+_1a95+="<Cookie type=\""+(_1a9b.is_visitor_cookie?"v":"s")+"\">"+_1a9b.name+"</Cookie>";
 });
-session_group_config+="</SessionGroup>";
+_1a95+="</SessionGroup>";
 }
-_1a8f.push({label:"clickstream",url:"/resources/ClickstreamTemplate.tmpl",substitutions:{SessionGroupConfig:session_group_config}});
+_1a8f.push({label:"clickstream",url:"/resources/ClickstreamTemplate.tmpl",substitutions:{IgnoreDefaultGroup:_1a96,SessionGroupConfig:_1a95}});
 if(pion.wizard.analytics_provider=="Omniture"){
-var _1a9a="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
+var _1a9c="<Plugin>OmnitureAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Omniture Analytics</Name>"+"<NumConnections>32</NumConnections>"+"<HttpHost>"+pion.wizard.omniture_host+"</HttpHost>"+"<AccountId>"+pion.wizard.omniture_report_suite+"</AccountId>"+"<EncryptConnections>false</EncryptConnections>"+"<SendTimestamp>true</SendTimestamp>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>"+"<Query name=\"ipaddress\">urn:vocab:clickstream#c-ip</Query>"+"<Query name=\"userAgent\">urn:vocab:clickstream#useragent</Query>"+"<Query name=\"pageName\">urn:vocab:clickstream#page-title</Query>"+"<Query name=\"referrer\">urn:vocab:clickstream#referer</Query>"+"<Query name=\"visitorID\">[computed]</Query>"+"<Query name=\"server\">[computed]</Query>"+"<Query name=\"pageURL\">[computed]</Query>"+"<Query name=\"timestamp\">[computed]</Query>"+"<Query name=\"reportSuiteID\">[computed]</Query>";
 }else{
 if(pion.wizard.analytics_provider=="Webtrends"){
-var _1a9a="<X>250</X>"+"<Y>300</Y>";
+var _1a9c="<X>250</X>"+"<Y>300</Y>";
 _1a8f.push({label:"analytics",is_json:true,plugin:"WebTrendsAnalyticsReactor",substitutions:{AccountId:pion.wizard.webtrends_account_id,HttpHost:pion.wizard.webtrends_host,StripClientIP:pion.wizard.strip_client_ip}});
 }else{
 if(pion.wizard.analytics_provider=="Google"){
-var _1a9a="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>";
+var _1a9c="<Plugin>GoogleAnalyticsReactor</Plugin>"+"<X>250</X>"+"<Y>300</Y>"+"<Name>Google Analytics</Name>"+"<AccountId>"+pion.wizard.google_account_id+"</AccountId>"+"<NumConnections>32</NumConnections>"+"<EncryptConnections>false</EncryptConnections>"+"<StripClientIP>"+pion.wizard.strip_client_ip+"</StripClientIP>";
 }else{
 if(pion.wizard.analytics_provider=="Unica"){
-var _1a9a="<X>250</X>"+"<Y>300</Y>";
+var _1a9c="<X>250</X>"+"<Y>300</Y>";
 _1a8f.push({label:"analytics",is_json:true,plugin:"UnicaAnalyticsReactor",substitutions:{AccountId:pion.wizard.unica_account_id,HttpHost:pion.wizard.unica_host,StripClientIP:pion.wizard.strip_client_ip}});
 }else{
 }
@@ -28256,36 +28257,36 @@ _1a8f.push({label:"analytics",is_json:true,plugin:"UnicaAnalyticsReactor",substi
 }
 }
 if(pion.edition=="Replay"){
-var _1a9b="<Plugin>ContentHashReactor</Plugin>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>^(text/html|application/xhtml|text/vnd.wap.wml)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
-var _1a9c="<X>450</X>"+"<Y>200</Y>";
+var _1a9d="<Plugin>ContentHashReactor</Plugin>"+"<X>250</X>"+"<Y>100</Y>"+"<Name>Detect Page Content</Name>"+"<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>"+"<MatchAllComparisons>true</MatchAllComparisons>"+"<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>"+"<Comparison>"+"<Term>urn:vocab:clickstream#status</Term>"+"<Type>equals</Type>"+"<Value>200</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>"+"<Comparison>"+"<Term>urn:vocab:clickstream#content-type</Term>"+"<Type>regex</Type>"+"<Value>^(text/html|application/xhtml|text/vnd.wap.wml)</Value>"+"<MatchAllValues>false</MatchAllValues>"+"</Comparison>";
+var _1a9e="<X>450</X>"+"<Y>200</Y>";
 _1a8f.push({label:"mdr",url:"/resources/MDRTemplate.tmpl",substitutions:{MaxDiskUsage:pion.wizard.max_disk_usage}});
-var _1a9d=[{label:"sniffer",config:_1a90},{label:"chr",config:_1a9b},{label:"clickstream",config:_1a94},{label:"mdr",config:_1a9c}];
-var _1a9e=[{from:"sniffer",to:"chr"},{from:"chr",to:"clickstream"},{from:"clickstream",to:"mdr"}];
+var _1a9f=[{label:"sniffer",config:_1a90},{label:"chr",config:_1a9d},{label:"clickstream",config:_1a94},{label:"mdr",config:_1a9e}];
+var _1aa0=[{from:"sniffer",to:"chr"},{from:"chr",to:"clickstream"},{from:"clickstream",to:"mdr"}];
 }else{
-var _1a9d=[{label:"sniffer",config:_1a90},{label:"clickstream",config:_1a94}];
-var _1a9e=[{from:"sniffer",to:"clickstream"}];
+var _1a9f=[{label:"sniffer",config:_1a90},{label:"clickstream",config:_1a94}];
+var _1aa0=[{from:"sniffer",to:"clickstream"}];
 }
-if(_1a9a){
-_1a9d.push({label:"analytics",config:_1a9a});
-_1a9e.push({from:"clickstream",to:"analytics"});
+if(_1a9c){
+_1a9f.push({label:"analytics",config:_1a9c});
+_1aa0.push({from:"clickstream",to:"analytics"});
 }
-wizard_config={templates:_1a8f,reactors:_1a9d,connections:_1a9e,workspace_name:"Clickstream"};
+wizard_config={templates:_1a8f,reactors:_1a9f,connections:_1aa0,workspace_name:"Clickstream"};
 if(pion.wizard.host_suffixes.length>0){
-var _1a95=pion.wizard.host_suffixes[0].split(".");
-var _1a96=_1a95.length;
-var _1a9f=_1a95[_1a96==1?0:_1a96-2];
-wizard_config.workspace_name=dojox.dtl.filter.strings.capfirst(_1a9f)+" Clickstream";
+var _1a97=pion.wizard.host_suffixes[0].split(".");
+var _1a98=_1a97.length;
+var _1aa1=_1a97[_1a98==1?0:_1a98-2];
+wizard_config.workspace_name=dojox.dtl.filter.strings.capfirst(_1aa1)+" Clickstream";
 }
 pion.applyTemplatesIfNeeded(wizard_config).addCallback(pion.addReactorsFromWizard).addCallback(pion.addConnectionsFromWizard).addCallback(pion.addReplayIfNeeded).addCallback(pion.startSniffer).addCallback(pion.setup_success_callback);
 };
-pion.updateLicenseState=function(_1aa0){
-pion.license_state=_1aa0;
-pion.updateLogo(_1aa0);
+pion.updateLicenseState=function(_1aa2){
+pion.license_state=_1aa2;
+pion.updateLogo(_1aa2);
 };
-pion.updateLogo=function(_1aa1){
-var _1aa2=dojo.byId("logo");
-dojo.query("p.logo",_1aa2).forEach(function(n){
-if(dojo.hasClass(n,_1aa1)){
+pion.updateLogo=function(_1aa3){
+var _1aa4=dojo.byId("logo");
+dojo.query("p.logo",_1aa4).forEach(function(n){
+if(dojo.hasClass(n,_1aa3)){
 dojo.removeClass(n,"hidden");
 }else{
 dojo.addClass(n,"hidden");
@@ -28307,7 +28308,7 @@ pion.setup_success_callback=function(){
 pion.terms.init();
 pion.services.init();
 };
-pion.editionSetup=function(_1aa5){
+pion.editionSetup=function(_1aa7){
 pion.wizard=dijit.byId("wizard");
 pion.wizard.back=function(){
 if(pion.wizard.selectedChildWidget.returnPane){
@@ -28317,20 +28318,20 @@ this.selectChild(this._adjacent(false));
 }
 };
 pion.wizard_nlsStrings=dojo.i18n.getLocalization("pion","wizard");
-dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1aa6,_1aa7){
+dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1aa8,_1aa9){
 dojo.cookie("logged_in","true",{expires:1});
 pion.last_logged_in_user=dojo.cookie("user");
-var _1aa8=_1aa6.getElementsByTagName("Reactor");
+var _1aaa=_1aa8.getElementsByTagName("Reactor");
 if(!pion.key_service_running){
 dojo.byId("outer").style.visibility="visible";
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();
 }else{
-if(_1aa8.length>0||dojo.cookie("pion_edition")){
-if(_1aa5=="invalid"&&dojo.cookie("pion_edition")!="Core"&&dojo.cookie("pion_edition")!="Lite"){
-var _1aa9=new pion.widgets.EditionSelectorDialog;
-_1aa9.show();
+if(_1aaa.length>0||dojo.cookie("pion_edition")){
+if(_1aa7=="invalid"&&dojo.cookie("pion_edition")!="Core"&&dojo.cookie("pion_edition")!="Lite"){
+var _1aab=new pion.widgets.EditionSelectorDialog;
+_1aab.show();
 }else{
 dojo.byId("outer").style.visibility="visible";
 dojo.byId("current_user_menu_section").style.visibility="visible";
@@ -28338,17 +28339,17 @@ dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();
 }
 }else{
-var _1aaa=dijit.byId("wizard");
+var _1aac=dijit.byId("wizard");
 dojo.removeClass("wizard","hidden");
 pion.wizard.cookies=[];
 pion.wizard.devices=[];
 pion.wizard.max_disk_usage="NA";
 pion.services.config_store.fetch({onItem:function(item){
-var _1aac=pion.services.config_store.getValue(item,"Plugin");
-if(_1aac=="ReplayService"){
+var _1aae=pion.services.config_store.getValue(item,"Plugin");
+if(_1aae=="ReplayService"){
 var id=pion.services.config_store.getValue(item,"@id");
-dojo.xhrDelete({url:"/config/services/"+id,handleAs:"xml",timeout:5000,load:function(_1aae,_1aaf){
-return _1aae;
+dojo.xhrDelete({url:"/config/services/"+id,handleAs:"xml",timeout:5000,load:function(_1ab0,_1ab1){
+return _1ab0;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 }
 },onError:pion.handleFetchError});
@@ -28359,90 +28360,90 @@ if(dojo.cookie("pion_edition")){
 pion.edition=dojo.cookie("pion_edition");
 dijit.byId("select_edition_form").attr("value",{edition:pion.edition});
 }else{
-if(_1aa5=="enterprise"){
+if(_1aa7=="enterprise"){
 dijit.byId("select_edition_form").attr("value",{edition:"Enterprise"});
 }else{
-if(_1aa5=="replay"){
+if(_1aa7=="replay"){
 dijit.byId("select_edition_form").attr("value",{edition:"Replay"});
 }
 }
 }
-var _1ab1=_1aaa.selectedChildWidget;
-dojo.forEach(dojo.query(".next_button",_1ab1.domNode),function(node){
-_1aaa.nextButton.attr("label",node.innerHTML);
+var _1ab3=_1aac.selectedChildWidget;
+dojo.forEach(dojo.query(".next_button",_1ab3.domNode),function(node){
+_1aac.nextButton.attr("label",node.innerHTML);
 });
 dojo.subscribe("wizard-selectChild",function(page){
 dojo.forEach(dojo.query(".prev_button",page.domNode),function(node){
-_1aaa.previousButton.attr("label",node.innerHTML);
+_1aac.previousButton.attr("label",node.innerHTML);
 if(node.getAttribute("returnPane")){
 page.returnPane=node.getAttribute("returnPane");
 }
 });
-var _1ab5=".prev_button_"+pion.edition.toLowerCase();
-dojo.forEach(dojo.query(_1ab5,page.domNode),function(node){
-_1aaa.previousButton.attr("label",node.innerHTML);
+var _1ab7=".prev_button_"+pion.edition.toLowerCase();
+dojo.forEach(dojo.query(_1ab7,page.domNode),function(node){
+_1aac.previousButton.attr("label",node.innerHTML);
 if(node.getAttribute("returnPane")){
 page.returnPane=node.getAttribute("returnPane");
 }
 });
 dojo.forEach(dojo.query(".next_button",page.domNode),function(node){
-_1aaa.nextButton.attr("label",node.innerHTML);
+_1aac.nextButton.attr("label",node.innerHTML);
 });
-_1ab5=".next_button_"+pion.edition.toLowerCase();
-dojo.forEach(dojo.query(_1ab5,page.domNode),function(node){
-_1aaa.nextButton.attr("label",node.innerHTML);
+_1ab7=".next_button_"+pion.edition.toLowerCase();
+dojo.forEach(dojo.query(_1ab7,page.domNode),function(node){
+_1aac.nextButton.attr("label",node.innerHTML);
 });
 dojo.forEach(dojo.query(".done_button",page.domNode),function(node){
-_1aaa.doneButton.attr("label",node.innerHTML);
+_1aac.doneButton.attr("label",node.innerHTML);
 });
 if(page.id=="capture_devices_pane"){
 if(!page.device_list_initialized){
-var _1aba="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
-dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1aba,load:function(_1abb){
-var node=_1abb.getElementsByTagName("Reactor")[0];
+var _1abc="<PionConfig><Reactor>"+"<Plugin>SnifferReactor</Plugin>"+"<Protocol>"+pion.protocols.default_id+"</Protocol>"+"</Reactor></PionConfig>";
+dojo.rawXhrPost({url:"/config/reactors",contentType:"text/xml",handleAs:"xml",postData:_1abc,load:function(_1abd){
+var node=_1abd.getElementsByTagName("Reactor")[0];
 var id=node.getAttribute("id");
-var _1abe=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
-var _1abf=dojo.byId("device_list");
-_1abe.fetch({query:{tagName:"Interface"},onItem:function(item){
-var _1ac1=_1abe.getValue(item,"Name");
-var _1ac2=_1abe.getValue(item,"Description");
-if(!_1ac2){
-_1ac2="";
+var _1ac0=new dojox.data.XmlStore({url:"/query/reactors/"+id+"/interfaces"});
+var _1ac1=dojo.byId("device_list");
+_1ac0.fetch({query:{tagName:"Interface"},onItem:function(item){
+var _1ac3=_1ac0.getValue(item,"Name");
+var _1ac4=_1ac0.getValue(item,"Description");
+if(!_1ac4){
+_1ac4="";
 }
-var _1ac3=document.createElement("div");
-_1abf.appendChild(_1ac3);
-new dijit.form.CheckBox({name:"device_check_boxes",value:_1ac1},_1ac3);
-var _1ac4=dojo.create("span",{innerHTML:_1ac1});
-dojo.addClass(_1ac4,"device_name");
-_1abf.appendChild(_1ac4);
-_1abf.appendChild(dojo.create("br"));
-var _1ac5=dojo.create("div",{innerHTML:_1ac2});
-dojo.addClass(_1ac5,"device_description");
-_1abf.appendChild(_1ac5);
-_1abf.appendChild(dojo.create("br"));
+var _1ac5=document.createElement("div");
+_1ac1.appendChild(_1ac5);
+new dijit.form.CheckBox({name:"device_check_boxes",value:_1ac3},_1ac5);
+var _1ac6=dojo.create("span",{innerHTML:_1ac3});
+dojo.addClass(_1ac6,"device_name");
+_1ac1.appendChild(_1ac6);
+_1ac1.appendChild(dojo.create("br"));
+var _1ac7=dojo.create("div",{innerHTML:_1ac4});
+dojo.addClass(_1ac7,"device_description");
+_1ac1.appendChild(_1ac7);
+_1ac1.appendChild(dojo.create("br"));
 pion.wizard.device_found=true;
 },onComplete:function(){
-dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1ac6,_1ac7){
-return _1ac6;
+dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1ac8,_1ac9){
+return _1ac8;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 if(!pion.wizard.device_found){
-_1abf.innerHTML="Error: no capture devices found.  Pion must be run as the root/administrator user.";
+_1ac1.innerHTML="Error: no capture devices found.  Pion must be run as the root/administrator user.";
 }
 page.device_list_initialized=true;
 }});
-},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1aba})});
+},error:pion.getXhrErrorHandler(dojo.rawXhrPost,{postData:_1abc})});
 }
 }
 });
 }
 }
-},error:function(_1ac8,_1ac9){
+},error:function(_1aca,_1acb){
 pion.handleXhrGetError();
 }});
 };
 pion.checkKeyService=function(){
-pion.about.checkKeyStatusDfd().addCallback(function(_1aca){
-pion.editionSetup(_1aca);
+pion.about.checkKeyStatusDfd().addCallback(function(_1acc){
+pion.editionSetup(_1acc);
 });
 };
 var init=function(){
@@ -28525,28 +28526,28 @@ page.onSelect();
 }
 }
 };
-dijit.form.TextBox.prototype._setValueAttr=function(value,_1acd,_1ace){
-var _1acf;
+dijit.form.TextBox.prototype._setValueAttr=function(value,_1acf,_1ad0){
+var _1ad1;
 if(value!==undefined){
-_1acf=this.filter(value);
-if(_1acf!==null&&((typeof _1acf!="number")||!isNaN(_1acf))){
-if(_1ace===undefined||!_1ace.toString){
-_1ace=this.format(_1acf,this.constraints);
+_1ad1=this.filter(value);
+if(_1ad1!==null&&((typeof _1ad1!="number")||!isNaN(_1ad1))){
+if(_1ad0===undefined||!_1ad0.toString){
+_1ad0=this.format(_1ad1,this.constraints);
 }
 }else{
-_1ace="";
+_1ad0="";
 }
 }
-if(_1ace!=null&&_1ace!=undefined){
-this.textbox.value=_1ace;
+if(_1ad0!=null&&_1ad0!=undefined){
+this.textbox.value=_1ad0;
 }
-dijit.form.TextBox.superclass._setValueAttr.call(this,_1acf,_1acd);
+dijit.form.TextBox.superclass._setValueAttr.call(this,_1ad1,_1acf);
 };
 dijit.Dialog.prototype._size=function(){
 var mb=dojo.marginBox(this.domNode);
-var _1ad1=dijit.getViewport();
-if(mb.w>=_1ad1.w||mb.h>=_1ad1.h){
-dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1ad1.h*0.9))+"px",overflow:"auto",position:"relative"});
+var _1ad3=dijit.getViewport();
+if(mb.w>=_1ad3.w||mb.h>=_1ad3.h){
+dojo.style(this.containerNode,{height:Math.min(mb.h,Math.floor(_1ad3.h*0.9))+"px",overflow:"auto",position:"relative"});
 }
 };
 dijit.DialogUnderlay.prototype.postCreate=function(){

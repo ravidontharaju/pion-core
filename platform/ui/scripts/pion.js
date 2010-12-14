@@ -351,7 +351,8 @@ pion.wizardDone = function(exit_early) {
 		'<X>250</X>' + 
 		'<Y>200</Y>';
 
-	session_group_config = '';
+	var session_group_config = '';
+	var ignore_default_group = (pion.wizard.host_suffixes.length > 0);
 	if (pion.wizard.host_suffixes.length > 0) {
 		var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
 		var num_pieces = pieces_of_first_host_suffix.length;
@@ -372,7 +373,7 @@ pion.wizardDone = function(exit_early) {
 	templates.push({
 		label: 'clickstream',
 		url: '/resources/ClickstreamTemplate.tmpl',
-		substitutions: {SessionGroupConfig: session_group_config}
+		substitutions: {IgnoreDefaultGroup: ignore_default_group, SessionGroupConfig: session_group_config}
 	});
 
 	if (pion.wizard.analytics_provider == 'Omniture') {
