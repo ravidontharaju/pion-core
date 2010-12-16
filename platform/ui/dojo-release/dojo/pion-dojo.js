@@ -25276,7 +25276,7 @@ this.export_csv_button.attr("disabled",false);
 });
 this._populateLookupStore();
 this.lookup_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Key",name:"Key",width:14},{field:"Value",name:"Value",width:"auto",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
-this.lookup_grid=new dojox.grid.DataGrid({store:this.lookup_store,structure:this.lookup_grid_layout,singleClickEdit:true},document.createElement("div"));
+this.lookup_grid=new dojox.grid.DataGrid({store:this.lookup_store,structure:this.lookup_grid_layout,rowsPerPage:1000,singleClickEdit:true},document.createElement("div"));
 this.lookup_grid_node.appendChild(this.lookup_grid.domNode);
 this.lookup_grid.startup();
 this.lookup_grid.connect(this.lookup_grid,"onCellClick",function(e){
@@ -25432,7 +25432,7 @@ this.rule_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]
 this.rule_store.next_id=0;
 this._populateRuleStore();
 this.rule_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Term",name:"Term",width:14,type:pion.widgets.TermTextCell},{field:"Type",name:"Comparison",width:10,widgetClass:pion.widgets.SimpleSelect,widgetProps:{store:pion.reactors.comparison_type_store,query:{category:"generic"}}},{field:"Value",name:"Value",width:"auto",formatter:pion.xmlCellFormatter},{field:"SetValue",name:"Set Value",width:"auto",formatter:pion.xmlCellFormatter},{name:"Insert Above",styles:"align: center;",width:3,editable:false,formatter:pion.makeInsertAboveButton},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
-this.rule_grid=new dojox.grid.DataGrid({store:this.rule_store,structure:this.rule_grid_layout,singleClickEdit:true},document.createElement("div"));
+this.rule_grid=new dojox.grid.DataGrid({store:this.rule_store,structure:this.rule_grid_layout,rowsPerPage:1000,singleClickEdit:true},document.createElement("div"));
 this.rule_grid._prev_term_type_category=this.rule_grid.structure[0].rows[1].widgetProps.query.category;
 this.rule_grid.term_column_index=0;
 this.rule_grid_node.appendChild(this.rule_grid.domNode);
@@ -25523,7 +25523,7 @@ this.regex_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[
 this.regex_store.next_id=0;
 this._populateRegexStore();
 this.regex_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Exp",name:"Regex",width:"auto",formatter:pion.xmlCellFormatter},{field:"Format",name:"Format",width:"auto",formatter:pion.xmlCellFormatter},{name:"Insert Above",styles:"align: center;",width:3,editable:false,formatter:pion.makeInsertAboveButton},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
-this.regex_grid=new dojox.grid.DataGrid({store:this.regex_store,structure:this.regex_grid_layout,singleClickEdit:true},document.createElement("div"));
+this.regex_grid=new dojox.grid.DataGrid({store:this.regex_store,structure:this.regex_grid_layout,rowsPerPage:1000,singleClickEdit:true},document.createElement("div"));
 this.regex_grid_node.appendChild(this.regex_grid.domNode);
 this.regex_grid.startup();
 this.regex_grid.connect(this.regex_grid,"onCellClick",function(e){
