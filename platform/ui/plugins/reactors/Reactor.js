@@ -438,6 +438,7 @@ dojo.declare("plugins.reactors.ReactorBoilerplate",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+			this.disabled = true;
 		}
 	}
 );
