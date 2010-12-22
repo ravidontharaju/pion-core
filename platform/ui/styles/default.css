@@ -184,6 +184,14 @@ p.hidden {
 	display: none;
 }
 
+span.hidden {
+	display: none;
+}
+
+.invisible {
+	visibility: hidden;
+}
+
 /* Features Matrix */
 
 .features_list {
@@ -329,6 +337,10 @@ a.help {
 
 a.header.help {
 	color: red;
+}
+
+a.open_new_tab {
+	color: #0099ff;
 }
 
 .username_in_header {
