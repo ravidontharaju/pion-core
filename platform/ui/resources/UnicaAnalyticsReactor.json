@@ -13,6 +13,7 @@
 		HttpHost: 'myaccount.unica.com',
 		NumConnections: 32,
 		NumRetries: 1,
+		ProxyPort: 80,
 		DebugLogLevel: 0
 	},
 	multivalued_defaults: {
