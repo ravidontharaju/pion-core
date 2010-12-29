@@ -220,7 +220,10 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 				m_sc_data_packets = m_sc_missing_packets = 0;
 				rc = boost::indeterminate;
 			} else {
-				// response is finished -> generate a new event
+				// response is finished, check request
+				if (! m_request.isValid())
+					m_request_parser.finish(m_request);
+				// generate a new event
 				generateEvent(event_ptr_ref);
 			}
 		}
