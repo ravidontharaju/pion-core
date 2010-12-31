@@ -484,6 +484,9 @@ private:
 	/// name of the MaxSize element for Pion XML config files
 	static const std::string	MAX_SIZE_ELEMENT_NAME;
 
+	/// name of the MaxExtracts element for Pion XML config files
+	static const std::string	MAX_EXTRACTS_ELEMENT_NAME;
+
 	/// name of the extract element for Pion XML config files
 	static const std::string	EXTRACT_ELEMENT_NAME;
 
@@ -501,9 +504,6 @@ private:
 
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string	TERM_ATTRIBUTE_NAME;
-
-	/// name of the max attribute for Pion XML config files
-	static const std::string	MAX_ATTRIBUTE_NAME;
 
 
 	/// string used for query string extraction source type

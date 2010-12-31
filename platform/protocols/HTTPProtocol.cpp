@@ -53,13 +53,13 @@ const std::string HTTPProtocol::ALLOW_UTF8_CONVERSION_ELEMENT_NAME = "AllowUtf8C
 const std::string HTTPProtocol::ALLOW_SEARCHING_CONTENT_FOR_CHARSET_ELEMENT_NAME = "AllowSearchingContentForCharset";
 const std::string HTTPProtocol::CONTENT_TYPE_ELEMENT_NAME = "ContentType";
 const std::string HTTPProtocol::MAX_SIZE_ELEMENT_NAME = "MaxSize";
+const std::string HTTPProtocol::MAX_EXTRACTS_ELEMENT_NAME = "MaxExtracts";
 const std::string HTTPProtocol::EXTRACT_ELEMENT_NAME = "Extract";
 const std::string HTTPProtocol::SOURCE_ELEMENT_NAME = "Source";
 const std::string HTTPProtocol::MATCH_ELEMENT_NAME = "Match";
 const std::string HTTPProtocol::FORMAT_ELEMENT_NAME = "Format";
 const std::string HTTPProtocol::NAME_ELEMENT_NAME = "Name";
 const std::string HTTPProtocol::TERM_ATTRIBUTE_NAME = "term";
-const std::string HTTPProtocol::MAX_ATTRIBUTE_NAME = "max";
 
 const std::string HTTPProtocol::EXTRACT_QUERY_STRING = "query";
 const std::string HTTPProtocol::EXTRACT_COOKIE_STRING = "cookie";
@@ -683,31 +683,12 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			break;	// ignore parameter name attribute
 		}
 		
-		// default to 1 for backwards-compat.
-		rule_ptr->m_max_extracts = 1U;
-
-		// get Format config node
-		std::string temp_str;
-		xmlNodePtr format_node = ConfigManager::findConfigNodeByName(FORMAT_ELEMENT_NAME, extract_node->children);
-		if (format_node) {
-			// get content of format element
-			xml_char_ptr = xmlNodeGetContent(format_node);
-			if (xml_char_ptr != NULL) {
-				rule_ptr->m_format = reinterpret_cast<char*>(xml_char_ptr);
-				xmlFree(xml_char_ptr);
-				if (!rule_ptr->m_format.empty()) {
-					// check for max attribute
-					temp_str = ConfigManager::getAttribute(MAX_ATTRIBUTE_NAME, format_node);
-					if (!temp_str.empty()) {
-						try {
-							rule_ptr->m_max_extracts = boost::lexical_cast<boost::uint32_t>(temp_str);
-						} catch (...) {}	// ignore failed casts (keep default)
-					}
-				}
-			}
-		}
+		// get Format parameter
+		ConfigManager::getConfigOption(FORMAT_ELEMENT_NAME, rule_ptr->m_format,
+			extract_node->children);
 
 		// get Match regex
+		std::string temp_str;
 		if (ConfigManager::getConfigOption(MATCH_ELEMENT_NAME, temp_str,
 			extract_node->children))
 		{
@@ -736,6 +717,16 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		{
 			try {
 				rule_ptr->m_max_size = boost::lexical_cast<boost::uint32_t>(temp_str);
+			} catch (...) {}	// ignore failed casts (keep default)
+		}
+
+		// get MaxExtracts parameter
+		rule_ptr->m_max_extracts = 1U;	// default to 1 for backwards-compat.
+		if (ConfigManager::getConfigOption(MAX_EXTRACTS_ELEMENT_NAME, temp_str,
+										   extract_node->children))
+		{
+			try {
+				rule_ptr->m_max_extracts = boost::lexical_cast<boost::uint32_t>(temp_str);
 			} catch (...) {}	// ignore failed casts (keep default)
 		}
 
