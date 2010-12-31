@@ -385,6 +385,9 @@ private:
 
 		/// maximum size (in bytes) of content to save (0 = do not save)
 		boost::uint32_t						m_max_size;
+
+		/// maximum matches to extract from source using format (0 = unlimited)
+		boost::uint32_t						m_max_extracts;
 	};
 
 	/// data type for a smart pointer to an extraction rule
@@ -498,6 +501,9 @@ private:
 
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string	TERM_ATTRIBUTE_NAME;
+
+	/// name of the max attribute for Pion XML config files
+	static const std::string	MAX_ATTRIBUTE_NAME;
 
 
 	/// string used for query string extraction source type
@@ -709,6 +715,8 @@ template <typename RangePair>
 inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& event_ptr_ref,
 	RangePair range, bool url_decode) const
 {
+	boost::uint32_t num_extracts;
+	std::string::const_iterator first, last;
 	boost::match_results<std::string::const_iterator> mr;
 	while (range.first != range.second) {
 		const std::string content_ref = (url_decode
@@ -719,16 +727,28 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 				(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
 										   (content_ref.size() > m_max_size
 											? m_max_size : content_ref.size()));
-			} else if ( boost::regex_search(content_ref, mr, m_match) ) {
-				if (m_format.empty() || mr.empty()) {
-					(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
-											   (content_ref.size() > m_max_size
-												? m_max_size : content_ref.size()));
-				} else {
-					std::string content_str(mr.format(m_format, boost::format_all));
-					(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
-											   (content_str.size() > m_max_size
-												? m_max_size : content_str.size()));
+			} else {
+				num_extracts = 0U;
+				first = content_ref.begin();
+				last = content_ref.end();
+				while ( boost::regex_search(first, last, mr, m_match) ) {
+					if (m_format.empty() || mr.empty()) {
+						// no format -> extract entire string
+						(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
+												   (content_ref.size() > m_max_size
+													? m_max_size : content_ref.size()));
+						break;	// stop looking for matches
+					} else {
+						std::string content_str(mr.format(m_format, boost::format_all));
+						(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
+												   (content_str.size() > m_max_size
+													? m_max_size : content_str.size()));
+					}
+					// check max_extracts
+					if (m_max_extracts && ++num_extracts >= m_max_extracts)
+						break;
+					// look for more matches after end of current one
+					first = mr[0].second;
 				}
 			}
 		}
@@ -744,16 +764,27 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 		(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
 								   (content_length > m_max_size
 									? m_max_size : content_length));
-	} else if ( boost::regex_search(content_ptr, mr, m_match) ) {
-		if (m_format.empty() || mr.empty()) {
-			(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
-									   (content_length > m_max_size
-										? m_max_size : content_length));
-		} else {
-			std::string content_str(mr.format(m_format, boost::format_all));
-			(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
-									   (content_str.size() > m_max_size
-										? m_max_size : content_str.size()));
+	} else {
+		boost::uint32_t num_extracts = 0U;
+		const char *end_ptr = content_ptr + content_length;
+		while ( boost::regex_search(content_ptr, end_ptr, mr, m_match) ) {
+			if (m_format.empty() || mr.empty()) {
+				// no format -> extract entire string
+				(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
+										   (content_length > m_max_size
+											? m_max_size : content_length));
+				break;	// stop looking for matches
+			} else {
+				std::string content_str(mr.format(m_format, boost::format_all));
+				(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
+										   (content_str.size() > m_max_size
+											? m_max_size : content_str.size()));
+			}
+			// check max_extracts
+			if (m_max_extracts && ++num_extracts >= m_max_extracts)
+				break;
+			// look for more matches after end of current one
+			content_ptr = mr[0].second;
 		}
 	}
 }
