@@ -59,6 +59,7 @@ const std::string HTTPProtocol::MATCH_ELEMENT_NAME = "Match";
 const std::string HTTPProtocol::FORMAT_ELEMENT_NAME = "Format";
 const std::string HTTPProtocol::NAME_ELEMENT_NAME = "Name";
 const std::string HTTPProtocol::TERM_ATTRIBUTE_NAME = "term";
+const std::string HTTPProtocol::MAX_ATTRIBUTE_NAME = "max";
 
 const std::string HTTPProtocol::EXTRACT_QUERY_STRING = "query";
 const std::string HTTPProtocol::EXTRACT_COOKIE_STRING = "cookie";
@@ -682,41 +683,59 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 			break;	// ignore parameter name attribute
 		}
 		
-		// get Format parameter
-		ConfigManager::getConfigOption(FORMAT_ELEMENT_NAME, rule_ptr->m_format,
-			extract_node->children);
-		
+		// default to 1 for backwards-compat.
+		rule_ptr->m_max_extracts = 1U;
+
+		// get Format config node
+		std::string temp_str;
+		xmlNodePtr format_node = ConfigManager::findConfigNodeByName(FORMAT_ELEMENT_NAME, extract_node->children);
+		if (format_node) {
+			// get content of format element
+			xml_char_ptr = xmlNodeGetContent(format_node);
+			if (xml_char_ptr != NULL) {
+				rule_ptr->m_format = reinterpret_cast<char*>(xml_char_ptr);
+				xmlFree(xml_char_ptr);
+				if (!rule_ptr->m_format.empty()) {
+					// check for max attribute
+					temp_str = ConfigManager::getAttribute(MAX_ATTRIBUTE_NAME, format_node);
+					if (!temp_str.empty()) {
+						try {
+							rule_ptr->m_max_extracts = boost::lexical_cast<boost::uint32_t>(temp_str);
+						} catch (...) {}	// ignore failed casts (keep default)
+					}
+				}
+			}
+		}
+
 		// get Match regex
-		std::string regex_str;
-		if (ConfigManager::getConfigOption(MATCH_ELEMENT_NAME, regex_str,
+		if (ConfigManager::getConfigOption(MATCH_ELEMENT_NAME, temp_str,
 			extract_node->children))
 		{
 			try {
-				rule_ptr->m_match.assign(regex_str);
+				rule_ptr->m_match.assign(temp_str);
 			} catch (...) {
-				throw BadMatchRegexException(regex_str);
+				throw BadMatchRegexException(temp_str);
 			}
 		}
 		
 		// get ContentType regex
-		if (ConfigManager::getConfigOption(CONTENT_TYPE_ELEMENT_NAME, regex_str,
+		if (ConfigManager::getConfigOption(CONTENT_TYPE_ELEMENT_NAME, temp_str,
 			extract_node->children))
 		{
 			try {
-				rule_ptr->m_type_regex.assign(regex_str);
+				rule_ptr->m_type_regex.assign(temp_str);
 			} catch (...) {
-				throw BadContentRegexException(regex_str);
+				throw BadContentRegexException(temp_str);
 			}
 		}
 		
 		// get MaxSize parameter
-		std::string max_size_str;
 		rule_ptr->m_max_size = boost::uint32_t(-1);	// default is undefined/none
-		if (ConfigManager::getConfigOption(MAX_SIZE_ELEMENT_NAME, max_size_str,
+		if (ConfigManager::getConfigOption(MAX_SIZE_ELEMENT_NAME, temp_str,
 										   extract_node->children))
 		{
 			try {
-				rule_ptr->m_max_size = boost::lexical_cast<boost::uint32_t>(max_size_str);
+				rule_ptr->m_max_size = boost::lexical_cast<boost::uint32_t>(temp_str);
 			} catch (...) {}	// ignore failed casts (keep default)
 		}
 
