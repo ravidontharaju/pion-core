@@ -23651,7 +23651,7 @@ var X=Math.floor(pion.reactors.last_x-dc.x);
 var Y=Math.floor(pion.reactors.last_y-dc.y);
 this.post_data="<PionConfig><Reactor>"+pion.makeXmlLeafElement("Plugin",this.plugin)+pion.makeXmlLeafElement("Workspace",_1692.my_content_pane.uuid)+"<X>"+X+"</X><Y>"+Y+"</Y>";
 for(var tag in _1691){
-if(tag!="options"){
+if(tag!="options"&&tag[0]!="_"){
 console.debug("dialogFields[",tag,"] = ",_1691[tag]);
 this.post_data+=pion.makeXmlLeafElement(tag,_1691[tag]);
 }
@@ -23724,7 +23724,7 @@ this.reactor.config[_16a3]=_16a4;
 }
 this.put_data="<PionConfig><Reactor>";
 for(var tag in this.reactor.config){
-if(dojo.indexOf(this.reactor.special_config_elements,tag)==-1){
+if(dojo.indexOf(this.reactor.special_config_elements,tag)==-1&&tag[0]!="_"){
 this.put_data+=pion.makeXmlLeafElement(tag,this.reactor.config[tag]);
 }
 }

@@ -287,7 +287,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 							+ pion.makeXmlLeafElement('Workspace', workspace_box.my_content_pane.uuid)
 							+ '<X>' + X + '</X><Y>' + Y + '</Y>';
 			for (var tag in dialogFields) {
-				if (tag != 'options') {
+				if (tag != 'options' && tag[0] != '_') {
 					console.debug('dialogFields[', tag, '] = ', dialogFields[tag]);
 					this.post_data += pion.makeXmlLeafElement(tag, dialogFields[tag]);
 				}
@@ -390,7 +390,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 
 			this.put_data = '<PionConfig><Reactor>';
 			for (var tag in this.reactor.config) {
-				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1) {
+				if (dojo.indexOf(this.reactor.special_config_elements, tag) == -1 && tag[0] != '_') {
 					this.put_data += pion.makeXmlLeafElement(tag, this.reactor.config[tag]);
 				}
 			}
