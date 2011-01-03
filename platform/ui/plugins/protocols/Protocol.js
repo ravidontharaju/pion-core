@@ -68,12 +68,15 @@ dojo.declare("plugins.protocols.ProtocolPane",
 							formatter: pion.xmlCellFormatter },
 						{ field: 'MaxSize', name: 'MaxSize', width: 'auto',
 							formatter: pion.xmlCellFormatter },
+						{ field: 'MaxExtracts', name: 'MaxExtracts', width: 'auto',
+							formatter: pion.xmlCellFormatter },
 						{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 					]
 				}];
 				this.extraction_rule_grid = new dojox.grid.DataGrid({
 					store: this.extraction_rule_store,
 					structure: this.extraction_rule_grid_layout,
+					rowsPerPage: 1000,
 					singleClickEdit: true
 				}, document.createElement('div'));
 				this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
@@ -140,7 +143,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 							Match: store.getValue(extraction_rule, 'Match'),
 							Format: store.getValue(extraction_rule, 'Format'),
 							ContentType: store.getValue(extraction_rule, 'ContentType'),
-							MaxSize: store.getValue(extraction_rule, 'MaxSize')
+							MaxSize: store.getValue(extraction_rule, 'MaxSize'),
+							MaxExtracts: store.getValue(extraction_rule, 'MaxExtracts')
 						}
 						_this.extraction_rule_store.newItem(extraction_rule_item);
 					});
@@ -156,6 +160,9 @@ dojo.declare("plugins.protocols.ProtocolPane",
 		_handleAddNewRule: function() {
 			this.markAsChanged();
 			this.extraction_rule_store.newItem({ID: this.extraction_rule_store.next_id++});
+
+			// This sets the focus to the last row, causing the grid to scroll to the bottom (so the user can see the newly created rule).
+			this.extraction_rule_grid.focus.setFocusIndex(this.extraction_rule_grid.rowCount - 1, 0);
 		},
 		save: function() {
 			if (this.has_extraction_rules) {
@@ -176,6 +183,8 @@ dojo.declare("plugins.protocols.ProtocolPane",
 							put_data += pion.makeXmlLeafElement('ContentType', store.getValue(item, 'ContentType'));
 						if (store.getValue(item, 'MaxSize'))
 							put_data += pion.makeXmlLeafElement('MaxSize', store.getValue(item, 'MaxSize'));
+						if (store.getValue(item, 'MaxExtracts'))
+							put_data += pion.makeXmlLeafElement('MaxExtracts', store.getValue(item, 'MaxExtracts'));
 						put_data += '</Extract>';
 					},
 					onComplete: function() {
