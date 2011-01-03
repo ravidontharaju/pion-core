@@ -27913,8 +27913,8 @@ this.has_extraction_rules="extraction_rule_grid_node" in this;
 if(this.has_extraction_rules){
 this.extraction_rule_store=new dojo.data.ItemFileWriteStore({data:{identifier:"ID",items:[]}});
 this.extraction_rule_store.next_id=0;
-this.extraction_rule_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"Term",name:"Term",width:16,type:pion.widgets.TermTextCell},{field:"Source",name:"Source",styles:"",width:7,type:dojox.grid.cells.Select,options:plugins.protocols.source_options},{field:"Name",name:"Name",width:7,formatter:pion.xmlCellFormatter},{field:"Match",name:"Match",width:8,formatter:pion.xmlCellFormatter},{field:"Format",name:"Format",width:8,formatter:pion.xmlCellFormatter},{field:"ContentType",name:"ContentType",width:8,formatter:pion.xmlCellFormatter},{field:"MaxSize",name:"MaxSize",width:"auto",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
-this.extraction_rule_grid=new dojox.grid.DataGrid({store:this.extraction_rule_store,structure:this.extraction_rule_grid_layout,singleClickEdit:true},document.createElement("div"));
+this.extraction_rule_grid_layout=[{defaultCell:{editable:true,type:dojox.grid.cells._Widget,styles:"text-align: left;"},rows:[{field:"Term",name:"Term",width:16,type:pion.widgets.TermTextCell},{field:"Source",name:"Source",styles:"",width:7,type:dojox.grid.cells.Select,options:plugins.protocols.source_options},{field:"Name",name:"Name",width:7,formatter:pion.xmlCellFormatter},{field:"Match",name:"Match",width:8,formatter:pion.xmlCellFormatter},{field:"Format",name:"Format",width:8,formatter:pion.xmlCellFormatter},{field:"ContentType",name:"ContentType",width:8,formatter:pion.xmlCellFormatter},{field:"MaxSize",name:"MaxSize",width:"auto",formatter:pion.xmlCellFormatter},{field:"MaxExtracts",name:"MaxExtracts",width:"auto",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
+this.extraction_rule_grid=new dojox.grid.DataGrid({store:this.extraction_rule_store,structure:this.extraction_rule_grid_layout,rowsPerPage:1000,singleClickEdit:true},document.createElement("div"));
 this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
 this.extraction_rule_grid.startup();
 this.extraction_rule_grid.connect(this.extraction_rule_grid,"onCellClick",function(e){
@@ -27966,7 +27966,7 @@ _this.extraction_rule_store.deleteItem(item);
 },onComplete:function(){
 var store=pion.protocols.config_store;
 dojo.forEach(store.getValues(item,"Extract"),function(_1a8a){
-var _1a8b={ID:_this.extraction_rule_store.next_id++,Term:store.getValue(_1a8a,"@term"),Source:store.getValue(_1a8a,"Source"),Name:store.getValue(_1a8a,"Name"),Match:store.getValue(_1a8a,"Match"),Format:store.getValue(_1a8a,"Format"),ContentType:store.getValue(_1a8a,"ContentType"),MaxSize:store.getValue(_1a8a,"MaxSize")};
+var _1a8b={ID:_this.extraction_rule_store.next_id++,Term:store.getValue(_1a8a,"@term"),Source:store.getValue(_1a8a,"Source"),Name:store.getValue(_1a8a,"Name"),Match:store.getValue(_1a8a,"Match"),Format:store.getValue(_1a8a,"Format"),ContentType:store.getValue(_1a8a,"ContentType"),MaxSize:store.getValue(_1a8a,"MaxSize"),MaxExtracts:store.getValue(_1a8a,"MaxExtracts")};
 _this.extraction_rule_store.newItem(_1a8b);
 });
 },onError:pion.handleFetchError});
@@ -27977,6 +27977,7 @@ dojo.addClass(this.domNode,"unsaved_changes");
 },_handleAddNewRule:function(){
 this.markAsChanged();
 this.extraction_rule_store.newItem({ID:this.extraction_rule_store.next_id++});
+this.extraction_rule_grid.focus.setFocusIndex(this.extraction_rule_grid.rowCount-1,0);
 },save:function(){
 if(this.has_extraction_rules){
 var _this=this;
@@ -27999,6 +28000,9 @@ _1a90+=pion.makeXmlLeafElement("ContentType",store.getValue(item,"ContentType"))
 }
 if(store.getValue(item,"MaxSize")){
 _1a90+=pion.makeXmlLeafElement("MaxSize",store.getValue(item,"MaxSize"));
+}
+if(store.getValue(item,"MaxExtracts")){
+_1a90+=pion.makeXmlLeafElement("MaxExtracts",store.getValue(item,"MaxExtracts"));
 }
 _1a90+="</Extract>";
 },onComplete:function(){
