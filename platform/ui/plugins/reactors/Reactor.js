@@ -85,6 +85,7 @@ dojo.declare("plugins.reactors.Reactor",
 			menu.addChild(new dijit.MenuItem({ label: "Show configuration", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Show stats", onClick: function(){_this.showQueryResult();} }));
 			menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Copy reactor", onClick: function(){pion.reactors.copyReactor(_this);} }));
 
 			dojo.connect(this.domNode, 'dblclick', function(event) {
 				event.stopPropagation(); // so the workspace configuration dialog won't also pop up

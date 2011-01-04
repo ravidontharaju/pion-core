@@ -1185,6 +1185,45 @@ function deleteReactorFromUI(reactor) {
 	}
 }
 
+pion.reactors.copyReactor = function(reactor) {
+	var url = '/config/reactors/' + reactor.config['@id'];
+	dojo.xhrGet({
+		url: url,
+		handleAs: 'text',
+		timeout: 5000,
+		load: function(response) {
+			var result = response.match(/<X>(\d+)<\/X>\s*<Y>(\d+)<\/Y>/);
+			var X = parseInt(result[1]) + 20;
+			var Y = parseInt(result[2]) + 20;
+			var post_data = response.replace(/<?.*>\s*<PionConfig.*>\s*<Reactor id="[^"]*">/, '<PionConfig><Reactor>');
+			post_data = post_data.replace(/<Name>(.*)<\/Name>/, '<Name>Copy of $1</Name>');
+			post_data = post_data.replace(/<X>\d+<\/X>/, '<X>' + X + '</X>');
+			post_data = post_data.replace(/<Y>\d+<\/Y>/, '<Y>' + Y + '</Y>');
+
+			dojo.rawXhrPost({
+				url: '/config/reactors',
+				contentType: "text/xml",
+				handleAs: "xml",
+				postData: post_data,
+				load: function(response) {
+					var node = response.getElementsByTagName('Reactor')[0];
+					var new_id = node.getAttribute('id');
+					var config = { '@id': new_id };
+					var attribute_nodes = node.childNodes;
+					for (var i = 0; i < attribute_nodes.length; ++i) {
+						if (attribute_nodes[i].firstChild) {
+							config[attribute_nodes[i].tagName] = attribute_nodes[i].firstChild.nodeValue;
+						}
+					}
+					pion.reactors.createReactorInConfiguredWorkspace(config);
+				},
+				error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+			});
+		},
+		error: pion.handleXhrGetError
+	});
+}
+
 function selected(page) {
 	if (page.title == "Add new workspace") {
 		var i = workspace_boxes.length;
