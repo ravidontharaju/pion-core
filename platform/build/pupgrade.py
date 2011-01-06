@@ -4,7 +4,7 @@
 # --------------------------------------
 
 # Import libraries used by this script
-import sys, os, re, shutil, optparse, uuid
+import sys, os, re, shutil, optparse
 from lxml import etree
 
 # Base class used for configuration upgrade logic
@@ -72,7 +72,7 @@ class Upgrade30xTo31x(UpgradeRule):
 					p = etree.SubElement(u, '{%s}Permission' % PION_NS)
 					p.set('type', 'ReplayService')
 					etree.SubElement(p, '{%s}Unrestricted' % PION_NS).text = 'true'
-		if (not QUIET and not TEST): print 'WARNING: Please use the web interface to review user permissions.'
+		if (not QUIET and not TEST): print 'WARNING: Please use Pion\'s web interface to review user permissions.'
 	def add_new_workspace(self, cfg, workspace_id, workspace_name):
 		# create a workspace node
 		new_node = etree.Element('{%s}Workspace' % PION_NS)
@@ -84,7 +84,7 @@ class Upgrade30xTo31x(UpgradeRule):
 		reactor_nodes = list(cfg.root.iter('{%s}Reactor' % PION_NS))
 		if (not reactor_nodes):
 			# empty reactors.xml -> create default workspace
-			self.add_new_workspace(cfg, str(uuid.uuid4()), 'Default')
+			self.add_new_workspace(cfg, 'Default', 'Default')
 			return
 		# look for MDR reactors
 		for r in reactor_nodes:
@@ -108,7 +108,7 @@ class Upgrade30xTo31x(UpgradeRule):
 			workspace_id = workspaces.get(workspace_name, None)
 			if (not workspace_id):
 				# generate a random id, and update map
-				workspace_id = str(uuid.uuid4())
+				workspace_id = workspace_name
 				workspaces[workspace_name] = workspace_id
 				# create a workspace node in XML doc
 				self.add_new_workspace(cfg, workspace_id, workspace_name)
@@ -185,6 +185,46 @@ class Upgrade30xTo31x(UpgradeRule):
 					self.replace_comment(t, 'HTTP response status (0=NONE, 1=TRUNCATED, 2=PARTIAL, 3=OK)')
 				elif (t.get('id') == 'urn:vocab:clickstream#tcp-status'):
 					self.replace_comment(t, 'TCP handshake status (0=OK, 1=RESET, 2=IGNORED)')
+	def update_robot_config(self, cfg):
+		# update robots.xml
+		idx = 0
+		n = cfg.root.find('{%s}TagIfRobotsTxt' % PION_NS)
+		if (n is not None):
+			idx = cfg.root.index(n)
+			cfg.root.remove(n)
+			if (idx > 0 and cfg.root[idx-1].text.find('that include a request for /robots.txt') != -1):
+				cfg.root[idx-1].text = ' If any client request matches the following URI stems, the session\n	will be tagged as a robot.  This can be used to create custom\n	"honey pots" that quite reliably filter out all bot traffic. '
+		uri_stem = etree.Element('{%s}UriStem' % PION_NS)
+		uri_stem.text = '/robots.txt'
+		cfg.root.insert(idx, uri_stem)
+	def update_replay_queries(self, cfg):
+		# update ReplayQueries.xml
+		for replay in cfg.root.iter('{%s}Replay' % PION_NS):
+			for hide in replay.iter('{%s}Hide' % PION_NS):
+				if (hide.text == 'requests:clickstream#s-port'):
+					node = etree.Element('{%s}Hide' % PION_NS)
+					node.text = 'requests:clickstream#cs-content$'
+					replay.insert(replay.index(hide)+1, node)
+					node = etree.Element('{%s}Hide' % PION_NS)
+					node.text = 'requests:clickstream#uri-query$'
+					replay.insert(replay.index(hide)+2, node)
+					break
+			for query in replay.iter('{%s}Query' % PION_NS):
+				if (query.get('id') == 'requests'):
+					idx = len(query)
+					crawl_window = query.find('{%s}CrawlWindow' % PION_NS)
+					if (crawl_window is not None):
+						idx = query.index(crawl_window)
+					node = etree.Element('{%s}Result' % PION_NS)
+					node.text = 'clickstream#uri-query'
+					query.insert(idx, node)
+					node = etree.Element('{%s}Result' % PION_NS)
+					node.text = 'clickstream#cs-content-type'
+					query.insert(idx+1, node)
+					node = etree.Element('{%s}Result' % PION_NS)
+					node.text = 'clickstream#cs-content'
+					query.insert(idx+2, node)
+					break
 	def process(self, pion_config):
 		self.update_users(pion_config['UserConfig'])
 		self.update_reactors(pion_config['ReactorConfig'])
@@ -192,6 +232,9 @@ class Upgrade30xTo31x(UpgradeRule):
 		self.update_protocols(pion_config['ProtocolConfig'])
 		self.update_vocabs(pion_config['VocabularyConfig'])
 		self.update_clickstream(pion_config.vocab['urn:vocab:clickstream'])
+		self.update_robot_config(pion_config['RobotConfig'])
+		self.update_replay_queries(pion_config['ReplayTemplates'])
+
 
 RULES.append(Upgrade30xTo31x('3.1.2', '^3\.0\..*$'))
 
@@ -242,7 +285,7 @@ class XMLConfig(object):
 		if (not TEST): shutil.copy(self.file, path)
 	def save(self):
 		"""saves updated configuration file"""
-		if (VERBOSE): print self.name + ': saving ' + self.file
+		if (not QUIET): print self.name + ': saving ' + self.file
 		if (not TEST):
 			self.tree.write(self.file, pretty_print=True, encoding='UTF-8', xml_declaration='True')
 	def set_version(self, version):
@@ -273,9 +316,9 @@ class PionConfig(dict):
 			self.vocab[vocab_id] = XMLConfig(vocab_file, vocab_id, 'PionConfig')
 		# these use different root elements
 		self.parse('robots.xml', 'RobotConfig')
-		self.parse('SearchEngines.xml', 'SearchEngineConfig')
 		self.parse('ReplayQueries.xml', 'ReplayTemplates')
-		self.parse('dbengines.xml', 'DatabaseTemplates')
+#		self.parse('SearchEngines.xml', 'SearchEngineConfig')
+#		self.parse('dbengines.xml', 'DatabaseTemplates')
 		# other config options -> not XML files
 		self.logconfig_file = os.path.join(self.config_path, platform_cfg.get('LogConfig'))
 		self.plugin_path = os.path.join(self.config_path, platform_cfg.get('PluginPath'))
