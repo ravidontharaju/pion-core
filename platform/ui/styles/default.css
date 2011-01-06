@@ -516,8 +516,9 @@ label.disabled {
 	overflow: hidden; /* Prevents superfluous scrollbars in IE7. */
 }
 
-#system_config .dijitContentPane {
-	overflow: auto; /* Special case inside main_stack_container where we want scrollbars. */
+#system_config .dijitContentPane,
+#sidebarMain .dijitContentPane {
+	overflow: auto; /* Special cases inside main_stack_container where we want scrollbars. */
 }
 
 .dijitStackController {
