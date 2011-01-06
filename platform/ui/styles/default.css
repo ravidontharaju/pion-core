@@ -336,7 +336,8 @@ a.help {
 }
 
 a.header.help {
-	color: red;
+	color: #666666;
+	font-size: 13px;
 }
 
 a.open_new_tab {
