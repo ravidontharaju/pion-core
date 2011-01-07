@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE(checkReactorStatusInConfigFileIsUsed) {
 	// of their default behavior.
 	std::ofstream out(m_config_filename.c_str());
 	out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 		<< "  <Reactor id=\"" << m_filter_id << "\">\n"
 		<< "    <Name>Do Nothing</Name>\n"
 		<< "    <Plugin>FilterReactor</Plugin>\n"

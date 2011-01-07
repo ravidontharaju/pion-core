@@ -107,23 +107,26 @@ xmlDocPtr ConfigManager::getConfigFromFile(const std::string& config_file, const
 		throw MissingRootElementException(config_file);
 	}
 
-	// If the version number in the file is different than the current one, make a backup of the file
-	// and update the version attribute in memory and in the file.
+	// If the version number in the file is different than the current one:
+	// a) if major or minor is different, throw fatal exception and refuse to run
+	// b) if build number is different, update the version attribute in memory and in the file
 	xmlChar* xml_char_ptr = xmlGetProp(config_ptr,
 									   reinterpret_cast<const xmlChar*>(PION_VERSION_ATTRIBUTE_NAME.c_str()));
-	std::string pion_version = "unversioned";
-	if (xml_char_ptr != NULL && xml_char_ptr[0]!='\0')
-		pion_version = reinterpret_cast<char*>(xml_char_ptr);
+	if (xml_char_ptr == NULL)
+		throw ConfigFileVersionException(config_file);
+	std::string cfg_file_version = reinterpret_cast<char*>(xml_char_ptr);
 	xmlFree(xml_char_ptr);
-	if (pion_version != PION_VERSION) {
-		try {
-			const std::string backup_filename(config_file + BACKUP_FILE_EXTENSION + "." + pion_version);
-			if (boost::filesystem::exists(backup_filename))
-				boost::filesystem::remove(backup_filename);
-			boost::filesystem::copy_file(config_file, backup_filename);
-		} catch (...) {
-			PION_LOG_WARN(logger, "Failed to backup configuration file: " << config_file);
+	if (cfg_file_version != PION_VERSION && cfg_file_version != "tests") {	// use "tests" to disregard check for unit tests
+		// incrementally compare version number in config file to PION_VERSION
+		unsigned int num_dots = 0;
+		for (size_t pos = 0; pos < cfg_file_version.size() && num_dots < 2; ++pos) {
+			if (cfg_file_version[pos] == '.') ++num_dots;	// count dots
+			if (cfg_file_version[pos] != PION_VERSION[pos])	// compare chars
+				throw ConfigFileVersionException(config_file);
 		}
+		if (num_dots != 2)	// check if stopped prematurely
+			throw ConfigFileVersionException(config_file);
+		// major and minor match, but build number does not
 		if (xmlSetProp(config_ptr,
 					   reinterpret_cast<const xmlChar*>(PION_VERSION_ATTRIBUTE_NAME.c_str()),
 					   reinterpret_cast<const xmlChar*>(PION_VERSION)) == NULL)
