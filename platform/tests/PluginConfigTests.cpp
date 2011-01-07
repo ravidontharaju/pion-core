@@ -78,7 +78,7 @@ public:
 	void setupSimpleConfigFile(const std::string& config_file_path) {
 		std::ofstream out(config_file_path.c_str());
 		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 			<< "\t<Codec id=\"dba9eac2-d8bb-11dc-bebe-001cc02bd66b\">\n"
 			<< "\t\t<Name>Just the clf-date</Name>\n"
 			<< "\t\t<Comment>Codec for just reading clf-dates</Comment>\n"
@@ -104,7 +104,7 @@ public:
 	void setupSimpleConfigFile(const std::string& config_file_path) {
 		std::ofstream out(config_file_path.c_str());
 		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 			<< "\t<Database id=\"e75d88f0-e7df-11dc-a76c-0016cb926e68\">\n"
 			<< "\t\t<Name>Embedded Storage Database</Name>\n"
 			<< "\t\t<Comment>Embedded SQLite database for storing events</Comment>\n"
@@ -129,7 +129,7 @@ public:
 	void setupSimpleConfigFile(const std::string& config_file_path) {
 		std::ofstream out(config_file_path.c_str());
 		out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 			<< "\t<Reactor id=\"0cc21558-cf84-11dc-a9e0-0019e3f89cd2\">\n"
 			<< "\t\t<Name>Do Nothing</Name>\n"
 			<< "\t\t<Comment>Filter that does nothing</Comment>\n"

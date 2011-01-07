@@ -94,6 +94,13 @@ public:
 			: PionException("Unable to initialize configuration file: ", file_name) {}
 	};
 
+	/// exception thrown if the version of the config file is not compatible (upgrade required)
+	class ConfigFileVersionException : public PionException {
+	public:
+		ConfigFileVersionException(const std::string& file_name)
+			: PionException("Incompatible configuration file (run pupgrade.py): ", file_name) {}
+	};
+
 	/// exception thrown if there is an error writing a config file
 	class WriteConfigException : public PionException {
 	public:

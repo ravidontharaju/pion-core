@@ -57,7 +57,7 @@ public:
 		m_users_config_file.open("users.xml");
 		m_users_config_file
 			<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n";
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n";
 	}
 
 	void finishWritingUsersConfigFile() {

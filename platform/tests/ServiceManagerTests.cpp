@@ -61,7 +61,7 @@ public:
 	void startWritingServicesConfigFile() {
 		m_services_config_file
 			<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 			<< "    <Server id=\"main-server\">\n"
 			<< "        <Port>0</Port>\n";
 	}
@@ -303,7 +303,7 @@ BOOST_FIXTURE_TEST_SUITE(ServicesConfigFile_S, ServicesConfigFile_F)
 BOOST_AUTO_TEST_CASE(checkTopLevelWebService) {
 	m_services_config_file
 		<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 		<< "    <Server id=\"main-server\">\n"
 		<< "        <Port>0</Port>\n"
 		<< "    </Server>\n"
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(checkTopLevelWebService) {
 BOOST_AUTO_TEST_CASE(checkTopLevelPlatformService) {
 	m_services_config_file
 		<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 		<< "    <Server id=\"main-server\">\n"
 		<< "        <Port>0</Port>\n"
 		<< "    </Server>\n"
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE(checkTopLevelPlatformService) {
 BOOST_AUTO_TEST_CASE(checkTopLevelPlatformServiceWithoutServerSpecified) {
 	m_services_config_file
 		<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 		<< "    <Server id=\"main-server\">\n"
 		<< "        <Port>0</Port>\n"
 		<< "    </Server>\n"
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(checkTopLevelPlatformServiceWithoutServerSpecified) {
 BOOST_AUTO_TEST_CASE(checkComboOfVariousConfigCases) {
 	m_services_config_file
 		<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-		<< "<PionConfig xmlns=\"http://purl.org/pion/config\">\n"
+		<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
 		<< "    <Server id=\"server-1\">\n"
 		<< "        <Port>2050</Port>\n"
 		<< "        <PlatformService id=\"query-service-1-A\">\n"
