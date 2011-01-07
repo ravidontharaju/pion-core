@@ -221,10 +221,10 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 				rc = boost::indeterminate;
 			} else {
 				// response is finished, check request
-				if (! m_request.isValid())
-					m_request_parser.finish(m_request);
-				// generate a new event
-				generateEvent(event_ptr_ref);
+				if (m_request.isValid())
+					generateEvent(event_ptr_ref);
+				else
+					rc = false;	// request not finished -> return false to try to recover
 			}
 		}
 	}
