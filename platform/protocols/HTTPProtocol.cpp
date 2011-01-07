@@ -240,12 +240,14 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 				rc = boost::indeterminate;
 			} else {
 				// response is finished, check request
-				if (! m_request.isValid())
-					m_request_parser.finish(m_request);
-				// generate a new event
-				EventPtr event_ptr;
-				generateEvent(event_ptr);
-				events.push_back(event_ptr);
+				if (m_request.isValid()) {
+					// generate a new event
+					EventPtr event_ptr;
+					generateEvent(event_ptr);
+					events.push_back(event_ptr);
+				} else {
+					rc = false;	// request not finished -> return false to try to recover
+				}
 			}
 		}
 	}
