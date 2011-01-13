@@ -842,8 +842,7 @@ public:
 	inline void setBlob(const Vocabulary::TermRef& term_ref,
 						  const CharType *value, std::size_t len)
 	{
-		if (len > 0)
-			insert(term_ref, make_blob(value, len));
+		insert(term_ref, make_blob(value, len));
 	}
 	
 	/**
@@ -853,7 +852,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setBlob(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		setBlob(term_ref, value, strlen(value));
+		insert(term_ref, make_blob(value, strlen(value)));
 	}
 	
 	/**
@@ -863,8 +862,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setBlob(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		if (!value.empty())
-			insert(term_ref, make_blob(value));
+		insert(term_ref, make_blob(value));
 	}
 	
 	/**
@@ -874,8 +872,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setBlob(const Vocabulary::TermRef& term_ref, const BlobType& value) {
-		if (!value.empty())
-			insert(term_ref, value);
+		insert(term_ref, value);
 	}
 	
 	/**
