@@ -23075,6 +23075,7 @@ dojo.provide("pion.login");
 pion.login.logout=function(){
 dojo.cookie("logged_in","",{expires:-1});
 dojo.xhrGet({url:"/logout",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1624,_1625){
+location.replace("/login.html");
 console.debug("logout response: ",_1624);
 return _1624;
 },error:function(_1626,_1627){

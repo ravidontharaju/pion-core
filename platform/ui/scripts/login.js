@@ -10,6 +10,7 @@ pion.login.logout = function() {
 		handleAs: 'xml',
 		timeout: 5000,
 		load: function(response, ioArgs) {
+			location.replace('/login.html');
 			console.debug('logout response: ', response);
 			return response;
 		},
