@@ -50,6 +50,12 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 		if (ioArgs.xhr.status == 500) {
 			var dialog = new pion._base.error.ServerErrorDialog({response_text: response.responseText});
 			dialog.show();
+		} else {
+			var dialog = new dijit.Dialog({
+				title: 'Error',
+				content: ioArgs.xhr.responseText
+			});
+			dialog.show();
 		}
 		if (finalErrorHandler) {
 			finalErrorHandler();
