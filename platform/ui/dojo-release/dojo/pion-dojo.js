@@ -28616,7 +28616,7 @@ var _1b2f=this.form.attr("value");
 if(this.uuid==pion.last_logged_in_user&&dojo.indexOf(_1b2f.tab_check_boxes,"Admin")==-1){
 pion.doDeleteConfirmationDialog("You are about to delete your own permission to make further changes to your own configuration.  Proceed?",dojo.hitch(this,this.doSave));
 }else{
-if(_1b2f.tab_check_boxes.length==0){
+if(_1b2f.tab_check_boxes.length==0&&_1b2f.workspace_check_box_group.length==0){
 pion.doDeleteConfirmationDialog("You are about to delete all permissions for user \""+this.uuid+"\".  Proceed?",dojo.hitch(this,this.doSave));
 }else{
 this.doSave();
