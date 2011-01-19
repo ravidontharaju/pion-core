@@ -71,7 +71,7 @@ pion.login.doLoginDialog = function(kw_args) {
 	dojo.byId('current_user_menu_section').style.visibility = 'hidden';
 	pion.login.login_pending = true;
 	var ops_toggle_button = dijit.byId('ops_toggle_button');
-	if (!ops_toggle_button.checked) {
+	if (ops_toggle_button && !ops_toggle_button.checked) {
 		ops_toggle_button.attr('checked', true);
 		//dojo.addClass(dojo.byId('counterBackground'), 'hidden');
 		pion.login.ops_temporarily_suppressed = true;
@@ -102,7 +102,7 @@ pion.login.doLoginDialog = function(kw_args) {
 			load: function(response, ioArgs) {
 				// If the user who just logged in is not the previously logged in user, reload.
 				if (dialogFields.Username != pion.last_logged_in_user) {
-					location.replace('/' + window.location.search);
+					location.replace(window.location.pathname + window.location.search);
 				}
 
 				pion.login.login_pending = false;
