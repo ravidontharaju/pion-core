@@ -128,6 +128,18 @@ class Upgrade30xTo31x(UpgradeRule):
 			if (n.get('id') == 'log-service'):
 				server_node = n.getparent()
 				server_node.remove(n)
+		# add redirect for /replay.html
+		for server_node in cfg.root.iter('{%s}Server' % PION_NS):
+			if (server_node.get('id') == 'main-server'):
+				idx = 0
+				n = server_node.find('{%s}Redirect' % PION_NS)
+				if (n is not None):
+					idx = server_node.index(n) + 1
+				redirect = etree.Element('{%s}Redirect' % PION_NS)
+				etree.SubElement(redirect, '{%s}Source' % PION_NS).text = '/replay.html'
+				etree.SubElement(redirect, '{%s}Target' % PION_NS).text = '/plugins/services/ReplayService/replay.html'
+				server_node.insert(idx, redirect)
+				break
 		# add new service entries
 		self.add_new_service(server_node, 'PlatformService',
 			'monitor-service', 'Event Data Monitoring Service',
