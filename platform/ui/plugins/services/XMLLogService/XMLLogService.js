@@ -59,7 +59,7 @@ dojo.declare("plugins.services.XMLLogService",
 			}, 1000);
 		},
 		getHeight: function() {
-			return this.log_grid_node.clientHeight + 110;
+			return this.containerNode.clientHeight + 110;
 		},
 		init: function() {
 			var _this = this;
@@ -83,8 +83,8 @@ dojo.declare("plugins.services.XMLLogService",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Message', name: 'Message', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Help', styles: 'text-align: center;', width: 3, editable: false, formatter: pion.makeSearchButton },
-					{ name: 'Remove', styles: 'text-align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Help', styles: 'text-align: center;', width: 4, editable: false, formatter: pion.makeSearchButton },
+					{ name: 'Remove', styles: 'text-align: center;', width: 4, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.log_grid = new dojox.grid.DataGrid({
@@ -229,6 +229,19 @@ dojo.declare("plugins.services.XMLLogService",
 		initSessionsGridLayout: function(col_set) {
 			var session_query_type_id = this.search_form.attr('value').SessionQueryType;
 			this.updateSessionsGridLayout(session_query_type_id, col_set);
+		},
+		removeAll: function() {
+			var _this = this;
+			dojo.xhrDelete({
+				url: this.resource + '?ack=*',
+				handleAs: 'xml',
+				timeout: 5000,
+				load: function(response, ioArgs) {
+					_this.log_grid.filter();
+					return response;
+				},
+				error: pion.getXhrErrorHandler(dojo.xhrDelete)
+			});
 		}
 	}
 );

@@ -81,6 +81,11 @@ void XMLLogServiceAppender::acknowledgeEvent(std::string id)
 		m_log_event_queue.erase(it);
 }
 
+void XMLLogServiceAppender::acknowledgeAllEvents(void)
+{
+	m_log_event_queue.clear();
+}
+
 
 // static members of XMLLogService
 
@@ -129,8 +134,13 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 		}
 		HTTPTypes::QueryParams::const_iterator qpi = qp.find("ack");
 		if (qpi != qp.end()) {
-			// Erase the event with the specified id from the queue (if found).
-			getLogAppender().acknowledgeEvent(qpi->second);
+			if (qpi->second == "*") {
+				// Erase all events in the queue.
+				getLogAppender().acknowledgeAllEvents();
+			} else {
+				// Erase the event with the specified id from the queue (if found).
+				getLogAppender().acknowledgeEvent(qpi->second);
+			}
 		} else {
 			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
 			std::string error_msg = "Query parameter \"ack\" is required for method DELETE on " + request->getResource() + ".";
