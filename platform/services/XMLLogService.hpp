@@ -52,6 +52,10 @@ public:
 	/// deletes the event with the specified ID from the queue
 	void acknowledgeEvent(std::string id);
 
+	/// deletes all events from the queue
+	void acknowledgeAllEvents(void);
+
+
 private:
 	/// default maximum number of events cached in memory
 	static const unsigned int				DEFAULT_MAX_EVENTS;
