@@ -26,6 +26,10 @@
 			<Source>sc-header</Source>
 			<Name>Set-Cookie</Name>
 		</Extract>
+		<Extract term="urn:vocab:clickstream#cs-content-type">
+			<Source>cs-header</Source>
+			<Name>Content-Type</Name>
+		</Extract>
 		<Extract term="urn:vocab:clickstream#content-type">
 			<Source>sc-header</Source>
 			<Name>Content-Type</Name>
