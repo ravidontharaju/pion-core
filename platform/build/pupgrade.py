@@ -13,16 +13,17 @@ class UpgradeRule(object):
 	def __init__(self, version, regex):
 		self.version = version
 		self.regex = regex
-	def start(self, pion_config):
-		"""this is always called before process"""
-		if (not QUIET):
-			print 'upgrading from ' + pion_config.version + ' to ' + self.version
+		self.was_updated = False
+	def process_file(self, xml_config, f):
+		"""checks to see if an upgrade is necessary & performs upgrade"""
+		if (re.search(self.regex, xml_config.version)):
+			f(xml_config)
+			self.was_updated = True
 	def process(self, pion_config):
 		"""override this function to define upgrade logic"""
-		pass
-	def finish(self, pion_config):
-		"""this is always called after process"""
-		pion_config.set_version(self.version)
+		if (self.was_updated):
+			pion_config.set_version(self.version)
+		return self.was_updated
 
 
 # Global list of configuration upgrade rules
@@ -238,14 +239,15 @@ class Upgrade30xTo31x(UpgradeRule):
 					query.insert(idx+2, node)
 					break
 	def process(self, pion_config):
-		self.update_users(pion_config['UserConfig'])
-		self.update_reactors(pion_config['ReactorConfig'])
-		self.update_services(pion_config['ServiceConfig'])
-		self.update_protocols(pion_config['ProtocolConfig'])
-		self.update_vocabs(pion_config['VocabularyConfig'])
-		self.update_clickstream(pion_config.vocab['urn:vocab:clickstream'])
-		self.update_robot_config(pion_config['RobotConfig'])
-		self.update_replay_queries(pion_config['ReplayTemplates'])
+		self.process_file(pion_config['UserConfig'], self.update_users)
+		self.process_file(pion_config['ReactorConfig'], self.update_reactors)
+		self.process_file(pion_config['ServiceConfig'], self.update_services)
+		self.process_file(pion_config['ProtocolConfig'], self.update_protocols)
+		self.process_file(pion_config['VocabularyConfig'], self.update_vocabs)
+		self.process_file(pion_config.vocab['urn:vocab:clickstream'], self.update_clickstream)
+		self.process_file(pion_config['RobotConfig'], self.update_robot_config)
+		self.process_file(pion_config['ReplayTemplates'], self.update_replay_queries)
+		return UpgradeRule.process(self, pion_config)
 
 
 RULES.append(Upgrade30xTo31x('3.1.2', '^3\.0\..*$'))
@@ -347,7 +349,7 @@ class PionConfig(dict):
 		return cfg
 	def backup(self, backup_path):
 		"""creates a backup of all configuration files"""
-		if (not QUIET): print 'creating backups in ' + backup_path
+		if (not QUIET): print 'Creating backups in ' + backup_path
 		if (not TEST and not os.path.exists(backup_path)):
 			os.makedirs(backup_path)
 		for name, cfg in self.items():
@@ -360,7 +362,6 @@ class PionConfig(dict):
 			cfg.backup(vocab_path)
 	def save(self):
 		"""saves updated configuration file"""
-		if (not QUIET): print 'saving configuration files'
 		for name, cfg in self.items():
 			cfg.save()
 		for name, cfg in self.vocab.items():
@@ -423,14 +424,10 @@ def main():
 	# process upgrade rules
 	upgraded = False
 	for r in RULES:
-		# process a rule only if version patches pattern
-		if (re.search(r.regex, config.version)):
-			r.start(config)
-			r.process(config)
-			r.finish(config)
-			upgraded = True
+		upgraded = r.process(config) | upgraded
 	if (upgraded):
 		# config was updated
+		if (not QUIET): print 'Updating configuration from ' + current_version + ' to ' + config.version
 		if (options.output):
 			# save config to new output directory
 			config.update_paths(options.output)
@@ -439,7 +436,7 @@ def main():
 			config.backup(os.path.join(config.config_path, 'backup-' + current_version))
 		config.save()
 	else:
-		if (not QUIET): print 'configuration is up-to-date (' + current_version + ')'
+		if (not QUIET): print 'Configuration is up-to-date (' + current_version + ')'
 
 
 # call main() if script is being executed	
