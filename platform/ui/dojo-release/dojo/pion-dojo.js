@@ -22833,7 +22833,7 @@ if(_15eb.xhr.status==500){
 var _15ef=new pion._base.error.ServerErrorDialog({response_text:_15ea.responseText});
 _15ef.show();
 }else{
-var _15ef=new dijit.Dialog({title:"Error",content:_15eb.xhr.responseText});
+var _15ef=new dijit.Dialog({title:"Server response error: status code = "+_15eb.xhr.status,content:"url: "+_15eb.url+"<br />response text: "+_15eb.xhr.responseText});
 _15ef.show();
 }
 if(_15ed){

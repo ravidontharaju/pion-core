@@ -55,8 +55,8 @@ pion.handleXhrError = function(response, ioArgs, xhrFunc, finalErrorHandler) {
 			dialog.show();
 		} else {
 			var dialog = new dijit.Dialog({
-				title: 'Error',
-				content: ioArgs.xhr.responseText
+				title: 'Server response error: status code = ' + ioArgs.xhr.status,
+				content: 'url: ' + ioArgs.url + '<br />response text: ' + ioArgs.xhr.responseText
 			});
 			dialog.show();
 		}
