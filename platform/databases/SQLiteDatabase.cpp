@@ -175,6 +175,8 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 		table_name += buff;
 	}
 
+	bool DidItExist = boost::filesystem::exists(dbPartition(m_database_name, partition));
+
 	// build a SQL query to create the output table if it doesn't yet exist
 	std::string create_table_sql = m_create_log;
 	stringSubstitutes(create_table_sql, field_map, table_name);
@@ -182,24 +184,44 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 	// run the SQL query to create the table
 	runQuery(create_table_sql, m_create_log_attr);
 
+	// Now let's run a series of blind ALTER TABLE ADD COLUMNS to ensure every partition has all columns
+	// Need to do this, before adding/checking indexes, in case some columns are missing
+	for (unsigned p = 0; p < field_map.size(); p++) {
+		// SQLite3/ALTER: ALTER TABLE [db.]table ADD [COLUMN] coldef;
+		// SQLite3/coldef: colname [typename] n*[colconstraint]
+		std::string Sql;
+		Sql = "ALTER TABLE " + table_name + " ADD COLUMN " + field_map[p].first + ' ' +
+			m_sql_affinity[field_map[p].second.term_type];
+		// This would be the "right" way, checking columns, etc...
+		// if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
+		//	throw SQLiteAPIException(getSQLiteError());
+		// But, we're going to just "cram it in"
+		try {
+			sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr);
+		} catch (...) {
+		}
+	}
+
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] [dbname.] indexname ON tablename ( indexcolumn [, indexcolumn] )
 	//		indexcolumn:  indexcolumn [COLLATE collatename] [ ASC | DESC]
 	// DROP INDEX [IF EXISTS] [dbname.] indexname
-	for (unsigned i = 0; i < index_map.size(); i++) {
-		std::string Sql;
-		const std::string idxname = table_name + "_" + field_map[i].first + "_idx";
-		if (index_map[i] == "false" || index_map[i].empty())
-			Sql = "DROP INDEX IF EXISTS " + idxname;
-		else if (index_map[i] == "true")
-			Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
-		else if (index_map[i] == "unique")
-			Sql = "CREATE UNIQUE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
-		else
-			Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + index_map[i] + " )";
 
-		if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
-			throw SQLiteAPIException(getSQLiteError());
-	}
+	if (!DidItExist)	// Don't index/un-index if the table existed...
+		for (unsigned i = 0; i < index_map.size(); i++) {
+			std::string Sql;
+			const std::string idxname = table_name + "_" + field_map[i].first + "_idx";
+			if (index_map[i] == "false" || index_map[i].empty())
+				Sql = "DROP INDEX IF EXISTS " + idxname;
+			else if (index_map[i] == "true")
+				Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
+			else if (index_map[i] == "unique")
+				Sql = "CREATE UNIQUE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + field_map[i].first + " )";
+			else
+				Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + index_map[i] + " )";
+
+			if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
+				throw SQLiteAPIException(getSQLiteError());
+		}
 }
 
 void SQLiteDatabase::dropTable(std::string& table_name, unsigned partition)
