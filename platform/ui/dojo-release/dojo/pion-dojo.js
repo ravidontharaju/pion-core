@@ -23664,7 +23664,7 @@ _this.connect(_this.reactor.transformation_store,"onDelete","_updateCustomPutDat
 dojo.disconnect(h);
 });
 this.reactor.reloadGridStores();
-this.transformation_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Term",name:"Term",width:18,type:pion.widgets.TermTextCell},{field:"Type",name:"Transformation Type",width:10,type:dojox.grid.cells.Select,options:["AssignTerm","AssignValue","JoinTerm","JoinTerm (unique)","Lookup","Regex","Rules","SplitTerm","URLDecode","URLEncode"]},{field:"Value",name:"Value",width:"auto",formatter:pion.xmlCellFormatter2},{field:"Value",name:"Value",width:"auto",type:pion.widgets.TermTextCell},{field:"Sep",name:"Sep",width:"2",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
+this.transformation_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Term",name:"Term",width:18,type:pion.widgets.TermTextCell},{field:"Type",name:"Transformation Type",width:10,type:dojox.grid.cells.Select,options:["AssignValue","AssignTerm","Lookup","Rules","Regex","JoinTerm","JoinTerm (unique)","SplitTerm"]},{field:"Value",name:"Value",width:"auto",formatter:pion.xmlCellFormatter2},{field:"Value",name:"Value",width:"auto",type:pion.widgets.TermTextCell},{field:"Sep",name:"Sep",width:"2",formatter:pion.xmlCellFormatter},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
 this.transformation_grid=new dojox.grid.DataGrid({store:this.reactor.transformation_store,structure:this.transformation_grid_layout,singleClickEdit:true},document.createElement("div"));
 this.transformation_grid.term_column_index=0;
 this.transformation_grid.value_text_column_index=2;
@@ -23765,7 +23765,7 @@ return false;
 return true;
 }
 }else{
-if(type=="AssignTerm"||type=="JoinTerm"||type=="JoinTerm (unique)"||type=="SplitTerm"||type=="URLEncode"||type=="URLDecode"){
+if(type=="AssignTerm"||type=="JoinTerm"||type=="JoinTerm (unique)"||type=="SplitTerm"){
 if(this.layout.cells[this.value_term_column_index].hidden){
 this.layout.setColumnVisibility(this.value_text_column_index,false);
 this.layout.setColumnVisibility(this.value_term_column_index,true);
