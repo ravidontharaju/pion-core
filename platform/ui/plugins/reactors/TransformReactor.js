@@ -251,7 +251,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 					{ field: 'Term', name: 'Term', width: 18, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Transformation Type', width: 10, 
-						type: dojox.grid.cells.Select, options: [ 'AssignValue', 'AssignTerm', 'Lookup', 'Rules', 'Regex', 'JoinTerm', 'JoinTerm (unique)', 'SplitTerm' ] },
+						type: dojox.grid.cells.Select, options: [ 'AssignTerm', 'AssignValue', 'JoinTerm', 'JoinTerm (unique)', 'Lookup', 'Regex', 'Rules', 'SplitTerm', 'URLDecode', 'URLEncode' ] },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter2 },
 					{ field: 'Value', name: 'Value', width: 'auto',
@@ -372,7 +372,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			});
 			this.transformation_grid.canEdit = function(cell, row_index) {
 				switch (cell.field) {
-					// Disable editing of 'Value' cell if 'Type' is not 'AssignValue', 'AssignTerm', 'JoinTerm', 'JoinTerm (unique)' or 'SplitTerm'.
+					// Disable editing of 'Value' cell if 'Type' is not 'AssignValue', 'AssignTerm', 'JoinTerm', 'JoinTerm (unique)', 'SplitTerm', 'URLEncode' or 'URLDecode'.
 					// Otherwise, if the correct column is visible, enable editing, else make the correct column visible.
 					case 'Value':
 						var item = this.getItem(row_index);
@@ -385,7 +385,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							} else {
 								return true;
 							}
-						} else if (type == 'AssignTerm' || type == 'JoinTerm' || type == 'JoinTerm (unique)' || type == 'SplitTerm') {
+						} else if (type == 'AssignTerm' || type == 'JoinTerm' || type == 'JoinTerm (unique)' || type == 'SplitTerm' || type == 'URLEncode' || type == 'URLDecode') {
 							if (this.layout.cells[this.value_term_column_index].hidden) {
 								this.layout.setColumnVisibility(this.value_text_column_index, false);
 								this.layout.setColumnVisibility(this.value_term_column_index, true);
