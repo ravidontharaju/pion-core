@@ -84,6 +84,20 @@ TransformReactor/Transformations/Type = Regex
 			<SourceTerm>src-term</SourceTerm>
 [rpt]		<Regex exp="escape(key)">escape(format)</Regex>
 
+JoinTerm: Iterates over source-term's values, joins values using separator-string (defaults to none), produces single-value term.  Optionally eliminates duplicates from source-term (defaults to false).  If only one value results, then no separator.
+  <Transformation>
+    <Term>urn:vocab:foo#single-value</Term>
+    <Type>JoinTerm</Type>
+    <Value sep="," uniq="true">urn:vocab:foo#multi-value</Value>
+  </Transformation>
+ 
+SplitTerm: Iterates over source-term's values, splits each value on separator-string (required), produces multi-value term.  If separator does not exist in value, value is preserved unchanged.
+  <Transformation>
+    <Term>urn:vocab:foo#multi-value</Term>
+    <Type>SplitTerm</Type>
+    <Value sep=",">urn:vocab:foo#single-or-multi-value</Value>
+  </Transformation>
+
  */
 
 // TransformReactor member functions
@@ -173,6 +187,10 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			new_transform = new TransformRules(v, v[term_ref], transformation_node->children);
 		else if (type_str == "Regex")
 			new_transform = new TransformRegex(v, v[term_ref], transformation_node->children);
+		else if (type_str == "SplitTerm")
+			new_transform = new TransformSplitTerm(v, v[term_ref], transformation_node->children);
+		else if (type_str == "JoinTerm")
+			new_transform = new TransformJoinTerm(v, v[term_ref], transformation_node->children);
 		else
 			throw InvalidTransformation(type_str);
 
