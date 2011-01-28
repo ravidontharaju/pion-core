@@ -1433,6 +1433,40 @@ function deleteWorkspaceFromUI(workspace_pane) {
 	dijit.byId("mainTabContainer").removeChild(workspace_pane);
 }
 
+pion.reactors.deleteAllWorkspaces = function() {
+	var dfd = new dojo.Deferred();
+	dojo.xhrGet({
+		url: '/config/workspaces',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var workspaces = response.getElementsByTagName('Workspace');
+			if (workspaces.length == 0) {
+				dfd.callback();
+			} else {
+				num_workspaces_deleted = 0;
+				dojo.forEach(workspaces, function(workspace) {
+					var id = workspace.getAttribute('id');
+					dojo.xhrDelete({
+						url: '/config/workspaces/' + id,
+						handleAs: 'xml',
+						timeout: 5000,
+						load: function(response, ioArgs) {
+							if (++num_workspaces_deleted == workspaces.length) {
+								dfd.callback();
+							}
+						},
+						error: pion.getXhrErrorHandler(dojo.xhrDelete)
+					});
+				});
+			}
+		},
+		error: pion.handleXhrGetError
+	});
+	return dfd;
+}
+
 dojo.declare("pion.reactors.WorkspaceDialog",
 	[ dijit.Dialog ],
 	{

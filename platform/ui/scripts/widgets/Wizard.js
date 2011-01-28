@@ -539,39 +539,13 @@ pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 }
 
 pion.widgets.Wizard.deleteAllWorkspacesAndReload = function() {
-	// Delete the pion_edition cookie.
-	dojo.cookie('pion_edition', '', {expires: -1});
+	pion.reactors.deleteAllWorkspaces()
+	.addCallback(function() {
+		// Delete the pion_edition cookie.
+		dojo.cookie('pion_edition', '', {expires: -1});
 
-	dojo.xhrGet({
-		url: '/config/workspaces',
-		preventCache: true,
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			var workspaces = response.getElementsByTagName('Workspace');
-			if (workspaces.length == 0) {
-				// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
-				location.replace('/');
-			} else {
-				num_workspaces_deleted = 0;
-				dojo.forEach(workspaces, function(workspace) {
-					var id = workspace.getAttribute('id');
-					dojo.xhrDelete({
-						url: '/config/workspaces/' + id,
-						handleAs: 'xml',
-						timeout: 5000,
-						load: function(response, ioArgs) {
-							if (++num_workspaces_deleted == workspaces.length) {
-								// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
-								location.replace('/');
-							}
-						},
-						error: pion.getXhrErrorHandler(dojo.xhrDelete)
-					});
-				});
-			}
-		},
-		error: pion.handleXhrGetError
+		// Reload.  Since there are now no Reactors configured and no pion_edition cookie, the wizard will start.
+		location.replace('/');
 	});
 }
 

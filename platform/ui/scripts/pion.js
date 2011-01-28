@@ -642,6 +642,9 @@ pion.editionSetup = function(license_key_type) {
 				var wizard = dijit.byId('wizard');
 				wizard.start();
 
+				// Any workspaces must be empty, and the wizard will make its own workspace, so delete them.
+				pion.reactors.deleteAllWorkspaces();
+
 				// Since there are no reactors configured, any ReplayService that is configured is useless, so delete it.
 				pion.services.config_store.fetch({
 					onItem: function(item) {
