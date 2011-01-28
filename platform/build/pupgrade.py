@@ -45,7 +45,7 @@ class Upgrade30xTo31x(UpgradeRule):
 		UpgradeRule.__init__(self, version, regex)
 	def update_users(self, cfg):
 		for u in cfg.root.iter('{%s}User' % PION_NS):
-			if (VERBOSE): print 'Updating User configuration: ' + u.get('id')
+			if (VERBOSE): print('Updating User configuration: ' + u.get('id'))
 			# iterate elements, get permissions and remove Permit nodes
 			permissions = list()
 			for n in u.getchildren():
@@ -73,7 +73,7 @@ class Upgrade30xTo31x(UpgradeRule):
 					p = etree.SubElement(u, '{%s}Permission' % PION_NS)
 					p.set('type', 'ReplayService')
 					etree.SubElement(p, '{%s}Unrestricted' % PION_NS).text = 'true'
-		if (not QUIET and not TEST): print 'WARNING: Please use Pion\'s web interface to review user permissions.'
+		if (not QUIET and not TEST): print('WARNING: Please use Pion\'s web interface to review user permissions.')
 	def add_new_workspace(self, cfg, workspace_id, workspace_name):
 		# create a workspace node
 		new_node = etree.Element('{%s}Workspace' % PION_NS)
@@ -279,7 +279,7 @@ class XMLConfig(object):
 	def __init__(self, file, name, rootname = None):
 		self.name = name
 		self.file = file
-		if (VERBOSE): print self.name + ': parsing XML configuration file: ' + self.file
+		if (VERBOSE): print(self.name + ': parsing XML configuration file: ' + self.file)
 		parser = etree.XMLParser(remove_blank_text=True)
 		self.tree = etree.parse(self.file, parser)
 		if (not rootname):
@@ -295,11 +295,11 @@ class XMLConfig(object):
 		return self.tree.find('{%s}%s' % (PION_NS,name)).text
 	def backup(self, path):
 		"""creates a backup of the configuration file"""
-		if (VERBOSE): print self.name + ': backing up ' + self.file + ' to ' + path
+		if (VERBOSE): print(self.name + ': backing up ' + self.file + ' to ' + path)
 		if (not TEST): shutil.copy(self.file, path)
 	def save(self):
 		"""saves updated configuration file"""
-		if (not QUIET): print self.name + ': saving ' + self.file
+		if (not QUIET): print(self.name + ': saving ' + self.file)
 		if (not TEST):
 			self.tree.write(self.file, pretty_print=True, encoding='UTF-8', xml_declaration='True')
 	def set_version(self, version):
@@ -338,10 +338,10 @@ class PionConfig(dict):
 		self.plugin_path = os.path.join(self.config_path, platform_cfg.get('PluginPath'))
 		self.data_dir = os.path.join(self.config_path, platform_cfg.get('DataDirectory'))
 		if (VERBOSE):
-			print 'log configuration file: ' + self.logconfig_file
-			print 'path to plugin files: ' + self.plugin_path
-			print 'data directory: ' + self.data_dir
-			print 'current version: ' + self.version
+			print('log configuration file: ' + self.logconfig_file)
+			print('path to plugin files: ' + self.plugin_path)
+			print('data directory: ' + self.data_dir)
+			print('current version: ' + self.version)
 	def parse(self, file, name, rootname = None):
 		"""parses a standard Pion XML configuration file"""
 		cfg = XMLConfig(os.path.join(self.config_path, file), name, rootname)
@@ -349,7 +349,7 @@ class PionConfig(dict):
 		return cfg
 	def backup(self, backup_path):
 		"""creates a backup of all configuration files"""
-		if (not QUIET): print 'Creating backups in ' + backup_path
+		if (not QUIET): print('Creating backups in ' + backup_path)
 		if (not TEST and not os.path.exists(backup_path)):
 			os.makedirs(backup_path)
 		for name, cfg in self.items():
@@ -402,7 +402,7 @@ def parse_args():
 	options, arguments = parser.parse_args()		
 	# check validity of arguments
 	if (len(arguments) != 1):
-		print 'error: No configuration path argument was specified'
+		print('error: No configuration path argument was specified')
 		sys.exit(1)
 	options.config_path = arguments[0]
 	return options
@@ -427,7 +427,7 @@ def main():
 		upgraded = r.process(config) | upgraded
 	if (upgraded):
 		# config was updated
-		if (not QUIET): print 'Updating configuration from ' + current_version + ' to ' + config.version
+		if (not QUIET): print('Updating configuration from ' + current_version + ' to ' + config.version)
 		if (options.output):
 			# save config to new output directory
 			config.update_paths(options.output)
@@ -436,7 +436,7 @@ def main():
 			config.backup(os.path.join(config.config_path, 'backup-' + current_version))
 		config.save()
 	else:
-		if (not QUIET): print 'Configuration is up-to-date (' + current_version + ')'
+		if (not QUIET): print('Configuration is up-to-date (' + current_version + ')')
 
 
 # call main() if script is being executed	
