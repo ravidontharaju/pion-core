@@ -389,6 +389,7 @@ private:
 			// Use u_strFromUTF8Lenient instead?
 			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf.get(), text_buf_len, m_collator, NULL, &errorCode);
 			int pos = usearch_first(ss, &errorCode);
+			usearch_close(ss);
 			// TODO: check errorCode.
 			return (pos != USEARCH_DONE);
 		}
