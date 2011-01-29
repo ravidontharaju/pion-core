@@ -360,7 +360,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			// found -> extract Basic authenticated username
 			std::string username;
 			const std::string base64_encoded = authorization_header.substr(6);
-			if (HTTPTypes::base64_decode(base64_encoded, username)) {
+			if (algo::base64_decode(base64_encoded, username)) {
 				std::size_t pos = username.find(':');
 				if (pos != std::string::npos) {
 					username.resize(pos);

@@ -29,7 +29,7 @@
 #include <pion/PionException.hpp>
 #include <pion/PionHashMap.hpp>
 #include <pion/PionDateTime.hpp>
-#include <pion/net/HTTPTypes.hpp>
+#include <pion/PionAlgorithms.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/Vocabulary.hpp>
 
@@ -611,7 +611,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			if (ss.size() > 0) {
 				if (log_urlencode) {
 					std::string temp_str(ss.get());
-					oss << pion::net::HTTPTypes::url_encode(temp_str);
+					oss << algo::url_encode(temp_str);
 				} else {
 					oss.write(ss.get(), ss.size());
 				}
@@ -624,7 +624,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			if (ss.size() > 0) {
 				if (log_urlencode) {
 					std::string temp_str(ss.get());
-					temp_str = pion::net::HTTPTypes::url_encode(temp_str);
+					temp_str = algo::url_encode(temp_str);
 					if (temp_str.size() > log_term.term_size)
 						temp_str.resize(log_term.term_size);
 					oss << temp_str;
@@ -645,7 +645,7 @@ inline void LogCodec::LogField::write(std::ostream& out, const pion::platform::E
 			if (log_urlencode) {
 				std::string temp_str;
 				log_time_facet.toString(temp_str, dt);
-				oss << pion::net::HTTPTypes::url_encode(temp_str);
+				oss << algo::url_encode(temp_str);
 			} else {
 				log_time_facet.write(oss, dt);
 			}
@@ -708,7 +708,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_BLOB:
 		case pion::platform::Vocabulary::TYPE_ZBLOB:
 			if (log_urlencode) {
-				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				std::string temp_str(algo::url_decode(buf));
 				e.setString(log_term.term_ref, temp_str);
 			} else {
 				e.setString(log_term.term_ref, buf);
@@ -716,7 +716,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
 			if (log_urlencode) {
-				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				std::string temp_str(algo::url_decode(buf));
 				if (temp_str.size() > log_term.term_size)
 					temp_str.resize(log_term.term_size);
 				e.setString(log_term.term_ref, temp_str);
@@ -732,7 +732,7 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		{
 			PionDateTime dt;
 			if (log_urlencode) {
-				std::string temp_str(pion::net::HTTPTypes::url_decode(buf));
+				std::string temp_str(algo::url_decode(buf));
 				log_time_facet.fromString(temp_str, dt);
 			} else {
 				log_time_facet.fromString(buf, dt);

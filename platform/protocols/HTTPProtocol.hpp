@@ -30,6 +30,7 @@
 #include <boost/regex.hpp>
 #include <unicode/ucnv.h>
 #include <pion/PionException.hpp>
+#include <pion/PionAlgorithms.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/net/HTTPParser.hpp>
 #include <pion/net/HTTPRequest.hpp>
@@ -720,7 +721,7 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 	boost::match_results<std::string::const_iterator> mr;
 	while (range.first != range.second) {
 		const std::string content_ref = (url_decode
-			? pion::net::HTTPTypes::url_decode(range.first->second)
+			? algo::url_decode(range.first->second)
 			: range.first->second);
 		if ( m_max_size > 0 && ! content_ref.empty() ) {
 			if ( m_match.empty() ) {

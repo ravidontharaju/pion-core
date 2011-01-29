@@ -20,6 +20,7 @@
 #include <sstream>
 #include <boost/bind.hpp>
 #include <pion/PionId.hpp>
+#include <pion/PionAlgorithms.hpp>
 #include <pion/net/HTTPResponse.hpp>
 #include <pion/net/HTTPResponseWriter.hpp>
 #include "pion/platform/Event.hpp"
@@ -244,7 +245,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("show");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_show_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -252,7 +253,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("unshow");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_show_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -260,7 +261,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("hide");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_suppressed_terms.insert(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -268,7 +269,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("unhide");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_suppressed_terms.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
@@ -276,7 +277,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("filter");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
 			const Vocabulary::TermRef tref = m_vocab_ptr->findTerm(urnvocab + *tok_iter);
@@ -294,7 +295,7 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 
 	qpi = qp.find("unfilter");
 	if (qpi != qp.end()) {
-		std::string str(HTTPTypes::url_decode(qpi->second));
+		std::string str(algo::url_decode(qpi->second));
 		tokenizer tokens(str, sep);
 		for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
 			m_filtered_events.erase(m_vocab_ptr->findTerm(urnvocab + *tok_iter));
