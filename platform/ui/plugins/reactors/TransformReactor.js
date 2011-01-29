@@ -4,6 +4,7 @@ dojo.require("pion.widgets.TermTextBox");
 dojo.require("pion.widgets.SimpleSelect");
 dojo.require("pion.terms");
 dojo.require("dojo.data.ItemFileWriteStore");
+dojo.require("dijit.Tooltip");
 dojo.require("dojox.grid.DataGrid");
 dojo.require("dojox.grid.cells.dijit");
 
@@ -102,6 +103,16 @@ dojo.declare("plugins.reactors.TransformReactor",
 							};
 							return regex_object;
 						});
+					} else if (new_t_item_object.Type == 'JoinTerm') {
+						var value = store.getValue(t_item, 'Value');
+						new_t_item_object.Value = value;
+						new_t_item_object.Sep = store.getValue(value, '@sep');
+						if (store.getValue(value, '@uniq') == 'true')
+							new_t_item_object.Type = 'JoinTerm (unique)';
+					} else if (new_t_item_object.Type == 'SplitTerm') {
+						var value = store.getValue(t_item, 'Value');
+						new_t_item_object.Value = value;
+						new_t_item_object.Sep = store.getValue(value, '@sep');
 					} else {
 						new_t_item_object.Value = store.getValue(t_item, 'Value');
 					}
@@ -129,9 +140,9 @@ dojo.declare("plugins.reactors.TransformReactor",
 				onItem: function(item) {
 					put_data += '<Transformation>';
 					put_data += '<Term>' + t_store.getValue(item, 'Term') + '</Term>';
-					put_data += '<Type>' + t_store.getValue(item, 'Type') + '</Type>';
 					var type = t_store.getValue(item, 'Type');
 					if (type == 'Lookup') {
+						put_data += '<Type>Lookup</Type>';
 						put_data += pion.makeXmlLeafElementFromItem(t_store, item, 'LookupTerm');
 						put_data += pion.makeXmlLeafElementFromItem(t_store, item, 'Match');
 						put_data += pion.makeXmlLeafElementFromItem(t_store, item, 'Format');
@@ -141,6 +152,7 @@ dojo.declare("plugins.reactors.TransformReactor",
 							put_data += '<Lookup key="' + pion.escapeXml(lookup.Key) + '">' + pion.escapeXml(lookup.Value) + '</Lookup>';
 						});
 					} else if (type == 'Rules') {
+						put_data += '<Type>Rules</Type>';
 						put_data += pion.makeXmlLeafElement('StopOnFirstMatch', plugins.reactors.TransformReactor.getBool(t_store, item, 'StopOnFirstMatch').toString());
 						dojo.forEach(t_store.getValues(item, 'Rule'), function(rule) {
 							put_data += '<Rule>';
@@ -152,11 +164,25 @@ dojo.declare("plugins.reactors.TransformReactor",
 							put_data += '</Rule>';
 						});
 					} else if (type == 'Regex') {
+						put_data += '<Type>Regex</Type>';
 						put_data += pion.makeXmlLeafElement('SourceTerm', t_store.getValue(item, 'SourceTerm'));
 						dojo.forEach(t_store.getValues(item, 'Regex'), function(regex) {
 							put_data += '<Regex exp="' + pion.escapeXml(regex.Exp) + '">' + pion.escapeXml(regex.Format) + '</Regex>';
 						});
+					} else if (type == 'JoinTerm') {
+						put_data += '<Type>JoinTerm</Type>';
+						put_data += '<Value sep="' + pion.escapeXml(t_store.getValue(item, 'Sep')) + '">' +
+									pion.escapeXml(t_store.getValue(item, 'Value')) + '</Value>';
+					} else if (type == 'JoinTerm (unique)') {
+						put_data += '<Type>JoinTerm</Type>';
+						put_data += '<Value sep="' + pion.escapeXml(t_store.getValue(item, 'Sep')) + '" uniq="true">' +
+									pion.escapeXml(t_store.getValue(item, 'Value')) + '</Value>';
+					} else if (type == 'SplitTerm') {
+						put_data += '<Type>SplitTerm</Type>';
+						put_data += '<Value sep="' + pion.escapeXml(t_store.getValue(item, 'Sep')) + '">' +
+									pion.escapeXml(t_store.getValue(item, 'Value')) + '</Value>';
 					} else {
+						put_data += '<Type>' + type + '</Type>';
 						put_data += pion.makeXmlLeafElement('Value', t_store.getValue(item, 'Value'));
 					}
 					put_data += '</Transformation>';
@@ -216,12 +242,14 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 				rows: [
 					{ field: 'Term', name: 'Term', width: 18, 
 						type: pion.widgets.TermTextCell },
-					{ field: 'Type', name: 'Transformation Type', width: 12, 
-						type: dojox.grid.cells.Select, options: [ 'AssignValue', 'AssignTerm', 'Lookup', 'Rules', 'Regex' ] },
+					{ field: 'Type', name: 'Transformation Type', width: 10, 
+						type: dojox.grid.cells.Select, options: [ 'AssignValue', 'AssignTerm', 'Lookup', 'Rules', 'Regex', 'JoinTerm', 'JoinTerm (unique)', 'SplitTerm' ] },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter2 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						type: pion.widgets.TermTextCell },
+					{ field: 'Sep', name: 'Sep', width: '2',
+						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
@@ -336,7 +364,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			});
 			this.transformation_grid.canEdit = function(cell, row_index) {
 				switch (cell.field) {
-					// Disable editing of 'Value' cell if 'Type' is not 'AssignValue' or 'AssignTerm'.
+					// Disable editing of 'Value' cell if 'Type' is not 'AssignValue', 'AssignTerm', 'JoinTerm', 'JoinTerm (unique)' or 'SplitTerm'.
 					// Otherwise, if the correct column is visible, enable editing, else make the correct column visible.
 					case 'Value':
 						var item = this.getItem(row_index);
@@ -349,7 +377,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							} else {
 								return true;
 							}
-						} else if (type == 'AssignTerm') {
+						} else if (type == 'AssignTerm' || type == 'JoinTerm' || type == 'JoinTerm (unique)' || type == 'SplitTerm') {
 							if (this.layout.cells[this.value_term_column_index].hidden) {
 								this.layout.setColumnVisibility(this.value_text_column_index, false);
 								this.layout.setColumnVisibility(this.value_term_column_index, true);
@@ -361,10 +389,27 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							return false;
 						}
 
+					case 'Sep':
+						var item = this.getItem(row_index);
+						var type = this.store.getValue(item, 'Type').toString();
+						return (type == 'JoinTerm' || type == 'JoinTerm (unique)' || type == 'SplitTerm');
+
 					default:
 						return true;
 				}
 			}
+
+			var showTooltip = function(e) {
+				if (e.cell.name == 'Sep') {
+					dijit.showTooltip('For type SplitTerm, a set of separator characters, and for type JoinTerm, a separator string.', e.cellNode);
+				}
+			}
+			var hideTooltip = function(e) {
+				dijit.hideTooltip(e.cellNode);
+				dijit._masterTT._onDeck = null;
+			}
+			dojo.connect(this.transformation_grid, "onHeaderCellMouseOver", showTooltip);
+			dojo.connect(this.transformation_grid, "onHeaderCellMouseOut", hideTooltip);
 		},
 		_handleAddNewTransformation: function() {
 			this.reactor.transformation_store.newItem({
