@@ -29,18 +29,18 @@ $PACKAGE_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME) );
 $TARBALL_NAME = $PACKAGE_NAME . "-" . $PLATFORM;
 $CONFIG_DIR = File::Spec->catdir( ($PACKAGE_DIR, "config") );
 $PLUGINS_DIR = File::Spec->catdir( ($PACKAGE_DIR, "plugins") );
-$LIBS_DIR = ($PLATFORM =~ /^win32/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
+$LIBS_DIR = ($PLATFORM =~ /^win/i) ? $PACKAGE_DIR : File::Spec->catdir( ($PACKAGE_DIR, "libs") );
 $UI_DIR = File::Spec->catdir( ($PACKAGE_DIR, "ui") );
 $BOOST_LIB_GLOB = "{thread,system,filesystem,regex,date_time,signals,iostreams}";
 $ICU_LIB_GLOB = "{data,i18n,uc}";
 
 # platform-specific variables
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	$SHARED_LIB_SUFFIX = "dll";
 	$PLUGIN_LIB_SUFFIX = "dll";
 	#$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || File::Spec->rootdir();
 	$SYSTEM_LIB_DIR = $ENV{"PION_LIBS"} || "C:/";
-	if ($PLATFORM =~ /^win32_x64/i) {
+	if ($PLATFORM =~ /^win64/i) {
 		$DLL_FULL_DIR = "release_dll_full_x64";
 		$LOGGING_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "log4cplus-1.0.3", "bin", "x64"), "log4cplus." . $SHARED_LIB_SUFFIX);
 		$YAJL_LIB = File::Spec->catfile( (($SYSTEM_LIB_DIR), "yajl-1.0.9", "bin", "x64"), "yajl." . $SHARED_LIB_SUFFIX);
@@ -91,7 +91,7 @@ if ($PLATFORM =~ /^win32/i) {
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "." . $SHARED_LIB_SUFFIX . ".1.*");
 }
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	$PION_COMMON_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-common." . $SHARED_LIB_SUFFIX);
 	$PION_NET_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-net." . $SHARED_LIB_SUFFIX);
 	$PION_PLATFORM_GLOB = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-platform." . $SHARED_LIB_SUFFIX);
@@ -131,7 +131,7 @@ mkdir($UI_DIR) unless -d $UI_DIR;
 
 # copy our third party library files into "libs"
 print "Copying system library files..\n";
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	copy($ICONV_LIB, $LIBS_DIR);
 	copy($LIBXML_LIB, $LIBS_DIR);
 	copy($ZLIB_LIB, $LIBS_DIR);
@@ -176,7 +176,7 @@ foreach (bsd_glob($NET_PLUGINS_GLOB)) {
 	copy($_, $PLUGINS_DIR);
 }
 
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	foreach (@PLATFORM_PLUGINS) {
 		copy($_, $PLUGINS_DIR);
 	}
@@ -206,7 +206,7 @@ mkdir(File::Spec->catdir( ($PACKAGE_DIR, "data") ));
 # copy other misc files
 copy("COPYING", File::Spec->catfile($PACKAGE_DIR, "LICENSE.txt"));
 copy("ChangeLog", File::Spec->catfile($PACKAGE_DIR, "HISTORY.txt"));
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "README.bin.msvc"),
 		File::Spec->catfile($PACKAGE_DIR, "README.txt"));
 } else {
@@ -229,16 +229,16 @@ copy(File::Spec->catfile( ("platform", "build"), "pmon.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
 copy(File::Spec->catfile( ("platform", "build"), "pupgrade.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py")) if (! ($PLATFORM =~ /^win32/i));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^win32/i));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py")) if (! ($PLATFORM =~ /^win32/i));
+chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py")) if (! ($PLATFORM =~ /^win/i));
+chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^win/i));
+chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py")) if (! ($PLATFORM =~ /^win/i));
 
 # copy the server exe
 copy($SERVER_EXE, $PACKAGE_DIR);
 
 # copy python26.dll for windows	builds
-if ($PLATFORM =~ /^win32/i) {
-	if ($PLATFORM =~ /^win32_x64/i) {
+if ($PLATFORM =~ /^win/i) {
+	if ($PLATFORM =~ /^win64/i) {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty", "x64"), "python26.dll"),
 			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
 	} else {
@@ -250,7 +250,7 @@ if ($PLATFORM =~ /^win32/i) {
 # platform-specific finishing touches
 print "Creating binary tarballs..\n";
 
-if ($PLATFORM =~ /^win32/i) {
+if ($PLATFORM =~ /^win/i) {
 	# copy startup script
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
@@ -305,8 +305,8 @@ if ($PLATFORM =~ /^win32/i) {
 	}
 }
 
-if ($PLATFORM =~ /^win32/i) {
-	if ($PLATFORM =~ /^win32_x64/i) {
+if ($PLATFORM =~ /^win/i) {
+	if ($PLATFORM =~ /^win64/i) {
 		$INSTALLER_PRJ_FILE = "pion-platform-64.aip";
 		$INSTALLER_OUT_FILE = "pion-platform-64.msi";
 	} else {
