@@ -1,3 +1,32 @@
+Version 3.1.5 (2011-01-30)
+==========================
+
+* Universal support for i18n character sets (592, 778, 935, 941)
+* Incorporated log notifications & management into UI (743, 986, 1053, 1054)
+* New MonitorService to view event streams between reactors (956, 997)
+* Cross-workspace connections & fine-grained permissions (645, 683, 684, 862)
+* LogInput & LogOutput Reactors now use DataDirectory for relative paths (967)
+* PythonReactor - Added new pymodules directory and clickstream module (979)
+* PythonReactor - fixed "Python26.dll not found" error on Windows (998)
+* HTTPProtocol - allow multiple extractions per rule (1034)
+* Various Event memory management optimizations to reduce footprint (205)
+* Modified how a universal Vocabulary is managed within the platform API (970)
+* Protocol::readNext() can now return multiple events using EventVector (971)
+* All configuration changes made via the web UI are now logged (772)
+* Added "Copy Reactor" context menu link in UI (895)
+* Added Help links in Pion UI to new docs available on pion.org (1010)
+* Fixed Logout UI link for users of Google Chrome (1042)
+* Removed dojo Javascript files that were flagged as security risks (880)
+* Wizard - now caches responses and re-uses them on subsequent runs (879)
+* Wizard - pre-populate with default Google & Omniture cookies (881)
+* Wizard - removed redundant warning before saving configuration (918)
+* pget.py now longer displays SSL key password as you type it in (882)
+* Added pupgrade.py script to help automate Pion upgrades (865)
+* Windows installer now sets up Pion to run as a service (884, 904)
+* Pion for Windows is now being built using VC9 on WinServ2003 (957, 958, 837)
+* Now building Pion for 64-bit Windows platforms (738, 939, 963, 977)
+
+
 Version 3.0.21 (2011-01-25)
 ===========================
 
