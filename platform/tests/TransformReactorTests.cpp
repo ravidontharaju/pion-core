@@ -473,6 +473,92 @@ BOOST_AUTO_TEST_CASE(checkRuleTypeIsNotDefinedWithEventType) {
 	sendEventAndValidateOutput(e, transformer_id);
 }
 
+BOOST_AUTO_TEST_CASE(checkSplitTerm) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>SplitTerm</Type>"
+			"<Value sep=\"|\">urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello|world");
+
+	m_expected_terms[m_sc_content_term_ref] = "hello";
+
+	// See if the |world drops off
+	sendEventAndValidateOutput(e, transformer_id);
+
+	xmlNodePtr config_ptr2 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>JoinTerm</Type>"
+			"<Value sep=\",\">urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id2 = m_reaction_engine->addReactor(config_ptr2);
+
+	m_expected_terms[m_sc_content_term_ref] = "hello,world";
+
+	// See if we can glue them together again, with a different separator
+	sendEventAndValidateOutput(e, transformer_id2);
+}
+
+BOOST_AUTO_TEST_CASE(checkJoinTerm) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>JoinTerm</Type>"
+			"<Value sep=\",\">urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello");
+	e->setString(m_sc_content_term_ref, "world");
+
+	// See if the two values get glued together into one value
+	m_expected_terms[m_sc_content_term_ref] = "hello,world";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+BOOST_AUTO_TEST_CASE(checkJoinUniqueTerm) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>JoinTerm</Type>"
+			"<Value sep=\",\" uniq=\"true\">urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello");
+	e->setString(m_sc_content_term_ref, "hello");
+	e->setString(m_sc_content_term_ref, "world");
+
+	// See if the three values get glued together into one value, with the dupe hello dropped
+	m_expected_terms[m_sc_content_term_ref] = "hello,world";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
