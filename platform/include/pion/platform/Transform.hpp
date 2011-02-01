@@ -22,10 +22,12 @@
 
 #include <cctype>
 #include <cstring>
+#include <set>
 #include <boost/regex.hpp>
 #include <boost/regex/icu.hpp>
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/tokenizer.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -127,6 +129,8 @@ public:
 	static const std::string			SOURCE_TERM_ELEMENT_NAME;
 	static const std::string			REGEXP_ELEMENT_NAME;
 	static const std::string			REGEXP_ATTRIBUTE_NAME;
+	static const std::string			SEP_ATTRIBUTE_NAME;
+	static const std::string			UNIQ_ATTRIBUTE_NAME;
 };
 
 	/**
@@ -246,6 +250,138 @@ public:
 		return AnyCopied;	// true, if any were copied...
 	}
 };
+
+/// TransformSplitTerm -- Transformation of splitting a term to multiple values based on separator
+class PION_PLATFORM_API TransformSplitTerm
+	: public Transform
+{
+	/// identifies the Vocabulary Term that is being copied from
+	Vocabulary::Term			m_src_term;
+
+	/// separator characters
+	boost::char_separator<char> m_sep;
+
+public:
+
+	/**
+	 * TransformSplitTerm constructs a transformation assignment based on a source term
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
+	 */
+	TransformSplitTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
+		: Transform(v, term)
+	{
+		// <Term>src-term</Term>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+			throw MissingTransformField("Missing Source-Term in TransformationSplitTerm");
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid Source-Term in TransformationSplitTerm");
+		m_src_term = v[term_ref];
+		std::string separator = ConfigManager::getAttribute(SEP_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(VALUE_ELEMENT_NAME, config_ptr));
+		if (separator.empty())
+			throw MissingTransformField("Missing separator value in TransformationSplitTerm");
+		m_sep = boost::char_separator<char>(separator.c_str());
+	}
+
+	/**
+	 * transform iterates through all values, and splits each into separate value
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
+	virtual bool transform(EventPtr& d, const EventPtr& s)
+	{
+		bool AnyCopied = false;
+		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
+		std::string str;
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
+			tokenizer str_tok(s->write(str, ec->value, m_src_term), m_sep);
+			for (tokenizer::iterator tok_iter = str_tok.begin(); tok_iter != str_tok.end(); ++tok_iter)
+				AnyCopied |= AssignValue(d, m_term, *tok_iter);
+		}
+		return AnyCopied;	// true, if any were copied...
+	}
+};
+
+/// TransformJoinTerm -- Transformation of joining multiple values of a term with a separator
+class PION_PLATFORM_API TransformJoinTerm
+	: public Transform
+{
+	/// identifies the Vocabulary Term that is being copied from
+	Vocabulary::Term			m_src_term;
+
+	/// separator characters
+	std::string					m_separator;
+
+	/// Unique values only?
+	bool						m_unique;
+
+public:
+
+	/**
+	 * TransformJoinTerm constructs a transformation based on joining multivalues from source term
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
+	 */
+	TransformJoinTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
+		: Transform(v, term), m_unique(false)
+	{
+		// <Term>src-term</Term>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+			throw MissingTransformField("Missing Source-Term in TransformationJoinTerm");
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid Source-Term in TransformationJoinTerm");
+		m_src_term = v[term_ref];
+		m_separator = ConfigManager::getAttribute(SEP_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(VALUE_ELEMENT_NAME, config_ptr));
+		if (m_separator.empty())
+			throw MissingTransformField("Missing separator value in TransformationSplitTerm");
+		std::string uniq = ConfigManager::getAttribute(UNIQ_ATTRIBUTE_NAME, ConfigManager::findConfigNodeByName(VALUE_ELEMENT_NAME, config_ptr));
+		if (uniq == "true")
+			m_unique = true;
+	}
+
+	/**
+	 * transform combines multiple values of source term into destination
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
+	virtual bool transform(EventPtr& d, const EventPtr& s)
+	{
+		bool AnyCopied = false;
+		std::set<std::string> seen;
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
+		std::string result, str;
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
+			s->write(str, ec->value, m_src_term);
+			if (!str.empty() && seen.find(str) == seen.end()) {
+				if (!result.empty())
+					result += m_separator;
+				result += str;
+				if (m_unique)
+					seen.insert(str);
+			}
+		}
+		if (!result.empty())
+			AnyCopied |= AssignValue(d, m_term, result);
+		return AnyCopied;	// true, if any were copied...
+	}
+};
+
+
 
 /// TransformLookup -- Transformation based on doing lookups
 class PION_PLATFORM_API TransformLookup

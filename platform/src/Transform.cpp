@@ -44,5 +44,7 @@ const std::string			Transform::SOURCE_TERM_ELEMENT_NAME = "SourceTerm";
 const std::string			Transform::REGEXP_ELEMENT_NAME = "Regex";
 const std::string			Transform::REGEXP_ATTRIBUTE_NAME = "exp";
 
+const std::string			Transform::SEP_ATTRIBUTE_NAME = "sep";
+const std::string			Transform::UNIQ_ATTRIBUTE_NAME = "uniq";
 }
 }
