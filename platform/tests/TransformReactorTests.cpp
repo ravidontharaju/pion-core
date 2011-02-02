@@ -762,6 +762,47 @@ BOOST_AUTO_TEST_CASE(checkJoinUniqueTerm) {
 	sendEventAndValidateOutput(e, transformer_id);
 }
 
+BOOST_AUTO_TEST_CASE(checkURLEncodeDecode) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>URLEncode</Type>"
+			"<Value>urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_sc_content_term_ref, "hello?and what");
+
+	// Verify that ? turns into %3F and space into %20
+	m_expected_terms[m_sc_content_term_ref] = "hello%3Fand%20what";
+
+	sendEventAndValidateOutput(e, transformer_id);
+
+
+	// Verify that the changed strings turns back via URLDecode
+	xmlNodePtr config_ptr2 = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>URLDecode</Type>"
+			"<Value>urn:vocab:clickstream#sc-content</Value>"
+		"</Transformation>");
+	std::string transformer_id2 = m_reaction_engine->addReactor(config_ptr2);
+
+	// See if the original string comes back, i.e. %3F turns into ? and %20 turns into space
+	m_expected_terms[m_sc_content_term_ref] = "hello?and what";
+
+	sendEventAndValidateOutput(e, transformer_id2);
+}
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END()

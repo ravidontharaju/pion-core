@@ -191,6 +191,10 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			new_transform = new TransformSplitTerm(v, v[term_ref], transformation_node->children);
 		else if (type_str == "JoinTerm")
 			new_transform = new TransformJoinTerm(v, v[term_ref], transformation_node->children);
+		else if (type_str == "URLEncode")
+			new_transform = new TransformURLEncode(v, v[term_ref], transformation_node->children);
+		else if (type_str == "URLDecode")
+			new_transform = new TransformURLDecode(v, v[term_ref], transformation_node->children);
 		else
 			throw InvalidTransformation(type_str);
 

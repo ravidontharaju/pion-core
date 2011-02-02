@@ -28,6 +28,7 @@
 #include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/tokenizer.hpp>
+#include <pion/PionAlgorithms.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -250,6 +251,105 @@ public:
 		return AnyCopied;	// true, if any were copied...
 	}
 };
+
+/// TransformURLEncode -- Transformation of URLEncoding source term into destination
+class PION_PLATFORM_API TransformURLEncode
+	: public Transform
+{
+	/// identifies the Vocabulary Term that is being copied from
+	Vocabulary::Term			m_src_term;
+
+public:
+
+	/**
+	 * TransformURLEncode constructs a transformation of URLEncoding
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
+	 */
+	TransformURLEncode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
+		: Transform(v, term)
+	{
+		// <Term>src-term</Term>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+			throw MissingTransformField("Missing Source-Term in TransformationURLEncode");
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid Source-Term in TransformationURLEncode");
+		m_src_term = v[term_ref];
+	}
+
+	/**
+	 * transform Assigns a URLEncoded copy of source term
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
+	virtual bool transform(EventPtr& d, const EventPtr& s)
+	{
+		bool AnyCopied = false;
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
+			std::string str;
+			AnyCopied |= AssignValue(d, m_term, algo::url_encode(s->write(str, ec->value, m_src_term)));
+		}
+		return AnyCopied;	// true, if any were copied...
+	}
+};
+
+/// TransformURLDecode  -- Transformation of URLDecoding source term into destination
+class PION_PLATFORM_API TransformURLDecode
+	: public Transform
+{
+	/// identifies the Vocabulary Term that is being copied from
+	Vocabulary::Term			m_src_term;
+
+public:
+
+	/**
+	 * TransformURLDecode constructs a transformation of URLDecoding
+	 *
+	 * @param v Vocabulary to use
+	 * @param term The source term type to use
+	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
+	 */
+	TransformURLDecode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
+		: Transform(v, term)
+	{
+		// <Term>src-term</Term>
+		std::string term_id;
+		if (! ConfigManager::getConfigOption(VALUE_ELEMENT_NAME, term_id, config_ptr))
+			throw MissingTransformField("Missing Source-Term in TransformationURLDecode");
+		Vocabulary::TermRef term_ref = v.findTerm(term_id);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			throw MissingTransformField("Invalid Source-Term in TransformationURLDecode");
+		m_src_term = v[term_ref];
+	}
+
+	/**
+	 * transform Assigns a URLDecoded copy of source term
+	 *
+	 * @param d Destination event (pointer) to modify term
+	 * @param s Source event to copy the termS/valueS from
+	 *
+	 * @return true if the Transformation occured; false if it did not
+	 */
+	virtual bool transform(EventPtr& d, const EventPtr& s)
+	{
+		bool AnyCopied = false;
+		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
+		for (Event::ConstIterator ec = values_range.first; ec != values_range.second; ec++) {
+			std::string str;
+			AnyCopied |= AssignValue(d, m_term, algo::url_decode(s->write(str, ec->value, m_src_term)));
+		}
+		return AnyCopied;	// true, if any were copied...
+	}
+};
+
 
 /// TransformSplitTerm -- Transformation of splitting a term to multiple values based on separator
 class PION_PLATFORM_API TransformSplitTerm
