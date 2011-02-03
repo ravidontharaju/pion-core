@@ -168,15 +168,17 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 								unsigned partition)
 {
 	PION_ASSERT(is_open());
-	PION_LOG_DEBUG(m_logger, "createTable " + table_name);
 	// If partition is defined, change table_name
 	if (partition) {
 		char buff[10];
 		sprintf(buff, "_%03u", partition);
 		table_name += buff;
 	}
+	PION_LOG_DEBUG(m_logger, "createTable " + table_name);
 
 	bool DidItExist = boost::filesystem::exists(dbPartition(m_database_name, partition));
+
+	PION_LOG_DEBUG(m_logger, "createTable/exists " + dbPartition(m_database_name, partition));
 
 	// build a SQL query to create the output table if it doesn't yet exist
 	std::string create_table_sql = m_create_log;
@@ -241,6 +243,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 			else
 				Sql = "CREATE INDEX IF NOT EXISTS " + idxname + " ON " + table_name + " ( " + index_map[i] + " )";
 
+			PION_LOG_DEBUG(m_logger, "createTable/index: " + Sql);
 			if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
 				throw SQLiteAPIException(getSQLiteError());
 		}

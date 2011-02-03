@@ -104,6 +104,8 @@ public:
 		if (partition) {
 			char buff[10];
 			sprintf(buff, "_%03u.db", partition);
+			if (name.find(buff, 0) != std::string::npos)	// already done
+				return name;
 			std::string::size_type i = 0;
 			if ((i = name.find(".db", i)) != std::string::npos)
 				name.replace(i, strlen(".db"), buff);
