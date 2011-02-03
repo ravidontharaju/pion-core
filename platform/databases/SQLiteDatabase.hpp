@@ -39,6 +39,8 @@ namespace plugins {		// begin namespace plugins
 class SQLiteDatabase :
 	public pion::platform::Database
 {
+	PionLogger									m_logger;
+
 public:
 
 	/// exception thrown if the SQLiteDatabase configuration does not define a Filename
@@ -67,8 +69,10 @@ public:
 	 * constructs a new SQLiteDatabase object
 	 */
 	SQLiteDatabase(void)
-		: pion::platform::Database("pion.SQLiteDatabase"), m_sqlite_db(NULL), m_error_ptr(NULL), m_cache_size(0), m_partition(0)
-	{}
+		: pion::platform::Database("pion.SQLiteDatabase"), m_logger(PION_GET_LOGGER("pion.SQLiteDatabase")),
+			m_sqlite_db(NULL), m_error_ptr(NULL), m_cache_size(0), m_partition(0)
+	{
+	}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~SQLiteDatabase()

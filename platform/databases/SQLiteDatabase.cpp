@@ -17,6 +17,7 @@
 // along with Pion.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <set>
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <pion/platform/ConfigManager.hpp>
@@ -167,7 +168,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 								unsigned partition)
 {
 	PION_ASSERT(is_open());
-
+	PION_LOG_DEBUG(m_logger, "createTable " + table_name);
 	// If partition is defined, change table_name
 	if (partition) {
 		char buff[10];
@@ -184,22 +185,44 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 	// run the SQL query to create the table
 	runQuery(create_table_sql, m_create_log_attr);
 
-	// Now let's run a series of blind ALTER TABLE ADD COLUMNS to ensure every partition has all columns
-	// Need to do this, before adding/checking indexes, in case some columns are missing
-	for (unsigned p = 0; p < field_map.size(); p++) {
-		// SQLite3/ALTER: ALTER TABLE [db.]table ADD [COLUMN] coldef;
-		// SQLite3/coldef: colname [typename] n*[colconstraint]
-		std::string Sql;
-		Sql = "ALTER TABLE " + table_name + " ADD COLUMN " + field_map[p].first + ' ' +
-			m_sql_affinity[field_map[p].second.term_type];
-		// This would be the "right" way, checking columns, etc...
-		// if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
-		//	throw SQLiteAPIException(getSQLiteError());
-		// But, we're going to just "cram it in"
-		try {
-			sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr);
-		} catch (...) {
+	std::string Sql = "PRAGMA table_info(" + table_name + ')';
+	try {
+		sqlite3_stmt *pStmt;
+		if (sqlite3_prepare_v2(m_sqlite_db, Sql.c_str(), Sql.size(), &pStmt, NULL) == SQLITE_OK) {
+			// In theory, we got the schema... let's play with it
+
+			std::set<std::string> columns_found;	// A set of column names found in the schema
+			while (sqlite3_step(pStmt) == SQLITE_ROW) {
+				// cid (0), name (1), type (2), notnull (3), dftl_value (4), pk (5)
+				// 0|epoch_time|INTEGER|0||0
+				const char *col = (const char *)sqlite3_column_text(pStmt, 1);	// get the "name" column (1)
+				if (col && *col) {
+					columns_found.insert(col);	// Add the col name into the set
+					PION_LOG_DEBUG(m_logger, "createTable/schemaCheck, found: " << col);
+				}
+			}
+			sqlite3_finalize(pStmt);
+
+			// We'll find out if any column (in field_map) is missing... add via ALTER TABLE ADD COLUMN
+			// Need to do this, before adding/checking indexes, in case some columns are missing
+			for (unsigned p = 0; p < field_map.size(); p++) {
+
+				// Only try to add (ALTER TABLE ADD) if not found in the set of columns in schema
+				if (columns_found.find(field_map[p].first) == columns_found.end()) {
+					// SQLite3/ALTER: ALTER TABLE [db.]table ADD [COLUMN] coldef;
+					// SQLite3/coldef: colname [typename] n*[colconstraint]
+					Sql = "ALTER TABLE " + table_name + " ADD COLUMN " + field_map[p].first + ' ' +
+						m_sql_affinity[field_map[p].second.term_type];
+					PION_LOG_DEBUG(m_logger, "createTable, add column " + Sql);
+					// This would be the "right" way, checking columns, etc...
+					// if (sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr) != SQLITE_OK)
+					//	throw SQLiteAPIException(getSQLiteError());
+					// But, we're going to just "cram it in"
+					sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr);
+				}
+			}
 		}
+	} catch (...) {
 	}
 
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] [dbname.] indexname ON tablename ( indexcolumn [, indexcolumn] )
@@ -208,7 +231,6 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 
 	if (!DidItExist)	// Don't index/un-index if the table existed...
 		for (unsigned i = 0; i < index_map.size(); i++) {
-			std::string Sql;
 			const std::string idxname = table_name + "_" + field_map[i].first + "_idx";
 			if (index_map[i] == "false" || index_map[i].empty())
 				Sql = "DROP INDEX IF EXISTS " + idxname;
