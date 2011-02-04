@@ -178,7 +178,7 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 
 	bool DidItExist = boost::filesystem::exists(dbPartition(m_database_name, partition));
 
-	PION_LOG_DEBUG(m_logger, "createTable/exists " + dbPartition(m_database_name, partition));
+	PION_LOG_DEBUG(m_logger, "createTable/exists (" << DidItExist << ")" << dbPartition(m_database_name, partition));
 
 	// build a SQL query to create the output table if it doesn't yet exist
 	std::string create_table_sql = m_create_log;
@@ -223,15 +223,28 @@ void SQLiteDatabase::createTable(const Query::FieldMap& field_map,
 					sqlite3_exec(m_sqlite_db, Sql.c_str(), NULL, NULL, &m_error_ptr);
 				}
 			}
-		}
+		} else
+			sqlite3_finalize(pStmt);	// finalize away, if something went wrong
 	} catch (...) {
 	}
+
+	// Find out if there's 1 or more rows (in which case, we won't touch the indexes)
+	bool RowsInTable = true;	// We'll assume true, just in case anything goes wrong with detection, we're not going to munge the db
+	try {
+		Sql = "SELECT * FROM " + table_name + " LIMIT 1";
+		sqlite3_stmt *pStmt;
+		if (sqlite3_prepare_v2(m_sqlite_db, Sql.c_str(), Sql.size(), &pStmt, NULL) == SQLITE_OK)
+			RowsInTable =(sqlite3_step(pStmt) == SQLITE_ROW);	// _step either found a row, or not...
+		sqlite3_finalize(pStmt);								// finalize the prepared statement away
+	} catch (...) {
+	}
+
 
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] [dbname.] indexname ON tablename ( indexcolumn [, indexcolumn] )
 	//		indexcolumn:  indexcolumn [COLLATE collatename] [ ASC | DESC]
 	// DROP INDEX [IF EXISTS] [dbname.] indexname
 
-	if (!DidItExist)	// Don't index/un-index if the table existed...
+	if (!RowsInTable)	// Don't index/un-index if the table has rows...
 		for (unsigned i = 0; i < index_map.size(); i++) {
 			const std::string idxname = table_name + "_" + field_map[i].first + "_idx";
 			if (index_map[i] == "false" || index_map[i].empty())
