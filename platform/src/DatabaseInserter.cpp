@@ -123,6 +123,10 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 		if (strspn(field_name.c_str(), CHARSET_FOR_TABLES) != field_name.length())
 			throw IllegalCharactersException(field_name);
 
+		for (unsigned i = 0; i < m_field_map.size(); i++)
+			if (m_field_map[i].first == field_name)
+				throw DuplicateColumnName(field_name);
+
 		// next get the Term we want to map to
 		const std::string term_id = ConfigManager::getAttribute(TERM_ATTRIBUTE_NAME, field_node);
 		if (term_id.empty())
