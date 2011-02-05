@@ -108,6 +108,13 @@ public:
 			: PionException("DatabaseInserter configuration has a field name with illegal characters: ", field_name) {}
 	};
 
+	/// exception thrown if the DatabaseInserter configuration has a duplicate field name
+	class DuplicateColumnName: public PionException {
+	public:
+		DuplicateColumnName(const std::string& field_name)
+			: PionException("DatabaseInserter configuration has a duplicate field name: ", field_name) {}
+	};
+
 	/// exception thrown if the DatabaseInserter configuration has a field name with illegal characters
 	class NoUniqueKeyFound: public PionException {
 	public:
