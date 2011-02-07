@@ -596,30 +596,45 @@ Event_setTerm(PythonEventObject *self, Vocabulary::TermRef term_ref, PyObject *v
 	case Vocabulary::TYPE_INT8:
 	case Vocabulary::TYPE_INT16:
 	case Vocabulary::TYPE_INT32:
-		if (! PyInt_Check(value) && !PyLong_Check(value))
-			return Event_conversion_error(t.term_id, "int required");
-		e.setInt(term_ref, PyInt_AsLong(value) );
+		if (PyLong_Check(value))
+			e.setInt(term_ref, PyLong_AsLong(value) );
+		else if (PyInt_Check(value))
+			e.setInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
 		break;
 	case Vocabulary::TYPE_UINT8:
 	case Vocabulary::TYPE_UINT16:
-		if (! PyInt_Check(value) && !PyLong_Check(value))
-			return Event_conversion_error(t.term_id, "int required");
-		e.setUInt(term_ref, PyInt_AsLong(value) );
+		if (PyLong_Check(value))
+			e.setUInt(term_ref, PyLong_AsUnsignedLong(value) );
+		else if (PyInt_Check(value))
+			e.setUInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
 		break;
 	case Vocabulary::TYPE_UINT32:
-		if (! PyInt_Check(value) && !PyLong_Check(value))
-			return Event_conversion_error(t.term_id, "int required");
-		e.setUInt(term_ref, PyLong_AsUnsignedLong(value) );
+		if (PyLong_Check(value))
+			e.setUInt(term_ref, PyLong_AsUnsignedLong(value) );
+		else if (PyInt_Check(value))
+			e.setUInt(term_ref, PyInt_AsUnsignedLongMask(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
 		break;
 	case Vocabulary::TYPE_INT64:
-		if (! PyInt_Check(value) && !PyLong_Check(value))
-			return Event_conversion_error(t.term_id, "int required");
-		e.setBigInt(term_ref, PyLong_AsLongLong(value) );
+		if (PyLong_Check(value))
+			e.setBigInt(term_ref, PyLong_AsLongLong(value) );
+		else if (PyInt_Check(value))
+			e.setBigInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
 		break;
 	case Vocabulary::TYPE_UINT64:
-		if (! PyInt_Check(value) && !PyLong_Check(value))
-			return Event_conversion_error(t.term_id, "int required");
-		e.setUBigInt(term_ref, PyLong_AsUnsignedLongLong(value) );
+		if (PyLong_Check(value))
+			e.setUBigInt(term_ref, PyLong_AsUnsignedLongLong(value) );
+		else if (PyInt_Check(value))
+			e.setUBigInt(term_ref, PyInt_AsUnsignedLongLongMask(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
 		break;
 	case Vocabulary::TYPE_FLOAT:
 		if (PyFloat_Check(value))
