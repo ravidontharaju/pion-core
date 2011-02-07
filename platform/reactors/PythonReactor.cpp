@@ -32,6 +32,7 @@
 // for compatibility with Python < 2.5
 #if PY_VERSION_HEX < 0x02050000
 	typedef int Py_ssize_t;
+	typedef inquiry lenfunc;
 	#define PY_SSIZE_T_MAX INT_MAX
 	#define PY_SSIZE_T_MIN INT_MIN
 #endif
