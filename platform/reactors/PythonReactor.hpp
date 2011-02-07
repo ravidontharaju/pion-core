@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -26,6 +26,7 @@
 #include <boost/thread/tss.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
+#include <pion/PionHashMap.hpp>
 #include <pion/PionException.hpp>
 #include <pion/platform/Reactor.hpp>
 #include <pion/platform/ReactionEngine.hpp>
@@ -43,6 +44,13 @@ class PythonReactor :
 {
 public:	
 	
+	/// exception thrown if unable to find a Vocabulary Term
+	class UnknownTermException : public PionException {
+	public:
+		UnknownTermException(const std::string& term)
+			: PionException("Unable to find required Vocabulary term: ", term) {}
+	};
+
 	/// exception thrown if there is an internal error encountered with the Python API
 	class InternalPythonException : public PionException {
 	public:
@@ -76,13 +84,6 @@ public:
 	public:
 		NotCallableException(const std::string& name)
 			: PionException("PythonReactor attribute defined is not callable: ", name) {}
-	};
-
-	/// exception thrown if there is an exception thrown while executing the byte code
-	class PythonRuntimeException : public PionException {
-	public:
-		PythonRuntimeException(const std::string& error_msg)
-			: PionException("PythonReactor runtime exception: ", error_msg) {}
 	};
 
 	/// exception thrown if there is an error initialize the Reactor Python class object
@@ -130,14 +131,42 @@ public:
 	 */
 	virtual void process(const pion::platform::EventPtr& e);
 	
+	/**
+	 * handle an HTTP query (from QueryService)
+	 *
+	 * @param out the ostream to write the statistics info into
+	 * @param branches URI stem path branches for the HTTP request
+	 * @param qp query parameters or pairs passed in the HTTP request
+	 *
+	 * @return std::string of XML response
+	 */
+	virtual void query(std::ostream& out, const QueryBranches& branches,
+		const QueryParams& qp);
+
 	/// called by the ReactorEngine to start Event processing
 	virtual void start(void);
 	
 	/// called by the ReactorEngine to stop Event processing
 	virtual void stop(void);
 	
-	/// delivers a Python event to the reactor's connections (used by Python callbacks)
-	void deliverToConnections(PyObject *event_ptr);
+	/**
+	 * delivers a Python event to the reactor's connections (used by Python callbacks)
+	 *
+	 * @param event_ptr pointer to a PythonEventObject
+	 *
+	 * @return bool true if successful, false if exception was raised
+	 */
+	/// 
+	bool deliverToConnections(PyObject *event_ptr);
+
+	/**
+	 * get a python object associated with the session (creates new one if necessary)
+	 *
+	 * @param event_ptr pointer to a PythonEventObject
+	 *
+	 * @return PyObject* pointer to the python object associated with the session, or NULL if an error occured
+	 */
+	PyObject *getSession(PyObject *event_ptr);
 
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
@@ -145,24 +174,33 @@ public:
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
 
+	/// returns a reference to the universal vocabulary (use carefully!)
+	inline const pion::platform::Vocabulary& getVocabulary(void) const {
+		PION_ASSERT(m_vocab_ptr);
+		return *m_vocab_ptr;
+	}
+	
+	/// convert microseconds into boost fractional seconds
+	static inline boost::uint64_t boost_msec_to_fsec(boost::uint64_t n);
+
+	/// convert boost fractional seconds into microseconds
+	static inline boost::uint64_t boost_fsec_to_msec(boost::uint64_t n);
+
 	
 protected:
 
 	/**
-	 * converts a Pion Event into a Python event object
+	 * this updates Vocabulary Term references cached for performance
 	 *
-	 * @param e the pion event to convert from
-	 * @param obj pointer will be assigned to the resulting Python event object
+	 * @param v the Vocabulary that this Reactor will use to describe Terms
 	 */
-	void toPythonEvent(const pion::platform::Event& e, PyObject *& obj) const;
+	void updateTerms(const pion::platform::Vocabulary& v);
 
-	/**
-	 * converts a Python event object into a Pion Event
-	 *
-	 * @param obj pointer to a PythonEventObject to convert from
-	 * @param e pointer will be assigned to the resulting Pion Event object
-	 */
-	void fromPythonEvent(PyObject *obj, pion::platform::EventPtr& e) const;
+	/// returns the number of session objects being tracked
+	std::size_t getNumSessions(void) const;
+
+	/// flushes all sessions that are cached
+	void flushSessions(void);
 
 	/**
 	 * initialize the Python state for the current thread, if not done already
@@ -209,12 +247,6 @@ protected:
 	/// if the Python error indicator is set, clear it and return a corresponding message
 	std::string getPythonError(void);
 
-	/// convert microseconds into boost fractional seconds
-	static inline boost::uint64_t boost_msec_to_fsec(boost::uint64_t n);
-
-	/// convert boost fractional seconds into microseconds
-	static inline boost::uint64_t boost_fsec_to_msec(boost::uint64_t n);
-
 	
 	/// simple object used to manage the Python GIL lock & thread-safety
 	class PythonLock {
@@ -253,6 +285,10 @@ protected:
 	
 private:
 	
+	/// data type for a map of unique session identifiers to SessionData objects
+	typedef PION_HASH_MAP<pion::platform::Event::BlobType, PyObject*, HashPionIdBlob>	SessionMap;
+
+
 	/// name of the start function in Python source code
 	static const std::string		START_FUNCTION_NAME;
 
@@ -267,6 +303,9 @@ private:
 
 	/// name of the PythonSource element for Pion XML config files
 	static const std::string		PYTHON_SOURCE_ELEMENT_NAME;
+
+	/// name of the open sessions element for Pion XML statistics
+	static const std::string		OPEN_SESSIONS_ELEMENT_NAME;
 
 	/// mutex used to protect the initialization counter
 	static boost::mutex				m_init_mutex;
@@ -303,12 +342,26 @@ private:
 	
 	/// copy of universal vocabulary used for mapping terms to python and back
 	pion::platform::VocabularyPtr	m_vocab_ptr;
+	
+	/// used to protect the SessionMap
+	mutable boost::mutex			m_sessions_mutex;
+
+	/// map of unique session identifiers to SessionData objects
+	SessionMap						m_sessions;
 
 	/// pointer to the global Python interpreter object
 	static PyInterpreterState *		m_interp_ptr;
 
 	/// thread-specific pointer to Python thread states
 	static boost::thread_specific_ptr<PyThreadState> *	m_state_ptr;
+
+	/// urn:vocab:clickstream#session-event
+	static const std::string			VOCAB_CLICKSTREAM_SESSION_EVENT;
+	pion::platform::Vocabulary::TermRef	m_session_event_term_ref;
+
+	/// urn:vocab:clickstream#session-id
+	static const std::string			VOCAB_CLICKSTREAM_SESSION_ID;
+	pion::platform::Vocabulary::TermRef	m_session_id_term_ref;
 };
 
 
