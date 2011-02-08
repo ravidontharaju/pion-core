@@ -70,6 +70,7 @@ if ($PLATFORM =~ /^win/i) {
 		$BOOST_DIR = File::Spec->catdir( ($SYSTEM_LIB_DIR, "boost-1.42.0", "lib") );
 	}
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
+	$PIONDB_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "piondb.exe");
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
@@ -78,6 +79,7 @@ if ($PLATFORM =~ /^win/i) {
 	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0.3." . $SHARED_LIB_SUFFIX);
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl.1." . $SHARED_LIB_SUFFIX);
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
+	$PIONDB_EXE = File::Spec->catfile( ("sqlite", ".libs"), "piondb");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "." . $SHARED_LIB_SUFFIX);
 	@ICU_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libicu" . $ICU_LIB_GLOB . ".42." . $SHARED_LIB_SUFFIX);
 	# hack for OSX because it links with two copies of the same file
@@ -89,6 +91,7 @@ if ($PLATFORM =~ /^win/i) {
 	$LOGGING_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "liblog4cplus-1.0." . $SHARED_LIB_SUFFIX . ".3");
 	$YAJL_LIB = File::Spec->catfile( ($SYSTEM_LIB_DIR), "libyajl." . $SHARED_LIB_SUFFIX . ".1");
 	$SERVER_EXE = File::Spec->catfile( ("platform", "server", ".libs"), "pion");
+	$PIONDB_EXE = File::Spec->catfile( ("sqlite", ".libs"), "piondb");
 	@BOOST_LIBS = bsd_glob($SYSTEM_LIB_DIR . "/libboost_" . $BOOST_LIB_GLOB . "." . $SHARED_LIB_SUFFIX . ".1.*");
 }
 if ($PLATFORM =~ /^win/i) {
@@ -233,8 +236,9 @@ chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py")) if (! ($PLATFORM =~ /^
 chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^win/i));
 chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py")) if (! ($PLATFORM =~ /^win/i));
 
-# copy the server exe
+# copy the executable files
 copy($SERVER_EXE, $PACKAGE_DIR);
+copy($PIONDB_EXE, $PACKAGE_DIR);
 
 # copy python26.dll for windows	builds
 if ($PLATFORM =~ /^win/i) {
