@@ -45,8 +45,11 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-// Define the Reactor and Event classes and callback functions for the pion Python module
+// Define the various classes and callback functions for the pion Python module
 // see http://docs.python.org/extending/newtypes.html
+
+
+// pion.reactor python class
 
 typedef struct {
 	PyObject_HEAD
@@ -82,7 +85,7 @@ Reactor_deliver(PythonReactorObject *self, PyObject *args)
 {
 	// Note: event_ptr is a borrowed reference -- do not decrement ref count
 	PyObject *event_ptr;
-	if (! PyArg_ParseTuple(args, "O:event_object", &event_ptr)) {
+	if (! PyArg_ParseTuple(args, "O:reactor.deliver", &event_ptr)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -105,7 +108,7 @@ Reactor_getsession(PythonReactorObject *self, PyObject *args)
 {
 	// Note: event_ptr is a borrowed reference -- do not decrement ref count
 	PyObject *event_ptr;
-	if (! PyArg_ParseTuple(args, "O:event_object", &event_ptr)) {
+	if (! PyArg_ParseTuple(args, "O:reactor.getsession", &event_ptr)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -123,7 +126,7 @@ Reactor_getterm(PythonReactorObject *self, PyObject *args)
 	// get argument and make sure it's a string
 	PyObject *term_id_obj;
 	// Note: event_ptr is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "O:term_id", &term_id_obj)) {
+	if (! PyArg_ParseTuple(args, "O:reactor.getterm", &term_id_obj)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -136,7 +139,6 @@ Reactor_getterm(PythonReactorObject *self, PyObject *args)
 	return PyLong_FromUnsignedLong(self->__this->getVocabulary().findTerm(term_id));
 }
 
-/*
 static PyObject*
 Reactor_GetAttr(PyObject *obj, PyObject *attr_name)
 {
@@ -152,13 +154,14 @@ Reactor_GetAttr(PyObject *obj, PyObject *attr_name)
 			retval = PyString_FromString(self->__this->getName().c_str());
 		} else {
 			retval = PyDict_GetItem(self->dict, attr_name);
+			Py_XINCREF(retval);
 		}
 	}
 	
 	return retval;
 }
 
-int
+static int
 Reactor_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
 {
 	int retval = -1;
@@ -176,21 +179,6 @@ Reactor_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
 	
 	return retval;
 }
-*/
-
-static PyObject *
-Reactor_getId(PythonReactorObject *self, void *closure)
-{
-	PION_ASSERT(self->__this);
-	return PyString_FromString(self->__this->getId().c_str());
-}
-
-static PyObject *
-Reactor_getName(PythonReactorObject *self, void *closure)
-{
-	PION_ASSERT(self->__this);
-	return PyString_FromString(self->__this->getName().c_str());
-}
 
 static PyMethodDef Reactor_methods[] = {
 	{(char*)"deliver", (PyCFunction)Reactor_deliver, METH_VARARGS,
@@ -203,18 +191,6 @@ static PyMethodDef Reactor_methods[] = {
 };
 
 static PyMemberDef Reactor_members[] = {
-    {NULL}  /* Sentinel */
-};
-
-static PyGetSetDef Reactor_getseters[] = {
-    {(char*)"id", 
-     (getter)Reactor_getId, NULL,
-     (char*)"unique identifier for the Reactor",
-     NULL},
-    {(char*)"name", 
-     (getter)Reactor_getName, NULL,
-     (char*)"descriptive name for the Reactor",
-     NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -236,8 +212,8 @@ static PyTypeObject PythonReactorType = {
 	0,                         /*tp_hash */
 	0,                         /*tp_call*/
 	0,                         /*tp_str*/
-	0,                         /*tp_getattro*/
-	0,                         /*tp_setattro*/
+	Reactor_GetAttr,           /*tp_getattro*/
+	Reactor_SetAttr,           /*tp_setattro*/
 	0,                         /*tp_as_buffer*/
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
 	"pion reactor objects",    /* tp_doc */
@@ -249,7 +225,7 @@ static PyTypeObject PythonReactorType = {
 	0,		                   /* tp_iternext */
 	Reactor_methods,           /* tp_methods */
 	Reactor_members,           /* tp_members */
-	Reactor_getseters,         /* tp_getset */
+	0,                         /* tp_getset */
 	0,                         /* tp_base */
 	0,                         /* tp_dict */
 	0,                         /* tp_descr_get */
@@ -273,7 +249,7 @@ Reactor_create(PythonReactor *this_ptr)
 }
 
 
-// Python Event class
+// pion.event python class
 
 typedef struct {
 	PyObject_HEAD
@@ -341,7 +317,7 @@ Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
 	PyObject *type=NULL;
 	static char *kwlist[] = {(char*)"reactor", (char*)"type", NULL};
 
-	if (! PyArg_ParseTupleAndKeywords(args, kwds, "OO:reactor,type", kwlist, &reactor_ptr, &type))
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "OO:pion.event", kwlist, &reactor_ptr, &type))
 		return -1; 
 
 	EventFactory f;
@@ -511,7 +487,7 @@ Event_getFunc(PythonEventObject *self, PyObject *args)
 	PyObject *default_value = NULL;
 
 	// Note: obj is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "O|O:term,default", &term, &default_value)) {
+	if (! PyArg_ParseTuple(args, "O|O:event.get", &term, &default_value)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -526,7 +502,7 @@ Event_getlist(PythonEventObject *self, PyObject *args)
 	PyObject *term = NULL;
 	PyObject *default_value = NULL;
 	// Note: obj is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "O|O:term,default", &term, &default_value)) {
+	if (! PyArg_ParseTuple(args, "O|O:event.getlist", &term, &default_value)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -793,7 +769,7 @@ Event_setFunc(PythonEventObject *self, PyObject *args)
 	PyObject *term;
 	PyObject *value;
 	// Note: obj is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "OO:term,value", &term, &value)) {
+	if (! PyArg_ParseTuple(args, "OO:event.set", &term, &value)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
@@ -814,7 +790,7 @@ Event_clear(PythonEventObject *self, PyObject *args)
 	// get parameters
 	PyObject *term;
 	// Note: obj is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "|O:term", &term)) {
+	if (! PyArg_ParseTuple(args, "|O:event.clear", &term)) {
 		PyErr_SetString(PyExc_TypeError, "error parsing arguments");
 		return NULL;
 	}
@@ -888,6 +864,15 @@ Event_getType(PythonEventObject *self, void *closure)
 	return PyLong_FromUnsignedLong(event_type);
 }
 
+static PyObject *
+Event_getTypeString(PythonEventObject *self, void *closure)
+{
+	Event::EventType event_type = Vocabulary::UNDEFINED_TERM_REF;
+	if (self->event_ptr.get() != NULL)
+		event_type = self->event_ptr->getType();
+	return PyString_FromString(Event_getVocabulary(self)[event_type].term_id.c_str());
+}
+
 static Py_ssize_t
 Event_size(PyObject *obj)
 {
@@ -926,6 +911,10 @@ static PyGetSetDef Event_getseters[] = {
     {(char*)"type", 
      (getter)Event_getType, NULL,
      (char*)"numeric identifier for the type of event",
+     NULL},
+    {(char*)"typestr", 
+     (getter)Event_getTypeString, NULL,
+     (char*)"string identifier for the type of event",
      NULL},
     {(char*)"reactor", 
      (getter)Event_getReactor, NULL,
@@ -990,6 +979,155 @@ Event_create(PythonReactorObject *reactor_ptr, const EventPtr& event_ptr)
 }
 
 
+// pion.session python class
+
+typedef struct {
+	PyObject_HEAD
+	PyObject *id;
+	PyObject *dict;
+} PythonSessionObject;
+
+static void
+Session_dealloc(PythonSessionObject* self)
+{
+	Py_XDECREF(self->id);
+	Py_XDECREF(self->dict);
+	self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *
+Session_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PythonSessionObject *self = (PythonSessionObject *)type->tp_alloc(type, 0);
+	if (self != NULL) {
+		self->id = PyString_FromString("");
+		if (self->id == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+		self->dict = PyDict_New();
+		if (self->dict == NULL) {
+			Py_DECREF(self->id);
+			Py_DECREF(self);
+			return NULL;
+		}
+	}
+	return (PyObject *)self;
+}
+
+static int
+Session_init(PythonSessionObject *self, PyObject *args, PyObject *kwds)
+{
+	static char *kwlist[] = {(char*)"session_id", NULL};
+	PyObject *session_id=NULL;
+	PyObject *tmp=NULL;
+
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "O:pion.session", kwlist, &session_id))
+		return -1;
+
+	if (session_id) {
+		tmp = self->id;
+		Py_INCREF(session_id);
+		self->id = session_id;
+		Py_XDECREF(tmp);
+	}
+	
+	return 0;
+}
+
+static PyObject*
+Session_GetAttr(PyObject *obj, PyObject *attr_name)
+{
+	PyObject *retval = PyObject_GenericGetAttr(obj, attr_name);
+
+	if (retval == NULL) {
+		PythonSessionObject *self = (PythonSessionObject*) obj;
+		char *attr_str = PyString_AsString(attr_name);
+		if (strcmp(attr_str, "id") == 0) {
+			retval = self->id;
+		} else {
+			retval = PyDict_GetItem(self->dict, attr_name);
+		}
+		Py_XINCREF(retval);
+	}
+	
+	return retval;
+}
+
+static int
+Session_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
+{
+	int retval = -1;
+	PythonSessionObject *self = (PythonSessionObject*) obj;
+	char *attr_str = PyString_AsString(attr_name);
+
+	if (strcmp(attr_str, "id") == 0) {
+		(void)PyErr_Format(PyExc_AttributeError, "Read-only attribute: %s", attr_str);
+		retval = -1;
+	} else if (value == NULL) {
+		retval = PyDict_DelItem(self->dict, attr_name);
+	} else {
+		retval = PyDict_SetItem(self->dict, attr_name, value);
+	}
+	
+	return retval;
+}
+
+static PyTypeObject PythonSessionType = {
+	PyObject_HEAD_INIT(NULL)
+	0,                         /*ob_size*/
+	"pion.session",            /*tp_name*/
+	sizeof(PythonSessionObject), /*tp_basicsize*/
+	0,                         /*tp_itemsize*/
+	(destructor)Session_dealloc, /*tp_dealloc*/
+	0,                         /*tp_print*/
+	0,                         /*tp_getattr*/
+	0,                         /*tp_setattr*/
+	0,                         /*tp_compare*/
+	0,                         /*tp_repr*/
+	0,                         /*tp_as_number*/
+	0,                         /*tp_as_sequence*/
+	0,                         /*tp_as_mapping*/
+	0,                         /*tp_hash */
+	0,                         /*tp_call*/
+	0,                         /*tp_str*/
+	Session_GetAttr,           /*tp_getattro*/
+	Session_SetAttr,           /*tp_setattro*/
+	0,                         /*tp_as_buffer*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+	"pion session objects",    /* tp_doc */
+	0,		                   /* tp_traverse */
+	0,		                   /* tp_clear */
+	0,		                   /* tp_richcompare */
+	0,		                   /* tp_weaklistoffset */
+	0,		                   /* tp_iter */
+	0,		                   /* tp_iternext */
+	0,                         /* tp_methods */
+	0,                         /* tp_members */
+	0,                         /* tp_getset */
+	0,                         /* tp_base */
+	0,                         /* tp_dict */
+	0,                         /* tp_descr_get */
+	0,                         /* tp_descr_set */
+	0,                         /* tp_dictoffset */
+	(initproc)Session_init,    /* tp_init */
+	0,                         /* tp_alloc */
+	Session_new,               /* tp_new */
+};
+
+static PythonSessionObject *
+Session_create(const Event::BlobType& session_id)
+{
+	PythonSessionObject *self;
+	self = (PythonSessionObject *) PythonSessionType.tp_alloc(&PythonSessionType, 0);
+	if (self != NULL) {
+		self->id = PyString_FromString(session_id.get());
+		self->dict = PyDict_New();
+	}
+	return self;
+}
+
+
 static PyMethodDef PionPythonCallbackMethods[] = {
 	{NULL, NULL, 0, NULL}
 };
@@ -1034,17 +1172,24 @@ PythonReactor::PythonReactor(void)
 		// setup pion module: Reactor data types and callback functions
 		PyObject *m = Py_InitModule("pion", PionPythonCallbackMethods);
 		if (PyType_Ready(&PythonReactorType) < 0) {
-			PION_LOG_ERROR(m_logger, "Error initializing Reactor data type");
+			PION_LOG_ERROR(m_logger, "Error initializing pion.reactor data type");
 		} else {
 			Py_INCREF(&PythonReactorType);
 			PyModule_AddObject(m, "reactor", (PyObject*) &PythonReactorType);
 		}
 		// setup Event data type
 		if (PyType_Ready(&PythonEventType) < 0) {
-			PION_LOG_ERROR(m_logger, "Error initializing Event data type");
+			PION_LOG_ERROR(m_logger, "Error initializing pion.event data type");
 		} else {
 			Py_INCREF(&PythonEventType);
 			PyModule_AddObject(m, "event", (PyObject*) &PythonEventType);
+		}
+		// setup Session data type
+		if (PyType_Ready(&PythonSessionType) < 0) {
+			PION_LOG_ERROR(m_logger, "Error initializing pion.session data type");
+		} else {
+			Py_INCREF(&PythonSessionType);
+			PyModule_AddObject(m, "session", (PyObject*) &PythonSessionType);
 		}
 		// initialize thread support
 		PyEval_InitThreads();
@@ -1362,7 +1507,7 @@ PyObject *PythonReactor::getSession(PyObject *event_ptr)
 	boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
 	SessionMap::iterator it = m_sessions.find(session_id);
 	if (it == m_sessions.end()) {
-		retval = PyDict_New();
+		retval = (PyObject*) Session_create(session_id);
 		m_sessions.insert(std::make_pair(session_id, retval));
 		PION_LOG_DEBUG(m_logger, "Created new session object for " << session_id.get());
 	} else {
@@ -1370,7 +1515,7 @@ PyObject *PythonReactor::getSession(PyObject *event_ptr)
 		PION_LOG_DEBUG(m_logger, "Using existing session object for " << session_id.get());
 	}
 	
-	Py_INCREF(retval);
+	Py_XINCREF(retval);
 	return retval;
 }
 
