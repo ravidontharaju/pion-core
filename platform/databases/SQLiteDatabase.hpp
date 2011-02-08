@@ -25,7 +25,7 @@
 #include <pion/platform/Database.hpp>
 #include "../../sqlite/pion-sqlite.h"
 
-#if SQLITE_VERSION_NUMBER != 3007004
+#if SQLITE_VERSION_NUMBER != 3007005
 #error Incorrect version of Pion-SQLite
 #endif
 
