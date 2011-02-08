@@ -14,7 +14,7 @@ bin_PROGRAMS = piondb
 
 piondb_SOURCES = shell.c
 piondb_CFLAGS = -DSQLITE_THREADSAFE=2 -DSQLITE_TEMP_STORE=2 -DSQLITE_DEFAULT_AUTOVACUUM=0
-piondb_LDADD = libpion-sqlite.la
+piondb_LDADD = libpion-sqlite.la -ldl
 piondb_DEPENDENCIES = libpion-sqlite.la
 
 EXTRA_DIST = *.vcproj
