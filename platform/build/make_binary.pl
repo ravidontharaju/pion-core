@@ -232,9 +232,6 @@ copy(File::Spec->catfile( ("platform", "build"), "pmon.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
 copy(File::Spec->catfile( ("platform", "build"), "pupgrade.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py")) if (! ($PLATFORM =~ /^win/i));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py")) if (! ($PLATFORM =~ /^win/i));
-chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py")) if (! ($PLATFORM =~ /^win/i));
 
 # copy the executable files
 copy($SERVER_EXE, $PACKAGE_DIR);
@@ -273,7 +270,12 @@ if ($PLATFORM =~ /^win/i) {
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
 
 	# set executable permissions for unix platforms
-	system("chmod a+x $PACKAGE_DIR/pion $PACKAGE_DIR/start_pion.sh");
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pion"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "piondb"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
 
 	# create tarballs
 	if ($NOZIP ne "nozip") {
