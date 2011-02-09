@@ -51,6 +51,12 @@ KEY_METRICS = {
 		'SslSessionKeyCount' : 100000,          # cached SSL session keys
 		'TcpReassemblyPacketCount' : 500000,    # packets waiting to be processed
 		'TcpReassemblyPayloadSize' : 100000000, # total bytes in packets waiting
+		'SslServerCount' : 1000,				# number of active ssl servers
+		'SslMissingKeyServerCount' : 100,		# number of ssl servers missing keys
+		'SslKeyCount' : 1000,					# number of active ssl keys
+		},
+	'PythonReactor' : {
+		'OpenSessions' : 100000,                # open visitor sessions
 		},
 	}
 
