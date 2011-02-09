@@ -48,6 +48,34 @@ namespace plugins {		// begin namespace plugins
 // Define the various classes and callback functions for the pion Python module
 // see http://docs.python.org/extending/newtypes.html
 
+static bool
+Python_getTermRef(const Vocabulary& v, PyObject *obj, Vocabulary::TermRef& term_ref)
+{
+	term_ref = Vocabulary::UNDEFINED_TERM_REF;
+	
+	if (PyInt_Check(obj) || PyLong_Check(obj)) {
+		term_ref = PyLong_AsUnsignedLong(obj);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
+			PyErr_SetString(PyExc_KeyError, "undefined term reference");
+		} else if (term_ref > v.size()) {
+			term_ref = Vocabulary::UNDEFINED_TERM_REF;
+			PyErr_SetString(PyExc_KeyError, "out-of-range term reference");
+		}
+	} else if (PyString_Check(obj)) {
+		const char *term_str = PyString_AsString(obj);
+		term_ref = v.findTerm(term_str);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			(void)PyErr_Format(PyExc_KeyError, "term '%s' not found", term_str);
+	} else {
+		PyErr_SetString(PyExc_TypeError, "invalid argument");
+	}
+	
+	return (term_ref != Vocabulary::UNDEFINED_TERM_REF);
+}
+
+// forward declaration so that Reactor_event and Event_copy can use it
+static PyObject *Event_create(PyObject *reactor_ptr, const EventPtr& event_ptr, bool is_unique);
+
 
 // pion.reactor python class
 
@@ -78,6 +106,32 @@ Reactor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 		self->__this = NULL;
 	}
 	return (PyObject *)self;
+}
+
+static PyObject*
+Reactor_event(PythonReactorObject *self, PyObject *args)
+{
+	// get argument and make sure it's a string
+	PyObject *term_id_obj;
+	// Note: event_ptr is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O:reactor.event", &term_id_obj)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+	
+	// get event type
+	Vocabulary::TermRef event_type;
+	PythonReactor *ptr = self->__this;
+	PION_ASSERT(ptr);
+	if (! Python_getTermRef(ptr->getVocabulary(), term_id_obj, event_type))
+		return NULL;
+	
+	// create a new empty event
+	EventFactory f;
+	EventPtr new_ptr;
+	f.create(new_ptr, event_type);
+
+	return Event_create((PyObject*)self, new_ptr, true);
 }
 
 static PyObject*
@@ -145,6 +199,7 @@ Reactor_GetAttr(PyObject *obj, PyObject *attr_name)
 	PyObject *retval = PyObject_GenericGetAttr(obj, attr_name);
 
 	if (retval == NULL) {
+		PyErr_Clear();
 		PythonReactorObject *self = (PythonReactorObject*) obj;
 		const char *attr_str = PyString_AsString(attr_name);
 		PION_ASSERT(self->__this);
@@ -153,8 +208,13 @@ Reactor_GetAttr(PyObject *obj, PyObject *attr_name)
 		} else if (strcmp(attr_str, "name") == 0) {
 			retval = PyString_FromString(self->__this->getName().c_str());
 		} else {
+			// note: PyDict_GetItem doesn't set error
 			retval = PyDict_GetItem(self->dict, attr_name);
-			Py_XINCREF(retval);
+			if (retval == NULL) {
+				(void)PyErr_Format(PyExc_AttributeError, "'pion.reactor' object has no attribute '%s'", attr_str);
+			} else {
+				Py_INCREF(retval);
+			}
 		}
 	}
 	
@@ -181,6 +241,8 @@ Reactor_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
 }
 
 static PyMethodDef Reactor_methods[] = {
+	{(char*)"event", (PyCFunction)Reactor_event, METH_VARARGS,
+	(char*)"Constructs a new pion.event object for the given type."},
 	{(char*)"deliver", (PyCFunction)Reactor_deliver, METH_VARARGS,
 	(char*)"Delivers an event to the reactor's output connections."},
 	{(char*)"getterm", (PyCFunction)Reactor_getterm, METH_VARARGS,
@@ -288,26 +350,7 @@ Event_getVocabulary(PythonEventObject *self)
 static bool
 Event_getTermRef(PythonEventObject *self, PyObject *obj, Vocabulary::TermRef& term_ref)
 {
-	term_ref = Vocabulary::UNDEFINED_TERM_REF;
-	
-	if (PyInt_Check(obj) || PyLong_Check(obj)) {
-		term_ref = PyLong_AsUnsignedLong(obj);
-		if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
-			PyErr_SetString(PyExc_KeyError, "undefined term reference");
-		} else if (term_ref > Event_getVocabulary(self).size()) {
-			term_ref = Vocabulary::UNDEFINED_TERM_REF;
-			PyErr_SetString(PyExc_KeyError, "out-of-range term reference");
-		}
-	} else if (PyString_Check(obj)) {
-		const char *term_str = PyString_AsString(obj);
-		term_ref = Event_getVocabulary(self).findTerm(term_str);
-		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
-			(void)PyErr_Format(PyExc_KeyError, "term '%s' not found", term_str);
-	} else {
-		PyErr_SetString(PyExc_TypeError, "invalid argument");
-	}
-	
-	return (term_ref != Vocabulary::UNDEFINED_TERM_REF);
+	return Python_getTermRef(Event_getVocabulary(self), obj, term_ref);
 }
 
 static int
@@ -825,10 +868,6 @@ Event_empty(PythonEventObject *self)
 	return retval;
 }
 
-// forward declaration so that Event_copy can use it
-static PythonEventObject *
-Event_create(PythonReactorObject *reactor_ptr, const EventPtr& event_ptr);
-
 static PyObject*
 Event_copy(PythonEventObject *self)
 {
@@ -840,11 +879,33 @@ Event_copy(PythonEventObject *self)
 	f.create(new_ptr, self->event_ptr->getType());
 	*new_ptr += *self->event_ptr;
 	
-	PythonEventObject *new_event = Event_create(self->reactor_ptr, new_ptr);
-	if (new_event)
-		new_event->is_unique = true;
+	return Event_create((PyObject*)self->reactor_ptr, new_ptr, true);
+}
+
+static PyObject*
+Event_has_key(PythonEventObject *self, PyObject *args)
+{
+	// get parameters
+	PyObject *term;
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O:event.has_key", &term)) {
+		PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+		return NULL;
+	}
 	
-	return (PyObject*) new_event;
+	// get term reference
+	Vocabulary::TermRef term_ref;
+	if (! Event_getTermRef(self, term, term_ref))
+		return NULL;
+
+	PyObject *retval = Py_False;
+	if (self->event_ptr.get()) {
+		if (self->event_ptr->isDefined(term_ref))
+			retval = Py_True;
+	}
+
+	Py_INCREF(retval);
+	return retval;
 }
 
 static PyObject*
@@ -900,6 +961,8 @@ static PyMethodDef Event_methods[] = {
 	(char*)"Checks to see if the Event contains zero items."},
 	{(char*)"copy", (PyCFunction)Event_copy, METH_NOARGS,
 	(char*)"Creates and returns a unique copy of the event."},
+	{(char*)"has_key", (PyCFunction)Event_has_key, METH_VARARGS,
+	(char*)"Returns True if the event has one or more values for a given term."},
     {NULL}  /* Sentinel */
 };
 
@@ -965,17 +1028,17 @@ static PyTypeObject PythonEventType = {
 	Event_new,                 /* tp_new */
 };
 
-static PythonEventObject *
-Event_create(PythonReactorObject *reactor_ptr, const EventPtr& event_ptr)
+static PyObject *
+Event_create(PyObject *reactor_ptr, const EventPtr& event_ptr, bool is_unique)
 {
 	PythonEventObject *self;
 	self = (PythonEventObject *) PythonEventType.tp_alloc(&PythonEventType, 0);
 	if (self != NULL) {
-		self->is_unique = false;
+		self->is_unique = is_unique;
 		self->event_ptr = event_ptr;
-		self->reactor_ptr = reactor_ptr;
+		self->reactor_ptr = (PythonReactorObject*) reactor_ptr;
 	}
-	return self;
+	return (PyObject*) self;
 }
 
 
@@ -1041,14 +1104,21 @@ Session_GetAttr(PyObject *obj, PyObject *attr_name)
 	PyObject *retval = PyObject_GenericGetAttr(obj, attr_name);
 
 	if (retval == NULL) {
+		PyErr_Clear();
 		PythonSessionObject *self = (PythonSessionObject*) obj;
 		char *attr_str = PyString_AsString(attr_name);
 		if (strcmp(attr_str, "id") == 0) {
 			retval = self->id;
+			Py_INCREF(retval);
 		} else {
+			// note: PyDict_GetItem doesn't set error
 			retval = PyDict_GetItem(self->dict, attr_name);
+			if (retval == NULL) {
+				(void)PyErr_Format(PyExc_AttributeError, "'pion.session' object has no attribute '%s'", attr_str);
+			} else {
+				Py_INCREF(retval);
+			}
 		}
-		Py_XINCREF(retval);
 	}
 	
 	return retval;
@@ -1368,7 +1438,7 @@ void PythonReactor::process(const EventPtr& e)
 		// generate a python Event object to use as a parameter for the process() function
 		PyObject *py_event = NULL;
 		try {
-			py_event = (PyObject*) Event_create((PythonReactorObject*) m_reactor_ptr, e);
+			py_event = Event_create(m_reactor_ptr, e, false);
 		} catch (...) {
 			if (PyErr_Occurred())
 				PION_LOG_ERROR(m_logger, getPythonError());
