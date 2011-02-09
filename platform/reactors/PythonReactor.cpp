@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -19,6 +19,7 @@
 
 // NOTE: According to API docs, Python.h must be #include'd FIRST
 #include <Python.h>
+#include <frameobject.h>
 #include <cstring>
 #include "structmember.h"
 #include "datetime.h"
@@ -31,6 +32,7 @@
 // for compatibility with Python < 2.5
 #if PY_VERSION_HEX < 0x02050000
 	typedef int Py_ssize_t;
+	typedef inquiry lenfunc;
 	#define PY_SSIZE_T_MAX INT_MAX
 	#define PY_SSIZE_T_MIN INT_MIN
 #endif
@@ -43,21 +45,50 @@ namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
 
 
-// Define the Reactor and Event classes and callback functions for the pion Python module
+// Define the various classes and callback functions for the pion Python module
 // see http://docs.python.org/extending/newtypes.html
+
+static bool
+Python_getTermRef(const Vocabulary& v, PyObject *obj, Vocabulary::TermRef& term_ref)
+{
+	term_ref = Vocabulary::UNDEFINED_TERM_REF;
+	
+	if (PyInt_Check(obj) || PyLong_Check(obj)) {
+		term_ref = PyLong_AsUnsignedLong(obj);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
+			PyErr_SetString(PyExc_KeyError, "undefined term reference");
+		} else if (term_ref > v.size()) {
+			term_ref = Vocabulary::UNDEFINED_TERM_REF;
+			PyErr_SetString(PyExc_KeyError, "out-of-range term reference");
+		}
+	} else if (PyString_Check(obj)) {
+		const char *term_str = PyString_AsString(obj);
+		term_ref = v.findTerm(term_str);
+		if (term_ref == Vocabulary::UNDEFINED_TERM_REF)
+			(void)PyErr_Format(PyExc_KeyError, "term '%s' not found", term_str);
+	} else {
+		PyErr_SetString(PyExc_TypeError, "invalid argument");
+	}
+	
+	return (term_ref != Vocabulary::UNDEFINED_TERM_REF);
+}
+
+// forward declaration so that Reactor_event and Event_copy can use it
+static PyObject *Event_create(PyObject *reactor_ptr, const EventPtr& event_ptr, bool is_unique);
+
+
+// pion.reactor python class
 
 typedef struct {
 	PyObject_HEAD
-	PyObject *		id;
-	PyObject *		name;
+	PyObject *		dict;
 	PythonReactor *	__this;
 } PythonReactorObject;
 
 static void
 Reactor_dealloc(PythonReactorObject* self)
 {
-	Py_XDECREF(self->id);
-	Py_XDECREF(self->name);
+	Py_XDECREF(self->dict);
 	self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -67,92 +98,169 @@ Reactor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     PythonReactorObject *self;
 	self = (PythonReactorObject *)type->tp_alloc(type, 0);
 	if (self != NULL) {
-		self->id = PyString_FromString("");
-		if (self->id == NULL) {
+		self->dict = PyDict_New();
+		if (self->dict == NULL) {
 			Py_DECREF(self);
 			return NULL;
 		}
-
-		self->name = PyString_FromString("");
-		if (self->name == NULL) {
-			Py_DECREF(self);
-			return NULL;
-		}
-
 		self->__this = NULL;
 	}
 	return (PyObject *)self;
 }
 
-static int
-Reactor_init(PythonReactorObject *self, PyObject *args, PyObject *kwds)
+static PyObject*
+Reactor_event(PythonReactorObject *self, PyObject *args)
 {
-	PyObject *id=NULL, *name=NULL, *tmp;
-
-	static char *kwlist[] = {(char*)"id", (char*)"name", NULL};
-
-	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist, &id, &name))
-		return -1; 
-
-	if (id) {
-		tmp = self->id;
-		Py_INCREF(id);
-		self->id = id;
-		Py_XDECREF(tmp);
-	}
-
-	if (name) {
-		tmp = self->name;
-		Py_INCREF(name);
-		self->name = name;
-		Py_XDECREF(tmp);
-	}
-
-	return 0;
-}
-
-static PyMemberDef Reactor_members[] = {
-    {(char*)"id", T_OBJECT_EX, offsetof(PythonReactorObject, id), 0,
-     (char*)"unique identifier of the PythonReactor"},
-    {(char*)"name", T_OBJECT_EX, offsetof(PythonReactorObject, name), 0,
-     (char*)"name assigned to the PythonReactor"},
-    {NULL}  /* Sentinel */
-};
-
-static PyObject* Reactor_deliver(PythonReactorObject *self, PyObject *args)
-{
-	// check that callback parameter is a dictionary
-	PyObject *event_ptr;
+	// get argument and make sure it's a string
+	PyObject *term_id_obj;
 	// Note: event_ptr is a borrowed reference -- do not decrement ref count
-	if (! PyArg_ParseTuple(args, "O:event_object", &event_ptr)) {
+	if (! PyArg_ParseTuple(args, "O:reactor.event", &term_id_obj)) {
 		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
-	if (! PyDict_Check(event_ptr)) {
-		PyErr_SetString(PyExc_TypeError, "parameter must be a dictionary");
+	
+	// get event type
+	Vocabulary::TermRef event_type;
+	PythonReactor *ptr = self->__this;
+	PION_ASSERT(ptr);
+	if (! Python_getTermRef(ptr->getVocabulary(), term_id_obj, event_type))
+		return NULL;
+	
+	// create a new empty event
+	EventFactory f;
+	EventPtr new_ptr;
+	f.create(new_ptr, event_type);
+
+	return Event_create((PyObject*)self, new_ptr, true);
+}
+
+static PyObject*
+Reactor_deliver(PythonReactorObject *self, PyObject *args)
+{
+	// Note: event_ptr is a borrowed reference -- do not decrement ref count
+	PyObject *event_ptr;
+	if (! PyArg_ParseTuple(args, "O:reactor.deliver", &event_ptr)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
 		return NULL;
 	}
 
+	// Note: Reactor::deliverToConnections() checks that type == pion.event
+
 	// deliver the event to other reactors
 	PythonReactor *ptr = self->__this;
-	ptr->deliverToConnections(event_ptr);
+	PION_ASSERT(ptr);
+	if (! ptr->deliverToConnections(event_ptr))
+		return NULL;
 
 	// return "none" (OK)
 	Py_INCREF(Py_None);
 	return Py_None;
 }
 
+static PyObject*
+Reactor_getsession(PythonReactorObject *self, PyObject *args)
+{
+	// Note: event_ptr is a borrowed reference -- do not decrement ref count
+	PyObject *event_ptr;
+	if (! PyArg_ParseTuple(args, "O:reactor.getsession", &event_ptr)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+
+	// Note: Reactor::getSession() checks that type == pion.event
+
+	PythonReactor *ptr = self->__this;
+	PION_ASSERT(ptr);
+	return ptr->getSession(event_ptr);
+}
+
+static PyObject*
+Reactor_getterm(PythonReactorObject *self, PyObject *args)
+{
+	// get argument and make sure it's a string
+	PyObject *term_id_obj;
+	// Note: event_ptr is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O:reactor.getterm", &term_id_obj)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+	char *term_id = PyString_AsString(term_id_obj);
+	if (term_id == NULL || *term_id == '\0') {
+		PyErr_SetString(PyExc_TypeError, "parameter must be a string");
+		return NULL;
+	}
+	PION_ASSERT(self->__this);
+	return PyLong_FromUnsignedLong(self->__this->getVocabulary().findTerm(term_id));
+}
+
+static PyObject*
+Reactor_GetAttr(PyObject *obj, PyObject *attr_name)
+{
+	PyObject *retval = PyObject_GenericGetAttr(obj, attr_name);
+
+	if (retval == NULL) {
+		PyErr_Clear();
+		PythonReactorObject *self = (PythonReactorObject*) obj;
+		const char *attr_str = PyString_AsString(attr_name);
+		PION_ASSERT(self->__this);
+		if (strcmp(attr_str, "id") == 0) {
+			retval = PyString_FromString(self->__this->getId().c_str());
+		} else if (strcmp(attr_str, "name") == 0) {
+			retval = PyString_FromString(self->__this->getName().c_str());
+		} else {
+			// note: PyDict_GetItem doesn't set error
+			retval = PyDict_GetItem(self->dict, attr_name);
+			if (retval == NULL) {
+				(void)PyErr_Format(PyExc_AttributeError, "'pion.reactor' object has no attribute '%s'", attr_str);
+			} else {
+				Py_INCREF(retval);
+			}
+		}
+	}
+	
+	return retval;
+}
+
+static int
+Reactor_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
+{
+	int retval = -1;
+	char *attr_str = PyString_AsString(attr_name);
+	PythonReactorObject *self = (PythonReactorObject*) obj;
+
+	if (strcmp(attr_str, "id") == 0 || strcmp(attr_str, "name") == 0) {
+		(void)PyErr_Format(PyExc_AttributeError, "Read-only attribute: %s", attr_str);
+		retval = -1;
+	} else if (value == NULL) {
+		retval = PyDict_DelItem(self->dict, attr_name);
+	} else {
+		retval = PyDict_SetItem(self->dict, attr_name, value);
+	}
+	
+	return retval;
+}
+
 static PyMethodDef Reactor_methods[] = {
+	{(char*)"event", (PyCFunction)Reactor_event, METH_VARARGS,
+	(char*)"Constructs a new pion.event object for the given type."},
 	{(char*)"deliver", (PyCFunction)Reactor_deliver, METH_VARARGS,
 	(char*)"Delivers an event to the reactor's output connections."},
+	{(char*)"getterm", (PyCFunction)Reactor_getterm, METH_VARARGS,
+	(char*)"Returns a numeric term reference for the given identifer."},
+	{(char*)"getsession", (PyCFunction)Reactor_getsession, METH_VARARGS,
+	(char*)"Returns a unique object for the event's session."},
+    {NULL}  /* Sentinel */
+};
+
+static PyMemberDef Reactor_members[] = {
     {NULL}  /* Sentinel */
 };
 
 static PyTypeObject PythonReactorType = {
 	PyObject_HEAD_INIT(NULL)
 	0,                         /*ob_size*/
-	"pion.Reactor",            /*tp_name*/
-	sizeof(PythonReactorObject),     /*tp_basicsize*/
+	"pion.reactor",            /*tp_name*/
+	sizeof(PythonReactorObject), /*tp_basicsize*/
 	0,                         /*tp_itemsize*/
 	(destructor)Reactor_dealloc, /*tp_dealloc*/
 	0,                         /*tp_print*/
@@ -166,11 +274,11 @@ static PyTypeObject PythonReactorType = {
 	0,                         /*tp_hash */
 	0,                         /*tp_call*/
 	0,                         /*tp_str*/
-	0,                         /*tp_getattro*/
-	0,                         /*tp_setattro*/
+	Reactor_GetAttr,           /*tp_getattro*/
+	Reactor_SetAttr,           /*tp_setattro*/
 	0,                         /*tp_as_buffer*/
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-	"pion Reactor objects",    /* tp_doc */
+	"pion reactor objects",    /* tp_doc */
 	0,		                   /* tp_traverse */
 	0,		                   /* tp_clear */
 	0,		                   /* tp_richcompare */
@@ -185,58 +293,785 @@ static PyTypeObject PythonReactorType = {
 	0,                         /* tp_descr_get */
 	0,                         /* tp_descr_set */
 	0,                         /* tp_dictoffset */
-	(initproc)Reactor_init,    /* tp_init */
+	0,                         /* tp_init */
 	0,                         /* tp_alloc */
 	Reactor_new,               /* tp_new */
 };
 
 static PythonReactorObject *
-Reactor_create(const char *id, const char *name, PythonReactor *this_ptr)
+Reactor_create(PythonReactor *this_ptr)
 {
 	PythonReactorObject *self;
 	self = (PythonReactorObject *) PythonReactorType.tp_alloc(&PythonReactorType, 0);
 	if (self != NULL) {
-		self->id = PyString_FromString(id);
-		if (self->id == NULL) {
-			Py_DECREF(self);
-			return NULL;
-		}
-
-		self->name = PyString_FromString(name);
-		if (self->name == NULL) {
-			Py_DECREF(self);
-			return NULL;
-		}
+		self->dict = PyDict_New();
 		self->__this = this_ptr;
 	}
 	return self;
 }
 
 
-// Python Event class
+// pion.event python class
 
 typedef struct {
-	PyDictObject	d;
-	PyObject *		type;
+	PyObject_HEAD
+	bool					is_unique;
+	EventPtr				event_ptr;
+	PythonReactorObject	*	reactor_ptr;
 } PythonEventObject;
 
 static void
 Event_dealloc(PythonEventObject* self)
 {
-	Py_XDECREF(self->type);
-	PyObject *obj = (PyObject*) self;
-	obj->ob_type->tp_base->tp_dealloc(obj);
+	self->event_ptr.reset();
+	self->ob_type->tp_free((PyObject*)self);
 }
 
 static PyObject *
 Event_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PythonEventObject *self;
-	self = (PythonEventObject *) type->tp_base->tp_new(type, args, kwds);
+	self = (PythonEventObject *)type->tp_alloc(type, 0);
 	if (self != NULL) {
-		self->type = PyString_FromString("");
-		if (self->type == NULL) {
-			Py_DECREF((PyObject*) self);
+		self->is_unique = false;
+		self->reactor_ptr = NULL;
+	}
+	return (PyObject *)self;
+}
+
+static const Vocabulary&
+Event_getVocabulary(PythonEventObject *self)
+{
+	PION_ASSERT(self->reactor_ptr);
+	PION_ASSERT(self->reactor_ptr->__this);
+	return self->reactor_ptr->__this->getVocabulary();
+}
+
+static bool
+Event_getTermRef(PythonEventObject *self, PyObject *obj, Vocabulary::TermRef& term_ref)
+{
+	return Python_getTermRef(Event_getVocabulary(self), obj, term_ref);
+}
+
+static int
+Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
+{
+	PyObject *reactor_ptr=NULL;
+	PyObject *type=NULL;
+	static char *kwlist[] = {(char*)"reactor", (char*)"type", NULL};
+
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "OO:pion.event", kwlist, &reactor_ptr, &type))
+		return -1; 
+
+	EventFactory f;
+	self->reactor_ptr = (PythonReactorObject*) reactor_ptr;
+	PION_ASSERT(self->reactor_ptr);
+	Event::EventType event_type;
+	if (! Event_getTermRef(self, type, event_type))
+		return -1;
+
+	f.create(self->event_ptr, event_type);
+	self->is_unique = true;
+
+	return 0;
+}
+
+static int
+Event_print(PyObject *obj, FILE *fp, int flags)
+{
+	PythonEventObject *self = (PythonEventObject*) obj;
+
+	if (self->event_ptr.get() != NULL) {
+		PION_ASSERT(self->reactor_ptr);
+		const Event& e = *(self->event_ptr);
+		std::string str;
+
+		fprintf(fp, "\npion.event (type=%s)\n===========================================================\n", Event_getVocabulary(self)[e.getType()].term_id.c_str());
+
+		for (Event::ConstIterator it = e.begin(); it != e.end(); ++it) {
+			const Vocabulary::Term& term = Event_getVocabulary(self)[it->term_ref];
+			Event::write(str, it->value, term);
+			fprintf(fp, "--- %s = %s\n", term.term_id.c_str(), str.c_str());
+		}
+	} else {
+		fprintf(fp, "pion.event (empty)\n");
+	}
+
+	return 0;
+}
+
+static PyObject* 
+Event_getValue(const Event::ParameterValue& value, Vocabulary::DataType term_type)
+{
+	// needed for python date time API functions
+	PyDateTime_IMPORT; 
+
+	// create return object based upon term type
+	PyObject *retval = NULL;
+	switch(term_type) {
+	case Vocabulary::TYPE_NULL:
+	case Vocabulary::TYPE_OBJECT:
+		// this shouldn't happen in practice, but if it does this is the most logical conversion
+		retval = PyInt_FromLong(1);
+		break;
+	case Vocabulary::TYPE_INT8:
+	case Vocabulary::TYPE_INT16:
+	case Vocabulary::TYPE_INT32:
+		retval = PyInt_FromLong(boost::get<boost::int32_t>(value));
+		break;
+	case Vocabulary::TYPE_UINT8:
+	case Vocabulary::TYPE_UINT16:
+		retval = PyInt_FromLong(boost::get<boost::uint32_t>(value));
+		break;
+	case Vocabulary::TYPE_UINT32:
+		retval = PyLong_FromUnsignedLong(boost::get<boost::uint32_t>(value));
+		break;
+	case Vocabulary::TYPE_INT64:
+		retval = PyLong_FromLongLong(boost::get<boost::int64_t>(value));
+		break;
+	case Vocabulary::TYPE_UINT64:
+		retval = PyLong_FromUnsignedLongLong(boost::get<boost::uint64_t>(value));
+		break;
+	case Vocabulary::TYPE_FLOAT:
+		retval = PyFloat_FromDouble(boost::get<float>(value));
+		break;
+	case Vocabulary::TYPE_DOUBLE:
+		retval = PyFloat_FromDouble(boost::get<double>(value));
+		break;
+	case Vocabulary::TYPE_LONG_DOUBLE:
+		retval = PyFloat_FromDouble(boost::get<long double>(value));
+		break;
+	case Vocabulary::TYPE_SHORT_STRING:
+	case Vocabulary::TYPE_STRING:
+	case Vocabulary::TYPE_LONG_STRING:
+	case Vocabulary::TYPE_CHAR:
+	case Vocabulary::TYPE_BLOB:
+	case Vocabulary::TYPE_ZBLOB:
+		{
+		const Event::BlobType& b = boost::get<const Event::BlobType&>(value);
+		retval = PyString_FromStringAndSize(b.get(), b.size());
+		break;
+		}
+	case Vocabulary::TYPE_DATE_TIME:
+		{
+		const PionDateTime& d = boost::get<const PionDateTime&>(value);
+		retval = PyDateTime_FromDateAndTime(d.date().year(),
+			d.date().month(), d.date().day(),
+			d.time_of_day().hours(), d.time_of_day().minutes(),
+			d.time_of_day().seconds(),
+			d.time_of_day().total_microseconds() % 1000000UL);
+		break;
+		}
+	case Vocabulary::TYPE_DATE:
+		{
+		const PionDateTime& d = boost::get<const PionDateTime&>(value);
+		retval = PyDate_FromDate(d.date().year(), d.date().month(),
+			d.date().day());
+		break;
+		}
+	case Vocabulary::TYPE_TIME:
+		{
+		const PionDateTime& d = boost::get<const PionDateTime&>(value);
+		retval = PyTime_FromTime(d.time_of_day().hours(),
+			d.time_of_day().minutes(), d.time_of_day().seconds(),
+			d.time_of_day().total_microseconds() % 1000000UL);
+		break;
+		}
+	}
+
+	return retval;
+}
+
+static PyObject*
+Event_getBase(PythonEventObject *self, PyObject *term, PyObject *default_value)
+{
+	PyObject *retval = NULL;
+	Vocabulary::TermRef term_ref;
+	if (! Event_getTermRef(self, term, term_ref))
+		return NULL;
+	
+	PION_ASSERT(self->event_ptr.get());
+
+	// get pointer to value in event
+	const Event::ParameterValue *param_ptr = self->event_ptr->getPointer(term_ref);
+
+	if (param_ptr == NULL) {
+
+		if (default_value) {
+			Py_INCREF(default_value);
+			retval = default_value;
+		} else {
+			Py_INCREF(Py_None);
+			retval = Py_None;
+		}
+
+	} else {
+
+		retval = Event_getValue(*param_ptr, Event_getVocabulary(self)[term_ref].term_type);
+		if (retval == NULL) {
+			PyErr_SetString(PyExc_RuntimeError, "event parameter conversion failed");
+		}
+	} 
+	
+	return retval;
+}
+
+static PyObject* 
+Event_getMap(PythonEventObject *self, PyObject *term)
+{
+	return Event_getBase(self, term, NULL);
+}
+
+static PyObject* 
+Event_getFunc(PythonEventObject *self, PyObject *args)
+{
+	// get term and default parameters
+	PyObject *term = NULL;
+	PyObject *default_value = NULL;
+
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O|O:event.get", &term, &default_value)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+	
+	return Event_getBase(self, term, default_value);
+}
+
+static PyObject* 
+Event_getlist(PythonEventObject *self, PyObject *args)
+{
+	// get term parameter
+	PyObject *term = NULL;
+	PyObject *default_value = NULL;
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O|O:event.getlist", &term, &default_value)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+	
+	PyObject *retval = NULL;
+	Vocabulary::TermRef term_ref;
+	if (! Event_getTermRef(self, term, term_ref))
+		return NULL;
+	
+	// get range of all values for given term
+	Event::ValuesRange range = self->event_ptr->equal_range(term_ref);
+	
+	if (range.first == range.second) {
+
+		if (default_value) {
+			Py_INCREF(default_value);
+			retval = default_value;
+		} else {
+			retval = PyList_New(0);
+		}
+
+	} else {
+
+		const Vocabulary::DataType term_type = Event_getVocabulary(self)[term_ref].term_type;
+		retval = PyList_New(0);
+
+		for (Event::ConstIterator it = range.first; it != range.second; ++it) {
+			PyObject *param = Event_getValue(it->value, term_type);
+			if (param == NULL) {
+				PyErr_SetString(PyExc_RuntimeError, "event parameter conversion failed");
+				Py_DECREF(retval);
+				return NULL;
+			}
+			PyList_Append(retval, param);
+		}
+	} 
+	
+	return retval;
+}
+
+static Py_ssize_t
+Event_conversion_error(const std::string& term_id, const char *msg)
+{
+	std::string error_msg(msg);
+	error_msg += " for ";
+	error_msg += term_id;
+	PyErr_SetString(PyExc_TypeError, error_msg.c_str());
+	return -1;
+}
+
+static Py_ssize_t
+Event_setTerm(PythonEventObject *self, Vocabulary::TermRef term_ref, PyObject *value)
+{
+	// needed for python date time API functions
+	PyDateTime_IMPORT; 
+
+	const Vocabulary::Term& t = Event_getVocabulary(self)[term_ref];
+	Event& e = *self->event_ptr;
+
+	// set value while converting type
+	switch( t.term_type ) {
+	case Vocabulary::TYPE_NULL:
+	case Vocabulary::TYPE_OBJECT:
+		// although not really supported, this is the most logical conversion
+		e.setInt(term_ref, 1);
+		break;
+	case Vocabulary::TYPE_INT8:
+	case Vocabulary::TYPE_INT16:
+	case Vocabulary::TYPE_INT32:
+		if (PyLong_Check(value))
+			e.setInt(term_ref, PyLong_AsLong(value) );
+		else if (PyInt_Check(value))
+			e.setInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
+		break;
+	case Vocabulary::TYPE_UINT8:
+	case Vocabulary::TYPE_UINT16:
+		if (PyLong_Check(value))
+			e.setUInt(term_ref, PyLong_AsUnsignedLong(value) );
+		else if (PyInt_Check(value))
+			e.setUInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
+		break;
+	case Vocabulary::TYPE_UINT32:
+		if (PyLong_Check(value))
+			e.setUInt(term_ref, PyLong_AsUnsignedLong(value) );
+		else if (PyInt_Check(value))
+			e.setUInt(term_ref, PyInt_AsUnsignedLongMask(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
+		break;
+	case Vocabulary::TYPE_INT64:
+		if (PyLong_Check(value))
+			e.setBigInt(term_ref, PyLong_AsLongLong(value) );
+		else if (PyInt_Check(value))
+			e.setBigInt(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
+		break;
+	case Vocabulary::TYPE_UINT64:
+		if (PyLong_Check(value))
+			e.setUBigInt(term_ref, PyLong_AsUnsignedLongLong(value) );
+		else if (PyInt_Check(value))
+			e.setUBigInt(term_ref, PyInt_AsUnsignedLongLongMask(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or long required");
+		break;
+	case Vocabulary::TYPE_FLOAT:
+		if (PyFloat_Check(value))
+			e.setFloat(term_ref, PyFloat_AsDouble(value) );
+		else if (PyInt_Check(value))
+			e.setFloat(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or float required");
+		break;
+	case Vocabulary::TYPE_DOUBLE:
+		if (PyFloat_Check(value))
+			e.setDouble(term_ref, PyFloat_AsDouble(value) );
+		else if (PyInt_Check(value))
+			e.setDouble(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or float required");
+		break;
+	case Vocabulary::TYPE_LONG_DOUBLE:
+		if (PyFloat_Check(value))
+			e.setLongDouble(term_ref, PyFloat_AsDouble(value) );
+		else if (PyInt_Check(value))
+			e.setLongDouble(term_ref, PyInt_AsLong(value) );
+		else
+			return Event_conversion_error(t.term_id, "int or float required");
+		break;
+	case Vocabulary::TYPE_SHORT_STRING:
+	case Vocabulary::TYPE_STRING:
+	case Vocabulary::TYPE_LONG_STRING:
+	case Vocabulary::TYPE_CHAR:
+	case Vocabulary::TYPE_BLOB:
+	case Vocabulary::TYPE_ZBLOB:
+		if (PyString_Check(value)) {
+			char *buf = PyString_AsString(value);
+			Py_ssize_t len = PyString_Size(value);
+			e.setString(term_ref, buf, len);
+		} else {
+			return Event_conversion_error(t.term_id, "str required");
+		}
+		break;
+	case Vocabulary::TYPE_DATE_TIME:
+		{
+		if (! PyDateTime_Check(value))
+			return Event_conversion_error(t.term_id, "datetime required");
+		boost::gregorian::date date(PyDateTime_GET_YEAR(value),
+			PyDateTime_GET_MONTH(value), PyDateTime_GET_DAY(value));
+		boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(value),
+			PyDateTime_DATE_GET_MINUTE(value), PyDateTime_DATE_GET_SECOND(value),
+			PythonReactor::boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(value)) );
+		PionDateTime d(date, time);
+		e.setDateTime(term_ref, d);
+		break;
+		}
+	case Vocabulary::TYPE_DATE:
+		{
+		if (PyDateTime_Check(value)) {
+			boost::gregorian::date date(PyDateTime_GET_YEAR(value),
+				PyDateTime_GET_MONTH(value), PyDateTime_GET_DAY(value));
+			boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(value),
+				PyDateTime_DATE_GET_MINUTE(value), PyDateTime_DATE_GET_SECOND(value),
+				PythonReactor::boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(value)) );
+			PionDateTime d(date, time);
+			e.setDateTime(term_ref, d);
+		} else if (PyDate_Check(value)) {
+			boost::gregorian::date date(PyDateTime_GET_YEAR(value),
+				PyDateTime_GET_MONTH(value), PyDateTime_GET_DAY(value));
+			PionDateTime d(date);
+			e.setDateTime(term_ref, d);
+		} else {
+			return Event_conversion_error(t.term_id, "date or datetime required");
+		}
+		break;
+		}
+	case Vocabulary::TYPE_TIME:
+		{
+		if (PyDateTime_Check(value)) {
+			boost::gregorian::date date(PyDateTime_GET_YEAR(value),
+				PyDateTime_GET_MONTH(value), PyDateTime_GET_DAY(value));
+			boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(value),
+				PyDateTime_DATE_GET_MINUTE(value), PyDateTime_DATE_GET_SECOND(value),
+				PythonReactor::boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(value)) );
+			PionDateTime d(date, time);
+			e.setDateTime(term_ref, d);
+		} else if (PyTime_Check(value)) {
+			boost::gregorian::date date(1970, 1, 1);
+			boost::posix_time::time_duration time(PyDateTime_TIME_GET_HOUR(value),
+				PyDateTime_TIME_GET_MINUTE(value), PyDateTime_TIME_GET_SECOND(value),
+				PythonReactor::boost_msec_to_fsec(PyDateTime_TIME_GET_MICROSECOND(value)) );
+			PionDateTime d(date, time);
+			e.setDateTime(term_ref, d);
+		} else {
+			return Event_conversion_error(t.term_id, "time or datetime required");
+		}
+		break;
+		}
+	}
+
+	return 0;
+}
+
+static Py_ssize_t
+Event_setBase(PythonEventObject *self, PyObject *term, PyObject *obj, bool clear_first)
+{
+	PION_ASSERT(self->event_ptr.get());
+
+	// check if we need to duplicate the event before modifying it
+	if (! self->is_unique) {
+
+		// TODO: add EventPtr::clone() function
+		//self->event_ptr = self->event_ptr.clone();
+
+		EventFactory f;
+		EventPtr old_ptr(self->event_ptr);
+		f.create(self->event_ptr, old_ptr->getType());
+		*self->event_ptr += *old_ptr;
+
+		self->is_unique = true;
+	}
+
+	// determine which term is being set
+	Vocabulary::TermRef term_ref;
+	if (! Event_getTermRef(self, term, term_ref))
+		return -1;
+	
+	// clear any existing values first?
+	if (clear_first)
+		self->event_ptr->clear(term_ref);
+	
+	// check if we have a single value or sequence of values
+	Py_ssize_t retval = 0;
+	if (PySequence_Check(obj) && !PyString_Check(obj)) {
+		Py_ssize_t size = PySequence_Size(obj);
+		if (size > 0) {
+			for (Py_ssize_t n = 0; n < size; ++n) {
+				retval = Event_setTerm(self, term_ref, PySequence_GetItem(obj, n));
+				if (retval != 0)
+					break;
+			}
+		}
+	} else {
+		retval = Event_setTerm(self, term_ref, obj);
+	}
+	
+	return retval;
+}
+
+static Py_ssize_t
+Event_setMap(PythonEventObject *self, PyObject *key, PyObject *value)
+{
+	return Event_setBase(self, key, value, true);
+}
+
+static PyObject *
+Event_setFunc(PythonEventObject *self, PyObject *args)
+{
+	// get parameters
+	PyObject *term;
+	PyObject *value;
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "OO:event.set", &term, &value)) {
+		PyErr_SetString(PyExc_TypeError, "missing required parameter");
+		return NULL;
+	}
+
+	PyObject *retval = NULL;
+	Py_ssize_t result = Event_setBase(self, term, value, false);
+	if (result == 0) {
+		Py_INCREF(Py_None);
+		retval = Py_None;
+	}
+
+	return retval;
+}
+
+static PyObject*
+Event_clear(PythonEventObject *self, PyObject *args)
+{
+	// get parameters
+	PyObject *term;
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "|O:event.clear", &term)) {
+		PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+		return NULL;
+	}
+	
+	if (term) {
+		Vocabulary::TermRef term_ref;
+		if (! Event_getTermRef(self, term, term_ref))
+			return NULL;
+		if (self->event_ptr.get())
+			self->event_ptr->clear(term_ref);
+	} else {
+		if (self->event_ptr.get())
+			self->event_ptr->clear();
+	}
+
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject*
+Event_empty(PythonEventObject *self)
+{
+	PyObject *retval = NULL;
+
+	if (self->event_ptr.get() == NULL) {
+		retval = Py_True;
+	} else {
+		retval = (self->event_ptr->empty() ? Py_True : Py_False);
+	}
+
+	Py_INCREF(retval);
+	return retval;
+}
+
+static PyObject*
+Event_copy(PythonEventObject *self)
+{
+	// TODO: add EventPtr::clone() function
+	//self->event_ptr = self->event_ptr.clone();
+
+	EventFactory f;
+	EventPtr new_ptr;
+	f.create(new_ptr, self->event_ptr->getType());
+	*new_ptr += *self->event_ptr;
+	
+	return Event_create((PyObject*)self->reactor_ptr, new_ptr, true);
+}
+
+static PyObject*
+Event_has_key(PythonEventObject *self, PyObject *args)
+{
+	// get parameters
+	PyObject *term;
+	// Note: obj is a borrowed reference -- do not decrement ref count
+	if (! PyArg_ParseTuple(args, "O:event.has_key", &term)) {
+		PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+		return NULL;
+	}
+	
+	// get term reference
+	Vocabulary::TermRef term_ref;
+	if (! Event_getTermRef(self, term, term_ref))
+		return NULL;
+
+	PyObject *retval = Py_False;
+	if (self->event_ptr.get()) {
+		if (self->event_ptr->isDefined(term_ref))
+			retval = Py_True;
+	}
+
+	Py_INCREF(retval);
+	return retval;
+}
+
+static PyObject*
+Event_getReactor(PythonEventObject *self, void *closure)
+{
+	PION_ASSERT(self->reactor_ptr);
+	Py_INCREF(self->reactor_ptr);
+	return (PyObject*) self->reactor_ptr;
+}
+
+static PyObject *
+Event_getType(PythonEventObject *self, void *closure)
+{
+	Event::EventType event_type = Vocabulary::UNDEFINED_TERM_REF;
+	if (self->event_ptr.get() != NULL)
+		event_type = self->event_ptr->getType();
+	return PyLong_FromUnsignedLong(event_type);
+}
+
+static PyObject *
+Event_getTypeString(PythonEventObject *self, void *closure)
+{
+	Event::EventType event_type = Vocabulary::UNDEFINED_TERM_REF;
+	if (self->event_ptr.get() != NULL)
+		event_type = self->event_ptr->getType();
+	return PyString_FromString(Event_getVocabulary(self)[event_type].term_id.c_str());
+}
+
+static Py_ssize_t
+Event_size(PyObject *obj)
+{
+	//TODO: not implemented b/c not supported by native Event type
+	PyErr_SetString(PyExc_NotImplementedError, "len(pion.event) not implemented");
+	return -1;
+}
+
+static PyMappingMethods Event_map_methods = {
+	(lenfunc)Event_size,
+	(binaryfunc)Event_getMap,
+	(objobjargproc)Event_setMap,
+};
+
+static PyMethodDef Event_methods[] = {
+	{(char*)"getlist", (PyCFunction)Event_getlist, METH_VARARGS,
+	(char*)"Returns a list of all values for a given term."},
+	{(char*)"get", (PyCFunction)Event_getFunc, METH_VARARGS,
+	(char*)"Returns the value of an Event parameter."},
+	{(char*)"set", (PyCFunction)Event_setFunc, METH_VARARGS,
+	(char*)"Sets the value of an Event parameter."},
+	{(char*)"clear", (PyCFunction)Event_clear, METH_VARARGS,
+	(char*)"Clears all items from the Event."},
+	{(char*)"empty", (PyCFunction)Event_empty, METH_NOARGS,
+	(char*)"Checks to see if the Event contains zero items."},
+	{(char*)"copy", (PyCFunction)Event_copy, METH_NOARGS,
+	(char*)"Creates and returns a unique copy of the event."},
+	{(char*)"has_key", (PyCFunction)Event_has_key, METH_VARARGS,
+	(char*)"Returns True if the event has one or more values for a given term."},
+    {NULL}  /* Sentinel */
+};
+
+static PyMemberDef Event_members[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyGetSetDef Event_getseters[] = {
+    {(char*)"type", 
+     (getter)Event_getType, NULL,
+     (char*)"numeric identifier for the type of event",
+     NULL},
+    {(char*)"typestr", 
+     (getter)Event_getTypeString, NULL,
+     (char*)"string identifier for the type of event",
+     NULL},
+    {(char*)"reactor", 
+     (getter)Event_getReactor, NULL,
+     (char*)"reactor associated with this event",
+     NULL},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject PythonEventType = {
+	PyObject_HEAD_INIT(NULL)
+	0,                         /*ob_size*/
+	"pion.event",              /*tp_name*/
+	sizeof(PythonEventObject), /*tp_basicsize*/
+	0,                         /*tp_itemsize*/
+	(destructor)Event_dealloc, /*tp_dealloc*/
+	Event_print,               /*tp_print*/
+	0,                         /*tp_getattr*/
+	0,                         /*tp_setattr*/
+	0,                         /*tp_compare*/
+	0,                         /*tp_repr*/
+	0,                         /*tp_as_number*/
+	0,                         /*tp_as_sequence*/
+	&Event_map_methods,        /*tp_as_mapping*/
+	0,                         /*tp_hash */
+	0,                         /*tp_call*/
+	0,                         /*tp_str*/
+	0,                         /*tp_getattro*/
+	0,                         /*tp_setattro*/
+	0,                         /*tp_as_buffer*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  /*tp_flags*/
+	"pion event objects",      /* tp_doc */
+	0,		                   /* tp_traverse */
+	0,		                   /* tp_clear */
+	0,		                   /* tp_richcompare */
+	0,		                   /* tp_weaklistoffset */
+	0,		                   /* tp_iter */
+	0,		                   /* tp_iternext */
+	Event_methods,             /* tp_methods */
+	Event_members,             /* tp_members */
+	Event_getseters,           /* tp_getset */
+	0,                         /* tp_base */
+	0,                         /* tp_dict */
+	0,                         /* tp_descr_get */
+	0,                         /* tp_descr_set */
+	0,                         /* tp_dictoffset */
+	(initproc)Event_init,      /* tp_init */
+	0,                         /* tp_alloc */
+	Event_new,                 /* tp_new */
+};
+
+static PyObject *
+Event_create(PyObject *reactor_ptr, const EventPtr& event_ptr, bool is_unique)
+{
+	PythonEventObject *self;
+	self = (PythonEventObject *) PythonEventType.tp_alloc(&PythonEventType, 0);
+	if (self != NULL) {
+		self->is_unique = is_unique;
+		self->event_ptr = event_ptr;
+		self->reactor_ptr = (PythonReactorObject*) reactor_ptr;
+	}
+	return (PyObject*) self;
+}
+
+
+// pion.session python class
+
+typedef struct {
+	PyObject_HEAD
+	PyObject *id;
+	PyObject *dict;
+} PythonSessionObject;
+
+static void
+Session_dealloc(PythonSessionObject* self)
+{
+	Py_XDECREF(self->id);
+	Py_XDECREF(self->dict);
+	self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *
+Session_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PythonSessionObject *self = (PythonSessionObject *)type->tp_alloc(type, 0);
+	if (self != NULL) {
+		self->id = PyString_FromString("");
+		if (self->id == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+		self->dict = PyDict_New();
+		if (self->dict == NULL) {
+			Py_DECREF(self->id);
+			Py_DECREF(self);
 			return NULL;
 		}
 	}
@@ -244,39 +1079,77 @@ Event_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 static int
-Event_init(PythonEventObject *self, PyObject *args, PyObject *kwds)
+Session_init(PythonSessionObject *self, PyObject *args, PyObject *kwds)
 {
-	PyObject *type=NULL, *tmp;
+	static char *kwlist[] = {(char*)"session_id", NULL};
+	PyObject *session_id=NULL;
+	PyObject *tmp=NULL;
 
-	static char *kwlist[] = {(char*)"type", NULL};
-
-	if (PyDict_Type.tp_init((PyObject *)self, args, kwds) < 0)
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "O:pion.session", kwlist, &session_id))
 		return -1;
 
-	if (! PyArg_ParseTupleAndKeywords(args, kwds, "O:event_type", kwlist, &type))
-		return -1; 
-
-	tmp = self->type;
-	Py_INCREF(type);
-	self->type = type;
-	Py_XDECREF(tmp);
-
+	if (session_id) {
+		tmp = self->id;
+		Py_INCREF(session_id);
+		self->id = session_id;
+		Py_XDECREF(tmp);
+	}
+	
 	return 0;
 }
 
-static PyMemberDef Event_members[] = {
-    {(char*)"type", T_OBJECT_EX, offsetof(PythonEventObject, type), 0,
-     (char*)"type of Event"},
-    {NULL}  /* Sentinel */
-};
+static PyObject*
+Session_GetAttr(PyObject *obj, PyObject *attr_name)
+{
+	PyObject *retval = PyObject_GenericGetAttr(obj, attr_name);
 
-static PyTypeObject PythonEventType = {
+	if (retval == NULL) {
+		PyErr_Clear();
+		PythonSessionObject *self = (PythonSessionObject*) obj;
+		char *attr_str = PyString_AsString(attr_name);
+		if (strcmp(attr_str, "id") == 0) {
+			retval = self->id;
+			Py_INCREF(retval);
+		} else {
+			// note: PyDict_GetItem doesn't set error
+			retval = PyDict_GetItem(self->dict, attr_name);
+			if (retval == NULL) {
+				(void)PyErr_Format(PyExc_AttributeError, "'pion.session' object has no attribute '%s'", attr_str);
+			} else {
+				Py_INCREF(retval);
+			}
+		}
+	}
+	
+	return retval;
+}
+
+static int
+Session_SetAttr(PyObject *obj, PyObject *attr_name, PyObject *value)
+{
+	int retval = -1;
+	PythonSessionObject *self = (PythonSessionObject*) obj;
+	char *attr_str = PyString_AsString(attr_name);
+
+	if (strcmp(attr_str, "id") == 0) {
+		(void)PyErr_Format(PyExc_AttributeError, "Read-only attribute: %s", attr_str);
+		retval = -1;
+	} else if (value == NULL) {
+		retval = PyDict_DelItem(self->dict, attr_name);
+	} else {
+		retval = PyDict_SetItem(self->dict, attr_name, value);
+	}
+	
+	return retval;
+}
+
+static PyTypeObject PythonSessionType = {
 	PyObject_HEAD_INIT(NULL)
 	0,                         /*ob_size*/
-	"pion.Event",              /*tp_name*/
-	sizeof(PythonEventObject), /*tp_basicsize*/
+	"pion.session",            /*tp_name*/
+	sizeof(PythonSessionObject), /*tp_basicsize*/
 	0,                         /*tp_itemsize*/
-	(destructor)Event_dealloc, /*tp_dealloc*/
+	(destructor)Session_dealloc, /*tp_dealloc*/
 	0,                         /*tp_print*/
 	0,                         /*tp_getattr*/
 	0,                         /*tp_setattr*/
@@ -288,11 +1161,11 @@ static PyTypeObject PythonEventType = {
 	0,                         /*tp_hash */
 	0,                         /*tp_call*/
 	0,                         /*tp_str*/
-	0,                         /*tp_getattro*/
-	0,                         /*tp_setattro*/
+	Session_GetAttr,           /*tp_getattro*/
+	Session_SetAttr,           /*tp_setattro*/
 	0,                         /*tp_as_buffer*/
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-	"pion Event objects",      /* tp_doc */
+	"pion session objects",    /* tp_doc */
 	0,		                   /* tp_traverse */
 	0,		                   /* tp_clear */
 	0,		                   /* tp_richcompare */
@@ -300,40 +1173,30 @@ static PyTypeObject PythonEventType = {
 	0,		                   /* tp_iter */
 	0,		                   /* tp_iternext */
 	0,                         /* tp_methods */
-	Event_members,             /* tp_members */
+	0,                         /* tp_members */
 	0,                         /* tp_getset */
 	0,                         /* tp_base */
 	0,                         /* tp_dict */
 	0,                         /* tp_descr_get */
 	0,                         /* tp_descr_set */
 	0,                         /* tp_dictoffset */
-	(initproc)Event_init,      /* tp_init */
+	(initproc)Session_init,    /* tp_init */
 	0,                         /* tp_alloc */
-	Event_new,                 /* tp_new */
+	Session_new,               /* tp_new */
 };
 
-static PythonEventObject *
-Event_create(const char *type)
+static PythonSessionObject *
+Session_create(const Event::BlobType& session_id)
 {
-    PyObject *args = PyTuple_New(0);
-    if (args == NULL)
-    	return NULL;
-    
-    PyObject *kwds = PyDict_New();
-    if (kwds == NULL) {
-    	Py_DECREF(args);
-    	return NULL;
-    }
-    
-    PythonEventObject *self = (PythonEventObject*) Event_new(&PythonEventType, args, kwds);
-	Py_DECREF(args);
-	Py_DECREF(kwds);
+	PythonSessionObject *self;
+	self = (PythonSessionObject *) PythonSessionType.tp_alloc(&PythonSessionType, 0);
 	if (self != NULL) {
-		self->type = PyString_FromString(type);
+		self->id = PyString_FromString(session_id.get());
+		self->dict = PyDict_New();
 	}
-
 	return self;
 }
+
 
 static PyMethodDef PionPythonCallbackMethods[] = {
 	{NULL, NULL, 0, NULL}
@@ -347,6 +1210,9 @@ const string			PythonReactor::STOP_FUNCTION_NAME = "stop";
 const string			PythonReactor::PROCESS_FUNCTION_NAME = "process";
 const string			PythonReactor::FILENAME_ELEMENT_NAME = "Filename";
 const string			PythonReactor::PYTHON_SOURCE_ELEMENT_NAME = "PythonSource";
+const string			PythonReactor::OPEN_SESSIONS_ELEMENT_NAME = "OpenSessions";
+const string			PythonReactor::VOCAB_CLICKSTREAM_SESSION_EVENT="urn:vocab:clickstream#session-event";
+const string 			PythonReactor::VOCAB_CLICKSTREAM_SESSION_ID="urn:vocab:clickstream#session-id";
 boost::mutex			PythonReactor::m_init_mutex;
 boost::uint32_t			PythonReactor::m_init_num = 0;
 PyInterpreterState *	PythonReactor::m_interp_ptr = NULL;
@@ -360,7 +1226,9 @@ PythonReactor::PythonReactor(void)
 	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
 	m_byte_code(NULL), m_module(NULL),
 	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL),
-	m_reactor_ptr(NULL)
+	m_reactor_ptr(NULL),
+	m_session_event_term_ref(Vocabulary::UNDEFINED_TERM_REF),
+	m_session_id_term_ref(Vocabulary::UNDEFINED_TERM_REF)
 {
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
@@ -374,18 +1242,24 @@ PythonReactor::PythonReactor(void)
 		// setup pion module: Reactor data types and callback functions
 		PyObject *m = Py_InitModule("pion", PionPythonCallbackMethods);
 		if (PyType_Ready(&PythonReactorType) < 0) {
-			PION_LOG_ERROR(m_logger, "Error initializing Reactor data type");
+			PION_LOG_ERROR(m_logger, "Error initializing pion.reactor data type");
 		} else {
 			Py_INCREF(&PythonReactorType);
-			PyModule_AddObject(m, "Reactor", (PyObject*) &PythonReactorType);
+			PyModule_AddObject(m, "reactor", (PyObject*) &PythonReactorType);
 		}
 		// setup Event data type
-		PythonEventType.tp_base = &PyDict_Type;
 		if (PyType_Ready(&PythonEventType) < 0) {
-			PION_LOG_ERROR(m_logger, "Error initializing Event data type");
+			PION_LOG_ERROR(m_logger, "Error initializing pion.event data type");
 		} else {
 			Py_INCREF(&PythonEventType);
-			PyModule_AddObject(m, "Event", (PyObject*) &PythonEventType);
+			PyModule_AddObject(m, "event", (PyObject*) &PythonEventType);
+		}
+		// setup Session data type
+		if (PyType_Ready(&PythonSessionType) < 0) {
+			PION_LOG_ERROR(m_logger, "Error initializing pion.session data type");
+		} else {
+			Py_INCREF(&PythonSessionType);
+			PyModule_AddObject(m, "session", (PyObject*) &PythonSessionType);
 		}
 		// initialize thread support
 		PyEval_InitThreads();
@@ -410,8 +1284,8 @@ PythonReactor::~PythonReactor()
 
 	try {
 		// free the compiled byte code (if any)
-		resetPythonSymbols();
 		Py_XDECREF(m_reactor_ptr);
+		resetPythonSymbols();
 
 		boost::mutex::scoped_lock init_lock(m_init_mutex);
 		if (--m_init_num == 0) {
@@ -431,9 +1305,9 @@ PythonReactor::~PythonReactor()
 		} else {
 			PyEval_ReleaseThread(thr_state_ptr);
 		}
-	} catch (...) {
+	} catch (std::exception& e) {
 		PyEval_ReleaseThread(thr_state_ptr);
-		throw;
+		PION_LOG_ERROR(m_logger, e.what());
 	}
 }
 
@@ -456,6 +1330,7 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	
 	// get copy of vocabulary used to map terms to python and back
 	m_vocab_ptr.reset(new Vocabulary(v));
+	updateTerms(*m_vocab_ptr);
 
 	// make sure the thread has been initialized and acquire the GIL lock
 	PythonLock py_lock;
@@ -467,7 +1342,7 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 
 	// create Reactor object to be passed to Python functions
 	Py_XDECREF(m_reactor_ptr);
-	m_reactor_ptr = (PyObject*) Reactor_create(getId().c_str(), getName().c_str(), this);
+	m_reactor_ptr = (PyObject*) Reactor_create(this);
 	if (m_reactor_ptr == NULL)
 		throw InitReactorObjectException(getPythonError());
 
@@ -486,6 +1361,18 @@ void PythonReactor::updateVocabulary(const Vocabulary& v)
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
 	m_vocab_ptr.reset(new Vocabulary(v));
+	updateTerms(*m_vocab_ptr);
+}
+
+void PythonReactor::updateTerms(const Vocabulary& v)
+{
+	m_session_event_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SESSION_EVENT);
+	if (m_session_event_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SESSION_EVENT);
+
+	m_session_id_term_ref = v.findTerm(VOCAB_CLICKSTREAM_SESSION_ID);
+	if (m_session_id_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_SESSION_ID);
 }
 
 void PythonReactor::start(void)
@@ -526,6 +1413,9 @@ void PythonReactor::stop(void)
 		// call user-defined stop() function
 		callPythonStop();
 		
+		// release any session objects
+		flushSessions();
+		
 		// release function pointers and imported source code module
 		Py_XDECREF(m_start_func);
 		Py_XDECREF(m_stop_func);
@@ -548,7 +1438,7 @@ void PythonReactor::process(const EventPtr& e)
 		// generate a python Event object to use as a parameter for the process() function
 		PyObject *py_event = NULL;
 		try {
-			toPythonEvent(*e, py_event);
+			py_event = Event_create(m_reactor_ptr, e, false);
 		} catch (...) {
 			if (PyErr_Occurred())
 				PION_LOG_ERROR(m_logger, getPythonError());
@@ -575,7 +1465,7 @@ void PythonReactor::process(const EventPtr& e)
 		// check for uncaught runtime exceptions
 		if (retval == NULL && PyErr_Occurred()) {
 			Py_DECREF(python_args);
-			throw PythonRuntimeException(getPythonError());
+			PION_LOG_ERROR(m_logger, "in process(): " << getPythonError());
 		}
 		Py_DECREF(python_args);
 		Py_XDECREF(retval);
@@ -585,21 +1475,62 @@ void PythonReactor::process(const EventPtr& e)
 		PION_LOG_DEBUG(m_logger, "Delivering pion event to connections");
 		deliverEvent(e);
 	}
+	
+	// sessions map processing: check for session close events
+	if (e->getType() == m_session_event_term_ref) {
+		// receipt of session event signifies completion of the session
+		const Event::ParameterValue *param_ptr = e->getPointer(m_session_id_term_ref);
+		if (param_ptr != NULL) {
+			const Event::BlobType session_id(boost::get<const Event::BlobType&>(*param_ptr));
+			if (! session_id.empty()) {
+				boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
+				SessionMap::iterator it = m_sessions.find(session_id);
+				if (it != m_sessions.end()) {
+					Py_XDECREF(it->second);
+					m_sessions.erase(it);
+					PION_LOG_DEBUG(m_logger, "Removed completed session: " << session_id.get());
+				}
+			}
+		}
+	}
 }
 
-void PythonReactor::deliverToConnections(PyObject *event_ptr)
+void PythonReactor::query(std::ostream& out, const QueryBranches& branches,
+	const QueryParams& qp)
+{
+	// basic reactor stats
+	writeBeginReactorXML(out);
+	writeStatsOnlyXML(out);
+
+	// number of sessions cached
+	out << '<' << OPEN_SESSIONS_ELEMENT_NAME << '>' << getNumSessions()
+		<< "</" << OPEN_SESSIONS_ELEMENT_NAME << '>' << std::endl;
+	
+	// finish reactor stats
+	writeEndReactorXML(out);
+}
+
+bool PythonReactor::deliverToConnections(PyObject *event_ptr)
 {
 	// getting a ConfigReadLock here introduces a deadlock condition, but
 	// no need to acquire a ConfigReadLock because all python threads will
 	// be stopped before any changes are ever made
 	PION_LOG_DEBUG(m_logger, "Delivering python event to connections");
+
+	// make sure that the object is of the correct type
+	if (! PyObject_IsInstance(event_ptr, (PyObject*) &PythonEventType)) {
+		PyErr_SetString(PyExc_TypeError, "parameter must be a pion.event");
+		return false;
+	}
+
 	// don't let exceptions thrown downstream propogate up
 	try {
-		EventPtr e;
-		fromPythonEvent(event_ptr, e);
+		PythonEventObject *event_obj_ptr = (PythonEventObject*) event_ptr;
+		// unset uniqueness since the event ptr may be shared
+		event_obj_ptr->is_unique = false;
 		// must release GIL to prevent deadlock in potential downstream PythonReactors
 		PythonLock py_lock(true);	// inversed lock
-		deliverEvent(e);
+		deliverEvent(event_obj_ptr->event_ptr);
 	} catch (std::exception& e) {
 		std::string error_msg(e.what());
 		if (PyErr_Occurred()) {
@@ -614,358 +1545,69 @@ void PythonReactor::deliverToConnections(PyObject *event_ptr)
 		else
 			PION_LOG_ERROR(m_logger, "caught unrecognized exception");
 	}
-}
-
-void PythonReactor::toPythonEvent(const Event& e, PyObject *& obj) const
-{
-	// needed for python date time API functions
-	PyDateTime_IMPORT; 
-
-	// create a new Python event using the Pion Event's type
-	const Vocabulary& v = *m_vocab_ptr;
-	PythonEventObject *self = Event_create(v[e.getType()].term_id.c_str());
-	if (! self)
-		throw EventConversionException("unable to create python event");
-	obj = (PyObject*) self;
-
-	// variables used for Pion Event iteration
-	std::string term_id;
-	Vocabulary::TermRef term_ref = Vocabulary::UNDEFINED_TERM_REF;
-	Vocabulary::DataType term_type = Vocabulary::TYPE_NULL;
-	PyObject *key = NULL;
-	PyObject *values = NULL;
-
-	// iterate each item defined within the Pion Event
-	for (Event::ConstIterator it = e.begin(); it != e.end(); ++it) {
 	
-		// check if this term is different from the last
-		if (it->term_ref != term_ref) {
-			// have moved to a new term -> if not the first then add its values
-			if (term_ref != Vocabulary::UNDEFINED_TERM_REF) {
-				PyDict_SetItem(obj, key, values);
-				Py_DECREF(key);
-				Py_DECREF(values);
-			}
-			// set the current term ref, id and type
-			term_ref = it->term_ref;
-			const Vocabulary::Term& tmp_term(v[term_ref]);
-			term_id = tmp_term.term_id;
-			term_type = tmp_term.term_type;
-			// Python key for this term will match it's uri identifier
-			key = PyString_FromString(term_id.c_str());
-			// create a new list to hold the values for this term
-			values = PyList_New(0);
-		}
-
-		// next we need to come up with a "new value" based on the Pion Event item
-		// the Pion Event value needs to be type converted into a corresponding Python object
-		PyObject *new_value = NULL;
-		switch (term_type) {
-		case Vocabulary::TYPE_NULL:
-		case Vocabulary::TYPE_OBJECT:
-			// this shouldn't happen in practice, but if it does this is the most logical conversion
-			new_value = PyInt_FromLong(1);
-			break;
-		case Vocabulary::TYPE_INT8:
-		case Vocabulary::TYPE_INT16:
-		case Vocabulary::TYPE_INT32:
-			new_value = PyInt_FromLong(boost::get<boost::int32_t>(it->value));
-			break;
-		case Vocabulary::TYPE_UINT8:
-		case Vocabulary::TYPE_UINT16:
-			new_value = PyInt_FromLong(boost::get<boost::uint32_t>(it->value));
-			break;
-		case Vocabulary::TYPE_UINT32:
-			new_value = PyLong_FromUnsignedLong(boost::get<boost::uint32_t>(it->value));
-			break;
-		case Vocabulary::TYPE_INT64:
-			new_value = PyLong_FromLongLong(boost::get<boost::int64_t>(it->value));
-			break;
-		case Vocabulary::TYPE_UINT64:
-			new_value = PyLong_FromUnsignedLongLong(boost::get<boost::uint64_t>(it->value));
-			break;
-		case Vocabulary::TYPE_FLOAT:
-			new_value = PyFloat_FromDouble(boost::get<float>(it->value));
-			break;
-		case Vocabulary::TYPE_DOUBLE:
-			new_value = PyFloat_FromDouble(boost::get<double>(it->value));
-			break;
-		case Vocabulary::TYPE_LONG_DOUBLE:
-			new_value = PyFloat_FromDouble(boost::get<long double>(it->value));
-			break;
-		case Vocabulary::TYPE_SHORT_STRING:
-		case Vocabulary::TYPE_STRING:
-		case Vocabulary::TYPE_LONG_STRING:
-		case Vocabulary::TYPE_CHAR:
-		case Vocabulary::TYPE_BLOB:
-		case Vocabulary::TYPE_ZBLOB:
-			{
-			const Event::BlobType& b = boost::get<const Event::BlobType&>(it->value);
-			new_value = PyString_FromStringAndSize(b.get(), b.size());
-			break;
-			}
-		case Vocabulary::TYPE_DATE_TIME:
-			{
-			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
-			new_value = PyDateTime_FromDateAndTime(d.date().year(),
-				d.date().month(), d.date().day(),
-				d.time_of_day().hours(), d.time_of_day().minutes(),
-				d.time_of_day().seconds(),
-				d.time_of_day().total_microseconds() % 1000000UL);
-			break;
-			}
-		case Vocabulary::TYPE_DATE:
-			{
-			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
-			new_value = PyDate_FromDate(d.date().year(), d.date().month(),
-				d.date().day());
-			break;
-			}
-		case Vocabulary::TYPE_TIME:
-			{
-			const PionDateTime& d = boost::get<const PionDateTime&>(it->value);
-			new_value = PyTime_FromTime(d.time_of_day().hours(),
-				d.time_of_day().minutes(), d.time_of_day().seconds(),
-				d.time_of_day().total_microseconds() % 1000000UL);
-			break;
-			}
-		}
-		
-		// make sure conversion was successful
-		if (! new_value) {
-			Py_DECREF(obj);
-			Py_XDECREF(key);
-			Py_XDECREF(values);
-			throw EventConversionException(term_id);
-		}
-		
-		// append item value to the list of python values
-		PyList_Append(values, new_value);
-		Py_DECREF(new_value);
-	}
-
-	// add the last term to the python event
-	if (key) {
-		PyDict_SetItem(obj, key, values);
-		Py_DECREF(key);
-		Py_DECREF(values);
-	}
+	return true;
 }
 
-void PythonReactor::fromPythonEvent(PyObject *py_event, EventPtr& e) const
+PyObject *PythonReactor::getSession(PyObject *event_ptr)
 {
-	// needed for python date time API functions
-	PyDateTime_IMPORT; 
-
-	// find the term corresponding with the event type
-	const Vocabulary& v = *m_vocab_ptr;
-	char *term_str = PyString_AsString(((PythonEventObject*)py_event)->type);
-	if (! term_str)
-		throw EventConversionException("event type field must be a string");
-	Vocabulary::TermRef term_ref = v.findTerm( term_str );
-	if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
-		std::string error_msg("unknown event type: ");
-		error_msg += term_str;
-		throw EventConversionException(error_msg);
+	// make sure that the object is of the correct type
+	if (! PyObject_IsInstance(event_ptr, (PyObject*) &PythonEventType)) {
+		PyErr_SetString(PyExc_TypeError, "parameter must be a pion.event");
+		return NULL;
 	}
-			
-	// create a new Pion Event object
-	EventFactory event_factory;
-	event_factory.create(e, term_ref);
 
-	// populate new Pion Event object
-	Py_ssize_t pos = 0;
-	PyObject *key = NULL;
-	PyObject *values = NULL;
+	// get session identifier for event
+	PythonEventObject *event_obj_ptr = (PythonEventObject*) event_ptr;
+	PION_ASSERT(event_obj_ptr->event_ptr.get());
+	const Event& e = *(event_obj_ptr->event_ptr);
+	const Event::ParameterValue *param_ptr = e.getPointer(m_session_id_term_ref);
+	if (param_ptr == NULL) {
+		PyErr_SetString(PyExc_TypeError, "event is missing session identifier");
+		return NULL;
+	}
+	const Event::BlobType session_id(boost::get<const Event::BlobType&>(*param_ptr));
+	if (session_id.empty()) {
+		PyErr_SetString(PyExc_TypeError, "event has empty session identifier");
+		return NULL;
+	}
 
-	// iterate through each item within the python event
-	while (PyDict_Next(py_event, &pos, &key, &values)) {
+	// check to see if the session already has an object assigned
+	PyObject *retval = NULL;
+	boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
+	SessionMap::iterator it = m_sessions.find(session_id);
+	if (it == m_sessions.end()) {
+		retval = (PyObject*) Session_create(session_id);
+		m_sessions.insert(std::make_pair(session_id, retval));
+		PION_LOG_DEBUG(m_logger, "Created new session object for " << session_id.get());
+	} else {
+		retval = it->second;
+		PION_LOG_DEBUG(m_logger, "Using existing session object for " << session_id.get());
+	}
+	
+	Py_XINCREF(retval);
+	return retval;
+}
 
-		// get the Pion term identifier for the Python key
-		term_str = PyString_AsString(key);
-		if (! term_str) {
-			std::string error_msg("Event key is not a string: ");
-			error_msg += term_str;
-			throw EventConversionException(error_msg);
-		}
-		term_ref = v.findTerm( term_str );
-		if (term_ref == Vocabulary::UNDEFINED_TERM_REF) {
-			std::string error_msg("unknown term: ");
-			error_msg += term_str;
-			throw EventConversionException(error_msg);
-		}
-		const Vocabulary::DataType term_type = v[term_ref].term_type;
-		
-		// make sure that values is a list
-		if (! PySequence_Check(values)) {
-			std::string error_msg("Event values must be a sequence: ");
-			error_msg += term_str;
-			throw EventConversionException(error_msg);
-		}
+std::size_t PythonReactor::getNumSessions(void) const
+{
+	boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
+	return m_sessions.size();
+}
 
-		// iterate through each of the values defined
-		Py_ssize_t num_values = PySequence_Size(values);
-		for (Py_ssize_t n = 0; n < num_values; ++n) {
-			// NOTE: returns a *new* reference!
-			// it's safe to assume the original sequence will not change, so
-			// just decrement the reference early to simplify bookkeeping
-			PyObject *obj = PySequence_GetItem(values, n);
-			PION_ASSERT(obj);
-			Py_XDECREF(obj);
-				
-			switch (term_type) {
-			case Vocabulary::TYPE_NULL:
-			case Vocabulary::TYPE_OBJECT:
-				// although not really supported, this is the most logical conversion
-				e->setInt(term_ref, 1);
-				break;
-			case Vocabulary::TYPE_INT8:
-			case Vocabulary::TYPE_INT16:
-			case Vocabulary::TYPE_INT32:
-				if (! PyInt_Check(obj)) {
-					std::string error_msg("int required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setInt(term_ref, PyInt_AsLong(obj) );
-				break;
-			case Vocabulary::TYPE_UINT8:
-			case Vocabulary::TYPE_UINT16:
-				if (! PyInt_Check(obj)) {
-					std::string error_msg("int required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setUInt(term_ref, PyInt_AsLong(obj) );
-				break;
-			case Vocabulary::TYPE_UINT32:
-				if (! PyLong_Check(obj)) {
-					std::string error_msg("long required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setUInt(term_ref, PyLong_AsUnsignedLong(obj) );
-				break;
-			case Vocabulary::TYPE_INT64:
-				if (! PyLong_Check(obj)) {
-					std::string error_msg("long required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setBigInt(term_ref, PyLong_AsLongLong(obj) );
-				break;
-			case Vocabulary::TYPE_UINT64:
-				if (! PyLong_Check(obj)) {
-					std::string error_msg("long required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setUBigInt(term_ref, PyLong_AsUnsignedLongLong(obj) );
-				break;
-			case Vocabulary::TYPE_FLOAT:
-				if (! PyFloat_Check(obj)) {
-					std::string error_msg("float required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setFloat(term_ref, PyFloat_AsDouble(obj) );
-				break;
-			case Vocabulary::TYPE_DOUBLE:
-				if (! PyFloat_Check(obj)) {
-					std::string error_msg("float required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setDouble(term_ref, PyFloat_AsDouble(obj) );
-				break;
-			case Vocabulary::TYPE_LONG_DOUBLE:
-				if (! PyFloat_Check(obj)) {
-					std::string error_msg("float required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				e->setLongDouble(term_ref, PyFloat_AsDouble(obj) );
-				break;
-			case Vocabulary::TYPE_SHORT_STRING:
-			case Vocabulary::TYPE_STRING:
-			case Vocabulary::TYPE_LONG_STRING:
-			case Vocabulary::TYPE_CHAR:
-			case Vocabulary::TYPE_BLOB:
-			case Vocabulary::TYPE_ZBLOB:
-				if (PyString_Check(obj)) {
-					char *buf = PyString_AsString(obj);
-					Py_ssize_t len = PyString_Size(obj);
-					e->setString(term_ref, buf, len);
-				} else {
-					std::string error_msg("str required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				break;
-			case Vocabulary::TYPE_DATE_TIME:
-				{
-				if (! PyDateTime_Check(obj)) {
-					std::string error_msg("datetime required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
-					PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-				boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
-					PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
-					boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
-				PionDateTime d(date, time);
-				e->setDateTime(term_ref, d);
-				break;
-				}
-			case Vocabulary::TYPE_DATE:
-				{
-				if (PyDateTime_Check(obj)) {
-					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
-						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-					boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
-						PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
-						boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
-					PionDateTime d(date, time);
-					e->setDateTime(term_ref, d);
-				} else if (PyDate_Check(obj)) {
-					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
-						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-					PionDateTime d(date);
-					e->setDateTime(term_ref, d);
-				} else {
-					std::string error_msg("date or datetime required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				break;
-				}
-			case Vocabulary::TYPE_TIME:
-				{
-				if (PyDateTime_Check(obj)) {
-					boost::gregorian::date date(PyDateTime_GET_YEAR(obj),
-						PyDateTime_GET_MONTH(obj), PyDateTime_GET_DAY(obj));
-					boost::posix_time::time_duration time(PyDateTime_DATE_GET_HOUR(obj),
-						PyDateTime_DATE_GET_MINUTE(obj), PyDateTime_DATE_GET_SECOND(obj),
-						boost_msec_to_fsec(PyDateTime_DATE_GET_MICROSECOND(obj)) );
-					PionDateTime d(date, time);
-					e->setDateTime(term_ref, d);
-				} else if (PyTime_Check(obj)) {
-					boost::gregorian::date date(1970, 1, 1);
-					boost::posix_time::time_duration time(PyDateTime_TIME_GET_HOUR(obj),
-						PyDateTime_TIME_GET_MINUTE(obj), PyDateTime_TIME_GET_SECOND(obj),
-						boost_msec_to_fsec(PyDateTime_TIME_GET_MICROSECOND(obj)) );
-					PionDateTime d(date, time);
-					e->setDateTime(term_ref, d);
-				} else {
-					std::string error_msg("time or datetime required: ");
-					error_msg += term_str;
-					throw EventConversionException(error_msg);
-				}
-				break;
-				}
-			}
+void PythonReactor::flushSessions(void)
+{
+	boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
+	size_t num_sessions = m_sessions.size();
+
+	if (num_sessions > 0) {
+		for (SessionMap::const_iterator it = m_sessions.begin();
+			it != m_sessions.end(); ++it)
+		{
+			Py_XDECREF(it->second);
 		}
+		m_sessions.clear();
+		PION_LOG_DEBUG(m_logger, "Flushing " << num_sessions << " session objects");
 	}
 }
 
@@ -998,7 +1640,7 @@ PyObject *PythonReactor::findPythonFunction(PyObject *module_ptr, const std::str
 		PION_LOG_DEBUG(m_logger, "Found " << func_name << "() function");
 	} else {
 		PyErr_Clear();
-		PION_LOG_WARN(m_logger, "Unable to find " << func_name << "() function");
+		PION_LOG_DEBUG(m_logger, "Unable to find " << func_name << "() function");
 	}
 	return func_ptr;
 }
@@ -1040,8 +1682,9 @@ void PythonReactor::compilePythonSource(void)
 		// compile source code into byte code
 		PION_LOG_DEBUG(m_logger, "Compiling Python source code");
 		m_byte_code = Py_CompileString(m_source.c_str(), m_source_file.c_str(), Py_file_input);
-		if (m_byte_code == NULL)
+		if (m_byte_code == NULL) {
 			throw FailedToCompileException(getPythonError());
+		}
 	}
 }
 
@@ -1088,7 +1731,7 @@ void PythonReactor::callPythonStart(void)
 	
 		// check for uncaught runtime exceptions
 		if (retval == NULL && PyErr_Occurred()) {
-			throw PythonRuntimeException(getPythonError());
+			PION_LOG_ERROR(m_logger, "in start(): " << getPythonError());
 		}
 	
 		Py_XDECREF(retval);
@@ -1111,7 +1754,7 @@ void PythonReactor::callPythonStop(void)
 	
 		// check for uncaught runtime exceptions
 		if (retval == NULL && PyErr_Occurred()) {
-			throw PythonRuntimeException(getPythonError());
+			PION_LOG_ERROR(m_logger, "in stop(): " << getPythonError());
 		}
 	
 		Py_XDECREF(retval);
@@ -1145,23 +1788,67 @@ std::string PythonReactor::getSourceCodeFromFile(void)
 std::string PythonReactor::getPythonError(void)
 {
 	// assumes PythonLock
+	std::string error_str;
 	PyObject *ptype = NULL;
 	PyObject *pvalue = NULL;
 	PyObject *ptraceback = NULL;
-	PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-	std::string error_str;
+	PyObject *psyntax = NULL;
+
+	PyErr_Fetch(&ptype, &pvalue, &ptraceback);	// note: clears exception
+
+	if (ptype) {
+		PyTypeObject* type_obj = (PyTypeObject*) ptype;
+		error_str += type_obj->tp_name;
+		error_str += ": ";
+	} else {
+		error_str += "Exception: ";
+	}
+
 	if (pvalue) {
-		PyObject *pstr = PyObject_Str(pvalue);
-		if (pstr) {
-			char *cptr = PyString_AsString(pstr);
-			if (cptr)
-				error_str = cptr;
-			Py_DECREF(pstr);
+		if (PyErr_GivenExceptionMatches(ptype, PyExc_SyntaxError)
+			&& PyTuple_Check(pvalue) && PyTuple_Size(pvalue) >= 2)
+		{
+			PyObject *str_obj = PyObject_Str(PyTuple_GetItem(pvalue, 0));
+			if (str_obj) {
+				error_str += PyString_AsString(str_obj);
+				Py_DECREF(str_obj);
+			}
+			psyntax = PyTuple_GetItem(pvalue, 1);
+		} else {
+			PyObject *str_obj = PyObject_Str(pvalue);
+			if (str_obj) {
+				error_str += PyString_AsString(str_obj);
+				Py_DECREF(str_obj);
+			}
 		}
 	}
+
+	if (ptraceback) {
+		PyTracebackObject* traceback = (PyTracebackObject*)ptraceback;
+		while (traceback->tb_next != NULL)
+			traceback = traceback->tb_next;
+		error_str += " (";
+		const char *cptr = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+		if (cptr && *cptr != '\0') {
+			error_str += cptr;
+			error_str += " ";
+		}
+		error_str += "line ";
+		error_str += boost::lexical_cast<std::string>(traceback->tb_lineno);
+		error_str += ")";
+	} else if (psyntax) {
+		PyObject *str_obj = PyObject_Str(psyntax);
+		if (str_obj) {
+			error_str += " ";
+			error_str += PyString_AsString(str_obj);
+			Py_DECREF(str_obj);
+		}
+	}
+
 	Py_XDECREF(ptype);
 	Py_XDECREF(pvalue);
 	Py_XDECREF(ptraceback);
+
 	return error_str;
 }
 
