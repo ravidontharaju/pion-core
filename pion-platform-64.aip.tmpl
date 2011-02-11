@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <DOCUMENT Type="Advanced Installer" CreateVersion="7.0.1" version="7.7" Modules="professional" RootPath="." Language="en">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="AI_PRODUCTNAME_ARP" Value="[|ProductName] [|ProductVersion] (64-bit)"/>
     <ROW Property="AI_SHORTCUTSREG" Value="0|0|0|0|"/>
+    <ROW Property="AI_UNINSTALLER" Value="msiexec.exe"/>
     <ROW Property="ALLUSERS" Value="2"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPNOREPAIR" Value="1"/>
+    <ROW Property="ARPSYSTEMCOMPONENT" Value="1"/>
     <ROW Property="BannerBitmap" MultiBuildValue="DefaultBuild:default_banner.bmp" Type="1"/>
     <ROW Property="CTRLS" Value="1"/>
     <ROW Property="DialogBitmap" MultiBuildValue="DefaultBuild:default_dialog.bmp" Type="1"/>
@@ -13,7 +17,7 @@
     <ROW Property="ProductName" Value="Pion Core" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION"/>
-    <ROW Property="UpgradeCode" Value="{23FD622B-018A-4972-A04D-E27EDB88D034}"/>
+    <ROW Property="UpgradeCode" Value="{3653880B-B0CD-4D80-9229-9A64AFA7E0C1}"/>
     <ROW Property="VIEWREADME" Value="1" Type="4"/>
     <ROW Property="WindowsFamily9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
     <ROW Property="WindowsFamilyNT" MultiBuildValue="DefaultBuild:Windows NT/2k/XP/Vista/Windows7 x86" ValueLocId="-"/>
@@ -27,13 +31,14 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
     <ROW Component="AIShRegAnswer" ComponentId="{4831C26C-AC3C-4101-BD48-90BE43A2D224}" Directory_="APPDIR" Attributes="4" KeyPath="AIShRegAnswer"/>
+    <ROW Component="AI_CustomARPName" ComponentId="{B780F279-4CBF-49AB-862A-B5EC98B2D100}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="NTEventLogAppender.amd64.dll" ComponentId="{784C3FE6-3275-407D-8767-2AF211943832}" Directory_="SystemFolder" Attributes="256" KeyPath="NTEventLogAppender.amd64.dll"/>
     <ROW Component="SHORTCUTDIR" ComponentId="{E453E502-78F9-4DED-A772-ADD83A52CDDE}" Directory_="SHORTCUTDIR" Attributes="0"/>
     <ROW Component="pion.exe" ComponentId="{55C4B9AC-0124-4B9F-9F2F-950AE46BA5A5}" Directory_="APPDIR" Attributes="0" KeyPath="pion.exe"/>
     <ROW Component="postinstall.html" ComponentId="{60491FA9-F5AB-4B4C-8C1F-C2C20E929C4F}" Directory_="APPDIR" Attributes="0" KeyPath="postinstall.html" Type="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="pion.exe postinstall.html SHORTCUTDIR AIShRegAnswer NTEventLogAppender.amd64.dll"/>
+    <ROW Feature="MainFeature" Title="MainFeature" Description="Description" Display="1" Level="1" Attributes="0" Components="pion.exe postinstall.html SHORTCUTDIR AIShRegAnswer NTEventLogAppender.amd64.dll AI_CustomARPName"/>
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
@@ -102,6 +107,7 @@
     <ROW Action="AI_DELETE_SHORTCUTS" Type="1" Source="aicustact.dll" Target="DeleteShortcuts"/>
     <ROW Action="AI_DEL_EMPTY_SHORTCUTDIR" Type="3073" Source="aicustact.dll" Target="DeleteEmptyDirectory"/>
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_GetArpIconPath" Type="1" Source="aicustact.dll" Target="GetArpIconPath"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
     <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
     <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
@@ -129,9 +135,10 @@
     <ROW Action="AI_DELETE_SHORTCUTS" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="1401"/>
     <ROW Action="AI_DEL_EMPTY_SHORTCUTDIR" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="6402" AdditionalSeq="AI_DATA_SETTER_1"/>
     <ROW Action="AI_DATA_SETTER_1" Condition="NOT (REMOVE=&quot;ALL&quot;)" Sequence="6401"/>
-    <ROW Action="DetectProcess" Sequence="53" AdditionalSeq="AI_DATA_SETTER_2"/>
-    <ROW Action="AI_DATA_SETTER_2" Sequence="52"/>
-    <ROW Action="AI_ResolveKnownFolders" Sequence="51"/>
+    <ROW Action="DetectProcess" Sequence="54" AdditionalSeq="AI_DATA_SETTER_2"/>
+    <ROW Action="AI_DATA_SETTER_2" Sequence="53"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="52"/>
+    <ROW Action="AI_GetArpIconPath" Sequence="51"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
@@ -158,6 +165,19 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
     <ROW Registry="AIShRegAnswer" Root="-1" Key="Software\Caphyon\Advanced Installer\Installs\[ProductCode]" Name="AIShRegAnswer" Value="[AI_SHORTCUTSREG]" Component_="AIShRegAnswer"/>
+    <ROW Registry="Comments" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="Comments" Value="This installer database contains the logic and data required to install [ProductName]." Component_="AI_CustomARPName"/>
+    <ROW Registry="Contact" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="Contact" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayIcon" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayIcon" Value="[ARP_ICON_PATH]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayName" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayName" Value="[ProductName] [ProductVersion] (64-bit)" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayVersion" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayVersion" Value="1.0.0" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpLink" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="HelpLink" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpTelephone" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="HelpTelephone" Component_="AI_CustomARPName"/>
+    <ROW Registry="InstallLocation" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="InstallLocation" Value="[APPDIR]" Component_="AI_CustomARPName"/>
+    <ROW Registry="ModifyPath" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="ModifyPath" Value="[AI_UNINSTALLER] /I [ProductCode]" Component_="AI_CustomARPName"/>
+    <ROW Registry="Publisher" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="Publisher" Value="Atomic Labs" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLInfoAbout" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="URLInfoAbout" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLUpdateInfo" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="URLUpdateInfo" Component_="AI_CustomARPName"/>
+    <ROW Registry="UninstallString" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="UninstallString" Value="[AI_UNINSTALLER] /x [ProductCode]" Component_="AI_CustomARPName"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServCtrlComponent">
     <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
@@ -166,7 +186,7 @@
     <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion Core" ServiceType="16" StartType="3" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
-    <ROW Shortcut="Pion" Directory_="SHORTCUTDIR" Name="Pion" Component_="pion.exe" Target="[#pion.exe]" Arguments="-c &quot;[APPDIR]config\platform.xml&quot;" Description="Run Pion as a desktop application" Hotkey="0" Icon_="pion.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="Pion" Directory_="SHORTCUTDIR" Name="PionCo~1|Pion Core" Component_="pion.exe" Target="[#pion.exe]" Arguments="-c &quot;[APPDIR]config\platform.xml&quot;" Description="Run Pion as a desktop application" Hotkey="0" Icon_="pion.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
     <ROW Shortcut="Pion_1" Directory_="DesktopFolder" Name="Pion" Component_="pion.exe" Target="[#pion.exe]" Arguments="-c &quot;[APPDIR]config\platform.xml&quot;" Description="Run Pion as a desktop application" Hotkey="0" Icon_="pion.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
