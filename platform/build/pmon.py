@@ -123,6 +123,7 @@ def main():
 			sys.exit(1)
 	# main loop
 	initialized = False
+	reconnecting = False
 	restarting = False
 	while (True):
 		if (not initialized):
@@ -142,15 +143,23 @@ def main():
 						send_email(options.email, last_metrics, 'unable to restart Pion server!')
 				raise
 			initialized = True
+			reconnecting = False
 			restarting = False
 		# retrieve stats for all reactors we want to monitor
 		try:
+			if (reconnecting):
+				# try to reestablish connection to Pion server
+				con = pget.get_con(options)
+				reconnecting = False
 			metrics = get_metrics(con, options, reactors)
 		except KeyboardInterrupt:
 			raise
 		except:
 			if (last_metrics == ""):
 				raise
+			elif (not reconnecting):
+				reconnecting = True
+				continue
 			print 'error: lost connection to Pion server!'
 			if (options.restart):
 				result = commands.getoutput(options.restart)
@@ -166,6 +175,7 @@ def main():
 				time.sleep(options.interval)
 				# force re-initialization
 				initialized = False
+				reconnecting = False
 				restarting = True
 				continue
 			elif (options.email):
