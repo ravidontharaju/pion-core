@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <DOCUMENT Type="Advanced Installer" CreateVersion="7.0.1" version="7.7" Modules="professional" RootPath="." Language="en">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
-    <ROW Property="AI_PRODUCTNAME_ARP" Value="[|ProductName] [|ProductVersion] (64-bit)"/>
+    <ROW Property="AI_PRODUCTNAME_ARP" Value="[|ProductName] [|ProductVersion]"/>
     <ROW Property="AI_SHORTCUTSREG" Value="0|0|0|0|"/>
     <ROW Property="AI_UNINSTALLER" Value="msiexec.exe"/>
     <ROW Property="ALLUSERS" Value="2"/>
@@ -16,7 +16,7 @@
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pion Core" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
-    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION;PION_32_PRESENT;PION_CORE_32_PRESENT"/>
     <ROW Property="UpgradeCode" Value="{3653880B-B0CD-4D80-9229-9A64AFA7E0C1}"/>
     <ROW Property="VIEWREADME" Value="1" Type="4"/>
     <ROW Property="WindowsFamily9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -149,6 +149,8 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
     <ROW Condition="NOT AI_PROCESS_STATE = &quot;Running&quot;" Description="Pion is currently running on this computer. Please stop all instances of Pion including Pion Windows Service and try again."/>
+    <ROW Condition="NOT PION_32_PRESENT" Description="Setup detetcted a 32 bit version of Pion installed on this computer. Please uninistall it before continue with installing this 64 bit version."/>
+    <ROW Condition="NOT PION_CORE_32_PRESENT" Description="Setup detetcted a 32 bit version of Pion Core installed on this computer. Please uninistall it before continue with installing this 64 bit version."/>
     <ROW Condition="NOT UPGRADE_ENTERPRISE_EDITION" Description="Pion Enterprise Edition installation detected. Community Edition cannot be installed. Installation will abort now."/>
     <ROW Condition="Version9X OR VersionNT64" Description="[ProductName] cannot be installed on [WindowsFamilyNT]" DescriptionLocId="AI.LaunchCondition.NoNT" IsPredefined="true" Builds="DefaultBuild"/>
     <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsFamily9X]" DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="DefaultBuild"/>
@@ -168,7 +170,7 @@
     <ROW Registry="Comments" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="Comments" Value="This installer database contains the logic and data required to install [ProductName]." Component_="AI_CustomARPName"/>
     <ROW Registry="Contact" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="Contact" Component_="AI_CustomARPName"/>
     <ROW Registry="DisplayIcon" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayIcon" Value="[ARP_ICON_PATH]" Component_="AI_CustomARPName"/>
-    <ROW Registry="DisplayName" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayName" Value="[ProductName] [ProductVersion] (64-bit)" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayName" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayName" Value="[ProductName] [ProductVersion]" Component_="AI_CustomARPName"/>
     <ROW Registry="DisplayVersion" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="DisplayVersion" Value="1.0.0" Component_="AI_CustomARPName"/>
     <ROW Registry="HelpLink" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="HelpLink" Component_="AI_CustomARPName"/>
     <ROW Registry="HelpTelephone" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="HelpTelephone" Component_="AI_CustomARPName"/>
@@ -195,6 +197,8 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
     <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>
     <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
-    <ROW UpgradeCode="{8913581B-1A47-4B9E-A28D-E6F3E333AB25}" VersionMin="1.0" Attributes="7" ActionProperty="UPGRADE_ENTERPRISE_EDITION"/>
+    <ROW UpgradeCode="{4403D4FD-7D80-4C5D-8244-4B8DEA81A71B}" VersionMin="1.0" Attributes="2" ActionProperty="UPGRADE_ENTERPRISE_EDITION"/>
+    <ROW UpgradeCode="{8913581B-1A47-4B9E-A28D-E6F3E333AB25}" VersionMin="1.0" Attributes="514" ActionProperty="PION_32_PRESENT"/>
+    <ROW UpgradeCode="{23FD622B-018A-4972-A04D-E27EDB88D034}" VersionMin="1.0" Attributes="514" ActionProperty="PION_CORE_32_PRESENT"/>
   </COMPONENT>
 </DOCUMENT>
