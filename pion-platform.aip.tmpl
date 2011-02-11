@@ -16,7 +16,7 @@
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pion Core" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
-    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION;PION_64_PRESENT;PION_CORE_64_PRESENT"/>
     <ROW Property="UpgradeCode" Value="{23FD622B-018A-4972-A04D-E27EDB88D034}"/>
     <ROW Property="VIEWREADME" Value="1" Type="4"/>
   </COMPONENT>
@@ -147,6 +147,8 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
     <ROW Condition="NOT AI_PROCESS_STATE = &quot;Running&quot;" Description="Pion is currently running on this computer. Please stop all instances of Pion including Pion Windows Service and try again."/>
+    <ROW Condition="NOT PION_64_PRESENT" Description="Setup detetcted a 64 bit version of Pion installed on this computer. Please uninistall it before continue with installing this 32 bit version."/>
+    <ROW Condition="NOT PION_CORE_64_PRESENT" Description="Setup detetcted a 64 bit version of Pion Core installed on this computer. Please uninistall it before continue with installing this 32 bit version."/>
     <ROW Condition="NOT UPGRADE_ENTERPRISE_EDITION" Description="Pion Enterprise Edition installation detected. Community Edition cannot be installed. Installation will abort now."/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiMergeModsComponent">
@@ -192,5 +194,7 @@
     <ROW UpgradeCode="[|UpgradeCode]" VersionMax="[|ProductVersion]" Attributes="1025" ActionProperty="OLDPRODUCTS"/>
     <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
     <ROW UpgradeCode="{8913581B-1A47-4B9E-A28D-E6F3E333AB25}" VersionMin="1.0" Attributes="7" ActionProperty="UPGRADE_ENTERPRISE_EDITION"/>
+    <ROW UpgradeCode="{4403D4FD-7D80-4C5D-8244-4B8DEA81A71B}" VersionMin="1.0" Attributes="514" ActionProperty="PION_64_PRESENT"/>
+    <ROW UpgradeCode="{3653880B-B0CD-4D80-9229-9A64AFA7E0C1}" VersionMin="1.0" Attributes="514" ActionProperty="PION_CORE_64_PRESENT"/>
   </COMPONENT>
 </DOCUMENT>
