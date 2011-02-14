@@ -850,7 +850,8 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								// since the former takes precedence over the latter.
 							}
 						}
-						do_conversion = (! charset.empty() && ucnv_compareNames(charset.c_str(), "utf-8") != 0);
+						static const boost::regex rx_utf8("utf-8", boost::regex::icase);
+						do_conversion = (!charset.empty() && !boost::regex_search(charset, rx_utf8));
 					}
 
 					if (content_encoding.empty()) {
