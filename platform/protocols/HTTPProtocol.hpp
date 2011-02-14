@@ -824,7 +824,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 					if (m_parent_protocol.m_allow_utf8_conversion) {
 						// Get the charset, if present, from the Content-Type header.
 						boost::match_results<std::string::const_iterator> mr;
-						boost::regex rx(";\\s*charset=([^;]+)");
+						static const boost::regex rx(";\\s*charset=([^;]+)");
 						if (boost::regex_search(content_type, mr, rx)) {
 							charset = mr[1];
 						}
@@ -834,8 +834,8 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								if (content_type.compare(0, 9, "text/html") == 0) {
 									// No charset in the Content-Type header and this is HTML, so need to look for meta tags in the content.
 
-									boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
-									boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
+									static const boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
+									static const boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
 									boost::match_results<const char*> mr2;
 									const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
 									size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
