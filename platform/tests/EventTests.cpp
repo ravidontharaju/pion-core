@@ -264,6 +264,30 @@ BOOST_AUTO_TEST_CASE(checkEventCopyValues) {
 	BOOST_CHECK(i == a_ptr->end());
 }
 
+BOOST_AUTO_TEST_CASE(checkEventSetWrite) {
+	EventPtr b_ptr(m_event_factory.create(m_object_term.term_ref));
+	std::string s("2025221224");
+	b_ptr->set(m_big_int_term, s);
+	BOOST_CHECK_EQUAL(b_ptr->getUBigInt(m_big_int_term.term_ref), 2025221224UL);
+	std::string r;
+	Event::ValuesRange range = b_ptr->equal_range(m_big_int_term.term_ref);
+	Event::ConstIterator i = range.first;
+	b_ptr->write(r, i->value, m_big_int_term);
+	BOOST_CHECK_EQUAL(s, r);
+}
+
+BOOST_AUTO_TEST_CASE(checkEventSetWrite2) {
+	EventPtr a_ptr(m_event_factory.create(m_object_term.term_ref));
+	std::string s("221224");
+	a_ptr->set(m_plain_int_term, s);
+	BOOST_CHECK_EQUAL(a_ptr->getInt(m_plain_int_term.term_ref), 221224);
+	std::string r;
+	Event::ValuesRange range = a_ptr->equal_range(m_plain_int_term.term_ref);
+	Event::ConstIterator i = range.first;
+	a_ptr->write(r, i->value, m_plain_int_term);
+	BOOST_CHECK_EQUAL(s, r);
+}
+
 BOOST_AUTO_TEST_CASE(checkParameterValueOperatorEquals) {
 	Event::ParameterValue pv1 = boost::int32_t(4);
 	Event::ParameterValue pv2 = boost::int32_t(4);
