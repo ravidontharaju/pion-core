@@ -182,17 +182,6 @@ public:
 	 */
 	virtual void setConfig(const pion::platform::Vocabulary& v, const xmlNodePtr config_ptr);
 
-	/**
-	 * parses an X-Forwarded-For HTTP header, and extracts from it an IP
-	 * address that best matches the client's public IP address (if any are found)
-	 *
-	 * @param header the X-Forwarded-For HTTP header to parse
-	 * @param public_ip the extract IP address, if found
-	 *
-	 * @return bool true if a public IP address was found and extracted
-	 */
-	static inline bool parseForwardedFor(const std::string& header, std::string& public_ip);
-
 
 private:
 
@@ -461,6 +450,19 @@ private:
 	/// whether to enable searching the content for meta tags containing charset declarations
 	bool						m_allow_searching_content_for_charset;
 
+
+	/// regular expression used to extract charset from Content-Encoding HTTP header
+	static const boost::regex	EXTRACT_CHARSET_RX;
+
+	/// regular expression used to extract charset from HTML meta tag
+	static const boost::regex	META_CHARSET1_RX;
+
+	/// another regular expression used to extract charset from HTML meta tag
+	static const boost::regex	META_CHARSET2_RX;
+
+	/// regular expression used to match UTF-8 in charset string
+	static const boost::regex	UTF8_RX;
+	
 	/// name of the MaxRequestContentLength element for Pion XML config files
 	static const std::string	MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME;
 
@@ -824,8 +826,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 					if (m_parent_protocol.m_allow_utf8_conversion) {
 						// Get the charset, if present, from the Content-Type header.
 						boost::match_results<std::string::const_iterator> mr;
-						static const boost::regex rx(";\\s*charset=([^;]+)");
-						if (boost::regex_search(content_type, mr, rx)) {
+						if (boost::regex_search(content_type, mr, EXTRACT_CHARSET_RX)) {
 							charset = mr[1];
 						}
 
@@ -834,15 +835,13 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								if (content_type.compare(0, 9, "text/html") == 0) {
 									// No charset in the Content-Type header and this is HTML, so need to look for meta tags in the content.
 
-									static const boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
-									static const boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
 									boost::match_results<const char*> mr2;
 									const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
 									size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
 									size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
-									if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
+									if (boost::regex_search(p, p + length1, mr2, META_CHARSET1_RX)) {
 										charset = mr2[1];
-									} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
+									} else if (boost::regex_search(p, p + length2, mr2, META_CHARSET2_RX)) {
 										charset = mr2[1];
 									}
 								}
@@ -851,8 +850,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								// since the former takes precedence over the latter.
 							}
 						}
-						static const boost::regex rx_utf8("utf-8", boost::regex::icase);
-						do_conversion = (!charset.empty() && !boost::regex_search(charset, rx_utf8));
+						do_conversion = (!charset.empty() && !boost::regex_search(charset, UTF8_RX));
 					}
 
 					if (content_encoding.empty()) {
@@ -895,45 +893,6 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 		}
 	}
 }
-
-inline bool HTTPProtocol::parseForwardedFor(const std::string& header, std::string& public_ip)
-{
-	// static regex's used to check for ipv4 address
-	static const boost::regex IPV4_ADDR_RX("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}");
-
-	/// static regex used to check for private/local networks:
-	/// 10.*
-	/// 127.*
-	/// 192.168.*
-	/// 172.16-31.*
-	static const boost::regex PRIVATE_NET_RX("(10\\.[0-9]{1,3}|127\\.[0-9]{1,3}|192\\.168|172\\.1[6-9]|172\\.2[0-9]|172\\.3[0-1])\\.[0-9]{1,3}\\.[0-9]{1,3}");
-
-	// sanity check
-	if (header.empty())
-		return false;
-
-	// local variables re-used by while loop
-	boost::match_results<std::string::const_iterator> m;
-	std::string::const_iterator start_it = header.begin();
-
-	// search for next ip address within the header
-	while (boost::regex_search(start_it, header.end(), m, IPV4_ADDR_RX)) {
-		// get ip that matched
-		std::string ip_str(m[0].first, m[0].second);
-		// check if public network ip address
-		if (! boost::regex_match(ip_str, PRIVATE_NET_RX) ) {
-			// match found!
-			public_ip = ip_str;
-			return true;
-		}
-		// update search starting position
-		start_it = m[0].second;
-	}
-
-	// no matches found
-	return false;
-}
-
 
 }	// end namespace plugins
 }	// end namespace pion
