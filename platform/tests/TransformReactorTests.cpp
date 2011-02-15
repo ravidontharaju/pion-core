@@ -255,6 +255,8 @@ public:
 		m_num_events_validated = 0;
 		m_page_event_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#page-event");
 		m_sc_content_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#sc-content");
+		m_sc_packets_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#sc-packets");
+		m_uri_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#uri");
 	}
 
 	typedef std::map<Vocabulary::TermRef, std::string> ExpectedTerms;
@@ -288,6 +290,8 @@ public:
 	int					m_num_events_validated;
 	Vocabulary::TermRef	m_page_event_ref;
 	Vocabulary::TermRef	m_sc_content_term_ref;
+	Vocabulary::TermRef	m_sc_packets_term_ref;
+	Vocabulary::TermRef	m_uri_term_ref;
 	ExpectedTerms		m_expected_terms;
 };
 
@@ -762,6 +766,77 @@ BOOST_AUTO_TEST_CASE(checkJoinUniqueTerm) {
 	sendEventAndValidateOutput(e, transformer_id);
 }
 
+
+BOOST_AUTO_TEST_CASE(checkAssignment) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>AssignTerm</Type>"
+			"<Value>urn:vocab:clickstream#uri</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setString(m_uri_term_ref, "hello");
+
+	// See if the three values get glued together into one value, with the dupe hello dropped
+	m_expected_terms[m_sc_content_term_ref] = "hello";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+
+/*
+ * Doesn't seem to work, probably the m_expected_terms assignment fails to work...
+ *
+BOOST_AUTO_TEST_CASE(checkAssignment2) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-packets</Term>"
+			"<Type>AssignTerm</Type>"
+			"<Value>urn:vocab:clickstream#sc-packets</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setUInt(m_sc_packets_term_ref, 5);
+
+	m_expected_terms[m_sc_packets_term_ref] = 5;
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
+*/
+
+BOOST_AUTO_TEST_CASE(checkTypeTransformation) {
+	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
+	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:clickstream#sc-content</Term>"
+			"<Type>AssignTerm</Type>"
+			"<Value>urn:vocab:clickstream#sc-packets</Value>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	// Create an input Event and specify expected Term value(s) in the corresponding output Event.
+	EventPtr e(m_event_factory.create(m_page_event_ref));
+	e->setUInt(m_sc_packets_term_ref, 5);
+
+	m_expected_terms[m_sc_content_term_ref] = "5";
+
+	sendEventAndValidateOutput(e, transformer_id);
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -144,8 +144,9 @@ public:
 	 */
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
 {
-	if (value.empty())		// New shortcut -- if empty value, don't assign
-	  return true;
+// Seems that not assigning empty values breaks functionality & tests
+//	if (value.empty())		// New shortcut -- if empty value, don't assign
+//	  return true;
 
 	try {
 		e->set(term, value);
