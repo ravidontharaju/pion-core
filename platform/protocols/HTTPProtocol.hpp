@@ -460,6 +460,19 @@ private:
 	/// whether to enable searching the content for meta tags containing charset declarations
 	bool						m_allow_searching_content_for_charset;
 
+
+	/// regular expression used to extract charset from Content-Encoding HTTP header
+	static const boost::regex	EXTRACT_CHARSET_RX;
+
+	/// regular expression used to extract charset from HTML meta tag
+	static const boost::regex	META_CHARSET1_RX;
+
+	/// another regular expression used to extract charset from HTML meta tag
+	static const boost::regex	META_CHARSET2_RX;
+
+	/// regular expression used to match UTF-8 in charset string
+	static const boost::regex	UTF8_RX;
+	
 	/// name of the MaxRequestContentLength element for Pion XML config files
 	static const std::string	MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME;
 
@@ -823,8 +836,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 					if (m_parent_protocol.m_allow_utf8_conversion) {
 						// Get the charset, if present, from the Content-Type header.
 						boost::match_results<std::string::const_iterator> mr;
-						static const boost::regex rx(";\\s*charset=([^;]+)");
-						if (boost::regex_search(content_type, mr, rx)) {
+						if (boost::regex_search(content_type, mr, EXTRACT_CHARSET_RX)) {
 							charset = mr[1];
 						}
 
@@ -833,15 +845,13 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								if (content_type.compare(0, 9, "text/html") == 0) {
 									// No charset in the Content-Type header and this is HTML, so need to look for meta tags in the content.
 
-									static const boost::regex rx_meta_1("<meta charset=([^\\s/>]*)", boost::regex::icase);
-									static const boost::regex rx_meta_2("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
 									boost::match_results<const char*> mr2;
 									const char* p = decoded_flag? decoded_content.get() : http_msg.getContent();
 									size_t length2 = decoded_flag? decoded_content_length : http_msg.getContentLength();
 									size_t length1 = length2 > 512? 512 : length2; // <meta charset> tags are required to be in the first 512 bytes.
-									if (boost::regex_search(p, p + length1, mr2, rx_meta_1)) {
+									if (boost::regex_search(p, p + length1, mr2, META_CHARSET1_RX)) {
 										charset = mr2[1];
-									} else if (boost::regex_search(p, p + length2, mr2, rx_meta_2)) {
+									} else if (boost::regex_search(p, p + length2, mr2, META_CHARSET2_RX)) {
 										charset = mr2[1];
 									}
 								}
@@ -850,8 +860,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								// since the former takes precedence over the latter.
 							}
 						}
-						static const boost::regex rx_utf8("utf-8", boost::regex::icase);
-						do_conversion = (!charset.empty() && !boost::regex_search(charset, rx_utf8));
+						do_conversion = (!charset.empty() && !boost::regex_search(charset, UTF8_RX));
 					}
 
 					if (content_encoding.empty()) {

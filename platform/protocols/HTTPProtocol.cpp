@@ -44,7 +44,12 @@ namespace plugins {		// begin namespace plugins
 
 
 // static members of HTTPProtocol
-	
+
+const boost::regex HTTPProtocol::EXTRACT_CHARSET_RX(";\\s*charset=([^;]+)");
+const boost::regex HTTPProtocol::META_CHARSET1_RX("<meta charset=([^\\s/>]*)", boost::regex::icase);
+const boost::regex HTTPProtocol::META_CHARSET2_RX("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=([^\";]+)", boost::regex::icase);
+const boost::regex HTTPProtocol::UTF8_RX("utf-8", boost::regex::icase);
+
 const std::string HTTPProtocol::MAX_REQUEST_CONTENT_LENGTH_ELEMENT_NAME = "MaxRequestContentLength";
 const std::string HTTPProtocol::MAX_RESPONSE_CONTENT_LENGTH_ELEMENT_NAME = "MaxResponseContentLength";
 const std::string HTTPProtocol::RAW_REQUEST_HEADERS_ELEMENT_NAME = "RawRequestHeaders";
