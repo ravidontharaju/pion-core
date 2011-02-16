@@ -242,6 +242,7 @@ void VocabularyManager::addVocabulary(const std::string& vocab_id,
 		ConfigManager::getConfigOption(NAME_ELEMENT_NAME, vocab_name, config_ptr);
 		// get the "Comment" value
 		ConfigManager::getConfigOption(COMMENT_ELEMENT_NAME, vocab_comment, config_ptr);
+		xmlFreeNodeList(config_ptr);
 	}
 	
 	// call addVocabulary() to do the real work

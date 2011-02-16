@@ -807,16 +807,22 @@ void ReactionEngine::setWorkspaceConfig(xmlNodePtr workspace_node, const char* c
 	// try to get the "Name" value, and if found, update the "Name" element in the Workspace node
 	std::string name;
 	if (ConfigManager::getConfigOption(ConfigManager::NAME_ELEMENT_NAME, name, config_ptr)) {
-		if (! ConfigManager::updateConfigOption(ConfigManager::NAME_ELEMENT_NAME, name, workspace_node))
+		if (! ConfigManager::updateConfigOption(ConfigManager::NAME_ELEMENT_NAME, name, workspace_node)) {
+			xmlFreeNodeList(config_ptr);
 			throw SetWorkspaceConfigException();
+		}
 	}
 
 	// try to get the "Comment" value, and if found, update the "Comment" element in the Workspace node
 	std::string comment;
 	if (ConfigManager::getConfigOption(ConfigManager::COMMENT_ELEMENT_NAME, comment, config_ptr)) {
-		if (! ConfigManager::updateConfigOption(ConfigManager::COMMENT_ELEMENT_NAME, comment, workspace_node))
+		if (! ConfigManager::updateConfigOption(ConfigManager::COMMENT_ELEMENT_NAME, comment, workspace_node)) {
+			xmlFreeNodeList(config_ptr);
 			throw SetWorkspaceConfigException();
+		}
 	}
+	
+	xmlFreeNodeList(config_ptr);
 }
 
 void ReactionEngine::stopNoLock(void)
