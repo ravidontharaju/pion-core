@@ -1,3 +1,19 @@
+
+Version 3.1.5 (2011-02-18)
+==========================
+
+* Embedded SQLite/Replay; detect schema before altering (1060)
+* TransformReactor fails non-string-type conversions (1069)
+* Publish Reactor configuration guide on pion.org (1004)
+* PythonReactor - zero copy events and other things (1048)
+* Do not allow dupe column names in Replay (or DBInserter) (1057)
+* At exit, tls_destructor core dumps (1056)
+* piondb - sqlite3 shell program using pion-sqlite library (1068)
+* pmon.py - lost connection when interval given (1072)
+* HTTP Protocol - performance regression (1077)
+* Windows 64-bit installer has problems with previous 32-bit installations (1062)
+
+
 Version 3.0.23 (2011-02-10)
 ===========================
 
