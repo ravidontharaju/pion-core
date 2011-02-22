@@ -232,6 +232,8 @@ copy(File::Spec->catfile( ("platform", "build"), "pmon.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
 copy(File::Spec->catfile( ("platform", "build"), "pupgrade.py"),
 	File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
+copy(File::Spec->catfile( ("platform", "build"), "httpbl.py"),
+	File::Spec->catfile($PACKAGE_DIR, "httpbl.py"));
 
 # copy the executable files
 copy($SERVER_EXE, $PACKAGE_DIR);
@@ -276,6 +278,7 @@ if ($PLATFORM =~ /^win32/i) {
 	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pget.py"));
 	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
 	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));
+	chmod(0777, File::Spec->catfile($PACKAGE_DIR, "httpbl.py"));
 
 	# create tarballs
 	if ($NOZIP ne "nozip") {
