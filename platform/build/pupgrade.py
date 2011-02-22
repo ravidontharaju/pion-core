@@ -33,7 +33,7 @@ RULES = list()
 ###########################################
 # KEEP THIS UPDATED TO THE LATEST VERSION #
 ###########################################
-CURRENT_VERSION = '3.1.2'
+CURRENT_VERSION = '4.0.0'
 
 ########################################
 # CONFIGURATION UPGRADE RULES GO BELOW #
@@ -249,8 +249,44 @@ class Upgrade30xTo31x(UpgradeRule):
 		self.process_file(pion_config['ReplayTemplates'], self.update_replay_queries)
 		return UpgradeRule.process(self, pion_config)
 
-
 RULES.append(Upgrade30xTo31x('3.1.2', '^3\.0\..*$'))
+
+
+class Upgrade31xTo40x(UpgradeRule):
+	"""Upgrade from 3.1.x to 4.0.x"""
+	def __init__(self, version, regex):
+		UpgradeRule.__init__(self, version, regex)
+		self.uristems = list()
+	def update_robot_config(self, cfg):
+		# update robots.xml
+		removed_comment = False
+		for uristem in cfg.root.iter('{%s}UriStem' % PION_NS):
+			self.uristems.append(uristem.text)
+			idx = cfg.root.index(uristem)
+			cfg.root.remove(uristem)
+			if (not removed_comment and idx > 0 and cfg.root[idx-1].text.find('request matches the following URI stems,') != -1):
+				cfg.root.remove(cfg.root[idx-1])
+				removed_comment = True
+	def update_reactors(self, cfg):
+		# update reactors.xml
+		if (not self.uristems):
+			return	# nothing to convert from robots.xml
+		reactor_nodes = list(cfg.root.iter('{%s}Reactor' % PION_NS))
+		if (not reactor_nodes):
+			return	# nothing to do -> no reactors
+		# look for Clickstream reactors
+		for r in reactor_nodes:
+			plugin = r.findtext('{%s}Plugin' % PION_NS)
+			if (plugin == 'ClickstreamReactor'):
+				honeypots = etree.SubElement(r, '{%s}HoneyPots' % PION_NS)
+				for uristem in self.uristems:
+					etree.SubElement(honeypots, '{%s}UriStem' % PION_NS).text = uristem
+	def process(self, pion_config):
+		self.process_file(pion_config['RobotConfig'], self.update_robot_config)
+		self.process_file(pion_config['ReactorConfig'], self.update_reactors)
+		return UpgradeRule.process(self, pion_config)
+
+RULES.append(Upgrade31xTo40x('4.0.0', '^3\.1\..*$'))
 
 # ...
 
