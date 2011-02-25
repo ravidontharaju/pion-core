@@ -145,14 +145,15 @@ public:
 	 * @param len length in bytes of the network data
 	 * @param data_timestamp data frame timestamp
 	 * @param ack_timestamp timestamp for acknowlegement of receipt of data frame
-	 * @param event_ptr refererence to an event object returned if the call resulted in event generation
+	 * @param events one or more events generated from network data
+	 * @param ec error_code contains additional information for parsing errors
 	 *
 	 * @return true if the current data chunk completes a new event, indeterminate if the event parsing is not
 	 *		   yet complete, false if an error encountered during the parsing
 	 */
 	virtual boost::tribool readNext(bool request, const char* ptr, size_t len,
 			boost::posix_time::ptime data_timestamp, boost::posix_time::ptime ack_timestamp,
-			pion::platform::EventContainer& events);
+			pion::platform::EventContainer& events, boost::system::error_code& ec);
 
 	/**
 	 * called when parsing previously failed.  should return true if the current packet

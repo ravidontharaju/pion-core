@@ -163,7 +163,8 @@ bool HTTPProtocol::close(EventPtr& event_ptr_ref, bool client_reset, bool server
 boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len, 
 									  boost::posix_time::ptime data_timestamp,
 									  boost::posix_time::ptime ack_timestamp,
-									  EventContainer& events)
+									  EventContainer& events,
+									  boost::system::error_code& ec)
 {
 	boost::tribool rc;
 
@@ -172,10 +173,10 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 		// missing data -> try to recover from lost packet
 		if (request) {
 			++m_cs_missing_packets;
-			rc = m_request_parser.parseMissingData(m_request, len);
+			rc = m_request_parser.parseMissingData(m_request, len, ec);
 		} else {
 			++m_sc_missing_packets;
-			rc = m_response_parser.parseMissingData(m_response, len);
+			rc = m_response_parser.parseMissingData(m_response, len, ec);
 		}
 	
 	} else {
@@ -198,7 +199,7 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 	
 			// parse the data
 			m_request_parser.setReadBuffer(ptr, len);
-			rc = m_request_parser.parse(m_request);
+			rc = m_request_parser.parse(m_request, ec);
 	
 		} else {
 	
@@ -216,7 +217,7 @@ boost::tribool HTTPProtocol::readNext(bool request, const char *ptr, size_t len,
 	
 			// parse the data
 			m_response_parser.setReadBuffer(ptr, len);
-			rc = m_response_parser.parse(m_response);
+			rc = m_response_parser.parse(m_response, ec);
 		}
 	}
 

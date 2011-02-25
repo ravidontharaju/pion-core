@@ -210,8 +210,10 @@ public:
 
 	void generateEvent(const std::string& content_type_header, const std::string& content, const std::string& content_encoding = "") {
 		// Process a minimal request.
-		m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+		boost::system::error_code ec;
+		m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 		BOOST_REQUIRE(boost::indeterminate(m_rc));
+		BOOST_CHECK(!ec);
 
 		// Simulate a response with the given content and Content-Type header.
 		std::ostringstream oss;
@@ -224,8 +226,9 @@ public:
 		std::string response = oss.str();
 
 		// Process the response and check that an Event was generated.
-		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+		m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 		BOOST_REQUIRE(m_rc == true);
+		BOOST_CHECK(!ec);
 		BOOST_REQUIRE(!m_e.empty());
 		BOOST_REQUIRE(m_e.back().get());
 	}
@@ -396,25 +399,31 @@ BOOST_FIXTURE_TEST_SUITE(HTTPFullContentProtocol_S, HTTPFullContentProtocol_F)
 
 BOOST_AUTO_TEST_CASE(checkReadNextRequestAndResponse) {
 	bool is_request;
-	m_rc = m_protocol_ptr->readNext(is_request = true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(is_request = true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 	BOOST_CHECK(m_e.empty());
 
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + "0123456789";
-	m_rc = m_protocol_ptr->readNext(is_request = false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(is_request = false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
 }
 
 BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	const std::string orig_sc_content = "0123456789";
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + orig_sc_content;
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
@@ -422,8 +431,10 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
 }
 
 BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	const std::string orig_sc_content = "<title>My Home Page</title>some content";
 	std::ostringstream oss;
@@ -432,8 +443,9 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
 		<< "Content-Length: " << orig_sc_content.length() << CRLF << CRLF
 		<< orig_sc_content;
 	std::string response = oss.str();
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
@@ -442,8 +454,10 @@ BOOST_AUTO_TEST_CASE(checkEventContainsContentPageTitle) {
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	const std::string orig_content = "0123456789";
 	const std::string gzipped_content = gzipEncode(orig_content);
@@ -455,8 +469,9 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
 		<< "Content-Length: " << gzipped_content.length() << CRLF << CRLF
 		<< gzipped_content;
 	std::string response = oss.str();
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
@@ -464,8 +479,10 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsContentTerm) {
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingEventContainsOriginalContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	// Simulate a response with content encoded with unknown compression algorithm "smash".
 	const std::string smashed_content = "d8kkdsj8722m";
@@ -479,16 +496,19 @@ BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingEventContainsOriginalContent
 
 	// Process the response and check that the resulting Event has an sc-content Term containing the still smashed content.
 	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
 	BOOST_CHECK_EQUAL(smashed_content, m_e.back()->getString(m_sc_content_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
-	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	std::ifstream log_file((LOG_FILE_DIR + "large.json").c_str());
 	std::ostringstream oss0;
@@ -504,8 +524,9 @@ BOOST_AUTO_TEST_CASE(checkWithContentEncodingEventContainsLongContentTerm) {
 		<< "Content-Length: " << gzipped_content.length() << CRLF << CRLF
 		<< gzipped_content;
 	std::string response = oss.str();
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
@@ -516,13 +537,16 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContent) {
 	const std::string orig_cs_content = "Color=Red";
 	std::string request = "POST / HTTP/1.1" + CRLF + "Content-Type: application/x-www-form-urlencoded" + CRLF 
 						+ "Content-Length: 9" + CRLF + CRLF + orig_cs_content;
-	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	const std::string orig_sc_content = "0123456789";
 	std::string response = "HTTP/1.1 200 " + CRLF + "Content-Type: text/html" + CRLF + "Content-Length: 10" + CRLF + CRLF + orig_sc_content;
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
@@ -663,12 +687,15 @@ BOOST_AUTO_TEST_CASE(checkRequestWithContentWithEucJpCharset) {
 		<< "Content-Length: " << euc_jp_encoded_query.length() << CRLF << CRLF
 		<< euc_jp_encoded_query;
 	std::string request = oss.str();
-	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e);
+	boost::system::error_code ec;
+	m_rc = m_protocol_ptr->readNext(true, request.c_str(), request.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(boost::indeterminate(m_rc));
+	BOOST_CHECK(!ec);
 
 	std::string response = "HTTP/1.1 204 " + CRLF + CRLF;
-	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e);
+	m_rc = m_protocol_ptr->readNext(false, response.c_str(), response.length(), m_t0, m_t0, m_e, ec);
 	BOOST_CHECK(m_rc == true);
+	BOOST_CHECK(!ec);
 	BOOST_REQUIRE(!m_e.empty());
 	BOOST_REQUIRE(m_e.back().get());
 
