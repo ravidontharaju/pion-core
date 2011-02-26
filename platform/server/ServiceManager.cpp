@@ -83,6 +83,9 @@ void ServiceManager::shutdown(void)
 
 	// finally, it's safe to clear the HTTPServer/WebServer objects
 	m_servers.clear();
+	
+	// release plugins used by the ServiceManager
+	this->releasePlugins();
 }
 
 void ServiceManager::openConfigFile(void)

@@ -119,6 +119,12 @@ void Reactor::removeConnection(const std::string& connection_id)
 	m_connections.erase(i);
 }
 
+void Reactor::clearConnections(void)
+{
+	ConfigWriteLock cfg_lock(*this);
+	m_connections.clear();
+}
+
 void Reactor::query(std::ostream& out, const QueryBranches& branches,
 	const QueryParams& qp)
 {

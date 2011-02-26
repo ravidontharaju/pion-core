@@ -152,6 +152,16 @@ void ReactionEngine::stop(void)
 	stopNoLock();
 }
 
+void ReactionEngine::shutdown(void)
+{
+	stop();
+	m_scheduler.shutdown();
+	m_temp_connections.clear();
+	m_reactor_connections.clear();
+	m_plugins.run(boost::bind(&Reactor::clearConnections, _1));
+	this->releasePlugins();
+}
+
 void ReactionEngine::clearStats(void)
 {
 	m_plugins.run(boost::bind(&Reactor::clearStats, _1));

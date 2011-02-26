@@ -170,7 +170,7 @@ public:
 				   DatabaseManager& database_mgr);
 	
 	/// virtual destructor
-	virtual ~ReactionEngine() { stop(); m_scheduler.shutdown(); }
+	virtual ~ReactionEngine() { shutdown();  }
 	
 	/// opens an existing configuration file and loads the plug-ins it contains
 	virtual void openConfigFile(void);
@@ -188,6 +188,9 @@ public:
 	/// stops all Event processing (stops all Reactors and terminates all connections)
 	void stop(void);
 	
+	/// shuts down the reaction engine -> stops all threads and releases plugins
+	void shutdown(void);
+
 	/// clears statistic counters for all Reactors
 	void clearStats(void);
 

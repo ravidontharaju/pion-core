@@ -134,8 +134,12 @@ public:
 		// make sure that the ReactionEngine stops before the ServiceManager
 		// This will cleanly terminate any temporary Reactor connections first
 		m_reaction_engine.stop();
-		// make sure the ServiceManager has shutdown before everything starts to destruct
+		// stop threads and release service plugins in ServiceManager because
+		// they use other plugins types; otherwise, code referenced by them
+		// may be released first which can potentitally cause crashes
 		m_service_mgr.shutdown();
+		// release reactor plugins next for same reasons
+		m_reaction_engine.shutdown();
 	}
 	
 	/// opens an existing platform config file

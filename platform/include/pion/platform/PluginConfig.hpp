@@ -148,6 +148,9 @@ public:
 	
 protected:
 
+	/// releases all code for managed plugins
+	inline void releasePlugins(void) { m_plugins.clear(); }
+
 	/**
 	 * protected constructor: this should only be used by derived classes
 	 *

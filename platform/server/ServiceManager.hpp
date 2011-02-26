@@ -153,7 +153,7 @@ public:
 	/// virtual destructor
 	virtual ~ServiceManager() { shutdown(); }
 	
-	/// shuts down the service manager -> stops all servers and threads
+	/// shuts down the service manager -> stops all servers and threads and releases plugins
 	void shutdown(void);
 	
 	/// opens an existing config file and loads the data it contains

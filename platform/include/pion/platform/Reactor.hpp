@@ -253,6 +253,9 @@ public:
 	 * @param connection_id unique identifier associated with the output connection
 	 */
 	void removeConnection(const std::string& connection_id);
+	
+	/// clears all of the reactor's output connections
+	void clearConnections(void);
 
 	/// write all XML statistics (including Reactor elements) for this Reactor to the output stream
 	inline void writeStatsXML(std::ostream& out) const {
@@ -583,6 +586,7 @@ private:
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;
 
+	/// unique identifier for the workspace this reactor belongs to
 	std::string						m_workspace_id;
 
 	/// the total number of Events received by this Reactor
