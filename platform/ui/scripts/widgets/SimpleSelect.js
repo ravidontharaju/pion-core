@@ -55,7 +55,9 @@ dojo.declare("pion.widgets.SimpleSelect", dijit.form._FormWidget, {
 			}
 			this._handleOnChange(value, true);
 		} else {
+			this.pendingSetValue = true;
 			var h = this.connect(this, '_onDoneAddingOptions', function() {
+				this.pendingSetValue = false;
 				this.disconnect(h);
 				if (value === null) {
 					this.containerNode.selectedIndex = -1;
@@ -178,6 +180,7 @@ console.info("~~~~~~~~~~~~~~~~~~~~~ In readyForCallback() callback, e = ", e, ",
 
 	_onDoneAddingOptions: function() {
 		this.doneAddingOptions = true;
-		this._onChange();
+		if (! this.pendingSetValue)
+			this._onChange();
 	}
 });

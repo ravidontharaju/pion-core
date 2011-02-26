@@ -49,6 +49,16 @@ pion.makeXmlLeafElementFromItem = function(store, item, tag_name, optional_defau
 	}
 }
 
+pion.makeObjectFromItem = function(store, item) {
+	var obj = {};
+	dojo.forEach(store.getAttributes(item), function(attr) {
+		if (attr != 'tagName' && attr != 'childNodes') {
+			obj[attr] = store.getValue(item, attr).toString();
+		}
+	});
+	return obj;
+}
+
 pion.xmlCellFormatter = function(d) {
 	if (d == '')
 		return '';

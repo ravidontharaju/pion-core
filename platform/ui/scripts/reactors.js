@@ -167,8 +167,8 @@ pion.reactors.init = function() {
 		.addCallback(pion.reactors._initConfiguredWorkspaces)
 		.addCallback(pion.reactors._initConfiguredReactors);
 
-	// Assign an id for the 'add new workspace' tab (at this point the only tab), so it can get special styling.
-	dojo.query(".dijitTab")[0].id = 'create_new_workspace_tab';
+	// Add a class to the 'add new workspace' tab (at this point the only tab), so it can get special styling.
+	dojo.query('.dijitTab', 'mainTabContainer').addClass('create_new_tab');
 
 	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
 	dojo.connect(document, 'onkeypress', handleKeyPress);
@@ -1243,7 +1243,7 @@ function selected(page) {
 				dojo.forEach(workspace_node.childNodes, function(node) {
 					if (node.firstChild) {
 						config[node.tagName] = node.firstChild.nodeValue;
-		}
+					}
 				});
 				addWorkspace(config);
 				return response;
@@ -1328,15 +1328,15 @@ function handleKeyPress(e) {
 
 function showWorkspaceConfigDialog(workspace_pane) {
 	dialog = new pion.reactors.WorkspaceDialog({title: "Workspace Configuration", workspace_pane: workspace_pane});
-		dialog.workspace_name.isValid = function(isFocused) {
-			if (!this.validator(this.textbox.value, this.constraints)) {
-				this.invalidMessage = "Invalid Workspace name";
-				console.debug('validationTextBox.isValid returned false');
-				return false;
-			}
-			return true;
-		};
-		dialog.save_button.onClick = function() { return dialog.isValid(); };
+	dialog.workspace_name.isValid = function(isFocused) {
+		if (!this.validator(this.textbox.value, this.constraints)) {
+			this.invalidMessage = "Invalid Workspace name";
+			console.debug('validationTextBox.isValid returned false');
+			return false;
+		}
+		return true;
+	};
+	dialog.save_button.onClick = function() { return dialog.isValid(); };
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
@@ -1362,14 +1362,14 @@ function updateWorkspaceConfig(dialogFields, workspace_pane) {
 		contentType: "text/xml",
 		handleAs: "xml",
 		putData: put_data,
-		load: function(response){
-		workspace_pane.title = new_workspace_name;
-		dojo.byId(workspace_pane.controlButton.id).innerHTML = new_workspace_name;
+		load: function(response) {
+			workspace_pane.title = new_workspace_name;
+			dojo.byId(workspace_pane.controlButton.id).innerHTML = new_workspace_name;
 			pion.reactors.workspaces_by_id[workspace_pane.uuid].config = dialogFields;
 		},
 		error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
-		});
-	}
+	});
+}
 
 // Returns true if there is another workspace with the given name.
 function isDuplicateWorkspaceName(workspace_pane, name) {

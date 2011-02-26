@@ -972,11 +972,11 @@ The following are also available, if the need arises.
 	font-weight: bold; 
 }
 
-#create_new_workspace_tab {
-	border: 0px;
-	background-color: #ffffff;
-	background: none;
-	text-decoration: underline;
+.create_new_tab {
+	border: 0 !important;
+	background-color: #ffffff !important;
+	background: none !important;
+	text-decoration: underline !important;
 }
 
 
