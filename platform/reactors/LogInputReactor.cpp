@@ -471,7 +471,8 @@ void LogInputReactor::readFromLog(void)
 					while (! log_stream->empty()) log_stream->pop();
 
 					StreamMap::iterator it = m_open_streams.find(m_log_file);
-					m_open_streams.erase(it);
+					if (it != m_open_streams.end())	// sanity check
+						m_open_streams.erase(it);
 
 					recordLogFileAsDone();
 				}
