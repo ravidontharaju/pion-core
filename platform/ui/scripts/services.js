@@ -117,7 +117,7 @@ pion.services.init = function() {
 	}
 
 	pion.plugins.initAvailablePluginList()
-		.addCallback(pion.getPermissions)
+		.addCallback(pion.plugins.getPermissions)
 		.addCallback(pion.services.getAllServicesInUIDirectory)
 		.addCallback(pion.services.getConfiguredServices)
 		.addCallback(initUsableServicePlugins)

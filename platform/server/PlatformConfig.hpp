@@ -174,7 +174,7 @@ public:
 	inline ServiceManager& getServiceManager(void) { return m_service_mgr; }
 
 	/// returns a pointer to the global UserManager
-	inline UserManagerPtr getUserManagerPtr(void) { return m_user_mgr_ptr; }
+	inline const UserManagerPtr getUserManagerPtr(void) const { return m_user_mgr_ptr; }
 
 	/// returns the name of the logging configuration file
 	inline const std::string& getLogConfigFile(void) const { return m_log_config_file; }
@@ -189,7 +189,7 @@ public:
 private:
 
 	/**
-	 * finds an identifier within a system creditionals file (users or groups)
+	 * finds an identifier within a system credentials file (users or groups)
 	 *
 	 * @param name descriptive name to lookup (user or group name, may be id)
 	 * @param file system credentials file to look within

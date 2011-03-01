@@ -1,4 +1,5 @@
 dojo.provide("pion.plugins");
+dojo.require("pion._base");
 
 pion.plugins.initAvailablePluginList = function() {
 	var d = new dojo.Deferred();
@@ -38,4 +39,26 @@ pion.plugins.getPluginPrototype = function(namespace, plugin_name, directory_to_
 	}
 
 	return prototype;
+}
+
+pion.plugins.getPermissions = function() {
+	var dfd = new dojo.Deferred();
+	dojo.xhrGet({
+		url: '/query/permissions',
+		preventCache: true,
+		handleAs: 'xml',
+		timeout: 5000,
+		load: function(response, ioArgs) {
+			var permission_nodes = response.getElementsByTagName('Permission');
+			pion.permissions_object = {};
+			dojo.forEach(permission_nodes, function(node) {
+				var type = node.getAttribute('type');
+				pion.permissions_object[type] = node;
+			});
+			dfd.callback();
+			return response;
+		},
+		error: pion.handleXhrGetError
+	});
+	return dfd;
 }

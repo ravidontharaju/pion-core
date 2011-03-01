@@ -71,28 +71,6 @@ pion.initOptionalValue = function(store, item, new_item_object, tag_name, option
 	}
 }
 
-pion.getPermissions = function() {
-	var dfd = new dojo.Deferred();
-	dojo.xhrGet({
-		url: '/query/permissions',
-		preventCache: true,
-		handleAs: 'xml',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			var permission_nodes = response.getElementsByTagName('Permission');
-			pion.permissions_object = {};
-			dojo.forEach(permission_nodes, function(node) {
-				var type = node.getAttribute('type');
-				pion.permissions_object[type] = node;
-			});
-			dfd.callback();
-			return response;
-		},
-		error: pion.handleXhrGetError
-	});
-	return dfd;
-}
-
 // Contains ids of all the children of 'main_stack_container' in index.html.
 pion.permission_types_by_tab_id = {
 	reactor_config:  'Reactors',
