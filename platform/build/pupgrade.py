@@ -24,6 +24,28 @@ class UpgradeRule(object):
 		if (self.was_updated):
 			pion_config.set_version(self.version)
 		return self.was_updated
+	def add_new_service(self, server_node, type, id, name, comment, plugin, resource):
+		n = etree.SubElement(server_node, '{%s}%s' % (PION_NS,type))
+		n.set('id', id)
+		etree.SubElement(n, '{%s}Name' % PION_NS).text = name
+		etree.SubElement(n, '{%s}Comment' % PION_NS).text = comment
+		etree.SubElement(n, '{%s}Plugin' % PION_NS).text = plugin
+		etree.SubElement(n, '{%s}Resource' % PION_NS).text = resource
+		return n
+	def add_new_redirect(self, server_node, source, dest):
+		idx = 0
+		n = server_node.find('{%s}Redirect' % PION_NS)
+		if (n is not None):
+			while (n.getnext()):
+				temp = n.getnext()
+				if (temp.tag != '{%s}Redirect' % PION_NS): break
+				n = temp
+			idx = server_node.index(n) + 1
+		redirect = etree.Element('{%s}Redirect' % PION_NS)
+		etree.SubElement(redirect, '{%s}Source' % PION_NS).text = source
+		etree.SubElement(redirect, '{%s}Target' % PION_NS).text = dest
+		server_node.insert(idx, redirect)
+	
 
 
 # Global list of configuration upgrade rules
@@ -115,13 +137,6 @@ class Upgrade30xTo31x(UpgradeRule):
 				self.add_new_workspace(cfg, workspace_id, workspace_name)
 			# replace descriptive name with id
 			w.text = workspace_id
-	def add_new_service(self, server_node, type, id, name, comment, plugin, resource):
-		n = etree.SubElement(server_node, '{%s}%s' % (PION_NS,type))
-		n.set('id', id)
-		etree.SubElement(n, '{%s}Name' % PION_NS).text = name
-		etree.SubElement(n, '{%s}Comment' % PION_NS).text = comment
-		etree.SubElement(n, '{%s}Plugin' % PION_NS).text = plugin
-		etree.SubElement(n, '{%s}Resource' % PION_NS).text = resource
 	def update_services(self, cfg):
 		# remove entry for "log-service"
 		server_node = None
@@ -129,27 +144,21 @@ class Upgrade30xTo31x(UpgradeRule):
 			if (n.get('id') == 'log-service'):
 				server_node = n.getparent()
 				server_node.remove(n)
-		# add redirect for /replay.html
+		# find node for main server
 		for server_node in cfg.root.iter('{%s}Server' % PION_NS):
 			if (server_node.get('id') == 'main-server'):
-				idx = 0
-				n = server_node.find('{%s}Redirect' % PION_NS)
-				if (n is not None):
-					idx = server_node.index(n) + 1
-				redirect = etree.Element('{%s}Redirect' % PION_NS)
-				etree.SubElement(redirect, '{%s}Source' % PION_NS).text = '/replay.html'
-				etree.SubElement(redirect, '{%s}Target' % PION_NS).text = '/plugins/services/ReplayService/replay.html'
-				server_node.insert(idx, redirect)
+				# add redirect for /replay.html
+				self.add_new_redirect(server_node, '/replay.html', '/plugins/services/ReplayService/replay.html')
+				# add new service entries
+				self.add_new_service(server_node, 'PlatformService',
+					'monitor-service', 'Event Data Monitoring Service',
+					'Pion platform event data monitoring service',
+					'MonitorService', '/monitor')
+				self.add_new_service(server_node, 'PlatformService',
+					'xml-log-service', 'XML Log Service',
+					'Recent Log entries in XML',
+					'XMLLogService', '/xmllog')
 				break
-		# add new service entries
-		self.add_new_service(server_node, 'PlatformService',
-			'monitor-service', 'Event Data Monitoring Service',
-			'Pion platform event data monitoring service',
-			'MonitorService', '/monitor')
-		self.add_new_service(server_node, 'PlatformService',
-			'xml-log-service', 'XML Log Service',
-			'Recent Log entries in XML',
-			'XMLLogService', '/xmllog')
 	def update_protocols(self, cfg):
 		# look for HTTPProtocol configs
 		for n in cfg.root.iter('{%s}Protocol' % PION_NS):
@@ -281,9 +290,23 @@ class Upgrade31xTo40x(UpgradeRule):
 				honeypots = etree.SubElement(r, '{%s}HoneyPots' % PION_NS)
 				for uristem in self.uristems:
 					etree.SubElement(honeypots, '{%s}UriStem' % PION_NS).text = uristem
+	def update_services(self, cfg):
+		# update services.xml
+		for server_node in cfg.root.iter('{%s}Server' % PION_NS):
+			if (server_node.get('id') == 'main-server'):
+				# add redirect for /replay.html
+				self.add_new_redirect(server_node, '/dashboard.html', '/plugins/services/DashboardService/dashboard.html')
+				# add dashboard server node
+				n = self.add_new_service(server_node, 'PlatformService',
+					'dashboard-service', 'Dashboard Service',
+					'Pion Dashboard configuration service',
+					'DashboardService', '/dashboard')
+				etree.SubElement(n, '{%s}DashboardConfig' % PION_NS).text = 'dashboards.xml'
+				break;
 	def process(self, pion_config):
 		self.process_file(pion_config['RobotConfig'], self.update_robot_config)
 		self.process_file(pion_config['ReactorConfig'], self.update_reactors)
+		self.process_file(pion_config['ServiceConfig'], self.update_services)
 		return UpgradeRule.process(self, pion_config)
 
 RULES.append(Upgrade31xTo40x('4.0.0', '^3\.1\..*$'))
