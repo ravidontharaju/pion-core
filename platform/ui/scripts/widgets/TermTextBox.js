@@ -33,6 +33,8 @@ dojo.declare("pion.widgets._TermTextBox",
 					}
 				} else
 					return true;
+			} else if (! value && ! this.required) {
+				return true;
 			} else {
 				this.invalidMessage = 'unknown term';
 				return false;

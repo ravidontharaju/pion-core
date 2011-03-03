@@ -205,7 +205,7 @@ dojo.declare("plugins.reactors.Reactor",
 
 			this.put_data = '<PionConfig><Reactor>';
 			for (var tag in this.config) {
-				if (dojo.indexOf(this.special_config_elements, tag) == -1) {
+				if (dojo.indexOf(this.special_config_elements, tag) == -1 && tag[0] != '_') {
 					console.debug('this.config[', tag, '] = ', this.config[tag]);
 					this.put_data += pion.makeXmlLeafElement(tag, this.config[tag]);
 				}
