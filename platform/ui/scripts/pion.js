@@ -100,8 +100,30 @@ pion.initTabs = function() {
 
 	var tabs = main_stack.getChildren();
 	if (tabs.length > 0) {
-		main_stack.selectChild(tabs[0]);
-		configPageSelected(tabs[0]);
+		var chooseBestTab = function(tabs, i) {
+			var dfd = new dojo.Deferred();
+
+			if (i == tabs.length) // All tabs are empty, so just pick the first one.
+				dfd.callback(tabs[0]);
+
+			if ('isEmpty' in tabs[i]) {
+				tabs[i].isEmpty().addCallback(function(is_empty) {
+					if (is_empty) {
+						chooseBestTab(tabs, i + 1).addCallback(function(tab) {
+							dfd.callback(tab);
+						});
+					} else
+						dfd.callback(tabs[i]);
+				});
+			} else
+				dfd.callback(tabs[i]);
+
+			return dfd;
+		}
+		chooseBestTab(tabs, 0).addCallback(function(tab) {
+			main_stack.selectChild(tab);
+			configPageSelected(tab);
+		})
 	} else {
 		alert('There are no access rights defined for this user account.  You may need to update your users.xml file.');
 	}
