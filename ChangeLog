@@ -1,6 +1,23 @@
+Version 4.0.1 (2011-04-08)
+==========================
+
+* Added read() and write() methods to HTTPMessage for serialization (1086)
+* Improved error handling in HTTP(Request/Response)(Reader/Writer) (1083)
+
+
 Version 3.0.21 (2011-01-25)
 ===========================
 
+* HTTP Parser - fixed various chunked content parsing errors (991)
+* HTTP Parser - now recovers gracefully if status line is missing comment (994)
+* HTTP Parser - handle "deflate" encoded content with zlib headers (1008)
+* HTTP Parser - ignore tab characters in query string content (1014)
+* HTTP Parser - allow for empty cookie names (1015)
+* HTTP Parser - don't remove unquoted spaces from cookie values (1016)
+* HTTP Parser - allow for responses with no HTTP headers (1017)
+* HTTP Parser - improve recovery from truncated requests (1033)
+* HTTP Parser - recover from empty query parameter names (1006)
+* HTTP Parser - raw headers strings were sometimes truncated (1031)
 * TCPTimer.cpp was missing boost/bind.hpp include file (1005)
 * TCPConnection - now allows for SSL state change (1024)
 * HTTPMessage - added headers_only options for send() and receive() (1025)
