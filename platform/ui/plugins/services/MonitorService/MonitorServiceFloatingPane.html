@@ -22,6 +22,9 @@
 						<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
 						<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportSelectedRows">
 								Export selected Events</button>
+						<br />
+						<label>Separator for multi-valued terms:</label>
+						<input dojoType="dijit.form.TextBox" name="separator" style="width: 25px" dojoAttachEvent="onChange: changeSeparator" />
 					</div>
 				</div>
 				<div dojoType="dijit.layout.BorderContainer" dojoAttachPoint="left_sidebar" region="left" class="left_sidebar" splitter="true">

@@ -116,6 +116,19 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				autoWidth: true,
 				autoHeight: true
 			}, document.createElement('div'));
+
+			this.event_grid.get = function(inRowIndex, inItem) {
+				if (! inItem)
+					return this.defaultValue;
+				if (! this.field)
+					return this.value;
+				var array = this.grid.store.getValues(inItem, this.field);
+				if (array.length > 1)
+					return array;
+				else
+					return this.grid.store.getValue(inItem, this.field);
+			}
+
 			this.event_grid_node.appendChild(this.event_grid.domNode);
 			this.event_grid.startup();
 
@@ -126,18 +139,31 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				}
 				dijit.showTooltip(msg, e.cellNode);
 			}
+			var showTooltip2 = function(e) {
+				var item = e.cell.grid.getItem(e.rowIndex);
+				if (item) {
+					var array = e.cell.grid.store.getValues(item, e.cell.field);
+					if (array.length > 1) {
+						dijit.showTooltip('Term has ' + array.length + ' values.', e.cellNode);
+					}
+				}
+			}
 			var hideTooltip = function(e) {
 				dijit.hideTooltip(e.cellNode);
 				dijit._masterTT._onDeck = null;
 			}
 			dojo.connect(this.event_grid, "onHeaderCellMouseOver", showTooltip);
 			dojo.connect(this.event_grid, "onHeaderCellMouseOut", hideTooltip);
+			dojo.connect(this.event_grid, "onCellMouseOver", showTooltip2);
+			dojo.connect(this.event_grid, "onCellMouseOut", hideTooltip);
 
 			this.update_interval = 5;
 			this.event_buffer_size = 15;
+			this.separator = '|';
 			this.settings_form.attr('value', {
 				update_interval: this.update_interval,
-				event_buffer_size: this.event_buffer_size
+				event_buffer_size: this.event_buffer_size,
+				separator: this.separator
 			});
 			this.startPolling({events: this.event_buffer_size});
 
@@ -226,6 +252,9 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			this.update_interval = val;
 			window.clearInterval(this.interval_handle);
 			this.startPolling();
+		},
+		changeSeparator: function(val) {
+			this.separator = val;
 		},
 		my_hide: function(e) {
 			// Note that using hide instead of my_hide in MonitorServiceFloatingPane.html doesn't work right, because the specified
@@ -388,7 +417,16 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				this.event_grid_layout = {rows: []};
 				for (var key in col_tags) {
 					var name = (key == 'Event Type')? key : key.split('#')[1];
-					var row = { field: col_tags[key], name: name, id: 'urn:vocab:' + key, styles: '', width: 12 };
+					var row = {
+						field: col_tags[key], name: name, id: 'urn:vocab:' + key, styles: '', width: 12,
+						formatter: function(d) {
+							if (dojo.isArray(d)) {
+								this.customClasses.push('multi_valued');
+								d = d.join(_this.separator);
+							}
+							return pion.xmlCellFormatter(d);
+						}
+					};
 					this.event_grid_layout.rows.push(row);
 				}
 				this.event_grid_layout.rows.sort(function(a, b) {
@@ -407,7 +445,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				setTimeout(function() {
 					// This sets the focus to the last row, causing the grid to scroll to the bottom (so the user can see the newly arrived events).
 					_this.event_grid.focus.setFocusIndex(_this.event_grid.rowCount - 1, 0);
-
+					
 					// However, we don't want to leave the focus there, because then the grid will keep scrolling to 
 					// the last row even if the user scrolls away, until they focus somewhere else (e.g. by clicking in a cell).
 					// The following makes nothing have the focus.

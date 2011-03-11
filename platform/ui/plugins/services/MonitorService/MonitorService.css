@@ -1,5 +1,5 @@
 .dojoxFloatingPane.monitor_service {
-	height: 520px;
+	height: 540px;
 	width: 740px;
 }
 
@@ -17,6 +17,11 @@
 
 .dojoxFloatingPane.monitor_service.storage .event_grid_pane {
 	background: #f0f9d1; 
+}
+
+.event_grid_pane .dojoxGridCell.multi_valued {
+	font-style: italic;
+	color: gray;
 }
 
 .tundra .monitor_service h3 {
