@@ -16,6 +16,7 @@ dependencies = {
 			"dijit.form.ValidationTextBox",
 			"dijit.form.Button",
 			"dijit.form.CheckBox",
+			"dijit.form.RadioButton",
 			"dijit.form.TimeTextBox",
 			"dijit.form.DateTextBox",
 			"dijit.ProgressBar",

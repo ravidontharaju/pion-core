@@ -6,6 +6,7 @@ dojo.require("dijit.Dialog");
 dojo.require("dijit.layout.StackContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
+dojo.require("dijit.form.RadioButton");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojox.dtl.filter.strings");
 dojo.require("dojox.widget.Standby");

@@ -22787,6 +22787,10 @@ event.stopPropagation();
 this.hide();
 }});
 }
+if(!dojo._hasResource["dijit.form.RadioButton"]){
+dojo._hasResource["dijit.form.RadioButton"]=true;
+dojo.provide("dijit.form.RadioButton");
+}
 if(!dojo._hasResource["pion._base.error"]){
 dojo._hasResource["pion._base.error"]=true;
 dojo.provide("pion._base.error");

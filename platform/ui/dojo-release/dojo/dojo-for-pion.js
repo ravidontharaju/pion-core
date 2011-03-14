@@ -7654,6 +7654,10 @@ this.attr("checked",true);
 }
 }});
 }
+if(!dojo._hasResource["dijit.form.RadioButton"]){
+dojo._hasResource["dijit.form.RadioButton"]=true;
+dojo.provide("dijit.form.RadioButton");
+}
 if(!dojo._hasResource["dojo.date"]){
 dojo._hasResource["dojo.date"]=true;
 dojo.provide("dojo.date");
