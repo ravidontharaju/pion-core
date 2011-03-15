@@ -22,7 +22,7 @@ dojo.declare("plugins.services.XMLLogService",
 			var tab_buttons = dijit.byId('main_stack_controller').getChildren();
 			this.tab_button = tab_buttons[tab_buttons.length - 1].domNode;
 
-			// This needs to be here (instead of in init()) so that this.log_grid_node.clientHeight will be ready when onSelect() calls this.getHeight().
+			// This needs to be here (instead of in init()) so that this.log_grid_node.offsetHeight will be ready when onSelect() calls this.getHeight().
 			pion.loadCss(dojo.moduleUrl("plugins.services", "XMLLogService/XMLLogService.css"));
 
 			var _this = this;
@@ -59,7 +59,7 @@ dojo.declare("plugins.services.XMLLogService",
 			}, 1000);
 		},
 		getHeight: function() {
-			return this.containerNode.clientHeight + 110;
+			return this.containerNode.offsetHeight + 110;
 		},
 		init: function() {
 			var _this = this;
