@@ -846,6 +846,18 @@ function configPageSelected(page) {
 	}
 }
 
+pion.getMaxMainStackContainerHeightWithoutScroll = function() {
+	// The maximum height that 'main_stack_container' could have without 'outer' needing a scrollbar.
+	var available_height = dojo.byId('outer').offsetHeight - (dojo.byId('topBar').offsetHeight + dojo.byId('bottomBar').offsetHeight);
+
+	if (dojo.isIE) {
+		// IE7 seems to reserve 15px at the bottom for a scrollbar.
+		available_height -= 15;
+	}
+
+	return available_height;
+}
+
 dojo.declare("pion.widgets.MainStackContentHeader",
 	[dijit._Widget, dijit._Templated],
 	{

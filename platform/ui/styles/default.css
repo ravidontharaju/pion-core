@@ -461,8 +461,7 @@ label.disabled {
 
 #menu .dijitButtonText {
 	height: 15px;
-	width: 75px;
-	padding: 4px;
+	padding: 5px;
 	text-decoration: none;
 	font-size: 12px;
 	font-weight: bold;
@@ -736,22 +735,21 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 
-
 /* Footer */
 
 #footer {
-	margin: 0 auto;
-/*
-30px is not enough for IE.  If a height must be specified here, make sure it's enough for all supported browsers.
-	height: 30px;
-*/
+	margin: 0;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 20px;
+	border-top: 1px solid #333333;
 }
 
 #footer p {
 	text-align: left;
 	font-size: smaller;
 	color: #666666;
-	margin-left: 20px;
+	margin: 0;
 }
 
 
