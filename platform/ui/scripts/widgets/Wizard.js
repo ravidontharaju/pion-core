@@ -9,8 +9,12 @@ dojo.declare("pion.widgets.Wizard",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+			pion.wizard_nlsStrings = dojo.i18n.getLocalization("pion", "wizard");
+
+			// TODO: It will take a lot more refactoring, but eventually all instances of pion.wizard.X should become this.X.
+			pion.wizard = this;
 		},
-		start: function() {
+		start: function(license_key_type) {
 			dojo.removeClass('wizard', 'hidden');
 			document.body.appendChild(device_list_standby.domNode);
 			device_list_standby.show();
@@ -19,6 +23,384 @@ dojo.declare("pion.widgets.Wizard",
 			pion.wizard.max_disk_usage = 'NA';
 
 			new pion.widgets.KeyStoreEditor({}, 'key_store_editor');
+
+			dijit.byId('review_setup').doneFunction = dojo.hitch(this, 'finish');
+
+			// Any workspaces must be empty, and the wizard will make its own workspace, so delete them.
+			pion.reactors.deleteAllWorkspaces();
+
+			// Since there are no reactors configured, any ReplayService that is configured is useless, so delete it.
+			pion.services.config_store.fetch({
+				onItem: function(item) {
+					var plugin = pion.services.config_store.getValue(item, 'Plugin');
+					if (plugin == 'ReplayService') {
+						var id = pion.services.config_store.getValue(item, '@id');
+						dojo.xhrDelete({
+							url: '/config/services/' + id,
+							handleAs: 'xml',
+							timeout: 5000,
+							load: function(response, ioArgs) {
+								return response;
+							},
+							error: pion.getXhrErrorHandler(dojo.xhrDelete)
+						});
+					}
+				},
+				onError: pion.handleFetchError
+			});
+
+			// This doesn't work: for some reason, it makes the radio buttons unselectable.
+			//var template = dojo.byId('select_analytics_provider_form').innerHTML;
+			//dojo.byId('select_analytics_provider_form').innerHTML = dojo.string.substitute(
+			//	template, pion.wizard_nlsStrings
+			//);
+			dojo.forEach(dojo.query('label', dojo.byId('select_analytics_provider_form')), function(node) {
+				node.innerHTML = dojo.string.substitute(node.innerHTML, pion.wizard_nlsStrings);
+			});
+
+			// Pre-select an edition if a pion_edition cookie is found, or failing that, a license key.
+			if (dojo.cookie('pion_edition')) {
+				pion.edition = dojo.cookie('pion_edition');
+				dijit.byId('select_edition_form').attr('value', {edition: pion.edition});
+			} else if (license_key_type == 'enterprise') {
+				dijit.byId('select_edition_form').attr('value', {edition: 'Enterprise'});
+			} else if (license_key_type == 'replay') {
+				dijit.byId('select_edition_form').attr('value', {edition: 'Replay'});
+			}
+
+			// Assign next-button label for page 1 (which was already selected).
+			var _this = this;
+			var first_page = this.selectedChildWidget;
+			dojo.forEach(dojo.query('.next_button', first_page.domNode), function(node) {
+				_this.nextButton.attr('label', node.innerHTML);
+			});
+
+			dijit.byId('license_acceptance_pane').init = pion.widgets.Wizard.prepareLicensePane;
+			dijit.byId('host_pane').init = pion.widgets.Wizard.prepareHostPane;
+			dijit.byId('cookie_pane').init = pion.widgets.Wizard.prepareCookiePane;
+			dijit.byId('analytics_provider_pane').init = pion.widgets.Wizard.prepareAnalyticsProviderPane;
+			dijit.byId('omniture_pane').init = pion.widgets.Wizard.prepareOmniturePane;
+			dijit.byId('webtrends_pane').init = pion.widgets.Wizard.prepareWebtrendsPane;
+			dijit.byId('google_pane').init = pion.widgets.Wizard.prepareGooglePane;
+			dijit.byId('unica_pane').init = pion.widgets.Wizard.prepareUnicaPane;
+			dijit.byId('capture_devices_pane').init = pion.widgets.Wizard.prepareCaptureDevicesPane;
+			dijit.byId('replay_setup_pane').init = pion.widgets.Wizard.prepareReplaySetupPane;
+
+			dojo.subscribe('wizard-selectChild', function(page) {
+				// Update the labels of the navigation buttons for the selected page.
+				dojo.forEach(dojo.query('.prev_button', page.domNode), function(node) {
+					_this.previousButton.attr('label', node.innerHTML);
+					if (node.getAttribute('returnPane'))
+						page.returnPane = node.getAttribute('returnPane');
+				});
+				var edition_specific_query = '.prev_button_' + pion.edition.toLowerCase();
+				dojo.forEach(dojo.query(edition_specific_query, page.domNode), function(node) {
+					_this.previousButton.attr('label', node.innerHTML);
+					if (node.getAttribute('returnPane'))
+						page.returnPane = node.getAttribute('returnPane');
+				});
+				dojo.forEach(dojo.query('.next_button', page.domNode), function(node) {
+					_this.nextButton.attr('label', node.innerHTML);
+				});
+				edition_specific_query = '.next_button_' + pion.edition.toLowerCase();
+				dojo.forEach(dojo.query(edition_specific_query, page.domNode), function(node) {
+					_this.nextButton.attr('label', node.innerHTML);
+				});
+				dojo.forEach(dojo.query('.done_button', page.domNode), function(node) {
+					_this.doneButton.attr('label', node.innerHTML);
+				});
+
+				if (page.init)
+					page.init();
+			});
+		},
+		finish: function() {
+			pion.widgets.Wizard.switchToOuter();
+
+			var templates = [];
+
+			var sniffer_config =
+										'<Plugin>SnifferReactor</Plugin>'
+										+ '<X>50</X>'
+										+ '<Y>100</Y>'
+										+ '<Name>Capture Traffic</Name>'
+										+ '<Comment>Captures raw network traffic to generate HTTP request events</Comment>'
+										+ '<Protocol>' + pion.protocols.default_id + '</Protocol>'
+										+ '<ProcessingThreads>1</ProcessingThreads>'
+										+ '<MaxPacketQueueSize>100000</MaxPacketQueueSize>'
+										+ '<QueueEventDelivery>true</QueueEventDelivery>'
+										+ '<HideCreditCardNumbers>false</HideCreditCardNumbers>';
+			dojo.forEach(pion.wizard.devices, function(device) {
+				var tcp_ports = dojo.map(pion.wizard.ports, function(item) {return 'tcp port ' + item});
+				sniffer_config += '<Capture><Interface>' + device + '</Interface><Filter>';
+				sniffer_config += tcp_ports.join(' or ');
+				sniffer_config += '</Filter></Capture>';
+			});
+
+			// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
+			var clickstream_config = 
+				'<X>250</X>' + 
+				'<Y>200</Y>';
+
+			var session_group_config = '';
+			var ignore_default_group = (pion.wizard.host_suffixes.length > 0);
+			if (pion.wizard.host_suffixes.length > 0) {
+				var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
+				var num_pieces = pieces_of_first_host_suffix.length;
+				var session_group_name = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
+				session_group_config +=
+					'<SessionGroup id="' + session_group_name + '">' +
+						'<Name>' + session_group_name + '</Name>';
+				dojo.forEach(pion.wizard.host_suffixes, function(host) {
+					session_group_config += '<Host>' + dojo.trim(host) + '</Host>';
+				});
+				dojo.forEach(pion.wizard.cookies, function(cookie) {
+					session_group_config += '<Cookie type="' + (cookie.is_visitor_cookie? 'v' : 's') + '">' + cookie.name + '</Cookie>';
+				});
+				session_group_config +=
+					'</SessionGroup>';
+			}
+
+			templates.push({
+				label: 'clickstream',
+				url: '/resources/ClickstreamTemplate.tmpl',
+				substitutions: {IgnoreDefaultGroup: ignore_default_group, SessionGroupConfig: session_group_config}
+			});
+
+			if (pion.wizard.analytics_provider == 'Omniture') {
+				var analytics_config =
+					'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
+					'<X>250</X>' +
+					'<Y>300</Y>' +
+					'<Name>Omniture Analytics</Name>' +
+					'<NumConnections>32</NumConnections>' +
+					'<HttpHost>' + pion.wizard.omniture_host + '</HttpHost>' +
+					'<AccountId>' + pion.wizard.omniture_report_suite + '</AccountId>' +
+					'<EncryptConnections>false</EncryptConnections>' +
+					'<SendTimestamp>true</SendTimestamp>' +
+					'<StripClientIP>' + pion.wizard.strip_client_ip + '</StripClientIP>' +
+					'<Query name="ipaddress">urn:vocab:clickstream#c-ip</Query>' +
+					'<Query name="userAgent">urn:vocab:clickstream#useragent</Query>' +
+					'<Query name="pageName">urn:vocab:clickstream#page-title</Query>' +
+					'<Query name="referrer">urn:vocab:clickstream#referer</Query>' +
+					'<Query name="visitorID">[computed]</Query>' +
+					'<Query name="server">[computed]</Query>' +
+					'<Query name="pageURL">[computed]</Query>' +
+					'<Query name="timestamp">[computed]</Query>' +
+					'<Query name="reportSuiteID">[computed]</Query>';
+			} else if (pion.wizard.analytics_provider == 'Webtrends') {
+				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
+				var analytics_config = 
+					'<X>250</X>' + 
+					'<Y>300</Y>';
+
+				templates.push({
+					label: 'analytics',
+					is_json: true,
+					plugin: 'WebTrendsAnalyticsReactor',
+					substitutions: {
+						AccountId: pion.wizard.webtrends_account_id,
+						HttpHost: pion.wizard.webtrends_host,
+						StripClientIP: pion.wizard.strip_client_ip
+					}
+				});
+			} else if (pion.wizard.analytics_provider == 'Google') {
+				var analytics_config =
+					'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
+					'<X>250</X>' +
+					'<Y>300</Y>' +
+					'<Name>Google Analytics</Name>' +
+					'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
+					'<NumConnections>32</NumConnections>' +
+					'<EncryptConnections>false</EncryptConnections>' +
+					'<StripClientIP>' + pion.wizard.strip_client_ip + '</StripClientIP>';
+			} else if (pion.wizard.analytics_provider == 'Unica') {
+				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
+				var analytics_config = 
+					'<X>250</X>' + 
+					'<Y>300</Y>';
+
+				templates.push({
+					label: 'analytics',
+					is_json: true,
+					plugin: 'UnicaAnalyticsReactor',
+					substitutions: {
+						AccountId: pion.wizard.unica_account_id,
+						HttpHost: pion.wizard.unica_host,
+						StripClientIP: pion.wizard.strip_client_ip
+					}
+				});
+			} else {
+				// TODO:
+			}
+
+			if (pion.edition == 'Replay') {
+				var chr_config = 
+					'<Plugin>ContentHashReactor</Plugin>' + 
+					'<X>250</X>' + 
+					'<Y>100</Y>' + 
+					'<Name>Detect Page Content</Name>' + 
+					'<SourceTerm>urn:vocab:clickstream#sc-content</SourceTerm>' + 
+					'<MatchAllComparisons>true</MatchAllComparisons>' + 
+					'<Comment>Looks for page content in HTTP events that will be stored for Replay</Comment>' + 
+					'<Comparison>' + 
+						'<Term>urn:vocab:clickstream#status</Term>' + 
+						'<Type>equals</Type>' + 
+						'<Value>200</Value>' + 
+						'<MatchAllValues>false</MatchAllValues>' + 
+					'</Comparison>' + 
+					'<Comparison>' + 
+						'<Term>urn:vocab:clickstream#content-type</Term>' + 
+						'<Type>regex</Type>' + 
+						'<Value>^(text/html|application/xhtml|text/vnd.wap.wml)</Value>' + 
+						'<MatchAllValues>false</MatchAllValues>' + 
+					'</Comparison>';
+
+				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
+				var mdr_config = 
+					'<X>450</X>' + 
+					'<Y>200</Y>';
+
+				templates.push({
+					label: 'mdr',
+					url: '/resources/MDRTemplate.tmpl',
+					substitutions: {MaxDiskUsage: pion.wizard.max_disk_usage}
+				});
+
+				var reactors = [
+					{label: 'sniffer', config: sniffer_config},
+					{label: 'chr', config: chr_config},
+					{label: 'clickstream', config: clickstream_config},
+					{label: 'mdr', config: mdr_config}
+				];
+				var connections = [
+					{from: 'sniffer', to: 'chr'},
+					{from: 'chr', to: 'clickstream'},
+					{from: 'clickstream', to: 'mdr'}
+				];
+
+			} else {
+				var reactors = [
+					{label: 'sniffer', config: sniffer_config},
+					{label: 'clickstream', config: clickstream_config}
+				];
+				var connections = [
+					{from: 'sniffer', to: 'clickstream'}
+				];
+			}
+
+			if (analytics_config) {
+				reactors.push({label: 'analytics', config: analytics_config});
+				connections.push({from: 'clickstream', to: 'analytics'});
+			}
+			wizard_config = {
+				templates: templates,
+				reactors: reactors,
+				connections: connections,
+				workspace_name: 'Clickstream'
+			};
+
+			if (pion.wizard.host_suffixes.length > 0) {
+				// This is the same algorithm as used to compute session_group_name, but it could be different.
+				var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
+				var num_pieces = pieces_of_first_host_suffix.length;
+				var prefix = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
+
+				wizard_config.workspace_name = dojox.dtl.filter.strings.capfirst(prefix) + ' Clickstream';
+			}
+
+			this.applyTemplatesIfNeeded(wizard_config)
+			.addCallback(pion.widgets.Wizard.addWorkspaceFromWizard)
+			.addCallback(pion.widgets.Wizard.addReactorsFromWizard)
+			.addCallback(pion.widgets.Wizard.addConnectionsFromWizard)
+			.addCallback(pion.widgets.Wizard.addReplayIfNeeded)
+			.addCallback(pion.widgets.Wizard.startSniffer)
+			.addCallback(pion.setup_success_callback);
+		},
+		applyTemplatesIfNeeded: function(wizard_config) {
+			var dfd = new dojo.Deferred();
+		
+			if (wizard_config.templates.length == 0) {
+				dfd.callback(wizard_config);
+				return dfd;
+			}
+		
+			var labels = dojo.map(wizard_config.reactors, function(item) {return item.label});
+			var num_templates_applied = 0;
+			dojo.forEach(wizard_config.templates, function(template) {
+				var index = dojo.indexOf(labels, template.label);
+		
+				if (template.is_json) {
+					dojo.xhrGet({
+						url: '/resources/' + template.plugin + '.json',
+						handleAs: 'json',
+						timeout: 20000,
+						load: function(response) {
+							var xml_config = '<Plugin>' + template.plugin + '</Plugin>';
+							dojo.forEach(response.required_input, function(name) {
+								xml_config += '<' + name + '>' + template.substitutions[name] + '</' + name + '>';
+							});
+							for (var name in response.option_defaults) {
+								if (dojo.indexOf(response.required_input, name) == -1) {
+									xml_config += '<' + name + '>' + response.option_defaults[name] + '</' + name + '>';
+								}
+							}
+							for (var name in response.value_defaults) {
+								if (dojo.indexOf(response.required_input, name) == -1) {
+									xml_config += '<' + name + '>' + response.value_defaults[name] + '</' + name + '>';
+								}
+							}
+							for (var tag in response.multivalued_defaults) {
+								var identifier = response.multivalued_defaults[tag].identifier;
+								var data = response.multivalued_defaults[tag].data;
+								for (var key in data) {
+									xml_config += '<' + tag + ' ' + identifier + '="' + key + '">' + data[key] + '</' + tag + '>';
+								}
+							}
+		
+							wizard_config.reactors[index].config += xml_config;
+							if (++num_templates_applied == wizard_config.templates.length) {
+								dfd.callback(wizard_config);
+							}
+							return response;
+						},
+						error: pion.handleXhrGetError
+					});
+				} else {
+					dojo.xhrGet({
+						url: template.url,
+						handleAs: 'text',
+						timeout: 20000,
+						load: function(response) {
+							var transformed_template = dojo.string.substitute(
+								response,
+								template.substitutions
+							);
+		
+							// This strips out EOL characters that can wreak havoc later when attempting to update a config.
+							// These can come both from the template file and from dojo.string.substitute().
+							var trimmed_XML = transformed_template.replace(/>\s*/g, '>');
+		
+							wizard_config.reactors[index].config += trimmed_XML;
+							if (++num_templates_applied == wizard_config.templates.length) {
+								dfd.callback(wizard_config);
+							}
+							return response;
+						},
+						error: pion.handleXhrGetError
+					});
+				}
+			});
+		
+			return dfd;
+		},
+		back: function() {
+			// Overrides dijit.layout.StackContainer.back()
+			if (this.selectedChildWidget.returnPane) {
+				this.selectChild(dijit.byId(this.selectedChildWidget.returnPane));
+			} else {
+				this.selectChild(this._adjacent(false));
+			}
 		},
 		placeholder: function() {
 		}
@@ -26,7 +408,15 @@ dojo.declare("pion.widgets.Wizard",
 );
 
 pion.widgets.Wizard.exitEarly = function() {
-	pion.wizardDone(true);
+	pion.widgets.Wizard.switchToOuter();
+	pion.setup_success_callback();
+}
+
+pion.widgets.Wizard.switchToOuter = function() {
+	dojo.addClass('wizard', 'hidden');
+	dojo.byId('outer').style.visibility = 'visible';
+	dojo.byId('current_user_menu_section').style.visibility = 'visible';
+	dojo.byId('current_user').innerHTML = dojo.cookie('user');
 }
 
 pion.widgets.Wizard.checkLicenseKey = function() {
@@ -585,6 +975,137 @@ pion.widgets.Wizard.restart = function() {
 	});
 }
 
-pion.widgets.Wizard.apply = function() {
-	// TODO: move pion.wizardDone() here?
+pion.widgets.Wizard.addWorkspaceFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+
+	var _this = this;
+	var post_data = '<PionConfig><Workspace><Name>' + wizard_config.workspace_name
+						 + '</Name></Workspace></PionConfig>';
+	dojo.rawXhrPost({
+		url: '/config/workspaces',
+		contentType: "text/xml",
+		handleAs: "xml",
+		postData: post_data,
+		load: function(response) {
+			var node = response.getElementsByTagName('Workspace')[0];
+			wizard_config.workspace_id = node.getAttribute('id');
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	});
+
+	return dfd;
 }
+
+pion.widgets.Wizard.addReactorsFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+
+	if (wizard_config.reactors.length == 0) {
+		dfd.callback(wizard_config);
+		return dfd;
+	}
+
+	var num_reactors_added = 0;
+	wizard_config.reactor_ids = {};
+	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_id
+						 + '</Workspace><Source>Wizard</Source>';
+	dojo.forEach(wizard_config.reactors, function(reactor) {
+		var post_data = post_data_header + reactor.config + '</Reactor></PionConfig>';  
+		dojo.rawXhrPost({
+			url: '/config/reactors',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				var node = response.getElementsByTagName('Reactor')[0];
+				wizard_config.reactor_ids[reactor.label] = node.getAttribute('id');
+				if (++num_reactors_added == wizard_config.reactors.length) {
+					dfd.callback(wizard_config);
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
+	});
+
+	return dfd;
+}
+
+pion.widgets.Wizard.addConnectionsFromWizard = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+
+	if (wizard_config.connections.length == 0)
+		dfd.callback(wizard_config);
+
+	var num_connections_added = 0;
+	dojo.forEach(wizard_config.connections, function(connection) {
+		var post_data = '<PionConfig><Connection><Type>reactor</Type>'
+			+ '<From>' + wizard_config.reactor_ids[connection.from] + '</From>'
+			+ '<To>' + wizard_config.reactor_ids[connection.to] + '</To>'
+			+ '</Connection></PionConfig>';  
+		dojo.rawXhrPost({
+			url: '/config/connections',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				if (++num_connections_added == wizard_config.connections.length) {
+					dfd.callback(wizard_config);
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
+	});
+
+	return dfd;
+}
+
+pion.widgets.Wizard.addReplayIfNeeded = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+
+	if (pion.edition != 'Replay') {
+		dfd.callback(wizard_config);
+		return dfd;
+	}
+
+	var replay_config = 
+		'<Name>Replay Query Service</Name>' +
+		'<Comment>Pion Replay query service</Comment>' +
+		'<Plugin>ReplayService</Plugin>' +
+		'<Resource>/replay</Resource>' +
+		'<Server>main-server</Server>' +
+		'<Namespace id="0">' +
+			'<Comment>Default Instance</Comment>' +
+			'<MultiDatabaseOutputReactor>' + wizard_config.reactor_ids['mdr'] + '</MultiDatabaseOutputReactor>' +
+		'</Namespace>';
+
+	var post_data = '<PionConfig><PlatformService>' + replay_config + '</PlatformService></PionConfig>';  
+	dojo.rawXhrPost({
+		url: '/config/services',
+		contentType: "text/xml",
+		handleAs: "xml",
+		postData: post_data,
+		load: function(response) {
+			var node = response.getElementsByTagName('PlatformService')[0];
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	});
+
+	return dfd;
+}
+
+pion.widgets.Wizard.startSniffer = function(wizard_config) {
+	var dfd = new dojo.Deferred();
+	dojo.xhrPut({
+		url: '/config/reactors/' + wizard_config.reactor_ids['sniffer'] + '/start',
+		load: function(response) {
+			dfd.callback(wizard_config);
+			return response;
+		},
+		error: pion.getXhrErrorHandler(dojo.xhrPut)
+	});
+	return dfd;
+}
+
