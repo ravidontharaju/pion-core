@@ -5,8 +5,8 @@ dojo.require("dojox.data.XmlStore");
 
 pion.services.config_store = new dojox.data.XmlStore({url: '/config/services', rootItem: 'PlatformService'});
 
-pion.services.createService = function(prototype) {
-	var kw_args = {title: prototype.label, resource: prototype.resource};
+pion.services.createService = function(prototype, wizard_config) {
+	var kw_args = {title: prototype.label, resource: prototype.resource, wizard_config: wizard_config};
 
 	// If the Service about to be created is a widget, then we would like to specify kw_args.id, which will then be used as the widget ID.
 	// So far, the only Services we have that are widgets are ones like ReplayService that are added as tabs of the main stack container.
@@ -20,7 +20,7 @@ pion.services.createService = function(prototype) {
 	console.debug('UI for service "', prototype.label, '" has been added.');
 }
 
-pion.services.init = function() {
+pion.services.init = function(wizard_config) {
 	init_services_standby.show();
 	pion.services.getAllServicesInUIDirectory = function() {
 		var d = new dojo.Deferred();
@@ -86,7 +86,7 @@ pion.services.init = function() {
 			if ('isUsable' in prototype) {
 				conditional_prototypes.push(prototype);
 			} else {
-				pion.services.createService(prototype);
+				pion.services.createService(prototype, wizard_config);
 			}
 		});
 		var num_pending_prototypes = conditional_prototypes.length;
@@ -97,7 +97,7 @@ pion.services.init = function() {
 				prototype.isUsable(prototype.resource)
 				.addCallback(function(is_usable) {
 					if (is_usable) {
-						pion.services.createService(prototype);
+						pion.services.createService(prototype, wizard_config);
 					} else {
 						console.debug('UI for service "', prototype.label, '" has NOT been added: isUsable() returned false.');
 					}

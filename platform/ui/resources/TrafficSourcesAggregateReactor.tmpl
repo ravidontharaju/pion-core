@@ -1,0 +1,16 @@
+<Plugin>AggregateReactor</Plugin>
+<X>500</X>
+<Y>300</Y>
+<Name>Traffic Sources</Name>
+<ContextInterval>1h</ContextInterval>
+<MemoryBuckets>24</MemoryBuckets>
+<PruneInterval>3</PruneInterval>
+<PruneThreshold>1</PruneThreshold>
+<MatchAllComparisons>false</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>UNIQUE</Math>
+	<IdentityTerm>
+		<Term>urn:vocab:clickstream#referer</Term>
+	</IdentityTerm>
+</Aggregate>

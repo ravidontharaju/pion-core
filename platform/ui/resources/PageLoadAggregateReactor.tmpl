@@ -1,0 +1,33 @@
+<Plugin>AggregateReactor</Plugin>
+<X>300</X>
+<Y>200</Y>
+<Name>Page Load Report</Name>
+<ContextInterval>10m</ContextInterval>
+<MemoryBuckets>144</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<MatchAllComparisons>true</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>SUM</Math>
+	<IdentityTerm>
+		<Term>urn:vocab:clickstream#page-load</Term>
+	</IdentityTerm>
+</Aggregate>
+<Comparison>
+	<Term>urn:vocab:clickstream#page-event</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#content-type</Term>
+	<Type>regex</Type>
+	<Value>(?i)text/html</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+	<Comparison>
+	<Term>urn:vocab:clickstream#page-load</Term>
+	<Type>less-than</Type>
+	<Value>20000000</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>

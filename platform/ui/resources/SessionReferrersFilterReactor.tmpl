@@ -1,0 +1,22 @@
+<Plugin>FilterReactor</Plugin>
+<X>100</X>
+<Y>300</Y>
+<Name>Session Referrers</Name>
+<MatchAllComparisons>true</MatchAllComparisons>
+<Comparison>
+	<Term>urn:vocab:clickstream#http-event</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#request-number</Term>
+	<Type>equals</Type>
+	<Value>1</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#referer</Term>
+	<Type>not-regex</Type>
+	<Value>^(${host_suffix_alternation})$</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>

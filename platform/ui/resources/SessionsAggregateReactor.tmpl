@@ -1,0 +1,33 @@
+<Plugin>AggregateReactor</Plugin>
+<X>500</X>
+<Y>200</Y>
+<Name>Sessions Report</Name>
+<ContextInterval>1h</ContextInterval>
+<MemoryBuckets>24</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<MatchAllComparisons>true</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>COUNT</Math>
+	<IdentityTerm>
+		<Term>urn:vocab:clickstream#page-event</Term>
+	</IdentityTerm>
+</Aggregate>
+<Comparison>
+	<Term>urn:vocab:clickstream#page-event</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#content-type</Term>
+	<Type>regex</Type>
+	<Value>(?i)text/html</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#page-number</Term>
+	<Type>equals</Type>
+	<Value>1</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>

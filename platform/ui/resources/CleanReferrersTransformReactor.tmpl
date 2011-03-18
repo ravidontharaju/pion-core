@@ -1,0 +1,12 @@
+<Plugin>TransformReactor</Plugin>
+<X>300</X>
+<Y>300</Y>
+<Name>Clean Referrers</Name>
+<OutgoingEvent>Same as input event</OutgoingEvent>
+<CopyOriginal>if-not-defined</CopyOriginal>
+<Transformation>
+	<Term>urn:vocab:clickstream#referer</Term>
+	<Type>Regex</Type>
+	<SourceTerm>urn:vocab:clickstream#referer</SourceTerm>
+	<Regex exp=".*://([^/]+)">$1</Regex>
+</Transformation>

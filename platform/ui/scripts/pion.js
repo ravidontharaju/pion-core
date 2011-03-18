@@ -157,9 +157,9 @@ pion.updateLogo = function(logo_type) {
 	});
 }
 
-pion.setup_success_callback = function() {
+pion.setup_success_callback = function(wizard_config) {
 	pion.terms.init();
-	pion.services.init();
+	pion.services.init(wizard_config);
 }
 
 pion.editionSetup = function(license_key_type) {

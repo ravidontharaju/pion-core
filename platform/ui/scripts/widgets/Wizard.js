@@ -170,7 +170,7 @@ dojo.declare("pion.widgets.Wizard",
 			if (pion.wizard.analytics_provider == 'Omniture') {
 				var analytics_config =
 					'<Plugin>OmnitureAnalyticsReactor</Plugin>' + 
-					'<X>250</X>' +
+					'<X>50</X>' +
 					'<Y>300</Y>' +
 					'<Name>Omniture Analytics</Name>' +
 					'<NumConnections>32</NumConnections>' +
@@ -191,7 +191,7 @@ dojo.declare("pion.widgets.Wizard",
 			} else if (pion.wizard.analytics_provider == 'Webtrends') {
 				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
 				var analytics_config = 
-					'<X>250</X>' + 
+					'<X>50</X>' + 
 					'<Y>300</Y>';
 
 				templates.push({
@@ -207,7 +207,7 @@ dojo.declare("pion.widgets.Wizard",
 			} else if (pion.wizard.analytics_provider == 'Google') {
 				var analytics_config =
 					'<Plugin>GoogleAnalyticsReactor</Plugin>' + 
-					'<X>250</X>' +
+					'<X>50</X>' +
 					'<Y>300</Y>' +
 					'<Name>Google Analytics</Name>' +
 					'<AccountId>' + pion.wizard.google_account_id + '</AccountId>' +
@@ -217,7 +217,7 @@ dojo.declare("pion.widgets.Wizard",
 			} else if (pion.wizard.analytics_provider == 'Unica') {
 				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
 				var analytics_config = 
-					'<X>250</X>' + 
+					'<X>50</X>' + 
 					'<Y>300</Y>';
 
 				templates.push({
@@ -258,8 +258,8 @@ dojo.declare("pion.widgets.Wizard",
 
 				// The remainder will be added in pion.widgets.Wizard.applyTemplatesIfNeeded().
 				var mdr_config = 
-					'<X>450</X>' + 
-					'<Y>200</Y>';
+					'<X>250</X>' + 
+					'<Y>300</Y>';
 
 				templates.push({
 					label: 'mdr',
@@ -293,11 +293,13 @@ dojo.declare("pion.widgets.Wizard",
 				reactors.push({label: 'analytics', config: analytics_config});
 				connections.push({from: 'clickstream', to: 'analytics'});
 			}
+
+			var workspaces = [{label: 'clickstream', name: 'Clickstream'}];
 			wizard_config = {
 				templates: templates,
 				reactors: reactors,
 				connections: connections,
-				workspace_name: 'Clickstream'
+				workspaces: workspaces
 			};
 
 			if (pion.wizard.host_suffixes.length > 0) {
@@ -306,11 +308,79 @@ dojo.declare("pion.widgets.Wizard",
 				var num_pieces = pieces_of_first_host_suffix.length;
 				var prefix = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
 
-				wizard_config.workspace_name = dojox.dtl.filter.strings.capfirst(prefix) + ' Clickstream';
+				var capitalized_prefix = dojox.dtl.filter.strings.capfirst(prefix);
+				workspaces[0].name = capitalized_prefix + ' Clickstream';
+				workspaces.push({label: 'reports', name: capitalized_prefix + ' Reports'});
+
+				templates.push({
+					label: 'HostFilterReactor',
+					url: '/resources/HostFilterReactor.tmpl',
+					substitutions: {host_label: capitalized_prefix, session_group: prefix, host_suffix_alternation: pion.wizard.host_suffixes.join('|')}
+				});
+				reactors.push({label: 'HostFilterReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'clickstream', to: 'HostFilterReactor'});
+
+				templates.push({
+					label: 'ReplyTimeAggregateReactor',
+					url: '/resources/ReplyTimeAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'ReplyTimeAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HostFilterReactor', to: 'ReplyTimeAggregateReactor'});
+
+				templates.push({
+					label: 'PagesAggregateReactor',
+					url: '/resources/PagesAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'PagesAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HostFilterReactor', to: 'PagesAggregateReactor'});
+
+				templates.push({
+					label: 'SessionsAggregateReactor',
+					url: '/resources/SessionsAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'SessionsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HostFilterReactor', to: 'SessionsAggregateReactor'});
+
+				templates.push({
+					label: 'PageLoadAggregateReactor',
+					url: '/resources/PageLoadAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'PageLoadAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HostFilterReactor', to: 'PageLoadAggregateReactor'});
+
+				templates.push({
+					label: 'SessionReferrersFilterReactor',
+					url: '/resources/SessionReferrersFilterReactor.tmpl',
+					substitutions: {host_suffix_alternation: pion.wizard.host_suffixes.join('|')}
+				});
+				reactors.push({label: 'SessionReferrersFilterReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HostFilterReactor', to: 'SessionReferrersFilterReactor'});
+
+				templates.push({
+					label: 'CleanReferrersTransformReactor',
+					url: '/resources/CleanReferrersTransformReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'CleanReferrersTransformReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'SessionReferrersFilterReactor', to: 'CleanReferrersTransformReactor'});
+
+				templates.push({
+					label: 'TrafficSourcesAggregateReactor',
+					url: '/resources/TrafficSourcesAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'TrafficSourcesAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'CleanReferrersTransformReactor', to: 'TrafficSourcesAggregateReactor'});
+
+				wizard_config.dashboards = [{url: '/resources/WebsiteActivityDashboard.json'}, {url: '/resources/VisitorSourcesDashboard.json'}];
 			}
 
 			this.applyTemplatesIfNeeded(wizard_config)
-			.addCallback(pion.widgets.Wizard.addWorkspaceFromWizard)
+			.addCallback(pion.widgets.Wizard.addWorkspacesFromWizard)
 			.addCallback(pion.widgets.Wizard.addReactorsFromWizard)
 			.addCallback(pion.widgets.Wizard.addConnectionsFromWizard)
 			.addCallback(pion.widgets.Wizard.addReplayIfNeeded)
@@ -319,17 +389,17 @@ dojo.declare("pion.widgets.Wizard",
 		},
 		applyTemplatesIfNeeded: function(wizard_config) {
 			var dfd = new dojo.Deferred();
-		
+
 			if (wizard_config.templates.length == 0) {
 				dfd.callback(wizard_config);
 				return dfd;
 			}
-		
+
 			var labels = dojo.map(wizard_config.reactors, function(item) {return item.label});
 			var num_templates_applied = 0;
 			dojo.forEach(wizard_config.templates, function(template) {
 				var index = dojo.indexOf(labels, template.label);
-		
+
 				if (template.is_json) {
 					dojo.xhrGet({
 						url: '/resources/' + template.plugin + '.json',
@@ -357,7 +427,7 @@ dojo.declare("pion.widgets.Wizard",
 									xml_config += '<' + tag + ' ' + identifier + '="' + key + '">' + data[key] + '</' + tag + '>';
 								}
 							}
-		
+
 							wizard_config.reactors[index].config += xml_config;
 							if (++num_templates_applied == wizard_config.templates.length) {
 								dfd.callback(wizard_config);
@@ -376,11 +446,11 @@ dojo.declare("pion.widgets.Wizard",
 								response,
 								template.substitutions
 							);
-		
+
 							// This strips out EOL characters that can wreak havoc later when attempting to update a config.
 							// These can come both from the template file and from dojo.string.substitute().
 							var trimmed_XML = transformed_template.replace(/>\s*/g, '>');
-		
+
 							wizard_config.reactors[index].config += trimmed_XML;
 							if (++num_templates_applied == wizard_config.templates.length) {
 								dfd.callback(wizard_config);
@@ -391,7 +461,7 @@ dojo.declare("pion.widgets.Wizard",
 					});
 				}
 			});
-		
+
 			return dfd;
 		},
 		back: function() {
@@ -837,6 +907,16 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 	dojo.byId('setup_review_form_replay_alloc').innerHTML = pion.wizard.max_disk_usage;
 }
 
+pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload = function(reactors) {
+	var dashboard_service_tab = dijit.byId('dashboard_service_tab');
+	if (dashboard_service_tab)
+		dashboard_service_tab.deleteAllDashboards().addCallback(function() {
+			pion.widgets.Wizard.deleteAllReactorsAndReload(reactors);
+		});
+	else
+		pion.widgets.Wizard.deleteAllReactorsAndReload(reactors);
+}
+
 pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 	var num_reactors_deleted = 0;
 	var getContent = function(p) { return dojox.xml.parser.textContent(p) };
@@ -950,24 +1030,49 @@ pion.widgets.Wizard.restart = function() {
 			if (reactors.length == 0) {
 				pion.widgets.Wizard.deleteAllWorkspacesAndReload();
 			} else {
-				pion.services.getConfiguredServices().addCallback(function(kw_args) {
+				var mixinNumDashboardPanes = function(kw_args) {
+					var dfd = new dojo.Deferred();
+					var dashboard_service_tab = dijit.byId('dashboard_service_tab');
+					if (dashboard_service_tab) {
+						dashboard_service_tab.getNumDashboardPanes().addCallback(function(num_panes) {
+							kw_args.num_dashboard_panes = num_panes;
+							dfd.callback(kw_args);
+						});
+					} else {
+						kw_args.num_dashboard_panes = 0;
+						dfd.callback(kw_args);
+					}
+					return dfd;
+				}
+
+				pion.services.getConfiguredServices()
+				.addCallback(mixinNumDashboardPanes)
+				.addCallback(function(kw_args) {
 					var replay_configured = dojo.some(kw_args.configured_services, function(service) {
 						return service.plugin == 'ReplayService';
 					});
+					var num_panes = kw_args.num_dashboard_panes;
 					var message = 'Warning: You currently have '
-								+ (reactors.length == 1? 'one Reactor ' : reactors.length + ' Reactors ')
-								+ (replay_configured? 'and a Replay Service ' : '')
-								+ 'configured.  If you continue, '
-								+ (reactors.length == 1 && ! replay_configured? 'it ' : 'they ')
+								+ (reactors.length == 1? 'one Reactor' : reactors.length + ' Reactors')
+								+ ((replay_configured && num_panes == 0)? ' and a Replay Service' : '')
+								+ ((replay_configured && num_panes == 1)? ', a Replay Service and one Dashboard chart' : '')
+								+ ((replay_configured && num_panes > 1)? ', a Replay Service and ' + num_panes + ' Dashboard charts' : '')
+								+ ((! replay_configured && num_panes == 1)? ' and one Dashboard chart' : '')
+								+ ((! replay_configured && num_panes > 1)? ' and ' + num_panes + ' Dashboard charts' : '')
+								+ ' configured.  If you continue, '
+								+ (reactors.length == 1 && ! replay_configured && num_panes == 0? 'it ' : 'they ')
 								+ 'will be deleted, and the Wizard will guide you through '
 								+ 'creating a new configuration from scratch.  If you want to edit the configuration of a '
 								+ 'particular Reactor, you can do so by double clicking on it in the Reactors '
 								+ 'tab, or by editing reactors.xml.  '
 								+ (replay_configured? 'The Replay Service can be edited by editing services.xml.  ' : '')
-								+ 'Do you want to delete your current Reactors '
-								+ (replay_configured? 'and Replay Service ' : '')
-								+ 'and continue to the Wizard?';
-					pion.doDeleteConfirmationDialog(message, pion.widgets.Wizard.deleteAllReactorsAndReload, reactors);
+								+ (num_panes > 0? 'Dashboards can be edited by editing dashboards.xml.  ' : '')
+								+ 'Do you want to delete your current Reactors'
+								+ ((replay_configured && num_panes == 0)? ' and Replay Service' : '')
+								+ ((replay_configured && num_panes > 0)? ', Replay Service and Dashboard charts' : '')
+								+ ((! replay_configured && num_panes > 0)? ' and Dashboard charts' : '')
+								+ ' and continue to the Wizard?';
+					pion.doDeleteConfirmationDialog(message, pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload, reactors);
 				});
 			}
 		},
@@ -975,24 +1080,28 @@ pion.widgets.Wizard.restart = function() {
 	});
 }
 
-pion.widgets.Wizard.addWorkspaceFromWizard = function(wizard_config) {
+pion.widgets.Wizard.addWorkspacesFromWizard = function(wizard_config) {
 	var dfd = new dojo.Deferred();
 
-	var _this = this;
-	var post_data = '<PionConfig><Workspace><Name>' + wizard_config.workspace_name
-						 + '</Name></Workspace></PionConfig>';
-	dojo.rawXhrPost({
-		url: '/config/workspaces',
-		contentType: "text/xml",
-		handleAs: "xml",
-		postData: post_data,
-		load: function(response) {
-			var node = response.getElementsByTagName('Workspace')[0];
-			wizard_config.workspace_id = node.getAttribute('id');
-			dfd.callback(wizard_config);
-			return response;
-		},
-		error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+	var num_workspaces_added = 0;
+	wizard_config.workspace_ids = {};
+	var post_data_header = '<PionConfig><Workspace><Name>';
+	dojo.forEach(wizard_config.workspaces, function(workspace) {
+		var post_data = post_data_header + workspace.name + '</Name></Workspace></PionConfig>';
+		dojo.rawXhrPost({
+			url: '/config/workspaces',
+			contentType: "text/xml",
+			handleAs: "xml",
+			postData: post_data,
+			load: function(response) {
+				var node = response.getElementsByTagName('Workspace')[0];
+				wizard_config.workspace_ids[workspace.label] = node.getAttribute('id');
+				if (++num_workspaces_added == wizard_config.workspaces.length) {
+					dfd.callback(wizard_config);
+				}
+			},
+			error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
+		});
 	});
 
 	return dfd;
@@ -1008,10 +1117,11 @@ pion.widgets.Wizard.addReactorsFromWizard = function(wizard_config) {
 
 	var num_reactors_added = 0;
 	wizard_config.reactor_ids = {};
-	var post_data_header = '<PionConfig><Reactor><Workspace>' + wizard_config.workspace_id
-						 + '</Workspace><Source>Wizard</Source>';
+	var post_data_header = '<PionConfig><Reactor><Source>Wizard</Source><Workspace>';
 	dojo.forEach(wizard_config.reactors, function(reactor) {
-		var post_data = post_data_header + reactor.config + '</Reactor></PionConfig>';  
+		var workspace_id = wizard_config.workspace_ids[reactor.workspace? reactor.workspace : 'clickstream'];
+		var post_data = post_data_header + workspace_id + '</Workspace>'
+			+ reactor.config + '</Reactor></PionConfig>';  
 		dojo.rawXhrPost({
 			url: '/config/reactors',
 			contentType: "text/xml",

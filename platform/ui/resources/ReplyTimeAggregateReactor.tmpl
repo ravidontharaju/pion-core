@@ -1,0 +1,21 @@
+<Plugin>AggregateReactor</Plugin>
+<X>300</X>
+<Y>100</Y>
+<Name>Reply Time Report</Name>
+<ContextInterval>10m</ContextInterval>
+<MemoryBuckets>144</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<MatchAllComparisons>false</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>SUM</Math>
+	<IdentityTerm>
+		<Term>urn:vocab:clickstream#sc-reply-time</Term>
+	</IdentityTerm>
+</Aggregate>
+<Comparison>
+	<Term>urn:vocab:clickstream#http-event</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
