@@ -119,9 +119,21 @@ else
 	fi
 	AM_CONDITIONAL(PYTHON_USE, test x"$az_python_use" = x"true")
 	if test "x$az_python_use" == "xtrue"; then
-		AZ_PYTHON_PREFIX( )
-		AZ_PYTHON_CSPEC()
-		AZ_PYTHON_LSPEC()
+		# hard code value for Mac since detection in m4 file is severely broken
+		# and doesn't work at all on 10.6+
+		case "$build_os" in
+		*darwin*)
+			#PYTHON_LSPEC="-Wl,-F. -F/System/Library/Frameworks -u PyMac_Error -framework Python"
+			# force use of Python 2.5 so it works on both 10.5 and 10.6
+			PYTHON_CSPEC="-I/usr/include/python2.5"
+			PYTHON_LSPEC="-u PyMac_Error -lpython2.5"
+			;;
+		*)
+			AZ_PYTHON_PREFIX( )
+			AZ_PYTHON_CSPEC()
+			AZ_PYTHON_LSPEC()
+			;;
+		esac
 		PION_HAVE_PYTHON="-DPION_HAVE_PYTHON"
 		PION_PYTHON_REACTOR="PythonReactor.la"
 		AC_MSG_NOTICE([Python support successfully enabled])
