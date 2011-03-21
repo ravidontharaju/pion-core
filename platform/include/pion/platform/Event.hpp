@@ -23,6 +23,7 @@
 #include <list>
 #include <vector>
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
 #ifdef _MSC_VER
 	#pragma warning(push)
 	#pragma warning(disable: 4181) // qualifier applied to reference type

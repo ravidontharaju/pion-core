@@ -18,9 +18,20 @@
 //
 
 #include <iostream>
+#include <boost/version.hpp>
 #include <boost/scoped_array.hpp>
 #include <pion/platform/CodecFactory.hpp>
 #include "ScriptReactor.hpp"
+
+
+#if ( (BOOST_VERSION / 100000) > 1 || (BOOST_VERSION / 100 % 1000) >= 44 )
+	// For Boost.IOStreams 1.44 and later
+	#define CLOSE_ON_EXIT_FLAGS	boost::iostreams::close_handle
+#else
+	// For Boost.IOStreams 1.43 and earlier
+	#define CLOSE_ON_EXIT_FLAGS	true
+#endif
+
 
 using namespace pion::platform;
 
@@ -384,9 +395,9 @@ void ScriptReactor::openPipe(void)
 #endif
 
 	// prepare c++ streams to use pipes for reading and writing events
-	m_input_streambuf_ptr.reset(new OStreamBuffer( m_input_pipe ));
+	m_input_streambuf_ptr.reset(new OStreamBuffer( m_input_pipe, CLOSE_ON_EXIT_FLAGS ));
 	m_input_stream_ptr.reset(new std::ostream(m_input_streambuf_ptr.get()));
-	m_output_streambuf_ptr.reset(new IStreamBuffer( m_output_pipe ));
+	m_output_streambuf_ptr.reset(new IStreamBuffer( m_output_pipe, CLOSE_ON_EXIT_FLAGS ));
 	m_output_stream_ptr.reset(new std::istream(m_output_streambuf_ptr.get()));
 }
 
