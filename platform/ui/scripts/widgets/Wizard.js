@@ -892,8 +892,11 @@ pion.widgets.Wizard.prepareReplaySetupPane = function() {
 
 pion.widgets.Wizard.checkReplaySetup = function() {
 	var form_values = dijit.byId('replay_setup').attr('value');
+	if (form_values.max_disk_usage < 10)
+		return 'Maximum disk usage must be at least 10 GB.';
 	pion.wizard.max_disk_usage = form_values.max_disk_usage;
 	pion.widgets.Wizard.prepareSetupReview();
+	return true;
 }
 
 pion.widgets.Wizard.prepareSetupReview = function() {

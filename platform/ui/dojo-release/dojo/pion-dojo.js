@@ -30208,8 +30208,12 @@ pion.widgets.Wizard.replay_setup_pane_initialized=true;
 };
 pion.widgets.Wizard.checkReplaySetup=function(){
 var _1c84=dijit.byId("replay_setup").attr("value");
+if(_1c84.max_disk_usage<10){
+return "Maximum disk usage must be at least 10 GB.";
+}
 pion.wizard.max_disk_usage=_1c84.max_disk_usage;
 pion.widgets.Wizard.prepareSetupReview();
+return true;
 };
 pion.widgets.Wizard.prepareSetupReview=function(){
 dojo.byId("setup_review_form_edition").innerHTML="Pion "+pion.edition;
