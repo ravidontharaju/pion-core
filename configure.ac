@@ -7,7 +7,8 @@ AC_INIT([pion-platform], [4.0.2], [support@atomiclabs.com])
 
 # Initialize some other things
 AC_PREREQ([2.59])
-AC_CONFIG_AUX_DIR(platform/build)
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([m4])
 AC_CONFIG_SRCDIR(platform/src/Vocabulary.cpp)
 
 # package and version args are now taken from AC_INIT()
@@ -15,6 +16,9 @@ AM_INIT_AUTOMAKE
 
 # Disable static libraries to speed up build (they are not used)
 AM_DISABLE_STATIC
+
+# Needed to set per-target compilation flags
+AM_PROG_CC_C_O
 
 # Setup libtool
 AC_LIBTOOL_WIN32_DLL
