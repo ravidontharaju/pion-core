@@ -23,10 +23,6 @@
 #include <deque>
 #include <queue>
 
-// This only works with LOG4CPLUS
-#include <log4cplus/appender.h>
-#include <log4cplus/loglevel.h>
-
 
 namespace pion {		// begin namespace pion
 namespace plugins {		// begin namespace plugins
@@ -36,7 +32,7 @@ namespace plugins {		// begin namespace plugins
 /// XMLLogServiceAppender: caches log events in memory for use by XMLLogService
 /// 
 class XMLLogServiceAppender
-		: public log4cplus::Appender
+	: public PionLogAppender
 {
 public:
 	// default constructor and destructor
@@ -104,14 +100,16 @@ public:
 							pion::net::TCPConnectionPtr& tcp_conn);
 
 	/// returns the log appender used by XMLLogService
-	inline XMLLogServiceAppender& getLogAppender(void) { return *m_log_appender_ptr; }
+	inline XMLLogServiceAppender& getLogAppender(void) {
+		return dynamic_cast<XMLLogServiceAppender&>(*m_log_appender_ptr);
+	}
 
 	/// returns the type attribute used for an XML Permission node pertaining to XMLLogService
 	std::string getPermissionType(void) const { return XML_LOG_SERVICE_PERMISSION_TYPE; }
 
 private:
-	/// map of file extensions to MIME types
-	XMLLogServiceAppender *	m_log_appender_ptr;
+	/// pointer to log appender
+	PionLogAppenderPtr	m_log_appender_ptr;
 
 	/// type identifier for XMLLogService permission type
 	static const std::string			XML_LOG_SERVICE_PERMISSION_TYPE;

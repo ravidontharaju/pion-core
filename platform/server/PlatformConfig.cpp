@@ -194,7 +194,7 @@ void PlatformConfig::openConfigFile(void)
 
 	#if defined(PION_USE_LOG4CPLUS)
 	// Start caching log events, so that even log events occurring during configuration will be available.
-	CircularBufferAppender* appender = new CircularBufferAppender;
+	PionLogAppenderPtr appender(new CircularBufferAppender);
 	appender->setName("CircularBufferAppender");
 	log4cplus::Logger::getRoot().addAppender(appender);
 	#endif
