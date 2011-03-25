@@ -203,7 +203,8 @@ private:
 		}
 		using boost::iostreams::file_descriptor::close;
 		using boost::iostreams::file_descriptor::handle;
-		explicit winpipe_handle_source(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+		template <typename FLAG_TYPE>
+		winpipe_handle_source(HANDLE h, FLAG_TYPE f) : boost::iostreams::file_descriptor(h, f) { }
 		winpipe_handle_source(const winpipe_handle_source& w) :
 			boost::iostreams::file_descriptor(static_cast<const boost::iostreams::file_descriptor&>(w)) { }
 	};
@@ -219,7 +220,8 @@ private:
 		}
 		using boost::iostreams::file_descriptor::close;
 		using boost::iostreams::file_descriptor::handle;
-		explicit winpipe_handle_sink(HANDLE h) : boost::iostreams::file_descriptor(h) { }
+		template <typename FLAG_TYPE>
+		winpipe_handle_sink(HANDLE h, FLAG_TYPE f) : boost::iostreams::file_descriptor(h, f) { }
 		winpipe_handle_sink(const winpipe_handle_sink& w) :
 			boost::iostreams::file_descriptor(static_cast<const boost::iostreams::file_descriptor&>(w)) { }
 	};
