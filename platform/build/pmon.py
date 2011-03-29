@@ -24,6 +24,14 @@ KEY_METRICS = {
 		'RequestsQueued' : 7500,                # requests queued for delivery
 		'OpenSessions' : 100000,                # open visitor sessions
 		},
+	'UnicaAnalyticsReactor' : {
+		'RequestsQueued' : 7500,                # requests queued for delivery
+		'OpenSessions' : 100000,                # open visitor sessions
+		},
+	'WebTrendsAnalyticsReactor' : {
+		'RequestsQueued' : 7500,                # requests queued for delivery
+		'OpenSessions' : 100000,                # open visitor sessions
+		},
 	'DatabaseOutputReactor' : {
 		'EventsQueued' : 25000,                 # events queued for db inserts
 		'KeyCacheSize' : 100000,                # recent index keys cached
