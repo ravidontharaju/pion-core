@@ -16,6 +16,7 @@ dojo.declare("plugins.services.XMLLogService",
 			this.inherited("postCreate", arguments);
 			this.alert_status = 'off';
 			this.last_update_time = 0;
+			this.last_fatal_error_dialog_time = 0;
 
 			// Add 'this' after all existing tabs in the main stack, then save a reference to the corresponding tab button.
 			dijit.byId('main_stack_container').addChild(this);
@@ -173,12 +174,24 @@ dojo.declare("plugins.services.XMLLogService",
 					if (timestamp > _this.last_update_time) {
 						new_fatal = true;
 						num_new_errors_and_fatals++;
-						node = event.getElementsByTagName('LoggerName')[0];
-						var logger = dojox.xml.parser.textContent(node);
-						var content = 'A fatal error has been reported by ' + logger + '.  Pion may now be in an unstable or unusable state.';
-						var dialog = new dijit.Dialog({title: 'Fatal Error', style: 'width: 400px'});
-						dialog.attr('content', content);
-						dialog.show();
+
+						if (! _this.fatal_error_dialog_open) {
+							var now = new Date();
+							var one_minute_ago = now.getTime() - 1000 * 60;
+							if (_this.last_fatal_error_dialog_time < one_minute_ago) {
+								_this.last_fatal_error_dialog_time = now.getTime();
+								node = event.getElementsByTagName('LoggerName')[0];
+								var logger = dojox.xml.parser.textContent(node);
+								var content = 'A fatal error has been reported by ' + logger + '.  Pion may now be in an unstable or unusable state.';
+								var dialog = new dijit.Dialog({title: 'Fatal Error', style: 'width: 400px'});
+								dialog.attr('content', content);
+								dialog.show();
+								_this.fatal_error_dialog_open = true;
+								dialog.connect(dialog, 'hide', function () {
+									_this.fatal_error_dialog_open = false;
+								});
+							}
+						}
 
 						// A little hack to deal with the fact that the grid doesn't render properly if there's a dialog open. 
 						_this.connect(dialog, 'onCancel', function() { this.log_grid.resize(); });
