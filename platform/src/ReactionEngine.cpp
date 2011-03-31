@@ -670,6 +670,8 @@ std::string ReactionEngine::addWorkspace(const char* content_buf, std::size_t co
 	// generate a unique identifier to represent the Workspace
 	const std::string workspace_id(ConfigManager::createUUID());
 
+	boost::mutex::scoped_lock engine_lock(m_mutex);
+
 	// create a new node for the Workspace and add it to the XML config document
 	xmlNodePtr workspace_node = xmlNewNode(NULL, reinterpret_cast<const xmlChar*>(Reactor::WORKSPACE_ELEMENT_NAME.c_str()));
 	if (workspace_node == NULL)
