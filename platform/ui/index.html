@@ -614,9 +614,50 @@
 				<input dojoType="dijit.form.TextBox" name="max_disk_usage" value="100" />
 			</div>
 			</div>
-			<p class="next_button" style="display: none">Next Step: Review and Save >></p>
+			<p class="next_button" style="display: none">Next Step: Sample Dashboards >></p>
 		</div>
 		<!--End Replay Configuration-->
+		
+		<!--Start Sample Dashboard Selection-->
+		<div dojoType="dojox.widget.WizardPane" id="dashboard_pane" passFunction="pion.widgets.Wizard.checkDashboardSelection">
+			
+			<!--start divs for top menu and header-->
+			<div class="wizard_menu">
+				<p><a class="header" onclick="pion.widgets.Wizard.exitEarly()" href="#">Advanced Configuration</a>
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<a class="header" href="http://pion.org/docs" target="_blank">Help</a>
+				</p>
+			</div>
+			
+			<div class="wizard_header_logo">
+				<img src="../images/logo-pion-wizard.png">
+			</div>
+			
+			<div class="wizard_header_title">
+				Easy Setup Wizard
+			</div>
+			<div style="clear: both;">&nbsp;</div>
+			<!--end divs for top menu and header-->
+			
+			<div class="wizard_content">
+				<h1>Create Sample Dashboards</h1>
+				<h2>Please select any sample dashboards you would like to have automatically created.</h2>
+				<div id="dashboard_selection_form" dojoType="dijit.form.Form">
+					<p>
+					<input type="radio" name="dashboard_check_boxes" value="Activity" dojoType="dijit.form.CheckBox" checked /><label>Activity</label>
+					</p>
+					<p>
+					<input type="radio" name="dashboard_check_boxes" value="Availability" dojoType="dijit.form.CheckBox" checked /><label>Availability</label>
+					</p>
+					<p>
+					<input type="radio" name="dashboard_check_boxes" value="Performance" dojoType="dijit.form.CheckBox" checked /><label>Performance</label>
+					</p>
+				</div>
+			</div>
+			
+			<p class="next_button" style="display: none">Next Step: Review and Save >></p>
+		</div>
+		<!--End Sample Dashboard Selection-->
 		
 		<!--Start Confirmation Page-->
 		<div dojoType="dojox.widget.WizardPane" id="review_setup">
@@ -663,6 +704,9 @@
 							<td id="setup_review_form_ssl_keys" />
 							<td><label>Replay Allocation:</label></td>
 							<td id="setup_review_form_replay_alloc" />
+						</tr><tr>
+							<td><label>Dashboards:</label></td>
+							<td id="setup_review_form_dashboards" />
 						</tr>
 					</table>
 				</div>

@@ -1,0 +1,18 @@
+<Plugin>AggregateReactor</Plugin>
+<X>70</X>
+<Y>290</Y>
+<Name>Automated Requests</Name>
+<ContextInterval>10s</ContextInterval>
+<MemoryBuckets>360</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<MatchAllComparisons>false</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>COUNT</Math>
+</Aggregate>
+<Comparison>
+	<Term>urn:vocab:clickstream#robot</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>

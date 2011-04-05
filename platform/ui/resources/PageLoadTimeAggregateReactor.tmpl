@@ -1,0 +1,16 @@
+<Plugin>AggregateReactor</Plugin>
+<X>430</X>
+<Y>130</Y>
+<Name>Page Load Time</Name>
+<ContextInterval>30m</ContextInterval>
+<MemoryBuckets>48</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<MatchAllComparisons>false</MatchAllComparisons>
+<Aggregate>
+	<Name>A</Name>
+	<Math>SUM</Math>
+	<IdentityTerm>
+		<Term>urn:vocab:clickstream#page-load</Term>
+	</IdentityTerm>
+</Aggregate>

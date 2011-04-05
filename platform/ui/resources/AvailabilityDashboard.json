@@ -1,0 +1,32 @@
+{
+	dashboard: {
+		Name: 'Availability',
+		NumRows: 2,
+		NumCols: 2
+	},
+	dashboard_panes: [{
+		Name: 'Successful Requests',
+		_reactor: 'SuccessfulRequestsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 144,
+		_location: 'CC'
+	}, {
+		Name: 'Client Errors',
+		_reactor: 'ClientErrorsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 144,
+		_location: 'RC'
+	}, {
+		Name: 'Refused Requests',
+		_reactor: 'RefusedRequestsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 144,
+		_location: 'CB'
+	}, {
+		Name: 'Server Errors',
+		_reactor: 'ServerErrorsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 144,
+		_location: 'RB'
+	}]
+}

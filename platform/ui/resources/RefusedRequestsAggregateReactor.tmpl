@@ -1,7 +1,7 @@
 <Plugin>AggregateReactor</Plugin>
-<X>300</X>
-<Y>100</Y>
-<Name>Reply Time Report</Name>
+<X>200</X>
+<Y>480</Y>
+<Name>Refused Requests</Name>
 <ContextInterval>10m</ContextInterval>
 <MemoryBuckets>144</MemoryBuckets>
 <PruneInterval>10</PruneInterval>
@@ -9,13 +9,11 @@
 <MatchAllComparisons>false</MatchAllComparisons>
 <Aggregate>
 	<Name>A</Name>
-	<Math>SUM</Math>
-	<IdentityTerm>
-		<Term>urn:vocab:clickstream#sc-reply-time</Term>
-	</IdentityTerm>
+	<Math>COUNT</Math>
 </Aggregate>
 <Comparison>
-	<Term>urn:vocab:clickstream#http-event</Term>
-	<Type>is-defined</Type>
+	<Term>urn:vocab:clickstream#refused</Term>
+	<Type>greater-than</Type>
+	<Value>0</Value>
 	<MatchAllValues>false</MatchAllValues>
 </Comparison>

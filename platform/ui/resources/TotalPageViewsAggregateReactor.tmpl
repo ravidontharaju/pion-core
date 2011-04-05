@@ -1,0 +1,15 @@
+<Plugin>AggregateReactor</Plugin>
+<X>430</X>
+<Y>50</Y>
+<Name>Total Page Views</Name>
+<ContextInterval>1h</ContextInterval>
+<UpdateInterval>5s</UpdateInterval>
+<MemoryBuckets>24</MemoryBuckets>
+<PruneInterval>10</PruneInterval>
+<PruneThreshold>10</PruneThreshold>
+<Running>true</Running>
+<MatchAllComparisons>false</MatchAllComparisons>
+<Aggregate>
+	<Name>Pages</Name>
+	<Math>COUNT</Math>
+</Aggregate>

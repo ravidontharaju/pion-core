@@ -85,6 +85,7 @@ dojo.declare("pion.widgets.Wizard",
 			dijit.byId('unica_pane').init = pion.widgets.Wizard.prepareUnicaPane;
 			dijit.byId('capture_devices_pane').init = pion.widgets.Wizard.prepareCaptureDevicesPane;
 			dijit.byId('replay_setup_pane').init = pion.widgets.Wizard.prepareReplaySetupPane;
+			dijit.byId('dashboard_pane').init = pion.widgets.Wizard.prepareDashboardSelectionPane;
 
 			dojo.subscribe('wizard-selectChild', function(page) {
 				// Update the labels of the navigation buttons for the selected page.
@@ -302,81 +303,122 @@ dojo.declare("pion.widgets.Wizard",
 				workspaces: workspaces
 			};
 
-			if (pion.wizard.host_suffixes.length > 0) {
-				// This is the same algorithm as used to compute session_group_name, but it could be different.
-				var pieces_of_first_host_suffix = pion.wizard.host_suffixes[0].split('.');
-				var num_pieces = pieces_of_first_host_suffix.length;
-				var prefix = pieces_of_first_host_suffix[num_pieces == 1? 0 : num_pieces - 2];
-
-				var capitalized_prefix = dojox.dtl.filter.strings.capfirst(prefix);
-				workspaces[0].name = capitalized_prefix + ' Clickstream';
-				workspaces.push({label: 'reports', name: capitalized_prefix + ' Reports'});
+			wizard_config.dashboards = [];
+			if (pion.wizard.dashboards.length > 0) {
+				workspaces.push({label: 'reports', name: 'Dashboard Reports'});
 
 				templates.push({
-					label: 'HostFilterReactor',
-					url: '/resources/HostFilterReactor.tmpl',
-					substitutions: {host_label: capitalized_prefix, session_group: prefix, host_suffix_alternation: pion.wizard.host_suffixes.join('|')}
-				});
-				reactors.push({label: 'HostFilterReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'clickstream', to: 'HostFilterReactor'});
-
-				templates.push({
-					label: 'ReplyTimeAggregateReactor',
-					url: '/resources/ReplyTimeAggregateReactor.tmpl',
+					label: 'ReportsAnchorFilterReactor',
+					url: '/resources/ReportsAnchorFilterReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'ReplyTimeAggregateReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'HostFilterReactor', to: 'ReplyTimeAggregateReactor'});
+				reactors.push({label: 'ReportsAnchorFilterReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'clickstream', to: 'ReportsAnchorFilterReactor'});
 
 				templates.push({
-					label: 'PagesAggregateReactor',
-					url: '/resources/PagesAggregateReactor.tmpl',
+					label: 'HTTPEventsFilterReactor',
+					url: '/resources/HTTPEventsFilterReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'PagesAggregateReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'HostFilterReactor', to: 'PagesAggregateReactor'});
+				reactors.push({label: 'HTTPEventsFilterReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'ReportsAnchorFilterReactor', to: 'HTTPEventsFilterReactor'});
+			}
+			if (dojo.indexOf(pion.wizard.dashboards, 'Activity') != -1) {
+				wizard_config.dashboards.push({url: '/resources/ActivityDashboard.json'});
 
 				templates.push({
-					label: 'SessionsAggregateReactor',
-					url: '/resources/SessionsAggregateReactor.tmpl',
+					label: 'RealUserRequestsAggregateReactor',
+					url: '/resources/RealUserRequestsAggregateReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'SessionsAggregateReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'HostFilterReactor', to: 'SessionsAggregateReactor'});
+				reactors.push({label: 'RealUserRequestsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'RealUserRequestsAggregateReactor'});
 
 				templates.push({
-					label: 'PageLoadAggregateReactor',
-					url: '/resources/PageLoadAggregateReactor.tmpl',
+					label: 'AutomatedRequestsAggregateReactor',
+					url: '/resources/AutomatedRequestsAggregateReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'PageLoadAggregateReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'HostFilterReactor', to: 'PageLoadAggregateReactor'});
+				reactors.push({label: 'AutomatedRequestsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'AutomatedRequestsAggregateReactor'});
+			}
+			if (dojo.indexOf(pion.wizard.dashboards, 'Availability') != -1) {
+				wizard_config.dashboards.push({url: '/resources/AvailabilityDashboard.json'});
 
 				templates.push({
-					label: 'SessionReferrersFilterReactor',
-					url: '/resources/SessionReferrersFilterReactor.tmpl',
-					substitutions: {host_suffix_alternation: pion.wizard.host_suffixes.join('|')}
-				});
-				reactors.push({label: 'SessionReferrersFilterReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'HostFilterReactor', to: 'SessionReferrersFilterReactor'});
-
-				templates.push({
-					label: 'CleanReferrersTransformReactor',
-					url: '/resources/CleanReferrersTransformReactor.tmpl',
+					label: 'SuccessfulRequestsAggregateReactor',
+					url: '/resources/SuccessfulRequestsAggregateReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'CleanReferrersTransformReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'SessionReferrersFilterReactor', to: 'CleanReferrersTransformReactor'});
+				reactors.push({label: 'SuccessfulRequestsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'SuccessfulRequestsAggregateReactor'});
 
 				templates.push({
-					label: 'TrafficSourcesAggregateReactor',
-					url: '/resources/TrafficSourcesAggregateReactor.tmpl',
+					label: 'RefusedRequestsAggregateReactor',
+					url: '/resources/RefusedRequestsAggregateReactor.tmpl',
 					substitutions: {}
 				});
-				reactors.push({label: 'TrafficSourcesAggregateReactor', workspace: 'reports', config: ''});
-				connections.push({from: 'CleanReferrersTransformReactor', to: 'TrafficSourcesAggregateReactor'});
+				reactors.push({label: 'RefusedRequestsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'RefusedRequestsAggregateReactor'});
 
-				wizard_config.dashboards = [{url: '/resources/WebsiteActivityDashboard.json'}, {url: '/resources/VisitorSourcesDashboard.json'}];
+				templates.push({
+					label: 'ClientErrorsAggregateReactor',
+					url: '/resources/ClientErrorsAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'ClientErrorsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'ClientErrorsAggregateReactor'});
+
+				templates.push({
+					label: 'ServerErrorsAggregateReactor',
+					url: '/resources/ServerErrorsAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'ServerErrorsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'ServerErrorsAggregateReactor'});
+			}
+			if (dojo.indexOf(pion.wizard.dashboards, 'Performance') != -1) {
+				wizard_config.dashboards.push({url: '/resources/PerformanceDashboard.json'});
+
+				templates.push({
+					label: 'PageViewEventsFilterReactor',
+					url: '/resources/PageViewEventsFilterReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'PageViewEventsFilterReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'ReportsAnchorFilterReactor', to: 'PageViewEventsFilterReactor'});
+
+				templates.push({
+					label: 'TotalPageViewsAggregateReactor',
+					url: '/resources/TotalPageViewsAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'TotalPageViewsAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'PageViewEventsFilterReactor', to: 'TotalPageViewsAggregateReactor'});
+
+				templates.push({
+					label: 'PageLoadTimeAggregateReactor',
+					url: '/resources/PageLoadTimeAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'PageLoadTimeAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'PageViewEventsFilterReactor', to: 'PageLoadTimeAggregateReactor'});
+
+				templates.push({
+					label: 'ServerReplyTimeAggregateReactor',
+					url: '/resources/ServerReplyTimeAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'ServerReplyTimeAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'ServerReplyTimeAggregateReactor'});
+
+				templates.push({
+					label: 'DataCenterTimeAggregateReactor',
+					url: '/resources/DataCenterTimeAggregateReactor.tmpl',
+					substitutions: {}
+				});
+				reactors.push({label: 'DataCenterTimeAggregateReactor', workspace: 'reports', config: ''});
+				connections.push({from: 'HTTPEventsFilterReactor', to: 'DataCenterTimeAggregateReactor'});
 			}
 
 			this.applyTemplatesIfNeeded(wizard_config)
@@ -868,8 +910,8 @@ pion.widgets.Wizard.checkSSLKeys = function() {
 		},
 		onComplete: function() {
 			if (pion.edition != 'Replay') {
-				pion.widgets.Wizard.prepareSetupReview();
-				pion.wizard.selectChild(dijit.byId('review_setup'));
+				pion.widgets.Wizard.prepareDashboardSelectionPane();
+				pion.wizard.selectChild(dijit.byId('dashboard_pane'));
 			}
 		},
 		onError: pion.handleFetchError
@@ -895,6 +937,22 @@ pion.widgets.Wizard.checkReplaySetup = function() {
 	if (form_values.max_disk_usage < 10)
 		return 'Maximum disk usage must be at least 10 GB.';
 	pion.wizard.max_disk_usage = form_values.max_disk_usage;
+	pion.widgets.Wizard.prepareDashboardSelectionPane();
+	return true;
+}
+
+pion.widgets.Wizard.prepareDashboardSelectionPane = function() {
+	if (! pion.widgets.Wizard.dashboard_pane_initialized) {
+		if (dojo.cookie('sample_dashboards') !== undefined) {
+			dijit.byId('dashboard_selection_form').attr('value', {dashboard_check_boxes: dojo.cookie('sample_dashboards').split(',')});
+		}
+		pion.widgets.Wizard.dashboard_pane_initialized = true;
+	}
+}
+
+pion.widgets.Wizard.checkDashboardSelection = function() {
+	pion.wizard.dashboards = dijit.byId('dashboard_selection_form').attr('value').dashboard_check_boxes;
+	dojo.cookie('sample_dashboards', pion.wizard.dashboards.join(','), {expires: 5000}); // 5000 days
 	pion.widgets.Wizard.prepareSetupReview();
 	return true;
 }
@@ -908,6 +966,7 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 	dojo.byId('setup_review_form_ports').innerHTML = pion.wizard.ports.join(', ');
 	dojo.byId('setup_review_form_ssl_keys').innerHTML = pion.wizard.ssl_keys.join(', ');
 	dojo.byId('setup_review_form_replay_alloc').innerHTML = pion.wizard.max_disk_usage;
+	dojo.byId('setup_review_form_dashboards').innerHTML = pion.wizard.dashboards.join(', ');
 }
 
 pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload = function(reactors) {

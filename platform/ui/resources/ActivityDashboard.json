@@ -1,0 +1,20 @@
+{
+	dashboard: {
+		Name: 'Activity',
+		NumRows: 2,
+		NumCols: 1
+	},
+	dashboard_panes: [{
+		Name: 'Real-User Requests',
+		_reactor: 'RealUserRequestsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 360,
+		_location: 'CC'
+	}, {
+		Name: 'Automated Requests',
+		_reactor: 'AutomatedRequestsAggregateReactor',
+		SeriesType: 'lines',
+		NumPoints: 360,
+		_location: 'CB'
+	}]
+}

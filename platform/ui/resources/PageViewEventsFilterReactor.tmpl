@@ -1,0 +1,16 @@
+<Plugin>FilterReactor</Plugin>
+<X>250</X>
+<Y>90</Y>
+<Name>Page View Events</Name>
+<MatchAllComparisons>true</MatchAllComparisons>
+<Comparison>
+	<Term>urn:vocab:clickstream#page-event</Term>
+	<Type>is-defined</Type>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
+<Comparison>
+	<Term>urn:vocab:clickstream#content-type</Term>
+	<Type>starts-with</Type>
+	<Value>text/html</Value>
+	<MatchAllValues>false</MatchAllValues>
+</Comparison>
