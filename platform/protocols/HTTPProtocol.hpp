@@ -878,7 +878,8 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						}
 					}
 				} else {
-					PION_LOG_ERROR(logger, "Decoding failed for Content-Encoding: " << content_encoding);
+					// NOTE: tryDecoding() logs already when decoding fails
+					//PION_LOG_WARN(logger, "Decoding failed for Content-Encoding: " << content_encoding);
 					decoded_and_converted_flag = false;
 				}
 			}
