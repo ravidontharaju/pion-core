@@ -933,14 +933,35 @@ template <class IteratorType>
 inline bool HideCreditCardNumbers(IteratorType first, IteratorType last)
 {
 	// static regular expressions used to find and verify credit card numbers
-	// from http://www.regular-expressions.info/creditcard.html
-	static const boost::regex FIND_CC_NUMBER_RX("\\b(\\d[+ -]*?){13,16}\\b");
-	static const boost::regex VERIFY_CC_NUMBER_RX("(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})");
+	//
+	// Visa: starts with "4", has 16 digits in blocks of 4
+	// 4(?:[\s+-]?\d){15}
+	//
+	// MasterCard: starts with 51-55, has 16 digits in blocks of 4
+	// 5[1-5](?:[\s+-]?\d){14}
+	//
+	// Amex: starts with 34 or 37, has 15 digits as 4-6-5
+	// (?:34|37)(?:[\s+-]?\d){13}
+	//
+	// Discover: starts with 6011 or 65, has 16 digits in blocks of 4
+	// (?:6011|65\d\d)(?:[\s+-]?\d){12}
+	//
+	// Diners: starts with 36, 38 or 300-305, all have 14 digits (blocks?)
+	// (?:30[0-5]|36\d|38\d)(?:[\s+-]?\d){11}
+	//
+	// JCB: starts with 35, has 16 digits (blocks?)
+	// 35(?:[\s+-]?\d){14}
+	//
+	// combined:
+	// 4(?:[\s+-]?\d){15}|5[1-5](?:[\s+-]?\d){14}|(?:34|37)(?:[\s+-]?\d){13}|(?:6011|65\d\d)(?:[\s+-]?\d){12}|(?:30[0-5]|36\d|38\d)(?:[\s+-]?\d){11}|35(?:[\s+-]?\d){14}
+	//
+	// resources:
+	// http://en.wikipedia.org/wiki/Credit_card_number
+	// http://en.wikipedia.org/wiki/List_of_Bank_Identification_Numbers
+	// http://www.regular-expressions.info/creditcard.html
+	// 
+	static const boost::regex FIND_CC_NUMBER_RX("\\b(?:4(?:[\\s+-]?\\d){15}|5[1-5](?:[\\s+-]?\\d){14}|(?:34|37)(?:[\\s+-]?\\d){13}|(?:6011|65\\d\\d)(?:[\\s+-]?\\d){12}|(?:30[0-5]|36\\d|38\\d)(?:[\\s+-]?\\d){11}|35(?:[\\s+-]?\\d){14})\\b");
 
-	// buffer used to store credit card digits for verification
-	static const unsigned int CC_NUM_SIZE = 16;
-	char cc_num_str[CC_NUM_SIZE+1];
-	
 	// variable used to store regex match information
 	boost::match_results<IteratorType> results;
 	
@@ -949,30 +970,13 @@ inline bool HideCreditCardNumbers(IteratorType first, IteratorType last)
 
 	// loop through the string looking for each possible match
 	while (boost::regex_search(first, last, results, FIND_CC_NUMBER_RX)) {
-
-		// keeps track of how many cc number digits extracted
-		unsigned int cc_digits = 0;
+		// basic verification succeeded
+		found_match = true;
 		
-		// build cc_num_str from matching range while stripping out any spaces or dashes
+		// replace match string with X's
 		for (IteratorType tmp_it = results[0].first; tmp_it != results[0].second; ++tmp_it) {
-			if (isdigit(*tmp_it)) {
-				cc_num_str[cc_digits++] = *tmp_it;
-			}
+			*tmp_it = 'X';
 		}
-		cc_num_str[cc_digits] = '\0';
-		
-		// verify that the resulting digits are a valid credit card number
-		// (this helps greatly reduce false positive matches)
-		if (boost::regex_match(cc_num_str, VERIFY_CC_NUMBER_RX)) {
-			// basic verification succeeded -> replace match string with X's
-			for (IteratorType tmp_it = results[0].first; tmp_it != results[0].second; ++tmp_it) {
-				*tmp_it = 'X';
-			}
-			found_match = true;
-		}
-		
-		// zero-out string used for cc number verification
-		memset(cc_num_str, '\0', CC_NUM_SIZE);
 
 		// start searching for more cc numbers after end of current match
 		// (no need to re-check earlier bytes)
