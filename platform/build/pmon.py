@@ -54,10 +54,10 @@ KEY_METRICS = {
 		},
 	'SnifferReactor' : {
 		'BitsPerSecond' : 300000000,            # average bps for a capture device
-		'PacketQueueSize' : 30000,              # packets waiting to be processed
-		'TcpSessionCount' : 10000,              # open tcp connections
-		'SslSessionKeyCount' : 100000,          # cached SSL session keys
-		'TcpReassemblyPacketCount' : 50000,     # packets waiting to be processed
+		'PacketQueueSize' : 10000,              # packets waiting to be processed
+		'TcpSessionCount' : 50000,              # open tcp connections
+		'SslSessionKeyCount' : 250000,          # cached SSL session keys
+		'TcpReassemblyPacketCount' : 250000,    # packets waiting to be processed
 		'TcpReassemblyPayloadSize' : 100000000, # total bytes in packets waiting
 		'SslServerCount' : 1000,				# number of active ssl servers
 		'SslMissingKeyServerCount' : 100,		# number of ssl servers missing keys
