@@ -30262,96 +30262,100 @@ dojo.byId("setup_review_form_ssl_keys").innerHTML=pion.wizard.ssl_keys.join(", "
 dojo.byId("setup_review_form_replay_alloc").innerHTML=pion.wizard.max_disk_usage;
 dojo.byId("setup_review_form_dashboards").innerHTML=pion.wizard.dashboards.join(", ");
 };
-pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload=function(_1c84){
-var _1c85=dijit.byId("dashboard_service_tab");
-if(_1c85){
-_1c85.deleteAllDashboards().addCallback(function(){
-pion.widgets.Wizard.deleteAllReactorsAndReload(_1c84);
-});
-}else{
-pion.widgets.Wizard.deleteAllReactorsAndReload(_1c84);
-}
-};
-pion.widgets.Wizard.deleteAllReactorsAndReload=function(_1c86){
-var _1c87=0;
-var _1c88=function(p){
+pion.widgets.Wizard.deleteAllReactorsAndReload=function(_1c84){
+var _1c85=0;
+var _1c86=function(p){
 return dojox.xml.parser.textContent(p);
 };
 dojo.cookie("analytics_provider","none",{expires:5000});
-dojo.forEach(_1c86,function(_1c8a){
-var _1c8b=dojo.map(_1c8a.getElementsByTagName("Source"),_1c88);
-if(_1c8b.length&&_1c8b[0]=="Wizard"){
-var _1c8c=dojox.xml.parser.textContent(_1c8a.getElementsByTagName("Plugin")[0]);
-switch(_1c8c){
+dojo.forEach(_1c84,function(_1c88){
+var _1c89=dojo.map(_1c88.getElementsByTagName("Source"),_1c86);
+if(_1c89.length&&_1c89[0]=="Wizard"){
+var _1c8a=dojox.xml.parser.textContent(_1c88.getElementsByTagName("Plugin")[0]);
+switch(_1c8a){
 case "ClickstreamReactor":
+var _1c8b=[];
+var _1c8c=[];
 var _1c8d=[];
-var _1c8e=[];
-var _1c8f=[];
-var _1c90=_1c8a.getElementsByTagName("SessionGroup");
-for(i=0;i<_1c90.length&&_1c90[i].getAttribute("id")=="default";++i){
+var _1c8e=_1c88.getElementsByTagName("SessionGroup");
+for(i=0;i<_1c8e.length&&_1c8e[i].getAttribute("id")=="default";++i){
 }
-if(i<_1c90.length){
-var _1c91=_1c90[i];
-_1c8d=dojo.map(_1c91.getElementsByTagName("Host"),_1c88);
-dojo.forEach(_1c91.getElementsByTagName("Cookie"),function(_1c92){
-var type=_1c92.getAttribute("type");
+if(i<_1c8e.length){
+var _1c8f=_1c8e[i];
+_1c8b=dojo.map(_1c8f.getElementsByTagName("Host"),_1c86);
+dojo.forEach(_1c8f.getElementsByTagName("Cookie"),function(_1c90){
+var type=_1c90.getAttribute("type");
 if(type){
 if(type.indexOf("s")!=-1){
-_1c8e.push(_1c88(_1c92));
+_1c8c.push(_1c86(_1c90));
 }
 if(type.indexOf("v")!=-1){
-_1c8f.push(_1c88(_1c92));
+_1c8d.push(_1c86(_1c90));
 }
 }
 });
 }
-dojo.cookie("host_suffixes",_1c8d.join(", "),{expires:5000});
-dojo.cookie("session_cookies",_1c8e.join(", "),{expires:5000});
-dojo.cookie("visitor_cookies",_1c8f.join(", "),{expires:5000});
+dojo.cookie("host_suffixes",_1c8b.join(", "),{expires:5000});
+dojo.cookie("session_cookies",_1c8c.join(", "),{expires:5000});
+dojo.cookie("visitor_cookies",_1c8d.join(", "),{expires:5000});
 break;
 case "OmnitureAnalyticsReactor":
 dojo.cookie("analytics_provider","Omniture",{expires:5000});
-dojo.cookie("omniture_host",_1c88(_1c8a.getElementsByTagName("HttpHost")[0]));
-dojo.cookie("omniture_report_suite",_1c88(_1c8a.getElementsByTagName("AccountId")[0]));
-dojo.cookie("strip_client_ip",_1c88(_1c8a.getElementsByTagName("StripClientIP")[0]));
+dojo.cookie("omniture_host",_1c86(_1c88.getElementsByTagName("HttpHost")[0]));
+dojo.cookie("omniture_report_suite",_1c86(_1c88.getElementsByTagName("AccountId")[0]));
+dojo.cookie("strip_client_ip",_1c86(_1c88.getElementsByTagName("StripClientIP")[0]));
 break;
 case "WebTrendsAnalyticsReactor":
 dojo.cookie("analytics_provider","Webtrends",{expires:5000});
-dojo.cookie("webtrends_account_id",_1c88(_1c8a.getElementsByTagName("AccountId")[0]));
-dojo.cookie("webtrends_host",_1c88(_1c8a.getElementsByTagName("HttpHost")[0]));
-dojo.cookie("strip_client_ip",_1c88(_1c8a.getElementsByTagName("StripClientIP")[0]));
+dojo.cookie("webtrends_account_id",_1c86(_1c88.getElementsByTagName("AccountId")[0]));
+dojo.cookie("webtrends_host",_1c86(_1c88.getElementsByTagName("HttpHost")[0]));
+dojo.cookie("strip_client_ip",_1c86(_1c88.getElementsByTagName("StripClientIP")[0]));
 break;
 case "GoogleAnalyticsReactor":
 dojo.cookie("analytics_provider","Google",{expires:5000});
-dojo.cookie("google_account_id",_1c88(_1c8a.getElementsByTagName("AccountId")[0]));
-dojo.cookie("strip_client_ip",_1c88(_1c8a.getElementsByTagName("StripClientIP")[0]));
+dojo.cookie("google_account_id",_1c86(_1c88.getElementsByTagName("AccountId")[0]));
+dojo.cookie("strip_client_ip",_1c86(_1c88.getElementsByTagName("StripClientIP")[0]));
 break;
 case "UnicaAnalyticsReactor":
 dojo.cookie("analytics_provider","Unica",{expires:5000});
-dojo.cookie("unica_account_id",_1c88(_1c8a.getElementsByTagName("AccountId")[0]));
-dojo.cookie("unica_host",_1c88(_1c8a.getElementsByTagName("HttpHost")[0]));
-dojo.cookie("strip_client_ip",_1c88(_1c8a.getElementsByTagName("StripClientIP")[0]));
+dojo.cookie("unica_account_id",_1c86(_1c88.getElementsByTagName("AccountId")[0]));
+dojo.cookie("unica_host",_1c86(_1c88.getElementsByTagName("HttpHost")[0]));
+dojo.cookie("strip_client_ip",_1c86(_1c88.getElementsByTagName("StripClientIP")[0]));
 break;
 case "SnifferReactor":
-var _1c94=dojo.map(_1c8a.getElementsByTagName("Interface"),_1c88);
-dojo.cookie("selected_interfaces",_1c94.join(","),{expires:5000});
+var _1c92=dojo.map(_1c88.getElementsByTagName("Interface"),_1c86);
+dojo.cookie("selected_interfaces",_1c92.join(","),{expires:5000});
 break;
 case "MultiDatabaseReactor":
-dojo.cookie("max_disk_usage",_1c88(_1c8a.getElementsByTagName("MaxDiskUsage")[0]));
+dojo.cookie("max_disk_usage",_1c86(_1c88.getElementsByTagName("MaxDiskUsage")[0]));
 break;
 }
 }
-var id=_1c8a.getAttribute("id");
-dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1c96,_1c97){
-if(++_1c87==_1c86.length){
-pion.widgets.Wizard.deleteAllWorkspacesAndReload();
+var id=_1c88.getAttribute("id");
+dojo.xhrDelete({url:"/config/reactors/"+id,handleAs:"xml",timeout:5000,load:function(_1c94,_1c95){
+if(++_1c85==_1c84.length){
+pion.widgets.Wizard.finishCleanupAndReload();
 }
-return _1c96;
+return _1c94;
 },error:pion.getXhrErrorHandler(dojo.xhrDelete)});
 });
 };
-pion.widgets.Wizard.deleteAllWorkspacesAndReload=function(){
-pion.reactors.deleteAllWorkspaces().addCallback(function(){
+pion.widgets.Wizard.deleteAllDashboards=function(){
+var dfd=new dojo.Deferred();
+var _1c97=dijit.byId("dashboard_service_tab");
+if(_1c97){
+_1c97.deleteAllDashboards().addCallback(function(){
+dfd.callback();
+});
+}else{
+dfd.callback();
+}
+return dfd;
+};
+pion.widgets.Wizard.finishCleanupAndReload=function(){
+pion.widgets.Wizard.deleteAllDashboards().addCallback(function(){
+pion.reactors.deleteAllWorkspaces();
+}).addCallback(function(){
 dojo.cookie("pion_edition","",{expires:-1});
 location.replace("/");
 });
@@ -30360,7 +30364,7 @@ pion.widgets.Wizard.restart=function(){
 dojo.xhrGet({url:"/config/reactors",preventCache:true,handleAs:"xml",timeout:5000,load:function(_1c98,_1c99){
 var _1c9a=_1c98.getElementsByTagName("Reactor");
 if(_1c9a.length==0){
-pion.widgets.Wizard.deleteAllWorkspacesAndReload();
+pion.widgets.Wizard.finishCleanupAndReload();
 }else{
 var _1c9b=function(_1c9c){
 var dfd=new dojo.Deferred();
@@ -30382,7 +30386,7 @@ return _1ca2.plugin=="ReplayService";
 });
 var _1ca3=_1ca0.num_dashboard_panes;
 var _1ca4="Warning: You currently have "+(_1c9a.length==1?"one Reactor":_1c9a.length+" Reactors")+((_1ca1&&_1ca3==0)?" and a Replay Service":"")+((_1ca1&&_1ca3==1)?", a Replay Service and one Dashboard chart":"")+((_1ca1&&_1ca3>1)?", a Replay Service and "+_1ca3+" Dashboard charts":"")+((!_1ca1&&_1ca3==1)?" and one Dashboard chart":"")+((!_1ca1&&_1ca3>1)?" and "+_1ca3+" Dashboard charts":"")+" configured.  If you continue, "+(_1c9a.length==1&&!_1ca1&&_1ca3==0?"it ":"they ")+"will be deleted, and the Wizard will guide you through "+"creating a new configuration from scratch.  If you want to edit the configuration of a "+"particular Reactor, you can do so by double clicking on it in the Reactors "+"tab, or by editing reactors.xml.  "+(_1ca1?"The Replay Service can be edited by editing services.xml.  ":"")+(_1ca3>0?"Dashboards can be edited by editing dashboards.xml.  ":"")+"Do you want to delete your current Reactors"+((_1ca1&&_1ca3==0)?" and Replay Service":"")+((_1ca1&&_1ca3>0)?", Replay Service and Dashboard charts":"")+((!_1ca1&&_1ca3>0)?" and Dashboard charts":"")+" and continue to the Wizard?";
-pion.doDeleteConfirmationDialog(_1ca4,pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload,_1c9a);
+pion.doDeleteConfirmationDialog(_1ca4,pion.widgets.Wizard.deleteAllReactorsAndReload,_1c9a);
 });
 }
 },error:pion.handleXhrGetError});

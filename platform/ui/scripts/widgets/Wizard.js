@@ -969,16 +969,6 @@ pion.widgets.Wizard.prepareSetupReview = function() {
 	dojo.byId('setup_review_form_dashboards').innerHTML = pion.wizard.dashboards.join(', ');
 }
 
-pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload = function(reactors) {
-	var dashboard_service_tab = dijit.byId('dashboard_service_tab');
-	if (dashboard_service_tab)
-		dashboard_service_tab.deleteAllDashboards().addCallback(function() {
-			pion.widgets.Wizard.deleteAllReactorsAndReload(reactors);
-		});
-	else
-		pion.widgets.Wizard.deleteAllReactorsAndReload(reactors);
-}
-
 pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 	var num_reactors_deleted = 0;
 	var getContent = function(p) { return dojox.xml.parser.textContent(p) };
@@ -1061,7 +1051,7 @@ pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 			timeout: 5000,
 			load: function(response, ioArgs) {
 				if (++num_reactors_deleted == reactors.length) {
-					pion.widgets.Wizard.deleteAllWorkspacesAndReload();
+					pion.widgets.Wizard.finishCleanupAndReload();
 				}
 				return response;
 			},
@@ -1070,8 +1060,22 @@ pion.widgets.Wizard.deleteAllReactorsAndReload = function(reactors) {
 	});
 }
 
-pion.widgets.Wizard.deleteAllWorkspacesAndReload = function() {
-	pion.reactors.deleteAllWorkspaces()
+pion.widgets.Wizard.deleteAllDashboards = function() {
+	var dfd = new dojo.Deferred();
+
+	var dashboard_service_tab = dijit.byId('dashboard_service_tab');
+	if (dashboard_service_tab)
+		dashboard_service_tab.deleteAllDashboards().addCallback(function() { dfd.callback(); });
+	else
+		dfd.callback();
+
+	return dfd;
+}
+
+pion.widgets.Wizard.finishCleanupAndReload = function() {
+	// Since there are no Reactors configured, any Dashboards or Workspaces are useless, so delete them.
+	pion.widgets.Wizard.deleteAllDashboards()
+	.addCallback(function() { pion.reactors.deleteAllWorkspaces(); })
 	.addCallback(function() {
 		// Delete the pion_edition cookie.
 		dojo.cookie('pion_edition', '', {expires: -1});
@@ -1090,7 +1094,7 @@ pion.widgets.Wizard.restart = function() {
 		load: function(response, ioArgs) {
 			var reactors = response.getElementsByTagName('Reactor');
 			if (reactors.length == 0) {
-				pion.widgets.Wizard.deleteAllWorkspacesAndReload();
+				pion.widgets.Wizard.finishCleanupAndReload();
 			} else {
 				var mixinNumDashboardPanes = function(kw_args) {
 					var dfd = new dojo.Deferred();
@@ -1134,7 +1138,7 @@ pion.widgets.Wizard.restart = function() {
 								+ ((replay_configured && num_panes > 0)? ', Replay Service and Dashboard charts' : '')
 								+ ((! replay_configured && num_panes > 0)? ' and Dashboard charts' : '')
 								+ ' and continue to the Wizard?';
-					pion.doDeleteConfirmationDialog(message, pion.widgets.Wizard.deleteAllReactorsAndDashboardsAndReload, reactors);
+					pion.doDeleteConfirmationDialog(message, pion.widgets.Wizard.deleteAllReactorsAndReload, reactors);
 				});
 			}
 		},
