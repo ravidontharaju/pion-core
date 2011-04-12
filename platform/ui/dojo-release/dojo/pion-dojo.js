@@ -29624,6 +29624,7 @@ document.body.appendChild(device_list_standby.domNode);
 device_list_standby.show();
 pion.wizard.cookies=[];
 pion.wizard.devices=[];
+pion.wizard.dashboards=[];
 pion.wizard.max_disk_usage="NA";
 new pion.widgets.KeyStoreEditor({},"key_store_editor");
 dijit.byId("review_setup").doneFunction=dojo.hitch(this,"finish");
@@ -30207,9 +30208,14 @@ pion.widgets.key_store.fetch({onItem:function(item){
 var _1c81=pion.widgets.key_store.getValue(item,"Name");
 pion.wizard.ssl_keys.push(_1c81);
 },onComplete:function(){
-if(pion.edition!="Replay"){
+if(pion.edition=="Lite"){
+pion.widgets.Wizard.prepareSetupReview();
+pion.wizard.selectChild(dijit.byId("review_setup"));
+}else{
+if(pion.edition=="Enterprise"){
 pion.widgets.Wizard.prepareDashboardSelectionPane();
 pion.wizard.selectChild(dijit.byId("dashboard_pane"));
+}
 }
 },onError:pion.handleFetchError});
 if(pion.edition=="Replay"){

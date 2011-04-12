@@ -20,6 +20,7 @@ dojo.declare("pion.widgets.Wizard",
 			device_list_standby.show();
 			pion.wizard.cookies = [];
 			pion.wizard.devices = [];
+			pion.wizard.dashboards = [];
 			pion.wizard.max_disk_usage = 'NA';
 
 			new pion.widgets.KeyStoreEditor({}, 'key_store_editor');
@@ -909,7 +910,10 @@ pion.widgets.Wizard.checkSSLKeys = function() {
 			pion.wizard.ssl_keys.push(key_name);
 		},
 		onComplete: function() {
-			if (pion.edition != 'Replay') {
+			if (pion.edition == 'Lite') {
+				pion.widgets.Wizard.prepareSetupReview();
+				pion.wizard.selectChild(dijit.byId('review_setup'));
+			} else if (pion.edition == 'Enterprise') {
 				pion.widgets.Wizard.prepareDashboardSelectionPane();
 				pion.wizard.selectChild(dijit.byId('dashboard_pane'));
 			}
@@ -919,7 +923,7 @@ pion.widgets.Wizard.checkSSLKeys = function() {
 	if (pion.edition == 'Replay') {
 		return true; // Proceed to next pane.
 	} else {
-		return false; // Don't proceed now, but in onComplete(), will go to final pane. 
+		return false; // Don't proceed now, but in onComplete(), will go a different pane. 
 	}
 }
 
