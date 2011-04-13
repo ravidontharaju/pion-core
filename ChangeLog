@@ -4,7 +4,7 @@ Version 4.0.3 (2011-04-14)
 * Added support for new libraries and build environments (1105, 1106, 1107)
 
 
-Version 4.0.1 (2011-04-08)
+Version 4.0.1 (2011-03-08)
 ==========================
 
 * Added read() and write() methods to HTTPMessage for serialization (1086)
