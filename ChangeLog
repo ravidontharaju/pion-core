@@ -1,4 +1,21 @@
-Version 4.0.1 (2011-04-08)
+Version 4.0.3 (2011-04-14)
+==========================
+
+* Monitor Service - added support to display multi-value terms (1095)
+* UI will now generate at most one fatal error dialog per minute (1110)
+* Thread safety issue when adding new workspaces - backup log warnings (1115)
+* Startup failures when current directory was not readable by pion user (596)
+* Added support for new libraries and build environments (1105, 1106, 1107)
+
+
+Version 3.0.27 (2011-04-14)
+===========================
+
+* Improved performance of HideCreditCardNumbers feature (1121)
+* Added Webtrends and Unica reactor statistics to pmon.py (1111)
+
+
+Version 4.0.1 (2011-03-08)
 ==========================
 
 * TransformReactor - support for URL encode/decode transformations (1061, 1063)
