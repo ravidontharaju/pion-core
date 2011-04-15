@@ -403,14 +403,16 @@ label.disabled {
 
 #topBar {
 	vertical-align: bottom;
-	text-align: bottom;
 }
 
 #logo {
 	background: url(../images/bg01.png) repeat-x;
 	background-color: #e0e0e0;
 	height: 100px;
-	margin: 0 auto;
+	margin: 0;
+	position: relative; /* This makes it dynamic, so that things inside it can be positioned relative to it. */
+	top: 0;             /* These make it so that its position is the same as if ...   */
+	left: 0;            /* ... it was static (i.e. 0 offset relative to normal flow). */
 	padding: 0;
 }
 
@@ -443,15 +445,10 @@ label.disabled {
 	margin: 0;
 	padding: 0;
 	float: right;
-	position: relative;
+	position: absolute; /* Relative to #logo. */
 	text-align: right;
 	right: 10px;
 	bottom: 0;
-}
-
-#menu div {
-	position:absolute;
-	bottom:0;
 }
 
 #menu span {
@@ -492,14 +489,9 @@ label.disabled {
 	border-top: 1px solid #CCCCCC;
 }
 
-
-#menu .dijitToggleButtonChecked button {
-	background-color: #ffffff;
+#menu .dijitToggleButtonChecked .dijitButtonNode {
 	background: url(../images/button-on-bg.png) repeat;
-	border-right: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-top: 1px solid #CCCCCC;
-	border-bottom: 2px solid #ffffff;
+	border-bottom: 1px solid #FFFFFF;
 }
 
 
