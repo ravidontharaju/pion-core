@@ -7,9 +7,8 @@
 import sys, os, re, shutil, optparse
 from lxml import etree
 
-# Base class used for configuration upgrade logic
 class UpgradeRule(object):
-	"""Class used to hold version upgrade logic"""
+	"""Base class used to hold version upgrade logic"""
 	def __init__(self, version, regex):
 		self.version = version
 		self.regex = regex
@@ -45,17 +44,20 @@ class UpgradeRule(object):
 		etree.SubElement(redirect, '{%s}Source' % PION_NS).text = source
 		etree.SubElement(redirect, '{%s}Target' % PION_NS).text = dest
 		server_node.insert(idx, redirect)
-	
+
+class UpgradeDoNothing(UpgradeRule):
+	"""Simple rule to upgrade version but nothing else"""
+	def __init__(self, version, regex):
+		UpgradeRule.__init__(self, version, regex)
+	def process(self, pion_config):
+		if (re.search(self.regex, pion_config['PionConfig'].version)):
+			self.was_updated = True
+		return UpgradeRule.process(self, pion_config)
 
 
 # Global list of configuration upgrade rules
 RULES = list()
 
-
-###########################################
-# KEEP THIS UPDATED TO THE LATEST VERSION #
-###########################################
-CURRENT_VERSION = '4.0.0'
 
 ########################################
 # CONFIGURATION UPGRADE RULES GO BELOW #
@@ -310,6 +312,11 @@ class Upgrade31xTo40x(UpgradeRule):
 		return UpgradeRule.process(self, pion_config)
 
 RULES.append(Upgrade31xTo40x('4.0.0', '^3\.1\..*$'))
+
+
+# Nothing to do yet for 4.1
+RULES.append(UpgradeDoNothing('4.1.0', '^4\.0\..*$'))
+
 
 # ...
 
