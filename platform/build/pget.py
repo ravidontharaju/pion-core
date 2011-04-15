@@ -157,6 +157,24 @@ def get_stats(con, options, reactor, fields=()):
 		get_stats_xml(reactor, fields, node)
 
 
+def get_engine_stats(con, options, fields=()):
+	# query reaction engine statistcs
+	r = send_request(con, '/config/reactors/stats', headers=options.headers)
+	if (r.status != 200):
+		print 'error: Unable to retrieve reaction engine statistics'
+		sys.exit(1)
+	# parse XML response
+	doc = xml.dom.minidom.parseString(r.read())
+	stats = doc.getElementsByTagName("PionStats")[0]
+	# look for statistics
+	engine_stats = list()
+	for node in stats.childNodes:
+		if (node.localName != "Reactor" and node.firstChild):
+			if (not fields or node.localName in fields):
+				engine_stats.append( (node.localName, node.firstChild.data) )
+	return engine_stats
+
+
 def list_reactors(con, options):
 	# retrieve a collection of reactor objects from pion config
 	reactors = get_reactors(con, options)

@@ -16,6 +16,7 @@ SMTP_PASSWORD = ''
 
 # defines a mapping of reactor statistics to maximum threshold values
 KEY_METRICS = {
+	# Reactor statistics
 	'OmnitureAnalyticsReactor' : {
 		'RequestsQueued' : 7500,                # requests queued for delivery
 		'OpenSessions' : 100000,                # open visitor sessions
@@ -66,6 +67,10 @@ KEY_METRICS = {
 	'PythonReactor' : {
 		'OpenSessions' : 100000,                # open visitor sessions
 		},
+	# ReactionEngine statistics
+	'ReactionEngine' : {
+		'EventsQueued' : 25000,                 # events queued for delivery
+		},
 	}
 
 
@@ -95,6 +100,13 @@ def get_metrics(con, options, reactors):
 		if (r.running == 'true'):
 			for s in r.stats:
 				metrics.append( Metric(r.id, r.type, r.name, s[0], int(s[1]), fieldmap[s[0]] ) )
+	metrics.sort()
+	# retrieve stats for ReactionEngine
+	if (KEY_METRICS.has_key('ReactionEngine')):
+		fieldmap = KEY_METRICS['ReactionEngine']
+		engine_stats = pget.get_engine_stats(con, options, fieldmap.keys())
+		for s in engine_stats:
+			metrics.append( Metric('', 'ReactionEngine', '', s[0], int(s[1]), fieldmap[s[0]] ) )
 	return metrics
 
 
@@ -189,14 +201,13 @@ def main():
 			elif (options.email):
 				send_email(options.email, last_metrics, 'lost connection to Pion server!')
 			sys.exit(1)
-		metrics.sort()
 		# generate summary of metrics collected
 		last_metrics = "------------------------------------------\n"
 		last_metrics += '| ' + time.strftime("PION STATISTICS AT %Y-%m-%d %H:%M:%S") + ' |\n'
 		last_metrics += "------------------------------------------\n"
 		metrics_error = False
 		for m in metrics:
-			if (m.value > m.max):
+			if (m.max > 0 and m.value > m.max):
 				metrics_error = True
 				last_metrics += '*'
 			last_metrics += str(m) + '\n'
