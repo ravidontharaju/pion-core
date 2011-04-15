@@ -15,9 +15,14 @@ DAEMON_COREFILE_LIMIT=unlimited
 
 RETVAL=0
 
+# Limit pion's maximum virtual memory size by physical memory minus MEM_RESERVE
+# MEM_RESERVE is a percentage value from 0 through 100 (default = reserve 5%)
+MEM_RESERVE=5
+
 start() {
 	echo -n $"Starting $prog: "
 	ulimit -s 512
+	ulimit -v $((`sed -n 's/^MemTotal: *\([0-9]*\).*$/\1/p' /proc/meminfo`*(100 - $MEM_RESERVE)/100))
 	daemon $prog -D
 	RETVAL=$?
 	echo
