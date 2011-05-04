@@ -56,11 +56,7 @@ dojo.declare("plugins.databases.DatabasePane",
 				}
 			}
 			console.dir(config);
-			this.form.attr('value', config);
-
-			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
-			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
-			comment_node.value = config.Comment;
+			this.form.set('value', config);
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;
@@ -75,12 +71,7 @@ dojo.declare("plugins.databases.DatabasePane",
 		},
 		save: function () {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			var config = this.form.attr('value');
-
-			// see comment in populateFromConfigItem about comment field
-			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
-			config.Comment = comment_node.value;
-
+			var config = this.form.get('value');
 			this.put_data = '<PionConfig><Database>';
 			for (var tag in config) {
 				if (tag != '@id') {

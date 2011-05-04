@@ -112,11 +112,6 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				this._addCustomConfigValues(config, item);
 			}
 			this.form.set('value', config);
-
-			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
-			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
-			comment_node.value = config.Comment;
-
 			if (this.has_extraction_rules)
 				this._reloadExtractionRuleStore(item);
 
@@ -199,12 +194,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			}
 		},
 		doPutRequest: function() {
-			var config = this.form.attr('value');
-
-			// see comment in populateFromConfigItem about comment field
-			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
-			config.Comment = comment_node.value;
-
+			var config = this.form.get('value');
 			var put_data = '<PionConfig><Protocol>';
 			for (var tag in config) {
 				if (tag.charAt(0) != '@' && tag != 'options') {

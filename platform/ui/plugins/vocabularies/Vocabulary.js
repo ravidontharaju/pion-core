@@ -278,21 +278,21 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 		_handleTypeChange: function(type) {
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
-				this.format_widget.attr('disabled', false);
-				this.format_widget.attr('value', '%Y');
+				this.format_widget.set('disabled', false);
+				this.format_widget.set('value', '%Y');
 				this.format_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.format_widget.attr('disabled', true);
-				this.format_widget.attr('value', '');
+				this.format_widget.set('disabled', true);
+				this.format_widget.set('value', '');
 				this.format_widget.domNode.style.visibility = 'hidden';
 			}
 			if (type == 'fixed-length string') {
-				this.size_widget.attr('disabled', false);
-				this.size_widget.attr('value', '1');
+				this.size_widget.set('disabled', false);
+				this.size_widget.set('value', '1');
 				this.size_widget.domNode.style.visibility = 'visible';
 			} else {
-				this.size_widget.attr('disabled', true);
-				this.size_widget.attr('value', '');
+				this.size_widget.set('disabled', true);
+				this.size_widget.set('value', '');
 				this.size_widget.domNode.style.visibility = 'hidden';
 			}
 		},
@@ -435,19 +435,14 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			var _this = this;
 			var h = dojo.connect(this.vocabulary, 'onDoneLoadingTerms', function() {
 				dojo.disconnect(h);
-				_this.name.attr('readOnly', _this.vocabulary.config.Locked);
-				_this.comment.disabled = _this.vocabulary.config.Locked;
-				_this.add_new_term_button.attr('disabled', _this.vocabulary.config.Locked);
+				_this.name.set('readOnly', _this.vocabulary.config.Locked);
+				_this.comment.set('readOnly', _this.vocabulary.config.Locked);
+				_this.add_new_term_button.set('disabled', _this.vocabulary.config.Locked);
 				var delete_column_index = _this.vocab_term_grid.layout.cellCount - 1;
 				_this.vocab_term_grid.layout.setColumnVisibility(delete_column_index, ! _this.vocabulary.config.Locked);
 				var form_data = dojo.clone(_this.vocabulary.config); 
-				form_data.checkboxes = _this.vocabulary.config.Locked? ["locked"] : [];
-				_this.form.attr('value', form_data);
-	
-				// See comments in plugins.databases.DatabasePane.populateFromConfigItem.
-				var comment_node = dojo.query('textarea.comment', _this.form.domNode)[0];
-				comment_node.value = _this.vocabulary.config.Comment? _this.vocabulary.config.Comment : '';
-	
+				form_data.options = _this.vocabulary.config.Locked? ["locked"] : [];
+				_this.form.set('value', form_data);
 				_this.vocab_term_grid.setStore(_this.vocabulary.vocab_term_store);
 
 				// Wait a bit for change events on widgets to get handled.
@@ -473,19 +468,12 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		},
 		saveVocabConfig: function() {
 			var _this = this;
-			var form_data = this.form.attr('value');
-			this.vocabulary.config.Name = form_data.Name;
-			this.vocabulary.config.Locked = dojo.indexOf(form_data.checkboxes, 'locked') >= 0;
-
-			// see comment in populateFromConfigItem about comment field
-			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];
-			this.vocabulary.config.Comment = comment_node.value;
-
+			var config = this.form.get('value');
+			config.Locked = dojo.indexOf(config.options, 'locked') >= 0;
 			var put_data = '<PionConfig><Vocabulary>';
-			for (var tag in this.vocabulary.config) {
-				if (tag != '@id') {
-					//console.debug('this.vocabulary.config[', tag, '] = ', this.vocabulary.config[tag]);
-					put_data += pion.makeXmlLeafElement(tag, this.vocabulary.config[tag]);
+			for (var tag in config) {
+				if (tag.charAt(0) != '@' && tag != 'options') {
+					put_data += pion.makeXmlLeafElement(tag, config[tag]);
 				}
 			}
 			put_data += '</Vocabulary></PionConfig>';

@@ -9,6 +9,7 @@ dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
 dojo.require("dijit.form.RadioButton");
 dojo.require("dijit.form.TextBox");
+dojo.require("dijit.form.SimpleTextarea");
 dojo.require("dojox.dtl.filter.strings");
 dojo.require("dojox.widget.Standby");
 dojo.require("dojo.parser");	// scan page for widgets and instantiate them
