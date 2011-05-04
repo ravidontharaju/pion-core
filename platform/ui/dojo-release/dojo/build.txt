@@ -67,8 +67,8 @@ pion-dojo.js:
 ./../../release/dojo-release/dijit/form/_FormMixin.js
 ./../../release/dojo-release/dijit/_DialogMixin.js
 ./../../release/dojo-release/dijit/DialogUnderlay.js
-./../../release/dojo-release/dijit/_Container.js
 ./../../release/dojo-release/dijit/_Contained.js
+./../../release/dojo-release/dijit/_Container.js
 ./../../release/dojo-release/dijit/layout/_LayoutWidget.js
 ./../../release/dojo-release/dijit/layout/_ContentPaneResizeMixin.js
 ./../../release/dojo-release/dojo/html.js
