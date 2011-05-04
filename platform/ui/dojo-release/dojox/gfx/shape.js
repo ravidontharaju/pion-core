@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Copyright (c) 2004-2011, The Dojo Foundation All Rights Reserved.
 	Available via Academic Free License >= 2.1 OR the modified BSD license.
 	see: http://dojotoolkit.org/license for details
 */
@@ -11,7 +11,7 @@ dojo.provide("dojox.gfx.shape");
 
 dojo.require("dojox.gfx._base");
 
-dojo.declare("dojox.gfx.Shape", null, {
+dojo.declare("dojox.gfx.shape.Shape", null, {
 	// summary: a Shape object, which knows how to apply
 	// graphical attributes and transformations
 
@@ -114,13 +114,13 @@ dojo.declare("dojox.gfx.Shape", null, {
 			return null;	// null
 		}
 		var m = this._getRealMatrix();
-		var r = [];
-		var g = dojox.gfx.matrix;
-		r.push(g.multiplyPoint(m, b.x, b.y));
-		r.push(g.multiplyPoint(m, b.x + b.width, b.y));
-		r.push(g.multiplyPoint(m, b.x + b.width, b.y + b.height));
-		r.push(g.multiplyPoint(m, b.x, b.y + b.height));
-		return r;	// Array
+			gm = dojox.gfx.matrix;
+		return [	// Array
+				gm.multiplyPoint(m, b.x, b.y),
+				gm.multiplyPoint(m, b.x + b.width, b.y),
+				gm.multiplyPoint(m, b.x + b.width, b.y + b.height),
+				gm.multiplyPoint(m, b.x, b.y + b.height)
+			];
 	},
 	getEventSource: function(){
 		// summary: returns a Node, which is used as
@@ -348,7 +348,7 @@ dojox.gfx.shape._eventsProcessing = {
 	}
 };
 
-dojo.extend(dojox.gfx.Shape, dojox.gfx.shape._eventsProcessing);
+dojo.extend(dojox.gfx.shape.Shape, dojox.gfx.shape._eventsProcessing);
 
 dojox.gfx.shape.Container = {
 	// summary: a container of shapes, which can be used
@@ -362,6 +362,13 @@ dojox.gfx.shape.Container = {
 
 	// group management
 
+	openBatch: function() {
+		// summary: starts a new batch, subsequent new child shapes will be held in
+		//	the batch instead of appending to the container directly
+	},
+	closeBatch: function() {
+		// summary: submits the current batch, append all pending child shapes to DOM
+	},
 	add: function(shape){
 		// summary: adds a shape to the list
 		// shape: dojox.gfx.Shape: a shape
@@ -494,7 +501,7 @@ dojo.declare("dojox.gfx.Rectangle", null, {
 	//	You should use the naked object instead: {x: 1, y: 2, width: 100, height: 200}.
 });
 
-dojo.declare("dojox.gfx.shape.Rect", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Rect", dojox.gfx.shape.Shape, {
 	// summary: a generic rectangle
 	constructor: function(rawNode){
 		// rawNode: Node: a DOM Node
@@ -507,7 +514,7 @@ dojo.declare("dojox.gfx.shape.Rect", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Ellipse", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Ellipse", dojox.gfx.shape.Shape, {
 	// summary: a generic ellipse
 	constructor: function(rawNode){
 		// rawNode: Node: a DOM Node
@@ -525,7 +532,7 @@ dojo.declare("dojox.gfx.shape.Ellipse", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Circle", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Circle", dojox.gfx.shape.Shape, {
 	// summary: a generic circle
 	//	(this is a helper object, which is defined for convenience)
 	constructor: function(rawNode){
@@ -544,7 +551,7 @@ dojo.declare("dojox.gfx.shape.Circle", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Line", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Line", dojox.gfx.shape.Shape, {
 	// summary: a generic line
 	//	(this is a helper object, which is defined for convenience)
 	constructor: function(rawNode){
@@ -567,7 +574,7 @@ dojo.declare("dojox.gfx.shape.Line", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Polyline", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Polyline", dojox.gfx.shape.Shape, {
 	// summary: a generic polyline/polygon
 	//	(this is a helper object, which is defined for convenience)
 	constructor: function(rawNode){
@@ -581,14 +588,25 @@ dojo.declare("dojox.gfx.shape.Polyline", dojox.gfx.Shape, {
 		// closed: Boolean: close the polyline to make a polygon
 		if(points && points instanceof Array){
 			// points: Array: an array of points
-			dojox.gfx.Shape.prototype.setShape.call(this, {points: points});
+			this.inherited(arguments, [{points: points}]);
 			if(closed && this.shape.points.length){
 				this.shape.points.push(this.shape.points[0]);
 			}
 		}else{
-			dojox.gfx.Shape.prototype.setShape.call(this, points);
+			this.inherited(arguments, [points]);
 		}
 		return this;	// self
+	},
+	_normalizePoints: function(){
+		// summary: normalize points to array of {x:number, y:number}
+		var p = this.shape.points, l = p && p.length;
+		if(l && typeof p[0] == "number"){
+			var points = [];
+			for(var i = 0; i < l; i += 2){
+				points.push({x: p[i], y: p[i + 1]});
+			}
+			this.shape.points = points;
+		}
 	},
 	getBoundingBox: function(){
 		// summary: returns the bounding box
@@ -615,7 +633,7 @@ dojo.declare("dojox.gfx.shape.Polyline", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Image", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Image", dojox.gfx.shape.Shape, {
 	// summary: a generic image
 	//	(this is a helper object, which is defined for convenience)
 	constructor: function(rawNode){
@@ -637,7 +655,7 @@ dojo.declare("dojox.gfx.shape.Image", dojox.gfx.Shape, {
 	}
 });
 
-dojo.declare("dojox.gfx.shape.Text", dojox.gfx.Shape, {
+dojo.declare("dojox.gfx.shape.Text", dojox.gfx.shape.Shape, {
 	// summary: a generic text
 	constructor: function(rawNode){
 		// rawNode: Node: a DOM Node
@@ -669,8 +687,8 @@ dojox.gfx.shape.Creator = {
 		switch(shape.type){
 			case gfx.defaultPath.type:		return this.createPath(shape);
 			case gfx.defaultRect.type:		return this.createRect(shape);
-			case gfx.defaultCircle.type:		return this.createCircle(shape);
-			case gfx.defaultEllipse.type:		return this.createEllipse(shape);
+			case gfx.defaultCircle.type:	return this.createCircle(shape);
+			case gfx.defaultEllipse.type:	return this.createEllipse(shape);
 			case gfx.defaultLine.type:		return this.createLine(shape);
 			case gfx.defaultPolyline.type:	return this.createPolyline(shape);
 			case gfx.defaultImage.type:		return this.createImage(shape);

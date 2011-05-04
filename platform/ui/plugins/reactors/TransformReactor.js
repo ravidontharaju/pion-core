@@ -41,20 +41,14 @@ dojo.declare("plugins.reactors.TransformReactor",
 		onDonePopulatingGridStores: function() {
 		},
 		reloadGridStores: function() {
-			// Delete all items from this.transformation_store, then repopulate
-			// it from the Reactor's configuration.
-			var _this = this;
-			this.transformation_store.fetch({
-				onItem: function(item) {
-					_this.transformation_store.deleteItem(item);
-				},
-				onComplete: function() {
-					_this._populateTransformationStore();
-				},
-				onError: pion.handleFetchError
+			delete this.transformation_store;
+			this.transformation_store = new dojo.data.ItemFileWriteStore({
+				data: { identifier: 'ID', items: [] }
 			});
+			this.transformation_store.next_id = 0;
 
 			this.prepareToHandleLoadNotification();
+			this._populateTransformationStore();
 		},
 		_populateTransformationStore: function() {
 			var _this = this;
@@ -256,6 +250,8 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.transformation_grid = new dojox.grid.DataGrid({
 				store: this.reactor.transformation_store,
 				structure: this.transformation_grid_layout,
+				autoHeight: 5,
+				escapeHTMLInData: false,
 				singleClickEdit: true
 			}, document.createElement('div'));
 
@@ -275,9 +271,16 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						var dialog = new plugins.reactors.TransformReactor.LookupConfigurationDialog({
 							reactor: _this.reactor,
 							transformation_store: this.store,
-							transformation_item: this.getItem(e.rowIndex)
+							transformation_item: this.getItem(e.rowIndex),
+							autofocus: false
 						});
 						dialog.show();
+						dialog.lookup_grid._refresh();
+
+						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
+						// the first focusable item (which looks awful since it's a term selector.)
+						dialog.cancel_button.focus();
+
 						dialog.save_button.onClick = function() {
 							return dialog.isValid();
 						};
@@ -295,9 +298,15 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						var dialog = new plugins.reactors.TransformReactor.RegexConfigurationDialog({
 							reactor: _this.reactor,
 							transformation_store: this.store,
-							transformation_item: this.getItem(e.rowIndex)
+							transformation_item: this.getItem(e.rowIndex),
+							autofocus: false
 						});
 						dialog.show();
+
+						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
+						// the first focusable item (which looks awful since it's a term selector.)
+						dialog.cancel_button.focus();
+
 						dialog.save_button.onClick = function() {
 							return dialog.isValid();
 						};
@@ -418,6 +427,18 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 				Type: 'AssignValue',
 				InPlace: true
 			});
+
+			// Once the grid has finished adding the new row, scroll to the bottom and
+			// focus on the first cell of the new row.
+			var h = this.transformation_grid.connect(this.transformation_grid, 'endUpdate', function() {
+/**
+				// To just show the (empty) row, but not focus on the first cell:
+				this.scrollToRow(this.rowCount - 1);
+/**/
+				this.focus.setFocusIndex(this.rowCount - 1, 0);
+/**/
+				this.disconnect(h);
+			});
 		},
 		// _updateCustomPutDataFromGridStores() will be passed arguments related to the item which triggered the call, which we ignore.
 		_updateCustomPutDataFromGridStores: function() {
@@ -506,6 +527,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 				store: this.lookup_store,
 				structure: this.lookup_grid_layout,
 				rowsPerPage: 1000,
+				autoHeight: 8,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.lookup_grid_node.appendChild(this.lookup_grid.domNode);
@@ -713,6 +735,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 				store: this.rule_store,
 				structure: this.rule_grid_layout,
 				rowsPerPage: 1000,
+				autoHeight: true,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.rule_grid._prev_term_type_category = this.rule_grid.structure[0].rows[1].widgetProps.query.category;
@@ -869,6 +892,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 				store: this.regex_store,
 				structure: this.regex_grid_layout,
 				rowsPerPage: 1000,
+				autoHeight: 8,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.regex_grid_node.appendChild(this.regex_grid.domNode);

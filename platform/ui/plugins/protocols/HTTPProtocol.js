@@ -86,10 +86,10 @@ dojo.declare("plugins.protocols.HTTPProtocolPane",
 		updateDisabling: function(e) {
 			if (e.target.checked) {
 				dojo.removeClass(this.allow_searching_label, 'disabled');
-				this.allow_searching.attr('disabled', false);
+				this.allow_searching.set('disabled', false);
 			} else {
 				dojo.addClass(this.allow_searching_label, 'disabled');
-				this.allow_searching.attr('disabled', true);
+				this.allow_searching.set('disabled', true);
 			}
 		}
 	}

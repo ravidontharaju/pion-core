@@ -1,22 +1,23 @@
-.dijitRtl .tundra .dijitTab {
-	margin-right:auto;
-	margin-left:4px;		/* space between one tab and the next in top/bottom mode */
+.tundra .dijitTabRtl {
 	-moz-box-orient:horizontal;
 	text-align: right;
 }
 
-/* tab strips */
-.dijitRtl .tundra .dijitTabContainerTopStrip,
-.dijitRtl .tundra .dijitTabContainerBottomStrip {
-	padding-right: 3px;
-	padding-left: 0px;
+.tundra .dijitTabRtl .dijitTabInnerDiv {
+	padding:2px 9px 2px 8px;
 }
 
-.dijitRtl .tundra .dijitTabInnerDiv {
-	padding:6px 9px 5px 8px;
+.tundra .tabStrip-disabled .tabStripButtonRtl .dijitTabInnerDiv {
+	/* this is not special for RTL mode, but just here to override rule above (for enabled tabstrip) */
+	padding-bottom: 3px;
+	padding-top: 1px;
 }
 
-.dijitRtl .tundra .dijitTabPaneWrapper {
+.tundra .tabStripButtonRtl .dijitTabInnerDiv {
+	padding: 3px 2px 4px 2px;
+}
+
+.tundra .dijitTabPaneWrapper {
 	#zoom: 1;
 }
 
@@ -28,11 +29,23 @@
 	margin-right: 1px !important;
 }
 
-.dijitRtl .tundra .dijitTabContainerLeft-tabs .dijitTab,
-.dijitRtl .tundra .dijitTabContainerRight-tabs .dijitTab {
-	margin-left:0px;
+.tundra .dijitTabContainerLeft-tabs .dijitTabRtl,
+.tundra .dijitTabContainerRight-tabs .dijitTabRtl {
+	margin-left:0;
 }
 
-.dj_ie-rtl .tundra .dijitTab .dijitTabInnerDiv {
-	width : 1% !important;
+.dj_ie .tundra .dijitTabRtl .dijitTabInnerDiv {
+	/* without this the tab label and icon become invisible, as though they were set to visibility:hidden */
+	width : 0.1% !important;
+}
+
+
+
+.dj_iequirks-rtl .tundra .dijitTabContainerTopNone,
+.dj_iequirks-rtl .tundra .dijitTabContainerBottomNone {
+	/* this strange rule prevents IE6 bug in themeTesterQuirk.html?dir=rtl upon closing
+	 * "Closable" tab, where the other tabs disappear
+	 */
+	border-left: 1px solid #fff;
+	border-right: 1px solid #fff;
 }

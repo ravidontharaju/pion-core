@@ -214,17 +214,17 @@ span.hidden {
 
 
 #counterBackground {
-	position:absolute;
-	top: 121px;
-	left: 239px;
+	position: absolute;
+	top: 0;
+	left: 0;
 	z-index: 3;
 	background: #4a4a4a;
 	width: 350px;
 	height: 50px;
 	/* for IE */
-	filter:alpha(opacity=80);
+	filter: alpha(opacity=80);
 	/* CSS3 standard */
-	opacity:0.8;
+	opacity: 0.8;
 }
 
 #counterBackground.mostly_hidden {
@@ -422,7 +422,7 @@ label.disabled {
 }
 
 
-/* SecondaryMenu */
+/* Top Right Menu */
 
 #secondaryMenu {
 	float: right;
@@ -431,34 +431,23 @@ label.disabled {
 }
 
 #fixed {
-	float:right;
-	width:1px;
-	height:60px;
-	display:block;
+	float: right;
+	width: 1px;
+	height: 60px;
+	display: block;
 	margin: 0px;
 	padding: 0px;
 }
 
-/* Menu */
+/* Main Tab Controller */
 
-#menu {
-	margin: 0;
-	padding: 0;
-	float: right;
-	position: absolute; /* Relative to #logo. */
-	text-align: right;
-	right: 10px;
-	bottom: 0;
+#main_stack_container .tundra .dijitTabContainerTop-tabs {
+	border: none;
 }
 
-#menu span {
-/*	display: block; */	/* With Dojo 1.2, aligns tabs vertically. */
-/*	float: right;   */	/* With Dojo 1.2, reverses tabs in FF3 and puts them down the right hand side in IE7. */
-}
-
-#menu .dijitButtonText {
+.tundra .dijitTabContainerTop-tabs .dijitTabInnerDiv {
 	height: 15px;
-	padding: 5px;
+	padding: 6px 8px 6px 8px;
 	text-decoration: none;
 	font-size: 12px;
 	font-weight: bold;
@@ -466,79 +455,59 @@ label.disabled {
 	border: none;
 }
 
-/*
-#menu a:hover {
-*/
-
-#menu .dijitButtonNode {
-	background-color: #ffffff;
+.tundra .dijitTabContainerTop-tabs .dijitTab {
 	background: url(../images/button-off-bg.png) repeat;
 	margin-right: 5px;
-	padding: 0px;
-	border-right: 1px solid #CCCCCC;
+}
+
+.tundra .dijitTabContainerTop-tabs .dijitTabChecked {
+	background: url(../images/button-on-bg.png) repeat;	
+	border-top: 2px solid #CCCCCC;
+}
+
+.tundra .dijitTabContainerTop-tabs .dijitTabHover {
+	border-top: 2px solid #CCCCCC;
+	border-left: 2px solid #CCCCCC;
+	border-right: 2px solid #CCCCCC;
+	border-bottom-color: transparent;
+	top: -1px;
+}
+
+.tundra .dijitTabContainerTop-tabs .dijitTabHover.dijitTabChecked {
 	border-left: 1px solid #CCCCCC;
-	border-top: 1px solid #CCCCCC;
-	
-}
-
-#menu button:hover {
-	background: #ffffff;
-	background: url(../images/button-off-bg.png) repeat;
 	border-right: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-top: 1px solid #CCCCCC;
+	top: 0;
 }
 
-#menu .dijitToggleButtonChecked .dijitButtonNode {
-	background: url(../images/button-on-bg.png) repeat;
-	border-bottom: 1px solid #FFFFFF;
-}
-
-
-#menu span {
-	padding-right: 0px;
-}
+/* Main Tab Container */
 
 #main_stack_container {
-	float:right;
+	margin-top: -29px;
+	margin-left: 10px;
+	margin-right: 10px;
+	width: auto !important;
+}
+
+.dj_ie7 #main_stack_container {
+	margin-top: -32px;
+}
+
+#main_stack_container .dijitTabContainerTop-container.dijitTabPaneWrapper {
+	border: 0;
 }
 
 #main_stack_container .dijitContentPane {
 	overflow: hidden; /* Prevents superfluous scrollbars in IE7. */
 }
 
-#system_config .dijitContentPane,
+#main_stack_container .dijitTabContainerTop-dijitContentPane {
+	padding: 0;
+}
+
+
 #sidebarMain .dijitContentPane {
-	overflow: auto; /* Special cases inside main_stack_container where we want scrollbars. */
+	overflow-y: auto; /* Leave overflow in X-dimension hidden, but allow vertical scrollbars. */
 }
-
-.dijitStackController {
- 	width: 200px;
-}
-
-
-/*
-A highly simplified extract of the generated HTML for a stack controller with two buttons, with the second one selected.
-
-<div id="menu">
-	<span class="dijitStackController">
-		<div class="dijitButton">
-			<div class="dijitRight">
-				<button class="dijitStretch dijitButtonNode dijitButtonContents">
-					<span class="dijitButtonText">Label 1</span>
-				</button>
-			</div>
-		</div>
-		<div class="dijitButton dijitToggleButtonChecked">
-			<div class="dijitRight">
-				<button class="dijitStretch dijitButtonNode dijitButtonContents">
-					<span class="dijitButtonText">Label 2</span>
-				</button>
-			</div>
-		</div>
-	</span>
-</div>
-*/
 
 /* BorderContainer Overrides  (BorderContainers are used in every configuration "page".) */
 
@@ -557,7 +526,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 
 .config_header {
 	height: 50px;
-	margin: 20px 30px 0 30px;
+	margin: 20px 20px 0 20px;
 }
 
 .config_header .title {
@@ -601,30 +570,19 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 /**/
 }
 
-/* Workspace Header */
-
-#workspace_config_header {
-	height: 110px;
-	margin: 0 0 0 30px;
-}
-
-#workspace_config_header .config_header {
-	margin-left: 0;
-}
-
 
 /* Content */
 
 .config_content {
 	padding: 0;
-	margin: 10px 30px 0 30px;
+	margin: 10px;
 	line-height: 150%;
 	font-size: 12px;
 }
 
 #reactor_config_content {
 	padding: 0 0 20px 0;
-	margin: 10px 10px 0 30px;
+	margin: 10px 10px 0 20px;
 	line-height: 150%;
 	font-size: 12px;
 }
@@ -648,10 +606,13 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 /* Sidebar */
 
 #side {
-	width: 189px;
+	width: 181px;
 	float: left;
-	margin: 0 auto 0 20px;
-	padding: 10px 0 0 0;
+	margin: 20px auto 20px 10px;
+}
+
+#side .dijitContentPane {
+	padding: 0;
 }
 
 .sidebarInstructions {
@@ -671,8 +632,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 }
 
 #sidebarBottom {
-	margin: 20px 0 -5px 0;
-	height: 150px;
+	margin: 20px 0 0 0;
 }
 
 .sidebarHeader {
@@ -752,7 +712,7 @@ A highly simplified extract of the generated HTML for a stack controller with tw
 	border: #cccccc 1px solid;
 	width: 148px;
 	height: 25px;
-	margin: 10px 0;
+	margin: 10px;
 	cursor: pointer;
 }
 
@@ -913,53 +873,33 @@ The following are also available, if the need arises.
 }
 */
 
-/* Tabs */
+/* Nested Tab Containers */
 
-.tundra .dijitTabPaneWrapper {
-	/*
-	overflow: hidden;
-	*/
-	background:#fff; 
-	border:1px solid #ccc;
+.tundra .dijitTabContainerBottom .dijitTabPaneWrapper {
+	background:#fff;
 }
 
-.tundra .dijitTab {
-	line-height:normal;
-	margin-right:5px;	/* space between one tab and the next in top/bottom mode */
-	padding:0px;
-	border:1px solid #ccc;
+/* Bottom Tabs (for nested tab containers) */
+
+#main_stack_container .dijitTabContainerBottom-tabs .dijitTab {
+	line-height: normal;
+	margin-right: 5px;	/* space between one tab and the next in top/bottom mode */
 	background: url(../images/bg-tab-off.png) repeat-x;
 }
 
-.tundra .dijitAlignLeft .dijitTab,
-.tundra .dijitAlignRight .dijitTab {
-	margin-right:0px;
-	margin-bottom:5px;	/* space between one tab and the next in left/right mode */
+#main_stack_container .dijitTabContainerBottom-tabs .dijitTabInnerDiv {
+	padding: 6px 10px 4px 10px;
 }
 
-.tundra .dijitTabInnerDiv {
-	padding:6px 10px 4px 10px;
-	border-left:1px solid #fff;
-	border-bottom:1px solid #fff;
-}
-
-.tundra .dijitTabHover,
-.tundra .dijitTabCloseButtonHover {
-	border:1px solid #ccc;
+#main_stack_container .dijitTabContainerBottom-tabs .dijitTabHover {
+	border: 1px solid #ccc;
 	background: url(../images/bg-tab-hover.png) repeat-x;
 }
 
-.dj_ie6 .tundra .dijitTabHover,
-.dj_ie6 .tundra .dijitTabCloseButtonHover {
-	background-image: url(../images/bg-tab-hover.png);
-}
-
-.tundra .dijitTabChecked,
-.tundra .dijitTabCloseButtonChecked
-{
+#main_stack_container .dijitTabContainerBottom-tabs .dijitTabChecked {
 	/* the selected tab (with or without hover) */
 	background: url(../images/bg-tab-on.png) repeat-x;
-	border-color: #ccc;
+	border-top-color: #F7F7F7; /* Should match the color at the top of bg-tab-on.png. */
 	font-weight: bold; 
 }
 
@@ -974,7 +914,7 @@ The following are also available, if the need arises.
 .reactor_dialog {
 	width: 700px;
 	padding: 20px;
-	margin:20px;
+	margin: 20px;
 }
 
 .pion_server_error_dialog {
@@ -1186,8 +1126,9 @@ I don't think this is being used anywhere.
 	font-size: 16px;
 	font-weight: bold;
 	width: auto;
-	height: 30px;
+	height: 25px;
 	text-align: left;
+	padding-top: 3px;
 	padding-left: 25px;
 	padding-right: 2px;
 }
@@ -1261,7 +1202,6 @@ I don't think this is being used anywhere.
 
 .tundra .config_content .plugin_type input {
 	width: 75%;
-	margin-right: 20px;
 }
 
 
@@ -1385,26 +1325,6 @@ I don't think this is being used anywhere.
 	height: 200px;
 }
 
-.transformation_grid {
-	height: 200px;
-}
-
-.lookup_grid {
-	height: 400px;
-}
-
-.rule_grid {
-	height: 500px;
-}
-
-.regex_grid {
-	height: 500px;
-}
-
-.query_grid {
-	height: 200px;
-}
-
 .tundra .dojoxGrid {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
@@ -1412,8 +1332,24 @@ I don't think this is being used anywhere.
 
 /* System Config Styles */
 
+#services_pane {
+	padding: 10px 0 10px 10px;
+}
+
 .pathsTable td {
 	border-bottom: 1px solid #999999;
+}
+
+#system_config.dijitContentPane {
+	padding-right: 10px; /* By putting this here instead of in #services_pane, even a vertical scrollbar on #services_pane will be inside the padding box. */
+}
+
+#system_config .dijitContentPane {
+	overflow: auto;
+}
+
+#system_config .dijitTree {
+	overflow: visible;
 }
 
 .tundra .dijitTreeNode {

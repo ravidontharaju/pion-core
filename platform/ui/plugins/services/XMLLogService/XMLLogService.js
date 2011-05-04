@@ -12,6 +12,7 @@ dojo.declare("plugins.services.XMLLogService",
 	{
 		templatePath: dojo.moduleUrl("plugins.services", "XMLLogService/XMLLogServiceTab.html"),
 		widgetsInTemplate: true,
+		dir: 'ltr',
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			this.alert_status = 'off';
@@ -20,12 +21,17 @@ dojo.declare("plugins.services.XMLLogService",
 
 			// Add 'this' after all existing tabs in the main stack, then save a reference to the corresponding tab button.
 			dijit.byId('main_stack_container').addChild(this);
-			var tab_buttons = dijit.byId('main_stack_controller').getChildren();
+			var tab_buttons = dijit.byId('main_stack_container').tablist.getChildren();
 			this.tab_button = tab_buttons[tab_buttons.length - 1].domNode;
+			dojo.addClass(this.tab_button, 'log_service');
 
 			// This needs to be here (instead of in init()) so that this.log_grid_node.offsetHeight will be ready when onSelect() calls this.getHeight().
 			pion.loadCss(dojo.moduleUrl("plugins.services", "XMLLogService/XMLLogService.css"));
-
+		},
+		getHeight: function() {
+			return this.containerNode.offsetHeight + 100;
+		},
+		init: function() {
 			var _this = this;
 			setInterval(function() {
 				if (pion.current_page.id != _this.id) {
@@ -58,12 +64,7 @@ dojo.declare("plugins.services.XMLLogService",
 					dojo.removeClass(_this.tab_button, 'flash_off');
 				}
 			}, 1000);
-		},
-		getHeight: function() {
-			return this.containerNode.offsetHeight + 110;
-		},
-		init: function() {
-			var _this = this;
+
 			this.log_xml_store = new pion.util.XMLQueryReadStore({
 				url: this.resource,
 				rootItem: 'Event',

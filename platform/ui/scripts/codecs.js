@@ -57,10 +57,6 @@ pion.codecs.init = function() {
 
 function addNewCodec() {
 	var dialog = new plugins.codecs.CodecInitDialog({title: 'Add New Codec'});
-
-	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
-
 	dialog.show();
 	dialog.execute = function(dialogFields) {
 		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
@@ -132,9 +128,9 @@ function updateCodecPane(pane) {
 	var store = pion.codecs.config_store;
 	store.fetch({
 		query: {'@id': pane.uuid},
-		onItem: function(item) {
-			console.debug('item: ', item);
-			pane.populateFromConfigItem(item);
+		onComplete: function(items) {
+			if (items.length > 0)
+				pane.populateFromConfigItem(items[0]);
 		},
 		onError: pion.getFetchErrorHandler('fetch() called by codecPaneSelected()')
 	});

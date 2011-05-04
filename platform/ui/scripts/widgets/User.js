@@ -30,7 +30,7 @@ dojo.declare("pion.widgets.UserPane",
 			var _this = this;
 			this.admin_check_box.onClick = function(e) {
 				_this._onAdminCheckBoxChanged(e.target.checked);
-				_this.form.attr('value', _this.config);
+				_this.form.set('value', _this.config);
 			}
 			this._initReactorsCheckBoxes();
 			this._initServicesCheckBoxes();
@@ -40,12 +40,12 @@ dojo.declare("pion.widgets.UserPane",
 			this.config.tab_check_boxes = checked? ['Admin', 'Vocabularies', 'Codecs', 'Databases', 'Protocols'] : [];
 
 			this._onReactorsUnrestrictedCheckBoxChanged(checked);
-			this.reactors_unrestricted_check_box.attr('disabled', checked);
+			this.reactors_unrestricted_check_box.set('disabled', checked);
 
-			this.vocabularies_check_box.attr('disabled', checked);
-			this.codecs_check_box.attr('disabled', checked);
-			this.databases_check_box.attr('disabled', checked);
-			this.protocols_check_box.attr('disabled', checked);
+			this.vocabularies_check_box.set('disabled', checked);
+			this.codecs_check_box.set('disabled', checked);
+			this.databases_check_box.set('disabled', checked);
+			this.protocols_check_box.set('disabled', checked);
 
 			var _this = this;
 			dojo.forEach(pion.services.restrictable_services, function(service) {
@@ -53,26 +53,26 @@ dojo.declare("pion.widgets.UserPane",
 				var unrestricted_check_box = _this[service.plugin + '_unrestricted_check_box'];
 				if (main_check_box) {
 					_this._onMainServiceCheckBoxChanged(checked, service);
-					main_check_box.attr('disabled', checked);
+					main_check_box.set('disabled', checked);
 
 					// disable all option check boxes for this service (since either admin is checked or main checkbox is unchecked)
 					if (unrestricted_check_box)
-						unrestricted_check_box.attr('disabled', true);
+						unrestricted_check_box.set('disabled', true);
 					var option_obj = _this[service.plugin + '_option_obj'];
 					for (key in option_obj) {
 						dojo.forEach(option_obj[key].check_boxes, function(check_box) {
-							check_box.attr('disabled', true);
+							check_box.set('disabled', true);
 						});
 					}
 				} else if (unrestricted_check_box) {
 					_this._onServiceUnrestrictedCheckBoxChanged(checked, service);
-					unrestricted_check_box.attr('disabled', checked);
+					unrestricted_check_box.set('disabled', checked);
 				} else {
 					// if checked=true, check and disable all option check boxes for this service, else uncheck and enable them.
 					var option_obj = _this[service.plugin + '_option_obj'];
 					for (key in option_obj) {
 						dojo.forEach(option_obj[key].check_boxes, function(check_box) {
-							check_box.attr('disabled', checked);
+							check_box.set('disabled', checked);
 						});
 						_this.config[service.plugin + '_' + key + '_check_boxes'] = checked? option_obj[key].values : [];
 					}
@@ -82,7 +82,7 @@ dojo.declare("pion.widgets.UserPane",
 		_initReactorsCheckBoxes: function() {
 			this.reactors_unrestricted_check_box.onClick = function(e) {
 				_this._onReactorsUnrestrictedCheckBoxChanged(e.target.checked);
-				_this.form.attr('value', _this.config);
+				_this.form.set('value', _this.config);
 			}
 			var _this = this;
 			this.workspace_check_boxes = [];
@@ -101,7 +101,7 @@ dojo.declare("pion.widgets.UserPane",
 						_this.workspace_check_boxes.push(new dijit.form.CheckBox({
 							name: 'workspace_check_box_group',
 							value: id,
-							onClick: function() { _this.config = _this.form.attr('value'); }
+							onClick: function() { _this.config = _this.form.get('value'); }
 						}, check_box_div));
 						var label_div = dojo.create('label', {innerHTML: name});
 						_this.reactors_unrestricted.appendChild(label_div);
@@ -120,7 +120,7 @@ dojo.declare("pion.widgets.UserPane",
 		_onReactorsUnrestrictedCheckBoxChanged: function(checked) {
 			this.config.workspace_check_box_group = checked? ['Unrestricted'] : [];
 			dojo.forEach(this.workspace_check_boxes, function(check_box) {
-				check_box.attr('disabled', checked);
+				check_box.set('disabled', checked);
 			});
 		},
 		_initServicesCheckBoxes: function() {
@@ -140,7 +140,7 @@ dojo.declare("pion.widgets.UserPane",
 					var main_check_box = new dijit.form.CheckBox({name: check_box_group, value: service.plugin}, check_box_div);
 					main_check_box.onClick = function(e) {
 						_this._onMainServiceCheckBoxChanged(e.target.checked, service);
-						_this.form.attr('value', _this.config);
+						_this.form.set('value', _this.config);
 					}
 					_this[service.plugin + '_main_check_box'] = main_check_box;
 					var label_div = dojo.create('label', {innerHTML: service.permission_layout.top_level_checkbox});
@@ -161,7 +161,7 @@ dojo.declare("pion.widgets.UserPane",
 					var unrestricted_check_box = new dijit.form.CheckBox({name: check_box_group, value: 'Unrestricted'}, check_box_div);
 					unrestricted_check_box.onClick = function(e) {
 						_this._onServiceUnrestrictedCheckBoxChanged(e.target.checked, service);
-						_this.form.attr('value', _this.config);
+						_this.form.set('value', _this.config);
 					}
 					_this[service.plugin + '_unrestricted_check_box'] = unrestricted_check_box;
 					var label_div = dojo.create('label', {innerHTML: service.permission_layout.Unrestricted});
@@ -184,7 +184,7 @@ dojo.declare("pion.widgets.UserPane",
 						option_obj[key].check_boxes.push(new dijit.form.CheckBox({
 							name: check_box_group,
 							value: option.value,
-							onClick: function() { _this.config = _this.form.attr('value'); }
+							onClick: function() { _this.config = _this.form.get('value'); }
 						}, check_box_div));
 						var label_div = dojo.create('label', {innerHTML: option.label});
 						wrapper_div.appendChild(label_div);
@@ -201,19 +201,19 @@ dojo.declare("pion.widgets.UserPane",
 			if ('Unrestricted' in service.permission_layout) {
 				this._onServiceUnrestrictedCheckBoxChanged(checked, service);
 				var unrestricted_check_box = this[service.plugin + '_unrestricted_check_box'];
-				unrestricted_check_box.attr('disabled', ! checked);
+				unrestricted_check_box.set('disabled', ! checked);
 
 				// Disable all option check boxes for this service.
 				for (key in option_obj) {
 					dojo.forEach(option_obj[key].check_boxes, function(check_box) {
-						check_box.attr('disabled', true);
+						check_box.set('disabled', true);
 					});
 				}
 			} else {
 				// If checked=true, check and enable all option check boxes for this service, else uncheck and disable them.
 				for (key in option_obj) {
 					dojo.forEach(option_obj[key].check_boxes, function(check_box) {
-						check_box.attr('disabled', ! checked);
+						check_box.set('disabled', ! checked);
 					});
 					this.config[service.plugin + '_' + key + '_check_boxes'] = checked? option_obj[key].values : [];
 				}
@@ -231,7 +231,7 @@ dojo.declare("pion.widgets.UserPane",
 			for (key in option_obj) {
 				this.config[service.plugin + '_' + key + '_check_boxes'] = [];
 				dojo.forEach(option_obj[key].check_boxes, function(check_box) {
-					check_box.attr('disabled', checked);
+					check_box.set('disabled', checked);
 				});
 			}
 		},
@@ -297,14 +297,14 @@ dojo.declare("pion.widgets.UserPane",
 					}
 				});
 			}
-			this.form.attr('value', this.config);
+			this.form.set('value', this.config);
 
 			// Wait a bit for change events on widgets to get handled.
 			var node = this.domNode;
 			setTimeout(function() { dojo.removeClass(node, 'unsaved_changes'); }, 500);
 		},
 		save: function() {
-			var config = this.form.attr('value');
+			var config = this.form.get('value');
 
 			if (this.uuid == pion.last_logged_in_user && dojo.indexOf(config.tab_check_boxes, 'Admin') == -1) {
 				pion.doDeleteConfirmationDialog('You are about to delete your own permission to make further changes to your own configuration.  Proceed?',
@@ -318,7 +318,7 @@ dojo.declare("pion.widgets.UserPane",
 		},
 		doSave: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
-			var config = this.form.attr('value');
+			var config = this.form.get('value');
 			var put_data = '<PionConfig><User>';
 			for (var tag in config) {
 				if (dojo.indexOf(this.special_config_elements, tag) == -1) {

@@ -1,53 +1,44 @@
-<div class="dojoxFloatingPane monitor_service">
-	<div tabindex="0" waiRole="button" class="dojoxFloatingPaneTitle" dojoAttachPoint="focusNode" style="background: #336699; color: #ffffff;">
-		<span dojoAttachPoint="closeNode" dojoAttachEvent="onclick: my_hide" class="dojoxFloatingCloseIcon"></span>
-		<span dojoAttachPoint="maxNode" dojoAttachEvent="onclick: maximize" class="dojoxFloatingMaximizeIcon">&thinsp;</span>
-		<span dojoAttachPoint="restoreNode" dojoAttachEvent="onclick: _restore" class="dojoxFloatingRestoreIcon">&thinsp;</span>	
-		<span dojoAttachPoint="dockNode" dojoAttachEvent="onclick: minimize" class="dojoxFloatingMinimizeIcon">&thinsp;</span>
-		<span dojoAttachPoint="titleNode" class="dijitInline dijitTitleNode"></span>
-	</div>
-	<div dojoAttachPoint="canvas" class="dojoxFloatingPaneCanvas" style="width: 100%;">
-		<div dojoAttachPoint="containerNode" waiRole="region" tabindex="-1" class="${contentClass}" style="width: 100%; border: 0px;">
-			<div dojoType="dijit.layout.BorderContainer" style="width: 100%; padding: 10px; height: 100%; background: #ffffff; border: 0px;">
-				<div dojoType="dijit.layout.ContentPane" region="top" class="monitor_settings">
-					<div dojoAttachPoint="settings_form" dojoType="dijit.form.Form">
-						<div dojoAttachPoint="events_message">Waiting for Events...</div>
-						<button dojoAttachEvent="onClick: togglePolling, onMouseOver: showTooltip, onMouseOut: hideTooltip"
-								dojoType=dijit.form.ToggleButton checked="true"></button>
-						<label>Update interval (seconds):</label>
-						<input dojoType="dijit.form.TextBox" name="update_interval" style="width: 25px" dojoAttachEvent="onChange: changeUpdateInterval" />
-						<label>Truncation length:</label>
-						<input dojoType="dijit.form.TextBox" name="truncation_length" style="width: 25px" />
-						<label>Event buffer size:</label>
-						<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
-						<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportSelectedRows">
-								Export selected Events</button>
-						<br />
-						<label>Separator for multi-valued terms:</label>
-						<input dojoType="dijit.form.TextBox" name="separator" style="width: 25px" dojoAttachEvent="onChange: changeSeparator" />
+<div class="monitor_service">
+	<div dojoAttachPoint='floater' dojoType='pion.util.ParentConstrainedFloatingPane' 
+			resizable='true' closable='true' dockable='true' title="${title}">
+		<div dojoType="dijit.layout.BorderContainer" style="width: 100%; height: 100%; background: #ffffff">
+			<div dojoType="dijit.layout.ContentPane" region="top" class="monitor_settings">
+				<div dojoAttachPoint="settings_form" dojoType="dijit.form.Form">
+					<div dojoAttachPoint="events_message">Waiting for Events...</div>
+					<button dojoAttachEvent="onClick: togglePolling, onMouseOver: showTooltip, onMouseOut: hideTooltip"
+							dojoType=dijit.form.ToggleButton checked="true"></button>
+					<label>Update interval (seconds):</label>
+					<input dojoType="dijit.form.TextBox" name="update_interval" style="width: 25px" dojoAttachEvent="onChange: changeUpdateInterval" />
+					<label>Truncation length:</label>
+					<input dojoType="dijit.form.TextBox" name="truncation_length" style="width: 25px" />
+					<label>Event buffer size:</label>
+					<input dojoType="dijit.form.NumberTextBox" type="text" name="event_buffer_size" style="width: 50px" constraints="{min: 1, max: 1000}" />
+					<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportSelectedRows">
+							Export selected Events</button>
+					<br />
+					<label>Separator for multi-valued terms:</label>
+					<input dojoType="dijit.form.TextBox" name="separator" style="width: 25px" dojoAttachEvent="onChange: changeSeparator" />
+				</div>
+			</div>
+			<div dojoType="dijit.layout.BorderContainer" dojoAttachPoint="left_sidebar" region="left" class="left_sidebar" splitter="true">
+				<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="event_type_block" class="event_type_block" region="top">
+					<h3>Event Types</h3>
+					<div dojoAttachPoint="event_type_form" dojoType="dijit.form.Form">
 					</div>
 				</div>
-				<div dojoType="dijit.layout.BorderContainer" dojoAttachPoint="left_sidebar" region="left" class="left_sidebar" splitter="true">
-					<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="event_type_block" region="top" style="visibility: hidden">
-						<h3>Event Types</h3>
-						<div dojoAttachPoint="event_type_form" dojoType="dijit.form.Form">
-						</div>
-					</div>
-					<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="column_block" region="center" style="visibility: hidden">
-						<h3>Columns</h3>
-						<input dojoType="dijit.form.CheckBox" value="EventType" checked="true" dojoAttachPoint="event_type_check_box" /><label>Event Type</label>
-						<div dojoAttachPoint="column_form" dojoType="dijit.form.Form">
-						</div>
-					</div>
-				</div>
-				<div dojoType="dijit.layout.ContentPane" region="center" class="event_grid_pane">
-					<div dojoAttachPoint="events_div" style="visibility: hidden">
-						<h3>Events</h3>
-								<div dojoAttachPoint="event_grid_node" />
+				<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="column_block" class="column_block" region="center">
+					<h3>Columns</h3>
+					<input dojoType="dijit.form.CheckBox" value="EventType" checked="true" dojoAttachPoint="event_type_check_box" /><label>Event Type</label>
+					<div dojoAttachPoint="column_form" dojoType="dijit.form.Form">
 					</div>
 				</div>
 			</div>
+			<div dojoType="dijit.layout.ContentPane" region="center" class="event_grid_pane">
+				<div dojoAttachPoint="events_div">
+					<h3>Events</h3>
+					<div dojoAttachPoint="event_grid_node" />
+				</div>
+			</div>
 		</div>
-		<span dojoAttachPoint="resizeHandle" class="dojoxFloatingResizeHandle"></span>
 	</div>
 </div>

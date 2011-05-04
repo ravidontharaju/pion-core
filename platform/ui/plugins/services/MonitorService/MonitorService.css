@@ -1,21 +1,56 @@
-.dojoxFloatingPane.monitor_service {
+/*
+Unfortunately, this gets overridden unless I add !important, but then resizing doesn't work.
+*/
+monitor_service .dojoxFloatingPane {
 	height: 540px;
 	width: 740px;
 }
 
-.dojoxFloatingPane.monitor_service .left_sidebar {
+.monitor_service .dojoxFloatingPaneContent {
+	overflow: hidden !important;
+}
+
+.monitor_service .monitor_settings {
+	height: 65px;
+}
+
+.monitor_service .left_sidebar {
 	width: 225px;
 }
 
-.dojoxFloatingPane.monitor_service.collection .event_grid_pane {
+/* This hackery, in addition to setting gutters="false" in left_sidebar, is needed
+   because there's a bug somewhere in FloatingPane that's screwing up the BorderContainer
+   layout.  Note that it only happens when a FloatingPane is being constructed from a
+   template, as with MonitorServiceFloatingPane.
+   
+   Update: It turns out that this hackery can be avoided by calling startup()
+   before resize(), instead of after.  This does mean that the top block no
+   longer sizes itself correctly, so I added the .monitor_settings rule above.
+*/
+/*
+.monitor_service .left_sidebar {
+	border: 0;
+}
+.monitor_service .left_sidebar .event_type_block {
+	padding: 5px;
+	margin-bottom: 5px;
+	border: 1px solid #CCC;
+}
+.monitor_service .left_sidebar .column_block {
+	padding: 5px;
+	border: 1px solid #CCC;
+}
+*/
+
+.monitor_service.collection .event_grid_pane {
 	background: #fddfdf; 
 }
 
-.dojoxFloatingPane.monitor_service.processing .event_grid_pane {
+.monitor_service.processing .event_grid_pane {
 	background: #d8ecf8; 
 }
 
-.dojoxFloatingPane.monitor_service.storage .event_grid_pane {
+.monitor_service.storage .event_grid_pane {
 	background: #f0f9d1; 
 }
 

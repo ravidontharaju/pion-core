@@ -28,10 +28,15 @@ dojo.declare("pion.widgets.ConfigAccordion",
 
 			// Remove it, causing the first remaining child to be selected.
 			this.removeChild(first_pane);
-	
+
+			// Remove any superfluous text nodes.  (Otherwise, inserting panes at a specified index won't
+			// work right with the current implementation of AccordionContainer.addChild().)
+			var _this = this;
+			var text_nodes = dojo.filter(this.domNode.childNodes, 'return item.nodeType == 3;');
+			dojo.forEach(text_nodes, function(item) {_this.domNode.removeChild(item);});
+
 			// This is needed to get the initial width right on FF3.
 			// (More specifically, to avoid a vertical white stripe on the right side of the pane.)
-			var _this = this;
 			var orig_borderBox = this._borderBox;
 			function resizeAfterBorderBoxChanges() {
 				if (_this._borderBox == orig_borderBox) {

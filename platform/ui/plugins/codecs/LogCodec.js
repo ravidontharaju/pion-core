@@ -25,10 +25,10 @@ dojo.declare("plugins.codecs.LogCodecPane",
 		},
 		populateWithDefaults: function() {
 			this.inherited('populateWithDefaults', arguments);
-			this.form.attr('value', {TimeOffset: 0});
+			this.form.set('value', {TimeOffset: 0});
 
 			// TODO: Is this the right thing to do, or should the default values be used, as in custom_post_data?
-			this.form.attr('value', {
+			this.form.set('value', {
 				'@event_split_set': '',
 				'@event_join_string': '',
 				'@comment_prefix': '',

@@ -153,7 +153,7 @@ pion.reactors.init = function() {
 		.addCallback(pion.reactors._initConfiguredReactors);
 
 	// Add a class to the 'add new workspace' tab (at this point the only tab), so it can get special styling.
-	dojo.query('.dijitTab', 'mainTabContainer').addClass('create_new_tab');
+	dojo.query('.dijitTabListWrapper .dijitTab', 'mainTabContainer').addClass('create_new_tab');
 
 	dojo.connect(window, 'onresize', expandWorkspaceIfNeeded);
 	dojo.connect(document, 'onkeypress', handleKeyPress);
@@ -868,7 +868,10 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 
 	//// The following use forEach to allow either zero or multiple matches.
 	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel')
+		// This causes dialog.onCancel() to get called twice.
+		//dojo.connect(n, 'click', dialog, 'onCancel')
+
+		dijit.byNode(n).onClick = function() { return dialog.onCancel(); };
 	});
 	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
 		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
@@ -877,9 +880,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-	// Need a delay here for the dialog to have time to figure out how big it should be,
-	// based on how many items end up being loaded into any grids it contains.
-	setTimeout(function() { dialog.show(); }, 1000);
+	dialog.show();
 }
 
 pion.reactors.showReactorConnectionsDialog = function(reactor) {

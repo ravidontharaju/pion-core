@@ -761,18 +761,12 @@
 				<!-- end secondary menu -->
 				<img src="images/0.gif" alt="" id="fixed" />
 				<div style="clear: both"></div>
-				<!-- start main menu -->
-				<div id="menu">
-					<span dojoType="dijit.layout.StackController" containerId="main_stack_container" id="main_stack_controller"></span>
-				</div>
-				<!-- end main menu -->
-
 			</div>
 			<!-- end header -->
 		</div>
 
-		<div id="main_stack_container" dojoType="dijit.layout.StackContainer" style="width: 100%; height: 100%">
-			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" gutters="false" design="sidebar" title="Reactors" style="width: 95%;">
+		<div id="main_stack_container" dojoType="dijit.layout.TabContainer" controllerWidget="pion.widgets.MainTabController" style="width: 100%; height: 100%">
+			<div id="reactor_config" dojoType="dijit.layout.BorderContainer" dir="ltr" gutters="false" design="sidebar" title="Reactors" style="width: 95%;">
 				<!-- start left sidebar -->
 				<div id="side" dojoType="dijit.layout.ContentPane" region="left" style="overflow:hidden">
 					<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer" gutters="false">
@@ -809,14 +803,17 @@
 					</div>
 				</div>
 				<!-- end left sidebar -->
+
 				<div id="workspace_config_header" dojoType="dijit.layout.ContentPane" region="top">
-					<div dojoType="pion.widgets.MainStackContentHeader" title="Reactor Configuration" help="plugins/reactors"></div>
-					<h4>
-						1. Drag Reactor types onto Workspace&nbsp;&nbsp;&nbsp;&nbsp;
-						2. Double-click to define	&nbsp;&nbsp;&nbsp;&nbsp;
-						3. Drag arrows to connect Reactors
-					</h4>
+					<div dojoType="pion.widgets.MainStackContentHeader" title="Reactor Configuration" help="plugins/reactors/getting_started"></div>
 				</div>
+
+				<!-- start tabbed workspaces -->
+				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" region="center">
+					<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom" style="height: 100%">
+						<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
+						</div>
+					</div>
 				<div id="counterBackground">
 					<span class="counterTitle">Operations per Second</span>
 					<span class="counterNumbersLeft">
@@ -827,17 +824,10 @@
 						<span id="workspace_ops"></span>
 					</span><span class="counterToggle"><button id="ops_toggle_button" dojoType=dijit.form.ToggleButton></button></span>
 				</div>
-
-				<!-- start tabbed workspaces -->
-				<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" region="center">
-					<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom">
-						<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
-						</div>
-					</div>
 				</div>
 				<!-- end tabbed workspaces -->
 			</div>
-			<div id="vocab_config" dojoType="dijit.layout.ContentPane" title="Vocabularies" style="width: 95%;">
+			<div id="vocab_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="Vocabularies" style="width: 95%;">
 				<div dojoType="pion.widgets.MainStackContentHeader" title="Vocabulary Configuration" help="docs/vocabularies"></div>
 				<div class="config_content">
 					<div id="vocab_config_accordion" dojoType="pion.widgets.ConfigAccordion">
@@ -849,7 +839,7 @@
 				</div>
 				<div id="vocab_config_end"></div>
 			</div>
-			<div id="codec_config" dojoType="dijit.layout.ContentPane" title="Codecs" style="width: 95%;">
+			<div id="codec_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="Codecs" style="width: 95%;">
 				<div dojoType="pion.widgets.MainStackContentHeader" title="Codec Configuration" help="plugins/codecs"></div>
 				<div class="config_content">
 					<div id="codec_config_accordion" dojoType="pion.widgets.ConfigAccordion">
@@ -861,7 +851,7 @@
 				</div>
 				<div id="codec_config_end" class="zero_height_end_marker"></div>
 			</div>
-			<div id="database_config" dojoType="dijit.layout.ContentPane" title="Databases" style="width: 95%;">
+			<div id="database_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="Databases" style="width: 95%;">
 				<div dojoType="pion.widgets.MainStackContentHeader" title="Database Configuration" help="plugins/databases"></div>
 				<div class="config_content">
 					<div id="database_config_accordion" dojoType="pion.widgets.ConfigAccordion">
@@ -873,7 +863,7 @@
 				</div>
 				<div id="database_config_end" class="zero_height_end_marker"></div>
 			</div>
-			<div id="protocol_config" dojoType="dijit.layout.ContentPane" title="Protocols" style="width: 95%;">
+			<div id="protocol_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="Protocols" style="width: 95%;">
 				<div dojoType="pion.widgets.MainStackContentHeader" title="Protocol Configuration" help="plugins/protocols"></div>
 				<div class="config_content">
 					<div id="protocol_config_accordion" dojoType="pion.widgets.ConfigAccordion">
@@ -887,7 +877,7 @@
 			</div>
 
 			<!--Start Users-->
-			<div id="user_config" dojoType="dijit.layout.ContentPane" title="Users" style="width: 95%;">
+			<div id="user_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="Users" style="width: 95%;">
 				<div dojoType="pion.widgets.MainStackContentHeader" title="Users Configuration" help="docs/users"></div>
 				<div class="config_content">
 					<div id="user_config_accordion" dojoType="pion.widgets.ConfigAccordion">
@@ -902,7 +892,7 @@
 			<!--End Users-->
 
 			<!--Start System-->
-			<div id="system_config" dojoType="dijit.layout.ContentPane" title="System" style="width: 95%; height: 300px">
+			<div id="system_config" dojoType="dijit.layout.ContentPane" dir="ltr" title="System" style="width: 95%; height: 300px">
 				<div dojoType="dijit.layout.BorderContainer" gutters="false">
 					<div dojoType="dijit.layout.ContentPane" region="top">
 						<div dojoType="pion.widgets.MainStackContentHeader" title="System Configuration"></div>
@@ -964,7 +954,7 @@
 							</tr>
 						</table>
 					</div>
-					<div dojoType="dijit.layout.ContentPane" region="center" style="padding: 10px;" minSize="100">
+					<div id="services_pane" dojoType="dijit.layout.ContentPane" region="center" minSize="100">
 						<div dojoType="pion.widgets.MainStackContentHeader" class="nested" title="Services" help="plugins/services"></div>
 						<hr/>
 						<!-- relevant class names start with dijitTree (e.g., in tundra.css) -->

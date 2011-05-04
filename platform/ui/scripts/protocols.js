@@ -191,10 +191,6 @@ pion.protocols.init = function() {
 
 	function addNewProtocol() {
 		var dialog = new plugins.protocols.ProtocolInitDialog({title: 'Add New Protocol'});
-
-		// Set the focus to the first input field, with a delay so that it doesn't get overridden.
-		setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
-
 		dialog.show();
 		dialog.execute = function(dialogFields) {
 			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }

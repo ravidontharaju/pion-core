@@ -505,7 +505,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				error: pion.getXhrErrorHandler(dojo.rawXhrPut, {putData: put_data})
 			});
 		},
-		cancel: function() {
+		cancel2: function() {
 			dojo.removeClass(this.domNode, 'unsaved_changes');
 			this.vocabulary.vocab_term_store.revert();
 			this.populateFromServerVocabStore();

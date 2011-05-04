@@ -106,8 +106,7 @@ pion.vocabularies.init = function() {
 	pion.vocabularies.config_accordion.createNewPaneFromItem = function(item, store) {
 		var id = pion.vocabularies.config_store.getValue(item, '@id');
 		var title = pion.escapeXml(store.getValue(item, this.title_attribute));
-		var vocab_pane_node = document.createElement('span');
-		var vocab_pane = new plugins.vocabularies.VocabularyPane({ 'class': 'vocab_pane', title: title, config: {'@id': id} }, vocab_pane_node);
+		var vocab_pane = new plugins.vocabularies.VocabularyPane({ 'class': 'vocab_pane', title: title, config: {'@id': id} });
 		this.addChild(vocab_pane);
 		return vocab_pane;
 	}

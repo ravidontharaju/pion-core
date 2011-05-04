@@ -54,7 +54,7 @@
 }
 .tundra .dojoxGridHeader .dojoxGridCellFocus {
 	border-color: #ACA899 #919191;
-	border-style: dashed;	
+	border-style: dashed;
 }
 .tundra .dojoxGridArrowButtonChar {
 	float: right;
@@ -106,7 +106,7 @@
 }
 
 .tundra .dojoxGridRowbarSelected {
-	background: #D8E8F9 url(../../../dijit/themes/tundra/images/tabDisabled.png) #ddd no-repeat center;
+	background: url(../../../dijit/themes/tundra/images/tabDisabled.png) #D8E8F9 no-repeat center;
 	border-right: 1px solid #ccc;
 }
 
@@ -131,12 +131,16 @@
 	color: #000;
 }
 
+.tundra .dojoxGridRowOver .dojoxGridCell .dijitDisabled {
+	color: gray;
+}
+
 .tundra .dojoxGridRowOdd {
 	background-color: #f2f5f9;
 }
 
 .tundra .dojoxGridRowSelected {
-	background-color: #aec7e3;
+	background-color: #aec7e3 !important;
 }
 
 .dijit_a11y .tundra .dojoxGridRowSelected { 
@@ -163,15 +167,15 @@
 }
 
 .tundra .dojoxGridCellFocus {
-	border: 1px dashed darkblue;
+	border: 1px dashed darkblue !important;
 }
 
 .tundra .dojoxGridCellOver {
 	border: 1px dotted #a6a6a6;
 }
 
-.tundra .dojoxGridCellFocus.dojoxGridCellOver {
-	border: 1px dashed darkblue;
+.tundra .dojoxGridCellFocus .dojoxGridCellOver {
+	border: 1px dashed darkblue !important;
 }
 
 /* editing */
@@ -202,3 +206,63 @@
 	border-right-color: #3559ac;
 }
 
+/* Tree Grid */
+.tundra .dojoxGridExpando {
+	float: left;
+	height: 18px;
+	width: 18px;
+	text-align: center;
+	margin-top: -3px;
+}
+.dijitRtl .tundra .dojoxGridExpando {
+	float: right;
+}
+.tundra .dojoxGridExpandoCell {
+	padding-top: 5px;
+}
+.tundra .dojoxGridExpandoNode {
+	height: 18px;
+	background-image: url('../../../dijit/themes/tundra/images/treeExpand_plus.gif');
+}
+.tundra .dojoxGridExpandoOpened .dojoxGridExpandoNode {
+	background-image: url('../../../dijit/themes/tundra/images/treeExpand_minus.gif');		
+}
+.tundra .dojoxGridExpandoLoading .dojoxGridExpandoNode {
+	background-image: url('../../../dijit/themes/tundra/images/treeExpand_loading.gif');		
+}
+.tundra .dojoxGridTreeModel .dojoxGridNoChildren .dojoxGridExpando {
+	visibility: visible !important;
+	width: 18px !important;
+}
+.tundra .dojoxGridTreeModel .dojoxGridNoChildren .dojoxGridExpandoNode {
+	background-image: url('../../../dijit/themes/tundra/images/treeExpand_leaf.gif');
+	background-position: -3px;
+}
+.tundra .dojoxGridExpandoNodeInner {
+	visibility: hidden;
+}
+.dijit_a11y .dojoxGridExpandoNodeInner {
+	visibility: visible;
+}
+		
+.tundra .dojoxGridSummaryRow .dojoxGridCell {
+	border-top-color: #999;
+	border-top-style: solid;
+}
+.tundra .dojoxGridSpacerCell,
+.tundra .dojoxGridExpandoCell,
+.tundra .dojoxGridSummaryRow .dojoxGridSpacerCell {
+	border-color: transparent;
+	border-right-color: #D5CDB5;
+}
+.tundra .dojoxGridSummaryRow .dojoxGridTotalCell,
+.tundra .dojoxGridRowCollapsed .dojoxGridExpandoCell,
+.tundra .dojoxGridTreeModel .dojoxGridExpandoCell {
+	border-bottom-color: #D5CDB5;
+}
+.tundra .dojoxGridSubRowAlt {
+	background-color: #F8F8F8;
+}
+.tundra .dojoxGridRowOdd .dojoxGridSubRowAlt {
+	background-color: #EDEFF3;
+}

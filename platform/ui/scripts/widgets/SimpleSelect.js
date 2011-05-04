@@ -108,7 +108,7 @@ console.info("~~~~~~~~~~~~~~~~~~~~~ In readyForCallback() callback, e = ", e, ",
 			dfd.errback(e);
 		});
 
-		this.attr('value', v);
+		this.set('value', v);
 		return dfd;
 	},
 
@@ -121,7 +121,7 @@ console.info("~~~~~~~~~~~~~~~~~~~~~ In readyForCallback() callback, e = ", e, ",
 	},
 
 	_onChange: function(/*Event*/ e){
-		this._handleOnChange(this.attr('value'), true);
+		this._handleOnChange(this.set('value'), true);
 	},
 
 	// for layout widgets:

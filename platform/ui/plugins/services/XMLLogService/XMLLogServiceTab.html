@@ -1,12 +1,9 @@
 <div class="log_service">
 	<div dojoType="pion.widgets.MainStackContentHeader" title="Log Entries" help="plugins/XMLLogService"></div>
-	<div dojoAttachPoint="containerNode">
+	<div dojoAttachPoint="containerNode" class="log_content">
 		<div class="log_grid_block">
-			<div style="float: right">
-				<button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick: removeAll">Remove All</button>
-			</div>
-			<div style="clear: both"></div>
 			<div dojoAttachPoint="log_grid_node" class="grid_node"></div>
+			<button dojoType=dijit.form.Button class="delete" dojoAttachEvent="onClick: removeAll">Remove All</button>
 		</div>
 	</div>
 </div>

@@ -5,6 +5,7 @@ dojo.require("pion.util.XMLQueryReadStore");
 dojo.require("pion.util.ParentConstrainedFloatingPane");
 dojo.require("pion.terms");
 dojo.require("pion.reactors");
+dojo.require("dojo.cache");
 dojo.require("dijit.Tooltip");
 dojo.require("dijit.form.Form");
 dojo.require("dijit.form.CheckBox");
@@ -54,18 +55,15 @@ dojo.declare("plugins.services.MonitorService",
 			var floating_pane = new plugins.services.MonitorServiceFloatingPane({
 				resource: this.resource,
 				slot: slot,
-				title: 'Events for Reactor <i>' + reactor.config.Name + '</i>',
-				dockable: true,
-				maxable: false,
-				closable: true,
-				resizable: true
+				title: 'Events for Reactor <i>' + reactor.config.Name + '</i>'
 			}, node);
-			floating_pane.domNode.style.top = '30px';
-			floating_pane.domNode.style.left = '30px';
+
 			var category = pion.reactors.categories[reactor.config.Plugin];
 			dojo.addClass(floating_pane.domNode, category);
-			floating_pane.startup();
-			floating_pane.bringToTop();
+
+			floating_pane.floater.startup();
+			floating_pane.floater.resize({ w: 740, h: 540 });
+			floating_pane.floater.bringToTop();
 		}
 	}
 );
@@ -78,19 +76,20 @@ plugins.services.MonitorService.label = 'Monitor';
 //}
 
 dojo.declare("plugins.services.MonitorServiceFloatingPane",
-	[ pion.util.ParentConstrainedFloatingPane ],
+	[dijit._Widget, dijit._Templated],
 	{
-		templatePath: dojo.moduleUrl("plugins.services", "MonitorService/MonitorServiceFloatingPane.html"),
+		templateString: dojo.cache('plugins.services', 'MonitorService/MonitorServiceFloatingPane.html'),
 		widgetsInTemplate: true,
 		postMixInProperties: function(){
 			this.inherited('postMixInProperties', arguments);
-
-			// This is needed to work correctly when using dijit.FloatingPane as built into pion-dojo.js 
-			// (since plugins.reactors.MonitorServiceFloatingPane is not supposed to be built into pion-dojo.js.)
-			this.templateString = "";
 		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+
+			// TODO: Cascade charts, as in ChartFloatingPane.
+			this.floater.domNode.style.top = '30px';
+			this.floater.domNode.style.left = '30px';
+
 			this.no_status_response_seen = true;
 			this.no_events_seen = true;
 
@@ -160,7 +159,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			this.update_interval = 5;
 			this.event_buffer_size = 15;
 			this.separator = '|';
-			this.settings_form.attr('value', {
+			this.settings_form.set('value', {
 				update_interval: this.update_interval,
 				event_buffer_size: this.event_buffer_size,
 				separator: this.separator
@@ -200,7 +199,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			var _this = this;
 
 			// set query.filter and query.unfilter, based on changes in the Event Types selected
-			var event_type_check_box_group_value = this.event_type_form.attr('value').event_type_check_box_group;
+			var event_type_check_box_group_value = this.event_type_form.get('value').event_type_check_box_group;
 			var newly_unchecked_types = dojo.filter(this.prev_event_type_check_box_group_value, function(type) {
 				return dojo.indexOf(event_type_check_box_group_value, type) == -1;
 			});
@@ -217,7 +216,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			this.prev_event_type_check_box_group_value = event_type_check_box_group_value;
 
 			// set query.show and query.unshow, based on changes in the columns (Terms) selected
-			var column_check_box_group_value = this.column_form.attr('value').column_check_box_group;
+			var column_check_box_group_value = this.column_form.get('value').column_check_box_group;
 			var newly_checked_columns = dojo.filter(column_check_box_group_value, function(type) {
 				return dojo.indexOf(_this.prev_column_check_box_group_value, type) == -1;
 			});
@@ -234,7 +233,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			this.prev_column_check_box_group_value = column_check_box_group_value;
 
 			// Send any query parameters that the user changed since the last query.
-			var settings_form_data = this.settings_form.attr('value');
+			var settings_form_data = this.settings_form.get('value');
 			if (settings_form_data.truncation_length != this.truncation_length) {
 				this.truncation_length = settings_form_data.truncation_length;
 				query_object.truncate = this.truncation_length;
@@ -311,7 +310,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				this.no_status_response_seen = false;
 				var truncating_node = data.getElementsByTagName('Truncating')[0];
 				this.truncation_length = dojox.xml.parser.textContent(truncating_node);
-				this.settings_form.attr('value', {
+				this.settings_form.set('value', {
 					truncation_length: this.truncation_length
 				});
 			}
@@ -384,7 +383,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				});
 
 				// Restore the checkmarks.
-				this.column_form.attr('value', {column_check_box_group: this.prev_column_check_box_group_value});
+				this.column_form.set('value', {column_check_box_group: this.prev_column_check_box_group_value});
 			}
 
 			// Done changing the sidebar, so update the layout.
@@ -434,8 +433,9 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 						return -1;
 					return a.id < b.id? -1 : 1;
 				});
-				this.event_grid.attr("structure", this.event_grid_layout);
+				this.event_grid.set('structure', this.event_grid_layout);
 				this.event_grid.layout.setColumnVisibility(0, this.event_type_check_box.checked);
+				this.event_grid._refresh();
 			}
 
 			var event_counter_node = data.getElementsByTagName('EventCounter')[0];
@@ -462,7 +462,7 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 			var items = this.event_grid.selection.getSelected();
 			if (items.length == 0) {
 				var dialog = new dijit.Dialog({title: 'Warning'});
-				dialog.attr('content', 'No Events selected.');
+				dialog.set('content', 'No Events selected.');
 				dialog.show();
 			} else {
 				var dialog = new dijit.Dialog({title: 'Exported Events', style: 'width: 600px'});

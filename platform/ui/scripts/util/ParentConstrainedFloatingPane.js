@@ -11,29 +11,15 @@ dojo.declare("pion.util.ParentConstrainedFloatingPane",
 		_className: "pion.util.ParentConstrainedFloatingPane",
 
 		postCreate: function(){
-			this.setTitle(this.title);
 			this.inherited(arguments);
+			new dojo.dnd.move.boxConstrainedMoveable(this.domNode, {handle: this.focusNode, box: {l: 0, t: 0}});
 
-			// This is the only change from the original.
-			var move = new dojo.dnd.move.parentConstrainedMoveable(this.domNode, {handle: this.focusNode});
-			//var move = new dojo.dnd.Moveable(this.domNode,{ handle: this.focusNode });
+/*
+			// Unfortunately, this only works if the FloatingPane is a direct child of the node it should be
+			// confined in, which is not the case with, e.g., plugins.reactors.ChartFloatingPane.
 
-			if(!this.dockable){ this.dockNode.style.display = "none"; } 
-			if(!this.closable){ this.closeNode.style.display = "none"; } 
-			if(!this.maxable){
-				this.maxNode.style.display = "none";
-				this.restoreNode.style.display = "none";
-			}
-			if(!this.resizable){
-				this.resizeHandle.style.display = "none"; 	
-			}else{
-				var foo = dojo.marginBox(this.domNode); 
-				this.domNode.style.width = foo.w+"px"; 
-			}		
-			this._allFPs.push(this);
-			this.domNode.style.position = "absolute";
-
-			this.bgIframe = new dijit.BackgroundIframe(this.domNode);
+			new dojo.dnd.move.parentConstrainedMoveable(this.domNode, {handle: this.focusNode});
+*/
 		}
 	}
 );

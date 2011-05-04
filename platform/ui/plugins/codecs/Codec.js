@@ -99,7 +99,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			if (this._addCustomConfigValues) {
 				this._addCustomConfigValues(config, item);
 			}
-			this.form.attr('value', config);
+			this.form.set('value', config);
 
 			// The comment field needs to be set separately, because dijit.form.attr() doesn't handle <textarea> elements.
 			var comment_node = dojo.query('textarea.comment', this.form.domNode)[0];

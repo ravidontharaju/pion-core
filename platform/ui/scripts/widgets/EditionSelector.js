@@ -23,7 +23,7 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			dojo.connect(this, "hide", this, "destroyRecursive");
-			this.attr('value', {edition: ''});
+			this.set('value', {edition: ''});
 		},
 		coreEditionSelected: function() {
 			pion.edition = 'Core';
@@ -39,7 +39,7 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 			if (! pion.key_service_running) {
 				alert(pion.wizard_nlsStrings.edition_disabled_because_key_service_not_running);
 				var form = dijit.byId('select_edition_form');
-				form.attr('value', {edition: ''});
+				form.set('value', {edition: ''});
 				return;
 			}
 
@@ -58,7 +58,7 @@ dojo.declare("pion.widgets.EditionSelectorForm",
 			if (! pion.key_service_running) {
 				alert(pion.wizard_nlsStrings.edition_disabled_because_key_service_not_running);
 				var form = dijit.byId('select_edition_form');
-				form.attr('value', {edition: ''});
+				form.set('value', {edition: ''});
 				return;
 			}
 

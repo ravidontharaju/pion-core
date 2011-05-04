@@ -1,12 +1,19 @@
-#menu .alert span {
+.log_content {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 10px;
+	position: relative; /* so absolute button position below will be relative to this */
+}
+
+.log_service.alert span {
 	color: red;
 }
 
-#menu .alert.flash_on span {
+.log_service.alert.flash_on span {
 	color: red;
 }
 
-#menu .alert.flash_off span {
+.log_service.alert.flash_off span {
 	color: black;
 }
 
@@ -21,10 +28,7 @@
 
 .log_service .log_grid_block {
 	background: #a0c5ec;
-	padding: 10px;
-	margin-left: 30px;
-	margin-top: 10px;
-	margin-right: 30px;
+	padding: 45px 10px 10px 10px;
 }
 
 .log_service button.search {
@@ -44,5 +48,8 @@
 }
 
 .log_service .dijitButton.delete {
-	margin: 0 0 10px 0;
+	margin: 0;
+	position: absolute;
+	top: 10px;
+	right: 10px;
 }

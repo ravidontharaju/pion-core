@@ -3,6 +3,7 @@ dojo.registerModulePath("plugins", "/plugins");
 dojo.require("dojo.cookie");
 dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("dijit.Dialog");
+dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.StackContainer");
 dojo.require("dijit.layout.TabContainer");
 dojo.require("dijit.form.CheckBox");
@@ -26,6 +27,7 @@ dojo.require("pion.about");
 dojo.require("pion.widgets.Wizard");
 dojo.require("pion.widgets.LicenseKey");
 dojo.require("pion.widgets.EditionSelector");
+dojo.require("pion.widgets.MainTabController");
 dojo.requireLocalization("pion", "wizard");
 dojo.requireLocalization("pion", "general");
 
@@ -86,6 +88,14 @@ pion.permission_types_by_tab_id = {
 // This is called by pion.services.init()
 pion.initTabs = function() {
 	var main_stack = dijit.byId('main_stack_container');
+
+	// This workaround can go away once we're using a dojo version with http://bugs.dojotoolkit.org/changeset/24421.
+	// I.e. once the following change in _TabButton.html is available:
+	// 		dojoAttachEvent='onclick:onClick' -> dojoAttachEvent='onclick:_onClick'
+	main_stack.selectChild = function(/*dijit._Widget|String*/ page, /*Boolean*/ animate){
+		if (! dijit.byId(page).controlButton.disabled)
+			this.inherited('selectChild', arguments);
+	}
 
 	// TODO: it would be a lot nicer to add only the permitted tabs, instead of creating
 	// all of them and then deleting the ones not found on the list of permitted tabs.
@@ -408,74 +418,5 @@ dijit.Dialog.prototype._size = function() {
 			overflow: "auto",
 			position: "relative"	// workaround IE bug moving scrollbar or dragging dialog
 		});
-	}
-}
-
-// See http://trac.dojotoolkit.org/ticket/6759 (in particular, multipledialog.patch)
-// for an explanation of the following overrides of dijit.Dialog and dijit.DialogUnderlay methods.
-dijit.DialogUnderlay.prototype.postCreate = function() {
-	// summary: Append the underlay to the body
-	dojo.body().appendChild(this.domNode);
-	this.bgIframe = new dijit.BackgroundIframe(this.domNode);
-	this._modalConnect = null;
-}
-
-dijit.DialogUnderlay.prototype.hide = function() {
-	// summary: hides the dialog underlay
-	this.domNode.style.display = "none";
-	if(this.bgIframe.iframe){
-		this.bgIframe.iframe.style.display = "none";
-	}
-	dojo.disconnect(this._modalConnect);
-	this._modalConnect = null;
-}
-
-dijit.DialogUnderlay.prototype._onMouseDown = function(/*Event*/ evt) {
-	dojo.stopEvent(evt);
-	window.focus();
-}
-
-dijit.Dialog.prototype.show = function() {
-	// summary: display the dialog
-
-	if(this.open){ return; }
-	
-	// first time we show the dialog, there's some initialization stuff to do			
-	if(!this._alreadyInitialized){
-		this._setup();
-		this._alreadyInitialized=true;
-	}
-
-	if(this._fadeOut.status() == "playing"){
-		this._fadeOut.stop();
-	}
-
-	this._modalconnects.push(dojo.connect(window, "onscroll", this, "layout"));
-	this._modalconnects.push(dojo.connect(window, "onresize", this, "layout"));
-	//this._modalconnects.push(dojo.connect(dojo.doc.documentElement, "onkeypress", this, "_onKey"));
-	this._modalconnects.push(dojo.connect(this.domNode, "onkeypress", this, "_onKey"));
-
-	dojo.style(this.domNode, {
-		opacity:0,
-		visibility:""
-	});
-	
-	this.open = true;
-	this._loadCheck(); // lazy load trigger
-
-	this._size();
-	this._position();
-
-	this._fadeIn.play();
-
-	this._savedFocus = dijit.getFocus(this);
-
-	if(this.autofocus){
-		// find focusable Items each time dialog is shown since if dialog contains a widget the 
-		// first focusable items can change
-		this._getFocusItems(this.domNode);
-
-		// set timeout to allow the browser to render dialog
-		setTimeout(dojo.hitch(dijit,"focus",this._firstFocusItem), 50);
 	}
 }

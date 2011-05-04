@@ -33,19 +33,14 @@
 	outline:1px;
 }
 .tundra .dijitSliderFocused .dijitSliderBar {
-	border-color:#888;	
-}
-
-.dijit_a11y .dijitSliderProgressBar {
-	background-color:#888 !important;
+	border-color:#888;
 }
 
 .tundra .dijitSliderImageHandleH {
-	border:0px;
+	border:0;
 	width:16px;
 	height:16px;
 	background:url("../images/preciseSliderThumb.png") no-repeat center top;
-	cursor:pointer;
 }
 .tundra .dijitSliderFocused .dijitSliderImageHandleH {
 	background-image:url("../images/preciseSliderThumbFocus.png");
@@ -69,11 +64,10 @@
 }
 
 .tundra .dijitSliderImageHandleV {
-	border:0px;
+	border:0;
 	width:16px;
 	height:16px;
 	background:url("../images/sliderThumb.png") no-repeat center center;
-	cursor:pointer;
 }
 
 .tundra .dijitSliderFocused .dijitSliderImageHandleV {
@@ -99,7 +93,6 @@
 .tundra .dijitSliderDecrementIconV,
 .tundra .dijitSliderIncrementIconH,
 .tundra .dijitSliderIncrementIconV {
-	cursor: pointer;
 	background-image: url('../images/spriteArrows.png');
 	background-repeat: no-repeat;
 	margin: 5px;
@@ -115,33 +108,40 @@
 }
 
 .tundra .dijitSliderDecrementIconH {
-	background-position: -7px 0px;
+	background-position: -7px 0;
 }
 .tundra .dijitSliderIncrementIconH {
-	background-position: -14px 0px;
+	background-position: -14px 0;
 }
 .tundra .dijitSliderDecrementIconV {
-	background-position: 0px 0px;
+	background-position: 0 0;
 }
 .tundra .dijitSliderIncrementIconV {
-	background-position: -21px 0px;
+	background-position: -21px 0;
 }
 
 .tundra .dijitSliderButtonInner {
 	visibility:hidden;
 }
 
-.tundra .dijitSliderDisabled {
-	opacity:0.6 !important;
-}
-
-.dj_ie .tundra .dijitSliderDisabled,
-.dj_ie .tundra .dijitSliderDisabled .dijitRuleContainer,
-.dj_ie .tundra .dijitSliderDisabled .dijitSliderRemainingBar,
-.dj_ie .tundra .dijitSliderDisabled .dijitSliderProgressBar {
-	filter: gray() alpha(opacity=40);
-}
-
+.tundra .dijitSliderReadOnly *,
 .tundra .dijitSliderDisabled * {
-	cursor: not-allowed !important;
+	border-color: #d5d5d5 #bdbdbd #bdbdbd #d5d5d5;
+	color: #bdbdbd;
+}
+.tundra .dijitSliderReadOnly .dijitSliderDecrementIconH,
+.tundra .dijitSliderDisabled .dijitSliderDecrementIconH {
+	background-position: -35px 0;
+}
+.tundra .dijitSliderReadOnly .dijitSliderIncrementIconH,
+.tundra .dijitSliderDisabled .dijitSliderIncrementIconH {
+	background-position: -42px 0;
+}
+.tundra .dijitSliderReadOnly .dijitSliderDecrementIconV,
+.tundra .dijitSliderDisabled .dijitSliderDecrementIconV {
+	background-position: -28px 0;
+}
+.tundra .dijitSliderReadOnly .dijitSliderIncrementIconV,
+.tundra .dijitSliderDisabled .dijitSliderIncrementIconV {
+	background-position: -49px 0;
 }

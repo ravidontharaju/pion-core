@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
+	Copyright (c) 2004-2011, The Dojo Foundation All Rights Reserved.
 	Available via Academic Free License >= 2.1 OR the modified BSD license.
 	see: http://dojotoolkit.org/license for details
 */
@@ -16,97 +16,85 @@ dojo.require("dojox.gfx.matrix");
 
 	// Generic interpolators. Should they be moved to dojox.fx?
 
-	var InterpolNumber = function(start, end){
+	function InterpolNumber(start, end){
 		this.start = start, this.end = end;
+	}
+	InterpolNumber.prototype.getValue = function(r){
+		return (this.end - this.start) * r + this.start;
 	};
-	d.extend(InterpolNumber, {
-		getValue: function(r){
-			return (this.end - this.start) * r + this.start;
-		}
-	});
 
-	var InterpolUnit = function(start, end, unit){
+	function InterpolUnit(start, end, units){
 		this.start = start, this.end = end;
-		this.unit = unit;
+		this.units = units;
+	}
+	InterpolUnit.prototype.getValue = function(r){
+		return (this.end - this.start) * r + this.start + this.units;
 	};
-	d.extend(InterpolUnit, {
-		getValue: function(r){
-			return (this.end - this.start) * r + this.start + this.unit;
-		}
-	});
 
-	var InterpolColor = function(start, end){
+	function InterpolColor(start, end){
 		this.start = start, this.end = end;
 		this.temp = new dojo.Color();
+	}
+	InterpolColor.prototype.getValue = function(r){
+		return d.blendColors(this.start, this.end, r, this.temp);
 	};
-	d.extend(InterpolColor, {
-		getValue: function(r){
-			return d.blendColors(this.start, this.end, r, this.temp);
-		}
-	});
 
-	var InterpolValues = function(values){
+	function InterpolValues(values){
 		this.values = values;
 		this.length = values.length;
+	}
+	InterpolValues.prototype.getValue = function(r){
+		return this.values[Math.min(Math.floor(r * this.length), this.length - 1)];
 	};
-	d.extend(InterpolValues, {
-		getValue: function(r){
-			return this.values[Math.min(Math.floor(r * this.length), this.length - 1)];
-		}
-	});
 
-	var InterpolObject = function(values, def){
+	function InterpolObject(values, def){
 		this.values = values;
 		this.def = def ? def : {};
-	};
-	d.extend(InterpolObject, {
-		getValue: function(r){
-			var ret = dojo.clone(this.def);
-			for(var i in this.values){
-				ret[i] = this.values[i].getValue(r);
-			}
-			return ret;
+	}
+	InterpolObject.prototype.getValue = function(r){
+		var ret = dojo.clone(this.def);
+		for(var i in this.values){
+			ret[i] = this.values[i].getValue(r);
 		}
-	});
+		return ret;
+	};
 
-	var InterpolTransform = function(stack, original){
+	function InterpolTransform(stack, original){
 		this.stack = stack;
 		this.original = original;
+	}
+	InterpolTransform.prototype.getValue = function(r){
+		var ret = [];
+		dojo.forEach(this.stack, function(t){
+			if(t instanceof m.Matrix2D){
+				ret.push(t);
+				return;
+			}
+			if(t.name == "original" && this.original){
+				ret.push(this.original);
+				return;
+			}
+			if(!(t.name in m)){ return; }
+			var f = m[t.name];
+			if(typeof f != "function"){
+				// constant
+				ret.push(f);
+				return;
+			}
+			var val = dojo.map(t.start, function(v, i){
+							return (t.end[i] - v) * r + v;
+						}),
+				matrix = f.apply(m, val);
+			if(matrix instanceof m.Matrix2D){
+				ret.push(matrix);
+			}
+		}, this);
+		return ret;
 	};
-	d.extend(InterpolTransform, {
-		getValue: function(r){
-			var ret = [];
-			dojo.forEach(this.stack, function(t){
-				if(t instanceof m.Matrix2D){
-					ret.push(t);
-					return;
-				}
-				if(t.name == "original" && this.original){
-					ret.push(this.original);
-					return;
-				}
-				if(!(t.name in m)){ return; }
-				var f = m[t.name];
-				if(typeof f != "function"){
-					// constant
-					ret.push(f);
-					return;
-				}
-				var val = dojo.map(t.start, function(v, i){
-								return (t.end[i] - v) * r + v;
-							}),
-					matrix = f.apply(m, val);
-				if(matrix instanceof m.Matrix2D){
-					ret.push(matrix);
-				}
-			}, this);
-			return ret;
-		}
-	});
 
 	var transparent = new d.Color(0, 0, 0, 0);
 
-	var getColorInterpol = function(prop, obj, name, def){
+	function getColorInterpol(prop, obj, name, def){
 		if(prop.values){
 			return new InterpolValues(prop.values);
 		}
@@ -125,9 +113,9 @@ dojo.require("dojox.gfx.matrix");
 			end = value;
 		}
 		return new InterpolColor(start, end);
-	};
+	}
 
-	var getNumberInterpol = function(prop, obj, name, def){
+	function getNumberInterpol(prop, obj, name, def){
 		if(prop.values){
 			return new InterpolValues(prop.values);
 		}
@@ -146,7 +134,7 @@ dojo.require("dojox.gfx.matrix");
 			end = value;
 		}
 		return new InterpolNumber(start, end);
-	};
+	}
 
 	g.fx.animateStroke = function(/*Object*/ args){
 		// summary:
@@ -160,7 +148,7 @@ dojo.require("dojox.gfx.matrix");
 		//	|		join:  {values: ["miter", "bevel", "round"]}
 		//	|	}).play();
 		if(!args.easing){ args.easing = d._defaultEasing; }
-		var anim = new d._Animation(args), shape = args.shape, stroke;
+		var anim = new d.Animation(args), shape = args.shape, stroke;
 		d.connect(anim, "beforeBegin", anim, function(){
 			stroke = shape.getStroke();
 			var prop = args.color, values = {}, value, start, end;
@@ -194,7 +182,7 @@ dojo.require("dojox.gfx.matrix");
 			this.curve = new InterpolObject(values, stroke);
 		});
 		d.connect(anim, "onAnimate", shape, "setStroke");
-		return anim; // dojo._Animation
+		return anim; // dojo.Animation
 	};
 
 	g.fx.animateFill = function(/*Object*/ args){
@@ -208,7 +196,7 @@ dojo.require("dojox.gfx.matrix");
 		//	|		color: {start: "red", end: "green"}
 		//	|	}).play();
 		if(!args.easing){ args.easing = d._defaultEasing; }
-		var anim = new d._Animation(args), shape = args.shape, fill;
+		var anim = new d.Animation(args), shape = args.shape, fill;
 		d.connect(anim, "beforeBegin", anim, function(){
 			fill = shape.getFill();
 			var prop = args.color, values = {};
@@ -217,7 +205,7 @@ dojo.require("dojox.gfx.matrix");
 			}
 		});
 		d.connect(anim, "onAnimate", shape, "setFill");
-		return anim; // dojo._Animation
+		return anim; // dojo.Animation
 	};
 
 	g.fx.animateFont = function(/*Object*/ args){
@@ -228,10 +216,10 @@ dojo.require("dojox.gfx.matrix");
 		//	|		shape: shape,
 		//	|		duration: 500,
 		//	|		variant: {values: ["normal", "small-caps"]},
-		//	|		size:  {end: 10, unit: "pt"}
+		//	|		size:  {end: 10, units: "pt"}
 		//	|	}).play();
 		if(!args.easing){ args.easing = d._defaultEasing; }
-		var anim = new d._Animation(args), shape = args.shape, font;
+		var anim = new d.Animation(args), shape = args.shape, font;
 		d.connect(anim, "beforeBegin", anim, function(){
 			font = shape.getFont();
 			var prop = args.style, values = {}, value, start, end;
@@ -251,15 +239,15 @@ dojo.require("dojox.gfx.matrix");
 				values.family = new InterpolValues(prop.values);
 			}
 			prop = args.size;
-			if(prop && prop.unit){
+			if(prop && prop.units){
 				start = parseFloat(prop.start ? prop.start : (shape.font && shape.font.size || "0"));
 				end = parseFloat(prop.end ? prop.end : (shape.font && shape.font.size || "0"));
-				values.size = new InterpolUnit(start, end, prop.unit);
+				values.size = new InterpolUnit(start, end, prop.units);
 			}
 			this.curve = new InterpolObject(values, font);
 		});
 		d.connect(anim, "onAnimate", shape, "setFont");
-		return anim; // dojo._Animation
+		return anim; // dojo.Animation
 	};
 
 	g.fx.animateTransform = function(/*Object*/ args){
@@ -275,13 +263,13 @@ dojo.require("dojox.gfx.matrix");
 		//	|		]
 		//	|	}).play();
 		if(!args.easing){ args.easing = d._defaultEasing; }
-		var anim = new d._Animation(args), shape = args.shape, original;
+		var anim = new d.Animation(args), shape = args.shape, original;
 		d.connect(anim, "beforeBegin", anim, function(){
 			original = shape.getTransform();
 			this.curve = new InterpolTransform(args.transform, original);
 		});
 		d.connect(anim, "onAnimate", shape, "setTransform");
-		return anim; // dojo._Animation
+		return anim; // dojo.Animation
 	};
 })();
 
