@@ -244,7 +244,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						type: pion.widgets.TermTextCell },
 					{ field: 'Sep', name: 'Sep', width: '2',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.transformation_grid = new dojox.grid.DataGrid({
@@ -520,7 +520,7 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 					{ field: 'Key', name: 'Key', width: 14 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.lookup_grid = new dojox.grid.DataGrid({
@@ -728,7 +728,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 					{ field: 'SetValue', name: 'Set Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.rule_grid = new dojox.grid.DataGrid({
@@ -885,7 +885,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 					{ field: 'Format', name: 'Format', width: 'auto',
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.regex_grid = new dojox.grid.DataGrid({

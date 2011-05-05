@@ -918,7 +918,7 @@ pion.reactors.showReactorConnectionsDialog = function(reactor) {
 		rows: [
 			{ field: 'Source', name: 'From', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', width: 3, formatter: makeDeleteButtonIfNeeded }
+			{ field: 'DeleteButton', name: 'Delete', classes: 'delete button', formatter: makeDeleteButtonIfNeeded }
 		]
 	}];
 	var reactor_inputs_grid = new dojox.grid.DataGrid({
@@ -993,7 +993,7 @@ pion.reactors.showReactorConnectionsDialog = function(reactor) {
 		rows: [
 			{ field: 'Sink', name: 'To', styles: '', width: 'auto' },
 			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
-			{ field: 'DeleteButton', name: 'Delete', styles: 'align: center;', width: 3, formatter: makeDeleteButtonIfNeeded }
+			{ field: 'DeleteButton', name: 'Delete', classes: 'delete button', formatter: makeDeleteButtonIfNeeded }
 		]
 	}];
 	var reactor_outputs_grid = new dojox.grid.DataGrid({

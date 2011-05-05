@@ -323,9 +323,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ field: 'MatchAllValues', name: 'Match All', width: 3, 
+					{ field: 'MatchAllValues', name: 'Match&nbsp;All', classes: 'match_all bool', 
 						type: dojox.grid.cells.Bool},
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.comparison_grid = new dojox.grid.DataGrid({
@@ -464,7 +464,7 @@ plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 			type: pion.widgets.TermTextCell },
 		{ field: 'IndexOption', name: 'Index', styles: 'text-align: center;', width: 4, 
 			type: dojox.grid.cells.Select, options: ['true', 'false', 'unique'] },
-		{ name: 'Delete', styles: 'align: center;', width: 3, editable: false,
+		{ name: 'Delete', classes: 'delete button', editable: false,
 			formatter: function() { return pion.makeDeleteButton(); } // This looks redundant, but pion.makeDeleteButton() isn't defined yet when this file is loaded.
 		}
 	]

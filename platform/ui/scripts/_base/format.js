@@ -174,7 +174,7 @@ pion.makeDeleteButton = function() {
 }
 
 pion.makeEditButton = function() {
-	return '<button dojoType=dijit.form.Button><img src="images/icon-edit.png" alt="EDIT" border="0" /></button>';
+	return '<button dojoType=dijit.form.Button class="edit_icon"></button>';
 }
 
 pion.makeInsertAboveButton = function() {

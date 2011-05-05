@@ -1119,6 +1119,16 @@ I don't think this is being used anywhere.
 }
 */
 
+.tundra button.edit_icon {
+	background-image: url('../images/icon-edit.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	border: outset #CCCCCC 3px;
+	width: auto;
+	height: 22px;
+	padding-left: 10px;
+}
+
 .tundra .add_new_pane .dijitButtonNode {
 	background: #ffffff url("../images/button-add-new-pane-off.png") no-repeat;
 	border: none;
@@ -1324,6 +1334,22 @@ I don't think this is being used anywhere.
 .tundra .dojoxGrid {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
+}
+
+th.delete, td.delete {
+	width: 45px !important;	/* A compromise between FF, Chrome and IE7 (with Chrome the outlier). */
+}
+
+th.button, td.button {
+	text-align: center !important;
+}
+
+th.match_all, td.match_all {
+	width: 60px !important;	/* A compromise between FF, Chrome and IE7 (with Chrome the outlier). */
+}
+
+th.bool, td.bool {
+	text-align: center !important;
 }
 
 /* System Config Styles */

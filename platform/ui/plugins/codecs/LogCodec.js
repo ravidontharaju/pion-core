@@ -49,9 +49,9 @@ dojo.declare("plugins.codecs.LogCodecPane",
 					{ field: 'StartChar', name: 'Start Char', styles: 'text-align: center', width: 3 },
 					// TODO: restore validation.
 					{ field: 'EndChar', name: 'End Char', styles: 'text-align: center', width: 3 },
-					{ field: 'StartEndOptional', name: 'Start/End Optional', width: 4, 
+					{ field: 'StartEndOptional', name: 'Start/End Optional', width: 4, classes: 'bool',
 						type: dojox.grid.cells.Bool },
-					{ field: 'URLEncode', name: 'URL Encode', width: 4, 
+					{ field: 'URLEncode', name: 'URL Encode', width: 4, classes: 'bool', 
 						type: dojox.grid.cells.Bool },
 					// TODO: restore validation.
 					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center', width: 3 },
@@ -59,7 +59,7 @@ dojo.declare("plugins.codecs.LogCodecPane",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Order', name: 'Order', width: 'auto',
 						widgetClass: dijit.form.NumberSpinner },
-					{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 		},

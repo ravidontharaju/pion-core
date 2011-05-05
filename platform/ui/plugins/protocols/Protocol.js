@@ -70,7 +70,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 							formatter: pion.xmlCellFormatter },
 						{ field: 'MaxExtracts', name: 'MaxExtracts', width: 'auto',
 							formatter: pion.xmlCellFormatter },
-						{ name: 'Delete', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeDeleteButton }
+						{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 					]
 				}];
 				this.extraction_rule_grid = new dojox.grid.DataGrid({

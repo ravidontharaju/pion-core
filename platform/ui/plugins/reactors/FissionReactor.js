@@ -129,7 +129,7 @@ dojo.declare("plugins.reactors.FissionReactorDialog",
 				rows: [
 					{ field: 'Term', name: 'Term', width: 'auto', editable: true,
 						type: pion.widgets.TermTextCell },
-					{ name: 'Delete', styles: 'align: center;', width: 3, formatter: pion.makeDeleteButton }
+					{ name: 'Delete', classes: 'delete button', formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.copy_term_grid = new dojox.grid.DataGrid({
