@@ -467,7 +467,7 @@ dojo.declare("plugins.reactors.ReactorConnectionsDialog",
 );
 
 dojo.declare("plugins.reactors.ReactorConnections",
-	[dijit._Widget, dijit._Templated],
+	[dijit.layout.ContentPane, dijit._Templated],
 	{
 		templatePath: dojo.moduleUrl("plugins", "reactors/ReactorConnections.html"),
 		postMixInProperties: function() {

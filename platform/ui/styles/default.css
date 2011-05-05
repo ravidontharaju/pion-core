@@ -733,7 +733,7 @@ label.disabled {
 }
 
 .reactor_connections_dialog {
-	padding: 10px;
+	padding: 10px !important;
 }
 
 .reactor_grid_block {
@@ -1319,10 +1319,6 @@ I don't think this is being used anywhere.
 
 .wide .reactor_dialog_grid {
 	width: 718px;
-}
-
-.field_mapping_grid {
-	height: 200px;
 }
 
 .tundra .dojoxGrid {

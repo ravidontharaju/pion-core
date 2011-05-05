@@ -26608,7 +26608,7 @@ this.templateString="";
 this.inherited("postCreate",arguments);
 },reactor:"",execute:function(_dc5){
 }});
-dojo.declare("plugins.reactors.ReactorConnections",[dijit._Widget,dijit._Templated],{templateString:"<div>\r\n\t<div class=\"reactor_grid_block\">\r\n\t\t<h2 style=\"float: left\">\r\n\t\t\tInput Connections\r\n\t\t</h2>\r\n\t\t<div style=\"float: right\">\r\n\t\t\t<button dojoType=\"dijit.form.DropDownButton\" class=\"add_new_row above_grid\">\r\n\t\t\t\t<span>ADD NEW INPUT CONNECTION</span>\r\n\t\t\t\t<div dojoType=\"dijit.Menu\" dojoAttachPoint=\"add_input_reactor_menu\"></div>\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div style=\"clear: both\"></div>\r\n\t\r\n\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t</div>\r\n\t<br />\r\n\t<div class=\"reactor_grid_block\">\r\n\t\t<h2 style=\"float: left\">\r\n\t\t\tOutput Connections\r\n\t\t</h2>\r\n\t\t<div style=\"float: right\">\r\n\t\t\t<button dojoType=\"dijit.form.DropDownButton\" class=\"add_new_row above_grid\">\r\n\t\t\t\t<span>ADD NEW OUTPUT CONNECTION</span>\r\n\t\t\t\t<div dojoType=\"dijit.Menu\" dojoAttachPoint=\"add_output_reactor_menu\"></div>\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div style=\"clear: both\"></div>\r\n\t\r\n\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
+dojo.declare("plugins.reactors.ReactorConnections",[dijit.layout.ContentPane,dijit._Templated],{templateString:"<div>\r\n\t<div class=\"reactor_grid_block\">\r\n\t\t<h2 style=\"float: left\">\r\n\t\t\tInput Connections\r\n\t\t</h2>\r\n\t\t<div style=\"float: right\">\r\n\t\t\t<button dojoType=\"dijit.form.DropDownButton\" class=\"add_new_row above_grid\">\r\n\t\t\t\t<span>ADD NEW INPUT CONNECTION</span>\r\n\t\t\t\t<div dojoType=\"dijit.Menu\" dojoAttachPoint=\"add_input_reactor_menu\"></div>\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div style=\"clear: both\"></div>\r\n\t\r\n\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_inputs_grid_node\"></div>\r\n\t</div>\r\n\t<br />\r\n\t<div class=\"reactor_grid_block\">\r\n\t\t<h2 style=\"float: left\">\r\n\t\t\tOutput Connections\r\n\t\t</h2>\r\n\t\t<div style=\"float: right\">\r\n\t\t\t<button dojoType=\"dijit.form.DropDownButton\" class=\"add_new_row above_grid\">\r\n\t\t\t\t<span>ADD NEW OUTPUT CONNECTION</span>\r\n\t\t\t\t<div dojoType=\"dijit.Menu\" dojoAttachPoint=\"add_output_reactor_menu\"></div>\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div style=\"clear: both\"></div>\r\n\t\r\n\t\t<div class=\"reactor_dialog_grid\" dojoAttachPoint=\"reactor_outputs_grid_node\"></div>\r\n\t</div>\r\n</div>\r\n",postMixInProperties:function(){
 this.inherited("postMixInProperties",arguments);
 if(this.templatePath){
 this.templateString="";
@@ -29017,7 +29017,7 @@ dojo.disconnect(h);
 });
 this.reactor.reloadGridStores();
 this.comparison_grid_layout=[{defaultCell:{width:8,editable:true,type:dojox.grid.cells._Widget,styles:"text-align: right;"},rows:[{field:"Term",name:"Term",width:20,type:pion.widgets.TermTextCell},{field:"Type",name:"Comparison",width:15,widgetClass:pion.widgets.SimpleSelect,widgetProps:{store:pion.reactors.comparison_type_store,query:{category:"generic"}}},{field:"Value",name:"Value",width:"auto",formatter:pion.xmlCellFormatter},{field:"MatchAllValues",name:"Match All",width:3,type:dojox.grid.cells.Bool},{name:"Delete",styles:"align: center;",width:3,editable:false,formatter:pion.makeDeleteButton}]}];
-this.comparison_grid=new dojox.grid.DataGrid({store:this.reactor.comparison_store,structure:this.comparison_grid_layout,singleClickEdit:true,autoHeight:true},document.createElement("div"));
+this.comparison_grid=new dojox.grid.DataGrid({store:this.reactor.comparison_store,structure:this.comparison_grid_layout,singleClickEdit:true,autoHeight:5},document.createElement("div"));
 this.comparison_grid._prev_term_type_category=this.comparison_grid.structure[0].rows[1].widgetProps.query.category;
 this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
 this.comparison_grid.startup();
@@ -29039,7 +29039,7 @@ this.store.deleteItem(this.getItem(e.rowIndex));
 }
 }
 });
-var _f0e=new dojox.grid.DataGrid({store:this.reactor.field_mapping_store,structure:plugins.reactors.DatabaseOutputReactorDialog.grid_layout,singleClickEdit:true},document.createElement("div"));
+var _f0e=new dojox.grid.DataGrid({store:this.reactor.field_mapping_store,structure:plugins.reactors.DatabaseOutputReactorDialog.grid_layout,autoHeight:5,singleClickEdit:true},document.createElement("div"));
 this.field_mapping_grid_node.appendChild(_f0e.domNode);
 _f0e.startup();
 _f0e.connect(_f0e,"onCellClick",function(e){

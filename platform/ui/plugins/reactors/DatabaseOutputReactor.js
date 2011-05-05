@@ -332,7 +332,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 				store: this.reactor.comparison_store,
 				structure: this.comparison_grid_layout,
 				singleClickEdit: true,
-				autoHeight: true
+				autoHeight: 5
 			}, document.createElement('div'));
 			this.comparison_grid._prev_term_type_category = this.comparison_grid.structure[0].rows[1].widgetProps.query.category;
 			this.comparison_grid_node.appendChild(this.comparison_grid.domNode);
@@ -360,6 +360,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			var field_mapping_grid = new dojox.grid.DataGrid({
 				store: this.reactor.field_mapping_store,
 				structure: plugins.reactors.DatabaseOutputReactorDialog.grid_layout,
+				autoHeight: 5,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.field_mapping_grid_node.appendChild(field_mapping_grid.domNode);
