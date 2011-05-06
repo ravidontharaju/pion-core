@@ -318,7 +318,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 				rows: [
 					{ field: 'Term', name: 'Term', width: 20, 
 						type: pion.widgets.TermTextCell },
-					{ field: 'Type', name: 'Comparison', width: 15, 
+					{ field: 'Type', name: 'Comparison', width: 10, 
 						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
 					{ field: 'Value', name: 'Value', width: 'auto',

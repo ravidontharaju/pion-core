@@ -60,7 +60,7 @@
 				<div dojoType="pion.widgets.ReactorGridHeader" title="Inclusion Conditions" help="docs/comparisons"></div>
 				<input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="MatchAllComparisons" dojoAttachEvent="onClick: _onUpdateMatchAllComparisons" />
 				<label>Match All Comparisons</label>
-				<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node" style="width: 618px"></div>
+				<div class="reactor_dialog_grid" dojoAttachPoint="comparison_grid_node"></div>
 				<button dojoAttachPoint="add_new_comparison_button" dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewComparison" class="add_new_row">ADD NEW COMPARISON</button>
 			</div>
 
@@ -69,7 +69,7 @@
 			<!--start field mappings-->
 			<div class="reactor_grid_block">
 				<h2>Field Mappings</h2>
-				<div class="field_mapping_grid reactor_dialog_grid" dojoAttachPoint="field_mapping_grid_node" style="width: 618px"></div>
+				<div class="field_mapping_grid reactor_dialog_grid" dojoAttachPoint="field_mapping_grid_node"></div>
 				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewMapping" class="add_new_row">ADD NEW MAPPING</button>
 			</div>
 			<!--end field mappings-->

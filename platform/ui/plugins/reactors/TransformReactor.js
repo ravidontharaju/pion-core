@@ -234,7 +234,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.transformation_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Term', name: 'Term', width: 18, 
+					{ field: 'Term', name: 'Term', width: 20, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Transformation Type', width: 10, 
 						type: dojox.grid.cells.Select, options: [ 'AssignTerm', 'AssignValue', 'JoinTerm', 'JoinTerm (unique)', 'Lookup', 'Regex', 'Rules', 'SplitTerm', 'URLDecode', 'URLEncode' ] },
@@ -242,7 +242,7 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						formatter: pion.xmlCellFormatter2 },
 					{ field: 'Value', name: 'Value', width: 'auto',
 						type: pion.widgets.TermTextCell },
-					{ field: 'Sep', name: 'Sep', width: '2',
+					{ field: 'Sep', name: 'Sep', width: '28px',
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
@@ -718,7 +718,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			this.rule_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Term', name: 'Term', width: 14, 
+					{ field: 'Term', name: 'Term', width: 20, 
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Comparison', width: 10, 
 						widgetClass: pion.widgets.SimpleSelect, 
@@ -727,7 +727,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'SetValue', name: 'Set Value', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
+					{ name: 'Insert Above', classes: 'insert button', editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
@@ -884,7 +884,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 						formatter: pion.xmlCellFormatter },
 					{ field: 'Format', name: 'Format', width: 'auto',
 						formatter: pion.xmlCellFormatter },
-					{ name: 'Insert Above', styles: 'align: center;', width: 3, editable: false, formatter: pion.makeInsertAboveButton },
+					{ name: 'Insert Above', classes: 'insert button', editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];

@@ -728,6 +728,15 @@ label.disabled {
 	padding: 10px 10px 0 10px;
 }
 
+/*	extra_padding_right is for tables that have a rightmost column with dojoType="dijit.form.TextBox" and style="width: 100%".
+	The problem is that the 100% width is calculated WITHOUT consideration of margin, border or padding.
+	Since dijitTextBox causes margin: 1px, border: 1px and padding: 2px, the input box gets moved right 4px.
+	So, by overriding padding: 10px above with padding-right: 14px, it comes out right.
+*/
+.reactor_dialog_top.extra_padding_right {
+	padding-right: 14px;
+}
+
 .reactor_dialog_bottom {
 	padding: 10px 10px 0 10px;
 }
@@ -915,6 +924,10 @@ The following are also available, if the need arises.
 	width: 700px;
 	padding: 20px;
 	margin: 20px;
+}
+
+.reactor_dialog.wide {
+	width: 800px;
 }
 
 .pion_server_error_dialog {
@@ -1118,6 +1131,15 @@ I don't think this is being used anywhere.
 	background-color: none;
 }
 */
+.tundra button.insert_row {
+	background-image: url('../images/arrowUp.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	border: outset #CCCCCC 3px;
+	width: auto;
+	height: 22px;
+	padding-left: 20px;
+}
 
 .tundra button.edit_icon {
 	background-image: url('../images/icon-edit.png');
@@ -1324,11 +1346,8 @@ I don't think this is being used anywhere.
 	padding: 0px;
 	margin: 5px 0 5px;
 	border: 1px solid #6096b6;
-	width: 618px;
-}
-
-.wide .reactor_dialog_grid {
-	width: 718px;
+	width: 100%;
+	margin-left: -1px; /* Compensate for the border, which is not included in the 100%. */
 }
 
 .tundra .dojoxGrid {
@@ -1337,6 +1356,10 @@ I don't think this is being used anywhere.
 }
 
 th.delete, td.delete {
+	width: 45px !important;	/* A compromise between FF, Chrome and IE7 (with Chrome the outlier). */
+}
+
+th.insert, td.insert {
 	width: 45px !important;	/* A compromise between FF, Chrome and IE7 (with Chrome the outlier). */
 }
 

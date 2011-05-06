@@ -1,4 +1,4 @@
-<div class="dijitDialog">
+<div class="dijitDialog reactor_dialog wide">
 	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
 		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Rules Configuration</span>
 		<span dojoAttachPoint="closeButtonNode" class="dijitDialogCloseIcon" dojoAttachEvent="onclick: onCancel">
@@ -13,7 +13,7 @@
 		<div class="reactor_dialog_bottom">
 			<div class="reactor_grid_block">
 				<h2>Rules</h2>
-				<div class="rule_grid reactor_dialog_grid" dojoAttachPoint="rule_grid_node" style="width: 718px"></div>
+				<div class="rule_grid reactor_dialog_grid" dojoAttachPoint="rule_grid_node"></div>
 				<button dojoType=dijit.form.Button dojoAttachEvent="onClick: _handleAddNewRule" class="add_new_row">ADD NEW RULE</button>
 			</div>
 			<div class="save_cancel_delete">
