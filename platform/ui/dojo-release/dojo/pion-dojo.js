@@ -32410,6 +32410,7 @@ pion.wizard_nlsStrings=dojo.i18n.getLocalization("pion","wizard");
 pion.wizard=this;
 },start:function(_1165){
 dojo.removeClass("wizard","hidden");
+dijit.byId("wizard").resize();
 document.body.appendChild(device_list_standby.domNode);
 device_list_standby.show();
 pion.wizard.cookies=[];
@@ -32671,9 +32672,13 @@ pion.setup_success_callback();
 };
 pion.widgets.Wizard.switchToOuter=function(){
 dojo.addClass("wizard","hidden");
-dojo.byId("outer").style.visibility="visible";
+dojo.removeClass("outer","hidden");
+dijit.byId("main_stack_container").resize();
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
+};
+pion.widgets.Wizard.forbid=function(){
+return false;
 };
 pion.widgets.Wizard.checkLicenseKey=function(){
 var _1187="Pion "+pion.edition;
@@ -33340,7 +33345,8 @@ this.inherited("postCreate",arguments);
 var _11df=this;
 },handleSelection:function(){
 dojo.cookie("pion_edition",pion.edition,{expires:5000});
-dojo.byId("outer").style.visibility="visible";
+dojo.removeClass("outer","hidden");
+dijit.byId("main_stack_container").resize();
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.terms.init();
@@ -33504,7 +33510,8 @@ dojo.cookie("logged_in","true",{expires:1});
 pion.last_logged_in_user=dojo.cookie("user");
 var _11f9=_11f7.getElementsByTagName("Reactor");
 if(!pion.key_service_running){
-dojo.byId("outer").style.visibility="visible";
+dojo.removeClass("outer","hidden");
+dijit.byId("main_stack_container").resize();
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();
@@ -33514,7 +33521,8 @@ if(_11f6=="invalid"&&dojo.cookie("pion_edition")!="Core"&&dojo.cookie("pion_edit
 var _11fa=new pion.widgets.EditionSelectorDialog;
 _11fa.show();
 }else{
-dojo.byId("outer").style.visibility="visible";
+dojo.removeClass("outer","hidden");
+dijit.byId("main_stack_container").resize();
 dojo.byId("current_user_menu_section").style.visibility="visible";
 dojo.byId("current_user").innerHTML=dojo.cookie("user");
 pion.setup_success_callback();

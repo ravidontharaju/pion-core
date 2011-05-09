@@ -104,40 +104,44 @@ h1.wizard_welcome {
 	text-decoration: underline;
 }
 
-.tundra .edition_button button {
+#wizard .dojoxWizardContainer > * {
+	overflow: visible;
+}
+
+.tundra .edition_button .dijitButtonNode {
 	width: 180px;
 	height: 38px;
 }
 
-.tundra .edition_button.lite button {
+.tundra .edition_button.lite .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-lite-small.png") no-repeat;
 }
 
-.tundra .edition_button.lite.dijitButtonHover button {
+.tundra .edition_button.lite.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-lite-small-on.png") no-repeat;
 }
 
-.tundra .edition_button.enterprise button {
+.tundra .edition_button.enterprise .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-enterprise-small.png") no-repeat;
 }
 
-.tundra .edition_button.enterprise.dijitButtonHover button {
+.tundra .edition_button.enterprise.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-enterprise-small-on.png") no-repeat;
 }
 
-.tundra .edition_button.core button {
+.tundra .edition_button.core .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-core-small.png") no-repeat;
 }
 
-.tundra .edition_button.core.dijitButtonHover button {
+.tundra .edition_button.core.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-core-small-on.png") no-repeat;
 }
 
-.tundra .edition_button.replay button {
+.tundra .edition_button.replay .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-replay-small.png") no-repeat;
 }
 
-.tundra .edition_button.replay.dijitButtonHover button {
+.tundra .edition_button.replay.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/logo-pion-replay-small-on.png") no-repeat;
 }
 
@@ -934,13 +938,14 @@ The following are also available, if the need arises.
 	width: 500px;
 }
 
-.pion_server_error_dialog .dijitButtonNode button {
-	border: solid #999999 1px;
+.pion_server_error_dialog .dijitButtonNode {
+	border: solid #999999 1px !important;
 	color: #366dba;
 	font-weight: bold;
 	width: auto;
-	height: 25px;
-	margin-right: 10px;
+	height: 20px;
+	margin-right: 10px !important;
+	padding: 3px 4px 0 4px !important;
 }
 
 /* Overwrite Dojo Dijit Styles for the Config Screens */

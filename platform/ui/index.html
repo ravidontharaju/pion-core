@@ -74,8 +74,8 @@
 	<div id="wizard" dojoType="pion.widgets.Wizard" class="hidden" hideDisabled="true" style="background: #ffffff;">
 
 		<!--Start Edition Selection-->
-		<div dojoType="dojox.widget.WizardPane" id="select_edition_pane" style="background: #ffffff;">
-			
+		<div dojoType="dojox.widget.WizardPane" id="select_edition_pane" passFunction="pion.widgets.Wizard.forbid">
+
 			<div class="wizard_menu">
 				<p>
 					<a class="header" href="http://pion.org/docs" target="_blank">Help</a>
@@ -89,8 +89,8 @@
 			<div class="wizard_welcome_hat">
 				<img src="../images/wizard-hat.png">
 			</div>
-				<h3 style="margin-left: 20px;">Please Select an Edition:</h3>
-				<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form"></form>
+			<h3 style="margin-left: 20px;">Please Select an Edition:</h3>
+			<form dojoType="pion.widgets.EditionSelectorForm" id="select_edition_form"></form>
 			<p class="next_button" style="display: none"></p>
 		</div>
 		<!--End Edition Selection-->
@@ -722,7 +722,7 @@
 		<!--End Confirmation Screen-->
 	</div>
 
-	<div id="outer" style="visibility: hidden">
+	<div id="outer" class="hidden">
 		<div id="topBar">
 			<!-- start header -->
 			<div id="logo">

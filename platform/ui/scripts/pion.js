@@ -189,7 +189,8 @@ pion.editionSetup = function(license_key_type) {
 				// If there's no KeyService running, then we assume Pion Core is installed, in which case
 				// the wizard is not useful, so we go directly to the Reactors tab.
 
-				dojo.byId('outer').style.visibility = 'visible';
+				dojo.removeClass('outer', 'hidden');
+				dijit.byId('main_stack_container').resize();
 				dojo.byId('current_user_menu_section').style.visibility = 'visible';
 				dojo.byId('current_user').innerHTML = dojo.cookie('user');
 				pion.setup_success_callback();
@@ -203,7 +204,8 @@ pion.editionSetup = function(license_key_type) {
 				} else {
 					// After pion.initTabs() is called, the Reactors tab will be selected, unless
 					// a Replay service is configured, in which case the Replay tab will be selected.
-					dojo.byId('outer').style.visibility = 'visible';
+					dojo.removeClass('outer', 'hidden');
+					dijit.byId('main_stack_container').resize();
 					dojo.byId('current_user_menu_section').style.visibility = 'visible';
 					dojo.byId('current_user').innerHTML = dojo.cookie('user');
 					pion.setup_success_callback();

@@ -95,7 +95,8 @@ dojo.declare("pion.widgets.EditionSelectorDialog",
 		handleSelection: function() {
 			dojo.cookie('pion_edition', pion.edition, {expires: 5000}); // 5000 days
 
-			dojo.byId('outer').style.visibility = 'visible';
+			dojo.removeClass('outer', 'hidden');
+			dijit.byId('main_stack_container').resize();
 			dojo.byId('current_user_menu_section').style.visibility = 'visible';
 			dojo.byId('current_user').innerHTML = dojo.cookie('user');
 

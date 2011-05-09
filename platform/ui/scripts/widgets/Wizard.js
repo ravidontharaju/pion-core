@@ -16,6 +16,7 @@ dojo.declare("pion.widgets.Wizard",
 		},
 		start: function(license_key_type) {
 			dojo.removeClass('wizard', 'hidden');
+			dijit.byId('wizard').resize();
 			document.body.appendChild(device_list_standby.domNode);
 			device_list_standby.show();
 			pion.wizard.cookies = [];
@@ -527,9 +528,15 @@ pion.widgets.Wizard.exitEarly = function() {
 
 pion.widgets.Wizard.switchToOuter = function() {
 	dojo.addClass('wizard', 'hidden');
-	dojo.byId('outer').style.visibility = 'visible';
+	dojo.removeClass('outer', 'hidden');
+	dijit.byId('main_stack_container').resize();
 	dojo.byId('current_user_menu_section').style.visibility = 'visible';
 	dojo.byId('current_user').innerHTML = dojo.cookie('user');
+}
+
+pion.widgets.Wizard.forbid = function() {
+	// Don't allow the user to proceed via the regular Wizard button.
+	return false;
 }
 
 pion.widgets.Wizard.checkLicenseKey = function() {
