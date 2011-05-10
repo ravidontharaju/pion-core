@@ -227,4 +227,7 @@ pion-dojo.js:
 ./../../release/dojo-release/pion/widgets/Wizard.js
 ./../../release/dojo-release/pion/widgets/EditionSelector.js
 ./../../release/dojo-release/pion/widgets/MainTabController.js
+./../../release/dojo-release/pion/widgets/ReactorConfigTab.js
+./../../release/dojo-release/pion/widgets/SystemConfigTab.js
+./../../release/dojo-release/pion/widgets/ConfigAccordionTab.js
 ./../../release/dojo-release/pion/pion.js

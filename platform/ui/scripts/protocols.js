@@ -239,7 +239,7 @@ pion.protocols.init = function() {
 		});
 	}
 
-	dojo.connect(dojo.byId('add_new_protocol_button'), 'click', addNewProtocol);
+	dijit.byId('protocol_config').button.onClick = addNewProtocol;
 }
 
 pion.protocols._adjustAccordionSize = function() {

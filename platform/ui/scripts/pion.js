@@ -29,6 +29,9 @@ dojo.require("pion.widgets.Wizard");
 dojo.require("pion.widgets.LicenseKey");
 dojo.require("pion.widgets.EditionSelector");
 dojo.require("pion.widgets.MainTabController");
+dojo.require("pion.widgets.ReactorConfigTab");
+dojo.require("pion.widgets.SystemConfigTab");
+dojo.require("pion.widgets.ConfigAccordionTab");
 dojo.requireLocalization("pion", "wizard");
 dojo.requireLocalization("pion", "general");
 
@@ -75,16 +78,16 @@ pion.initOptionalValue = function(store, item, new_item_object, tag_name, option
 	}
 }
 
-// Contains ids of all the children of 'main_stack_container' in index.html.
-pion.permission_types_by_tab_id = {
-	reactor_config:  'Reactors',
-	vocab_config:    'Vocabularies',
-	codec_config:    'Codecs',
-	database_config: 'Databases',
-	protocol_config: 'Protocols',
-	user_config:     'Admin',
-	system_config:   'Admin'
-};
+// Default children of 'main_stack_container' in index.html - will be added if the user has permission.
+pion.config_tab_table = [
+	{permission_type: 'Reactors',     widget: 'ReactorConfigTab',   params: {id: 'reactor_config',  title: 'Reactors'}},
+	{permission_type: 'Vocabularies', widget: 'ConfigAccordionTab', params: {id: 'vocab_config',    title: 'Vocabularies', header: 'Vocabulary Configuration', help: 'docs/vocabularies', button: 'ADD A NEW VOCABULARY'}},
+	{permission_type: 'Codecs',       widget: 'ConfigAccordionTab', params: {id: 'codec_config',    title: 'Codecs', header: 'Codec Configuration', help: 'plugins/codecs', button: 'ADD A NEW CODEC'}},
+	{permission_type: 'Databases',    widget: 'ConfigAccordionTab', params: {id: 'database_config', title: 'Databases', header: 'Database Configuration', help: 'plugins/databases', button: 'ADD A NEW DATABASE'}},
+	{permission_type: 'Protocols',    widget: 'ConfigAccordionTab', params: {id: 'protocol_config', title: 'Protocols', header: 'Protocol Configuration', help: 'plugins/protocols', button: 'ADD A NEW PROTOCOL'}},
+	{permission_type: 'Admin',        widget: 'ConfigAccordionTab', params: {id: 'user_config',     title: 'Users', header: 'User Configuration', help: 'docs/users', button: 'ADD A NEW USER'}},
+	{permission_type: 'Admin',        widget: 'SystemConfigTab',    params: {id: 'system_config',   title: 'System'}}
+];
 
 // This is called by pion.services.init()
 pion.initTabs = function() {
@@ -98,30 +101,28 @@ pion.initTabs = function() {
 			this.inherited('selectChild', arguments);
 	}
 
-	// TODO: it would be a lot nicer to add only the permitted tabs, instead of creating
-	// all of them and then deleting the ones not found on the list of permitted tabs.
-	if (! ('Admin' in pion.permissions_object)) {
-		for (var tab_id in pion.permission_types_by_tab_id) {
-			if (! (pion.permission_types_by_tab_id[tab_id] in pion.permissions_object)) {
-				main_stack.removeChild(dijit.byId(tab_id));
-			}
+	// Add default configuration tabs for which the user has permission.
+	var rtl_index = plugins.services.num_rightmost_tabs_added || 0;
+	dojo.forEach(pion.config_tab_table, function(entry) {
+		if ('Admin' in pion.permissions_object || entry.permission_type in pion.permissions_object) {
+			var tab_pane_class = dojo.getObject('pion.widgets.' + entry.widget);
+			main_stack.addChild(new tab_pane_class(entry.params), rtl_index);
 		}
-	}
+	});
 
-	init_services_standby.hide();
-
+	// Note: since main_stack is rtl, tabs[0] is on the right.
 	var tabs = main_stack.getChildren();
 	if (tabs.length > 0) {
 		var chooseBestTab = function(tabs, i) {
 			var dfd = new dojo.Deferred();
 
-			if (i == tabs.length) // All tabs are empty, so just pick the first one.
-				dfd.callback(tabs[0]);
+			if (i == 0) // All tabs are empty, so just pick the leftmost one.
+				dfd.callback(tabs[tabs.length - 1]);
 
 			if ('isEmpty' in tabs[i]) {
 				tabs[i].isEmpty().addCallback(function(is_empty) {
 					if (is_empty) {
-						chooseBestTab(tabs, i + 1).addCallback(function(tab) {
+						chooseBestTab(tabs, i - 1).addCallback(function(tab) {
 							dfd.callback(tab);
 						});
 					} else
@@ -132,13 +133,15 @@ pion.initTabs = function() {
 
 			return dfd;
 		}
-		chooseBestTab(tabs, 0).addCallback(function(tab) {
+		chooseBestTab(tabs, tabs.length - 1).addCallback(function(tab) {
 			main_stack.selectChild(tab);
 			configPageSelected(tab);
 		})
 	} else {
 		alert('There are no access rights defined for this user account.  You may need to update your users.xml file.');
 	}
+
+	init_services_standby.hide();
 
 	// Don't be tempted to move this earlier to avoid calling configPageSelected() above:
 	// selectChild(page) won't trigger configPageSelected(page) if page was already selected.

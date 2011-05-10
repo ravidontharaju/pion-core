@@ -20,10 +20,12 @@ dojo.declare("plugins.services.XMLLogService",
 			this.last_fatal_error_dialog_time = 0;
 
 			// Add 'this' after all existing tabs in the main stack, then save a reference to the corresponding tab button.
-			dijit.byId('main_stack_container').addChild(this);
+			// Note that main stack is rtl, so the rightmost tab has index 0.
+			dijit.byId('main_stack_container').addChild(this, 0);
 			var tab_buttons = dijit.byId('main_stack_container').tablist.getChildren();
-			this.tab_button = tab_buttons[tab_buttons.length - 1].domNode;
+			this.tab_button = tab_buttons[0].domNode;
 			dojo.addClass(this.tab_button, 'log_service');
+			plugins.services.num_rightmost_tabs_added = (plugins.services.num_rightmost_tabs_added || 0) + 1;
 
 			// This needs to be here (instead of in init()) so that this.log_grid_node.offsetHeight will be ready when onSelect() calls this.getHeight().
 			pion.loadCss(dojo.moduleUrl("plugins.services", "XMLLogService/XMLLogService.css"));

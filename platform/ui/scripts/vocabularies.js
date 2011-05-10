@@ -215,5 +215,5 @@ pion.vocabularies.init = function() {
 		onError: pion.handleFetchError
 	});
 
-	dojo.connect(dojo.byId('add_new_vocab_button'), 'click', pion.vocabularies.addNewVocabulary);
+	dijit.byId('vocab_config').button.onClick = pion.vocabularies.addNewVocabulary;
 }

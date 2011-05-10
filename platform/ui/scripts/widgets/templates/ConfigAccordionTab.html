@@ -1,0 +1,12 @@
+<div dojoAttachPoint='containerNode' dir="ltr">
+	<div dojoType="pion.widgets.MainStackContentHeader" title="${header}" help="${help}"></div>
+	<div class="config_content">
+		<div id="${id}_accordion" dojoType="pion.widgets.ConfigAccordion">
+			<div dojoType="dijit.layout.ContentPane"></div>
+		</div>
+		<div>
+			<button dojoAttachPoint="button" dojoType=dijit.form.Button class="add_new_pane">${button}</button>
+		</div>
+	</div>
+	<div id="${id}_end"></div>
+</div>

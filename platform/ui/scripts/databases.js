@@ -316,5 +316,5 @@ pion.databases.init = function() {
 		*/
 	}
 
-	dojo.connect(dojo.byId('add_new_database_button'), 'click', _addNewDatabase);
+	dijit.byId('database_config').button.onClick = _addNewDatabase;
 }

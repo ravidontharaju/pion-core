@@ -52,7 +52,7 @@ pion.codecs.init = function() {
 
 	pion.codecs.config_store.fetch({ onComplete: onComplete, onError: pion.getFetchErrorHandler('fetch() called by pion.codecs.init()') });
 
-	dojo.connect(dojo.byId('add_new_codec_button'), 'click', addNewCodec);
+	dijit.byId('codec_config').button.onClick = addNewCodec;
 }
 
 function addNewCodec() {

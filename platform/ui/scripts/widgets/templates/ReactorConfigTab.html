@@ -1,0 +1,64 @@
+<div dojoAttachPoint='containerNode' dir="ltr">
+	<div dojoType="dijit.layout.BorderContainer" gutters="false" design="sidebar">
+		<!-- start left sidebar -->
+		<div id="side" dojoType="dijit.layout.ContentPane" region="left" style="overflow:hidden">
+			<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer" gutters="false">
+				<div id="sidebarTop" dojoType="dijit.layout.ContentPane" region="top">
+					<div class="sidebarHeader">Reactor Types</div>
+					<div class="sidebarInstructions">
+						Drag reactors onto Workspace
+					</div>
+				</div>
+				<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" region="bottom">
+					<div class="sidebarHeader">Connect Reactors</div>
+					<div class="sidebarInstructions">
+						Drag to connect Reactors
+					</div>
+					<div class="sidebar">
+						<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
+							<div class="dojoDndItem" dndType="connector" reactor_type="connector"><img src="images/icon-connector.png" width="148" height="25" alt="Connector" /></div>
+						</div>
+					</div>
+				</div>
+				<div id="sidebarMain" dojoType="dijit.layout.ContentPane" region="center">
+					<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
+						<div dojoType="dijit.layout.ContentPane" class="collection" selected="true" title="Collection Reactors">
+							<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
+						</div>
+						<div dojoType="dijit.layout.ContentPane" class="processing" title="Processing Reactors">
+							<div jsId="processingReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
+						</div>
+						<div dojoType="dijit.layout.ContentPane" class="storage" title="Storage Reactors">
+							<div jsId="storageReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- end left sidebar -->
+
+		<div id="workspace_config_header" dojoType="dijit.layout.ContentPane" region="top">
+			<div dojoType="pion.widgets.MainStackContentHeader" title="Reactor Configuration" help="plugins/reactors/getting_started"></div>
+		</div>
+
+		<!-- start tabbed workspaces -->
+		<div id="reactor_config_content" class="config_content" dojoType="dijit.layout.ContentPane" region="center">
+			<div id="mainTabContainer" dojoType="dijit.layout.TabContainer" tabPosition="bottom" style="height: 100%">
+				<div id="new_workspace_tab" dojoType="dijit.layout.ContentPane" title="Add new workspace">
+				</div>
+			</div>
+		<div id="counterBackground">
+			<span class="counterTitle">Operations per Second</span>
+			<span class="counterNumbersLeft">
+				Global:<br />
+				Workspace:
+			</span><span class="counterNumbersRight">
+				<span id="global_ops"></span><br />
+				<span id="workspace_ops"></span>
+			</span><span class="counterToggle"><button id="ops_toggle_button" dojoType=dijit.form.ToggleButton></button></span>
+		</div>
+		</div>
+		<!-- end tabbed workspaces -->
+	</div>
+</div>
+

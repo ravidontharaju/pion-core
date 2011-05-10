@@ -338,9 +338,6 @@ pion.reactors._initConfiguredReactors = function() {
 					pion.reactors.workspace_box = workspace_boxes[0];
 					surface = pion.reactors.workspace_box.my_surface;
 					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
-
-					// Now that all workspaces have been added, call layout() in case there are enough to require more than one row of tabs.
-					dijit.byId('main_stack_container').layout();
 				},
 				onError: pion.handleFetchError
 			});

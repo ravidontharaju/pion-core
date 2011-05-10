@@ -165,7 +165,7 @@ pion.users.init = function() {
 		}
 	}
 
-	dojo.connect(dojo.byId('add_new_user_button'), 'click', addNewUser);
+	dijit.byId('user_config').button.onClick = addNewUser;
 }
 
 pion.users._adjustAccordionSize = function() {
