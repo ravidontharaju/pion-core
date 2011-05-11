@@ -476,7 +476,7 @@ function addWorkspace(config) {
 	}
 	workspace_pane.domNode.appendChild(shim);
 	tab_container.addChild(workspace_pane, i);
-	var new_workspace = new dojo.dnd.Target(shim, { accept: ["reactor"] });
+	var new_workspace = new pion.reactors.OverlappableTarget(shim, { accept: ["reactor"] });
 	dojo.addClass(new_workspace.node, "workspaceTarget");
 	dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ pion.reactors.handleDropOnWorkspace(source, nodes, copy, new_workspace); });
 	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
@@ -1481,6 +1481,20 @@ dojo.declare("pion.reactors.WorkspaceDialog",
 		_handleDelete: function() {
 			this.onCancel();
 			deleteWorkspaceIfConfirmed(this.workspace_pane);
+		}
+	}
+);
+
+dojo.declare("pion.reactors.OverlappableTarget",
+	[dojo.dnd.Target],
+	{
+		onOverEvent: function() {
+			if (this.targetState != 'Disabled')
+				this.inherited('onOverEvent', arguments);
+		},
+		onOutEvent: function(){
+			if (this.targetState != 'Disabled')
+				this.inherited('onOutEvent', arguments);
 		}
 	}
 );
