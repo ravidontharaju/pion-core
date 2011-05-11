@@ -20,7 +20,7 @@ dojo.declare("plugins.reactors.Reactor",
 			if ('option_defaults' in this.class_info)
 				this._initOptions(this.config, this.class_info.option_defaults);
 			this.requires_license = 'edition' in this.class_info && this.class_info.edition == 'Enterprise';
-			var reactor_target = new dojo.dnd.Target(this.domNode, {accept: ["connector"]});
+			var reactor_target = new pion.reactors.OverlappableTarget(this.domNode, {accept: ["connector"]});
 			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
 
 			this.name_div = document.createElement('div');

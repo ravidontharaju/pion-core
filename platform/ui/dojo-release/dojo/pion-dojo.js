@@ -23506,7 +23506,7 @@ if("option_defaults" in this.class_info){
 this._initOptions(this.config,this.class_info.option_defaults);
 }
 this.requires_license="edition" in this.class_info&&this.class_info.edition=="Enterprise";
-var _1678=new dojo.dnd.Target(this.domNode,{accept:["connector"]});
+var _1678=new pion.reactors.OverlappableTarget(this.domNode,{accept:["connector"]});
 dojo.connect(_1678,"onDndDrop",pion.reactors.handleDropOnReactor);
 this.name_div=document.createElement("div");
 this.name_div.innerHTML=pion.escapeXml(this.config.Name);
@@ -26820,7 +26820,7 @@ shim.style.height=minimum_workspace_height+"px";
 }
 _1957.domNode.appendChild(shim);
 _1958.addChild(_1957,i);
-var _195b=new dojo.dnd.Target(shim,{accept:["reactor"]});
+var _195b=new pion.reactors.OverlappableTarget(shim,{accept:["reactor"]});
 dojo.addClass(_195b.node,"workspaceTarget");
 dojo.connect(_195b,"onDndDrop",function(_195c,nodes,copy,_195f){
 pion.reactors.handleDropOnWorkspace(_195c,nodes,copy,_195b);
@@ -27506,6 +27506,15 @@ _this.attr("value",_1a28);
 },_handleDelete:function(){
 this.onCancel();
 deleteWorkspaceIfConfirmed(this.workspace_pane);
+}});
+dojo.declare("pion.reactors.OverlappableTarget",[dojo.dnd.Target],{onOverEvent:function(){
+if(this.targetState!="Disabled"){
+this.inherited("onOverEvent",arguments);
+}
+},onOutEvent:function(){
+if(this.targetState!="Disabled"){
+this.inherited("onOutEvent",arguments);
+}
 }});
 }
 if(!dojo._hasResource["plugins.vocabularies.Vocabulary"]){
