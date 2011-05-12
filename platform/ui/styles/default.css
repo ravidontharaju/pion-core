@@ -513,6 +513,11 @@ label.disabled {
 	overflow-y: auto; /* Leave overflow in X-dimension hidden, but allow vertical scrollbars. */
 }
 
+#accordion_padding {
+	height: 5px;
+	background: #cccccc;
+}
+
 /* BorderContainer Overrides  (BorderContainers are used in every configuration "page".) */
 
 /* Overrides ContentPane.css. */

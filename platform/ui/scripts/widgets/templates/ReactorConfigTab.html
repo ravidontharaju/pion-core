@@ -1,36 +1,36 @@
 <div dojoAttachPoint='containerNode' dir="ltr">
 	<div dojoType="dijit.layout.BorderContainer" gutters="false" design="sidebar">
 		<!-- start left sidebar -->
-		<div id="side" dojoType="dijit.layout.ContentPane" region="left" style="overflow:hidden">
-			<div id="sidebarContainer" dojoType="dijit.layout.BorderContainer" gutters="false">
+		<div id="side" dojoType="dijit.layout.BorderContainer" region="left" style="overflow: hidden" gutters="false">
+			<div dojoType="dijit.layout.BorderContainer" gutters="false" region="center">
 				<div id="sidebarTop" dojoType="dijit.layout.ContentPane" region="top">
 					<div class="sidebarHeader">Reactor Types</div>
 					<div class="sidebarInstructions">
 						Drag reactors onto Workspace
 					</div>
 				</div>
-				<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" region="bottom">
-					<div class="sidebarHeader">Connect Reactors</div>
-					<div class="sidebarInstructions">
-						Drag to connect Reactors
+				<div id="sidebarMain" dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" region="center">
+					<div dojoType="dijit.layout.ContentPane" class="collection" selected="true" title="Collection Reactors">
+						<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 					</div>
-					<div class="sidebar">
-						<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
-							<div class="dojoDndItem" dndType="connector" reactor_type="connector"><img src="images/icon-connector.png" width="148" height="25" alt="Connector" /></div>
-						</div>
+					<div dojoType="dijit.layout.ContentPane" class="processing" title="Processing Reactors">
+						<div jsId="processingReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
+					</div>
+					<div dojoType="dijit.layout.ContentPane" class="storage" title="Storage Reactors">
+						<div jsId="storageReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
 					</div>
 				</div>
-				<div id="sidebarMain" dojoType="dijit.layout.ContentPane" region="center">
-					<div dojoType="dijit.layout.AccordionContainer" class="sidebar" duration="200" style="height: 100%; overflow: auto">
-						<div dojoType="dijit.layout.ContentPane" class="collection" selected="true" title="Collection Reactors">
-							<div jsId="collectionReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
-						</div>
-						<div dojoType="dijit.layout.ContentPane" class="processing" title="Processing Reactors">
-							<div jsId="processingReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
-						</div>
-						<div dojoType="dijit.layout.ContentPane" class="storage" title="Storage Reactors">
-							<div jsId="storageReactors" dojoType="dojo.dnd.Source" class="reactorBucket" copyOnly="true" accept="nothing"></div>
-						</div>
+				<div id="accordion_padding" dojoType="dijit.layout.ContentPane" region="bottom">
+				</div>
+			</div>
+			<div id="sidebarBottom" dojoType="dijit.layout.ContentPane" region="bottom">
+				<div class="sidebarHeader">Connect Reactors</div>
+				<div class="sidebarInstructions">
+					Drag to connect Reactors
+				</div>
+				<div class="sidebar">
+					<div dojoType="dojo.dnd.Source" class="connectorBucket" copyOnly="true">
+						<div class="dojoDndItem" dndType="connector" reactor_type="connector"><img src="images/icon-connector.png" width="148" height="25" alt="Connector" /></div>
 					</div>
 				</div>
 			</div>
