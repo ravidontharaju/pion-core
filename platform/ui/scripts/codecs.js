@@ -59,9 +59,6 @@ function addNewCodec() {
 	var dialog = new plugins.codecs.CodecInitDialog({title: 'Add New Codec'});
 	dialog.show();
 	dialog.execute = function(dialogFields) {
-		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-		this.execute_already_called = true;
-
 		console.debug(dialogFields);
 		var post_data = '<PionConfig><Codec>';
 		for (var tag in dialogFields) {

@@ -221,8 +221,6 @@ pion.databases.init = function() {
 		var dialog = new plugins.databases.SelectPluginDialog({title: 'Select Database Plugin'});
 		dialog.show();
 		dialog.execute = function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
 			//if (pion.key_service_running &&
 			//	plugins.databases[dialogFields.Plugin] &&
 			//	plugins.databases[dialogFields.Plugin].edition == 'Enterprise') {
@@ -254,9 +252,6 @@ pion.databases.init = function() {
 
 		dialog.show();
 		dialog.execute = function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			// TODO: override pion.databases.config_store._getPostContent() (see XmlStore._getPostContent())
 			// with the code below to build the post data.
 			// Then we can get rid of createNewPaneFromStore(), and do the following here:

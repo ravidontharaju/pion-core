@@ -374,9 +374,6 @@ dojo.declare("plugins.reactors.ReactorDialog",
 		},
 		reactor: '',
 		execute: function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			dojo.mixin(this.reactor.config, dialogFields);
 			this.reactor.name_div.innerHTML = pion.escapeXml(dialogFields.Name);
 

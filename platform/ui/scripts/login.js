@@ -88,9 +88,6 @@ pion.login.doLoginDialog = function(kw_args) {
 	);
 	dialog.show();
 	dialog.execute = function(dialogFields) {
-		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-		this.execute_already_called = true;
-
 		// Same as in login.html.  Note that dojo.cookie also uses encodeURIComponent().
 		document.cookie = 'user=' + encodeURIComponent(dialogFields.Username);
 

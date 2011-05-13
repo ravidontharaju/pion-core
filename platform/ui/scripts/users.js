@@ -129,9 +129,6 @@ pion.users.init = function() {
 
 		dialog.show();
 		dialog.execute = function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			// TODO: override pion.users.config_store._getPostContent() (see XmlStore._getPostContent())
 			// with the code below to build the post data.
 			// Then we can get rid of createNewPaneFromStore(), and do the following here:

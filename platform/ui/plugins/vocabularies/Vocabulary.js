@@ -297,9 +297,6 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 			}
 		},
 		execute: function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			var item_object = {
 				ID: dialogFields['@id'],
 				Type: dialogFields.Type,

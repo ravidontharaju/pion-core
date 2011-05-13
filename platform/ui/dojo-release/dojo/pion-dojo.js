@@ -25950,11 +25950,6 @@ _d65.destroyRecursive();
 });
 _d65.show();
 _d65.execute=function(_d67){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 document.cookie="user="+encodeURIComponent(_d67.Username);
 dojo.xhrGet({url:"/login?user="+_d67.Username+"&pass="+_d67.Password,preventCache:true,handleAs:"xml",load:function(_d68,_d69){
 if(_d67.Username!=pion.last_logged_in_user){
@@ -26554,11 +26549,6 @@ if("value_defaults" in this.reactor.class_info){
 this.set("value",this.reactor.class_info.value_defaults);
 }
 },reactor:"",execute:function(_dc0){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 dojo.mixin(this.reactor.config,_dc0);
 this.reactor.name_div.innerHTML=pion.escapeXml(_dc0.Name);
 if("options" in _dc0&&plugins.reactors[this.reactor.config.Plugin].option_defaults){
@@ -27503,11 +27493,6 @@ function addNewCodec(){
 var _e3e=new plugins.codecs.CodecInitDialog({title:"Add New Codec"});
 _e3e.show();
 _e3e.execute=function(_e3f){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 console.debug(_e3f);
 var _e40="<PionConfig><Codec>";
 for(var tag in _e3f){
@@ -28190,11 +28175,6 @@ this.store.deleteItem(this.getItem(e.rowIndex));
 }
 });
 },execute:function(_e84){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _e85=this.transformation_store;
 var _e86=this.transformation_item;
 var _e87=this.lookup_store;
@@ -28238,11 +28218,6 @@ var _e8d=this;
 var _e8e=new plugins.reactors.TransformReactor.KeyValuePairImportDialog({title:"Key Value Pairs in XML Format to Import",instructions:"Enter key value pairs in the following format, using standard escape sequences:",example:"&lt;Lookup key=\"index-1\"&gt;NASDAQ&lt;/Lookup&gt\n...\n&lt;Lookup key=\"index-n\"&gt;S&amp;amp;P 500&lt;/Lookup&gt"});
 _e8e.show();
 _e8e.execute=function(_e8f){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _e90="<PionConfig>"+this.XML_text_area.value+"</PionConfig>";
 var _e91=_e90.replace(/>\s*/g,">");
 if(dojo.isIE){
@@ -28276,11 +28251,6 @@ var _e9c=this;
 var _e9d=new plugins.reactors.TransformReactor.KeyValuePairImportDialog({title:"Key Value Pairs in CSV Format to Import",instructions:"Enter key value pairs in CSV format.  Example:",example:"A,yes & no\nB,\"X, Y and Z\"\nC,\"the one with a \"\"D\"\" in it\"\nD,\" quoting optional here \"\n..."});
 _e9d.show();
 _e9d.execute=function(_e9e){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _e9f=this.XML_text_area.value.split("\n");
 dojo.forEach(_e9f,function(line){
 if(results=line.match(/^"(.*)","(.*)"$/)){
@@ -28390,11 +28360,6 @@ _eab.edit.apply();
 this.disconnect(h);
 });
 },execute:function(_ead){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _eae=this.transformation_store;
 var _eaf=this.transformation_item;
 var _eb0=this.rule_store;
@@ -28456,11 +28421,6 @@ _eb7.store.newItem(dojo.mixin(item,{ID:_eb7.store.next_id++}));
 }
 });
 },execute:function(_eb8){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _eb9=this.transformation_store;
 var _eba=this.transformation_item;
 var _ebb=this.regex_store;
@@ -28763,11 +28723,6 @@ function _ee8(){
 var _ee9=new plugins.databases.SelectPluginDialog({title:"Select Database Plugin"});
 _ee9.show();
 _ee9.execute=function(_eea){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 _eeb(_eea.Plugin);
 };
 };
@@ -28788,11 +28743,6 @@ dojo.query("input",_ef0.domNode)[0].select();
 },500);
 _ef0.show();
 _ef0.execute=function(_ef1){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 console.debug(_ef1);
 var _ef2="<PionConfig><Database>";
 for(var tag in _ef1){
@@ -30178,13 +30128,7 @@ setTimeout(function(){
 dojo.query("input",dialog.domNode)[0].select();
 },500);
 dialog.show();
-dialog.execute_already_called=false;
 dialog.execute=function(_ffd){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 updateWorkspaceConfig(_ffd,_ffb);
 };
 };
@@ -30505,11 +30449,6 @@ this.size_widget.set("value","");
 this.size_widget.domNode.style.visibility="hidden";
 }
 },execute:function(_102d){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _102e={ID:_102d["@id"],Type:_102d.Type,Comment:_102d.Comment};
 _102e.Format=_102d.Format?_102d.Format:"-";
 _102e.Size=_102d.Size?_102d.Size:"-";
@@ -30689,11 +30628,6 @@ dojo.query("input",_1040.domNode)[0].select();
 },500);
 _1040.show();
 _1040.execute=function(_1041){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 var _1042="<PionConfig><Vocabulary>";
 _1042+=pion.makeXmlLeafElement("Name",_1041.Name);
 _1042+=pion.makeXmlLeafElement("Comment",_1041.Comment);
@@ -31169,11 +31103,6 @@ function _1083(){
 var _1084=new plugins.protocols.ProtocolInitDialog({title:"Add New Protocol"});
 _1084.show();
 _1084.execute=function(_1085){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 _1086(_1085);
 };
 };
@@ -31670,11 +31599,6 @@ dojo.query("input",_10e4.domNode)[0].select();
 },500);
 _10e4.show();
 _10e4.execute=function(_10e5){
-if(this.execute_already_called){
-console.debug("See http://trac.atomiclabs.com/ticket/685.");
-return;
-}
-this.execute_already_called=true;
 console.debug(_10e5);
 var id=_10e5["@id"];
 delete _10e5["@id"];

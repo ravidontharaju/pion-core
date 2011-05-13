@@ -539,9 +539,6 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.lookup_store;
@@ -598,9 +595,6 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 			dialog.show();
 			dialog.execute = function(dialogFields) {
-				if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-				this.execute_already_called = true;
-
 				var wrapped_XML = '<PionConfig>' + this.XML_text_area.value + '</PionConfig>';
 				var trimmed_XML = wrapped_XML.replace(/>\s*/g, '>');
 				if (dojo.isIE) {
@@ -644,9 +638,6 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			});
 			dialog.show();
 			dialog.execute = function(dialogFields) {
-				if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-				this.execute_already_called = true;
-
 				var lines = this.XML_text_area.value.split('\n');
 				dojo.forEach(lines, function(line) {
 					if (results = line.match(/^"(.*)","(.*)"$/)) {
@@ -800,9 +791,6 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.rule_store;
@@ -931,9 +919,6 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 			});
 		},
 		execute: function(dialogFields) {
-			if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-			this.execute_already_called = true;
-
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
 			var r_store = this.regex_store;

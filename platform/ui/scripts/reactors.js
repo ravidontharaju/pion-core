@@ -1267,11 +1267,7 @@ function showWorkspaceConfigDialog(workspace_pane) {
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
 	dialog.show();
-	dialog.execute_already_called = false;
 	dialog.execute = function(dialogFields) {
-		if (this.execute_already_called) { console.debug('See http://trac.atomiclabs.com/ticket/685.'); return; }
-		this.execute_already_called = true;
-
 		updateWorkspaceConfig(dialogFields, workspace_pane);
 	}
 }
