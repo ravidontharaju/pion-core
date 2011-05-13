@@ -809,7 +809,7 @@ label.disabled {
 	font-size: 14px;
 }
 
-/* for moveable items, e.g. reactors in a workspace */
+/* for reactors in a workspace */
 
 .name {
 	width: 132px;
@@ -820,7 +820,7 @@ label.disabled {
 }
 
 
-.moveable {
+.reactor {
 	padding: 8px 10px 0 5px;
 	border: 1px solid #666666;
 	cursor: pointer;
@@ -830,7 +830,13 @@ label.disabled {
 	font-weight: bold;
 }
 
-.tundra .moveable .dijitToggleButton .dijitButtonNode {
+.reactor.disabled {
+	cursor: default;
+	opacity: .50;              /* CSS3 standard */
+	filter: alpha(opacity=50); /* for IE */
+}
+
+.tundra .reactor .dijitToggleButton .dijitButtonNode {
 	width: 16px;
 	height: 16px;
 	background-color: transparent;
@@ -840,7 +846,7 @@ label.disabled {
 }
 
 
-.tundra .moveable .dijitToggleButtonChecked .dijitButtonNode {
+.tundra .reactor .dijitToggleButtonChecked .dijitButtonNode {
 	width: 16px;
 	height: 16px;
 	background-color: #ffffff;
@@ -849,7 +855,7 @@ label.disabled {
 	border: 0px;
 }
 
-.tundra .moveable .ops_per_sec {
+.tundra .reactor .ops_per_sec {
 	margin-left: 45px;
 	font-size: 9px;
 	color: #999999;

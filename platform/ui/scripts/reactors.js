@@ -32,16 +32,13 @@ var STEP = 10;
 var minimum_workspace_width = 2000;
 var minimum_workspace_height = 2000;
 
-var latest_event = null;
 var workspace_boxes = [];
 var surface = null;
-var reactor_config_store;
 
 pion.reactors.workspace_box = null;
 pion.reactors.workspaces_by_id = {};
 pion.reactors.reactors_by_id = {};
 pion.reactors.connections_by_id = {};
-pion.reactors.config_store = null;
 pion.reactors.comparison_type_store = new dojo.data.ItemFileWriteStore({data: { identifier: 'name', items: [] }});
 pion.reactors.comparison_type_xml_store = new dojox.data.XmlStore({url: '/config/comparisons'});
 pion.reactors.arity_by_comparison_name = {};
@@ -191,7 +188,7 @@ pion.reactors.init = function() {
 							var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
 							var is_running = (is_running_string == 'true');
 							//console.debug(reactor.config.Name, is_running? ' is ' : ' is not ', 'running.');
-							reactor.run_button.attr('checked', is_running);
+							reactor.run_button.set('checked', is_running);
 							reactor.config.Running = is_running;
 						}
 					});
@@ -222,7 +219,7 @@ pion.reactors.updateRunButtons = function() {
 						var is_running_node = n.getElementsByTagName('Running')[0];
 						var is_running_string = dojo.isIE? is_running_node.xml.match(/.*>(\w*)<.*/)[1] : is_running_node.textContent;
 						var is_running = (is_running_string == 'true');
-						reactor.run_button.attr('checked', is_running);
+						reactor.run_button.set('checked', is_running);
 						reactor.config.Running = is_running;
 					}
 				});
@@ -289,24 +286,24 @@ pion.reactors._initConfiguredWorkspaces = function() {
 }
 
 pion.reactors._initConfiguredReactors = function() {
-	reactor_config_store = new dojox.data.XmlStore({url: '/config/reactors'});
-	reactor_config_store._getFetchUrl = function(request) {
+	pion.reactors.config_store = new dojox.data.XmlStore({url: '/config/reactors'});
+	var store = pion.reactors.config_store;
+	store._getFetchUrl = function(request) {
 		if (request && request.query && '@id' in request.query)
 			return this.url + '/' + request.query['@id'];
 		else
 			return this.url;
 	}
-	pion.reactors.config_store = reactor_config_store;
-	reactor_config_store.fetch({
+	store.fetch({
 		query: {tagName: 'Reactor'},
 		onItem: function(item, request) {
-			console.debug('fetched Reactor with id = ', reactor_config_store.getValue(item, '@id'));
+			console.debug('fetched Reactor with id = ', store.getValue(item, '@id'));
 
 			var config = {};
-			var attributes = reactor_config_store.getAttributes(item);
+			var attributes = store.getAttributes(item);
 			for (var i = 0; i < attributes.length; ++i) {
 				if (attributes[i] != 'tagName' && attributes[i] != 'childNodes') {
-					config[attributes[i]] = reactor_config_store.getValue(item, attributes[i]).toString();
+					config[attributes[i]] = store.getValue(item, attributes[i]).toString();
 				}
 			}
 			//console.dir(config);
@@ -316,11 +313,11 @@ pion.reactors._initConfiguredReactors = function() {
 		onComplete: function(items, request) {
 			console.debug('done fetching Reactors');
 			pion.reactors.updateRunButtons();
-			reactor_config_store.fetch({
+			store.fetch({
 				query: {tagName: 'Connection'},
 				onItem: function(item, request) {
-					var start_reactor = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'From')];
-					var end_reactor   = pion.reactors.reactors_by_id[reactor_config_store.getValue(item, 'To')];
+					var start_reactor = pion.reactors.reactors_by_id[store.getValue(item, 'From')];
+					var end_reactor   = pion.reactors.reactors_by_id[store.getValue(item, 'To')];
 
 					// TODO: need to handle the case where only one is defined - a proxy should be created.
 					if (! start_reactor || ! end_reactor)
@@ -330,7 +327,7 @@ pion.reactors._initConfiguredReactors = function() {
 					surface = pion.reactors.workspace_box.my_surface;
 					dijit.byId("mainTabContainer").selectChild(pion.reactors.workspace_box.my_content_pane);
 
-					var connection_id = reactor_config_store.getValue(item, '@id').toString();
+					var connection_id = store.getValue(item, '@id').toString();
 					pion.reactors.createConnection(start_reactor, end_reactor, connection_id);
 				},
 				onComplete: function(items, request) {
@@ -478,7 +475,7 @@ function addWorkspace(config) {
 	tab_container.addChild(workspace_pane, i);
 	var new_workspace = new pion.reactors.OverlappableTarget(shim, { accept: ["reactor"] });
 	dojo.addClass(new_workspace.node, "workspaceTarget");
-	dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ pion.reactors.handleDropOnWorkspace(source, nodes, copy, new_workspace); });
+	dojo.connect(new_workspace, "onDrop", pion.reactors.handleDropOnWorkspace);
 	dojo.connect(new_workspace.node, "onmouseup", updateLatestMouseUpEvent);
 	new_workspace.config = config;
 	new_workspace.my_content_pane = workspace_pane;
@@ -559,8 +556,6 @@ function makeScrollHandler(workspace_pane) {
 }
 
 function updateLatestMouseUpEvent(e) {
-	latest_event = e;
-	console.debug("e = ", e);
 	pion.reactors.last_x = e.clientX;
 	pion.reactors.last_y = e.clientY;
 }
@@ -654,37 +649,8 @@ pion.reactors.createReactor = function(config, node) {
 	return reactor;
 }
 
-pion.reactors.handleDropOnWorkspace = function(source, nodes, copy, target) {
-	console.debug("handleDropOnWorkspace called, target.node = ", target.node, ", workspace_box.node = ", pion.reactors.workspace_box.node);
-
-	// Remove connectors that are added to the workspace as a consequence of being dropped on a reactor.
-	// They shouldn't be added, because the workspace is disabled as a target when a connector is being moved, but
-	// there is a bug in dojo.dnd.Source.onDndDrop.  Alternatively, this can be avoided by adding 
-	//		if(this.targetState == "Disabled"){ break; }
-	// near the beginning of dojo.dnd.Source.onDndDrop.
-	dojo.query('.dojoDndItem', pion.reactors.workspace_box.node).forEach(function(n) {
-		if (n.getAttribute("dndType") == "connector") {
-			console.debug('Removing ', n);
-			pion.reactors.workspace_box.node.removeChild(n);
-		}
-	});
-
-	// We need to duplicate the acceptance check that was done in onDndDrop(), since handleDropOnWorkspace() is called 
-	// whenever onDndDrop() is called.
-	// TODO: see if it would make more sense to have
-	//		new_workspace.creator = handleDropOnWorkspace  (appropriately rewritten)
-	// rather than
-	//		dojo.connect(new_workspace, "onDndDrop", function(source, nodes, copy, target){ handleDropOnWorkspace(source, nodes, copy, new_workspace); })
-	if (!target.checkAcceptance(source, nodes))
-		return;
-
-	// If not the current workspace, ignore the drop.
-	// TODO: once the problems with disabling targets are fixed, this should be handled by disabling all but the current workspace.
-	if (target != pion.reactors.workspace_box)
-		return;
-
+pion.reactors.handleDropOnWorkspace = function(source, nodes, copy) {
 	var reactor_type = nodes[0].getAttribute("reactor_type");
-
 	pion.reactors.showReactorInitDialog(reactor_type);
 }
 
@@ -716,14 +682,8 @@ pion.reactors._showReactorInitDialog = function(reactor_type) {
 	dialog.show();
 }
 
-pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
-	var workspace_box = pion.reactors.workspace_box;
-
-	// If target is not a reactor, return.  This happens when dropping reactors on the workspace, and seems to be a dnd bug. 
-	if (!target.node.getAttribute('reactor_type')) return;
-
-	// handleDropOnReactor will be called more than once for a single drop.  One of these times will be just
-	// after a connector node was added to the reactor.  If this is that time, delete the connector node.
+pion.reactors.handleDropOnReactor = function(target) {
+	// Delete the connector node (i.e. the arrow icon added to the reactor icon).
 	// Note that this sometimes happens after tracking has started, i.e. when isTracking == true.
 	dojo.query('.dojoDndItem', target.node).forEach(function(n) {
 		target.node.removeChild(n);
@@ -732,51 +692,56 @@ pion.reactors.handleDropOnReactor = function(source, nodes, copy, target) {
 	// If we're already tracking a connector for this target, we're done.
 	if (pion.reactors.isTracking) return;
 
-	if (nodes[0].getAttribute("dndType") != "connector") {
-		// This should not be reached, since reactor targets are only supposed to accept connectors.
-		console.debug('returning because nodes[0].getAttribute("dndType") != "connector"');
-		return;
-	}
-
 	pion.reactors.isTracking = true;
-	var x1 = target.node.offsetLeft + target.node.offsetWidth;
-	var y1 = target.node.offsetTop  + target.node.offsetHeight / 2;
-	pion.reactors.trackLine = surface.createPolyline([{x: x1, y: y1}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 - 5}, {x: x1 + 20, y: y1}, {x: x1 + 15, y: y1 + 5}]).setStroke("black");
-	var xOffset = dojo.byId("reactor_config_content").offsetLeft;
-	var yOffset = dojo.byId("reactor_config_content").offsetTop;
-	yOffset += dojo.byId("main_stack_container").offsetTop;
-	var starting_pane = pion.reactors.workspace_box.my_content_pane;
+	var center_x = target.node.offsetLeft + target.node.offsetWidth / 2;
+	var center_y = target.node.offsetTop  + target.node.offsetHeight / 2;
+	var wb_pos = dojo.position(pion.reactors.workspace_box.node, false);
 
-	pion.reactors.mouse_connection = dojo.connect(dijit.byId('mainTabContainer').node, 'onmousemove', 
+	// Draw a line from the center of the target reactor to the cursor.
+	var cursor_x = pion.reactors.last_x - wb_pos.x;
+	var cursor_y = pion.reactors.last_y - wb_pos.y;
+	pion.reactors.trackLine = surface.createPolyline([{x: center_x, y: center_y}, {x: cursor_x, y: center_y}, {x: cursor_x, y: cursor_y}]).setStroke("black");
+
+	var starting_pane = pion.reactors.workspace_box.my_content_pane;
+	pion.reactors.mouse_connection = dojo.connect(dojo.byId('mainTabContainer'), 'onmousemove', 
 		function(event) {
-			var x2 = event.clientX - xOffset;
-			var y2 = event.clientY - yOffset;
+			var cursor_x = event.clientX - wb_pos.x;
+			var cursor_y = event.clientY - wb_pos.y;
 			if (pion.reactors.workspace_box.my_content_pane != starting_pane)
 				// We're in a different workspace than the one the connection started in.
-				pion.reactors.trackLine.setShape([{x: 0, y: 100}, {x: x2, y: 100}, {x: x2, y: y2}])
+				pion.reactors.trackLine.setShape([{x: 0, y: 100}, {x: cursor_x, y: 100}, {x: cursor_x, y: cursor_y}])
 			else
-				pion.reactors.trackLine.setShape([{x: x1, y: y1}, {x: x2, y: y1}, {x: x2, y: y2}])
+				// Draw a line from the center of the target reactor to the cursor.
+				pion.reactors.trackLine.setShape([{x: center_x, y: center_y}, {x: cursor_x, y: center_y}, {x: cursor_x, y: cursor_y}])
 		}
 	);
 	pion.reactors.mouse_connection.starting_pane = starting_pane;
 
 	// the startpoint of the connection will be the widget at target.node, i.e. the reactor the connector was dropped on
 	wrapperWithStartpoint = function(event) {
-		dojo.disconnect(pion.reactors.mouse_connection);
-		pion.reactors.trackLine.removeShape();
+		pion.reactors.stopTracking();
 		handleSelectionOfConnectorEndpoint(event, target.node);
 	}
 
-	dojo.query(".moveable").filter(function(n) { return n != target.node; }).forEach("item.onClickHandler = dojo.connect(item, 'click', wrapperWithStartpoint)");
+	// Add class 'disabled' to the target reactor and add a click handler to all other reactors.
+	dojo.addClass(target.node, 'disabled');
+	dojo.query('.reactor').filter(function(n) { return n != target.node; }).forEach("item.onClickHandler = dojo.connect(item, 'click', wrapperWithStartpoint)");
 
-	// TODO: disable everything except clicking on moveable's.
+	// TODO: disable everything except clicking on reactors.
+}
+
+pion.reactors.stopTracking = function() {
+	dojo.disconnect(pion.reactors.mouse_connection);
+	pion.reactors.trackLine.removeShape();
+	pion.reactors.isTracking = false;
+
+	// Disconnect the click handlers and remove class 'disabled' on all reactors.
+	// (Only the start point will have class 'disabled', but this is easier than keeping track of the start point.)
+	dojo.query('.reactor').forEach("dojo.disconnect(item.onClickHandler); dojo.removeClass(item, 'disabled');");
 }
 
 function handleSelectionOfConnectorEndpoint(event, source_target) {
-	pion.reactors.isTracking = false;
-	console.debug('handleSelectionOfConnectorEndpoint: event = ', event);
 	var source_reactor = dijit.byNode(source_target);
-	console.debug('source_reactor = ', source_reactor);
 	var sink_reactor = dijit.byNode(event.target);
 	if (!sink_reactor) {
 		// This will happen, e.g., when clicking on the name div of the reactor.
@@ -785,9 +750,6 @@ function handleSelectionOfConnectorEndpoint(event, source_target) {
 
 	if (source_reactor.workspace != sink_reactor.workspace)
 		dijit.byId("mainTabContainer").selectChild(source_reactor.workspace.my_content_pane);
-
-	// Disconnect the click handlers on all moveable's.
-	dojo.query(".moveable").forEach("dojo.disconnect(item.onClickHandler)");
 
 	// If in Lite mode and either Reactor is an Enterprise Reactor, display an error message and don't add the connection.
 	pion.reactors.doConnectionChangeIfAllowed(source_reactor, sink_reactor, function() {
@@ -832,7 +794,7 @@ pion.reactors.doConnectionChangeIfAllowed = function(source_reactor, sink_reacto
 							+ 'Click here to obtain a free trial license.</a><br />'
 							+ 'If you already have a commercial license but have not yet installed the key, you can do so '
 							+ '<a href="#" onclick="pion.reactors.doLicenseKeyDialog();" class="link">here.</a>';
-				pion.reactors.action_not_allowed_dialog.attr('content', content);
+				pion.reactors.action_not_allowed_dialog.set('content', content);
 				pion.reactors.action_not_allowed_dialog.show();
 			} else {
 				callback();
@@ -861,7 +823,7 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 	} else {
 		var dialog = new plugins.reactors.ReactorDialog({title: reactor.config.Plugin + ' Configuration', reactor: reactor});
 	}
-	dialog.attr('value', reactor.config);
+	dialog.set('value', reactor.config);
 
 	//// The following use forEach to allow either zero or multiple matches.
 	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
@@ -1077,26 +1039,8 @@ pion.reactors.addOutputConnectionItem = function(reactor_outputs_store, connecti
 	});
 }
 
-pion.reactors.showXMLDialog = function(reactor) {
+pion.reactors.showConfigInNewTab = function(reactor) {
 	window.open('/config/reactors/' + reactor.config['@id']);
-	/*
-	 TODO: restore this once I figure out how to pretty print the XML.  Also, it should at least have a refresh button, if not auto-refreshing.
-	dojo.xhrGet({
-		url: '/config/reactors/' + reactor.config['@id'],
-		preventCache: true,
-		handleAs: 'text',
-		timeout: 5000,
-		load: function(response, ioArgs) {
-			var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre><br/>';
-			console.debug('html = ', html);
-			var dialog = new dijit.Dialog({title: reactor.config.Name + ' Configuration', style: 'width: 600px'});
-			dialog.attr('content', html);
-			dialog.show();
-			return response;
-		},
-		error: pion.handleXhrGetError
-	});
-	*/
 }
 
 pion.reactors.deleteReactorIfConfirmed = function(reactor) {
@@ -1298,9 +1242,7 @@ function handleKeyPress(e) {
 	if (e.keyCode == dojo.keys.ESCAPE) {
 		if (pion.reactors.isTracking) {
 			var starting_pane = pion.reactors.mouse_connection.starting_pane;
-			dojo.disconnect(pion.reactors.mouse_connection);
-			pion.reactors.trackLine.removeShape();
-			pion.reactors.isTracking = false;
+			pion.reactors.stopTracking();
 
 			// If needed, reselect the workspace tab that was originally selected.
 			if (workspace_box.my_content_pane != starting_pane)
@@ -1408,11 +1350,10 @@ function deleteWorkspaceFromUI(workspace_pane) {
 		deleteReactorFromUI(copy_of_reactor_array[i]);
 	}
 	delete pion.reactors.workspaces_by_id[workspace_pane.uuid];
-	for (var j = 0; j < workspace_boxes.length; ++j) {
-		if (workspace_boxes[j] == workspace_pane.my_workspace_box) {
-			workspace_boxes.splice(j, 1);
-		}
-	}
+	workspace_boxes = dojo.filter(workspace_boxes, function(box) {
+		return box != workspace_pane.my_workspace_box;
+	});
+
 	dijit.byId("mainTabContainer").removeChild(workspace_pane);
 }
 
@@ -1473,7 +1414,7 @@ dojo.declare("pion.reactors.WorkspaceDialog",
 							config[attr] = store.getValue(item, attr).toString();
 						}
 					});
-					_this.attr('value', config);
+					_this.set('value', config);
 				},
 				onError: pion.handleFetchError
 			});

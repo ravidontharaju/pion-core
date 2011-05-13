@@ -21,7 +21,7 @@ dojo.declare("plugins.reactors.Reactor",
 				this._initOptions(this.config, this.class_info.option_defaults);
 			this.requires_license = 'edition' in this.class_info && this.class_info.edition == 'Enterprise';
 			var reactor_target = new pion.reactors.OverlappableTarget(this.domNode, {accept: ["connector"]});
-			dojo.connect(reactor_target, "onDndDrop", pion.reactors.handleDropOnReactor);
+			dojo.connect(reactor_target, "onDrop", function(){ pion.reactors.handleDropOnReactor(reactor_target); });
 
 			this.name_div = document.createElement('div');
 			this.name_div.innerHTML = pion.escapeXml(this.config.Name);
@@ -54,10 +54,9 @@ dojo.declare("plugins.reactors.Reactor",
 			var category = pion.reactors.categories[this.config.Plugin];
 			dojo.addClass(this.domNode, category);
 			if (category != 'collection') {
-				this.run_button.attr('checked', true); // all reactors except collectors start out running
+				this.run_button.set('checked', true); // all reactors except collectors start out running
 			}
 
-			dojo.addClass(this.domNode, 'moveable');
 			dojo.addClass(this.domNode, 'reactor');
 			dojo.addClass(this.domNode, this.config.Plugin);
 
@@ -82,7 +81,7 @@ dojo.declare("plugins.reactors.Reactor",
 			var menu = this.context_menu;
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor configuration", onClick: function(){pion.reactors.showReactorConfigDialog(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Edit reactor connections", onClick: function(){pion.reactors.showReactorConnectionsDialog(_this);} }));
-			menu.addChild(new dijit.MenuItem({ label: "Show configuration", onClick: function(){pion.reactors.showXMLDialog(_this);} }));
+			menu.addChild(new dijit.MenuItem({ label: "Show configuration", onClick: function(){pion.reactors.showConfigInNewTab(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Show stats", onClick: function(){_this.showQueryResult();} }));
 			menu.addChild(new dijit.MenuItem({ label: "Delete reactor", onClick: function(){pion.reactors.deleteReactorIfConfirmed(_this);} }));
 			menu.addChild(new dijit.MenuItem({ label: "Copy reactor", onClick: function(){pion.reactors.copyReactor(_this);} }));
@@ -182,7 +181,7 @@ dojo.declare("plugins.reactors.Reactor",
 					var html = '<pre>' + response.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
 					console.debug('html = ', html);
 					var dialog = new dijit.Dialog({title: 'Reactor Diagnostics'});
-					dialog.attr('content', html);
+					dialog.set('content', html);
 					dialog.show();
 					return response;
 				},
@@ -270,13 +269,13 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					if (this.class_info.option_defaults[option])
 						options.push(option);
 				}
-				this.attr('value', {options: options});
+				this.set('value', {options: options});
 			}
 			if ('value_defaults' in this.class_info)
-				this.attr('value', this.class_info.value_defaults);
+				this.set('value', this.class_info.value_defaults);
 		},
 		tryConfig: function() {
-			var dialogFields = this.attr('value');
+			var dialogFields = this.get('value');
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
 			var workspace_box = pion.reactors.workspace_box;
@@ -371,7 +370,7 @@ dojo.declare("plugins.reactors.ReactorDialog",
 			if ('option_defaults' in this.reactor.class_info)
 				this.reactor._initOptions(this.reactor.config, this.reactor.class_info.option_defaults);
 			if ('value_defaults' in this.reactor.class_info)
-				this.attr('value', this.reactor.class_info.value_defaults);
+				this.set('value', this.reactor.class_info.value_defaults);
 		},
 		reactor: '',
 		execute: function(dialogFields) {
@@ -495,9 +494,9 @@ dojo.declare("plugins.reactors.ReactorConnections",
 				var source_reactor = pion.reactors.reactors_by_id[uuid];
 				var menu_item = new dijit.MenuItem({label: source_reactor.config.Name});
 				if (source_reactor == sink_reactor || dojo.indexOf(existing_inputs, source_reactor) != -1)
-					menu_item.attr('disabled', true);
+					menu_item.set('disabled', true);
 				else
-					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'input'));
+					menu_item.set('onClick', this.makeCallback(source_reactor, sink_reactor, 'input'));
 				var workspace_id = source_reactor.workspace.my_content_pane.uuid;
 				subMenus[workspace_id].addChild(menu_item);
 			}
@@ -519,9 +518,9 @@ dojo.declare("plugins.reactors.ReactorConnections",
 				var sink_reactor = pion.reactors.reactors_by_id[uuid];
 				var menu_item = new dijit.MenuItem({label: sink_reactor.config.Name});
 				if (source_reactor == sink_reactor || dojo.indexOf(existing_outputs, sink_reactor) != -1)
-					menu_item.attr('disabled', true);
+					menu_item.set('disabled', true);
 				else
-					menu_item.attr('onClick', this.makeCallback(source_reactor, sink_reactor, 'output'));
+					menu_item.set('onClick', this.makeCallback(source_reactor, sink_reactor, 'output'));
 				var workspace_id = sink_reactor.workspace.my_content_pane.uuid;
 				subMenus[workspace_id].addChild(menu_item);
 			}
@@ -551,7 +550,7 @@ dojo.declare("plugins.reactors.ReactorConnections",
 							}
 
 							// Disable the menu item that was selected, since it's now an existing connection.
-							this_menu_item.attr('disabled', true);
+							this_menu_item.set('disabled', true);
 						},
 						error: pion.getXhrErrorHandler(dojo.rawXhrPost, {postData: post_data})
 					});

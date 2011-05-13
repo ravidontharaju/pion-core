@@ -91,7 +91,7 @@ pion.widgets.CrossWorkspaceConnection.default_y_offset = 40;
 pion.widgets.CrossWorkspaceConnection.icon_width = 30;
 pion.widgets.CrossWorkspaceConnection.icon_height = 30;
 
-// See .moveable rule in default.css.
+// See .reactor rule in default.css.
 pion.widgets.CrossWorkspaceConnection.reactor_width = 150;
 pion.widgets.CrossWorkspaceConnection.reactor_height = 50;
 
