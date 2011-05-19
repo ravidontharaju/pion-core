@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -456,7 +456,7 @@ void VocabularyConfig::writeTermConfigXML(std::ostream& out,
 	if (t.term_type == Vocabulary::TYPE_CHAR)
 		out << ' ' << SIZE_ATTRIBUTE_NAME << "=\"" << t.term_size << '\"';
 	else if (! t.term_format.empty())
-		out << ' ' << FORMAT_ATTRIBUTE_NAME << "=\"" << t.term_format << '\"';
+		out << ' ' << FORMAT_ATTRIBUTE_NAME << "=\"" << xml_encode(t.term_format) << '\"';
 	out << '>' << Vocabulary::getDataTypeAsString(t.term_type)
 		<< "</" << TYPE_ELEMENT_NAME << '>' << std::endl;
 	
