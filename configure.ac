@@ -14,8 +14,8 @@ AC_CONFIG_SRCDIR(platform/src/Vocabulary.cpp)
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
 
-# Disable static libraries to speed up build (they are not used)
-AM_DISABLE_STATIC
+# Use "silent mode" for less verbose build commands in automake 1.11+
+m4_ifdef( [AM_SILENT_RULES], [AM_SILENT_RULES([yes])] )
 
 # Needed to set per-target compilation flags
 AM_PROG_CC_C_O

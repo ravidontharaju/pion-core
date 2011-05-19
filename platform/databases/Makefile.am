@@ -7,6 +7,7 @@ AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
 pion_plugins_LTLIBRARIES = SQLiteDatabase.la
 
+SQLiteDatabase_la_CXXFLAGS = -shared $(AM_CXXFLAGS)
 SQLiteDatabase_la_SOURCES = SQLiteDatabase.hpp SQLiteDatabase.cpp
 SQLiteDatabase_la_CPPFLAGS = -I@PION_COMMON_HOME@/include -I../include
 SQLiteDatabase_la_LDFLAGS = -no-undefined -module -avoid-version
