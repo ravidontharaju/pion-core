@@ -121,7 +121,7 @@ console.info("~~~~~~~~~~~~~~~~~~~~~ In readyForCallback() callback, e = ", e, ",
 	},
 
 	_onChange: function(/*Event*/ e){
-		this._handleOnChange(this.set('value'), true);
+		this._handleOnChange(this.get('value'), true);
 	},
 
 	// for layout widgets:

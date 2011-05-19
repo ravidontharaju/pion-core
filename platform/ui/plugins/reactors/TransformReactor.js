@@ -238,9 +238,9 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						type: pion.widgets.TermTextCell },
 					{ field: 'Type', name: 'Transformation Type', width: 10, 
 						type: dojox.grid.cells.Select, options: [ 'AssignTerm', 'AssignValue', 'JoinTerm', 'JoinTerm (unique)', 'Lookup', 'Regex', 'Rules', 'SplitTerm', 'URLDecode', 'URLEncode' ] },
-					{ field: 'Value', name: 'Value', width: 'auto',
+					{ field: 'Value', name: 'Value', relWidth: 1,
 						formatter: pion.xmlCellFormatter2 },
-					{ field: 'Value', name: 'Value', width: 'auto',
+					{ field: 'Value', name: 'Value', relWidth: 1,
 						type: pion.widgets.TermTextCell },
 					{ field: 'Sep', name: 'Sep', width: '28px',
 						formatter: pion.xmlCellFormatter },
@@ -275,7 +275,10 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							autofocus: false
 						});
 						dialog.show();
+
+						// These seem to be necessary when using 'autoHeight: n' (but not 'autoHeight: true').
 						dialog.lookup_grid._refresh();
+						setTimeout(function() { dialog.lookup_grid.resize(); }, 0);
 
 						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
 						// the first focusable item (which looks awful since it's a term selector.)
@@ -302,6 +305,10 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							autofocus: false
 						});
 						dialog.show();
+
+						// These seem to be necessary when using 'autoHeight: n' (but not 'autoHeight: true').
+						dialog.regex_grid._refresh();
+						setTimeout(function() { dialog.regex_grid.resize(); }, 0);
 
 						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
 						// the first focusable item (which looks awful since it's a term selector.)
@@ -517,16 +524,15 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 			this.lookup_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Key', name: 'Key', width: 14 },
-					{ field: 'Value', name: 'Value', width: 'auto',
-						formatter: pion.xmlCellFormatter },
+					{ field: 'Key', name: 'Key', width: 14, formatter: pion.xmlCellFormatter },
+					{ field: 'Value', name: 'Value', relWidth: 1, formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.lookup_grid = new dojox.grid.DataGrid({
 				store: this.lookup_store,
 				structure: this.lookup_grid_layout,
-				rowsPerPage: 1000,
+				escapeHTMLInData: false,
 				autoHeight: 8,
 				singleClickEdit: true
 			}, document.createElement('div'));
@@ -714,9 +720,9 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 					{ field: 'Type', name: 'Comparison', width: 10, 
 						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ field: 'Value', name: 'Value', width: 'auto',
+					{ field: 'Value', name: 'Value', relWidth: 1,
 						formatter: pion.xmlCellFormatter },
-					{ field: 'SetValue', name: 'Set Value', width: 'auto',
+					{ field: 'SetValue', name: 'Set Value', relWidth: 1,
 						formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', classes: 'insert button', editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
@@ -725,7 +731,7 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			this.rule_grid = new dojox.grid.DataGrid({
 				store: this.rule_store,
 				structure: this.rule_grid_layout,
-				rowsPerPage: 1000,
+				escapeHTMLInData: false,
 				autoHeight: true,
 				singleClickEdit: true
 			}, document.createElement('div'));
@@ -868,10 +874,8 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 			this.regex_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Exp', name: 'Regex', width: 'auto',
-						formatter: pion.xmlCellFormatter },
-					{ field: 'Format', name: 'Format', width: 'auto',
-						formatter: pion.xmlCellFormatter },
+					{ field: 'Exp', name: 'Regex', relWidth: 1, formatter: pion.xmlCellFormatter },
+					{ field: 'Format', name: 'Format', relWidth: 1, formatter: pion.xmlCellFormatter },
 					{ name: 'Insert Above', classes: 'insert button', editable: false, formatter: pion.makeInsertAboveButton },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
@@ -879,7 +883,7 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 			this.regex_grid = new dojox.grid.DataGrid({
 				store: this.regex_store,
 				structure: this.regex_grid_layout,
-				rowsPerPage: 1000,
+				escapeHTMLInData: false,
 				autoHeight: 8,
 				singleClickEdit: true
 			}, document.createElement('div'));

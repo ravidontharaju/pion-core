@@ -83,18 +83,18 @@ dojo.declare("plugins.reactors.DatabaseOutputReactor",
 			store.fetch({
 				query: {'@id': this.config['@id']},
 				onItem: function(item) {
-					var comparisons = store.getValues(item, 'Comparison');
-					for (var i = 0; i < comparisons.length; ++i) {
-						var comparison_item = {
-							ID: _this.comparison_store.next_id++,
-							Term: store.getValue(comparisons[i], 'Term'),
-							Type: store.getValue(comparisons[i], 'Type'),
-							MatchAllValues: _this.getOptionalBool(store, comparisons[i], 'MatchAllValues')
-						}
-						if (store.hasAttribute(comparisons[i], 'Value'))
-							comparison_item.Value = store.getValue(comparisons[i], 'Value');
+					dojo.forEach(store.getValues(item, 'Comparison'), function(comp) {
+						var comparison_item = { ID: _this.comparison_store.next_id++ };
+
+						// This will pull in things beyond what comparison_grid_layout knows about, but they will be ignored.
+						dojo.forEach(store.getAttributes(comp), function(attr) {
+							comparison_item[attr] = (attr in plugins.reactors.DatabaseOutputReactor.grid_option_defaults)?
+														_this.getOptionalBool(store, comp, attr):
+														store.getValue(comp, attr).toString();
+						});
+
 						_this.comparison_store.newItem(comparison_item);
-					}
+					});
 				},
 				onComplete: function() {
 					_this.comparison_store_is_ready = true;
@@ -316,12 +316,12 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.comparison_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Term', name: 'Term', width: 20, 
+					{ field: 'Term', name: 'Term', relWidth: 2, 
 						type: pion.widgets.TermTextCell },
-					{ field: 'Type', name: 'Comparison', width: 10, 
+					{ field: 'Type', name: 'Comparison', relWidth: 1, 
 						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ field: 'Value', name: 'Value', width: 'auto',
+					{ field: 'Value', name: 'Value', relWidth: 2,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'MatchAllValues', name: 'Match&nbsp;All', classes: 'match_all bool', 
 						type: dojox.grid.cells.Bool},
@@ -331,6 +331,7 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 			this.comparison_grid = new dojox.grid.DataGrid({
 				store: this.reactor.comparison_store,
 				structure: this.comparison_grid_layout,
+				escapeHTMLInData: false,
 				singleClickEdit: true,
 				autoHeight: 5
 			}, document.createElement('div'));
@@ -457,10 +458,10 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 plugins.reactors.DatabaseOutputReactorDialog.grid_layout = [{
 	defaultCell: { editable: true, type: dojox.grid.cells._Widget },
 	rows: [
-		{ field: 'Field', name: 'Database Column Name', width: 20,
+		{ field: 'Field', name: 'Database Column Name', relWidth: 1,
 			widgetClass: dijit.form.ValidationTextBox, 
 			widgetProps: {regExp: "[a-zA-Z][\\w]*", required: "true", invalidMessage: "Illegal database column name" } },
-		{ field: 'Term', name: 'Term', width: 'auto', 
+		{ field: 'Term', name: 'Term', relWidth: 2, 
 			type: pion.widgets.TermTextCell },
 		{ field: 'IndexOption', name: 'Index', styles: 'text-align: center;', width: 4, 
 			type: dojox.grid.cells.Select, options: ['true', 'false', 'unique'] },

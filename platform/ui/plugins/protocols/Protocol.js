@@ -54,21 +54,21 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				this.extraction_rule_grid_layout = [{
 					defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
 					rows: [
-						{ field: 'Term', name: 'Term', width: 16, 
+						{ field: 'Term', name: 'Term', relWidth: 3, 
 							type: pion.widgets.TermTextCell },
-						{ field: 'Source', name: 'Source', styles: '', width: 7, 
+						{ field: 'Source', name: 'Source', styles: '', relWidth: 1, 
 							type: dojox.grid.cells.Select, options: plugins.protocols.source_options },
-						{ field: 'Name', name: 'Name', width: 7,
+						{ field: 'Name', name: 'Name', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
-						{ field: 'Match', name: 'Match', width: 8,
+						{ field: 'Match', name: 'Match', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
-						{ field: 'Format', name: 'Format', width: 8,
+						{ field: 'Format', name: 'Format', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
-						{ field: 'ContentType', name: 'ContentType', width: 8,
+						{ field: 'ContentType', name: 'ContentType', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
-						{ field: 'MaxSize', name: 'MaxSize', width: 'auto',
+						{ field: 'MaxSize', name: 'MaxSize', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
-						{ field: 'MaxExtracts', name: 'MaxExtracts', width: 'auto',
+						{ field: 'MaxExtracts', name: 'MaxExtracts', relWidth: 1,
 							formatter: pion.xmlCellFormatter },
 						{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 					]
@@ -76,7 +76,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 				this.extraction_rule_grid = new dojox.grid.DataGrid({
 					store: this.extraction_rule_store,
 					structure: this.extraction_rule_grid_layout,
-					rowsPerPage: 1000,
+					escapeHTMLInData: false,
 					singleClickEdit: true
 				}, document.createElement('div'));
 				this.extraction_rule_grid_node.appendChild(this.extraction_rule_grid.domNode);
@@ -85,6 +85,7 @@ dojo.declare("plugins.protocols.ProtocolPane",
 					if (e.cell.name == 'Delete') {
 						this.store.deleteItem(this.getItem(e.rowIndex));
 						_this.markAsChanged();
+						dojo.stopEvent(e); // Prevent UI from reloading.
 					}
 				});
 				dojo.connect(this.extraction_rule_grid, 'onApplyCellEdit', this, _this._handleCellEdit);
@@ -132,15 +133,14 @@ dojo.declare("plugins.protocols.ProtocolPane",
 					dojo.forEach(store.getValues(item, 'Extract'), function(extraction_rule) {
 						var extraction_rule_item = {
 							ID: _this.extraction_rule_store.next_id++,
-							Term: store.getValue(extraction_rule, '@term'),
-							Source: store.getValue(extraction_rule, 'Source'),
-							Name: store.getValue(extraction_rule, 'Name'),
-							Match: store.getValue(extraction_rule, 'Match'),
-							Format: store.getValue(extraction_rule, 'Format'),
-							ContentType: store.getValue(extraction_rule, 'ContentType'),
-							MaxSize: store.getValue(extraction_rule, 'MaxSize'),
-							MaxExtracts: store.getValue(extraction_rule, 'MaxExtracts')
-						}
+							Term: store.getValue(extraction_rule, '@term')
+						};
+
+						// This will pull in things beyond what extraction_rule_grid_layout knows about, but they will be ignored.
+						dojo.forEach(store.getAttributes(extraction_rule), function(attr) {
+							extraction_rule_item[attr] = store.getValue(extraction_rule, attr).toString();
+						});
+
 						_this.extraction_rule_store.newItem(extraction_rule_item);
 					});
 				},
@@ -155,8 +155,11 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			this.markAsChanged();
 			this.extraction_rule_store.newItem({ID: this.extraction_rule_store.next_id++});
 
-			// This sets the focus to the last row, causing the grid to scroll to the bottom (so the user can see the newly created rule).
-			this.extraction_rule_grid.focus.setFocusIndex(this.extraction_rule_grid.rowCount - 1, 0);
+			// Once the grid has finished adding the new row, scroll to the bottom and focus on the first cell of the new row.
+			var h = this.extraction_rule_grid.connect(this.extraction_rule_grid, 'endUpdate', function() {
+				this.focus.setFocusIndex(this.rowCount - 1, 0);
+				this.disconnect(h);
+			});
 		},
 		save: function() {
 			if (this.has_extraction_rules) {

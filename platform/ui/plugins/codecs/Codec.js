@@ -50,6 +50,7 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.field_mapping_grid = new dojox.grid.DataGrid({
 				store: this.field_mapping_store,
 				structure: this.field_mapping_grid_layout,
+				escapeHTMLInData: false,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.field_mapping_grid_node.appendChild(this.field_mapping_grid.domNode);
@@ -58,6 +59,7 @@ dojo.declare("plugins.codecs.CodecPane",
 				if (e.cell.name == 'Delete') {
 					this.store.deleteItem(this.getItem(e.rowIndex));
 					_this.markAsChanged();
+					dojo.stopEvent(e); // Prevent UI from reloading.
 				}
 			});
 			this.connect(this.field_mapping_grid, 'onApplyCellEdit', _this._handleCellEdit);
@@ -76,7 +78,7 @@ dojo.declare("plugins.codecs.CodecPane",
 				rows: [
 					{ field: 'FieldName', name: 'Field Name', width: 15,
 						formatter: pion.xmlCellFormatter },
-					{ field: 'Term', name: 'Term', width: 'auto', 
+					{ field: 'Term', name: 'Term', relWidth: 1, 
 						type: pion.widgets.TermTextCell },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
@@ -140,6 +142,12 @@ dojo.declare("plugins.codecs.CodecPane",
 		_handleAddNewField: function() {
 			this.markAsChanged();
 			this.field_mapping_store.newItem({ID: this.field_mapping_store.next_id++});
+
+			// Once the grid has finished adding the new row, scroll to the bottom and focus on the first cell of the new row.
+			var h = this.field_mapping_grid.connect(this.field_mapping_grid, 'endUpdate', function() {
+				this.focus.setFocusIndex(this.rowCount - 1, 0);
+				this.disconnect(h);
+			});
 		},
 		onFieldMappingPutDataReady: function() {
 		},

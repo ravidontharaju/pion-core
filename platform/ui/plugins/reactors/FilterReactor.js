@@ -114,12 +114,12 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			this.comparison_grid_layout = [{
 				defaultCell: { width: 8, editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: right;' },
 				rows: [
-					{ field: 'Term', name: 'Term', width: 20, 
+					{ field: 'Term', name: 'Term', relWidth: 2, 
 						type: pion.widgets.TermTextCell },
-					{ field: 'Type', name: 'Comparison', width: 15, 
+					{ field: 'Type', name: 'Comparison', relWidth: 1, 
 						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.reactors.comparison_type_store, query: {category: 'generic'}} },
-					{ field: 'Value', name: 'Value', width: 'auto',
+					{ field: 'Value', name: 'Value', relWidth: 2,
 						formatter: pion.xmlCellFormatter },
 					{ field: 'MatchAllValues', name: 'Match&nbsp;All', classes: 'match_all bool', 
 						type: dojox.grid.cells.Bool},
@@ -129,6 +129,7 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 			this.comparison_grid = new dojox.grid.DataGrid({
 				store: this.reactor.comparison_store,
 				structure: this.comparison_grid_layout,
+				escapeHTMLInData: false,
 				singleClickEdit: true,
 				autoHeight: true
 			}, document.createElement('div'));

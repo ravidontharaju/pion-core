@@ -41,23 +41,26 @@ dojo.declare("plugins.codecs.LogCodecPane",
 			this.field_mapping_grid_layout = [{
 				defaultCell: { editable: true, type: dojox.grid.cells._Widget, styles: 'text-align: left;' },
 				rows: [
-					{ field: 'FieldName', name: 'Field Name', width: 15,
+					{ field: 'FieldName', name: 'Field Name', relWidth: 1,
 						formatter: pion.xmlCellFormatter },
-					{ field: 'Term', name: 'Term', width: 15, 
+					{ field: 'Term', name: 'Term', relWidth: 2, 
 						type: pion.widgets.TermTextCell },
 					// TODO: restore validation.
-					{ field: 'StartChar', name: 'Start Char', styles: 'text-align: center', width: 3 },
+					{ field: 'StartChar', name: 'Start Char', styles: 'text-align: center;', width: 3,
+						formatter: pion.xmlCellFormatter },
 					// TODO: restore validation.
-					{ field: 'EndChar', name: 'End Char', styles: 'text-align: center', width: 3 },
+					{ field: 'EndChar', name: 'End Char', styles: 'text-align: center;', width: 3,
+						formatter: pion.xmlCellFormatter },
 					{ field: 'StartEndOptional', name: 'Start/End Optional', width: 4, classes: 'bool',
 						type: dojox.grid.cells.Bool },
 					{ field: 'URLEncode', name: 'URL Encode', width: 4, classes: 'bool', 
 						type: dojox.grid.cells.Bool },
 					// TODO: restore validation.
-					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center', width: 3 },
-					{ field: 'EmptyString', name: 'Empty String', width: 3,
+					{ field: 'EscapeChar', name: 'Escape Char', styles: 'text-align: center;', width: 4,
 						formatter: pion.xmlCellFormatter },
-					{ field: 'Order', name: 'Order', width: 'auto',
+					{ field: 'EmptyString', name: 'Empty String', styles: 'text-align: center;', width: 4,
+						formatter: pion.xmlCellFormatter },
+					{ field: 'Order', name: 'Order', styles: 'text-align: center;', width: 4,
 						widgetClass: dijit.form.NumberSpinner },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]

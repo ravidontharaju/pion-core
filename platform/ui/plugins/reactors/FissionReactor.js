@@ -127,7 +127,7 @@ dojo.declare("plugins.reactors.FissionReactorDialog",
 			this.reactor.reloadCopyTermStore();
 			this.copy_term_grid_layout = [{
 				rows: [
-					{ field: 'Term', name: 'Term', width: 'auto', editable: true,
+					{ field: 'Term', name: 'Term', relWidth: 1, editable: true,
 						type: pion.widgets.TermTextCell },
 					{ name: 'Delete', classes: 'delete button', formatter: pion.makeDeleteButton }
 				]

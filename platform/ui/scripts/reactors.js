@@ -875,8 +875,8 @@ pion.reactors.showReactorConnectionsDialog = function(reactor) {
 	}
 	var reactor_inputs_grid_layout = [{
 		rows: [
-			{ field: 'Source', name: 'From', styles: '', width: 'auto' },
-			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
+			{ field: 'Source', name: 'From', styles: '', relWidth: 1 },
+			{ field: 'ID', name: 'Connection ID', styles: '', relWidth: 1 },
 			{ field: 'DeleteButton', name: 'Delete', classes: 'delete button', formatter: makeDeleteButtonIfNeeded }
 		]
 	}];
@@ -950,8 +950,8 @@ pion.reactors.showReactorConnectionsDialog = function(reactor) {
 	});
 	var reactor_outputs_grid_layout = [{
 		rows: [
-			{ field: 'Sink', name: 'To', styles: '', width: 'auto' },
-			{ field: 'ID', name: 'Connection ID', styles: '', width: 'auto' },
+			{ field: 'Sink', name: 'To', styles: '', relWidth: 1 },
+			{ field: 'ID', name: 'Connection ID', styles: '', relWidth: 1 },
 			{ field: 'DeleteButton', name: 'Delete', classes: 'delete button', formatter: makeDeleteButtonIfNeeded }
 		]
 	}];

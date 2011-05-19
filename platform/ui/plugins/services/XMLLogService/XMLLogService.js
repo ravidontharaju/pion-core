@@ -79,14 +79,11 @@ dojo.declare("plugins.services.XMLLogService",
 				rows: [
 					//{ field: 'id', name: 'ID', width: 10,
 					//	formatter: pion.xmlCellFormatter },
-					{ field: 'LogLevel', name: 'Severity', width: 4,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'Timestamp', name: 'Time', width: 9,
+					{ field: 'LogLevel', name: 'Severity', width: '55px' },
+					{ field: 'Timestamp', name: 'Time', width: 11,
 						formatter: pion.localDatetimeCellFormatter },
-					{ field: 'LoggerName', name: 'Module', width: 10,
-						formatter: pion.xmlCellFormatter },
-					{ field: 'Message', name: 'Message', width: 'auto',
-						formatter: pion.xmlCellFormatter },
+					{ field: 'LoggerName', name: 'Module', width: 10 },
+					{ field: 'Message', name: 'Message', relWidth: 1 },
 					{ name: 'Help', styles: 'text-align: center;', width: 4, editable: false, formatter: pion.makeSearchButton },
 					{ name: 'Remove', styles: 'text-align: center;', width: 4, editable: false, formatter: pion.makeDeleteButton }
 				]

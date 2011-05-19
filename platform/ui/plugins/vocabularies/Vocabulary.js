@@ -279,7 +279,12 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 			console.debug('_handleTypeChange: type = ', type);
 			if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
 				this.format_widget.set('disabled', false);
-				this.format_widget.set('value', '%Y');
+				if (type == 'specific date')
+					this.format_widget.set('value', '%Y-%m-%d');
+				else if (type == 'specific time')
+					this.format_widget.set('value', '%H:%M:%S');
+				else
+					this.format_widget.set('value', '%Y-%m-%d %H:%M:%S');
 				this.format_widget.domNode.style.visibility = 'visible';
 			} else {
 				this.format_widget.set('disabled', true);
@@ -348,21 +353,16 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 					{ field: 'Type', name: 'Type', width: 15,
 						widgetClass: pion.widgets.SimpleSelect, 
 						widgetProps: {store: pion.terms.type_store, searchAttr: "description"} },
-					{ field: 'Format', name: 'Format', width: 10 },
-					{ field: 'Size', name: 'Size', width: 3 },
-
-					// TODO: restore validation
-					//{ field: 'Format', name: 'Format', width: 10, styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
-					//{ field: 'Size', name: 'Size', width: 3, styles: '', editor: dojox.grid.editors.Dijit, editorClass: "dijit.form.ValidationTextBox", editorProps: {} },
-
-					{ field: 'Comment', name: 'Comment', width: 'auto',
-						formatter: pion.xmlCellFormatter },
+					{ field: 'Format', name: 'Format', width: 10, formatter: pion.xmlCellFormatter },
+					{ field: 'Size', name: 'Size', width: 4, widgetClass: dijit.form.NumberTextBox, constraint: {min: 1} },
+					{ field: 'Comment', name: 'Comment', relWidth: 1, formatter: pion.xmlCellFormatter },
 					{ name: 'Delete', classes: 'delete button', editable: false, formatter: pion.makeDeleteButton }
 				]
 			}];
 			this.vocab_term_grid = new dojox.grid.DataGrid({
 				store: this.vocabulary.vocab_term_store,
 				structure: this.vocab_grid_layout,
+				escapeHTMLInData: false,
 				singleClickEdit: true
 			}, document.createElement('div'));
 			this.vocab_term_grid_node.appendChild(this.vocab_term_grid.domNode);
@@ -374,31 +374,7 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 				if (e.cell.name == 'Delete') {
 					this.store.deleteItem(this.getItem(e.rowIndex));
 					dojo.addClass(_this.domNode, 'unsaved_changes');
-
-				// TODO: restore validation.
-				//} else if (e.cell.field == 'Format' || e.cell.field == 'Size') {
-				//	console.debug('e.cell.editorProps.regExp = ', e.cell.editorProps.regExp);
-				//	if (e.cell.editor.editor) console.debug('e.cell.editor.editor.regExp = ', e.cell.editor.editor.regExp);
-				//	var type = this.vocab_grid.model.getDatum(e.rowIndex, 1);
-				//	var regExp = '-';
-				//	if (e.cell.field == 'Format') {
-				//		if (type == 'specific date' || type == 'specific time' || type == 'specific time & date') {
-				//			regExp = '.*%.*';
-				//		}
-				//	}
-				//	if (e.cell.field == 'Size') {
-				//		if (type == 'fixed-length string') {
-				//			regExp = '[1-9][0-9]*';
-				//		}
-				//	}
-				//	if (e.cell.editor.editor) {
-				//		console.debug("e.cell.editor.editor.regExp set to ", regExp);
-				//		e.cell.editor.editor.regExp = regExp;
-				//	} else {
-				//		console.debug("e.cell.editorProps.regExp set to ", regExp);
-				//		e.cell.editorProps.regExp = regExp;
-				//	}
-
+					dojo.stopEvent(e); // Prevent UI from reloading.
 				}
 			});
 			dojo.connect(this.vocab_term_grid, 'onApplyCellEdit', this, _this.markAsChanged);

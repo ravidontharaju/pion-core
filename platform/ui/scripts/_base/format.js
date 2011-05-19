@@ -75,12 +75,6 @@ pion.xmlCellFormatter2 = function(d) {
 	if (d && d.toString()) {
 		if (d.toString().substr(0, 8) == '<button ')
 			return d;
-
-		// This is a workaround for a dojo "feature" that tries to block html formatting in cells.
-		// See http://bugs.dojotoolkit.org/ticket/9173
-		if (d.toString().substr(0, 11) == '&lt;button ')
-			return d.replace(/&lt;/g, '<');
-
 		return pion.escapeXml(d);
 	} else {
 		return this.defaultValue;
