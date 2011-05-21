@@ -24,7 +24,7 @@ XMLCodec_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@
 JSONCodec_la_CXXFLAGS = -shared $(AM_CXXFLAGS)
 JSONCodec_la_SOURCES = JSONCodec.hpp JSONCodec.cpp
 JSONCodec_la_LDFLAGS = -no-undefined -module -avoid-version -rpath '@PION_PLUGINS_DIRECTORY@'
-JSONCodec_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
+JSONCodec_la_LIBADD = ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@ @PION_JSON_LIB@
 JSONCodec_la_DEPENDENCIES = ../src/libpion-platform.la @PION_COMMON_LIB@ 
 
 EXTRA_DIST = *.vcproj
