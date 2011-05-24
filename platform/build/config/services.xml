@@ -25,8 +25,8 @@
 			<Plugin>FileService</Plugin>
 			<Resource>/</Resource>
 			<Option name="directory">@PION_UI_DIRECTORY@</Option>
-			<Option name="cache">1</Option>
-			<Option name="scan">2</Option>
+			<Option name="cache">0</Option>
+			<Option name="scan">0</Option>
 			<Option name="writable">false</Option>
 		</WebService>
 		<PlatformService id="config-service">

@@ -78,6 +78,16 @@ void ServiceManager::shutdown(void)
 	for (ServerMap::iterator it=m_servers.begin(); it!=m_servers.end(); ++it)
 		it->second->stop();
 
+	// call the stop() method for each web service associated with this server
+	try {
+		m_plugins.run(boost::bind(&PlatformService::stop, _1));
+		m_web_services.run(boost::bind(&WebService::stop, _1));
+	} catch (std::exception& e) {
+		// catch exceptions thrown by services since their exceptions may be free'd
+		// from memory before they are caught
+		PION_LOG_ERROR(m_logger, "Web Service exception caught during shutdown: " << e.what());
+	}
+
 	// stop scheduler after stopping servers
 	m_scheduler.shutdown();
 
@@ -269,9 +279,6 @@ void ServiceManager::openConfigFile(void)
 			service_node = service_node->next;
 		}
 
-		// start up the server
-		server_ptr->start();
-		
 		// step to the next server definition
 		server_node = server_node->next;
 	}
@@ -306,6 +313,20 @@ void ServiceManager::openConfigFile(void)
 
 		service_node = service_node->next;
 	}
+
+	// call the start() method for each web service associated with this server
+	try {
+		m_plugins.run(boost::bind(&WebService::start, _1));
+		m_web_services.run(boost::bind(&WebService::start, _1));
+	} catch (std::exception& e) {
+		// catch exceptions thrown by services since their exceptions may be free'd
+		// from memory before they are caught
+		throw WebServiceException("[Startup]", e.what());
+	}
+	
+	// startup the web servers
+	for (ServerMap::iterator it=m_servers.begin(); it!=m_servers.end(); ++it)
+		it->second->start();
 
 	PION_LOG_INFO(m_logger, "Loaded Service configuration file: " << m_config_file);
 }
