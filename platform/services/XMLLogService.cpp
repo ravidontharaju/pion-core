@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // pion-net: a C++ framework for building lightweight HTTP interfaces
 // ------------------------------------------------------------------
-// Copyright (C) 2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2010-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
 // See http://www.boost.org/LICENSE_1_0.txt
@@ -27,6 +27,7 @@ namespace plugins {		// begin namespace plugins
 // static members of XMLLogServiceAppender
 
 const unsigned int		XMLLogServiceAppender::DEFAULT_MAX_EVENTS = 100;
+boost::uint32_t			XMLLogServiceAppender::m_event_count = 0;
 
 
 // XMLLogServiceAppender member functions
@@ -46,8 +47,8 @@ XMLLogServiceAppender::XMLLogServiceAppender(void)
 
 void XMLLogServiceAppender::append(const log4cplus::spi::InternalLoggingEvent& event)
 {
-	std::string key(boost::lexical_cast<std::string>(event.getLogLevel()));
-	key  += '.' + boost::lexical_cast<std::string>(event.getTimestamp().sec());
+	std::ostringstream key;
+	key << event.getLogLevel() << '.' << std::setfill('0') << std::setw(10) << ++m_event_count;
 	std::string val;
 	val = "<LogLevel>" + ConfigManager::xml_encode(m_log_level_manager.toString(event.getLogLevel()))
 		+ "</LogLevel><Timestamp>" + ConfigManager::xml_encode(boost::lexical_cast<std::string>(event.getTimestamp().sec()))
@@ -55,8 +56,7 @@ void XMLLogServiceAppender::append(const log4cplus::spi::InternalLoggingEvent& e
 		+ "</LoggerName><Message>" + ConfigManager::xml_encode(event.getMessage().substr(0, 100))	// FIXME: 100 char truncate configurable
 		+ "</Message>";
 	boost::mutex::scoped_lock log_lock(m_log_mutex);
-	// FIXME: severity:second must be unique, or it fails to insert...
-	m_log_event_queue[key] = val;							// Add the new entry, sort as appropriate
+	m_log_event_queue[key.str()] = val;						// Add the new entry, sort as appropriate
 	if (m_log_event_queue.size() > m_max_events)			// Queue size exceeded?
 		m_log_event_queue.erase(m_log_event_queue.begin());	// Whack the least important
 }
