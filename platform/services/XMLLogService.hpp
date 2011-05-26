@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // pion-net: a C++ framework for building lightweight HTTP interfaces
 // ------------------------------------------------------------------
-// Copyright (C) 2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2010-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
 // See http://www.boost.org/LICENSE_1_0.txt
@@ -56,6 +56,9 @@ private:
 	/// default maximum number of events cached in memory
 	static const unsigned int				DEFAULT_MAX_EVENTS;
 	
+	/// Count of events logged.
+	static boost::uint32_t					m_event_count;
+
 	/// maximum number of events cached in memory
 	unsigned int							m_max_events;
 	
