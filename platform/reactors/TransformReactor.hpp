@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -100,6 +100,7 @@ public:
 	/// constructs a new TransformReactor object
 	TransformReactor(void) :
 		Reactor(TYPE_PROCESSING),
+		m_logger(PION_GET_LOGGER("pion.TransformReactor")),
 		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF)
 	{}
 
@@ -173,6 +174,9 @@ private:
 
 	/// One event_factory to manufacture the outgoing/duplicated events
 	pion::platform::EventFactory	m_event_factory;
+
+	/// primary logging interface used by this class
+	PionLogger						m_logger;
 };
 
 }	// end namespace plugins

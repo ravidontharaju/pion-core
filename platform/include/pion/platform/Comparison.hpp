@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -29,6 +29,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/Event.hpp>
 #include <unicode/uiter.h>
@@ -142,6 +143,13 @@ public:
 		}
 	};
 
+	/// exception thrown if boost::u32regex_search fails and throws
+	class RegexFailure : public PionException {
+	public:
+		RegexFailure(const std::string& search_str)
+			: PionException("str = " + search_str) {}
+	};
+
 
 	/// virtual destructor: you may extend this class
 	virtual ~Comparison() {}
@@ -152,14 +160,16 @@ public:
 	 * @param term the term that will be examined
 	 */
 	explicit Comparison(const Vocabulary::Term& term)
-		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false)
+		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false), m_running(true),
+		  m_logger(PION_GET_LOGGER("pion.platform.Comparison"))
 	{}
 
 	/// standard copy constructor
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
 		m_str_value(c.m_str_value), m_comparison_func(c.m_comparison_func), 
-		m_regex(c.m_regex), m_match_all_values(c.m_match_all_values)
+		m_regex(c.m_regex), m_match_all_values(c.m_match_all_values), 
+		m_regex_str(c.m_regex_str), m_running(c.m_running), m_logger(c.m_logger)
 	{}
 
 	/**
@@ -169,7 +179,7 @@ public:
 	 *
 	 * @return 	true if the Comparison succeeded; false if it did not
 	 */
-	inline bool evaluate(const Event& e) const;
+	inline bool evaluate(const Event& e);
 
 	/**
 	 * evaluates the result of the Comparison
@@ -178,7 +188,7 @@ public:
 	 *
 	 * @return 	true if the Comparison succeeded; false if it did not
 	 */
-	inline bool evaluateRange(const Event::ValuesRange& values_range) const;
+	inline bool evaluateRange(const Event::ValuesRange& values_range);
 
 	/**
 	 * configures the Comparison information
@@ -270,6 +280,8 @@ public:
 	static bool requiresValue(ComparisonType t);
 
 	static void writeComparisonsXML(std::ostream& out);
+
+	inline bool isRunning(void) const { return m_running; }
 
 private:
 
@@ -494,10 +506,13 @@ private:
 	public:
 		CompareStringRegex(const boost::u32regex& value) : m_regex(value) {}
 		inline bool operator()(const Event::ParameterValue& event_value) const {
-			// note: regex_match must match the ENTIRE string; use regex_search
-			// instead to match any part of the string
-			return boost::u32regex_search(
-				boost::get<const Event::BlobType&>(event_value).get(), m_regex);
+			try {
+				// note: regex_match must match the ENTIRE string; use regex_search
+				// instead to match any part of the string
+				return boost::u32regex_search(boost::get<const Event::BlobType&>(event_value).get(), m_regex);
+			} catch (...) {
+				throw RegexFailure(boost::get<const Event::BlobType&>(event_value).get());
+			}
 		}
 	private:
 		const boost::u32regex&	m_regex;
@@ -715,6 +730,12 @@ private:
 
 	/// true if all values for the Vocabulary Term must match
 	bool						m_match_all_values;
+
+	/// Is this rule running?
+	bool						m_running;
+
+	/// primary logging interface used by this class
+	mutable PionLogger			m_logger;
 };
 
 
@@ -823,7 +844,7 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 
 // This method now evaluates only a values_range, in order to support TransformReactor2
 // See Comparison::evaluate() on how values_range is defined, and the special case of *_DEFINED
-inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) const
+inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range)
 {
 	bool result = false;
 	bool negate_result = false;
@@ -1162,7 +1183,18 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 				case Vocabulary::TYPE_ZBLOB:
 				{
 					CompareStringRegex comparison_func(m_regex);
-					result = checkComparison(comparison_func, values_range);
+					try {
+						result = checkComparison(comparison_func, values_range);
+					} catch (pion::platform::Comparison::RegexFailure& e) {
+						PION_LOG_ERROR(m_logger, "Regex search failed: regex = " << m_regex_str << ", " << e.what());
+
+						// Prevent this rule from running again.
+						PION_LOG_WARN(m_logger, "Comparison rule has been disabled: regex = " << m_regex_str);
+						m_running = false;
+
+						// Since neither true nor false is an appropriate return value, rethrow for RuleChain to handle.
+						throw;
+					}
 					break;
 				}
 				default:
@@ -1308,7 +1340,7 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range) co
 // This is the refactored version of evaluate
 // Since IS_DEFINED and IS_NOT_DEFINED allow for looking at Event, in addition to range_value,
 // it was necessary to put some convoluted special-case logic here...
-inline bool Comparison::evaluate(const Event& e) const
+inline bool Comparison::evaluate(const Event& e)
 {
 	if (m_type == TYPE_IS_DEFINED || m_type == TYPE_IS_NOT_DEFINED) {
 		// If object type matches looked for type, return true -- refactored out of evaluateRange

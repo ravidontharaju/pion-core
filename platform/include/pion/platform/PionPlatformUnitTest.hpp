@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2009-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -23,11 +23,17 @@
 #include <fstream>
 #include <libxml/tree.h>
 #include <boost/function.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <pion/PionScheduler.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Codec.hpp>
 #include <pion/platform/ReactionEngine.hpp>
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/net/TCPStream.hpp>
+#include <pion/net/HTTPRequest.hpp>
+#include <pion/net/HTTPResponse.hpp>
+#include "../server/PlatformConfig.hpp"
 
 /// returns the path to the unit test config file directory
 const std::string& get_config_file_dir(void);
@@ -121,6 +127,74 @@ struct PionPlatformUnitTest {
 		BOOST_REQUIRE(config_ptr);
 		return config_ptr;
 	}
+
+	static pion::net::HTTPResponsePtr sendRequestAndGetResponse(
+		pion::server::PlatformConfig& platform_cfg,
+		pion::net::HTTPRequest& request,
+		const std::string& request_method = "GET")
+	{
+		// Connect a stream to localhost.
+		pion::net::TCPStream tcp_stream(platform_cfg.getServiceManager().getIOService());
+		boost::system::error_code ec = tcp_stream.connect(boost::asio::ip::address::from_string("127.0.0.1"),
+														  platform_cfg.getServiceManager().getPort());
+		BOOST_REQUIRE(! ec);
+
+		// Send the request to the server.
+		request.setMethod(request_method);
+		request.send(tcp_stream.rdbuf()->getConnection(), ec);
+		BOOST_REQUIRE(! ec);
+
+		// Get the response from the server.
+		pion::net::HTTPResponsePtr response_ptr(new pion::net::HTTPResponse(request));
+		response_ptr->receive(tcp_stream.rdbuf()->getConnection(), ec);
+		BOOST_REQUIRE(! ec);
+		
+		return response_ptr;
+	}
+
+#if defined(PION_USE_LOG4CPLUS)
+	static void setupXmlLogService(pion::server::PlatformConfig& platform_cfg) {
+		// Create a CircularBufferAppender so that XMLLogService can use it.
+		pion::PionLogAppenderPtr appender(new pion::CircularBufferAppender);
+		appender->setName("CircularBufferAppender");
+		log4cplus::Logger::getRoot().addAppender(appender);
+
+		// Create and load a services config file with an XMLLogService, so that we can check that regex exceptions are logged.
+		boost::filesystem::ofstream services_config_file;
+		services_config_file.open(SERVICES_CONFIG_FILE);
+		services_config_file
+			<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			<< "<PionConfig xmlns=\"http://purl.org/pion/config\" pion_version=\"tests\">\n"
+			<< "    <Server id=\"main-server\">\n"
+			<< "        <Port>0</Port>\n"
+			<< "        <PlatformService id=\"xml-log-service\">\n"
+			<< "            <Name>XML Log Service</Name>\n"
+			<< "            <Plugin>XMLLogService</Plugin>\n"
+			<< "            <Resource>/xmllog</Resource>\n"
+			<< "        </PlatformService>\n"
+			<< "    </Server>\n"
+			<< "</PionConfig>\n";
+		services_config_file.close();
+		platform_cfg.getServiceManager().setConfigFile(SERVICES_CONFIG_FILE);
+		platform_cfg.getServiceManager().openConfigFile();
+	}
+
+	static void getXmlLogMessages(pion::server::PlatformConfig& platform_cfg, std::vector<std::string>& messages) {
+		messages.clear();
+		pion::net::HTTPResponsePtr response_ptr = PionPlatformUnitTest::sendRequestAndGetResponse(platform_cfg, pion::net::HTTPRequest("/xmllog"));
+		xmlDocPtr doc_ptr = xmlParseMemory(response_ptr->getContent(), response_ptr->getContentLength());
+		BOOST_REQUIRE(doc_ptr);
+		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
+		BOOST_REQUIRE(node_ptr);
+		BOOST_REQUIRE(node_ptr->children);
+		for (xmlNodePtr cur_node = node_ptr->children; cur_node != NULL; cur_node = cur_node->next) {
+			xmlNodePtr msg_node = pion::platform::ConfigManager::findConfigNodeByName("Message", cur_node->children);
+			xmlChar* xml_char_ptr = xmlNodeGetContent(msg_node);
+			BOOST_REQUIRE(xml_char_ptr);
+			messages.push_back(reinterpret_cast<char*>(xml_char_ptr));
+		}
+	}
+#endif
 };
 
 #endif

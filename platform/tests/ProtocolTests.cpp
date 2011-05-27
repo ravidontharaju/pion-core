@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -30,12 +30,14 @@
 #include <pion/platform/PluginConfig.hpp>
 #include <pion/platform/Protocol.hpp>
 #include <pion/platform/ProtocolFactory.hpp>
+#include <pion/net/HTTPRequest.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/compose.hpp>
 #include <boost/iostreams/copy.hpp>
 #include "../protocols/HTTPProtocol.hpp"
+#include "../server/PlatformConfig.hpp"
 
 using namespace pion;
 using namespace pion::platform;
@@ -990,6 +992,65 @@ BOOST_AUTO_TEST_CASE(checkAllowSearchingIgnoredWhenAllowUtf8ConversionIsFalse) {
 
 	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
 	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
+#if defined(PION_USE_LOG4CPLUS)
+	// Set up XmlLogService, clear existing Events, and set maximum length of Message content to 200 (default is 100).
+	pion::server::PlatformConfig platform_cfg;
+	PionPlatformUnitTest::setupXmlLogService(platform_cfg);
+	PionPlatformUnitTest::sendRequestAndGetResponse(platform_cfg, pion::net::HTTPRequest("/xmllog?ack=*"), "DELETE");
+	PionPlatformUnitTest::sendRequestAndGetResponse(platform_cfg, pion::net::HTTPRequest("/xmllog?truncate=200"));
+#endif
+
+	// Make a Protocol with a problematic regex and some content that will cause the regex to fail.
+	// See https://svn.boost.org/trac/boost/ticket/620.
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<Extract term=\"urn:vocab:clickstream#comment\">"
+		"		<Source>sc-content</Source>"
+		"		<Match>(a*ba*)*c</Match>"
+		"		<Format>$1</Format>"
+		"	</Extract>"
+		+ m_config_str_tail);
+	const std::string content = 
+		"<html><head>" + CRLF +
+		"<title>Title 1</title>" + CRLF +
+		"</head><body>abababababababababababab</body></html>" + CRLF;
+
+	// Ask the Protocol to process a response with the above content and generate an Event.
+	generateEvent("Content-Type: text/html", content);
+
+#if defined(PION_USE_LOG4CPLUS)
+	// Use XmlLogService to confirm that the expected error and warning were logged.
+	std::vector<std::string> messages;
+	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
+	BOOST_REQUIRE_EQUAL(messages.size(), 2);
+	std::string expected_error_message = 
+		"Regex search failed: regex = (a*ba*)*c, "
+		"str = <html><head>\n"
+		"<title>Title 1</title>\n"
+		"</head><body>abababababababababababab</body></html>\n";
+	BOOST_CHECK_EQUAL(expected_error_message, messages[0]);
+	std::string expected_warning_message = "Extraction rule has been disabled: regex = (a*ba*)*c";
+	BOOST_CHECK_EQUAL(expected_warning_message, messages[1]);
+#endif
+
+	// Check that the second extraction rule (whose regex is not problematic) worked.
+	BOOST_CHECK_EQUAL("Title 1", m_e.back()->getString(m_page_title_term_ref));
+
+	// Ask the Protocol to process another (identical) response.
+	m_e.clear();
+	generateEvent("Content-Type: text/html", content);
+
+#if defined(PION_USE_LOG4CPLUS)
+	// Check that the problematic regex was disabled by confirming that no additional error was logged.
+	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
+	BOOST_CHECK_EQUAL(messages.size(), 2);
+#endif
+
+	// Confirm that the second extraction rule still worked.
+	BOOST_CHECK_EQUAL("Title 1", m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -242,8 +242,9 @@ void TransformReactor::process(const EventPtr& e)
 	try {
 		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); i++)
 			(*i)->transform(new_e, e);		// transform   d <- s
-	} catch (...) {
+	} catch (std::exception& e) {
 		// Likely Boost.regex throw
+		PION_LOG_ERROR(m_logger, e.what());
 		if (getReactionEngine().getDebugMode())		// Are we in debug mode?
 			stop();									// Yes: stop the reactor
 		throw TransformFailureException(getId());	// Continue throw to log error
