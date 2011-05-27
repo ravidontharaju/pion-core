@@ -168,8 +168,9 @@ public:
 	Comparison(const Comparison& c)
 		: m_term(c.m_term), m_type(c.m_type), m_value(c.m_value),
 		m_str_value(c.m_str_value), m_comparison_func(c.m_comparison_func), 
-		m_regex(c.m_regex), m_match_all_values(c.m_match_all_values), 
-		m_regex_str(c.m_regex_str), m_running(c.m_running), m_logger(c.m_logger)
+		m_regex(c.m_regex), m_regex_str(c.m_regex_str),
+		m_match_all_values(c.m_match_all_values), 
+		m_running(c.m_running), m_logger(c.m_logger)
 	{}
 
 	/**

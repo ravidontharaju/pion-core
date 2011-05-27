@@ -1025,7 +1025,7 @@ BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
 	// Use XmlLogService to confirm that the expected error and warning were logged.
 	std::vector<std::string> messages;
 	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
-	BOOST_REQUIRE_EQUAL(messages.size(), 2);
+	BOOST_REQUIRE_EQUAL(messages.size(), 2U);
 	std::string expected_error_message = 
 		"Regex search failed: regex = (a*ba*)*c, "
 		"str = <html><head>\n"
@@ -1046,7 +1046,7 @@ BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
 #if defined(PION_USE_LOG4CPLUS)
 	// Check that the problematic regex was disabled by confirming that no additional error was logged.
 	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
-	BOOST_CHECK_EQUAL(messages.size(), 2);
+	BOOST_CHECK_EQUAL(messages.size(), 2U);
 #endif
 
 	// Confirm that the second extraction rule still worked.
