@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -68,7 +68,7 @@ public:
 			return "Comparison rule configuration is missing a required comparison value";
 		}
 	};
-	
+
 
 	/// default constructor for a RuleChain
 	RuleChain(void) {}
@@ -99,7 +99,7 @@ public:
 	 * @param e pointer to the Event to process
 	 * @return true if the Event passes the RuleChain, false if not
 	 */
-	inline bool operator()(const pion::platform::EventPtr& e) const;
+	inline bool operator()(const pion::platform::EventPtr& e);
 
 
 private:
@@ -138,28 +138,42 @@ private:
 
 // inline members for RuleChain
 
-inline bool RuleChain::operator()(const pion::platform::EventPtr& e) const
+inline bool RuleChain::operator()(const pion::platform::EventPtr& e)
 {
-	ComparisonVector::const_iterator i = m_comparisons.begin();
-	
+	ComparisonVector::iterator i = m_comparisons.begin();
+
+	// Note: it's not necessarily logically consistent to return true when there are no comparisons when 
+	// m_match_all_comparisons is false, since we interpret the latter to mean "at least one comparison passed".
+	// Unfortunately, there is the expectation that a FilterReactor with an empty configuration lets all
+	// events through, and the default value of m_match_all_comparisons is false.
+	if (m_comparisons.empty())
+		return true;
+
 	if (m_match_all_comparisons) {
 		// all comparisons in the rule chain must pass for the Event to be delivered
 		for (; i != m_comparisons.end(); ++i) {
-			if (! i->evaluate(*e) )
-				return false;
+			if (i->isRunning()) {
+				try {
+					if (! i->evaluate(*e) )
+						return false;
+				} catch (pion::platform::Comparison::RegexFailure&) {
+				}
+			}
 		}
+		return true;
 	} else {
 		// any one comparison in the rule chain must pass for the Event to be delivered
 		for (; i != m_comparisons.end(); ++i) {
-			if ( i->evaluate(*e) )
-				break;
+			if (i->isRunning()) {
+				try {
+					if ( i->evaluate(*e) )
+						return true;
+				} catch (pion::platform::Comparison::RegexFailure&) {
+				}
+			}
 		}
-		// return if none matched & at least one rule is defined
-		if ( i == m_comparisons.end() && ! m_comparisons.empty() )
-			return false;
+		return false;
 	}
-	
-	return true;
 }
 
 

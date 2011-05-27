@@ -41,7 +41,10 @@ public:
 	
 	/// sets the maximum number of log events cached in memory
 	inline void setMaxEvents(unsigned int n) { m_max_events = n; }
-	
+
+	/// sets the maximum length of Message content
+	inline void setTruncationLength(unsigned int n) { m_truncate = n; }
+
 	/// writes the events cached in memory to a response stream
 	void writeLogEvents(pion::net::HTTPResponseWriterPtr& writer);
 
@@ -55,7 +58,10 @@ public:
 private:
 	/// default maximum number of events cached in memory
 	static const unsigned int				DEFAULT_MAX_EVENTS;
-	
+
+	/// default maximum length of Message content
+	static const unsigned int				DEFAULT_TRUNCATION_LENGTH;
+
 	/// Count of events logged.
 	static boost::uint32_t					m_event_count;
 
@@ -67,6 +73,9 @@ private:
 
 	/// memory cache of pre-formatted log events
 	std::list<std::string>					m_log_events;
+
+	/// maximum length of Message content
+	unsigned								m_truncate;
 
 	/// map queue of log events
 	typedef std::map<std::string, std::string>	LOG_QUEUE;

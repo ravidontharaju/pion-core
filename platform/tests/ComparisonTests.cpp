@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -1116,6 +1116,72 @@ BOOST_AUTO_TEST_CASE(checkRuleChainWithEventTypeComparison) {
 	r.setConfig(m_vocabulary, config_ptr_4);
 	BOOST_CHECK(r(e1));
 	BOOST_CHECK(r(e2));
+}
+
+BOOST_AUTO_TEST_CASE(checkComparisonDisabledAfterRegexException) {
+#if defined(PION_USE_LOG4CPLUS)
+	// Set up XmlLogService for checking errors and warnings, and clear existing Events.
+	pion::server::PlatformConfig platform_cfg;
+	PionPlatformUnitTest::setupXmlLogService(platform_cfg);
+	PionPlatformUnitTest::sendRequestAndGetResponse(platform_cfg, pion::net::HTTPRequest("/xmllog?ack=*"), "DELETE");
+#endif
+
+	// Make a RuleChain with two Comparisons, one of which has a problematic regex.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<MatchAllComparisons>false</MatchAllComparisons>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#simple-string</Term>"
+			"<Type>regex</Type>"
+			"<Value>(a*ba*)*c</Value>"
+		"</Comparison>"
+		"<Comparison>"
+			"<Term>urn:vocab:test#plain-int</Term>"
+			"<Type>less-than</Type>"
+			"<Value>10</Value>"
+		"</Comparison>");
+	RuleChain r;
+	r.setConfig(m_vocabulary, config_ptr);
+
+	// Create an event that should cause the first comparison to match and the second to not match.
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, "ac");
+	e1->setInt(m_plain_int_term.term_ref, 15);
+
+	// Confirm that the rule succeeded.
+	BOOST_CHECK(r(e1));
+
+	// Create an event that should cause the first comparison to throw an exception and be disabled and the second to match.
+	// See https://svn.boost.org/trac/boost/ticket/620 (but note that the string "abababababababababababab" mentioned there
+	// is not sufficient to make boost::u32regex_search() run out of memory, so a longer one is used here.)
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, "abababababababababababababababababababababababab");
+	e2->setInt(m_plain_int_term.term_ref, 5);
+
+	// Confirm that the rule succeeded.
+	BOOST_CHECK(r(e2));
+
+#if defined(PION_USE_LOG4CPLUS)
+	// Use XmlLogService to confirm that the expected error and warning were logged.
+	std::vector<std::string> messages;
+	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
+	BOOST_REQUIRE_EQUAL(messages.size(), 2);
+	std::string expected_error_message = "Regex search failed: regex = (a*ba*)*c, str = abababababababababababababababababababababababab";
+	BOOST_CHECK_EQUAL(expected_error_message, messages[0]);
+	std::string expected_warning_message = "Comparison rule has been disabled: regex = (a*ba*)*c";
+	BOOST_CHECK_EQUAL(expected_warning_message, messages[1]);
+#endif
+
+	// Check that the first comparison is disabled by running the rule on e1 again and checking that this time it fails.
+	BOOST_CHECK(! r(e1));
+
+	// Confirm that the second comparison is still working by running the rule on e2 again and checking that it succeeds.
+	BOOST_CHECK(r(e2));
+
+#if defined(PION_USE_LOG4CPLUS)
+	// Confirm that no additional error was logged.
+	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
+	BOOST_CHECK_EQUAL(messages.size(), 2);
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

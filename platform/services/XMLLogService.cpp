@@ -27,13 +27,14 @@ namespace plugins {		// begin namespace plugins
 // static members of XMLLogServiceAppender
 
 const unsigned int		XMLLogServiceAppender::DEFAULT_MAX_EVENTS = 100;
+const unsigned int		XMLLogServiceAppender::DEFAULT_TRUNCATION_LENGTH = 100;
 boost::uint32_t			XMLLogServiceAppender::m_event_count = 0;
 
 
 // XMLLogServiceAppender member functions
 
 XMLLogServiceAppender::XMLLogServiceAppender(void)
-	: m_max_events(DEFAULT_MAX_EVENTS), m_num_events(0)
+	: m_max_events(DEFAULT_MAX_EVENTS), m_num_events(0), m_truncate(DEFAULT_TRUNCATION_LENGTH)
 {
 	// Append any log events that have already occurred.
 	log4cplus::SharedAppenderPtr cba_ptr = log4cplus::Logger::getRoot().getAppender("CircularBufferAppender");
@@ -53,7 +54,7 @@ void XMLLogServiceAppender::append(const log4cplus::spi::InternalLoggingEvent& e
 	val = "<LogLevel>" + ConfigManager::xml_encode(m_log_level_manager.toString(event.getLogLevel()))
 		+ "</LogLevel><Timestamp>" + ConfigManager::xml_encode(boost::lexical_cast<std::string>(event.getTimestamp().sec()))
 		+ "</Timestamp><LoggerName>" + ConfigManager::xml_encode(event.getLoggerName())
-		+ "</LoggerName><Message>" + ConfigManager::xml_encode(event.getMessage().substr(0, 100))	// FIXME: 100 char truncate configurable
+		+ "</LoggerName><Message>" + ConfigManager::xml_encode(event.getMessage().substr(0, m_truncate))
 		+ "</Message>";
 	boost::mutex::scoped_lock log_lock(m_log_mutex);
 	m_log_event_queue[key.str()] = val;						// Add the new entry, sort as appropriate
@@ -121,18 +122,23 @@ void XMLLogService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 															boost::bind(&TCPConnection::finish, tcp_conn)));
 	writer->getResponse().setContentType(HTTPTypes::CONTENT_TYPE_XML);
 
+	const HTTPTypes::QueryParams qp = request->getQueryParams();
+	HTTPTypes::QueryParams::const_iterator qpi;
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
+		qpi = qp.find("truncate");
+		if (qpi != qp.end())
+			getLogAppender().setTruncationLength(boost::lexical_cast<boost::uint32_t>(qpi->second));
+
 		getLogAppender().writeLogEvents(writer);
 		writer->send();
 	} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
-		const HTTPTypes::QueryParams qp = request->getQueryParams();
 		if (qp.empty()) {
 			// The required query parameter "ack" was not found, so send a 400 (Bad Request) response.
 			std::string error_msg = "Query parameter \"ack\" is required for method DELETE on " + request->getResource() + ".";
 			handleBadRequest(request, tcp_conn, error_msg);
 			return;
 		}
-		HTTPTypes::QueryParams::const_iterator qpi = qp.find("ack");
+		qpi = qp.find("ack");
 		if (qpi != qp.end()) {
 			if (qpi->second == "*") {
 				// Erase all events in the queue.

@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -476,51 +476,61 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 		i != m_extraction_rules.end(); ++i)
 	{
 		const ExtractionRule& rule = **i;
-		switch (rule.m_source) {
-			case EXTRACT_QUERY:
-				// extract query parameter from request
-				rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name), true);
-				break;
-			case EXTRACT_COOKIE:
-				// extract cookie parameter from request
-				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
-				// extract set-cookie parameters from response
-				rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
-				break;
-			case EXTRACT_CS_COOKIE:
-				// extract cookie parameter from request
-				rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
-				break;
-			case EXTRACT_SC_COOKIE:
-				// extract set-cookie parameters from response
-				rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
-				break;
-			case EXTRACT_CS_HEADER:
-				// extract HTTP header from request
-				rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
-				break;
-			case EXTRACT_SC_HEADER:
-				// extract HTTP header from response
-				rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
-				break;
-			case EXTRACT_CS_CONTENT:
-				// extract decoded and converted HTTP payload content from request
-				rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
-					final_request_content, final_request_length, m_logger);
-				break;
-			case EXTRACT_SC_CONTENT:
-				// extract decoded and converted HTTP payload content from response
-				rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
-					final_response_content, final_response_length, m_logger);
-				break;
-			case EXTRACT_CS_RAW_CONTENT:
-				// extract raw HTTP payload content from request
-				rule.processRawContent(event_ptr_ref, m_request);
-				break;
-			case EXTRACT_SC_RAW_CONTENT:
-				// extract raw HTTP payload content from response
-				rule.processRawContent(event_ptr_ref, m_response);
-				break;
+		if (! rule.m_running)
+			continue;
+		try {
+			switch (rule.m_source) {
+				case EXTRACT_QUERY:
+					// extract query parameter from request
+					rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name), true);
+					break;
+				case EXTRACT_COOKIE:
+					// extract cookie parameter from request
+					rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+					// extract set-cookie parameters from response
+					rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
+					break;
+				case EXTRACT_CS_COOKIE:
+					// extract cookie parameter from request
+					rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+					break;
+				case EXTRACT_SC_COOKIE:
+					// extract set-cookie parameters from response
+					rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
+					break;
+				case EXTRACT_CS_HEADER:
+					// extract HTTP header from request
+					rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
+					break;
+				case EXTRACT_SC_HEADER:
+					// extract HTTP header from response
+					rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
+					break;
+				case EXTRACT_CS_CONTENT:
+					// extract decoded and converted HTTP payload content from request
+					rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
+						final_request_content, final_request_length, m_logger);
+					break;
+				case EXTRACT_SC_CONTENT:
+					// extract decoded and converted HTTP payload content from response
+					rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
+						final_response_content, final_response_length, m_logger);
+					break;
+				case EXTRACT_CS_RAW_CONTENT:
+					// extract raw HTTP payload content from request
+					rule.processRawContent(event_ptr_ref, m_request);
+					break;
+				case EXTRACT_SC_RAW_CONTENT:
+					// extract raw HTTP payload content from response
+					rule.processRawContent(event_ptr_ref, m_response);
+					break;
+			}
+		} catch (RegexFailure& e) {
+			PION_LOG_ERROR(m_logger, e.what());
+
+			// Prevent this rule from running again.
+			(*i)->m_running = false;
+			PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match.str());
 		}
 	}
 }

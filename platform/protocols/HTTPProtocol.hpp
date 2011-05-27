@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -99,6 +99,13 @@ public:
 	public:
 		TermNotStringException(const std::string& term_id)
 			: PionException("HTTPProtocol content extraction non-string term specified: ", term_id) {}
+	};
+
+	/// exception thrown if regex_search fails and throws
+	class RegexFailure : public PionException {
+	public:
+		RegexFailure(const std::string& regex, const std::string& str)
+			: PionException("Regex search failed: regex = ", regex + ", str = " + str) {}
 	};
 
 
@@ -253,7 +260,7 @@ private:
 		 * @param term_id unique identifier for the event term
 		 */
 		ExtractionRule(const std::string& term_id, const HTTPProtocol& parent_protocol) :
-			m_parent_protocol(parent_protocol), m_term(term_id)
+			m_parent_protocol(parent_protocol), m_term(term_id), m_running(true)
 		{}
 
 		/**
@@ -379,6 +386,9 @@ private:
 
 		/// maximum matches to extract from source using format (0 = unlimited)
 		boost::uint32_t						m_max_extracts;
+
+		/// Is this rule running?
+		bool								m_running;
 	};
 
 	/// data type for a smart pointer to an extraction rule
@@ -735,7 +745,13 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 				num_extracts = 0U;
 				first = content_ref.begin();
 				last = content_ref.end();
-				while ( boost::regex_search(first, last, mr, m_match) ) {
+				while (1) {
+					try {
+						if (! boost::regex_search(first, last, mr, m_match))
+							break;
+					} catch (...) {
+						throw RegexFailure(m_match.str(), content_ref);
+					}
 					if (m_format.empty() || mr.empty()) {
 						// no format -> extract entire string
 						(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
@@ -771,7 +787,13 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 	} else {
 		boost::uint32_t num_extracts = 0U;
 		const char *end_ptr = content_ptr + content_length;
-		while ( boost::regex_search(content_ptr, end_ptr, mr, m_match) ) {
+		while (1) {
+			try {
+				if (! boost::regex_search(content_ptr, end_ptr, mr, m_match))
+					break;
+			} catch (...) {
+				throw RegexFailure(m_match.str(), content_ptr);
+			}
 			if (m_format.empty() || mr.empty()) {
 				// no format -> extract entire string
 				(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
@@ -796,12 +818,18 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 inline void HTTPProtocol::ExtractionRule::processRawContent(pion::platform::EventPtr& event_ptr_ref,
 	const pion::net::HTTPMessage& http_msg) const
 {
-	if (m_max_size > 0
-		&& http_msg.getContentLength() > 0
-		&& ( m_type_regex.empty()
-			|| boost::regex_search(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE), m_type_regex) ) )
-	{
-		setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
+		bool content_type_matches = true;
+		if (! m_type_regex.empty()) {
+			const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
+			try {
+				content_type_matches = boost::regex_search(content_type, m_type_regex);
+			} catch (...) {
+				throw RegexFailure(m_type_regex.str(), content_type);
+			}
+		}
+		if (content_type_matches) 
+			setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
 	}
 }
 
@@ -811,7 +839,13 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 {
 	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
 		const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
-		if (m_type_regex.empty() || boost::regex_search(content_type, m_type_regex)) {
+		bool content_type_matches;
+		try {
+			content_type_matches = m_type_regex.empty() || boost::regex_search(content_type, m_type_regex);
+		} catch (...) {
+			throw RegexFailure(m_type_regex.str(), content_type);
+		}
+		if (content_type_matches) {
 			// Try decoding and converting the content if we haven't already done so.
 			if (boost::indeterminate(decoded_and_converted_flag)) {
 				// See http://www.w3.org/International/tutorials/tutorial-char-enc/#Slide0400 for
