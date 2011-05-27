@@ -130,7 +130,7 @@ struct PionPlatformUnitTest {
 
 	static pion::net::HTTPResponsePtr sendRequestAndGetResponse(
 		pion::server::PlatformConfig& platform_cfg,
-		pion::net::HTTPRequest& request,
+		pion::net::HTTPRequest request,
 		const std::string& request_method = "GET")
 	{
 		// Connect a stream to localhost.

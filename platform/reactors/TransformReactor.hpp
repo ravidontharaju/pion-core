@@ -100,8 +100,8 @@ public:
 	/// constructs a new TransformReactor object
 	TransformReactor(void) :
 		Reactor(TYPE_PROCESSING),
-		m_logger(PION_GET_LOGGER("pion.TransformReactor")),
-		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF)
+		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF),
+		m_logger(PION_GET_LOGGER("pion.TransformReactor"))
 	{}
 
 	/// virtual destructor: this class is meant to be extended
