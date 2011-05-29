@@ -42,6 +42,13 @@
 #include "PlatformConfig.hpp"
 #include "../../net/utils/ShutdownManager.hpp"
 
+#ifdef PION_STATIC_LINKING
+	#include <pion/PionPlugin.hpp>
+	PION_DECLARE_PLUGIN(FileService)
+	PION_DECLARE_PLUGIN(HTTPProtocol)
+	PION_DECLARE_PLUGIN(SnifferReactor)
+#endif
+
 using namespace std;
 using namespace pion;
 using namespace pion::net;
