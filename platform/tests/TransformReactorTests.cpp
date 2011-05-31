@@ -958,28 +958,28 @@ BOOST_FIXTURE_TEST_SUITE(CreditCardInEventTests_S, CreditCardInEventTests_F)
 
 BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithOnlyNumericFields) {
 	EventPtr event_ptr(m_event_factory.create(0));
-	event_ptr->setUInt(0, 1UL);
-	event_ptr->setUInt(1, 10UL);
+	event_ptr->setUInt(1, 1UL);
+	event_ptr->setUInt(2, 10UL);
 	BOOST_CHECK(! HideCreditCardNumbers(*event_ptr));	// should return false but not throw
-	BOOST_CHECK_THROW(HideCreditCardNumbers(*event_ptr, 0), boost::bad_get);	// should throw (not string type)
+	BOOST_CHECK_THROW(HideCreditCardNumbers(*event_ptr, 1), boost::bad_get);	// should throw (not string type)
 }
 
 BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithNumericAndStringFields) {
-	EventPtr event_ptr(m_event_factory.create(0));
-	event_ptr->setUInt(0, 1UL);
-	event_ptr->setString(1, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
+	EventPtr event_ptr(m_event_factory.create(1));
+	event_ptr->setUInt(1, 1UL);
+	event_ptr->setString(2, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
 	BOOST_CHECK(HideCreditCardNumbers(*event_ptr));
 	BOOST_CHECK(! HideCreditCardNumbers(*event_ptr));	// should be no more to hide
 	std::string expected_result("Multiple\r\n lines XXXXXXXXXXXXXXXXXXX credit card\r\nnumber!");
-	BOOST_CHECK_EQUAL(expected_result, event_ptr->getString(1));
-	BOOST_CHECK_EQUAL(event_ptr->getUInt(0), 1UL);
+	BOOST_CHECK_EQUAL(expected_result, event_ptr->getString(2));
+	BOOST_CHECK_EQUAL(event_ptr->getUInt(1), 1UL);
 }
 
 BOOST_AUTO_TEST_CASE(checkHideCreditCardInEventWithMultipleStringFields) {
-	EventPtr event_ptr(m_event_factory.create(0));
-	event_ptr->setString(0, "Here is number 444-4-55 55-66 66-7777 with dashes and spaces!");
-	event_ptr->setString(1, "Test with other word boundaries.  ccnum:44 44-5555 66-66 7777!");
-	event_ptr->setString(1, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
+	EventPtr event_ptr(m_event_factory.create(1));
+	event_ptr->setString(1, "Here is number 444-4-55 55-66 66-7777 with dashes and spaces!");
+	event_ptr->setString(2, "Test with other word boundaries.  ccnum:44 44-5555 66-66 7777!");
+	event_ptr->setString(2, "Multiple\r\n lines 4444-5555-6666-7777 credit card\r\nnumber!");
 	BOOST_CHECK(HideCreditCardNumbers(*event_ptr));
 
 	Event::ConstIterator it = event_ptr->begin();
