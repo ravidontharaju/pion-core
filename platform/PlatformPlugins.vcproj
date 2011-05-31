@@ -26,7 +26,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -59,7 +59,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -70,7 +70,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -92,7 +92,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -114,7 +114,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -126,7 +126,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -137,7 +137,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -149,7 +149,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -172,7 +172,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -183,7 +183,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove all files from all *\.libs folders"
-				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;"
+				CommandLine="if exist codecs\.libs del /Q codecs\.libs\*.*&#x0D;&#x0A;if exist databases\.libs del /Q databases\.libs\*.*&#x0D;&#x0A;if exist reactors\.libs del /Q reactors\.libs\*.*&#x0D;&#x0A;if exist services\.libs del /Q services\.libs\*.*&#x0D;&#x0A;if exist protocols\.libs del /Q protocols\.libs\*.*&#x0D;&#x0A;if exist plugins del /Q plugins\*.*&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -195,7 +195,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy the plugin DLLs for the current configuration into *\.libs"
-				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;"
+				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
