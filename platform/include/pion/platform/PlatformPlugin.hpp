@@ -119,10 +119,21 @@ protected:
 		m_plugin_id = pp.m_plugin_id;
 		m_plugin_name = pp.m_plugin_name;
 		m_plugin_comment = pp.m_plugin_comment;
+		m_codec_factory_ptr = pp.m_codec_factory_ptr;
+		m_database_mgr_ptr = pp.m_database_mgr_ptr;
+		m_reaction_engine_ptr = pp.m_reaction_engine_ptr;
+		m_protocol_factory_ptr = pp.m_protocol_factory_ptr;
+		m_service_mgr_ptr = pp.m_service_mgr_ptr;
 	}
 	
 	/// returns the CodecFactory to use for accessing Codecs
 	inline CodecFactory& getCodecFactory(void) {
+		PION_ASSERT(m_codec_factory_ptr != NULL);
+		return *m_codec_factory_ptr;
+	}
+	
+	/// returns the CodecFactory to use for accessing Codecs (const)
+	inline const CodecFactory& getCodecFactory(void) const {
 		PION_ASSERT(m_codec_factory_ptr != NULL);
 		return *m_codec_factory_ptr;
 	}
@@ -133,20 +144,44 @@ protected:
 		return *m_database_mgr_ptr;
 	}
 	
+	/// returns the DatabaseManager to use for accessing Databases (const)
+	inline const DatabaseManager& getDatabaseManager(void) const {
+		PION_ASSERT(m_database_mgr_ptr != NULL);
+		return *m_database_mgr_ptr;
+	}
+	
 	/// returns the ReactionEngine to use for accessing Reactors
 	inline ReactionEngine& getReactionEngine(void) {
 		PION_ASSERT(m_reaction_engine_ptr != NULL);
 		return *m_reaction_engine_ptr;
 	}
 
+	/// returns the ReactionEngine to use for accessing Reactors (const)
+	inline const ReactionEngine& getReactionEngine(void) const {
+		PION_ASSERT(m_reaction_engine_ptr != NULL);
+		return *m_reaction_engine_ptr;
+	}
+	
 	/// returns the ProtocolFactory to use for accessing Protocols
 	inline ProtocolFactory& getProtocolFactory(void) {
 		PION_ASSERT(m_protocol_factory_ptr != NULL);
 		return *m_protocol_factory_ptr;
 	}
 
+	/// returns the ProtocolFactory to use for accessing Protocols (const)
+	inline const ProtocolFactory& getProtocolFactory(void) const {
+		PION_ASSERT(m_protocol_factory_ptr != NULL);
+		return *m_protocol_factory_ptr;
+	}
+
 	/// returns the ServiceManager to use for accessing PlatformServices
 	inline pion::server::ServiceManager& getServiceManager(void) {
+		PION_ASSERT(m_service_mgr_ptr != NULL);
+		return *m_service_mgr_ptr;
+	}
+
+	/// returns the ServiceManager to use for accessing PlatformServices (const)
+	inline const pion::server::ServiceManager& getServiceManager(void) const {
 		PION_ASSERT(m_service_mgr_ptr != NULL);
 		return *m_service_mgr_ptr;
 	}

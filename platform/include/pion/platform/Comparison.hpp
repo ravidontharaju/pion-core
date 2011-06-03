@@ -159,8 +159,9 @@ public:
 	 *
 	 * @param term the term that will be examined
 	 */
-	explicit Comparison(const Vocabulary::Term& term)
-		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false), m_running(true),
+	explicit Comparison(const Vocabulary::Term& term, bool debug_mode = false)
+		: m_term(term), m_type(TYPE_FALSE), m_match_all_values(false),
+		  m_running(true), m_debug_mode(debug_mode),
 		  m_logger(PION_GET_LOGGER("pion.platform.Comparison"))
 	{}
 
@@ -170,7 +171,8 @@ public:
 		m_str_value(c.m_str_value), m_comparison_func(c.m_comparison_func), 
 		m_regex(c.m_regex), m_regex_str(c.m_regex_str),
 		m_match_all_values(c.m_match_all_values), 
-		m_running(c.m_running), m_logger(c.m_logger)
+		m_running(c.m_running), m_debug_mode(c.m_debug_mode),
+		m_logger(c.m_logger)
 	{}
 
 	/**
@@ -735,6 +737,9 @@ private:
 	/// Is this rule running?
 	bool						m_running;
 
+	/// true if running in "debug mode"
+	bool						m_debug_mode;
+
 	/// primary logging interface used by this class
 	mutable PionLogger			m_logger;
 };
@@ -1189,9 +1194,11 @@ inline bool Comparison::evaluateRange(const Event::ValuesRange& values_range)
 					} catch (pion::platform::Comparison::RegexFailure& e) {
 						PION_LOG_ERROR(m_logger, "Regex search failed: regex = " << m_regex_str << ", " << e.what());
 
-						// Prevent this rule from running again.
-						PION_LOG_WARN(m_logger, "Comparison rule has been disabled: regex = " << m_regex_str);
-						m_running = false;
+						if (! m_debug_mode) {
+							// Prevent this rule from running again.
+							PION_LOG_WARN(m_logger, "Comparison rule has been disabled: regex = " << m_regex_str);
+							m_running = false;
+						}
 
 						// Since neither true nor false is an appropriate return value, rethrow for RuleChain to handle.
 						throw;

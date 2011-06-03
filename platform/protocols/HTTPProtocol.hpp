@@ -104,8 +104,8 @@ public:
 	/// exception thrown if regex_search fails and throws
 	class RegexFailure : public PionException {
 	public:
-		RegexFailure(const std::string& regex, const std::string& str)
-			: PionException("Regex search failed: regex = ", regex + ", str = " + str) {}
+		RegexFailure(const std::string& error_msg)
+			: PionException("Regex search failed: ", error_msg) {}
 	};
 
 
@@ -358,7 +358,7 @@ private:
 			boost::shared_array<char>& final_content,
 			size_t& final_content_length,
 			PionLogger& logger) const;
-
+		
 
 		/// the protocol this rule belongs to
 		const HTTPProtocol&					m_parent_protocol;
@@ -405,6 +405,14 @@ private:
 	 * @param event_ptr_ref pointer assigned to the new Event
 	 */
 	void generateEvent(pion::platform::EventPtr& event_ptr_ref);
+
+	/**
+	 * handles the failure of a regex-based extraction rule
+	 *
+	 * @param regex string representation of the regex that failed
+	 * @param str source string extraction was performed upon
+	 */
+	void handleRegexFailure(const std::string& regex, const std::string& str) const;
 
 
 	/// primary logging interface used by this class
@@ -750,7 +758,7 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 						if (! boost::regex_search(first, last, mr, m_match))
 							break;
 					} catch (...) {
-						throw RegexFailure(m_match.str(), content_ref);
+						m_parent_protocol.handleRegexFailure(m_match.str(), content_ref);
 					}
 					if (m_format.empty() || mr.empty()) {
 						// no format -> extract entire string
@@ -792,7 +800,7 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 				if (! boost::regex_search(content_ptr, end_ptr, mr, m_match))
 					break;
 			} catch (...) {
-				throw RegexFailure(m_match.str(), content_ptr);
+				m_parent_protocol.handleRegexFailure(m_match.str(), content_ptr);
 			}
 			if (m_format.empty() || mr.empty()) {
 				// no format -> extract entire string
@@ -825,7 +833,7 @@ inline void HTTPProtocol::ExtractionRule::processRawContent(pion::platform::Even
 			try {
 				content_type_matches = boost::regex_search(content_type, m_type_regex);
 			} catch (...) {
-				throw RegexFailure(m_type_regex.str(), content_type);
+				m_parent_protocol.handleRegexFailure(m_type_regex.str(), content_type);
 			}
 		}
 		if (content_type_matches) 
@@ -843,7 +851,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 		try {
 			content_type_matches = m_type_regex.empty() || boost::regex_search(content_type, m_type_regex);
 		} catch (...) {
-			throw RegexFailure(m_type_regex.str(), content_type);
+			m_parent_protocol.handleRegexFailure(m_type_regex.str(), content_type);
 		}
 		if (content_type_matches) {
 			// Try decoding and converting the content if we haven't already done so.

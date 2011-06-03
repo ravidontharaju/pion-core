@@ -176,25 +176,26 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			throw EmptyTypeException(getId());	// TODO: Improve the error message
 
 		// Add the transformation
+		const bool debug_mode = getReactionEngine().getDebugMode();
 		Transform *new_transform;
 		if (type_str == "AssignValue")
-			new_transform = new TransformAssignValue(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformAssignValue(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "AssignTerm")
-			new_transform = new TransformAssignTerm(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformAssignTerm(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "Lookup")
-			new_transform = new TransformLookup(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformLookup(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "Rules")
-			new_transform = new TransformRules(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformRules(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "Regex")
-			new_transform = new TransformRegex(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformRegex(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "SplitTerm")
-			new_transform = new TransformSplitTerm(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformSplitTerm(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "JoinTerm")
-			new_transform = new TransformJoinTerm(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformJoinTerm(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "URLEncode")
-			new_transform = new TransformURLEncode(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformURLEncode(v, v[term_ref], transformation_node->children, debug_mode);
 		else if (type_str == "URLDecode")
-			new_transform = new TransformURLDecode(v, v[term_ref], transformation_node->children);
+			new_transform = new TransformURLDecode(v, v[term_ref], transformation_node->children, debug_mode);
 		else
 			throw InvalidTransformation(type_str);
 
@@ -245,9 +246,6 @@ void TransformReactor::process(const EventPtr& e)
 	} catch (std::exception& e) {
 		// Likely Boost.regex throw
 		PION_LOG_ERROR(m_logger, e.what());
-		if (getReactionEngine().getDebugMode())		// Are we in debug mode?
-			stop();									// Yes: stop the reactor
-		throw TransformFailureException(getId());	// Continue throw to log error
 	}
 
 	deliverEvent(new_e);			// Deliver the modified event

@@ -45,6 +45,9 @@ class PION_PLATFORM_API Transform
 public:
 	/// identifies the Vocabulary Term that is being tested (for regex)
 	Vocabulary::Term			m_term;
+	
+	/// true if the transform should run in "debug mode"
+	const bool					m_debug_mode;
 
 	/// invalid/missing type of transformation
 	class MissingTransformField : public PionException {
@@ -67,8 +70,6 @@ public:
 			: PionException("AssignValue failed for value: ", value) {}
 	};
 
-//	mutable PionLogger			m_logger;
-
 	/// virtual destructor: you may extend this class
 	virtual ~Transform() {}
 
@@ -77,9 +78,10 @@ public:
 	 *
 	 * @param term the term that will be examined
 	 * @param set_term the term that will be set (if not InPlace)
+	 * @param debug_mode true if the transform should run in "debug mode"
 	 */
-	Transform(const Vocabulary& v, const Vocabulary::Term& term)
-		: 	m_term(term) //, m_logger(PION_GET_LOGGER("pion.Transform"))
+	Transform(const Vocabulary& v, const Vocabulary::Term& term, bool debug_mode)
+		: m_term(term), m_debug_mode(debug_mode)
 	{
 	}
 
@@ -177,8 +179,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignValue entity
 	 */
-	TransformAssignValue(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformAssignValue(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <Value>escape(value)</Value>
 		std::string val;
@@ -219,8 +221,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
-	TransformAssignTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformAssignTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
@@ -268,8 +270,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
-	TransformURLEncode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformURLEncode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
@@ -317,8 +319,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
-	TransformURLDecode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformURLDecode(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
@@ -370,8 +372,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
-	TransformSplitTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformSplitTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
@@ -432,8 +434,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the AssignTerm entity
 	 */
-	TransformJoinTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term), m_unique(false)
+	TransformJoinTerm(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode), m_unique(false)
 	{
 		// <Term>src-term</Term>
 		std::string term_id;
@@ -518,8 +520,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the Lookup entity
 	 */
-	TransformLookup(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformLookup(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		//	<LookupTerm>src-term</LookupTerm>
 		std::string term_id;
@@ -622,8 +624,10 @@ public:
 					// Get the source string again
 					str.clear();
 					s->write(str, ec->value, m_lookup_term);
-					// Not running anymore
-					m_running = false;
+					if (! m_debug_mode) {
+						// Not running anymore
+						m_running = false;
+					}
 					// Throw on this, to get an error message logged
 					throw RegexFailure("str=" + str + ", regex=" + m_match.str());
 				}
@@ -680,8 +684,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the Rules entity
 	 */
-	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformRules(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		// <StopOnFirstMatch>true|false</StopOnFirstMatch>			-> DEFAULT: true
 		m_short_circuit = false;
@@ -789,8 +793,10 @@ public:
 								} catch (...) {
 									// Get the original value again...
 									std::string str;
-									// This rule won't be running again...
-									m_running[i] = false;
+									if (! m_debug_mode) {
+										// This rule won't be running again...
+										m_running[i] = false;
+									}
 									// Throw on this, to get an error message logged
 									throw RegexFailure("str=" + s->write(str, ec->value, m_comparison[i]->getTerm()) + ", regex=" + m_comparison[i]->getRegexStr());
 								}
@@ -833,8 +839,8 @@ public:
 	 * @param term The source term type to use
 	 * @param config_ptr Pointer to XML configuration of the Regex entity
 	 */
-	TransformRegex(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr)
-		: Transform(v, term)
+	TransformRegex(const Vocabulary& v, const Vocabulary::Term& term, const xmlNodePtr config_ptr, bool debug_mode = false)
+		: Transform(v, term, debug_mode)
 	{
 		//	<SourceTerm>src-term</SourceTerm>
 		std::string term_id;
@@ -904,8 +910,10 @@ public:
 					try {
 						res = boost::u32regex_replace(str, m_regex[i], m_format[i], boost::format_all | boost::format_no_copy);
 					} catch (...) {
-						// This rule won't be running again...
-						m_running[i] = false;
+						if (! m_debug_mode) {
+							// This rule won't be running again...
+							m_running[i] = false;
+						}
 						// Throw on this, to get an error message logged
 						throw RegexFailure("str=" + str + ", regex=" + m_regex_str[i]);
 					}

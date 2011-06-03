@@ -34,6 +34,7 @@
 #include <unicode/utypes.h>
 #include <unicode/ucnv.h>
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/ProtocolFactory.hpp>
 #include "HTTPProtocol.hpp"
 
 using namespace pion::net;
@@ -527,10 +528,11 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			}
 		} catch (RegexFailure& e) {
 			PION_LOG_ERROR(m_logger, e.what());
-
-			// Prevent this rule from running again.
-			(*i)->m_running = false;
-			PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match.str());
+			if (! getProtocolFactory().getDebugMode()) {
+				// Prevent this rule from running again.
+				(*i)->m_running = false;
+				PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match.str());
+			}
 		}
 	}
 }
@@ -908,6 +910,19 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_canceled_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CANCELED);
 	if (m_canceled_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CANCELED);
+}
+
+void HTTPProtocol::handleRegexFailure(const std::string& regex, const std::string& str) const
+{
+	std::string error_msg("regex = ");
+	error_msg += regex;
+	if (getProtocolFactory().getDebugMode()) {
+		// only include source string in debug mode since this data
+		// has not yet been processed to remove credit card numbers
+		error_msg += ", str = ";
+		error_msg += str;
+	}
+	throw RegexFailure(error_msg);
 }
 
 
