@@ -145,9 +145,8 @@ public:
 	 */
 inline bool AssignValue(EventPtr& e, const Vocabulary::Term& term, const std::string& value)
 {
-// Seems that not assigning empty values breaks functionality & tests
-//	if (value.empty())		// New shortcut -- if empty value, don't assign
-//	  return true;
+	if (value.empty())		// New shortcut -- if empty value, don't assign
+	  return true;
 
 	try {
 		e->set(term, value);
@@ -462,7 +461,6 @@ public:
 	 */
 	virtual bool transform(EventPtr& d, const EventPtr& s)
 	{
-		bool AnyCopied = false;
 		std::set<std::string> seen;
 		Event::ValuesRange values_range = s->equal_range(m_src_term.term_ref);
 		std::string result, str;
@@ -476,9 +474,7 @@ public:
 					seen.insert(str);
 			}
 		}
-		if (!result.empty())
-			AnyCopied |= AssignValue(d, m_term, result);
-		return AnyCopied;	// true, if any were copied...
+		return AssignValue(d, m_term, result);
 	}
 };
 
