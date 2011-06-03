@@ -507,8 +507,8 @@ void DatabaseInserter::insertEvents(void)
 		}
 		
 	} catch (std::exception& e) {
-		PION_LOG_FATAL(m_logger, e.what());
-		m_is_running = false;
+		PION_LOG_ERROR(m_logger, "Bulk insert failure: " << e.what());
+//		m_is_running = false;
 		m_swapped_queue.notify_all();
 	}
 
