@@ -3,8 +3,8 @@
 <Comment>Sessionizes HTTP traffic into page views and visitor sessions</Comment>
 <SessionTimeout>1800</SessionTimeout>
 <PageTimeout>10</PageTimeout>
-<MaxOpenPages>5</MaxOpenPages>
-<MaxOpenEvents>100</MaxOpenEvents>
+<MaxOpenPages>10</MaxOpenPages>
+<MaxOpenEvents>250</MaxOpenEvents>
 <IgnoreRobotTraffic>true</IgnoreRobotTraffic>
 <UseEventTimeForTimeouts>false</UseEventTimeForTimeouts>
 <AnonPersistence>false</AnonPersistence>
@@ -32,3 +32,6 @@ ${SessionGroupConfig}
 		<MatchAllValues>false</MatchAllValues>
 	</Comparison>
 </PageObjects>
+<HoneyPots>
+	<UriStem>/robots.txt</UriStem>
+</HoneyPots>
