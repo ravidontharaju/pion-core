@@ -719,7 +719,7 @@ public:
 				if (! ConfigManager::getConfigOptionEmptyOk(VALUE_ELEMENT_NAME, value_str, RuleNode->children))
 					throw MissingTransformField("Missing Value in TransformationAssignRules");
 
-			Comparison *comp = new Comparison(v[term_ref]);
+			Comparison *comp = new Comparison(v[term_ref], debug_mode);
 			comp->configure(ctype, value_str);
 			m_comparison.push_back(comp);
 
