@@ -313,6 +313,18 @@ private:
 			PionLogger& logger) const;
 
 		/**
+		 * Truncates to the lesser of m_max_size and content_length, except that if
+		 * that specifies a cutoff in the middle of a UTF-8 code point, it truncates to the
+		 * beginning of the code point.
+		 *
+		 * @param event_ptr_ref pointer to the Event being generated
+		 * @param content_ptr pointer to a blob of payload content data
+		 * @param content_length length of the payload content data blob
+		 */
+		inline void setTruncatedString(pion::platform::EventPtr& event_ptr_ref,
+			const char *content_ptr, const size_t content_length) const;
+
+		/**
 		 * copies decoded content from a decoder into a decoder sink
 		 *
 		 * @param decoder used to decode the input stream
@@ -746,9 +758,7 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 			: range.first->second);
 		if ( m_max_size > 0 && ! content_ref.empty() ) {
 			if ( m_match.empty() ) {
-				(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
-										   (content_ref.size() > m_max_size
-											? m_max_size : content_ref.size()));
+				setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size());
 			} else {
 				num_extracts = 0U;
 				first = content_ref.begin();
@@ -762,15 +772,11 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 					}
 					if (m_format.empty() || mr.empty()) {
 						// no format -> extract entire string
-						(*event_ptr_ref).setString(m_term.term_ref, content_ref.c_str(),
-												   (content_ref.size() > m_max_size
-													? m_max_size : content_ref.size()));
+						setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size());
 						break;	// stop looking for matches
 					} else {
 						std::string content_str(mr.format(m_format, boost::format_all));
-						(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
-												   (content_str.size() > m_max_size
-													? m_max_size : content_str.size()));
+						setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size());
 					}
 					// check max_extracts
 					if (m_max_extracts && ++num_extracts >= m_max_extracts)
@@ -789,9 +795,7 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 {
 	boost::match_results<const char*> mr;
 	if ( m_match.empty() ) {
-		(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
-								   (content_length > m_max_size
-									? m_max_size : content_length));
+		setTruncatedString(event_ptr_ref, content_ptr, content_length);
 	} else {
 		boost::uint32_t num_extracts = 0U;
 		const char *end_ptr = content_ptr + content_length;
@@ -804,15 +808,11 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 			}
 			if (m_format.empty() || mr.empty()) {
 				// no format -> extract entire string
-				(*event_ptr_ref).setString(m_term.term_ref, content_ptr,
-										   (content_length > m_max_size
-											? m_max_size : content_length));
+				setTruncatedString(event_ptr_ref, content_ptr, content_length);
 				break;	// stop looking for matches
 			} else {
 				std::string content_str(mr.format(m_format, boost::format_all));
-				(*event_ptr_ref).setString(m_term.term_ref, content_str.c_str(),
-										   (content_str.size() > m_max_size
-											? m_max_size : content_str.size()));
+				setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size());
 			}
 			// check max_extracts
 			if (m_max_extracts && ++num_extracts >= m_max_extracts)
@@ -936,6 +936,23 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 			}
 		}
 	}
+}
+
+inline void HTTPProtocol::ExtractionRule::setTruncatedString(
+	pion::platform::EventPtr& event_ptr_ref,
+	const char* content_ptr,
+	const size_t content_length) const
+{
+	size_t offset = content_length > m_max_size? m_max_size : content_length;
+
+	// 'offset' points to the end of the requested byte array, but might be in the middle of a UTF-8 code point, 
+	// in which case this will decrease 'offset' to point to the beginning of that code point.
+	U8_SET_CP_START_UNSAFE(content_ptr, offset) // "Unsafe" macro, assumes well-formed UTF-8.
+
+	// TODO: We could use the following "safe" macro instead, which doesn't assume well-formed UTF-8, and thus does more computation.
+	// U8_SET_CP_START(content_ptr, 0, offset)
+
+	(*event_ptr_ref).setString(m_term.term_ref, content_ptr, offset);
 }
 
 }	// end namespace plugins

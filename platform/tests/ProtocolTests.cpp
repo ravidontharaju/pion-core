@@ -1050,4 +1050,40 @@ BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
 	BOOST_CHECK_EQUAL("Title 1", m_e.back()->getString(m_page_title_term_ref));
 }
 
+BOOST_AUTO_TEST_CASE(checkExtractionRuleTruncation) {
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<Extract term=\"urn:vocab:test#blob-1\">"
+		"		<Source>sc-content</Source>"
+		"		<MaxSize>4</MaxSize>"
+		"	</Extract>"
+		"	<Extract term=\"urn:vocab:test#blob-2\">"
+		"		<Source>sc-content</Source>"
+		"		<MaxSize>5</MaxSize>"
+		"	</Extract>"
+		"	<Extract term=\"urn:vocab:test#blob-3\">"
+		"		<Source>sc-content</Source>"
+		"		<MaxSize>6</MaxSize>"
+		"	</Extract>"
+		+ m_config_str_tail);
+
+	pion::platform::Vocabulary::TermRef	blob_1_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-1");
+	pion::platform::Vocabulary::TermRef	blob_2_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-2");
+	pion::platform::Vocabulary::TermRef	blob_3_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-3");
+
+	// UTF8_ENCODED_TEST_STRING_1 has a 3-byte code point starting at offset 3.
+	// Thus, if MaxSize is 4 or 5, we expect the result to be truncated to length 3.
+	const std::string content = UTF8_ENCODED_TEST_STRING_1 + CRLF;
+
+	// Send a Content-Type header with no charset specified.
+	generateEvent("Content-Type: text/plain", content);
+
+	// Check that when MaxSize specified an offset in the middle of a code point, the string was truncated to the start of that code point.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1.substr(0, 3), m_e.back()->getString(blob_1_term_ref));
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1.substr(0, 3), m_e.back()->getString(blob_2_term_ref));
+
+	// Check that when MaxSize specified an offset on a code point boundary, the string was truncated to the length specified by MaxSize.
+	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1.substr(0, 6), m_e.back()->getString(blob_3_term_ref));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

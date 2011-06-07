@@ -211,6 +211,8 @@ public:
 		while (in.get(c)) file_contents += c;
 		return boost::regex_search(file_contents, regex);
 	}
+	
+	static const size_t NUM_TERMS_IN_VOCAB_A = 9;
 };
 
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(VocabularyConfigWithPreExistingConfigFileOpen_S, 
@@ -220,8 +222,8 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigIsOpen) {
 	BOOST_CHECK(F::configIsOpen());
 }
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsSix) {
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(6));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabSize) {
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), NUM_TERMS_IN_VOCAB_A);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularyConfigOptionValues) {
@@ -314,10 +316,9 @@ public:
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(BoundVocabularyConfig_S, 
 									   boost::mpl::list<BoundVocabularyConfig_F>)
 
-BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkSizeEqualsFive) {
-	// there should be five terms defined in the config file
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), static_cast<size_t>(6));
-	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), static_cast<size_t>(6));
+BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabSize) {
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), NUM_TERMS_IN_VOCAB_A);
+	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), NUM_TERMS_IN_VOCAB_A);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdValues) {
@@ -411,9 +412,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 
 	// look up the term using the ID
 	Vocabulary::TermRef term_ref = F::m_vocabulary.findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(7));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(NUM_TERMS_IN_VOCAB_A + 1));
 	term_ref = F::getVocabulary().findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(7));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(NUM_TERMS_IN_VOCAB_A + 1));
 	
 	// check Term member values
 	BOOST_CHECK_EQUAL(F::m_vocabulary[term_ref].term_id, new_term.term_id);
