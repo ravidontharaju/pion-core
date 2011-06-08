@@ -28,6 +28,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/logic/tribool.hpp>
 #include <boost/regex.hpp>
+#include <boost/regex/icu.hpp>
 #include <unicode/ucnv.h>
 #include <pion/PionException.hpp>
 #include <pion/PionAlgorithms.hpp>
@@ -281,9 +282,13 @@ private:
 		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param content_ptr pointer to a blob of payload content data
 		 * @param content_length length of the payload content data blob
+		 * @param final_content_is_utf8 whether the content is UTF-8 encoded
 		 */
-		inline void setTermValueFromFinalContent(pion::platform::EventPtr& event_ptr_ref,
-			const char *content_ptr, const size_t content_length) const;
+		inline void setTermValueFromFinalContent(
+			pion::platform::EventPtr& event_ptr_ref,
+			const char *content_ptr, 
+			const size_t content_length,
+			boost::logic::tribool final_content_is_utf8) const;
 
 		/**
 		 * processes content extraction for HTTPMessage payload content
@@ -303,6 +308,7 @@ private:
 		 * @param decoded_and_converted_flag has the payload content been decoded (if needed) and converted (if needed)?
 		 * @param final_content cached value of decoded and converted payload content
 		 * @param final_content_length length of the cached decoded and converted payload content
+		 * @param final_content_is_utf8 whether the content is UTF-8 encoded
 		 * @param logger PionLogger instance to use
 		 */
 		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
@@ -310,6 +316,7 @@ private:
 			boost::logic::tribool& decoded_and_converted_flag,
 			boost::shared_array<char>& final_content,
 			size_t& final_content_length,
+			boost::logic::tribool& final_content_is_utf8,
 			PionLogger& logger) const;
 
 		/**
@@ -389,6 +396,12 @@ private:
 
 		/// regex that must match the source value; may contain ()'s for m_format
 		boost::regex						m_match;
+
+		/// regex that must match the source value; may contain ()'s for m_format
+		boost::u32regex						m_u32_match;
+
+		/// the original string that m_match was constructed from
+		std::string							m_match_str;
 
 		/// regex that must match the content-type (for cs-content and sc-content)
 		boost::regex						m_type_regex;
@@ -790,8 +803,11 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 	}
 }
 
-inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::platform::EventPtr& event_ptr_ref,
-	const char *content_ptr, const size_t content_length) const
+inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(
+		pion::platform::EventPtr& event_ptr_ref,
+		const char *content_ptr, 
+		const size_t content_length,
+		boost::logic::tribool final_content_is_utf8) const
 {
 	boost::match_results<const char*> mr;
 	if ( m_match.empty() ) {
@@ -801,10 +817,15 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(pion::pla
 		const char *end_ptr = content_ptr + content_length;
 		while (1) {
 			try {
-				if (! boost::regex_search(content_ptr, end_ptr, mr, m_match))
-					break;
+				if (final_content_is_utf8) {
+					if (! boost::u32regex_search(content_ptr, end_ptr, mr, m_u32_match))
+						break;
+				} else {
+					if (! boost::regex_search(content_ptr, end_ptr, mr, m_match))
+						break;
+				}
 			} catch (...) {
-				m_parent_protocol.handleRegexFailure(m_match.str(), content_ptr);
+				m_parent_protocol.handleRegexFailure(m_match_str, content_ptr);
 			}
 			if (m_format.empty() || mr.empty()) {
 				// no format -> extract entire string
@@ -837,13 +858,14 @@ inline void HTTPProtocol::ExtractionRule::processRawContent(pion::platform::Even
 			}
 		}
 		if (content_type_matches) 
-			setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+			setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength(), boost::indeterminate);
 	}
 }
 
 inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
 	const pion::net::HTTPMessage& http_msg, boost::logic::tribool& decoded_and_converted_flag,
-	boost::shared_array<char>& final_content, size_t& final_content_length, PionLogger& logger) const
+	boost::shared_array<char>& final_content, size_t& final_content_length, 
+	boost::logic::tribool& final_content_is_utf8, PionLogger& logger) const
 {
 	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
 		const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
@@ -893,6 +915,8 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								// since the former takes precedence over the latter.
 							}
 						}
+						if (!charset.empty() && boost::regex_search(charset, UTF8_RX))
+							final_content_is_utf8 = true;
 						do_conversion = (!charset.empty() && !boost::regex_search(charset, UTF8_RX));
 					}
 
@@ -902,6 +926,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						if (do_conversion) {
 							decoded_and_converted_flag = tryConvertingToUtf8(charset, http_msg.getContent(), http_msg.getContentLength(), 
 																			 final_content, final_content_length, logger);
+							final_content_is_utf8 = decoded_and_converted_flag;
 						} else {
 							// No decoding or converting needed.  Can use http_msg.getContent() directly below.
 							decoded_and_converted_flag = false;
@@ -912,6 +937,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						if (do_conversion) {
 							decoded_and_converted_flag = tryConvertingToUtf8(charset, decoded_content.get(), decoded_content_length,
 																			 final_content, final_content_length, logger);
+							final_content_is_utf8 = decoded_and_converted_flag;
 						} else {
 							// 
 							final_content.swap(decoded_content);
@@ -928,11 +954,11 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 
 			if (decoded_and_converted_flag && final_content.get() != NULL) {
 				// we already have decoded and converted content -> use it
-				setTermValueFromFinalContent(event_ptr_ref, final_content.get(), final_content_length);
+				setTermValueFromFinalContent(event_ptr_ref, final_content.get(), final_content_length, final_content_is_utf8);
 			} else {
 				// Either no Content-Encoding header was found and no charset was specified, or decoding or conversion failed.
 				// -> use raw payload content
-				setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength());
+				setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength(), final_content_is_utf8);
 			}
 		}
 	}

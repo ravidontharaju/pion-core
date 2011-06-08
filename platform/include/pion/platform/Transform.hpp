@@ -493,7 +493,10 @@ class PION_PLATFORM_API TransformLookup
 	Vocabulary::Term			m_lookup_term;
 
 	/// [optional] regular expression to apply to Lookup Term
-	boost::regex				m_match;
+	boost::u32regex				m_match;
+
+	/// the original string that m_match was constructed from
+	std::string					m_match_str;
 
 	/// [optional] format to apply to regular expression, default: $&
 	std::string					m_format;
@@ -535,7 +538,8 @@ public:
 		std::string val;
 		if (ConfigManager::getConfigOptionEmptyOk(LOOKUP_MATCH_ELEMENT_NAME, val, config_ptr)) {
 			try {
-				m_match = val;
+				m_match = boost::make_u32regex(val);
+				m_match_str = val;
 			} catch (...) {
 				throw MissingTransformField("Invalid regular expression in TransformationLookup: " + val);
 			}
@@ -619,7 +623,7 @@ public:
 			// If regex defined, do the regular expression, replacing the key value
 			if (! m_match.empty()) {
 				try {
-					str = boost::regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
+					str = boost::u32regex_replace(str, m_match, m_format, boost::format_all | boost::format_no_copy);
 				} catch (...) {
 					// Get the source string again
 					str.clear();
@@ -629,7 +633,7 @@ public:
 						m_running = false;
 					}
 					// Throw on this, to get an error message logged
-					throw RegexFailure("str=" + str + ", regex=" + m_match.str());
+					throw RegexFailure("str=" + str + ", regex=" + m_match_str);
 				}
 			}
 			// Find the value, using the key

@@ -679,6 +679,62 @@ BOOST_AUTO_TEST_CASE(checkCharBasedRulesRegexAgainstNonAsciiChar) {
 	sendEventAndValidateOutput(e, transformer_id);
 }
 
+BOOST_AUTO_TEST_CASE(checkTransformLookup) {
+	// Add a TransformReactor that does a Lookup transformation.
+	xmlNodePtr config_ptr = PionPlatformUnitTest::makeReactorConfigFromString(
+		"<Plugin>TransformReactor</Plugin>"
+		"<Workspace>1</Workspace>"
+		"<Transformation>"
+			"<Term>urn:vocab:test#blob-1</Term>"
+			"<Type>Lookup</Type>"
+			"<LookupTerm>urn:vocab:clickstream#sc-content</LookupTerm>"
+			"<Lookup key=\"x init\">special case x</Lookup>"
+			"<Lookup key=\"α init\">special case alpha</Lookup>"
+			"<Match>(\\w)\\s*=\\s*\\d+\\b;?</Match>"
+			"<Format>$1 init</Format>"
+			"<DefaultAction>output</DefaultAction>"
+		"</Transformation>");
+	std::string transformer_id = m_reaction_engine->addReactor(config_ptr);
+
+	pion::platform::Vocabulary::TermRef	blob_1_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-1");
+
+	// Create an input Event that should be modified by the regex and then match one of the lookup keys.
+	EventPtr e0(m_event_factory.create(m_page_event_ref));
+	e0->setString(m_sc_content_term_ref, "x=1;");
+	m_expected_terms[blob_1_term_ref] = "special case x";
+
+	sendEventAndValidateOutput(e0, transformer_id);
+
+	// Same as the previous case, except that this time boost::u32regex is required for correct matching.
+	EventPtr e1(m_event_factory.create(m_page_event_ref));
+	e1->setString(m_sc_content_term_ref, "α=1;");
+	m_expected_terms[blob_1_term_ref] = "special case alpha";
+
+	sendEventAndValidateOutput(e1, transformer_id);
+
+	// Create an input Event that should be modified by the regex but not match any lookup key.
+	// Since DefaultAction = output, we expect the output to be the regex output.
+	EventPtr e2(m_event_factory.create(m_page_event_ref));
+	e2->setString(m_sc_content_term_ref, "a=2;");
+	m_expected_terms[blob_1_term_ref] = "a init";
+
+	sendEventAndValidateOutput(e2, transformer_id);
+
+	// Create an input Event that should not be modified by the regex but should match one of the lookup keys.
+	EventPtr e3(m_event_factory.create(m_page_event_ref));
+	e3->setString(m_sc_content_term_ref, "α init");
+	m_expected_terms[blob_1_term_ref] = "special case alpha";
+
+	sendEventAndValidateOutput(e3, transformer_id);
+
+	// Finally, create an input Event that shouldn't match anything.
+	EventPtr e4(m_event_factory.create(m_page_event_ref));
+	e4->setString(m_sc_content_term_ref, "blah");
+	m_expected_terms[blob_1_term_ref] = "blah";
+
+	sendEventAndValidateOutput(e4, transformer_id);
+}
+
 BOOST_AUTO_TEST_CASE(checkSplitTerm) {
 	// Add a TransformReactor that does a Rule based Transformation of type is-not-defined where the
 	// Term, urn:vocab:clickstream#page-event, is the same as the type of the Event.

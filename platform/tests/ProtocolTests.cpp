@@ -1086,4 +1086,27 @@ BOOST_AUTO_TEST_CASE(checkExtractionRuleTruncation) {
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1.substr(0, 6), m_e.back()->getString(blob_3_term_ref));
 }
 
+BOOST_AUTO_TEST_CASE(checkCharBasedExtractionRuleRegexAgainstNonAsciiChar) {
+	// Create a protocol with an extraction rule with a regex that matches exactly one "word" character.
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<Extract term=\"urn:vocab:test#blob-1\">"
+		"		<Source>sc-content</Source>"
+		"		<Match>x=(\\w);</Match>"
+		"		<Format>[$1]</Format>"
+		"	</Extract>"
+		+ m_config_str_tail);
+
+	// Create a UTF-8 string that should match the regex above, where the character we'd like to match consists of two bytes,
+	// so that boost::u32regex is required for the match to succeed.
+	const std::string content = "x=α;" + CRLF;
+
+	// Send a Content-Type header with charset=utf-8.
+	generateEvent("Content-Type: text/html; charset=utf-8", content);
+
+	// Check that the extraction rule succeeded.
+	pion::platform::Vocabulary::TermRef	blob_1_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-1");
+	BOOST_CHECK_EQUAL("[α]", m_e.back()->getString(blob_1_term_ref));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
