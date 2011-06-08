@@ -31,6 +31,8 @@
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/regex/icu.hpp>
 #include <unicode/utypes.h>
 #include <unicode/ucnv.h>
 #include <pion/platform/ConfigManager.hpp>
@@ -471,6 +473,8 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	boost::shared_array<char> final_response_content;
 	boost::logic::tribool decoded_and_converted_request_flag(boost::indeterminate);
 	boost::logic::tribool decoded_and_converted_response_flag(boost::indeterminate);
+	boost::logic::tribool final_request_content_is_utf8(boost::indeterminate);
+	boost::logic::tribool final_response_content_is_utf8(boost::indeterminate);
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -510,12 +514,12 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 				case EXTRACT_CS_CONTENT:
 					// extract decoded and converted HTTP payload content from request
 					rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
-						final_request_content, final_request_length, m_logger);
+						final_request_content, final_request_length, final_request_content_is_utf8, m_logger);
 					break;
 				case EXTRACT_SC_CONTENT:
 					// extract decoded and converted HTTP payload content from response
 					rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
-						final_response_content, final_response_length, m_logger);
+						final_response_content, final_response_length, final_response_content_is_utf8, m_logger);
 					break;
 				case EXTRACT_CS_RAW_CONTENT:
 					// extract raw HTTP payload content from request
@@ -531,7 +535,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			if (! getProtocolFactory().getDebugMode()) {
 				// Prevent this rule from running again.
 				(*i)->m_running = false;
-				PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match.str());
+				PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match_str);
 			}
 		}
 	}
@@ -714,6 +718,8 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		{
 			try {
 				rule_ptr->m_match.assign(temp_str);
+				rule_ptr->m_u32_match = boost::make_u32regex(temp_str);
+				rule_ptr->m_match_str = temp_str;
 			} catch (...) {
 				throw BadMatchRegexException(temp_str);
 			}
