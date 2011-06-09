@@ -212,8 +212,10 @@ public:
 		return boost::regex_search(file_contents, regex);
 	}
 	
-	static const size_t NUM_TERMS_IN_VOCAB_A = 9;
+	static const size_t NUM_TERMS_IN_VOCAB_A;
 };
+
+const size_t VocabularyConfigWithPreExistingConfigFileOpen_F::NUM_TERMS_IN_VOCAB_A = 9;
 
 BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(VocabularyConfigWithPreExistingConfigFileOpen_S, 
 									   boost::mpl::list<VocabularyConfigWithPreExistingConfigFileOpen_F>)
@@ -223,7 +225,7 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkConfigIsOpen) {
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabSize) {
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), NUM_TERMS_IN_VOCAB_A);
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), this->NUM_TERMS_IN_VOCAB_A);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabularyConfigOptionValues) {
@@ -317,8 +319,8 @@ BOOST_AUTO_TEST_SUITE_FIXTURE_TEMPLATE(BoundVocabularyConfig_S,
 									   boost::mpl::list<BoundVocabularyConfig_F>)
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkVocabSize) {
-	BOOST_CHECK_EQUAL(F::getVocabulary().size(), NUM_TERMS_IN_VOCAB_A);
-	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), NUM_TERMS_IN_VOCAB_A);
+	BOOST_CHECK_EQUAL(F::getVocabulary().size(), this->NUM_TERMS_IN_VOCAB_A);
+	BOOST_CHECK_EQUAL(F::m_vocabulary.size(), this->NUM_TERMS_IN_VOCAB_A);
 }
 
 BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkIdValues) {
@@ -412,9 +414,9 @@ BOOST_AUTO_TEST_CASE_FIXTURE_TEMPLATE(checkAddNewTerm) {
 
 	// look up the term using the ID
 	Vocabulary::TermRef term_ref = F::m_vocabulary.findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(NUM_TERMS_IN_VOCAB_A + 1));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(this->NUM_TERMS_IN_VOCAB_A + 1));
 	term_ref = F::getVocabulary().findTerm(new_term.term_id);
-	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(NUM_TERMS_IN_VOCAB_A + 1));
+	BOOST_CHECK_EQUAL(term_ref, static_cast<Vocabulary::TermRef>(this->NUM_TERMS_IN_VOCAB_A + 1));
 	
 	// check Term member values
 	BOOST_CHECK_EQUAL(F::m_vocabulary[term_ref].term_id, new_term.term_id);
