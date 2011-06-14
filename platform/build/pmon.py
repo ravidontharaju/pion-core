@@ -63,6 +63,9 @@ KEY_METRICS = {
 		'SslServerCount' : 1000,				# number of active ssl servers
 		'SslMissingKeyServerCount' : 100,		# number of ssl servers missing keys
 		'SslKeyCount' : 1000,					# number of active ssl keys
+		'TotalPackets' : 0,						# total number of packets seen
+		'CapturedPackets' : 0,					# total number of packets captured
+		'DroppedPackets' : 0,					# total number of dropped packets
 		},
 	'PythonReactor' : {
 		'OpenSessions' : 100000,                # open visitor sessions
