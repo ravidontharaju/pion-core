@@ -499,6 +499,13 @@ void DatabaseInserter::insertEvents(void)
 					insert_queue_ptr->clear();	// drop events in insert queue
 					m_keys.clear();				// erase key cache since it may be inaccurate
 
+				} catch (std::exception& e) {
+
+					// another insert failure occured -> just log and drop versus stopping altogether
+					PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events: " << e.what());
+					insert_queue_ptr->clear();	// drop events in insert queue
+					m_keys.clear();				// erase key cache since it may be inaccurate
+
 				}
 
 			} else {
@@ -507,8 +514,8 @@ void DatabaseInserter::insertEvents(void)
 		}
 		
 	} catch (std::exception& e) {
-		PION_LOG_ERROR(m_logger, "Bulk insert failure: " << e.what());
-//		m_is_running = false;
+		PION_LOG_FATAL(m_logger, e.what());
+		m_is_running = false;
 		m_swapped_queue.notify_all();
 	}
 
