@@ -1380,9 +1380,18 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 					return;
 				}
 			}
+			
+			// Remove any passwords before logging results
+			std::string clean_content(request->getContent());
+			std::string result_fmt("<Password>...</Password>");
+			boost::regex find_password_rx("<Password>(.*?)</Password>");
+			clean_content = boost::regex_replace(clean_content, find_password_rx, result_fmt);
+			request->setContent(clean_content);
+			
 			//
 			// END USERS CONFIG
 			//
+			
 		} else if (branches.front() == "plugins") {
 
 			// Send a list of all Plugins found in the Plugin directories.
