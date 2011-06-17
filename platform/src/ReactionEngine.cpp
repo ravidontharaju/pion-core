@@ -1099,11 +1099,19 @@ bool ReactionEngine::creationAllowed(xmlNodePtr permission_config_ptr, xmlNodePt
 	if (findConfigNodeByName(PLUGIN_ELEMENT_NAME, config_ptr) != NULL) {
 		// config_ptr is for a Reactor
 
+		// check if creating a protected reactor type
+		std::string reactor_type;
+		getConfigOption(PLUGIN_ELEMENT_NAME, reactor_type, config_ptr);
+		if (reactor_type == "SnifferReactor")
+			return false;	// admin or full privileges only can create these
+
+		// otherwise, check workspace permissions
 		std::string workspace_id;
 		if (! ConfigManager::getConfigOption(Reactor::WORKSPACE_ELEMENT_NAME, workspace_id, config_ptr))
 			throw Reactor::MissingWorkspaceException();
 		if (ConfigManager::findConfigNodeByContent(WORKSPACE_QUALIFIER_ELEMENT_NAME, workspace_id, permission_config_ptr->children))
 			return true;	// The User has permission to create Reactors in the specified Workspace.
+			
 	} else if (findConfigNodeByName(FROM_ELEMENT_NAME, config_ptr) != NULL) {
 		// config_ptr is for a Connection
 
