@@ -1,0 +1,18 @@
+<div class="dijitDialog pion_server_error_dialog">
+	<div dojoAttachPoint="titleBar" class="dijitDialogTitleBar" tabindex="0" waiRole="dialog">
+		<span dojoAttachPoint="titleNode" class="dijitDialogTitle">Pion Server Response Error</span>
+	</div>
+	<div dojoAttachPoint="containerNode" class="dijitDialogPaneContent">
+		<p class="status_code"></p>
+		<p class="url"></p>
+		<p><label>Response Text:</label></p>
+		<div dojoType="dijit.layout.ContentPane" dojoAttachPoint="response_pane" style="border: 1px solid; padding: 8px; margin-bottom: 10px" >"
+		</div>
+		<div class="save_cancel_delete">
+			<span dojoAttachPoint="kb_button" class="hidden">
+				<button dojoType=dijit.form.Button class="open_kb" dojoAttachEvent="onClick: openKB">Open Pion Knowledge Base</button>
+			</span>
+			<button dojoType=dijit.form.Button class="ok" dojoAttachEvent="onClick: onCancel">OK</button>
+		</div>
+	</div>
+</div>
