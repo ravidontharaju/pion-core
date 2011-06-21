@@ -10,6 +10,6 @@
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalDependencies="libxml2.lib rpcrt4.lib"
+		AdditionalDependencies="rpcrt4.lib"
 	/>
 </VisualStudioPropertySheet>
