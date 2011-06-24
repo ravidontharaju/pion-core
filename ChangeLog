@@ -1,3 +1,21 @@
+Version 4.0.5 (2011-06-24)
+==========================
+
+* Database Output Reactor - no longer stops if it encounters errors (974)
+* TransformReactor - regression in AssignValue created empty terms (1145)
+* HTTPProtocol - fixed crashes caused by truncation of UTF8 sequences (1146)
+* MonitorService - improved concurrency locking and logging (1156)
+* Now using i18n regex routines for HTTPProtocol & Comparisons (1147)
+* Improved error handling of bad regular expressions (584)
+* Fixed regression causing seg fault crashes during shutdown (1155)
+* Fixed regression causing 100% CPU usage on RHEL5 32-bit (1151)
+* User account changes in UI logged passwords in config.log (1152)
+* Improved propagation of web service errors into UI (1153)
+* Log viewer in UI only showed one event of given severity per second (1135)
+* Added constraints on maximum memory usage for Linux platforms (1123)
+* pmon.py now includes metric for events queued in Reaction Engine (1124)
+
+
 Version 4.0.3 (2011-04-14)
 ==========================
 
