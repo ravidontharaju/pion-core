@@ -198,6 +198,42 @@
 				CommandLine="if not exist codecs\.libs md codecs\.libs&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll codecs\.libs&#x0D;&#x0A;if not exist databases\.libs md databases\.libs&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll databases\.libs&#x0D;&#x0A;if not exist reactors\.libs md reactors\.libs&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll reactors\.libs&#x0D;&#x0A;if not exist services\.libs md services\.libs&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll services\.libs&#x0D;&#x0A;if not exist protocols\.libs md protocols\.libs&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll protocols\.libs&#x0D;&#x0A;if not exist plugins md plugins&#x0D;&#x0A;copy codecs\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy databases\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy reactors\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy protocols\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;copy ..\net\services\$(ConfigurationName)_$(PlatformName)\*.dll plugins&#x0D;&#x0A;"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release_static|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="10"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug_static|Win32"
+			ConfigurationType="10"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
