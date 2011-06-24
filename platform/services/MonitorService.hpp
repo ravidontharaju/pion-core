@@ -118,12 +118,7 @@ public:
 	/// destructor
 	~MonitorWriter()
 	{
-//		PION_LOG_INFO(m_logger, "Closing output feed to " << getConnectionId());
 		stop();
-//		PION_LOG_INFO(m_logger, "Closing output feed #2 to " << getConnectionId());
-		boost::mutex::scoped_lock send_lock(m_mutex);
-		m_event_buffer.clear();
-//		PION_LOG_INFO(m_logger, "Closing output feed #3 to " << getConnectionId());
 	}
 
 	/**
@@ -164,10 +159,17 @@ public:
 	 * @param Flush (default false) -- flush events; if aged out
 	 */
 	void stop(bool Stop = true, bool Flush = false) {
-		if (m_stopped == false && Stop == true)
-			m_reaction_engine.removeTempConnection(getConnectionId());
-		m_stopped = true;
+		boost::mutex::scoped_lock writer_lock(m_mutex);
+		if (!m_stopped) {
+			PION_LOG_INFO(m_logger, "Stopping output feed to " << getConnectionId());
+			if (Stop) {
+				PION_LOG_DEBUG(m_logger, "Removing connection to " << getConnectionId());
+				m_reaction_engine.removeTempConnection(getConnectionId());
+			}
+			m_stopped = true;
+		}
 		if (Flush) {
+			PION_LOG_DEBUG(m_logger, "Clearing events from " << getConnectionId());
 			m_event_buffer.clear();
 			m_age = boost::date_time::not_a_date_time;
 		}
@@ -216,8 +218,8 @@ class MonitorService
 	/// A vector of currently active MonitorWriters
 	std::vector<MonitorWriterPtr>		m_writers;
 
-	/// Running?
-	volatile bool						m_running;
+	/// mutex used to protect the MonitorService's data
+	mutable boost::mutex				m_mutex;
 
 public:
 	
@@ -225,22 +227,15 @@ public:
 	MonitorService(void)
 		: PlatformService("pion.MonitorService"),
 		m_logger(PION_GET_LOGGER("pion.MonitorService")),
-		m_writers(WRITERS), 								// a default of ten simultaneous monitors allowed
-		m_running(true)
+		m_writers(WRITERS) 								// a default of ten simultaneous monitors allowed
 	{ }
 	
 	/// virtual destructor -- stop all the running captures
 	virtual ~MonitorService()
 	{
-		if (m_running) {
-			m_running = false;
-//			PION_LOG_INFO(m_logger, "MonitorService: starting shut down");
-			for (unsigned i = 0; i < m_writers.size(); i++)
-				if (m_writers[i] != NULL)
-					m_writers[i]->stop();
-			m_writers.clear();
-//			PION_LOG_INFO(m_logger, "MonitorService: Done");
-		}
+		PION_LOG_INFO(m_logger, "shutdown - clearing all writers");
+		boost::mutex::scoped_lock service_lock(m_mutex);
+		m_writers.clear();
 	}
 	
 	/**

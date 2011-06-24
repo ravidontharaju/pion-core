@@ -45,20 +45,21 @@ const std::string			MonitorService::MONITOR_SERVICE_PERMISSION_TYPE = "MonitorSe
 
 void MonitorWriter::writeEvent(EventPtr& e)
 {
-	PION_LOG_DEBUG(m_logger, "Sending event to " << getConnectionId());
-	// lock the mutex to ensure that only one Event is sent at a time
-	boost::mutex::scoped_lock send_lock(m_mutex);
+	PION_LOG_DEBUG(m_logger, "Received event via " << getConnectionId());
 	if (e.get() == NULL) {
 		// Reactor is being removed -> close the connection
 		// note that the ReactionEngine will remove the connection for us
 		// keep the data, in case user wants to still watch it
+		PION_LOG_DEBUG(m_logger, "Reactor removed for " << getConnectionId());
 		stop(false);
 	} else if (m_age + boost::posix_time::seconds(120) < boost::posix_time::second_clock::local_time()) {
 		// It's been over two minutes since last call -- detach & clear events
+		PION_LOG_DEBUG(m_logger, "Timing-out idle monitor for " << getConnectionId());
 		stop(true, true);
 	} else {
 		try {
-
+			// lock the mutex to ensure that only one Event is sent at a time
+			boost::mutex::scoped_lock writer_lock(m_mutex);
 			const Vocabulary::TermRef tref = e->getType();
 			m_events_seen.insert(tref);
 			// if this event type is NOT found in filtered_events, then add it to the stream
@@ -68,8 +69,11 @@ void MonitorWriter::writeEvent(EventPtr& e)
 				++m_event_counter;
 
 				// If we're not scrolling, and buffer is full, then disconnect from the feed
-				if (!m_scroll && m_event_buffer.full())
+				if (!m_scroll && m_event_buffer.full()) {
+					PION_LOG_DEBUG(m_logger, "Event buffer full for " << getConnectionId());
+					writer_lock.unlock();	// stop() needs to acquire mutex
 					stop();
+				}
 			}
 		} catch (std::exception& ex) {
 			// stop sending Events if we encounter an exception
@@ -84,7 +88,7 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 	setQP(qp);	// Configure settings based on query parameters
 
 	// lock the mutex to ensure that the HTTP response is sent first
-	boost::mutex::scoped_lock send_lock(m_mutex);
+	boost::mutex::scoped_lock writer_lock(m_mutex);
 
 	// tell the ReactionEngine to start sending us Events
 	Reactor::EventHandler event_handler(boost::bind(&MonitorWriter::writeEvent,
@@ -98,6 +102,8 @@ void MonitorWriter::start(const HTTPTypes::QueryParams& qp)
 void MonitorWriter::SerializeXML(pion::platform::Vocabulary::TermRef tref,
 	const pion::platform::Event::ParameterValue& value, std::ostream& xml, TermCol& cols)
 {
+	// NOTE: assumes mutex is locked already
+	
 	if (tref > m_vocab_ptr->size())		// sanity check
 		tref = Vocabulary::UNDEFINED_TERM_REF;
 
@@ -152,7 +158,7 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 	std::ostringstream xml;
 	unsigned size;
 	{
-		boost::mutex::scoped_lock send_lock(m_mutex);
+		boost::mutex::scoped_lock writer_lock(m_mutex);
 		size = m_event_buffer.size();
 		for (boost::circular_buffer<pion::platform::EventPtr>::const_iterator i = m_event_buffer.begin(); i != m_event_buffer.end(); i++) {
 			// traverse through all terms in event
@@ -210,6 +216,8 @@ std::string MonitorWriter::getStatus(const HTTPTypes::QueryParams& qp)
 
 void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 {
+	boost::mutex::scoped_lock writer_lock(m_mutex);
+
 	setAge();
 
 	if (qp.empty())
@@ -222,7 +230,6 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
     if (qpi != qp.end()) {
         unsigned events = boost::lexical_cast<boost::uint32_t>(qpi->second);
 		if (events != m_size) {
-			boost::mutex::scoped_lock send_lock(m_mutex);
 			// Remove (if necessary) first events, change capacity to match new
 			m_event_buffer.rset_capacity(m_size = events);
 		}
@@ -283,7 +290,6 @@ void MonitorWriter::setQP(const HTTPTypes::QueryParams& qp)
 			const Vocabulary::TermRef tref = m_vocab_ptr->findTerm(urnvocab + *tok_iter);
 			m_filtered_events.insert(tref);	// Add event type to filtered events
 			// Remove all events of the filtered type from the buffer
-			boost::mutex::scoped_lock send_lock(m_mutex);
 			EventBuffer::iterator i = m_event_buffer.begin();
 			while (i != m_event_buffer.end())
 				if ((*i)->getType() == tref)
@@ -328,7 +334,10 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 
 	// get the start/stop verb
 	const std::string verb(branches[0]);
-	
+
+	// only allow one thread to make changes at a time
+	boost::mutex::scoped_lock service_lock(m_mutex);
+
 	// check the request method to determine if we should read or write Events
 	if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
@@ -378,6 +387,7 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 			std::ostringstream xml;
 			xml << dtd << "<MonitorService>" << slot << "</MonitorService>";
 			response_writer->write(xml.str());
+			PION_LOG_INFO(m_logger, "start request for reactor " << reactor_id << " (slot " << slot << ")");
 		} else {
 			// use local array to identify the reactor_id
 			// possibly a secondary id, for multiple instances per reactor_id
@@ -395,21 +405,25 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 				}
 
 				if (verb == "status") {
+					PION_LOG_DEBUG(m_logger, "status request for slot " << slot);
 					// get the status for this capture...
 					std::string response = m_writers[slot]->getStatus(qp);
 					response_writer->write(dtd + response);
 				} else if (verb == "stop") {
+					PION_LOG_DEBUG(m_logger, "stop request for slot " << slot);
 					m_writers[slot]->stop();
 					std::ostringstream xml;
 					xml << dtd << "<MonitorService action=\"stopped\">" << slot << "</MonitorService>";
 					response_writer->write(xml.str());
 				} else if (verb == "delete") {
+					PION_LOG_DEBUG(m_logger, "delete request for slot " << slot);
 					m_writers[slot]->stop();
 					m_writers[slot].reset();
 					std::ostringstream xml;
 					xml << dtd << "<MonitorService action=\"deleted\">" << slot << "</MonitorService>";
 					response_writer->write(xml.str());
 				} else if (verb == "ping") {
+					PION_LOG_DEBUG(m_logger, "ping request for slot " << slot);
 					std::ostringstream xml;
 					xml << dtd << "<MonitorService action=\"ping\">" << slot << "</MonitorService>";
 					response_writer->write(xml.str());
@@ -417,6 +431,7 @@ void MonitorService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_c
 				}
 			} else {
 				response_writer->write(dtd + "<Error>Invalid slot defined</Error>");
+				PION_LOG_ERROR(m_logger, "invalid slot defined: " << slot);
 			}
 		}
 

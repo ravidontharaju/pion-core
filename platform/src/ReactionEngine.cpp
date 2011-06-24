@@ -154,12 +154,17 @@ void ReactionEngine::stop(void)
 
 void ReactionEngine::shutdown(void)
 {
+	PION_LOG_DEBUG(m_logger, "shutting down");
 	stop();
+	PION_LOG_DEBUG(m_logger, "stopped; shutting down threads");
 	m_scheduler.shutdown();
+	PION_LOG_DEBUG(m_logger, "threads shutdown; clearing connections");
 	m_temp_connections.clear();
 	m_reactor_connections.clear();
 	m_plugins.run(boost::bind(&Reactor::clearConnections, _1));
+	PION_LOG_DEBUG(m_logger, "connections cleared; releasing plugins");
 	this->releasePlugins();
+	PION_LOG_DEBUG(m_logger, "shutdown complete");
 }
 
 void ReactionEngine::clearStats(void)
@@ -861,6 +866,16 @@ void ReactionEngine::stopNoLock(void)
 
 		// notify the thread scheduler that we no longer need it
 		m_scheduler.removeActiveUser();
+
+		// clear out the dummy node in the PionLockedQueue because otherwise
+		// it still has a copy of the last node in the queue.  Since this queue
+		// stores function objects referencing other code, and likely code which
+		// is contained within a plugin of one kind or another, it's possible
+		// that the plugin code would otherwise get released and then the
+		// destructor on the function object would be called when the queue
+		// destructs.  This seems to cause crashes, apparently due to bugs in
+		// boost.function...
+		m_scheduler.clear();
 
 		m_is_running = false;
 	}

@@ -108,6 +108,9 @@ public:
 		m_reaction_queue.push(work_func);
 	}
 	
+	/// clears all work out of the reaction queue (also resets dummy node)
+	inline void clear(void) { m_reaction_queue.clear(); }
+	
 	/// returns the number of events queued in ReactionScheduler
 	inline std::size_t getQueueSize(void) const { return m_reaction_queue.size(); }
 
@@ -148,21 +151,29 @@ protected:
 
 	/// processes work in the reaction queue while running
 	void processReactionQueue(void) {
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
 		// retrieve reference to the thread's Event allocator
 		EventFactory event_factory;
 		EventAllocator& event_alloc(event_factory.getAllocator());
+#endif
 
 		// initialize consumer thread object
 		ThreadInfoPtr info_ptr(getThreadInfo());
 		
-		// used to pop work off the queue
-		Reaction r;
+		PION_LOG_INFO(m_logger, "thread starting");
 
 		while (m_is_running) {
 			try {
 				while (m_is_running) {
+					// this needs to be temporary otherwise the code referenced
+					// by the function object could be released before this
+					// reference to it is released (during shutdown).  This
+					// can cause crashes apparently due to bugs in boost.function
+					Reaction r;
+					//PION_LOG_DEBUG(m_logger, "getting work");
 					if (m_reaction_queue.pop(r, *info_ptr) && m_is_running) {
 						// got new work for the queue
+						//PION_LOG_DEBUG(m_logger, "processing work");
 						r();
 					} else {
 						// thread slept for 1 seconds with no new work
@@ -179,6 +190,8 @@ protected:
 				PION_LOG_ERROR(m_logger, "caught unrecognized exception");
 			}
 		}
+		
+		PION_LOG_INFO(m_logger, "thread exiting");
 	}		
 	
 	
