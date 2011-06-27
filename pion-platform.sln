@@ -912,8 +912,8 @@ Global
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_DLL|x64.ActiveCfg = Debug_DLL|x64
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_DLL|x64.Build.0 = Debug_DLL|x64
-		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|Win32.ActiveCfg = Debug_DLL_full|Win32
-		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|Win32.Build.0 = Debug_DLL_full|Win32
+		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|Win32.ActiveCfg = Debug_static|Win32
+		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|Win32.Build.0 = Debug_static|Win32
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|x64.ActiveCfg = Debug_DLL_full|x64
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Debug_static|x64.Build.0 = Debug_DLL_full|x64
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_DLL_full|Win32.ActiveCfg = Release_DLL_full|Win32
@@ -924,8 +924,8 @@ Global
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_DLL|Win32.Build.0 = Release_DLL|Win32
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_DLL|x64.ActiveCfg = Release_DLL|x64
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_DLL|x64.Build.0 = Release_DLL|x64
-		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|Win32.ActiveCfg = Release_DLL_full|Win32
-		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|Win32.Build.0 = Release_DLL_full|Win32
+		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|Win32.ActiveCfg = Release_static|Win32
+		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|Win32.Build.0 = Release_static|Win32
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|x64.ActiveCfg = Release_DLL_full|x64
 		{7CE46CF5-C346-47C7-B564-37A14D801F24}.Release_static|x64.Build.0 = Release_DLL_full|x64
 		{8DCAE4F8-D796-486B-B154-9C7444B5F74A}.Debug_DLL_full|Win32.ActiveCfg = Debug_DLL_full|Win32
