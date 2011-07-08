@@ -570,7 +570,7 @@
 		<Configuration
 			Name="Debug_static|x64"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\..\common\build\pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops;..\..\common\build\third_party_libs_x64.vsprops"
+			InheritedPropertySheets="..\..\common\build\Debug_static_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops;..\..\common\build\third_party_static_libs_x64.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -591,9 +591,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;PION_STATIC_LINKING;_CONSOLE;LOG4CXX_STATIC"
+				PreprocessorDefinitions="_DEBUG;_CONSOLE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -779,7 +779,7 @@
 		<Configuration
 			Name="Release_static|x64"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\..\common\build\pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops;..\..\common\build\third_party_libs_x64.vsprops"
+			InheritedPropertySheets="..\..\common\build\Release_static_pion.vsprops;..\build\depth_2_pion-platform.vsprops;..\..\net\build\pion-net.vsprops;..\..\common\build\third_party_static_libs_x64.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -799,8 +799,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="PION_STATIC_LINKING;NDEBUG;_CONSOLE;LOG4CXX_STATIC"
-				RuntimeLibrary="0"
+				PreprocessorDefinitions="NDEBUG;_CONSOLE"
+				RuntimeLibrary="2"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -814,8 +814,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="FileService.lib HTTPProtocol.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(LOG4CXX_LIB)\static&quot;"
+				AdditionalLibraryDirectories="&quot;$(PION_NET_HOME)\services\$(ConfigurationName)_$(PlatformName)&quot;;&quot;$(PION_PLATFORM_HOME)\protocols\$(ConfigurationName)_$(PlatformName)&quot;"
 				UACExecutionLevel="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
