@@ -705,13 +705,20 @@ inline void LogCodec::LogField::read(const char *buf, pion::platform::Event& e)
 		case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 		case pion::platform::Vocabulary::TYPE_STRING:
 		case pion::platform::Vocabulary::TYPE_LONG_STRING:
-		case pion::platform::Vocabulary::TYPE_BLOB:
-		case pion::platform::Vocabulary::TYPE_ZBLOB:
 			if (log_urlencode) {
 				std::string temp_str(algo::url_decode(buf));
 				e.setString(log_term.term_ref, temp_str);
 			} else {
 				e.setString(log_term.term_ref, buf);
+			}
+			break;
+		case pion::platform::Vocabulary::TYPE_BLOB:
+		case pion::platform::Vocabulary::TYPE_ZBLOB:
+			if (log_urlencode) {
+				std::string temp_str(algo::url_decode(buf));
+				e.setBlob(log_term.term_ref, temp_str);
+			} else {
+				e.setBlob(log_term.term_ref, buf);
 			}
 			break;
 		case pion::platform::Vocabulary::TYPE_CHAR:
