@@ -20,6 +20,9 @@
 #ifndef __PION_DATABASEOUTPUTREACTOR_HEADER__
 #define __PION_DATABASEOUTPUTREACTOR_HEADER__
 
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionLogger.hpp>
 #include <pion/platform/Event.hpp>
@@ -42,7 +45,8 @@ public:
 	/// constructs a new DatabaseOutputReactor object
 	DatabaseOutputReactor(void)
 		: pion::platform::Reactor(TYPE_STORAGE),
-		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor"))
+		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
+		m_num_inserters(DEFAULT_NUM_INSERTERS), m_next_inserter(0U)
 	{}
 
 	/// virtual destructor: this class is meant to be extended
@@ -99,7 +103,11 @@ public:
 	/// sets the logger to be used
 	inline void setLogger(PionLogger log_ptr) { 
 		m_logger = log_ptr;
-		m_inserter->setLogger(log_ptr);
+		for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+			it != m_inserters.end(); ++it)
+		{
+			(*it)->setLogger(log_ptr);
+		}
 	}
 
 	/// returns the logger currently in use
@@ -107,6 +115,10 @@ public:
 
 
 private:
+
+	/// returns the next inserter to use for database insertion
+	boost::uint16_t nextInserter(void);
+	
 
 	/// name of the database element for Pion XML config files
 	static const std::string				DATABASE_ELEMENT_NAME;
@@ -123,13 +135,34 @@ private:
 	/// name of the KeyCacheSize element for Pion XML statistics
 	static const std::string				KEY_CACHE_SIZE_ELEMENT_NAME;
 
+	/// name of the NumInserters element for Pion XML statistics
+	static const std::string				NUM_INSERTERS_ELEMENT_NAME;
+
+	/// name of the Inserter element for Pion XML statistics
+	static const std::string				INSERTER_ELEMENT_NAME;
+
+	/// default number of database inserters to use
+	static const boost::uint16_t			DEFAULT_NUM_INSERTERS;
+
+
+	/// data type for a database inserter smart pointer
+	typedef boost::shared_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
+
+
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
-	typedef boost::scoped_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
+	/// collections of inserters, which manage insertion of events into the database
+	std::vector<DatabaseInserterPtr>		m_inserters;
+	
+	/// total number of database inserters being used
+	boost::uint16_t							m_num_inserters;
 
-	/// class that manages insertion of events into the database
-	DatabaseInserterPtr						m_inserter;
+	/// database inserter to use for the next event received
+	boost::uint16_t							m_next_inserter;
+
+	/// used to protect the Database inserters vector
+	mutable boost::mutex					m_inserter_mutex;
 };
 
 
