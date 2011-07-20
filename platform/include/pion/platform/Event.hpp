@@ -886,7 +886,7 @@ public:
 	inline void setString(const Vocabulary::TermRef& term_ref,
 						  const CharType *value, std::size_t len)
 	{
-		insert(term_ref, make_utf8_blob(value, len));
+		setBlob(term_ref, value, len);
 	}
 	
 	/**
@@ -896,7 +896,7 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		insert(term_ref, make_utf8_blob(value));
+		setBlob(term_ref, value);
 	}
 	
 	/**
@@ -906,7 +906,17 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		insert(term_ref, make_utf8_blob(value));
+		setBlob(term_ref, value);
+	}
+	
+	/**
+	 * sets the value for a particular term to an existing BlobType value (alias for setBlob)
+	 *
+	 * @param term_ref numeric identifier for the term
+	 * @param value new value assigned to the term
+	 */
+	inline void setString(const Vocabulary::TermRef& term_ref, const BlobType& value) {
+		setBlob(term_ref, value);
 	}
 	
 	/**
@@ -962,11 +972,9 @@ public:
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
-			setString(t.term_ref, value);
-			break;
 		case Vocabulary::TYPE_BLOB:
 		case Vocabulary::TYPE_ZBLOB:
-			setBlob(t.term_ref, value);
+			setString(t.term_ref, value);
 			break;
 		}
 	}
@@ -1104,30 +1112,6 @@ public:
 
 	/// can be used to construct a new BLOB object based upon a c-style string
 	inline BlobParams make_blob(const CharType *ptr) const {
-		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
-	}
-
-	/// can be used to construct a new UTF8 BLOB object based upon an existing std::string
-	inline BlobParams make_utf8_blob(const std::string& str) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return BlobParams(*m_alloc_ptr, str.c_str(), str.size());
-	}
-	
-	/// can be used to construct a new UTF8 BLOB object based upon an existing memory buffer
-	inline BlobParams make_utf8_blob(const CharType *ptr, const std::size_t len) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return BlobParams(*m_alloc_ptr, ptr, len);
-	}
-
-	/// can be used to construct a new UTF8 BLOB object based upon a c-style string
-	inline BlobParams make_utf8_blob(const CharType *ptr) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
 		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
 	}
 

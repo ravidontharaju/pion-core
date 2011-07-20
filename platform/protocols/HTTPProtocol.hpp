@@ -978,10 +978,7 @@ inline void HTTPProtocol::ExtractionRule::setTruncatedString(
 	// TODO: We could use the following "safe" macro instead, which doesn't assume well-formed UTF-8, and thus does more computation.
 	// U8_SET_CP_START(content_ptr, 0, offset)
 
-// NOTE: using setBlob() since we don't need to re-check UTF8 validity at the Event level
-// TODO: ??  should we just perform this truncation/check using Event::setString() instead??
-
-	(*event_ptr_ref).setBlob(m_term.term_ref, content_ptr, offset);
+	(*event_ptr_ref).setString(m_term.term_ref, content_ptr, offset);
 }
 
 }	// end namespace plugins
