@@ -34,7 +34,9 @@ const std::string			DatabaseOutputReactor::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseOutputReactor::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseOutputReactor::EVENTS_QUEUED_ELEMENT_NAME = "EventsQueued";
 const std::string			DatabaseOutputReactor::KEY_CACHE_SIZE_ELEMENT_NAME = "KeyCacheSize";
-
+const std::string			DatabaseOutputReactor::NUM_INSERTERS_ELEMENT_NAME = "NumInserters";
+const std::string			DatabaseOutputReactor::INSERTER_ELEMENT_NAME = "Inserter";
+const boost::uint16_t		DatabaseOutputReactor::DEFAULT_NUM_INSERTERS = 1U;
 
 // DatabaseOutputReactor member functions
 
@@ -48,19 +50,30 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 		if (m_is_running)
 		  stop();
 
-		// This will destruct earlier, if it existed
-		m_inserter.reset(new pion::platform::DatabaseInserter());
-	
 		// update reactor base class config
 		Reactor::setConfig(v, config_ptr);
 	
-		// initialize inserter parameters
-		m_inserter->setLogger(m_logger);
-		m_inserter->setDatabaseManager(getDatabaseManager());
+		// get the number of database inserters to use
+		ConfigManager::getConfigOption(NUM_INSERTERS_ELEMENT_NAME, m_num_inserters,
+			DEFAULT_NUM_INSERTERS, config_ptr);
+		if (m_num_inserters < 1)
+			m_num_inserters = 1;
 		
-		// update inserter config
-		m_inserter->setConfig(v, config_ptr);
-		
+		// initialize database inserters
+		m_inserters.clear();
+		for (boost::uint16_t n = 0; n < m_num_inserters; ++n) {
+			DatabaseInserterPtr inserter_ptr(new pion::platform::DatabaseInserter());
+			
+			// initialize inserter parameters
+			inserter_ptr->setLogger(m_logger);
+			inserter_ptr->setDatabaseManager(getDatabaseManager());
+			
+			// update inserter config
+			inserter_ptr->setConfig(v, config_ptr);
+
+			m_inserters.push_back(inserter_ptr);
+		}
+
 		// restart inserter if it was running
 		if (was_running)
 			start();
@@ -75,15 +88,21 @@ void DatabaseOutputReactor::updateVocabulary(const Vocabulary& v)
 	// first update anything in the Reactor base class that might be needed
 	ConfigWriteLock cfg_lock(*this);
 	Reactor::updateVocabulary(v);
-	if (m_inserter)
-		m_inserter->updateVocabulary(v);
+	for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+		it != m_inserters.end(); ++it)
+	{
+		(*it)->updateVocabulary(v);
+	}
 }
 
 void DatabaseOutputReactor::updateDatabases(void)
 {
 	ConfigWriteLock cfg_lock(*this);
-	if (m_inserter)
-		m_inserter->updateDatabases();
+	for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+		it != m_inserters.end(); ++it)
+	{
+		(*it)->updateDatabases();
+	}
 }
 
 void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branches,
@@ -92,32 +111,42 @@ void DatabaseOutputReactor::query(std::ostream& out, const QueryBranches& branch
 	writeBeginReactorXML(out);
 	writeStatsOnlyXML(out);
 
-	// write number of events queued for insertion
-	out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << m_inserter->getEventsQueued()
-	    << "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
+	if (!m_inserters.empty()) {
+		for (std::vector<DatabaseInserterPtr>::const_iterator it = m_inserters.begin();
+			it != m_inserters.end(); ++it)
+		{
+			out << '<' << INSERTER_ELEMENT_NAME << '>' << std::endl;
+	
+			// write number of events queued for insertion
+			out << '<' << EVENTS_QUEUED_ELEMENT_NAME << '>' << (*it)->getEventsQueued()
+				<< "</" << EVENTS_QUEUED_ELEMENT_NAME << '>' << std::endl;
+		
+			// write size of the key cache
+			out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << (*it)->getKeyCacheSize()
+				<< "</" << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << std::endl;
+	
+			out << "</" << INSERTER_ELEMENT_NAME << '>' << std::endl;
+		}
 
-	// write size of the key cache
-	out << '<' << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << m_inserter->getKeyCacheSize()
-	    << "</" << KEY_CACHE_SIZE_ELEMENT_NAME << '>' << std::endl;
-
-	// write database identifier and table name
-	out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserter->getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
-		<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserter->getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
-
-	// In addition; if full status is requested, get Database/Table/Fields
-	if (branches.size() > 2 && branches[2] == "full") {
-		Query::FieldMap field_map(m_inserter->getFieldMap());
-		Query::IndexMap index_map(m_inserter->getIndexMap());
-		for (unsigned int i = 0; i < field_map.size(); i++) {
-			// <Field id="0" col="dbcol">vocab:uri</Field>
-			// <Field id="0" col="dbcol" index="true">vocab:uri</Field>
-			const std::string idx_str = (index_map.size() >= i && index_map[i] != "false") ? "true" : "false";
-			out << '<' << FIELD_ELEMENT_NAME << " id=\"" << i << "\" col=\""
-				<< field_map[i].first << "\" index=\"" << idx_str << "\">" << field_map[i].second.term_id
-				<< "</" << FIELD_ELEMENT_NAME << '>' << std::endl;
+		// write database identifier and table name
+		out << '<' << DATABASE_ELEMENT_NAME << '>' << m_inserters[0]->getDatabaseId() << "</" << DATABASE_ELEMENT_NAME << '>' << std::endl
+			<< '<' << TABLE_ELEMENT_NAME << '>' << m_inserters[0]->getTableName() << "</" << TABLE_ELEMENT_NAME << '>' << std::endl;
+	
+		// In addition; if full status is requested, get Database/Table/Fields
+		if (branches.size() > 2 && branches[2] == "full") {
+			Query::FieldMap field_map(m_inserters[0]->getFieldMap());
+			Query::IndexMap index_map(m_inserters[0]->getIndexMap());
+			for (unsigned int i = 0; i < field_map.size(); i++) {
+				// <Field id="0" col="dbcol">vocab:uri</Field>
+				// <Field id="0" col="dbcol" index="true">vocab:uri</Field>
+				const std::string idx_str = (index_map.size() >= i && index_map[i] != "false") ? "true" : "false";
+				out << '<' << FIELD_ELEMENT_NAME << " id=\"" << i << "\" col=\""
+					<< field_map[i].first << "\" index=\"" << idx_str << "\">" << field_map[i].second.term_id
+					<< "</" << FIELD_ELEMENT_NAME << '>' << std::endl;
+			}
 		}
 	}
-
+	
 	writeEndReactorXML(out);
 }
 
@@ -126,9 +155,11 @@ void DatabaseOutputReactor::start(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (! m_is_running) {
 		m_is_running = true;
-		if (m_inserter) {
+		for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+			it != m_inserters.end(); ++it)
+		{
 			try {
-				m_inserter->start();
+				(*it)->start();
 			} catch (...) {
 				// failed to start inserter -> update running state to false
 				m_is_running = false;
@@ -143,18 +174,30 @@ void DatabaseOutputReactor::stop(void)
 	ConfigWriteLock cfg_lock(*this);
 	if (m_is_running) {
 		m_is_running = false;
-		if (m_inserter)
-			m_inserter->stop();
+		for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+			it != m_inserters.end(); ++it)
+		{
+			(*it)->stop();
+		}
 	}
 }
 
 void DatabaseOutputReactor::process(const EventPtr& e)
 {
 	// add the event to the insert queue
-	m_inserter->insert(e);
+	m_inserters[nextInserter()]->insert(e);
 
 	// deliver the event to other Reactors (if any are connected)
 	deliverEvent(e);
+}
+
+boost::uint16_t DatabaseOutputReactor::nextInserter(void)
+{
+	boost::mutex::scoped_lock queue_lock(m_inserter_mutex);
+	const boost::uint16_t result = m_next_inserter;
+	if (++m_next_inserter >= m_num_inserters)
+		m_next_inserter = 0;
+	return result;
 }
 
 }	// end namespace plugins
