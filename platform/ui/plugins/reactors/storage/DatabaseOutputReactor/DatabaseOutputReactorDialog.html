@@ -33,10 +33,13 @@
 					><td><input dojoType="dijit.form.TextBox" name="Table"/></td
 				></tr><tr
 					><td><label>Queue Size:</label></td
-					><td><input dojoType="dijit.form.TextBox" name="QueueSize"/></td
+					><td><input dojoType="dijit.form.NumberTextBox" type="text" name="QueueSize" constraints="{min: 1}" /></td
 				></tr><tr
 					><td><label>Queue Timeout:</label></td
-					><td><input dojoType="dijit.form.TextBox" name="QueueTimeout"/></td
+					><td><input dojoType="dijit.form.NumberTextBox" type="text" name="QueueTimeout" constraints="{min: 1}" /></td
+				></tr><tr
+					><td><label>Number of Inserters:</label></td
+					><td><input dojoType="dijit.form.NumberTextBox" type="text" name="NumInserters" constraints="{min: 1}" /></td
 				></tr><tr
 					><td><label>Ignore Insert Errors</label></td
 					><td><input dojoType="dijit.form.CheckBox" type="checkBox" name="options" value="IgnoreInsert"/></td
