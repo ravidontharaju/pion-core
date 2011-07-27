@@ -521,14 +521,14 @@ inline void Query::fetchEvent(const FieldMap& field_map, EventPtr e)
 				{
 					std::string val;
 					fetchBlob(param, val);
-					e->setString(field_map[param].second.term_ref, val.c_str(), val.size());
+					e->setBlob(field_map[param].second.term_ref, val.c_str(), val.size());
 				}
 				break;
 			case Vocabulary::TYPE_ZBLOB:
 				{
 					std::string val;
 					fetchZBlob(param, val);
-					e->setString(field_map[param].second.term_ref, val.c_str(), val.size());
+					e->setBlob(field_map[param].second.term_ref, val.c_str(), val.size());
 				}
 				break;
 			case Vocabulary::TYPE_DATE_TIME:

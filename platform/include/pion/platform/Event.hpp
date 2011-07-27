@@ -877,7 +877,7 @@ public:
 	}
 	
 	/**
-	 * sets the value for a particular term to a string using a character array  (alias for setBlob)
+	 * sets the value for a particular term to a string using a character array (ensures UTF8 encoding)
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
@@ -886,37 +886,37 @@ public:
 	inline void setString(const Vocabulary::TermRef& term_ref,
 						  const CharType *value, std::size_t len)
 	{
-		setBlob(term_ref, value, len);
+		insert(term_ref, make_utf8_blob(value, len));
 	}
 	
 	/**
-	 * sets the value for a particular term to a string using a character array  (alias for setBlob)
+	 * sets the value for a particular term to a string using a character array (ensures UTF8 encoding)
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		setBlob(term_ref, value);
+		insert(term_ref, make_utf8_blob(value));
 	}
 	
 	/**
-	 * sets the value for a particular term to a string using a std::string  (alias for setBlob)
+	 * sets the value for a particular term to a string using a std::string (ensures UTF8 encoding)
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		setBlob(term_ref, value);
+		insert(term_ref, make_utf8_blob(value));
 	}
 	
 	/**
-	 * sets the value for a particular term to an existing BlobType value (alias for setBlob)
+	 * sets the value for a particular term to an existing BlobType value (ensures UTF8 encoding)
 	 *
 	 * @param term_ref numeric identifier for the term
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const BlobType& value) {
-		setBlob(term_ref, value);
+		insert(term_ref, make_utf8_blob(value));
 	}
 	
 	/**
@@ -972,9 +972,11 @@ public:
 		case Vocabulary::TYPE_STRING:
 		case Vocabulary::TYPE_LONG_STRING:
 		case Vocabulary::TYPE_CHAR:
+			setString(t.term_ref, value);
+			break;
 		case Vocabulary::TYPE_BLOB:
 		case Vocabulary::TYPE_ZBLOB:
-			setString(t.term_ref, value);
+			setBlob(t.term_ref, value);
 			break;
 		}
 	}
@@ -1113,6 +1115,38 @@ public:
 	/// can be used to construct a new BLOB object based upon a c-style string
 	inline BlobParams make_blob(const CharType *ptr) const {
 		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
+	}
+
+	/// can be used to construct a new UTF8 BLOB object based upon an existing std::string
+	inline BlobParams make_utf8_blob(const std::string& str) const {
+		//
+		// TODO: use ICU to guarantee UTF8
+		//
+		return BlobParams(*m_alloc_ptr, str.c_str(), str.size());
+	}
+	
+	/// can be used to construct a new UTF8 BLOB object based upon an existing memory buffer
+	inline BlobParams make_utf8_blob(const CharType *ptr, const std::size_t len) const {
+		//
+		// TODO: use ICU to guarantee UTF8
+		//
+		return BlobParams(*m_alloc_ptr, ptr, len);
+	}
+
+	/// can be used to construct a new UTF8 BLOB object based upon a c-style string
+	inline BlobParams make_utf8_blob(const CharType *ptr) const {
+		//
+		// TODO: use ICU to guarantee UTF8
+		//
+		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
+	}
+
+	/// can be used to construct a new UTF8 BLOB object based upon an existing BLOB
+	inline BlobType make_utf8_blob(const BlobType& b) const {
+		//
+		// TODO: use ICU to guarantee UTF8
+		//
+		return b;
 	}
 
 	/// returns the number of references to this Event

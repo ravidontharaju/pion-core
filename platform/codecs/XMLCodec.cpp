@@ -414,9 +414,11 @@ bool XMLCodec::read(std::istream& in, Event& e)
 				case pion::platform::Vocabulary::TYPE_SHORT_STRING:
 				case pion::platform::Vocabulary::TYPE_STRING:
 				case pion::platform::Vocabulary::TYPE_LONG_STRING:
+					e.setString(term.term_ref, value_str);
+					break;
 				case pion::platform::Vocabulary::TYPE_BLOB:
 				case pion::platform::Vocabulary::TYPE_ZBLOB:
-					e.setString(term.term_ref, value_str);
+					e.setBlob(term.term_ref, value_str);
 					break;
 				case pion::platform::Vocabulary::TYPE_CHAR:
 					if (value_str.size() > term.term_size) {
