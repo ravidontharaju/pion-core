@@ -54,7 +54,7 @@ def send_request(con, uristem, **args):
 		print 'error: Unable to authenticate to Pion server'
 		sys.exit(1)
 	if (r.status >= 400 and r.status <= 599):
-		print 'error: response =', r.status, r.reason
+		print 'error (' + str(r.status) + '): ' + r.read()
 		sys.exit(1)
 	# return the response
 	return r
@@ -231,6 +231,7 @@ def add_key(con, options):
 		password_tag.appendChild( xml_doc.createTextNode(key_password) )
 		key_tag.appendChild(password_tag)
 	# send POST request to add the new RSA private key to the keystore
+	con = get_con(options)	# re-establish connection since it probably timed-out
 	r = send_request(con, '/keystore', body=xml_doc.toxml(), headers=options.headers, method='POST')
 	print_response(r)
 
