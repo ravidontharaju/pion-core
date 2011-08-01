@@ -1118,35 +1118,63 @@ public:
 	}
 
 	/// can be used to construct a new UTF8 BLOB object based upon an existing std::string
-	inline BlobParams make_utf8_blob(const std::string& str) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return BlobParams(*m_alloc_ptr, str.c_str(), str.size());
+	inline BlobType make_utf8_blob(const std::string& str) const {
+		BlobType result;
+		if (true) {	// TODO: true if valid UTF8
+			// string is already valid UTF8 sequence
+			result.set(*m_alloc_ptr, str);
+		} else {
+			// string is NOT valid UTF8 sequence
+			// TODO: calculate new string size
+			CharType *bptr = result.reserve(*m_alloc_ptr, str.size());	// TODO: should use new string size
+			memcpy(bptr, str.c_str(), str.size());	// TODO: replace with ICU conversion routine
+		}
+		return result;
 	}
 	
 	/// can be used to construct a new UTF8 BLOB object based upon an existing memory buffer
-	inline BlobParams make_utf8_blob(const CharType *ptr, const std::size_t len) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return BlobParams(*m_alloc_ptr, ptr, len);
+	inline BlobType make_utf8_blob(const CharType *ptr, const std::size_t len) const {
+		BlobType result;
+		if (true) {	// TODO: true if valid UTF8
+			// string is already valid UTF8 sequence
+			result.set(*m_alloc_ptr, ptr, len);
+		} else {
+			// string is NOT valid UTF8 sequence
+			// TODO: calculate new string size
+			CharType *bptr = result.reserve(*m_alloc_ptr, len);	// TODO: should use new string size
+			memcpy(bptr, ptr, len);	// TODO: replace with ICU conversion routine
+		}
+		return result;
 	}
 
 	/// can be used to construct a new UTF8 BLOB object based upon a c-style string
-	inline BlobParams make_utf8_blob(const CharType *ptr) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return BlobParams(*m_alloc_ptr, ptr, strlen(ptr));
+	inline BlobType make_utf8_blob(const CharType *ptr) const {
+		BlobType result;
+		if (true) {	// TODO: true if valid UTF8
+			// string is already valid UTF8 sequence
+			result.set(*m_alloc_ptr, ptr);
+		} else {
+			// string is NOT valid UTF8 sequence
+			const std::size_t len = strlen(ptr);	// TODO: calculate new string size
+			CharType *bptr = result.reserve(*m_alloc_ptr, len);	// TODO: should use new string size
+			memcpy(bptr, ptr, len);	// TODO: replace with ICU conversion routine
+		}
+		return result;
 	}
 
 	/// can be used to construct a new UTF8 BLOB object based upon an existing BLOB
 	inline BlobType make_utf8_blob(const BlobType& b) const {
-		//
-		// TODO: use ICU to guarantee UTF8
-		//
-		return b;
+		if (true) {	// TODO: true if valid UTF8
+			// string is already valid UTF8 sequence
+			return b;
+		} else {
+			// string is NOT valid UTF8 sequence
+			// TODO: calculate new string size
+			BlobType result;
+			CharType *bptr = result.reserve(*m_alloc_ptr, b.size());	// TODO: should use new string size
+			memcpy(bptr, b.get(), b.size());	// TODO: replace with ICU conversion routine
+			return result;
+		}
 	}
 
 	/// returns the number of references to this Event
