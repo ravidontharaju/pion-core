@@ -308,7 +308,6 @@ private:
 		 * @param decoded_and_converted_flag has the payload content been decoded (if needed) and converted (if needed)?
 		 * @param final_content cached value of decoded and converted payload content
 		 * @param final_content_length length of the cached decoded and converted payload content
-		 * @param final_content_is_utf8 whether the content is UTF-8 encoded
 		 * @param logger PionLogger instance to use
 		 */
 		inline void processContent(pion::platform::EventPtr& event_ptr_ref,
@@ -316,7 +315,6 @@ private:
 			boost::logic::tribool& decoded_and_converted_flag,
 			boost::shared_array<char>& final_content,
 			size_t& final_content_length,
-			boost::logic::tribool& final_content_is_utf8,
 			PionLogger& logger) const;
 
 		/**
@@ -327,9 +325,11 @@ private:
 		 * @param event_ptr_ref pointer to the Event being generated
 		 * @param content_ptr pointer to a blob of payload content data
 		 * @param content_length length of the payload content data blob
+		 * @param content_is_valid_utf8 content is valid UTF-8
 		 */
 		inline void setTruncatedString(pion::platform::EventPtr& event_ptr_ref,
-			const char *content_ptr, const size_t content_length) const;
+			const char *content_ptr, const size_t content_length, 
+			boost::logic::tribool content_is_valid_utf8) const;
 
 		/**
 		 * copies decoded content from a decoder into a decoder sink
@@ -771,7 +771,7 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 			: range.first->second);
 		if ( m_max_size > 0 && ! content_ref.empty() ) {
 			if ( m_match.empty() ) {
-				setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size());
+				setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size(), boost::indeterminate);
 			} else {
 				num_extracts = 0U;
 				first = content_ref.begin();
@@ -785,11 +785,11 @@ inline void HTTPProtocol::ExtractionRule::process(pion::platform::EventPtr& even
 					}
 					if (m_format.empty() || mr.empty()) {
 						// no format -> extract entire string
-						setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size());
+						setTruncatedString(event_ptr_ref, content_ref.c_str(), content_ref.size(), boost::indeterminate);
 						break;	// stop looking for matches
 					} else {
 						std::string content_str(mr.format(m_format, boost::format_all));
-						setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size());
+						setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size(), boost::indeterminate);
 					}
 					// check max_extracts
 					if (m_max_extracts && ++num_extracts >= m_max_extracts)
@@ -811,7 +811,7 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(
 {
 	boost::match_results<const char*> mr;
 	if ( m_match.empty() ) {
-		setTruncatedString(event_ptr_ref, content_ptr, content_length);
+		setTruncatedString(event_ptr_ref, content_ptr, content_length, final_content_is_utf8);
 	} else {
 		boost::uint32_t num_extracts = 0U;
 		const char *end_ptr = content_ptr + content_length;
@@ -829,11 +829,11 @@ inline void HTTPProtocol::ExtractionRule::setTermValueFromFinalContent(
 			}
 			if (m_format.empty() || mr.empty()) {
 				// no format -> extract entire string
-				setTruncatedString(event_ptr_ref, content_ptr, content_length);
+				setTruncatedString(event_ptr_ref, content_ptr, content_length, final_content_is_utf8);
 				break;	// stop looking for matches
 			} else {
 				std::string content_str(mr.format(m_format, boost::format_all));
-				setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size());
+				setTruncatedString(event_ptr_ref, content_str.c_str(), content_str.size(), boost::indeterminate);
 			}
 			// check max_extracts
 			if (m_max_extracts && ++num_extracts >= m_max_extracts)
@@ -865,7 +865,7 @@ inline void HTTPProtocol::ExtractionRule::processRawContent(pion::platform::Even
 inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPtr& event_ptr_ref,
 	const pion::net::HTTPMessage& http_msg, boost::logic::tribool& decoded_and_converted_flag,
 	boost::shared_array<char>& final_content, size_t& final_content_length, 
-	boost::logic::tribool& final_content_is_utf8, PionLogger& logger) const
+	PionLogger& logger) const
 {
 	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
 		const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
@@ -915,8 +915,6 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								// since the former takes precedence over the latter.
 							}
 						}
-						if (!charset.empty() && boost::regex_search(charset, UTF8_RX))
-							final_content_is_utf8 = true;
 						do_conversion = (!charset.empty() && !boost::regex_search(charset, UTF8_RX));
 					}
 
@@ -926,10 +924,17 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						if (do_conversion) {
 							decoded_and_converted_flag = tryConvertingToUtf8(charset, http_msg.getContent(), http_msg.getContentLength(), 
 																			 final_content, final_content_length, logger);
-							final_content_is_utf8 = decoded_and_converted_flag;
-						} else {
-							// No decoding or converting needed.  Can use http_msg.getContent() directly below.
-							decoded_and_converted_flag = false;
+						}
+						if (! do_conversion || ! decoded_and_converted_flag) {
+							if (pion::platform::EventValidator::isValidUTF8(http_msg.getContent(), http_msg.getContentLength(), &final_content_length)) {
+								// No decoding needed, conversion failed or not needed, and no cleansing needed.
+								decoded_and_converted_flag = false;
+							} else {
+								final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(http_msg.getContent(), http_msg.getContentLength());
+								final_content.reset(new char[final_content_length]);
+								pion::platform::EventValidator::cleanseUTF8_TEMP(http_msg.getContent(), http_msg.getContentLength(), final_content.get(), &final_content_length);
+								decoded_and_converted_flag = true;
+							}
 						}
 					} else {
 						// Decoded content is in decoded_content.
@@ -937,28 +942,42 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						if (do_conversion) {
 							decoded_and_converted_flag = tryConvertingToUtf8(charset, decoded_content.get(), decoded_content_length,
 																			 final_content, final_content_length, logger);
-							final_content_is_utf8 = decoded_and_converted_flag;
-						} else {
-							// 
-							final_content.swap(decoded_content);
-							final_content_length = decoded_content_length;
+						}
+						if (! do_conversion || ! decoded_and_converted_flag) {
+							if (pion::platform::EventValidator::isValidUTF8(decoded_content.get(), decoded_content_length, &final_content_length)) {
+								final_content.swap(decoded_content);
+							} else {
+								final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(decoded_content.get(), decoded_content_length);
+								final_content.reset(new char[final_content_length]);
+								pion::platform::EventValidator::cleanseUTF8_TEMP(decoded_content.get(), decoded_content_length, final_content.get(), &final_content_length);
+							}
 							decoded_and_converted_flag = true;
 						}
 					}
 				} else {
+					// Decoding failed - still need to cleanse content if it's not valid UTF-8.
 					// NOTE: tryDecoding() logs already when decoding fails
 					//PION_LOG_WARN(logger, "Decoding failed for Content-Encoding: " << content_encoding);
-					decoded_and_converted_flag = false;
+
+					if (pion::platform::EventValidator::isValidUTF8(http_msg.getContent(), http_msg.getContentLength(), &final_content_length)) {
+						decoded_and_converted_flag = false;
+					} else {
+						final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(http_msg.getContent(), http_msg.getContentLength());
+						final_content.reset(new char[final_content_length]);
+						pion::platform::EventValidator::cleanseUTF8_TEMP(http_msg.getContent(), http_msg.getContentLength(), final_content.get(), &final_content_length);
+						decoded_and_converted_flag = true;
+					}
 				}
 			}
 
-			if (decoded_and_converted_flag && final_content.get() != NULL) {
-				// we already have decoded and converted content -> use it
-				setTermValueFromFinalContent(event_ptr_ref, final_content.get(), final_content_length, final_content_is_utf8);
+			if (decoded_and_converted_flag) {
+				// final_content contains the result of decoding the content (if needed and successful), followed by
+				// UTF-8 conversion or UTF-8 validation/cleansing.
+				setTermValueFromFinalContent(event_ptr_ref, final_content.get(), final_content_length, true);
 			} else {
 				// Either no Content-Encoding header was found and no charset was specified, or decoding or conversion failed.
-				// -> use raw payload content
-				setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), http_msg.getContentLength(), final_content_is_utf8);
+				// Also, http_msg.getContent() has been confirmed as valid UTF-8 (up to a length of final_content_length).
+				setTermValueFromFinalContent(event_ptr_ref, http_msg.getContent(), final_content_length, true);
 			}
 		}
 	}
@@ -967,21 +986,21 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 inline void HTTPProtocol::ExtractionRule::setTruncatedString(
 	pion::platform::EventPtr& event_ptr_ref,
 	const char* content_ptr,
-	const size_t content_length) const
+	const size_t content_length,
+	boost::logic::tribool content_is_valid_utf8) const
 {
-	size_t offset = content_length > m_max_size? m_max_size : content_length;
+	if (content_is_valid_utf8) {
+		size_t offset = content_length > m_max_size? m_max_size : content_length;
+		if (offset < content_length) {
+			// 'offset' might be in the middle of a UTF-8 code point, 
+			// in which case this will decrease 'offset' to point to the beginning of that code point.
+			U8_SET_CP_START_UNSAFE(content_ptr, offset)
+		}
 
-	// 'offset' points to the end of the requested byte array, but might be in the middle of a UTF-8 code point, 
-	// in which case this will decrease 'offset' to point to the beginning of that code point.
-	U8_SET_CP_START_UNSAFE(content_ptr, offset) // "Unsafe" macro, assumes well-formed UTF-8.
-
-	// TODO: We could use the following "safe" macro instead, which doesn't assume well-formed UTF-8, and thus does more computation.
-	// U8_SET_CP_START(content_ptr, 0, offset)
-
-// NOTE: using setBlob() since we don't need to re-check UTF8 validity at the Event level
-// TODO: ??  should we just perform this truncation/check using Event::setString() instead??
-
-	(*event_ptr_ref).setBlob(m_term.term_ref, content_ptr, offset);
+		// Avoid re-checking UTF-8 validity at the Event level.
+		(*event_ptr_ref).setBlob(m_term.term_ref, content_ptr, offset);
+	} else
+		(*event_ptr_ref).setString(m_term.term_ref, content_ptr, content_length);
 }
 
 }	// end namespace plugins

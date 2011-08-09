@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -26,11 +26,92 @@ using namespace pion;
 using namespace pion::platform;
 
 
+static const std::string ASCII_STRING_1 = "ABC";
+
+static const char INVALID_UTF8_CHAR_ARRAY_1[] = {
+		0x41,									// 'A'
+		(char)0xFE,								// can never occur in a valid UTF-8 sequence
+		0x42};									// 'B'
+
+static const std::string INVALID_UTF8_STRING_1(INVALID_UTF8_CHAR_ARRAY_1, sizeof(INVALID_UTF8_CHAR_ARRAY_1));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_1[] = {
+		0x41,									// 'A'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x42};									// 'B'
+
+static const std::string CLEANSED_UTF8_STRING_1(CLEANSED_UTF8_CHAR_ARRAY_1, sizeof(CLEANSED_UTF8_CHAR_ARRAY_1));
+
+static const char INVALID_UTF8_CHAR_ARRAY_2[] = {
+		0x41,									// 'A'
+		(char)0xC8,								// valid lead byte, requires one trail byte...
+		0x58,								    // ...not a trail byte.
+		0x42,									// 'B'
+		(char)0xC8,								// valid lead byte, requires one trail byte...
+		(char)0xC8,								// ...invalid second byte.
+		0x63,									// 'C'
+		(char)0xE2,								// valid lead byte, requires two trail bytes...
+		(char)0x82,								// ...valid second byte...
+		0x58,								    // ...not a trail byte.
+		0x64};									// 'D'
+
+static const std::string INVALID_UTF8_STRING_2(INVALID_UTF8_CHAR_ARRAY_2, sizeof(INVALID_UTF8_CHAR_ARRAY_2));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_2[] = {
+		0x41,									// 'A'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x58,									// 'X'
+		0x42,									// 'B'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x63,									// 'C'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x58,									// 'X'
+		0x64};									// 'D'
+
+static const std::string CLEANSED_UTF8_STRING_2(CLEANSED_UTF8_CHAR_ARRAY_2, sizeof(CLEANSED_UTF8_CHAR_ARRAY_2));
+
+static const char INVALID_UTF8_CHAR_ARRAY_3[] = {
+		(char)0x82,								// trail byte
+		(char)0x82,								// trail byte
+		(char)0x82,								// trail byte
+		(char)0x82,								// trail byte
+		(char)0x82};							// trail byte
+
+static const std::string INVALID_UTF8_STRING_3(INVALID_UTF8_CHAR_ARRAY_3, sizeof(INVALID_UTF8_CHAR_ARRAY_3));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_3[] = {
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		(char)0xEF, (char)0xBF,	(char)0xBD};	// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+
+static const std::string CLEANSED_UTF8_STRING_3(CLEANSED_UTF8_CHAR_ARRAY_3, sizeof(CLEANSED_UTF8_CHAR_ARRAY_3));
+
+static const char INVALID_UTF8_CHAR_ARRAY_4[] = {
+		0x41,									// 'A'
+		(char)0xE7,								// valid lead byte, requires two trail bytes...
+		(char)0x8C,								// ...valid second byte...
+		(char)0xAB,								// ...valid third byte.
+		(char)0xAB};							// another trail byte
+
+static const std::string INVALID_UTF8_STRING_4(INVALID_UTF8_CHAR_ARRAY_4, sizeof(INVALID_UTF8_CHAR_ARRAY_4));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_4[] = {
+		0x41,									// 'A'
+		(char)0xE7, (char)0x8C,	(char)0xAB,		// UTF-8 encoding of U+732B (simplified Chinese character for "cat")
+		(char)0xEF, (char)0xBF,	(char)0xBD};	// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+
+static const std::string CLEANSED_UTF8_STRING_4(CLEANSED_UTF8_CHAR_ARRAY_4, sizeof(CLEANSED_UTF8_CHAR_ARRAY_4));
+
+
 class EventTests_F {
 public:
 	EventTests_F()
 		: m_null_term("urn:vocab:test#null-term"), m_plain_int_term("urn:vocab:test#plain-old-int"),
 		m_big_int_term("urn:vocab:test#big-int"), m_fixed_term("urn:vocab:test#fixed-text"),
+		m_string_term("urn:vocab:test#string"),
 		m_date_term("urn:vocab:test#date"), m_object_term("urn:vocab:test#simple-object")
 	{
 		// initialize our initial term set
@@ -44,6 +125,7 @@ public:
 		m_plain_int_term.term_type = Vocabulary::TYPE_INT16;
 		m_big_int_term.term_type = Vocabulary::TYPE_UINT64;
 		m_fixed_term.term_type = Vocabulary::TYPE_CHAR;
+		m_string_term.term_type = Vocabulary::TYPE_STRING;
 		m_date_term.term_type = Vocabulary::TYPE_DATE;
 		m_object_term.term_type = Vocabulary::TYPE_OBJECT;
 		m_null_term.term_comment = "A plain, old integer number";
@@ -62,6 +144,7 @@ public:
 		m_vocabulary.addTerm(m_plain_int_term);
 		m_vocabulary.addTerm(m_big_int_term);
 		m_vocabulary.addTerm(m_fixed_term);
+		m_vocabulary.addTerm(m_string_term);
 		m_vocabulary.addTerm(m_date_term);
 		m_vocabulary.addTerm(m_object_term);
 	}
@@ -72,6 +155,7 @@ public:
 	Vocabulary::Term	m_plain_int_term;
 	Vocabulary::Term	m_big_int_term;
 	Vocabulary::Term	m_fixed_term;
+	Vocabulary::Term	m_string_term;
 	Vocabulary::Term	m_date_term;
 	Vocabulary::Term	m_object_term;
 };
@@ -365,5 +449,119 @@ BOOST_AUTO_TEST_CASE(checkParameterValueConstructedFromValue) {
 	BOOST_CHECK_EQUAL(strcmp(boost::get<Event::BlobType&>(pv3).get(), "abc"), 0);
 }
 
+BOOST_AUTO_TEST_CASE(testAllSetStringOverloadsWithValidUTF8Data) {
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, ASCII_STRING_1.c_str(), ASCII_STRING_1.size());
+	BOOST_CHECK_EQUAL(e1->getString(m_string_term.term_ref), ASCII_STRING_1);
+
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, ASCII_STRING_1.c_str());
+	BOOST_CHECK_EQUAL(e2->getString(m_string_term.term_ref), ASCII_STRING_1);
+
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setString(m_string_term.term_ref, ASCII_STRING_1);
+	BOOST_CHECK_EQUAL(e3->getString(m_string_term.term_ref), ASCII_STRING_1);
+
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setString(m_string_term.term_ref, Event::BlobType(m_event_factory.getAllocator(), ASCII_STRING_1.c_str(), ASCII_STRING_1.size()));
+	BOOST_CHECK_EQUAL(e4->getString(m_string_term.term_ref), ASCII_STRING_1);
+}	
+
+BOOST_AUTO_TEST_CASE(testAllSetStringOverloadsWithInvalidUTF8Data) {
+	EventPtr e1(m_event_factory.create(m_object_term.term_ref));
+	e1->setString(m_string_term.term_ref, INVALID_UTF8_STRING_1.c_str(), INVALID_UTF8_STRING_1.size());
+	BOOST_CHECK_EQUAL(e1->getString(m_string_term.term_ref), CLEANSED_UTF8_STRING_1);
+
+	EventPtr e2(m_event_factory.create(m_object_term.term_ref));
+	e2->setString(m_string_term.term_ref, INVALID_UTF8_STRING_2.c_str());
+	BOOST_CHECK_EQUAL(e2->getString(m_string_term.term_ref), CLEANSED_UTF8_STRING_2);
+
+	EventPtr e3(m_event_factory.create(m_object_term.term_ref));
+	e3->setString(m_string_term.term_ref, INVALID_UTF8_STRING_3);
+	BOOST_CHECK_EQUAL(e3->getString(m_string_term.term_ref), CLEANSED_UTF8_STRING_3);
+
+	EventPtr e4(m_event_factory.create(m_object_term.term_ref));
+	e4->setString(m_string_term.term_ref, Event::BlobType(m_event_factory.getAllocator(), INVALID_UTF8_STRING_4.c_str(), INVALID_UTF8_STRING_4.size()));
+	BOOST_CHECK_EQUAL(e4->getString(m_string_term.term_ref), CLEANSED_UTF8_STRING_4);
+}	
+
 BOOST_AUTO_TEST_SUITE_END()
 
+
+BOOST_AUTO_TEST_CASE(testIsValidUTF8) {
+	std::size_t trimmed_len;
+	BOOST_CHECK(EventValidator::isValidUTF8(ASCII_STRING_1.c_str(), ASCII_STRING_1.size(), &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, ASCII_STRING_1.size());
+
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_1.c_str(), INVALID_UTF8_STRING_1.size(), NULL));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_2.c_str(), INVALID_UTF8_STRING_2.size(), NULL));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), INVALID_UTF8_STRING_3.size(), NULL));
+
+	// Since the first byte is valid and the second is a valid lead byte, with len = 2, isValidUTF8() should return true.
+	std::size_t len = 2;
+	BOOST_CHECK(EventValidator::isValidUTF8(INVALID_UTF8_STRING_2.c_str(), len, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 1);
+
+	std::size_t* trimmed_len_ptr = NULL;
+	// With trimmed_len_ptr == NULL, a partial code point at the end is not allowed.
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_2.c_str(), len, trimmed_len_ptr));
+
+	// Test with all trail byte sequence.
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), 1, &trimmed_len));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), 2, &trimmed_len));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), 3, &trimmed_len));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), 4, &trimmed_len));
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_3.c_str(), 5, &trimmed_len));
+
+	// Test with a sequence that starts OK but has too many trail bytes.
+	BOOST_CHECK(EventValidator::isValidUTF8(INVALID_UTF8_STRING_4.c_str(), 2, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 1);
+	BOOST_CHECK(EventValidator::isValidUTF8(INVALID_UTF8_STRING_4.c_str(), 3, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 1);
+	BOOST_CHECK(EventValidator::isValidUTF8(INVALID_UTF8_STRING_4.c_str(), 4, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 4);
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_4.c_str(), 5, &trimmed_len));
+
+	// Test empty string.
+	BOOST_CHECK(EventValidator::isValidUTF8("", 0, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 0);
+}
+
+BOOST_AUTO_TEST_CASE(testGetCleansedUTF8Length) {
+	size_t len = EventValidator::getCleansedUTF8Length(ASCII_STRING_1.c_str(), ASCII_STRING_1.size());
+	BOOST_CHECK_EQUAL(len, ASCII_STRING_1.size());
+
+	// Using BOOST_CHECK_GE because getCleansedUTF8Length() returns an an upper bound on the required length.
+	len = EventValidator::getCleansedUTF8Length(INVALID_UTF8_STRING_1.c_str(), INVALID_UTF8_STRING_1.size());
+	BOOST_CHECK_GE(len, CLEANSED_UTF8_STRING_1.size());
+	len = EventValidator::getCleansedUTF8Length(INVALID_UTF8_STRING_2.c_str(), INVALID_UTF8_STRING_2.size());
+	BOOST_CHECK_GE(len, CLEANSED_UTF8_STRING_2.size());
+	len = EventValidator::getCleansedUTF8Length(INVALID_UTF8_STRING_3.c_str(), INVALID_UTF8_STRING_3.size());
+	BOOST_CHECK_GE(len, CLEANSED_UTF8_STRING_3.size());
+	len = EventValidator::getCleansedUTF8Length(INVALID_UTF8_STRING_4.c_str(), INVALID_UTF8_STRING_4.size());
+	BOOST_CHECK_GE(len, CLEANSED_UTF8_STRING_4.size());
+}
+
+BOOST_AUTO_TEST_CASE(testCleanseUTF8) {
+	char buf[100];
+	size_t actual_len;
+	EventValidator::cleanseUTF8_TEMP(ASCII_STRING_1.c_str(), ASCII_STRING_1.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, ASCII_STRING_1.size());
+	BOOST_CHECK(strncmp(buf, ASCII_STRING_1.c_str(), actual_len) == 0);
+
+	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_1.c_str(), INVALID_UTF8_STRING_1.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_1.size());
+	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_1.c_str(), actual_len) == 0);
+
+	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_2.c_str(), INVALID_UTF8_STRING_2.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_2.size());
+	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_2.c_str(), actual_len) == 0);
+
+	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_3.c_str(), INVALID_UTF8_STRING_3.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_3.size());
+	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_3.c_str(), actual_len) == 0);
+
+	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_4.c_str(), INVALID_UTF8_STRING_4.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_4.size());
+	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_4.c_str(), actual_len) == 0);
+}
