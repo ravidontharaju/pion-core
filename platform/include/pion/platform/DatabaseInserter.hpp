@@ -21,6 +21,7 @@
 #define __PION_DATABASINSERTER_HEADER__
 
 #include <vector>
+#include <ctime>
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
@@ -135,7 +136,9 @@ public:
 		m_database_mgr_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
-		m_is_running(false), m_partition(0), m_wipe(false), m_max_age(0), m_last_time(0), m_table_size(0)
+		m_recovery_interval(DEFAULT_RECOVERY_INTERVAL),
+		m_is_running(false), m_partition(0), m_wipe(false), m_max_age(0),
+		m_last_time(0), m_next_connect(0), m_table_size(0)
 	{}
 
 	/// virtual destructor: this class may be extended
@@ -257,11 +260,30 @@ private:
 	typedef std::vector<EventPtr>	EventQueue;
 
 
-	/// returns the DatabaseManager to use for accessing Databases
+	/// return current timestamp (time_t format)
+	static inline std::time_t now(void) { return ::time(NULL); }
+        
+  	/// returns the DatabaseManager to use for accessing Databases
 	DatabaseManager& getDatabaseManager(void);
+
+	/// (re)establishes a connection to the database
+	void connect(void);
+
+	/// attempts to reconnect the the database (true if successful)
+	bool tryConnecting(void);
+	
+	/// returns true if the database connection is OK
+	bool checkConnection(void);
 
 	/// function used by the worker thread to store events to the database
 	void insertEvents(void);
+
+	/**
+	 * function used by the worker thread to store events to the database
+	 *
+	 * @param insert_queue_ptr event queue ptr that will be swapped with available event queue
+	 */
+	void insertEvents(boost::scoped_ptr<EventQueue>& insert_queue_ptr);
 
 	/**
 	 * checks for new events queued for database storage
@@ -279,6 +301,9 @@ private:
 	/// default number of seconds before the queue is automatically flushed due to timeout
 	static const boost::uint32_t			DEFAULT_QUEUE_TIMEOUT;
 
+	/// default number of seconds in between database connection recovery attempts
+	static const boost::uint32_t			DEFAULT_RECOVERY_INTERVAL;
+
 	/// name of the database element for Pion XML config files
 	static const std::string				DATABASE_ELEMENT_NAME;
 
@@ -293,6 +318,9 @@ private:
 
 	/// name of the queue timeout element for Pion XML config files
 	static const std::string				QUEUE_TIMEOUT_ELEMENT_NAME;
+
+	/// name of the recovery interval element for Pion XML config files
+	static const std::string				RECOVERY_INTERVAL_ELEMENT_NAME;
 
 	/// name of the Term ID attribute for Pion XML config files
 	static const std::string				TERM_ATTRIBUTE_NAME;
@@ -360,6 +388,9 @@ private:
 	/// number of seconds before the queue is automatically flushed due to timeout
 	boost::uint32_t							m_queue_timeout;
 
+	/// number of seconds in between database connection recovery attempts
+	boost::uint32_t							m_recovery_interval;
+
 	/// used to protect the Event queue
 	mutable boost::mutex					m_queue_mutex;
 
@@ -402,6 +433,9 @@ private:
 
 	/// most recent timestamp used for key cache pruning
 	boost::uint32_t							m_last_time;
+	
+	/// timestamp for next connection attempt (0 if connected)
+	std::time_t								m_next_connect;
 
 	/// Counter for index cache consumption
 	boost::uint64_t							m_cache_consumption;

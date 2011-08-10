@@ -29,12 +29,14 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 const boost::uint32_t		DatabaseInserter::DEFAULT_QUEUE_SIZE = 10000;
 const boost::uint32_t		DatabaseInserter::DEFAULT_QUEUE_TIMEOUT = 5;
+const boost::uint32_t		DatabaseInserter::DEFAULT_RECOVERY_INTERVAL = 5;
 const std::string			DatabaseInserter::DEFAULT_IGNORE = "false";
 const std::string			DatabaseInserter::DATABASE_ELEMENT_NAME = "Database";
 const std::string			DatabaseInserter::TABLE_ELEMENT_NAME = "Table";
 const std::string			DatabaseInserter::FIELD_ELEMENT_NAME = "Field";
 const std::string			DatabaseInserter::QUEUE_SIZE_ELEMENT_NAME = "QueueSize";
 const std::string			DatabaseInserter::QUEUE_TIMEOUT_ELEMENT_NAME = "QueueTimeout";
+const std::string			DatabaseInserter::RECOVERY_INTERVAL_ELEMENT_NAME = "RecoveryInterval";
 const std::string			DatabaseInserter::TERM_ATTRIBUTE_NAME = "term";
 const std::string			DatabaseInserter::INDEX_ATTRIBUTE_NAME = "index";
 const std::string			DatabaseInserter::SQL_ATTRIBUTE_NAME = "sql";
@@ -64,6 +66,9 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 
 	// get the queue timeout parameter
 	ConfigManager::getConfigOption(QUEUE_TIMEOUT_ELEMENT_NAME, m_queue_timeout, DEFAULT_QUEUE_TIMEOUT, config_ptr);
+
+	// get the recovery interval parameter
+	ConfigManager::getConfigOption(RECOVERY_INTERVAL_ELEMENT_NAME, m_recovery_interval, DEFAULT_RECOVERY_INTERVAL, config_ptr);
 
 	// get the optional max_age parameter
 	ConfigManager::getConfigOption(MAX_KEY_AGE_ELEMENT_NAME, m_max_age, DEFAULT_MAX_AGE, config_ptr);
@@ -197,43 +202,8 @@ void DatabaseInserter::start(void)
 		m_is_running = true;
 
 		try {
-
 			// open a new database connection
-			if (!m_database_ptr)
-				m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
-			PION_ASSERT(m_database_ptr);
-
-			if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {
-				m_database_ptr->dropTable(m_table_name, m_partition);
-				PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
-			}
-
-			// open up the database if it isn't already open
-			// TODO: This only works with SQLite (wiping before opening)
-			m_database_ptr->open(m_partition);
-			PION_ASSERT(m_database_ptr->is_open());
-
-			// create the database table if it does not yet exist
-			m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
-			m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
-
-			// prepare the query used to insert new events into the table
-			m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
-			PION_ASSERT(m_insert_query_ptr);
-
-			// prepare the query used to begin new transactions
-			m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
-			PION_ASSERT(m_begin_transaction_ptr);
-
-			// prepare the query used to commit transactions
-			m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
-			PION_ASSERT(m_commit_transaction_ptr);
-
-			m_cache_overhead = m_database_ptr->getCache(Database::CACHE_INDEX_ROW_OVERHEAD);
-			m_cache_size = m_database_ptr->getCache(Database::CACHE_PAGE_CACHE_SIZE);
-
-			PION_LOG_DEBUG(m_logger, "Database cache overhead: " << m_cache_overhead << ", cache size: " << m_cache_size / 1024UL << "k");
-		
+			connect();
 		} catch (...) {
 			// failed to initialize properly -> reset and update running state to false
 			m_insert_query_ptr.reset();
@@ -243,7 +213,7 @@ void DatabaseInserter::start(void)
 			m_is_running = false;
 			throw;
 		}
-
+	
 		// spawn a new thread that will be used to save events to the database
 		PION_LOG_DEBUG(m_logger, "Starting worker thread: " << m_database_id);
 		m_thread.reset(new boost::thread(boost::bind(&DatabaseInserter::insertEvents, this)));
@@ -416,6 +386,84 @@ void DatabaseInserter::insert(const EventPtr& e)
 	}
 }
 
+void DatabaseInserter::connect(void)
+{
+	// open a new database connection
+	PION_LOG_DEBUG(m_logger, "Connecting to database: " << m_database_id);
+	if (!m_database_ptr)
+		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+	PION_ASSERT(m_database_ptr);
+
+	if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {
+		m_database_ptr->dropTable(m_table_name, m_partition);
+		PION_LOG_DEBUG(m_logger, "Wiping partition: " << m_table_name << "/" << m_partition << " on thread: " << m_database_id);
+	}
+
+	// open up the database if it isn't already open
+	// TODO: This only works with SQLite (wiping before opening)
+	m_database_ptr->open(m_partition);
+	PION_ASSERT(m_database_ptr->is_open());
+
+	// create the database table if it does not yet exist
+	m_database_ptr->createTable(m_field_map, m_table_name, m_index_map, m_partition);
+	m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
+
+	// prepare the query used to insert new events into the table
+	m_insert_query_ptr = m_ignore_insert ? m_database_ptr->prepareInsertIgnoreQuery(m_field_map, m_table_name) : m_database_ptr->prepareInsertQuery(m_field_map, m_table_name);
+	PION_ASSERT(m_insert_query_ptr);
+
+	// prepare the query used to begin new transactions
+	m_begin_transaction_ptr = m_database_ptr->getBeginTransactionQuery();
+	PION_ASSERT(m_begin_transaction_ptr);
+
+	// prepare the query used to commit transactions
+	m_commit_transaction_ptr = m_database_ptr->getCommitTransactionQuery();
+	PION_ASSERT(m_commit_transaction_ptr);
+		
+	m_cache_overhead = m_database_ptr->getCache(Database::CACHE_INDEX_ROW_OVERHEAD);
+	m_cache_size = m_database_ptr->getCache(Database::CACHE_PAGE_CACHE_SIZE);
+
+	PION_LOG_DEBUG(m_logger, "Database connected (cache overhead: " << m_cache_overhead << ", cache size: " << m_cache_size / 1024UL << "k)");
+}
+
+bool DatabaseInserter::tryConnecting()
+{
+	try {
+		connect();
+		m_next_connect = 0;
+		return true;
+	} catch (std::exception& e) {
+		m_next_connect = now() + m_recovery_interval;
+		PION_LOG_ERROR(m_logger, "Lost database connection; retry in " << m_recovery_interval << " seconds: " << e.what());
+	}
+	return false;
+}
+
+bool DatabaseInserter::checkConnection()
+{
+	// check if we need to try to reconnect
+	bool connection_ok = true;
+	if (m_next_connect) {
+		if (!m_database_ptr->is_open()) {
+			// we just lost the connection -> try reconnect immediately
+			connection_ok = tryConnecting();
+			if (connection_ok) {
+				PION_LOG_WARN(m_logger, "Lost connection but recovered successfully");
+			}
+		}
+	} else if (now() >= m_next_connect) {
+		// time to try reconnecting again
+		connection_ok = tryConnecting();
+		if (connection_ok) {
+			PION_LOG_WARN(m_logger, "Successfully reconnected to database");
+		}
+	} else {
+		// not yet time to reconnect
+		connection_ok = false;
+	}
+	return connection_ok;
+}
+
 void DatabaseInserter::insertEvents(void)
 {
 	PION_LOG_DEBUG(m_logger, "Worker thread is running: " << m_database_id);
@@ -446,51 +494,11 @@ void DatabaseInserter::insertEvents(void)
 			if (checkEventQueue(insert_queue_ptr)) {
 
 				PION_LOG_DEBUG(m_logger, "Worker thread woke with " << insert_queue_ptr->size() << " events available: " << m_database_id);
-
+	
 				try {
 
-					// begin a new transaction
-					m_begin_transaction_ptr->run();
-					m_begin_transaction_ptr->reset();
-	
-					// step through the event queue, inserting each event individually
-					for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
-						// bind the event to the insert query
-						m_insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
-						// execute the query to insert the record
-						m_insert_query_ptr->run();
-						m_insert_query_ptr->reset();
-					}
-	
-					// end & commit the transaction
-					m_commit_transaction_ptr->run();
-					m_commit_transaction_ptr->reset();
-
-					// done flushing the queue
-					PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);
-					insert_queue_ptr->clear();
-	
-					// Pruning needed?
-					if (m_max_age) {
-						boost::uint32_t size_before, size_after;
-						{
-							boost::mutex::scoped_lock queue_lock(m_queue_mutex);
-							boost::uint32_t min_age = m_last_time - m_max_age;
-							size_before = m_keys.size();
-							KeyHash::iterator cur_it;
-							KeyHash::iterator i = m_keys.begin();
-							while (i != m_keys.end()) {
-								cur_it = i;
-								++i;
-								if (cur_it->second < min_age)
-									m_keys.erase(cur_it);
-							}
-							size_after = m_keys.size();
-						}
-						PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " keys from cache, " << size_after << " left");
-					}
-
-					m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);
+					// attempt to insert events into the database
+					insertEvents(insert_queue_ptr);
 
 				} catch (Database::DatabaseBusyException& e) {
 				
@@ -500,12 +508,24 @@ void DatabaseInserter::insertEvents(void)
 					m_keys.clear();				// erase key cache since it may be inaccurate
 
 				} catch (std::exception& e) {
-
-					// another insert failure occured -> just log and drop versus stopping altogether
-					PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events: " << e.what());
-					insert_queue_ptr->clear();	// drop events in insert queue
-					m_keys.clear();				// erase key cache since it may be inaccurate
-
+					
+					// check if insert failed because we lost database connection
+					bool able_to_recover = false;
+					if (!m_database_ptr->is_open()) {
+						// it did -> try to reconnect and insert again
+						if (checkConnection()) {
+							try {
+								insertEvents(insert_queue_ptr);
+								able_to_recover = true;
+							} catch (...) {}
+						}
+					}
+					if (!able_to_recover) {
+						// insert failure occured -> just log and drop versus stopping altogether
+						PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events: " << e.what());
+						insert_queue_ptr->clear();	// drop events in insert queue
+						m_keys.clear();				// erase key cache since it may be inaccurate
+					}
 				}
 
 			} else {
@@ -520,6 +540,52 @@ void DatabaseInserter::insertEvents(void)
 	}
 
 	PION_LOG_DEBUG(m_logger, "Worker thread is exiting: " << m_database_id);
+}
+
+void DatabaseInserter::insertEvents(boost::scoped_ptr<EventQueue>& insert_queue_ptr)
+{
+	// begin a new transaction
+	m_begin_transaction_ptr->run();
+	m_begin_transaction_ptr->reset();
+	
+	// step through the event queue, inserting each event individually
+	for (unsigned int n = 0; n < insert_queue_ptr->size(); ++n) {
+		// bind the event to the insert query
+		m_insert_query_ptr->bindEvent(m_field_map, *((*insert_queue_ptr)[n]), false);
+		// execute the query to insert the record
+		m_insert_query_ptr->run();
+		m_insert_query_ptr->reset();
+	}
+	
+	// end & commit the transaction
+	m_commit_transaction_ptr->run();
+	m_commit_transaction_ptr->reset();
+	
+	// done flushing the queue
+	PION_LOG_DEBUG(m_logger, "Worker thread wrote " << insert_queue_ptr->size() << " events: " << m_database_id);
+	insert_queue_ptr->clear();
+	
+	// Pruning needed?
+	if (m_max_age) {
+		boost::uint32_t size_before, size_after;
+		{
+			boost::mutex::scoped_lock queue_lock(m_queue_mutex);
+			boost::uint32_t min_age = m_last_time - m_max_age;
+			size_before = m_keys.size();
+			KeyHash::iterator cur_it;
+			KeyHash::iterator i = m_keys.begin();
+			while (i != m_keys.end()) {
+				cur_it = i;
+				++i;
+				if (cur_it->second < min_age)
+					m_keys.erase(cur_it);
+			}
+			size_after = m_keys.size();
+		}
+		PION_LOG_DEBUG(m_logger, "Worker thread pruned " << (size_before - size_after) << " keys from cache, " << size_after << " left");
+	}
+	
+	m_table_size = m_database_ptr->getCache(Database::DB_FILE_SIZE);	
 }
 
 bool DatabaseInserter::checkEventQueue(boost::scoped_ptr<EventQueue>& insert_queue_ptr)
@@ -538,7 +604,20 @@ bool DatabaseInserter::checkEventQueue(boost::scoped_ptr<EventQueue>& insert_que
 		if (m_event_queue_ptr->size() == 0)
 			return false;
 	}
-	
+
+	if (m_next_connect && !checkConnection()) {
+		// still waiting for reconnect
+		if (m_event_queue_ptr->size() >= m_queue_max) {
+			// queue is full -> drop events
+			PION_LOG_ERROR(m_logger, "Dropping " << m_event_queue_ptr->size() << " events: not ready to reconnect");
+			m_event_queue_ptr->clear();	// drop events in insert queue
+			m_keys.clear();				// erase key cache since it may be inaccurate
+			// notify threads that the event queue has been cleared
+			m_swapped_queue.notify_all();
+		}	// else not yet full -> just wait a little longer
+		return false;
+	}
+
 	// swap the event queues
 	insert_queue_ptr.swap(m_event_queue_ptr);
 
