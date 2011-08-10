@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -641,9 +641,9 @@ public:
 	 * shorthand for retrieving the (const) BlobType value of field (specialization for std::string)
 	 * 
 	 * @param term_ref numeric identifier for the term
-	 * @param v will be set to the value of the term if it is defined
+	 * @param str will be set to the value of the term if it is defined
 	 *
-	 * @return true if the term is defined and v was set to its value, or false if not
+	 * @return true if the term is defined and str was set to its value, or false if not
 	 */
 	inline bool getBlob(const Vocabulary::TermRef& term_ref, std::string& str) const {
 		const ParameterValue *param_ptr = getPointer(term_ref);
@@ -671,9 +671,9 @@ public:
 	 * shorthand for retrieving the (const) value of a string field (specialization for std::string)
 	 * 
 	 * @param term_ref numeric identifier for the term
-	 * @param v will be set to the value of the term if it is defined
+	 * @param str will be set to the value of the term if it is defined
 	 *
-	 * @return true if the term is defined and v was set to its value, or false if not
+	 * @return true if the term is defined and str was set to its value, or false if not
 	 */
 	inline bool getString(const Vocabulary::TermRef& term_ref, std::string& str) const {
 		return getBlob(term_ref, str);
@@ -1120,14 +1120,13 @@ public:
 	/// can be used to construct a new UTF8 BLOB object based upon an existing std::string
 	inline BlobType make_utf8_blob(const std::string& str) const {
 		BlobType result;
-		if (true) {	// TODO: true if valid UTF8
-			// string is already valid UTF8 sequence
-			result.set(*m_alloc_ptr, str);
+		std::size_t trimmed_len;
+		if (EventValidator::isValidUTF8(str.c_str(), str.size(), &trimmed_len)) {
+			result.set(*m_alloc_ptr, str.c_str(), trimmed_len);
 		} else {
-			// string is NOT valid UTF8 sequence
-			// TODO: calculate new string size
-			CharType *bptr = result.reserve(*m_alloc_ptr, str.size());	// TODO: should use new string size
-			memcpy(bptr, str.c_str(), str.size());	// TODO: replace with ICU conversion routine
+			std::size_t buf_len = EventValidator::getCleansedUTF8Length(str.c_str(), str.size());
+			char* bptr = result.reserve(*m_alloc_ptr, buf_len);
+			EventValidator::cleanseUTF8(*m_alloc_ptr, str.c_str(), str.size(), bptr, &buf_len);
 		}
 		return result;
 	}
@@ -1135,14 +1134,13 @@ public:
 	/// can be used to construct a new UTF8 BLOB object based upon an existing memory buffer
 	inline BlobType make_utf8_blob(const CharType *ptr, const std::size_t len) const {
 		BlobType result;
-		if (true) {	// TODO: true if valid UTF8
-			// string is already valid UTF8 sequence
-			result.set(*m_alloc_ptr, ptr, len);
+		std::size_t trimmed_len;
+		if (EventValidator::isValidUTF8(ptr, len, &trimmed_len)) {
+			result.set(*m_alloc_ptr, ptr, trimmed_len);
 		} else {
-			// string is NOT valid UTF8 sequence
-			// TODO: calculate new string size
-			CharType *bptr = result.reserve(*m_alloc_ptr, len);	// TODO: should use new string size
-			memcpy(bptr, ptr, len);	// TODO: replace with ICU conversion routine
+			std::size_t buf_len = EventValidator::getCleansedUTF8Length(ptr, len);
+			char* bptr = result.reserve(*m_alloc_ptr, buf_len);
+			EventValidator::cleanseUTF8(*m_alloc_ptr, ptr, len, bptr, &buf_len);
 		}
 		return result;
 	}
@@ -1150,29 +1148,27 @@ public:
 	/// can be used to construct a new UTF8 BLOB object based upon a c-style string
 	inline BlobType make_utf8_blob(const CharType *ptr) const {
 		BlobType result;
-		if (true) {	// TODO: true if valid UTF8
-			// string is already valid UTF8 sequence
-			result.set(*m_alloc_ptr, ptr);
+		const std::size_t len = strlen(ptr);
+		std::size_t trimmed_len;
+		if (EventValidator::isValidUTF8(ptr, len, &trimmed_len)) {
+			result.set(*m_alloc_ptr, ptr, trimmed_len);
 		} else {
-			// string is NOT valid UTF8 sequence
-			const std::size_t len = strlen(ptr);	// TODO: calculate new string size
-			CharType *bptr = result.reserve(*m_alloc_ptr, len);	// TODO: should use new string size
-			memcpy(bptr, ptr, len);	// TODO: replace with ICU conversion routine
+			std::size_t buf_len = EventValidator::getCleansedUTF8Length(ptr, len);
+			char* bptr = result.reserve(*m_alloc_ptr, buf_len);
+			EventValidator::cleanseUTF8(*m_alloc_ptr, ptr, len, bptr, &buf_len);
 		}
 		return result;
 	}
 
 	/// can be used to construct a new UTF8 BLOB object based upon an existing BLOB
 	inline BlobType make_utf8_blob(const BlobType& b) const {
-		if (true) {	// TODO: true if valid UTF8
-			// string is already valid UTF8 sequence
+		if (EventValidator::isValidUTF8(b.get(), b.size(), NULL)) {
 			return b;
 		} else {
-			// string is NOT valid UTF8 sequence
-			// TODO: calculate new string size
+			std::size_t buf_len = EventValidator::getCleansedUTF8Length(b.get(), b.size());
 			BlobType result;
-			CharType *bptr = result.reserve(*m_alloc_ptr, b.size());	// TODO: should use new string size
-			memcpy(bptr, b.get(), b.size());	// TODO: replace with ICU conversion routine
+			char* bptr = result.reserve(*m_alloc_ptr, buf_len);
+			EventValidator::cleanseUTF8(*m_alloc_ptr, b.get(), b.size(), bptr, &buf_len);
 			return result;
 		}
 	}
@@ -1338,6 +1334,65 @@ private:
 typedef BasicEvent<char, EventAllocator>	Event;
 	
 	
+class PION_PLATFORM_API EventValidator {
+public:
+	/// exception thrown if u_strFromUTF8 returns an unexpected error when being used for validation only
+	class ValidationException : public PionException {
+	public:
+		ValidationException(const std::string& error_msg)
+			: PionException("An error other than U_INVALID_CHAR_FOUND or U_BUFFER_OVERFLOW_ERROR occurred while doing UTF-8 validation: ", error_msg) {}
+	};
+
+	/**
+	 * Validates UTF-8 data.
+	 * Passing a non-NULL trimmed_len allows efficiently dealing with the case where ptr + len
+	 * is in the middle of a UTF-8 code point (presumably due to truncating).
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer
+	 * @param trimmed_len if not NULL, and data is valid except for a possibly incomplete final code point, gets offset to end of last complete code point 
+	 *
+	 * @return if trimmed_len is NULL, true iff buffer is valid UTF-8, else true iff buffer of length *trimmed_len is valid UTF-8
+	 */
+	static bool isValidUTF8(const char* ptr, const std::size_t len, std::size_t* trimmed_len);
+
+	/**
+	 * Returns an upper bound on the length needed for a string that replaces invalid UTF-8 characters
+	 * in ptr with replacement characters (U+FFFD)
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer
+	 *
+	 * @return upper bound on length of buffer for cleansed data
+	 */
+	static size_t getCleansedUTF8Length(const char* ptr, const std::size_t len);
+
+	/**
+	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
+	 * replacement characters (U+FFFD).
+	 *
+	 * @param blob_alloc memory allocator to use for intermediate buffer
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer 
+	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
+	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
+	 */
+	static void cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+
+	/**
+	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
+	 * replacement characters (U+FFFD).  (Temporary until calls to this function can be replaced 
+	 * with calls to cleanseUTF8(), which allows more efficient memory allocation.)
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer 
+	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
+	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
+	 */
+	static void cleanseUTF8_TEMP(const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+};
+
+
 ///
 /// EventPtr: Event smart pointer objects generated by the EventFactory
 ///

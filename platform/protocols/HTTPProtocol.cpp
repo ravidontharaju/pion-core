@@ -473,8 +473,6 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 	boost::shared_array<char> final_response_content;
 	boost::logic::tribool decoded_and_converted_request_flag(boost::indeterminate);
 	boost::logic::tribool decoded_and_converted_response_flag(boost::indeterminate);
-	boost::logic::tribool final_request_content_is_utf8(boost::indeterminate);
-	boost::logic::tribool final_response_content_is_utf8(boost::indeterminate);
 
 	// process content extraction rules
 	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
@@ -514,12 +512,12 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 				case EXTRACT_CS_CONTENT:
 					// extract decoded and converted HTTP payload content from request
 					rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
-						final_request_content, final_request_length, final_request_content_is_utf8, m_logger);
+						final_request_content, final_request_length, m_logger);
 					break;
 				case EXTRACT_SC_CONTENT:
 					// extract decoded and converted HTTP payload content from response
 					rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
-						final_response_content, final_response_length, final_response_content_is_utf8, m_logger);
+						final_response_content, final_response_length, m_logger);
 					break;
 				case EXTRACT_CS_RAW_CONTENT:
 					// extract raw HTTP payload content from request

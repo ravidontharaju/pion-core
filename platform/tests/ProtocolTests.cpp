@@ -351,6 +351,18 @@ static const char EUC_JP_ENCODED_TEST_CHAR_ARRAY_1[] = {
 
 static const std::string EUC_JP_ENCODED_TEST_STRING_1(EUC_JP_ENCODED_TEST_CHAR_ARRAY_1, sizeof(EUC_JP_ENCODED_TEST_CHAR_ARRAY_1));
 
+// This is what you get when EUC_JP_ENCODED_TEST_STRING_1 is interpreted as UTF-8, and invalid characters are replaced.
+static const char CLEANSED_EUC_JP_ENCODED_TEST_CHAR_ARRAY_1[] = {
+	0x63,								// 'c'
+	0x61,								// 'a'
+	0x74,								// 't'
+	(char)0xC7, (char)0xAD,				// UTF-8 encoding of U+01ED
+	(char)0xEF, (char)0xBF,	(char)0xBD,	// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+	(char)0xCF,	(char)0xA3,				// UTF-8 encoding of U+03E3
+	(char)0xEF, (char)0xBF,	(char)0xBD};// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+
+static const std::string CLEANSED_EUC_JP_ENCODED_TEST_STRING_1(CLEANSED_EUC_JP_ENCODED_TEST_CHAR_ARRAY_1, sizeof(CLEANSED_EUC_JP_ENCODED_TEST_CHAR_ARRAY_1));
+
 // See http://demo.icu-project.org/icu-bin/convexp?conv=ibm-943_P15A-2003 for Shift_JIS tables.
 static const char SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1[] = {
 	0x63,				// 'c'
@@ -361,6 +373,51 @@ static const char SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1[] = {
 	(char)0x82, 0x6A};	// Shift_JIS encoding of U+FF2B (FULLWIDTH LATIN CAPITAL LETTER K)
 
 static const std::string SHIFT_JIS_ENCODED_TEST_STRING_1(SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1, sizeof(SHIFT_JIS_ENCODED_TEST_CHAR_ARRAY_1));
+
+static const char INVALID_UTF8_CHAR_ARRAY_1[] = {
+		0x63,									// 'c'
+		0x61,									// 'a'
+		0x74,									// 't'
+		(char)0xFE,								// can never occur in a valid UTF-8 sequence
+		0x63,									// 'c'
+		0x61,									// 'a'
+		0x74};									// 't'
+
+static const std::string INVALID_UTF8_STRING_1(INVALID_UTF8_CHAR_ARRAY_1, sizeof(INVALID_UTF8_CHAR_ARRAY_1));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_1[] = {
+		0x63,									// 'c'
+		0x61,									// 'a'
+		0x74,									// 't'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x63,									// 'c'
+		0x61,									// 'a'
+		0x74};									// 't'
+
+static const std::string CLEANSED_UTF8_STRING_1(CLEANSED_UTF8_CHAR_ARRAY_1, sizeof(CLEANSED_UTF8_CHAR_ARRAY_1));
+
+static const char INVALID_UTF8_RESOURCE_CHAR_ARRAY[] = {
+		0x2F,									// '/'
+		0x61,									// 'a'
+		0x62,									// 'b'
+		(char)0xFE,								// can never occur in a valid UTF-8 sequence
+		0x63};									// 'c'
+
+static const std::string INVALID_UTF8_RESOURCE_STRING(INVALID_UTF8_RESOURCE_CHAR_ARRAY, sizeof(INVALID_UTF8_RESOURCE_CHAR_ARRAY));
+
+static const char CLEANSED_UTF8_RESOURCE_CHAR_ARRAY[] = {
+		0x2F,									// '/'
+		0x61,									// 'a'
+		0x62,									// 'b'
+		(char)0xEF, (char)0xBF,	(char)0xBD,		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+		0x63};									// 'c'
+
+static const std::string CLEANSED_UTF8_RESOURCE_STRING(CLEANSED_UTF8_RESOURCE_CHAR_ARRAY, sizeof(CLEANSED_UTF8_RESOURCE_CHAR_ARRAY));
+
+static const char UTF8_REPL_CHAR_CHAR_ARRAY[] = {
+	(char)0xEF, (char)0xBF,	(char)0xBD};		// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+
+static const std::string UTF8_REPL_CHAR(UTF8_REPL_CHAR_CHAR_ARRAY, sizeof(UTF8_REPL_CHAR_CHAR_ARRAY));
 
 
 /// fixture class used for testing Protocol "HTTP (full content)"
@@ -562,6 +619,52 @@ BOOST_AUTO_TEST_CASE(checkWithUtf8CharsetEventContainsOriginalContentTerm) {
 
 	// Check that the sc_content Term in the Event was unchanged.
 	BOOST_CHECK_EQUAL(UTF8_ENCODED_TEST_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkWithUtf8CharsetInvalidUtf8BytesInContentAreReplaced) {
+	// Send a Content-Type header with charset=utf-8.
+	generateEvent("Content-Type: text/html; charset=utf-8", INVALID_UTF8_STRING_1);
+
+	// Check that the invalid byte was replaced in the sc-content Term in the Event.
+	BOOST_CHECK_EQUAL(CLEANSED_UTF8_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkWithNoCharsetInvalidUtf8BytesInContentAreReplaced) {
+	// Send a Content-Type header with charset=utf-8.
+	generateEvent("Content-Type: text/html", INVALID_UTF8_STRING_1);
+
+	// Check that the invalid byte was replaced in the sc-content Term in the Event.
+	BOOST_CHECK_EQUAL(CLEANSED_UTF8_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkWithContentEncodingInvalidUtf8BytesInContentAreReplaced) {
+	// Send a Content-Type header with no charset specified and send gzipped content.
+	generateEvent("Content-Type: text/html", gzipEncode(INVALID_UTF8_STRING_1), "gzip");
+
+	// Check that the invalid byte was replaced in the sc-content Term in the Event.
+	BOOST_CHECK_EQUAL(CLEANSED_UTF8_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkWithUnknownContentEncodingInvalidUtf8BytesInContentAreReplaced) {
+	// Content encoded with unknown compression algorithm "smash", containing an invalid UTF-8 byte.
+	const std::string smashed_content = INVALID_UTF8_STRING_1;
+
+	// Send a Content-Encoding header with value "smash".
+	generateEvent("Content-Type: text/html", smashed_content, "smash");
+
+	// Check that the resulting Event has an sc-content Term containing the still encoded content, with the invalid byte replaced.
+	// (Note: an error should be logged - to see it, run the tests with argument '-v'.)
+	BOOST_CHECK_EQUAL(CLEANSED_UTF8_STRING_1, m_e.back()->getString(m_sc_content_term_ref));
+}
+
+BOOST_AUTO_TEST_CASE(checkInvalidUtf8CharsInHeaderAreReplaced) {
+	// Generate an event with a resource in the request that has an invalid UTF-8 character.
+	m_minimal_request = "GET " + INVALID_UTF8_RESOURCE_STRING + " HTTP/1.1" + CRLF + "Host: X" + CRLF + CRLF;
+	generateEvent("Content-Type: text/html", "nothing special");
+
+	// Check that the invalid byte was replaced in the uri-stem Term in the Event.
+	pion::platform::Vocabulary::TermRef	uri_stem_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#uri-stem");
+	BOOST_CHECK_EQUAL(CLEANSED_UTF8_RESOURCE_STRING, m_e.back()->getString(uri_stem_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkWithUtf8CompatCharsetEventContainsOriginalContentTerm) {
@@ -872,8 +975,9 @@ BOOST_AUTO_TEST_CASE(checkWithEucJpCharsetEventContainsEucJpPageTitle) {
 	// Send a Content-Type header with charset=euc-jp.
 	generateEvent("Content-Type: text/html; charset=euc-jp", content_with_title);
 
-	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8, and
+	// that bytes that are invalid UTF-8 were replaced.
+	BOOST_CHECK_EQUAL(CLEANSED_EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 // Contrast with HTTPFullContentProtocol_S::checkMetaHttpEquivContentTypeCharset().
@@ -889,8 +993,9 @@ BOOST_AUTO_TEST_CASE(checkMetaHttpEquivContentTypeCharset) {
 	// Send a Content-Type header with no charset specified.
 	generateEvent("Content-Type: text/html", content);
 
-	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8, and
+	// that bytes that are invalid UTF-8 were replaced.
+	BOOST_CHECK_EQUAL(CLEANSED_EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -949,8 +1054,9 @@ BOOST_AUTO_TEST_CASE(checkMetaTagIgnoredWhenAllowSearchingIsFalse) {
 	// Send a Content-Type header with no charset specified.
 	generateEvent("Content-Type: text/html", content);
 
-	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8, and
+	// that bytes that are invalid UTF-8 were replaced.
+	BOOST_CHECK_EQUAL(CLEANSED_EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkContentTypeHeaderNotIgnoredWhenAllowSearchingIsFalse) {
@@ -990,8 +1096,9 @@ BOOST_AUTO_TEST_CASE(checkAllowSearchingIgnoredWhenAllowUtf8ConversionIsFalse) {
 	// Send a Content-Type header with no charset specified.
 	generateEvent("Content-Type: text/html", content);
 
-	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8.
-	BOOST_CHECK_EQUAL(EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
+	// Check that the title Term in the Event was NOT converted from EUC-JP to UTF-8, and
+	// that bytes that are invalid UTF-8 were replaced.
+	BOOST_CHECK_EQUAL(CLEANSED_EUC_JP_ENCODED_TEST_STRING_1, m_e.back()->getString(m_page_title_term_ref));
 }
 
 BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
@@ -1005,10 +1112,12 @@ BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
 
 	// Make a Protocol with a problematic regex and some content that will cause the regex to fail.
 	// See https://svn.boost.org/trac/boost/ticket/620.
+	// sc-raw-content is used so that boost::regex is used instead of boost::u32regex.
+	// See checkComparisonDisabledAfterRegexException for a test of a boost::u32regex. 
 	m_protocol_ptr = createProtocol(
 		m_config_str_head + 
 		"	<Extract term=\"urn:vocab:clickstream#comment\">"
-		"		<Source>sc-content</Source>"
+		"		<Source>sc-raw-content</Source>"
 		"		<Match>(a*ba*)*c</Match>"
 		"		<Format>$1</Format>"
 		"	</Extract>"
@@ -1107,6 +1216,46 @@ BOOST_AUTO_TEST_CASE(checkCharBasedExtractionRuleRegexAgainstNonAsciiChar) {
 	// Check that the extraction rule succeeded.
 	pion::platform::Vocabulary::TermRef	blob_1_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-1");
 	BOOST_CHECK_EQUAL("[α]", m_e.back()->getString(blob_1_term_ref));
+}
+
+// tests HTTPProtocol::ExtractionRule::process()
+BOOST_AUTO_TEST_CASE(checkNonContentSourceExtractionRules) {
+	// Create a protocol with several extraction rules with source 'query'.
+	m_protocol_ptr = createProtocol(
+		m_config_str_head + 
+		"	<Extract term=\"urn:vocab:test#blob-1\">"
+		"		<Source>query</Source>"
+		"		<Match>\\d</Match>"
+		"		<Name>a</Name>"
+		"	</Extract>"
+		"	<Extract term=\"urn:vocab:test#blob-2\">"
+		"		<Source>query</Source>"
+		"		<Match>\\d.*</Match>"
+		"		<Name>b</Name>"
+		"		<Format>[$0]</Format>"
+		"	</Extract>"
+		"	<Extract term=\"urn:vocab:test#blob-3\">"
+		"		<Source>query</Source>"
+		"		<Match>\\d</Match>"
+		"		<Name>c</Name>"
+		"	</Extract>"
+		+ m_config_str_tail);
+
+	// Generate an event with several query parameters with invalid UTF-8 characters.
+	const std::string FE(1, (char)0xFE); // One byte string where the byte is invalid anywhere in a UTF-8 sequence.
+	m_minimal_request = "GET /xyz?a=Z" + FE + "Z&b=2" + FE + "&c=" + FE + "3 HTTP/1.1" + CRLF + "Host: X" + CRLF + CRLF;
+	generateEvent("Content-Type: text/html", "nothing special");
+
+	// Value for query key 'a' doesn't match rule, so getString() should return false.
+	pion::platform::Vocabulary::TermRef	blob_1_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-1");
+	std::string str;
+	BOOST_CHECK(! m_e.back()->getString(blob_1_term_ref, str));
+
+	// Check that getString() returns the expected values for blob-2 and blob-3, with the invalid characters replaced.
+	pion::platform::Vocabulary::TermRef	blob_2_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-2");
+	BOOST_CHECK_EQUAL("[2" + UTF8_REPL_CHAR + "]", m_e.back()->getString(blob_2_term_ref));
+	pion::platform::Vocabulary::TermRef	blob_3_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:test#blob-3");
+	BOOST_CHECK_EQUAL(UTF8_REPL_CHAR + "3", m_e.back()->getString(blob_3_term_ref));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
