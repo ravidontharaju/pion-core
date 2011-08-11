@@ -60,6 +60,99 @@
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+
+#ifdef PION_EVENT_USE_POOL_ALLOCATORS
+
+	/// default allocator used to handle memory operations for Pion Events
+	typedef PionPoolAllocator<16, 256>			EventAllocator;
+
+#else
+	
+	/// Event allocator type used if the use of memory pools is disabled
+	struct DummyEventAllocator {
+		/**
+		 * allocates a block of memory
+		 *
+		 * @param n minimum size of the new memory block, in bytes
+		 *
+		 * @return void * raw pointer to the new memory block
+		 */
+		inline void *malloc(std::size_t n) { return ::malloc(n); }
+		
+		/**
+		 * deallocates a block of memory
+		 *
+		 * @param ptr raw pointer to the block of memory
+		 * @param n requested size of the memory block, in bytes (actual size may be larger)
+		 */
+		inline void free(void *ptr, std::size_t n) { ::free(ptr); }
+	};
+	
+	/// default allocator used to handle memory operations for Pion Events
+	typedef DummyEventAllocator			EventAllocator;
+
+#endif
+
+
+/// used to perform utf8 validation/cleansing on event content
+class PION_PLATFORM_API EventValidator {
+public:
+	/// exception thrown if u_strFromUTF8 returns an unexpected error when being used for validation only
+	class ValidationException : public PionException {
+	public:
+		ValidationException(const std::string& error_msg)
+			: PionException("An error other than U_INVALID_CHAR_FOUND or U_BUFFER_OVERFLOW_ERROR occurred while doing UTF-8 validation: ", error_msg) {}
+	};
+
+	/**
+	 * Validates UTF-8 data.
+	 * Passing a non-NULL trimmed_len allows efficiently dealing with the case where ptr + len
+	 * is in the middle of a UTF-8 code point (presumably due to truncating).
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer
+	 * @param trimmed_len if not NULL, and data is valid except for a possibly incomplete final code point, gets offset to end of last complete code point 
+	 *
+	 * @return if trimmed_len is NULL, true iff buffer is valid UTF-8, else true iff buffer of length *trimmed_len is valid UTF-8
+	 */
+	static bool isValidUTF8(const char* ptr, const std::size_t len, std::size_t* trimmed_len);
+
+	/**
+	 * Returns an upper bound on the length needed for a string that replaces invalid UTF-8 characters
+	 * in ptr with replacement characters (U+FFFD)
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer
+	 *
+	 * @return upper bound on length of buffer for cleansed data
+	 */
+	static size_t getCleansedUTF8Length(const char* ptr, const std::size_t len);
+
+	/**
+	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
+	 * replacement characters (U+FFFD).
+	 *
+	 * @param blob_alloc memory allocator to use for intermediate buffer
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer 
+	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
+	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
+	 */
+	static void cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+
+	/**
+	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
+	 * replacement characters (U+FFFD).  (Temporary until calls to this function can be replaced 
+	 * with calls to cleanseUTF8(), which allows more efficient memory allocation.)
+	 *
+	 * @param ptr pointer to buffer of UTF-8 data to check
+	 * @param len length of buffer 
+	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
+	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
+	 */
+	static void cleanseUTF8_TEMP(const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+};
+
 	
 ///
 /// Event: an item of structured data that represents something of interest
@@ -1296,101 +1389,9 @@ private:
 	boost::detail::atomic_count		m_references;
 };
 
-	
-#ifdef PION_EVENT_USE_POOL_ALLOCATORS
 
-	/// default allocator used to handle memory operations for Pion Events
-	typedef PionPoolAllocator<16, 256>			EventAllocator;
-
-#else
-	
-	/// Event allocator type used if the use of memory pools is disabled
-	struct DummyEventAllocator {
-		/**
-		 * allocates a block of memory
-		 *
-		 * @param n minimum size of the new memory block, in bytes
-		 *
-		 * @return void * raw pointer to the new memory block
-		 */
-		inline void *malloc(std::size_t n) { return ::malloc(n); }
-		
-		/**
-		 * deallocates a block of memory
-		 *
-		 * @param ptr raw pointer to the block of memory
-		 * @param n requested size of the memory block, in bytes (actual size may be larger)
-		 */
-		inline void free(void *ptr, std::size_t n) { ::free(ptr); }
-	};
-	
-	/// default allocator used to handle memory operations for Pion Events
-	typedef DummyEventAllocator			EventAllocator;
-
-#endif
-	
-	
 /// default data type used for Pion Events
 typedef BasicEvent<char, EventAllocator>	Event;
-	
-	
-class PION_PLATFORM_API EventValidator {
-public:
-	/// exception thrown if u_strFromUTF8 returns an unexpected error when being used for validation only
-	class ValidationException : public PionException {
-	public:
-		ValidationException(const std::string& error_msg)
-			: PionException("An error other than U_INVALID_CHAR_FOUND or U_BUFFER_OVERFLOW_ERROR occurred while doing UTF-8 validation: ", error_msg) {}
-	};
-
-	/**
-	 * Validates UTF-8 data.
-	 * Passing a non-NULL trimmed_len allows efficiently dealing with the case where ptr + len
-	 * is in the middle of a UTF-8 code point (presumably due to truncating).
-	 *
-	 * @param ptr pointer to buffer of UTF-8 data to check
-	 * @param len length of buffer
-	 * @param trimmed_len if not NULL, and data is valid except for a possibly incomplete final code point, gets offset to end of last complete code point 
-	 *
-	 * @return if trimmed_len is NULL, true iff buffer is valid UTF-8, else true iff buffer of length *trimmed_len is valid UTF-8
-	 */
-	static bool isValidUTF8(const char* ptr, const std::size_t len, std::size_t* trimmed_len);
-
-	/**
-	 * Returns an upper bound on the length needed for a string that replaces invalid UTF-8 characters
-	 * in ptr with replacement characters (U+FFFD)
-	 *
-	 * @param ptr pointer to buffer of UTF-8 data to check
-	 * @param len length of buffer
-	 *
-	 * @return upper bound on length of buffer for cleansed data
-	 */
-	static size_t getCleansedUTF8Length(const char* ptr, const std::size_t len);
-
-	/**
-	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
-	 * replacement characters (U+FFFD).
-	 *
-	 * @param blob_alloc memory allocator to use for intermediate buffer
-	 * @param ptr pointer to buffer of UTF-8 data to check
-	 * @param len length of buffer 
-	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
-	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
-	 */
-	static void cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
-
-	/**
-	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
-	 * replacement characters (U+FFFD).  (Temporary until calls to this function can be replaced 
-	 * with calls to cleanseUTF8(), which allows more efficient memory allocation.)
-	 *
-	 * @param ptr pointer to buffer of UTF-8 data to check
-	 * @param len length of buffer 
-	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
-	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
-	 */
-	static void cleanseUTF8_TEMP(const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
-};
 
 
 ///

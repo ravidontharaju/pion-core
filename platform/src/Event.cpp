@@ -62,7 +62,7 @@ bool EventValidator::isValidUTF8(const char* ptr, const std::size_t len, std::si
 				return false;
 			if (! U8_IS_LEAD(ptr[i]))
 				return false; // a trail byte must be preceded by another trail byte or a lead byte
-			int n = U8_COUNT_TRAIL_BYTES(ptr[i]);
+			unsigned int n = U8_COUNT_TRAIL_BYTES(ptr[i]);
 			if (i + n < len - 1)
 				return false; // too many trail bytes
 			if (i + n > len - 1)
