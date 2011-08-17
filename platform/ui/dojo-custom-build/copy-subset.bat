@@ -14,6 +14,7 @@ copy /y %releaseDir%\dijit\templates               ..\dojo-release\dijit\templat
 copy /y %releaseDir%\dijit\themes\*.css            ..\dojo-release\dijit\themes
 xcopy /y /s %releaseDir%\dijit\themes\tundra       ..\dojo-release\dijit\themes\tundra
 copy /y %releaseDir%\dijit\themes\a11y             ..\dojo-release\dijit\themes\a11y
+xcopy /y /s %releaseDir%\dijit\icons               ..\dojo-release\dijit\icons
 
 copy /y %releaseDir%\dojox\gfx                     ..\dojo-release\dojox\gfx
 xcopy /y /s %releaseDir%\dojox\grid\resources      ..\dojo-release\dojox\grid\resources
