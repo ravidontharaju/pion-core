@@ -390,8 +390,7 @@ void DatabaseInserter::connect(void)
 {
 	// open a new database connection
 	PION_LOG_DEBUG(m_logger, "Connecting to database: " << m_database_id);
-	if (!m_database_ptr)
-		m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+	m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
 	PION_ASSERT(m_database_ptr);
 
 	if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {
