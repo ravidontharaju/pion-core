@@ -1024,7 +1024,8 @@ The following are also available, if the need arises.
 	padding: 2px;
 }
 
-.tundra button.add_new {
+.tundra button.add_new,
+.tundra .add_new .dijitButtonNode {
 	background: #ffffff url("../images/button-add-off.png") no-repeat;
 	border: solid #999999 1px;
 	color: #366dba;
@@ -1037,7 +1038,8 @@ The following are also available, if the need arises.
 	padding-right: 2px;
 }
 
-.tundra button.add_new:hover {
+.tundra button.add_new:hover,
+.tundra .add_new.dijitButtonHover .dijitButtonNode {
 	background: #ffffff url("../images/button-add-on.png") no-repeat;
 }
 
