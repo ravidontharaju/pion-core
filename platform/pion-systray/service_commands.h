@@ -20,3 +20,13 @@ DWORD StartPionService();
  */
 DWORD StopPionService();
 
+/**
+ * IsUserAdmin: returns TRUE if current user belongs to Administrators group, FALSE otherwise
+ */
+BOOL IsUserAdmin();
+
+/**
+ * UpdateServiceStatusIcon: queries Pion service state and sets the SysTray icon accordingly
+ * Note: the SysTray icon must already exist
+ */
+void UpdateServiceStatusIcon(HINSTANCE hInstance, HWND hWnd);

@@ -35,6 +35,11 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // remains consistent on all systems.
 IDI_PIONSYSTRAY         ICON                    "pion-systray.ico"
 IDI_SMALL               ICON                    "small.ico"
+IDI_RUNNING             ICON                    "pion-running.ico"
+IDI_STOPPED             ICON                    "pion-stopped.ico"
+IDI_WAITING             ICON                    "pion-waiting.ico"
+IDI_UNKNOWN             ICON                    "pion-unknown.ico"
+IDI_ERROR               ICON                    "pion-error.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

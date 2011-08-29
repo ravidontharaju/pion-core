@@ -1,8 +1,28 @@
 #include "stdafx.h"
 #include "service_commands.h"
+#include "systray.h"
 
 static LPCTSTR strPionServiceName = _T("pion");
 static DWORD dwSCTimeout = 20000; // 20 sec timeout for service commands
+
+
+BOOL IsUserAdmin(VOID)
+{
+	BOOL b;
+	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+	PSID AdministratorsGroup; 
+	b = AllocateAndInitializeSid( &NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
+		DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup); 
+	
+	if (b){
+		if (!CheckTokenMembership( NULL, AdministratorsGroup, &b)) {
+			b = FALSE;
+		} 
+		FreeSid(AdministratorsGroup); 
+	}
+
+	return b;
+}
 
 BOOL GetPionServiceStatus(DWORD& status)
 {
@@ -60,9 +80,6 @@ DWORD StartPionService()
 
     DWORD dwStartTime = GetTickCount();
 
-     // Set the cursor to an hourglass.
-	HCURSOR hCurs = SetCursor(LoadCursor(NULL,IDC_WAIT));
-
 	// send the Stop command
 	SERVICE_STATUS_PROCESS ssp;
 	ZeroMemory(&ssp, sizeof(ssp));
@@ -70,7 +87,6 @@ DWORD StartPionService()
         rc = GetLastError();
 		CloseServiceHandle(hScm);
 		CloseServiceHandle(hService);
-		SetCursor(hCurs);
 		return rc;
     }
 
@@ -79,44 +95,11 @@ DWORD StartPionService()
 	if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
 		(LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
 		rc = GetLastError();
-		SetCursor(hCurs);
 		CloseServiceHandle(hScm);
 		CloseServiceHandle(hService);
 		return rc;
 	}
 
-	// wait for the service to come to the SERVICE_STOPPED state
-	while (ssp.dwCurrentState != SERVICE_RUNNING) {
-		DWORD dwWait = ssp.dwWaitHint / 10;
-		if (dwWait < 1000) {
-			dwWait = 1000;
-		} else if(dwWait > 10000) {
-			dwWait = 10000;
-		}
-
-		// check for timeout
-		if(GetTickCount() - dwStartTime > dwSCTimeout ) {
-			rc = WAIT_TIMEOUT;
-			SetCursor(hCurs);
-			CloseServiceHandle(hScm);
-			CloseServiceHandle(hService);
-			return rc;
-		}
-
-		Sleep(dwWait);
-
-		// query the service status
-        if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
-                 (LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
-			rc = GetLastError();
-			SetCursor(hCurs);
-			CloseServiceHandle(hScm);
-			CloseServiceHandle(hService);
-			return rc;
-        }
-	}
-
-	SetCursor(hCurs);
 	CloseServiceHandle(hScm);
 	CloseServiceHandle(hService);
 
@@ -143,9 +126,6 @@ DWORD StopPionService()
 
     DWORD dwStartTime = GetTickCount();
 
-     // Set the cursor to an hourglass.
-	HCURSOR hCurs = SetCursor(LoadCursor(NULL,IDC_WAIT));
-
 	// send the Stop command
 	SERVICE_STATUS_PROCESS ssp;
 	ZeroMemory(&ssp, sizeof(ssp));
@@ -153,45 +133,66 @@ DWORD StopPionService()
         rc = GetLastError();
 		CloseServiceHandle(hScm);
 		CloseServiceHandle(hService);
-		SetCursor(hCurs);
 		return rc;
     }
 
-	// wait for the service to come to the SERVICE_STOPPED state
-	while (ssp.dwCurrentState != SERVICE_STOPPED) {
-		DWORD dwWait = ssp.dwWaitHint / 10;
-		if (dwWait < 1000) {
-			dwWait = 1000;
-		} else if(dwWait > 10000) {
-			dwWait = 10000;
-		}
-
-		// check for timeout
-		if(GetTickCount() - dwStartTime > dwSCTimeout ) {
-			rc = WAIT_TIMEOUT;
-			SetCursor(hCurs);
-			CloseServiceHandle(hScm);
-			CloseServiceHandle(hService);
-			return rc;
-		}
-
-		Sleep(dwWait);
-
-		DWORD dwBytesNeeded = 0;
-		// query the service status
-        if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
-                 (LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
-			rc = GetLastError();
-			SetCursor(hCurs);
-			CloseServiceHandle(hScm);
-			CloseServiceHandle(hService);
-			return rc;
-        }
-	}
-
-	SetCursor(hCurs);
 	CloseServiceHandle(hScm);
 	CloseServiceHandle(hService);
 
 	return 0;
+}
+
+
+void UpdateServiceStatusIcon(HINSTANCE hInstance, HWND hWnd)
+{
+	// Open the service control manager on local computer w/all access
+	SC_HANDLE hScm = OpenSCManager( NULL, NULL, STANDARD_RIGHTS_REQUIRED | SC_MANAGER_CONNECT);
+	if (hScm == NULL) {
+		SetTrayIcon(NULL, hWnd, IDI_ERROR);
+		return;
+	}
+
+	// Open Pion Service
+	SC_HANDLE hService = OpenService(hScm, strPionServiceName, 
+		STANDARD_RIGHTS_REQUIRED | SERVICE_STOP | SERVICE_QUERY_STATUS );  
+ 	if (hService == NULL) {
+		CloseServiceHandle(hScm);
+		SetTrayIcon(NULL, hWnd, IDI_ERROR);
+		return;
+	}
+
+	DWORD dwBytesNeeded = 0;
+	SERVICE_STATUS_PROCESS ssp;
+	ZeroMemory(&ssp, sizeof(ssp));
+	// query the service status
+	if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
+		(LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
+		CloseServiceHandle(hScm);
+		CloseServiceHandle(hService);
+		SetTrayIcon(NULL, hWnd, IDI_ERROR);
+		return;
+	}
+
+	LPCTSTR lpszIcon = IDI_QUESTION;
+	switch(ssp.dwCurrentState) 
+	{
+	case SERVICE_STOPPED:
+		lpszIcon = MAKEINTRESOURCE(IDI_STOPPED);
+		break;
+	case SERVICE_RUNNING:
+		lpszIcon = MAKEINTRESOURCE(IDI_RUNNING);
+		break;
+	case SERVICE_START_PENDING:
+	case SERVICE_STOP_PENDING:
+		lpszIcon = MAKEINTRESOURCE(IDI_WAITING);
+		break;
+	default:
+		hInstance = NULL; // system icon
+		lpszIcon = IDI_QUESTION;
+		break;
+	}
+
+	SetTrayIcon(hInstance, hWnd, lpszIcon);
+	CloseServiceHandle(hScm);
+	CloseServiceHandle(hService);
 }

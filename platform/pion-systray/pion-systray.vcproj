@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -90,7 +90,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)_$(PlatformName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -199,6 +199,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\systray.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -222,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\systray.h"
+				>
+			</File>
+			<File
 				RelativePath=".\targetver.h"
 				>
 			</File>
@@ -232,11 +240,39 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\pion-error.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\pion-running.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\pion-stopped.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\pion-systray.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\pion-systray.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\pion-unknown.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\pion-waiting.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\common\build\pion.ico"
 				>
 			</File>
 			<File

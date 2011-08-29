@@ -3,9 +3,9 @@
 #include "stdafx.h"
 #include "pion-systray.h"
 #include "service_commands.h"
+#include "systray.h"
 
 #define MAX_LOADSTRING 100
-#define WM_TRAY_ICON_NOTIFY	(WM_USER + 1)
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -37,6 +37,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Perform application initialization:
 	if (!InitInstance (hInstance, nCmdShow))
 	{
+		return FALSE;
+	}
+
+	if(!IsUserAdmin())
+	{
+		MessageBox(NULL, _T("You must have administrative privileges to run Pion Tray app!"), _T("Pion"), 
+			MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
@@ -91,45 +98,12 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
-//
-// Tray Icon create/destroy
-// 
-UINT CreateTrayIcon( HINSTANCE hInstance, HWND hWnd )
-{
-    NOTIFYICONDATA niData; 
-    ZeroMemory(&niData,sizeof(NOTIFYICONDATA));
-
-	niData.cbSize = sizeof(niData);
-	niData.uFlags = NIF_ICON | NIF_MESSAGE;
-	niData.hWnd = hWnd;
-	niData.uCallbackMessage = WM_TRAY_ICON_NOTIFY;
-
-	HICON hIcon = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_SMALL), IMAGE_ICON, 
-			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-
-	niData.hIcon = hIcon;
-
-	BOOL rc = Shell_NotifyIcon(NIM_ADD,&niData);
-	return rc;
-}
-
-void DestroyTrayIcon(HWND hWnd)
-{
-    NOTIFYICONDATA niData; 
-    ZeroMemory(&niData,sizeof(NOTIFYICONDATA));
-
-	niData.cbSize = sizeof(niData);
-	niData.uFlags = 0;
-	niData.hWnd = hWnd;
-
-	Shell_NotifyIcon(NIM_DELETE,&niData);
-}
 
 // Display a "error" message box with given text and string text for the system error
 void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error)
 {
-	TCHAR szBuff[16*1024];
-	TCHAR szMsg[32*1024];
+	TCHAR szBuff[4*1024];
+	TCHAR szMsg[6*1024];
 
 	if(lpszText) {
 		_tcscpy(szMsg, lpszText);
@@ -244,10 +218,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   CreateTrayIcon(hInstance, hWnd);
+   CreateTrayIcon(hInstance,IDI_QUESTION, hWnd);
+   UpdateServiceStatusIcon(hInstance, hWnd);
+   SetTimer(hWnd, 0, 1000, NULL);
    ShowWindow(hWnd, SW_HIDE);
    UpdateWindow(hWnd);
-
 
    return TRUE;
 }
@@ -306,6 +281,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ShowContextMenu(hWnd);
 			break;
 		}
+		break;
+	case WM_TIMER:
+		UpdateServiceStatusIcon(hInst, hWnd);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
