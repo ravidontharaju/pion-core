@@ -69,6 +69,10 @@ bool EventValidator::isValidUTF8(const char* ptr, const std::size_t len, std::si
 				offset = i;   // back up to just before the lead byte
 			// i + n == len - 1 ==> offset OK
 		}
+		if (offset == 0) {
+			*trimmed_len = 0;
+			return true;
+		}
 	}
 
 	// Test input to see if it's valid UTF-8.

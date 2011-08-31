@@ -105,6 +105,16 @@ static const char CLEANSED_UTF8_CHAR_ARRAY_4[] = {
 
 static const std::string CLEANSED_UTF8_STRING_4(CLEANSED_UTF8_CHAR_ARRAY_4, sizeof(CLEANSED_UTF8_CHAR_ARRAY_4));
 
+static const char INVALID_UTF8_CHAR_ARRAY_5[] = {
+		(char)0xC8};							// valid lead byte, requires one trail byte.
+
+static const std::string INVALID_UTF8_STRING_5(INVALID_UTF8_CHAR_ARRAY_5, sizeof(INVALID_UTF8_CHAR_ARRAY_5));
+
+static const char CLEANSED_UTF8_CHAR_ARRAY_5[] = {
+		(char)0xEF, (char)0xBF,	(char)0xBD};	// UTF-8 encoding of U+FFFD (REPLACEMENT CHARACTER)
+
+static const std::string CLEANSED_UTF8_STRING_5(CLEANSED_UTF8_CHAR_ARRAY_5, sizeof(CLEANSED_UTF8_CHAR_ARRAY_5));
+
 
 class EventTests_F {
 public:
@@ -492,6 +502,7 @@ BOOST_AUTO_TEST_CASE(testIsValidUTF8) {
 	std::size_t trimmed_len;
 	BOOST_CHECK(EventValidator::isValidUTF8(ASCII_STRING_1.c_str(), ASCII_STRING_1.size(), &trimmed_len));
 	BOOST_CHECK_EQUAL(trimmed_len, ASCII_STRING_1.size());
+	BOOST_CHECK(EventValidator::isValidUTF8(ASCII_STRING_1.c_str(), ASCII_STRING_1.size(), NULL));
 
 	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_1.c_str(), INVALID_UTF8_STRING_1.size(), NULL));
 	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_2.c_str(), INVALID_UTF8_STRING_2.size(), NULL));
@@ -522,9 +533,20 @@ BOOST_AUTO_TEST_CASE(testIsValidUTF8) {
 	BOOST_CHECK_EQUAL(trimmed_len, 4);
 	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_4.c_str(), 5, &trimmed_len));
 
+	// Test with a sequence that has only an incomplete code point.
+	BOOST_CHECK(EventValidator::isValidUTF8(INVALID_UTF8_STRING_5.c_str(), INVALID_UTF8_STRING_5.size(), &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 0);
+	BOOST_CHECK(! EventValidator::isValidUTF8(INVALID_UTF8_STRING_5.c_str(), INVALID_UTF8_STRING_5.size(), NULL));
+
 	// Test empty string.
 	BOOST_CHECK(EventValidator::isValidUTF8("", 0, &trimmed_len));
 	BOOST_CHECK_EQUAL(trimmed_len, 0);
+	BOOST_CHECK(EventValidator::isValidUTF8("", 0, NULL));
+
+	// Test length 0 for non-empty string.
+	BOOST_CHECK(EventValidator::isValidUTF8(ASCII_STRING_1.c_str(), 0, &trimmed_len));
+	BOOST_CHECK_EQUAL(trimmed_len, 0);
+	BOOST_CHECK(EventValidator::isValidUTF8(ASCII_STRING_1.c_str(), 0, NULL));
 }
 
 BOOST_AUTO_TEST_CASE(testGetCleansedUTF8Length) {
@@ -564,4 +586,8 @@ BOOST_AUTO_TEST_CASE(testCleanseUTF8) {
 	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_4.c_str(), INVALID_UTF8_STRING_4.size(), buf, &actual_len);
 	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_4.size());
 	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_4.c_str(), actual_len) == 0);
+
+	EventValidator::cleanseUTF8_TEMP(INVALID_UTF8_STRING_5.c_str(), INVALID_UTF8_STRING_5.size(), buf, &actual_len);
+	BOOST_CHECK_EQUAL(actual_len, CLEANSED_UTF8_STRING_5.size());
+	BOOST_CHECK(strncmp(buf, CLEANSED_UTF8_STRING_5.c_str(), actual_len) == 0);
 }
