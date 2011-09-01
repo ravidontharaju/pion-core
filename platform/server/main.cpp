@@ -25,6 +25,7 @@
 #endif
 
 #include <pion/PionConfig.hpp>
+#include <pion/PionProcess.hpp>
 
 #ifdef PION_HAVE_SSL
 	#include <openssl/ssl.h>
@@ -40,7 +41,6 @@
 #include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include "PlatformConfig.hpp"
-#include "../../net/utils/ShutdownManager.hpp"
 
 #ifdef PION_STATIC_LINKING
 	#include <pion/PionPlugin.hpp>
@@ -82,7 +82,7 @@ int parse_args(int argc, char *argv[], bool& run_as_daemon, bool& lock_memory, s
 				lock_memory = true;
 			} else if (argv[argnum][1] == 'c' && argv[argnum][2] == '\0' && argnum+1 < argc) {
 				platform_config_file = boost::filesystem::system_complete(argv[++argnum]).normalize().file_string();
-			} else if (strncmp(argv[argnum], "--version", 9) == 0) {
+			} else if (strncmp(argv[argnum], "--version", 9) == 0 || strncmp(argv[argnum], "-version", 8) == 0) {
 				std::cout << "pion version " << PION_VERSION << std::endl;
 				return 1;
 			} else {
@@ -122,7 +122,7 @@ void WINAPI service_control_handler( DWORD dwCtrl )
 	case SERVICE_CONTROL_SHUTDOWN:
 		report_service_status(SERVICE_STOP_PENDING, NO_ERROR, 0);
 		// Signal the Pion to shutdown.
-		main_shutdown_manager.shutdown();
+		PionProcess::shutdown();
 		return;
 
 	case SERVICE_CONTROL_INTERROGATE: 
@@ -185,12 +185,6 @@ void WINAPI SvcMain( DWORD dwArgc, LPTSTR *lpszArgv )
 	bool run_as_daemon = false;
 	bool lock_memory = false;
 	
-#ifdef _MSC_VER
-	std::string platform_config_file("config\\platform.xml");
-#else
-	std::string platform_config_file("/etc/pion/platform.xml");
-#endif
-
 	run( true, g_lock_memory, g_platform_config_file );
 
 	report_service_status( SERVICE_STOPPED, NO_ERROR, 0 );
@@ -253,18 +247,7 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 		daemonize_server();
 	
 	// setup signal handler
-#ifdef _MSC_VER
-	SetConsoleCtrlHandler(console_ctrl_handler, TRUE);
-#else
-	signal(SIGPIPE, SIG_IGN);
-	signal(SIGCHLD, SIG_IGN);
-	signal(SIGTSTP, SIG_IGN);
-	signal(SIGTTOU, SIG_IGN);
-	signal(SIGTTIN, SIG_IGN);
-	signal(SIGHUP, SIG_IGN);
-	signal(SIGINT, handle_signal);
-	signal(SIGTERM, handle_signal);
-#endif
+	PionProcess::initialize();
 		
 #ifdef PION_HAVE_SSL
 	// initialize the OpenSSL library
@@ -292,7 +275,7 @@ int run (bool run_as_daemon, bool lock_memory, const std::string& platform_confi
 				report_service_status( SERVICE_RUNNING, NO_ERROR, 0 );
 #endif
 			// wait for shutdown
-			main_shutdown_manager.wait();
+			PionProcess::wait_for_shutdown();
 		} catch (std::exception& e) {
 			PION_LOG_FATAL(pion_main_log, e.what());
 		}

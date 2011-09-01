@@ -188,23 +188,6 @@ public:
 	
 private:
 
-	/**
-	 * finds an identifier within a system credentials file (users or groups)
-	 *
-	 * @param name descriptive name to lookup (user or group name, may be id)
-	 * @param file system credentials file to look within
-	 *
-	 * @return boost::int32_t identifier found, or -1 if none found
-	 */
-	boost::int32_t findSystemId(const std::string& name, const std::string& file);
-
-	/// calculates the user id based upon the user configuration parameter
-	void parseUser(void);
-	
-	/// calculates the group id based upon the group configuration parameter
-	void parseGroup(void);
-
-
 	/// default name of the vocabulary config file
 	static const std::string		DEFAULT_CONFIG_FILE;
 
@@ -259,12 +242,6 @@ private:
 	/// name of the multithread branches element for Pion XML config files
 	static const std::string		MULTITHREAD_BRANCHES_ELEMENT_NAME;
 
-	/// name of the User element for Pion XML config files
-	static const std::string		USER_ELEMENT_NAME;
-
-	/// name of the Group element for Pion XML config files
-	static const std::string		GROUP_ELEMENT_NAME;
-
 	
 	/// global manager of Vocabularies
 	pion::platform::VocabularyManager		m_vocab_mgr;
@@ -293,18 +270,6 @@ private:
 	/// directory in which database files are stored
 	std::string								m_data_directory;
 	
-	/// name of the user that the server should use
-	std::string								m_user_name;
-
-	/// name of the group that the server should use
-	std::string								m_group_name;
-
-	/// id of the user that the server should use
-	boost::int32_t							m_user_id;
-
-	/// id of the group that the server should use
-	boost::int32_t							m_group_id;
-
 	/// collection of plugin paths that were successfully added
 	std::vector<std::string>				m_plugin_paths;
 	

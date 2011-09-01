@@ -20,15 +20,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
+#include <pion/PionAdminRights.hpp>
 #include "PlatformConfig.hpp"
-#ifndef _MSC_VER
-	#include <fstream>
-	#include <unistd.h>
-	#include <sys/types.h>
-	#include <boost/regex.hpp>
-	#include <boost/tokenizer.hpp>
-	#include <boost/lexical_cast.hpp>
-#endif
 
 using namespace pion::net;
 using namespace pion::platform;
@@ -58,8 +51,6 @@ const std::string			PlatformConfig::DEBUG_MODE_ELEMENT_NAME = "DebugMode";
 const std::string			PlatformConfig::REACTION_ENGINE_ELEMENT_NAME = "ReactionEngine";
 const std::string			PlatformConfig::MAX_THREADS_ELEMENT_NAME = "MaxThreads";
 const std::string			PlatformConfig::MULTITHREAD_BRANCHES_ELEMENT_NAME = "MultithreadBranches";
-const std::string			PlatformConfig::USER_ELEMENT_NAME = "User";
-const std::string			PlatformConfig::GROUP_ELEMENT_NAME = "Group";
 	
 		
 // PlatformConfig member functions
@@ -70,102 +61,9 @@ PlatformConfig::PlatformConfig(void)
 	m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 	m_reaction_engine(m_vocab_mgr, m_codec_factory, m_protocol_factory, m_database_mgr),
 	m_service_mgr(m_vocab_mgr, *this), m_user_mgr_ptr(new UserManager),
-	m_user_id(-1), m_group_id(-1), m_debug_mode(false)
+	m_debug_mode(false)
 {
 	setLogger(PION_GET_LOGGER("pion.server.PlatformConfig"));
-}
-
-boost::int32_t PlatformConfig::findSystemId(const std::string& name,
-	const std::string& file)
-{
-#ifdef _MSC_VER
-	return -1;
-#else
-
-	// check if name is the system id
-	const boost::regex just_numbers("\\d+");
-	if (boost::regex_match(name, just_numbers)) {
-		return boost::lexical_cast<boost::int32_t>(name);
-	}
-
-	// open system file
-	std::ifstream system_file(file.c_str());
-	if (! system_file.is_open()) {
-		PION_LOG_ERROR(m_logger, "Unable to open " << file << " file");
-		return -1;
-	}
-
-	// find id in system file
-	typedef boost::tokenizer<boost::char_separator<char> > Tok;
-	boost::char_separator<char> sep(":");
-	std::string line;
-	boost::int32_t system_id = -1;
-
-	while (std::getline(system_file, line, '\n')) {
-		Tok tokens(line, sep);
-		Tok::const_iterator token_it = tokens.begin();
-		if (token_it != tokens.end() && *token_it == name) {
-			// found line matching name
-			if (++token_it != tokens.end() && ++token_it != tokens.end()
-				&& boost::regex_match(*token_it, just_numbers))
-			{
-				// found id as third parameter
-				system_id = boost::lexical_cast<boost::int32_t>(*token_it);
-			} else {
-				PION_LOG_ERROR(m_logger, "Unexpected formatting in "
-					<< file << " file");
-			}
-			break;
-		}
-	}
-
-	if (system_id == -1) {
-		PION_LOG_ERROR(m_logger, "Unable to find " << name
-			<< " in " << file << " file");
-	}
-
-	return system_id;
-#endif
-}
-
-void PlatformConfig::parseUser(void)
-{
-#ifdef _MSC_VER
-	PION_LOG_ERROR(m_logger, "Windows not supported for user masquerading: " << m_user_name);
-#else
-	m_user_id = findSystemId(m_user_name, "/etc/passwd");
-	if (m_user_id != -1) {
-		if ( seteuid(m_user_id) != 0 ) {
-			PION_LOG_ERROR(m_logger, "Unable to run as user "
-				<< m_user_name << " (" << m_user_id << ")");
-		} else {
-			PION_LOG_INFO(m_logger, "Running as user "
-				<< m_user_name << " (" << m_user_id << ")");
-		}
-	} else {
-		m_user_id = geteuid();
-	}
-#endif
-}
-
-void PlatformConfig::parseGroup(void)
-{
-#ifdef _MSC_VER
-	PION_LOG_ERROR(m_logger, "Windows not supported for group masquerading: " << m_group_name);
-#else
-	m_group_id = findSystemId(m_group_name, "/etc/group");
-	if (m_group_id != -1) {
-		if ( setegid(m_group_id) != 0 ) {
-			PION_LOG_ERROR(m_logger, "Unable to run as group "
-				<< m_group_name << " (" << m_group_id << ")");
-		} else {
-			PION_LOG_INFO(m_logger, "Running as group "
-				<< m_group_name << " (" << m_group_id << ")");
-		}
-	} else {
-		m_group_id = getegid();
-	}
-#endif
 }
 
 void PlatformConfig::openConfigFile(void)
@@ -202,17 +100,40 @@ void PlatformConfig::openConfigFile(void)
 	// get group to run Pion as
 	// MUST BE PERFORMED BEFORE CHANGING USER
 	// (since changing user may downgrade credentials)
-	if (ConfigManager::getConfigOption(GROUP_ELEMENT_NAME, m_group_name,
+	std::string tempStr;
+	if (ConfigManager::getConfigOption("Group", tempStr,
 		m_config_node_ptr->children))
 	{
-		parseGroup();
+#ifdef _MSC_VER
+		PION_LOG_ERROR(m_logger, "Windows not supported for group masquerading: " << tempStr);
+#else
+		long group_id = PionAdminRights::runAsGroup(tempStr);
+		if (group_id >= 0) {
+			PION_LOG_INFO(m_logger, "Running as group "
+				<< tempStr << " (" << group_id << ")");
+		} else {
+			PION_LOG_ERROR(m_logger, "Unable to run as group "
+				<< tempStr << " (" << group_id << ")");
+		}
+#endif
 	}
 	
 	// get user to run Pion as
-	if (ConfigManager::getConfigOption(USER_ELEMENT_NAME, m_user_name,
+	if (ConfigManager::getConfigOption("User", tempStr,
 		m_config_node_ptr->children))
 	{
-		parseUser();
+#ifdef _MSC_VER
+		PION_LOG_ERROR(m_logger, "Windows not supported for user masquerading: " << tempStr);
+#else
+		long user_id = PionAdminRights::runAsUser(tempStr);
+		if (user_id >= 0) {
+			PION_LOG_INFO(m_logger, "Running as user "
+				<< tempStr << " (" << user_id << ")");
+		} else {
+			PION_LOG_ERROR(m_logger, "Unable to run as user "
+				<< tempStr << " (" << user_id << ")");
+		}
+#endif
 	}
 
 	// Step through plugin path definitions
