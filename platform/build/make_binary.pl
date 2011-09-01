@@ -71,6 +71,7 @@ if ($PLATFORM =~ /^win/i) {
 	}
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
 	$PIONDB_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "piondb.exe");
+	$SYSTRAY_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-systray.exe");
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
@@ -239,7 +240,7 @@ copy(File::Spec->catfile( ("platform", "build"), "httpbl.py"),
 copy($SERVER_EXE, $PACKAGE_DIR);
 copy($PIONDB_EXE, $PACKAGE_DIR);
 
-# copy python26.dll for windows	builds
+# copy python26.dll and pion-systray.exe for windows builds
 if ($PLATFORM =~ /^win/i) {
 	if ($PLATFORM =~ /^win64/i) {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty", "x64"), "python26.dll"),
@@ -248,6 +249,7 @@ if ($PLATFORM =~ /^win/i) {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty"), "python26.dll"),
 			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
 	}
+	copy($SYSTRAY_EXE, $PACKAGE_DIR);
 }
 
 # platform-specific finishing touches

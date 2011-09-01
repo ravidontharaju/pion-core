@@ -259,6 +259,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestPlugins", "common\TestP
 		{CD11B3D6-1296-45F4-B924-034CC103D626} = {CD11B3D6-1296-45F4-B924-034CC103D626}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pion-systray", "platform\pion-systray\pion-systray.vcproj", "{47B90755-EFC9-4183-9C2D-221623E97696}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_DLL_full|Win32 = Debug_DLL_full|Win32
@@ -1158,6 +1160,28 @@ Global
 		{A4803007-06EC-4F2C-975B-61E49CDC87C5}.Release_DLL|x64.Build.0 = Release_DLL|x64
 		{A4803007-06EC-4F2C-975B-61E49CDC87C5}.Release_static|Win32.ActiveCfg = Release_DLL_full|Win32
 		{A4803007-06EC-4F2C-975B-61E49CDC87C5}.Release_static|x64.ActiveCfg = Release_DLL_full|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL_full|Win32.ActiveCfg = Debug_DLL_full|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL_full|Win32.Build.0 = Debug_DLL_full|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL_full|x64.ActiveCfg = Debug_DLL_full|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL_full|x64.Build.0 = Debug_DLL_full|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_DLL|x64.ActiveCfg = Debug_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_static|Win32.ActiveCfg = Debug_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_static|x64.ActiveCfg = Debug_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Debug_static|x64.Build.0 = Debug_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL_full|Win32.ActiveCfg = Release_DLL_full|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL_full|Win32.Build.0 = Release_DLL_full|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL_full|x64.ActiveCfg = Release_DLL_full|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL_full|x64.Build.0 = Release_DLL_full|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL|Win32.ActiveCfg = Debug_DLL|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL|Win32.Build.0 = Debug_DLL|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL|x64.ActiveCfg = Release_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_DLL|x64.Build.0 = Release_DLL|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_static|Win32.ActiveCfg = Release_static|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_static|Win32.Build.0 = Release_static|Win32
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_static|x64.ActiveCfg = Release_static|x64
+		{47B90755-EFC9-4183-9C2D-221623E97696}.Release_static|x64.Build.0 = Release_static|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

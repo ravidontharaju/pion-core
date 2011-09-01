@@ -18,7 +18,12 @@ IF EXIST %INSTALL_PRJ% del %INSTALL_PRJ%
 copy %INSTALL_PRJ%.tmpl %INSTALL_PRJ%
 
 copy platform\build\win32\config\*.* %1\config\
+
+REM A hack to make Advanced Installer happy - need to keep references to these files in AI project
+REM in order to configure install options (startup menu, etc)
 copy %1\pion.exe platform\build\win32\pion.exe
+copy %1\pion.exe platform\build\win32\pion-systray.exe
+
 move "%1\config" "%1\config-new"
 
 %AI_EXE% /edit %INSTALL_PRJ% /SetVersion %2

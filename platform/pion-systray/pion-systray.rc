@@ -33,7 +33,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_PIONSYSTRAY         ICON                    "pion-systray.ico"
+IDI_PIONSYSTRAY         ICON                    "pion.ico"
 IDI_SMALL               ICON                    "small.ico"
 IDI_RUNNING             ICON                    "pion-running.ico"
 IDI_STOPPED             ICON                    "pion-stopped.ico"
