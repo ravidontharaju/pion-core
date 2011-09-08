@@ -126,19 +126,10 @@ void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error)
 //
 // Shows the context menu for the tray icon and handles the menu commands
 //
-void ShowContextMenu(HWND hWnd)
+void ShowContextMenu(HWND hWnd, POINT pos)
 {
 	// load menu
 	HMENU hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDM_TRAY_CONTEXT));
-
-	// get the tray icon coords
-	NOTIFYICONIDENTIFIER niid;
-	RECT rect;
-	ZeroMemory(&niid, sizeof(niid));
-	ZeroMemory(&rect, sizeof(rect));
-	niid.cbSize = sizeof(niid);
-	niid.hWnd = hWnd;
-	Shell_NotifyIconGetRect(&niid, &rect);
 
 	// get the current state of Pion Service to enable/disable menu items
 	DWORD status = 0; 
@@ -167,7 +158,7 @@ void ShowContextMenu(HWND hWnd)
 
 	// display the menu, take the command, and destroy the menu
 	SetForegroundWindow(hWnd);
-	UINT nCmd = (UINT)TrackPopupMenu(hContextMenu, TPM_RETURNCMD, rect.left, rect.top, 0, hWnd, NULL);
+	UINT nCmd = (UINT)TrackPopupMenu(hContextMenu, TPM_RETURNCMD, pos.x, pos.y, 0, hWnd, NULL);
 	DestroyMenu(hMenu);
 
 	// process commands
@@ -278,7 +269,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CONTEXTMENU:
 		case WM_RBUTTONUP:
 		case WM_LBUTTONUP:
-			ShowContextMenu(hWnd);
+			POINT pos;
+			DWORD messagepos = ::GetMessagePos();
+			pos.x = GET_X_LPARAM(messagepos);
+			pos.y = GET_Y_LPARAM(messagepos);
+			ShowContextMenu(hWnd, pos);
 			break;
 		}
 		break;
