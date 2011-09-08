@@ -170,7 +170,21 @@ public:
 		EmptyPluginElementException(const std::string& plugin_id)
 			: PionException("Plug-in configuration does not contain a \"plugin\" element: ", plugin_id) {}
 	};
+
+	/// exception thrown if the directory configured is not found
+	class DirectoryNotFoundException : public PionException {
+	public:
+		DirectoryNotFoundException(const std::string& element, const std::string& dir)
+			: PionException(std::string("Configuration directory ") + element + std::string(" not found: "), dir) {}
+	};
 	
+	/// exception thrown if the directory configuration option is not a directory
+	class NotADirectoryException : public PionException {
+	public:
+		NotADirectoryException(const std::string& element, const std::string& dir)
+			: PionException(std::string("Configuration ") + element + std::string(" is not a directory: "), dir) {}
+	};
+
 	
 	/// virtual destructor
 	virtual ~ConfigManager() { closeConfigFile(); }
@@ -517,6 +531,18 @@ public:
 	std::string resolveRelativeDataPath(const std::string& orig_path);
 
 	/**
+	 * verifies that a directory config parameter is valid and updates relative paths
+	 *
+	 * @param element name of the XML config element being verified
+	 * @param dir value of the XML config element (may be relative)
+	 */
+	void verifyDirectory(const std::string& element, std::string& dir);
+
+	/// looks for User and Group elements in the configuration file and changes
+	/// the process permissions appropriately if found
+	void runAsUserGroup(void);
+
+	/**
 	 * determines whether a User has permission to create a new configuration node
 	 *
 	 * @param permission_config_ptr the Permission node of the appropriate type from the User's configuration
@@ -578,7 +604,7 @@ public:
 		// ConfigManager will only be granted if the User has "Admin" permission.
 		return "";
 	}
-
+	
 
 protected:
 	

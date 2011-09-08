@@ -20,7 +20,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <pion/PionPlugin.hpp>
 #include <pion/PionLogger.hpp>
-#include <pion/PionAdminRights.hpp>
 #include "PlatformConfig.hpp"
 
 using namespace pion::net;
@@ -77,6 +76,9 @@ void PlatformConfig::openConfigFile(void)
 	// open the file and find the "config" root element
 	ConfigManager::openConfigFile();
 
+	// check for run as user/group in config file
+	ConfigManager::runAsUserGroup();
+
 	#if defined(PION_USE_LOG4CXX) || defined(PION_USE_LOG4CPLUS) || defined(PION_USE_LOG4CPP)
 	// configure logging using LogConfig file (if defined)
 	if (ConfigManager::getConfigOption(LOG_CONFIG_ELEMENT_NAME, m_log_config_file,
@@ -96,45 +98,6 @@ void PlatformConfig::openConfigFile(void)
 	appender->setName("CircularBufferAppender");
 	log4cplus::Logger::getRoot().addAppender(appender);
 	#endif
-
-	// get group to run Pion as
-	// MUST BE PERFORMED BEFORE CHANGING USER
-	// (since changing user may downgrade credentials)
-	std::string tempStr;
-	if (ConfigManager::getConfigOption("Group", tempStr,
-		m_config_node_ptr->children))
-	{
-#ifdef _MSC_VER
-		PION_LOG_ERROR(m_logger, "Windows not supported for group masquerading: " << tempStr);
-#else
-		long group_id = PionAdminRights::runAsGroup(tempStr);
-		if (group_id >= 0) {
-			PION_LOG_INFO(m_logger, "Running as group "
-				<< tempStr << " (" << group_id << ")");
-		} else {
-			PION_LOG_ERROR(m_logger, "Unable to run as group "
-				<< tempStr << " (" << group_id << ")");
-		}
-#endif
-	}
-	
-	// get user to run Pion as
-	if (ConfigManager::getConfigOption("User", tempStr,
-		m_config_node_ptr->children))
-	{
-#ifdef _MSC_VER
-		PION_LOG_ERROR(m_logger, "Windows not supported for user masquerading: " << tempStr);
-#else
-		long user_id = PionAdminRights::runAsUser(tempStr);
-		if (user_id >= 0) {
-			PION_LOG_INFO(m_logger, "Running as user "
-				<< tempStr << " (" << user_id << ")");
-		} else {
-			PION_LOG_ERROR(m_logger, "Unable to run as user "
-				<< tempStr << " (" << user_id << ")");
-		}
-#endif
-	}
 
 	// Step through plugin path definitions
 	m_plugin_paths.clear();

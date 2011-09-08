@@ -18,6 +18,7 @@
 //
 
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/PionAdminRights.hpp>
 #include <boost/filesystem/operations.hpp>
 
 
@@ -434,6 +435,58 @@ std::string ConfigManager::resolveRelativeDataPath(const std::string& orig_path)
 	return new_path.file_string();
 }
 
+void ConfigManager::verifyDirectory(const std::string& element, std::string& dir)
+{
+	// normalize potentially relative path
+	dir = ConfigManager::resolveRelativePath(dir);
+
+	// make sure that the directory exists
+	if (! boost::filesystem::exists(dir) )
+		throw DirectoryNotFoundException(element, dir);
+		
+	// make sure it's a directory
+	if (! boost::filesystem::is_directory(dir) )
+		throw NotADirectoryException(element, dir);
+}
+
+void ConfigManager::runAsUserGroup(void)
+{
+	// get group to run Pion as
+	// MUST BE PERFORMED BEFORE CHANGING USER
+	// (since changing user may downgrade credentials)
+	std::string tempStr;
+	if (getConfigOption("Group", tempStr, m_config_node_ptr->children)) {
+#ifdef _MSC_VER
+		PION_LOG_ERROR(m_logger, "Windows not supported for group masquerading: " << tempStr);
+#else
+		long group_id = PionAdminRights::runAsGroup(tempStr);
+		if (group_id >= 0) {
+			PION_LOG_INFO(m_logger, "Running as group "
+				<< tempStr << " (" << group_id << ")");
+		} else {
+			PION_LOG_ERROR(m_logger, "Unable to run as group "
+				<< tempStr << " (" << group_id << ")");
+		}
+#endif
+	}
+	
+	// get user to run Pion as
+	if (getConfigOption("User", tempStr, m_config_node_ptr->children)) {
+#ifdef _MSC_VER
+		PION_LOG_ERROR(m_logger, "Windows not supported for user masquerading: " << tempStr);
+#else
+		long user_id = PionAdminRights::runAsUser(tempStr);
+		if (user_id >= 0) {
+			PION_LOG_INFO(m_logger, "Running as user "
+				<< tempStr << " (" << user_id << ")");
+		} else {
+			PION_LOG_ERROR(m_logger, "Unable to run as user "
+				<< tempStr << " (" << user_id << ")");
+		}
+#endif
+	}
+}
+
 bool ConfigManager::getNodeId(xmlNodePtr config_node, std::string& node_id)
 {
 	node_id = "";
@@ -760,6 +813,5 @@ void ConfigManager::removePluginConfig(const std::string& plugin_name,
 	saveConfigFile();
 }
 
-	
 }	// end namespace platform
 }	// end namespace pion
