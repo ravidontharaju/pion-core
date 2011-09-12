@@ -1,3 +1,15 @@
+Version 4.0.7 (2011-09-12)
+==========================
+
+* HTTPProtocol - fixed rare segmentation fault when content is truncated (1166)
+* HTTPProtocol - enforce that request and response content is UTF-8 (1160)
+* Database Output Reactor - multiple threads for concurrent bulk inserts (1159)
+* Database Output Reactor - automatically recover from lost connections (1167)
+* Event string terms now automatically ensure that content is UTF-8 (1158)
+* Fixed pget --addkey server timeout regression (1163)
+* Fixed pget --removekey error reporting failures (1164)
+
+
 Version 4.0.5 (2011-06-24)
 ==========================
 
