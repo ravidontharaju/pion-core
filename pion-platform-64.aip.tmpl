@@ -9,13 +9,14 @@
     <ROW Property="ARPNOREPAIR" Value="1"/>
     <ROW Property="ARPSYSTEMCOMPONENT" Value="1"/>
     <ROW Property="BannerBitmap" MultiBuildValue="DefaultBuild:default_banner.bmp" Type="1"/>
-    <ROW Property="CTRLS" Value="1"/>
+    <ROW Property="CTRLS" Value="3"/>
     <ROW Property="DialogBitmap" MultiBuildValue="DefaultBuild:default_dialog.bmp" Type="1"/>
     <ROW Property="Manufacturer" Value="Atomic Labs" ValueLocId="*"/>
     <ROW Property="ProductCode" Value="1033:{8C9712B1-631F-46F9-8E1C-F9E845FD6128} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pion Core" ValueLocId="*"/>
     <ROW Property="ProductVersion" Value="1.0.0"/>
+    <ROW Property="RUNAPPLICATION" Value="1" Type="4"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND;UPGRADE_ENTERPRISE_EDITION;PION_32_PRESENT;PION_CORE_32_PRESENT"/>
     <ROW Property="UpgradeCode" Value="{3653880B-B0CD-4D80-9229-9A64AFA7E0C1}"/>
     <ROW Property="VIEWREADME" Value="1" Type="4"/>
@@ -111,6 +112,7 @@
     <ROW Action="AI_DEL_EMPTY_SHORTCUTDIR" Type="3073" Source="aicustact.dll" Target="DeleteEmptyDirectory"/>
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
     <ROW Action="AI_GetArpIconPath" Type="1" Source="aicustact.dll" Target="GetArpIconPath"/>
+    <ROW Action="AI_LaunchApp" Type="1" Source="aicustact.dll" Target="http://localhost:8888"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
     <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
     <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
@@ -185,7 +187,7 @@
     <ROW Registry="UninstallString" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName]" Name="UninstallString" Value="[AI_UNINSTALLER] /x [ProductCode]" Component_="AI_CustomARPName"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServCtrlComponent">
-    <ROW ServiceControl="pion.exe" Name="Pion" Event="160" Wait="1" Component_="pion.exe"/>
+    <ROW ServiceControl="pion.exe" Name="Pion" Event="161" Wait="1" Component_="pion.exe"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiServInstComponent">
     <ROW ServiceInstall="pion.exe" Name="Pion" DisplayName="Atomic Labs Pion Core" ServiceType="16" StartType="3" ErrorControl="32769" Arguments="-D -c &quot;[APPDIR]config\platform.xml&quot;" Component_="pion.exe" Description="Provides data capture, processing and integration capabilities for analytics."/>
