@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -41,10 +41,6 @@ using namespace pion;
 using namespace pion::platform;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_vocab_config_files(void);
-extern void cleanup_backup_files(void);
-
 /// static strings used by these unit tests
 static const std::string COMMON_LOG_FILE(LOG_FILE_DIR + "common.log");
 static const std::string COMBINED_LOG_FILE(LOG_FILE_DIR + "combined.log");
@@ -54,7 +50,7 @@ static const std::string EXTENDED_LOG_FILE(LOG_FILE_DIR + "extended.log");
 /// cleans up config files relevant to Codecs in the working directory
 void cleanup_codec_config_files(bool copy_codec_config_file)
 {
-	cleanup_vocab_config_files();
+	PionPlatformUnitTest::cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
 		boost::filesystem::remove(CODECS_CONFIG_FILE);
@@ -1451,7 +1447,7 @@ public:
 	}
 	virtual ~CodecPtrWithFieldsOfAllTypes_F() {
 		this->m_vocab_mgr.removeVocabulary("urn:vocab:v1");
-		cleanup_backup_files();
+		PionPlatformUnitTest::cleanup_backup_files();
 	}
 
 	EventFactory m_event_factory;

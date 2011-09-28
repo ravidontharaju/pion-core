@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -36,10 +36,6 @@ using namespace pion::platform;
 using namespace pion::server;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_platform_config_files(void);
-
-
 /// static strings used by these unit tests
 static const std::string COMMON_LOG_FILE(LOG_FILE_DIR + "common.log");
 
@@ -53,7 +49,7 @@ public:
 		m_ie_filter_id("153f6c40-cb78-11dc-8fa0-0019e3f89cd2"),
 		m_do_nothing_id("0cc21558-cf84-11dc-a9e0-0019e3f89cd2")
 	{
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 
 		// start the ServiceManager, etc.
 		m_platform_cfg.setConfigFile(PLATFORM_CONFIG_FILE);

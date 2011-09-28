@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------
 // pion-net: a C++ framework for building lightweight HTTP interfaces
 // ------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Distributed under the Boost Software License, Version 1.0.
 // See http://www.boost.org/LICENSE_1_0.txt
@@ -36,9 +36,6 @@ using namespace pion::net;
 	static const std::string PATH_TO_PLUGINS("../services/.libs");
 #endif
 
-extern void cleanup_platform_config_files(void);
-extern void cleanup_cache_files(void);
-extern void cleanup_log_files(void);
 static const std::string NEW_OUTPUT_LOG_FILE(LOG_FILE_DIR + "new.log");
 static const boost::uint64_t ONE_SECOND = 1000000000; // in nsec
 static const boost::uint64_t NUM_LINES_IN_DEFAULT_LOG_FILE = 4;
@@ -98,9 +95,9 @@ BOOST_AUTO_TEST_SUITE_END()
 class PlatformReadyForQueryServiceRequests_F {
 public:
 	PlatformReadyForQueryServiceRequests_F() {
-		cleanup_platform_config_files();
-		cleanup_cache_files();
-		cleanup_log_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_cache_files();
+		PionPlatformUnitTest::cleanup_log_files();
 		BOOST_CHECK(timestampedLogFiles().size() == 0);
 		boost::filesystem::remove("logs/combined-2.log");
 

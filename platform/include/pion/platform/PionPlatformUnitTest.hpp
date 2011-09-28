@@ -23,6 +23,7 @@
 #include <fstream>
 #include <libxml/tree.h>
 #include <boost/function.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <pion/PionScheduler.hpp>
 #include <pion/PionLogger.hpp>
@@ -68,7 +69,108 @@ const std::string DBENGINES_CONFIG_FILE(CONFIG_FILE_DIR + "dbengines.xml");
 const std::string DBENGINES_TEMPLATE_FILE(CONFIG_FILE_DIR + "dbengines.tmpl");
 
 
-struct PionPlatformUnitTest {
+struct PionPlatformUnitTest
+{
+	/// returns the path to the unit test vocabulary config path
+	static const std::string& get_vocabulary_path(void)
+	{
+	#if defined(PION_XCODE)
+		static const std::string TESTS_VOCABULARY_PATH("../../platform/tests/config/vocabularies/");
+	#else
+		static const std::string TESTS_VOCABULARY_PATH("config/vocabularies/");
+	#endif
+		
+		return TESTS_VOCABULARY_PATH;
+	}
+
+	/// cleans up vocabulary config files in the tests config directory
+	static void cleanup_vocab_config_files(void)
+	{
+		if (boost::filesystem::exists(VOCABS_CONFIG_FILE))
+			boost::filesystem::remove(VOCABS_CONFIG_FILE);
+		boost::filesystem::copy_file(VOCABS_TEMPLATE_FILE, VOCABS_CONFIG_FILE);
+
+		// Copy all *.tmpl files in the "vocabularies" subdirectory of the tests config directory to *.xml files.
+		boost::filesystem::path vocab_dir_path(get_vocabulary_path());
+		for (boost::filesystem::directory_iterator itr(vocab_dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+			if (boost::filesystem::extension(itr->path()) == ".tmpl") {
+				boost::filesystem::path xml_config_file = boost::filesystem::change_extension(itr->path(), ".xml");
+				if (boost::filesystem::exists(xml_config_file))
+					boost::filesystem::remove(xml_config_file);
+				boost::filesystem::copy_file(itr->path(), xml_config_file);
+			}
+		}
+	}
+
+	/// cleans up platform config files in the working directory
+	static void cleanup_platform_config_files(void)
+	{
+		cleanup_vocab_config_files();
+		
+		if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
+			boost::filesystem::remove(REACTORS_CONFIG_FILE);
+		boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
+		
+		if (boost::filesystem::exists(CODECS_CONFIG_FILE))
+			boost::filesystem::remove(CODECS_CONFIG_FILE);
+		boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
+		
+		if (boost::filesystem::exists(PROTOCOLS_CONFIG_FILE))
+			boost::filesystem::remove(PROTOCOLS_CONFIG_FILE);
+		boost::filesystem::copy_file(PROTOCOLS_TEMPLATE_FILE, PROTOCOLS_CONFIG_FILE);
+
+		if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
+			boost::filesystem::remove(DATABASES_CONFIG_FILE);
+		boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
+		
+		if (boost::filesystem::exists(PLATFORM_CONFIG_FILE))
+			boost::filesystem::remove(PLATFORM_CONFIG_FILE);
+		boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, PLATFORM_CONFIG_FILE);
+		
+		if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
+			boost::filesystem::remove(SERVICES_CONFIG_FILE);
+		boost::filesystem::copy_file(SERVICES_TEMPLATE_FILE, SERVICES_CONFIG_FILE);
+
+		if (boost::filesystem::exists(USERS_CONFIG_FILE))
+			boost::filesystem::remove(USERS_CONFIG_FILE);
+		boost::filesystem::copy_file(USERS_TEMPLATE_FILE, USERS_CONFIG_FILE);
+
+		if (boost::filesystem::exists(DBENGINES_CONFIG_FILE))
+			boost::filesystem::remove(DBENGINES_CONFIG_FILE);
+		boost::filesystem::copy_file(DBENGINES_TEMPLATE_FILE, DBENGINES_CONFIG_FILE);
+	}
+
+	static void cleanup_cache_files(void)
+	{
+		boost::filesystem::path dir_path(CONFIG_FILE_DIR);
+		for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+			if (boost::filesystem::extension(itr->path()) == ".cache") {
+				boost::filesystem::remove(itr->path());
+			}
+		}
+	}
+
+	static void cleanup_backup_files(void)
+	{
+		boost::filesystem::path dir_path(CONFIG_FILE_DIR);
+		for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+			if (boost::filesystem::extension(itr->path()) == ".bak") {
+				boost::filesystem::remove(itr->path());
+			}
+		}
+	}
+
+	// Deletes all files starting with "new" in the test logs directory.
+	static void cleanup_log_files(void)
+	{
+		boost::filesystem::path dir_path(get_log_file_dir());
+		for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
+			std::string basename = boost::filesystem::basename(itr->path());
+			if (basename.substr(0, 3) == "new") {
+				boost::filesystem::remove(itr->path());
+			}
+		}
+	}
 
 	static void checkReactorEventsIn(pion::platform::ReactionEngine& reaction_engine,
 		const std::string& reactor_id, const boost::uint64_t expected_value,
@@ -186,12 +288,13 @@ struct PionPlatformUnitTest {
 		BOOST_REQUIRE(doc_ptr);
 		xmlNodePtr node_ptr = xmlDocGetRootElement(doc_ptr);
 		BOOST_REQUIRE(node_ptr);
-		BOOST_REQUIRE(node_ptr->children);
-		for (xmlNodePtr cur_node = node_ptr->children; cur_node != NULL; cur_node = cur_node->next) {
-			xmlNodePtr msg_node = pion::platform::ConfigManager::findConfigNodeByName("Message", cur_node->children);
-			xmlChar* xml_char_ptr = xmlNodeGetContent(msg_node);
-			BOOST_REQUIRE(xml_char_ptr);
-			messages.push_back(reinterpret_cast<char*>(xml_char_ptr));
+		if (node_ptr->children) {
+			for (xmlNodePtr cur_node = node_ptr->children; cur_node != NULL; cur_node = cur_node->next) {
+				xmlNodePtr msg_node = pion::platform::ConfigManager::findConfigNodeByName("Message", cur_node->children);
+				xmlChar* xml_char_ptr = xmlNodeGetContent(msg_node);
+				BOOST_REQUIRE(xml_char_ptr);
+				messages.push_back(reinterpret_cast<char*>(xml_char_ptr));
+			}
 		}
 	}
 #endif

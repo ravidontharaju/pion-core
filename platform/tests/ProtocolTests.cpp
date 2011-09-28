@@ -45,14 +45,10 @@ using namespace pion::platform;
 static const std::string CRLF = pion::net::HTTPTypes::STRING_CRLF;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_vocab_config_files(void);
-
-
 /// cleans up config files relevant to Protocols in the working directory
 void cleanup_protocol_config_files(bool copy_protocol_config_file)
 {
-	cleanup_vocab_config_files();
+	PionPlatformUnitTest::cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(PROTOCOLS_CONFIG_FILE))
 		boost::filesystem::remove(PROTOCOLS_CONFIG_FILE);

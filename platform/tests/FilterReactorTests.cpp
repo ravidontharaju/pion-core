@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -39,9 +39,6 @@ using namespace pion::platform;
 static const std::string LOG_OUTPUT_FILE(LOG_FILE_DIR + "tr2.out");
 static const std::string CLF_LOG_FILE(LOG_FILE_DIR + "tr2.log");
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_platform_config_files(void);
-
 
 // The names ReactionEngineReadyToAddReactors2_F and ReactionEngineReadyToAddReactors2_S are used so that the unit test framework 
 // won't confuse them with ReactionEngineReadyToAddReactors_F and ReactionEngineReadyToAddReactors_S in TransformReactorTests.
@@ -52,7 +49,7 @@ public:
 		m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(NULL)
 	{
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 		
 		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();

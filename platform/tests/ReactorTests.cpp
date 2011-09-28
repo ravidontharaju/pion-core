@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -46,11 +46,6 @@ using boost::mpl::transform1;
 using boost::mpl::lambda;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_vocab_config_files(void);
-extern void cleanup_cache_files(void);
-
-
 /// static strings used by these unit tests
 static const std::string COMBINED_LOG_FILE(LOG_FILE_DIR + "combined.log");
 static const std::string NEW_LOG_FILE(LOG_FILE_DIR + "new.log");
@@ -70,7 +65,7 @@ static const std::string ATOM_ENTRIES_EXPECTED_FILE(LOG_FILE_DIR + "atom_entries
 /// cleans up reactor config files in the working directory
 void cleanup_reactor_config_files(void)
 {
-	cleanup_vocab_config_files();
+	PionPlatformUnitTest::cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
 		boost::filesystem::remove(REACTORS_CONFIG_FILE);
@@ -532,7 +527,7 @@ public:
 	ReactionEngineAlreadyRunningTests_F()
 		: m_finished_log_callbacks(0U)
 	{
-		cleanup_cache_files();
+		PionPlatformUnitTest::cleanup_cache_files();
 		boost::filesystem::remove(NEW_LOG_FILE);
 		boost::filesystem::remove(NEW_DATABASE_FILE);
 		boost::filesystem::remove(RSS_CHANNELS_LOG_FILE);

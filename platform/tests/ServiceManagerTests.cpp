@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -35,16 +35,13 @@ using namespace pion::platform;
 using namespace pion::server;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_platform_config_files(void);
-
 // "Servers Only" means no top level Services. 
 class ServicesConfigFileServersOnly_F
 {
 public:
 	ServicesConfigFileServersOnly_F() {
 		// get everything set up first
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 
 		// open the default service configuration file for writing
 		m_services_config_file_path = SERVICES_CONFIG_FILE;
@@ -259,7 +256,7 @@ class ServicesConfigFile_F
 public:
 	ServicesConfigFile_F() : m_tcp_conn(NULL) {
 		// get everything set up first
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 
 		// open the default service configuration file for writing
 		m_services_config_file_path = SERVICES_CONFIG_FILE;

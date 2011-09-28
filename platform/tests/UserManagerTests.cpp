@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -32,15 +32,11 @@ using namespace pion::platform;
 using namespace pion::server;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_platform_config_files(void);
-
-
 class NewUserManager_F : public UserManager {
 public:
 	NewUserManager_F() : UserManager() {
 		// get everything set up first
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 
 		// The default constructor for UserManager sets the config file to "users.xml".
 		// Since that's a relative path, we set the current directory to the test config directory.

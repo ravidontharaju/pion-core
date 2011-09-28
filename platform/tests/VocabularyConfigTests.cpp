@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -33,22 +33,17 @@ using namespace pion;
 using namespace pion::platform;
 
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern const std::string& get_vocabulary_path(void);
-extern void cleanup_vocab_config_files(void);
-
-
 /// static strings used by these unit tests
-static const std::string VOCAB_NEW_CONFIG_FILE(get_vocabulary_path() + "new.xml");
+static const std::string VOCAB_NEW_CONFIG_FILE(PionPlatformUnitTest::get_vocabulary_path() + "new.xml");
 static const std::string VOCAB_DEFAULT_CONFIG_FILE("vocabulary.xml");
-static const std::string VOCAB_A_CONFIG_FILE(get_vocabulary_path() + "a.xml");
-static const std::string VOCAB_B_CONFIG_FILE(get_vocabulary_path() + "b.xml");
+static const std::string VOCAB_A_CONFIG_FILE(PionPlatformUnitTest::get_vocabulary_path() + "a.xml");
+static const std::string VOCAB_B_CONFIG_FILE(PionPlatformUnitTest::get_vocabulary_path() + "b.xml");
 
 
 /// cleans up vocabulary config files in the working directory
 void cleanup_config_files(void)
 {
-	cleanup_vocab_config_files();
+	PionPlatformUnitTest::cleanup_vocab_config_files();
 
 	if (boost::filesystem::exists(VOCAB_NEW_CONFIG_FILE))
 		boost::filesystem::remove(VOCAB_NEW_CONFIG_FILE);

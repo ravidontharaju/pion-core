@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -123,105 +123,4 @@ const std::string& get_config_file_dir(void)
 #endif
 
 	return TESTS_CONFIG_FILE_DIR;
-}
-
-/// returns the path to the unit test vocabulary config path
-const std::string& get_vocabulary_path(void)
-{
-#if defined(PION_XCODE)
-	static const std::string TESTS_VOCABULARY_PATH("../../platform/tests/config/vocabularies/");
-#else
-	static const std::string TESTS_VOCABULARY_PATH("config/vocabularies/");
-#endif
-	
-	return TESTS_VOCABULARY_PATH;
-}
-
-/// cleans up vocabulary config files in the tests config directory
-void cleanup_vocab_config_files(void)
-{
-	if (boost::filesystem::exists(VOCABS_CONFIG_FILE))
-		boost::filesystem::remove(VOCABS_CONFIG_FILE);
-	boost::filesystem::copy_file(VOCABS_TEMPLATE_FILE, VOCABS_CONFIG_FILE);
-
-	// Copy all *.tmpl files in the "vocabularies" subdirectory of the tests config directory to *.xml files.
-	boost::filesystem::path vocab_dir_path(get_vocabulary_path());
-	for (boost::filesystem::directory_iterator itr(vocab_dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
-		if (boost::filesystem::extension(itr->path()) == ".tmpl") {
-			boost::filesystem::path xml_config_file = boost::filesystem::change_extension(itr->path(), ".xml");
-			if (boost::filesystem::exists(xml_config_file))
-				boost::filesystem::remove(xml_config_file);
-			boost::filesystem::copy_file(itr->path(), xml_config_file);
-		}
-	}
-}
-
-/// cleans up platform config files in the working directory
-void cleanup_platform_config_files(void)
-{
-	cleanup_vocab_config_files();
-	
-	if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
-		boost::filesystem::remove(REACTORS_CONFIG_FILE);
-	boost::filesystem::copy_file(REACTORS_TEMPLATE_FILE, REACTORS_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(CODECS_CONFIG_FILE))
-		boost::filesystem::remove(CODECS_CONFIG_FILE);
-	boost::filesystem::copy_file(CODECS_TEMPLATE_FILE, CODECS_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(PROTOCOLS_CONFIG_FILE))
-		boost::filesystem::remove(PROTOCOLS_CONFIG_FILE);
-	boost::filesystem::copy_file(PROTOCOLS_TEMPLATE_FILE, PROTOCOLS_CONFIG_FILE);
-
-	if (boost::filesystem::exists(DATABASES_CONFIG_FILE))
-		boost::filesystem::remove(DATABASES_CONFIG_FILE);
-	boost::filesystem::copy_file(DATABASES_TEMPLATE_FILE, DATABASES_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(PLATFORM_CONFIG_FILE))
-		boost::filesystem::remove(PLATFORM_CONFIG_FILE);
-	boost::filesystem::copy_file(PLATFORM_TEMPLATE_FILE, PLATFORM_CONFIG_FILE);
-	
-	if (boost::filesystem::exists(SERVICES_CONFIG_FILE))
-		boost::filesystem::remove(SERVICES_CONFIG_FILE);
-	boost::filesystem::copy_file(SERVICES_TEMPLATE_FILE, SERVICES_CONFIG_FILE);
-
-	if (boost::filesystem::exists(USERS_CONFIG_FILE))
-		boost::filesystem::remove(USERS_CONFIG_FILE);
-	boost::filesystem::copy_file(USERS_TEMPLATE_FILE, USERS_CONFIG_FILE);
-
-	if (boost::filesystem::exists(DBENGINES_CONFIG_FILE))
-		boost::filesystem::remove(DBENGINES_CONFIG_FILE);
-	boost::filesystem::copy_file(DBENGINES_TEMPLATE_FILE, DBENGINES_CONFIG_FILE);
-}
-
-void cleanup_cache_files(void)
-{
-	boost::filesystem::path dir_path(CONFIG_FILE_DIR);
-	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
-		if (boost::filesystem::extension(itr->path()) == ".cache") {
-			boost::filesystem::remove(itr->path());
-		}
-	}
-}
-
-void cleanup_backup_files(void)
-{
-	boost::filesystem::path dir_path(CONFIG_FILE_DIR);
-	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
-		if (boost::filesystem::extension(itr->path()) == ".bak") {
-			boost::filesystem::remove(itr->path());
-		}
-	}
-}
-
-// Deletes all files starting with "new" in the test logs directory.
-void cleanup_log_files(void)
-{
-	boost::filesystem::path dir_path(get_log_file_dir());
-	for (boost::filesystem::directory_iterator itr(dir_path); itr != boost::filesystem::directory_iterator(); ++itr) {
-		std::string basename = boost::filesystem::basename(itr->path());
-		if (basename.substr(0, 3) == "new") {
-			boost::filesystem::remove(itr->path());
-		}
-	}
 }

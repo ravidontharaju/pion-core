@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2010 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -44,9 +44,6 @@ static const std::string STOCK_PRICE_LOG_FILE(LOG_FILE_DIR + "stocks.log");
 static const int NUM_STOCK_RECORDS = 4;
 static const std::string STOCK_PRICE_LOG_EXPECTED_FILE(LOG_FILE_DIR + "stocks-expected.out");
 
-/// external functions defined in PionPlatformUnitTests.cpp
-extern void cleanup_platform_config_files(void);
-
 
 /// interface class for TransformReactor tests
 class TransformReactorTests_F {
@@ -56,7 +53,7 @@ public:
 		m_transformer_id("25bcc7f0-e109-11dd-aef9-001c25b8b54e"),
 		m_output_log_id("18883550-e105-11dd-8c4d-001c25b8b54e")
 	{
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 
 		if (boost::filesystem::exists(REACTORS_CONFIG_FILE))
 			boost::filesystem::remove(REACTORS_CONFIG_FILE);
@@ -121,7 +118,7 @@ public:
 		m_vocab_mgr(), m_codec_factory(m_vocab_mgr), m_protocol_factory(m_vocab_mgr), m_database_mgr(m_vocab_mgr),
 		m_reaction_engine(NULL)
 	{
-		cleanup_platform_config_files();
+		PionPlatformUnitTest::cleanup_platform_config_files();
 		
 		m_vocab_mgr.setConfigFile(VOCABS_CONFIG_FILE);
 		m_vocab_mgr.openConfigFile();
