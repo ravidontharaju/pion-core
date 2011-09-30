@@ -1,0 +1,16 @@
+{
+	required_input: [
+		'Resource'
+	],
+	option_defaults: {
+		EncryptConnections: false
+	},
+	value_defaults: {
+		NumConnections: 32,
+		NumRetries: 1,
+		ProxyPort: 80,
+		DebugLogLevel: 0,
+		Method: 'GET'
+	}
+}
+ 
