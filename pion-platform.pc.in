@@ -12,4 +12,4 @@ Description: an open source platform for real-time event stream processing
 Version: @VERSION@
 #Requires: boost-1.35.0 libxml2
 Libs: -L${libdir} @LDFLAGS@ @PION_PLATFORM_LIBS@ @PION_EXTERNAL_LIBS@ 
-Cflags: @CPPFLAGS@ -I${includedir}
+Cflags: @CPPFLAGS@ @PION_HAVE_JSON@ -I${includedir}
