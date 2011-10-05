@@ -869,7 +869,7 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 {
 	if (m_max_size > 0 && http_msg.getContentLength() > 0) {
 		const std::string& content_type = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_TYPE);
-		bool content_type_matches;
+		bool content_type_matches = false;
 		try {
 			content_type_matches = m_type_regex.empty() || boost::regex_search(content_type, m_type_regex);
 		} catch (...) {

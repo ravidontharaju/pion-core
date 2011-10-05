@@ -462,6 +462,7 @@ inline char * LogCodec::cstyle(char *cstring)
 	char *ptr = cstring;
 	size_t len = strlen(cstring);
 	size_t num, nlen;
+	unsigned int value;
 
 	while ( (ptr = strchr(ptr, '\\')) ) {
 		nlen = 1;
@@ -476,12 +477,12 @@ inline char * LogCodec::cstyle(char *cstring)
 		case '_': *ptr = ' '; break;
 		case '0': case '1': case '2': case '3':
 		case '4': case '5': case '6': case '7':
-			nlen = sscanf(ptr + 1, "%o", &num);
-			*ptr = (char)num;
+			nlen = sscanf(ptr + 1, "%o", &value);
+			*ptr = (char)value;
 			break;
 		case 'x':
-			nlen = sscanf(ptr + 1, "%x", &num);
-			*ptr = (char)num;
+			nlen = sscanf(ptr + 1, "%x", &value);
+			*ptr = (char)value;
 			break;
 		}
 		num = ptr - cstring + nlen;

@@ -320,30 +320,7 @@ void daemonize_server(void)
 /// run server as a daemon (Unix)
 void daemonize_server(void)
 {
-	// adopted from "Unix Daemon Server Programming"
-	// http://www.enderunix.org/docs/eng/daemon.php
-	
-	// return early if already running as a daemon
-	if(getppid()==1) return;
-	
-	// for out the process 
-	int i = fork();
-	if (i<0) exit(1);	// error forking
-	if (i>0) exit(0);	// exit if parent
-	
-	// child (daemon process) continues here after the fork...
-	
-	// obtain a new process group
-	setsid();
-	
-	// close all descriptors
-	for (i=getdtablesize();i>=0;--i) close(i);
-	
-	// bind stdio to /dev/null
-	i=open("/dev/null",O_RDWR); dup(i); dup(i);
-	
-	// restrict file creation mode to 0750
-	umask(027);
+	PionProcess::daemonize();
 }
 #endif
 
