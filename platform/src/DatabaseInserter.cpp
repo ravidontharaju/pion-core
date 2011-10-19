@@ -19,6 +19,7 @@
 
 #include <pion/platform/ConfigManager.hpp>
 #include <pion/platform/DatabaseInserter.hpp>
+#include <pion/platform/DatabaseManager.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -96,7 +97,7 @@ void DatabaseInserter::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	// get the database to use
 	if (! ConfigManager::getConfigOption(DATABASE_ELEMENT_NAME, m_database_id, config_ptr))
 		throw EmptyDatabaseException();
-	if (! getDatabaseManager().hasPlugin(m_database_id))
+	if (! hasDatabasePlugin(m_database_id))
 		throw DatabaseManager::DatabaseNotFoundException(m_database_id);
 
 	// get the name of the table to store events in
@@ -190,7 +191,7 @@ void DatabaseInserter::updateVocabulary(const Vocabulary& v)
 void DatabaseInserter::updateDatabases(void)
 {
 	// just check to see if the database was deleted (if so, stop now!)
-	if (! getDatabaseManager().hasPlugin(m_database_id)) {
+	if (! hasDatabasePlugin(m_database_id)) {
 		stop();
 	}
 }
@@ -390,8 +391,7 @@ void DatabaseInserter::connect(void)
 {
 	// open a new database connection
 	PION_LOG_DEBUG(m_logger, "Connecting to database: " << m_database_id);
-	m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
-	PION_ASSERT(m_database_ptr);
+	getDatabasePlugin(m_database_ptr, m_database_id);
 
 	if (m_wipe && m_database_ptr->tableExists(m_table_name, m_partition)) {
 		m_database_ptr->dropTable(m_table_name, m_partition);
@@ -626,11 +626,16 @@ bool DatabaseInserter::checkEventQueue(boost::scoped_ptr<EventQueue>& insert_que
 	return true;
 }
 
-DatabaseManager& DatabaseInserter::getDatabaseManager(void)
+bool DatabaseInserter::getDatabasePlugin(DatabasePtr& plugin_ptr, const std::string& plugin_id) const
 {
-	if (m_database_mgr_ptr == NULL)
-		throw MissingDatabaseManagerException();
-	return *m_database_mgr_ptr;
+	if (!m_platform_plugin_ptr)
+		throw MissingPlatformPluginException();
+	return m_platform_plugin_ptr->getDatabasePlugin(plugin_ptr, plugin_id);
+}
+
+bool DatabaseInserter::hasDatabasePlugin(const std::string& plugin_id) const
+{
+	return (m_platform_plugin_ptr && m_platform_plugin_ptr->hasDatabasePlugin(plugin_id));
 }
 
 }	// end namespace platform

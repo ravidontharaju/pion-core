@@ -176,7 +176,7 @@ void TransformReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 			throw EmptyTypeException(getId());	// TODO: Improve the error message
 
 		// Add the transformation
-		const bool debug_mode = getReactionEngine().getDebugMode();
+		const bool debug_mode = getConfigManager().getDebugMode();
 		Transform *new_transform;
 		if (type_str == "AssignValue")
 			new_transform = new TransformAssignValue(v, v[term_ref], transformation_node->children, debug_mode);

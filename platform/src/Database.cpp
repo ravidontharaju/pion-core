@@ -18,7 +18,6 @@
 //
 
 #include <pion/platform/Database.hpp>
-#include <pion/platform/DatabaseManager.hpp>
 #include <pion/platform/ConfigManager.hpp>
 #include <boost/filesystem/operations.hpp>
 
@@ -27,6 +26,11 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 
 
 // static members of Database
+
+const std::string			Database::DBENGINES_FILE = "dbengines.xml";
+const std::string			Database::DBENGINES_ROOT_ELEMENT_NAME = "DatabaseTemplates";
+const std::string			Database::TEMPLATE_ELEMENT_NAME = "Template";
+const std::string			Database::ENGINE_ELEMENT_NAME = "Engine";
 
 const std::string			Database::INSERT_QUERY_ID = "urn:sql:insert-event";
 const std::string			Database::INSERT_IGNORE_QUERY_ID = "urn:sql:insert-ignore-event";
@@ -220,14 +224,38 @@ void Database::readConfig(const xmlNodePtr config_ptr, std::string engine_str)
 
 	xmlDocPtr template_doc_ptr = NULL;
 	if (! ConfigManager::getConfigOption(CLIENT_ELEMENT_NAME, m_database_client, config_ptr)) {
-		if ((template_doc_ptr = getDatabaseManager().getDatabaseEngineConfig(m_database_engine, config_detail_ptr)) == NULL)
+		if ((template_doc_ptr = getDatabaseEngineConfig(m_database_engine, config_detail_ptr)) == NULL)
 			throw ReadConfigException(getId());
 	}
 	readConfigDetails(config_detail_ptr);
-
+	
 	if (template_doc_ptr != NULL)
 		xmlFreeDoc(template_doc_ptr);
 }
+
+xmlDocPtr Database::getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr)
+{
+	std::string templateFile = getConfigManager().resolveRelativePath(DBENGINES_FILE);
+	xmlDocPtr template_doc_ptr = NULL;
+	xmlNodePtr template_ptr;
+	if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, DBENGINES_ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
+		throw ReadConfigException(templateFile);
+
+	template_ptr = template_ptr->children;
+	std::string engine_name_str;
+	while (template_ptr) {
+		if ((config_detail_ptr = ConfigManager::findConfigNodeByName(TEMPLATE_ELEMENT_NAME,
+			template_ptr)) != NULL)
+			if (ConfigManager::getConfigOption(ENGINE_ELEMENT_NAME, engine_name_str, config_detail_ptr->children) &&
+				engine_name_str == database_engine) {
+				config_detail_ptr = config_detail_ptr->children;
+				break;
+			}
+		template_ptr = template_ptr->next;
+	}
+	return template_doc_ptr;
+}
+
 
 /// Only used by stringSubstitutes, so non-inlined is fine for performance
 void Database::stringReplace(std::string& src, const char* search, const std::string& substitute)

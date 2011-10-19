@@ -105,7 +105,7 @@ void FissionReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	boost::mutex::scoped_lock codec_lock(m_codec_mutex);
 	if (! ConfigManager::getConfigOption(CODEC_ELEMENT_NAME, m_codec_id, config_ptr))
 		throw EmptyCodecException(getId());
-	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);	
+	getCodecPlugin(m_codec_ptr, m_codec_id);
 	PION_ASSERT(m_codec_ptr);
 	codec_lock.unlock();
 
@@ -160,14 +160,15 @@ void FissionReactor::updateVocabulary(const Vocabulary& v)
 void FissionReactor::updateCodecs(void)
 {
 	// check if the codec was deleted (if so, stop now!)
-	if (! getCodecFactory().hasPlugin(m_codec_id)) {
+	if (! hasCodecPlugin(m_codec_id)) {
 		stop();
 		boost::mutex::scoped_lock codec_lock(m_codec_mutex);
 		m_codec_ptr.reset();
 	} else {
 		// update the codec pointer
 		boost::mutex::scoped_lock codec_lock(m_codec_mutex);
-		m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+		getCodecPlugin(m_codec_ptr, m_codec_id);
+		PION_ASSERT(m_codec_ptr);
 	}
 }
 	

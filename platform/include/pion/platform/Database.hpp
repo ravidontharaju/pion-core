@@ -43,6 +43,16 @@ class PION_PLATFORM_API Database
 {
 public:
 
+	/// name of the database engines config file
+	static const std::string				DBENGINES_FILE;
+
+	/// element names used in database engines config file
+	static const std::string				DBENGINES_ROOT_ELEMENT_NAME;
+	static const std::string				TEMPLATE_ELEMENT_NAME;
+
+	/// name of XML element for the database engine type
+	static const std::string				ENGINE_ELEMENT_NAME;
+
 	/// exception thrown if the database is busy & the query should be tried again later
 	class DatabaseBusyException : public std::exception {
 	public:
@@ -399,9 +409,18 @@ protected:
 	/**
 	 * readConfigDetails is called by readConfig, once it locates the SQL details for an engine
 	 *
-	 * @param config_ptr XML file & pointer to where SQL details are found
+	 * @param config_ptr XML pointer to where SQL details are found
 	 */
 	void readConfigDetails(const xmlNodePtr config_ptr);
+
+	/**
+	 * gets the configuration for the specified database engine
+	 *
+	 * @param database_engine the name of the database engine
+	 * @param config_detail_ptr XML configuration for the database engine
+	 */
+	xmlDocPtr getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr);
+
 
 	/// Database engine name, e.g. MySQL-MyISAM
 	/// This is used to find a matching set of SQL from configuation file

@@ -50,7 +50,7 @@ void SQLiteDatabase::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		throw EmptyFilenameException(getId());
 
 	// resolve paths relative to the platform DataDirectory
-	m_database_name = getDatabaseManager().resolveRelativeDataPath(m_database_name);
+	m_database_name = getConfigManager().resolveRelativeDataPath(m_database_name);
 }
 
 DatabasePtr SQLiteDatabase::clone(void) const

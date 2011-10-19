@@ -111,14 +111,6 @@ public:
 	 */
 	void writeDatabaseEnginesXML(std::ostream& out);
 
-	/**
-	 * gets the configuration for the specified database engine
-	 *
-	 * @param database_engine the name of the database engine
-	 * @param config_detail_ptr XML configuration for the database engine
-	 */
-	xmlDocPtr getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr);
-
 	/// returns the type attribute used for an XML Permission node pertaining to Databases
 	std::string getPermissionType(void) const { return DATABASES_PERMISSION_TYPE; }
 
@@ -143,6 +135,7 @@ protected:
 		try {
 			Database *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
 			new_plugin_ptr->setId(plugin_id);
+			new_plugin_ptr->setConfigManager(*this);
 			new_plugin_ptr->setDatabaseManager(*this);
 			if (config_ptr != NULL) {
 				VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
@@ -166,14 +159,6 @@ private:
 
 	/// type identifier for Databases permission type
 	static const std::string		DATABASES_PERMISSION_TYPE;
-
-	/// name of the database engines config file
-	static const std::string		TEMPLATE_FILE;
-
-	/// element names used in database engines config file
-	static const std::string		DBENGINES_ROOT_ELEMENT_NAME;
-	static const std::string		TEMPLATE_ELEMENT_NAME;
-	static const std::string		ENGINE_ELEMENT_NAME;
 
 	/// the default type of database to use if one is not otherwise specified
 	static const std::string		DEFAULT_DATABASE_TYPE;

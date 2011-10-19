@@ -708,7 +708,7 @@ private:
 			reactor_ptr->setCodecFactory(m_codec_factory);
 			reactor_ptr->setProtocolFactory(m_protocol_factory);
 			reactor_ptr->setDatabaseManager(m_database_mgr);
-			reactor_ptr->setReactionEngine(*this);
+			reactor_ptr->setConfigManager(*this);
 			if (config_ptr != NULL) {
 				VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
 				reactor_ptr->setConfig(*vocab_ptr, config_ptr);

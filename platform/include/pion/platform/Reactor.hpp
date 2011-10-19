@@ -31,10 +31,10 @@
 #include <boost/function/function1.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/PionException.hpp>
+#include <pion/PionScheduler.hpp>
 #include <pion/platform/Event.hpp>
 #include <pion/platform/Vocabulary.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
-#include <pion/platform/ReactionScheduler.hpp>
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
@@ -265,7 +265,7 @@ public:
 	}
 
 	/// sets the scheduler that will be used to deliver Events to other Reactors
-	inline void setScheduler(ReactionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
+	inline void setScheduler(PionScheduler& scheduler) { m_scheduler_ptr = & scheduler; }
 
 	/// sets the value of the "multithreaded branches" setting
 	inline void setMultithreadBranches(bool b) { m_multithread_branches = b; }
@@ -364,7 +364,7 @@ protected:
 	{}
 
 	/// returns the task scheduler used by the ReactionEngine
-	inline ReactionScheduler& getScheduler(void) {
+	inline PionScheduler& getScheduler(void) {
 		PION_ASSERT(m_scheduler_ptr != NULL);
 		return *m_scheduler_ptr;
 	}
@@ -550,7 +550,7 @@ private:
 		}
 		
 		/// schedules an Event to be sent over the OutputConnection
-		inline void post(ReactionScheduler& scheduler, const EventPtr& event_ptr) {
+		inline void post(PionScheduler& scheduler, const EventPtr& event_ptr) {
 			scheduler.post(boost::bind<void>(m_event_handler, event_ptr));
 		}
 
@@ -581,7 +581,7 @@ private:
 	const ReactorType				m_type;
 	
 	/// used to schedule the delivery of events to Reactors for processing
-	ReactionScheduler *				m_scheduler_ptr;
+	PionScheduler *			    	m_scheduler_ptr;
 	
 	/// a collection of connections to which Events may be sent
 	ConnectionMap					m_connections;

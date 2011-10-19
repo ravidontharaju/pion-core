@@ -56,14 +56,16 @@ void LogOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_pt
 	if (! ConfigManager::getConfigOption(CODEC_ELEMENT_NAME, m_codec_id, config_ptr))
 		throw EmptyCodecException(getId());
 	// make sure the codec exists (but leave it uninitialized)
-	(void)getCodecFactory().getCodec(m_codec_id);
+	CodecPtr temp_ptr;
+	getCodecPlugin(temp_ptr, m_codec_id);
+	PION_ASSERT(temp_ptr);
 	
 	// get the filename regex to use for finding log files
 	if (! ConfigManager::getConfigOption(FILENAME_ELEMENT_NAME, m_log_filename, config_ptr))
 		throw EmptyFilenameException(getId());
 	
 	// resolve paths relative to the ReactionEngine's config file location
-	m_log_filename = getReactionEngine().resolveRelativeDataPath(m_log_filename);
+	m_log_filename = getConfigManager().resolveRelativeDataPath(m_log_filename);
 
 	// if running, open the new output log
 	if (was_running) {
@@ -84,13 +86,15 @@ void LogOutputReactor::updateVocabulary(const Vocabulary& v)
 void LogOutputReactor::updateCodecs(void)
 {
 	// check if the codec was deleted (if so, stop now!)
-	if (! getCodecFactory().hasPlugin(m_codec_id)) {
+	if (! hasCodecPlugin(m_codec_id)) {
 		stop();
 	} else {
 		// update the codec pointer
 		ConfigWriteLock cfg_lock(*this);
-		if (m_codec_ptr)
-			m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+		if (m_codec_ptr) {
+			getCodecPlugin(m_codec_ptr, m_codec_id);
+			PION_ASSERT(m_codec_ptr);
+		}
 	}
 }
 	
@@ -171,9 +175,9 @@ void LogOutputReactor::openLogFileNoLock(void)
 		throw OpenLogException(m_log_filename);
 
 	// initialize the codec for writing
-	m_codec_ptr = getCodecFactory().getCodec(m_codec_id);
+	getCodecPlugin(m_codec_ptr, m_codec_id);
 	PION_ASSERT(m_codec_ptr);
-
+	
 	PION_LOG_DEBUG(m_logger, "Opened output log file: " << m_log_filename);
 }
 

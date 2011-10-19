@@ -29,10 +29,6 @@ const std::string		DatabaseManager::DEFAULT_CONFIG_FILE = "databases.xml";
 const std::string		DatabaseManager::DATABASE_ELEMENT_NAME = "Database";
 const std::string		DatabaseManager::DATABASES_PERMISSION_TYPE = "Databases";
 const std::string		DatabaseManager::DEFAULT_DATABASE_TYPE = "sqlite";
-const std::string		DatabaseManager::TEMPLATE_FILE = "dbengines.xml";
-const std::string		DatabaseManager::DBENGINES_ROOT_ELEMENT_NAME = "DatabaseTemplates";
-const std::string		DatabaseManager::TEMPLATE_ELEMENT_NAME = "Template";
-const std::string		DatabaseManager::ENGINE_ELEMENT_NAME = "Engine";
 
 
 // DatabaseManager member functions
@@ -81,10 +77,10 @@ void DatabaseManager::removeDatabase(const std::string& database_id)
 }
 
 void DatabaseManager::writeDatabaseEnginesXML(std::ostream& out) {
-	std::string templateFile = resolveRelativePath(TEMPLATE_FILE);
+	std::string templateFile = resolveRelativePath(Database::DBENGINES_FILE);
 	xmlDocPtr template_doc_ptr = NULL;
 	xmlNodePtr template_ptr;
-	if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, DBENGINES_ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
+	if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, Database::DBENGINES_ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
 		throw ReadConfigException(templateFile);
 
 	ConfigManager::writeConfigXML(out, template_ptr, false);
@@ -92,29 +88,6 @@ void DatabaseManager::writeDatabaseEnginesXML(std::ostream& out) {
 	if (template_doc_ptr != NULL)
 		xmlFreeDoc(template_doc_ptr);
 }
-
-xmlDocPtr DatabaseManager::getDatabaseEngineConfig(const std::string& database_engine, xmlNodePtr& config_detail_ptr) {
-	std::string templateFile = resolveRelativePath(TEMPLATE_FILE);
-	xmlDocPtr template_doc_ptr = NULL;
-	xmlNodePtr template_ptr;
-	if ((template_doc_ptr = ConfigManager::getConfigFromFile(templateFile, DBENGINES_ROOT_ELEMENT_NAME, template_ptr, m_logger)) == NULL)
-		throw ReadConfigException(templateFile);
-
-	template_ptr = template_ptr->children;
-	std::string engine_name_str;
-	while (template_ptr) {
-		if ((config_detail_ptr = ConfigManager::findConfigNodeByName(TEMPLATE_ELEMENT_NAME,
-			template_ptr)) != NULL)
-			if (ConfigManager::getConfigOption(ENGINE_ELEMENT_NAME, engine_name_str, config_detail_ptr->children) &&
-				engine_name_str == database_engine) {
-				config_detail_ptr = config_detail_ptr->children;
-				break;
-			}
-		template_ptr = template_ptr->next;
-	}
-	return template_doc_ptr;
-}
-
 
 }	// end namespace platform
 }	// end namespace pion

@@ -423,7 +423,7 @@ std::string ConfigManager::resolveRelativePath(const std::string& base_path_to_f
 	return new_path.file_string();
 }
 
-std::string ConfigManager::resolveRelativeDataPath(const std::string& orig_path)
+std::string ConfigManager::resolveRelativeDataPath(const std::string& orig_path) const
 {
 	// return the original if it is not relative
 	if (boost::filesystem::path(orig_path).is_complete())
@@ -435,7 +435,7 @@ std::string ConfigManager::resolveRelativeDataPath(const std::string& orig_path)
 	return new_path.file_string();
 }
 
-void ConfigManager::verifyDirectory(const std::string& element, std::string& dir)
+void ConfigManager::verifyDirectory(const std::string& element, std::string& dir) const
 {
 	// normalize potentially relative path
 	dir = ConfigManager::resolveRelativePath(dir);

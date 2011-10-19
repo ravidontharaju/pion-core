@@ -66,7 +66,7 @@ void DatabaseOutputReactor::setConfig(const Vocabulary& v, const xmlNodePtr conf
 			
 			// initialize inserter parameters
 			inserter_ptr->setLogger(m_logger);
-			inserter_ptr->setDatabaseManager(getDatabaseManager());
+			inserter_ptr->setPlatformPlugin(*this);
 			
 			// update inserter config
 			inserter_ptr->setConfig(v, config_ptr);

@@ -254,10 +254,10 @@ void ServiceManager::openConfigFile(void)
 				pion::platform::VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
 				service_ptr = m_plugins.load(service_id, plugin_type);
 				service_ptr->setId(service_id);
+				service_ptr->setConfigManager(*this);
 				service_ptr->setPlatformConfig(m_platform_config);
 				service_ptr->setServerId(server_id);
 				service_ptr->setConfig(*vocab_ptr, service_node->children);
-				service_ptr->setServiceManager(*this);
 			} catch (std::exception& e) {
 				throw WebServiceException(service_id, e.what());
 			}

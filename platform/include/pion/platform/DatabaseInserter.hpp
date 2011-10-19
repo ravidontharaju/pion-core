@@ -32,7 +32,7 @@
 #include <pion/platform/RuleChain.hpp>
 #include <pion/platform/Query.hpp>
 #include <pion/platform/Database.hpp>
-#include <pion/platform/DatabaseManager.hpp>
+#include <pion/platform/PlatformPlugin.hpp>
 
 
 namespace pion {		// begin namespace pion
@@ -46,12 +46,12 @@ class PION_PLATFORM_API DatabaseInserter
 {
 public:
 
-	/// exception thrown if this class tries to use DatabaseManager before it is
-	/// initialized via setDatabaseManager()
-	class MissingDatabaseManagerException : public std::exception {
+	/// exception thrown if this class tries to retrieve a database plugin
+	/// before it is initialized using setPlatformPlugin()
+	class MissingPlatformPluginException : public std::exception {
 	public:
 		virtual const char* what() const throw() {
-			return "DatabaseInserter is missing the DatabaseManager";
+			return "DatabaseInserter is missing the PlatformPlugin";
 		}
 	};
 
@@ -133,7 +133,7 @@ public:
 	/// constructs a new DatabaseInserter object
 	DatabaseInserter(void) :
 		m_logger(PION_GET_LOGGER("pion.platform.DatabaseInserter")),
-		m_database_mgr_ptr(NULL),
+		m_platform_plugin_ptr(NULL),
 		m_event_queue_ptr(new EventQueue), 
 		m_queue_max(DEFAULT_QUEUE_SIZE), m_queue_timeout(DEFAULT_QUEUE_TIMEOUT),
 		m_recovery_interval(DEFAULT_RECOVERY_INTERVAL),
@@ -144,8 +144,8 @@ public:
 	/// virtual destructor: this class may be extended
 	virtual ~DatabaseInserter() { stop(); }
 
-	/// sets the DatabaseManager that will used by the plugin to access Databases
-	inline void setDatabaseManager(DatabaseManager& mgr) { m_database_mgr_ptr = & mgr; }
+	/// sets the PlatformPlugin that will used by the plugin to access Databases
+	inline void setPlatformPlugin(const PlatformPlugin& plugin) { m_platform_plugin_ptr = & plugin; }
 	
 	/**
 	 * sets configuration parameters for this class
@@ -249,7 +249,7 @@ public:
 	inline bool tableExists(void)
 	{
 		if (!m_database_ptr)
-			m_database_ptr = getDatabaseManager().getDatabase(m_database_id);
+			getDatabasePlugin(m_database_ptr, m_database_id);
 		return m_database_ptr->tableExists(m_table_name, m_partition);
 	}
 
@@ -263,8 +263,18 @@ private:
 	/// return current timestamp (time_t format)
 	static inline std::time_t now(void) { return ::time(NULL); }
         
-  	/// returns the DatabaseManager to use for accessing Databases
-	DatabaseManager& getDatabaseManager(void);
+	/**
+	 * retrieves a new Database instance
+	 *
+	 * @param plugin_ptr smart pointer which will be assigned to the new instance
+	 * @param plugin_id unique identifier for the plugin to retrieve
+	 *
+	 * @return true if a matching plugin was found, otherwise false
+	 */
+	bool getDatabasePlugin(DatabasePtr& plugin_ptr, const std::string& plugin_id) const;
+
+	/// returns true if the unique identifier matches a known Database plugin
+	bool hasDatabasePlugin(const std::string& plugin_id) const;
 
 	/// (re)establishes a connection to the database
 	void connect(void);
@@ -352,8 +362,8 @@ private:
 	/// primary logging interface used by this class
 	PionLogger								m_logger;
 
-	/// reference to the database manager, used to create new DB connection
-	DatabaseManager *						m_database_mgr_ptr;
+	/// reference to the platform plugin used to create new DB connections
+	const PlatformPlugin *					m_platform_plugin_ptr;
 
 	/// unique identifier for the database that is used to store events
 	std::string								m_database_id;

@@ -81,7 +81,7 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 		throw EmptyDirectoryException(getId());
 	
 	// resolve paths relative to the ReactionEngine's config file location
-	m_log_directory = getReactionEngine().resolveRelativeDataPath(m_log_directory);
+	m_log_directory = getConfigManager().resolveRelativeDataPath(m_log_directory);
 
 	// make sure that the directory exists
 	if (! boost::filesystem::exists(m_log_directory) )
@@ -128,9 +128,9 @@ void LogInputReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr
 
 	// assign names for the cache files
 	m_history_cache_filename = getId() + ".cache";
-	m_history_cache_filename = getReactionEngine().resolveRelativePath(m_history_cache_filename);
+	m_history_cache_filename = getConfigManager().resolveRelativePath(m_history_cache_filename);
 	m_current_log_file_cache_filename = getId() + "-cur.cache";
-	m_current_log_file_cache_filename = getReactionEngine().resolveRelativePath(m_current_log_file_cache_filename);
+	m_current_log_file_cache_filename = getConfigManager().resolveRelativePath(m_current_log_file_cache_filename);
 }
 	
 void LogInputReactor::query(std::ostream& out, const QueryBranches& branches,
@@ -412,7 +412,7 @@ void LogInputReactor::readFromLog(void)
 		CodecPtr codec_ptr;
 		{
 			ConfigReadLock cfg_lock(*this);
-			codec_ptr = getCodecFactory().getCodec(m_codec_id);
+			getCodecPlugin(codec_ptr, m_codec_id);
 			PION_ASSERT(codec_ptr);
 		}
 

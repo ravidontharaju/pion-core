@@ -25,24 +25,24 @@
 #include <boost/noncopyable.hpp>
 #include <pion/PionConfig.hpp>
 
-namespace pion {		// begin namespace pion
-namespace server {		// begin namespace server (Pion Server)
-
-// forward declarations
-class ServiceManager;
-
-}	// end namespace server
-}	// end namespace pion
 
 namespace pion {		// begin namespace pion
 namespace platform {	// begin namespace platform (Pion Platform Library)
 
+
 // forward declarations
 class Vocabulary;
+class ConfigManager;	
 class CodecFactory;
 class DatabaseManager;
-class ReactionEngine;	
 class ProtocolFactory;
+class Codec;
+class Database;
+class Protocol;
+typedef boost::shared_ptr<Codec> CodecPtr;
+typedef boost::shared_ptr<Database> DatabasePtr;
+typedef boost::shared_ptr<Protocol> ProtocolPtr;
+
 
 ///
 /// PlatformPlugin: interface class extended by all Pion Platform plug-ins
@@ -54,8 +54,8 @@ public:
 
 	/// constructs a new PlatformPlugin object
 	PlatformPlugin(void) :
-		m_codec_factory_ptr(NULL), m_database_mgr_ptr(NULL),
-		m_reaction_engine_ptr(NULL), m_protocol_factory_ptr(NULL), m_service_mgr_ptr(NULL)
+		m_config_mgr_ptr(NULL), m_codec_factory_ptr(NULL),
+		m_database_mgr_ptr(NULL), m_protocol_factory_ptr(NULL)
 	{}
 	
 	/// virtual destructor: this class is meant to be extended
@@ -97,20 +97,63 @@ public:
 	/// returns the descriptive comment for this plug-in
 	inline const std::string& getComment(void) const { return m_plugin_comment; }
 
+	/// sets the ConfigManager that will used by the plugin to access Codecs
+	inline void setConfigManager(const ConfigManager& mgr) { m_config_mgr_ptr = & mgr; }
+	
 	/// sets the CodecFactory that will used by the plugin to access Codecs
 	inline void setCodecFactory(CodecFactory& factory) { m_codec_factory_ptr = & factory; }
 	
 	/// sets the DatabaseManager that will used by the plugin to access Databases
 	inline void setDatabaseManager(DatabaseManager& mgr) { m_database_mgr_ptr = & mgr; }
 	
-	/// sets the ReactionEngine that will used by the plugin to access Reactors
-	inline void setReactionEngine(ReactionEngine& engine) { m_reaction_engine_ptr = & engine; }
-
 	/// sets the ProtocolFactory that will used by the plugin to access Protocols
 	inline void setProtocolFactory(ProtocolFactory& factory) { m_protocol_factory_ptr = & factory; }
 
-	/// sets the ServiceManager that will used by the plugin to access PlatformServices
-	inline void setServiceManager(pion::server::ServiceManager& mgr) { m_service_mgr_ptr = & mgr; }
+	/// returns the ConfigManager associated with this plugin
+	inline const ConfigManager& getConfigManager(void) const {
+		PION_ASSERT(m_config_mgr_ptr != NULL);
+		return *m_config_mgr_ptr;
+	}
+	
+	/**
+	 * retrieves a new Codec instance
+	 *
+	 * @param plugin_ptr smart pointer which will be assigned to the new instance
+	 * @param plugin_id unique identifier for the plugin to retrieve
+	 *
+	 * @return true if a matching plugin was found, otherwise false
+	 */
+	bool getCodecPlugin(CodecPtr& plugin_ptr, const std::string& plugin_id) const;
+	
+	/**
+	 * retrieves a new Database instance
+	 *
+	 * @param plugin_ptr smart pointer which will be assigned to the new instance
+	 * @param plugin_id unique identifier for the plugin to retrieve
+	 *
+	 * @return true if a matching plugin was found, otherwise false
+	 */
+	bool getDatabasePlugin(DatabasePtr& plugin_ptr, const std::string& plugin_id) const;
+
+	/**
+	 * retrieves a new Protocol instance
+	 *
+	 * @param plugin_ptr smart pointer which will be assigned to the new instance
+	 * @param plugin_id unique identifier for the plugin to retrieve
+	 *
+	 * @return true if a matching plugin was found, otherwise false
+	 */
+	bool getProtocolPlugin(ProtocolPtr& plugin_ptr, const std::string& plugin_id) const;
+	
+	/// returns true if the unique identifier matches a known Codec plugin
+	bool hasCodecPlugin(const std::string& plugin_id) const;
+
+	/// returns true if the unique identifier matches a known Database plugin
+	bool hasDatabasePlugin(const std::string& plugin_id) const;
+
+	/// returns true if the unique identifier matches a known Protocol plugin
+	bool hasProtocolPlugin(const std::string& plugin_id) const;
+
 
 protected:
 	
@@ -119,72 +162,12 @@ protected:
 		m_plugin_id = pp.m_plugin_id;
 		m_plugin_name = pp.m_plugin_name;
 		m_plugin_comment = pp.m_plugin_comment;
+		m_config_mgr_ptr = pp.m_config_mgr_ptr;
 		m_codec_factory_ptr = pp.m_codec_factory_ptr;
 		m_database_mgr_ptr = pp.m_database_mgr_ptr;
-		m_reaction_engine_ptr = pp.m_reaction_engine_ptr;
 		m_protocol_factory_ptr = pp.m_protocol_factory_ptr;
-		m_service_mgr_ptr = pp.m_service_mgr_ptr;
 	}
 	
-	/// returns the CodecFactory to use for accessing Codecs
-	inline CodecFactory& getCodecFactory(void) {
-		PION_ASSERT(m_codec_factory_ptr != NULL);
-		return *m_codec_factory_ptr;
-	}
-	
-	/// returns the CodecFactory to use for accessing Codecs (const)
-	inline const CodecFactory& getCodecFactory(void) const {
-		PION_ASSERT(m_codec_factory_ptr != NULL);
-		return *m_codec_factory_ptr;
-	}
-	
-	/// returns the DatabaseManager to use for accessing Databases
-	inline DatabaseManager& getDatabaseManager(void) {
-		PION_ASSERT(m_database_mgr_ptr != NULL);
-		return *m_database_mgr_ptr;
-	}
-	
-	/// returns the DatabaseManager to use for accessing Databases (const)
-	inline const DatabaseManager& getDatabaseManager(void) const {
-		PION_ASSERT(m_database_mgr_ptr != NULL);
-		return *m_database_mgr_ptr;
-	}
-	
-	/// returns the ReactionEngine to use for accessing Reactors
-	inline ReactionEngine& getReactionEngine(void) {
-		PION_ASSERT(m_reaction_engine_ptr != NULL);
-		return *m_reaction_engine_ptr;
-	}
-
-	/// returns the ReactionEngine to use for accessing Reactors (const)
-	inline const ReactionEngine& getReactionEngine(void) const {
-		PION_ASSERT(m_reaction_engine_ptr != NULL);
-		return *m_reaction_engine_ptr;
-	}
-	
-	/// returns the ProtocolFactory to use for accessing Protocols
-	inline ProtocolFactory& getProtocolFactory(void) {
-		PION_ASSERT(m_protocol_factory_ptr != NULL);
-		return *m_protocol_factory_ptr;
-	}
-
-	/// returns the ProtocolFactory to use for accessing Protocols (const)
-	inline const ProtocolFactory& getProtocolFactory(void) const {
-		PION_ASSERT(m_protocol_factory_ptr != NULL);
-		return *m_protocol_factory_ptr;
-	}
-
-	/// returns the ServiceManager to use for accessing PlatformServices
-	inline pion::server::ServiceManager& getServiceManager(void) {
-		PION_ASSERT(m_service_mgr_ptr != NULL);
-		return *m_service_mgr_ptr;
-	}
-
-	/// returns the ServiceManager to use for accessing PlatformServices (const)
-	inline const pion::server::ServiceManager& getServiceManager(void) const {
-		PION_ASSERT(m_service_mgr_ptr != NULL);
-		return *m_service_mgr_ptr;
-	}
 
 private:
 	
@@ -204,20 +187,17 @@ private:
 	/// descriptive comment for this Plugin
 	std::string						m_plugin_comment;
 	
+	/// config manager object associated with this plugin
+	const ConfigManager *			m_config_mgr_ptr;
+	
 	/// pointer to the CodecFactory, used by the plugin to access Codecs
 	CodecFactory *					m_codec_factory_ptr;
 	
 	/// pointer to the DatabaseManager, used by the plugin to access Databases
 	DatabaseManager *				m_database_mgr_ptr;
-	
-	/// pointer to the ReactionEngine, used by the plugin to access Reactors
-	ReactionEngine *				m_reaction_engine_ptr;
 
 	/// pointer to the ProtocolFactory, used by the plugin to access NetworkProtocols
 	ProtocolFactory *				m_protocol_factory_ptr;
-
-	/// pointer to the ServiceManager, used by the plugin to access PlatformServices
-	pion::server::ServiceManager *	m_service_mgr_ptr;
 };
 
 	

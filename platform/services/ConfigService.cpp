@@ -1161,7 +1161,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 
 					// retrieve configuration for all PlatformServices
-					getServiceManager().writeConfigXML(ss);
+					cfg.getServiceManager().writeConfigXML(ss);
 
 				} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_POST) {
 
@@ -1177,7 +1177,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 						// add the new PlatformService to the ServiceManager
 						std::string service_id;
 						try {
-							service_id = getServiceManager().addPlatformService(service_config_ptr);
+							service_id = cfg.getServiceManager().addPlatformService(service_config_ptr);
 						} catch (std::exception&) {
 							xmlFreeNodeList(service_config_ptr);
 							throw;
@@ -1189,7 +1189,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 						response_ptr->setStatusMessage(HTTPTypes::RESPONSE_MESSAGE_CREATED);
 
 						// respond with the new PlatformService's configuration
-						if (! getServiceManager().writeConfigXML(ss, service_id))
+						if (! cfg.getServiceManager().writeConfigXML(ss, service_id))
 							throw ServiceManager::PlatformServiceNotFoundException(service_id);
 
 					} else {
@@ -1234,7 +1234,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 				if (request->getMethod() == HTTPTypes::REQUEST_METHOD_GET) {
 					// retrieve an existing PlatformService's configuration
 
-					if (! getServiceManager().writeConfigXML(ss, branches[1]))
+					if (! cfg.getServiceManager().writeConfigXML(ss, branches[1]))
 						throw ServiceManager::PlatformServiceNotFoundException(branches[1]);
 
 				} else if (request->getMethod() == HTTPTypes::REQUEST_METHOD_DELETE) {
@@ -1242,7 +1242,7 @@ void ConfigService::operator()(HTTPRequestPtr& request, TCPConnectionPtr& tcp_co
 
 					// Check whether the User has permission to remove the specified PlatformService.
 					if (cfg.getUserManagerPtr()->removalAllowed(request->getUser(), cfg.getServiceManager(), branches[1])) {
-						getServiceManager().removePlatformService(branches[1]);
+						cfg.getServiceManager().removePlatformService(branches[1]);
 
 						// send a 204 (No Content) response
 						response_ptr->setStatusCode(HTTPTypes::RESPONSE_CODE_NO_CONTENT);

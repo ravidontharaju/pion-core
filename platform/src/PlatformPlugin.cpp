@@ -18,7 +18,13 @@
 //
 
 #include <pion/platform/Vocabulary.hpp>
+#include <pion/platform/Codec.hpp>
+#include <pion/platform/Database.hpp>
+#include <pion/platform/Protocol.hpp>
 #include <pion/platform/ConfigManager.hpp>
+#include <pion/platform/CodecFactory.hpp>
+#include <pion/platform/DatabaseManager.hpp>
+#include <pion/platform/ProtocolFactory.hpp>
 #include <pion/platform/PlatformPlugin.hpp>
 
 
@@ -47,6 +53,48 @@ void PlatformPlugin::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 void PlatformPlugin::updateVocabulary(const Vocabulary& v)
 {
 	// nothing is currently necessary
+}
+
+bool PlatformPlugin::getCodecPlugin(CodecPtr& plugin_ptr, const std::string& plugin_id) const
+{
+	if (m_codec_factory_ptr) {
+		plugin_ptr = m_codec_factory_ptr->getCodec(plugin_id);
+		return bool(plugin_ptr);
+	}
+	return false;
+}
+
+bool PlatformPlugin::getDatabasePlugin(DatabasePtr& plugin_ptr, const std::string& plugin_id) const
+{
+	if (m_database_mgr_ptr) {
+		plugin_ptr = m_database_mgr_ptr->getDatabase(plugin_id);
+		return bool(plugin_ptr);
+	}
+	return false;
+}
+
+bool PlatformPlugin::getProtocolPlugin(ProtocolPtr& plugin_ptr, const std::string& plugin_id) const
+{
+	if (m_protocol_factory_ptr) {
+		plugin_ptr = m_protocol_factory_ptr->getProtocol(plugin_id);
+		return bool(plugin_ptr);
+	}
+	return false;
+}
+
+bool PlatformPlugin::hasCodecPlugin(const std::string& plugin_id) const
+{
+	return (m_codec_factory_ptr && m_codec_factory_ptr->hasPlugin(plugin_id));
+}
+
+bool PlatformPlugin::hasDatabasePlugin(const std::string& plugin_id) const
+{
+	return (m_database_mgr_ptr && m_database_mgr_ptr->hasPlugin(plugin_id));
+}
+
+bool PlatformPlugin::hasProtocolPlugin(const std::string& plugin_id) const
+{
+	return (m_protocol_factory_ptr && m_protocol_factory_ptr->hasPlugin(plugin_id));
 }
 
 }	// end namespace platform

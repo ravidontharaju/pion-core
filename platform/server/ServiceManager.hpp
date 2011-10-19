@@ -252,7 +252,7 @@ protected:
 		try {
 			PlatformService *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
 			new_plugin_ptr->setId(plugin_id);
-			new_plugin_ptr->setServiceManager(*this);
+			new_plugin_ptr->setConfigManager(*this);
 			new_plugin_ptr->setPlatformConfig(m_platform_config);
 			if (config_ptr != NULL) {
 				pion::platform::VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());

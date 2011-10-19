@@ -528,7 +528,7 @@ public:
 	 *
 	 * @return std::string resolved, absolute path to the file
 	 */
-	std::string resolveRelativeDataPath(const std::string& orig_path);
+	std::string resolveRelativeDataPath(const std::string& orig_path) const;
 
 	/**
 	 * verifies that a directory config parameter is valid and updates relative paths
@@ -536,7 +536,7 @@ public:
 	 * @param element name of the XML config element being verified
 	 * @param dir value of the XML config element (may be relative)
 	 */
-	void verifyDirectory(const std::string& element, std::string& dir);
+	void verifyDirectory(const std::string& element, std::string& dir) const;
 
 	/// looks for User and Group elements in the configuration file and changes
 	/// the process permissions appropriately if found

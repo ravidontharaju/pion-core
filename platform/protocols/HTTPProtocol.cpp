@@ -530,7 +530,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			}
 		} catch (RegexFailure& e) {
 			PION_LOG_ERROR(m_logger, e.what());
-			if (! getProtocolFactory().getDebugMode()) {
+			if (! getConfigManager().getDebugMode()) {
 				// Prevent this rule from running again.
 				(*i)->m_running = false;
 				PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match_str);
@@ -920,7 +920,7 @@ void HTTPProtocol::handleRegexFailure(const std::string& regex, const std::strin
 {
 	std::string error_msg("regex = ");
 	error_msg += regex;
-	if (getProtocolFactory().getDebugMode()) {
+	if (getConfigManager().getDebugMode()) {
 		// only include source string in debug mode since this data
 		// has not yet been processed to remove credit card numbers
 		error_msg += ", str = ";

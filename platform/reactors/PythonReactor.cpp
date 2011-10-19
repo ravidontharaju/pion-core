@@ -1667,7 +1667,7 @@ void PythonReactor::compilePythonSource(void)
 	if (! m_source.empty()) {
 		// append Pion modules to sys.path if not already there
 		const char * const py_path_ptr = Py_GetPath();
-		std::string py_path_str(getReactionEngine().resolveRelativePath("pymodules"));
+		std::string py_path_str(getConfigManager().resolveRelativePath("pymodules"));
 		if (py_path_ptr == NULL || strstr(py_path_ptr, py_path_str.c_str()) == NULL) {
 			if (py_path_ptr && *py_path_ptr != '\0') {
 				#ifdef _MSC_VER
@@ -1764,7 +1764,7 @@ void PythonReactor::callPythonStop(void)
 std::string PythonReactor::getSourceCodeFromFile(void)
 {
 	// find and confirm existance of source code file
-	string src_file = getReactionEngine().resolveRelativePath(m_source_file);
+	string src_file = getConfigManager().resolveRelativePath(m_source_file);
 	if (! boost::filesystem::exists(src_file) )
 		throw SourceFileNotFoundException(m_source_file);
 	

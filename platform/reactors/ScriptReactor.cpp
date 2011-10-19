@@ -137,13 +137,13 @@ void ScriptReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// get the Input Codec that the Reactor should use
 		if (! ConfigManager::getConfigOption(INPUT_CODEC_ELEMENT_NAME, m_input_codec_id, config_ptr))
 			throw EmptyInputCodecException(getId());
-		m_input_codec_ptr = getCodecFactory().getCodec(m_input_codec_id);
+		getCodecPlugin(m_input_codec_ptr, m_input_codec_id);
 		PION_ASSERT(m_input_codec_ptr);
-
+		
 		// get the Output Codec that the Reactor should use
 		if (! ConfigManager::getConfigOption(OUTPUT_CODEC_ELEMENT_NAME, m_output_codec_id, config_ptr))
 			throw EmptyOutputCodecException(getId());
-		m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
+		getCodecPlugin(m_output_codec_ptr, m_output_codec_id);
 		PION_ASSERT(m_output_codec_ptr);
 
 		// get the script or program command to execute
@@ -175,15 +175,17 @@ void ScriptReactor::updateVocabulary(const Vocabulary& v)
 void ScriptReactor::updateCodecs(void)
 {
 	// check if a codec was deleted (if so, stop now!)
-	if (! getCodecFactory().hasPlugin(m_input_codec_id)
-		|| ! getCodecFactory().hasPlugin(m_output_codec_id))
+	if (! hasCodecPlugin(m_input_codec_id)
+		|| ! hasCodecPlugin(m_output_codec_id))
 	{
 		stop();
 	} else {
 		// update the codec pointer
 		ConfigWriteLock cfg_lock(*this);
-		m_input_codec_ptr = getCodecFactory().getCodec(m_input_codec_id);
-		m_output_codec_ptr = getCodecFactory().getCodec(m_output_codec_id);
+		getCodecPlugin(m_input_codec_ptr, m_input_codec_id);
+		getCodecPlugin(m_output_codec_ptr, m_output_codec_id);
+		PION_ASSERT(m_input_codec_ptr);
+		PION_ASSERT(m_output_codec_ptr);
 	}
 }
 
@@ -255,9 +257,7 @@ void ScriptReactor::openPipe(void)
 {
 	// close first if already open
 	closePipe();
-
 	PION_LOG_DEBUG(m_logger, "Opening pipe to command: " << m_command);
-
 	PION_ASSERT(! m_args.empty());
 
 #ifdef _MSC_VER

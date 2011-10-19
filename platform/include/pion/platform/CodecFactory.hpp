@@ -126,6 +126,7 @@ protected:
 		try {
 			Codec *new_plugin_ptr = m_plugins.load(plugin_id, plugin_name);
 			new_plugin_ptr->setId(plugin_id);
+			new_plugin_ptr->setConfigManager(*this);
 			new_plugin_ptr->setCodecFactory(*this);
 			if (config_ptr != NULL) {
 				VocabularyPtr vocab_ptr(m_vocab_mgr.getVocabulary());
