@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -122,9 +122,9 @@ public:
 	/// constructs a new ScriptReactor object
 	ScriptReactor(void)
 		: Reactor(TYPE_PROCESSING),
-		m_logger(PION_GET_LOGGER("pion.ScriptReactor")),
 		m_input_pipe(INVALID_DESCRIPTOR), m_output_pipe(INVALID_DESCRIPTOR), m_child(INVALID_PROCESS)
 	{
+		setLogger(PION_GET_LOGGER("pion.ScriptReactor"));
 	}
 
 	/// virtual destructor: this class is meant to be extended
@@ -165,12 +165,6 @@ public:
 	 * @param e pointer to the Event to process
 	 */
 	virtual void process(const pion::platform::EventPtr& e);
-
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
 
 
 private:
@@ -245,9 +239,6 @@ private:
 	/// name of the Command element for Pion XML config files
 	static const std::string			COMMAND_ELEMENT_NAME;
 
-
-	/// primary logging interface used by this class
-	PionLogger							m_logger;
 
 	/// pointer to the Codec that is used for writing Events to the script
 	pion::platform::CodecPtr			m_input_codec_ptr;

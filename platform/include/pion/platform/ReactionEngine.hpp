@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -722,6 +722,7 @@ private:
 		} catch (PionPlugin::PluginNotFoundException&) {
 			throw;
 		} catch (std::exception& e) {
+			PION_LOG_ERROR(m_logger, "plugin_id: " << plugin_id << " - " << e.what() << " - rethrowing");
 			throw PluginException(e.what());
 		}
 	}

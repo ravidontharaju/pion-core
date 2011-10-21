@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -45,9 +45,10 @@ public:
 	/// constructs a new DatabaseOutputReactor object
 	DatabaseOutputReactor(void)
 		: pion::platform::Reactor(TYPE_STORAGE),
-		m_logger(PION_GET_LOGGER("pion.DatabaseOutputReactor")),
 		m_num_inserters(DEFAULT_NUM_INSERTERS), m_next_inserter(0U)
-	{}
+	{
+		setLogger(PION_GET_LOGGER("pion.DatabaseOutputReactor"));
+	}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~DatabaseOutputReactor() { stop(); }
@@ -101,17 +102,14 @@ public:
 	virtual void stop(void);
 
 	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { 
+	inline void setLogger(PionLogger log_ptr) const { 
 		m_logger = log_ptr;
-		for (std::vector<DatabaseInserterPtr>::iterator it = m_inserters.begin();
+		for (std::vector<DatabaseInserterPtr>::const_iterator it = m_inserters.begin();
 			it != m_inserters.end(); ++it)
 		{
 			(*it)->setLogger(log_ptr);
 		}
 	}
-
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
 
 
 private:
@@ -148,9 +146,6 @@ private:
 	/// data type for a database inserter smart pointer
 	typedef boost::shared_ptr<pion::platform::DatabaseInserter>		DatabaseInserterPtr;
 
-
-	/// primary logging interface used by this class
-	PionLogger								m_logger;
 
 	/// collections of inserters, which manage insertion of events into the database
 	std::vector<DatabaseInserterPtr>		m_inserters;

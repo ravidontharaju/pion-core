@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -159,7 +159,7 @@ bool Comparison::checkForValidType(const ComparisonType type) const
 }
 
 void Comparison::configure(const ComparisonType type,
-						   const std::string & value,
+						   const std::string& value,
 						   const bool match_all_values)
 {
 	if (! checkForValidType(type))
@@ -167,14 +167,13 @@ void Comparison::configure(const ComparisonType type,
 
 	if (! value.empty()) {
 		// Test value to make sure it's a valid UTF-8 string.
-		UErrorCode errorCode = U_ZERO_ERROR;
-		u_strFromUTF8(NULL, 0, NULL, value.c_str(), -1, &errorCode);
-		if (errorCode == U_INVALID_CHAR_FOUND)
-			throw InvalidComparisonException();
-		if (errorCode != U_BUFFER_OVERFLOW_ERROR) // U_BUFFER_OVERFLOW_ERROR is expected since destCapacity = 0
-			throw InvalidComparisonException();
-
-		// TODO: Make more specific exceptions, e.g. InvalidCharInUtf8StringException & Utf8StringException.
+		UErrorCode u_error_code = U_ZERO_ERROR;
+		u_strFromUTF8(NULL, 0, NULL, value.c_str(), -1, &u_error_code);
+		if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+			PION_LOG_ERROR(m_logger, "In Comparison::configure(), u_strFromUTF8() returned unexpected error code " 
+										<< u_errorName(u_error_code) << "; value = " << value);
+			throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
+		}
 	}
 
 	if (type == TYPE_REGEX || type == TYPE_NOT_REGEX) {
@@ -186,51 +185,51 @@ void Comparison::configure(const ComparisonType type,
 		switch (type) {
 			case TYPE_EXACT_MATCH:
 			case TYPE_NOT_EXACT_MATCH:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_logger, m_str_value));
 				break;
 			case TYPE_EXACT_MATCH_PRIMARY:
 			case TYPE_NOT_EXACT_MATCH_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringExactMatch(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_CONTAINS:
 			case TYPE_NOT_CONTAINS:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_logger, m_str_value));
 				break;
 			case TYPE_CONTAINS_PRIMARY:
 			case TYPE_NOT_CONTAINS_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringContains(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_STARTS_WITH:
 			case TYPE_NOT_STARTS_WITH:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_logger, m_str_value));
 				break;
 			case TYPE_STARTS_WITH_PRIMARY:
 			case TYPE_NOT_STARTS_WITH_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringStartsWith(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_ENDS_WITH:
 			case TYPE_NOT_ENDS_WITH:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_logger, m_str_value));
 				break;
 			case TYPE_ENDS_WITH_PRIMARY:
 			case TYPE_NOT_ENDS_WITH_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringEndsWith(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_ORDERED_BEFORE:
 			case TYPE_NOT_ORDERED_BEFORE:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_logger, m_str_value));
 				break;
 			case TYPE_ORDERED_BEFORE_PRIMARY:
 			case TYPE_NOT_ORDERED_BEFORE_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedBefore(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_ORDERED_AFTER:
 			case TYPE_NOT_ORDERED_AFTER:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_str_value));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_logger, m_str_value));
 				break;
 			case TYPE_ORDERED_AFTER_PRIMARY:
 			case TYPE_NOT_ORDERED_AFTER_PRIMARY:
-				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_str_value, UCOL_PRIMARY));
+				m_comparison_func = boost::shared_ptr<ComparisonFunctor>(new CompareStringOrderedAfter(m_logger, m_str_value, UCOL_PRIMARY));
 				break;
 			case TYPE_FALSE:
 			case TYPE_TRUE:
@@ -384,21 +383,48 @@ void Comparison::writeComparisonsXML(std::ostream& out) {
 	}
 }
 
-Comparison::ComparisonFunctor::ComparisonFunctor(const std::string& value, UColAttributeValue attr) : m_pattern_buf(NULL) {
-	UErrorCode errorCode = U_ZERO_ERROR;
-	m_collator = ucol_open(NULL, &errorCode);
-	// TODO: check errorCode.
-	////if (U_FAILURE(errorCode))
-	////	do something
+Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::string& value, UColAttributeValue attr)
+	: m_logger(logger), m_pattern_buf(NULL)
+{
+	UErrorCode u_error_code = U_ZERO_ERROR;
+	m_collator = ucol_open(NULL, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(logger, "ucol_open() returned error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("ucol_open", u_errorName(u_error_code));
+	}
 
-	if (attr != UCOL_DEFAULT)
-		ucol_setAttribute(m_collator, UCOL_STRENGTH, attr, &errorCode);
-		// TODO: check errorCode.
+	if (attr != UCOL_DEFAULT) {
+		ucol_setAttribute(m_collator, UCOL_STRENGTH, attr, &u_error_code);
+		if (U_FAILURE(u_error_code)) {
+			ucol_close(m_collator);
+			PION_LOG_ERROR(logger, "ucol_setAttribute() returned error code " << u_errorName(u_error_code) << " - throwing");
+			throw UnexpectedICUErrorCodeException("ucol_setAttribute", u_errorName(u_error_code));
+		}
+	}
 
-	u_strFromUTF8(NULL, 0, &m_pattern_buf_len, value.c_str(), -1, &errorCode);
-	errorCode = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
-	m_pattern_buf = new UChar[m_pattern_buf_len];
-	u_strFromUTF8(m_pattern_buf, m_pattern_buf_len, NULL, value.c_str(), -1, &errorCode);
+	u_strFromUTF8(NULL, 0, &m_pattern_buf_len, value.c_str(), -1, &u_error_code);
+	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+		ucol_close(m_collator);
+		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
+	}
+
+	try {
+		m_pattern_buf = new UChar[m_pattern_buf_len];
+	} catch (std::bad_alloc& e) {
+		ucol_close(m_collator);
+		PION_LOG_ERROR(m_logger, "m_pattern_buf_len: " << m_pattern_buf_len << " - " << e.what() << " - rethrowing");
+		throw BadAllocException("m_pattern_buf_len = " + boost::lexical_cast<std::string>(m_pattern_buf_len));
+	}
+
+	u_error_code = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
+	u_strFromUTF8(m_pattern_buf, m_pattern_buf_len, NULL, value.c_str(), -1, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		delete [] m_pattern_buf;
+		ucol_close(m_collator);
+		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
+	}
 }
 
 Comparison::ComparisonFunctor::~ComparisonFunctor() {
@@ -406,25 +432,25 @@ Comparison::ComparisonFunctor::~ComparisonFunctor() {
 	ucol_close(m_collator);
 }
 
-Comparison::CompareStringExactMatch::CompareStringExactMatch(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringExactMatch::CompareStringExactMatch(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
-Comparison::CompareStringContains::CompareStringContains(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringContains::CompareStringContains(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
-Comparison::CompareStringStartsWith::CompareStringStartsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringStartsWith::CompareStringStartsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
 Comparison::CompareStringStartsWith::~CompareStringStartsWith() {
 }
 
-Comparison::CompareStringEndsWith::CompareStringEndsWith(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringEndsWith::CompareStringEndsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
-Comparison::CompareStringOrderedBefore::CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringOrderedBefore::CompareStringOrderedBefore(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
-Comparison::CompareStringOrderedAfter::CompareStringOrderedAfter(const std::string& value, UColAttributeValue attr) : ComparisonFunctor(value, attr) {
+Comparison::CompareStringOrderedAfter::CompareStringOrderedAfter(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
 }
 
 	

@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2009 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -240,7 +240,7 @@ public:
 	inline bool isRunning(void) const { return m_is_running; }
 	
 	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
+	inline void setLogger(PionLogger log_ptr) const { m_logger = log_ptr; }
 
 	/// returns the logger currently in use
 	inline PionLogger getLogger(void) { return m_logger; }
@@ -350,7 +350,7 @@ private:
 	static const boost::uint32_t			DEFAULT_MAX_AGE;
 
 	/// primary logging interface used by this class
-	PionLogger								m_logger;
+	mutable PionLogger						m_logger;
 
 	/// reference to the database manager, used to create new DB connection
 	DatabaseManager *						m_database_mgr_ptr;

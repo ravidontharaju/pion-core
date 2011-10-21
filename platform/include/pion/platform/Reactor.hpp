@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -216,7 +216,12 @@ public:
 			// re-check after locking
 			if ( isRunning() ) {
 				++m_events_in;
-				process(e);
+				try {
+					process(e);
+				} catch (std::exception& e) {
+					PION_LOG_ERROR(m_logger, "reactor_id: " << getId() << " - " << e.what() << " - rethrowing");
+					throw;
+				}
 			}
 		}
 	}
@@ -284,6 +289,12 @@ public:
 
 	/// returns the ID of the Workspace the Reactor belongs to
 	inline std::string getWorkspace(void) const { return m_workspace_id; }
+
+	/// sets the logger to be used
+	virtual inline void setLogger(PionLogger log_ptr) const { m_logger = log_ptr; }
+
+	/// returns the logger currently in use
+	inline PionLogger getLogger(void) const { return m_logger; }
 
 protected:
 
@@ -360,7 +371,8 @@ protected:
 	Reactor(const ReactorType type)
 		: m_is_running(false), m_type(type), m_scheduler_ptr(NULL), 
 		m_events_in(0), m_events_out(0),
-		m_config_change_pending(false), m_config_num_readers(0)
+		m_config_change_pending(false), m_config_num_readers(0),
+		m_logger(PION_GET_LOGGER("pion.Reactor"))
 	{}
 
 	/// returns the task scheduler used by the ReactionEngine
@@ -514,6 +526,9 @@ protected:
 
 	/// will be true if the Reactor is "running"
 	volatile bool				m_is_running;
+
+	/// primary logging interface used by this class
+	mutable PionLogger			m_logger;
 
 	
 private:

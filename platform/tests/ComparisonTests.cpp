@@ -698,7 +698,7 @@ BOOST_AUTO_TEST_CASE(checkConfigureComparisonWithInvalidUtf8String) {
 	Comparison c(m_string_term);
 
 	// C3 is the first byte of Ä in UTF-8 encoding
-	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_STARTS_WITH, "\xC3"), Comparison::InvalidComparisonException);
+	BOOST_CHECK_THROW(c.configure(Comparison::TYPE_STARTS_WITH, "\xC3"), Comparison::UnexpectedICUErrorCodeException);
 }
 
 BOOST_AUTO_TEST_CASE(checkConfigureComparisonWithEmptyString) {
@@ -1161,14 +1161,14 @@ BOOST_AUTO_TEST_CASE(checkComparisonDisabledAfterRegexException) {
 	BOOST_CHECK(r(e2));
 
 #if defined(PION_USE_LOG4CPLUS)
-	// Use XmlLogService to confirm that the expected error and warning were logged.
+	// Use XmlLogService to confirm that the expected messages were logged.
 	std::vector<std::string> messages;
 	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
-	BOOST_REQUIRE_EQUAL(messages.size(), 2U);
-	std::string expected_error_message = "Regex search failed: regex = (a*ba*)*c, str = abababababababababababababababababababababababab";
-	BOOST_CHECK_EQUAL(expected_error_message, messages[0]);
-	std::string expected_warning_message = "Comparison rule has been disabled: regex = (a*ba*)*c";
-	BOOST_CHECK_EQUAL(expected_warning_message, messages[1]);
+	BOOST_REQUIRE_EQUAL(messages.size(), 3U);
+	sort(messages.begin(), messages.end());
+	BOOST_CHECK_EQUAL(messages[0], "Comparison rule has been disabled: regex = (a*ba*)*c");
+	BOOST_CHECK_EQUAL(messages[1], "Regex search failed: regex = (a*ba*)*c, str = abababababababababababababababababababababababab");
+	BOOST_CHECK_EQUAL(messages[2], "term_id: urn:vocab:test#simple-string - str = abababababababababababababababababababababababab - ret"); // truncated
 #endif
 
 	// Check that the first comparison is disabled by running the rule on e1 again and checking that this time it fails.
@@ -1180,7 +1180,7 @@ BOOST_AUTO_TEST_CASE(checkComparisonDisabledAfterRegexException) {
 #if defined(PION_USE_LOG4CPLUS)
 	// Confirm that no additional error was logged.
 	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
-	BOOST_CHECK_EQUAL(messages.size(), 2U);
+	BOOST_CHECK_EQUAL(messages.size(), 3U);
 #endif
 }
 
