@@ -39,7 +39,14 @@ void EventFactory::EventAllocatorFactory::createInstance(void)
 	m_instance_ptr = &factory_instance;
 }
 
-bool EventValidator::isValidUTF8(const char* ptr, const std::size_t len, std::size_t* trimmed_len) {
+
+EventMessageLogger::Logger* EventMessageLogger::m_logger_ptr = NULL;
+
+
+bool EventValidator::isValidUTF8(const char* ptr, std::size_t len, std::size_t* trimmed_len) {
+	if (ptr == NULL)
+		throw NullSourcePointerException();
+
 	size_t offset = len;
 
 	if (len == 0) {
@@ -76,65 +83,105 @@ bool EventValidator::isValidUTF8(const char* ptr, const std::size_t len, std::si
 	}
 
 	// Test input to see if it's valid UTF-8.
-	UErrorCode errorCode = U_ZERO_ERROR;
-	u_strFromUTF8(NULL, 0, NULL, ptr, offset, &errorCode);
-	if (errorCode == U_BUFFER_OVERFLOW_ERROR) {
+	UErrorCode u_error_code = U_ZERO_ERROR;
+	u_strFromUTF8(NULL, 0, NULL, ptr, offset, &u_error_code);
+	if (u_error_code == U_BUFFER_OVERFLOW_ERROR) {
 		// U_BUFFER_OVERFLOW_ERROR is expected since destCapacity = 0
 		if (trimmed_len)
 			*trimmed_len = offset;
 		return true;
-	} else if (errorCode == U_INVALID_CHAR_FOUND)
+	} else if (u_error_code == U_INVALID_CHAR_FOUND)
 		return false;
-	else
-		throw ValidationException(u_errorName(errorCode));
+	else {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
+	}
 }
 
-size_t EventValidator::getCleansedUTF8Length(const char* ptr, const std::size_t len) {
+size_t EventValidator::getCleansedUTF8Length(const char* ptr, std::size_t len) {
+	if (ptr == NULL)
+		throw NullSourcePointerException();
+
 	// Determine how many substitutions will need to be made.
-	UErrorCode errorCode = U_ZERO_ERROR;
+	UErrorCode u_error_code = U_ZERO_ERROR;
 	int32_t utf_16_len;
 	int32_t num_substitutions;
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
-	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &errorCode);
+	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
+	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
+	}
 
 	// Each bad UTF-8 character will be replaced by 3 bytes (representing the replacement character) in the safe UTF-8.
 	// Since it might be the case that multiple bytes are replaced by a single replacement character, this is an upper bound.
 	return len + 2 * num_substitutions;
 }
 
-void EventValidator::cleanseUTF8_TEMP(const char* ptr, const std::size_t len, char* buf, size_t* buf_len) {
+void EventValidator::cleanseUTF8_TEMP(const char* ptr, std::size_t len, char* buf, size_t* buf_len) {
+	if (ptr == NULL)
+		throw NullSourcePointerException();
+
 	// We'll convert to UTF-16, replacing invalid characters, then convert back to UTF-8.
 	// First, determine how large a buffer we need for the UTF-16 bytes.
-	UErrorCode errorCode = U_ZERO_ERROR;
+	UErrorCode u_error_code = U_ZERO_ERROR;
 	int32_t utf_16_len;
 	int32_t num_substitutions;
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
-	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &errorCode);
+	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
+	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
+	}
 
 	// Each bad UTF-8 character will be replaced by 3 bytes (representing the replacement character) in the safe UTF-8.
 	// Since it might be the case that multiple bytes are replaced by a single replacement character, this is an upper bound.
 	int32_t length_of_safe_content_buffer = len + 2 * num_substitutions;
 
-	UChar* utf_16_buf = new UChar[utf_16_len];
-	errorCode = U_ZERO_ERROR;
-	u_strFromUTF8WithSub(utf_16_buf, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &errorCode);
+	UChar* utf_16_buf;
+	try {
+		utf_16_buf = new UChar[utf_16_len];
+	} catch (std::bad_alloc& e) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "utf_16_len: " << utf_16_len << " - " << e.what() << " - rethrowing");
+		throw BadAllocException("utf_16_len = " + boost::lexical_cast<std::string>(utf_16_len));
+	}
+
+	u_error_code = U_ZERO_ERROR;
+	u_strFromUTF8WithSub(utf_16_buf, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		delete [] utf_16_buf;
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
+	}
 
 	int32_t repaired_content_length = 0;
-	u_strToUTF8(buf, length_of_safe_content_buffer, &repaired_content_length, utf_16_buf, utf_16_len, &errorCode);
+	u_strToUTF8(buf, length_of_safe_content_buffer, &repaired_content_length, utf_16_buf, utf_16_len, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		delete [] utf_16_buf;
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strToUTF8", u_errorName(u_error_code));
+	}
 
 	*buf_len = (size_t)repaired_content_length;
 
 	delete [] utf_16_buf;
 }
 
-void EventValidator::cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, const std::size_t len, char* buf, size_t* buf_len) {
+void EventValidator::cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, std::size_t len, char* buf, size_t* buf_len) {
+	if (ptr == NULL)
+		throw NullSourcePointerException();
+
 	// We'll convert to UTF-16, replacing invalid characters, then convert back to UTF-8.
 	// First, determine how large a buffer we need for the UTF-16 bytes.
-	UErrorCode errorCode = U_ZERO_ERROR;
+	UErrorCode u_error_code = U_ZERO_ERROR;
 	int32_t utf_16_len;
 	int32_t num_substitutions;
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
-	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &errorCode);
+	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
+	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
+	}
 
 	// Each bad UTF-8 character will be replaced by 3 bytes (representing the replacement character) in the safe UTF-8.
 	// Since it might be the case that multiple bytes are replaced by a single replacement character, this is an upper bound.
@@ -145,11 +192,20 @@ void EventValidator::cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, co
 	pion::PionBlob<char, EventAllocator> utf_16_buf;
 	UChar* bptr = (UChar*)utf_16_buf.reserve(blob_alloc, utf_16_len * sizeof(UChar));
 
-	errorCode = U_ZERO_ERROR;
-	u_strFromUTF8WithSub(bptr, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &errorCode);
+	u_error_code = U_ZERO_ERROR;
+	u_strFromUTF8WithSub(bptr, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
+	}
 
 	int32_t cleansed_content_length = 0;
-	u_strToUTF8(buf, length_of_safe_content_buffer, &cleansed_content_length, bptr, utf_16_len, &errorCode);
+	u_strToUTF8(buf, length_of_safe_content_buffer, &cleansed_content_length, bptr, utf_16_len, &u_error_code);
+	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		throw UnexpectedICUErrorCodeException("u_strToUTF8", u_errorName(u_error_code));
+	}
+
 	*buf_len = (size_t)cleansed_content_length;
 }
 

@@ -39,6 +39,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/intrusive/rbtree_algorithms.hpp>
 #include <pion/PionConfig.hpp>
+#include <pion/PionLogger.hpp>
 #include <pion/PionBlob.hpp>
 #include <pion/PionDateTime.hpp>
 #include <pion/platform/Vocabulary.hpp>
@@ -97,11 +98,25 @@ namespace platform {	// begin namespace platform (Pion Platform Library)
 /// used to perform utf8 validation/cleansing on event content
 class PION_PLATFORM_API EventValidator {
 public:
-	/// exception thrown if u_strFromUTF8 returns an unexpected error when being used for validation only
-	class ValidationException : public PionException {
+	/// exception thrown when a NULL pointer was passed as the source for UTF-8 conversion
+	class NullSourcePointerException : public PionException {
 	public:
-		ValidationException(const std::string& error_msg)
-			: PionException("An error other than U_INVALID_CHAR_FOUND or U_BUFFER_OVERFLOW_ERROR occurred while doing UTF-8 validation: ", error_msg) {}
+		NullSourcePointerException(void)
+			: PionException("In EventValidator, a NULL pointer was passed as the source for UTF-8 conversion") {}
+	};
+
+	/// exception thrown if an ICU function returns an unexpected error code
+	class UnexpectedICUErrorCodeException : public PionException {
+	public:
+		UnexpectedICUErrorCodeException(const std::string& icu_func, const std::string& u_error_code_str)
+			: PionException("Unexpected ICU error code in EventValidator: ", icu_func + " () returned " + u_error_code_str) {}
+	};
+
+	/// exception thrown when an std::bad_alloc exception is caught
+	class BadAllocException : public PionException {
+	public:
+		BadAllocException(const std::string& error_msg)
+			: PionException("std::bad_alloc in EventValidator: ", error_msg) {}
 	};
 
 	/**
@@ -115,7 +130,7 @@ public:
 	 *
 	 * @return if trimmed_len is NULL, true iff buffer is valid UTF-8, else true iff buffer of length *trimmed_len is valid UTF-8
 	 */
-	static bool isValidUTF8(const char* ptr, const std::size_t len, std::size_t* trimmed_len);
+	static bool isValidUTF8(const char* ptr, std::size_t len, std::size_t* trimmed_len);
 
 	/**
 	 * Returns an upper bound on the length needed for a string that replaces invalid UTF-8 characters
@@ -126,7 +141,7 @@ public:
 	 *
 	 * @return upper bound on length of buffer for cleansed data
 	 */
-	static size_t getCleansedUTF8Length(const char* ptr, const std::size_t len);
+	static size_t getCleansedUTF8Length(const char* ptr, std::size_t len);
 
 	/**
 	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
@@ -138,7 +153,7 @@ public:
 	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
 	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
 	 */
-	static void cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+	static void cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, std::size_t len, char* buf, size_t* buf_len);
 
 	/**
 	 * Copies an input buffer into another buffer, replacing invalid UTF-8 characters with
@@ -150,10 +165,38 @@ public:
 	 * @param buf pointer to output buffer (assumed to be long enough - see getCleansedUTF8Length())
 	 * @param buf_len pointer to length of output buffer actually used (could be less than what getCleansedUTF8Length() returned)
 	 */
-	static void cleanseUTF8_TEMP(const char* ptr, const std::size_t len, char* buf, size_t* buf_len);
+	static void cleanseUTF8_TEMP(const char* ptr, std::size_t len, char* buf, size_t* buf_len);
 };
 
-	
+
+/// used for logging of Event related messages
+class PION_PLATFORM_API EventMessageLogger {
+public:
+	/**
+	 * Gets the logger used for Event messages.
+	 *
+	 * @return PionLogger& the logger used for Event messages
+	 */
+	static PionLogger& get(void) {
+		if (m_logger_ptr == NULL) {
+			m_logger_ptr = new Logger();
+		}
+		return m_logger_ptr->m_logger;
+	}
+
+private:
+	// Helper class to avoid m_logger potentially being initialized before the logging library itself is initialized,
+	// which it might be if m_logger were a static member of EventMessageLogger.
+	struct Logger {
+		Logger(void) : m_logger(PION_GET_LOGGER("pion.platform.Event")) {};
+
+		PionLogger		m_logger;
+	};
+
+	static Logger* m_logger_ptr;
+};
+
+
 ///
 /// Event: an item of structured data that represents something of interest
 ///
@@ -173,7 +216,16 @@ public:
 			return "Term type is not serializable";
 		}
 	};
-	
+
+	/// A PionException wrapper used to include a term_ref for error reporting higher up the call chain.
+	class PionExceptionWithTermRef : public PionException {
+	public:
+		PionExceptionWithTermRef(const std::string& msg, Vocabulary::TermRef term_ref)
+			: PionException(msg), m_term_ref(term_ref)
+		{}
+
+		Vocabulary::TermRef m_term_ref;
+	};
 
 protected:
 
@@ -979,7 +1031,12 @@ public:
 	inline void setString(const Vocabulary::TermRef& term_ref,
 						  const CharType *value, std::size_t len)
 	{
-		insert(term_ref, make_utf8_blob(value, len));
+		try {
+			insert(term_ref, make_utf8_blob(value, len));
+		} catch (std::exception& e) {
+			PION_LOG_ERROR(EventMessageLogger::get(), "term_ref: " << term_ref << " - " << e.what() << " - rethrowing");
+			throw PionExceptionWithTermRef(e.what(), term_ref);
+		}
 	}
 	
 	/**
@@ -989,7 +1046,12 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const CharType *value) {
-		insert(term_ref, make_utf8_blob(value));
+		try {
+			insert(term_ref, make_utf8_blob(value));
+		} catch (std::exception& e) {
+			PION_LOG_ERROR(EventMessageLogger::get(), "term_ref: " << term_ref << " - " << e.what() << " - rethrowing");
+			throw PionExceptionWithTermRef(e.what(), term_ref);
+		}
 	}
 	
 	/**
@@ -999,7 +1061,12 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const std::string& value) {
-		insert(term_ref, make_utf8_blob(value));
+		try {
+			insert(term_ref, make_utf8_blob(value));
+		} catch (std::exception& e) {
+			PION_LOG_ERROR(EventMessageLogger::get(), "term_ref: " << term_ref << " - " << e.what() << " - rethrowing");
+			throw PionExceptionWithTermRef(e.what(), term_ref);
+		}
 	}
 	
 	/**
@@ -1009,7 +1076,12 @@ public:
 	 * @param value new value assigned to the term
 	 */
 	inline void setString(const Vocabulary::TermRef& term_ref, const BlobType& value) {
-		insert(term_ref, make_utf8_blob(value));
+		try {
+			insert(term_ref, make_utf8_blob(value));
+		} catch (std::exception& e) {
+			PION_LOG_ERROR(EventMessageLogger::get(), "term_ref: " << term_ref << " - " << e.what() << " - rethrowing");
+			throw PionExceptionWithTermRef(e.what(), term_ref);
+		}
 	}
 	
 	/**

@@ -150,6 +150,20 @@ public:
 			: PionException("str = " + search_str) {}
 	};
 
+	/// exception thrown if an ICU function returns an unexpected error code
+	class UnexpectedICUErrorCodeException : public PionException {
+	public:
+		UnexpectedICUErrorCodeException(const std::string& icu_func, const std::string& u_error_code_str)
+			: PionException("Unexpected ICU error code in Comparison: ", icu_func + " returned " + u_error_code_str) {}
+	};
+
+	/// exception thrown when an std::bad_alloc exception is caught
+	class BadAllocException : public PionException {
+	public:
+		BadAllocException(const std::string& error_msg)
+			: PionException("std::bad_alloc in Comparison: ", error_msg) {}
+	};
+
 
 	/// virtual destructor: you may extend this class
 	virtual ~Comparison() {}
@@ -350,21 +364,22 @@ private:
 
 	class ComparisonFunctor {
 	public:
-		ComparisonFunctor(const std::string& value, UColAttributeValue attr);
+		ComparisonFunctor(PionLogger& logger, const std::string& value, UColAttributeValue attr);
 		virtual ~ComparisonFunctor();
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const = 0;
 
 	protected:
-		int32_t			m_pattern_buf_len;
-		UChar*			m_pattern_buf;
-		UCollator*		m_collator;
+		int32_t				m_pattern_buf_len;
+		UChar*				m_pattern_buf;
+		UCollator*			m_collator;
+		mutable PionLogger	m_logger;
 	};
 
 	/// helper class used to determine if one string matches another
 	class CompareStringExactMatch : public ComparisonFunctor {
 	public:
-		CompareStringExactMatch(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringExactMatch(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringExactMatch() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -372,9 +387,12 @@ private:
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
-			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
-			// TODO: check errorCode.
+			UErrorCode u_error_code = U_ZERO_ERROR;
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringExactMatch: " << u_errorName(u_error_code));
+				return false;
+			}
 			return (result == UCOL_EQUAL);
 		}
 	};
@@ -382,7 +400,7 @@ private:
 	/// helper class used to determine if one string contains another
 	class CompareStringContains : public ComparisonFunctor {
 	public:
-		CompareStringContains(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringContains(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringContains() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -396,16 +414,43 @@ private:
 
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			int32_t text_buf_len;
-			UErrorCode errorCode = U_ZERO_ERROR;
-			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &errorCode);
-			errorCode = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
-			boost::scoped_array<UChar> text_buf(new UChar[text_buf_len]);
-			u_strFromUTF8(text_buf.get(), text_buf_len, NULL, blob.get(), blob.size(), &errorCode);
+			UErrorCode u_error_code = U_ZERO_ERROR;
+			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &u_error_code);
+			if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				return false;
+			}
+
+			boost::scoped_array<UChar> text_buf;
+			try {
+				text_buf.reset(new UChar[text_buf_len]);
+			} catch (std::bad_alloc& e) {
+				PION_LOG_ERROR(m_logger, "text_buf_len: " << text_buf_len << " - " << e.what() << " - rethrowing");
+				throw BadAllocException("text_buf_len = " + boost::lexical_cast<std::string>(text_buf_len));
+			}
+
+			u_error_code = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
+			u_strFromUTF8(text_buf.get(), text_buf_len, NULL, blob.get(), blob.size(), &u_error_code);
 			// Use u_strFromUTF8Lenient instead?
-			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf.get(), text_buf_len, m_collator, NULL, &errorCode);
-			int pos = usearch_first(ss, &errorCode);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				return false;
+			}
+
+			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf.get(), text_buf_len, m_collator, NULL, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "usearch_openFromCollator() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				return false;
+			}
+
+			int pos = usearch_first(ss, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "usearch_first() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				usearch_close(ss);
+				return false;
+			}
+
 			usearch_close(ss);
-			// TODO: check errorCode.
 			return (pos != USEARCH_DONE);
 		}
 	};
@@ -413,7 +458,7 @@ private:
 	/// helper class used to determine if one string starts with another
 	class CompareStringStartsWith : public ComparisonFunctor {
 	public:
-		CompareStringStartsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringStartsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringStartsWith();
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -423,9 +468,14 @@ private:
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
 			// Populate a buffer by parsing UTF-8 bytes from the blob into code units, until the number of code units is the same as in the pattern.
-			boost::scoped_array<UChar> text_prefix_buf(new UChar[m_pattern_buf_len]);
-			int i;
-			for (i = 0; i < m_pattern_buf_len; ++i) {
+			boost::scoped_array<UChar> text_prefix_buf;
+			try {
+				text_prefix_buf.reset(new UChar[m_pattern_buf_len]);
+			} catch (std::bad_alloc& e) {
+				PION_LOG_ERROR(m_logger, "m_pattern_buf_len: " << m_pattern_buf_len << " - " << e.what() << " - rethrowing");
+				throw BadAllocException("m_pattern_buf_len = " + boost::lexical_cast<std::string>(m_pattern_buf_len));
+			}
+			for (int i = 0; i < m_pattern_buf_len; ++i) {
 				UChar32 c = text_iter.next(&text_iter);
 				if (c == U_SENTINEL) {
 					// If the iteration failed, the text is too short to start with the pattern, so return false.
@@ -442,7 +492,7 @@ private:
 	/// helper class used to determine if one string ends with another
 	class CompareStringEndsWith : public ComparisonFunctor {
 	public:
-		CompareStringEndsWith(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringEndsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringEndsWith() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -461,9 +511,12 @@ private:
 			// Compare the last m_pattern_buf_len code units of the text with all m_pattern_buf_len code units of the pattern.
 			UCharIterator pattern_iter;
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
-			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
-			// TODO: check errorCode.
+			UErrorCode u_error_code = U_ZERO_ERROR;
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringEndsWith: " << u_errorName(u_error_code));
+				return false;
+			}
 			return (result == UCOL_EQUAL);
 		}
 	};
@@ -471,7 +524,7 @@ private:
 	/// helper class used to determine if one string is ordered before another
 	class CompareStringOrderedBefore : public ComparisonFunctor {
 	public:
-		CompareStringOrderedBefore(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringOrderedBefore(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringOrderedBefore() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -479,9 +532,12 @@ private:
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
-			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
-			// TODO: check errorCode.
+			UErrorCode u_error_code = U_ZERO_ERROR;
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedBefore: " << u_errorName(u_error_code));
+				return false;
+			}
 			return (result == UCOL_LESS);
 		}
 	};
@@ -489,7 +545,7 @@ private:
 	/// helper class used to determine if one string is ordered after another
 	class CompareStringOrderedAfter : public ComparisonFunctor {
 	public:
-		CompareStringOrderedAfter(const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
+		CompareStringOrderedAfter(PionLogger& logger, const std::string& value, UColAttributeValue attr = UCOL_DEFAULT);
 		~CompareStringOrderedAfter() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
@@ -497,9 +553,12 @@ private:
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
-			UErrorCode errorCode = U_ZERO_ERROR;
-			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &errorCode);
-			// TODO: check errorCode.
+			UErrorCode u_error_code = U_ZERO_ERROR;
+			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
+			if (U_FAILURE(u_error_code)) {
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedAfter: " << u_errorName(u_error_code));
+				return false;
+			}
 			return (result == UCOL_GREATER);
 		}
 	};
@@ -824,21 +883,26 @@ inline bool Comparison::checkComparison(const ComparisonFunction& comparison_fun
 	boost::tribool result = boost::indeterminate;
 //	Event::ConstIterator value = values_range.second;
 
-	for (Event::ConstIterator i = values_range.first;
-		 i != values_range.second; ++i)
-	{
-		if (comparison_func(i->value)) {
-			if (! m_match_all_values) {
-				result = true;
-//				value = i;
-				break;
-			}
-		} else {
-			if (m_match_all_values) {
-				result = false;
-				break;
+	try {
+		for (Event::ConstIterator i = values_range.first;
+			 i != values_range.second; ++i)
+		{
+			if (comparison_func(i->value)) {
+				if (! m_match_all_values) {
+					result = true;
+//					value = i;
+					break;
+				}
+			} else {
+				if (m_match_all_values) {
+					result = false;
+					break;
+				}
 			}
 		}
+	} catch (PionException& e) {
+		PION_LOG_ERROR(m_logger, "term_id: " << m_term.term_id << " - " << e.what() << " - rethrowing");
+		throw;
 	}
 
 	if (boost::indeterminate(result))

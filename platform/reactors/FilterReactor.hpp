@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -39,8 +39,8 @@ class FilterReactor :
 public:	
 	
 	/// constructs a new FilterReactor object
-	FilterReactor(void) : Reactor(TYPE_PROCESSING) {}
-	
+	FilterReactor(void) : Reactor(TYPE_PROCESSING) { setLogger(PION_GET_LOGGER("pion.FilterReactor")); }
+
 	/// virtual destructor: this class is meant to be extended
 	virtual ~FilterReactor() { stop(); }
 	

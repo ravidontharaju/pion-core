@@ -100,15 +100,16 @@ public:
 	/// constructs a new TransformReactor object
 	TransformReactor(void) :
 		Reactor(TYPE_PROCESSING),
-		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF),
-		m_logger(PION_GET_LOGGER("pion.TransformReactor"))
-	{}
+		m_event_type(pion::platform::Vocabulary::UNDEFINED_TERM_REF)
+	{
+		setLogger(PION_GET_LOGGER("pion.TransformReactor"));
+	}
 
 	/// virtual destructor: this class is meant to be extended
 	virtual ~TransformReactor() {
-			stop();
-			for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); ++i)
-				delete (*i);
+		stop();
+		for (TransformChain::iterator i = m_transforms.begin(); i != m_transforms.end(); ++i)
+			delete (*i);
 	}
 
 	/**
@@ -174,9 +175,6 @@ private:
 
 	/// One event_factory to manufacture the outgoing/duplicated events
 	pion::platform::EventFactory	m_event_factory;
-
-	/// primary logging interface used by this class
-	PionLogger						m_logger;
 };
 
 }	// end namespace plugins

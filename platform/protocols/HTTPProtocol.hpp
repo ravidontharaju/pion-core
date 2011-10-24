@@ -109,6 +109,27 @@ public:
 			: PionException("Regex search failed: ", error_msg) {}
 	};
 
+	/// exception thrown if an ICU function returns an unexpected error code
+	class UnexpectedICUErrorCodeException : public PionException {
+	public:
+		UnexpectedICUErrorCodeException(const std::string& icu_func, const std::string& u_error_code_str)
+			: PionException("Unexpected ICU error code in HTTPProtocol: ", icu_func + " returned " + u_error_code_str) {}
+	};
+
+	/// exception thrown when tryConvertingToUtf8() is called with source == NULL
+	class NullSourcePointerException : public PionException {
+	public:
+		NullSourcePointerException(void)
+			: PionException("In HTTPProtocol, a NULL pointer was passed to convert to UTF-8") {}
+	};
+
+	/// exception thrown when an std::bad_alloc exception is caught in HTTPProtocol::ExtractionRule::tryConvertingToUtf8()
+	class BadAllocException : public PionException {
+	public:
+		BadAllocException(const std::string& error_msg)
+			: PionException("std::bad_alloc in HTTPProtocol: ", error_msg) {}
+	};
+
 
 	/// constructs HTTPProtocol object
 	HTTPProtocol() : m_logger(PION_GET_LOGGER("pion.HTTPProtocol")),
@@ -494,6 +515,9 @@ private:
 	/// whether to enable searching the content for meta tags containing charset declarations
 	bool						m_allow_searching_content_for_charset;
 
+	/// copy of universal vocabulary used for error reporting
+	pion::platform::VocabularyPtr	m_vocab_ptr;
+	
 
 	/// regular expression used to extract charset from Content-Encoding HTTP header
 	static const boost::regex	EXTRACT_CHARSET_RX;
@@ -931,7 +955,14 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								decoded_and_converted_flag = false;
 							} else {
 								final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(http_msg.getContent(), http_msg.getContentLength());
-								final_content.reset(new char[final_content_length]);
+
+								try {
+									final_content.reset(new char[final_content_length]);
+								} catch (std::bad_alloc& e) {
+									PION_LOG_ERROR(logger, "final_content_length: " << final_content_length << " - " << e.what() << " - rethrowing");
+									throw BadAllocException("final_content_length = " + boost::lexical_cast<std::string>(final_content_length));
+								}
+
 								pion::platform::EventValidator::cleanseUTF8_TEMP(http_msg.getContent(), http_msg.getContentLength(), final_content.get(), &final_content_length);
 								decoded_and_converted_flag = true;
 							}
@@ -948,7 +979,14 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 								final_content.swap(decoded_content);
 							} else {
 								final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(decoded_content.get(), decoded_content_length);
-								final_content.reset(new char[final_content_length]);
+
+								try {
+									final_content.reset(new char[final_content_length]);
+								} catch (std::bad_alloc& e) {
+									PION_LOG_ERROR(logger, "final_content_length: " << final_content_length << " - " << e.what() << " - rethrowing");
+									throw BadAllocException("final_content_length = " + boost::lexical_cast<std::string>(final_content_length));
+								}
+
 								pion::platform::EventValidator::cleanseUTF8_TEMP(decoded_content.get(), decoded_content_length, final_content.get(), &final_content_length);
 							}
 							decoded_and_converted_flag = true;
@@ -963,7 +1001,14 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						decoded_and_converted_flag = false;
 					} else {
 						final_content_length = pion::platform::EventValidator::getCleansedUTF8Length(http_msg.getContent(), http_msg.getContentLength());
-						final_content.reset(new char[final_content_length]);
+
+						try {
+							final_content.reset(new char[final_content_length]);
+						} catch (std::bad_alloc& e) {
+							PION_LOG_ERROR(logger, "final_content_length: " << final_content_length << " - " << e.what() << " - rethrowing");
+							throw BadAllocException("final_content_length = " + boost::lexical_cast<std::string>(final_content_length));
+						}
+
 						pion::platform::EventValidator::cleanseUTF8_TEMP(http_msg.getContent(), http_msg.getContentLength(), final_content.get(), &final_content_length);
 						decoded_and_converted_flag = true;
 					}

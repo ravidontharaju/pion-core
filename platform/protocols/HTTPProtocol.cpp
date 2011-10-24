@@ -331,211 +331,226 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 
 	retval->m_extraction_rules = m_extraction_rules;
 
+	retval->m_vocab_ptr = m_vocab_ptr;
+
 	return ProtocolPtr(retval);
 }
 
 void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 {
-	const Event::EventType event_type(getEventType());
+	try {
+		const Event::EventType event_type(getEventType());
 
-	// create a new event via EventFactory
-	m_event_factory.create(event_ptr_ref, event_type);
+		// create a new event via EventFactory
+		m_event_factory.create(event_ptr_ref, event_type);
 
-	// populate some basic fields
-	(*event_ptr_ref).setUBigInt(m_cs_bytes_term_ref, m_request_parser.getTotalBytesRead());
-	(*event_ptr_ref).setUBigInt(m_sc_bytes_term_ref, m_response_parser.getTotalBytesRead());
-	(*event_ptr_ref).setUBigInt(m_bytes_term_ref, m_request_parser.getTotalBytesRead()
-							 + m_response_parser.getTotalBytesRead());
-	(*event_ptr_ref).setUInt(m_status_term_ref, m_response.getStatusCode());
-	(*event_ptr_ref).setString(m_comment_term_ref, m_response.getStatusMessage());
-	(*event_ptr_ref).setString(m_method_term_ref, m_request.getMethod());
-	if (! m_request_parser.getRawHeaders().empty())
-		(*event_ptr_ref).setString(m_cs_headers_term_ref, m_request_parser.getRawHeaders());
-	if (! m_response_parser.getRawHeaders().empty())
-		(*event_ptr_ref).setString(m_sc_headers_term_ref, m_response_parser.getRawHeaders());
+		// populate some basic fields
+		(*event_ptr_ref).setUBigInt(m_cs_bytes_term_ref, m_request_parser.getTotalBytesRead());
+		(*event_ptr_ref).setUBigInt(m_sc_bytes_term_ref, m_response_parser.getTotalBytesRead());
+		(*event_ptr_ref).setUBigInt(m_bytes_term_ref, m_request_parser.getTotalBytesRead()
+								 + m_response_parser.getTotalBytesRead());
+		(*event_ptr_ref).setUInt(m_status_term_ref, m_response.getStatusCode());
+		(*event_ptr_ref).setString(m_comment_term_ref, m_response.getStatusMessage());
+		(*event_ptr_ref).setString(m_method_term_ref, m_request.getMethod());
+		if (! m_request_parser.getRawHeaders().empty())
+			(*event_ptr_ref).setString(m_cs_headers_term_ref, m_request_parser.getRawHeaders());
+		if (! m_response_parser.getRawHeaders().empty())
+			(*event_ptr_ref).setString(m_sc_headers_term_ref, m_response_parser.getRawHeaders());
 
-	// construct uri string
-	std::string uri_str(m_request.getResource());
-	if (! m_request.getQueryString().empty()) {
-		uri_str += '?';
-		uri_str += m_request.getQueryString();
-	}
-	(*event_ptr_ref).setString(m_uri_term_ref, uri_str);
+		// construct uri string
+		std::string uri_str(m_request.getResource());
+		if (! m_request.getQueryString().empty()) {
+			uri_str += '?';
+			uri_str += m_request.getQueryString();
+		}
+		(*event_ptr_ref).setString(m_uri_term_ref, uri_str);
 
-	// check for Authorization header
-	const std::string& authorization_header = m_request.getHeader(HTTPTypes::HEADER_AUTHORIZATION);
-	if (!authorization_header.empty()) {
-		if (boost::algorithm::starts_with(authorization_header, "Basic ")) {
-			// found -> extract Basic authenticated username
-			std::string username;
-			const std::string base64_encoded = authorization_header.substr(6);
-			if (algo::base64_decode(base64_encoded, username)) {
-				std::size_t pos = username.find(':');
-				if (pos != std::string::npos) {
-					username.resize(pos);
-					(*event_ptr_ref).setString(m_authuser_term_ref, username);
+		// check for Authorization header
+		const std::string& authorization_header = m_request.getHeader(HTTPTypes::HEADER_AUTHORIZATION);
+		if (!authorization_header.empty()) {
+			if (boost::algorithm::starts_with(authorization_header, "Basic ")) {
+				// found -> extract Basic authenticated username
+				std::string username;
+				const std::string base64_encoded = authorization_header.substr(6);
+				if (algo::base64_decode(base64_encoded, username)) {
+					std::size_t pos = username.find(':');
+					if (pos != std::string::npos) {
+						username.resize(pos);
+						(*event_ptr_ref).setString(m_authuser_term_ref, username);
+					}
 				}
-			}
-		} else if (boost::algorithm::starts_with(authorization_header, "Digest ")) {
-			// found -> extract Digest authenticated username
-			std::size_t start_pos = authorization_header.find("username=\"");
-			if (start_pos != std::string::npos) {
-				start_pos += 10;	// step past first quote
-				std::size_t end_pos = authorization_header.find('\"', start_pos);
-				if (end_pos != std::string::npos) {
-					std::string username = authorization_header.substr(start_pos, end_pos-start_pos);
-					(*event_ptr_ref).setString(m_authuser_term_ref, username);
+			} else if (boost::algorithm::starts_with(authorization_header, "Digest ")) {
+				// found -> extract Digest authenticated username
+				std::size_t start_pos = authorization_header.find("username=\"");
+				if (start_pos != std::string::npos) {
+					start_pos += 10;	// step past first quote
+					std::size_t end_pos = authorization_header.find('\"', start_pos);
+					if (end_pos != std::string::npos) {
+						std::string username = authorization_header.substr(start_pos, end_pos-start_pos);
+						(*event_ptr_ref).setString(m_authuser_term_ref, username);
+					}
 				}
 			}
 		}
-	}
-	
-	// check for X-Forwarded-For header
-	const std::string& xff_header = m_request.getHeader(HTTPTypes::HEADER_X_FORWARDED_FOR);
-	if (!xff_header.empty()) {
-	    std::string public_ip;
-	    if (HTTPParser::parseForwardedFor(xff_header, public_ip)) {
-	        // set c-ip field if a good match was found
-			(*event_ptr_ref).setString(m_c_ip_term_ref, public_ip);
-	    }
-	}
-	
-	// populate some more fields...
-	(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
-	(*event_ptr_ref).setString(m_uri_query_term_ref, m_request.getQueryString());
-	(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
-	(*event_ptr_ref).setUInt(m_cached_term_ref,
-							 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
-							 ? 1 : 0);
 
-	// sanity checks for timestamps
-	// (may have only request packets or only response packets)
-	if (m_request_start_time.is_not_a_date_time())
-		m_request_start_time = m_request_end_time = m_request_ack_time = m_response_start_time;
-	else if (m_response_start_time.is_not_a_date_time())
-		m_response_start_time = m_response_end_time = m_response_ack_time = m_request_end_time;
-	if (m_response_ack_time < m_response_end_time)
-		m_response_ack_time = m_response_end_time;
-
-	// set timestamp fields
-	(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_start_time); 
-	(*event_ptr_ref).setDateTime(m_time_term_ref, m_request_start_time); 
-	(*event_ptr_ref).setDateTime(m_date_time_term_ref, m_request_start_time); 
-	(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_start_time); 
-	(*event_ptr_ref).setDateTime(m_request_start_time_term_ref, m_request_start_time); 
-	(*event_ptr_ref).setDateTime(m_request_end_time_term_ref, m_request_end_time); 
-	(*event_ptr_ref).setDateTime(m_response_start_time_term_ref, m_response_start_time); 
-	(*event_ptr_ref).setDateTime(m_response_end_time_term_ref, m_response_end_time); 
-	(*event_ptr_ref).setUInt(m_epoch_time_term_ref,
-		PionTimeFacet::to_time_t(m_request_start_time) );
-
-	// set time duration fields
-	(*event_ptr_ref).setUInt(m_cs_send_time_term_ref,
-		( m_request_end_time > m_request_start_time ?
-		  (m_request_end_time - m_request_start_time).total_microseconds()
-		  : 0 ) );
-	(*event_ptr_ref).setUInt(m_cs_ack_time_term_ref,
-		( m_request_ack_time > m_request_end_time ?
-		  (m_request_ack_time - m_request_end_time).total_microseconds()
-		  : 0 ) );
-	(*event_ptr_ref).setUInt(m_sc_reply_time_term_ref,
-		( m_response_start_time > m_request_end_time ?
-		  (m_response_start_time - m_request_end_time).total_microseconds()
-		  : 0 ) );
-	(*event_ptr_ref).setUInt(m_sc_send_time_term_ref,
-		( m_response_end_time > m_response_start_time ?
-		  (m_response_end_time - m_response_start_time).total_microseconds()
-		  : 0 ) );
-	(*event_ptr_ref).setUInt(m_data_center_time_term_ref,
-		( m_response_end_time > m_request_end_time ?
-		  (m_response_end_time - m_request_end_time).total_microseconds()
-		  : 0 ) );
-
-	// save sc_ack_time for next calculation
-	const boost::uint32_t sc_ack_time = ( m_response_ack_time > m_response_end_time ?
-		  (m_response_ack_time - m_response_end_time).total_microseconds() : 0 );
-	(*event_ptr_ref).setUInt(m_sc_ack_time_term_ref, sc_ack_time);
-
-	// set packet counter fields
-	(*event_ptr_ref).setUInt(m_cs_data_packets_term_ref, m_cs_data_packets);
-	(*event_ptr_ref).setUInt(m_sc_data_packets_term_ref, m_sc_data_packets);
-	(*event_ptr_ref).setUInt(m_cs_missing_packets_term_ref, m_cs_missing_packets);
-	(*event_ptr_ref).setUInt(m_sc_missing_packets_term_ref, m_sc_missing_packets);
-	
-	// set availability metrics
-	(*event_ptr_ref).setUInt(m_request_status_term_ref, m_request.getStatus());
-	(*event_ptr_ref).setUInt(m_response_status_term_ref, m_response.getStatus());
-
-	// used to cache "final" payload content, i.e. after decoding (if needed) and conversion to UTF-8 (if needed) 
-	size_t final_request_length;
-	size_t final_response_length;
-	boost::shared_array<char> final_request_content;
-	boost::shared_array<char> final_response_content;
-	boost::logic::tribool decoded_and_converted_request_flag(boost::indeterminate);
-	boost::logic::tribool decoded_and_converted_response_flag(boost::indeterminate);
-
-	// process content extraction rules
-	for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
-		i != m_extraction_rules.end(); ++i)
-	{
-		const ExtractionRule& rule = **i;
-		if (! rule.m_running)
-			continue;
-		try {
-			switch (rule.m_source) {
-				case EXTRACT_QUERY:
-					// extract query parameter from request
-					rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name), true);
-					break;
-				case EXTRACT_COOKIE:
-					// extract cookie parameter from request
-					rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
-					// extract set-cookie parameters from response
-					rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
-					break;
-				case EXTRACT_CS_COOKIE:
-					// extract cookie parameter from request
-					rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
-					break;
-				case EXTRACT_SC_COOKIE:
-					// extract set-cookie parameters from response
-					rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
-					break;
-				case EXTRACT_CS_HEADER:
-					// extract HTTP header from request
-					rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
-					break;
-				case EXTRACT_SC_HEADER:
-					// extract HTTP header from response
-					rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
-					break;
-				case EXTRACT_CS_CONTENT:
-					// extract decoded and converted HTTP payload content from request
-					rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
-						final_request_content, final_request_length, m_logger);
-					break;
-				case EXTRACT_SC_CONTENT:
-					// extract decoded and converted HTTP payload content from response
-					rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
-						final_response_content, final_response_length, m_logger);
-					break;
-				case EXTRACT_CS_RAW_CONTENT:
-					// extract raw HTTP payload content from request
-					rule.processRawContent(event_ptr_ref, m_request);
-					break;
-				case EXTRACT_SC_RAW_CONTENT:
-					// extract raw HTTP payload content from response
-					rule.processRawContent(event_ptr_ref, m_response);
-					break;
-			}
-		} catch (RegexFailure& e) {
-			PION_LOG_ERROR(m_logger, e.what());
-			if (! getConfigManager().getDebugMode()) {
-				// Prevent this rule from running again.
-				(*i)->m_running = false;
-				PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match_str);
+		// check for X-Forwarded-For header
+		const std::string& xff_header = m_request.getHeader(HTTPTypes::HEADER_X_FORWARDED_FOR);
+		if (!xff_header.empty()) {
+			std::string public_ip;
+			if (HTTPParser::parseForwardedFor(xff_header, public_ip)) {
+				// set c-ip field if a good match was found
+				(*event_ptr_ref).setString(m_c_ip_term_ref, public_ip);
 			}
 		}
+
+		// populate some more fields...
+		(*event_ptr_ref).setString(m_uri_stem_term_ref, m_request.getResource());
+		(*event_ptr_ref).setString(m_uri_query_term_ref, m_request.getQueryString());
+		(*event_ptr_ref).setString(m_request_term_ref, m_request.getFirstLine());
+		(*event_ptr_ref).setUInt(m_cached_term_ref,
+								 m_response.getStatusCode() == HTTPTypes::RESPONSE_CODE_NOT_MODIFIED
+								 ? 1 : 0);
+
+		// sanity checks for timestamps
+		// (may have only request packets or only response packets)
+		if (m_request_start_time.is_not_a_date_time())
+			m_request_start_time = m_request_end_time = m_request_ack_time = m_response_start_time;
+		else if (m_response_start_time.is_not_a_date_time())
+			m_response_start_time = m_response_end_time = m_response_ack_time = m_request_end_time;
+		if (m_response_ack_time < m_response_end_time)
+			m_response_ack_time = m_response_end_time;
+
+		// set timestamp fields
+		(*event_ptr_ref).setDateTime(m_date_term_ref, m_request_start_time); 
+		(*event_ptr_ref).setDateTime(m_time_term_ref, m_request_start_time); 
+		(*event_ptr_ref).setDateTime(m_date_time_term_ref, m_request_start_time); 
+		(*event_ptr_ref).setDateTime(m_clf_date_term_ref, m_request_start_time); 
+		(*event_ptr_ref).setDateTime(m_request_start_time_term_ref, m_request_start_time); 
+		(*event_ptr_ref).setDateTime(m_request_end_time_term_ref, m_request_end_time); 
+		(*event_ptr_ref).setDateTime(m_response_start_time_term_ref, m_response_start_time); 
+		(*event_ptr_ref).setDateTime(m_response_end_time_term_ref, m_response_end_time); 
+		(*event_ptr_ref).setUInt(m_epoch_time_term_ref,
+			PionTimeFacet::to_time_t(m_request_start_time) );
+
+		// set time duration fields
+		(*event_ptr_ref).setUInt(m_cs_send_time_term_ref,
+			( m_request_end_time > m_request_start_time ?
+			  (m_request_end_time - m_request_start_time).total_microseconds()
+			  : 0 ) );
+		(*event_ptr_ref).setUInt(m_cs_ack_time_term_ref,
+			( m_request_ack_time > m_request_end_time ?
+			  (m_request_ack_time - m_request_end_time).total_microseconds()
+			  : 0 ) );
+		(*event_ptr_ref).setUInt(m_sc_reply_time_term_ref,
+			( m_response_start_time > m_request_end_time ?
+			  (m_response_start_time - m_request_end_time).total_microseconds()
+			  : 0 ) );
+		(*event_ptr_ref).setUInt(m_sc_send_time_term_ref,
+			( m_response_end_time > m_response_start_time ?
+			  (m_response_end_time - m_response_start_time).total_microseconds()
+			  : 0 ) );
+		(*event_ptr_ref).setUInt(m_data_center_time_term_ref,
+			( m_response_end_time > m_request_end_time ?
+			  (m_response_end_time - m_request_end_time).total_microseconds()
+			  : 0 ) );
+
+		// save sc_ack_time for next calculation
+		const boost::uint32_t sc_ack_time = ( m_response_ack_time > m_response_end_time ?
+			  (m_response_ack_time - m_response_end_time).total_microseconds() : 0 );
+		(*event_ptr_ref).setUInt(m_sc_ack_time_term_ref, sc_ack_time);
+
+		// set packet counter fields
+		(*event_ptr_ref).setUInt(m_cs_data_packets_term_ref, m_cs_data_packets);
+		(*event_ptr_ref).setUInt(m_sc_data_packets_term_ref, m_sc_data_packets);
+		(*event_ptr_ref).setUInt(m_cs_missing_packets_term_ref, m_cs_missing_packets);
+		(*event_ptr_ref).setUInt(m_sc_missing_packets_term_ref, m_sc_missing_packets);
+		
+		// set availability metrics
+		(*event_ptr_ref).setUInt(m_request_status_term_ref, m_request.getStatus());
+		(*event_ptr_ref).setUInt(m_response_status_term_ref, m_response.getStatus());
+
+		// used to cache "final" payload content, i.e. after decoding (if needed) and conversion to UTF-8 (if needed) 
+		size_t final_request_length;
+		size_t final_response_length;
+		boost::shared_array<char> final_request_content;
+		boost::shared_array<char> final_response_content;
+		boost::logic::tribool decoded_and_converted_request_flag(boost::indeterminate);
+		boost::logic::tribool decoded_and_converted_response_flag(boost::indeterminate);
+
+		// process content extraction rules
+		for (ExtractionRuleVector::const_iterator i = m_extraction_rules.begin();
+			i != m_extraction_rules.end(); ++i)
+		{
+			const ExtractionRule& rule = **i;
+			if (! rule.m_running)
+				continue;
+			try {
+				switch (rule.m_source) {
+					case EXTRACT_QUERY:
+						// extract query parameter from request
+						rule.process(event_ptr_ref, m_request.getQueryParams().equal_range(rule.m_name), true);
+						break;
+					case EXTRACT_COOKIE:
+						// extract cookie parameter from request
+						rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+						// extract set-cookie parameters from response
+						rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
+						break;
+					case EXTRACT_CS_COOKIE:
+						// extract cookie parameter from request
+						rule.process(event_ptr_ref, m_request.getCookieParams().equal_range(rule.m_name), false);
+						break;
+					case EXTRACT_SC_COOKIE:
+						// extract set-cookie parameters from response
+						rule.process(event_ptr_ref, m_response.getCookieParams().equal_range(rule.m_name), false);
+						break;
+					case EXTRACT_CS_HEADER:
+						// extract HTTP header from request
+						rule.process(event_ptr_ref, m_request.getHeaders().equal_range(rule.m_name), false);
+						break;
+					case EXTRACT_SC_HEADER:
+						// extract HTTP header from response
+						rule.process(event_ptr_ref, m_response.getHeaders().equal_range(rule.m_name), false);
+						break;
+					case EXTRACT_CS_CONTENT:
+						// extract decoded and converted HTTP payload content from request
+						rule.processContent(event_ptr_ref, m_request, decoded_and_converted_request_flag,
+							final_request_content, final_request_length, m_logger);
+						break;
+					case EXTRACT_SC_CONTENT:
+						// extract decoded and converted HTTP payload content from response
+						rule.processContent(event_ptr_ref, m_response, decoded_and_converted_response_flag,
+							final_response_content, final_response_length, m_logger);
+						break;
+					case EXTRACT_CS_RAW_CONTENT:
+						// extract raw HTTP payload content from request
+						rule.processRawContent(event_ptr_ref, m_request);
+						break;
+					case EXTRACT_SC_RAW_CONTENT:
+						// extract raw HTTP payload content from response
+						rule.processRawContent(event_ptr_ref, m_response);
+						break;
+				}
+			} catch (RegexFailure& e) {
+				PION_LOG_ERROR(m_logger, e.what());
+				if (! getConfigManager().getDebugMode()) {
+					// Prevent this rule from running again.
+					(*i)->m_running = false;
+					PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match_str);
+				}
+			} catch (Event::PionExceptionWithTermRef& e) {
+				throw; // error message would be redundant, so skip it
+			} catch (std::exception& e) {
+				PION_LOG_ERROR(m_logger, "term_id: " << rule.m_term.term_id << " - " << e.what() << " - rethrowing");
+				throw;
+			}
+		}
+	} catch (Event::PionExceptionWithTermRef& e) {
+		std::string term_id = "unknown";
+		if (e.m_term_ref != Vocabulary::UNDEFINED_TERM_REF && m_vocab_ptr && e.m_term_ref <= m_vocab_ptr->size())
+			term_id = (*m_vocab_ptr)[e.m_term_ref].term_id;
+		PION_LOG_ERROR(m_logger, "term_id: " << term_id << " - " << e.what() << " - rethrowing");
+		throw;
 	}
 }
 
@@ -760,6 +775,9 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 		// step to the next rule
 		extract_node = extract_node->next;
 	}
+
+	// get copy of vocabulary to use for error reporting
+	m_vocab_ptr.reset(new Vocabulary(v));
 
 	// initialize references to known Terms:
 
@@ -1016,7 +1034,12 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 
 	// initialize decoded content cache to hold results
 	decoded_content_length = decoder_sink.getBytes();
-	decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
+	try {
+		decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
+	} catch (std::bad_alloc& e) {
+		PION_LOG_ERROR(logger, "decoded_content_length: " << decoded_content_length << " - " << e.what() << " - rethrowing");
+		throw BadAllocException("decoded_content_length = " + boost::lexical_cast<std::string>(decoded_content_length));
+	}
 	decoded_content.get()[decoded_content_length] = '\0';		// null terminate buffer since it may be re-used
 
 	if (decoded_content_length > 0) {
@@ -1045,26 +1068,45 @@ bool HTTPProtocol::ExtractionRule::tryConvertingToUtf8(
 	size_t& final_content_length,
 	PionLogger& logger) const
 {
-	UErrorCode status = U_ZERO_ERROR;
-	UConverter* conv = ucnv_open(charset.c_str(), &status);
-	if (U_FAILURE(status)) {
+	if (source == NULL)
+		throw NullSourcePointerException();
+
+	UErrorCode u_error_code = U_ZERO_ERROR;
+	UConverter* conv = ucnv_open(charset.c_str(), &u_error_code);
+	if (U_FAILURE(u_error_code)) {
 		PION_LOG_ERROR(logger, "Unable to find converter for charset: " << charset);
 		return false;
 	} 
 
 	// Here we set the target length to 0 so we can find out how many bytes we need to allocate.
-	int32_t target_capacity = ucnv_toAlgorithmic(UCNV_UTF8, conv, NULL, 0, source, source_length, &status);
-	// Expect status == U_BUFFER_OVERFLOW_ERROR
+	int32_t target_capacity = ucnv_toAlgorithmic(UCNV_UTF8, conv, NULL, 0, source, source_length, &u_error_code);
+
+	// U_BUFFER_OVERFLOW_ERROR is expected since targetCapacity = 0
+	if (u_error_code != U_BUFFER_OVERFLOW_ERROR) {
+		ucnv_close(conv);
+		if (u_error_code == U_INVALID_CHAR_FOUND)
+			return false;
+		else
+			throw UnexpectedICUErrorCodeException("ucnv_toAlgorithmic", u_errorName(u_error_code));
+	}
 
 	// Now allocate the memory and do the conversion for real.
 	final_content_length = target_capacity + 1;
-	final_content.reset(new char[target_capacity + 1]);	// add 1 in case length == 0 + null termination
+	try {
+		final_content.reset(new char[target_capacity + 1]);	// add 1 in case length == 0 + null termination
+	} catch (std::bad_alloc& e) {
+		ucnv_close(conv);
+		PION_LOG_ERROR(logger, "target_capacity: " << target_capacity << " - " << e.what() << " - rethrowing");
+		throw BadAllocException("target_capacity = " + boost::lexical_cast<std::string>(target_capacity));
+	}
 	final_content.get()[target_capacity] = '\0';		// null terminate buffer since it may be re-used
-	status = U_ZERO_ERROR;
-	ucnv_toAlgorithmic(UCNV_UTF8, conv, final_content.get(), final_content_length, source, source_length, &status);
+	u_error_code = U_ZERO_ERROR;
+	ucnv_toAlgorithmic(UCNV_UTF8, conv, final_content.get(), final_content_length, source, source_length, &u_error_code);
 
 	ucnv_close(conv);
-	return (status == U_ZERO_ERROR);
+	if (u_error_code != U_ZERO_ERROR)
+		throw UnexpectedICUErrorCodeException("ucnv_toAlgorithmic", u_errorName(u_error_code));
+	return true;
 }
 
 

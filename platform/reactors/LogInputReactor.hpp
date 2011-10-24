@@ -1,7 +1,7 @@
 // ------------------------------------------------------------------------
 // Pion is a development platform for building Reactors that process Events
 // ------------------------------------------------------------------------
-// Copyright (C) 2007-2008 Atomic Labs, Inc.  (http://www.atomiclabs.com)
+// Copyright (C) 2007-2011 Atomic Labs, Inc.  (http://www.atomiclabs.com)
 //
 // Pion is free software: you can redistribute it and/or modify it under the
 // terms of the GNU Affero General Public License as published by the Free
@@ -114,9 +114,10 @@ public:
 	/// constructs a new LogInputReactor object
 	LogInputReactor(void)
 		: Reactor(TYPE_COLLECTION),
-		m_logger(PION_GET_LOGGER("pion.LogInputReactor")),
 		m_just_one(false), m_tail_f(false), m_frequency(DEFAULT_FREQUENCY), m_worker_is_active(false)
 	{
+		setLogger(PION_GET_LOGGER("pion.LogInputReactor"));
+
 		// publish the "FinishedLog" signal
 		publish("FinishedLog");
 	}
@@ -150,12 +151,6 @@ public:
 	
 	/// called by the ReactorEngine to stop Event processing
 	virtual void stop(void);
-	
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-	
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
 	
 		
 private:
@@ -246,10 +241,7 @@ private:
 	/// name of the ConsumedLog element for Pion XML config files
 	static const std::string			CONSUMED_LOG_ELEMENT_NAME;
 
-	
-	/// primary logging interface used by this class
-	PionLogger							m_logger;
-	
+
 	/// unique identifier of the Codec that is used for reading Events
 	std::string							m_codec_id;
 	

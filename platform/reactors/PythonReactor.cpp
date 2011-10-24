@@ -1223,20 +1223,20 @@ boost::thread_specific_ptr<PyThreadState> *		PythonReactor::m_state_ptr = NULL;
 
 PythonReactor::PythonReactor(void)
 	: Reactor(TYPE_PROCESSING),
-	m_logger(PION_GET_LOGGER("pion.PythonReactor")),
 	m_byte_code(NULL), m_module(NULL),
 	m_start_func(NULL), m_stop_func(NULL), m_process_func(NULL),
 	m_reactor_ptr(NULL),
 	m_session_event_term_ref(Vocabulary::UNDEFINED_TERM_REF),
 	m_session_id_term_ref(Vocabulary::UNDEFINED_TERM_REF)
 {
+	setLogger(PION_GET_LOGGER("pion.PythonReactor"));
 	boost::mutex::scoped_lock init_lock(m_init_mutex);
 	if (++m_init_num == 1) {
 		PION_LOG_DEBUG(m_logger, "Initializing Python interpreter");
 		// initialize the thread specific state pointers
 		m_state_ptr = new boost::thread_specific_ptr<PyThreadState>(&PythonReactor::releaseThreadState);
 		// enable optimizations
-        Py_OptimizeFlag = 2;
+		Py_OptimizeFlag = 2;
 		// initialize python interpreter
 		Py_Initialize();
 		// setup pion module: Reactor data types and callback functions

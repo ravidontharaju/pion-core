@@ -168,12 +168,6 @@ public:
 	 */
 	PyObject *getSession(PyObject *event_ptr);
 
-	/// sets the logger to be used
-	inline void setLogger(PionLogger log_ptr) { m_logger = log_ptr; }
-
-	/// returns the logger currently in use
-	inline PionLogger getLogger(void) { return m_logger; }
-
 	/// returns a reference to the universal vocabulary (use carefully!)
 	inline const pion::platform::Vocabulary& getVocabulary(void) const {
 		PION_ASSERT(m_vocab_ptr);
@@ -312,9 +306,6 @@ private:
 	
 	/// total number of PythonReactor instances
 	static boost::uint32_t			m_init_num;
-
-	/// primary logging interface used by this class
-	PionLogger						m_logger;
 
 	/// string containing python source code to execute
 	std::string						m_source;
