@@ -72,6 +72,8 @@ if ($PLATFORM =~ /^win/i) {
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
 	$PIONDB_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "piondb.exe");
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
+	@PDB_FILES = bsd_glob("{bin,net/services,platform/codecs,platform/databases,platform/protocols,platform/codecs,platform/reactors,platform/services}/" . $DLL_FULL_DIR . "/*.pdb");
+	$PDB_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME . "-debug"), );
 } elsif ($PLATFORM eq "osx") {
 	$SHARED_LIB_SUFFIX = "dylib";
 	$PLUGIN_LIB_SUFFIX = "so";
@@ -239,14 +241,22 @@ copy(File::Spec->catfile( ("platform", "build"), "httpbl.py"),
 copy($SERVER_EXE, $PACKAGE_DIR);
 copy($PIONDB_EXE, $PACKAGE_DIR);
 
-# copy python26.dll for windows	builds
 if ($PLATFORM =~ /^win/i) {
+	# copy python26.dll for windows	builds
 	if ($PLATFORM =~ /^win64/i) {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty", "x64"), "python26.dll"),
 			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
 	} else {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty"), "python26.dll"),
 			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
+	}
+
+	# copy pdb files to debug directory
+	print "Copying debug files..\n";
+	rmtree($PDB_DIR);
+	mkdir($PDB_DIR) unless -d $PDB_DIR;
+	foreach (@PDB_FILES) {
+		copy($_, $PDB_DIR);
 	}
 }
 
@@ -258,12 +268,15 @@ if ($PLATFORM =~ /^win/i) {
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.bat"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.bat"));
 
-	# create zip package
+	# create zip packages
 	if ($NOZIP ne "nozip") {
 		require Archive::Zip;
 		$zip = new Archive::Zip;
 		$zip->addTree($PACKAGE_DIR, $PACKAGE_NAME);
 		$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME.zip");
+		#$zip = new Archive::Zip;
+		#$zip->addTree($PDB_DIR, $PACKAGE_NAME . "-debug");
+		#$zip->writeToFileNamed("$BIN_DIR/$TARBALL_NAME-debug.zip");
 		undef $zip;
 	}
 } else {
