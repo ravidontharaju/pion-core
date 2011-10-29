@@ -62,12 +62,15 @@ case "$1" in
 	;;
   restart|reload)
 	restart
+	RETVAL=$?
 	;;
   condrestart)
 	condrestart
+	RETVAL=$?
 	;;
   status)
 	dostatus
+	RETVAL=$?
 	;;
   *)
 	echo "Usage: $prog {start|stop|restart|reload|condrestart|status}"
