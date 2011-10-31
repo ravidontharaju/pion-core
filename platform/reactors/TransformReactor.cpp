@@ -245,7 +245,7 @@ void TransformReactor::process(const EventPtr& e)
 			(*i)->transform(new_e, e);		// transform   d <- s
 	} catch (std::exception& e) {
 		// Likely Boost.regex throw
-		PION_LOG_ERROR(m_logger, e.what());
+		PION_LOG_ERROR(m_logger, "reactor_id: " << getId() << " - " << e.what() << " - handled");
 	}
 
 	deliverEvent(new_e);			// Deliver the modified event
