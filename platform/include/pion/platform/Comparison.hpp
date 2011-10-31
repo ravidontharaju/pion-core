@@ -383,8 +383,15 @@ private:
 		~CompareStringExactMatch() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
-			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (m_pattern_buf_len == 0)
+				return blob.size() == 0; // A string is an exact match for an empty string iff it is empty.
+			else if (blob.size() == 0)
+				return false; // A non-empty string can't exactly match an empty string.
+
+			UCharIterator text_iter, pattern_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode u_error_code = U_ZERO_ERROR;
@@ -413,6 +420,13 @@ private:
 			//UnicodeString text = UnicodeString::fromUTF8(boost::get<const Event::BlobType&>(event_value).get());
 
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (m_pattern_buf_len == 0)
+				return true; // This is a reasonable response for this degenerate case.
+			else if (blob.size() == 0)
+				return false; // An empty string can't contain a non-empty string.
+
 			int32_t text_buf_len;
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &u_error_code);
@@ -462,8 +476,15 @@ private:
 		~CompareStringStartsWith();
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
-			// Create a code unit iterator from the Event value.
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (m_pattern_buf_len == 0)
+				return true; // This is a reasonable response for this degenerate case.
+			else if (blob.size() == 0)
+				return false; // An empty string can't start with a non-empty string.
+
+			// Create a code unit iterator from the Event value.
 			UCharIterator text_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
@@ -496,8 +517,15 @@ private:
 		~CompareStringEndsWith() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
-			// Create a code unit iterator from the Event value.
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (m_pattern_buf_len == 0)
+				return true; // This is a reasonable response for this degenerate case.
+			else if (blob.size() == 0)
+				return false; // An empty string can't end with a non-empty string.
+
+			// Create a code unit iterator from the Event value.
 			UCharIterator text_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 
@@ -528,8 +556,15 @@ private:
 		~CompareStringOrderedBefore() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
-			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (m_pattern_buf_len == 0)
+				return false; // Nothing is ordered before an empty string.
+			else if (blob.size() == 0)
+				return true; // An empty string is ordered before any non-empty string.
+
+			UCharIterator text_iter, pattern_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode u_error_code = U_ZERO_ERROR;
@@ -549,8 +584,15 @@ private:
 		~CompareStringOrderedAfter() {}
 
 		virtual bool operator()(const Event::ParameterValue& event_value) const {
-			UCharIterator text_iter, pattern_iter;
 			const Event::BlobType& blob = boost::get<const Event::BlobType&>(event_value);
+
+			// Handle cases where at least one of the two strings is empty.
+			if (blob.size() == 0)
+				return false; // An empty string is not ordered after anything.
+			else if (m_pattern_buf_len == 0)
+				return true; // A non-empty string comes after an empty string.
+
+			UCharIterator text_iter, pattern_iter;
 			uiter_setUTF8(&text_iter, blob.get(), blob.size());
 			uiter_setString(&pattern_iter, m_pattern_buf, m_pattern_buf_len);
 			UErrorCode u_error_code = U_ZERO_ERROR;

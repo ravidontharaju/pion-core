@@ -409,6 +409,11 @@ Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
 	}
 
+	// m_pattern_buf_len == 0 is a special case that always needs to be checked for before using m_pattern_buf.
+	// It has different implications for different subclasses, so it needs to be dealt with in the subclasses.
+	if (m_pattern_buf_len == 0)
+		return;
+
 	try {
 		m_pattern_buf = new UChar[m_pattern_buf_len];
 	} catch (std::bad_alloc& e) {
@@ -436,21 +441,31 @@ Comparison::CompareStringExactMatch::CompareStringExactMatch(PionLogger& logger,
 }
 
 Comparison::CompareStringContains::CompareStringContains(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
+	if (m_pattern_buf_len == 0)
+		PION_LOG_WARN(logger, "A CompareStringContains object was configured with an empty string as the value to search for.");
 }
 
 Comparison::CompareStringStartsWith::CompareStringStartsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
+	if (m_pattern_buf_len == 0)
+		PION_LOG_WARN(logger, "A CompareStringStartsWith object was configured with an empty string as the value to compare against.");
 }
 
 Comparison::CompareStringStartsWith::~CompareStringStartsWith() {
 }
 
 Comparison::CompareStringEndsWith::CompareStringEndsWith(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
+	if (m_pattern_buf_len == 0)
+		PION_LOG_WARN(logger, "A CompareStringEndsWith object was configured with an empty string as the value to compare against.");
 }
 
 Comparison::CompareStringOrderedBefore::CompareStringOrderedBefore(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
+	if (m_pattern_buf_len == 0)
+		PION_LOG_WARN(logger, "A CompareStringOrderedBefore object was configured with an empty string as the value to compare against.");
 }
 
 Comparison::CompareStringOrderedAfter::CompareStringOrderedAfter(PionLogger& logger, const std::string& value, UColAttributeValue attr) : ComparisonFunctor(logger, value, attr) {
+	if (m_pattern_buf_len == 0)
+		PION_LOG_WARN(logger, "A CompareStringOrderedAfter object was configured with an empty string as the value to compare against.");
 }
 
 	

@@ -717,9 +717,58 @@ BOOST_AUTO_TEST_CASE(checkConfigureComparisonWithEmptyString) {
 	BOOST_CHECK(c.evaluate(*e1));
 	BOOST_CHECK(c.evaluate(*e2));
 
+	c.configure(Comparison::TYPE_ENDS_WITH, "");
+	BOOST_CHECK(c.evaluate(*e1));
+	BOOST_CHECK(c.evaluate(*e2));
+
 	c.configure(Comparison::TYPE_ORDERED_BEFORE, "");
 	BOOST_CHECK(! c.evaluate(*e1));
 	BOOST_CHECK(! c.evaluate(*e2));
+
+	c.configure(Comparison::TYPE_ORDERED_AFTER, "");
+	BOOST_CHECK(c.evaluate(*e1));
+	BOOST_CHECK(! c.evaluate(*e2));
+
+	c.configure(Comparison::TYPE_CONTAINS, "");
+	BOOST_CHECK(c.evaluate(*e1));
+	BOOST_CHECK(c.evaluate(*e2));
+}
+
+BOOST_AUTO_TEST_CASE(checkEvaluateComparisonWithEmptyValue) {
+	EventPtr e(m_event_factory.create(m_object_term.term_ref));
+	e->setString(m_string_term.term_ref, "");
+
+	Comparison c(m_string_term);
+
+	c.configure(Comparison::TYPE_EXACT_MATCH, "abc");
+	BOOST_CHECK(! c.evaluate(*e));
+	c.configure(Comparison::TYPE_EXACT_MATCH, "");
+	BOOST_CHECK(c.evaluate(*e));
+
+	c.configure(Comparison::TYPE_STARTS_WITH, "abc");
+	BOOST_CHECK(! c.evaluate(*e));
+	c.configure(Comparison::TYPE_STARTS_WITH, "");
+	BOOST_CHECK(c.evaluate(*e));
+
+	c.configure(Comparison::TYPE_ENDS_WITH, "abc");
+	BOOST_CHECK(! c.evaluate(*e));
+	c.configure(Comparison::TYPE_ENDS_WITH, "");
+	BOOST_CHECK(c.evaluate(*e));
+
+	c.configure(Comparison::TYPE_ORDERED_BEFORE, "abc");
+	BOOST_CHECK(c.evaluate(*e));
+	c.configure(Comparison::TYPE_ORDERED_BEFORE, "");
+	BOOST_CHECK(! c.evaluate(*e));
+
+	c.configure(Comparison::TYPE_ORDERED_AFTER, "abc");
+	BOOST_CHECK(! c.evaluate(*e));
+	c.configure(Comparison::TYPE_ORDERED_AFTER, "");
+	BOOST_CHECK(! c.evaluate(*e));
+
+	c.configure(Comparison::TYPE_CONTAINS, "abc");
+	BOOST_CHECK(! c.evaluate(*e));
+	c.configure(Comparison::TYPE_CONTAINS, "");
+	BOOST_CHECK(c.evaluate(*e));
 }
 
 BOOST_AUTO_TEST_CASE(checkComparisonCopyWorksForRegex) {
