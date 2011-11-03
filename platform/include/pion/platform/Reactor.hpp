@@ -369,10 +369,10 @@ protected:
 		
 	/// constructs a new Reactor object
 	Reactor(const ReactorType type)
-		: m_is_running(false), m_type(type), m_scheduler_ptr(NULL), 
+		: m_is_running(false), m_logger(PION_GET_LOGGER("pion.Reactor")),
+		m_type(type), m_scheduler_ptr(NULL), 
 		m_events_in(0), m_events_out(0),
-		m_config_change_pending(false), m_config_num_readers(0),
-		m_logger(PION_GET_LOGGER("pion.Reactor"))
+		m_config_change_pending(false), m_config_num_readers(0)
 	{}
 
 	/// returns the task scheduler used by the ReactionEngine
