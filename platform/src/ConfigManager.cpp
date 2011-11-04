@@ -376,16 +376,20 @@ xmlNodePtr ConfigManager::createResourceConfig(const std::string& resource_name,
 		throw XMLBufferParsingException(buf);
 
 	// find the ROOT element
-	if ( (node_ptr = xmlDocGetRootElement(doc_ptr)) == NULL
-		|| xmlStrcmp(node_ptr->name,
-					 reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) )
-	{
+	if ( (node_ptr = xmlDocGetRootElement(doc_ptr)) == NULL ) {
 		xmlFreeDoc(doc_ptr);
 		// buf is missing the root "PionConfig" element 
 		throw MissingRootElementException(buf);
 	}
-	// find the resource element
-	node_ptr = findConfigNodeByName(resource_name, node_ptr->children);
+
+	// check if root is the "PionConfig" root element
+	if (xmlStrcmp(node_ptr->name, reinterpret_cast<const xmlChar*>(ROOT_ELEMENT_NAME.c_str())) ) {
+		// no, try to find the resource at top level
+		node_ptr = findConfigNodeByName(resource_name, node_ptr);
+	} else {
+		// yes, try to find the resource in children
+		node_ptr = findConfigNodeByName(resource_name, node_ptr->children);
+	}
 	if (node_ptr == NULL) {
 		xmlFreeDoc(doc_ptr);
 		throw MissingResourceElementException(resource_name);

@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithMissingConfigElement) {
 	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", "", 0), ConfigManager::BadXMLBufferException);
 
 	char buf2[] = "<otherTag></otherTag>";
-	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf2, strlen(buf2)), ConfigManager::MissingRootElementException);
+	BOOST_CHECK_THROW(ConfigManager::createResourceConfig("resource1", buf2, strlen(buf2)), ConfigManager::MissingResourceElementException);
 }
 
 BOOST_AUTO_TEST_CASE(checkCreateResourceConfigWithMissingResourceElement) {
