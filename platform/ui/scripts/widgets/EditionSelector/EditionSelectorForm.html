@@ -3,25 +3,29 @@
 		<table width="600" style="font-size: 12px;">
 			<tr>
 				<td width="50%">
-					<button dojoType="dijit.form.Button" class="edition_button lite" dojoAttachEvent="onClick: liteEditionSelected"></button>
+					<!-- type="button" needed for IE8. -->
+					<button dojoType="dijit.form.Button" type="button" class="edition_button lite" dojoAttachEvent="onClick: liteEditionSelected"></button>
 					<br />
 					${pion_lite_description}
 				</td><td width="70">
 					<img src="images/spacer.png" width="70" height="1">
 				</td><td width="50%">
-					<button dojoType="dijit.form.Button" class="edition_button enterprise" dojoAttachEvent="onClick: enterpriseEditionSelected"></button>
+					<!-- type="button" needed for IE8. -->
+					<button dojoType="dijit.form.Button" type="button" class="edition_button enterprise" dojoAttachEvent="onClick: enterpriseEditionSelected"></button>
 					<br />
 					${pion_enterprise_description} <img src="/images/key.png">
 				</td>
 			</tr><tr>
 				<td width="50%">
-					<button dojoType="dijit.form.Button" class="edition_button core" dojoAttachEvent="onClick: coreEditionSelected"></button>
+					<!-- type="button" needed for IE8. -->
+					<button dojoType="dijit.form.Button" type="button" class="edition_button core" dojoAttachEvent="onClick: coreEditionSelected"></button>
 					<br />
 					${pion_core_description}
 				</td><td width="70">
 					<img src="images/spacer.png" width="70" height="1">
 				</td><td width="50%">
-					<button dojoType="dijit.form.Button" class="edition_button replay" dojoAttachEvent="onClick: replayEditionSelected"></button>
+					<!-- type="button" needed for IE8. -->
+					<button dojoType="dijit.form.Button" type="button" class="edition_button replay" dojoAttachEvent="onClick: replayEditionSelected"></button>
 					<br />
 					${pion_replay_description} <img src="/images/key.png">
 				</td>

@@ -68,7 +68,7 @@ pion.reactors.init = function() {
 		node.setAttribute('reactor_type', item.reactor_type);
 		var img_node = dojo.doc.createElement("img");
 		node.appendChild(img_node);
-		img_node.setAttribute('src', item.src);
+		img_node.setAttribute('src', item.src.toString());
 		img_node.setAttribute('width', 148);
 		img_node.setAttribute('height', 25);
 		img_node.setAttribute('alt', item.alt);

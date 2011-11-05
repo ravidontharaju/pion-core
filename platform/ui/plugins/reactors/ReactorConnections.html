@@ -4,7 +4,10 @@
 			Input Connections
 		</h2>
 		<div style="float: right">
-			<button dojoType="dijit.form.DropDownButton" class="add_new_row above_grid">
+			<!-- type="button" needed for IE8.  Alternatively, the following also works with IE8:
+			<button data-dojo-type="dijit.form.DropDownButton" data-dojo-props='"class": "add_new_row above_grid"'>
+			-->
+			<button dojoType="dijit.form.DropDownButton" type="button" class="add_new_row above_grid">
 				<span>ADD NEW INPUT CONNECTION</span>
 				<div dojoType="dijit.Menu" dojoAttachPoint="add_input_reactor_menu"></div>
 			</button>
@@ -19,7 +22,8 @@
 			Output Connections
 		</h2>
 		<div style="float: right">
-			<button dojoType="dijit.form.DropDownButton" class="add_new_row above_grid">
+			<!-- See comment above. -->
+			<button dojoType="dijit.form.DropDownButton" type="button" class="add_new_row above_grid">
 				<span>ADD NEW OUTPUT CONNECTION</span>
 				<div dojoType="dijit.Menu" dojoAttachPoint="add_output_reactor_menu"></div>
 			</button>
