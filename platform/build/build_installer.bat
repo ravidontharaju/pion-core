@@ -3,12 +3,12 @@
 REM %ProgramFiles% is not defined when this file is run by make_binary.pl on ws03-vc9-32.
 REM SET AI_DIR="%ProgramFiles%\Caphyon\Advanced Installer 7.3.1"
 
-SET AI_DIR="C:\Program Files\Caphyon\Advanced Installer 7.7\bin\x86"
+SET AI_DIR="C:\Program Files\Caphyon\Advanced Installer 8.5\bin\x86"
 
 SET AI_EXE=advancedinstaller.com
 SET INSTALL_PRJ=%3
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
-SET AI_DIR="C:\Program Files (x86)\Caphyon\Advanced Installer 7.7\bin\x86"
+SET AI_DIR="C:\Program Files (x86)\Caphyon\Advanced Installer 8.5\bin\x86"
 IF EXIST %AI_DIR%\%AI_EXE% GOTO INST
 @echo Error: Advanced Installer is not found at %AI_DIR%; aborting installer build script
 EXIT -1
