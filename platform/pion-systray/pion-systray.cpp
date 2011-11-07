@@ -17,6 +17,7 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error);
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -45,6 +46,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		MessageBox(NULL, _T("You must have administrative privileges to run Pion Tray app!"), _T("Pion"), 
 			MB_OK | MB_ICONERROR);
 		return FALSE;
+	}
+
+	// check if starting the service is requested
+	if(_tcscmp(lpCmdLine, _T("-start")) == 0)
+	{
+		DWORD rc = StartPionService();
+		if(rc) {
+			DisplayErrorDialog(NULL, _T("Failed to start Pion service"), rc);
+		}
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PIONSYSTRAY));
