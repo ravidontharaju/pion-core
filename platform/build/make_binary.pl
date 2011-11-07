@@ -341,7 +341,7 @@ if ($PLATFORM =~ /^win/i) {
 	}
 	print "Creating Pion installation package..\n";
 	$INSTALLER_SCRIPT="platform\\\\build\\\\build_installer.bat";
-	$WIN_PACKAGE_DIR="bin\\" . $PACKAGE_NAME;
+	$WIN_PACKAGE_DIR="bin\\\\" . $PACKAGE_NAME;
 	$CMD = "cmd /c $INSTALLER_SCRIPT $WIN_PACKAGE_DIR $VERSION $INSTALLER_PRJ_FILE";
 	print "About to call: $CMD\n";
 	system($CMD);
