@@ -15,4 +15,4 @@ if [ -r /proc/meminfo ]; then
 	ulimit -v $((`sed -n 's/^MemTotal: *\([0-9]*\).*$/\1/p' /proc/meminfo`*(100 - $MEM_RESERVE)/100))
 fi
 
-DYLD_LIBRARY_PATH="./libs" LD_LIBRARY_PATH="./libs" ./pion -c config/platform.xml $1
+DYLD_LIBRARY_PATH="./libs" LD_LIBRARY_PATH="./libs" $PWD/pion -c config/platform.xml "$@"

@@ -284,14 +284,17 @@ if ($PLATFORM =~ /^win/i) {
 		undef $zip;
 	}
 } else {
-	# copy startup script
+	# copy startup/shutdown scripts
 	copy(File::Spec->catfile( ("platform", "build"), "start_pion.sh"),
 		File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
+	copy(File::Spec->catfile( ("platform", "build"), "stop_pion.sh"),
+		File::Spec->catfile($PACKAGE_DIR, "stop_pion.sh"));
 
 	# set executable permissions for unix platforms
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "pion"));
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "piondb"));
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "start_pion.sh"));
+	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "stop_pion.sh"));
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "pget.py"));
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "pmon.py"));
 	chmod(0755, File::Spec->catfile($PACKAGE_DIR, "pupgrade.py"));

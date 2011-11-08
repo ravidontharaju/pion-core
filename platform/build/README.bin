@@ -24,6 +24,7 @@ plugins/           Directory containing Pion plugin files
 ui/                Directory containing Pion user interface files
 pion               The Pion Platform server executable
 start_pion.sh      Unix shell script used to start Pion
+stop_pion.sh       Unix shell script used to stop Pion
 pion-manual.pdf    Latest version of the Pion User Manual
 HISTORY.txt        Pion Platform version history (or "change log")
 LICENSE.txt        The GNU Affero General Public License
@@ -31,7 +32,8 @@ README.txt         This README file
 
 To start Pion, just run the "./start_pion.sh" script from a command shell.
 This will setup your environment paths and start the Pion server executable.
-To run Pion as a background daemon, run "./start_pion.sh -D" 
+To run Pion as a background daemon, run "./start_pion.sh -D".  To stop this
+instance of Pion, just run the "./stop_pion.sh" script.
 
 Once the server is running, open your favorite web browser (Firefox, Safari
 or IE7) and point it to the following URL:
