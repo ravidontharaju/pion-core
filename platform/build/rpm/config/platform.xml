@@ -12,10 +12,15 @@
 	<ProtocolConfig>protocols.xml</ProtocolConfig>
 	<PluginPath>/usr/share/pion/plugins</PluginPath>
 	<DataDirectory>/var/lib/pion</DataDirectory>
-	<!--
+	<!-- MaxThreads default=4
 	<ReactionEngine>
 		<MaxThreads>32</MaxThreads>
 		<MultithreadBranches>false</MultithreadBranches>
 	</ReactionEngine>
+	-->
+	<!-- MaxThreads default=4
+	<ServiceManager>
+		<MaxThreads>8</MaxThreads>
+	</ServiceManager>
 	-->
 </PionConfig>
