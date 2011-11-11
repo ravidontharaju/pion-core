@@ -48,6 +48,7 @@ const std::string			PlatformConfig::PLUGIN_PATH_ELEMENT_NAME = "PluginPath";
 const std::string			PlatformConfig::DATA_DIRECTORY_ELEMENT_NAME = "DataDirectory";
 const std::string			PlatformConfig::DEBUG_MODE_ELEMENT_NAME = "DebugMode";
 const std::string			PlatformConfig::REACTION_ENGINE_ELEMENT_NAME = "ReactionEngine";
+const std::string			PlatformConfig::SERVICE_MANAGER_ELEMENT_NAME = "ServiceManager";
 const std::string			PlatformConfig::MAX_THREADS_ELEMENT_NAME = "MaxThreads";
 const std::string			PlatformConfig::MULTITHREAD_BRANCHES_ELEMENT_NAME = "MultithreadBranches";
 	
@@ -235,6 +236,25 @@ void PlatformConfig::openConfigFile(void)
 				m_reaction_engine.setMultithreadBranches(false);
 			} else {
 				PION_LOG_ERROR(m_logger, "Platform config has invalid MultithreadBranches setting for ReactionEngine (using default)");
+			}
+		}
+	}
+	
+	// get the ServiceManager (advanced/hidden) configuration parameters
+	xmlNodePtr service_manager_node =
+		ConfigManager::findConfigNodeByName(SERVICE_MANAGER_ELEMENT_NAME, m_config_node_ptr->children);
+	if (service_manager_node != NULL) {
+		// get MaxThreads setting (if it is defined)
+		std::string max_threads_str;
+		if (ConfigManager::getConfigOption(MAX_THREADS_ELEMENT_NAME, max_threads_str,
+										   service_manager_node->children))
+		{
+			const boost::uint32_t max_threads = boost::lexical_cast<boost::uint32_t>(max_threads_str);
+			if (max_threads == 0) {
+				PION_LOG_ERROR(m_logger, "Platform config has invalid MaxThreads setting for ServiceManager (using default)");
+			} else {
+				PION_LOG_INFO(m_logger, "Setting ServiceManager MaxThreads to " << max_threads);
+				m_service_mgr.setNumThreads(max_threads);
 			}
 		}
 	}

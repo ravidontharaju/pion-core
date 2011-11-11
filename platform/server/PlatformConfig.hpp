@@ -236,6 +236,9 @@ private:
 	/// name of the reaction engine element for Pion XML config files
 	static const std::string		REACTION_ENGINE_ELEMENT_NAME;
 	
+	/// name of the service manager element for Pion XML config files
+	static const std::string		SERVICE_MANAGER_ELEMENT_NAME;
+	
 	/// name of the max threads element for Pion XML config files
 	static const std::string		MAX_THREADS_ELEMENT_NAME;
 
