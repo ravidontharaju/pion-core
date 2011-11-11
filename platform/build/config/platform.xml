@@ -10,10 +10,15 @@
 	<LogConfig>@PION_LOG_CONFIG@</LogConfig>
 	<PluginPath>@PION_PLUGINS_DIRECTORY@</PluginPath>
 	<DataDirectory>@PION_DATA_DIRECTORY@</DataDirectory>
-	<!--
+	<!-- MaxThreads default=4
 	<ReactionEngine>
 		<MaxThreads>32</MaxThreads>
 		<MultithreadBranches>false</MultithreadBranches>
 	</ReactionEngine>
+	-->
+	<!-- MaxThreads default=4
+	<ServiceManager>
+		<MaxThreads>8</MaxThreads>
+	</ServiceManager>
 	-->
 </PionConfig>
