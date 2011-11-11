@@ -93,7 +93,11 @@ bool EventValidator::isValidUTF8(const char* ptr, std::size_t len, std::size_t* 
 	} else if (u_error_code == U_INVALID_CHAR_FOUND)
 		return false;
 	else {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "offset: " << offset 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
 	}
 }
@@ -109,7 +113,11 @@ size_t EventValidator::getCleansedUTF8Length(const char* ptr, std::size_t len) {
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
 	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
 	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "len: " << len 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
 	}
 
@@ -130,7 +138,11 @@ void EventValidator::cleanseUTF8_TEMP(const char* ptr, std::size_t len, char* bu
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
 	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
 	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "len: " << len 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
 	}
 
@@ -149,16 +161,27 @@ void EventValidator::cleanseUTF8_TEMP(const char* ptr, std::size_t len, char* bu
 	u_error_code = U_ZERO_ERROR;
 	u_strFromUTF8WithSub(utf_16_buf, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
 	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "utf_16_buf: " << (void*)utf_16_buf 
+													<< " - " << "utf_16_len: " << utf_16_len 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "len: " << len 
+													<< " - throwing");
 		delete [] utf_16_buf;
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
 	}
 
 	int32_t repaired_content_length = 0;
 	u_strToUTF8(buf, length_of_safe_content_buffer, &repaired_content_length, utf_16_buf, utf_16_len, &u_error_code);
 	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "buf: " << (void*)buf 
+													<< " - " << "length_of_safe_content_buffer: " << length_of_safe_content_buffer 
+													<< " - " << "utf_16_buf: " << (void*)utf_16_buf 
+													<< " - " << "utf_16_len: " << utf_16_len 
+													<< " - throwing");
 		delete [] utf_16_buf;
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strToUTF8", u_errorName(u_error_code));
 	}
 
@@ -179,7 +202,11 @@ void EventValidator::cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, st
 	const UChar32 REPLACEMENT_CHARACTER = 0xFFFD;
 	u_strFromUTF8WithSub(NULL, 0, &utf_16_len, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
 	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "len: " << len 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
 	}
 
@@ -195,14 +222,26 @@ void EventValidator::cleanseUTF8(EventAllocator& blob_alloc, const char* ptr, st
 	u_error_code = U_ZERO_ERROR;
 	u_strFromUTF8WithSub(bptr, utf_16_len, NULL, ptr, len, REPLACEMENT_CHARACTER, &num_substitutions, &u_error_code);
 	if (U_FAILURE(u_error_code)) {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strFromUTF8WithSub() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "bptr: " << (void*)bptr 
+													<< " - " << "utf_16_len: " << utf_16_len 
+													<< " - " << "ptr: " << (void*)ptr 
+													<< " - " << "strlen(ptr): " << strlen(ptr) 
+													<< " - " << "len: " << len 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8WithSub", u_errorName(u_error_code));
 	}
 
 	int32_t cleansed_content_length = 0;
 	u_strToUTF8(buf, length_of_safe_content_buffer, &cleansed_content_length, bptr, utf_16_len, &u_error_code);
 	if (U_FAILURE(u_error_code)) {
-		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(EventMessageLogger::get(), "u_strToUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+													<< " - " << "buf: " << (void*)buf 
+													<< " - " << "*buf_len: " << *buf_len 
+													<< " - " << "length_of_safe_content_buffer: " << length_of_safe_content_buffer 
+													<< " - " << "bptr: " << (void*)bptr 
+													<< " - " << "utf_16_len: " << utf_16_len 
+													<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strToUTF8", u_errorName(u_error_code));
 	}
 

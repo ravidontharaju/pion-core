@@ -397,7 +397,11 @@ private:
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringExactMatch: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringExactMatch: " << u_errorName(u_error_code)
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size() 
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len);
 				return false;
 			}
 			return (result == UCOL_EQUAL);
@@ -431,7 +435,9 @@ private:
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			u_strFromUTF8(NULL, 0, &text_buf_len, blob.get(), blob.size(), &u_error_code);
 			if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
-				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code)
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size());
 				return false;
 			}
 
@@ -447,19 +453,31 @@ private:
 			u_strFromUTF8(text_buf.get(), text_buf_len, NULL, blob.get(), blob.size(), &u_error_code);
 			// Use u_strFromUTF8Lenient instead?
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "u_strFromUTF8() returned error in CompareStringContains: " << u_errorName(u_error_code)
+											<< " - " << "text_buf.get(): " << (void*)text_buf.get() 
+											<< " - " << "text_buf_len: " << text_buf_len 
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size());
 				return false;
 			}
 
 			UStringSearch* ss = usearch_openFromCollator(m_pattern_buf, m_pattern_buf_len, text_buf.get(), text_buf_len, m_collator, NULL, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "usearch_openFromCollator() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "usearch_openFromCollator() returned error in CompareStringContains: " << u_errorName(u_error_code)
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len
+											<< " - " << "text_buf.get(): " << (void*)text_buf.get() 
+											<< " - " << "text_buf_len: " << text_buf_len);
 				return false;
 			}
 
 			int pos = usearch_first(ss, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "usearch_first() returned error in CompareStringContains: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "usearch_first() returned error in CompareStringContains: " << u_errorName(u_error_code)
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len
+											<< " - " << "text_buf.get(): " << (void*)text_buf.get() 
+											<< " - " << "text_buf_len: " << text_buf_len);
 				usearch_close(ss);
 				return false;
 			}
@@ -542,7 +560,11 @@ private:
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringEndsWith: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringEndsWith: " << u_errorName(u_error_code)
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size() 
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len);
 				return false;
 			}
 			return (result == UCOL_EQUAL);
@@ -570,7 +592,11 @@ private:
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedBefore: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedBefore: " << u_errorName(u_error_code)
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size() 
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len);
 				return false;
 			}
 			return (result == UCOL_LESS);
@@ -598,7 +624,11 @@ private:
 			UErrorCode u_error_code = U_ZERO_ERROR;
 			UCollationResult result = ucol_strcollIter(m_collator, &text_iter, &pattern_iter, &u_error_code);
 			if (U_FAILURE(u_error_code)) {
-				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedAfter: " << u_errorName(u_error_code));
+				PION_LOG_ERROR(m_logger, "ucol_strcollIter() returned error in CompareStringOrderedAfter: " << u_errorName(u_error_code)
+											<< " - " << "blob.get(): " << (void*)blob.get() 
+											<< " - " << "blob.size(): " << blob.size() 
+											<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+											<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len);
 				return false;
 			}
 			return (result == UCOL_GREATER);

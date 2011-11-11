@@ -170,8 +170,9 @@ void Comparison::configure(const ComparisonType type,
 		UErrorCode u_error_code = U_ZERO_ERROR;
 		u_strFromUTF8(NULL, 0, NULL, value.c_str(), -1, &u_error_code);
 		if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
-			PION_LOG_ERROR(m_logger, "In Comparison::configure(), u_strFromUTF8() returned unexpected error code " 
-										<< u_errorName(u_error_code) << "; value = " << value);
+			PION_LOG_ERROR(m_logger, "In Comparison::configure(), u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+										<< " - " << "value: " << value 
+										<< " - throwing");
 			throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
 		}
 	}
@@ -397,7 +398,9 @@ Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::
 		ucol_setAttribute(m_collator, UCOL_STRENGTH, attr, &u_error_code);
 		if (U_FAILURE(u_error_code)) {
 			ucol_close(m_collator);
-			PION_LOG_ERROR(logger, "ucol_setAttribute() returned error code " << u_errorName(u_error_code) << " - throwing");
+			PION_LOG_ERROR(logger, "ucol_setAttribute() returned error code " << u_errorName(u_error_code)
+								   << " - " << "attr: " << attr 
+								   << " - throwing");
 			throw UnexpectedICUErrorCodeException("ucol_setAttribute", u_errorName(u_error_code));
 		}
 	}
@@ -405,7 +408,9 @@ Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::
 	u_strFromUTF8(NULL, 0, &m_pattern_buf_len, value.c_str(), -1, &u_error_code);
 	if (U_FAILURE(u_error_code) && u_error_code != U_BUFFER_OVERFLOW_ERROR) {
 		ucol_close(m_collator);
-		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
+		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+								<< " - " << "value: " << value 
+								<< " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
 	}
 
@@ -425,9 +430,13 @@ Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::
 	u_error_code = U_ZERO_ERROR; // Need to reset, because u_strFromUTF8 returns U_BUFFER_OVERFLOW_ERROR when destCapacity = 0.
 	u_strFromUTF8(m_pattern_buf, m_pattern_buf_len, NULL, value.c_str(), -1, &u_error_code);
 	if (U_FAILURE(u_error_code)) {
+		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) 
+								<< " - " << "m_pattern_buf: " << (void*)m_pattern_buf 
+								<< " - " << "m_pattern_buf_len: " << m_pattern_buf_len 
+								<< " - " << "value: " << value 
+								<< " - throwing");
 		delete [] m_pattern_buf;
 		ucol_close(m_collator);
-		PION_LOG_ERROR(logger, "u_strFromUTF8() returned unexpected error code " << u_errorName(u_error_code) << " - throwing");
 		throw UnexpectedICUErrorCodeException("u_strFromUTF8", u_errorName(u_error_code));
 	}
 }
