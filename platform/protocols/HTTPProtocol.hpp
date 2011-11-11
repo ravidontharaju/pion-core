@@ -943,8 +943,13 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						// No decoding needed, so do conversion, if required, directly on http_msg.getContent().
 
 						if (do_conversion) {
-							decoded_and_converted_flag = tryConvertingToUtf8(charset, http_msg.getContent(), http_msg.getContentLength(), 
-																			 final_content, final_content_length, logger);
+							try {
+								decoded_and_converted_flag = tryConvertingToUtf8(charset, http_msg.getContent(), http_msg.getContentLength(), 
+																				 final_content, final_content_length, logger);
+							} catch (std::exception& e) {
+								PION_LOG_ERROR(logger, "charset: " << charset << " - " << "content_length: " << http_msg.getContentLength() << " - " << e.what() << " - rethrowing");
+								throw;
+							}
 						}
 						if (! do_conversion || ! decoded_and_converted_flag) {
 							if (pion::platform::EventValidator::isValidUTF8(http_msg.getContent(), http_msg.getContentLength(), &final_content_length)) {
@@ -968,8 +973,15 @@ inline void HTTPProtocol::ExtractionRule::processContent(pion::platform::EventPt
 						// Decoded content is in decoded_content.
 
 						if (do_conversion) {
-							decoded_and_converted_flag = tryConvertingToUtf8(charset, decoded_content.get(), decoded_content_length,
-																			 final_content, final_content_length, logger);
+							try {
+								decoded_and_converted_flag = tryConvertingToUtf8(charset, decoded_content.get(), decoded_content_length,
+																				 final_content, final_content_length, logger);
+							} catch (std::exception& e) {
+								PION_LOG_ERROR(logger, "charset: " << charset << " - " << "content_encoding: " << content_encoding << " - " 
+														<< "content_length: " << http_msg.getContentLength() << " - " 
+														<< "decoded_content_length: " << decoded_content_length << " - " << e.what() << " - rethrowing");
+								throw;
+							}
 						}
 						if (! do_conversion || ! decoded_and_converted_flag) {
 							if (pion::platform::EventValidator::isValidUTF8(decoded_content.get(), decoded_content_length, &final_content_length)) {
