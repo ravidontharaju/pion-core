@@ -976,8 +976,11 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 	std::string& content_encoding, PionLogger& logger) const
 {
 	// check if content is encoded
-	content_encoding = http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING);
+	content_encoding = boost::algorithm::to_lower_copy(http_msg.getHeader(pion::net::HTTPTypes::HEADER_CONTENT_ENCODING));
 	if (content_encoding.empty()) {
+		return false;
+	} else if (content_encoding == "identity") {
+		content_encoding.clear();
 		return false;
 	}
 		
@@ -995,7 +998,7 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 			PION_LOG_WARN(logger, "Content decoding failed after " << decoder_sink.getBytes() << " bytes for " << content_encoding << " content (" << (http_msg.isChunked() ? "with" : "without") << " chunking)");
 		}
 
-	} else if (content_encoding == "deflate") {
+	} else if (content_encoding == "deflate" || content_encoding == "x-zlib") {
 
 		// payload has deflate ("zlib") encoding
 		boost::iostreams::zlib_params deflate_param;
