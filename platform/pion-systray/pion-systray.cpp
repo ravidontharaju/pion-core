@@ -19,6 +19,114 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error);
 
+
+/**
+ * ProcessCommandLine: parses and processes command line arguments
+ * @return TRUE if the application should continue initialization; FALSE if it should quit
+ *
+ */
+int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
+{
+	TCHAR cmdLineBuf[1024];
+	BOOL bStart = FALSE; // indicates if -start option is present
+	BOOL bStop = FALSE; // indicates if -stop option is present
+	BOOL bQuit = FALSE; // indicates if -quit option is present
+	LPTSTR pszCmdParam = NULL;
+	LPCTSTR szDelims = _T(" \t");
+	// copy the command line into a temp buffer
+	_tcscpy(cmdLineBuf, lpCmdLine);
+	
+	// parse the command line
+	pszCmdParam = _tcstok(cmdLineBuf, szDelims);
+	while(pszCmdParam != NULL)
+	{
+		if(_tcscmp(pszCmdParam, _T("-start")) == 0)
+		{
+			bStart = TRUE;
+		} 
+		else if(_tcscmp(pszCmdParam, _T("-stop")) == 0)
+		{
+			bStop = TRUE;
+		}
+		else if(_tcscmp(pszCmdParam, _T("-quit")) == 0)
+		{
+			bQuit = TRUE;
+		}
+		else
+		{
+			TCHAR err_msg[1024];
+			_stprintf(err_msg, _T("Invalid argument: %s"), pszCmdParam);
+			MessageBox(NULL, err_msg, _T("Pion"), MB_OK | MB_ICONERROR);
+
+			return FALSE;
+		}
+
+		pszCmdParam = _tcstok(NULL, szDelims);
+	}
+
+	if(bStart && bStop)
+	{
+		MessageBox(NULL, _T("Either -start or -stop argument can be specified, but not both"), 
+			_T("Pion"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	DWORD rc = 0;
+	// check if starting the service is requested
+	if(bStart)
+	{
+		rc = StartPionService();
+		if(rc) {
+			DisplayErrorDialog(NULL, _T("Failed to start Pion service"), rc);
+		}
+	} 
+	else if(bStop)
+	{
+		rc = StopPionService();
+		if(rc) {
+			DisplayErrorDialog(NULL, _T("Failed to stop Pion service"), rc);
+		}
+	}
+	else
+	{
+		bQuit = FALSE; // if neither -start or -stop is present, ignore -quit
+	}
+
+	// if -quit parameter is present, 
+	if(bQuit && rc == 0)
+	{
+		DWORD dwState = 0;
+
+		rc = WaitForServiceControlOpFinish(15, &dwState);
+		if(rc == 0)
+		{
+			if(bStart) 
+			{
+				rc = dwState == SERVICE_RUNNING ? 0 : ERROR_GEN_FAILURE;
+			}
+			if(bStop)
+			{
+				rc = dwState == SERVICE_STOPPED ? 0 : ERROR_GEN_FAILURE;
+			}
+		}
+		
+		if(rc != 0)
+		{
+			LPCTSTR pszError = bStart ? _T("Failed to start Pion") : _T("Failed to stop Pion");
+			DisplayErrorDialog(NULL, pszError, rc);
+		}
+		else
+		{
+			LPCTSTR pszMsg = bStart ? _T("Pion started successfully") : _T("Pion stopped successfully");
+			MessageBox(NULL, pszMsg, _T("Pion"), MB_OK | MB_ICONINFORMATION);
+		}
+
+		return FALSE;
+	}
+
+	return (rc == 0) && (!bQuit);
+}
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -29,6 +137,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	MSG msg;
 	HACCEL hAccelTable;
+
+	if(!IsUserAdmin())
+	{
+		MessageBox(NULL, _T("You must have administrative privileges to run Pion Tray app!"), _T("Pion"), 
+			MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	if(ProcessCommandLine(hInstance, lpCmdLine) == FALSE) {
+		return FALSE;
+	}
 
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -41,21 +160,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	if(!IsUserAdmin())
-	{
-		MessageBox(NULL, _T("You must have administrative privileges to run Pion Tray app!"), _T("Pion"), 
-			MB_OK | MB_ICONERROR);
-		return FALSE;
-	}
 
-	// check if starting the service is requested
-	if(_tcscmp(lpCmdLine, _T("-start")) == 0)
-	{
-		DWORD rc = StartPionService();
-		if(rc) {
-			DisplayErrorDialog(NULL, _T("Failed to start Pion service"), rc);
-		}
-	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PIONSYSTRAY));
 
@@ -103,7 +208,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_PIONSYSTRAY);
 	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_PIONSYSTRAY));
 
 	return RegisterClassEx(&wcex);
 }

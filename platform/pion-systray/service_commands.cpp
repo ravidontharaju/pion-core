@@ -142,6 +142,68 @@ DWORD StopPionService()
 	return 0;
 }
 
+DWORD WaitForServiceControlOpFinish(int waitSec, DWORD* pdwStatus)
+{
+	// Open the service control manager on local computer w/all access
+	SC_HANDLE hScm = OpenSCManager( NULL, NULL, STANDARD_RIGHTS_REQUIRED | SC_MANAGER_CONNECT);
+	if (hScm == NULL) {
+		return GetLastError();
+	}
+
+	// Open Pion Service
+	SC_HANDLE hService = OpenService(hScm, strPionServiceName, 
+		STANDARD_RIGHTS_REQUIRED | SERVICE_STOP | SERVICE_QUERY_STATUS );  
+ 	if (hService == NULL) {
+		DWORD rc = GetLastError();
+		CloseServiceHandle(hScm);
+		return rc;
+	}
+
+	DWORD dwBytesNeeded = 0;
+	SERVICE_STATUS_PROCESS ssp;
+	ZeroMemory(&ssp, sizeof(ssp));
+	// query the service status
+	if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
+		(LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
+		DWORD rc = GetLastError();
+		CloseServiceHandle(hScm);
+		CloseServiceHandle(hService);
+		return rc;
+	}
+
+	BOOL isPending = (ssp.dwCurrentState == SERVICE_START_PENDING) || 
+				(ssp.dwCurrentState == SERVICE_STOP_PENDING) ||
+				(ssp.dwCurrentState == SERVICE_CONTINUE_PENDING) || 
+				(ssp.dwCurrentState == SERVICE_PAUSE_PENDING);
+
+	int cnt = 0;
+	while(isPending && cnt < waitSec)
+	{
+		Sleep(1000);
+		++cnt;
+		// query the service status again
+		if (!QueryServiceStatusEx( hService, SC_STATUS_PROCESS_INFO,
+			(LPBYTE)&ssp, sizeof(ssp), &dwBytesNeeded )) {
+			DWORD rc = GetLastError();
+			CloseServiceHandle(hScm);
+			CloseServiceHandle(hService);
+			return rc;
+		}
+		isPending = (ssp.dwCurrentState == SERVICE_START_PENDING) || 
+						(ssp.dwCurrentState == SERVICE_STOP_PENDING) ||
+						(ssp.dwCurrentState == SERVICE_CONTINUE_PENDING) || 
+						(ssp.dwCurrentState == SERVICE_PAUSE_PENDING);
+	}
+
+	if(pdwStatus)
+	{
+		*pdwStatus = ssp.dwCurrentState;
+	}
+
+	CloseServiceHandle(hScm);
+	CloseServiceHandle(hService);
+	return cnt >= waitSec ? ERROR_TIMEOUT : 0;
+}
 
 void UpdateServiceStatusIcon(HINSTANCE hInstance, HWND hWnd)
 {

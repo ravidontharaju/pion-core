@@ -912,15 +912,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\pion-systray.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\pion-systray.rc"
-				>
-			</File>
-			<File
-				RelativePath=".\pion-unknown.ico"
 				>
 			</File>
 			<File
@@ -933,10 +925,6 @@
 			</File>
 			<File
 				RelativePath=".\pion.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\small.ico"
 				>
 			</File>
 		</Filter>

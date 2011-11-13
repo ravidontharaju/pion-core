@@ -30,3 +30,10 @@ BOOL IsUserAdmin();
  * Note: the SysTray icon must already exist
  */
 void UpdateServiceStatusIcon(HINSTANCE hInstance, HWND hWnd);
+
+
+/**
+ * WaitForServiceControlOpFinish: wait waitSec number of seconds for the serive to 
+ * come to Started/Stopped/Paused state
+ */
+DWORD WaitForServiceControlOpFinish(int waitSec, DWORD* pdwState);
