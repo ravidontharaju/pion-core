@@ -385,7 +385,7 @@ void Comparison::writeComparisonsXML(std::ostream& out) {
 }
 
 Comparison::ComparisonFunctor::ComparisonFunctor(PionLogger& logger, const std::string& value, UColAttributeValue attr)
-	: m_logger(logger), m_pattern_buf(NULL)
+	: m_pattern_buf(NULL), m_logger(logger)
 {
 	UErrorCode u_error_code = U_ZERO_ERROR;
 	m_collator = ucol_open(NULL, &u_error_code);
