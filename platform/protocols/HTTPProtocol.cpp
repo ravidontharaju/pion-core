@@ -118,6 +118,7 @@ const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REQUEST_STATUS="urn:vocab:clic
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_RESPONSE_STATUS="urn:vocab:clickstream#response-status";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_REFUSED="urn:vocab:clickstream#refused";
 const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CANCELED="urn:vocab:clickstream#canceled";
+const std::string HTTPProtocol::VOCAB_CLICKSTREAM_CS_VERSION="urn:vocab:clickstream#cs-version";
 
 
 // HTTPProtocol member functions
@@ -323,6 +324,7 @@ boost::shared_ptr<Protocol> HTTPProtocol::clone(void) const
 	retval->m_response_status_term_ref = m_response_status_term_ref;
 	retval->m_refused_term_ref = m_refused_term_ref;
 	retval->m_canceled_term_ref = m_canceled_term_ref;
+	retval->m_cs_version_term_ref = m_cs_version_term_ref;
 
 	retval->m_request_parser.setMaxContentLength(m_request_parser.getMaxContentLength());
 	retval->m_response_parser.setMaxContentLength(m_response_parser.getMaxContentLength());
@@ -356,6 +358,7 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 			(*event_ptr_ref).setString(m_cs_headers_term_ref, m_request_parser.getRawHeaders());
 		if (! m_response_parser.getRawHeaders().empty())
 			(*event_ptr_ref).setString(m_sc_headers_term_ref, m_response_parser.getRawHeaders());
+		(*event_ptr_ref).setString(m_cs_version_term_ref, m_request.getVersionString());
 
 		// construct uri string
 		std::string uri_str(m_request.getResource());
@@ -932,6 +935,10 @@ void HTTPProtocol::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	m_canceled_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CANCELED);
 	if (m_canceled_term_ref == Vocabulary::UNDEFINED_TERM_REF)
 		throw UnknownTermException(VOCAB_CLICKSTREAM_CANCELED);
+
+	m_cs_version_term_ref = v.findTerm(VOCAB_CLICKSTREAM_CS_VERSION);
+	if (m_cs_version_term_ref == Vocabulary::UNDEFINED_TERM_REF)
+		throw UnknownTermException(VOCAB_CLICKSTREAM_CS_VERSION);
 }
 
 void HTTPProtocol::handleRegexFailure(const std::string& regex, const std::string& str) const

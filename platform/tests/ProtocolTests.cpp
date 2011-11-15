@@ -468,6 +468,15 @@ BOOST_AUTO_TEST_CASE(checkReadNextRequestAndResponse) {
 	BOOST_REQUIRE(m_e.back().get());
 }
 
+BOOST_AUTO_TEST_CASE(checkEventContainsCsVersion) {
+	m_minimal_request = "GET / HTTP/1.0" + CRLF + "Host: X" + CRLF + CRLF;
+	generateEvent("Content-Type: text/html", "nothing special");
+
+	// Check that the cs-version Term in the Event is correct.
+	pion::platform::Vocabulary::TermRef	cs_version_term_ref = m_vocab_mgr.getVocabulary()->findTerm("urn:vocab:clickstream#cs-version");
+	BOOST_CHECK_EQUAL("HTTP/1.0", m_e.back()->getString(cs_version_term_ref));
+}
+
 BOOST_AUTO_TEST_CASE(checkEventContainsContentTerm) {
 	boost::system::error_code ec;
 	m_rc = m_protocol_ptr->readNext(true, m_minimal_request.c_str(), m_minimal_request.length(), m_t0, m_t0, m_e, ec);

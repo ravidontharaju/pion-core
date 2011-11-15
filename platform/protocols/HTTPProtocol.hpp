@@ -759,6 +759,10 @@ private:
 	static const std::string	VOCAB_CLICKSTREAM_CANCELED;
 	pion::platform::Vocabulary::TermRef	m_canceled_term_ref;
 
+	/// urn:vocab:clickstream#cs-version
+	static const std::string	VOCAB_CLICKSTREAM_CS_VERSION;
+	pion::platform::Vocabulary::TermRef	m_cs_version_term_ref;
+
 	/// NOTE: in addition to the above Terms, the SnifferReactor
 	/// automatically sets the following:
 	/// 
