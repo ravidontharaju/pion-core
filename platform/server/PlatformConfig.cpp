@@ -180,6 +180,22 @@ void PlatformConfig::openConfigFile(void)
 	// open the file and find the "config" root element
 	ConfigManager::openConfigFile();
 
+	// get group to run Pion as
+	// MUST BE PERFORMED BEFORE CHANGING USER
+	// (since changing user may downgrade credentials)
+	if (ConfigManager::getConfigOption(GROUP_ELEMENT_NAME, m_group_name,
+		m_config_node_ptr->children))
+	{
+		parseGroup();
+	}
+	
+	// get user to run Pion as
+	if (ConfigManager::getConfigOption(USER_ELEMENT_NAME, m_user_name,
+		m_config_node_ptr->children))
+	{
+		parseUser();
+	}
+
 	#if defined(PION_USE_LOG4CXX) || defined(PION_USE_LOG4CPLUS) || defined(PION_USE_LOG4CPP)
 	// configure logging using LogConfig file (if defined)
 	if (ConfigManager::getConfigOption(LOG_CONFIG_ELEMENT_NAME, m_log_config_file,
@@ -199,22 +215,6 @@ void PlatformConfig::openConfigFile(void)
 	appender->setName("CircularBufferAppender");
 	log4cplus::Logger::getRoot().addAppender(appender);
 	#endif
-
-	// get group to run Pion as
-	// MUST BE PERFORMED BEFORE CHANGING USER
-	// (since changing user may downgrade credentials)
-	if (ConfigManager::getConfigOption(GROUP_ELEMENT_NAME, m_group_name,
-		m_config_node_ptr->children))
-	{
-		parseGroup();
-	}
-	
-	// get user to run Pion as
-	if (ConfigManager::getConfigOption(USER_ELEMENT_NAME, m_user_name,
-		m_config_node_ptr->children))
-	{
-		parseUser();
-	}
 
 	// Step through plugin path definitions
 	m_plugin_paths.clear();
