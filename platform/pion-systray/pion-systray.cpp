@@ -297,6 +297,18 @@ void ShowContextMenu(HWND hWnd, POINT pos)
 			DisplayErrorDialog(hWnd, _T("Failed to start Pion service"), rc);
 		}
 		break;
+
+	case ID_OPENPION:
+		{
+			DWORD rc = (DWORD) ShellExecute( hWnd, _T("open"), _T("http://localhost:8888"), NULL, NULL, SW_NORMAL );
+
+			// ShellExecute return value less or equal to 32 indicates an error
+			if(rc <= 32)
+			{
+				DisplayErrorDialog(hWnd, _T("Failed to open Pion"), rc);
+			}
+		}
+		break;
 	}
 }
 

@@ -61,6 +61,8 @@ BEGIN
     BEGIN
         MENUITEM "&Start Pion Service",         ID_STARTPIONSERVICE
         MENUITEM "S&top Pion Service",          ID_STOPPIONSERVICE
+        MENUITEM "&Open Pion",                  ID_OPENPION
+        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       IDM_EXIT
     END
 END
