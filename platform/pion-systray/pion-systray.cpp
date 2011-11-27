@@ -4,6 +4,7 @@
 #include "pion-systray.h"
 #include "service_commands.h"
 #include "systray.h"
+#include "singleinstance.h"
 
 #define MAX_LOADSTRING 100
 
@@ -18,7 +19,6 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error);
-
 
 /**
  * ProcessCommandLine: parses and processes command line arguments
@@ -127,6 +127,7 @@ int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
 	return (rc == 0) && (!bQuit);
 }
 
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -137,6 +138,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	MSG msg;
 	HACCEL hAccelTable;
+	
+	// check as early as possible
+	CLimitSingleInstance siCheck(_T("pion-systray"));
 
 	if(!IsUserAdmin())
 	{
@@ -145,7 +149,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	if(ProcessCommandLine(hInstance, lpCmdLine) == FALSE) {
+	if(ProcessCommandLine(hInstance, lpCmdLine) == FALSE) 
+	{
+		return FALSE;
+	}
+
+	if(siCheck.IsAnotherInstanceRunning())
+	{
 		return FALSE;
 	}
 
@@ -159,8 +169,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	{
 		return FALSE;
 	}
-
-
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PIONSYSTRAY));
 
