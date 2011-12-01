@@ -1,0 +1,36 @@
+{
+	required_input: [
+		'ProfileId',
+		'CollectorId',
+		'CollectorKey',
+		'StripClientIP'
+	],
+	option_defaults: {
+		EncryptConnections: false,
+		StripClientIP: false
+	},
+	value_defaults: {
+		Name: 'CloudMeter',
+		NumConnections: 32,
+		NumRetries: 1,
+		ProxyPort: 80,
+		DebugLogLevel: 0
+	},
+	multivalued_defaults: {
+		Query: {
+			identifier: 'name',
+			data: {
+				uri_stem: 'urn:vocab:clickstream#uri-stem',
+				uri_query: 'urn:vocab:clickstream#uri-query',
+				client_ip: 'urn:vocab:clickstream#c-ip',
+				host: 'urn:vocab:clickstream#host',
+				status: 'urn:vocab:clickstream#status',
+				cs_bytes: 'urn:vocab:clickstream#cs-bytes',
+				sc_bytes: 'urn:vocab:clickstream#sc-bytes',
+				page_load: 'urn:vocab:clickstream#page-load',
+				page_title: 'urn:vocab:clickstream#page-title'
+			}
+		}
+	}
+}
+ 
