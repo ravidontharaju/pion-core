@@ -1,8 +1,7 @@
 {
 	required_input: [
-		'ProfileId',
-		'CollectorId',
-		'CollectorKey',
+		'AgentId',
+		'AgentKey',
 		'StripClientIP'
 	],
 	option_defaults: {
