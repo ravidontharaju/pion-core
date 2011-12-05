@@ -350,8 +350,10 @@ protected:
 				boost::uint16_t sleep_times = 0;
 				m_reactor_ref.m_config_change_pending = true;
 				while (m_reactor_ref.m_config_num_readers > 0) {
-					if (++sleep_times > 50)
+					if (++sleep_times > 50) {
+						m_reactor_ref.m_config_change_pending = false;
 						throw ConfigLockException(m_reactor_ref.getId());
+					}
 					boost::thread::sleep(boost::get_system_time()
 						+ boost::posix_time::millisec(100));
 				}
