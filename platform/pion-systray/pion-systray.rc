@@ -33,10 +33,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+
+#ifdef PION_STATIC
+IDI_PIONSYSTRAY         ICON                    "pion.ico"
+IDI_RUNNING             ICON                    "cloudmeter-running.ico"
+IDI_STOPPED             ICON                    "cloudmeter-stopped.ico"
+IDI_WAITING             ICON                    "cloudmeter-waiting.ico"
+#else
 IDI_PIONSYSTRAY         ICON                    "pion.ico"
 IDI_RUNNING             ICON                    "pion-running.ico"
 IDI_STOPPED             ICON                    "pion-stopped.ico"
 IDI_WAITING             ICON                    "pion-waiting.ico"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -92,7 +100,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            128,IDC_STATIC,14,14,21,20
     LTEXT           "pion-systray, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2011",IDC_STATIC,42,26,114,8
+    LTEXT           "Copyright (C) Atomic Labs, Inc. 2011",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
 
@@ -152,11 +160,31 @@ END
 // String Table
 //
 
+#ifdef PION_STATIC
 STRINGTABLE 
 BEGIN
-    IDS_APP_TITLE           "pion-systray"
-    IDC_PIONSYSTRAY         "PIONSYSTRAY"
+    IDS_APP_TITLE				"CloudMeter"
+	IDS_ADMIN_RIGHTS_REQUIRED	"You must have administrative access rights to run CloudMeter"
+	IDE_SERVICE_START_FAILED	"Failed to start CloudMeter service"
+	IDE_SERVICE_STOP_FAILED		"Failed to stop CloudMeter service"
+	IDS_SERVICE_STARTED			"CloudMeter started successfully"
+	IDS_SERVICE_STOPPED			"CloudMeter stopped"
+	IDE_OPEN_FAILED				"Failed to open CloudMeter"
+    IDC_PIONSYSTRAY				"PIONSYSTRAY"
 END
+#else
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE				"Pion"
+	IDS_ADMIN_RIGHTS_REQUIRED	"You must have administrative access rights to run Pion"
+	IDE_SERVICE_START_FAILED	"Failed to start Pion service"
+	IDE_SERVICE_STOP_FAILED		"Failed to stop Pion service"
+	IDS_SERVICE_STARTED			"Pion started successfully"
+	IDS_SERVICE_STOPPED			"Pion stopped"
+	IDE_OPEN_FAILED				"Failed to open Pion"
+    IDC_PIONSYSTRAY				"PIONSYSTRAY"
+END
+#endif
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

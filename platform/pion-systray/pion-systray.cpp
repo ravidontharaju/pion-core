@@ -18,7 +18,7 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
-void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error);
+void DisplayErrorDialog(HWND hWnd, UINT res_id, DWORD error);
 
 /**
  * ProcessCommandLine: parses and processes command line arguments
@@ -56,7 +56,7 @@ int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
 		{
 			TCHAR err_msg[1024];
 			_stprintf(err_msg, _T("Invalid argument: %s"), pszCmdParam);
-			MessageBox(NULL, err_msg, _T("Pion"), MB_OK | MB_ICONERROR);
+			MessageBox(NULL, err_msg, szTitle, MB_OK | MB_ICONERROR);
 
 			return FALSE;
 		}
@@ -67,7 +67,7 @@ int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
 	if(bStart && bStop)
 	{
 		MessageBox(NULL, _T("Either -start or -stop argument can be specified, but not both"), 
-			_T("Pion"), MB_OK | MB_ICONERROR);
+			szTitle, MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
@@ -77,14 +77,14 @@ int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
 	{
 		rc = StartPionService();
 		if(rc) {
-			DisplayErrorDialog(NULL, _T("Failed to start Pion service"), rc);
+			DisplayErrorDialog(NULL, IDE_SERVICE_START_FAILED, rc);
 		}
 	} 
 	else if(bStop)
 	{
 		rc = StopPionService();
 		if(rc) {
-			DisplayErrorDialog(NULL, _T("Failed to stop Pion service"), rc);
+			DisplayErrorDialog(NULL, IDE_SERVICE_STOP_FAILED, rc);
 		}
 	}
 	else
@@ -112,13 +112,15 @@ int ProcessCommandLine(HINSTANCE hInstance, LPTSTR lpCmdLine)
 		
 		if(rc != 0)
 		{
-			LPCTSTR pszError = bStart ? _T("Failed to start Pion") : _T("Failed to stop Pion");
-			DisplayErrorDialog(NULL, pszError, rc);
+			UINT uError = bStart ? IDE_SERVICE_START_FAILED : IDE_SERVICE_STOP_FAILED;
+			DisplayErrorDialog(NULL, uError, rc);
 		}
 		else
 		{
-			LPCTSTR pszMsg = bStart ? _T("Pion started successfully") : _T("Pion stopped successfully");
-			MessageBox(NULL, pszMsg, _T("Pion"), MB_OK | MB_ICONINFORMATION);
+			UINT uMsg = bStart ? IDS_SERVICE_STARTED : IDS_SERVICE_STOPPED;
+			TCHAR szText[MAX_PATH];
+			LoadString(hInstance, uMsg, szText, MAX_PATH);
+			MessageBox(NULL, szText, szTitle, MB_OK | MB_ICONINFORMATION);
 		}
 
 		return FALSE;
@@ -144,8 +146,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	if(!IsUserAdmin())
 	{
-		MessageBox(NULL, _T("You must have administrative privileges to run Pion Tray app!"), _T("Pion"), 
-			MB_OK | MB_ICONERROR);
+		TCHAR szError[MAX_LOADSTRING];
+		LoadString(hInstance, IDS_ADMIN_RIGHTS_REQUIRED, szError, MAX_LOADSTRING);
+
+		MessageBox(NULL, szError, szTitle, MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
@@ -223,10 +227,13 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 
 // Display a "error" message box with given text and string text for the system error
-void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error)
+void DisplayErrorDialog(HWND hWnd, UINT res_id, DWORD error)
 {
 	TCHAR szBuff[4*1024];
 	TCHAR szMsg[6*1024];
+
+	TCHAR lpszText[MAX_PATH];
+	LoadString(hInst, res_id, lpszText, MAX_PATH);
 
 	if(lpszText) {
 		_tcscpy(szMsg, lpszText);
@@ -242,7 +249,7 @@ void DisplayErrorDialog(HWND hWnd, LPCTSTR lpszText, DWORD error)
 		_tcscat(szMsg, szBuff);
 	}
 
-	MessageBox(hWnd, szMsg, _T("Pion"), MB_OK | MB_ICONERROR);
+	MessageBox(hWnd, szMsg, szTitle, MB_OK | MB_ICONERROR);
 }
 
 
@@ -295,14 +302,14 @@ void ShowContextMenu(HWND hWnd, POINT pos)
 	case ID_STARTPIONSERVICE:
 		rc = StartPionService();
 		if(rc) {
-			DisplayErrorDialog(hWnd, _T("Failed to start Pion service"), rc);
+			DisplayErrorDialog(hWnd, IDE_SERVICE_START_FAILED, rc);
 		}
 		break;
 
 	case ID_STOPPIONSERVICE:
 		rc = StopPionService();
 		if(rc) {
-			DisplayErrorDialog(hWnd, _T("Failed to start Pion service"), rc);
+			DisplayErrorDialog(hWnd, IDE_SERVICE_STOP_FAILED, rc);
 		}
 		break;
 
@@ -313,7 +320,7 @@ void ShowContextMenu(HWND hWnd, POINT pos)
 			// ShellExecute return value less or equal to 32 indicates an error
 			if(rc <= 32)
 			{
-				DisplayErrorDialog(hWnd, _T("Failed to open Pion"), rc);
+				DisplayErrorDialog(hWnd, IDE_OPEN_FAILED, rc);
 			}
 		}
 		break;

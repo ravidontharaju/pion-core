@@ -2,7 +2,11 @@
 #include "service_commands.h"
 #include "systray.h"
 
+#ifdef PION_STATIC
+static LPCTSTR strPionServiceName = _T("cloudmeter");
+#else
 static LPCTSTR strPionServiceName = _T("pion");
+#endif
 static DWORD dwSCTimeout = 20000; // 20 sec timeout for service commands
 
 

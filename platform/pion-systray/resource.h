@@ -17,6 +17,12 @@
 #define IDI_STOPPED                     132
 #define IDI_WAITING                     133
 #define IDI_UNKNOWN                     134
+#define IDS_ADMIN_RIGHTS_REQUIRED		135
+#define IDE_SERVICE_START_FAILED		136
+#define IDE_SERVICE_STOP_FAILED			137
+#define IDS_SERVICE_STARTED				138
+#define IDS_SERVICE_STOPPED				139
+#define IDE_OPEN_FAILED					140
 #define ID_CONTEXT_STARTPIONSERVICE     32771
 #define ID_CONTEXT_STOPPIONSERVICE      32772
 #define ID_CONTEXT_EXIT                 32773

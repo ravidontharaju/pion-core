@@ -714,7 +714,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;PION_STATIC"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -726,6 +726,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_UNICODE;UNICODE;PION_STATIC"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -907,6 +908,18 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\cloudmeter-running.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\cloudmeter-stopped.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\cloudmeter-waiting.ico"
+				>
+			</File>
 			<File
 				RelativePath=".\pion-running.ico"
 				>
