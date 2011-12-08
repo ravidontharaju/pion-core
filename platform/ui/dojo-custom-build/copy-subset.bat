@@ -10,7 +10,6 @@ copy /y %releaseDir%\dojo\build.txt                ..\dojo-release\dojo\build.tx
 copy /y %releaseDir%\dojo\LICENSE                  ..\dojo-release\dojo\LICENSE
 copy /y %releaseDir%\dojo\_firebug                 ..\dojo-release\dojo\_firebug
 
-copy /y %releaseDir%\dijit\templates               ..\dojo-release\dijit\templates
 copy /y %releaseDir%\dijit\themes\*.css            ..\dojo-release\dijit\themes
 xcopy /y /s %releaseDir%\dijit\themes\tundra       ..\dojo-release\dijit\themes\tundra
 copy /y %releaseDir%\dijit\themes\a11y             ..\dojo-release\dijit\themes\a11y
