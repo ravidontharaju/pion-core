@@ -13,7 +13,7 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
-#ifdef PION_STATIC
+#ifdef PION_STATIC_LINKING
 	#define MUTEX_NAME _T("cloudmeter-systray")
 #else
 	#define MUTEX_NAME _T("pion-systray")

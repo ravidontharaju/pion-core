@@ -34,7 +34,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-#ifdef PION_STATIC
+#ifdef PION_STATIC_LINKING
 IDI_PIONSYSTRAY         ICON                    "pion.ico"
 IDI_RUNNING             ICON                    "cloudmeter-running.ico"
 IDI_STOPPED             ICON                    "cloudmeter-stopped.ico"
@@ -160,7 +160,7 @@ END
 // String Table
 //
 
-#ifdef PION_STATIC
+#ifdef PION_STATIC_LINKING
 STRINGTABLE 
 BEGIN
     IDS_APP_TITLE				"CloudMeter"

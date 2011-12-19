@@ -2,7 +2,7 @@
 #include "service_commands.h"
 #include "systray.h"
 
-#ifdef PION_STATIC
+#ifdef PION_STATIC_LINKING
 static LPCTSTR strPionServiceName = _T("cloudmeter");
 #else
 static LPCTSTR strPionServiceName = _T("pion");
