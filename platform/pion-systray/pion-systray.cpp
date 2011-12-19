@@ -13,6 +13,12 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
+#ifdef PION_STATIC
+	#define MUTEX_NAME _T("cloudmeter-systray")
+#else
+	#define MUTEX_NAME _T("pion-systray")
+#endif
+
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
@@ -142,7 +148,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HACCEL hAccelTable;
 	
 	// check as early as possible
-	CLimitSingleInstance siCheck(_T("pion-systray"));
+	CLimitSingleInstance siCheck(MUTEX_NAME);
 
 	if(!IsUserAdmin())
 	{

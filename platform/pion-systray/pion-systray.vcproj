@@ -733,6 +733,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\$cloudmeter-systray.exe"
 				LinkIncremental="1"
 				UACExecutionLevel="1"
 				GenerateDebugInformation="true"
@@ -937,11 +938,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\pion.ico"
+				RelativePath="..\..\common\build\pion.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\common\build\pion.ico"
+				RelativePath=".\pion.ico"
 				>
 			</File>
 		</Filter>
