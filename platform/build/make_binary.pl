@@ -71,7 +71,6 @@ if ($PLATFORM =~ /^win/i) {
 	}
 	$SERVER_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion.exe");
 	$PIONDB_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "piondb.exe");
-	$SYSTRAY_EXE = File::Spec->catfile( (($BIN_DIR), $DLL_FULL_DIR), "pion-systray.exe");
 	@BOOST_LIBS = bsd_glob($BOOST_DIR . "/boost_" . $BOOST_LIB_GLOB . "-vc90-mt-1_42." . $SHARED_LIB_SUFFIX);
 	@PDB_FILES = bsd_glob("{bin,net/services,platform/codecs,platform/databases,platform/protocols,platform/codecs,platform/reactors,platform/services}/" . $DLL_FULL_DIR . "/*.pdb");
 	$PDB_DIR = File::Spec->catdir( ($BIN_DIR, $PACKAGE_NAME . "-debug"), );
@@ -251,9 +250,6 @@ if ($PLATFORM =~ /^win/i) {
 		copy(File::Spec->catfile( ("platform", "build", "3rdparty"), "python26.dll"),
 			File::Spec->catfile( $PACKAGE_DIR, "python26.dll"));
 	}
-
-	# copy pion-systray.exe for windows builds
-	copy($SYSTRAY_EXE, $PACKAGE_DIR);
 
 	# copy pdb files to debug directory
 	print "Copying debug files..\n";
