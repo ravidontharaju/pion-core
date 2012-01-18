@@ -314,8 +314,8 @@ class Upgrade31xTo40x(UpgradeRule):
 RULES.append(Upgrade31xTo40x('4.0.0', '^3\.1\..*$'))
 
 
-# Nothing to do yet for 4.1
-RULES.append(UpgradeDoNothing('4.1.0', '^4\.0\..*$'))
+# Nothing to do yet for 5.0
+RULES.append(UpgradeDoNothing('5.0.0', '^4\.0\..*$'))
 
 
 # ...
@@ -384,11 +384,18 @@ class PionConfig(dict):
 		self.parse(platform_cfg.get('CodecConfig'), 'CodecConfig', 'PionConfig')
 		self.parse(platform_cfg.get('DatabaseConfig'), 'DatabaseConfig', 'PionConfig')
 		self.parse(platform_cfg.get('ReactorConfig'), 'ReactorConfig', 'PionConfig')
-		self.parse(platform_cfg.get('ServiceConfig'), 'ServiceConfig', 'PionConfig')
 		self.parse(platform_cfg.get('ProtocolConfig'), 'ProtocolConfig', 'PionConfig')
 		self.parse(platform_cfg.get('UserConfig'), 'UserConfig', 'PionConfig')
-		vocab_cfg = self.parse(platform_cfg.get('VocabularyConfig'), 'VocabularyConfig', 'PionConfig')
+		# parse service config & look for DashboardConfig
+		service_cfg = self.parse(platform_cfg.get('ServiceConfig'), 'ServiceConfig', 'PionConfig')
+		for server in service_cfg.root.iter('{%s}Server' % PION_NS):
+			for platform_service in server.iter('{%s}PlatformService' % PION_NS):
+				dashboard_file = platform_service.find('{%s}DashboardConfig' % PION_NS)
+				if (dashboard_file is not None):
+					# DashboardConfig found -> parse and add it for processing
+					self.parse(dashboard_file.text, 'DashboardConfig', 'PionConfig')
 		# parse vocabulary configuration files
+		vocab_cfg = self.parse(platform_cfg.get('VocabularyConfig'), 'VocabularyConfig', 'PionConfig')
 		self.vocab = dict()
 		for v in vocab_cfg.root.iter('{%s}VocabularyConfig' % PION_NS):
 			vocab_id = v.get('id')
