@@ -530,16 +530,17 @@ void HTTPProtocol::generateEvent(EventPtr& event_ptr_ref)
 						break;
 				}
 			} catch (RegexFailure& e) {
-				PION_LOG_ERROR(m_logger, e.what());
+				PION_LOG_ERROR(m_logger, "uri_str: " << uri_str << " - " << e.what());
 				if (! getProtocolFactory().getDebugMode()) {
 					// Prevent this rule from running again.
 					(*i)->m_running = false;
 					PION_LOG_WARN(m_logger, "Extraction rule has been disabled: regex = " << rule.m_match_str);
 				}
 			} catch (Event::PionExceptionWithTermRef& e) {
-				throw; // error message would be redundant, so skip it
+				PION_LOG_ERROR(m_logger, "uri_str: " << uri_str << " - rethrowing");
+				throw; // Will be caught at the end of this method, where details of e will be logged.
 			} catch (std::exception& e) {
-				PION_LOG_ERROR(m_logger, "term_id: " << rule.m_term.term_id << " - " << e.what() << " - rethrowing");
+				PION_LOG_ERROR(m_logger, "uri_str: " << uri_str << "; term_id: " << rule.m_term.term_id << " - " << e.what() << " - rethrowing");
 				throw;
 			}
 		}
@@ -960,7 +961,7 @@ bool HTTPProtocol::ExtractionRule::writeToSink(FilteringStreambuf& decoder,
 		// these should not cause the event to be lost!
 		return false;
 	}
-	return true;
+	return decoder_sink.getBytes() > 0;
 }
 
 bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& http_msg, 
@@ -975,7 +976,12 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 		content_encoding.clear();
 		return false;
 	}
-		
+
+	if (http_msg.getContentLength() <= 0) {
+		PION_LOG_ERROR(logger, "http_msg.getContentLength() = " << http_msg.getContentLength() << " in tryDecoding()");
+		return false;
+	}
+
 	// attempt to decode content
 	boost::iostreams::filtering_streambuf<boost::iostreams::input> decoder;
 	DecoderSink decoder_sink;
@@ -1027,17 +1033,21 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 		return false;
 	}
 
-	// initialize decoded content cache to hold results
 	decoded_content_length = decoder_sink.getBytes();
-	try {
-		decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
-	} catch (std::bad_alloc& e) {
-		PION_LOG_ERROR(logger, "decoded_content_length: " << decoded_content_length << " - " << e.what() << " - rethrowing");
-		throw BadAllocException("decoded_content_length = " + boost::lexical_cast<std::string>(decoded_content_length));
-	}
-	decoded_content.get()[decoded_content_length] = '\0';		// null terminate buffer since it may be re-used
 
-	if (decoded_content_length > 0) {
+	if (decoded_content_length == 0) {
+		// Since http_msg.getContentLength() > 0, this constitutes a decoding failure.
+		return false;
+	} else {
+		// initialize decoded content cache to hold results
+		try {
+			decoded_content.reset(new char[decoded_content_length+1]);	// add 1 in case length == 0 + null termination
+		} catch (std::bad_alloc& e) {
+			PION_LOG_ERROR(logger, "decoded_content_length: " << decoded_content_length << " - " << e.what() << " - rethrowing");
+			throw BadAllocException("decoded_content_length = " + boost::lexical_cast<std::string>(decoded_content_length));
+		}
+		decoded_content.get()[decoded_content_length] = '\0';		// null terminate buffer since it may be re-used
+
 		// copy results into decoded content cache (a contiguous array)
 		char *decoded_ptr = decoded_content.get();
 		const DecoderContainer& container = decoder_sink.getContainer();
@@ -1049,10 +1059,10 @@ bool HTTPProtocol::ExtractionRule::tryDecoding(const pion::net::HTTPMessage& htt
 				decoded_ptr += it->second;
 			}
 		}
-	}
 
-	// content was decoded
-	return true;
+		// content was decoded
+		return true;
+	}
 }
 
 bool HTTPProtocol::ExtractionRule::tryConvertingToUtf8(
