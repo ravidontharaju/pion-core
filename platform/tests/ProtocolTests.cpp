@@ -1141,7 +1141,7 @@ BOOST_AUTO_TEST_CASE(checkRuleDisabledAfterRegexException) {
 	PionPlatformUnitTest::getXmlLogMessages(platform_cfg, messages);
 	BOOST_REQUIRE_EQUAL(messages.size(), 2U);
 	std::string expected_error_message = 
-		"Regex search failed: regex = (a*ba*)*c";
+		"uri_str: / - Regex search failed: regex = (a*ba*)*c";
 	BOOST_CHECK_EQUAL(expected_error_message, messages[0]);
 	std::string expected_warning_message = "Extraction rule has been disabled: regex = (a*ba*)*c";
 	BOOST_CHECK_EQUAL(expected_warning_message, messages[1]);
