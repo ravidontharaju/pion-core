@@ -552,7 +552,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib icudt_s.lib icuuc_s.lib icuin_s.lib"
+				AdditionalDependencies="libxml2_a.lib iconv.lib zlib.lib icudt_s.lib icuuc_s.lib icuin_s.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
