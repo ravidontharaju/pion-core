@@ -118,6 +118,7 @@ dojo.declare("plugins.reactors.FissionReactorDialog",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
+			this.add_new_copy_term_button.onClick = function() { _this._handleAddNewCopyTerm(); return false; };
 			var h = dojo.connect(this.reactor, 'onDonePopulatingCopyTermStore', function() {
 				_this._updateCustomPutDataFromCopyTermStore();
 				_this.connect(_this.reactor.copy_term_store, 'onSet', '_updateCustomPutDataFromCopyTermStore');

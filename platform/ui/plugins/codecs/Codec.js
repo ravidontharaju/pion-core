@@ -42,6 +42,9 @@ dojo.declare("plugins.codecs.CodecPane",
 			this.inherited("postCreate", arguments);
 			this.special_config_elements = ['Field', 'tagName', 'childNodes'];
 			var _this = this;
+
+			this.add_new_row_button.onClick = function(e) { _this._handleAddNewField(); return false; }
+
 			this.field_mapping_store = new dojo.data.ItemFileWriteStore({
 				data: { identifier: 'ID', items: [] }
 			});

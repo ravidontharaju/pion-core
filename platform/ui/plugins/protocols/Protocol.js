@@ -44,6 +44,9 @@ dojo.declare("plugins.protocols.ProtocolPane",
 			this.populateWithDefaults();
 			var _this = this;
 
+			if ('add_new_rule_button' in this)
+				this.add_new_rule_button.onClick = function(e) { _this._handleAddNewRule(); return false; }
+
 			this.has_extraction_rules = 'extraction_rule_grid_node' in this;
 			if (this.has_extraction_rules) {
 				this.extraction_rule_store = new dojo.data.ItemFileWriteStore({

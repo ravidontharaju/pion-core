@@ -336,6 +336,9 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
+
+			this.add_new_term_button.onClick = function(e) { _this._handleAddNewTerm(); return false; }
+
 			this.vocabulary = new plugins.vocabularies.Vocabulary(this.config);
 			this.initGrid();
 			dojo.query("input", this.domNode).forEach(function(n) { dojo.connect(n, 'change', _this, _this.markAsChanged); });

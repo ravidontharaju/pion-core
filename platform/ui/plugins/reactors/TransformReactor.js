@@ -503,7 +503,8 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 		widgetsInTemplate: true,
  		postCreate: function() {
 			this.inherited("postCreate", arguments);
-
+			var _this = this;
+			this.add_new_lookup_button.onClick = function() { _this._handleAddNewLookup(); return false; };
 			if (! this.transformation_item.DefaultAction)
 				this.transformation_item.DefaultAction = 'leave-undefined';
 			if (this.transformation_item.DefaultAction == 'fixedvalue') {
@@ -701,9 +702,10 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 			if (this.templatePath) this.templateString = "";
 		},
 		widgetsInTemplate: true,
- 		postCreate: function() {
+		postCreate: function() {
 			this.inherited("postCreate", arguments);
-
+			var _this = this;
+			this.add_new_rule_button.onClick = function() { _this._handleAddNewRule(); return false; };
 			if (plugins.reactors.TransformReactor.getBool(this.transformation_store, this.transformation_item, 'StopOnFirstMatch'))
 				this.attr('value', {options: ['StopOnFirstMatch']});
 
@@ -863,7 +865,8 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 		widgetsInTemplate: true,
  		postCreate: function() {
 			this.inherited("postCreate", arguments);
-
+			var _this = this;
+			this.add_new_regex_button.onClick = function() { _this._handleAddNewRegex(); return false; };
 			this.attr('value', {SourceTerm: this.transformation_item.SourceTerm});
 
 			// Create and populate a datastore for the Regex grid.
