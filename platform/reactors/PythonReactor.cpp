@@ -1349,9 +1349,16 @@ void PythonReactor::setConfig(const Vocabulary& v, const xmlNodePtr config_ptr)
 	// pre-compile the python source code to check for errors early
 	compilePythonSource();
 	
-	// if running, re-initialize the Python module and call user-defined start()
+	// check if python reactor is running during config change
 	if (isRunning()) {
+		// re-initialize the Python module
 		initPythonModule();
+
+		// if there is no process function, ensure sessions are clear
+		if (! m_process_func)
+			flushSessions();
+
+		// call user-defined start()
 		callPythonStart();
 	}
 }
@@ -1470,28 +1477,28 @@ void PythonReactor::process(const EventPtr& e)
 		Py_DECREF(python_args);
 		Py_XDECREF(retval);
 
+		// sessions map processing: check for session close events
+		if (e->getType() == m_session_event_term_ref) {
+			// receipt of session event signifies completion of the session
+			const Event::ParameterValue *param_ptr = e->getPointer(m_session_id_term_ref);
+			if (param_ptr != NULL) {
+				const Event::BlobType session_id(boost::get<const Event::BlobType&>(*param_ptr));
+				if (! session_id.empty()) {
+					boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
+					SessionMap::iterator it = m_sessions.find(session_id);
+					if (it != m_sessions.end()) {
+						Py_XDECREF(it->second);
+						m_sessions.erase(it);
+						PION_LOG_DEBUG(m_logger, "Removed completed session: " << session_id.get());
+					}
+				}
+			}
+		}
+
 	} else {
 		// no process() python function defined, just pass events through
 		PION_LOG_DEBUG(m_logger, "Delivering pion event to connections");
 		deliverEvent(e);
-	}
-	
-	// sessions map processing: check for session close events
-	if (e->getType() == m_session_event_term_ref) {
-		// receipt of session event signifies completion of the session
-		const Event::ParameterValue *param_ptr = e->getPointer(m_session_id_term_ref);
-		if (param_ptr != NULL) {
-			const Event::BlobType session_id(boost::get<const Event::BlobType&>(*param_ptr));
-			if (! session_id.empty()) {
-				boost::mutex::scoped_lock sessions_lock(m_sessions_mutex);
-				SessionMap::iterator it = m_sessions.find(session_id);
-				if (it != m_sessions.end()) {
-					Py_XDECREF(it->second);
-					m_sessions.erase(it);
-					PION_LOG_DEBUG(m_logger, "Removed completed session: " << session_id.get());
-				}
-			}
-		}
 	}
 }
 
