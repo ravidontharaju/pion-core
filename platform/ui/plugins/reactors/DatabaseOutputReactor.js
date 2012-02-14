@@ -252,6 +252,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorInitDialog",
 					this.store.deleteItem(this.getItem(e.rowIndex));
 				}
 			});
+
+			var _this = this;
+			this.add_new_mapping_button.onClick = function() { _this._handleAddNewMapping(); return false; };
 		},
 		// _updateCustomPostDataFromFieldMappingStore() will be passed arguments related to the item which triggered the call, which we ignore.
 		_updateCustomPostDataFromFieldMappingStore: function() {
@@ -300,6 +303,9 @@ dojo.declare("plugins.reactors.DatabaseOutputReactorDialog",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
+			this.add_new_mapping_button.onClick = function() { _this._handleAddNewMapping(); return false; };
+			this.add_new_comparison_button.onClick = function() { _this._handleAddNewComparison(); return false; };
+
 			var h = dojo.connect(this.reactor, 'onDonePopulatingGridStores', function() {
 				_this._updateCustomPutDataFromGridStores();
 				_this._checkForUniqueIndex();

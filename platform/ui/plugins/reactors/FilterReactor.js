@@ -104,6 +104,8 @@ dojo.declare("plugins.reactors.FilterReactorDialog",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
+			this.add_new_comparison_button.onClick = function() { _this._handleAddNewComparison(); return false; };
+
 			var h = dojo.connect(this.reactor, 'onDonePopulatingComparisonStore', function() {
 				_this._updateCustomPutDataFromComparisonStore();
 				_this.connect(_this.reactor.comparison_store, 'onSet', '_updateCustomPutDataFromComparisonStore');

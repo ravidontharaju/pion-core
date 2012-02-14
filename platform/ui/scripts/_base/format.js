@@ -164,17 +164,17 @@ pion.localTimeCellFormatter = function(t) {
 }
 
 pion.makeDeleteButton = function() {
-	return '<button dojoType=dijit.form.Button class="delete_row"></button>';
+	return '<button type="button" dojoType="dijit.form.Button" class="delete_row"></button>';
 }
 
 pion.makeEditButton = function() {
-	return '<button dojoType=dijit.form.Button class="edit_icon"></button>';
+	return '<button type="button" dojoType="dijit.form.Button" class="edit_icon"></button>';
 }
 
 pion.makeInsertAboveButton = function() {
-	return '<button dojoType=dijit.form.Button class="insert_row"></button>';
+	return '<button type="button" dojoType="dijit.form.Button" class="insert_row"></button>';
 }
 
 pion.makeSearchButton = function() {
-	return '<button dojoType=dijit.form.Button class="search"></button>';
+	return '<button type="button" dojoType="dijit.form.Button" class="search"></button>';
 }

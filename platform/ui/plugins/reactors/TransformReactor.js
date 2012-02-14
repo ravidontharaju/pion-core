@@ -211,6 +211,8 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 			this.inherited("postCreate", arguments);
 			this.attr('value', {CopyOriginal: 'if-not-defined', OutgoingEvent: 'Same as input event'});
 			var _this = this;
+			this.add_new_transformation_button.onClick = function() { _this._handleAddNewTransformation(); return false; };
+
 			pion.terms.store.fetch({
 				query: {Type: 'object'},
 				onItem: function(item) {
