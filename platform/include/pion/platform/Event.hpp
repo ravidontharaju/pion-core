@@ -47,7 +47,7 @@
 
 /// uncomment the following to use pool allocators for Event memory management
 #ifndef _WIN64
-//#define PION_EVENT_USE_POOL_ALLOCATORS
+#define PION_EVENT_USE_POOL_ALLOCATORS
 #endif
 
 #ifdef PION_EVENT_USE_POOL_ALLOCATORS
