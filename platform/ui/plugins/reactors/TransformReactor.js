@@ -285,10 +285,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
 						// the first focusable item (which looks awful since it's a term selector.)
 						dialog.cancel_button.focus();
-
-						dialog.save_button.onClick = function() {
-							return dialog.isValid();
-						};
 					} else if (type == 'Rules') {
 						var dialog = new plugins.reactors.TransformReactor.RulesConfigurationDialog({
 							reactor: _this.reactor,
@@ -296,9 +292,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 							transformation_item: this.getItem(e.rowIndex)
 						});
 						dialog.show();
-						dialog.save_button.onClick = function() {
-							return dialog.isValid();
-						};
 					} else if (type == 'Regex') {
 						var dialog = new plugins.reactors.TransformReactor.RegexConfigurationDialog({
 							reactor: _this.reactor,
@@ -315,10 +308,6 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
 						// the first focusable item (which looks awful since it's a term selector.)
 						dialog.cancel_button.focus();
-
-						dialog.save_button.onClick = function() {
-							return dialog.isValid();
-						};
 					}
 				}
 			});
@@ -504,7 +493,14 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
  		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
 			this.add_new_lookup_button.onClick = function() { _this._handleAddNewLookup(); return false; };
+
 			if (! this.transformation_item.DefaultAction)
 				this.transformation_item.DefaultAction = 'leave-undefined';
 			if (this.transformation_item.DefaultAction == 'fixedvalue') {
@@ -705,7 +701,14 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
 			this.add_new_rule_button.onClick = function() { _this._handleAddNewRule(); return false; };
+
 			if (plugins.reactors.TransformReactor.getBool(this.transformation_store, this.transformation_item, 'StopOnFirstMatch'))
 				this.attr('value', {options: ['StopOnFirstMatch']});
 
@@ -866,7 +869,14 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
  		postCreate: function() {
 			this.inherited("postCreate", arguments);
 			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
 			this.add_new_regex_button.onClick = function() { _this._handleAddNewRegex(); return false; };
+
 			this.attr('value', {SourceTerm: this.transformation_item.SourceTerm});
 
 			// Create and populate a datastore for the Regex grid.

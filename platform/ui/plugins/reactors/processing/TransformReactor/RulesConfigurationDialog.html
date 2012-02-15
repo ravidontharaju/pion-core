@@ -16,10 +16,7 @@
 				<div class="rule_grid reactor_dialog_grid" dojoAttachPoint="rule_grid_node"></div>
 				<button dojoType="dijit.form.Button" dojoAttachPoint="add_new_rule_button" class="add_new_row">ADD NEW RULE</button>
 			</div>
-			<div class="save_cancel_delete">
-				<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
-				<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Cancel</button>
-			</div>
+			<div dojoType="pion.widgets.SaveAndCancelButtons" dojoAttachPoint="buttons"></div>
 		</div>
 	</div>
 </div>

@@ -212,6 +212,12 @@ dojo.declare("plugins.vocabularies.VocabularyInitDialog",
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
 			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
+
 			this.id_widget.isValid = function() {
 				if (!this.validator(this.textbox.value, this.constraints)) {
 					this.invalidMessage = "Invalid Vocabulary ID";
@@ -245,6 +251,13 @@ dojo.declare("plugins.vocabularies.TermInitDialog",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
+
 			this.id_widget.isValid = function() {
 				if (! this.validator(this.textbox.value, this.constraints)) {
 					this.invalidMessage = "Invalid Term ID";
@@ -337,6 +350,11 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 			this.inherited("postCreate", arguments);
 			var _this = this;
 
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.onClick = function(e) { _this.save(); return false; }
+			this.buttons.cancel_button.onClick = function(e) { _this.cancel2(); return false; }
+			this.buttons.delete_button.onClick = function(e) { _this.delete2(); return false; }
 			this.add_new_term_button.onClick = function(e) { _this._handleAddNewTerm(); return false; }
 
 			this.vocabulary = new plugins.vocabularies.Vocabulary(this.config);
@@ -430,7 +448,6 @@ dojo.declare("plugins.vocabularies.VocabularyPane",
 		_handleAddNewTerm: function() {
 			console.debug('_handleAddNewTerm');
 			var dialog = new plugins.vocabularies.TermInitDialog({vocabulary: this.vocabulary, pane: pion.vocabularies.selected_pane});
-			dialog.save_button.onClick = function() { return dialog.isValid(); };
 
 			// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 			setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);

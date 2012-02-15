@@ -259,6 +259,10 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited('postCreate', arguments);
+			var _this = this;
+			this.buttons.save_button.onClick = function() { _this.tryConfig(); return false; };
+			this.buttons.cancel_button.onClick = function() { return _this.onCancel(); };
+
 			this.class_info = plugins.reactors[this.plugin];
 			if ('init_defaults' in this.class_info)
 				this.class_info.init_defaults();
@@ -275,6 +279,8 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 				this.set('value', this.class_info.value_defaults);
 		},
 		tryConfig: function() {
+			if (! this.isValid())
+				return;
 			var dialogFields = this.get('value');
 			console.debug(dialogFields);
 			console.debug('this.plugin = ', this.plugin);
@@ -363,6 +369,12 @@ dojo.declare("plugins.reactors.ReactorDialog",
 		widgetsInTemplate: true,
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
 
 			// Invalidate this.reactor.config_item, so that the next call to getConfigItem() will query the server.
 			delete this.reactor.config_item;

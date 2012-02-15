@@ -386,6 +386,36 @@ dojo.declare("pion.widgets.ReactorGridHeader",
 	}
 );
 
+dojo.declare("pion.widgets.SaveAndCancelButtons",
+	[dijit._Widget, dijit._Templated],
+	{
+		save_label: 'Save',
+		cancel_label: 'Cancel',
+		templateString:
+			'<div class="save_cancel_delete">' + 
+				'<button dojoType="dijit.form.Button" class="save" dojoAttachPoint="save_button">${save_label}</button>' + 
+				'<button dojoType="dijit.form.Button" class="cancel" dojoAttachPoint="cancel_button">${cancel_label}</button>' + 
+			'</div>',
+		widgetsInTemplate: true
+	}
+);
+
+dojo.declare("pion.widgets.SaveCancelAndDeleteButtons",
+	[dijit._Widget, dijit._Templated],
+	{
+		save_label: 'Save',
+		cancel_label: 'Cancel',
+		delete_label: 'Delete',
+		templateString:
+			'<div class="save_cancel_delete">' + 
+				'<button dojoType="dijit.form.Button" class="save" dojoAttachPoint="save_button">${save_label}</button>' + 
+				'<button dojoType="dijit.form.Button" class="cancel" dojoAttachPoint="cancel_button">${cancel_label}</button>' + 
+				'<button dojoType="dijit.form.Button" class="delete" dojoAttachPoint="delete_button">${delete_label}</button>' + 
+			'</div>',
+		widgetsInTemplate: true
+	}
+);
+
 // Override dijit.form.TextBox.prototype._setValueAttr(), because with the current version (1.2.1),
 // dijit.form.FilteringSelect doesn't work right with dojox.data.XmlStore.
 dijit.form.TextBox.prototype._setValueAttr = function(value, /*Boolean?*/ priorityChange, /*String?*/ formattedValue){

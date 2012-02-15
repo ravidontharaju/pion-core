@@ -15,7 +15,16 @@ dojo.declare("plugins.databases.SelectPluginDialog",
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
 		},
-		widgetsInTemplate: true
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited('postCreate', arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
+		}
 	}
 );
 
@@ -27,7 +36,16 @@ dojo.declare("plugins.databases.DatabaseInitDialog",
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
 		},
-		widgetsInTemplate: true
+		widgetsInTemplate: true,
+		postCreate: function() {
+			this.inherited('postCreate', arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().
+			this.buttons.save_button.type = 'submit';
+			this.buttons.save_button.onClick = function() { return _this.isValid(); };
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
+		}
 	}
 );
 
@@ -42,6 +60,13 @@ dojo.declare("plugins.databases.DatabasePane",
 		widgetsInTemplate: true,
 		postCreate: function(){
 			this.inherited("postCreate", arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.onClick = function(e) { _this.save(); return false; }
+			this.buttons.cancel_button.onClick = function(e) { _this.cancel(); return false; }
+			this.buttons.delete_button.onClick = function(e) { _this.delete2(); return false; }
 		},
 		getHeight: function() {
 			return this.pane_end.offsetTop;

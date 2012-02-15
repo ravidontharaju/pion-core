@@ -676,9 +676,6 @@ pion.reactors._showReactorInitDialog = function(reactor_type) {
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);
 
-	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		dojo.connect(n, 'click', dialog, 'onCancel')
-	});
 	dialog.show();
 }
 
@@ -824,17 +821,6 @@ pion.reactors._showReactorConfigDialog = function(reactor) {
 		var dialog = new plugins.reactors.ReactorDialog({title: reactor.config.Plugin + ' Configuration', reactor: reactor});
 	}
 	dialog.set('value', reactor.config);
-
-	//// The following use forEach to allow either zero or multiple matches.
-	dojo.query(".dijitButton.cancel", dialog.domNode).forEach(function(n) {
-		// This causes dialog.onCancel() to get called twice.
-		//dojo.connect(n, 'click', dialog, 'onCancel')
-
-		dijit.byNode(n).onClick = function() { return dialog.onCancel(); };
-	});
-	dojo.query(".dijitButton.save", dialog.domNode).forEach(function(n) {
-		dijit.byNode(n).onClick = function() { return dialog.isValid(); };
-	});
 
 	// Set the focus to the first input field, with a delay so that it doesn't get overridden.
 	setTimeout(function() { dojo.query('input', dialog.domNode)[0].select(); }, 500);

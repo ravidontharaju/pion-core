@@ -44,10 +44,7 @@
 				<button dojoType=dijit.form.Button class="export" dojoAttachEvent="onClick: _onExportCsvKeyValuePairs" dojoAttachPoint="export_csv_button" disabled="true">
 					Export CSV</button>
 			</div>
-			<div class="save_cancel_delete">
-				<button dojoType=dijit.form.Button class="save" dojoAttachPoint="save_button" type="submit">Save</button>
-				<button dojoType=dijit.form.Button class="cancel" dojoAttachPoint="cancel_button" dojoAttachEvent="onClick: onCancel">Cancel</button>
-			</div>
+			<div dojoType="pion.widgets.SaveAndCancelButtons" dojoAttachPoint="buttons"></div>
 		</div>
 	</div>
 </div>
