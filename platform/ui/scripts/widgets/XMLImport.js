@@ -18,15 +18,23 @@ dojo.declare("pion.widgets.XMLImportDialog",
 		},
 		postCreate: function() {
 			this.inherited("postCreate", arguments);
+			var _this = this;
+
+			// See dijit.form.Button._onButtonClick().  'return false' prevents spurious
+			// calls to _onSubmit() in IE8, which sets type=submit by default.
+			this.buttons.save_button.onClick = function() { _this.applyXML(); return false; };
+			this.buttons.save_button.attr('disabled', true);
+			this.buttons.cancel_button.onClick = function() { _this.onCancel(); return false; };
+
 			this.uuid_replacements = {};
 		},
 		enableApply: function() {
 			console.debug("enableApply called");
-			this.apply_button.attr('disabled', false);
+			this.buttons.save_button.attr('disabled', false);
 		},
 		applyXML: function() {
 			console.debug("applyXML called");
-			this.apply_button.attr('disabled', true);
+			this.buttons.save_button.attr('disabled', true);
 
 			// TODO: check if already PionConfig first
 

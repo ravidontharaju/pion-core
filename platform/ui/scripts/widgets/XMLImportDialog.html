@@ -29,10 +29,6 @@
 		<div class="dijitDialogPaneContent">
 			<textarea dojoAttachPoint="result_text_area" style="width: 100%" rows="8" disabled="true" wrap="off"></textarea>
 		</div>
-		<div class="save_cancel_delete">
-			<button dojoType=dijit.form.Button class="save" dojoAttachEvent="onClick: applyXML"
-					dojoAttachPoint="apply_button" disabled="true">Apply</button>
-			<button dojoType=dijit.form.Button class="cancel" dojoAttachEvent="onClick: onCancel">Exit</button>
-		</div>
+		<div dojoType="pion.widgets.SaveAndCancelButtons" dojoAttachPoint="buttons" save_label="Apply" cancel_label="Exit"></div>
 	</div>
 </div>
