@@ -338,8 +338,7 @@ dojo.declare("plugins.reactors.ReactorInitDialog",
 					//console.dir(config);
 					var reactor_node = document.createElement("div");
 
-					// Replace the dnd reactor with the new reactor node.
-					workspace_box.node.replaceChild(reactor_node, workspace_box.node.lastChild);
+					workspace_box.node.appendChild(reactor_node);
 
 					var reactor = pion.reactors.createReactor(config, reactor_node);
 					pion.reactors.updateRunButtons();

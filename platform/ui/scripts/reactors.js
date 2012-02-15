@@ -652,6 +652,10 @@ pion.reactors.createReactor = function(config, node) {
 pion.reactors.handleDropOnWorkspace = function(source, nodes, copy) {
 	var reactor_type = nodes[0].getAttribute("reactor_type");
 	pion.reactors.showReactorInitDialog(reactor_type);
+
+	// Remove the dnd reactor.
+	var workspace_box = pion.reactors.workspace_box;
+	workspace_box.node.removeChild(workspace_box.node.lastChild);
 }
 
 pion.reactors.showReactorInitDialog = function(reactor_type) {
