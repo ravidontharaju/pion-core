@@ -1466,7 +1466,7 @@ th.bool, td.bool {
 	font-weight:bold;
 }
 
-.tundra button.open_keystore_editor  {
+.tundra .open_keystore_editor .dijitButtonNode {
 	background: #ffffff url("../images/button-edit-keys.png") repeat-x;
 	border: solid #999999 1px;
 	color: #366dba;
