@@ -273,18 +273,13 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						var dialog = new plugins.reactors.TransformReactor.LookupConfigurationDialog({
 							reactor: _this.reactor,
 							transformation_store: this.store,
-							transformation_item: this.getItem(e.rowIndex),
-							autofocus: false
+							transformation_item: this.getItem(e.rowIndex)
 						});
 						dialog.show();
 
 						// These seem to be necessary when using 'autoHeight: n' (but not 'autoHeight: true').
 						dialog.lookup_grid._refresh();
 						setTimeout(function() { dialog.lookup_grid.resize(); }, 0);
-
-						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
-						// the first focusable item (which looks awful since it's a term selector.)
-						dialog.cancel_button.focus();
 					} else if (type == 'Rules') {
 						var dialog = new plugins.reactors.TransformReactor.RulesConfigurationDialog({
 							reactor: _this.reactor,
@@ -296,18 +291,13 @@ dojo.declare("plugins.reactors.TransformReactorDialog",
 						var dialog = new plugins.reactors.TransformReactor.RegexConfigurationDialog({
 							reactor: _this.reactor,
 							transformation_store: this.store,
-							transformation_item: this.getItem(e.rowIndex),
-							autofocus: false
+							transformation_item: this.getItem(e.rowIndex)
 						});
 						dialog.show();
 
 						// These seem to be necessary when using 'autoHeight: n' (but not 'autoHeight: true').
 						dialog.regex_grid._refresh();
 						setTimeout(function() { dialog.regex_grid.resize(); }, 0);
-
-						// Note that without 'autofocus: false' above, Dialog.show() would subsequently set the focus to
-						// the first focusable item (which looks awful since it's a term selector.)
-						dialog.cancel_button.focus();
 					}
 				}
 			});
@@ -488,6 +478,10 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
+
+			// Without this, Dialog.show() would subsequently set the focus to
+			// the first focusable item (which looks awful since it's a term selector.)
+			this.autofocus = false;
 		},
 		widgetsInTemplate: true,
  		postCreate: function() {
@@ -542,6 +536,15 @@ dojo.declare("plugins.reactors.TransformReactor.LookupConfigurationDialog",
 					this.store.deleteItem(this.getItem(e.rowIndex));
 				}
 			});
+		},
+		show: function() {
+			this.inherited("show", arguments);
+
+			// Usually, the first editable field would be the best place to focus, but as mentioned in
+			// postMixInProperties(), that doesn't work well here.  Without this, nothing would have
+			// focus initially, which is also reasonable.  Note, however, that even with this here,
+			// setting autofocus to false is still needed.
+			this.buttons.cancel_button.focus();
 		},
 		execute: function(dialogFields) {
 			var t_store = this.transformation_store;
@@ -696,6 +699,10 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
+
+			// Without this, Dialog.show() would subsequently set the focus to
+			// the first focusable item (which is not very useful for this dialog.)
+			this.autofocus = false;
 		},
 		widgetsInTemplate: true,
 		postCreate: function() {
@@ -803,6 +810,15 @@ dojo.declare("plugins.reactors.TransformReactor.RulesConfigurationDialog",
 				this.disconnect(h);
 			});
 		},
+		show: function() {
+			this.inherited("show", arguments);
+
+			// Usually, the first editable field would be the best place to focus, but as mentioned in
+			// postMixInProperties(), that's not very useful here.  Without this, nothing would have
+			// focus initially, which is also reasonable.  Note, however, that even with this here,
+			// setting autofocus to false is still needed.
+			this.buttons.cancel_button.focus();
+		},
 		execute: function(dialogFields) {
 			var t_store = this.transformation_store;
 			var t_item = this.transformation_item;
@@ -864,6 +880,10 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 		postMixInProperties: function() {
 			this.inherited('postMixInProperties', arguments);
 			if (this.templatePath) this.templateString = "";
+
+			// Without this, Dialog.show() would subsequently set the focus to
+			// the first focusable item (which looks awful since it's a term selector.)
+			this.autofocus = false;
 		},
 		widgetsInTemplate: true,
  		postCreate: function() {
@@ -936,6 +956,15 @@ dojo.declare("plugins.reactors.TransformReactor.RegexConfigurationDialog",
 					});
 				}
 			});
+		},
+		show: function() {
+			this.inherited("show", arguments);
+
+			// Usually, the first editable field would be the best place to focus, but as mentioned in
+			// postMixInProperties(), that doesn't work well here.  Without this, nothing would have
+			// focus initially, which is also reasonable.  Note, however, that even with this here,
+			// setting autofocus to false is still needed.
+			this.buttons.cancel_button.focus();
 		},
 		execute: function(dialogFields) {
 			var t_store = this.transformation_store;
