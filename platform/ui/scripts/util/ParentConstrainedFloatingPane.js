@@ -10,7 +10,7 @@ dojo.declare("pion.util.ParentConstrainedFloatingPane",
 
 		_className: "pion.util.ParentConstrainedFloatingPane",
 
-		postCreate: function(){
+		postCreate: function() {
 			this.inherited(arguments);
 			new dojo.dnd.move.boxConstrainedMoveable(this.domNode, {handle: this.focusNode, box: {l: 0, t: 0}});
 
@@ -20,6 +20,14 @@ dojo.declare("pion.util.ParentConstrainedFloatingPane",
 
 			new dojo.dnd.move.parentConstrainedMoveable(this.domNode, {handle: this.focusNode});
 */
+		},
+		resize: function(dim) {
+			// This absurd hack is necessary for IE7 and IE8 when used with dojo 1.6.1.
+			// (There was a callback function added in _ContentPaneResizeMixin.resize() in dojo 1.6.1 that broke IE;
+			// commenting out line 72 of _ContentPaneResizeMixin.js also makes it work.)
+			var dummy = dim.w + dim.h;
+
+			this.inherited(arguments);
 		}
 	}
 );
