@@ -456,3 +456,15 @@ dijit.Dialog.prototype._size = function() {
 		});
 	}
 }
+
+// Fixing dijit.Dialog.prototype._trackMouseState() so that it doesn't try to track nonexistent nodes.
+// The specific problem this is addressing is errors occurring with (the large number of) dialogs I've
+// defined that inherit from dijit.Dialog but don't have a closeButtonNode in their template.
+dijit.Dialog.prototype._trackMouseState = (function() {
+	var original = dijit.Dialog.prototype._trackMouseState;
+	return function(node, c) {
+		if (! node)
+			return;
+		return dojo.hitch(this, original)(node, c);
+	};
+})();
