@@ -196,10 +196,18 @@ dojo.declare("plugins.services.MonitorServiceFloatingPane",
 				return;
 			}
 
+			// Does the form have a value for event_type_check_box_group?
+			// (It might not, either due to not having been initialized yet, or due
+			// to the form being in the process of being destroyed.)
+			var event_type_check_box_group_value = this.event_type_form.get('value').event_type_check_box_group;
+			if (! event_type_check_box_group_value) {
+				this.event_grid.filter(query_object);
+				return;
+			}
+
 			var _this = this;
 
 			// set query.filter and query.unfilter, based on changes in the Event Types selected
-			var event_type_check_box_group_value = this.event_type_form.get('value').event_type_check_box_group;
 			var newly_unchecked_types = dojo.filter(this.prev_event_type_check_box_group_value, function(type) {
 				return dojo.indexOf(event_type_check_box_group_value, type) == -1;
 			});
