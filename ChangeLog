@@ -1,3 +1,10 @@
+Version 4.0.11 (2012-02-22)
+===========================
+
+* Python reactor - SIGABRT crash caused by reactor.getsession() (PION-1162)
+* HTTP protocol - i18n errors caused by content decoding failures (PION-1159)
+
+
 Version 4.0.9 (2012-01-16)
 ==========================
 
