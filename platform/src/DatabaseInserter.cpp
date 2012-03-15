@@ -434,6 +434,9 @@ bool DatabaseInserter::tryConnecting()
 	} catch (std::exception& e) {
 		m_next_connect = now() + m_recovery_interval;
 		PION_LOG_ERROR(m_logger, "Lost database connection; retry in " << m_recovery_interval << " seconds: " << e.what());
+	} catch (...) {
+		m_next_connect = now() + m_recovery_interval;
+		PION_LOG_ERROR(m_logger, "Lost database connection; retry in " << m_recovery_interval << " seconds: unknown exception");
 	}
 	return false;
 }
@@ -442,7 +445,7 @@ bool DatabaseInserter::checkConnection()
 {
 	// check if we need to try to reconnect
 	bool connection_ok = true;
-	if (m_next_connect) {
+	if (m_next_connect==0) {
 		if (!m_database_ptr->is_open()) {
 			// we just lost the connection -> try reconnect immediately
 			connection_ok = tryConnecting();
@@ -604,7 +607,7 @@ bool DatabaseInserter::checkEventQueue(boost::scoped_ptr<EventQueue>& insert_que
 			return false;
 	}
 
-	if (m_next_connect && !checkConnection()) {
+	if (!checkConnection()) {
 		// still waiting for reconnect
 		if (m_event_queue_ptr->size() >= m_queue_max) {
 			// queue is full -> drop events
