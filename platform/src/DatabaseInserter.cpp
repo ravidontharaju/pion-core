@@ -509,7 +509,7 @@ void DatabaseInserter::insertEvents(void)
 					insert_queue_ptr->clear();	// drop events in insert queue
 					m_keys.clear();				// erase key cache since it may be inaccurate
 
-				} catch (std::exception& e) {
+				} catch (...) {
 					
 					// check if insert failed because we lost database connection
 					bool able_to_recover = false;
@@ -524,7 +524,7 @@ void DatabaseInserter::insertEvents(void)
 					}
 					if (!able_to_recover) {
 						// insert failure occured -> just log and drop versus stopping altogether
-						PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events: " << e.what());
+						PION_LOG_ERROR(m_logger, "Dropping " << insert_queue_ptr->size() << " events due to insert exception");
 						insert_queue_ptr->clear();	// drop events in insert queue
 						m_keys.clear();				// erase key cache since it may be inaccurate
 					}
@@ -537,6 +537,10 @@ void DatabaseInserter::insertEvents(void)
 		
 	} catch (std::exception& e) {
 		PION_LOG_FATAL(m_logger, e.what());
+		m_is_running = false;
+		m_swapped_queue.notify_all();
+	} catch (...) {
+		PION_LOG_FATAL(m_logger, "Worker thread caught unknown exception");
 		m_is_running = false;
 		m_swapped_queue.notify_all();
 	}
