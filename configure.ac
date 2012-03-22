@@ -7,8 +7,8 @@ AC_INIT([pion-net], [5.0.0], [support@atomiclabs.com])
 
 # Initialize some other things
 AC_PREREQ([2.59])
-AC_CONFIG_AUX_DIR(net/build)
-AC_CONFIG_SRCDIR(net/src/TCPServer.cpp)
+AC_CONFIG_AUX_DIR(build)
+AC_CONFIG_SRCDIR(src/TCPServer.cpp)
 
 # package and version args are now taken from AC_INIT()
 AM_INIT_AUTOMAKE
@@ -21,7 +21,7 @@ AC_PROG_LIBTOOL
 # Setup doxygen support
 DX_DOXYGEN_FEATURE(ON)
 DX_HTML_FEATURE(ON)
-DX_INIT_DOXYGEN(pion-net, net/doc/Doxyfile, net/doc)
+DX_INIT_DOXYGEN(pion-net, doc/Doxyfile, doc)
 
 # Define CXXFLAGS before AC_PROG_CXX to suppress the default autoconf
 # compiler options
@@ -43,8 +43,8 @@ m4_include([common/build/pion-boost.inc])
 m4_include([common/build/pion-config.inc])
 
 # Output Makefiles
-AC_OUTPUT(pion-net.pc Makefile net/Makefile
-	net/include/Makefile net/include/pion/Makefile net/include/pion/net/Makefile
-	common/Makefile common/include/Makefile common/include/pion/Makefile
+AC_OUTPUT(pion-net.pc Makefile
+	include/Makefile include/pion/Makefile include/pion/net/Makefile
+	common/pion-common.pc common/Makefile common/include/Makefile common/include/pion/Makefile
 	common/src/Makefile common/tests/Makefile common/tests/PluginsUsedByUnitTests/Makefile
-	net/src/Makefile net/services/Makefile net/utils/Makefile net/tests/Makefile)
+	src/Makefile services/Makefile utils/Makefile tests/Makefile)
