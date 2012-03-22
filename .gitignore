@@ -19,7 +19,7 @@ build/missing
 config.log
 config.status
 configure
-doc/html/
+doc/html
 doc/pion-common.tag
 include/pion/PionConfig.hpp
 include/pion/stamp-h1
