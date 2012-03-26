@@ -29,3 +29,14 @@ sqlite/piondb
 *.o
 *.lo
 *.la
+bin/
+IntermediateOutput/
+*.dll
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.ncb
+*.user
+*.suo
+BuildLog.htm
