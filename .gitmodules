@@ -1,6 +1,0 @@
-[submodule "common"]
-	path = common
-	url = git://github.com/atomiclabs/pion-common.git
-[submodule "net"]
-	path = net
-	url = git://github.com/atomiclabs/pion-net.git
