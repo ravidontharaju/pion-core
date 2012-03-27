@@ -6,6 +6,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache/
 m4/
+bin/
 config.log
 config.status
 configure
