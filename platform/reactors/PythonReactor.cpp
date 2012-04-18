@@ -1547,10 +1547,11 @@ bool PythonReactor::deliverToConnections(PyObject *event_ptr)
 		}
 		PION_LOG_ERROR(m_logger, error_msg);
 	} catch (...) {
-		if (PyErr_Occurred())
+		if (PyErr_Occurred()) {
 			PION_LOG_ERROR(m_logger, getPythonError());
-		else
+		} else {
 			PION_LOG_ERROR(m_logger, "caught unrecognized exception");
+		}
 	}
 	
 	return true;

@@ -4,8 +4,10 @@
 
 AM_CPPFLAGS = -I@PION_COMMON_HOME@/include -I@PION_NET_HOME@/include -I../include -I../server
 
+EXTRA_LTLIBRARIES = XMLLogService.la
+
 pion_pluginsdir = @PION_PLUGINS_DIRECTORY@
-pion_plugins_LTLIBRARIES = ConfigService.la FeedService.la MonitorService.la XMLLogService.la QueryService.la
+pion_plugins_LTLIBRARIES = ConfigService.la FeedService.la MonitorService.la QueryService.la @PION_XMLLOG_SERVICE@
 
 ConfigService_la_SOURCES = ConfigService.hpp ConfigService.cpp
 ConfigService_la_LDFLAGS = -no-undefined -module -avoid-version
@@ -22,14 +24,14 @@ MonitorService_la_LDFLAGS = -no-undefined -module -avoid-version
 MonitorService_la_LIBADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 MonitorService_la_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
-XMLLogService_la_SOURCES = XMLLogService.hpp XMLLogService.cpp
-XMLLogService_la_LDFLAGS = -no-undefined -module -avoid-version
-XMLLogService_la_LIBADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
-XMLLogService_la_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
-
 QueryService_la_SOURCES = QueryService.hpp QueryService.cpp
 QueryService_la_LDFLAGS = -no-undefined -module -avoid-version
 QueryService_la_LIBADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
 QueryService_la_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
+
+XMLLogService_la_SOURCES = XMLLogService.hpp XMLLogService.cpp
+XMLLogService_la_LDFLAGS = -no-undefined -module -avoid-version -rpath '@PION_PLUGINS_DIRECTORY@'
+XMLLogService_la_LIBADD = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@ @PION_EXTERNAL_LIBS@ @PION_PLATFORM_LIBS@
+XMLLogService_la_DEPENDENCIES = ../server/libpion-server.la ../src/libpion-platform.la @PION_COMMON_LIB@ @PION_NET_LIB@
 
 EXTRA_DIST = *.vcproj

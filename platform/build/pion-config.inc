@@ -145,6 +145,13 @@ AC_SUBST(PION_HAVE_PYTHON)
 AC_SUBST(PION_PYTHON_REACTOR)
 
 
+# Only build the XMLLogService plugin if we have log4cplus
+if test "$PION_LOG_LIB" == "-llog4cplus"; then
+	PION_XMLLOG_SERVICE="XMLLogService.la"
+fi
+AC_SUBST(PION_XMLLOG_SERVICE)
+
+
 # Define platform libraries
 PION_PLATFORM_LIBS="$PION_XML_LIB $PION_JSON_LIB"
 AC_SUBST(PION_PLATFORM_LIBS)
