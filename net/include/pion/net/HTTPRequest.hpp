@@ -11,6 +11,7 @@
 #define __PION_HTTPREQUEST_HEADER__
 
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/net/HTTPMessage.hpp>
 #include <pion/net/PionUser.hpp>
@@ -33,16 +34,27 @@ public:
 	 * @param resource the HTTP resource to request
 	 */
 	HTTPRequest(const std::string& resource)
-		: m_method(REQUEST_METHOD_GET), m_resource(resource) {}
+		: m_method(REQUEST_METHOD_GET)
+		, m_resource(resource)
+	{
+	}
 	
 	/// constructs a new HTTPRequest object (default constructor)
-	HTTPRequest(void) : m_method(REQUEST_METHOD_GET) {}
+	HTTPRequest()
+		: m_method(REQUEST_METHOD_GET)
+	{
+	}
 	
 	/// virtual destructor
-	virtual ~HTTPRequest() {}
+	virtual ~HTTPRequest()
+	{
+	}
 
 	/// clears all request data
-	virtual void clear(void) {
+	virtual void clear()
+	{
+		scoped_lock lck( getMutex() );
+
 		HTTPMessage::clear();
 		m_method.erase();
 		m_resource.erase();
@@ -50,10 +62,18 @@ public:
 		m_query_string.erase();
 		m_query_params.clear();
 		m_user_record.reset();
+		m_bodyStreamHandler.clear();
 	}
 
 	/// the content length of the message can never be implied for requests
 	virtual bool isContentLengthImplied(void) const { return false; }
+
+	/// It returns \b true if content of request has to be consumed as stream.
+	virtual bool isStream() const
+	{
+		scoped_lock lck( getMutex() );
+		return m_bodyStreamHandler ? true : false;
+	}
 
 	/// returns the request method (i.e. GET, POST, PUT)
 	inline const std::string& getMethod(void) const { return m_method; }
@@ -148,9 +168,30 @@ public:
 	/// get the user record for HTTP request after authentication
 	inline PionUserPtr getUser() const { return m_user_record; }
 
+	//..........................................................................
+	typedef boost::function4<
+		void,						   // return type
+		bool,						   // good state
+		boost::shared_ptr<HTTPRequest>, // request message
+		bool,						   // true, if the end of content
+		boost::function0<void>		  // continue handler (has to called)
+	> BodyStreamHandler;
+
+	void setBodyStreamHandler( BodyStreamHandler const & bodyStreamHandler
+		= BodyStreamHandler() )
+	{
+		scoped_lock lck( getMutex() );
+		m_bodyStreamHandler = bodyStreamHandler;
+	}
+
+	BodyStreamHandler const & getBodyStreamHandler() const
+	{
+		scoped_lock lck( getMutex() );
+		return m_bodyStreamHandler;
+	}
+	//..........................................................................
 
 protected:
-
 	/// updates the string containing the first line for the HTTP message
 	virtual void updateFirstLine(void) const {
 		// start out with the request method
@@ -167,7 +208,6 @@ protected:
 		// append HTTP version
 		m_first_line += getVersionString();
 	}
-	
 	
 private:
 
@@ -188,6 +228,9 @@ private:
 
 	/// pointer to PionUser record if this request had been authenticated 
 	PionUserPtr						m_user_record;
+	
+	/// Functor, pointing to body stream handler
+	BodyStreamHandler			   m_bodyStreamHandler;
 };
 
 

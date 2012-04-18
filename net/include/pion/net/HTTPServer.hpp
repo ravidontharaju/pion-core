@@ -116,8 +116,9 @@ public:
 	 *
 	 * @param resource the resource name or uri-stem to bind to the handler
 	 * @param request_handler function used to handle requests to the resource
+	 * @param request_headers_handler optional function used to handle request headers to the resource
 	 */
-	void addResource(const std::string& resource, RequestHandler request_handler);
+	void addResource(const std::string& resource, RequestHandler request_handler, RequestHandler request_headers_handler = RequestHandler());
 
 	/**
 	 * removes a web service from the HTTP server
@@ -232,6 +233,15 @@ protected:
 	virtual void handleConnection(TCPConnectionPtr& tcp_conn);
 
 	/**
+	 * handles a new HTTP request headers
+	 *
+	 * @param http_request the HTTP request to handle
+	 * @param tcp_conn TCP connection containing a new request
+	 */
+	void handleRequestHeaders(HTTPRequestPtr& http_request,
+		TCPConnectionPtr& tcp_conn, const boost::system::error_code& ec);
+
+    /**
 	 * handles a new HTTP request
 	 *
 	 * @param http_request the HTTP request to handle
@@ -250,9 +260,16 @@ protected:
 	virtual bool findRequestHandler(const std::string& resource,
 							RequestHandler& request_handler) const;
 
+    /**
+	 * searches for the appropriate request headers handler to use for a given resource
+	 *
+	 * @param resource the name of the resource to search for
+	 * @param request_handler function that can handle request headers for this resource
+	 */
+    bool findRequestHeadersHandler(const std::string& resource,
+                                   RequestHandler& request_handler) const;
 
 private:
-
 	/// maximum number of redirections
 	static const unsigned int	MAX_REDIRECTS;
 
@@ -262,9 +279,17 @@ private:
 	/// data type for a map of requested resources to other resources
 	typedef std::map<std::string, std::string>		RedirectMap;
 
+private:
+    bool findHandler(const std::string& resource,
+                     ResourceMap const & resources,
+                     RequestHandler& request_handler) const;
 
+private:
 	/// collection of resources that are recognized by this HTTP server
 	ResourceMap					m_resources;
+
+	/// collection of resources that are recognized by this HTTP server for headers processing
+	ResourceMap					m_headers_resources;
 
 	/// collection of redirections from a requested resource to another resource
 	RedirectMap					m_redirects;

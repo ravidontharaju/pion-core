@@ -361,6 +361,9 @@ public:
 
 protected:
 
+	/// Called after we have finished parsing the HTTP message headers
+	virtual void finishedHeaders(const boost::system::error_code& ec) {}
+
 	/**
 	 * parses an HTTP message up to the end of the headers using bytes 
 	 * available in the read buffer
@@ -401,6 +404,7 @@ protected:
 	 * parses a chunked HTTP message-body using bytes available in the read buffer
 	 *
 	 * @param chunk_buffers buffers to be populated from parsing chunked content
+	 * @param is_stream \b true means that message content is consumed as stream
 	 * @param ec error_code contains additional information for parsing errors
 	 *
 	 * @return boost::tribool result of parsing:
@@ -409,7 +413,7 @@ protected:
 	 *                        indeterminate = message is not yet finished
 	 */
 	boost::tribool parseChunks(HTTPMessage::ChunkCache& chunk_buffers,
-		boost::system::error_code& ec);
+		bool is_stream, boost::system::error_code& ec);
 
 	/**
 	 * consumes payload content in the parser's read buffer 
@@ -430,9 +434,11 @@ protected:
 	 * the next chunk for the HTTP message
 	 *
 	 * @param chunk_buffers buffers to be populated from parsing chunked content
+	 * @param is_stream \b true means that message content is consumed as stream
+	 *
 	 * @return std::size_t number of content bytes consumed, if any
 	 */
-	std::size_t consumeContentAsNextChunk(HTTPMessage::ChunkCache& chunk_buffers);
+	std::size_t consumeContentAsNextChunk(HTTPMessage::ChunkCache& chunk_buffers, bool is_stream);
 
 	/**
 	 * compute and sets a HTTP Message data integrity status

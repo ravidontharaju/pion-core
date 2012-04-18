@@ -67,7 +67,7 @@ protected:
                       std::size_t bytes_read);
 
     /// Consumes bytes that have been read using an HTTP parser
-    void consumeBytes(void);
+	void consumeBytes();
 	
 	/// Reads more bytes from the TCP connection
 	virtual void readBytes(void) = 0;

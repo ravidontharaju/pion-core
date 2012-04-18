@@ -36,7 +36,6 @@ const std::size_t		HTTPParser::DEFAULT_CONTENT_MAX = 1024 * 1024;	// 1 MB
 HTTPParser::ErrorCategory *	HTTPParser::m_error_category_ptr = NULL;
 boost::once_flag			HTTPParser::m_instance_flag = BOOST_ONCE_INIT;
 
-
 // HTTPParser member functions
 
 boost::tribool HTTPParser::parse(HTTPMessage& http_msg,
@@ -66,12 +65,32 @@ boost::tribool HTTPParser::parse(HTTPMessage& http_msg,
 				if (rc == true) {
 					// finishHeaderParsing() updates m_message_parse_state
 					rc = finishHeaderParsing(http_msg, ec);
+					// if content is expected, then interrupt parsing to permit
+					// to the application code to set up streaming consumption mode for content
+					if ( boost::indeterminate(rc) )
+					{
+						// update bytes last read (aggregate individual operations for caller)
+						m_bytes_last_read = total_bytes_parsed;
+						
+						// notify derived classes
+						finishedHeaders(ec);
+						
+						if ( PARSE_CONTENT == m_message_parse_state )
+						{
+							// check if content-length exceeds maximum allowed
+							if ( !http_msg.isStream() && m_bytes_content_remaining > m_max_content_length )
+								http_msg.setContentLength(m_max_content_length);
+							
+							// allocate a buffer for payload content (may be zero-size)
+							http_msg.createContentBuffer();
+						}
+					}
 				}
 				break;
 
 			// parsing chunked payload content
 			case PARSE_CHUNKS:
-				rc = parseChunks(http_msg.getChunkCache(), ec);
+				rc = parseChunks(http_msg.getChunkCache(), http_msg.isStream(), ec);
 				total_bytes_parsed += m_bytes_last_read;
 				// check if we have finished parsing all chunks
 				if (rc == true) {
@@ -87,7 +106,7 @@ boost::tribool HTTPParser::parse(HTTPMessage& http_msg,
 
 			// parsing payload content with no length (until EOF)
 			case PARSE_CONTENT_NO_LENGTH:
-				consumeContentAsNextChunk(http_msg.getChunkCache());
+				consumeContentAsNextChunk(http_msg.getChunkCache(), http_msg.isStream());
 				total_bytes_parsed += m_bytes_last_read;
 				break;
 
@@ -115,6 +134,8 @@ boost::tribool HTTPParser::parse(HTTPMessage& http_msg,
 boost::tribool HTTPParser::parseMissingData(HTTPMessage& http_msg,
 	std::size_t len, boost::system::error_code& ec)
 {
+	PION_ASSERT( !http_msg.isStream() );
+	
 	static const char MISSING_DATA_CHAR = 'X';
 	boost::tribool rc = boost::indeterminate;
 
@@ -699,6 +720,8 @@ boost::tribool HTTPParser::finishHeaderParsing(HTTPMessage& http_msg,
 
 	m_bytes_content_remaining = m_bytes_content_read = 0;
 	http_msg.setContentLength(0);
+
+	PION_ASSERT( !http_msg.getContent() );
 	http_msg.updateTransferCodingUsingHeader();
 	updateMessageWithHeaderData(http_msg);
 
@@ -740,8 +763,8 @@ boost::tribool HTTPParser::finishHeaderParsing(HTTPMessage& http_msg,
 				m_bytes_content_remaining = http_msg.getContentLength();
 
 				// check if content-length exceeds maximum allowed
-				if (m_bytes_content_remaining > m_max_content_length)
-					http_msg.setContentLength(m_max_content_length);
+				//if (m_bytes_content_remaining > m_max_content_length)
+				//	http_msg.setContentLength(m_max_content_length);
 
 				// return true if parsing headers only
 				if (m_parse_headers_only)
@@ -770,8 +793,8 @@ boost::tribool HTTPParser::finishHeaderParsing(HTTPMessage& http_msg,
 		}
 	}
 
-	// allocate a buffer for payload content (may be zero-size)
-	http_msg.createContentBuffer();
+//	// allocate a buffer for payload content (may be zero-size)
+//	http_msg.createContentBuffer();
 
 	return rc;
 }
@@ -962,9 +985,11 @@ bool HTTPParser::parseCookieHeader(HTTPTypes::CookieParams& dict,
 	return true;
 }
 
-boost::tribool HTTPParser::parseChunks(HTTPMessage::ChunkCache& chunk_cache,
+boost::tribool HTTPParser::parseChunks(HTTPMessage::ChunkCache& chunk_cache, bool is_stream,
 	boost::system::error_code& ec)
 {
+	if ( is_stream  )
+		chunk_cache.clear();
 	//
 	// note that boost::tribool may have one of THREE states:
 	//
@@ -1031,6 +1056,14 @@ boost::tribool HTTPParser::parseChunks(HTTPMessage::ChunkCache& chunk_cache,
 					m_chunked_content_parse_state = PARSE_EXPECTING_FINAL_CR_AFTER_LAST_CHUNK;
 				} else {
 					m_chunked_content_parse_state = PARSE_CHUNK;
+					if ( is_stream  )
+					{
+						// small optimization to minimize reallocation of copntent buffer
+						std::size_t num_available = m_read_end_ptr - m_read_ptr;
+						std::size_t num_rest	  = m_size_of_current_chunk - m_bytes_read_in_current_chunk;
+						std::size_t num		   = std::min<std::size_t>( num_available, num_rest );
+						chunk_cache.reserve( num );
+					}
 				}
 			} else {
 				setError(ec, ERROR_CHUNK_CHAR);
@@ -1039,9 +1072,12 @@ boost::tribool HTTPParser::parseChunks(HTTPMessage::ChunkCache& chunk_cache,
 			break;
 
 		case PARSE_CHUNK:
-			if (m_bytes_read_in_current_chunk < m_size_of_current_chunk) {
-				if (chunk_cache.size() < m_max_content_length)
+			if (m_bytes_read_in_current_chunk < m_size_of_current_chunk)
+			{
+				if (is_stream || chunk_cache.size() < m_max_content_length)
+				{
 					chunk_cache.push_back(*m_read_ptr);
+				}
 				m_bytes_read_in_current_chunk++;
 			}
 			if (m_bytes_read_in_current_chunk == m_size_of_current_chunk) {
@@ -1109,6 +1145,7 @@ boost::tribool HTTPParser::consumeContent(HTTPMessage& http_msg,
 	size_t content_bytes_to_read;
 	size_t content_bytes_available = bytes_available();
 	boost::tribool rc = boost::indeterminate;
+	m_bytes_last_read = 0;
 
 	if (m_bytes_content_remaining == 0) {
 		// we have all of the remaining payload content
@@ -1126,15 +1163,14 @@ boost::tribool HTTPParser::consumeContent(HTTPMessage& http_msg,
 	}
 
 	// make sure content buffer is not already full
-	if (m_bytes_content_read < m_max_content_length) {
-		if (m_bytes_content_read + content_bytes_to_read > m_max_content_length) {
+	if ( http_msg.isStream() || m_bytes_content_read < m_max_content_length ) {
+		if ( !http_msg.isStream() && m_bytes_content_read + content_bytes_to_read > m_max_content_length ) {
 			// read would exceed maximum size for content buffer
 			// copy only enough bytes to fill up the content buffer
-			memcpy(http_msg.getContent() + m_bytes_content_read, m_read_ptr, 
-				m_max_content_length - m_bytes_content_read);
+			http_msg.appendContent( m_bytes_content_read, m_read_ptr, m_max_content_length - m_bytes_content_read );
 		} else {
 			// copy all bytes available
-			memcpy(http_msg.getContent() + m_bytes_content_read, m_read_ptr, content_bytes_to_read);
+			http_msg.appendContent( m_bytes_content_read, m_read_ptr, content_bytes_to_read );
 		}
 	}
 
@@ -1146,14 +1182,21 @@ boost::tribool HTTPParser::consumeContent(HTTPMessage& http_msg,
 	return rc;
 }
 
-std::size_t HTTPParser::consumeContentAsNextChunk(HTTPMessage::ChunkCache& chunk_cache)
+std::size_t HTTPParser::consumeContentAsNextChunk(HTTPMessage::ChunkCache& chunk_cache, bool is_stream)
 {
 	if (bytes_available() == 0) {
 		m_bytes_last_read = 0;
 	} else {
 		m_bytes_last_read = (m_read_end_ptr - m_read_ptr);
+
+		if ( is_stream )
+		{
+			chunk_cache.clear();
+			chunk_cache.reserve( m_bytes_last_read );
+		}
+
 		while (m_read_ptr < m_read_end_ptr) {
-			if (chunk_cache.size() < m_max_content_length)
+			if (is_stream || chunk_cache.size() < m_max_content_length)
 				chunk_cache.push_back(*m_read_ptr);
 			++m_read_ptr;
 		}
@@ -1165,7 +1208,8 @@ std::size_t HTTPParser::consumeContentAsNextChunk(HTTPMessage::ChunkCache& chunk
 
 void HTTPParser::finish(HTTPMessage& http_msg) const
 {
-	switch (m_message_parse_state) {
+	switch (m_message_parse_state)
+	{
 	case PARSE_START:
 		http_msg.setIsValid(false);
 		http_msg.setContentLength(0);
@@ -1197,7 +1241,7 @@ void HTTPParser::finish(HTTPMessage& http_msg) const
 
 	computeMsgStatus(http_msg, http_msg.isValid());
 
-	if (isParsingRequest()) {
+	if (isParsingRequest() && !http_msg.isStream()) {
 		// Parse query pairs from post content if content type is x-www-form-urlencoded.
 		// Type could be followed by parameters (as defined in section 3.6 of RFC 2616)
 		// e.g. Content-Type: application/x-www-form-urlencoded; charset=UTF-8

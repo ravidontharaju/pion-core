@@ -19,6 +19,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <pion/PionConfig.hpp>
 #include <pion/net/HTTPTypes.hpp>
 
@@ -79,7 +80,8 @@ public:
 		: m_is_valid(false), m_is_chunked(false), m_chunks_supported(false),
 		m_do_not_send_content_length(false),
 		m_version_major(1), m_version_minor(1), m_content_length(0),
-		m_status(STATUS_NONE), m_has_missing_packets(false), m_has_data_after_missing(false)
+		m_status(STATUS_NONE), m_has_missing_packets(false), m_has_data_after_missing(false),
+		m_mtx( new mutex_type() )
 	{}
 
 	/// copy constructor
@@ -97,11 +99,12 @@ public:
 		m_headers(http_msg.m_headers),
 		m_status(http_msg.m_status),
 		m_has_missing_packets(http_msg.m_has_missing_packets),
-		m_has_data_after_missing(http_msg.m_has_data_after_missing)
+		m_has_data_after_missing(http_msg.m_has_data_after_missing),
+		m_mtx( new mutex_type() )
 	{
 		if (http_msg.m_content_buf) {
-			char *ptr = createContentBuffer();
-			memcpy(ptr, http_msg.m_content_buf.get(), m_content_length);
+			m_content_buf.reset( new ChunkCache );
+			*m_content_buf = *http_msg.m_content_buf;
 		}
 	}
 
@@ -122,9 +125,10 @@ public:
 		m_has_missing_packets = http_msg.m_has_missing_packets;
 		m_has_data_after_missing = http_msg.m_has_data_after_missing;
 		if (http_msg.m_content_buf) {
-			char *ptr = createContentBuffer();
-			memcpy(ptr, http_msg.m_content_buf.get(), m_content_length);
+			m_content_buf.reset( new ChunkCache );
+			*m_content_buf = *http_msg.m_content_buf;
 		}
+		m_mtx.reset( new mutex_type() );
 		return *this;
 	}
 
@@ -178,19 +182,79 @@ public:
 	}
 
 	/// returns the length of the payload content (in bytes)
-	inline std::size_t getContentLength(void) const { return m_content_length; }
+	inline boost::uint64_t getContentLength(void) const { return m_content_length; }
+
+	/// It returns \b true if content of request has to be consumed as stream.
+	virtual bool isStream() const
+	{
+		return false;
+	}
+
+	virtual void appendContent( std::size_t offset, void const * data, std::size_t length )
+	{
+		if ( !isStream() )
+		{
+			memcpy( getContent() + offset, data, length );
+		}
+		else
+		{
+			char const * b = static_cast<char const *>( data );
+			char const * e = b + length;
+			m_content_buf->assign( b, e );
+		}
+	}
 
 	/// returns true if the message content is chunked
 	inline bool isChunked(void) const { return m_is_chunked; }
 
+	/// returns true if buffer for content is allocated already
+	bool isContentBufferAllocated() const
+	{
+		return m_content_buf;
+	}
+
+	/// returns size of allocated buffer
+	std::size_t getContentBufferSize() const
+	{
+		return m_content_buf ? m_content_buf->size() : 0;
+	}
+
 	/// returns a pointer to the payload content, or NULL if there is none
-	inline char *getContent(void) { return m_content_buf.get(); }
+	inline char *getContent(void)
+	{
+		return !m_content_buf || m_content_buf->empty() ? 0 : m_content_buf->data();
+	}
 
 	/// returns a const pointer to the payload content, or NULL if there is none
-	inline const char *getContent(void) const { return m_content_buf.get(); }
+	inline const char *getContent(void) const
+	{
+		return !m_content_buf || m_content_buf->empty() ? 0 : m_content_buf->data();
+	}
+
+	ChunkCache * getContentAsVector()
+	{
+		return m_content_buf.get();
+	}
+
+	ChunkCache const * getContentAsVector() const
+	{
+		return m_content_buf.get();
+	}
 
 	/// returns a reference to the chunk cache
-	inline ChunkCache& getChunkCache(void) { return m_chunk_cache; }
+	inline ChunkCache& getChunkCache(void)
+	{
+		if ( isStream() )
+		{
+			if ( !m_content_buf )
+			{
+				m_content_buf.reset( new ChunkCache );
+			}
+			return *m_content_buf;
+		}
+
+		return m_chunk_cache;
+	}
 
 	/// returns a value for the header if any are defined; otherwise, an empty string
 	inline const std::string& getHeader(const std::string& key) const {
@@ -199,6 +263,11 @@ public:
 
 	/// returns a reference to the HTTP headers
 	inline Headers& getHeaders(void) {
+		return m_headers;
+	}
+
+	/// returns a const reference to the HTTP headers
+	inline const Headers& getHeaders(void) const {
 		return m_headers;
 	}
 
@@ -282,7 +351,7 @@ public:
 	}
 
 	/// sets the length of the payload content (in bytes)
-	inline void setContentLength(const std::size_t n) { m_content_length = n; }
+	inline void setContentLength(const boost::uint64_t n) { m_content_length = n; }
 
 	/// if called, the content-length will not be sent in the HTTP headers
 	inline void setDoNotSendContentLength(void) { m_do_not_send_content_length = true; }
@@ -301,7 +370,7 @@ public:
 		} else {
 			std::string trimmed_length(i->second);
 			boost::algorithm::trim(trimmed_length);
-			m_content_length = boost::lexical_cast<std::size_t>(trimmed_length);
+			m_content_length = boost::lexical_cast<boost::uint64_t>(trimmed_length);
 		}
 	}
 
@@ -316,19 +385,28 @@ public:
 		}
 	}
 
-	///creates a payload content buffer of size m_content_length and returns
-	/// a pointer to the new buffer (memory is managed by HTTPMessage class)
-	inline char *createContentBuffer(void) {
-		m_content_buf.reset(new char[m_content_length + 1]);
-		m_content_buf[m_content_length] = '\0';
-		return m_content_buf.get();
+	/// Creates a payload content buffer of size m_content_length and returns
+	/// a pointer to the new buffer (memory is managed by HTTPMessage class).
+	/// For streaming mode the methos just creates empty payload buffer.
+	inline char *createContentBuffer()
+	{
+		if ( isStream() )
+		{
+			m_content_buf.reset( new ChunkCache );
+			return 0;
+		}
+
+		m_content_buf.reset( new ChunkCache( m_content_length + 1 ) );
+		(*m_content_buf)[m_content_length] = '\0';
+
+		return m_content_buf->data();
 	}
 	
 	/// resets payload content to match the value of a string
 	inline void setContent(const std::string& content) {
 		setContentLength(content.size());
-		createContentBuffer();
-		memcpy(m_content_buf.get(), content.c_str(), content.size());
+		char* data = createContentBuffer();
+        memcpy( data, content.c_str(), content.size());
 	}
 
 	/// clears payload content buffer
@@ -553,11 +631,14 @@ protected:
 	/// updates the string containing the first line for the HTTP message
 	virtual void updateFirstLine(void) const = 0;
 
-
 	/// first line sent in an HTTP message
 	/// (i.e. "GET / HTTP/1.1" for request, or "HTTP/1.1 200 OK" for response)
 	mutable std::string				m_first_line;
 
+	typedef boost::recursive_mutex mutex_type;
+	typedef mutex_type::scoped_lock scoped_lock;
+	
+	mutex_type& getMutex() const { return *m_mtx; }
 
 private:
 
@@ -586,10 +667,10 @@ private:
 	boost::uint16_t					m_version_minor;
 
 	/// the length of the payload content (in bytes)
-	std::size_t						m_content_length;
+	boost::uint64_t					m_content_length;
 
 	/// the payload content, if any was sent with the message
-	boost::scoped_array<char>		m_content_buf;
+	boost::scoped_ptr< ChunkCache > m_content_buf;
 
 	/// buffers for holding chunked data
 	ChunkCache						m_chunk_cache;
@@ -608,6 +689,9 @@ private:
 
 	/// indicates missing packets in the middle of the data stream
 	bool							m_has_data_after_missing;
+	
+	/// synchronize access to message data
+	std::auto_ptr<mutex_type>		m_mtx;
 };
 
 

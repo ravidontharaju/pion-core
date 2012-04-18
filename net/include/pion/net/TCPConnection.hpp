@@ -23,6 +23,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include <boost/any.hpp>
 #include <boost/array.hpp>
 #include <boost/function.hpp>
 #include <boost/function/function1.hpp>
@@ -654,6 +655,27 @@ public:
 	/// returns const reference to underlying SSL socket object
 	inline const SSLSocket& getSSLSocket(void) const { return m_ssl_socket; }
 
+    template < typename _T >
+    inline void setUserData( const _T& data ) throw() {
+        m_user_data = data;
+    }
+    
+    template < typename _T >
+    inline _T getUserData() const throw()
+    {
+        try
+        {
+            if( m_user_data.empty() )
+                return _T();
+            else
+                return boost::any_cast<_T>( m_user_data );
+        }
+        catch( boost::bad_any_cast& )
+        {
+            return _T();
+        }
+    }
+
 	
 protected:
 		
@@ -689,6 +711,9 @@ private:
 
 	/// data type for a read position bookmark
 	typedef std::pair<const char*, const char*>		ReadPosition;
+
+    /// user data
+    boost::any                  m_user_data;
 
 	
 	/// context object for the SSL connection socket

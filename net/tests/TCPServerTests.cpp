@@ -266,7 +266,9 @@ public:
 		for (std::map<std::string, std::string>::const_iterator i = m_expectedHeaders.begin(); i != m_expectedHeaders.end(); ++i) {
 			BOOST_CHECK_EQUAL(http_request.getHeader(i->first), i->second);
 		}
-		BOOST_CHECK_EQUAL(m_expectedContent, http_request.getContent());
+		const char* content = http_request.getContent();
+        std::string stringContent = content ? content : "";
+		BOOST_CHECK_EQUAL(m_expectedContent, stringContent);
 
 		if (m_additional_request_test)
 			BOOST_CHECK(m_additional_request_test(http_request));

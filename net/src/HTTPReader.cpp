@@ -62,8 +62,7 @@ void HTTPReader::consumeBytes(const boost::system::error_code& read_error,
 	consumeBytes();
 }
 
-
-void HTTPReader::consumeBytes(void)
+void HTTPReader::consumeBytes()
 {
 	// parse the bytes read from the last operation
 	//
@@ -115,7 +114,6 @@ void HTTPReader::consumeBytes(void)
 		getMessage().setIsValid(false);
 		finishedReading(ec);
 	} else {
-		// not yet finished parsing the message -> read more data
 		readBytesWithTimeout();
 	}
 }

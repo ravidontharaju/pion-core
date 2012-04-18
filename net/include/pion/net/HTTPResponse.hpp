@@ -71,10 +71,13 @@ public:
 
 	/// clears all response data
 	virtual void clear(void) {
+		scoped_lock lck( getMutex() );
+		
 		HTTPMessage::clear();
 		m_status_code = RESPONSE_CODE_OK;
 		m_status_message = RESPONSE_MESSAGE_OK;
 		m_request_method.clear();
+		m_bodyStreamHandler.clear();
 	}
 
 	/// the content length may be implied for certain types of responses
@@ -84,6 +87,13 @@ public:
 			    || m_status_code == 204 || m_status_code == 205		// no content & reset content responses
 			    || m_status_code == 304								// not modified responses have no content
 			    );
+	}
+
+	/// It returns \b true if content of request has to be consumed as stream.
+	virtual bool isStream() const
+	{
+		scoped_lock lck( getMutex() );
+		return m_bodyStreamHandler ? true : false;
 	}
 
 	/**
@@ -190,6 +200,27 @@ public:
 		changeHeader(HEADER_LAST_MODIFIED, get_date_string(t));
 	}
 	
+	//..........................................................................
+	typedef boost::function4<
+		void,							// return type
+		bool,							// good state
+		boost::shared_ptr<HTTPResponse>, // request message
+		bool,							// true, if the end of content
+		boost::function0<void>		   // continue handler (has to called)
+	> BodyStreamHandler;
+
+	void setBodyStreamHandler( BodyStreamHandler const & bodyStreamHandler = BodyStreamHandler() )
+	{
+		scoped_lock lck( getMutex() );
+		m_bodyStreamHandler = bodyStreamHandler;
+	}
+
+	BodyStreamHandler const & getBodyStreamHandler() const
+	{
+		scoped_lock lck( getMutex() );
+		return m_bodyStreamHandler;
+	}
+	//..........................................................................
 	
 protected:
 	
@@ -216,6 +247,9 @@ private:
 	
 	/// HTTP method used by the request
 	std::string				m_request_method;
+	
+	/// Function pointer to async body stream handler
+	BodyStreamHandler			   m_bodyStreamHandler;
 };
 
 

@@ -205,10 +205,13 @@ std::size_t HTTPMessage::read(std::istream& in,
 
 void HTTPMessage::concatenateChunks(void)
 {
+    if ( !isStream() )
+    {
 	setContentLength(m_chunk_cache.size());
 	char *post_buffer = createContentBuffer();
 	if (m_chunk_cache.size() > 0)
 		std::copy(m_chunk_cache.begin(), m_chunk_cache.end(), post_buffer);
+    }
 }
 	
 }	// end namespace net

@@ -27,8 +27,11 @@ const unsigned int			HTTPServer::MAX_REDIRECTS = 10;
 void HTTPServer::handleConnection(TCPConnectionPtr& tcp_conn)
 {
 	HTTPRequestReaderPtr reader_ptr;
-	reader_ptr = HTTPRequestReader::create(tcp_conn, boost::bind(&HTTPServer::handleRequest,
-										   this, _1, _2, _3));
+	reader_ptr = HTTPRequestReader::create(
+		tcp_conn,
+		boost::bind(&HTTPServer::handleRequest,this, _1, _2, _3),
+		boost::bind(&HTTPServer::handleRequestHeaders,this, _1, _2, _3)
+	);
 	reader_ptr->setMaxContentLength(m_max_content_length);
 	reader_ptr->receive();
 }
@@ -116,17 +119,49 @@ void HTTPServer::handleRequest(HTTPRequestPtr& http_request,
 	}
 }
 	
-bool HTTPServer::findRequestHandler(const std::string& resource,
+void HTTPServer::handleRequestHeaders(HTTPRequestPtr& http_request,
+		TCPConnectionPtr& tcp_conn, const boost::system::error_code& ec)
+{
+	PION_LOG_DEBUG(m_logger, "Received HTTP request headers");
+
+	// strip off trailing slash if the request has one
+	std::string resource_requested(stripTrailingSlash(http_request->getResource()));
+
+	// search for a handler matching the resource requested
+	RequestHandler request_headers_handler;
+	if (findRequestHeadersHandler(resource_requested, request_headers_handler)) {
+
+		// try to handle the request
+		try {
+			request_headers_handler(http_request, tcp_conn);
+			PION_LOG_DEBUG(m_logger, "Found request headers handler for HTTP resource: "
+						   << resource_requested);
+			if (http_request->getResource() != http_request->getOriginalResource()) {
+				PION_LOG_DEBUG(m_logger, "Original resource requested was: " << http_request->getOriginalResource());
+			}
+		} catch (std::bad_alloc&) {
+			// propagate memory errors (FATAL)
+			throw;
+		} catch (std::exception& e) {
+			// recover gracefully from other exceptions thrown request handlers
+			PION_LOG_ERROR(m_logger, "HTTP request headers handler: " << e.what());
+		}
+
+	}
+}
+	
+bool HTTPServer::findHandler(const std::string& resource,
+                             ResourceMap const & resources,
 									RequestHandler& request_handler) const
 {
 	// first make sure that HTTP resources are registered
 	boost::mutex::scoped_lock resource_lock(m_resource_mutex);
-	if (m_resources.empty())
+	if (resources.empty())
 		return false;
 	
 	// iterate through each resource entry that may match the resource
-	ResourceMap::const_iterator i = m_resources.upper_bound(resource);
-	while (i != m_resources.begin()) {
+	ResourceMap::const_iterator i = resources.upper_bound(resource);
+	while (i != resources.begin()) {
 		--i;
 		// check for a match if the first part of the strings match
 		if (i->first.empty() || resource.compare(0, i->first.size(), i->first) == 0) {
@@ -142,13 +177,33 @@ bool HTTPServer::findRequestHandler(const std::string& resource,
 	return false;
 }
 
+bool HTTPServer::findRequestHandler(const std::string& resource,
+									RequestHandler& request_handler) const
+{
+    return findHandler(resource, m_resources, request_handler);
+}
+
+bool HTTPServer::findRequestHeadersHandler(const std::string& resource,
+                                           RequestHandler& request_handler) const
+{
+    return findHandler(resource, m_headers_resources, request_handler);
+}
+
 void HTTPServer::addResource(const std::string& resource,
-							 RequestHandler request_handler)
+							 RequestHandler request_handler,
+                             RequestHandler request_headers_handler)
 {
 	boost::mutex::scoped_lock resource_lock(m_resource_mutex);
 	const std::string clean_resource(stripTrailingSlash(resource));
+
 	m_resources.insert(std::make_pair(clean_resource, request_handler));
 	PION_LOG_INFO(m_logger, "Added request handler for HTTP resource: " << clean_resource);
+
+    if (request_headers_handler)
+    {
+        m_headers_resources.insert(std::make_pair(clean_resource, request_headers_handler));
+        PION_LOG_INFO(m_logger, "Added request headers handler for HTTP resource: " << clean_resource);
+    }
 }
 
 void HTTPServer::removeResource(const std::string& resource)
